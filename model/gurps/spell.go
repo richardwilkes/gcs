@@ -909,7 +909,7 @@ func (s *Spell) String() string {
 }
 
 func (s *Spell) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotesWithReplacements(), EntityFromNode(s).EmbeddedEval)
+	return ResolveText(EntityFromNode(s), s.LocalNotesWithReplacements())
 }
 
 // RawPoints returns the unadjusted points.

@@ -16,7 +16,6 @@ import (
 	"hash"
 	"io/fs"
 	"math"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -1592,9 +1591,6 @@ func (e *Entity) SetPointsRecord(record []*PointsRecord) {
 		e.TotalPoints += rec.Points
 	}
 }
-
-// EvalEmbeddedRegex is aa regex for extracting embedded expressions.
-var EvalEmbeddedRegex = regexp.MustCompile(`\|\|[^|]+\|\|`)
 
 // EmbeddedEval resolves an embedded expression.
 func (e *Entity) EmbeddedEval(s string) string {

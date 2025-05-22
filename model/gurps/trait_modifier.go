@@ -440,7 +440,7 @@ func (t *TraitModifier) String() string {
 }
 
 func (t *TraitModifier) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(t.LocalNotesWithReplacements(), EntityFromNode(t).EmbeddedEval)
+	return ResolveText(EntityFromNode(t), t.LocalNotesWithReplacements())
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.

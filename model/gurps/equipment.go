@@ -545,7 +545,7 @@ func (e *Equipment) String() string {
 }
 
 func (e *Equipment) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotesWithReplacements(), EntityFromNode(e).EmbeddedEval)
+	return ResolveText(EntityFromNode(e), e.LocalNotesWithReplacements())
 }
 
 // Notes returns the local notes.

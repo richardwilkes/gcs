@@ -551,7 +551,7 @@ func (t *Trait) Notes() string {
 }
 
 func (t *Trait) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(t.LocalNotesWithReplacements(), EntityFromNode(t).EmbeddedEval)
+	return ResolveText(EntityFromNode(t), t.LocalNotesWithReplacements())
 }
 
 // FeatureList returns the list of Features.

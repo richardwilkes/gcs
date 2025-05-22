@@ -391,7 +391,7 @@ func (e *EquipmentModifier) String() string {
 }
 
 func (e *EquipmentModifier) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotesWithReplacements(), EntityFromNode(e).EmbeddedEval)
+	return ResolveText(EntityFromNode(e), e.LocalNotesWithReplacements())
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.

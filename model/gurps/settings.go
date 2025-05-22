@@ -40,6 +40,15 @@ const maxRecentFiles = 20
 // DefaultNavigatorDividerPosition is the default position for the navigator divider.
 const DefaultNavigatorDividerPosition = 330
 
+const (
+	// DefaultPermittedScriptExecTime is the default execution time permitted per script.
+	DefaultPermittedScriptExecTime = time.Second
+	// MinPermittedScriptExecTime is the minimum execution time permitted per script.
+	MinPermittedScriptExecTime = 10 * time.Millisecond
+	// MaxPermittedScriptExecTime is the maximum execution time permitted per script.
+	MaxPermittedScriptExecTime = time.Second
+)
+
 // Last directory keys
 const (
 	DefaultLastDirKey  = "default"
@@ -73,26 +82,27 @@ type PDFInfo struct {
 
 // Settings holds the application settings.
 type Settings struct {
-	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitempty"`
-	General            *GeneralSettings           `json:"general,omitempty"`
-	LibrarySet         Libraries                  `json:"libraries,omitempty"`
-	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
-	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
-	RecentFiles        []string                   `json:"recent_files,omitempty"`
-	DeepSearch         []string                   `json:"deep_search,omitempty"`
-	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
-	ColumnSizing       map[string]map[int]float32 `json:"column_sizing,omitempty"`
-	PageRefs           PageRefs                   `json:"page_refs,omitempty"`
-	KeyBindings        KeyBindings                `json:"key_bindings,omitempty"`
-	WorkspaceFrame     *unison.Rect               `json:"workspace_frame,omitempty"`
-	TopDockState       *unison.DockState          `json:"top_dock_state,omitempty"`
-	DocDockState       *unison.DockState          `json:"doc_dock_state,omitempty"`
-	Colors             colors.Colors              `json:"theme_colors"`
-	Fonts              fonts.Fonts                `json:"fonts"`
-	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
-	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
-	Closed             map[string]int64           `json:"closed,omitempty"`
-	PDFs               map[string]*PDFInfo        `json:"pdfs,omitempty"`
+	LastSeenGCSVersion         string                     `json:"last_seen_gcs_version,omitempty"`
+	General                    *GeneralSettings           `json:"general,omitempty"`
+	LibrarySet                 Libraries                  `json:"libraries,omitempty"`
+	LibraryExplorer            NavigatorSettings          `json:"library_explorer"`
+	ThemeMode                  thememode.Enum             `json:"theme_mode,alt=color_mode"`
+	RecentFiles                []string                   `json:"recent_files,omitempty"`
+	DeepSearch                 []string                   `json:"deep_search,omitempty"`
+	LastDirs                   map[string]string          `json:"last_dirs,omitempty"`
+	ColumnSizing               map[string]map[int]float32 `json:"column_sizing,omitempty"`
+	PageRefs                   PageRefs                   `json:"page_refs,omitempty"`
+	KeyBindings                KeyBindings                `json:"key_bindings,omitempty"`
+	WorkspaceFrame             *unison.Rect               `json:"workspace_frame,omitempty"`
+	TopDockState               *unison.DockState          `json:"top_dock_state,omitempty"`
+	DocDockState               *unison.DockState          `json:"doc_dock_state,omitempty"`
+	Colors                     colors.Colors              `json:"theme_colors"`
+	Fonts                      fonts.Fonts                `json:"fonts"`
+	Sheet                      *SheetSettings             `json:"sheet_settings,omitempty"`
+	OpenInWindow               []dgroup.Group             `json:"open_in_window,omitempty"`
+	Closed                     map[string]int64           `json:"closed,omitempty"`
+	PDFs                       map[string]*PDFInfo        `json:"pdfs,omitempty"`
+	PermittedPerScriptExecTime time.Duration              `json:"permitted_per_script_exec_time,omitempty"`
 }
 
 // IDer defines the methods required of objects that have an ID.
@@ -114,10 +124,11 @@ func GlobalSettings() *Settings {
 		dice.GURPSFormat = true
 		if err := jio.LoadFromFile(context.Background(), SettingsPath, &globalSettings); err != nil {
 			globalSettings = Settings{
-				LastSeenGCSVersion: cmdline.AppVersion,
-				General:            NewGeneralSettings(),
-				LibrarySet:         NewLibraries(),
-				Sheet:              FactorySheetSettings(),
+				LastSeenGCSVersion:         cmdline.AppVersion,
+				General:                    NewGeneralSettings(),
+				LibrarySet:                 NewLibraries(),
+				Sheet:                      FactorySheetSettings(),
+				PermittedPerScriptExecTime: DefaultPermittedScriptExecTime,
 			}
 		}
 		globalSettings.EnsureValidity()
@@ -178,6 +189,11 @@ func (s *Settings) EnsureValidity() {
 		s.General = NewGeneralSettings()
 	} else {
 		s.General.EnsureValidity()
+	}
+	if s.PermittedPerScriptExecTime < MinPermittedScriptExecTime {
+		s.PermittedPerScriptExecTime = MinPermittedScriptExecTime
+	} else if s.PermittedPerScriptExecTime > MaxPermittedScriptExecTime {
+		s.PermittedPerScriptExecTime = MaxPermittedScriptExecTime
 	}
 	if len(s.LibrarySet) == 0 {
 		s.LibrarySet = NewLibraries()

@@ -233,7 +233,7 @@ func (n *Note) String() string {
 }
 
 func (n *Note) resolveText() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(n.TextWithReplacements(), EntityFromNode(n).EmbeddedEval)
+	return ResolveText(EntityFromNode(n), n.TextWithReplacements())
 }
 
 // NotesHeaderData returns the header data information for the given note column.
