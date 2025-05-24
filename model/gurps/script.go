@@ -4,54 +4,64 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
+	"github.com/dop251/goja"
+	"github.com/dop251/goja/parser"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/goblin"
-	"github.com/richardwilkes/goblin/ast"
+	"github.com/richardwilkes/toolbox/errs"
 )
 
 const scriptPrefix = "^^^"
 
 var (
 	evalEmbeddedRegex = regexp.MustCompile(`\|\|[^|]+\|\|`)
-	topScope          = createTopScope()
+	scriptCache       = make(map[string]*goja.Program)
+	scriptCacheLock   sync.RWMutex
+	vmPool            = sync.Pool{New: func() any {
+		vm := goja.New()
+		vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
+		vm.SetParserOptions(parser.WithDisableSourceMaps)
+
+		vm.Set("printf", fmt.Printf)
+
+		vm.Set("fixedIntFromString", fxp.FromStringForced)
+		vm.Set("fixedIntFromInt", fxp.From[int])
+		vm.Set("fixedIntFromFloat", fxp.From[float64])
+		vm.Set("fixedIntAsInt", fxp.As[int])
+		vm.Set("fixedIntAsFloat", fxp.As[float64])
+		vm.Set("fixedIntApplyRounding", fxp.ApplyRounding)
+		vm.Set("fixedIntAdd", addFixedInts)
+		vm.Set("fixedIntSub", subFixedInts)
+
+		vm.Set("feetAndInches", fxp.FeetAndInches)
+		vm.Set("inch", fxp.Inch)
+		vm.Set("feet", fxp.Feet)
+		vm.Set("yard", fxp.Yard)
+		vm.Set("mile", fxp.Mile)
+		vm.Set("centimeter", fxp.Centimeter)
+		vm.Set("kilometer", fxp.Kilometer)
+		vm.Set("meter", fxp.Meter)
+		vm.Set("extractLengthUnit", fxp.ExtractLengthUnit)
+		vm.Set("lengthFromInteger", fxp.LengthFromInteger[int])
+		vm.Set("lengthFromString", fxp.LengthFromStringForced)
+
+		vm.Set("ssrt", SSRT)
+		vm.Set("yardsFromSSRT", YardsFromSSRT)
+
+		return vm
+	}}
 )
+
+// ScriptArg is a named argument to be passed to RunString.
+type ScriptArg struct {
+	Name  string
+	Value any
+}
 
 type entityScope struct {
 	entity *Entity
-}
-
-func createTopScope() ast.Scope {
-	scope := goblin.NewScope()
-
-	scope.Define("sprintf", fmt.Sprintf)
-
-	scope.DefineType("FixedInt", fxp.One)
-	scope.Define("FixedIntFromString", fxp.FromStringForced)
-	scope.Define("FixedIntFromInt", fxp.From[int])
-	scope.Define("FixedIntFromFloat", fxp.From[float64])
-	scope.Define("FixedIntAsInt", fxp.As[int])
-	scope.Define("FixedIntAsFloat", fxp.As[float64])
-	scope.Define("ApplyRounding", fxp.ApplyRounding)
-
-	scope.DefineType("Length", fxp.Length(0))
-	scope.DefineType("LengthUnit", fxp.Yard)
-	scope.DefineGlobal("FeetAndInches", fxp.FeetAndInches)
-	scope.DefineGlobal("Inch", fxp.Inch)
-	scope.DefineGlobal("Feet", fxp.Feet)
-	scope.DefineGlobal("Yard", fxp.Yard)
-	scope.DefineGlobal("Mile", fxp.Mile)
-	scope.DefineGlobal("Centimeter", fxp.Centimeter)
-	scope.DefineGlobal("Kilometer", fxp.Kilometer)
-	scope.DefineGlobal("Meter", fxp.Meter)
-	scope.Define("ExtractLengthUnit", fxp.ExtractLengthUnit)
-	scope.Define("LengthFromInteger", fxp.LengthFromInteger[int])
-	scope.Define("LengthFromString", fxp.LengthFromStringForced)
-
-	scope.Define("SSRT", SSRT)
-	scope.Define("YardsFromSSRT", YardsFromSSRT)
-
-	return scope
 }
 
 // ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
@@ -60,24 +70,67 @@ func ResolveText(entity *Entity, text string) string {
 	if !strings.HasPrefix(text, scriptPrefix) {
 		return evalEmbeddedRegex.ReplaceAllStringFunc(text, entity.EmbeddedEval)
 	}
-
 	es := &entityScope{entity: entity}
-	scope := topScope.NewScope()
-	defer scope.Destroy()
-
-	scope.Define("HasTrait", es.HasTrait)
-	scope.Define("TraitLevel", es.TraitLevel)
-
-	scope.Define("SkillLevel", es.SkillLevel)
-
-	scope.Define("AttributeIDs", es.AttributeIDs)
-	scope.Define("CurrentAttributeValue", es.CurrentAttributeValue)
-
-	v, err := scope.ParseAndRunWithTimeout(GlobalSettings().PermittedPerScriptExecTime, text[len(scriptPrefix):])
+	v, err := RunScript(GlobalSettings().PermittedPerScriptExecTime, text[len(scriptPrefix):],
+		ScriptArg{Name: "hasTrait", Value: es.HasTrait},
+		ScriptArg{Name: "traitLevel", Value: es.TraitLevel},
+		ScriptArg{Name: "skillLevel", Value: es.SkillLevel},
+		ScriptArg{Name: "attributeIDs", Value: es.AttributeIDs},
+		ScriptArg{Name: "currentAttributeValue", Value: es.CurrentAttributeValue},
+	)
 	if err != nil {
 		return err.Error()
 	}
 	return v.String()
+}
+
+// RunScript compiles and runs a script with the provided arguments. A timeout of 0 or less means no timeout.
+// The script should be a valid JavaScript function body, and it will be wrapped in an anonymous function to avoid
+// polluting the global scope. The arguments will be set as global variables in the script's context. The return value
+// is the result of the script execution, or an error if it fails.
+func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Value, error) {
+	scriptCacheLock.RLock()
+	program, exists := scriptCache[text]
+	scriptCacheLock.RUnlock()
+	if !exists {
+		var err error
+		program, err = goja.Compile("", "(function() {"+text+"})();", true)
+		if err != nil {
+			return nil, errs.New("failed to compile script: " + err.Error())
+		}
+		scriptCacheLock.Lock()
+		scriptCache[text] = program
+		scriptCacheLock.Unlock()
+	}
+	vm, ok := vmPool.Get().(*goja.Runtime)
+	if !ok {
+		return nil, errs.New("failed to get VM from pool")
+	}
+	defer func() {
+		globals := vm.GlobalObject()
+		for _, arg := range args {
+			globals.Delete(arg.Name)
+		}
+		vm.ClearInterrupt()
+		vmPool.Put(vm)
+	}()
+	for _, arg := range args {
+		if err := vm.Set(arg.Name, arg.Value); err != nil {
+			return nil, errs.Newf("failed to set argument %s: %s", arg.Name, err.Error())
+		}
+	}
+	if timeout > 0 {
+		defer time.AfterFunc(timeout, func() { vm.Interrupt("timeout") }).Stop()
+	}
+	return vm.RunProgram(program)
+}
+
+func addFixedInts(a, b fxp.Int) fxp.Int {
+	return a + b
+}
+
+func subFixedInts(a, b fxp.Int) fxp.Int {
+	return a - b
 }
 
 // HasTrait checks if the entity has a trait with the given name.

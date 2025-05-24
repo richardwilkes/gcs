@@ -3,8 +3,8 @@ module github.com/richardwilkes/gcs/v5
 go 1.24.2
 
 require (
+	github.com/dop251/goja v0.0.0-20250309171923-bcd7cc6bf64c
 	github.com/google/uuid v1.6.0
-	github.com/richardwilkes/goblin v1.1.2
 	github.com/richardwilkes/json v0.3.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.10.2
@@ -22,8 +22,11 @@ require (
 require (
 	github.com/OpenPrinting/goipp v1.2.0 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728 // indirect
+	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
+	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/kr/text v0.2.0 // indirect
