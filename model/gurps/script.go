@@ -1,7 +1,9 @@
 package gurps
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 	"sync"
@@ -24,31 +26,31 @@ var (
 		vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 		vm.SetParserOptions(parser.WithDisableSourceMaps)
 
-		vm.Set("printf", fmt.Printf)
+		mustSet(vm, "printf", fmt.Printf)
 
-		vm.Set("fixedIntFromString", fxp.FromStringForced)
-		vm.Set("fixedIntFromInt", fxp.From[int])
-		vm.Set("fixedIntFromFloat", fxp.From[float64])
-		vm.Set("fixedIntAsInt", fxp.As[int])
-		vm.Set("fixedIntAsFloat", fxp.As[float64])
-		vm.Set("fixedIntApplyRounding", fxp.ApplyRounding)
-		vm.Set("fixedIntAdd", addFixedInts)
-		vm.Set("fixedIntSub", subFixedInts)
+		mustSet(vm, "fixedIntFromString", fxp.FromStringForced)
+		mustSet(vm, "fixedIntFromInt", fxp.From[int])
+		mustSet(vm, "fixedIntFromFloat", fxp.From[float64])
+		mustSet(vm, "fixedIntAsInt", fxp.As[int])
+		mustSet(vm, "fixedIntAsFloat", fxp.As[float64])
+		mustSet(vm, "fixedIntApplyRounding", fxp.ApplyRounding)
+		mustSet(vm, "fixedIntAdd", addFixedInts)
+		mustSet(vm, "fixedIntSub", subFixedInts)
 
-		vm.Set("feetAndInches", fxp.FeetAndInches)
-		vm.Set("inch", fxp.Inch)
-		vm.Set("feet", fxp.Feet)
-		vm.Set("yard", fxp.Yard)
-		vm.Set("mile", fxp.Mile)
-		vm.Set("centimeter", fxp.Centimeter)
-		vm.Set("kilometer", fxp.Kilometer)
-		vm.Set("meter", fxp.Meter)
-		vm.Set("extractLengthUnit", fxp.ExtractLengthUnit)
-		vm.Set("lengthFromInteger", fxp.LengthFromInteger[int])
-		vm.Set("lengthFromString", fxp.LengthFromStringForced)
+		mustSet(vm, "feetAndInches", fxp.FeetAndInches)
+		mustSet(vm, "inch", fxp.Inch)
+		mustSet(vm, "feet", fxp.Feet)
+		mustSet(vm, "yard", fxp.Yard)
+		mustSet(vm, "mile", fxp.Mile)
+		mustSet(vm, "centimeter", fxp.Centimeter)
+		mustSet(vm, "kilometer", fxp.Kilometer)
+		mustSet(vm, "meter", fxp.Meter)
+		mustSet(vm, "extractLengthUnit", fxp.ExtractLengthUnit)
+		mustSet(vm, "lengthFromInteger", fxp.LengthFromInteger[int])
+		mustSet(vm, "lengthFromString", fxp.LengthFromStringForced)
 
-		vm.Set("ssrt", SSRT)
-		vm.Set("yardsFromSSRT", YardsFromSSRT)
+		mustSet(vm, "ssrt", SSRT)
+		mustSet(vm, "yardsFromSSRT", YardsFromSSRT)
 
 		return vm
 	}}
@@ -62,6 +64,12 @@ type ScriptArg struct {
 
 type entityScope struct {
 	entity *Entity
+}
+
+func mustSet(vm *goja.Runtime, name string, value any) {
+	if err := vm.Set(name, value); err != nil {
+		panic(errs.Newf("failed to set %s: %s", name, err.Error()))
+	}
 }
 
 // ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
@@ -109,7 +117,9 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 	defer func() {
 		globals := vm.GlobalObject()
 		for _, arg := range args {
-			globals.Delete(arg.Name)
+			if err := globals.Delete(arg.Name); err != nil {
+				errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, err, "name", arg.Name)
+			}
 		}
 		vm.ClearInterrupt()
 		vmPool.Put(vm)
