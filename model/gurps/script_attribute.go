@@ -8,87 +8,48 @@ import (
 const unknown = "unknown"
 
 type scriptAttribute struct {
-	attr *Attribute
+	ID           string  `json:"id"`
+	Kind         string  `json:"kind"`
+	Name         string  `json:"name"`
+	FullName     string  `json:"fullName"`
+	Maximum      fxp.Int `json:"maximum"`
+	Current      fxp.Int `json:"current"`
+	AllowDecimal bool    `json:"allowDecimal,omitempty"`
+}
+
+func newScriptAttribute(attr *Attribute) *scriptAttribute {
+	a := scriptAttribute{
+		ID:       attr.ID(),
+		Kind:     unknown,
+		Name:     unknown,
+		FullName: unknown,
+		Maximum:  attr.Maximum(),
+		Current:  attr.Current(),
+	}
+	if def := attr.AttributeDef(); def != nil {
+		switch def.Kind() {
+		case PrimaryAttrKind:
+			a.Kind = "primary"
+		case SecondaryAttrKind:
+			a.Kind = "secondary"
+		case PoolAttrKind:
+			a.Kind = "pool"
+		}
+		if def.Name == "" {
+			a.Name = def.FullName
+		} else {
+			a.Name = def.Name
+		}
+		a.FullName = def.ResolveFullName()
+		a.AllowDecimal = def.AllowsDecimal()
+	}
+	return &a
 }
 
 func (a *scriptAttribute) String() string {
-	type attrJSON struct {
-		ID           string  `json:"id"`
-		Kind         string  `json:"kind"`
-		Name         string  `json:"name"`
-		FullName     string  `json:"fullName"`
-		Maximum      fxp.Int `json:"maximum"`
-		Current      fxp.Int `json:"current"`
-		AllowDecimal bool    `json:"allowDecimal"`
-	}
-	data, err := json.Marshal(attrJSON{
-		ID:           a.ID(),
-		Kind:         a.Kind(),
-		Name:         a.Name(),
-		FullName:     a.FullName(),
-		Maximum:      a.Maximum(),
-		Current:      a.Current(),
-		AllowDecimal: a.AllowDecimal(),
-	})
+	data, err := json.Marshal(a)
 	if err != nil {
 		return err.Error()
 	}
 	return string(data)
-}
-
-func (a *scriptAttribute) ID() string {
-	return a.attr.ID()
-}
-
-func (a *scriptAttribute) Kind() string {
-	if def := a.attr.AttributeDef(); def != nil {
-		switch def.Kind() {
-		case PrimaryAttrKind:
-			return "primary"
-		case SecondaryAttrKind:
-			return "secondary"
-		case PoolAttrKind:
-			return "pool"
-		}
-	}
-	return unknown
-}
-
-func (a *scriptAttribute) Name() string {
-	if def := a.attr.AttributeDef(); def != nil {
-		if def.Name == "" {
-			return def.FullName
-		}
-		return def.Name
-	}
-	return unknown
-}
-
-func (a *scriptAttribute) FullName() string {
-	if def := a.attr.AttributeDef(); def != nil {
-		return def.ResolveFullName()
-	}
-	return unknown
-}
-
-func (a *scriptAttribute) CombinedName() string {
-	if def := a.attr.AttributeDef(); def != nil {
-		return def.CombinedName()
-	}
-	return unknown
-}
-
-func (a *scriptAttribute) Current() fxp.Int {
-	return a.attr.Current()
-}
-
-func (a *scriptAttribute) Maximum() fxp.Int {
-	return a.attr.Maximum()
-}
-
-func (a *scriptAttribute) AllowDecimal() bool {
-	if def := a.attr.AttributeDef(); def != nil {
-		return def.AllowsDecimal()
-	}
-	return false
 }

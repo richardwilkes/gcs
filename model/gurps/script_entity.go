@@ -2,8 +2,6 @@ package gurps
 
 import (
 	"strings"
-
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
 type scriptEntity struct {
@@ -12,70 +10,6 @@ type scriptEntity struct {
 
 func (e *scriptEntity) Exists() bool {
 	return e.entity != nil
-}
-
-// HasTrait checks if the entity has a trait with the given name.
-func (e *scriptEntity) HasTrait(traitName string) bool {
-	if e.entity == nil {
-		return false
-	}
-	found := false
-	Traverse(func(t *Trait) bool {
-		if strings.EqualFold(t.NameWithReplacements(), traitName) {
-			found = true
-			return true
-		}
-		return false
-	}, true, false, e.entity.Traits...)
-	return found
-}
-
-// TraitLevel returns the level of the trait with the given name, or -1 if not found or not leveled.
-func (e *scriptEntity) TraitLevel(traitName string) fxp.Int {
-	if e.entity == nil {
-		return -fxp.One
-	}
-	levels := -fxp.One
-	Traverse(func(t *Trait) bool {
-		if strings.EqualFold(t.NameWithReplacements(), traitName) {
-			if t.IsLeveled() {
-				if levels == -fxp.One {
-					levels = t.Levels
-				} else {
-					levels += t.Levels
-				}
-			}
-		}
-		return false
-	}, true, false, e.entity.Traits...)
-	return levels
-}
-
-// SkillLevel returns the level of the skill with the given name, or 0 if not found.
-func (e *scriptEntity) SkillLevel(name, specialization string, relative bool) int {
-	if e.entity == nil {
-		return 0
-	}
-	if e.entity.isSkillLevelResolutionExcluded(name, specialization) {
-		return 0
-	}
-	e.entity.registerSkillLevelResolutionExclusion(name, specialization)
-	defer e.entity.unregisterSkillLevelResolutionExclusion(name, specialization)
-	var level int
-	Traverse(func(s *Skill) bool {
-		if strings.EqualFold(s.NameWithReplacements(), name) &&
-			strings.EqualFold(s.SpecializationWithReplacements(), specialization) {
-			s.UpdateLevel()
-			if relative {
-				level = fxp.As[int](s.LevelData.RelativeLevel)
-			} else {
-				level = fxp.As[int](s.LevelData.Level)
-			}
-			return true
-		}
-		return false
-	}, true, true, e.entity.Skills...)
-	return level
 }
 
 // Attributes returns a list of available attributes.
@@ -90,7 +24,7 @@ func (e *scriptEntity) Attributes() []*scriptAttribute {
 			if def.IsSeparator() {
 				continue
 			}
-			attrs = append(attrs, &scriptAttribute{attr: attr})
+			attrs = append(attrs, newScriptAttribute(attr))
 		}
 	}
 	return attrs
@@ -102,7 +36,66 @@ func (e *scriptEntity) Attribute(idOrName string) *scriptAttribute {
 		return nil
 	}
 	if attr := e.entity.Attributes.Find(idOrName); attr != nil {
-		return &scriptAttribute{attr: attr}
+		return newScriptAttribute(attr)
 	}
 	return nil
+}
+
+// Traits returns a hierarchical list of enabled traits.
+func (e *scriptEntity) Traits() []*scriptTrait {
+	if e.entity == nil {
+		return nil
+	}
+	traits := make([]*scriptTrait, 0, len(e.entity.Traits))
+	for _, trait := range e.entity.Traits {
+		if trait.Enabled() {
+			traits = append(traits, newScriptTrait(trait, true))
+		}
+	}
+	return traits
+}
+
+// Trait returns all traits with the given name.
+func (e *scriptEntity) Trait(name string, includeEnabledChildren bool) []*scriptTrait {
+	if e.entity == nil {
+		return nil
+	}
+	var result []*scriptTrait
+	Traverse(func(t *Trait) bool {
+		if strings.EqualFold(t.NameWithReplacements(), name) {
+			result = append(result, newScriptTrait(t, includeEnabledChildren))
+		}
+		return false
+	}, true, false, e.entity.Traits...)
+	return result
+}
+
+// Skills returns a hierarchical list of skills.
+func (e *scriptEntity) Skills() []*scriptSkill {
+	if e.entity == nil {
+		return nil
+	}
+	skills := make([]*scriptSkill, 0, len(e.entity.Skills))
+	for _, skill := range e.entity.Skills {
+		if skill.Enabled() {
+			skills = append(skills, newScriptSkill(e.entity, skill, true))
+		}
+	}
+	return skills
+}
+
+// Skill returns all skills with the given name.
+func (e *scriptEntity) Skill(name, specialization string, includeChildren bool) []*scriptSkill {
+	if e.entity == nil {
+		return nil
+	}
+	var result []*scriptSkill
+	Traverse(func(t *Skill) bool {
+		if strings.EqualFold(t.NameWithReplacements(), name) &&
+			strings.EqualFold(t.SpecializationWithReplacements(), specialization) {
+			result = append(result, newScriptSkill(e.entity, t, includeChildren))
+		}
+		return false
+	}, true, false, e.entity.Skills...)
+	return result
 }
