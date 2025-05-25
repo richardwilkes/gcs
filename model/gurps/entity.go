@@ -119,12 +119,14 @@ type Entity struct {
 	cachedEncumbranceLevel          encumbrance.Level
 	cachedEncumbranceLevelForSkills encumbrance.Level
 	cachedVariables                 map[string]string
+	resolveCache                    *ScriptResolveCache
 	srcMatcher                      *SrcMatcher
 }
 
 // NewEntityFromFile loads an Entity from a file.
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var e Entity
+	e.resolveCache = NewScriptResolveCache()
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &e); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
@@ -138,6 +140,7 @@ func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 func NewEntity() *Entity {
 	settings := GlobalSettings().GeneralSettings()
 	var e Entity
+	e.resolveCache = NewScriptResolveCache()
 	e.ID = tid.MustNewTID(kinds.Entity)
 	e.TotalPoints = settings.InitialPoints
 	e.PointsRecord = append(e.PointsRecord, &PointsRecord{
@@ -270,6 +273,7 @@ func (e *Entity) DiscardCaches() {
 	e.cachedEncumbranceLevel = encumbrance.LastLevel + 1
 	e.cachedEncumbranceLevelForSkills = encumbrance.LastLevel + 1
 	e.cachedVariables = nil
+	e.resolveCache = NewScriptResolveCache()
 }
 
 // Recalculate the statistics.

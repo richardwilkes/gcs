@@ -88,6 +88,8 @@ var (
 	BillionMinusOne     = From(999999999)
 	MaxBasePoints       = MillionMinusOne
 	Max                 = Int(f64.Max)
+	// MaxSafeMultiply returns the maximum value that can be safely multiplied without overflow.
+	MaxSafeMultiply = f64.MaxSafeMultiply[DP]()
 )
 
 // DP is an alias for the fixed-point decimal places configuration we are using.
