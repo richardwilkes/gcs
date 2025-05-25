@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
@@ -133,6 +134,15 @@ func (a *Attribute) SetMaximum(value fxp.Int) {
 	if def := a.AttributeDef(); def != nil && !def.IsSeparator() {
 		a.Adjustment = value - (def.BaseValue(a.Entity) + a.Bonus)
 	}
+}
+
+// NameMatches checks if the name matches this Attribute's name or full name. Case is ignored.
+func (a *Attribute) NameMatches(name string) bool {
+	def := a.AttributeDef()
+	if def == nil || def.IsSeparator() {
+		return false
+	}
+	return strings.EqualFold(def.Name, name) || strings.EqualFold(def.FullName, name)
 }
 
 // Current returns the current value. Same as .Maximum() if not a pool.

@@ -22,7 +22,7 @@ var (
 	globalResolveCache = NewScriptResolveCache()
 	vmPool             = sync.Pool{New: func() any {
 		vm := goja.New()
-		vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
+		vm.SetFieldNameMapper(scriptNameMapper{})
 		vm.SetParserOptions(parser.WithDisableSourceMaps)
 		mustSet(vm, "console", &scriptConsole{})
 		mustSet(vm, "fixed", newScriptFixed())

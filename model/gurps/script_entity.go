@@ -78,31 +78,31 @@ func (e *scriptEntity) SkillLevel(name, specialization string, relative bool) in
 	return level
 }
 
-// AttributeIDs returns a list of available attribute IDs.
-func (e *scriptEntity) AttributeIDs() []string {
+// Attributes returns a list of available attributes.
+func (e *scriptEntity) Attributes() []*scriptAttribute {
 	if e.entity == nil {
 		return nil
 	}
-	attrs := e.entity.Attributes.List()
-	ids := make([]string, 0, len(attrs))
-	for _, attr := range attrs {
+	list := e.entity.Attributes.List()
+	attrs := make([]*scriptAttribute, 0, len(list))
+	for _, attr := range list {
 		if def := attr.AttributeDef(); def != nil {
 			if def.IsSeparator() {
 				continue
 			}
-			ids = append(ids, def.DefID)
+			attrs = append(attrs, &scriptAttribute{attr: attr})
 		}
 	}
-	return ids
+	return attrs
 }
 
-// CurrentAttributeValue resolves the given attribute ID to its current value.
-func (e *scriptEntity) CurrentAttributeValue(attrID string) (value fxp.Int, exists bool) {
+// Attribute returns the attribute with the given ID or name, or nil if there is no match.
+func (e *scriptEntity) Attribute(idOrName string) *scriptAttribute {
 	if e.entity == nil {
-		return 0, false
+		return nil
 	}
-	if value = e.entity.Attributes.Current(attrID); value == fxp.Min {
-		return 0, false
+	if attr := e.entity.Attributes.Find(idOrName); attr != nil {
+		return &scriptAttribute{attr: attr}
 	}
-	return value, true
+	return nil
 }

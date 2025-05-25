@@ -87,6 +87,20 @@ func (a *Attributes) Hash(h hash.Hash) {
 	}
 }
 
+// Find resolves the given ID or name to an Attribute, or nil if not found.
+func (a *Attributes) Find(idOrName string) *Attribute {
+	if attr, ok := a.Set[idOrName]; ok {
+		return attr
+	}
+	list := a.List()
+	for _, one := range list {
+		if one.NameMatches(idOrName) {
+			return one
+		}
+	}
+	return nil
+}
+
 // Cost returns the points spent for the specified Attribute.
 func (a *Attributes) Cost(attrID string) fxp.Int {
 	if attr, ok := a.Set[attrID]; ok {
