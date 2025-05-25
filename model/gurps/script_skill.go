@@ -7,6 +7,8 @@ import (
 	"github.com/richardwilkes/json"
 )
 
+const groupKind = "group"
+
 type scriptSkill struct {
 	Name           string         `json:"name"`
 	Specialization string         `json:"specialization,omitempty"`
@@ -26,7 +28,7 @@ func newScriptSkill(entity *Entity, skill *Skill, includeChildren bool) *scriptS
 		Tags:           slices.Clone(skill.Tags),
 	}
 	if skill.Container() {
-		s.Kind = "group"
+		s.Kind = groupKind
 		if includeChildren {
 			children := skill.NodeChildren()
 			s.Children = make([]*scriptSkill, 0, len(children))

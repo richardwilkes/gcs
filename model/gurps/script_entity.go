@@ -99,3 +99,32 @@ func (e *scriptEntity) Skill(name, specialization string, includeChildren bool) 
 	}, true, false, e.entity.Skills...)
 	return result
 }
+
+// Spells returns a hierarchical list of spells.
+func (e *scriptEntity) Spells() []*scriptSpell {
+	if e.entity == nil {
+		return nil
+	}
+	spells := make([]*scriptSpell, 0, len(e.entity.Spells))
+	for _, spell := range e.entity.Spells {
+		if spell.Enabled() {
+			spells = append(spells, newScriptSpell(e.entity, spell, true))
+		}
+	}
+	return spells
+}
+
+// Spell returns all spells with the given name.
+func (e *scriptEntity) Spell(name string, includeChildren bool) []*scriptSpell {
+	if e.entity == nil {
+		return nil
+	}
+	var result []*scriptSpell
+	Traverse(func(t *Spell) bool {
+		if strings.EqualFold(t.NameWithReplacements(), name) {
+			result = append(result, newScriptSpell(e.entity, t, includeChildren))
+		}
+		return false
+	}, true, false, e.entity.Spells...)
+	return result
+}
