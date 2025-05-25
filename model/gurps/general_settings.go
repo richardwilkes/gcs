@@ -24,18 +24,21 @@ import (
 
 // Default, minimum & maximum values for the general numeric settings
 var (
-	InitialPointsDef         = fxp.OneHundredFifty
-	InitialPointsMin         fxp.Int
-	InitialPointsMax         = fxp.TenMillionMinusOne
-	TooltipDelayDef          = fxp.ThreeQuarters
-	TooltipDelayMin          fxp.Int
-	TooltipDelayMax          = fxp.Thirty
-	TooltipDismissalDef      = fxp.Sixty
-	TooltipDismissalMin      = fxp.One
-	TooltipDismissalMax      = fxp.ThirtySixHundred
-	ScrollWheelMultiplierDef = fxp.From(unison.MouseWheelMultiplier)
-	ScrollWheelMultiplierMin = fxp.One
-	ScrollWheelMultiplierMax = fxp.TenThousandMinusOne
+	InitialPointsDef           = fxp.OneHundredFifty
+	InitialPointsMin           fxp.Int
+	InitialPointsMax           = fxp.TenMillionMinusOne
+	TooltipDelayDef            = fxp.ThreeQuarters
+	TooltipDelayMin            fxp.Int
+	TooltipDelayMax            = fxp.Thirty
+	TooltipDismissalDef        = fxp.Sixty
+	TooltipDismissalMin        = fxp.One
+	TooltipDismissalMax        = fxp.ThirtySixHundred
+	ScrollWheelMultiplierDef   = fxp.From(unison.MouseWheelMultiplier)
+	ScrollWheelMultiplierMin   = fxp.One
+	ScrollWheelMultiplierMax   = fxp.TenThousandMinusOne
+	PermittedScriptExecTimeDef = fxp.FromStringForced("0.05")
+	PermittedScriptExecTimeMin = fxp.FromStringForced("0.001")
+	PermittedScriptExecTimeMax = fxp.Half
 )
 
 // Default, minimum & maximum values for the general numeric settings that can be constants
@@ -70,6 +73,7 @@ type GeneralSettings struct {
 	TooltipDelay                fxp.Int          `json:"tooltip_delay"`
 	TooltipDismissal            fxp.Int          `json:"tooltip_dismissal"`
 	ScrollWheelMultiplier       fxp.Int          `json:"scroll_wheel_multiplier"`
+	PermittedPerScriptExecTime  fxp.Int          `json:"permitted_per_script_exec_time,omitempty"`
 	NavigatorUIScale            int              `json:"navigator_scale"`
 	InitialListUIScale          int              `json:"initial_list_scale"`
 	InitialEditorUIScale        int              `json:"initial_editor_scale"`
@@ -91,25 +95,26 @@ type GeneralSettings struct {
 // NewGeneralSettings creates settings with factory defaults.
 func NewGeneralSettings() *GeneralSettings {
 	return &GeneralSettings{
-		DefaultPlayerName:       toolbox.CurrentUserName(),
-		DefaultTechLevel:        "3",
-		InitialPoints:           InitialPointsDef,
-		TooltipDelay:            TooltipDelayDef,
-		TooltipDismissal:        TooltipDismissalDef,
-		ScrollWheelMultiplier:   fxp.From(unison.MouseWheelMultiplier),
-		NavigatorUIScale:        InitialNavigatorUIScaleDef,
-		InitialListUIScale:      InitialListUIScaleDef,
-		InitialEditorUIScale:    InitialEditorUIScaleDef,
-		InitialSheetUIScale:     InitialSheetUIScaleDef,
-		InitialPDFUIScale:       InitialPDFUIScaleDef,
-		InitialMarkdownUIScale:  InitialMarkdownUIScaleDef,
-		InitialImageUIScale:     InitialImageUIScaleDef,
-		MaximumAutoColWidth:     MaximumAutoColWidthDef,
-		ImageResolution:         ImageResolutionDef,
-		PDFAutoScaling:          InitialPDFAutoScaling,
-		AutoFillProfile:         true,
-		AutoAddNaturalAttacks:   true,
-		RestoreWorkspaceOnStart: true,
+		DefaultPlayerName:          toolbox.CurrentUserName(),
+		DefaultTechLevel:           "3",
+		InitialPoints:              InitialPointsDef,
+		TooltipDelay:               TooltipDelayDef,
+		TooltipDismissal:           TooltipDismissalDef,
+		ScrollWheelMultiplier:      fxp.From(unison.MouseWheelMultiplier),
+		PermittedPerScriptExecTime: PermittedScriptExecTimeDef,
+		NavigatorUIScale:           InitialNavigatorUIScaleDef,
+		InitialListUIScale:         InitialListUIScaleDef,
+		InitialEditorUIScale:       InitialEditorUIScaleDef,
+		InitialSheetUIScale:        InitialSheetUIScaleDef,
+		InitialPDFUIScale:          InitialPDFUIScaleDef,
+		InitialMarkdownUIScale:     InitialMarkdownUIScaleDef,
+		InitialImageUIScale:        InitialImageUIScaleDef,
+		MaximumAutoColWidth:        MaximumAutoColWidthDef,
+		ImageResolution:            ImageResolutionDef,
+		PDFAutoScaling:             InitialPDFAutoScaling,
+		AutoFillProfile:            true,
+		AutoAddNaturalAttacks:      true,
+		RestoreWorkspaceOnStart:    true,
 	}
 }
 
@@ -159,20 +164,33 @@ func (s *GeneralSettings) CalendarRef(libraries Libraries) *CalendarRef {
 func (s *GeneralSettings) EnsureValidity() {
 	s.InitialPoints = fxp.ResetIfOutOfRange(s.InitialPoints, InitialPointsMin, InitialPointsMax, InitialPointsDef)
 	s.TooltipDelay = fxp.ResetIfOutOfRange(s.TooltipDelay, TooltipDelayMin, TooltipDelayMax, TooltipDelayDef)
-	s.TooltipDismissal = fxp.ResetIfOutOfRange(s.TooltipDismissal, TooltipDismissalMin, TooltipDismissalMax, TooltipDismissalDef)
-	s.ScrollWheelMultiplier = fxp.ResetIfOutOfRange(s.ScrollWheelMultiplier, ScrollWheelMultiplierMin, ScrollWheelMultiplierMax, ScrollWheelMultiplierDef)
+	s.TooltipDismissal = fxp.ResetIfOutOfRange(s.TooltipDismissal, TooltipDismissalMin, TooltipDismissalMax,
+		TooltipDismissalDef)
+	s.PermittedPerScriptExecTime = fxp.ResetIfOutOfRange(s.PermittedPerScriptExecTime, PermittedScriptExecTimeMin,
+		PermittedScriptExecTimeMax, PermittedScriptExecTimeDef)
+	s.ScrollWheelMultiplier = fxp.ResetIfOutOfRange(s.ScrollWheelMultiplier, ScrollWheelMultiplierMin,
+		ScrollWheelMultiplierMax, ScrollWheelMultiplierDef)
 	if s.MonitorResolution != 0 {
 		s.MonitorResolution = fxp.ResetIfOutOfRange(s.MonitorResolution, MonitorResolutionMin, MonitorResolutionMax, 0)
 	}
-	s.ImageResolution = fxp.ResetIfOutOfRange(s.ImageResolution, ImageResolutionMin, ImageResolutionMax, ImageResolutionDef)
-	s.NavigatorUIScale = fxp.ResetIfOutOfRange(s.NavigatorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialNavigatorUIScaleDef)
-	s.InitialListUIScale = fxp.ResetIfOutOfRange(s.InitialListUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialListUIScaleDef)
-	s.InitialEditorUIScale = fxp.ResetIfOutOfRange(s.InitialEditorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialEditorUIScaleDef)
-	s.InitialSheetUIScale = fxp.ResetIfOutOfRange(s.InitialSheetUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialSheetUIScaleDef)
-	s.InitialPDFUIScale = fxp.ResetIfOutOfRange(s.InitialPDFUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialPDFUIScaleDef)
-	s.InitialMarkdownUIScale = fxp.ResetIfOutOfRange(s.InitialMarkdownUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialMarkdownUIScaleDef)
-	s.InitialImageUIScale = fxp.ResetIfOutOfRange(s.InitialImageUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialImageUIScaleDef)
-	s.MaximumAutoColWidth = fxp.ResetIfOutOfRange(s.MaximumAutoColWidth, AutoColWidthMin, AutoColWidthMax, MaximumAutoColWidthDef)
+	s.ImageResolution = fxp.ResetIfOutOfRange(s.ImageResolution, ImageResolutionMin, ImageResolutionMax,
+		ImageResolutionDef)
+	s.NavigatorUIScale = fxp.ResetIfOutOfRange(s.NavigatorUIScale, InitialUIScaleMin, InitialUIScaleMax,
+		InitialNavigatorUIScaleDef)
+	s.InitialListUIScale = fxp.ResetIfOutOfRange(s.InitialListUIScale, InitialUIScaleMin, InitialUIScaleMax,
+		InitialListUIScaleDef)
+	s.InitialEditorUIScale = fxp.ResetIfOutOfRange(s.InitialEditorUIScale, InitialUIScaleMin, InitialUIScaleMax,
+		InitialEditorUIScaleDef)
+	s.InitialSheetUIScale = fxp.ResetIfOutOfRange(s.InitialSheetUIScale, InitialUIScaleMin, InitialUIScaleMax,
+		InitialSheetUIScaleDef)
+	s.InitialPDFUIScale = fxp.ResetIfOutOfRange(s.InitialPDFUIScale, InitialUIScaleMin, InitialUIScaleMax,
+		InitialPDFUIScaleDef)
+	s.InitialMarkdownUIScale = fxp.ResetIfOutOfRange(s.InitialMarkdownUIScale, InitialUIScaleMin, InitialUIScaleMax,
+		InitialMarkdownUIScaleDef)
+	s.InitialImageUIScale = fxp.ResetIfOutOfRange(s.InitialImageUIScale, InitialUIScaleMin, InitialUIScaleMax,
+		InitialImageUIScaleDef)
+	s.MaximumAutoColWidth = fxp.ResetIfOutOfRange(s.MaximumAutoColWidth, AutoColWidthMin, AutoColWidthMax,
+		MaximumAutoColWidthDef)
 	s.PDFAutoScaling = s.PDFAutoScaling.EnsureValid()
 	s.UpdateToolTipTiming()
 }

@@ -2,6 +2,8 @@ package gurps
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"regexp"
 	"strings"
@@ -10,7 +12,9 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja/parser"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/i18n"
 )
 
 const scriptPrefix = "^^^"
@@ -61,10 +65,15 @@ func ResolveText(entity *Entity, text string) string {
 		return cached
 	}
 	var result string
-	if v, err := RunScript(GlobalSettings().PermittedPerScriptExecTime, text[len(scriptPrefix):],
-		ScriptArg{Name: "entity", Value: &scriptEntity{entity: entity}},
-	); err != nil {
-		result = err.Error()
+	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
+	if v, err := RunScript(fxp.SecondsToDuration(maxTime), text[len(scriptPrefix):],
+		ScriptArg{Name: "entity", Value: &scriptEntity{entity: entity}}); err != nil {
+		var interruptedErr *goja.InterruptedError
+		if errors.As(err, &interruptedErr) {
+			result = fmt.Sprintf(i18n.Text("script execution timed out (limited to %v seconds)"), maxTime)
+		} else {
+			result = err.Error()
+		}
 	} else {
 		result = v.String()
 	}
@@ -84,7 +93,7 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 		var err error
 		program, err = goja.Compile("", "(function() {"+text+"})();", true)
 		if err != nil {
-			return nil, errs.New("failed to compile script: " + err.Error())
+			return nil, fmt.Errorf("failed to compile script: %w", err)
 		}
 		scriptCacheLock.Lock()
 		scriptCache[text] = program
@@ -92,7 +101,7 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 	}
 	vm, ok := vmPool.Get().(*goja.Runtime)
 	if !ok {
-		return nil, errs.New("failed to get VM from pool")
+		return nil, errors.New("failed to get VM from pool")
 	}
 	defer func() {
 		globals := vm.GlobalObject()
@@ -106,7 +115,7 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 	}()
 	for _, arg := range args {
 		if err := vm.Set(arg.Name, arg.Value); err != nil {
-			return nil, errs.Newf("failed to set argument %s: %s", arg.Name, err.Error())
+			return nil, fmt.Errorf("failed to set argument %q: %w", arg.Name, err)
 		}
 	}
 	if timeout > 0 {

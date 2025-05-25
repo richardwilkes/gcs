@@ -62,6 +62,7 @@ type generalSettingsDockable struct {
 	maxAutoColWidthField            *IntegerField
 	monitorResolutionField          *IntegerField
 	exportResolutionField           *IntegerField
+	permittedScriptExecTimeField    *DecimalField
 	tooltipDelayField               *DecimalField
 	tooltipDismissalField           *DecimalField
 	scrollWheelMultiplierField      *DecimalField
@@ -165,6 +166,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createCellAutoMaxWidthField(content)
 	d.createMonitorResolutionField(content)
 	d.createImageResolutionField(content)
+	d.createPermittedScriptExecTimeField(content)
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
 	d.createScrollWheelMultiplierField(content)
@@ -322,6 +324,19 @@ func (d *generalSettingsDockable) createImageResolutionField(content *unison.Pan
 		func(v int) { gurps.GlobalSettings().General.ImageResolution = v },
 		gurps.ImageResolutionMin, gurps.ImageResolutionMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.exportResolutionField, NewFieldTrailingLabel(i18n.Text("ppi"), false)))
+}
+
+func (d *generalSettingsDockable) createPermittedScriptExecTimeField(content *unison.Panel) {
+	title := i18n.Text("Max Execution Time")
+	content.AddChild(NewFieldLeadingLabel(title, false))
+	d.permittedScriptExecTimeField = NewDecimalField(nil, "", title,
+		func() fxp.Int { return gurps.GlobalSettings().General.PermittedPerScriptExecTime },
+		func(v fxp.Int) {
+			general := gurps.GlobalSettings().General
+			general.PermittedPerScriptExecTime = v
+		}, gurps.PermittedScriptExecTimeMin, gurps.PermittedScriptExecTimeMax, false, false)
+	content.AddChild(WrapWithSpan(2, d.permittedScriptExecTimeField,
+		NewFieldTrailingLabel(i18n.Text("seconds per script"), false)))
 }
 
 func (d *generalSettingsDockable) createTooltipDelayField(content *unison.Panel) {
@@ -537,6 +552,7 @@ func (d *generalSettingsDockable) sync() {
 	d.maxAutoColWidthField.SetText(strconv.Itoa(gs.MaximumAutoColWidth))
 	d.monitorResolutionField.SetText(strconv.Itoa(gs.MonitorResolution))
 	d.exportResolutionField.SetText(strconv.Itoa(gs.ImageResolution))
+	d.permittedScriptExecTimeField.SetText(gs.PermittedPerScriptExecTime.String())
 	d.tooltipDelayField.SetText(gs.TooltipDelay.String())
 	d.tooltipDismissalField.SetText(gs.TooltipDismissal.String())
 	d.scrollWheelMultiplierField.SetText(gs.ScrollWheelMultiplier.String())
