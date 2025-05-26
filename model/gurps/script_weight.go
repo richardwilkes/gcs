@@ -1,15 +1,18 @@
 package gurps
 
-import "github.com/richardwilkes/gcs/v5/model/fxp"
+import (
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
+)
 
 type scriptWeight struct {
-	Pound    fxp.WeightUnit
-	PoundAlt fxp.WeightUnit
-	Ounce    fxp.WeightUnit
-	Ton      fxp.WeightUnit
-	TonAlt   fxp.WeightUnit
-	Kilogram fxp.WeightUnit
-	Gram     fxp.WeightUnit
+	Pound    fxp.WeightUnit `json:"pound"`
+	PoundAlt fxp.WeightUnit `json:"poundAlt"`
+	Ounce    fxp.WeightUnit `json:"ounce"`
+	Ton      fxp.WeightUnit `json:"ton"`
+	TonAlt   fxp.WeightUnit `json:"tonAlt"`
+	Kilogram fxp.WeightUnit `json:"kilogram"`
+	Gram     fxp.WeightUnit `json:"gram"`
 }
 
 func newScriptWeight() *scriptWeight {
@@ -37,9 +40,17 @@ func (l *scriptWeight) FromInteger(value int, units fxp.WeightUnit) fxp.Weight {
 }
 
 func (l *scriptWeight) FromFixed(value fxp.Int, units fxp.WeightUnit) fxp.Weight {
-	return fxp.WeightFromInteger(value, units)
+	return fxp.WeightFromFixed(value, units)
 }
 
 func (l *scriptWeight) AsFixed(value fxp.Weight) fxp.Int {
 	return fxp.Int(value)
+}
+
+func (l *scriptWeight) String() string {
+	data, err := json.Marshal(l)
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
 }

@@ -1,16 +1,19 @@
 package gurps
 
-import "github.com/richardwilkes/gcs/v5/model/fxp"
+import (
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
+)
 
 type scriptLength struct {
-	FeetAndInches fxp.LengthUnit
-	Inch          fxp.LengthUnit
-	Feet          fxp.LengthUnit
-	Yard          fxp.LengthUnit
-	Mile          fxp.LengthUnit
-	Centimeter    fxp.LengthUnit
-	Kilometer     fxp.LengthUnit
-	Meter         fxp.LengthUnit
+	FeetAndInches fxp.LengthUnit `json:"feetAndInches"`
+	Inch          fxp.LengthUnit `json:"inch"`
+	Feet          fxp.LengthUnit `json:"feet"`
+	Yard          fxp.LengthUnit `json:"yard"`
+	Mile          fxp.LengthUnit `json:"mile"`
+	Centimeter    fxp.LengthUnit `json:"centimeter"`
+	Kilometer     fxp.LengthUnit `json:"kilometer"`
+	Meter         fxp.LengthUnit `json:"meter"`
 }
 
 func newScriptLength() *scriptLength {
@@ -44,4 +47,12 @@ func (l *scriptLength) FromFixed(value fxp.Int, units fxp.LengthUnit) fxp.Length
 
 func (l *scriptLength) AsFixed(value fxp.Length) fxp.Int {
 	return fxp.Int(value)
+}
+
+func (l *scriptLength) String() string {
+	data, err := json.Marshal(l)
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
 }

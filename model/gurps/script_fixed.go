@@ -2,25 +2,26 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 )
 
 type scriptFixed struct {
-	MaxSafeMultiply fxp.Int
-	MaxValue        fxp.Int
-	MinValue        fxp.Int
-	Zero            fxp.Int
-	Tenth           fxp.Int
-	Eighth          fxp.Int
-	Quarter         fxp.Int
-	Half            fxp.Int
-	One             fxp.Int
-	Two             fxp.Int
-	Three           fxp.Int
-	Four            fxp.Int
-	Five            fxp.Int
-	Ten             fxp.Int
-	Hundred         fxp.Int
-	Thousand        fxp.Int
+	MaxSafeMultiply fxp.Int `json:"maxSafeMultiply"`
+	MaxValue        fxp.Int `json:"maxValue"`
+	MinValue        fxp.Int `json:"minValue"`
+	Zero            fxp.Int `json:"zero"`
+	Tenth           fxp.Int `json:"tenth"`
+	Eighth          fxp.Int `json:"eighth"`
+	Quarter         fxp.Int `json:"quarter"`
+	Half            fxp.Int `json:"half"`
+	One             fxp.Int `json:"one"`
+	Two             fxp.Int `json:"two"`
+	Three           fxp.Int `json:"three"`
+	Four            fxp.Int `json:"four"`
+	Five            fxp.Int `json:"five"`
+	Ten             fxp.Int `json:"ten"`
+	Hundred         fxp.Int `json:"hundred"`
+	Thousand        fxp.Int `json:"thousand"`
 }
 
 func newScriptFixed() *scriptFixed {
@@ -66,4 +67,12 @@ func (f *scriptFixed) FromFloat(value float64) fxp.Int {
 
 func (f *scriptFixed) ApplyRounding(value fxp.Int, roundDown bool) fxp.Int {
 	return fxp.ApplyRounding(value, roundDown)
+}
+
+func (f *scriptFixed) String() string {
+	data, err := json.Marshal(f)
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
 }
