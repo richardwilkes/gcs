@@ -24,6 +24,11 @@ func WeightFromInteger[T constraints.Integer](value T, unit WeightUnit) Weight {
 	return Weight(unit.ToPounds(From(value)))
 }
 
+// WeightFromFixed creates a new Weight.
+func WeightFromFixed(value Int, unit WeightUnit) Weight {
+	return Weight(unit.ToPounds(value))
+}
+
 // WeightFromStringForced creates a new Weight. May have any of the known Weight suffixes or no notation at all, in
 // which case defaultUnits is used.
 func WeightFromStringForced(text string, defaultUnits WeightUnit) Weight {
