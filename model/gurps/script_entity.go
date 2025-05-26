@@ -60,14 +60,14 @@ func (e *scriptEntity) Trait(name string, includeEnabledChildren bool) []*script
 	if e.entity == nil {
 		return nil
 	}
-	var result []*scriptTrait
+	var traits []*scriptTrait
 	Traverse(func(t *Trait) bool {
 		if strings.EqualFold(t.NameWithReplacements(), name) {
-			result = append(result, newScriptTrait(t, includeEnabledChildren))
+			traits = append(traits, newScriptTrait(t, includeEnabledChildren))
 		}
 		return false
 	}, true, false, e.entity.Traits...)
-	return result
+	return traits
 }
 
 // Skills returns a hierarchical list of skills.
@@ -89,15 +89,15 @@ func (e *scriptEntity) Skill(name, specialization string, includeChildren bool) 
 	if e.entity == nil {
 		return nil
 	}
-	var result []*scriptSkill
+	var skills []*scriptSkill
 	Traverse(func(t *Skill) bool {
 		if strings.EqualFold(t.NameWithReplacements(), name) &&
 			strings.EqualFold(t.SpecializationWithReplacements(), specialization) {
-			result = append(result, newScriptSkill(e.entity, t, includeChildren))
+			skills = append(skills, newScriptSkill(e.entity, t, includeChildren))
 		}
 		return false
 	}, true, false, e.entity.Skills...)
-	return result
+	return skills
 }
 
 // Spells returns a hierarchical list of spells.
@@ -119,12 +119,39 @@ func (e *scriptEntity) Spell(name string, includeChildren bool) []*scriptSpell {
 	if e.entity == nil {
 		return nil
 	}
-	var result []*scriptSpell
+	var spells []*scriptSpell
 	Traverse(func(t *Spell) bool {
 		if strings.EqualFold(t.NameWithReplacements(), name) {
-			result = append(result, newScriptSpell(e.entity, t, includeChildren))
+			spells = append(spells, newScriptSpell(e.entity, t, includeChildren))
 		}
 		return false
 	}, true, false, e.entity.Spells...)
-	return result
+	return spells
+}
+
+// Items returns a hierarchical list of carried equipment.
+func (e *scriptEntity) Items() []*scriptEquipment {
+	if e.entity == nil {
+		return nil
+	}
+	items := make([]*scriptEquipment, 0, len(e.entity.CarriedEquipment))
+	for _, item := range e.entity.CarriedEquipment {
+		items = append(items, newScriptEquipment(e.entity, item, true))
+	}
+	return items
+}
+
+// Item returns all carried equipment with the given name.
+func (e *scriptEntity) Item(name string, includeChildren bool) []*scriptEquipment {
+	if e.entity == nil {
+		return nil
+	}
+	var items []*scriptEquipment
+	Traverse(func(t *Equipment) bool {
+		if strings.EqualFold(t.NameWithReplacements(), name) {
+			items = append(items, newScriptEquipment(e.entity, t, includeChildren))
+		}
+		return false
+	}, true, false, e.entity.CarriedEquipment...)
+	return items
 }
