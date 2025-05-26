@@ -2,6 +2,8 @@ package gurps
 
 import (
 	"strings"
+
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
 type scriptEntity struct {
@@ -154,4 +156,19 @@ func (e *scriptEntity) Item(name string, includeChildren bool) []*scriptEquipmen
 		return false
 	}, true, false, e.entity.CarriedEquipment...)
 	return items
+}
+
+func (e *scriptEntity) Encumbrance() scriptEncumbrance {
+	return newScriptEncumbrance(e.entity)
+}
+
+func (e *scriptEntity) WeightUnits() fxp.WeightUnit {
+	return SheetSettingsFor(e.entity).DefaultWeightUnits
+}
+
+func (e *scriptEntity) SizeModifier() int {
+	if e.entity == nil {
+		return 0
+	}
+	return e.entity.Profile.AdjustedSizeModifier()
 }
