@@ -45,7 +45,7 @@ func (l *scriptLength) FromFixed(value fxp.Int, units fxp.LengthUnit) fxp.Length
 	return fxp.LengthFromInteger(value, units)
 }
 
-func (l *scriptLength) AsFixed(value fxp.Length) fxp.Int {
+func (l *scriptLength) AsFixedInches(value fxp.Length) fxp.Int {
 	return fxp.Int(value)
 }
 

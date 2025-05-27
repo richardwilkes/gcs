@@ -63,9 +63,9 @@ func (e *scriptEntity) Trait(name string, includeEnabledChildren bool) []*script
 		return nil
 	}
 	var traits []*scriptTrait
-	Traverse(func(t *Trait) bool {
-		if strings.EqualFold(t.NameWithReplacements(), name) {
-			traits = append(traits, newScriptTrait(t, includeEnabledChildren))
+	Traverse(func(trait *Trait) bool {
+		if strings.EqualFold(trait.NameWithReplacements(), name) && trait.Enabled() {
+			traits = append(traits, newScriptTrait(trait, includeEnabledChildren))
 		}
 		return false
 	}, true, false, e.entity.Traits...)
@@ -79,9 +79,7 @@ func (e *scriptEntity) Skills() []*scriptSkill {
 	}
 	skills := make([]*scriptSkill, 0, len(e.entity.Skills))
 	for _, skill := range e.entity.Skills {
-		if skill.Enabled() {
-			skills = append(skills, newScriptSkill(e.entity, skill, true))
-		}
+		skills = append(skills, newScriptSkill(e.entity, skill, true))
 	}
 	return skills
 }
@@ -92,10 +90,10 @@ func (e *scriptEntity) Skill(name, specialization string, includeChildren bool) 
 		return nil
 	}
 	var skills []*scriptSkill
-	Traverse(func(t *Skill) bool {
-		if strings.EqualFold(t.NameWithReplacements(), name) &&
-			strings.EqualFold(t.SpecializationWithReplacements(), specialization) {
-			skills = append(skills, newScriptSkill(e.entity, t, includeChildren))
+	Traverse(func(skill *Skill) bool {
+		if strings.EqualFold(skill.NameWithReplacements(), name) &&
+			strings.EqualFold(skill.SpecializationWithReplacements(), specialization) {
+			skills = append(skills, newScriptSkill(e.entity, skill, includeChildren))
 		}
 		return false
 	}, true, false, e.entity.Skills...)
@@ -109,9 +107,7 @@ func (e *scriptEntity) Spells() []*scriptSpell {
 	}
 	spells := make([]*scriptSpell, 0, len(e.entity.Spells))
 	for _, spell := range e.entity.Spells {
-		if spell.Enabled() {
-			spells = append(spells, newScriptSpell(e.entity, spell, true))
-		}
+		spells = append(spells, newScriptSpell(e.entity, spell, true))
 	}
 	return spells
 }
@@ -122,9 +118,9 @@ func (e *scriptEntity) Spell(name string, includeChildren bool) []*scriptSpell {
 		return nil
 	}
 	var spells []*scriptSpell
-	Traverse(func(t *Spell) bool {
-		if strings.EqualFold(t.NameWithReplacements(), name) {
-			spells = append(spells, newScriptSpell(e.entity, t, includeChildren))
+	Traverse(func(spell *Spell) bool {
+		if strings.EqualFold(spell.NameWithReplacements(), name) {
+			spells = append(spells, newScriptSpell(e.entity, spell, includeChildren))
 		}
 		return false
 	}, true, false, e.entity.Spells...)
@@ -138,7 +134,9 @@ func (e *scriptEntity) Items() []*scriptEquipment {
 	}
 	items := make([]*scriptEquipment, 0, len(e.entity.CarriedEquipment))
 	for _, item := range e.entity.CarriedEquipment {
-		items = append(items, newScriptEquipment(e.entity, item, true))
+		if item.Quantity > 0 {
+			items = append(items, newScriptEquipment(e.entity, item, true))
+		}
 	}
 	return items
 }
@@ -149,9 +147,9 @@ func (e *scriptEntity) Item(name string, includeChildren bool) []*scriptEquipmen
 		return nil
 	}
 	var items []*scriptEquipment
-	Traverse(func(t *Equipment) bool {
-		if strings.EqualFold(t.NameWithReplacements(), name) {
-			items = append(items, newScriptEquipment(e.entity, t, includeChildren))
+	Traverse(func(item *Equipment) bool {
+		if item.Quantity > 0 && strings.EqualFold(item.NameWithReplacements(), name) {
+			items = append(items, newScriptEquipment(e.entity, item, includeChildren))
 		}
 		return false
 	}, true, false, e.entity.CarriedEquipment...)

@@ -45,7 +45,7 @@ func newScriptFixed() *scriptFixed {
 	}
 }
 
-func (f *scriptFixed) AsInt(value fxp.Int) int {
+func (f *scriptFixed) AsInteger(value fxp.Int) int {
 	return fxp.As[int](value)
 }
 
@@ -57,7 +57,7 @@ func (f *scriptFixed) FromString(value string) fxp.Int {
 	return fxp.FromStringForced(value)
 }
 
-func (f *scriptFixed) FromInt(value int) fxp.Int {
+func (f *scriptFixed) FromInteger(value int) fxp.Int {
 	return fxp.From(value)
 }
 

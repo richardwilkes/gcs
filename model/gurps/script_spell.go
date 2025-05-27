@@ -13,19 +13,19 @@ type scriptSpell struct {
 	Attribute         string         `json:"attribute,omitempty"`
 	Difficulty        string         `json:"difficulty,omitempty"`
 	College           []string       `json:"college,omitempty"`
-	PowerSource       string         `json:"power_source,omitempty"`
-	Class             string         `json:"spell_class,omitempty"`
+	PowerSource       string         `json:"powerSource,omitempty"`
+	SpellClass        string         `json:"spellClass,omitempty"`
 	Resist            string         `json:"resist,omitempty"`
-	CastingCost       string         `json:"casting_cost,omitempty"`
-	MaintenanceCost   string         `json:"maintenance_cost,omitempty"`
-	CastingTime       string         `json:"casting_time,omitempty"`
+	CastingCost       string         `json:"castingCost,omitempty"`
+	MaintenanceCost   string         `json:"maintenanceCost,omitempty"`
+	CastingTime       string         `json:"castingTime,omitempty"`
 	Duration          string         `json:"duration,omitempty"`
-	RitualSkillName   string         `json:"base_skill,omitempty"`
+	RitualSkillName   string         `json:"ritualSkillName,omitempty"`
 	Children          []*scriptSpell `json:"children,omitempty"`
 	Tags              []string       `json:"tags,omitempty"`
 	Level             int            `json:"level"`
-	RelativeLevel     int            `json:"relative_level"`
-	RitualPrereqCount int            `json:"prereq_count,omitempty"`
+	RelativeLevel     int            `json:"relativeLevel"`
+	RitualPrereqCount int            `json:"ritualPrereqCount,omitempty"`
 }
 
 func newScriptSpell(entity *Entity, spell *Spell, includeChildren bool) *scriptSpell {
@@ -54,7 +54,7 @@ func newScriptSpell(entity *Entity, spell *Spell, includeChildren bool) *scriptS
 		s.Difficulty = spell.Difficulty.Difficulty.Key()
 		s.College = slices.Clone([]string(spell.College))
 		s.PowerSource = spell.PowerSource
-		s.Class = spell.Class
+		s.SpellClass = spell.Class
 		s.Resist = spell.Resist
 		s.CastingCost = spell.CastingCost
 		s.MaintenanceCost = spell.MaintenanceCost

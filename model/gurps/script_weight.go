@@ -43,7 +43,7 @@ func (l *scriptWeight) FromFixed(value fxp.Int, units fxp.WeightUnit) fxp.Weight
 	return fxp.WeightFromFixed(value, units)
 }
 
-func (l *scriptWeight) AsFixed(value fxp.Weight) fxp.Int {
+func (l *scriptWeight) AsFixedPounds(value fxp.Weight) fxp.Int {
 	return fxp.Int(value)
 }
 

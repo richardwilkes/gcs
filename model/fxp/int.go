@@ -118,7 +118,7 @@ func As[T xmath.Numeric](value Int) T {
 	return f64.As[DP, T](value)
 }
 
-// ApplyRounding rounds in the positive direction of roundDown is false, or in the negative direction if roundDown is
+// ApplyRounding rounds in the positive direction if roundDown is false, or in the negative direction if roundDown is
 // true.
 func ApplyRounding(value Int, roundDown bool) Int {
 	if truncated := value.Trunc(); value != truncated {
