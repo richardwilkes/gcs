@@ -81,10 +81,11 @@ type Navigator struct {
 
 func newNavigator() *Navigator {
 	n := &Navigator{
-		toolbar:    unison.NewPanel(),
-		scroll:     unison.NewScrollPanel(),
-		table:      unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
-		deepSearch: make(map[string]bool),
+		toolbar:     unison.NewPanel(),
+		scroll:      unison.NewScrollPanel(),
+		table:       unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
+		deepSearch:  make(map[string]bool),
+		searchIndex: -1,
 	}
 	n.Self = n
 
@@ -899,7 +900,7 @@ func setNavigatorRowOpen(row *NavigatorNode, open bool) {
 }
 
 func (n *Navigator) searchModified(_, _ *unison.FieldState) {
-	n.searchIndex = 0
+	n.searchIndex = -1
 	n.searchResult = nil
 	n.search(strings.ToLower(n.searchField.Text()), n.table.RootRows())
 	n.adjustForMatch()
@@ -1061,17 +1062,23 @@ func (n *Navigator) nextMatch() {
 }
 
 func (n *Navigator) adjustForMatch() {
-	n.backButton.SetEnabled(n.searchIndex != 0)
+	n.backButton.SetEnabled(n.searchIndex > 0)
 	n.forwardButton.SetEnabled(len(n.searchResult) != 0 && n.searchIndex != len(n.searchResult)-1)
 	if len(n.searchResult) != 0 {
-		n.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), n.searchIndex+1, len(n.searchResult)))
-		row := n.searchResult[n.searchIndex]
-		n.table.DiscloseRow(row, false)
-		n.table.ClearSelection()
-		i := n.table.RowToIndex(row)
-		n.table.SelectByIndex(i)
-		n.ValidateLayout()
-		n.table.ScrollRowIntoView(i)
+		if n.searchIndex < 0 {
+			n.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("- of %d"), len(n.searchResult)))
+		} else {
+			n.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), n.searchIndex+1, len(n.searchResult)))
+		}
+		if n.searchIndex >= 0 {
+			row := n.searchResult[n.searchIndex]
+			n.table.DiscloseRow(row, false)
+			n.table.ClearSelection()
+			i := n.table.RowToIndex(row)
+			n.table.SelectByIndex(i)
+			n.ValidateLayout()
+			n.table.ScrollRowIntoView(i)
+		}
 	} else {
 		n.matchesLabel.SetTitle("-")
 	}
