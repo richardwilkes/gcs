@@ -222,6 +222,7 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 		},
 		func(state check.Enum) {
 			gurps.GlobalSettings().General.GroupContainersOnSort = state == check.On
+			Workspace.Navigator.EventuallyReload()
 		})
 	d.groupContainersOnSortCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel("", false))

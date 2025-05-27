@@ -307,7 +307,17 @@ func (n *NavigatorNode) Refresh() {
 				}
 			}
 		}
+		groupContainers := gurps.GlobalSettings().General.GroupContainersOnSort
 		slices.SortFunc(favs, func(a, b *fav) int {
+			if groupContainers {
+				aIsDir := xfs.IsDir(filepath.Join(a.library.Path(), a.path))
+				if aIsDir != xfs.IsDir(filepath.Join(b.library.Path(), b.path)) {
+					if aIsDir {
+						return -1 // Directories before files
+					}
+					return 1 // Files after directories
+				}
+			}
 			result := txt.NaturalCmp(xfs.TrimExtension(a.path), xfs.TrimExtension(b.path), true)
 			if result == 0 {
 				result = txt.NaturalCmp(a.path, b.path, true)
@@ -348,7 +358,16 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 		}
 		return nil
 	}
+	groupContainers := gurps.GlobalSettings().General.GroupContainersOnSort
 	slices.SortFunc(entries, func(a, b fs.DirEntry) int {
+		if groupContainers {
+			if aIsDir := a.IsDir(); aIsDir != b.IsDir() {
+				if aIsDir {
+					return -1 // Directories before files
+				}
+				return 1 // Files after directories
+			}
+		}
 		aName := a.Name()
 		bName := b.Name()
 		result := txt.NaturalCmp(xfs.TrimExtension(aName), xfs.TrimExtension(bName), true)
