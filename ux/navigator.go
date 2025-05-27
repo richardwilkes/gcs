@@ -848,8 +848,12 @@ func (n *Navigator) handleSelectionDoubleClick() {
 		} else {
 			if d, _ := row.OpenNodeContent(); !toolbox.IsNil(d) {
 				if slices.Contains(n.searchResult, row) {
-					if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
-						f.SetText(n.searchField.Text())
+					// If we didn't match on the file name, copy the search text into the newly opened dockable's search
+					// field
+					if !row.Match(strings.ToLower(n.searchField.Text())) {
+						if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
+							f.SetText(n.searchField.Text())
+						}
 					}
 				}
 			}
