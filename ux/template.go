@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -478,8 +479,27 @@ func cloneRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]
 }
 
 func appendRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]) {
-	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
-	selMap := make(map[tid.TID]bool, len(rows))
+	selMap := make(map[tid.TID]bool)
+	orig := slices.Clone(table.RootRows())
+	switch t := any(table).(type) {
+	case *unison.Table[*Node[*gurps.Skill]]:
+		if skillNodes, ok2 := any(orig).([]*Node[*gurps.Skill]); ok2 {
+			if rowNodes, ok3 := any(rows).([]*Node[*gurps.Skill]); ok3 {
+				if newRows, ok4 := any(mergeSkillRows(t, skillNodes, rowNodes, selMap)).([]*Node[T]); ok4 {
+					rows = newRows
+				}
+			}
+		}
+	case *unison.Table[*Node[*gurps.Spell]]:
+		if spellNodes, ok2 := any(orig).([]*Node[*gurps.Spell]); ok2 {
+			if rowNodes, ok3 := any(rows).([]*Node[*gurps.Spell]); ok3 {
+				if newRows, ok4 := any(mergeSpellRows(t, spellNodes, rowNodes, selMap)).([]*Node[T]); ok4 {
+					rows = newRows
+				}
+			}
+		}
+	}
+	table.SetRootRows(append(orig, rows...))
 	for _, row := range rows {
 		selMap[row.ID()] = true
 	}
@@ -490,6 +510,82 @@ func appendRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 			tableProvider.ProcessDropData(nil, table)
 		}
 	}
+}
+
+func mergeSkillRows(skillTable *unison.Table[*Node[*gurps.Skill]], skillNodes, rows []*Node[*gurps.Skill], selMap map[tid.TID]bool) []*Node[*gurps.Skill] {
+	skillMap := make(map[uint64]*gurps.Skill)
+	gurps.Traverse(func(skill *gurps.Skill) bool {
+		skillMap[gurps.Hash64(skill)] = skill
+		return false
+	}, true, true, ExtractNodeDataFromList(skillNodes)...)
+	pruneMap := make(map[*gurps.Skill]bool)
+	rowSkills := ExtractNodeDataFromList(rows)
+	gurps.Traverse(func(skill *gurps.Skill) bool {
+		if s, ok := skillMap[gurps.Hash64(skill)]; ok &&
+			maps.Equal(s.Replacements, skill.Replacements) &&
+			((s.TechLevel == nil && skill.TechLevel == nil) ||
+				(s.TechLevel != nil && skill.TechLevel != nil && *s.TechLevel == *skill.TechLevel)) {
+			pruneMap[skill] = true
+			s.Points += skill.Points
+			selMap[s.ID()] = true
+		}
+		return false
+	}, true, true, rowSkills...)
+	for skill := range pruneMap {
+		parent := skill.Parent()
+		if parent == nil {
+			rowSkills = slices.DeleteFunc(rowSkills, func(s *gurps.Skill) bool {
+				return s == skill
+			})
+		} else {
+			parent.Children = slices.DeleteFunc(parent.Children, func(s *gurps.Skill) bool {
+				return s == skill
+			})
+		}
+	}
+	replacements := make([]*Node[*gurps.Skill], 0, len(rowSkills))
+	for _, skill := range rowSkills {
+		replacements = append(replacements, NewNode(skillTable, nil, skill, true))
+	}
+	return replacements
+}
+
+func mergeSpellRows(spellTable *unison.Table[*Node[*gurps.Spell]], spellNodes, rows []*Node[*gurps.Spell], selMap map[tid.TID]bool) []*Node[*gurps.Spell] {
+	spellMap := make(map[uint64]*gurps.Spell)
+	gurps.Traverse(func(spell *gurps.Spell) bool {
+		spellMap[gurps.Hash64(spell)] = spell
+		return false
+	}, true, true, ExtractNodeDataFromList(spellNodes)...)
+	pruneMap := make(map[*gurps.Spell]bool)
+	rowSpells := ExtractNodeDataFromList(rows)
+	gurps.Traverse(func(spell *gurps.Spell) bool {
+		if s, ok := spellMap[gurps.Hash64(spell)]; ok &&
+			maps.Equal(s.Replacements, spell.Replacements) &&
+			((s.TechLevel == nil && spell.TechLevel == nil) ||
+				(s.TechLevel != nil && spell.TechLevel != nil && *s.TechLevel == *spell.TechLevel)) {
+			pruneMap[spell] = true
+			s.Points += spell.Points
+			selMap[s.ID()] = true
+		}
+		return false
+	}, true, true, rowSpells...)
+	for spell := range pruneMap {
+		parent := spell.Parent()
+		if parent == nil {
+			rowSpells = slices.DeleteFunc(rowSpells, func(s *gurps.Spell) bool {
+				return s == spell
+			})
+		} else {
+			parent.Children = slices.DeleteFunc(parent.Children, func(s *gurps.Spell) bool {
+				return s == spell
+			})
+		}
+	}
+	replacements := make([]*Node[*gurps.Spell], 0, len(rowSpells))
+	for _, spell := range rowSpells {
+		replacements = append(replacements, NewNode(spellTable, nil, spell, true))
+	}
+	return replacements
 }
 
 func rawPoints(child any) fxp.Int {

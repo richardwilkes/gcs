@@ -103,7 +103,7 @@ type SkillSyncData struct {
 	Tags             []string `json:"tags,omitempty"`
 }
 
-// SkillNonContainerOnlySyncData holds the sskll sync data that is only applicable to traits that aren't containers.
+// SkillNonContainerOnlySyncData holds the Skill sync data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlySyncData struct {
 	Specialization               string              `json:"specialization,omitempty"`
 	Difficulty                   AttributeDifficulty `json:"difficulty,omitempty"`
@@ -116,7 +116,7 @@ type SkillNonContainerOnlySyncData struct {
 	Features                     Features            `json:"features,omitempty"`
 }
 
-// SkillContainerOnlySyncData holds the skill sync data that is only applicable to traits that are containers.
+// SkillContainerOnlySyncData holds the skill sync data that is only applicable to skills that are containers.
 type SkillContainerOnlySyncData struct {
 	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
 }
