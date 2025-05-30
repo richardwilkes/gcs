@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"hash"
 	"io/fs"
+	"log/slog"
 	"math"
 	"slices"
 	"strconv"
@@ -104,29 +105,29 @@ type features struct {
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
 type Entity struct {
 	EntityData
-	LiftingStrengthBonus            fxp.Int
-	StrikingStrengthBonus           fxp.Int
-	ThrowingStrengthBonus           fxp.Int
-	DodgeBonus                      fxp.Int
-	ParryBonus                      fxp.Int
-	ParryBonusTooltip               string
-	BlockBonus                      fxp.Int
-	BlockBonusTooltip               string
-	features                        features
-	variableResolverExclusions      map[string]bool
-	skillResolverExclusions         map[string]bool
-	cachedBasicLift                 fxp.Weight
-	cachedEncumbranceLevel          encumbrance.Level
-	cachedEncumbranceLevelForSkills encumbrance.Level
-	cachedVariables                 map[string]string
-	resolveCache                    *ScriptResolveCache
-	srcMatcher                      *SrcMatcher
+	LiftingStrengthBonus           fxp.Int
+	StrikingStrengthBonus          fxp.Int
+	ThrowingStrengthBonus          fxp.Int
+	DodgeBonus                     fxp.Int
+	ParryBonus                     fxp.Int
+	ParryBonusTooltip              string
+	BlockBonus                     fxp.Int
+	BlockBonusTooltip              string
+	srcMatcher                     *SrcMatcher
+	features                       features
+	variableResolverExclusions     map[string]bool
+	skillResolverExclusions        map[string]bool
+	scriptCache                    map[string]string
+	variableCache                  map[string]string
+	basicLiftCache                 fxp.Weight
+	encumbranceLevelCache          encumbrance.Level
+	encumbranceLevelForSkillsCache encumbrance.Level
 }
 
 // NewEntityFromFile loads an Entity from a file.
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var e Entity
-	e.resolveCache = NewScriptResolveCache()
+	e.DiscardCaches()
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &e); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
@@ -140,7 +141,7 @@ func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 func NewEntity() *Entity {
 	settings := GlobalSettings().GeneralSettings()
 	var e Entity
-	e.resolveCache = NewScriptResolveCache()
+	e.DiscardCaches()
 	e.ID = tid.MustNewTID(kinds.Entity)
 	e.TotalPoints = settings.InitialPoints
 	e.PointsRecord = append(e.PointsRecord, &PointsRecord{
@@ -269,11 +270,13 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 
 // DiscardCaches discards the internal caches.
 func (e *Entity) DiscardCaches() {
-	e.cachedBasicLift = -1
-	e.cachedEncumbranceLevel = encumbrance.LastLevel + 1
-	e.cachedEncumbranceLevelForSkills = encumbrance.LastLevel + 1
-	e.cachedVariables = nil
-	e.resolveCache = NewScriptResolveCache()
+	e.variableResolverExclusions = make(map[string]bool)
+	e.skillResolverExclusions = make(map[string]bool)
+	e.scriptCache = make(map[string]string)
+	e.variableCache = make(map[string]string)
+	e.basicLiftCache = -1
+	e.encumbranceLevelCache = encumbrance.LastLevel + 1
+	e.encumbranceLevelForSkillsCache = encumbrance.LastLevel + 1
 }
 
 // Recalculate the statistics.
@@ -287,9 +290,10 @@ func (e *Entity) Recalculate() {
 	e.UpdateSkills()
 	e.UpdateSpells()
 	for range 5 {
-		// Unfortunately, there are what amount to circular references in the GURPS logic, so we need to potentially run
-		// though this process a few times until things stabilize. To avoid a potential endless loop, though, we cap the
-		// iterations.
+		// Some skill & spell levels won't be correct until the features & prerequisites have been processed, and those
+		// can't be processed in some cases until the skills & spells have known levels. Due to this circular
+		// referencing, we need to update the skills & spells at least twice. Once they no longer change, we can stop
+		// processing. To avoid an infinite loop, we limit the number of iterations to 5.
 		e.processFeatures()
 		e.processPrereqs()
 		e.DiscardCaches()
@@ -1053,27 +1057,27 @@ func (e *Entity) Dodge(enc encumbrance.Level) int {
 // EncumbranceLevel returns the current Encumbrance level.
 func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
 	if forSkills {
-		if e.cachedEncumbranceLevelForSkills != encumbrance.LastLevel+1 {
-			return e.cachedEncumbranceLevelForSkills
+		if e.encumbranceLevelForSkillsCache != encumbrance.LastLevel+1 {
+			return e.encumbranceLevelForSkillsCache
 		}
-	} else if e.cachedEncumbranceLevel != encumbrance.LastLevel+1 {
-		return e.cachedEncumbranceLevel
+	} else if e.encumbranceLevelCache != encumbrance.LastLevel+1 {
+		return e.encumbranceLevelCache
 	}
 	carried := e.WeightCarried(forSkills)
 	for _, one := range encumbrance.Levels {
 		if carried <= e.MaximumCarry(one) {
 			if forSkills {
-				e.cachedEncumbranceLevelForSkills = one
+				e.encumbranceLevelForSkillsCache = one
 			} else {
-				e.cachedEncumbranceLevel = one
+				e.encumbranceLevelCache = one
 			}
 			return one
 		}
 	}
 	if forSkills {
-		e.cachedEncumbranceLevelForSkills = encumbrance.ExtraHeavy
+		e.encumbranceLevelForSkillsCache = encumbrance.ExtraHeavy
 	} else {
-		e.cachedEncumbranceLevel = encumbrance.ExtraHeavy
+		e.encumbranceLevelCache = encumbrance.ExtraHeavy
 	}
 	return encumbrance.ExtraHeavy
 }
@@ -1129,11 +1133,11 @@ func (e *Entity) ShiftSlightly() fxp.Weight {
 
 // BasicLift returns the entity's Basic Lift.
 func (e *Entity) BasicLift() fxp.Weight {
-	if e.cachedBasicLift != -1 {
-		return e.cachedBasicLift
+	if e.basicLiftCache != -1 {
+		return e.basicLiftCache
 	}
-	e.cachedBasicLift = e.BasicLiftForST(e.LiftingStrength())
-	return e.cachedBasicLift
+	e.basicLiftCache = e.BasicLiftForST(e.LiftingStrength())
+	return e.basicLiftCache
 }
 
 // BasicLiftForST returns the entity's Basic Lift as if their base ST was the given value.
@@ -1173,21 +1177,17 @@ func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 
 func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) bool {
 	if e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization)] {
-		if fxp.DebugVariableResolver {
-			if specialization != "" {
-				name += " (" + specialization + ")"
-			}
-			errs.Log(errs.New("attempt to resolve skill level via itself"), "name", name)
+		args := []any{"name", name}
+		if specialization != "" {
+			args = append(args, "specialization", specialization)
 		}
+		slog.Error("attempt to resolve skill level via itself", args...)
 		return true
 	}
 	return false
 }
 
 func (e *Entity) registerSkillLevelResolutionExclusion(name, specialization string) {
-	if e.skillResolverExclusions == nil {
-		e.skillResolverExclusions = make(map[string]bool)
-	}
 	e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization)] = true
 }
 
@@ -1202,49 +1202,37 @@ func (e *Entity) skillLevelResolutionKey(name, specialization string) string {
 // ResolveVariable implements eval.VariableResolver.
 func (e *Entity) ResolveVariable(variableName string) string {
 	if e.variableResolverExclusions[variableName] {
-		if fxp.DebugVariableResolver {
-			errs.Log(errs.New("attempt to resolve variable via itself"), "name", "$"+variableName)
-		}
+		slog.Error("attempt to resolve variable via itself", "name", variableName)
 		return ""
 	}
-	if v, ok := e.cachedVariables[variableName]; ok {
+	if v, ok := e.variableCache[variableName]; ok {
 		return v
-	}
-	if e.cachedVariables == nil {
-		e.cachedVariables = make(map[string]string)
-	}
-	if e.variableResolverExclusions == nil {
-		e.variableResolverExclusions = make(map[string]bool)
 	}
 	e.variableResolverExclusions[variableName] = true
 	defer func() { delete(e.variableResolverExclusions, variableName) }()
 	if SizeModifierID == variableName {
 		result := strconv.Itoa(e.Profile.AdjustedSizeModifier())
-		e.cachedVariables[variableName] = result
+		e.variableCache[variableName] = result
 		return result
 	}
 	parts := strings.SplitN(variableName, ".", 2)
 	attr := e.Attributes.Set[parts[0]]
 	if attr == nil {
-		if fxp.DebugVariableResolver {
-			errs.Log(errs.New("no such variable"), "name", "$"+variableName)
-		}
+		slog.Error("no such variable", "name", variableName)
 		return ""
 	}
 	def := attr.AttributeDef()
 	if def == nil {
-		if fxp.DebugVariableResolver {
-			errs.Log(errs.New("no such variable definition"), "name", "$"+variableName)
-		}
+		slog.Error("no such variable definition", "name", variableName)
 		return ""
 	}
 	if (def.Type == attribute.Pool || def.Type == attribute.PoolRef) && len(parts) > 1 && parts[1] == "current" {
 		result := attr.Current().String()
-		e.cachedVariables[variableName] = result
+		e.variableCache[variableName] = result
 		return result
 	}
 	result := attr.Maximum().String()
-	e.cachedVariables[variableName] = result
+	e.variableCache[variableName] = result
 	return result
 }
 
@@ -1594,20 +1582,6 @@ func (e *Entity) SetPointsRecord(record []*PointsRecord) {
 	for _, rec := range record {
 		e.TotalPoints += rec.Points
 	}
-}
-
-// EmbeddedEval resolves an embedded expression.
-func (e *Entity) EmbeddedEval(s string) string {
-	if e == nil {
-		return s
-	}
-	ev := fxp.NewEvaluator(e)
-	exp := s[2 : len(s)-2]
-	result, err := ev.Evaluate(exp)
-	if err != nil {
-		errs.Log(err, "expression", exp)
-	}
-	return fmt.Sprintf("%v", result)
 }
 
 // SyncWithLibrarySources syncs the entity with the library sources.

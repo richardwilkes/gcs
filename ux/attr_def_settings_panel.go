@@ -193,9 +193,10 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 		text = i18n.Text("Base Value")
 		content.AddChild(NewFieldLeadingLabel(text, false))
-		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
+		field = NewMultiLineStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
 			func() string { return p.def.AttributeBase },
 			func(s string) { p.def.AttributeBase = s })
+		field.AutoScroll = false
 		field.SetMinimumTextWidthUsing("floor($basic_speed)")
 		field.Tooltip = newWrappedTooltip(i18n.Text("The base value, which may be a number or a formula"))
 		content.AddChild(field)

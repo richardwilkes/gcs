@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
@@ -116,8 +115,8 @@ func (p *PoolThreshold) Clone() *PoolThreshold {
 }
 
 // Threshold returns the threshold value for the given maximum.
-func (p *PoolThreshold) Threshold(resolver eval.VariableResolver) fxp.Int {
-	return fxp.EvaluateToNumber(p.Expression, resolver)
+func (p *PoolThreshold) Threshold(entity *Entity) fxp.Int {
+	return ResolveToNumber(entity, p.Expression)
 }
 
 // ContainsOp returns true if this PoolThreshold contains the specified ThresholdOp.

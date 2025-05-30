@@ -14,7 +14,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/eval"
 )
 
 const (
@@ -42,10 +41,10 @@ type AncestryOptions struct {
 }
 
 // RandomHeight returns a randomized height.
-func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not fxp.Length) fxp.Length {
+func (o *AncestryOptions) RandomHeight(entity *Entity, not fxp.Length) fxp.Length {
 	def := fxp.LengthFromInteger(defaultHeight, fxp.Inch)
-	for i := 0; i < maximumRandomTries; i++ {
-		value := fxp.Length(fxp.EvaluateToNumber(o.HeightFormula, resolver))
+	for range maximumRandomTries {
+		value := fxp.Length(ResolveToNumber(entity, o.HeightFormula))
 		if value <= 0 {
 			value = def
 		}
@@ -57,10 +56,10 @@ func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not fxp.L
 }
 
 // RandomWeight returns a randomized weight.
-func (o *AncestryOptions) RandomWeight(resolver eval.VariableResolver, not fxp.Weight) fxp.Weight {
+func (o *AncestryOptions) RandomWeight(entity *Entity, not fxp.Weight) fxp.Weight {
 	def := fxp.WeightFromInteger(defaultWeight, fxp.Pound)
-	for i := 0; i < maximumRandomTries; i++ {
-		value := fxp.Weight(fxp.EvaluateToNumber(o.WeightFormula, resolver))
+	for range maximumRandomTries {
+		value := fxp.Weight(ResolveToNumber(entity, o.WeightFormula))
 		if value <= 0 {
 			value = def
 		}
@@ -72,9 +71,9 @@ func (o *AncestryOptions) RandomWeight(resolver eval.VariableResolver, not fxp.W
 }
 
 // RandomAge returns a randomized age.
-func (o *AncestryOptions) RandomAge(resolver eval.VariableResolver, not int) int {
-	for i := 0; i < maximumRandomTries; i++ {
-		age := fxp.As[int](fxp.EvaluateToNumber(o.AgeFormula, resolver))
+func (o *AncestryOptions) RandomAge(entity *Entity, not int) int {
+	for range maximumRandomTries {
+		age := fxp.As[int](ResolveToNumber(entity, o.AgeFormula))
 		if age <= 0 {
 			age = defaultAge
 		}

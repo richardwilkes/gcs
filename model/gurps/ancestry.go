@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/eval"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 )
 
@@ -106,34 +105,34 @@ func (a *Ancestry) GenderedOptions(gender string) *AncestryOptions {
 }
 
 // RandomHeight returns a randomized height.
-func (a *Ancestry) RandomHeight(resolver eval.VariableResolver, gender string, not fxp.Length) fxp.Length {
+func (a *Ancestry) RandomHeight(entity *Entity, gender string, not fxp.Length) fxp.Length {
 	if options := a.GenderedOptions(gender); options != nil && options.HeightFormula != "" {
-		return options.RandomHeight(resolver, not)
+		return options.RandomHeight(entity, not)
 	}
 	if a.CommonOptions != nil && a.CommonOptions.HeightFormula != "" {
-		return a.CommonOptions.RandomHeight(resolver, not)
+		return a.CommonOptions.RandomHeight(entity, not)
 	}
 	return fxp.LengthFromInteger(defaultHeight, fxp.Inch)
 }
 
 // RandomWeight returns a randomized weight.
-func (a *Ancestry) RandomWeight(resolver eval.VariableResolver, gender string, not fxp.Weight) fxp.Weight {
+func (a *Ancestry) RandomWeight(entity *Entity, gender string, not fxp.Weight) fxp.Weight {
 	if options := a.GenderedOptions(gender); options != nil && options.WeightFormula != "" {
-		return options.RandomWeight(resolver, not)
+		return options.RandomWeight(entity, not)
 	}
 	if a.CommonOptions != nil && a.CommonOptions.WeightFormula != "" {
-		return a.CommonOptions.RandomWeight(resolver, not)
+		return a.CommonOptions.RandomWeight(entity, not)
 	}
 	return fxp.WeightFromInteger(defaultWeight, fxp.Pound)
 }
 
 // RandomAge returns a randomized age.
-func (a *Ancestry) RandomAge(resolver eval.VariableResolver, gender string, not int) int {
+func (a *Ancestry) RandomAge(entity *Entity, gender string, not int) int {
 	if options := a.GenderedOptions(gender); options != nil && options.AgeFormula != "" {
-		return options.RandomAge(resolver, not)
+		return options.RandomAge(entity, not)
 	}
 	if a.CommonOptions != nil && a.CommonOptions.AgeFormula != "" {
-		return a.CommonOptions.RandomAge(resolver, not)
+		return a.CommonOptions.RandomAge(entity, not)
 	}
 	return defaultAge
 }

@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
@@ -189,11 +188,11 @@ func (a *AttributeDef) AllowsDecimal() bool {
 }
 
 // BaseValue returns the resolved base value.
-func (a *AttributeDef) BaseValue(resolver eval.VariableResolver) fxp.Int {
+func (a *AttributeDef) BaseValue(entity *Entity) fxp.Int {
 	if a.IsSeparator() {
 		return 0
 	}
-	return fxp.EvaluateToNumber(a.AttributeBase, resolver)
+	return ResolveToNumber(entity, a.AttributeBase)
 }
 
 // ComputeCost returns the value adjusted for a cost reduction.

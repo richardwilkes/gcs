@@ -14,16 +14,22 @@ import (
 	"github.com/dop251/goja/parser"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
 const scriptPrefix = "^^^"
 
+// The evaluator operators and functions that will be used when calling newEvaluator().
+var (
+	EvalOperators = eval.FixedOperators[fxp.DP](true)
+	EvalFuncs     = eval.FixedFunctions[fxp.DP]()
+)
+
 var (
 	evalEmbeddedRegex  = regexp.MustCompile(`\|\|[^|]+\|\|`)
-	scriptCacheLock    sync.RWMutex
 	scriptCache        = make(map[string]*goja.Program)
-	globalResolveCache = NewScriptResolveCache()
+	globalResolveCache = make(map[string]string)
 	vmPool             = sync.Pool{New: func() any {
 		vm := goja.New()
 		vm.SetFieldNameMapper(scriptNameMapper{})
@@ -53,20 +59,63 @@ func mustSet(vm *goja.Runtime, name string, value any) {
 // expressions inside || pairs inside the text and evaluate them.
 func ResolveText(entity *Entity, text string) string {
 	if !strings.HasPrefix(text, scriptPrefix) {
-		return evalEmbeddedRegex.ReplaceAllStringFunc(text, entity.EmbeddedEval)
+		return evalEmbeddedRegex.ReplaceAllStringFunc(text, func(s string) string {
+			if entity == nil {
+				return s
+			}
+			exp := s[2 : len(s)-2]
+			result, err := newEvaluator(entity).Evaluate(exp)
+			if err != nil {
+				slog.Error("expression evaluation failed", "expression", exp, "error", err)
+			}
+			return fmt.Sprintf("%v", result)
+		})
 	}
-	var resolveCache *ScriptResolveCache
+	return resolveScript(entity, text[len(scriptPrefix):])
+}
+
+// ResolveToNumber evaluates the text as a script if it starts with ^^^, or evaluates it as an expression otherwise.
+func ResolveToNumber(entity *Entity, text string) fxp.Int {
+	if !strings.HasPrefix(text, scriptPrefix) {
+		result, err := newEvaluator(entity).Evaluate(text)
+		if err != nil {
+			slog.Error("expression evaluation failed", "expression", text, "error", err)
+			return 0
+		}
+		if value, ok := result.(fxp.Int); ok {
+			return value
+		}
+		if str, ok := result.(string); ok {
+			var value fxp.Int
+			if value, err = fxp.FromString(str); err == nil {
+				return value
+			}
+		}
+		slog.Error("unable to resolve expression to a number", "expression", text, "result", result, "error", err)
+		return 0
+	}
+	text = resolveScript(entity, text[len(scriptPrefix):])
+	value, err := fxp.FromString(text)
+	if err != nil {
+		slog.Error("unable to resolve script result to a number", "result", text)
+		return 0
+	}
+	return value
+}
+
+func resolveScript(entity *Entity, text string) string {
+	var resolveCache map[string]string
 	if entity == nil {
 		resolveCache = globalResolveCache
 	} else {
-		resolveCache = entity.resolveCache
+		resolveCache = entity.scriptCache
 	}
-	if cached, exists := resolveCache.Get(text); exists {
+	if cached, exists := resolveCache[text]; exists {
 		return cached
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
-	if v, err := RunScript(fxp.SecondsToDuration(maxTime), text[len(scriptPrefix):],
+	if v, err := RunScript(fxp.SecondsToDuration(maxTime), text,
 		ScriptArg{Name: "entity", Value: &scriptEntity{entity: entity}}); err != nil {
 		var interruptedErr *goja.InterruptedError
 		if errors.As(err, &interruptedErr) {
@@ -77,7 +126,7 @@ func ResolveText(entity *Entity, text string) string {
 	} else {
 		result = v.String()
 	}
-	resolveCache.Set(text, result)
+	resolveCache[text] = result
 	return result
 }
 
@@ -86,18 +135,14 @@ func ResolveText(entity *Entity, text string) string {
 // polluting the global scope. The arguments will be set as global variables in the script's context. The return value
 // is the result of the script execution, or an error if it fails.
 func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Value, error) {
-	scriptCacheLock.RLock()
 	program, exists := scriptCache[text]
-	scriptCacheLock.RUnlock()
 	if !exists {
 		var err error
 		program, err = goja.Compile("", "(function() {"+text+"})();", true)
 		if err != nil {
 			return nil, fmt.Errorf("failed to compile script: %w", err)
 		}
-		scriptCacheLock.Lock()
 		scriptCache[text] = program
-		scriptCacheLock.Unlock()
 	}
 	vm, ok := vmPool.Get().(*goja.Runtime)
 	if !ok {
@@ -122,4 +167,12 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 		defer time.AfterFunc(timeout, func() { vm.Interrupt("timeout") }).Stop()
 	}
 	return vm.RunProgram(program)
+}
+
+func newEvaluator(resolver eval.VariableResolver) *eval.Evaluator {
+	return &eval.Evaluator{
+		Resolver:  resolver,
+		Operators: EvalOperators,
+		Functions: EvalFuncs,
+	}
 }

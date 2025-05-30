@@ -1,6 +1,8 @@
 package gurps
 
 import (
+	"log/slog"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 )
@@ -23,8 +25,20 @@ func newScriptAttribute(attr *Attribute) *scriptAttribute {
 		Kind:     unknown,
 		Name:     unknown,
 		FullName: unknown,
-		Maximum:  attr.Maximum(),
-		Current:  attr.Current(),
+	}
+	if attr.Entity != nil {
+		s := attr.Entity.ResolveVariable(attr.AttrID)
+		var err error
+		a.Maximum, err = fxp.FromString(s)
+		if err != nil {
+			slog.Error("failed to resolve attribute to number", "attr", attr.AttrID, "value", s)
+		}
+		id := attr.AttrID + ".current"
+		s = attr.Entity.ResolveVariable(id)
+		a.Current, err = fxp.FromString(s)
+		if err != nil {
+			slog.Error("failed to resolve attribute to number", "attr", id, "value", s)
+		}
 	}
 	if def := attr.AttributeDef(); def != nil {
 		switch def.Kind() {
