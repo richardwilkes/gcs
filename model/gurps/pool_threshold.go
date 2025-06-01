@@ -31,7 +31,7 @@ type PoolThreshold struct {
 // PoolThresholdData holds the data that will be serialized for the PoolThreshold.
 type PoolThresholdData struct {
 	State       string         `json:"state"`
-	Expression  string         `json:"expression"`
+	Value       string         `json:"value"`
 	Explanation string         `json:"explanation,omitempty"`
 	Ops         []threshold.Op `json:"ops,omitempty"`
 }
@@ -49,6 +49,7 @@ func (p *PoolThreshold) MarshalJSON() ([]byte, error) {
 func (p *PoolThreshold) UnmarshalJSON(data []byte) error {
 	var legacy struct {
 		PoolThresholdData
+		Expression string  `json:"expression"`
 		Multiplier fxp.Int `json:"multiplier"`
 		Divisor    fxp.Int `json:"divisor"`
 		Addition   fxp.Int `json:"addition"`
@@ -56,8 +57,13 @@ func (p *PoolThreshold) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &legacy); err != nil {
 		return err
 	}
-	if legacy.Expression == "" {
-		legacy.Expression = convertToExpression(legacy.Multiplier, legacy.Divisor, legacy.Addition)
+	if legacy.Value == "" {
+		if legacy.Expression == "" {
+			legacy.Expression = convertToExpression(legacy.Multiplier, legacy.Divisor, legacy.Addition)
+		}
+		if legacy.Expression != "" {
+			legacy.Value = ExprToScript(legacy.Expression)
+		}
 	}
 	slices.Sort(legacy.Ops)
 	p.PoolThresholdData = legacy.PoolThresholdData
@@ -116,7 +122,7 @@ func (p *PoolThreshold) Clone() *PoolThreshold {
 
 // Threshold returns the threshold value for the given maximum.
 func (p *PoolThreshold) Threshold(entity *Entity) fxp.Int {
-	return ResolveToNumber(entity, p.Expression)
+	return ResolveToNumber(entity, p.Value)
 }
 
 // ContainsOp returns true if this PoolThreshold contains the specified ThresholdOp.
@@ -142,7 +148,7 @@ func (p *PoolThreshold) RemoveOp(op threshold.Op) {
 // Hash writes this object's contents into the hasher.
 func (p *PoolThreshold) Hash(h hash.Hash) {
 	hashhelper.String(h, p.State)
-	hashhelper.String(h, p.Expression)
+	hashhelper.String(h, p.Value)
 	hashhelper.String(h, p.Explanation)
 	hashhelper.Num64(h, len(p.Ops))
 	for _, one := range p.Ops {

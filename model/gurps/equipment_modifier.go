@@ -89,7 +89,7 @@ type EquipmentModifierSyncData struct {
 	Name             string   `json:"name,omitempty"`
 	PageRef          string   `json:"reference,omitempty"`
 	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"notes,omitempty"`
+	LocalNotes       string   `json:"local_notes,omitempty"`
 	Tags             []string `json:"tags,omitempty"`
 }
 
@@ -236,6 +236,7 @@ func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
 		EquipmentModifierData
 		// Old data fields
 		Type       string   `json:"type"`
+		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
@@ -249,6 +250,9 @@ func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
 		setOpen = localData.IsOpen
 	}
 	e.EquipmentModifierData = localData.EquipmentModifierData
+	if e.LocalNotes == "" && localData.ExprNotes != "" {
+		e.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
+	}
 	e.ClearUnusedFieldsForType()
 	e.Tags = convertOldCategoriesToTags(e.Tags, localData.Categories)
 	slices.Sort(e.Tags)

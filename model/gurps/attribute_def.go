@@ -48,7 +48,7 @@ type AttributeDefData struct {
 	Placement           attribute.Placement `json:"placement,omitempty"`
 	Name                string              `json:"name"`
 	FullName            string              `json:"full_name,omitempty"`
-	AttributeBase       string              `json:"attribute_base,omitempty"`
+	Base                string              `json:"base,omitempty"`
 	CostPerPoint        fxp.Int             `json:"cost_per_point,omitempty"`
 	CostAdjPercentPerSM fxp.Int             `json:"cost_adj_percent_per_sm,omitempty"`
 	Thresholds          []*PoolThreshold    `json:"thresholds,omitempty"`
@@ -65,11 +65,20 @@ func (a *AttributeDef) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (a *AttributeDef) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &a.AttributeDefData); err != nil {
+	var legacy struct {
+		AttributeDefData
+		// Old data fields
+		AttributeBase string `json:"attribute_base"`
+	}
+	if err := json.Unmarshal(data, &legacy); err != nil {
 		return err
 	}
+	a.AttributeDefData = legacy.AttributeDefData
+	if a.Base == "" && legacy.AttributeBase != "" {
+		a.Base = ExprToScript(legacy.AttributeBase)
+	}
 	for _, threshold := range a.Thresholds {
-		threshold.Expression = strings.ReplaceAll(threshold.Expression, "$self", "$"+a.DefID)
+		threshold.Value = strings.ReplaceAll(threshold.Value, "$self", "$"+a.DefID)
 	}
 	return nil
 }
@@ -158,7 +167,7 @@ func (a *AttributeDef) Primary() bool {
 	if a.Placement == attribute.Primary {
 		return true
 	}
-	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
+	_, err := fxp.FromString(strings.TrimSpace(a.Base))
 	return err == nil
 }
 
@@ -173,7 +182,7 @@ func (a *AttributeDef) Secondary() bool {
 	if a.Placement == attribute.Secondary {
 		return true
 	}
-	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
+	_, err := fxp.FromString(strings.TrimSpace(a.Base))
 	return err != nil
 }
 
@@ -192,7 +201,7 @@ func (a *AttributeDef) BaseValue(entity *Entity) fxp.Int {
 	if a.IsSeparator() {
 		return 0
 	}
-	return ResolveToNumber(entity, a.AttributeBase)
+	return ResolveToNumber(entity, a.Base)
 }
 
 // ComputeCost returns the value adjusted for a cost reduction.
@@ -221,7 +230,7 @@ func (a *AttributeDef) Hash(h hash.Hash) {
 	hashhelper.Num8(h, a.Placement)
 	hashhelper.String(h, a.Name)
 	hashhelper.String(h, a.FullName)
-	hashhelper.String(h, a.AttributeBase)
+	hashhelper.String(h, a.Base)
 	hashhelper.Num64(h, a.CostPerPoint)
 	hashhelper.Num64(h, a.CostAdjPercentPerSM)
 	hashhelper.Num64(h, len(a.Thresholds))

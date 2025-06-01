@@ -121,7 +121,6 @@ func GlobalSettings() *Settings {
 			}
 		}
 		globalSettings.EnsureValidity()
-		InstallEvaluatorFunctions(EvalFuncs)
 		unison.SetThemeMode(globalSettings.ThemeMode)
 		globalSettings.Colors.MakeCurrent()
 		globalSettings.Fonts.MakeCurrent()

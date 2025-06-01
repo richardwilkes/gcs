@@ -194,8 +194,8 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		text = i18n.Text("Base Value")
 		content.AddChild(NewFieldLeadingLabel(text, false))
 		field = NewMultiLineStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
-			func() string { return p.def.AttributeBase },
-			func(s string) { p.def.AttributeBase = s })
+			func() string { return p.def.Base },
+			func(s string) { p.def.Base = s })
 		field.AutoScroll = false
 		field.SetMinimumTextWidthUsing("floor($basic_speed)")
 		field.Tooltip = newWrappedTooltip(i18n.Text("The base value, which may be a number or a formula"))
@@ -245,7 +245,7 @@ func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
 		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
 	} else if p.def.IsSeparator() {
 		p.def.FullName = ""
-		p.def.AttributeBase = ""
+		p.def.Base = ""
 		p.def.CostPerPoint = 0
 		p.def.CostAdjPercentPerSM = 0
 		p.def.Thresholds = nil

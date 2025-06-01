@@ -99,7 +99,7 @@ type TraitModifierSyncData struct {
 	Name             string   `json:"name,omitempty"`
 	PageRef          string   `json:"reference,omitempty"`
 	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"notes,omitempty"`
+	LocalNotes       string   `json:"local_notes,omitempty"`
 	Tags             []string `json:"tags,omitempty"`
 }
 
@@ -243,6 +243,7 @@ func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 		TraitModifierData
 		// Old data fields
 		Type       string   `json:"type"`
+		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
@@ -256,6 +257,9 @@ func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 		setOpen = localData.IsOpen
 	}
 	t.TraitModifierData = localData.TraitModifierData
+	if t.LocalNotes == "" && localData.ExprNotes != "" {
+		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
+	}
 	t.ClearUnusedFieldsForType()
 	t.Tags = convertOldCategoriesToTags(t.Tags, localData.Categories)
 	slices.Sort(t.Tags)

@@ -10,9 +10,11 @@
 package gurps
 
 import (
+	"bytes"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 )
 
@@ -29,10 +31,15 @@ const (
 
 // AncestryOptions holds options that may be randomized for an Entity's ancestry.
 type AncestryOptions struct {
+	AncestryOptionsData
+}
+
+// AncestryOptionsData holds the data that will be serialized for the AncestryOptions.
+type AncestryOptionsData struct {
 	Name              string                  `json:"name,omitempty"`
-	HeightFormula     string                  `json:"height_formula,omitempty"`
-	WeightFormula     string                  `json:"weight_formula,omitempty"`
-	AgeFormula        string                  `json:"age_formula,omitempty"`
+	HeightScript      string                  `json:"height_script,omitempty"`
+	WeightScript      string                  `json:"weight_script,omitempty"`
+	AgeScript         string                  `json:"age_script,omitempty"`
 	HairOptions       []*WeightedStringOption `json:"hair_options,omitempty"`
 	EyeOptions        []*WeightedStringOption `json:"eye_options,omitempty"`
 	SkinOptions       []*WeightedStringOption `json:"skin_options,omitempty"`
@@ -40,11 +47,45 @@ type AncestryOptions struct {
 	NameGenerators    []string                `json:"name_generators,omitempty"`
 }
 
+// MarshalJSON implements json.Marshaler.
+func (o *AncestryOptions) MarshalJSON() ([]byte, error) {
+	var buffer bytes.Buffer
+	e := json.NewEncoder(&buffer)
+	e.SetEscapeHTML(false)
+	err := e.Encode(&o.AncestryOptionsData)
+	return buffer.Bytes(), err
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (o *AncestryOptions) UnmarshalJSON(data []byte) error {
+	var legacy struct {
+		AncestryOptionsData
+		// Old data fields
+		HeightFormula string `json:"height_formula"`
+		WeightFormula string `json:"weight_formula"`
+		AgeFormula    string `json:"age_formula"`
+	}
+	if err := json.Unmarshal(data, &legacy); err != nil {
+		return err
+	}
+	o.AncestryOptionsData = legacy.AncestryOptionsData
+	if o.HeightScript == "" && legacy.HeightFormula != "" {
+		o.HeightScript = ExprToScript(legacy.HeightFormula)
+	}
+	if o.WeightScript == "" && legacy.WeightFormula != "" {
+		o.WeightScript = ExprToScript(legacy.WeightFormula)
+	}
+	if o.AgeScript == "" && legacy.AgeFormula != "" {
+		o.AgeScript = ExprToScript(legacy.AgeFormula)
+	}
+	return nil
+}
+
 // RandomHeight returns a randomized height.
 func (o *AncestryOptions) RandomHeight(entity *Entity, not fxp.Length) fxp.Length {
 	def := fxp.LengthFromInteger(defaultHeight, fxp.Inch)
 	for range maximumRandomTries {
-		value := fxp.Length(ResolveToNumber(entity, o.HeightFormula))
+		value := fxp.Length(ResolveToNumber(entity, o.HeightScript))
 		if value <= 0 {
 			value = def
 		}
@@ -59,7 +100,7 @@ func (o *AncestryOptions) RandomHeight(entity *Entity, not fxp.Length) fxp.Lengt
 func (o *AncestryOptions) RandomWeight(entity *Entity, not fxp.Weight) fxp.Weight {
 	def := fxp.WeightFromInteger(defaultWeight, fxp.Pound)
 	for range maximumRandomTries {
-		value := fxp.Weight(ResolveToNumber(entity, o.WeightFormula))
+		value := fxp.Weight(ResolveToNumber(entity, o.WeightScript))
 		if value <= 0 {
 			value = def
 		}
@@ -73,7 +114,7 @@ func (o *AncestryOptions) RandomWeight(entity *Entity, not fxp.Weight) fxp.Weigh
 // RandomAge returns a randomized age.
 func (o *AncestryOptions) RandomAge(entity *Entity, not int) int {
 	for range maximumRandomTries {
-		age := fxp.As[int](ResolveToNumber(entity, o.AgeFormula))
+		age := fxp.As[int](ResolveToNumber(entity, o.AgeScript))
 		if age <= 0 {
 			age = defaultAge
 		}

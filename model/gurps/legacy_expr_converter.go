@@ -26,8 +26,14 @@ type operator struct {
 }
 
 type parsedFunction struct {
+	unaryOp  *operator
 	function string
 	args     string
+}
+
+type expressionOperand struct {
+	unaryOp *operator
+	value   string
 }
 
 type expressionOperator struct {
@@ -36,10 +42,11 @@ type expressionOperator struct {
 }
 
 type expressionTree struct {
-	left    any
-	right   any
-	op      *operator
-	unaryOp *operator
+	left      any
+	right     any
+	op        *operator
+	unaryOp   *operator
+	hasParens bool
 }
 
 type exprToScript struct {
@@ -49,8 +56,15 @@ type exprToScript struct {
 	operatorStack []*expressionOperator
 }
 
+// EmbeddedExprToScript converts an old-style embedded expression string into an embedded JavaScript script string.
+func EmbeddedExprToScript(text string) string {
+	return evalEmbeddedRegex.ReplaceAllStringFunc(text, func(s string) string {
+		return "||" + ExprToScript(s[2:len(s)-2]) + "||"
+	})
+}
+
 // ExprToScript converts an old-style expression string into a JavaScript script string.
-func ExprToScript(expr string) (string, error) {
+func ExprToScript(expr string) string {
 	e := exprToScript{
 		operators: []*operator{
 			{symbol: "("},
@@ -72,44 +86,49 @@ func ExprToScript(expr string) (string, error) {
 			{symbol: "^", replacement: "**", precedence: 7},
 		},
 		functions: map[string]string{
-			"abs":      "Math.abs",
-			"cbrt":     "Math.cbrt",
-			"ceil":     "Math.ceil",
-			"exp":      "Math.exp",
-			"exp2":     "Math.exp2",
-			"floor":    "Math.floor",
-			"if":       "iff",
-			"log":      "Math.log",
-			"log1p":    "Math.log1p",
-			"log10":    "Math.log10",
-			"max":      "Math.max",
-			"min":      "Math.min",
-			"round":    "Math.round",
-			"sqrt":     "Math.sqrt",
-			"add_dice": "add_dice",
-			// TODO: Put these into a separate js object?
-			"advantage_level": "trait_level",
-			"dice":            "dice",
-			"dice_count":      "dice_count",
-			"dice_modifier":   "dice_modifier",
-			"dice_multiplier": "dice_multiplier",
-			"dice_sides":      "dice_sides",
-			"enc":             "enc",
-			"has_trait":       "has_trait",
-			"random_height":   "random_height",
-			"random_weight":   "random_weight",
-			"roll":            "roll",
-			"signed":          "signed",
-			"skill_level":     "skill_level",
-			"ssrt":            "ssrt",
-			"ssrt_to_yards":   "ssrt_to_yards",
-			"subtract_dice":   "subtract_dice",
-			"trait_level":     "trait_level",
-			"weapon_damage":   "weapon_damage",
+			"if":     "iff",
+			"signed": "signedValue",
+
+			"advantage_level": "entity.traitLevel",
+			"enc":             "entity.currentEncumbrance",
+			"has_trait":       "entity.hasTrait",
+			"random_height":   "entity.randomHeight",
+			"random_weight":   "entity.randomWeight",
+			"skill_level":     "entity.skillLevel",
+			"trait_level":     "entity.traitLevel",
+			"weapon_damage":   "entity.weaponDamage",
+
+			"add_dice":        "dice.add",
+			"dice_count":      "dice.count",
+			"dice_modifier":   "dice.modifier",
+			"dice_multiplier": "dice.multiplier",
+			"dice_sides":      "dice.sides",
+			"dice":            "dice.from",
+			"roll":            "dice.roll",
+			"subtract_dice":   "dice.subtract",
+
+			"abs":   "Math.abs",
+			"cbrt":  "Math.cbrt",
+			"ceil":  "Math.ceil",
+			"exp":   "Math.exp",
+			"exp2":  "Math.exp2",
+			"floor": "Math.floor",
+			"log":   "Math.log",
+			"log10": "Math.log10",
+			"log1p": "Math.log1p",
+			"max":   "Math.max",
+			"min":   "Math.min",
+			"round": "Math.round",
+			"sqrt":  "Math.sqrt",
+
+			"ssrt_to_yards": "ssrt.modifierToYards",
+			"ssrt":          "ssrt.modifier",
 		},
 	}
-	parts, err := e.processExpression(nil, expr)
-	return strings.Join(parts, " "), err
+	if parts, err := e.processExpression(nil, expr); err == nil {
+		expr = strings.Join(parts, " ")
+	}
+	return expr
 }
 
 func (e *exprToScript) processExpression(parts []string, expression string) ([]string, error) {
@@ -143,7 +162,7 @@ func (e *exprToScript) parse(expression string) error {
 		opIndex, op := e.nextOperator(expression, i, nil)
 		if opIndex > i || opIndex == -1 {
 			var err error
-			if i, err = e.processOperand(expression, i, opIndex); err != nil {
+			if i, err = e.processOperand(expression, i, opIndex, unaryOp); err != nil {
 				return err
 			}
 			haveOperand = true
@@ -188,20 +207,26 @@ func (e *exprToScript) nextOperator(expression string, start int, match *operato
 	return -1, nil
 }
 
-func (e *exprToScript) processOperand(expression string, start, opIndex int) (int, error) {
+func (e *exprToScript) processOperand(expression string, start, opIndex int, unaryOp *operator) (int, error) {
 	if opIndex == -1 {
 		text := strings.TrimSpace(expression[start:])
 		if text == "" {
 			return -1, errs.Newf("expression is invalid at index %d", start)
 		}
-		e.operandStack = append(e.operandStack, text)
+		e.operandStack = append(e.operandStack, &expressionOperand{
+			unaryOp: unaryOp,
+			value:   text,
+		})
 		return len(expression), nil
 	}
 	text := strings.TrimSpace(expression[start:opIndex])
 	if text == "" {
 		return -1, errs.Newf("expression is invalid at index %d", start)
 	}
-	e.operandStack = append(e.operandStack, text)
+	e.operandStack = append(e.operandStack, &expressionOperand{
+		unaryOp: unaryOp,
+		value:   text,
+	})
 	return opIndex, nil
 }
 
@@ -294,18 +319,19 @@ func (e *exprToScript) processFunction(expression string, opIndex int) (int, *op
 	if len(e.operandStack) == 0 {
 		return -1, nil, errs.Newf("invalid stack at index %d", next)
 	}
-	operand, ok := e.operandStack[len(e.operandStack)-1].(string)
+	operand, ok := e.operandStack[len(e.operandStack)-1].(*expressionOperand)
 	if !ok {
 		return -1, nil, errs.Newf("unexpected operand stack value at index %d", next)
 	}
 	e.operandStack = e.operandStack[:len(e.operandStack)-1]
-	f, exists := e.functions[operand]
+	f, exists := e.functions[operand.value]
 	if !exists {
-		return -1, nil, errs.Newf("function not defined: %s", operand)
+		return -1, nil, errs.Newf("function not defined: %s", operand.value)
 	}
 	e.operandStack = append(e.operandStack, &parsedFunction{
 		function: f,
 		args:     expression[opIndex+1 : next],
+		unaryOp:  operand.unaryOp,
 	})
 	return next, op, nil
 }
@@ -324,15 +350,17 @@ func (e *exprToScript) processTree() {
 	op := e.operatorStack[len(e.operatorStack)-1]
 	e.operatorStack = e.operatorStack[:len(e.operatorStack)-1]
 	e.operandStack = append(e.operandStack, &expressionTree{
-		left:  left,
-		right: right,
-		op:    op.op,
+		left:      left,
+		right:     right,
+		op:        op.op,
+		hasParens: len(e.operatorStack) > 0 && e.operatorStack[len(e.operatorStack)-1].op.symbol == "(",
 	})
 }
 
 func (e *exprToScript) process(parts []string, op any) []string {
 	switch v := op.(type) {
 	case *expressionTree:
+		leftIndex := len(parts)
 		if v.left != nil {
 			parts = e.process(parts, v.left)
 		}
@@ -346,23 +374,50 @@ func (e *exprToScript) process(parts []string, op any) []string {
 		if v.right != nil {
 			parts = e.process(parts, v.right)
 		}
+		if v.hasParens {
+			parts[leftIndex] = "(" + parts[leftIndex]
+			parts[len(parts)-1] = parts[len(parts)-1] + ")"
+		}
 		return parts
-	case string:
-		if _, err := strconv.ParseFloat(v, 64); err != nil {
-			if !strings.HasPrefix(v, "$") &&
-				(!strings.HasPrefix(v, `"`) || !strings.HasSuffix(v, `"`)) {
-				return append(parts, `"`+v+`"`)
+	case *expressionOperand:
+		value := v.value
+		if _, err := strconv.ParseFloat(value, 64); err != nil {
+			if !strings.HasPrefix(value, "$") && (!strings.HasPrefix(value, `"`) || !strings.HasSuffix(value, `"`)) {
+				value = `"` + value + `"`
 			}
 		}
-		return append(parts, v)
+		if v.unaryOp != nil {
+			value = v.unaryOp.String() + value
+		}
+		return append(parts, value)
 	case *parsedFunction:
 		var funcParts []string
+		first := true
+		skip := false
 		next, remaining := extractNextEvalArg(v.args)
 		for next != "" {
-			var err error
-			funcParts, err = e.processExpression(funcParts, next)
-			if err != nil {
-				funcParts = append(funcParts, "<error>")
+			// Special case for roll function
+			if first {
+				first = false
+				if v.function == "dice.roll" {
+					if strings.IndexByte(next, '(') == -1 {
+						if !strings.HasPrefix(next, "$") &&
+							(!strings.HasPrefix(next, `"`) || !strings.HasSuffix(next, `"`)) {
+							next = `"` + next + `"`
+						}
+						funcParts = append(funcParts, next)
+						skip = true
+					}
+				}
+			}
+			if skip {
+				skip = false
+			} else {
+				var err error
+				funcParts, err = e.processExpression(funcParts, next)
+				if err != nil {
+					funcParts = append(funcParts, "<error>")
+				}
 			}
 			next, remaining = extractNextEvalArg(remaining)
 			if next != "" {

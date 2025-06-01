@@ -106,10 +106,10 @@ func (a *Ancestry) GenderedOptions(gender string) *AncestryOptions {
 
 // RandomHeight returns a randomized height.
 func (a *Ancestry) RandomHeight(entity *Entity, gender string, not fxp.Length) fxp.Length {
-	if options := a.GenderedOptions(gender); options != nil && options.HeightFormula != "" {
+	if options := a.GenderedOptions(gender); options != nil && options.HeightScript != "" {
 		return options.RandomHeight(entity, not)
 	}
-	if a.CommonOptions != nil && a.CommonOptions.HeightFormula != "" {
+	if a.CommonOptions != nil && a.CommonOptions.HeightScript != "" {
 		return a.CommonOptions.RandomHeight(entity, not)
 	}
 	return fxp.LengthFromInteger(defaultHeight, fxp.Inch)
@@ -117,10 +117,10 @@ func (a *Ancestry) RandomHeight(entity *Entity, gender string, not fxp.Length) f
 
 // RandomWeight returns a randomized weight.
 func (a *Ancestry) RandomWeight(entity *Entity, gender string, not fxp.Weight) fxp.Weight {
-	if options := a.GenderedOptions(gender); options != nil && options.WeightFormula != "" {
+	if options := a.GenderedOptions(gender); options != nil && options.WeightScript != "" {
 		return options.RandomWeight(entity, not)
 	}
-	if a.CommonOptions != nil && a.CommonOptions.WeightFormula != "" {
+	if a.CommonOptions != nil && a.CommonOptions.WeightScript != "" {
 		return a.CommonOptions.RandomWeight(entity, not)
 	}
 	return fxp.WeightFromInteger(defaultWeight, fxp.Pound)
@@ -128,10 +128,10 @@ func (a *Ancestry) RandomWeight(entity *Entity, gender string, not fxp.Weight) f
 
 // RandomAge returns a randomized age.
 func (a *Ancestry) RandomAge(entity *Entity, gender string, not int) int {
-	if options := a.GenderedOptions(gender); options != nil && options.AgeFormula != "" {
+	if options := a.GenderedOptions(gender); options != nil && options.AgeScript != "" {
 		return options.RandomAge(entity, not)
 	}
-	if a.CommonOptions != nil && a.CommonOptions.AgeFormula != "" {
+	if a.CommonOptions != nil && a.CommonOptions.AgeScript != "" {
 		return a.CommonOptions.RandomAge(entity, not)
 	}
 	return defaultAge

@@ -1,6 +1,10 @@
 package gurps
 
-import "github.com/richardwilkes/gcs/v5/model/fxp"
+import (
+	"fmt"
+
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+)
 
 type scriptSSRT struct{}
 
@@ -10,6 +14,18 @@ func (s *scriptSSRT) RangeModifier(yards float64) int {
 
 func (s *scriptSSRT) SizeModifier(yards float64) int {
 	return yardsToValue(fxp.Length(fxp.Yard.ToInches(fxp.From(yards))), true)
+}
+
+func (s *scriptSSRT) Modifier(length float64, units string, forSize bool) int {
+	l, err := fxp.LengthFromString(fmt.Sprintf("%v %s", length, units), fxp.Yard)
+	if err != nil {
+		return 0
+	}
+	result := yardsToValue(l, forSize)
+	if !forSize {
+		result = -result
+	}
+	return result
 }
 
 func yardsToValue(length fxp.Length, allowNegative bool) int {

@@ -99,7 +99,7 @@ type SkillSyncData struct {
 	Name             string   `json:"name,omitempty"`
 	PageRef          string   `json:"reference,omitempty"`
 	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"notes,omitempty"`
+	LocalNotes       string   `json:"local_notes,omitempty"`
 	Tags             []string `json:"tags,omitempty"`
 }
 
@@ -321,6 +321,7 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 		SkillData
 		// Old data fields
 		Type       string   `json:"type"`
+		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
@@ -340,6 +341,9 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 		setOpen = localData.IsOpen
 	}
 	s.SkillData = localData.SkillData
+	if s.LocalNotes == "" && localData.ExprNotes != "" {
+		s.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
+	}
 	s.ClearUnusedFieldsForType()
 	s.Tags = convertOldCategoriesToTags(s.Tags, localData.Categories)
 	slices.Sort(s.Tags)

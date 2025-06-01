@@ -108,7 +108,7 @@ type SpellSyncData struct {
 	Name             string   `json:"name,omitempty"`
 	PageRef          string   `json:"reference,omitempty"`
 	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"notes,omitempty"`
+	LocalNotes       string   `json:"local_notes,omitempty"`
 	Tags             []string `json:"tags,omitempty"`
 }
 
@@ -326,6 +326,7 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 		SpellData
 		// Old data fields
 		Type       string   `json:"type"`
+		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
@@ -345,6 +346,9 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 		setOpen = localData.IsOpen
 	}
 	s.SpellData = localData.SpellData
+	if s.LocalNotes == "" && localData.ExprNotes != "" {
+		s.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
+	}
 	s.ClearUnusedFieldsForType()
 	s.Tags = convertOldCategoriesToTags(s.Tags, localData.Categories)
 	slices.Sort(s.Tags)

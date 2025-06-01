@@ -98,7 +98,7 @@ type TraitSyncData struct {
 	Name             string              `json:"name,omitempty"`
 	PageRef          string              `json:"reference,omitempty"`
 	PageRefHighlight string              `json:"reference_highlight,omitempty"`
-	LocalNotes       string              `json:"notes,omitempty"`
+	LocalNotes       string              `json:"local_notes,omitempty"`
 	Tags             []string            `json:"tags,omitempty"`
 	Prereq           *PrereqList         `json:"prereqs,omitempty"`
 	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
@@ -259,6 +259,7 @@ func (t *Trait) UnmarshalJSON(data []byte) error {
 		TraitData
 		// Old data fields
 		Type         string   `json:"type"`
+		ExprNotes    string   `json:"notes"`
 		Categories   []string `json:"categories"`
 		Mental       bool     `json:"mental"`
 		Physical     bool     `json:"physical"`
@@ -277,6 +278,9 @@ func (t *Trait) UnmarshalJSON(data []byte) error {
 		setOpen = localData.IsOpen
 	}
 	t.TraitData = localData.TraitData
+	if t.LocalNotes == "" && localData.ExprNotes != "" {
+		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
+	}
 	// Force the CanLevel flag, if needed
 	if !t.Container() && (t.Levels != 0 || t.PointsPerLevel != 0) {
 		t.CanLevel = true

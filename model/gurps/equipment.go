@@ -95,7 +95,7 @@ type EquipmentSyncData struct {
 	Name                   string      `json:"description,omitempty"`
 	PageRef                string      `json:"reference,omitempty"`
 	PageRefHighlight       string      `json:"reference_highlight,omitempty"`
-	LocalNotes             string      `json:"notes,omitempty"`
+	LocalNotes             string      `json:"local_notes,omitempty"`
 	TechLevel              string      `json:"tech_level,omitempty"`
 	LegalityClass          string      `json:"legality_class,omitempty"`
 	Tags                   []string    `json:"tags,omitempty"`
@@ -255,6 +255,7 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 		EquipmentData
 		// Old data fields
 		Type       string   `json:"type"`
+		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
@@ -268,6 +269,9 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 		setOpen = localData.IsOpen
 	}
 	e.EquipmentData = localData.EquipmentData
+	if e.LocalNotes == "" && localData.ExprNotes != "" {
+		e.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
+	}
 	e.ClearUnusedFieldsForType()
 	e.Tags = convertOldCategoriesToTags(e.Tags, localData.Categories)
 	slices.Sort(e.Tags)

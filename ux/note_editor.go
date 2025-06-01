@@ -66,9 +66,9 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 3}))
 	content.AddChild(label)
 	field := NewMultiLineStringField(nil, "", labelText,
-		func() string { return e.editorData.Text },
+		func() string { return e.editorData.MarkDown },
 		func(value string) {
-			e.editorData.Text = value
+			e.editorData.MarkDown = value
 			markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), value), 0)
 			content.MarkForLayoutAndRedraw()
 			MarkModified(content)
@@ -103,7 +103,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	)
 	content.AddChild(label)
 
-	markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), e.editorData.Text), 0)
+	markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), e.editorData.MarkDown), 0)
 
 	markdownWrapper := unison.NewPanel()
 	markdownWrapper.SetScale(1.33)

@@ -65,7 +65,7 @@ type NoteEditData struct {
 
 // NoteSyncData holds the note sync data that is common to both containers and non-containers.
 type NoteSyncData struct {
-	Text             string `json:"text,omitempty"`
+	MarkDown         string `json:"markdown,omitempty"`
 	PageRef          string `json:"reference,omitempty"`
 	PageRefHighlight string `json:"reference_highlight,omitempty"`
 }
@@ -101,7 +101,7 @@ func NewNote(owner DataOwner, parent *Note, container bool) *Note {
 	n.TID = tid.MustNewTID(noteKind(container))
 	n.parent = parent
 	n.owner = owner
-	n.Text = n.Kind()
+	n.MarkDown = n.Kind()
 	n.SetOpen(container)
 	return &n
 }
@@ -187,7 +187,7 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 		NoteData: n.NoteData,
 	}
 	notes := n.resolveText()
-	if notes != n.Text {
+	if notes != n.MarkDown {
 		data.Calc = &calc{ResolvedNotes: notes}
 	}
 	return json.Marshal(&data)
@@ -198,8 +198,9 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		NoteData
 		// Old data fields
-		Type   string `json:"type"`
-		IsOpen bool   `json:"open"`
+		Type     string `json:"type"`
+		ExprText string `json:"text"`
+		IsOpen   bool   `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
@@ -211,6 +212,9 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 		setOpen = localData.IsOpen
 	}
 	n.NoteData = localData.NoteData
+	if n.MarkDown == "" && localData.ExprText != "" {
+		n.MarkDown = EmbeddedExprToScript(localData.ExprText)
+	}
 	n.ClearUnusedFieldsForType()
 	if n.Container() {
 		for _, one := range n.Children {
@@ -225,7 +229,7 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 
 // TextWithReplacements returns the text with any replacements applied.
 func (n *Note) TextWithReplacements() string {
-	return nameable.Apply(n.Text, n.Replacements)
+	return nameable.Apply(n.MarkDown, n.Replacements)
 }
 
 func (n *Note) String() string {
@@ -327,7 +331,7 @@ func (n *Note) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = n.Replacements
 	}
-	nameable.Extract(n.Text, m, existing)
+	nameable.Extract(n.MarkDown, m, existing)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -395,7 +399,7 @@ func (n *Note) Hash(h hash.Hash) {
 }
 
 func (n *NoteSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, n.Text)
+	hashhelper.String(h, n.MarkDown)
 	hashhelper.String(h, n.PageRef)
 	hashhelper.String(h, n.PageRefHighlight)
 }

@@ -2,9 +2,9 @@
 	"version": 5,
 	"name": "Human",
 	"common_options": {
-		"height_formula": "random_height($st)",
-		"weight_formula": "random_weight($st)",
-		"age_formula": "roll(1d12+14)",
+		"height_formula": "entity.randomHeight($st)",
+		"weight_formula": "entity.randomWeight($st)",
+		"age_formula": "dice.roll(\"1d102+140\")",
 		"hair_options": [
 			{
 				"weight": 14,

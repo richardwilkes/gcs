@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"regexp"
 	"strings"
 	"sync"
@@ -15,16 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/i18n"
-)
-
-const scriptPrefix = "^^^"
-
-// The evaluator operators and functions that will be used when calling newEvaluator().
-var (
-	EvalOperators = eval.FixedOperators[fxp.DP](true)
-	EvalFuncs     = eval.FixedFunctions[fxp.DP]()
 )
 
 var (
@@ -36,10 +28,14 @@ var (
 		vm.SetFieldNameMapper(scriptNameMapper{})
 		vm.SetParserOptions(parser.WithDisableSourceMaps)
 		mustSet(vm, "console", &scriptConsole{})
+		mustSet(vm, "dice", &scriptDice{})
 		mustSet(vm, "fixed", newScriptFixed())
+		mustSet(vm, "iff", scriptIff)
 		mustSet(vm, "length", newScriptLength())
-		mustSet(vm, "weight", newScriptWeight())
+		mustSet(vm, "Math.exp2", math.Exp2)
+		mustSet(vm, "signedValue", scriptSigned)
 		mustSet(vm, "ssrt", &scriptSSRT{})
+		mustSet(vm, "weight", newScriptWeight())
 		return vm
 	}}
 )
@@ -56,49 +52,41 @@ func mustSet(vm *goja.Runtime, name string, value any) {
 	}
 }
 
+func scriptIff(condition bool, trueValue, falseValue any) any {
+	if condition {
+		return trueValue
+	}
+	return falseValue
+}
+
+func scriptSigned(value string) (string, error) {
+	v, err := fxp.FromString(value)
+	if err != nil {
+		return "", err
+	}
+	return v.StringWithSign(), nil
+}
+
 // ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
 // expressions inside || pairs inside the text and evaluate them.
 func ResolveText(entity *Entity, text string) string {
-	if !strings.HasPrefix(text, scriptPrefix) {
-		return evalEmbeddedRegex.ReplaceAllStringFunc(text, func(s string) string {
-			if entity == nil {
-				return s
-			}
-			exp := s[2 : len(s)-2]
-			result, err := newEvaluator(entity).Evaluate(exp)
-			if err != nil {
-				slog.Error("expression evaluation failed", "expression", exp)
-			}
-			return fmt.Sprintf("%v", result)
-		})
-	}
-	return resolveScript(entity, text[len(scriptPrefix):])
+	return evalEmbeddedRegex.ReplaceAllStringFunc(text, func(s string) string {
+		exp := s[2 : len(s)-2]
+		return resolveScript(entity, exp)
+	})
 }
 
-// ResolveToNumber evaluates the text as a script if it starts with ^^^, or evaluates it as an expression otherwise.
+// ResolveToNumber resolves the text to a fixed-point number. If the text is just a number, that value is returned,
+// otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a number. If
+// this fails, a value of 0 will be returned.
 func ResolveToNumber(entity *Entity, text string) fxp.Int {
-	if !strings.HasPrefix(text, scriptPrefix) {
-		result, err := newEvaluator(entity).Evaluate(text)
-		if err != nil {
-			slog.Error("expression evaluation failed", "expression", text)
-			return 0
-		}
-		if value, ok := result.(fxp.Int); ok {
-			return value
-		}
-		if str, ok := result.(string); ok {
-			var value fxp.Int
-			if value, err = fxp.FromString(str); err == nil {
-				return value
-			}
-		}
-		slog.Error("unable to resolve expression to a number", "expression", text, "result", result)
-		return 0
+	if v, err := fxp.FromString(strings.TrimSpace(text)); err == nil {
+		return v
 	}
-	text = resolveScript(entity, text[len(scriptPrefix):])
-	value, err := fxp.FromString(text)
+	result := resolveScript(entity, text)
+	value, err := fxp.FromString(result)
 	if err != nil {
-		slog.Error("unable to resolve script result to a number", "result", text)
+		slog.Error("unable to resolve script result to a number", "result", result, "script", text)
 		return 0
 	}
 	return value
@@ -201,12 +189,4 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 		defer time.AfterFunc(timeout, func() { vm.Interrupt("timeout") }).Stop()
 	}
 	return vm.RunProgram(program)
-}
-
-func newEvaluator(resolver eval.VariableResolver) *eval.Evaluator {
-	return &eval.Evaluator{
-		Resolver:  resolver,
-		Operators: EvalOperators,
-		Functions: EvalFuncs,
-	}
 }
