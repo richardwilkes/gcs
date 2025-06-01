@@ -11,7 +11,7 @@ import (
 type scriptTrait struct {
 	Name     string         `json:"name"`
 	Kind     string         `json:"kind"`
-	Levels   *fxp.Int       `json:"levels,omitempty"`
+	Levels   *float64       `json:"levels,omitempty"`
 	Children []*scriptTrait `json:"children,omitempty"`
 	Tags     []string       `json:"tags,omitempty"`
 }
@@ -35,7 +35,7 @@ func newScriptTrait(trait *Trait, includeEnabledChildren bool) *scriptTrait {
 	} else {
 		t.Kind = "trait"
 		if trait.CanLevel {
-			levels := trait.Levels
+			levels := fxp.As[float64](trait.Levels)
 			t.Levels = &levels
 		}
 	}

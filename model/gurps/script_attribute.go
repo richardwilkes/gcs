@@ -14,8 +14,8 @@ type scriptAttribute struct {
 	Kind         string  `json:"kind"`
 	Name         string  `json:"name"`
 	FullName     string  `json:"fullName"`
-	Maximum      fxp.Int `json:"maximum"`
-	Current      fxp.Int `json:"current"`
+	Maximum      float64 `json:"maximum"`
+	Current      float64 `json:"current"`
 	AllowDecimal bool    `json:"allowDecimal,omitempty"`
 }
 
@@ -28,17 +28,18 @@ func newScriptAttribute(attr *Attribute) *scriptAttribute {
 	}
 	if attr.Entity != nil {
 		s := attr.Entity.ResolveVariable(attr.AttrID)
-		var err error
-		a.Maximum, err = fxp.FromString(s)
+		v, err := fxp.FromString(s)
 		if err != nil {
 			slog.Error("failed to resolve attribute to number", "attr", attr.AttrID, "value", s)
 		}
+		a.Maximum = fxp.As[float64](v)
 		id := attr.AttrID + ".current"
 		s = attr.Entity.ResolveVariable(id)
-		a.Current, err = fxp.FromString(s)
+		v, err = fxp.FromString(s)
 		if err != nil {
 			slog.Error("failed to resolve attribute to number", "attr", id, "value", s)
 		}
+		a.Current = fxp.As[float64](v)
 	}
 	if def := attr.AttributeDef(); def != nil {
 		switch def.Kind() {
@@ -58,6 +59,10 @@ func newScriptAttribute(attr *Attribute) *scriptAttribute {
 		a.AllowDecimal = def.AllowsDecimal()
 	}
 	return &a
+}
+
+func (a *scriptAttribute) ValueOf() float64 {
+	return a.Maximum
 }
 
 func (a *scriptAttribute) String() string {

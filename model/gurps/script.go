@@ -13,6 +13,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/dop251/goja/parser"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -66,7 +67,7 @@ func ResolveText(entity *Entity, text string) string {
 			exp := s[2 : len(s)-2]
 			result, err := newEvaluator(entity).Evaluate(exp)
 			if err != nil {
-				slog.Error("expression evaluation failed", "expression", exp, "error", err)
+				slog.Error("expression evaluation failed", "expression", exp)
 			}
 			return fmt.Sprintf("%v", result)
 		})
@@ -74,33 +75,33 @@ func ResolveText(entity *Entity, text string) string {
 	return resolveScript(entity, text[len(scriptPrefix):])
 }
 
-// ResolveToNumber evaluates the text as a script if it starts with ^^^, or evaluates it as an expression otherwise.
-func ResolveToNumber(entity *Entity, text string) fxp.Int {
-	if !strings.HasPrefix(text, scriptPrefix) {
-		result, err := newEvaluator(entity).Evaluate(text)
+// ResolveToNumber evaluates the text as javascript if 'script' is true, or evaluates it as an expression otherwise.
+func ResolveToNumber(entity *Entity, text string, script bool) fxp.Int {
+	if script {
+		result := resolveScript(entity, text)
+		value, err := fxp.FromString(result)
 		if err != nil {
-			slog.Error("expression evaluation failed", "expression", text, "error", err)
+			slog.Error("unable to resolve script result to a number", "result", result)
 			return 0
 		}
-		if value, ok := result.(fxp.Int); ok {
+		return value
+	}
+	result, err := newEvaluator(entity).Evaluate(text)
+	if err != nil {
+		slog.Error("expression evaluation failed", "expression", text)
+		return 0
+	}
+	if value, ok := result.(fxp.Int); ok {
+		return value
+	}
+	if str, ok := result.(string); ok {
+		var value fxp.Int
+		if value, err = fxp.FromString(str); err == nil {
 			return value
 		}
-		if str, ok := result.(string); ok {
-			var value fxp.Int
-			if value, err = fxp.FromString(str); err == nil {
-				return value
-			}
-		}
-		slog.Error("unable to resolve expression to a number", "expression", text, "result", result, "error", err)
-		return 0
 	}
-	text = resolveScript(entity, text[len(scriptPrefix):])
-	value, err := fxp.FromString(text)
-	if err != nil {
-		slog.Error("unable to resolve script result to a number", "result", text)
-		return 0
-	}
-	return value
+	slog.Error("unable to resolve expression to a number", "expression", text, "result", result)
+	return 0
 }
 
 func resolveScript(entity *Entity, text string) string {
@@ -115,8 +116,20 @@ func resolveScript(entity *Entity, text string) string {
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
-	if v, err := RunScript(fxp.SecondsToDuration(maxTime), text,
-		ScriptArg{Name: "entity", Value: &scriptEntity{entity: entity}}); err != nil {
+	args := []ScriptArg{{Name: "entity", Value: &scriptEntity{entity: entity}}}
+	if entity != nil {
+		list := entity.Attributes.List()
+		for _, attr := range list {
+			if def := attr.AttributeDef(); def != nil {
+				if def.IsSeparator() {
+					continue
+				}
+				args = append(args, ScriptArg{Name: "$" + attr.AttrID,
+					Value: func() any { return newScriptAttribute(attr) }})
+			}
+		}
+	}
+	if v, err := RunScript(fxp.SecondsToDuration(maxTime), text, args...); err != nil {
 		var interruptedErr *goja.InterruptedError
 		if errors.As(err, &interruptedErr) {
 			result = fmt.Sprintf(i18n.Text("script execution timed out (limited to %v seconds)"), maxTime)
@@ -124,7 +137,11 @@ func resolveScript(entity *Entity, text string) string {
 			result = err.Error()
 		}
 	} else {
-		result = v.String()
+		if attr, ok := v.Export().(*scriptAttribute); ok {
+			result = fmt.Sprintf("%v", attr.ValueOf())
+		} else {
+			result = v.String()
+		}
 	}
 	resolveCache[text] = result
 	return result
@@ -137,8 +154,11 @@ func resolveScript(entity *Entity, text string) string {
 func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Value, error) {
 	program, exists := scriptCache[text]
 	if !exists {
-		var err error
-		program, err = goja.Compile("", "(function() {"+text+"})();", true)
+		jsBytes, err := json.Marshal(text)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal script text: %w", err)
+		}
+		program, err = goja.Compile("", "(function() { 'use strict'; return eval("+string(jsBytes)+"); })();", true)
 		if err != nil {
 			return nil, fmt.Errorf("failed to compile script: %w", err)
 		}
@@ -148,8 +168,8 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 	if !ok {
 		return nil, errors.New("failed to get VM from pool")
 	}
+	globals := vm.GlobalObject()
 	defer func() {
-		globals := vm.GlobalObject()
 		for _, arg := range args {
 			if err := globals.Delete(arg.Name); err != nil {
 				errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, err, "name", arg.Name)
@@ -159,6 +179,16 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 		vmPool.Put(vm)
 	}()
 	for _, arg := range args {
+		if valueProvider, ok := arg.Value.(func() any); ok {
+			var cachedResult goja.Value
+			globals.DefineAccessorProperty(arg.Name, vm.ToValue(func(_ goja.FunctionCall) goja.Value {
+				if cachedResult == nil {
+					cachedResult = vm.ToValue(valueProvider())
+				}
+				return cachedResult
+			}), nil, goja.FLAG_TRUE, goja.FLAG_TRUE)
+			continue
+		}
 		if err := vm.Set(arg.Name, arg.Value); err != nil {
 			return nil, fmt.Errorf("failed to set argument %q: %w", arg.Name, err)
 		}

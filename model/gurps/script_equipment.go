@@ -11,12 +11,12 @@ type scriptEquipment struct {
 	Name           string             `json:"name"`
 	Children       []*scriptEquipment `json:"children,omitempty"`
 	Tags           []string           `json:"tags,omitempty"`
-	Quantity       fxp.Int            `json:"quantity"`
-	Value          fxp.Int            `json:"value"`
-	ExtendedValue  fxp.Int            `json:"extendedValue"`
-	Weight         fxp.Weight         `json:"weight"`
-	ExtendedWeight fxp.Weight         `json:"extendedWeight"`
-	Level          fxp.Int            `json:"level,omitempty"`
+	Quantity       float64            `json:"quantity"`
+	Value          float64            `json:"value"`
+	ExtendedValue  float64            `json:"extendedValue"`
+	Weight         float64            `json:"weight"`
+	ExtendedWeight float64            `json:"extendedWeight"`
+	Level          float64            `json:"level,omitempty"`
 	Uses           int                `json:"uses,omitempty"`
 	Equipped       bool               `json:"equipped,omitempty"`
 }
@@ -26,12 +26,12 @@ func newScriptEquipment(entity *Entity, equipment *Equipment, includeChildren bo
 	e := scriptEquipment{
 		Name:           equipment.NameWithReplacements(),
 		Tags:           slices.Clone(equipment.Tags),
-		Quantity:       equipment.Quantity,
-		Value:          equipment.AdjustedValue(),
-		ExtendedValue:  equipment.ExtendedValue(),
-		Weight:         equipment.AdjustedWeight(false, defUnits),
-		ExtendedWeight: equipment.ExtendedWeight(false, defUnits),
-		Level:          equipment.Level,
+		Quantity:       fxp.As[float64](equipment.Quantity),
+		Value:          fxp.As[float64](equipment.AdjustedValue()),
+		ExtendedValue:  fxp.As[float64](equipment.ExtendedValue()),
+		Weight:         fxp.As[float64](fxp.Int(equipment.AdjustedWeight(false, defUnits))),
+		ExtendedWeight: fxp.As[float64](fxp.Int(equipment.ExtendedWeight(false, defUnits))),
+		Level:          fxp.As[float64](equipment.Level),
 		Uses:           equipment.Uses,
 		Equipped:       equipment.Equipped,
 	}

@@ -4,12 +4,12 @@ import "github.com/richardwilkes/gcs/v5/model/fxp"
 
 type scriptSSRT struct{}
 
-func (s *scriptSSRT) RangeModifier(length fxp.Length) int {
-	return -yardsToValue(length, false)
+func (s *scriptSSRT) RangeModifier(yards float64) int {
+	return -yardsToValue(fxp.Length(fxp.Yard.ToInches(fxp.From(yards))), false)
 }
 
-func (s *scriptSSRT) SizeModifier(length fxp.Length) int {
-	return yardsToValue(length, true)
+func (s *scriptSSRT) SizeModifier(yards float64) int {
+	return yardsToValue(fxp.Length(fxp.Yard.ToInches(fxp.From(yards))), true)
 }
 
 func yardsToValue(length fxp.Length, allowNegative bool) int {
@@ -77,8 +77,8 @@ func yardsToValue(length fxp.Length, allowNegative bool) int {
 }
 
 // ModifierToYards converts a value from the Size and Speed/Range table to a length in yards.
-func (s *scriptSSRT) ModifierToYards(ssrtValue int) fxp.Int {
-	return valueToYards(ssrtValue)
+func (s *scriptSSRT) ModifierToYards(ssrtValue int) float64 {
+	return fxp.As[float64](valueToYards(ssrtValue))
 }
 
 func valueToYards(value int) fxp.Int {

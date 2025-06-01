@@ -9,19 +9,19 @@ import (
 )
 
 type scriptEncumbrance struct {
-	LevelName                string     `json:"levelName"`
-	Level                    int        `json:"level"`
-	LevelForSkills           int        `json:"levelForSkills"`
-	MoveFactor               fxp.Int    `json:"moveFactor"`
-	WeightCarried            fxp.Weight `json:"weightCarried"`
-	MaximumCarry             fxp.Weight `json:"maximumCarry"`
-	BasicLift                fxp.Weight `json:"basicLift"`
-	OneHandedLift            fxp.Weight `json:"oneHandedLift"`
-	TwoHandedLift            fxp.Weight `json:"twoHandedLift"`
-	ShoveAndKnockOver        fxp.Weight `json:"shoveAndKnockOver"`
-	RunningShoveAndKnockOver fxp.Weight `json:"runningShoveAndKnockOver"`
-	CarryOnBack              fxp.Weight `json:"carryOnBack"`
-	ShiftSlightly            fxp.Weight `json:"shiftSlightly"`
+	LevelName                string  `json:"levelName"`
+	Level                    int     `json:"level"`
+	LevelForSkills           int     `json:"levelForSkills"`
+	MoveFactor               float64 `json:"moveFactor"`
+	WeightCarried            float64 `json:"weightCarried"`
+	MaximumCarry             float64 `json:"maximumCarry"`
+	BasicLift                float64 `json:"basicLift"`
+	OneHandedLift            float64 `json:"oneHandedLift"`
+	TwoHandedLift            float64 `json:"twoHandedLift"`
+	ShoveAndKnockOver        float64 `json:"shoveAndKnockOver"`
+	RunningShoveAndKnockOver float64 `json:"runningShoveAndKnockOver"`
+	CarryOnBack              float64 `json:"carryOnBack"`
+	ShiftSlightly            float64 `json:"shiftSlightly"`
 }
 
 func newScriptEncumbrance(entity *Entity) scriptEncumbrance {
@@ -33,16 +33,16 @@ func newScriptEncumbrance(entity *Entity) scriptEncumbrance {
 		LevelName:                strings.ReplaceAll(level.Key(), "_", " "),
 		Level:                    int(level),
 		LevelForSkills:           int(entity.EncumbranceLevel(true)),
-		MoveFactor:               fxp.One - fxp.From(int(level)).Mul(fxp.Two).Div(fxp.Ten),
-		WeightCarried:            entity.WeightCarried(false),
-		MaximumCarry:             entity.MaximumCarry(encumbrance.ExtraHeavy),
-		BasicLift:                entity.BasicLift(),
-		OneHandedLift:            entity.OneHandedLift(),
-		TwoHandedLift:            entity.TwoHandedLift(),
-		ShoveAndKnockOver:        entity.ShoveAndKnockOver(),
-		RunningShoveAndKnockOver: entity.RunningShoveAndKnockOver(),
-		CarryOnBack:              entity.CarryOnBack(),
-		ShiftSlightly:            entity.ShiftSlightly(),
+		MoveFactor:               fxp.As[float64](fxp.One - fxp.From(int(level)).Mul(fxp.Two).Div(fxp.Ten)),
+		WeightCarried:            fxp.As[float64](fxp.Int(entity.WeightCarried(false))),
+		MaximumCarry:             fxp.As[float64](fxp.Int(entity.MaximumCarry(encumbrance.ExtraHeavy))),
+		BasicLift:                fxp.As[float64](fxp.Int(entity.BasicLift())),
+		OneHandedLift:            fxp.As[float64](fxp.Int(entity.OneHandedLift())),
+		TwoHandedLift:            fxp.As[float64](fxp.Int(entity.TwoHandedLift())),
+		ShoveAndKnockOver:        fxp.As[float64](fxp.Int(entity.ShoveAndKnockOver())),
+		RunningShoveAndKnockOver: fxp.As[float64](fxp.Int(entity.RunningShoveAndKnockOver())),
+		CarryOnBack:              fxp.As[float64](fxp.Int(entity.CarryOnBack())),
+		ShiftSlightly:            fxp.As[float64](fxp.Int(entity.ShiftSlightly())),
 	}
 }
 
