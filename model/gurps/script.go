@@ -75,33 +75,33 @@ func ResolveText(entity *Entity, text string) string {
 	return resolveScript(entity, text[len(scriptPrefix):])
 }
 
-// ResolveToNumber evaluates the text as javascript if 'script' is true, or evaluates it as an expression otherwise.
-func ResolveToNumber(entity *Entity, text string, script bool) fxp.Int {
-	if script {
-		result := resolveScript(entity, text)
-		value, err := fxp.FromString(result)
+// ResolveToNumber evaluates the text as a script if it starts with ^^^, or evaluates it as an expression otherwise.
+func ResolveToNumber(entity *Entity, text string) fxp.Int {
+	if !strings.HasPrefix(text, scriptPrefix) {
+		result, err := newEvaluator(entity).Evaluate(text)
 		if err != nil {
-			slog.Error("unable to resolve script result to a number", "result", result)
+			slog.Error("expression evaluation failed", "expression", text)
 			return 0
 		}
-		return value
-	}
-	result, err := newEvaluator(entity).Evaluate(text)
-	if err != nil {
-		slog.Error("expression evaluation failed", "expression", text)
-		return 0
-	}
-	if value, ok := result.(fxp.Int); ok {
-		return value
-	}
-	if str, ok := result.(string); ok {
-		var value fxp.Int
-		if value, err = fxp.FromString(str); err == nil {
+		if value, ok := result.(fxp.Int); ok {
 			return value
 		}
+		if str, ok := result.(string); ok {
+			var value fxp.Int
+			if value, err = fxp.FromString(str); err == nil {
+				return value
+			}
+		}
+		slog.Error("unable to resolve expression to a number", "expression", text, "result", result)
+		return 0
 	}
-	slog.Error("unable to resolve expression to a number", "expression", text, "result", result)
-	return 0
+	text = resolveScript(entity, text[len(scriptPrefix):])
+	value, err := fxp.FromString(text)
+	if err != nil {
+		slog.Error("unable to resolve script result to a number", "result", text)
+		return 0
+	}
+	return value
 }
 
 func resolveScript(entity *Entity, text string) string {
@@ -124,8 +124,10 @@ func resolveScript(entity *Entity, text string) string {
 				if def.IsSeparator() {
 					continue
 				}
-				args = append(args, ScriptArg{Name: "$" + attr.AttrID,
-					Value: func() any { return newScriptAttribute(attr) }})
+				args = append(args, ScriptArg{
+					Name:  "$" + attr.AttrID,
+					Value: func() any { return newScriptAttribute(attr) },
+				})
 			}
 		}
 	}
@@ -179,14 +181,16 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 		vmPool.Put(vm)
 	}()
 	for _, arg := range args {
-		if valueProvider, ok := arg.Value.(func() any); ok {
+		if valueProvider, ok2 := arg.Value.(func() any); ok2 {
 			var cachedResult goja.Value
-			globals.DefineAccessorProperty(arg.Name, vm.ToValue(func(_ goja.FunctionCall) goja.Value {
+			if err := globals.DefineAccessorProperty(arg.Name, vm.ToValue(func(_ goja.FunctionCall) goja.Value {
 				if cachedResult == nil {
 					cachedResult = vm.ToValue(valueProvider())
 				}
 				return cachedResult
-			}), nil, goja.FLAG_TRUE, goja.FLAG_TRUE)
+			}), nil, goja.FLAG_TRUE, goja.FLAG_TRUE); err != nil {
+				return nil, fmt.Errorf("failed to define accessor for argument %q: %w", arg.Name, err)
+			}
 			continue
 		}
 		if err := vm.Set(arg.Name, arg.Value); err != nil {
