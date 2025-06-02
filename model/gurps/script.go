@@ -59,12 +59,8 @@ func scriptIff(condition bool, trueValue, falseValue any) any {
 	return falseValue
 }
 
-func scriptSigned(value string) (string, error) {
-	v, err := fxp.FromString(value)
-	if err != nil {
-		return "", err
-	}
-	return v.StringWithSign(), nil
+func scriptSigned(value float64) string {
+	return fxp.From(value).StringWithSign()
 }
 
 // ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded

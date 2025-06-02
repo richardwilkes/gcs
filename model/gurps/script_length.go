@@ -41,8 +41,12 @@ func (l *scriptLength) FromInteger(value int, units fxp.LengthUnit) fxp.Length {
 	return fxp.LengthFromInteger(value, units)
 }
 
+func (l *scriptLength) FromFloat(value float64, units fxp.LengthUnit) fxp.Length {
+	return fxp.LengthFromFixed(fxp.From(value), units)
+}
+
 func (l *scriptLength) FromFixed(value fxp.Int, units fxp.LengthUnit) fxp.Length {
-	return fxp.LengthFromInteger(value, units)
+	return fxp.LengthFromFixed(value, units)
 }
 
 func (l *scriptLength) AsFixedInches(value fxp.Length) fxp.Int {

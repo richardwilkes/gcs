@@ -14,8 +14,14 @@ func TestExprToScript(t *testing.T) {
 	s = gurps.ExprToScript(`roll(1d12+14)`)
 	check.Equal(t, `dice.roll("1d12+14")`, s)
 
+	s = gurps.ExprToScript(`roll(1d12+14,true)`)
+	check.Equal(t, `dice.roll("1d12+14", true)`, s)
+
 	s = gurps.ExprToScript(`roll(dice(1,12,14))`)
 	check.Equal(t, `dice.roll(dice.from(1, 12, 14))`, s)
+
+	s = gurps.ExprToScript(`add_dice(1d12+14,2d12-3)`)
+	check.Equal(t, `dice.add("1d12+14", "2d12-3")`, s)
 
 	s = gurps.ExprToScript(`(1 + 2) * 3 - max(1  /  2^3 + 2, if ( !$st, 3, 4)) + hello + if(world with me,x, y)`)
 	check.Equal(t, `(1 + 2) * 3 - Math.max(1 / 2 ** 3 + 2, iff($st, 3, 4)) + "hello" + iff("world with me", "x", "y")`, s)

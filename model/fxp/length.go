@@ -28,6 +28,11 @@ func LengthFromInteger[T constraints.Integer](value T, unit LengthUnit) Length {
 	return Length(unit.ToInches(From(value)))
 }
 
+// LengthFromFixed creates a new Length.
+func LengthFromFixed(value Int, unit LengthUnit) Length {
+	return Length(unit.ToInches(value))
+}
+
 // LengthFromStringForced creates a new Length. May have any of the known Units suffixes, a feet and inches format (e.g.
 // 6'2"), or no notation at all, in which case defaultUnits is used.
 func LengthFromStringForced(text string, defaultUnits LengthUnit) Length {

@@ -91,7 +91,7 @@ func (e *scriptEntity) HasTrait(name string) bool {
 
 func (e *scriptEntity) TraitLevel(name string) float64 {
 	if e.entity == nil {
-		return 0
+		return -1
 	}
 	name = strings.TrimSpace(name)
 	level := -fxp.One
@@ -239,6 +239,10 @@ func (e *scriptEntity) CurrentEncumbrance(forSkills, returnMoveFactor bool) floa
 
 func (e *scriptEntity) WeightUnits() fxp.WeightUnit {
 	return SheetSettingsFor(e.entity).DefaultWeightUnits
+}
+
+func (e *scriptEntity) ExtraDiceFromModifiers() bool {
+	return SheetSettingsFor(e.entity).UseModifyingDicePlusAdds
 }
 
 func (e *scriptEntity) SizeModifier() int {

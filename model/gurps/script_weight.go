@@ -39,6 +39,10 @@ func (l *scriptWeight) FromInteger(value int, units fxp.WeightUnit) fxp.Weight {
 	return fxp.WeightFromInteger(value, units)
 }
 
+func (l *scriptWeight) FromFloat(value float64, units fxp.WeightUnit) fxp.Weight {
+	return fxp.WeightFromFixed(fxp.From(value), units)
+}
+
 func (l *scriptWeight) FromFixed(value fxp.Int, units fxp.WeightUnit) fxp.Weight {
 	return fxp.WeightFromFixed(value, units)
 }

@@ -381,9 +381,11 @@ func (e *exprToScript) process(parts []string, op any) []string {
 		return parts
 	case *expressionOperand:
 		value := v.value
-		if _, err := strconv.ParseFloat(value, 64); err != nil {
-			if !strings.HasPrefix(value, "$") && (!strings.HasPrefix(value, `"`) || !strings.HasSuffix(value, `"`)) {
-				value = `"` + value + `"`
+		if value != "true" && value != "false" {
+			if _, err := strconv.ParseFloat(value, 64); err != nil {
+				if !strings.HasPrefix(value, "$") && (!strings.HasPrefix(value, `"`) || !strings.HasSuffix(value, `"`)) {
+					value = `"` + value + `"`
+				}
 			}
 		}
 		if v.unaryOp != nil {
@@ -392,24 +394,17 @@ func (e *exprToScript) process(parts []string, op any) []string {
 		return append(parts, value)
 	case *parsedFunction:
 		var funcParts []string
-		first := true
+		i := 0
 		skip := false
 		next, remaining := extractNextEvalArg(v.args)
 		for next != "" {
-			// Special case for roll function
-			if first {
-				first = false
-				if v.function == "dice.roll" {
-					if strings.IndexByte(next, '(') == -1 {
-						if !strings.HasPrefix(next, "$") &&
-							(!strings.HasPrefix(next, `"`) || !strings.HasSuffix(next, `"`)) {
-							next = `"` + next + `"`
-						}
-						funcParts = append(funcParts, next)
-						skip = true
-					}
+			// Special case for some dice functions
+			if strings.HasPrefix(v.function, "dice.") && v.function != "dice.from" {
+				if i == 0 || i > 0 && v.function != "dice.roll" {
+					funcParts, skip = extractDiceArg(funcParts, next)
 				}
 			}
+			i++
 			if skip {
 				skip = false
 			} else {
@@ -431,6 +426,16 @@ func (e *exprToScript) process(parts []string, op any) []string {
 		}
 		return parts
 	}
+}
+
+func extractDiceArg(parts []string, arg string) ([]string, bool) {
+	if strings.IndexByte(arg, '(') != -1 {
+		return parts, false
+	}
+	if !(strings.HasPrefix(arg, "$") || (strings.HasPrefix(arg, `"`) && strings.HasSuffix(arg, `"`))) {
+		arg = `"` + arg + `"`
+	}
+	return append(parts, arg), true
 }
 
 func extractNextEvalArg(args string) (arg, remaining string) {

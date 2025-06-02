@@ -10,13 +10,13 @@ import (
 const unknown = "unknown"
 
 type scriptAttribute struct {
-	ID           string  `json:"id"`
-	Kind         string  `json:"kind"`
-	Name         string  `json:"name"`
-	FullName     string  `json:"fullName"`
-	Maximum      float64 `json:"maximum"`
-	Current      float64 `json:"current"`
-	AllowDecimal bool    `json:"allowDecimal,omitempty"`
+	ID        string  `json:"id"`
+	Kind      string  `json:"kind"`
+	Name      string  `json:"name"`
+	FullName  string  `json:"fullName"`
+	Maximum   float64 `json:"maximum"`
+	Current   float64 `json:"current"`
+	IsDecimal bool    `json:"isDecimal"`
 }
 
 func newScriptAttribute(attr *Attribute) *scriptAttribute {
@@ -56,7 +56,7 @@ func newScriptAttribute(attr *Attribute) *scriptAttribute {
 			a.Name = def.Name
 		}
 		a.FullName = def.ResolveFullName()
-		a.AllowDecimal = def.AllowsDecimal()
+		a.IsDecimal = def.AllowsDecimal()
 	}
 	return &a
 }
