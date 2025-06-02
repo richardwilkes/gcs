@@ -403,6 +403,10 @@ func (e *exprToScript) process(parts []string, op any) []string {
 				if i == 0 || i > 0 && v.function != "dice.roll" {
 					funcParts, skip = extractDiceArg(funcParts, next)
 				}
+			} else if strings.HasPrefix(next, `"`) && strings.HasSuffix(next, `"`) {
+				// If the next argument is a string, we don't need to do anything special
+				funcParts = append(funcParts, next)
+				skip = true
 			}
 			i++
 			if skip {
@@ -432,7 +436,7 @@ func extractDiceArg(parts []string, arg string) ([]string, bool) {
 	if strings.IndexByte(arg, '(') != -1 {
 		return parts, false
 	}
-	if !(strings.HasPrefix(arg, "$") || (strings.HasPrefix(arg, `"`) && strings.HasSuffix(arg, `"`))) {
+	if !strings.HasPrefix(arg, "$") && (!strings.HasPrefix(arg, `"`) || !strings.HasSuffix(arg, `"`)) {
 		arg = `"` + arg + `"`
 	}
 	return append(parts, arg), true

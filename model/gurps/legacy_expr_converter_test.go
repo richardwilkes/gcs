@@ -36,7 +36,13 @@ func TestExprToScript(t *testing.T) {
 	check.Equal(t, `Hello ||$name||! A random weight for you is ||entity.randomWeight($st)||.`, s)
 
 	s = gurps.EmbeddedExprToScript(`Hello ||$name||!
-A random weight for you is ||random_weight($st)||.`)
+	A random weight for you is ||random_weight($st)||.`)
 	check.Equal(t, `Hello ||$name||!
-A random weight for you is ||entity.randomWeight($st)||.`, s)
+	A random weight for you is ||entity.randomWeight($st)||.`, s)
+
+	s = gurps.ExprToScript(`trait_level("enhanced move (ground)")`)
+	check.Equal(t, `entity.traitLevel("enhanced move (ground)")`, s)
+
+	s = gurps.ExprToScript(`(2 * max(max($basic_move, floor(skill_level(jumping) / 2)), $st / 4) * (1 + max(0, trait_level("enhanced move (ground)"))) - 3) * enc(false, true) * if(trait_level("enhanced move (ground)")<1,2,1) * (2 ^ max(0, trait_level(super jump)))`)
+	check.Equal(t, `(((2 * Math.max(Math.max($basic_move, Math.floor(entity.skillLevel("jumping") / 2)), $st / 4)) * (1 + Math.max(0, entity.traitLevel("enhanced move (ground)")))) - 3) * entity.currentEncumbrance(false, true) * iff(entity.traitLevel("enhanced move (ground)") < 1, 2, 1) * (2 ** Math.max(0, entity.traitLevel("super jump")))`, s)
 }
