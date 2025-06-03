@@ -20,10 +20,12 @@ import (
 )
 
 var (
-	evalEmbeddedRegex  = regexp.MustCompile(`\|\|[^|]+\|\|`)
-	scriptCache        = make(map[string]*goja.Program)
-	globalResolveCache = make(map[string]string)
-	vmPool             = sync.Pool{New: func() any {
+	scriptStart         = "<script>"
+	scriptEnd           = "</script>"
+	embeddedScriptRegex = regexp.MustCompile(`(?s)` + scriptStart + `.*?` + scriptEnd)
+	scriptCache         = make(map[string]*goja.Program)
+	globalResolveCache  = make(map[string]string)
+	vmPool              = sync.Pool{New: func() any {
 		vm := goja.New()
 		vm.SetFieldNameMapper(scriptNameMapper{})
 		vm.SetParserOptions(parser.WithDisableSourceMaps)
@@ -66,8 +68,8 @@ func scriptSigned(value float64) string {
 // ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
 // expressions inside || pairs inside the text and evaluate them.
 func ResolveText(entity *Entity, text string) string {
-	return evalEmbeddedRegex.ReplaceAllStringFunc(text, func(s string) string {
-		exp := s[2 : len(s)-2]
+	return embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
+		exp := s[len(scriptStart) : len(s)-len(scriptEnd)]
 		return resolveScript(entity, exp)
 	})
 }

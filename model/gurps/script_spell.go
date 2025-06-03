@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 )
 
 type scriptSpell struct {
@@ -67,12 +66,4 @@ func newScriptSpell(entity *Entity, spell *Spell, includeChildren bool) *scriptS
 		s.RelativeLevel = fxp.As[int](spell.LevelData.RelativeLevel)
 	}
 	return &s
-}
-
-func (t *scriptSpell) String() string {
-	data, err := json.Marshal(t)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }

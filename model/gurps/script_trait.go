@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 )
 
 type scriptTrait struct {
@@ -40,12 +39,4 @@ func newScriptTrait(trait *Trait, includeEnabledChildren bool) *scriptTrait {
 		}
 	}
 	return &t
-}
-
-func (t *scriptTrait) String() string {
-	data, err := json.Marshal(t)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -17,6 +18,8 @@ import (
 
 	"github.com/richardwilkes/toolbox/errs"
 )
+
+var legacyEvalEmbeddedRegex = regexp.MustCompile(`\|\|[^|]+\|\|`)
 
 type operator struct {
 	symbol      string
@@ -58,8 +61,9 @@ type exprToScript struct {
 
 // EmbeddedExprToScript converts an old-style embedded expression string into an embedded JavaScript script string.
 func EmbeddedExprToScript(text string) string {
-	return evalEmbeddedRegex.ReplaceAllStringFunc(text, func(s string) string {
-		return "||" + ExprToScript(s[2:len(s)-2]) + "||"
+	return legacyEvalEmbeddedRegex.ReplaceAllStringFunc(text, func(s string) string {
+		// Embedded scripts now use <script>...</script> to avoid conflicts with the OR operator: ||
+		return scriptStart + ExprToScript(s[2:len(s)-2]) + scriptEnd
 	})
 }
 

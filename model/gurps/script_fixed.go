@@ -2,7 +2,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 )
 
 type scriptFixed struct {
@@ -67,12 +66,4 @@ func (f *scriptFixed) FromFloat(value float64) fxp.Int {
 
 func (f *scriptFixed) ApplyRounding(value fxp.Int, roundDown bool) fxp.Int {
 	return fxp.ApplyRounding(value, roundDown)
-}
-
-func (f *scriptFixed) String() string {
-	data, err := json.Marshal(f)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }

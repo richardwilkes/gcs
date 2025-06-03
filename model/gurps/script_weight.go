@@ -2,7 +2,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 )
 
 type scriptWeight struct {
@@ -49,12 +48,4 @@ func (l *scriptWeight) FromFixed(value fxp.Int, units fxp.WeightUnit) fxp.Weight
 
 func (l *scriptWeight) AsFixedPounds(value fxp.Weight) fxp.Int {
 	return fxp.Int(value)
-}
-
-func (l *scriptWeight) String() string {
-	data, err := json.Marshal(l)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }

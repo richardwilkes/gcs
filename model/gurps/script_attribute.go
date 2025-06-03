@@ -4,7 +4,6 @@ import (
 	"log/slog"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 )
 
 const unknown = "unknown"
@@ -63,12 +62,4 @@ func newScriptAttribute(attr *Attribute) *scriptAttribute {
 
 func (a *scriptAttribute) ValueOf() float64 {
 	return a.Maximum
-}
-
-func (a *scriptAttribute) String() string {
-	data, err := json.Marshal(a)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }

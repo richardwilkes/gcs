@@ -30,15 +30,15 @@ func TestExprToScript(t *testing.T) {
 	check.Equal(t, `$st + iff(entity.hasTrait("Lifting ST"), entity.traitLevel("Lifting ST"), 0) + iff(entity.skillLevel("Sumo Wrestling") - $dx < 1, 0, 1) + iff(entity.skillLevel("Sumo Wrestling") - $dx > 1, 1, 0) + iff(entity.hasTrait("Wrestling Master"), iff(entity.skillLevel("Wrestling") - $dx < 1, 0, entity.skillLevel("Wrestling") - $dx), iff(entity.skillLevel("Wrestling") - $dx < 1, 0, 1) + iff(entity.skillLevel("Wrestling") - $dx > 1, 1, 0))`, s)
 
 	s = gurps.EmbeddedExprToScript(`Hello ||$name||!`)
-	check.Equal(t, `Hello ||$name||!`, s)
+	check.Equal(t, `Hello <script>$name</script>!`, s)
 
 	s = gurps.EmbeddedExprToScript(`Hello ||$name||! A random weight for you is ||random_weight($st)||.`)
-	check.Equal(t, `Hello ||$name||! A random weight for you is ||entity.randomWeight($st)||.`, s)
+	check.Equal(t, `Hello <script>$name</script>! A random weight for you is <script>entity.randomWeight($st)</script>.`, s)
 
 	s = gurps.EmbeddedExprToScript(`Hello ||$name||!
 	A random weight for you is ||random_weight($st)||.`)
-	check.Equal(t, `Hello ||$name||!
-	A random weight for you is ||entity.randomWeight($st)||.`, s)
+	check.Equal(t, `Hello <script>$name</script>!
+	A random weight for you is <script>entity.randomWeight($st)</script>.`, s)
 
 	s = gurps.ExprToScript(`trait_level("enhanced move (ground)")`)
 	check.Equal(t, `entity.traitLevel("enhanced move (ground)")`, s)

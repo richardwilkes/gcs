@@ -2,7 +2,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 )
 
 type scriptLength struct {
@@ -51,12 +50,4 @@ func (l *scriptLength) FromFixed(value fxp.Int, units fxp.LengthUnit) fxp.Length
 
 func (l *scriptLength) AsFixedInches(value fxp.Length) fxp.Int {
 	return fxp.Int(value)
-}
-
-func (l *scriptLength) String() string {
-	data, err := json.Marshal(l)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }

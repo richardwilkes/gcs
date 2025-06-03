@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 )
 
 type scriptEquipment struct {
@@ -43,12 +42,4 @@ func newScriptEquipment(entity *Entity, equipment *Equipment, includeChildren bo
 		}
 	}
 	return &e
-}
-
-func (t *scriptEquipment) String() string {
-	data, err := json.Marshal(t)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }

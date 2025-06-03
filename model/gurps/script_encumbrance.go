@@ -5,7 +5,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
-	"github.com/richardwilkes/json"
 )
 
 type scriptEncumbrance struct {
@@ -44,12 +43,4 @@ func newScriptEncumbrance(entity *Entity) scriptEncumbrance {
 		CarryOnBack:              fxp.As[float64](fxp.Int(entity.CarryOnBack())),
 		ShiftSlightly:            fxp.As[float64](fxp.Int(entity.ShiftSlightly())),
 	}
-}
-
-func (e scriptEncumbrance) String() string {
-	data, err := json.Marshal(e)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }

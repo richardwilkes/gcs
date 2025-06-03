@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 )
 
 const groupKind = "group"
@@ -55,12 +54,4 @@ func newScriptSkill(entity *Entity, skill *Skill, includeChildren bool) *scriptS
 		}
 	}
 	return &s
-}
-
-func (t *scriptSkill) String() string {
-	data, err := json.Marshal(t)
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
 }
