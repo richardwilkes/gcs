@@ -20,6 +20,15 @@ type scriptSkill struct {
 	RelativeLevel  int            `json:"relative_level"`
 }
 
+func deferredNewScriptSkill(entity *Entity, skill *Skill) func() any {
+	if skill == nil {
+		return nil
+	}
+	return func() any {
+		return newScriptSkill(entity, skill, true)
+	}
+}
+
 func newScriptSkill(entity *Entity, skill *Skill, includeChildren bool) *scriptSkill {
 	s := scriptSkill{
 		Name:           skill.NameWithReplacements(),

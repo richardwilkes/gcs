@@ -15,6 +15,15 @@ type scriptTrait struct {
 	Tags     []string       `json:"tags,omitempty"`
 }
 
+func deferredNewScriptTrait(trait *Trait) func() any {
+	if trait == nil {
+		return nil
+	}
+	return func() any {
+		return newScriptTrait(trait, true)
+	}
+}
+
 func newScriptTrait(trait *Trait, includeEnabledChildren bool) *scriptTrait {
 	t := scriptTrait{
 		Name: trait.NameWithReplacements(),

@@ -27,6 +27,15 @@ type scriptSpell struct {
 	RitualPrereqCount int            `json:"ritualPrereqCount,omitempty"`
 }
 
+func deferredNewScriptSpell(entity *Entity, spell *Spell) func() any {
+	if spell == nil {
+		return nil
+	}
+	return func() any {
+		return newScriptSpell(entity, spell, true)
+	}
+}
+
 func newScriptSpell(entity *Entity, spell *Spell, includeChildren bool) *scriptSpell {
 	s := scriptSpell{
 		Name: spell.NameWithReplacements(),

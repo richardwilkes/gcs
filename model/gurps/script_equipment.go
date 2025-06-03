@@ -20,6 +20,15 @@ type scriptEquipment struct {
 	Equipped       bool               `json:"equipped,omitempty"`
 }
 
+func deferredNewScriptEquipment(entity *Entity, equipment *Equipment) func() any {
+	if equipment == nil {
+		return nil
+	}
+	return func() any {
+		return newScriptEquipment(entity, equipment, true)
+	}
+}
+
 func newScriptEquipment(entity *Entity, equipment *Equipment, includeChildren bool) *scriptEquipment {
 	defUnits := SheetSettingsFor(entity).DefaultWeightUnits
 	e := scriptEquipment{

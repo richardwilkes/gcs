@@ -67,21 +67,28 @@ func scriptSigned(value float64) string {
 
 // ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
 // expressions inside || pairs inside the text and evaluate them.
-func ResolveText(entity *Entity, text string) string {
+func ResolveText(entity *Entity, thisProvider func() any, text string) string {
+	var this any
 	return embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
-		exp := s[len(scriptStart) : len(s)-len(scriptEnd)]
-		return resolveScript(entity, exp)
+		if this == nil && thisProvider != nil {
+			this = thisProvider()
+		}
+		return resolveScript(entity, this, s[len(scriptStart):len(s)-len(scriptEnd)])
 	})
 }
 
 // ResolveToNumber resolves the text to a fixed-point number. If the text is just a number, that value is returned,
 // otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a number. If
 // this fails, a value of 0 will be returned.
-func ResolveToNumber(entity *Entity, text string) fxp.Int {
+func ResolveToNumber(entity *Entity, thisProvider func() any, text string) fxp.Int {
 	if v, err := fxp.FromString(strings.TrimSpace(text)); err == nil {
 		return v
 	}
-	result := resolveScript(entity, text)
+	var this any
+	if thisProvider != nil {
+		this = thisProvider()
+	}
+	result := resolveScript(entity, this, text)
 	value, err := fxp.FromString(result)
 	if err != nil {
 		slog.Error("unable to resolve script result to a number", "result", result, "script", text)
@@ -90,7 +97,7 @@ func ResolveToNumber(entity *Entity, text string) fxp.Int {
 	return value
 }
 
-func resolveScript(entity *Entity, text string) string {
+func resolveScript(entity *Entity, this any, text string) string {
 	var resolveCache map[string]string
 	if entity == nil {
 		resolveCache = globalResolveCache
@@ -103,6 +110,9 @@ func resolveScript(entity *Entity, text string) string {
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
 	args := []ScriptArg{{Name: "entity", Value: &scriptEntity{entity: entity}}}
+	if this != nil {
+		args = append(args, ScriptArg{Name: "self", Value: this})
+	}
 	if entity != nil {
 		list := entity.Attributes.List()
 		for _, attr := range list {

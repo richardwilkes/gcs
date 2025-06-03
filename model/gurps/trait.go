@@ -556,7 +556,7 @@ func (t *Trait) Notes() string {
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (t *Trait) ResolveLocalNotes() string {
-	return ResolveText(EntityFromNode(t), t.LocalNotesWithReplacements())
+	return ResolveText(EntityFromNode(t), deferredNewScriptTrait(t), t.LocalNotesWithReplacements())
 }
 
 // FeatureList returns the list of Features.

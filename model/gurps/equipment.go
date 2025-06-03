@@ -550,7 +550,8 @@ func (e *Equipment) String() string {
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (e *Equipment) ResolveLocalNotes() string {
-	return ResolveText(EntityFromNode(e), e.LocalNotesWithReplacements())
+	entity := EntityFromNode(e)
+	return ResolveText(entity, deferredNewScriptEquipment(entity, e), e.LocalNotesWithReplacements())
 }
 
 // Notes returns the local notes.
