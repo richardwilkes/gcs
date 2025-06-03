@@ -1159,6 +1159,12 @@ func (s *Skill) ClearUnusedFieldsForType() {
 		s.SkillContainerOnlySyncData = SkillContainerOnlySyncData{}
 		s.Children = nil
 		s.Difficulty.omit = false
+		if s.IsTechnique() {
+			s.Defaults = nil
+		} else {
+			s.TechniqueDefault = nil
+			s.TechniqueLimitModifier = nil
+		}
 	}
 }
 
@@ -1269,15 +1275,15 @@ func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (s *SkillEditData) CopyFrom(other *Skill) {
-	s.copyFrom(&other.SkillEditData, other.Container(), false)
+	s.copyFrom(&other.SkillEditData, other.Container(), false, other.IsTechnique())
 }
 
 // ApplyTo implements node.EditorData.
 func (s *SkillEditData) ApplyTo(other *Skill) {
-	other.copyFrom(s, other.Container(), true)
+	other.copyFrom(s, other.Container(), true, other.IsTechnique())
 }
 
-func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply bool) {
+func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply, isTechnique bool) {
 	*s = *other
 	s.Tags = txt.CloneStringSlice(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
@@ -1290,24 +1296,27 @@ func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply bool
 		s.DefaultedFrom = &def
 	}
 	s.Defaults = nil
-	if len(other.Defaults) != 0 {
+	s.TechniqueDefault = nil
+	s.TechniqueLimitModifier = nil
+	if isTechnique {
+		if other.TechniqueDefault != nil {
+			def := *other.TechniqueDefault
+			s.TechniqueDefault = &def
+			if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
+				s.TechniqueDefault.Name = ""
+				s.TechniqueDefault.Specialization = ""
+			}
+		}
+		if other.TechniqueLimitModifier != nil {
+			mod := *other.TechniqueLimitModifier
+			s.TechniqueLimitModifier = &mod
+		}
+	} else if len(other.Defaults) != 0 {
 		s.Defaults = make([]*SkillDefault, len(other.Defaults))
 		for i, def := range other.Defaults {
 			def2 := *def
 			s.Defaults[i] = &def2
 		}
-	}
-	if other.TechniqueDefault != nil {
-		def := *other.TechniqueDefault
-		s.TechniqueDefault = &def
-		if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-			s.TechniqueDefault.Name = ""
-			s.TechniqueDefault.Specialization = ""
-		}
-	}
-	if other.TechniqueLimitModifier != nil {
-		mod := *other.TechniqueLimitModifier
-		s.TechniqueLimitModifier = &mod
 	}
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	s.Weapons = CloneWeapons(other.Weapons, isApply)

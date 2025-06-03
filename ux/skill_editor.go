@@ -191,7 +191,9 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addSourceFields(content, &e.target.SourcedID)
 	if !e.target.Container() {
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment))
-		content.AddChild(newDefaultsPanel(entity, &e.editorData.Defaults))
+		if !e.target.IsTechnique() {
+			content.AddChild(newDefaultsPanel(entity, &e.editorData.Defaults))
+		}
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
 		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
