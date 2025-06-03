@@ -20,12 +20,13 @@ type scriptEquipment struct {
 	Equipped       bool               `json:"equipped,omitempty"`
 }
 
-func deferredNewScriptEquipment(entity *Entity, equipment *Equipment) func() any {
+func deferredNewScriptEquipment(entity *Entity, equipment *Equipment) ScriptSelfProvider {
 	if equipment == nil {
-		return nil
+		return ScriptSelfProvider{}
 	}
-	return func() any {
-		return newScriptEquipment(entity, equipment, true)
+	return ScriptSelfProvider{
+		ID:       equipment.TID,
+		Provider: func() any { return newScriptEquipment(entity, equipment, true) },
 	}
 }
 

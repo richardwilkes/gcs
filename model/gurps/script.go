@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 )
 
 var (
@@ -24,7 +25,7 @@ var (
 	scriptEnd           = "</script>"
 	embeddedScriptRegex = regexp.MustCompile(`(?s)` + scriptStart + `.*?` + scriptEnd)
 	scriptCache         = make(map[string]*goja.Program)
-	globalResolveCache  = make(map[string]string)
+	globalResolveCache  = make(map[scriptResolveKey]string)
 	vmPool              = sync.Pool{New: func() any {
 		vm := goja.New()
 		vm.SetFieldNameMapper(scriptNameMapper{})
@@ -41,6 +42,25 @@ var (
 		return vm
 	}}
 )
+
+// ScriptSelfProvider is a provider for the "self" variable in scripts.
+type ScriptSelfProvider struct {
+	ID       tid.TID
+	Provider func() any
+}
+
+// ResolveID returns the ID of the provider. If the the underlying Provider is nil, an empty string is returned.
+func (s ScriptSelfProvider) ResolveID() tid.TID {
+	if s.Provider == nil {
+		return ""
+	}
+	return s.ID
+}
+
+type scriptResolveKey struct {
+	id   tid.TID
+	text string
+}
 
 // ScriptArg is a named argument to be passed to RunString.
 type ScriptArg struct {
@@ -67,28 +87,20 @@ func scriptSigned(value float64) string {
 
 // ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
 // expressions inside || pairs inside the text and evaluate them.
-func ResolveText(entity *Entity, thisProvider func() any, text string) string {
-	var this any
+func ResolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
 	return embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
-		if this == nil && thisProvider != nil {
-			this = thisProvider()
-		}
-		return resolveScript(entity, this, s[len(scriptStart):len(s)-len(scriptEnd)])
+		return resolveScript(entity, selfProvider, s[len(scriptStart):len(s)-len(scriptEnd)])
 	})
 }
 
 // ResolveToNumber resolves the text to a fixed-point number. If the text is just a number, that value is returned,
 // otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a number. If
 // this fails, a value of 0 will be returned.
-func ResolveToNumber(entity *Entity, thisProvider func() any, text string) fxp.Int {
+func ResolveToNumber(entity *Entity, selfProvider ScriptSelfProvider, text string) fxp.Int {
 	if v, err := fxp.FromString(strings.TrimSpace(text)); err == nil {
 		return v
 	}
-	var this any
-	if thisProvider != nil {
-		this = thisProvider()
-	}
-	result := resolveScript(entity, this, text)
+	result := resolveScript(entity, selfProvider, text)
 	value, err := fxp.FromString(result)
 	if err != nil {
 		slog.Error("unable to resolve script result to a number", "result", result, "script", text)
@@ -97,21 +109,22 @@ func ResolveToNumber(entity *Entity, thisProvider func() any, text string) fxp.I
 	return value
 }
 
-func resolveScript(entity *Entity, this any, text string) string {
-	var resolveCache map[string]string
+func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
+	var resolveCache map[scriptResolveKey]string
 	if entity == nil {
 		resolveCache = globalResolveCache
 	} else {
 		resolveCache = entity.scriptCache
 	}
-	if cached, exists := resolveCache[text]; exists {
+	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
+	if cached, exists := resolveCache[key]; exists {
 		return cached
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
 	args := []ScriptArg{{Name: "entity", Value: &scriptEntity{entity: entity}}}
-	if this != nil {
-		args = append(args, ScriptArg{Name: "self", Value: this})
+	if selfProvider.Provider != nil {
+		args = append(args, ScriptArg{Name: "self", Value: selfProvider.Provider})
 	}
 	if entity != nil {
 		list := entity.Attributes.List()
@@ -141,7 +154,7 @@ func resolveScript(entity *Entity, this any, text string) string {
 			result = v.String()
 		}
 	}
-	resolveCache[text] = result
+	resolveCache[key] = result
 	return result
 }
 

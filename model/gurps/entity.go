@@ -117,7 +117,7 @@ type Entity struct {
 	features                       features
 	variableResolverExclusions     map[string]bool
 	skillResolverExclusions        map[string]bool
-	scriptCache                    map[string]string
+	scriptCache                    map[scriptResolveKey]string
 	variableCache                  map[string]string
 	basicLiftCache                 fxp.Weight
 	encumbranceLevelCache          encumbrance.Level
@@ -272,7 +272,7 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 func (e *Entity) DiscardCaches() {
 	e.variableResolverExclusions = make(map[string]bool)
 	e.skillResolverExclusions = make(map[string]bool)
-	e.scriptCache = make(map[string]string)
+	e.scriptCache = make(map[scriptResolveKey]string)
 	e.variableCache = make(map[string]string)
 	e.basicLiftCache = -1
 	e.encumbranceLevelCache = encumbrance.LastLevel + 1

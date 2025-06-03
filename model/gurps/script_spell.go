@@ -27,12 +27,13 @@ type scriptSpell struct {
 	RitualPrereqCount int            `json:"ritualPrereqCount,omitempty"`
 }
 
-func deferredNewScriptSpell(entity *Entity, spell *Spell) func() any {
+func deferredNewScriptSpell(entity *Entity, spell *Spell) ScriptSelfProvider {
 	if spell == nil {
-		return nil
+		return ScriptSelfProvider{}
 	}
-	return func() any {
-		return newScriptSpell(entity, spell, true)
+	return ScriptSelfProvider{
+		ID:       spell.TID,
+		Provider: func() any { return newScriptSpell(entity, spell, true) },
 	}
 }
 

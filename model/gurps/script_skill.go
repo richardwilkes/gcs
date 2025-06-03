@@ -20,12 +20,13 @@ type scriptSkill struct {
 	RelativeLevel  int            `json:"relative_level"`
 }
 
-func deferredNewScriptSkill(entity *Entity, skill *Skill) func() any {
+func deferredNewScriptSkill(entity *Entity, skill *Skill) ScriptSelfProvider {
 	if skill == nil {
-		return nil
+		return ScriptSelfProvider{}
 	}
-	return func() any {
-		return newScriptSkill(entity, skill, true)
+	return ScriptSelfProvider{
+		ID:       skill.TID,
+		Provider: func() any { return newScriptSkill(entity, skill, true) },
 	}
 }
 

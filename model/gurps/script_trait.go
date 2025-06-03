@@ -15,12 +15,13 @@ type scriptTrait struct {
 	Tags     []string       `json:"tags,omitempty"`
 }
 
-func deferredNewScriptTrait(trait *Trait) func() any {
+func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
 	if trait == nil {
-		return nil
+		return ScriptSelfProvider{}
 	}
-	return func() any {
-		return newScriptTrait(trait, true)
+	return ScriptSelfProvider{
+		ID:       trait.TID,
+		Provider: func() any { return newScriptTrait(trait, true) },
 	}
 }
 

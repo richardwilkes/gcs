@@ -201,7 +201,7 @@ func (a *AttributeDef) BaseValue(entity *Entity) fxp.Int {
 	if a.IsSeparator() {
 		return 0
 	}
-	return ResolveToNumber(entity, nil, a.Base)
+	return ResolveToNumber(entity, ScriptSelfProvider{}, a.Base)
 }
 
 // ComputeCost returns the value adjusted for a cost reduction.

@@ -122,7 +122,7 @@ func (p *PoolThreshold) Clone() *PoolThreshold {
 
 // Threshold returns the threshold value for the given maximum.
 func (p *PoolThreshold) Threshold(entity *Entity) fxp.Int {
-	return ResolveToNumber(entity, nil, p.Value)
+	return ResolveToNumber(entity, ScriptSelfProvider{}, p.Value)
 }
 
 // ContainsOp returns true if this PoolThreshold contains the specified ThresholdOp.

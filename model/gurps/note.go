@@ -237,7 +237,7 @@ func (n *Note) String() string {
 }
 
 func (n *Note) resolveText() string {
-	return ResolveText(EntityFromNode(n), nil, n.TextWithReplacements())
+	return ResolveText(EntityFromNode(n), ScriptSelfProvider{}, n.TextWithReplacements())
 }
 
 // NotesHeaderData returns the header data information for the given note column.
