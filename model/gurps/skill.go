@@ -281,7 +281,7 @@ func (s *Skill) MarshalJSON() ([]byte, error) {
 		UnsatisfiedReason string `json:"unsatisfied_reason,omitempty"`
 	}
 	cnl := calcNoLevel{UnsatisfiedReason: s.UnsatisfiedReason}
-	notes := s.resolveLocalNotes()
+	notes := s.ResolveLocalNotes()
 	if notes != s.LocalNotes {
 		cnl.ResolvedNotes = notes
 	}
@@ -1031,7 +1031,7 @@ func (s *Skill) LocalNotesWithReplacements() string {
 
 // Notes implements WeaponOwner.
 func (s *Skill) Notes() string {
-	return s.resolveLocalNotes()
+	return s.ResolveLocalNotes()
 }
 
 // ModifierNotes returns the notes due to modifiers.
@@ -1049,7 +1049,8 @@ func (s *Skill) ModifierNotes() string {
 	return ""
 }
 
-func (s *Skill) resolveLocalNotes() string {
+// ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
+func (s *Skill) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(s), s.LocalNotesWithReplacements())
 }
 

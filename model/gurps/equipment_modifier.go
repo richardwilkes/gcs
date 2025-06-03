@@ -223,7 +223,7 @@ func (e *EquipmentModifier) MarshalJSON() ([]byte, error) {
 	}{
 		EquipmentModifierData: e.EquipmentModifierData,
 	}
-	notes := e.resolveLocalNotes()
+	notes := e.ResolveLocalNotes()
 	if notes != e.LocalNotes {
 		data.Calc = &calc{ResolvedNotes: notes}
 	}
@@ -414,7 +414,8 @@ func (e *EquipmentModifier) String() string {
 	return e.NameWithReplacements()
 }
 
-func (e *EquipmentModifier) resolveLocalNotes() string {
+// ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
+func (e *EquipmentModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(e), e.LocalNotesWithReplacements())
 }
 
@@ -423,14 +424,14 @@ func (e *EquipmentModifier) SecondaryText(optionChecker func(display.Option) boo
 	if !optionChecker(SheetSettingsFor(EntityFromNode(e)).NotesDisplay) {
 		return ""
 	}
-	return e.resolveLocalNotes()
+	return e.ResolveLocalNotes()
 }
 
 // FullDescription returns a full description.
 func (e *EquipmentModifier) FullDescription() string {
 	var buffer strings.Builder
 	buffer.WriteString(e.String())
-	if localNotes := e.resolveLocalNotes(); localNotes != "" {
+	if localNotes := e.ResolveLocalNotes(); localNotes != "" {
 		buffer.WriteString(" (")
 		buffer.WriteString(localNotes)
 		buffer.WriteByte(')')

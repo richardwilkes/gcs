@@ -283,7 +283,7 @@ func (s *Spell) MarshalJSON() ([]byte, error) {
 		ResolvedNotes string `json:"resolved_notes,omitempty"`
 	}
 	var cl calcLeast
-	notes := s.resolveLocalNotes()
+	notes := s.ResolveLocalNotes()
 	if notes != s.LocalNotes {
 		cl.ResolvedNotes = notes
 	}
@@ -831,7 +831,7 @@ func (s *Spell) SetDataOwner(owner DataOwner) {
 
 // Notes implements WeaponOwner.
 func (s *Spell) Notes() string {
-	return s.resolveLocalNotes()
+	return s.ResolveLocalNotes()
 }
 
 // Rituals returns the rituals required to cast the spell.
@@ -912,7 +912,8 @@ func (s *Spell) String() string {
 	return buffer.String()
 }
 
-func (s *Spell) resolveLocalNotes() string {
+// ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
+func (s *Spell) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(s), s.LocalNotesWithReplacements())
 }
 

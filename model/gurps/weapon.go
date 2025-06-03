@@ -67,7 +67,7 @@ type WeaponOwner interface {
 	nameable.Accesser
 	DataOwner() DataOwner
 	Description() string
-	Notes() string
+	ResolveLocalNotes() string
 	FeatureList() Features
 	TagList() []string
 	RatedStrength() fxp.Int
@@ -377,19 +377,19 @@ func (w *Weapon) String() string {
 func (w *Weapon) Notes() string {
 	var buffer strings.Builder
 	if w.Owner != nil {
-		buffer.WriteString(w.Owner.Notes())
+		buffer.WriteString(w.Owner.ResolveLocalNotes())
 		switch owner := w.Owner.(type) {
 		case *Equipment:
 			Traverse(func(mod *EquipmentModifier) bool {
 				if mod.ShowNotesOnWeapon {
-					AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.resolveLocalNotes()))
+					AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.ResolveLocalNotes()))
 				}
 				return false
 			}, true, true, owner.Modifiers...)
 		case *Trait:
 			Traverse(func(mod *TraitModifier) bool {
 				if mod.ShowNotesOnWeapon {
-					AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.resolveLocalNotes()))
+					AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.ResolveLocalNotes()))
 				}
 				return false
 			}, true, true, owner.Modifiers...)

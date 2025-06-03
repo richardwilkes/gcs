@@ -238,7 +238,7 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 			UnsatisfiedReason:       e.UnsatisfiedReason,
 		},
 	}
-	notes := e.resolveLocalNotes()
+	notes := e.ResolveLocalNotes()
 	if notes != e.LocalNotes {
 		data.Calc.ResolvedNotes = notes
 	}
@@ -526,7 +526,7 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 			localBuffer.WriteString(i18n.Text("Rated ST "))
 			localBuffer.WriteString(e.RatedST.String())
 		}
-		if localNotes := e.resolveLocalNotes(); localNotes != "" {
+		if localNotes := e.ResolveLocalNotes(); localNotes != "" {
 			if localBuffer.Len() != 0 {
 				localBuffer.WriteString("; ")
 			}
@@ -548,7 +548,8 @@ func (e *Equipment) String() string {
 	return buffer.String()
 }
 
-func (e *Equipment) resolveLocalNotes() string {
+// ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
+func (e *Equipment) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(e), e.LocalNotesWithReplacements())
 }
 

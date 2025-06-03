@@ -230,7 +230,7 @@ func (t *TraitModifier) MarshalJSON() ([]byte, error) {
 	}{
 		TraitModifierData: t.TraitModifierData,
 	}
-	notes := t.resolveLocalNotes()
+	notes := t.ResolveLocalNotes()
 	if notes != t.LocalNotes {
 		data.Calc = &calc{ResolvedNotes: notes}
 	}
@@ -463,7 +463,8 @@ func (t *TraitModifier) String() string {
 	return buffer.String()
 }
 
-func (t *TraitModifier) resolveLocalNotes() string {
+// ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
+func (t *TraitModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(t), t.LocalNotesWithReplacements())
 }
 
@@ -472,14 +473,14 @@ func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) s
 	if !optionChecker(SheetSettingsFor(EntityFromNode(t)).NotesDisplay) {
 		return ""
 	}
-	return t.resolveLocalNotes()
+	return t.ResolveLocalNotes()
 }
 
 // FullDescription returns a full description.
 func (t *TraitModifier) FullDescription() string {
 	var buffer strings.Builder
 	buffer.WriteString(t.String())
-	if localNotes := t.resolveLocalNotes(); localNotes != "" {
+	if localNotes := t.ResolveLocalNotes(); localNotes != "" {
 		buffer.WriteString(" (")
 		buffer.WriteString(localNotes)
 		buffer.WriteByte(')')

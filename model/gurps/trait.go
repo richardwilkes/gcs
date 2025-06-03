@@ -246,7 +246,7 @@ func (t *Trait) MarshalJSON() ([]byte, error) {
 			UnsatisfiedReason: t.UnsatisfiedReason,
 		},
 	}
-	notes := t.resolveLocalNotes()
+	notes := t.ResolveLocalNotes()
 	if notes != t.LocalNotes {
 		data.Calc.ResolvedNotes = notes
 	}
@@ -551,10 +551,11 @@ func (t *Trait) String() string {
 
 // Notes returns the local notes.
 func (t *Trait) Notes() string {
-	return t.resolveLocalNotes()
+	return t.ResolveLocalNotes()
 }
 
-func (t *Trait) resolveLocalNotes() string {
+// ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
+func (t *Trait) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(t), t.LocalNotesWithReplacements())
 }
 
