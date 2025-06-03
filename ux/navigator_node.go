@@ -62,7 +62,10 @@ func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
 	case lib.IsUser():
 		id = "10000000000000001"
 	default:
-		id = gurps.IDForNavNode(lib.Path(), kinds.NavigatorLibrary)
+		if lib.ID == "" {
+			lib.ID = gurps.IDForNavNode(lib.Path(), kinds.NavigatorLibrary)
+		}
+		id = lib.ID
 	}
 	n := &NavigatorNode{
 		id:      id,

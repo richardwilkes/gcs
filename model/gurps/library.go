@@ -25,8 +25,10 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/rjeczalik/notify"
@@ -39,6 +41,7 @@ var NotifyOfLibraryChangeFunc func()
 
 // Library holds information about a library of data files.
 type Library struct {
+	ID                tid.TID  `json:"id"`
 	Title             string   `json:"title,omitempty"`
 	GitHubAccountName string   `json:"-"`
 	AccessToken       string   `json:"access_token,omitempty"`
@@ -54,6 +57,7 @@ type Library struct {
 // NewLibrary creates a new library.
 func NewLibrary(title, githubAccountName, accessToken, repoName, pathOnDisk string) *Library {
 	lib := &Library{
+		ID:                tid.MustNewTID(kinds.NavigatorLibrary),
 		Title:             title,
 		GitHubAccountName: githubAccountName,
 		AccessToken:       accessToken,
