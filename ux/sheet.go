@@ -891,6 +891,7 @@ func (s *Sheet) syncWithAllSources() {
 
 // Rebuild implements widget.Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
+	gurps.DiscardGlobalResolveCache()
 	h, v := s.scroll.Position()
 	focusRefKey := s.targetMgr.CurrentFocusRef()
 	s.entity.Recalculate()

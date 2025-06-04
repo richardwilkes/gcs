@@ -342,6 +342,7 @@ func (e *pointsEditor) MarkModified(_ unison.Paneler) {
 }
 
 func (e *pointsEditor) Rebuild(_ bool) {
+	gurps.DiscardGlobalResolveCache()
 	e.MarkModified(nil)
 	e.MarkForLayoutRecursively()
 	e.MarkForRedraw()

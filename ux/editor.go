@@ -296,6 +296,7 @@ func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 }
 
 func (e *editor[N, D]) Rebuild(_ bool) {
+	gurps.DiscardGlobalResolveCache()
 	e.MarkModified(nil)
 	e.MarkForLayoutRecursively()
 	e.MarkForRedraw()

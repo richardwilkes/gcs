@@ -870,6 +870,7 @@ func (t *Template) SheetSettingsUpdated(e *gurps.Entity, blockLayout bool) {
 
 // Rebuild implements widget.Rebuildable.
 func (t *Template) Rebuild(full bool) {
+	gurps.DiscardGlobalResolveCache()
 	t.template.EnsureAttachments()
 	t.template.SourceMatcher().PrepareHashes(t.template)
 	h, v := t.scroll.Position()

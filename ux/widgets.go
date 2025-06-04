@@ -58,6 +58,7 @@ type ModifiableRoot interface {
 
 // MarkModified looks for a ModifiableRoot, starting at the panel. If found, it then called MarkModified() on it.
 func MarkModified(panel unison.Paneler) {
+	gurps.DiscardGlobalResolveCache()
 	p := panel.AsPanel()
 	for p != nil {
 		if modifiable, ok := p.Self.(ModifiableRoot); ok {

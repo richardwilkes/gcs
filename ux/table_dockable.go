@@ -413,6 +413,7 @@ func (d *TableDockable[T]) sizeToFit() {
 
 // Rebuild implements widget.Rebuildable.
 func (d *TableDockable[T]) Rebuild(_ bool) {
+	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()
 	sel := d.table.CopySelectionMap()
 	d.table.SyncToModel()

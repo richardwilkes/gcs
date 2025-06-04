@@ -340,4 +340,5 @@ func (p *pageExporter) String() string {
 }
 
 func (p *pageExporter) Rebuild(_ bool) {
+	gurps.DiscardGlobalResolveCache()
 }

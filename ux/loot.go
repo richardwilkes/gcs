@@ -445,6 +445,7 @@ func (l *LootSheet) syncWithAllSources() {
 
 // Rebuild implements widget.Rebuildable.
 func (l *LootSheet) Rebuild(full bool) {
+	gurps.DiscardGlobalResolveCache()
 	l.loot.EnsureAttachments()
 	l.loot.SourceMatcher().PrepareHashes(l.loot)
 	h, v := l.scroll.Position()

@@ -68,6 +68,13 @@ type ScriptArg struct {
 	Value any
 }
 
+// DiscardGlobalResolveCache clears the global resolve cache.
+func DiscardGlobalResolveCache() {
+	if len(globalResolveCache) != 0 {
+		globalResolveCache = make(map[scriptResolveKey]string)
+	}
+}
+
 func mustSet(vm *goja.Runtime, name string, value any) {
 	if err := vm.Set(name, value); err != nil {
 		panic(errs.Newf("failed to set %s: %s", name, err.Error()))

@@ -269,4 +269,5 @@ func (p *lootPageExporter) String() string {
 }
 
 func (p *lootPageExporter) Rebuild(_ bool) {
+	gurps.DiscardGlobalResolveCache()
 }
