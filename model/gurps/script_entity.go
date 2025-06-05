@@ -8,11 +8,57 @@ import (
 )
 
 type scriptEntity struct {
-	entity *Entity
+	entity                 *Entity
+	PlayerName             string
+	Name                   string
+	Title                  string
+	Organization           string
+	Religion               string
+	TechLevel              string
+	Gender                 string
+	Age                    string
+	Birthday               string
+	Eyes                   string
+	Hair                   string
+	Skin                   string
+	Handedness             string
+	DisplayHeightUnits     string
+	DisplayWeightUnits     string
+	HeightInInches         float64
+	WeightInPounds         float64
+	SizeModifier           int
+	ExtraDiceFromModifiers bool
+	Exists                 bool
 }
 
-func (e *scriptEntity) Exists() bool {
-	return e.entity != nil
+func newScriptEntity(entity *Entity) *scriptEntity {
+	settings := SheetSettingsFor(entity)
+	e := &scriptEntity{
+		DisplayHeightUnits:     settings.DefaultLengthUnits.Key(),
+		DisplayWeightUnits:     settings.DefaultWeightUnits.Key(),
+		ExtraDiceFromModifiers: settings.UseModifyingDicePlusAdds,
+	}
+	if entity != nil {
+		e.entity = entity
+		e.PlayerName = entity.Profile.PlayerName
+		e.Name = entity.Profile.Name
+		e.Title = entity.Profile.Title
+		e.Organization = entity.Profile.Organization
+		e.Religion = entity.Profile.Religion
+		e.TechLevel = entity.Profile.TechLevel
+		e.Gender = entity.Profile.Gender
+		e.Age = entity.Profile.Age
+		e.Birthday = entity.Profile.Birthday
+		e.Eyes = entity.Profile.Eyes
+		e.Hair = entity.Profile.Hair
+		e.Skin = entity.Profile.Skin
+		e.Handedness = entity.Profile.Handedness
+		e.HeightInInches = fxp.As[float64](fxp.Int(entity.Profile.Height))
+		e.WeightInPounds = fxp.As[float64](fxp.Int(entity.Profile.Weight))
+		e.SizeModifier = entity.Profile.AdjustedSizeModifier()
+		e.Exists = true
+	}
+	return e
 }
 
 func (e *scriptEntity) Attributes() []*scriptAttribute {
@@ -202,21 +248,6 @@ func (e *scriptEntity) CurrentEncumbrance(forSkills, returnMoveFactor bool) floa
 	return float64(level)
 }
 
-func (e *scriptEntity) WeightUnits() fxp.WeightUnit {
-	return SheetSettingsFor(e.entity).DefaultWeightUnits
-}
-
-func (e *scriptEntity) ExtraDiceFromModifiers() bool {
-	return SheetSettingsFor(e.entity).UseModifyingDicePlusAdds
-}
-
-func (e *scriptEntity) SizeModifier() int {
-	if e.entity == nil {
-		return 0
-	}
-	return e.entity.Profile.AdjustedSizeModifier()
-}
-
 func (e *scriptEntity) WeaponDamage(name, usage string) string {
 	if e.entity == nil {
 		return ""
@@ -234,17 +265,17 @@ func (e *scriptEntity) WeaponDamage(name, usage string) string {
 	return ""
 }
 
-// RandomHeight returns a height in inches based on the given strength using the chart from B18.
-func (e *scriptEntity) RandomHeight(st int) int {
+// RandomHeightInInches returns a height in inches based on the given strength using the chart from B18.
+func (e *scriptEntity) RandomHeightInInches(st int) int {
 	r := rand.NewCryptoRand()
 	return 68 + (st-10)*2 + (r.Intn(6) + 1) - (r.Intn(6) + 1)
 }
 
-// RandomWeight returns a weight in pounds based on the given strength using the chart from B18. Adjusts appropriately
-// for the traits Skinny, Overweight, Fat, and Very Fat, if present on the sheet. 'shift' causes a shift towards a
-// lighter value if negative and a heavier value if positive, similar to having one of the traits Skinny, Overweight,
-// Fat, and Very Fat applied, but is additive to them.
-func (e *scriptEntity) RandomWeight(st, shift int) int {
+// RandomWeightInPounds returns a weight in pounds based on the given strength using the chart from B18. Adjusts
+// appropriately for the traits Skinny, Overweight, Fat, and Very Fat, if present on the sheet. 'shift' causes a shift
+// towards a lighter value if negative and a heavier value if positive, similar to having one of the traits Skinny,
+// Overweight, Fat, and Very Fat applied, but is additive to them.
+func (e *scriptEntity) RandomWeightInPounds(st, shift int) int {
 	shift += 3 // Average
 	if e.entity != nil {
 		skinny := false

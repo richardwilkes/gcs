@@ -125,8 +125,8 @@ func ExprToScript(expr string) string {
 			"round": "Math.round",
 			"sqrt":  "Math.sqrt",
 
-			"ssrt_to_yards": "ssrt.modifierToYards",
-			"ssrt":          "ssrt.modifier",
+			"ssrt_to_yards": "measure.modifierToYards",
+			"ssrt":          "measure.modifier",
 		},
 	}
 	if parts, err := e.processExpression(nil, expr); err == nil {

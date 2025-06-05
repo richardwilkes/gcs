@@ -6,30 +6,65 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
-type scriptSSRT struct{}
+type scriptMeasurement struct{}
 
-func (s *scriptSSRT) RangeModifier(yards float64) int {
-	return -yardsToValue(fxp.Length(fxp.Yard.ToInches(fxp.From(yards))), false)
+func (s scriptMeasurement) FormatLength(inches float64, toUnits string) string {
+	return fxp.ExtractLengthUnit(toUnits).Format(fxp.Length(fxp.From(inches)))
 }
 
-func (s *scriptSSRT) SizeModifier(yards float64) int {
-	return yardsToValue(fxp.Length(fxp.Yard.ToInches(fxp.From(yards))), true)
+func (s scriptMeasurement) LengthToInches(value float64, fromUnits string) float64 {
+	return fxp.As[float64](fxp.ExtractLengthUnit(fromUnits).ToInches(fxp.From(value)))
 }
 
-func (s *scriptSSRT) Modifier(length float64, units string, forSize bool) int {
+func (s scriptMeasurement) StringLengthToInches(str, defaultUnits string) float64 {
+	length, err := fxp.LengthFromString(str, fxp.ExtractLengthUnit(defaultUnits))
+	if err != nil {
+		return 0
+	}
+	return fxp.As[float64](fxp.Int(length))
+}
+
+func (s scriptMeasurement) FormatWeight(pounds float64, toUnits string) string {
+	return fxp.ExtractWeightUnit(toUnits).Format(fxp.Weight(fxp.From(pounds)))
+}
+
+func (s scriptMeasurement) WeightToPounds(value float64, fromUnits string) float64 {
+	return fxp.As[float64](fxp.ExtractWeightUnit(fromUnits).ToPounds(fxp.From(value)))
+}
+
+func (s scriptMeasurement) StringWeightToPounds(str, defaultUnits string) float64 {
+	weight, err := fxp.WeightFromString(str, fxp.ExtractWeightUnit(defaultUnits))
+	if err != nil {
+		return 0
+	}
+	return fxp.As[float64](fxp.Int(weight))
+}
+
+func (s scriptMeasurement) RangeModifier(yards float64) int {
+	return -ssrtInchesToValue(fxp.Yard.ToInches(fxp.From(yards)), false)
+}
+
+func (s scriptMeasurement) SizeModifier(yards float64) int {
+	return ssrtInchesToValue(fxp.Yard.ToInches(fxp.From(yards)), true)
+}
+
+func (s scriptMeasurement) Modifier(length float64, units string, forSize bool) int {
 	l, err := fxp.LengthFromString(fmt.Sprintf("%v %s", length, units), fxp.Yard)
 	if err != nil {
 		return 0
 	}
-	result := yardsToValue(l, forSize)
+	result := ssrtInchesToValue(fxp.Int(l), forSize)
 	if !forSize {
 		result = -result
 	}
 	return result
 }
 
-func yardsToValue(length fxp.Length, allowNegative bool) int {
-	inches := fxp.Int(length)
+func (s scriptMeasurement) ModifierToYards(ssrtValue int) float64 {
+	return fxp.As[float64](ssrtToYards(ssrtValue))
+}
+
+func ssrtInchesToValue(inches fxp.Int, allowNegative bool) int {
 	yards := inches.Div(fxp.ThirtySix)
 	if allowNegative {
 		switch {
@@ -92,12 +127,7 @@ func yardsToValue(length fxp.Length, allowNegative bool) int {
 	}
 }
 
-// ModifierToYards converts a value from the Size and Speed/Range table to a length in yards.
-func (s *scriptSSRT) ModifierToYards(ssrtValue int) float64 {
-	return fxp.As[float64](valueToYards(ssrtValue))
-}
-
-func valueToYards(value int) fxp.Int {
+func ssrtToYards(value int) fxp.Int {
 	if value < -15 {
 		value = -15
 	}

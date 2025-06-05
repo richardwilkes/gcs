@@ -30,15 +30,12 @@ var (
 		vm := goja.New()
 		vm.SetFieldNameMapper(scriptNameMapper{})
 		vm.SetParserOptions(parser.WithDisableSourceMaps)
-		mustSet(vm, "console", &scriptConsole{})
-		mustSet(vm, "dice", &scriptDice{})
-		mustSet(vm, "fixed", newScriptFixed())
+		mustSet(vm, "console", scriptConsole{})
+		mustSet(vm, "dice", scriptDice{})
 		mustSet(vm, "iff", scriptIff)
-		mustSet(vm, "length", newScriptLength())
+		mustSet(vm, "measure", scriptMeasurement{})
 		mustSet(vm, "Math.exp2", math.Exp2)
 		mustSet(vm, "signedValue", scriptSigned)
-		mustSet(vm, "ssrt", &scriptSSRT{})
-		mustSet(vm, "weight", newScriptWeight())
 		return vm
 	}}
 )
@@ -129,7 +126,7 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
-	args := []ScriptArg{{Name: "entity", Value: &scriptEntity{entity: entity}}}
+	args := []ScriptArg{{Name: "entity", Value: newScriptEntity(entity)}}
 	if selfProvider.Provider != nil {
 		args = append(args, ScriptArg{Name: "self", Value: selfProvider.Provider})
 	}

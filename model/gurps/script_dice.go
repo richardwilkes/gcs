@@ -8,7 +8,7 @@ import (
 
 type scriptDice struct{}
 
-func (d *scriptDice) From(count, sides, modifier, multiplier *int) string {
+func (d scriptDice) From(count, sides, modifier, multiplier *int) string {
 	var result dice.Dice
 	// Account for the dice(sides) shorthand
 	if count != nil && sides == nil && modifier == nil && multiplier == nil {
@@ -35,7 +35,7 @@ func (d *scriptDice) From(count, sides, modifier, multiplier *int) string {
 	return result.String()
 }
 
-func (d *scriptDice) Add(left, right string) (string, error) {
+func (d scriptDice) Add(left, right string) (string, error) {
 	d1 := dice.New(left)
 	d2 := dice.New(right)
 	if d1.Sides != d2.Sides {
@@ -56,7 +56,7 @@ func (d *scriptDice) Add(left, right string) (string, error) {
 	return d1.String(), nil
 }
 
-func (d *scriptDice) Subtract(left, right string) (string, error) {
+func (d scriptDice) Subtract(left, right string) (string, error) {
 	d1 := dice.New(left)
 	d2 := dice.New(right)
 	if d1.Sides != d2.Sides {
@@ -78,22 +78,22 @@ func (d *scriptDice) Subtract(left, right string) (string, error) {
 	return d1.String(), nil
 }
 
-func (d *scriptDice) Count(diceSpec string) int {
+func (d scriptDice) Count(diceSpec string) int {
 	return dice.New(diceSpec).Count
 }
 
-func (d *scriptDice) Sides(diceSpec string) int {
+func (d scriptDice) Sides(diceSpec string) int {
 	return dice.New(diceSpec).Sides
 }
 
-func (d *scriptDice) Modifier(diceSpec string) int {
+func (d scriptDice) Modifier(diceSpec string) int {
 	return dice.New(diceSpec).Modifier
 }
 
-func (d *scriptDice) Multiplier(diceSpec string) int {
+func (d scriptDice) Multiplier(diceSpec string) int {
 	return dice.New(diceSpec).Multiplier
 }
 
-func (d *scriptDice) Roll(diceSpec string, extraDiceFromModifiers bool) int {
+func (d scriptDice) Roll(diceSpec string, extraDiceFromModifiers bool) int {
 	return dice.Roll(diceSpec, extraDiceFromModifiers)
 }
