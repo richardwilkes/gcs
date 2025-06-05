@@ -5,14 +5,21 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox/tid"
 )
 
 type scriptTrait struct {
-	Name     string         `json:"name"`
-	Kind     string         `json:"kind"`
-	Levels   *float64       `json:"levels,omitempty"`
-	Children []*scriptTrait `json:"children,omitempty"`
-	Tags     []string       `json:"tags,omitempty"`
+	trait          *Trait
+	ID             tid.TID
+	ParentID       tid.TID
+	Name           string
+	Kind           string
+	Levels         *float64
+	children       []*scriptTrait
+	Tags           []string
+	Container      bool
+	HasChildren    bool
+	cachedChildren bool
 }
 
 func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
@@ -21,32 +28,62 @@ func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
 	}
 	return ScriptSelfProvider{
 		ID:       trait.TID,
-		Provider: func() any { return newScriptTrait(trait, true) },
+		Provider: func() any { return newScriptTrait(trait) },
 	}
 }
 
-func newScriptTrait(trait *Trait, includeEnabledChildren bool) *scriptTrait {
+func newScriptTrait(trait *Trait) *scriptTrait {
+	var parentID tid.TID
+	if trait.parent != nil {
+		parentID = trait.parent.TID
+	}
 	t := scriptTrait{
-		Name: trait.NameWithReplacements(),
-		Tags: slices.Clone(trait.Tags),
+		trait:       trait,
+		ID:          trait.TID,
+		ParentID:    parentID,
+		Name:        trait.NameWithReplacements(),
+		Tags:        slices.Clone(trait.Tags),
+		Container:   trait.Container(),
+		HasChildren: trait.HasChildren(),
 	}
 	if trait.Container() {
 		t.Kind = strings.ReplaceAll(trait.ContainerType.Key(), "_", " ")
-		if includeEnabledChildren {
-			children := trait.NodeChildren()
-			t.Children = make([]*scriptTrait, 0, len(children))
-			for _, child := range children {
+	} else if trait.CanLevel {
+		levels := fxp.As[float64](trait.Levels)
+		t.Levels = &levels
+	}
+	return &t
+}
+
+func (t *scriptTrait) Children() []*scriptTrait {
+	if !t.cachedChildren {
+		t.cachedChildren = true
+		if len(t.trait.Children) != 0 {
+			t.children = make([]*scriptTrait, 0, len(t.trait.Children))
+			for _, child := range t.trait.Children {
 				if child.Enabled() {
-					t.Children = append(t.Children, newScriptTrait(child, true))
+					t.children = append(t.children, newScriptTrait(child))
 				}
 			}
 		}
-	} else {
-		t.Kind = "trait"
-		if trait.CanLevel {
-			levels := fxp.As[float64](trait.Levels)
-			t.Levels = &levels
-		}
 	}
-	return &t
+	return t.children
+}
+
+func (t *scriptTrait) Find(name, tag string) []*scriptTrait {
+	if !t.trait.Container() {
+		return nil
+	}
+	return findScriptTraits(name, tag, t.trait.Children...)
+}
+
+func findScriptTraits(name, tag string, topLevelTraits ...*Trait) []*scriptTrait {
+	var traits []*scriptTrait
+	Traverse(func(trait *Trait) bool {
+		if (name == "" || strings.EqualFold(trait.NameWithReplacements(), name)) && matchTag(tag, trait.Tags) {
+			traits = append(traits, newScriptTrait(trait))
+		}
+		return false
+	}, true, false, topLevelTraits...)
+	return traits
 }

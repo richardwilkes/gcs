@@ -21,5 +21,8 @@ func uncapitalizeScriptName(s string) string {
 	if strings.EqualFold(s, "id") {
 		return "id"
 	}
+	if strings.EqualFold(s, "parentid") {
+		return "parentID"
+	}
 	return txt.FirstToLower(s)
 }

@@ -416,8 +416,7 @@ func (e *EquipmentModifier) String() string {
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (e *EquipmentModifier) ResolveLocalNotes() string {
-	entity := EntityFromNode(e)
-	return ResolveText(entity, deferredNewScriptEquipment(entity, e.equipment), e.LocalNotesWithReplacements())
+	return ResolveText(EntityFromNode(e), deferredNewScriptEquipment(e.equipment), e.LocalNotesWithReplacements())
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
