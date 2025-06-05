@@ -101,7 +101,11 @@ func ResolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) s
 // otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a number. If
 // this fails, a value of 0 will be returned.
 func ResolveToNumber(entity *Entity, selfProvider ScriptSelfProvider, text string) fxp.Int {
-	if v, err := fxp.FromString(strings.TrimSpace(text)); err == nil {
+	trimmed := strings.TrimSpace(text)
+	if trimmed == "" {
+		return 0
+	}
+	if v, err := fxp.FromString(trimmed); err == nil {
 		return v
 	}
 	result := resolveScript(entity, selfProvider, text)
@@ -111,6 +115,26 @@ func ResolveToNumber(entity *Entity, selfProvider ScriptSelfProvider, text strin
 		return 0
 	}
 	return value
+}
+
+// ResolveToWeight resolves the text to a weight. If the text is just a weight, that weight is returned,
+// otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a weight. If
+// this fails, a weight of 0 will be returned.
+func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text string, defUnits fxp.WeightUnit) fxp.Weight {
+	trimmed := strings.TrimSpace(text)
+	if trimmed == "" {
+		return 0
+	}
+	if w, err := fxp.WeightFromString(trimmed, defUnits); err == nil {
+		return w
+	}
+	result := resolveScript(entity, selfProvider, text)
+	w, err := fxp.WeightFromString(result, defUnits)
+	if err != nil {
+		slog.Error("unable to resolve script result to a weight", "result", result, "script", text)
+		return 0
+	}
+	return w
 }
 
 func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {

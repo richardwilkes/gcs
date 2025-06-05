@@ -41,13 +41,22 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 				addLabelAndDecimalField(content, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
 			}
 			valueLabel := i18n.Text("Value")
-			wrapper := addFlowWrapper(content, valueLabel, 3)
-			addDecimalField(wrapper, nil, "", valueLabel, "", &e.editorData.Value, 0, fxp.Max-1)
-			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended"), false))
-			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
+			content.AddChild(NewFieldLeadingLabel(valueLabel, false))
+			addScriptField(content, nil, "", valueLabel,
+				i18n.Text("The value, which may be a number or a script expression"),
+				func() string { return e.editorData.BaseValue },
+				func(value string) {
+					e.editorData.BaseValue = value
+					MarkModified(content)
+				})
+			entity := gurps.EntityFromNode(e.target)
+			extendedValueLabel := i18n.Text("Extended Value")
+			content.AddChild(NewFieldLeadingLabel(extendedValueLabel, false))
+			content.AddChild(NewNonEditableField(func(field *NonEditableField) {
 				var value fxp.Int
 				if e.editorData.Quantity > 0 {
-					value = gurps.ValueAdjustedForModifiers(e.target, e.editorData.Value, e.editorData.Modifiers)
+					value = gurps.ValueAdjustedForModifiers(e.target,
+						cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedBaseValue(), e.editorData.Modifiers)
 					if e.target.Container() {
 						for _, one := range e.target.Children {
 							value += one.ExtendedValue()
@@ -59,16 +68,22 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 				field.MarkForLayoutAndRedraw()
 			}))
 			weightLabel := i18n.Text("Weight")
-			wrapper = addFlowWrapper(content, weightLabel, 3)
-			entity := gurps.EntityFromNode(e.target)
-			addWeightField(wrapper, nil, "", weightLabel, "", entity, &e.editorData.Weight, false)
-			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended"), false))
-			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
+			content.AddChild(NewFieldLeadingLabel(weightLabel, false))
+			addScriptField(content, nil, "", weightLabel,
+				i18n.Text("The weight, which may be a number with optional units or a script expression"),
+				func() string { return e.editorData.BaseWeight },
+				func(value string) {
+					e.editorData.BaseWeight = value
+					MarkModified(content)
+				})
+			extendedWeightLabel := i18n.Text("Extended Weight")
+			content.AddChild(NewFieldLeadingLabel(extendedWeightLabel, false))
+			content.AddChild(NewNonEditableField(func(field *NonEditableField) {
 				var weight fxp.Weight
 				defUnits := gurps.SheetSettingsFor(entity).DefaultWeightUnits
 				if e.editorData.Quantity > 0 {
 					weight = gurps.ExtendedWeightAdjustedForModifiers(e.target, defUnits, e.editorData.Quantity,
-						e.editorData.Weight, e.editorData.Modifiers, e.editorData.Features, e.target.Children, false,
+						cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedBaseWeight(), e.editorData.Modifiers, e.editorData.Features, e.target.Children, false,
 						false)
 				}
 				field.SetTitle(defUnits.Format(weight))
@@ -77,7 +92,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			content.AddChild(unison.NewPanel())
 			addCheckBox(content, i18n.Text("Ignore weight for skills"), &e.editorData.WeightIgnoredForSkills)
 			usesLabel := i18n.Text("Uses")
-			wrapper = addFlowWrapper(content, usesLabel, 3)
+			wrapper := addFlowWrapper(content, usesLabel, 3)
 			usesField := addIntegerField(wrapper, nil, "", usesLabel, "", &e.editorData.Uses, 0, 9999999)
 			maxUsesLabel := i18n.Text("Maximum Uses")
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(maxUsesLabel, false))
@@ -106,4 +121,10 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 				adjustFieldBlank(usesField, e.editorData.MaxUses <= 0)
 			}
 		}, nil)
+}
+
+func cloneEquipmentWithOverlay(e *gurps.Equipment, overlay *gurps.EquipmentEditData) *gurps.Equipment {
+	clone := e.Clone(e.Source.LibraryFile, e.DataOwner(), e.Parent(), true)
+	clone.EquipmentEditData = *overlay
+	return clone
 }

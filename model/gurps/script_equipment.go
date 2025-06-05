@@ -36,7 +36,8 @@ type scriptEquipment struct {
 	cachedExtendedWeight   bool
 }
 
-func deferredNewScriptEquipment(equipment *Equipment) ScriptSelfProvider {
+// DeferredNewScriptEquipment creates a deferred ScriptSelfProvider for the given Equipment.
+func DeferredNewScriptEquipment(equipment *Equipment) ScriptSelfProvider {
 	if equipment == nil {
 		return ScriptSelfProvider{}
 	}

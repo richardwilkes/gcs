@@ -99,8 +99,8 @@ type EquipmentSyncData struct {
 	TechLevel              string      `json:"tech_level,omitempty"`
 	LegalityClass          string      `json:"legality_class,omitempty"`
 	Tags                   []string    `json:"tags,omitempty"`
-	Value                  fxp.Int     `json:"value,omitempty"`
-	Weight                 fxp.Weight  `json:"weight,omitempty"`
+	BaseValue              string      `json:"base_value,omitempty"`
+	BaseWeight             string      `json:"base_weight,omitempty"`
 	MaxUses                int         `json:"max_uses,omitempty"`
 	Prereq                 *PrereqList `json:"prereqs,omitempty"`
 	Weapons                []*Weapon   `json:"weapons,omitempty"`
@@ -218,7 +218,9 @@ func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, 
 // MarshalJSON implements json.Marshaler.
 func (e *Equipment) MarshalJSON() ([]byte, error) {
 	type calc struct {
+		Value                   fxp.Int     `json:"value"`
 		ExtendedValue           fxp.Int     `json:"extended_value"`
+		Weight                  fxp.Weight  `json:"weight"`
 		ExtendedWeight          fxp.Weight  `json:"extended_weight"`
 		ExtendedWeightForSkills *fxp.Weight `json:"extended_weight_for_skills,omitempty"`
 		ResolvedNotes           string      `json:"resolved_notes,omitempty"`
@@ -232,7 +234,9 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 	}{
 		EquipmentData: e.EquipmentData,
 		Calc: calc{
+			Value:                   e.AdjustedValue(),
 			ExtendedValue:           e.ExtendedValue(),
+			Weight:                  e.AdjustedWeight(false, defUnits),
 			ExtendedWeight:          e.ExtendedWeight(false, defUnits),
 			ExtendedWeightForSkills: nil,
 			UnsatisfiedReason:       e.UnsatisfiedReason,
@@ -254,10 +258,12 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		EquipmentData
 		// Old data fields
-		Type       string   `json:"type"`
-		ExprNotes  string   `json:"notes"`
-		Categories []string `json:"categories"`
-		IsOpen     bool     `json:"open"`
+		Type       string     `json:"type"`
+		ExprNotes  string     `json:"notes"`
+		Categories []string   `json:"categories"`
+		Value      fxp.Int    `json:"value"`
+		Weight     fxp.Weight `json:"weight"`
+		IsOpen     bool       `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
@@ -269,6 +275,12 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 		setOpen = localData.IsOpen
 	}
 	e.EquipmentData = localData.EquipmentData
+	if e.BaseValue == "" && localData.Value != 0 {
+		e.BaseValue = localData.Value.String()
+	}
+	if e.BaseWeight == "" && localData.Weight != 0 {
+		e.BaseWeight = fxp.Pound.Format(localData.Weight)
+	}
 	if e.LocalNotes == "" && localData.ExprNotes != "" {
 		e.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}
@@ -550,7 +562,7 @@ func (e *Equipment) String() string {
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (e *Equipment) ResolveLocalNotes() string {
-	return ResolveText(EntityFromNode(e), deferredNewScriptEquipment(e), e.LocalNotesWithReplacements())
+	return ResolveText(EntityFromNode(e), DeferredNewScriptEquipment(e), e.LocalNotesWithReplacements())
 }
 
 // Notes returns the local notes.
@@ -573,9 +585,20 @@ func (e *Equipment) RatedStrength() fxp.Int {
 	return e.RatedST
 }
 
+// BaseValueWithReplacements returns the base value with any replacements applied.
+func (e *Equipment) BaseValueWithReplacements() string {
+	return nameable.Apply(e.BaseValue, e.Replacements)
+}
+
+// ResolvedBaseValue resolves the base value, running any embedded scripts to get the final result.
+func (e *Equipment) ResolvedBaseValue() fxp.Int {
+	return ResolveToNumber(EntityFromNode(e), DeferredNewScriptEquipment(e), e.BaseValueWithReplacements()).
+		Min(fxp.Max - 1).Max(0)
+}
+
 // AdjustedValue returns the value after adjustments for any modifiers. Does not include the value of children.
 func (e *Equipment) AdjustedValue() fxp.Int {
-	return ValueAdjustedForModifiers(e, e.Value, e.Modifiers)
+	return ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), e.Modifiers)
 }
 
 // ExtendedValue returns the extended value.
@@ -592,17 +615,29 @@ func (e *Equipment) ExtendedValue() fxp.Int {
 	return value.Mul(e.Quantity)
 }
 
+// BaseWeightWithReplacements returns the base weight with any replacements applied.
+func (e *Equipment) BaseWeightWithReplacements() string {
+	return nameable.Apply(e.BaseWeight, e.Replacements)
+}
+
+// ResolvedBaseWeight resolves the base weight, running any embedded scripts to get the final result.
+func (e *Equipment) ResolvedBaseWeight() fxp.Weight {
+	entity := EntityFromNode(e)
+	return ResolveToWeight(entity, DeferredNewScriptEquipment(e), e.BaseWeightWithReplacements(),
+		SheetSettingsFor(entity).DefaultWeightUnits)
+}
+
 // AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children.
 func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
 	if forSkills && e.WeightIgnoredForSkills && e.Equipped {
 		return 0
 	}
-	return WeightAdjustedForModifiers(e, e.Weight, e.Modifiers, defUnits)
+	return WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits)
 }
 
 // ExtendedWeight returns the extended weight.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
-	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.Weight, e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.Equipped)
+	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.ResolvedBaseWeight(), e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.Equipped)
 }
 
 // ExtendedWeightAdjustedForModifiers calculates the extended weight.
@@ -677,6 +712,8 @@ func (e *Equipment) FillWithNameableKeys(m, existing map[string]string) {
 	}
 	nameable.Extract(e.Name, m, existing)
 	nameable.Extract(e.LocalNotes, m, existing)
+	nameable.Extract(e.BaseValue, m, existing)
+	nameable.Extract(e.BaseWeight, m, existing)
 	if e.Prereq != nil {
 		e.Prereq.FillWithNameableKeys(m, existing)
 	}
@@ -836,8 +873,8 @@ func (e *EquipmentSyncData) hash(h hash.Hash) {
 	for _, tag := range e.Tags {
 		hashhelper.String(h, tag)
 	}
-	hashhelper.Num64(h, e.Value)
-	hashhelper.Num64(h, e.Weight)
+	hashhelper.String(h, e.BaseValue)
+	hashhelper.String(h, e.BaseWeight)
 	hashhelper.Num64(h, e.MaxUses)
 	e.Prereq.Hash(h)
 	hashhelper.Num64(h, len(e.Weapons))
