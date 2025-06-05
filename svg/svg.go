@@ -239,6 +239,10 @@ var (
 	resetData string
 	Reset     = unison.MustSVGFromContentString(resetData)
 
+	//go:embed script.svg
+	scriptData string
+	Script     = unison.MustSVGFromContentString(scriptData)
+
 	//go:embed settings.svg
 	settingsData string
 	Settings     = unison.MustSVGFromContentString(settingsData)

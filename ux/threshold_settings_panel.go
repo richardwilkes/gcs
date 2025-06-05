@@ -111,13 +111,10 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 
 	text = i18n.Text("Threshold")
 	content.AddChild(NewFieldLeadingLabel(text, false))
-	field = NewMultiLineStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"threshold", text,
+	addScriptField(content, p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"threshold", text,
+		i18n.Text("The value where the threshold takes effect, which may be a number or a script expression"),
 		func() string { return p.threshold.Value },
 		func(s string) { p.threshold.Value = s })
-	field.AutoScroll = false
-	field.SetMinimumTextWidthUsing("round($self*100/50+20)")
-	field.Tooltip = newWrappedTooltip(i18n.Text("An expression to calculate the threshold value"))
-	content.AddChild(field)
 
 	for _, op := range threshold.Ops[1:] {
 		content.AddChild(unison.NewPanel())

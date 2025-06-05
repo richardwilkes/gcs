@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -107,7 +108,17 @@ func addPageRefHighlightLabelAndField(parent *unison.Panel, fieldData *string) {
 }
 
 func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
-	addLabelAndMultiLineStringField(parent, i18n.Text("Notes"), "", fieldData)
+	labelText := i18n.Text("Notes")
+	label := NewFieldLeadingLabel(labelText, false)
+	parent.AddChild(label)
+	addScriptField(parent, nil, "", labelText,
+		i18n.Text("These notes may have scripts embedded in them by wrapping each script in <script>your script goes here</script> tags."),
+		func() string { return *fieldData },
+		func(value string) {
+			*fieldData = value
+			parent.MarkForLayoutAndRedraw()
+			MarkModified(parent)
+		})
 }
 
 func addVTTNotesLabelAndField(parent *unison.Panel, fieldData *string) {
@@ -686,6 +697,18 @@ func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey st
 	adjustFieldBlank(field, (*tp).Type == picker.NotApplicable)
 }
 
+func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoTitle, tooltip string, get func() string, set func(string)) *StringField {
+	field := NewMultiLineStringField(targetMgr, targetKey, undoTitle, get, set)
+	field.AutoScroll = false
+	field.SetMinimumTextWidthUsing("floor($basic_speed)")
+	field.Tooltip = newWrappedTooltip(tooltip)
+	scriptHelpButton := unison.NewSVGButton(svg.Script)
+	scriptHelpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Scripting Guide") }
+	scriptHelpButton.Tooltip = newWrappedTooltip(i18n.Text("Scripting Guide"))
+	parent.AddChild(WrapWithSpan(1, field, scriptHelpButton))
+	return field
+}
+
 // WrapWithSpan wraps a number of children with a single panel that request to fill in span number of columns.
 func WrapWithSpan(span int, children ...unison.Paneler) *unison.Panel {
 	wrapper := unison.NewPanel()
@@ -707,7 +730,7 @@ func WrapWithSpan(span int, children ...unison.Paneler) *unison.Panel {
 }
 
 // NewSVGButtonForFont creates a new SVG button with the given font and a size adjustment.
-func NewSVGButtonForFont(svg *unison.SVG, font unison.Font, sizeAdjust float32) *unison.Button {
+func NewSVGButtonForFont(svgData *unison.SVG, font unison.Font, sizeAdjust float32) *unison.Button {
 	b := unison.NewButton()
 	b.ButtonTheme = unison.DefaultButtonTheme
 	b.Font = font
@@ -716,7 +739,7 @@ func NewSVGButtonForFont(svg *unison.SVG, font unison.Font, sizeAdjust float32) 
 	b.HideBase = true
 	baseline := font.Baseline() + sizeAdjust
 	b.Drawable = &unison.DrawableSVG{
-		SVG:  svg,
+		SVG:  svgData,
 		Size: unison.NewSize(baseline, baseline).Ceil(),
 	}
 	return b

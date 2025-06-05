@@ -21,7 +21,7 @@ import (
 // EditNote displays the editor for a note.
 func EditNote(owner Rebuildable, note *gurps.Note) {
 	displayEditor(owner, note, svg.GCSNotes, "md:Help/Interface/Note",
-		initNoteToolbar, initNoteEditor, nil)
+		nil, initNoteEditor, nil)
 }
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
@@ -41,13 +41,6 @@ func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
 	}
 }
 
-func initNoteToolbar(_ *editor[*gurps.Note, *gurps.NoteEditData], toolbar *unison.Panel) {
-	filler := unison.NewPanel()
-	filler.SetLayoutData(&unison.FlexLayoutData{HGrab: true})
-	toolbar.AddChild(filler)
-	toolbar.AddChild(unison.NewLink(i18n.Text("Markdown Guide"), "", "md:Help/Markdown Guide", unison.DefaultLinkTheme, HandleLink))
-}
-
 func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison.Panel) func() {
 	markdown := unison.NewMarkdown(true)
 	markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(e.owner)
@@ -65,7 +58,8 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	})
 	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 3}))
 	content.AddChild(label)
-	field := NewMultiLineStringField(nil, "", labelText,
+	field := addScriptField(content, nil, "", labelText,
+		i18n.Text("These notes will be interpreted as markdown and may also have scripts embedded in them by wrapping each script in <script>your script goes here</script> tags."),
 		func() string { return e.editorData.MarkDown },
 		func(value string) {
 			e.editorData.MarkDown = value
@@ -73,7 +67,6 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 			content.MarkForLayoutAndRedraw()
 			MarkModified(content)
 		})
-	field.AutoScroll = false
 	field.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			fd := unison.MonospacedFont.Font.Descriptor()
@@ -81,7 +74,14 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 			return fd
 		},
 	}
-	content.AddChild(field)
+	parent := field.Parent()
+	if layout, ok := parent.Layout().(*unison.FlexLayout); ok {
+		layout.Columns++
+	}
+	markdownHelpButton := unison.NewSVGButton(svg.MarkdownFile)
+	markdownHelpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Markdown Guide") }
+	markdownHelpButton.Tooltip = newWrappedTooltip(i18n.Text("Markdown Guide"))
+	parent.AddChild(markdownHelpButton)
 
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
