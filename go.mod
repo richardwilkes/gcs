@@ -1,6 +1,6 @@
 module github.com/richardwilkes/gcs/v5
 
-go 1.24.2
+go 1.24.4
 
 require (
 	github.com/dop251/goja v0.0.0-20250531102226-cb187b08699c
