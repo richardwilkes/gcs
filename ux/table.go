@@ -364,7 +364,6 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]], recordUnd
 				}
 			}
 		}
-		needSet := false
 		topLevelData := provider.RootData()
 		for _, target := range list {
 			parent := gurps.AsNode(target).Parent()
@@ -372,7 +371,6 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]], recordUnd
 				for i, one := range topLevelData {
 					if one == target {
 						topLevelData = slices.Delete(topLevelData, i, i+1)
-						needSet = true
 						break
 					}
 				}
@@ -387,9 +385,7 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]], recordUnd
 				}
 			}
 		}
-		if needSet {
-			provider.SetRootData(topLevelData)
-		}
+		provider.SetRootData(topLevelData)
 		if recordUndo && mgr != nil && undo != nil {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
