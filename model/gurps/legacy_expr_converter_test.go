@@ -33,12 +33,12 @@ func TestExprToScript(t *testing.T) {
 	check.Equal(t, `Hello <script>$name</script>!`, s)
 
 	s = gurps.EmbeddedExprToScript(`Hello ||$name||! A random weight for you is ||random_weight($st)||.`)
-	check.Equal(t, `Hello <script>$name</script>! A random weight for you is <script>entity.randomWeight($st)</script>.`, s)
+	check.Equal(t, `Hello <script>$name</script>! A random weight for you is <script>entity.randomWeightInPounds($st)</script>.`, s)
 
 	s = gurps.EmbeddedExprToScript(`Hello ||$name||!
 	A random weight for you is ||random_weight($st)||.`)
 	check.Equal(t, `Hello <script>$name</script>!
-	A random weight for you is <script>entity.randomWeight($st)</script>.`, s)
+	A random weight for you is <script>entity.randomWeightInPounds($st)</script>.`, s)
 
 	s = gurps.ExprToScript(`trait_level("enhanced move (ground)")`)
 	check.Equal(t, `entity.traitLevel("enhanced move (ground)")`, s)
