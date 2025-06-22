@@ -275,6 +275,10 @@ var (
 	trashData string
 	Trash     = unison.MustSVGFromContentString(trashData)
 
+	//go:embed magic_wand.svg
+	magicWandData string
+	MagicWand     = unison.MustSVGFromContentString(magicWandData)
+
 	//go:embed weight.svg
 	weightData string
 	Weight     = unison.MustSVGFromContentString(weightData)

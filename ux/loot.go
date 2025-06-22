@@ -10,16 +10,19 @@
 package ux
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/xmath/rand"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -218,6 +221,11 @@ func (l *LootSheet) createToolbar() {
 	syncSourceButton.Tooltip = newWrappedTooltip(i18n.Text("Sync with all sources in this sheet"))
 	syncSourceButton.ClickCallback = func() { l.syncWithAllSources() }
 	l.toolbar.AddChild(syncSourceButton)
+
+	treasureButton := unison.NewSVGButton(svg.MagicWand)
+	treasureButton.Tooltip = newWrappedTooltip(i18n.Text("Generate a treasure horde from this loot sheet"))
+	treasureButton.ClickCallback = func() { l.generateTreasure() }
+	l.toolbar.AddChild(treasureButton)
 
 	l.searchTracker = InstallSearchTracker(l.toolbar, func() {
 		l.Equipment.Table.ClearSelection()
@@ -634,4 +642,124 @@ func (l *LootSheet) toggleNotes() {
 		table.ApplyNoteState(closed)
 	}
 	l.Rebuild(true)
+}
+
+func (l *LootSheet) generateTreasure() {
+	content := unison.NewPanel()
+	content.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	markdown := unison.NewMarkdown(false)
+	markdown.SetContent(i18n.Text(`# Treasure Generation
+
+This will generate a new Loot Sheet with items from the contents of this one.
+Each top-level item in this sheet will be treated as a potential item to select from.
+The quantity of that top-level item will be used to determine the likelihood of it
+being selected, with larger numbers increasing the chance it is chosen.`), 400)
+	content.AddChild(markdown)
+	input := unison.NewPanel()
+	input.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
+	})
+	input.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
+	input.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 4}))
+	minValue := fxp.Thousand
+	maxValue := fxp.TwoThousand
+	var dialog *unison.Dialog
+	var minField, maxField *DecimalField
+	validateOK := func() {
+		dialog.Button(unison.ModalResponseOK).SetEnabled(minValue <= maxValue && maxValue >= minValue &&
+			!minField.Invalid() && !maxField.Invalid())
+	}
+	label := i18n.Text("Minimum Value")
+	input.AddChild(NewFieldLeadingLabel(label, false))
+	minField = NewDecimalField(nil, "", label,
+		func() fxp.Int { return minValue },
+		func(value fxp.Int) {
+			minValue = value
+			validateOK()
+		},
+		fxp.One, fxp.MaxSafeMultiply, false, false)
+	input.AddChild(minField)
+	label = i18n.Text("Maximum Value")
+	input.AddChild(NewFieldLeadingLabel(label, false))
+	maxField = NewDecimalField(nil, "", label,
+		func() fxp.Int { return maxValue },
+		func(value fxp.Int) {
+			maxValue = value
+			validateOK()
+		},
+		fxp.One, fxp.MaxSafeMultiply, false, false)
+	input.AddChild(maxField)
+	content.AddChild(input)
+	icon := &unison.DrawableSVG{
+		SVG:  svg.MagicWand,
+		Size: unison.Size{Width: 48, Height: 48},
+	}
+	var err error
+	if dialog, err = unison.NewDialog(icon, unison.DefaultDialogTheme.QuestionIconInk, content,
+		[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()},
+		unison.FloatingWindowOption(), unison.NotResizableWindowOption()); err != nil {
+		errs.Log(err)
+		return
+	}
+	if dialog.RunModal() == unison.ModalResponseOK {
+		var current fxp.Int
+		choices, total := pruneEquipmentList(maxValue-current, l.loot.Equipment)
+		r := rand.NewCryptoRand()
+		m := make(map[*gurps.Equipment]int)
+		for len(choices) > 0 && current < minValue {
+			found := false
+			fmt.Println("Range: ", total.String())
+			choice := fxp.Int(r.Intn(int(total)))
+			fmt.Println("Choice: ", choice.String())
+			for _, item := range choices {
+				if item.Quantity >= choice {
+					m[item]++
+					current += item.ExtendedValueOfJustOne()
+					found = true
+					break
+				}
+				choice -= item.Quantity
+			}
+			if !found || current >= minValue {
+				break
+			}
+			choices, total = pruneEquipmentList(maxValue-current, choices)
+		}
+		if current < minValue {
+			unison.ErrorDialogWithMessage(i18n.Text("Unable to generate treasure!"),
+				fmt.Sprintf(i18n.Text(`The minimum value of $%s could not be reached while staying at
+or under the maximum value of $%s with the available items.`),
+					minValue.Comma(), maxValue.Comma()))
+			return
+		}
+
+		loot := gurps.NewLoot()
+		for item, quantity := range m {
+			clone := item.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(item), nil, false)
+			clone.Quantity = fxp.From(quantity)
+			loot.Equipment = append(loot.Equipment, clone)
+		}
+		loot.EnsureAttachments()
+		sheet := NewLootSheet("untitled"+gurps.LootExt, loot)
+		sheet.hash = 0 // Force it to be recognized as unsaved
+		DisplayNewDockable(sheet)
+	}
+}
+
+func pruneEquipmentList(remaining fxp.Int, items []*gurps.Equipment) (revisedItems []*gurps.Equipment, total fxp.Int) {
+	for _, item := range items {
+		if item.Quantity > 0 && item.ExtendedValueOfJustOne() <= remaining {
+			revisedItems = append(revisedItems, item)
+			total += item.Quantity
+		}
+	}
+	return
 }

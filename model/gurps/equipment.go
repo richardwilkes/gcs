@@ -615,6 +615,21 @@ func (e *Equipment) ExtendedValue() fxp.Int {
 	return value.Mul(e.Quantity)
 }
 
+// ExtendedValueOfJustOne returns the extended value of just one piece of this equipment, including the value of
+// children.
+func (e *Equipment) ExtendedValueOfJustOne() fxp.Int {
+	if e.Quantity <= 0 {
+		return 0
+	}
+	value := e.AdjustedValue()
+	if e.Container() {
+		for _, one := range e.Children {
+			value += one.ExtendedValue()
+		}
+	}
+	return value
+}
+
 // BaseWeightWithReplacements returns the base weight with any replacements applied.
 func (e *Equipment) BaseWeightWithReplacements() string {
 	return nameable.Apply(e.BaseWeight, e.Replacements)
