@@ -113,14 +113,24 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
 				rebuilder.Rebuild(true)
 			}
-			// Only process them if this is both for an entity and not from one (i.e. drop into a sheet from a library)
-			if toolbox.IsNil(unison.Ancestor[gurps.DataOwnerProvider](from)) {
-				ProcessModifiersForSelection(to)
-				ProcessNameablesForSelection(to)
-			}
 		}
 	}
+	// Only process modifiers and nameables if this is a drop into a character or loot sheet from something
+	// besides a character or loot sheet.
+	if isForCharacterOrLootSheet(to) && !isForCharacterOrLootSheet(from) {
+		ProcessModifiersForSelection(to)
+		ProcessNameablesForSelection(to)
+	}
 	finishDidDrop(undo, from, to, move)
+}
+
+func isForCharacterOrLootSheet(panel unison.Paneler) bool {
+	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
+	case *Sheet, *LootSheet:
+		return true
+	default:
+		return false
+	}
 }
 
 func finishDidDrop[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
