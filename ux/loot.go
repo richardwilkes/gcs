@@ -711,27 +711,35 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 	}
 	if dialog.RunModal() == unison.ModalResponseOK {
 		var current fxp.Int
-		choices, total := pruneEquipmentList(maxValue-current, l.loot.Equipment)
 		r := rand.NewCryptoRand()
 		m := make(map[*gurps.Equipment]int)
-		for len(choices) > 0 && current < minValue {
-			found := false
-			fmt.Println("Range: ", total.String())
-			choice := fxp.Int(r.Intn(int(total)))
-			fmt.Println("Choice: ", choice.String())
-			for _, item := range choices {
-				if item.Quantity >= choice {
-					m[item]++
-					current += item.ExtendedValueOfJustOne()
-					found = true
+		for range 10 {
+			choices, total, highest := pruneEquipmentList(maxValue-current, l.loot.Equipment)
+			for len(choices) > 0 && current < minValue {
+				found := false
+				choice := fxp.Int(r.Intn(int(total)))
+				for _, item := range choices {
+					if item.Quantity >= choice {
+						m[item]++
+						current += item.ExtendedValueOfJustOne()
+						found = true
+						break
+					}
+					choice -= item.Quantity
+				}
+				if !found || current >= minValue {
 					break
 				}
-				choice -= item.Quantity
+				remaining := maxValue - current
+				if highest > remaining {
+					choices, total, highest = pruneEquipmentList(remaining, choices)
+				}
 			}
-			if !found || current >= minValue {
+			if current >= minValue {
 				break
 			}
-			choices, total = pruneEquipmentList(maxValue-current, choices)
+			current = 0
+			clear(m)
 		}
 		if current < minValue {
 			unison.ErrorDialogWithMessage(i18n.Text("Unable to generate treasure!"),
@@ -740,7 +748,6 @@ or under the maximum value of $%s with the available items.`),
 					minValue.Comma(), maxValue.Comma()))
 			return
 		}
-
 		loot := gurps.NewLoot()
 		for item, quantity := range m {
 			clone := item.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(item), nil, false)
@@ -754,11 +761,17 @@ or under the maximum value of $%s with the available items.`),
 	}
 }
 
-func pruneEquipmentList(remaining fxp.Int, items []*gurps.Equipment) (revisedItems []*gurps.Equipment, total fxp.Int) {
+func pruneEquipmentList(remaining fxp.Int, items []*gurps.Equipment) (revisedItems []*gurps.Equipment, total, highest fxp.Int) {
 	for _, item := range items {
-		if item.Quantity > 0 && item.ExtendedValueOfJustOne() <= remaining {
-			revisedItems = append(revisedItems, item)
-			total += item.Quantity
+		if item.Quantity > 0 {
+			one := item.ExtendedValueOfJustOne()
+			if one <= remaining {
+				revisedItems = append(revisedItems, item)
+				total += item.Quantity
+				if highest < one {
+					highest = one
+				}
+			}
 		}
 	}
 	return
