@@ -252,8 +252,12 @@ func copySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 				}
 				if targetTable != nil {
 					CopyRowsTo(targetTable, sel, postProcessor, true)
-					ProcessModifiersForSelection(targetTable)
-					ProcessNameablesForSelection(targetTable)
+					// Only process modifiers and nameables if this is copying into a character or loot sheet from
+					// something besides a character or loot sheet.
+					if isForCharacterOrLootSheet(targetTable) && !isForCharacterOrLootSheet(table) {
+						ProcessModifiersForSelection(targetTable)
+						ProcessNameablesForSelection(targetTable)
+					}
 				}
 			}
 		}

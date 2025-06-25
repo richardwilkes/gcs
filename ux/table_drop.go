@@ -125,6 +125,9 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 }
 
 func isForCharacterOrLootSheet(panel unison.Paneler) bool {
+	if toolbox.IsNil(panel) {
+		return false
+	}
 	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
 	case *Sheet, *LootSheet:
 		return true
