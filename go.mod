@@ -3,6 +3,7 @@ module github.com/richardwilkes/gcs/v5
 go 1.24.4
 
 require (
+	gioui.org v0.8.0
 	github.com/dop251/goja v0.0.0-20250531102226-cb187b08699c
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/json v0.3.0
@@ -20,12 +21,14 @@ require (
 )
 
 require (
+	gioui.org/shader v1.0.8 // indirect
 	github.com/OpenPrinting/goipp v1.2.0 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
+	github.com/go-text/typesetting v0.2.1 // indirect
 	github.com/google/pprof v0.0.0-20250602020802-c6617b811d0e // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
@@ -36,6 +39,7 @@ require (
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/tc-hib/winres v0.3.1 // indirect
 	github.com/yuin/goldmark v1.7.12 // indirect
+	golang.org/x/exp/shiny v0.0.0-20240707233637-46b078467d37 // indirect
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sync v0.15.0 // indirect

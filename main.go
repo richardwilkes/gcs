@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/gcs/v5/ux/gio"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -84,7 +85,8 @@ func main() {
 			cl.FatalMsg(err.Error())
 		}
 	default:
-		ux.Start(fileList) // Never returns
+		gio.StartGioUI() // Start the new Gio UI
+		// ux.Start(fileList) // Original Unison UI start
 	}
 	atexit.Exit(0)
 }
