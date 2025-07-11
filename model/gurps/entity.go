@@ -40,7 +40,6 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -48,11 +47,10 @@ import (
 )
 
 var (
-	_ eval.VariableResolver = &Entity{}
-	_ ListProvider          = &Entity{}
-	_ DataOwner             = &Entity{}
-	_ Hashable              = &Entity{}
-	_ PageInfoProvider      = &Entity{}
+	_ ListProvider     = &Entity{}
+	_ DataOwner        = &Entity{}
+	_ Hashable         = &Entity{}
+	_ PageInfoProvider = &Entity{}
 )
 
 // PointsBreakdown holds the points spent on a character.
@@ -1199,7 +1197,7 @@ func (e *Entity) skillLevelResolutionKey(name, specialization string) string {
 	return name + "\u0000" + specialization
 }
 
-// ResolveVariable implements eval.VariableResolver.
+// ResolveVariable resolves a variable to a value.
 func (e *Entity) ResolveVariable(variableName string) string {
 	if e.variableResolverExclusions[variableName] {
 		slog.Error("attempt to resolve variable via itself", "name", variableName)
