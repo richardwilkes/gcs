@@ -16,9 +16,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Prereq = &EquippedEquipmentPrereq{}
@@ -27,8 +27,8 @@ var _ Prereq = &EquippedEquipmentPrereq{}
 type EquippedEquipmentPrereq struct {
 	Parent       *PrereqList   `json:"-"`
 	Type         prereq.Type   `json:"type"`
-	NameCriteria criteria.Text `json:"name,omitempty"`
-	TagsCriteria criteria.Text `json:"tags,omitempty"`
+	NameCriteria criteria.Text `json:"name,omitzero"`
+	TagsCriteria criteria.Text `json:"tags,omitzero"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
@@ -64,7 +64,7 @@ func (p *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]st
 }
 
 // Satisfied implements Prereq.
-func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
+func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
@@ -90,10 +90,10 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 // Hash writes this object's contents into the hasher.
 func (p *EquippedEquipmentPrereq) Hash(h hash.Hash) {
 	if p == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, p.Type)
+	xhash.Num8(h, p.Type)
 	p.NameCriteria.Hash(h)
 	p.TagsCriteria.Hash(h)
 }

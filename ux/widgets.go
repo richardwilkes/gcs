@@ -20,8 +20,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
@@ -151,7 +152,7 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet
 	})
 	tip := gurps.TechLevelInfo()
 	if !ownerIsSheet {
-		tip = txt.Wrap("", i18n.Text("Leave field blank to auto-populate with the character's TL when added to a character sheet."), 60) + "\n\n" + tip
+		tip = xstrings.Wrap("", i18n.Text("Leave field blank to auto-populate with the character's TL when added to a character sheet."), 60) + "\n\n" + tip
 	}
 	field.Tooltip = newWrappedTooltip(tip)
 	if *fieldData == nil {
@@ -246,7 +247,7 @@ func newWrappedTooltipWithSecondaryText(primary, secondary string) *unison.Panel
 }
 
 func wrapTextForTooltip(tooltip string) string {
-	return strings.ReplaceAll(txt.Wrap("", strings.ReplaceAll(tooltip, " ", "␣"), 80), "␣", " ")
+	return strings.ReplaceAll(xstrings.Wrap("", strings.ReplaceAll(tooltip, " ", "␣"), 80), "␣", " ")
 }
 
 func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
@@ -465,7 +466,7 @@ func adjustFieldBlank(field unison.Paneler, blank bool) {
 	panel := field.AsPanel()
 	panel.SetEnabled(!blank)
 	if blank {
-		panel.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
+		panel.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
 			var ink unison.Ink
 			if f, ok := panel.Self.(*unison.Field); ok {
 				ink = f.BackgroundInk
@@ -483,7 +484,7 @@ func adjustFieldBlank(field unison.Paneler, blank bool) {
 func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 	popup.SetEnabled(!blank)
 	if blank {
-		popup.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
+		popup.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
 			unison.DrawRoundedRectBase(gc, popup.ContentRect(false), popup.CornerRadius, 1, popup.BackgroundInk, popup.EdgeInk)
 		}
 	} else {
@@ -583,11 +584,11 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 	panel.AddChild(popup)
 	if integerOnly {
 		field = NewIntegerField(targetMgr, targetKey, undoTitle,
-			func() int { return fxp.As[int](numCriteria.Qualifier) },
+			func() int { return fxp.AsInteger[int](numCriteria.Qualifier) },
 			func(value int) {
-				numCriteria.Qualifier = fxp.From(value)
+				numCriteria.Qualifier = fxp.FromInteger(value)
 				MarkModified(panel)
-			}, fxp.As[int](minValue), fxp.As[int](maxValue), false, false)
+			}, fxp.AsInteger[int](minValue), fxp.AsInteger[int](maxValue), false, false)
 		panel.AddChild(field)
 	} else {
 		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue)
@@ -652,9 +653,9 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 	}
 	parent.AddChild(popup)
 	parent.AddChild(NewIntegerField(targetMgr, targetKey, i18n.Text("Quantity Criteria"),
-		func() int { return fxp.As[int](numCriteria.Qualifier) },
+		func() int { return fxp.AsInteger[int](numCriteria.Qualifier) },
 		func(value int) {
-			numCriteria.Qualifier = fxp.From(value)
+			numCriteria.Qualifier = fxp.FromInteger(value)
 			MarkModified(parent)
 		}, 0, 9999, false, false))
 }
@@ -740,7 +741,7 @@ func NewSVGButtonForFont(svgData *unison.SVG, font unison.Font, sizeAdjust float
 	baseline := font.Baseline() + sizeAdjust
 	b.Drawable = &unison.DrawableSVG{
 		SVG:  svgData,
-		Size: unison.NewSize(baseline, baseline).Ceil(),
+		Size: geom.NewSize(baseline, baseline).Ceil(),
 	}
 	return b
 }

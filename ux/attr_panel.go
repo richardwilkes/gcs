@@ -18,9 +18,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -96,7 +97,7 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 		a.fatalKind()
 	}
 	a.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: title},
-		unison.NewEmptyBorder(unison.NewSymmetricInsets(2, 1))))
+		unison.NewEmptyBorder(geom.NewSymmetricInsets(2, 1))))
 	a.DrawCallback = a.drawSelf
 	attrs := gurps.SheetSettingsFor(a.entity).Attributes
 	a.hash = gurps.Hash64(attrs)
@@ -104,7 +105,7 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 	return a
 }
 
-func (a *AttrPanel) drawSelf(gc *unison.Canvas, rect unison.Rect) {
+func (a *AttrPanel) drawSelf(gc *unison.Canvas, rect geom.Rect) {
 	gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 	children := a.Children()
 	for i, rowIndex := range a.rowStarts {
@@ -129,7 +130,7 @@ func (a *AttrPanel) drawSelf(gc *unison.Canvas, rect unison.Rect) {
 }
 
 func (a *AttrPanel) fatalKind() {
-	fatal.WithErr(errs.Newf("unknown attribute panel kind: %d", a.kind))
+	xos.ExitWithErr(errs.Newf("unknown attribute panel kind: %d", a.kind))
 }
 
 func (a *AttrPanel) columns() int {
@@ -191,7 +192,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 				size := max(fonts.PageLabelPrimary.Baseline()-2, 6)
 				button.Drawable = &unison.DrawableSVG{
 					SVG:             unison.CircledChevronRightSVG,
-					Size:            unison.NewSize(size, size),
+					Size:            geom.NewSize(size, size),
 					RotationDegrees: rotation,
 				}
 				button.ClickCallback = func() {
@@ -220,8 +221,8 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 						VAlign: align.Middle,
 						HGrab:  true,
 					})
-					label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-						_, pref, _ := label.Sizes(unison.Size{})
+					label.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
+						_, pref, _ := label.Sizes(geom.Size{})
 						paint := unison.ThemeSurfaceEdge.Paint(gc, rect, paintstyle.Stroke)
 						paint.SetStrokeWidth(1)
 						half := (rect.Width - pref.Width) / 2
@@ -308,8 +309,8 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 								func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true))
 						} else {
 							a.AddChild(NewIntegerPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
-								func() int { return fxp.As[int](attr.Maximum().Trunc()) },
-								func(v int) { attr.SetMaximum(fxp.From(v)) }, fxp.As[int](fxp.Min.Trunc()), fxp.As[int](fxp.Max.Trunc()), false, true))
+								func() int { return fxp.AsInteger[int](attr.Maximum().Floor()) },
+								func(v int) { attr.SetMaximum(fxp.FromInteger(v)) }, fxp.AsInteger[int](fxp.Min.Floor()), fxp.AsInteger[int](fxp.Max.Floor()), false, true))
 						}
 					}
 					a.AddChild(NewPageLabel(def.CombinedName()))

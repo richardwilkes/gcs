@@ -9,9 +9,7 @@
 
 package gurps
 
-import (
-	"github.com/richardwilkes/toolbox/xmath/rand"
-)
+import "github.com/richardwilkes/toolbox/v2/xrand"
 
 // WeightedStringOption is a string that has a weight associated with it.
 type WeightedStringOption struct {
@@ -33,7 +31,7 @@ func ChooseWeightedStringOption(options []*WeightedStringOption, not string) str
 		}
 	}
 	if total > 0 {
-		choice := 1 + rand.NewCryptoRand().Intn(total)
+		choice := 1 + xrand.New().Intn(total)
 		for _, one := range options {
 			if one.Value != not {
 				choice -= one.Weight

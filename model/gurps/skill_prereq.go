@@ -15,9 +15,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Prereq = &SkillPrereq{}
@@ -27,9 +27,9 @@ type SkillPrereq struct {
 	Parent                 *PrereqList     `json:"-"`
 	Type                   prereq.Type     `json:"type"`
 	Has                    bool            `json:"has"`
-	NameCriteria           criteria.Text   `json:"name,omitempty"`
-	LevelCriteria          criteria.Number `json:"level,omitempty"`
-	SpecializationCriteria criteria.Text   `json:"specialization,omitempty"`
+	NameCriteria           criteria.Text   `json:"name,omitzero"`
+	LevelCriteria          criteria.Number `json:"level,omitzero"`
+	SpecializationCriteria criteria.Text   `json:"specialization,omitzero"`
 }
 
 // NewSkillPrereq creates a new SkillPrereq.
@@ -67,7 +67,7 @@ func (p *SkillPrereq) FillWithNameableKeys(m, existing map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
@@ -119,11 +119,11 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 // Hash writes this object's contents into the hasher.
 func (p *SkillPrereq) Hash(h hash.Hash) {
 	if p == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, p.Type)
-	hashhelper.Bool(h, p.Has)
+	xhash.Num8(h, p.Type)
+	xhash.Bool(h, p.Has)
 	p.NameCriteria.Hash(h)
 	p.LevelCriteria.Hash(h)
 	p.SpecializationCriteria.Hash(h)

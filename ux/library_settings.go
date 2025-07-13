@@ -20,8 +20,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/slant"
@@ -222,7 +222,7 @@ func (d *librarySettingsDockable) choosePath() {
 	dlg.SetCanChooseDirectories(true)
 	dlg.SetCanChooseFiles(false)
 	usedLastDir := false
-	if xfs.IsDir(d.path) {
+	if xos.IsDir(d.path) {
 		dlg.SetInitialDirectory(filepath.Dir(d.path))
 	} else {
 		dlg.SetInitialDirectory(gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey))

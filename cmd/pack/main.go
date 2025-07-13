@@ -10,35 +10,30 @@
 package main
 
 import (
-	"os"
+	"flag"
 
 	"github.com/richardwilkes/gcs/v5/early"
-	"github.com/richardwilkes/toolbox/atexit"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/unison/upack/packager"
+	"github.com/richardwilkes/toolbox/v2/xflag"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xyaml"
+	"github.com/richardwilkes/unison/cmd/upack/packager"
 )
 
 func main() {
 	early.Configure()
-	appName := cmdline.AppName
-	cmdline.AppName += " Packager"
-	cmdline.AppCmdName += "pack"
-	cmdline.AppIdentifier += ".pack"
-	cl := cmdline.New(false)
-	cl.Description = "A tool for packaging " + appName + " for distribution."
-	var release string
-	var createDist bool
-	cl.NewGeneralOption(&release).SetName("release").SetSingle('r').SetArg("version").
-		SetUsage(`The release version to package (e.g. "1.2.3") to package.`)
-	cl.NewGeneralOption(&createDist).SetName("dist").SetSingle('d').
-		SetUsage(`Enable creation of a distribution package.`)
-	cl.Parse(os.Args[1:])
-	if release == "" {
-		cl.FatalMsg("A release version must be specified.")
+	baseAppName := xos.AppName
+	xos.AppName += " Packager"
+	xos.AppCmdName += "pack"
+	xos.AppIdentifier += ".pack"
+	xflag.SetUsage(nil, "A tool for packaging "+baseAppName+" for distribution.", "")
+	release := flag.String("release", "", "The release `version` (e.g. \"1.2.3\") to package")
+	createDist := flag.Bool("dist", false, "Enable creation of a distribution package")
+	xflag.Parse()
+	if *release == "" {
+		xos.ExitWithMsg("A release version must be specified.")
 	}
 	var cfg packager.Config
-	cl.FatalIfError(fs.LoadYAML("packaging.yml", &cfg))
-	cl.FatalIfError(packager.Package(&cfg, release, createDist))
-	atexit.Exit(0)
+	xos.ExitIfErr(xyaml.Load("packaging.yml", &cfg))
+	xos.ExitIfErr(packager.Package(&cfg, *release, *createDist))
+	xos.Exit(0)
 }

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 type scriptSpell struct {
@@ -87,7 +87,7 @@ func newScriptSpell(entity *Entity, spell *Spell) *scriptSpell {
 		s.Duration = spell.Duration
 		s.RitualSkillName = spell.RitualSkillName
 		s.RitualPrereqCount = spell.RitualPrereqCount
-		s.Points = fxp.As[int](spell.AdjustedPoints(nil))
+		s.Points = fxp.AsInteger[int](spell.AdjustedPoints(nil))
 	}
 	return &s
 }
@@ -107,8 +107,8 @@ func (s *scriptSpell) ensureCachedLevels() {
 		return
 	}
 	s.spell.UpdateLevel()
-	s.level = fxp.As[int](s.spell.LevelData.Level)
-	s.relativeLevel = fxp.As[int](s.spell.LevelData.RelativeLevel)
+	s.level = fxp.AsInteger[int](s.spell.LevelData.Level)
+	s.relativeLevel = fxp.AsInteger[int](s.spell.LevelData.RelativeLevel)
 }
 
 func (s *scriptSpell) Children() []*scriptSpell {

@@ -13,7 +13,8 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -39,8 +40,8 @@ type ImageDockable struct {
 	imgPanel   *unison.Panel
 	scroll     *unison.ScrollPanel
 	scale      int
-	dragStart  unison.Point
-	dragOrigin unison.Point
+	dragStart  geom.Point
+	dragOrigin geom.Point
 	inDrag     bool
 }
 
@@ -86,7 +87,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	sizeLabel.SetTitle(fmt.Sprintf("%d x %d pixels", int(size.Width), int(size.Height)))
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -118,14 +119,14 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	return d, nil
 }
 
-func (d *ImageDockable) updateCursor(_ unison.Point) *unison.Cursor {
+func (d *ImageDockable) updateCursor(_ geom.Point) *unison.Cursor {
 	if d.inDrag {
 		return unison.MoveCursor()
 	}
 	return unison.ArrowCursor()
 }
 
-func (d *ImageDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifiers) bool {
+func (d *ImageDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifiers) bool {
 	d.dragStart = d.imgPanel.PointToRoot(where)
 	d.dragOrigin.X, d.dragOrigin.Y = d.scroll.Position()
 	d.inDrag = true
@@ -134,30 +135,30 @@ func (d *ImageDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifie
 	return true
 }
 
-func (d *ImageDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
+func (d *ImageDockable) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) bool {
 	pt := d.dragStart.Sub(d.imgPanel.PointToRoot(where)).Add(d.dragOrigin)
 	d.scroll.SetPosition(pt.X, pt.Y)
 	return true
 }
 
-func (d *ImageDockable) mouseUp(_ unison.Point, _ int, _ unison.Modifiers) bool {
+func (d *ImageDockable) mouseUp(_ geom.Point, _ int, _ unison.Modifiers) bool {
 	d.inDrag = false
 	d.UpdateCursorNow()
 	return true
 }
 
-func (d *ImageDockable) imageSizer(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
+func (d *ImageDockable) imageSizer(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	prefSize = d.img.Size()
-	return unison.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
+	return geom.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
 }
 
-func (d *ImageDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
+func (d *ImageDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 	gc.DrawRect(dirty, unison.ThemeSurface.Paint(gc, dirty, paintstyle.Fill))
 	gc.DrawImage(d.img, 0, 0, nil, nil)
 }
 
 // TitleIcon implements workspace.FileBackedDockable
-func (d *ImageDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (d *ImageDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(d.path).SVG,
 		Size: suggestedSize,
@@ -166,7 +167,7 @@ func (d *ImageDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 
 // Title implements workspace.FileBackedDockable
 func (d *ImageDockable) Title() string {
-	return xfs.BaseName(d.path)
+	return xfilepath.BaseName(d.path)
 }
 
 // Tooltip implements workspace.FileBackedDockable

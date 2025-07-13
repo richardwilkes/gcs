@@ -14,9 +14,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xmath"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -26,7 +27,7 @@ type Page struct {
 	unison.Panel
 	flex         *unison.FlexLayout
 	infoProvider gurps.PageInfoProvider
-	lastInsets   unison.Insets
+	lastInsets   geom.Insets
 	Force        bool
 }
 
@@ -49,7 +50,7 @@ func NewPage(infoProvider gurps.PageInfoProvider) *Page {
 }
 
 // LayoutSizes implements unison.Layout
-func (p *Page) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, maxSize unison.Size) {
+func (p *Page) LayoutSizes(_ *unison.Panel, _ geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	pageSettings := p.infoProvider.PageSettings()
 	w, h := pageSettings.Orientation.Dimensions(gurps.MustParsePageSize(pageSettings.Size))
 	if insets := p.insets(); insets != p.lastInsets {
@@ -60,7 +61,7 @@ func (p *Page) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, m
 	if p.Force {
 		prefSize.Height = h.Pixels()
 	} else {
-		_, size, _ := p.flex.LayoutSizes(p.AsPanel(), unison.Size{Width: w.Pixels()})
+		_, size, _ := p.flex.LayoutSizes(p.AsPanel(), geom.Size{Width: w.Pixels()})
 		prefSize.Height = size.Height
 	}
 	return prefSize, prefSize, prefSize
@@ -74,15 +75,15 @@ func (p *Page) PerformLayout(_ *unison.Panel) {
 // ApplyPreferredSize to this panel.
 func (p *Page) ApplyPreferredSize() {
 	r := p.FrameRect()
-	_, pref, _ := p.Sizes(unison.Size{})
+	_, pref, _ := p.Sizes(geom.Size{})
 	r.Size = pref
 	p.SetFrameRect(r)
 	p.ValidateLayout()
 }
 
-func (p *Page) insets() unison.Insets {
+func (p *Page) insets() geom.Insets {
 	pageSettings := p.infoProvider.PageSettings()
-	insets := unison.Insets{
+	insets := geom.Insets{
 		Top:    pageSettings.TopMargin.Pixels(),
 		Left:   pageSettings.LeftMargin.Pixels(),
 		Bottom: pageSettings.BottomMargin.Pixels(),
@@ -93,10 +94,10 @@ func (p *Page) insets() unison.Insets {
 	return insets
 }
 
-func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
+func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	insets := p.insets()
-	_, prefSize, _ := p.LayoutSizes(nil, unison.Size{})
-	r := unison.Rect{Size: prefSize}
+	_, prefSize, _ := p.LayoutSizes(nil, geom.Size{})
+	r := geom.Rect{Size: prefSize}
 	gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
 	r.X += insets.Left
 	r.Width -= insets.Left + insets.Right
@@ -115,8 +116,8 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	}
 
 	center := unison.NewText(p.infoProvider.PageTitle(), primaryDecorations)
-	left := unison.NewText(fmt.Sprintf(i18n.Text("%s is copyrighted ©%s by %s"), cmdline.AppName,
-		cmdline.ResolveCopyrightYears(), cmdline.CopyrightHolder), secondaryDecorations)
+	left := unison.NewText(fmt.Sprintf(i18n.Text("%s is copyrighted ©%s by %s"), xos.AppName,
+		xos.CopyrightYears(), xos.CopyrightHolder), secondaryDecorations)
 	right := unison.NewText(fmt.Sprintf(i18n.Text("Modified %s"), p.infoProvider.ModifiedOnString()),
 		secondaryDecorations)
 	if pageNumber&1 == 0 {

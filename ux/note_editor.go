@@ -13,7 +13,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -56,7 +57,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 		HAlign: align.End,
 		VAlign: align.Start,
 	})
-	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 3}))
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 3}))
 	content.AddChild(label)
 	field := addScriptField(content, nil, "", labelText,
 		i18n.Text("These notes will be interpreted as markdown and may also have scripts embedded in them by wrapping each script in <script>your script goes here</script> tags."),
@@ -97,8 +98,8 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	})
 	label.SetBorder(
 		unison.NewCompoundBorder(
-			unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1}, false),
-			unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 3}),
+			unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1}, false),
+			unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 3}),
 		),
 	)
 	content.AddChild(label)

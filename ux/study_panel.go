@@ -16,8 +16,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -55,8 +56,8 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.S
 			Title: i18n.Text("Study"),
 			Font:  unison.LabelFont,
 		},
-		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		unison.NewEmptyBorder(geom.NewUniformInsets(2))))
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 
@@ -178,7 +179,7 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 func updateLimitations(info *unison.Label, studyType study.Type) {
 	ClearInfoPop(info)
 	for _, one := range studyType.Limitations() {
-		AddHelpToInfoPop(info, txt.Wrap("", "● "+one, 60))
+		AddHelpToInfoPop(info, xstrings.Wrap("", "● "+one, 60))
 	}
 }
 

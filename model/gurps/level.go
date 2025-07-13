@@ -23,7 +23,7 @@ func (l Level) LevelAsString(forContainer bool) string {
 	if forContainer {
 		return ""
 	}
-	level := l.Level.Trunc()
+	level := l.Level.Floor()
 	if level <= 0 {
 		return "-"
 	}

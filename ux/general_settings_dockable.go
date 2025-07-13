@@ -13,6 +13,7 @@ import (
 	"cmp"
 	"errors"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -24,18 +25,20 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/collection/dict"
-	"github.com/richardwilkes/toolbox/collection/slice"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/rotation"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio/fs/paths"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xflag"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xslices"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
 )
+
+// PathToLog is set by the main entry point to whatever is being used for the path to the log file.
+var PathToLog string
 
 var languageSetting string
 
@@ -172,7 +175,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createScrollWheelMultiplierField(content)
 	d.createPathInfoField(content, i18n.Text("Settings Path"), gurps.SettingsPath)
 	d.createPathInfoField(content, i18n.Text("Translations Path"), i18n.Dir)
-	d.createPathInfoField(content, i18n.Text("Log Path"), rotation.PathToLog)
+	d.createPathInfoField(content, i18n.Text("Log Path"), PathToLog)
 	d.createExternalPDFCmdLineField(content)
 	d.createLocaleField(content)
 	d.createDeepSearchCheckboxes(content)
@@ -402,7 +405,7 @@ func (d *generalSettingsDockable) createExternalPDFCmdLineField(content *unison.
 		HGrab:  true,
 	})
 	d.externalPDFCmdlineField.ValidateCallback = func() bool {
-		_, err := cmdline.Parse(strings.TrimSpace(d.externalPDFCmdlineField.Text()))
+		_, err := xflag.SplitCommandLine(strings.TrimSpace(d.externalPDFCmdlineField.Text()))
 		return err == nil
 	}
 	d.externalPDFCmdlineField.Tooltip = newWrappedTooltip(i18n.Text(`The internal PDF viewer will be used if the External PDF Viewer field is empty.
@@ -424,7 +427,7 @@ func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	d.localeField.Tooltip = newWrappedTooltip(txt.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this generally require quitting and restarting GCS to have the desired effect.`), 100))
+	d.localeField.Tooltip = newWrappedTooltip(xstrings.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this generally require quitting and restarting GCS to have the desired effect.`), 100))
 	d.localeField.Watermark = i18n.Locale()
 	content.AddChild(d.localeField)
 }
@@ -436,7 +439,7 @@ func (d *generalSettingsDockable) createDeepSearchCheckboxes(content *unison.Pan
 		Title: i18n.Text("Library Explorer Deep Search"),
 		Font:  unison.DefaultLabelTheme.Font,
 	},
-		unison.NewEmptyBorder(unison.NewSymmetricInsets(unison.StdHSpacing,
+		unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing,
 			unison.StdVSpacing))))
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -450,8 +453,8 @@ func (d *generalSettingsDockable) createDeepSearchCheckboxes(content *unison.Pan
 		fi := gurps.FileInfoFor(ext)
 		extMap[strings.TrimPrefix(fi.Name, "GCS ")] = fi.Extensions[0]
 	}
-	keys := dict.Keys(extMap)
-	slice.ColumnSort(keys, 2, cmp.Compare[string])
+	keys := slices.Collect(maps.Keys(extMap))
+	xslices.ColumnSort(keys, 2, cmp.Compare[string])
 	settings := gurps.GlobalSettings()
 	for _, name := range keys {
 		ext := extMap[name]
@@ -487,7 +490,7 @@ func (d *generalSettingsDockable) createOpenInWindowCheckboxes(content *unison.P
 		Title: i18n.Text("Use Separate Windows"),
 		Font:  unison.DefaultLabelTheme.Font,
 	},
-		unison.NewEmptyBorder(unison.NewSymmetricInsets(unison.StdHSpacing,
+		unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing,
 			unison.StdVSpacing))))
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -498,7 +501,7 @@ func (d *generalSettingsDockable) createOpenInWindowCheckboxes(content *unison.P
 	settings := gurps.GlobalSettings()
 	groups := make([]dgroup.Group, len(dgroup.Groups))
 	copy(groups, dgroup.Groups)
-	slice.ColumnSort(groups, 2, cmp.Compare[dgroup.Group])
+	xslices.ColumnSort(groups, 2, cmp.Compare[dgroup.Group])
 	for _, group := range groups {
 		box := NewCheckBox(nil, "", group.String(),
 			func() check.Enum {
@@ -617,5 +620,5 @@ func LoadLanguageSetting() {
 }
 
 func languageSettingPath() string {
-	return filepath.Join(paths.AppDataDir(), cmdline.AppCmdName+"_language.txt")
+	return filepath.Join(xos.AppDataDir(true), xos.AppCmdName+"_language.txt")
 }

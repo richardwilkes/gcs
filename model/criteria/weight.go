@@ -14,7 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // Weight holds the criteria for matching a weight.
@@ -28,8 +28,8 @@ type WeightData struct {
 	Qualifier fxp.Weight        `json:"qualifier,omitempty"`
 }
 
-// ShouldOmit implements json.Omitter.
-func (w Weight) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (w Weight) IsZero() bool {
 	return w.Compare.EnsureValid() == AnyNumber
 }
 
@@ -51,10 +51,6 @@ func (w Weight) String() string {
 
 // Hash writes this object's contents into the hasher.
 func (w Weight) Hash(h hash.Hash) {
-	if w.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.String(h, w.Compare)
-	hashhelper.Num64(h, w.Qualifier)
+	xhash.StringWithLen(h, w.Compare)
+	xhash.Num64(h, w.Qualifier)
 }

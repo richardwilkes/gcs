@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 const timeLayout = "Jan _2, 2006, 3:04 PM"

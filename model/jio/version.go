@@ -12,10 +12,10 @@ package jio
 import (
 	"fmt"
 
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 // These version numbers are used both as the version of the data files written to disk as well as the major version
@@ -36,10 +36,10 @@ const (
 // CheckVersion returns an error if the data version is out of the acceptable range.
 func CheckVersion(version int) error {
 	if version > CurrentDataVersion {
-		return errs.New(txt.Wrap("", fmt.Sprintf(i18n.Text("The data was written with a newer version of %[1]s and cannot be loaded. Please update %[1]s and try again."), cmdline.AppName), 76))
+		return errs.New(xstrings.Wrap("", fmt.Sprintf(i18n.Text("The data was written with a newer version of %[1]s and cannot be loaded. Please update %[1]s and try again."), xos.AppName), 76))
 	}
 	if version < MinimumDataVersion {
-		return errs.New(txt.Wrap("", fmt.Sprintf(i18n.Text("The data was written with an older version of %s and cannot be loaded. You will need to load it with an earlier version that can read this version of the data and write the current format."), cmdline.AppName), 76))
+		return errs.New(xstrings.Wrap("", fmt.Sprintf(i18n.Text("The data was written with an older version of %s and cannot be loaded. You will need to load it with an earlier version that can read this version of the data and write the current format."), xos.AppName), 76))
 	}
 	return nil
 }

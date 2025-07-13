@@ -9,10 +9,11 @@
 
 package main
 
-//go:generate go run srcgen.go
+//go:generate go run main.go
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
 	"go/format"
 	"io"
@@ -22,16 +23,17 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
-const (
-	rootDir     = ".."
-	genGoSuffix = "_gen.go"
-)
+const genSuffix = "_gen.go"
+
+//go:embed enum.go.tmpl
+var enumTmplData string
 
 type enumValue struct {
 	Name          string
@@ -52,54 +54,66 @@ type enumInfo struct {
 }
 
 func main() {
-	removeExistingGenFiles()
+	wd, err := os.Getwd()
+	xos.ExitIfErr(err)
+	originalWD := wd
+	if xfilepath.BaseName(wd) == "enumgen" {
+		wd = filepath.Dir(wd)
+		if xfilepath.BaseName(wd) == "cmd" {
+			wd = filepath.Dir(wd)
+		}
+	}
+	if xfilepath.BaseName(wd) != "gcs" {
+		xos.ExitWithMsg("unexpected working directory: " + originalWD)
+	}
+	removeExistingGenFiles(wd)
 	for _, one := range allEnums {
-		processEnumTemplate("enum.go.tmpl", one)
+		processEnumTemplate(wd, one)
 	}
 }
 
-func removeExistingGenFiles() {
+func removeExistingGenFiles(rootDir string) {
 	root, err := filepath.Abs(rootDir)
-	fatal.IfErr(err)
-	fatal.IfErr(filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
+	xos.ExitIfErr(err)
+	xos.ExitIfErr(filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		name := info.Name()
 		switch {
 		case info.IsDir():
 			if name == ".git" {
 				return filepath.SkipDir
 			}
-		case strings.HasSuffix(name, genGoSuffix):
-			fatal.IfErr(os.Remove(path))
+		case strings.HasSuffix(name, genSuffix):
+			xos.ExitIfErr(os.Remove(path))
 		}
 		return nil
 	}))
 }
 
-func processEnumTemplate(tmplName string, info *enumInfo) {
-	tmpl, err := template.New(tmplName).Funcs(template.FuncMap{
+func processEnumTemplate(rootDir string, info *enumInfo) {
+	tmpl, err := template.New("enum.go.tmpl").Funcs(template.FuncMap{
 		"fileLeaf":     filepath.Base,
 		"join":         join,
 		"last":         last,
 		"toIdentifier": toIdentifier,
 		"wrapComment":  wrapComment,
-	}).ParseFiles(tmplName)
-	fatal.IfErr(err)
+	}).Parse(enumTmplData)
+	xos.ExitIfErr(err)
 	var buffer bytes.Buffer
-	writeGeneratedFromComment(&buffer, tmplName)
-	fatal.IfErr(tmpl.Execute(&buffer, info))
+	writeGeneratedFromComment(&buffer, "enum.go.tmpl")
+	xos.ExitIfErr(tmpl.Execute(&buffer, info))
 	var data []byte
 	if data, err = format.Source(buffer.Bytes()); err != nil {
-		fmt.Println("unable to format source file: " + filepath.Join(info.Pkg, info.Name+genGoSuffix))
+		fmt.Println("unable to format source file: " + filepath.Join(info.Pkg, info.Name+genSuffix))
 		data = buffer.Bytes()
 	}
 	dir := filepath.Join(rootDir, info.Pkg)
-	fatal.IfErr(os.MkdirAll(dir, 0o750))
-	fatal.IfErr(os.WriteFile(filepath.Join(dir, info.Name+genGoSuffix), data, 0o640))
+	xos.ExitIfErr(os.MkdirAll(dir, 0o750))
+	xos.ExitIfErr(os.WriteFile(filepath.Join(dir, info.Name+genSuffix), data, 0o640))
 }
 
 func writeGeneratedFromComment(w io.Writer, tmplName string) {
 	_, err := fmt.Fprintf(w, "// Code generated from \"%s\" - DO NOT EDIT.\n\n", tmplName)
-	fatal.IfErr(err)
+	xos.ExitIfErr(err)
 }
 
 func join(values []string) string {
@@ -114,7 +128,7 @@ func join(values []string) string {
 }
 
 func (e *enumInfo) LocalType() string {
-	return txt.FirstToLower(toIdentifier(e.Name)) + "Data"
+	return xstrings.FirstToLower(toIdentifier(e.Name)) + "Data"
 }
 
 func (e *enumInfo) IDFor(v *enumValue) string {
@@ -195,7 +209,7 @@ func toIdentifier(in string) string {
 }
 
 func wrapComment(in string, cols int) string {
-	return txt.Wrap("// ", in, cols)
+	return xstrings.Wrap("// ", in, cols)
 }
 
 var allEnums = []*enumInfo{

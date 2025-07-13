@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 type scriptSkill struct {
@@ -69,7 +69,7 @@ func newScriptSkill(entity *Entity, skill *Skill) *scriptSkill {
 		}
 		s.Attribute = skill.Difficulty.Attribute
 		s.Difficulty = skill.Difficulty.Difficulty.Key()
-		s.Points = fxp.As[int](skill.AdjustedPoints(nil))
+		s.Points = fxp.AsInteger[int](skill.AdjustedPoints(nil))
 	}
 	return &s
 }
@@ -92,8 +92,8 @@ func (s *scriptSkill) ensureCachedLevels() {
 		s.entity.registerSkillLevelResolutionExclusion(s.Name, s.Specialization)
 		s.skill.UpdateLevel()
 		s.entity.unregisterSkillLevelResolutionExclusion(s.Name, s.Specialization)
-		s.level = fxp.As[int](s.skill.LevelData.Level)
-		s.relativeLevel = fxp.As[int](s.skill.LevelData.RelativeLevel)
+		s.level = fxp.AsInteger[int](s.skill.LevelData.Level)
+		s.relativeLevel = fxp.AsInteger[int](s.skill.LevelData.RelativeLevel)
 	}
 }
 

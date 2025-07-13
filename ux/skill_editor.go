@@ -16,7 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
@@ -165,7 +166,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 						e.editorData.DefaultedFrom, e.editorData.Difficulty, points,
 						e.editorData.EncumbrancePenaltyMultiplier)
 				}
-				lvl := level.Level.Trunc()
+				lvl := level.Level.Floor()
 				if lvl <= 0 {
 					field.SetTitle("-")
 				} else {
@@ -180,7 +181,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			})
 			insets := levelField.Border().Insets()
 			levelField.SetLayoutData(&unison.FlexLayoutData{
-				MinSize: unison.NewSize(levelField.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+
+				MinSize: geom.NewSize(levelField.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+
 					insets.Right, 0),
 			})
 			wrapper.AddChild(levelField)

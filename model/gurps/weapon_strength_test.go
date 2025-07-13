@@ -13,10 +13,11 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestWeaponStrength(t *testing.T) {
+	c := check.New(t)
 	for i, s := range []string{
 		"",
 		"10",
@@ -36,7 +37,7 @@ func TestWeaponStrength(t *testing.T) {
 		"12BMR†",
 		"12BMR‡",
 	} {
-		check.Equal(t, s, gurps.ParseWeaponStrength(s).String(), "test %d", i)
+		c.Equal(s, gurps.ParseWeaponStrength(s).String(), "test %d", i)
 	}
 
 	cases := []struct {
@@ -53,7 +54,7 @@ func TestWeaponStrength(t *testing.T) {
 		{"   2 m b R † ", "2BMR†"},
 		{"spec", ""},
 	}
-	for i, c := range cases {
-		check.Equal(t, c.expected, gurps.ParseWeaponStrength(c.input).String(), "test %d", i)
+	for i, one := range cases {
+		c.Equal(one.expected, gurps.ParseWeaponStrength(one.input).String(), "test %d", i)
 	}
 }

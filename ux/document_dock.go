@@ -10,7 +10,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -42,7 +43,7 @@ func (d *DocumentDock) DockKey() string {
 }
 
 // TitleIcon implements unison.Dockable
-func (d *DocumentDock) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (d *DocumentDock) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  unison.DocumentSVG,
 		Size: suggestedSize,

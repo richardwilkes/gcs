@@ -6,12 +6,9 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
-	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
-
-var _ json.Omitter = &Source{}
 
 // LibraryFile holds the library and path to a file.
 type LibraryFile struct {
@@ -22,7 +19,7 @@ type LibraryFile struct {
 // SourcedID holds a TID and an optional Source.
 type SourcedID struct {
 	TID    tid.TID `json:"id"`
-	Source Source  `json:"source,omitempty"`
+	Source Source  `json:"source,omitzero"`
 }
 
 // Source holds a reference to the source of a particular piece of data.
@@ -47,13 +44,13 @@ type SrcMatcher struct {
 	libHashes map[LibraryFile]libSrcData
 }
 
-// ShouldOmit implements json.Omitter.
-func (s Source) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (s Source) IsZero() bool {
 	return s.TID == "" || s.Library == "" || s.Path == ""
 }
 
 func (s Source) collectInto(m map[LibraryFile]struct{}) {
-	if !s.ShouldOmit() {
+	if !s.IsZero() {
 		if _, exists := m[s.LibraryFile]; !exists {
 			m[s.LibraryFile] = struct{}{}
 		}
@@ -190,7 +187,7 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 // Match returns the source state of the given data.
 func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) {
 	src := data.GetSource()
-	if src.ShouldOmit() {
+	if src.IsZero() {
 		return srcstate.Custom, nil
 	}
 	if srcData, ok := sm.libHashes[src.LibraryFile]; ok {

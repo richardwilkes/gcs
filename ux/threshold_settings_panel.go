@@ -13,7 +13,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
@@ -33,13 +34,13 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, thresh *gurps.PoolThresh
 		threshold: thresh,
 	}
 	p.Self = p
-	p.SetBorder(unison.NewEmptyBorder(unison.Insets{
+	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
 		Top:    unison.StdVSpacing,
 		Left:   unison.StdHSpacing,
 		Bottom: unison.StdVSpacing,
 		Right:  unison.StdHSpacing,
 	}))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		var ink unison.Ink
 		if p.Parent().IndexOfChild(p)%2 == 1 {
 			ink = unison.ThemeSurface

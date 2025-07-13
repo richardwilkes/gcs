@@ -13,18 +13,19 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/paper"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestRealLengthConversion(t *testing.T) {
-	check.Equal(t, `0.25 in`, paper.Length{Length: 0.25, Units: paper.Inch}.String())
-	check.Equal(t, float32(18), paper.Length{Length: 0.25, Units: paper.Inch}.Pixels())
-	check.Equal(t, `1 in`, paper.Length{Length: 1, Units: paper.Inch}.String())
-	check.Equal(t, float32(72), paper.Length{Length: 1, Units: paper.Inch}.Pixels())
-	check.Equal(t, `15 in`, paper.Length{Length: 15, Units: paper.Inch}.String())
-	check.Equal(t, float32(1080), paper.Length{Length: 15, Units: paper.Inch}.Pixels())
-	check.Equal(t, "1 cm", paper.Length{Length: 1, Units: paper.Centimeter}.String())
-	check.Equal(t, float32(28.3464566929), paper.Length{Length: 1, Units: paper.Centimeter}.Pixels())
-	check.Equal(t, "1 mm", paper.Length{Length: 1, Units: paper.Millimeter}.String())
-	check.Equal(t, float32(2.8346456693), paper.Length{Length: 1, Units: paper.Millimeter}.Pixels())
+	c := check.New(t)
+	c.Equal(`0.25 in`, paper.Length{Length: 0.25, Units: paper.Inch}.String())
+	c.Equal(float32(18), paper.Length{Length: 0.25, Units: paper.Inch}.Pixels())
+	c.Equal(`1 in`, paper.Length{Length: 1, Units: paper.Inch}.String())
+	c.Equal(float32(72), paper.Length{Length: 1, Units: paper.Inch}.Pixels())
+	c.Equal(`15 in`, paper.Length{Length: 15, Units: paper.Inch}.String())
+	c.Equal(float32(1080), paper.Length{Length: 15, Units: paper.Inch}.Pixels())
+	c.Equal("1 cm", paper.Length{Length: 1, Units: paper.Centimeter}.String())
+	c.Equal(float32(28.3464566929), paper.Length{Length: 1, Units: paper.Centimeter}.Pixels())
+	c.Equal("1 mm", paper.Length{Length: 1, Units: paper.Millimeter}.String())
+	c.Equal(float32(2.8346456693), paper.Length{Length: 1, Units: paper.Millimeter}.Pixels())
 }

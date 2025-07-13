@@ -13,9 +13,10 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/slant"
@@ -52,13 +53,13 @@ func (w *aboutWindow) prepare() error {
 			return errs.NewWithCause("unable to load about image", err)
 		}
 	}
-	if w.Window, err = unison.NewWindow(fmt.Sprintf(i18n.Text("About %s"), cmdline.AppName),
+	if w.Window, err = unison.NewWindow(fmt.Sprintf(i18n.Text("About %s"), xos.AppName),
 		unison.NotResizableWindowOption()); err != nil {
 		return errs.NewWithCause("unable to create about window", err)
 	}
 	SetupMenuBar(w.Window)
 	content := w.Content()
-	content.SetSizer(func(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
+	content.SetSizer(func(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
 		prefSize = w.img.LogicalSize()
 		return prefSize, prefSize, prefSize
 	})
@@ -78,10 +79,10 @@ func (w *aboutWindow) prepare() error {
 	return nil
 }
 
-func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
+func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ geom.Rect) {
 	r := w.Content().ContentRect(true)
 	gc.DrawImageInRect(w.img, r, nil, nil)
-	gc.DrawRect(r, unison.NewEvenlySpacedGradient(unison.Point{Y: 0.25}, unison.Point{Y: 1}, 0, 0,
+	gc.DrawRect(r, unison.NewEvenlySpacedGradient(geom.Point{Y: 0.25}, geom.Point{Y: 1}, 0, 0,
 		unison.Transparent, unison.Black).Paint(gc, r, paintstyle.Fill))
 
 	face := unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright)
@@ -115,19 +116,19 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 	y -= lineHeight * 1.5
 
 	fg := unison.RGB(204, 204, 204)
-	text = unison.NewText(cmdline.Copyright(), &unison.TextDecoration{
+	text = unison.NewText(xos.Copyright(), &unison.TextDecoration{
 		Font:            font,
 		OnBackgroundInk: fg,
 	})
 	text.Draw(gc, (r.Width-text.Width())/2, y)
 
-	buildText := unison.NewText(i18n.Text("Build ")+cmdline.BuildNumber, &unison.TextDecoration{
+	buildText := unison.NewText(i18n.Text("Build ")+xos.BuildNumber, &unison.TextDecoration{
 		Font:            font,
 		OnBackgroundInk: fg,
 	})
 	var t string
-	if cmdline.AppVersion != "" && cmdline.AppVersion != "0.0" {
-		t = i18n.Text("Version ") + cmdline.AppVersion
+	if xos.AppVersion != "" && xos.AppVersion != "0.0" {
+		t = i18n.Text("Version ") + xos.AppVersion
 	} else {
 		t = i18n.Text("Development")
 	}
@@ -141,7 +142,7 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 		vMargin = 4
 	)
 	width := max(versionText.Width(), buildText.Width()) + hMargin*2
-	backing := unison.NewRect((r.Width-width)/2, 65, width, versionText.Height()+buildText.Height()+vMargin*2)
+	backing := geom.NewRect((r.Width-width)/2, 65, width, versionText.Height()+buildText.Height()+vMargin*2)
 	gc.DrawRoundedRect(backing, 8, 8, unison.Black.SetAlphaIntensity(0.7).Paint(gc, backing, paintstyle.Fill))
 	p := unison.Black.Paint(gc, backing, paintstyle.Stroke)
 	p.SetStrokeWidth(2)

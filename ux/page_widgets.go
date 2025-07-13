@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -34,7 +35,7 @@ func NewPageHeader(title string, hSpan int) *unison.Label {
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	label.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, colors.Header.Paint(gc, rect, paintstyle.Fill))
 		label.DefaultDraw(gc, rect)
 	}
@@ -58,7 +59,7 @@ func NewPageLabelWithInk(title string, ink unison.Ink) *unison.Label {
 		VAlign: align.Middle,
 	})
 
-	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Bottom: 1})) // To match field underline spacing
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Bottom: 1})) // To match field underline spacing
 	return label
 }
 
@@ -74,7 +75,7 @@ func NewPageLabelEnd(title string) *unison.Label {
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Bottom: 1})) // To match field underline spacing
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Bottom: 1})) // To match field underline spacing
 	return label
 }
 
@@ -90,7 +91,7 @@ func NewPageLabelCenter(title string) *unison.Label {
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Bottom: 1})) // To match field underline spacing
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Bottom: 1})) // To match field underline spacing
 	return label
 }
 
@@ -133,8 +134,8 @@ func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 func installPageFieldFontAndFocusBorders(field *unison.Field) {
 	field.Font = fonts.PageFieldPrimary
 	unison.InstallFocusBorders(field, field,
-		unison.NewLineBorder(unison.ThemeFocus, 0, unison.Insets{Bottom: 1}, false),
-		unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1}, false),
+		unison.NewLineBorder(unison.ThemeFocus, 0, geom.Insets{Bottom: 1}, false),
+		unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1}, false),
 	)
 }
 
@@ -190,7 +191,7 @@ func NewDecimalPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get 
 	installPageFieldFontAndFocusBorders(field.Field)
 	if !noMinWidth && minValue != fxp.Min && maxValue != fxp.Max {
 		// Override to ignore fractional values
-		field.SetMinimumTextWidthUsing(minValue.Trunc().String(), maxValue.Trunc().String())
+		field.SetMinimumTextWidthUsing(minValue.Floor().String(), maxValue.Floor().String())
 	}
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

@@ -17,8 +17,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 )
 
@@ -172,7 +172,7 @@ func (c *Colors) MarshalJSON() ([]byte, error) {
 func (c *Colors) UnmarshalJSON(data []byte) error {
 	c.data = nil
 	var err error
-	toolbox.CallWithHandler(func() {
+	xos.SafeCall(func() {
 		err = json.Unmarshal(data, &c.data)
 	}, func(e error) {
 		err = e

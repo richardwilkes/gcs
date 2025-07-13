@@ -15,9 +15,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Prereq = &PrereqList{}
@@ -27,7 +27,7 @@ type PrereqList struct {
 	Parent  *PrereqList     `json:"-"`
 	Type    prereq.Type     `json:"type"`
 	All     bool            `json:"all"`
-	WhenTL  criteria.Number `json:"when_tl,omitempty"`
+	WhenTL  criteria.Number `json:"when_tl,omitzero"`
 	Prereqs Prereqs         `json:"prereqs,omitempty"`
 }
 
@@ -39,8 +39,8 @@ func NewPrereqList() *PrereqList {
 	}
 }
 
-// ShouldOmit implements json.Omitter.
-func (p *PrereqList) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (p *PrereqList) IsZero() bool {
 	return p == nil || len(p.Prereqs) == 0
 }
 
@@ -74,11 +74,11 @@ func (p *PrereqList) CloneAsPrereqList(parent *PrereqList) *PrereqList {
 }
 
 // CloneResolvingEmpty clones this prereq list. If the result would be nil and it isn't a container, a new, empty, list
-// is created. If the result would not be nil but pruneIfEmpty is true and calling ShouldOmit() on it would return true,
+// is created. If the result would not be nil but pruneIfEmpty is true and calling IsZero() on it would return true,
 // then nil is returned.
 func (p *PrereqList) CloneResolvingEmpty(isContainer, pruneIfEmpty bool) *PrereqList {
 	if p != nil {
-		if pruneIfEmpty && p.ShouldOmit() {
+		if pruneIfEmpty && p.IsZero() {
 			return nil
 		}
 		return p.CloneAsPrereqList(nil)
@@ -97,7 +97,7 @@ func (p *PrereqList) FillWithNameableKeys(m, existing map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
+func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	if p.WhenTL.Compare != criteria.AnyNumber {
 		tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
 		if tl < 0 {
@@ -108,9 +108,9 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuff
 		}
 	}
 	count := 0
-	var local *xio.ByteBuffer
+	var local *xbytes.InsertBuffer
 	if buffer != nil {
-		local = &xio.ByteBuffer{}
+		local = &xbytes.InsertBuffer{}
 	}
 	eqpPenalty := false
 	for _, one := range p.Prereqs {
@@ -120,7 +120,7 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuff
 	}
 	if local != nil && local.Len() != 0 {
 		indented := strings.ReplaceAll(local.String(), "\n", "\n\u00a0\u00a0\u00a0")
-		local = &xio.ByteBuffer{}
+		local = &xbytes.InsertBuffer{}
 		local.WriteString(indented)
 	}
 	satisfied := count == len(p.Prereqs) || (!p.All && count > 0)
@@ -143,14 +143,14 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuff
 
 // Hash writes this object's contents into the hasher.
 func (p *PrereqList) Hash(h hash.Hash) {
-	if p.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
+	if p.IsZero() {
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, p.Type)
-	hashhelper.Bool(h, p.All)
+	xhash.Num8(h, p.Type)
+	xhash.Bool(h, p.All)
 	p.WhenTL.Hash(h)
-	hashhelper.Num64(h, len(p.Prereqs))
+	xhash.Num64(h, len(p.Prereqs))
 	for _, one := range p.Prereqs {
 		one.Hash(h)
 	}

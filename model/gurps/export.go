@@ -24,10 +24,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 )
 
 type exportedMeleeWeapon struct {
@@ -308,7 +308,7 @@ func ExportSheets(templatePath string, fileList []string) error {
 			if err != nil {
 				return err
 			}
-			if err = Export(entity, templatePath, fs.TrimExtension(one)+filepath.Ext(templatePath)); err != nil {
+			if err = Export(entity, templatePath, xfilepath.TrimExtension(one)+filepath.Ext(templatePath)); err != nil {
 				return err
 			}
 		} else {
@@ -359,8 +359,8 @@ func createTemplateFuncs() texttmpl.FuncMap {
 		"lastIndexStr":  strings.LastIndex,
 		"lower":         strings.ToLower,
 		"numberFrom":    numberFrom,
-		"numberToFloat": fxp.As[float64],
-		"numberToInt":   fxp.As[int],
+		"numberToFloat": fxp.AsFloat[float64],
+		"numberToInt":   fxp.AsInteger[int],
 		"repeat":        strings.Repeat,
 		"replace":       strings.ReplaceAll,
 		"split":         strings.Split,
@@ -375,9 +375,9 @@ func createTemplateFuncs() texttmpl.FuncMap {
 func numberFrom(value any) (fxp.Int, error) {
 	switch v := value.(type) {
 	case int:
-		return fxp.From(v), nil
+		return fxp.FromInteger(v), nil
 	case float64:
-		return fxp.From(v), nil
+		return fxp.FromFloat(v), nil
 	case string:
 		// Intentionally allow parsing of things that start with a number, but aren't fully a number
 		result, _ := fxp.Extract(v)
@@ -494,7 +494,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	slices.SortFunc(data.Attributes.Pools, func(a, b *exportedPool) int { return cmp.Compare(a.order, b.order) })
 	currentEnc := entity.EncumbranceLevel(false)
 	for _, enc := range encumbrance.Levels {
-		penalty := fxp.As[int](enc.Penalty())
+		penalty := fxp.AsInteger[int](enc.Penalty())
 		data.Encumbrance = append(data.Encumbrance, &exportedEncumbrance{
 			Name:      enc.String(),
 			Level:     -penalty,
@@ -752,7 +752,7 @@ func addToHitLocations(entity *Entity, locations []*exportedHitLocation, depth i
 			Penalty:   location.HitPenalty,
 			Depth:     depth,
 		}
-		var tooltip xio.ByteBuffer
+		var tooltip xbytes.InsertBuffer
 		loc.DR = location.DisplayDR(entity, &tooltip)
 		loc.Notes = tooltip.String()
 		locations = append(locations, loc)

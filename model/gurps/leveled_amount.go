@@ -14,8 +14,8 @@ import (
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // LeveledAmount holds an amount that can be either a fixed amount, or an amount per level.
@@ -48,9 +48,9 @@ func (l *LeveledAmount) Format() string {
 // Hash writes this object's contents into the hasher.
 func (l *LeveledAmount) Hash(h hash.Hash) {
 	if l == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num64(h, l.Amount)
-	hashhelper.Bool(h, l.PerLevel)
+	xhash.Num64(h, l.Amount)
+	xhash.Bool(h, l.PerLevel)
 }

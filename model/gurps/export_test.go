@@ -15,10 +15,11 @@ import (
 	"text/template"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestTemplateFuncs(t *testing.T) {
+	c := check.New(t)
 	values := struct {
 		One         fxp.Int
 		OnePointOne fxp.Int
@@ -43,9 +44,9 @@ func TestTemplateFuncs(t *testing.T) {
 		{in: `{{(numberFrom 22).Add (numberFrom 44.4)}}`, out: "66.4"},
 	} {
 		tmpl, err := tmplBase.Parse(data.in)
-		check.NoError(t, err, "Test %d", i)
+		c.NoError(err, "Test %d", i)
 		var buffer strings.Builder
-		check.NoError(t, tmpl.Execute(&buffer, values), "Test %d", i)
-		check.Equal(t, data.out, buffer.String(), "Test %d", i)
+		c.NoError(tmpl.Execute(&buffer, values), "Test %d", i)
+		c.Equal(data.out, buffer.String(), "Test %d", i)
 	}
 }

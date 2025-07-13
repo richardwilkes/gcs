@@ -28,11 +28,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -102,7 +101,7 @@ type EquipmentSyncData struct {
 	BaseValue              string      `json:"base_value,omitempty"`
 	BaseWeight             string      `json:"base_weight,omitempty"`
 	MaxUses                int         `json:"max_uses,omitempty"`
-	Prereq                 *PrereqList `json:"prereqs,omitempty"`
+	Prereq                 *PrereqList `json:"prereqs,omitzero"`
 	Weapons                []*Weapon   `json:"weapons,omitempty"`
 	Features               Features    `json:"features,omitempty"`
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitempty"`
@@ -878,29 +877,29 @@ func (e *Equipment) Hash(h hash.Hash) {
 }
 
 func (e *EquipmentSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, e.Name)
-	hashhelper.String(h, e.PageRef)
-	hashhelper.String(h, e.PageRefHighlight)
-	hashhelper.String(h, e.LocalNotes)
-	hashhelper.String(h, e.TechLevel)
-	hashhelper.String(h, e.LegalityClass)
-	hashhelper.Num64(h, len(e.Tags))
+	xhash.StringWithLen(h, e.Name)
+	xhash.StringWithLen(h, e.PageRef)
+	xhash.StringWithLen(h, e.PageRefHighlight)
+	xhash.StringWithLen(h, e.LocalNotes)
+	xhash.StringWithLen(h, e.TechLevel)
+	xhash.StringWithLen(h, e.LegalityClass)
+	xhash.Num64(h, len(e.Tags))
 	for _, tag := range e.Tags {
-		hashhelper.String(h, tag)
+		xhash.StringWithLen(h, tag)
 	}
-	hashhelper.String(h, e.BaseValue)
-	hashhelper.String(h, e.BaseWeight)
-	hashhelper.Num64(h, e.MaxUses)
+	xhash.StringWithLen(h, e.BaseValue)
+	xhash.StringWithLen(h, e.BaseWeight)
+	xhash.Num64(h, e.MaxUses)
 	e.Prereq.Hash(h)
-	hashhelper.Num64(h, len(e.Weapons))
+	xhash.Num64(h, len(e.Weapons))
 	for _, weapon := range e.Weapons {
 		weapon.Hash(h)
 	}
-	hashhelper.Num64(h, len(e.Features))
+	xhash.Num64(h, len(e.Features))
 	for _, feature := range e.Features {
 		feature.Hash(h)
 	}
-	hashhelper.Bool(h, e.WeightIgnoredForSkills)
+	xhash.Bool(h, e.WeightIgnoredForSkills)
 }
 
 // CopyFrom implements node.EditorData.
@@ -915,7 +914,7 @@ func (e *EquipmentEditData) ApplyTo(other *Equipment) {
 
 func (e *EquipmentEditData) copyFrom(owner DataOwner, other *EquipmentEditData, isApply bool) {
 	*e = *other
-	e.Tags = txt.CloneStringSlice(other.Tags)
+	e.Tags = slices.Clone(other.Tags)
 	e.Replacements = maps.Clone(other.Replacements)
 	e.Modifiers = nil
 	if len(other.Modifiers) != 0 {

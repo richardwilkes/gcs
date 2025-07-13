@@ -11,10 +11,11 @@ package ux
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 
-	"github.com/richardwilkes/toolbox/collection/dict"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -61,24 +62,24 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 		if simple {
 			popup.SelectIndex(index)
 		} else {
-			m := make(map[int]bool)
+			m := make(map[int]struct{})
 			wasSelected := false
 			for _, i := range popup.SelectedIndexes() {
 				if i != 0 {
 					if index == i {
 						wasSelected = true
 					} else {
-						m[i] = true
+						m[i] = struct{}{}
 					}
 				}
 			}
 			if !wasSelected {
-				m[index] = true
+				m[index] = struct{}{}
 			}
 			if len(m) == 0 {
 				popup.SelectIndex(0)
 			} else {
-				popup.SelectIndex(dict.Keys(m)...)
+				popup.SelectIndex(slices.Collect(maps.Keys(m))...)
 			}
 		}
 	}

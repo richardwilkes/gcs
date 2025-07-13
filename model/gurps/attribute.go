@@ -17,7 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Hashable = &Attribute{}
@@ -121,7 +121,7 @@ func (a *Attribute) Maximum() fxp.Int {
 	}
 	maximum := def.BaseValue(a.Entity) + a.Adjustment + a.Bonus
 	if !def.AllowsDecimal() {
-		maximum = maximum.Trunc()
+		maximum = maximum.Floor()
 	}
 	return maximum
 }
@@ -211,15 +211,15 @@ func CountThresholdOpMet(op threshold.Op, attributes *Attributes) int {
 
 // Hash writes this object's contents into the hasher.
 func (a *Attribute) Hash(h hash.Hash) {
-	hashhelper.String(h, a.AttrID)
-	hashhelper.Num64(h, a.Adjustment)
-	hashhelper.Num64(h, a.Damage)
-	hashhelper.Num64(h, a.Bonus)
-	hashhelper.Num64(h, a.CostReduction)
-	hashhelper.Num64(h, a.Order)
+	xhash.StringWithLen(h, a.AttrID)
+	xhash.Num64(h, a.Adjustment)
+	xhash.Num64(h, a.Damage)
+	xhash.Num64(h, a.Bonus)
+	xhash.Num64(h, a.CostReduction)
+	xhash.Num64(h, a.Order)
 	if def := a.AttributeDef(); def != nil {
 		def.Hash(h)
 	} else {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 	}
 }

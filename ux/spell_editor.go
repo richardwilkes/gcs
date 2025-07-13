@@ -16,7 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -69,7 +70,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 					level = gurps.CalculateSpellLevel(entity, localName, localPowerSource, localColleges,
 						e.editorData.Tags, e.editorData.Difficulty, points)
 				}
-				lvl := level.Level.Trunc()
+				lvl := level.Level.Floor()
 				if lvl <= 0 {
 					field.SetTitle("-")
 				} else {
@@ -80,7 +81,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			})
 			insets := levelField.Border().Insets()
 			levelField.SetLayoutData(&unison.FlexLayoutData{
-				MinSize: unison.NewSize(levelField.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+insets.Right, 0),
+				MinSize: geom.NewSize(levelField.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+insets.Right, 0),
 			})
 			wrapper.AddChild(levelField)
 		}

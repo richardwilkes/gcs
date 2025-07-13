@@ -16,8 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var skillBasedDefaultTypes = map[string]bool{
@@ -35,7 +35,7 @@ type SkillDefault struct {
 	Level          fxp.Int         `json:"level,omitempty"`
 	AdjLevel       fxp.Int         `json:"adjusted_level,omitempty"`
 	Points         fxp.Int         `json:"points,omitempty"`
-	WhenTL         criteria.Number `json:"when_tl,omitempty"`
+	WhenTL         criteria.Number `json:"when_tl,omitzero"`
 }
 
 // DefaultTypeIsSkillBased returns true if the SkillDefault type is Skill-based.
@@ -134,13 +134,13 @@ func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string
 	case ParryID:
 		best := s.best(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
-			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.ParryBonus
+			best = best.Div(fxp.Two).Floor() + fxp.Three + entity.ParryBonus
 		}
 		return s.finalLevel(best)
 	case BlockID:
 		best := s.best(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
-			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.BlockBonus
+			best = best.Div(fxp.Two).Floor() + fxp.Three + entity.BlockBonus
 		}
 		return s.finalLevel(best)
 	case SkillID:
@@ -186,17 +186,17 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 		if ruleOf20 && level > 20 {
 			level = 20
 		}
-		return s.finalLevel(fxp.From(level))
+		return s.finalLevel(fxp.FromInteger(level))
 	case ParryID:
 		best := s.bestFast(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
-			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.ParryBonus
+			best = best.Div(fxp.Two).Floor() + fxp.Three + entity.ParryBonus
 		}
 		return s.finalLevel(best)
 	case BlockID:
 		best := s.bestFast(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
-			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.BlockBonus
+			best = best.Div(fxp.Two).Floor() + fxp.Three + entity.BlockBonus
 		}
 		return s.finalLevel(best)
 	case SkillID:
@@ -207,7 +207,7 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 			level = level.Min(fxp.Twenty)
 		}
 		if entity.SheetSettings.UseHalfStatDefaults {
-			level = level.Div(fxp.Two).Trunc() + fxp.Five
+			level = level.Div(fxp.Two).Floor() + fxp.Five
 		}
 		return s.finalLevel(level)
 	}
@@ -234,11 +234,11 @@ func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (s *SkillDefault) Hash(h hash.Hash) {
-	hashhelper.String(h, s.DefaultType)
-	hashhelper.String(h, s.Name)
-	hashhelper.String(h, s.Specialization)
-	hashhelper.Num64(h, s.Modifier)
-	if !s.WhenTL.ShouldOmit() {
+	xhash.StringWithLen(h, s.DefaultType)
+	xhash.StringWithLen(h, s.Name)
+	xhash.StringWithLen(h, s.Specialization)
+	xhash.Num64(h, s.Modifier)
+	if !s.WhenTL.IsZero() {
 		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
 		s.WhenTL.Hash(h)
 	}

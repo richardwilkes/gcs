@@ -13,10 +13,11 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestWeaponRecoil(t *testing.T) {
+	c := check.New(t)
 	for i, s := range []string{
 		"",
 		"1",
@@ -34,7 +35,7 @@ func TestWeaponRecoil(t *testing.T) {
 		"7",
 		"8",
 	} {
-		check.Equal(t, s, gurps.ParseWeaponRecoil(s).String(), "test %d", i)
+		c.Equal(s, gurps.ParseWeaponRecoil(s).String(), "test %d", i)
 	}
 
 	cases := []struct {
@@ -46,7 +47,7 @@ func TestWeaponRecoil(t *testing.T) {
 		{"?", ""},
 		{"0", ""},
 	}
-	for i, c := range cases {
-		check.Equal(t, c.expected, gurps.ParseWeaponRecoil(c.input).String(), "test %d", i)
+	for i, one := range cases {
+		c.Equal(one.expected, gurps.ParseWeaponRecoil(one.input).String(), "test %d", i)
 	}
 }

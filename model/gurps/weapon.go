@@ -29,12 +29,12 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/zeebo/xxh3"
@@ -77,18 +77,18 @@ type WeaponOwner interface {
 type WeaponData struct {
 	TID        tid.TID         `json:"id"`
 	Damage     WeaponDamage    `json:"damage"`
-	Strength   WeaponStrength  `json:"strength,omitempty"`
+	Strength   WeaponStrength  `json:"strength,omitzero"`
 	Usage      string          `json:"usage,omitempty"`
 	UsageNotes string          `json:"usage_notes,omitempty"`
-	Reach      WeaponReach     `json:"reach,omitempty"`
-	Parry      WeaponParry     `json:"parry,omitempty"`
-	Block      WeaponBlock     `json:"block,omitempty"`
-	Accuracy   WeaponAccuracy  `json:"accuracy,omitempty"`
-	Range      WeaponRange     `json:"range,omitempty"`
-	RateOfFire WeaponRoF       `json:"rate_of_fire,omitempty"`
-	Shots      WeaponShots     `json:"shots,omitempty"`
-	Bulk       WeaponBulk      `json:"bulk,omitempty"`
-	Recoil     WeaponRecoil    `json:"recoil,omitempty"`
+	Reach      WeaponReach     `json:"reach,omitzero"`
+	Parry      WeaponParry     `json:"parry,omitzero"`
+	Block      WeaponBlock     `json:"block,omitzero"`
+	Accuracy   WeaponAccuracy  `json:"accuracy,omitzero"`
+	Range      WeaponRange     `json:"range,omitzero"`
+	RateOfFire WeaponRoF       `json:"rate_of_fire,omitzero"`
+	Shots      WeaponShots     `json:"shots,omitzero"`
+	Bulk       WeaponBulk      `json:"bulk,omitzero"`
+	Recoil     WeaponRecoil    `json:"recoil,omitzero"`
 	Defaults   []*SkillDefault `json:"defaults,omitempty"`
 	Hide       bool            `json:"hide,omitempty"`
 }
@@ -197,10 +197,10 @@ func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, preserveID bool) *
 
 // Compare returns an integer indicating the sort order of this weapon compared to the other weapon.
 func (w *Weapon) Compare(other *Weapon) int {
-	result := txt.NaturalCmp(w.String(), other.String(), true)
+	result := xstrings.NaturalCmp(w.String(), other.String(), true)
 	if result == 0 {
-		if result = txt.NaturalCmp(w.UsageWithReplacements(), other.UsageWithReplacements(), true); result == 0 {
-			if result = txt.NaturalCmp(w.UsageNotesWithReplacements(), other.UsageNotesWithReplacements(), true); result == 0 {
+		if result = xstrings.NaturalCmp(w.UsageWithReplacements(), other.UsageWithReplacements(), true); result == 0 {
+			if result = xstrings.NaturalCmp(w.UsageNotesWithReplacements(), other.UsageNotesWithReplacements(), true); result == 0 {
 				//nolint:gosec // Just need a tie-breaker
 				result = cmp.Compare(uintptr(unsafe.Pointer(w)), uintptr(unsafe.Pointer(other)))
 			}
@@ -213,10 +213,10 @@ func (w *Weapon) Compare(other *Weapon) int {
 func (w *Weapon) HashResolved() uint64 {
 	h := xxh3.New()
 	w.Hash(h)
-	hashhelper.String(h, w.String())
-	hashhelper.Num64(h, w.SkillLevel(nil))
-	hashhelper.String(h, w.Damage.ResolvedDamage(nil))
-	hashhelper.Bool(h, w.Hide)
+	xhash.StringWithLen(h, w.String())
+	xhash.Num64(h, w.SkillLevel(nil))
+	xhash.StringWithLen(h, w.Damage.ResolvedDamage(nil))
+	xhash.Bool(h, w.Hide)
 	return h.Sum64()
 }
 
@@ -224,13 +224,13 @@ func (w *Weapon) HashResolved() uint64 {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (w *WeaponData) Hash(h hash.Hash) {
 	if w == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
 	w.Damage.Hash(h)
 	w.Strength.Hash(h)
-	hashhelper.String(h, w.Usage)
-	hashhelper.String(h, w.UsageNotes)
+	xhash.StringWithLen(h, w.Usage)
+	xhash.StringWithLen(h, w.UsageNotes)
 	w.Reach.Hash(h)
 	w.Parry.Hash(h)
 	w.Block.Hash(h)
@@ -240,7 +240,7 @@ func (w *WeaponData) Hash(h hash.Hash) {
 	w.Shots.Hash(h)
 	w.Bulk.Hash(h)
 	w.Recoil.Hash(h)
-	hashhelper.Num64(h, len(w.Defaults))
+	xhash.Num64(h, len(w.Defaults))
 	for _, one := range w.Defaults {
 		one.Hash(h)
 	}
@@ -427,14 +427,14 @@ func (w *Weapon) Entity() *Entity {
 }
 
 // SkillLevel returns the resolved skill level.
-func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
+func (w *Weapon) SkillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	entity := w.Entity()
 	if entity == nil {
 		return 0
 	}
-	var primaryTooltip *xio.ByteBuffer
+	var primaryTooltip *xbytes.InsertBuffer
 	if tooltip != nil {
-		primaryTooltip = &xio.ByteBuffer{}
+		primaryTooltip = &xbytes.InsertBuffer{}
 	}
 	adj := w.skillLevelBaseAdjustment(entity, primaryTooltip) + w.skillLevelPostAdjustment(entity, primaryTooltip)
 	best := fxp.Min
@@ -467,7 +467,7 @@ func (w *Weapon) usesCrossbowSkill() bool {
 	return false
 }
 
-func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
+func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var adj fxp.Int
 	minST := w.Strength.Resolve(w, nil).Min
 	if !w.IsRanged() || (w.Range.MusclePowered && !w.usesCrossbowSkill()) {
@@ -512,7 +512,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fx
 	return adj
 }
 
-func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
+func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if w.IsMelee() &&
 		// Cannot use w.ParryParts.Resolve() here, because that calls this
 		w.ResolveBoolFlag(wswitch.CanParry, w.Parry.CanParry) &&
@@ -523,7 +523,7 @@ func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xio.ByteBuffer) fx
 }
 
 // EncumbrancePenalty returns the current encumbrance penalty.
-func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
+func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if e == nil {
 		return 0
 	}
@@ -538,7 +538,7 @@ func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xio.ByteBuffer) fxp.Int 
 	return penalty
 }
 
-func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuffer) fxp.Int {
+func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
 		if sb.SelectionType.EnsureValid() == skillsel.ThisWeapon {
 			if sb.SpecializationCriteria.Matches(w.NameableReplacements(), w.UsageWithReplacements()) {
@@ -576,7 +576,7 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 	return initial
 }
 
-func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
+func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
 	entity := w.Entity()
 	if entity == nil {
 		return nil
@@ -609,7 +609,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	entity.AddNamedWeaponBonusesFor(nameQualifier, w.UsageWithReplacements(), tags, dieCount, tooltip, bonusSet,
 		allowed)
 	for _, f := range w.Owner.FeatureList() {
-		w.extractWeaponBonus(f, bonusSet, allowed, fxp.From(dieCount), tooltip)
+		w.extractWeaponBonus(f, bonusSet, allowed, fxp.FromInteger(dieCount), tooltip)
 	}
 	if t, ok := w.Owner.(*Trait); ok {
 		Traverse(func(mod *TraitModifier) bool {
@@ -618,7 +618,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 				if bonus, ok = f.(Bonus); ok {
 					bonus.SetSubOwner(mod)
 				}
-				w.extractWeaponBonus(f, bonusSet, allowed, fxp.From(dieCount), tooltip)
+				w.extractWeaponBonus(f, bonusSet, allowed, fxp.FromInteger(dieCount), tooltip)
 			}
 			return false
 		}, true, true, t.Modifiers...)
@@ -630,7 +630,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 				if bonus, ok = f.(Bonus); ok {
 					bonus.SetSubOwner(mod)
 				}
-				w.extractWeaponBonus(f, bonusSet, allowed, fxp.From(dieCount), tooltip)
+				w.extractWeaponBonus(f, bonusSet, allowed, fxp.FromInteger(dieCount), tooltip)
 			}
 			return false
 		}, true, true, eqp.Modifiers...)
@@ -645,7 +645,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	return result
 }
 
-func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount fxp.Int, tooltip *xio.ByteBuffer) {
+func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount fxp.Int, tooltip *xbytes.InsertBuffer) {
 	if allowedFeatureTypes[f.FeatureType()] {
 		if bonus, ok := f.(*WeaponBonus); ok {
 			savedLevel := bonus.Level
@@ -809,7 +809,7 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (w *Weapon) CellData(columnID int, data *CellData) {
-	var buffer xio.ByteBuffer
+	var buffer xbytes.InsertBuffer
 	data.Type = cell.Text
 	switch columnID {
 	case WeaponHideColumn:

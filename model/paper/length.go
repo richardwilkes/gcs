@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 // Length contains a real-world length value with an attached units.

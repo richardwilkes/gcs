@@ -14,8 +14,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -44,11 +45,11 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 		gurps.Traverse(func(row T) bool {
 			switch t := (any(row)).(type) {
 			case *gurps.Trait:
-				if processModifiers(txt.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
+				if processModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
 					unison.Ancestor[Rebuildable](owner).Rebuild(true)
 				}
 			case *gurps.Equipment:
-				if processModifiers(txt.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
+				if processModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
 					unison.Ancestor[Rebuildable](owner).Rebuild(true)
 				}
 			}
@@ -62,7 +63,7 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 		return false
 	}
 	list := unison.NewPanel()
-	list.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing)))
+	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
 	list.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
@@ -83,17 +84,17 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 				cb = unison.NewCheckBox()
 				cb.SetTitle(lines[0].String())
 				cb.State = check.FromBool(mod.Enabled())
-				_, cbPref, _ := cb.Sizes(unison.Size{})
+				_, cbPref, _ := cb.Sizes(geom.Size{})
 				label := unison.NewLabel()
 				label.Font = unison.DefaultCheckBoxTheme.Font
 				label.Text = cb.Text
-				_, labelPref, _ := label.Sizes(unison.Size{})
+				_, labelPref, _ := label.Sizes(geom.Size{})
 				tracker[cb] = mod
 				vspacing := float32(unison.StdVSpacing)
 				if len(lines) == 1 {
 					vspacing *= 2
 				}
-				cb.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: indent, Bottom: vspacing}))
+				cb.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: indent, Bottom: vspacing}))
 				list.AddChild(cb)
 				lines = lines[1:]
 				indent += cbPref.Width - labelPref.Width
@@ -106,18 +107,18 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 				if len(lines)-1 == i {
 					vspacing *= 2
 				}
-				label.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: indent, Bottom: vspacing}))
+				label.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: indent, Bottom: vspacing}))
 				if cb != nil {
-					label.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+					label.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
 						return true
 					}
-					label.MouseUpCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
+					label.MouseUpCallback = func(where geom.Point, _ int, _ unison.Modifiers) bool {
 						if where.In(label.ContentRect(false)) {
 							cb.Click()
 						}
 						return true
 					}
-					label.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor {
+					label.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor {
 						return unison.PointingCursor()
 					}
 				}
@@ -133,7 +134,7 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 		children[len(children)-1].SetBorder(unison.NewEmptyBorder(insets))
 	}
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
 	scroll.SetLayoutData(&unison.FlexLayoutData{

@@ -13,10 +13,11 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestWeaponShots(t *testing.T) {
+	c := check.New(t)
 	for i, s := range []string{
 		"",
 		"1",
@@ -33,7 +34,7 @@ func TestWeaponShots(t *testing.T) {
 		"2+1(2i)",
 		"3x3s",
 	} {
-		check.Equal(t, s, gurps.ParseWeaponShots(s).String(), "test %d", i)
+		c.Equal(s, gurps.ParseWeaponShots(s).String(), "test %d", i)
 	}
 
 	cases := []struct {
@@ -56,7 +57,7 @@ func TestWeaponShots(t *testing.T) {
 		{"T(spec)", "T"},
 		{"n/a", ""},
 	}
-	for i, c := range cases {
-		check.Equal(t, c.expected, gurps.ParseWeaponShots(c.input).String(), "test %d", i)
+	for i, one := range cases {
+		c.Equal(one.expected, gurps.ParseWeaponShots(one.input).String(), "test %d", i)
 	}
 }

@@ -19,9 +19,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // WeaponDamageData holds the WeaponDamage data that is written to disk.
@@ -47,19 +47,19 @@ type WeaponDamage struct {
 // Hash writes this object's contents into the hasher.
 func (w *WeaponDamage) Hash(h hash.Hash) {
 	if w == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.String(h, w.Type)
-	hashhelper.Num8(h, w.StrengthType)
-	hashhelper.Bool(h, w.Leveled)
-	hashhelper.Num64(h, w.StrengthMultiplier)
+	xhash.StringWithLen(h, w.Type)
+	xhash.Num8(h, w.StrengthType)
+	xhash.Bool(h, w.Leveled)
+	xhash.Num64(h, w.StrengthMultiplier)
 	w.Base.Hash(h)
-	hashhelper.Num64(h, w.ArmorDivisor)
+	xhash.Num64(h, w.ArmorDivisor)
 	w.Fragmentation.Hash(h)
-	hashhelper.Num64(h, w.FragmentationArmorDivisor)
-	hashhelper.String(h, w.FragmentationType)
-	hashhelper.Num64(h, w.ModifierPerDie)
+	xhash.Num64(h, w.FragmentationArmorDivisor)
+	xhash.StringWithLen(h, w.FragmentationType)
+	xhash.Num64(h, w.ModifierPerDie)
 }
 
 // Clone creates a copy of this data.
@@ -186,7 +186,7 @@ func (w *WeaponDamage) String() string {
 
 // DamageTooltip returns a formatted tooltip for the damage.
 func (w *WeaponDamage) DamageTooltip() string {
-	var tooltip xio.ByteBuffer
+	var tooltip xbytes.InsertBuffer
 	w.ResolvedDamage(&tooltip)
 	if tooltip.Len() == 0 {
 		return NoAdditionalModifiers()
@@ -217,9 +217,9 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
 			st = entity.TelekineticStrength()
 		case stdmg.IQThrust, stdmg.IQSwing:
-			st = entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Trunc()
+			st = entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
 		default:
-			st = entity.ResolveAttributeCurrent(StrengthID).Max(0).Trunc()
+			st = entity.ResolveAttributeCurrent(StrengthID).Max(0).Floor()
 		}
 	}
 	var percentMin fxp.Int
@@ -232,7 +232,7 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		}
 	}
 	if percentMin != 0 {
-		st += st.Mul(percentMin).Div(fxp.Hundred).Trunc()
+		st += st.Mul(percentMin).Div(fxp.Hundred).Floor()
 	}
 	if st < 0 {
 		st = 0
@@ -252,9 +252,9 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	}
 	t, tOK := w.Owner.Owner.(*Trait)
 	if tOK && t.IsLeveled() {
-		multiplyDice(fxp.As[int](t.Levels), base)
+		multiplyDice(fxp.AsInteger[int](t.Levels), base)
 	}
-	intST := fxp.As[int](st)
+	intST := fxp.AsInteger[int](st)
 	var stDamage *dice.Dice
 	switch w.StrengthType {
 	case stdmg.Thrust, stdmg.LiftingThrust, stdmg.TelekineticThrust, stdmg.IQThrust:
@@ -265,14 +265,14 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		return base
 	}
 	if w.Leveled && t.IsLeveled() {
-		multiplyDice(fxp.As[int](t.Levels), stDamage)
+		multiplyDice(fxp.AsInteger[int](t.Levels), stDamage)
 	}
 	base = addDice(base, stDamage)
 	return base
 }
 
 // ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible.
-func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
+func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	base := w.BaseDamageDice()
 	if base.Count == 0 && base.Modifier == 0 {
 		return w.String()
@@ -284,7 +284,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
-			bonus.DieCount = fxp.From(base.Count)
+			bonus.DieCount = fxp.FromInteger(base.Count)
 			amt := bonus.AdjustedAmountForWeapon(w.Owner)
 			if bonus.Percent {
 				percentDamageBonus += amt
@@ -297,7 +297,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 						amt = amt.Div(fxp.Two)
 					}
 				}
-				base.Modifier += fxp.As[int](amt)
+				base.Modifier += fxp.AsInteger[int](amt)
 			}
 		case feature.WeaponDRDivisorBonus:
 			amt := bonus.AdjustedAmountForWeapon(w.Owner)
@@ -310,11 +310,11 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		}
 	}
 	if w.ModifierPerDie != 0 {
-		amt := w.ModifierPerDie.Mul(fxp.From(base.Count))
+		amt := w.ModifierPerDie.Mul(fxp.FromInteger(base.Count))
 		if adjustForPhoenixFlame {
 			amt = amt.Div(fxp.Two)
 		}
-		base.Modifier += fxp.As[int](amt)
+		base.Modifier += fxp.AsInteger[int](amt)
 	}
 	if percentDamageBonus != 0 {
 		base = adjustDiceForPercentBonus(base, percentDamageBonus)
@@ -372,14 +372,14 @@ func multiplyDice(multiplier int, d *dice.Dice) {
 func addDice(left, right *dice.Dice) *dice.Dice {
 	if left.Sides > 1 && right.Sides > 1 && left.Sides != right.Sides {
 		sides := min(left.Sides, right.Sides)
-		average := fxp.From(sides + 1).Div(fxp.Two)
-		averageLeft := fxp.From(left.Count * (left.Sides + 1)).Div(fxp.Two).Mul(fxp.From(left.Multiplier))
-		averageRight := fxp.From(right.Count * (right.Sides + 1)).Div(fxp.Two).Mul(fxp.From(right.Multiplier))
+		average := fxp.FromInteger(sides + 1).Div(fxp.Two)
+		averageLeft := fxp.FromInteger(left.Count * (left.Sides + 1)).Div(fxp.Two).Mul(fxp.FromInteger(left.Multiplier))
+		averageRight := fxp.FromInteger(right.Count * (right.Sides + 1)).Div(fxp.Two).Mul(fxp.FromInteger(right.Multiplier))
 		averageBoth := averageLeft + averageRight
 		return &dice.Dice{
-			Count:      fxp.As[int](averageBoth.Div(average)),
+			Count:      fxp.AsInteger[int](averageBoth.Div(average)),
 			Sides:      sides,
-			Modifier:   fxp.As[int](averageBoth.Mod(average).Round()) + left.Modifier + right.Modifier,
+			Modifier:   fxp.AsInteger[int](averageBoth.Mod(average).Round()) + left.Modifier + right.Modifier,
 			Multiplier: 1,
 		}
 	}
@@ -392,22 +392,22 @@ func addDice(left, right *dice.Dice) *dice.Dice {
 }
 
 func adjustDiceForPercentBonus(d *dice.Dice, percent fxp.Int) *dice.Dice {
-	count := fxp.From(d.Count)
-	modifier := fxp.From(d.Modifier)
-	averagePerDie := fxp.From(d.Sides + 1).Div(fxp.Two)
+	count := fxp.FromInteger(d.Count)
+	modifier := fxp.FromInteger(d.Modifier)
+	averagePerDie := fxp.FromInteger(d.Sides + 1).Div(fxp.Two)
 	average := averagePerDie.Mul(count) + modifier
 	modifier = modifier.Mul(fxp.Hundred + percent).Div(fxp.Hundred)
 	if average < 0 {
 		count = count.Mul(fxp.Hundred + percent).Div(fxp.Hundred).Max(0)
 	} else {
 		average = average.Mul(fxp.Hundred+percent).Div(fxp.Hundred) - modifier
-		count = average.Div(averagePerDie).Trunc().Max(0)
+		count = average.Div(averagePerDie).Floor().Max(0)
 		modifier += (average - count.Mul(averagePerDie)).Round()
 	}
 	return &dice.Dice{
-		Count:      fxp.As[int](count),
+		Count:      fxp.AsInteger[int](count),
 		Sides:      d.Sides,
-		Modifier:   fxp.As[int](modifier),
+		Modifier:   fxp.AsInteger[int](modifier),
 		Multiplier: d.Multiplier,
 	}
 }

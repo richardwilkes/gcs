@@ -18,8 +18,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -89,7 +90,7 @@ func ShowAttributeSettings(owner EntityPanel) {
 	d.WillCloseCallback = d.willClose
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
 	scroller := unison.Ancestor[*unison.ScrollPanel](d.content)
-	scroller.ScrollRectIntoViewCallback = func(rect unison.Rect) bool {
+	scroller.ScrollRectIntoViewCallback = func(rect geom.Rect) bool {
 		if scroller.DefaultScrollRectIntoView(rect) {
 			if d.inDragOver && !d.waitingForTimer {
 				d.waitingForTimer = true
@@ -323,10 +324,10 @@ func (d *attributeSettingsDockable) apply() {
 	}
 }
 
-func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[string]any) bool {
+func (d *attributeSettingsDockable) dataDragOver(where geom.Point, data map[string]any) bool {
 	d.lastDragData = data
-	d.content.ScrollRectIntoView(unison.NewRect(where.X, where.Y-16, 1, 1))
-	d.content.ScrollRectIntoView(unison.NewRect(where.X, where.Y+16, 1, 1))
+	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
+	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
 
 	prevInDragOver := d.inDragOver
 	prevDefInsert := d.defInsert
@@ -402,7 +403,7 @@ func (d *attributeSettingsDockable) dataDragExit() {
 	d.MarkForRedraw()
 }
 
-func (d *attributeSettingsDockable) dataDragDrop(_ unison.Point, data map[string]any) {
+func (d *attributeSettingsDockable) dataDragDrop(_ geom.Point, data map[string]any) {
 	if d.inDragOver && d.defInsert != -1 {
 		if dragData, ok := data[attributeSettingsDragDataKey]; ok {
 			var dd *attributeSettingsDragData
@@ -446,7 +447,7 @@ func (d *attributeSettingsDockable) dataDragDrop(_ unison.Point, data map[string
 	d.dataDragExit()
 }
 
-func (d *attributeSettingsDockable) drawOver(gc *unison.Canvas, rect unison.Rect) {
+func (d *attributeSettingsDockable) drawOver(gc *unison.Canvas, rect geom.Rect) {
 	if d.inDragOver {
 		if d.thresholdInsert != -1 {
 			children := d.dragTargetPool.Children()
@@ -456,7 +457,7 @@ func (d *attributeSettingsDockable) drawOver(gc *unison.Canvas, rect unison.Rect
 			} else {
 				y = children[len(children)-1].FrameRect().Bottom()
 			}
-			pt := d.content.PointFromRoot(d.dragTargetPool.PointToRoot(unison.Point{Y: y}))
+			pt := d.content.PointFromRoot(d.dragTargetPool.PointToRoot(geom.Point{Y: y}))
 			paint := unison.ThemeWarning.Paint(gc, rect, paintstyle.Stroke)
 			paint.SetStrokeWidth(2)
 			r := d.content.RectFromRoot(d.dragTargetPool.RectToRoot(d.dragTargetPool.ContentRect(false)))

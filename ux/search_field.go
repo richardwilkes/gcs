@@ -10,7 +10,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -41,7 +42,7 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 	b.OnSelectionInk = f.OnEditableInk
 	b.SetFocusable(false)
 	b.SetEnabled(false)
-	b.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor { return unison.ArrowCursor() }
+	b.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor { return unison.ArrowCursor() }
 	b.Tooltip = newWrappedTooltip(i18n.Text("Clear"))
 	b.ClickCallback = func() { f.SetText("") }
 	f.ModifiedCallback = func(before, after *unison.FieldState) {
@@ -58,7 +59,7 @@ type searchLayout struct {
 	flex  unison.FlexLayout
 }
 
-func (s *searchLayout) LayoutSizes(_ *unison.Panel, hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
+func (s *searchLayout) LayoutSizes(_ *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	return s.field.DefaultSizes(hint)
 }
 

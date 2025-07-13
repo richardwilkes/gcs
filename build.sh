@@ -78,7 +78,7 @@ for arg in "$@"; do
 done
 
 if [ "$RUN_GENPKG"x == "1x" ]; then
-	go run cmd/genpkg/main.go
+	go run ./cmd/genpkg/main.go
 fi
 
 if [ "$SOMETHING"x != "1x" ]; then
@@ -86,7 +86,7 @@ if [ "$SOMETHING"x != "1x" ]; then
 	BUILD_GO=1
 fi
 
-LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
+LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/xos.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
 case $(uname -s) in
@@ -105,7 +105,7 @@ esac
 # Generate the source
 if [ "$BUILD_GEN"x == "1x" ]; then
 	echo -e "\033[33mGenerating...\033[0m"
-	go generate ./gen/srcgen.go
+	go generate ./cmd/enumgen/main.go
 fi
 
 # Generate the translation file
@@ -113,7 +113,7 @@ if [ "$I18N"x == "1x" ]; then
 	i18n $(go list -f "{{.Dir}}" -m github.com/richardwilkes/json) \
 		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/pdf) \
 		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/rpgtools) \
-		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/toolbox) \
+		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/toolbox/v2) \
 		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/unison) \
 		.
 fi
@@ -149,5 +149,5 @@ fi
 
 # Package
 if [ "$PACKAGER"x == "1x" ]; then
-	go run cmd/pack/main.go --release $RELEASE $DIST
+	go run ./cmd/pack/main.go --release $RELEASE $DIST
 fi

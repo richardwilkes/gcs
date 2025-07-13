@@ -21,11 +21,13 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -208,7 +210,7 @@ func (n *NavigatorNode) primaryColumnText() string {
 		}
 		return fmt.Sprintf("%s v%s", n.library.Title, filterVersion(current))
 	default:
-		return xfs.TrimExtension(path.Base(n.path))
+		return xfilepath.TrimExtension(path.Base(n.path))
 	}
 }
 
@@ -243,7 +245,7 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	label.SetTitle(title)
 	label.Drawable = &unison.DrawableSVG{
 		SVG:  fi.SVG,
-		Size: unison.NewSize(size, size),
+		Size: geom.NewSize(size, size),
 	}
 	if n.IsLibrary() && !n.library.IsUser() {
 		if current, releases := n.library.AvailableReleases(); len(releases) != 0 && releases[0].HasUpdate() {
@@ -313,23 +315,23 @@ func (n *NavigatorNode) Refresh() {
 		groupContainers := gurps.GlobalSettings().General.GroupContainersOnSort
 		slices.SortFunc(favs, func(a, b *fav) int {
 			if groupContainers {
-				aIsDir := xfs.IsDir(filepath.Join(a.library.Path(), a.path))
-				if aIsDir != xfs.IsDir(filepath.Join(b.library.Path(), b.path)) {
+				aIsDir := xos.IsDir(filepath.Join(a.library.Path(), a.path))
+				if aIsDir != xos.IsDir(filepath.Join(b.library.Path(), b.path)) {
 					if aIsDir {
 						return -1 // Directories before files
 					}
 					return 1 // Files after directories
 				}
 			}
-			result := txt.NaturalCmp(xfs.TrimExtension(a.path), xfs.TrimExtension(b.path), true)
+			result := xstrings.NaturalCmp(xfilepath.TrimExtension(a.path), xfilepath.TrimExtension(b.path), true)
 			if result == 0 {
-				result = txt.NaturalCmp(a.path, b.path, true)
+				result = xstrings.NaturalCmp(a.path, b.path, true)
 			}
 			return result
 		})
 		for _, one := range favs {
 			p := filepath.Join(one.library.Path(), one.path)
-			if xfs.IsDir(p) {
+			if xos.IsDir(p) {
 				n.children = append(n.children, NewDirectoryNode(n.nav, one.library, one.path, n))
 			} else {
 				n.children = append(n.children, NewFileNode(one.library, one.path, n))
@@ -373,9 +375,9 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 		}
 		aName := a.Name()
 		bName := b.Name()
-		result := txt.NaturalCmp(xfs.TrimExtension(aName), xfs.TrimExtension(bName), true)
+		result := xstrings.NaturalCmp(xfilepath.TrimExtension(aName), xfilepath.TrimExtension(bName), true)
 		if result == 0 {
-			result = txt.NaturalCmp(aName, bName, true)
+			result = xstrings.NaturalCmp(aName, bName, true)
 		}
 		return result
 	})

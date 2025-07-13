@@ -18,13 +18,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponStrength{}
 	_ json.Marshaler   = WeaponStrength{}
 	_ json.Unmarshaler = &(WeaponStrength{})
 )
@@ -56,8 +55,8 @@ func ParseWeaponStrength(s string) WeaponStrength {
 	return ws
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (ws WeaponStrength) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (ws WeaponStrength) IsZero() bool {
 	return ws == WeaponStrength{}
 }
 
@@ -78,20 +77,16 @@ func (ws *WeaponStrength) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (ws WeaponStrength) Hash(h hash.Hash) {
-	if ws.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Num64(h, ws.Min)
-	hashhelper.Bool(h, ws.Bipod)
-	hashhelper.Bool(h, ws.Mounted)
-	hashhelper.Bool(h, ws.MusketRest)
-	hashhelper.Bool(h, ws.TwoHanded)
-	hashhelper.Bool(h, ws.TwoHandedUnready)
+	xhash.Num64(h, ws.Min)
+	xhash.Bool(h, ws.Bipod)
+	xhash.Bool(h, ws.Mounted)
+	xhash.Bool(h, ws.MusketRest)
+	xhash.Bool(h, ws.TwoHanded)
+	xhash.Bool(h, ws.TwoHandedUnready)
 }
 
 // Resolve any bonuses that apply.
-func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponStrength {
+func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponStrength {
 	result := ws
 	result.Bipod = w.ResolveBoolFlag(wswitch.Bipod, result.Bipod)
 	result.Mounted = w.ResolveBoolFlag(wswitch.Mounted, result.Mounted)
@@ -108,7 +103,7 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 		}
 	}
 	if percentMin != 0 {
-		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Trunc()
+		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Floor()
 	}
 	result.Validate()
 	return result

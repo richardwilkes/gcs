@@ -12,7 +12,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -68,7 +68,7 @@ func adjustRawPoints[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*
 			if increment || provider.RawPoints() > 0 {
 				before.List = append(before.List, newRawPointsAdjuster(provider))
 				rawPts := provider.RawPoints()
-				pts := rawPts.Trunc()
+				pts := rawPts.Floor()
 				if increment {
 					pts += fxp.One
 				} else if rawPts == pts {

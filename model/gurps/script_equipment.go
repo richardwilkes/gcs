@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 type scriptEquipment struct {
@@ -60,8 +60,8 @@ func newScriptEquipment(equipment *Equipment) *scriptEquipment {
 		TechLevel:              equipment.TechLevel,
 		LegalityClass:          equipment.LegalityClass,
 		Tags:                   slices.Clone(equipment.Tags),
-		Quantity:               fxp.As[float64](equipment.Quantity),
-		Level:                  fxp.As[float64](equipment.Level),
+		Quantity:               fxp.AsFloat[float64](equipment.Quantity),
+		Level:                  fxp.AsFloat[float64](equipment.Level),
 		Uses:                   equipment.Uses,
 		MaxUses:                equipment.MaxUses,
 		WeightIgnoredForSkills: equipment.WeightIgnoredForSkills,
@@ -74,7 +74,7 @@ func newScriptEquipment(equipment *Equipment) *scriptEquipment {
 func (e *scriptEquipment) Value() float64 {
 	if !e.cachedValue {
 		e.cachedValue = true
-		e.value = fxp.As[float64](e.equipment.AdjustedValue())
+		e.value = fxp.AsFloat[float64](e.equipment.AdjustedValue())
 	}
 	return e.value
 }
@@ -82,7 +82,7 @@ func (e *scriptEquipment) Value() float64 {
 func (e *scriptEquipment) ExtendedValue() float64 {
 	if !e.cachedExtendedValue {
 		e.cachedExtendedValue = true
-		e.extendedValue = fxp.As[float64](e.equipment.ExtendedValue())
+		e.extendedValue = fxp.AsFloat[float64](e.equipment.ExtendedValue())
 	}
 	return e.extendedValue
 }
@@ -90,7 +90,7 @@ func (e *scriptEquipment) ExtendedValue() float64 {
 func (e *scriptEquipment) Weight() float64 {
 	if !e.cachedWeight {
 		e.cachedWeight = true
-		e.weight = fxp.As[float64](fxp.Int(e.equipment.AdjustedWeight(false, fxp.Pound)))
+		e.weight = fxp.AsFloat[float64](fxp.Int(e.equipment.AdjustedWeight(false, fxp.Pound)))
 	}
 	return e.weight
 }
@@ -98,7 +98,7 @@ func (e *scriptEquipment) Weight() float64 {
 func (e *scriptEquipment) ExtendedWeight() float64 {
 	if !e.cachedExtendedWeight {
 		e.cachedExtendedWeight = true
-		e.extendedWeight = fxp.As[float64](fxp.Int(e.equipment.ExtendedWeight(false, fxp.Pound)))
+		e.extendedWeight = fxp.AsFloat[float64](fxp.Int(e.equipment.ExtendedWeight(false, fxp.Pound)))
 	}
 	return e.extendedWeight
 }

@@ -19,12 +19,14 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -94,7 +96,7 @@ func InitWorkspace(wnd *unison.Window) {
 func finishInit() {
 	Workspace.Window.ResizedCallback = nil
 	if gurps.GlobalSettings().General.RestoreWorkspaceOnStart {
-		toolbox.CallWithHandler(restoreDockState, func(err error) {
+		xos.SafeCall(restoreDockState, func(err error) {
 			slog.Warn("Unable to restore workspace state", "error", err)
 		})
 	} else {
@@ -131,7 +133,7 @@ func restoreDockState() {
 	}
 	OpenFiles(files)
 	for _, k := range files {
-		if d := LocateFileBackedDockable(k); !toolbox.IsNil(d) {
+		if d := LocateFileBackedDockable(k); !xreflect.IsNil(d) {
 			m[filePrefix+k] = d
 		} else {
 			m[filePrefix+k] = newNotFoundDockable(k)
@@ -218,7 +220,7 @@ func isWorkspaceAllowedToClose() bool {
 		if tc, ok := d.(unison.TabCloser); ok {
 			var fbd FileBackedDockable
 			if fbd, ok = tc.(FileBackedDockable); ok {
-				if !fs.FileExists(fbd.BackingFilePath()) {
+				if !xos.FileExists(fbd.BackingFilePath()) {
 					if !fbd.MayAttemptClose() {
 						return false
 					}
@@ -227,7 +229,7 @@ func isWorkspaceAllowedToClose() bool {
 							return false
 						}
 					}
-					if !fs.FileExists(fbd.BackingFilePath()) {
+					if !xos.FileExists(fbd.BackingFilePath()) {
 						if !AttemptCloseForDockable(fbd) {
 							return false
 						}
@@ -460,7 +462,7 @@ func InstallDockUndockCmd(dockable unison.Dockable) {
 
 // NewWindowForDockable creates a new window and places a Dockable inside it.
 func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison.Window, error) {
-	var frame unison.Rect
+	var frame geom.Rect
 	if focused := unison.ActiveWindow(); focused != nil {
 		frame = focused.FrameRect()
 	} else {
@@ -622,7 +624,7 @@ func traverseGroup(d unison.Dockable, f func(target GroupedCloser) bool) {
 func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUnmodified func()) bool {
 	filePath := d.BackingFilePath()
 	if err := saver(filePath); err != nil {
-		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to save %s"), fs.BaseName(filePath)), err)
+		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to save %s"), xfilepath.BaseName(filePath)), err)
 		return false
 	}
 	setUnmodified()
@@ -634,13 +636,13 @@ func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUn
 func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath string) error, setUnmodifiedAndNewPath func(filePath string)) bool {
 	dialog := unison.NewSaveDialog()
 	existingPath := d.BackingFilePath()
-	if !strings.HasPrefix(existingPath, markdownContentOnlyPrefix) && fs.FileExists(existingPath) {
+	if !strings.HasPrefix(existingPath, markdownContentOnlyPrefix) && xos.FileExists(existingPath) {
 		dialog.SetInitialDirectory(filepath.Dir(existingPath))
 	} else {
 		dialog.SetInitialDirectory(gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey))
 	}
 	dialog.SetAllowedExtensions(extension)
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(existingPath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(existingPath)))
 	if dialog.RunModal() {
 		filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), extension, false)
 		if !ok {
@@ -648,7 +650,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 		}
 		gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 		if err := saver(filePath); err != nil {
-			Workspace.ErrorHandler(i18n.Text("Unable to save as ")+fs.BaseName(filePath), err)
+			Workspace.ErrorHandler(i18n.Text("Unable to save as ")+xfilepath.BaseName(filePath), err)
 			return false
 		}
 		setUnmodifiedAndNewPath(filePath)
@@ -669,9 +671,9 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 		ta := a.Title()
 		tb := b.Title()
 		if ta == tb {
-			return txt.NaturalCmp(a.BackingFilePath(), b.BackingFilePath(), true)
+			return xstrings.NaturalCmp(a.BackingFilePath(), b.BackingFilePath(), true)
 		}
-		return txt.NaturalCmp(ta, tb, true)
+		return xstrings.NaturalCmp(ta, tb, true)
 	})
 	list := unison.NewList[T]()
 	list.SetAllowMultipleSelection(true)
@@ -682,7 +684,7 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 	}
 	list.Append(choices...)
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

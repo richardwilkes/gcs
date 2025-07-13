@@ -18,7 +18,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -49,7 +50,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		HGrab:  true,
 	})
 	p.SetBorder(&TitledBorder{Title: i18n.Text("Encumbrance, Move & Dodge")})
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
@@ -126,13 +127,13 @@ func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Le
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	marker.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: 4}))
+	marker.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 4}))
 	baseline := marker.Font.Baseline()
 	marker.Drawable = &unison.DrawableSVG{
 		SVG:  svg.Weight,
-		Size: unison.Size{Width: baseline, Height: baseline},
+		Size: geom.Size{Width: baseline, Height: baseline},
 	}
-	marker.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	marker.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		if enc == entity.EncumbranceLevel(false) {
 			marker.DefaultDraw(gc, rect)
 		}
@@ -186,7 +187,7 @@ func (p *EncumbrancePanel) createDodgeField(enc encumbrance.Level, rowColor *enc
 	})
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The dodge for the %s encumbrance level"), enc.String()))
-	field.SetBorder(unison.NewEmptyBorder(unison.Insets{Right: 4}))
+	field.SetBorder(unison.NewEmptyBorder(geom.Insets{Right: 4}))
 	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
 }
@@ -221,6 +222,6 @@ func (c *encRowColor) GetColor() unison.Color {
 	}
 }
 
-func (c *encRowColor) Paint(canvas *unison.Canvas, rect unison.Rect, style paintstyle.Enum) *unison.Paint {
+func (c *encRowColor) Paint(canvas *unison.Canvas, rect geom.Rect, style paintstyle.Enum) *unison.Paint {
 	return c.GetColor().Paint(canvas, rect, style)
 }

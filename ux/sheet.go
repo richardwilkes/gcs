@@ -22,11 +22,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -146,16 +147,16 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		VAlign:  align.Fill,
 	})
 
-	s.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+	s.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
 		s.RequestFocus()
 		return false
 	}
-	s.DataDragOverCallback = func(_ unison.Point, data map[string]any) bool {
+	s.DataDragOverCallback = func(_ geom.Point, data map[string]any) bool {
 		s.dragReroutePanel = nil
 		for _, key := range dropKeys {
 			if _, ok := data[key]; ok {
 				if s.dragReroutePanel = s.keyToPanel(key); s.dragReroutePanel != nil {
-					s.dragReroutePanel.DataDragOverCallback(unison.Point{Y: 100000000}, data)
+					s.dragReroutePanel.DataDragOverCallback(geom.Point{Y: 100000000}, data)
 					return true
 				}
 				break
@@ -169,13 +170,13 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 			s.dragReroutePanel = nil
 		}
 	}
-	s.DataDragDropCallback = func(_ unison.Point, data map[string]any) {
+	s.DataDragDropCallback = func(_ geom.Point, data map[string]any) {
 		if s.dragReroutePanel != nil {
-			s.dragReroutePanel.DataDragDropCallback(unison.Point{Y: 10000000}, data)
+			s.dragReroutePanel.DataDragDropCallback(geom.Point{Y: 10000000}, data)
 			s.dragReroutePanel = nil
 		}
 	}
-	s.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
+	s.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		if s.dragReroutePanel != nil {
 			r := s.RectFromRoot(s.dragReroutePanel.RectToRoot(s.dragReroutePanel.ContentRect(true)))
 			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
@@ -273,7 +274,7 @@ func (s *Sheet) createToolbar() {
 	s.toolbar = unison.NewPanel()
 	s.AddChild(s.toolbar)
 	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
-		unison.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
+		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
@@ -385,7 +386,7 @@ func (s *Sheet) exportPortrait(_ any) {
 			backingFilePath := s.BackingFilePath()
 			dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 			dialog.SetAllowedExtensions(ext)
-			dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+			dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 			if dialog.RunModal() {
 				if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
 					if err := s.entity.Profile.ExportPortrait(filePath); err != nil {
@@ -468,7 +469,7 @@ func (s *Sheet) UndoManager() *unison.UndoManager {
 }
 
 // TitleIcon implements workspace.FileBackedDockable
-func (s *Sheet) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (s *Sheet) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(s.path).SVG,
 		Size: suggestedSize,
@@ -477,7 +478,7 @@ func (s *Sheet) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 
 // Title implements workspace.FileBackedDockable
 func (s *Sheet) Title() string {
-	return fs.BaseName(s.BackingFilePath())
+	return xfilepath.BaseName(s.BackingFilePath())
 }
 
 func (s *Sheet) String() string {
@@ -525,7 +526,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way to
 		//       determine that the content of a table doesn't need to be refreshed.
 		skipDeepSync := false
-		if !toolbox.IsNil(src) {
+		if !xreflect.IsNil(src) {
 			_, skipDeepSync = src.AsPanel().ClientData()[SkipDeepSync]
 		}
 		if !skipDeepSync {
@@ -597,7 +598,7 @@ func (s *Sheet) exportToPDF() {
 	backingFilePath := s.BackingFilePath()
 	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("pdf")
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -614,7 +615,7 @@ func (s *Sheet) exportToWEBP() {
 	backingFilePath := s.BackingFilePath()
 	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("webp")
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "webp", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -631,7 +632,7 @@ func (s *Sheet) exportToPNG() {
 	backingFilePath := s.BackingFilePath()
 	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("png")
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "png", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -648,7 +649,7 @@ func (s *Sheet) exportToJPEG() {
 	backingFilePath := s.BackingFilePath()
 	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("jpeg")
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "jpeg", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -928,7 +929,7 @@ func (s *Sheet) Rebuild(full bool) {
 	UpdateCalculator(s)
 }
 
-func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect, start, step int, overrideFunc func(rowIndex int, ink unison.Ink) unison.Ink) {
+func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect geom.Rect, start, step int, overrideFunc func(rowIndex int, ink unison.Ink) unison.Ink) {
 	gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 	children := p.AsPanel().Children()
 	row := 0

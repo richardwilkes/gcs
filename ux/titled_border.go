@@ -12,7 +12,8 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
-	"github.com/richardwilkes/toolbox/xmath"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/filltype"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -34,8 +35,8 @@ func (t *TitledBorder) font() unison.Font {
 }
 
 // Insets implements unison.Border
-func (t *TitledBorder) Insets() unison.Insets {
-	return unison.Insets{
+func (t *TitledBorder) Insets() geom.Insets {
+	return geom.Insets{
 		Top:    xmath.Ceil(t.font().LineHeight()) + 2,
 		Left:   1,
 		Bottom: 1,
@@ -44,7 +45,7 @@ func (t *TitledBorder) Insets() unison.Insets {
 }
 
 // Draw implements unison.Border
-func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
+func (t *TitledBorder) Draw(gc *unison.Canvas, rect geom.Rect) {
 	clip := rect.Inset(t.Insets())
 	clip.Y += 0.5
 	clip.Height -= 0.5

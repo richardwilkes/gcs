@@ -15,7 +15,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -50,8 +51,8 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 			Title: i18n.Text("Defaults"),
 			Font:  unison.LabelFont,
 		},
-		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		unison.NewEmptyBorder(geom.NewUniformInsets(2))))
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 	addButton := unison.NewSVGButton(svg.CircledAdd)

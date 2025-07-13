@@ -14,8 +14,8 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/taskqueue"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
 )
@@ -29,7 +29,7 @@ type monitor struct {
 	lock       sync.RWMutex
 	events     chan notify.EventInfo
 	done       chan bool
-	queue      *taskqueue.Queue
+	queue      *xos.TaskQueue
 	tokensLock sync.RWMutex
 	tokens     []*MonitorToken
 }
@@ -57,7 +57,7 @@ func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 	m.tokens = append(m.tokens, token)
 	m.tokensLock.Unlock()
 	if m.events == nil {
-		m.queue = taskqueue.New(taskqueue.Workers(1))
+		m.queue = xos.NewTaskQueue(&xos.TaskQueueConfig{Workers: 1})
 		m.done = make(chan bool)
 		m.events = make(chan notify.EventInfo, 16)
 		if err := notify.Watch(token.root+"/...", m.events, notify.Create|notify.Remove|notify.Rename); err != nil {

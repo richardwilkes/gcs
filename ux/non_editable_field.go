@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -34,7 +35,7 @@ func newNonEditableField(syncer func(*NonEditableField), hAlign align.Enum) *Non
 	f.Font = unison.FieldFont
 	f.HAlign = hAlign
 	f.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
-		unison.NewUniformInsets(1), false), unison.NewEmptyBorder(unison.Insets{Top: 3, Left: 3, Bottom: 2, Right: 3})))
+		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.Insets{Top: 3, Left: 3, Bottom: 2, Right: 3})))
 	f.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,

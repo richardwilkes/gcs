@@ -16,7 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -62,7 +63,7 @@ func (d *fontSettingsDockable) initContent(content *unison.Panel) {
 	notice := unison.NewLabel()
 	notice.Font = unison.SystemFont
 	notice.SetTitle(i18n.Text("Changing fonts usually requires restarting the app to see content laid out correctly."))
-	notice.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
+	notice.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}))
 	notice.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  3,
 		VSpan:  1,

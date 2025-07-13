@@ -15,9 +15,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Prereq = &AttributePrereq{}
@@ -28,7 +28,7 @@ type AttributePrereq struct {
 	Type              prereq.Type     `json:"type"`
 	Has               bool            `json:"has"`
 	CombinedWith      string          `json:"combined_with,omitempty"`
-	QualifierCriteria criteria.Number `json:"qualifier,omitempty"`
+	QualifierCriteria criteria.Number `json:"qualifier,omitzero"`
 	Which             string          `json:"which"`
 }
 
@@ -65,7 +65,7 @@ func (p *AttributePrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	value := entity.ResolveAttributeCurrent(p.Which)
 	if p.CombinedWith != "" {
 		value += entity.ResolveAttributeCurrent(p.CombinedWith)
@@ -92,12 +92,12 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xio.ByteBuff
 // Hash writes this object's contents into the hasher.
 func (p *AttributePrereq) Hash(h hash.Hash) {
 	if p == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, p.Type)
-	hashhelper.Bool(h, p.Has)
-	hashhelper.String(h, p.CombinedWith)
+	xhash.Num8(h, p.Type)
+	xhash.Bool(h, p.Has)
+	xhash.StringWithLen(h, p.CombinedWith)
 	p.QualifierCriteria.Hash(h)
-	hashhelper.String(h, p.Which)
+	xhash.StringWithLen(h, p.Which)
 }

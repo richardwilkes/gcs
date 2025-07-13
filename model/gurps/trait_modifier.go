@@ -27,11 +27,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -626,30 +625,30 @@ func (t *TraitModifier) SyncWithSource() {
 func (t *TraitModifier) Hash(h hash.Hash) {
 	t.hash(h)
 	if t.Container() {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 	} else {
 		t.TraitModifierNonContainerSyncData.hash(h)
 	}
 }
 
 func (t *TraitModifierSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, t.Name)
-	hashhelper.String(h, t.PageRef)
-	hashhelper.String(h, t.PageRefHighlight)
-	hashhelper.String(h, t.LocalNotes)
-	hashhelper.Num64(h, len(t.Tags))
+	xhash.StringWithLen(h, t.Name)
+	xhash.StringWithLen(h, t.PageRef)
+	xhash.StringWithLen(h, t.PageRefHighlight)
+	xhash.StringWithLen(h, t.LocalNotes)
+	xhash.Num64(h, len(t.Tags))
 	for _, tag := range t.Tags {
-		hashhelper.String(h, tag)
+		xhash.StringWithLen(h, tag)
 	}
 }
 
 func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
-	hashhelper.Num64(h, t.Cost)
-	hashhelper.Num8(h, t.CostType)
-	hashhelper.Bool(h, t.UseLevelFromTrait)
-	hashhelper.Bool(h, t.ShowNotesOnWeapon)
-	hashhelper.Num8(h, t.Affects)
-	hashhelper.Num64(h, len(t.Features))
+	xhash.Num64(h, t.Cost)
+	xhash.Num8(h, t.CostType)
+	xhash.Bool(h, t.UseLevelFromTrait)
+	xhash.Bool(h, t.ShowNotesOnWeapon)
+	xhash.Num8(h, t.Affects)
+	xhash.Num64(h, len(t.Features))
 	for _, feature := range t.Features {
 		feature.Hash(h)
 	}
@@ -667,6 +666,6 @@ func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
 
 func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
 	*t = *other
-	t.Tags = txt.CloneStringSlice(other.Tags)
+	t.Tags = slices.Clone(other.Tags)
 	t.Features = other.Features.Clone()
 }

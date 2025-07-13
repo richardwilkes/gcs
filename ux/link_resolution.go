@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 )
 
@@ -52,7 +52,7 @@ func HandleLink(p unison.Paneler, target string) {
 		return
 	}
 	if !unison.HasURLPrefix(revised) && !unison.HasAnyPrefix(unison.DefaultMarkdownTheme.AltLinkPrefixes, revised) {
-		if fs.FileIsReadable(revised) {
+		if xos.FileIsReadable(revised) {
 			OpenFile(revised, 0)
 			return
 		}

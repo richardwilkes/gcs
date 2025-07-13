@@ -12,7 +12,8 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -94,7 +95,7 @@ func (p *bodySettingsSubTablePanel) createContent() *unison.Panel {
 		VSpacing: unison.StdVSpacing,
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	content.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
+	content.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false))
 
 	for _, loc := range p.body.Locations {
 		content.AddChild(newHitLocationSettingsPanel(p.dockable, loc))

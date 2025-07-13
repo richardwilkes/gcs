@@ -17,8 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox/errs"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 )
 
 // DefaultAncestry holds the name of the default ancestry.
@@ -70,7 +70,7 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 		return nil, err
 	}
 	if ancestry.Name == "" {
-		ancestry.Name = xfs.BaseName(filePath)
+		ancestry.Name = xfilepath.BaseName(filePath)
 	}
 	return &ancestry.Ancestry, nil
 }

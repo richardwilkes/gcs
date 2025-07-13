@@ -18,8 +18,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -57,7 +58,7 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 	toolbar := d.createToolbar(addToStartToolbar, addToEndToolbar)
 	d.AddChild(toolbar)
 	content := unison.NewPanel()
-	content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
+	content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
 	initContent(content)
 	scroller := unison.NewScrollPanel()
 	scroller.SetContent(content, behavior.Fill, behavior.Fill)
@@ -73,7 +74,7 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 }
 
 // TitleIcon implements unison.Dockable
-func (d *SettingsDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (d *SettingsDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  d.TabIcon,
 		Size: suggestedSize,
@@ -129,7 +130,7 @@ func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	if addToStartToolbar != nil {
 		addToStartToolbar(toolbar)
@@ -234,7 +235,7 @@ func (d *SettingsDockable) handleExport(_ unison.MenuItem) {
 	dialog.SetAllowedExtensions(d.Extensions[0])
 	global := gurps.GlobalSettings()
 	dialog.SetInitialDirectory(global.LastDir(gurps.SettingsLastDirKey))
-	dialog.SetInitialFileName(xfs.SanitizeName(xfs.BaseName(d.Title())))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(d.Title())))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {
 			global.SetLastDir(gurps.SettingsLastDirKey, filepath.Dir(filePath))

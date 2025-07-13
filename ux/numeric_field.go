@@ -14,13 +14,13 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xmath"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/constraints"
 )
 
 // NumericField holds a numeric value that can be edited.
-type NumericField[T xmath.Numeric] struct {
+type NumericField[T constraints.Integer | constraints.Float] struct {
 	*unison.Field
 	targetMgr     *TargetMgr
 	targetKey     string
@@ -40,7 +40,7 @@ type NumericField[T xmath.Numeric] struct {
 }
 
 // NewNumericField creates a new field that formats its content.
-func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue T) *NumericField[T] {
+func NewNumericField[T constraints.Integer | constraints.Float](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue T) *NumericField[T] {
 	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
 	f.adjustMinimumTextWidth()
 	f.Sync()
@@ -49,7 +49,7 @@ func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle
 
 // NewNumericFieldWithException creates a new field that formats its content and can hold an exceptional value (one
 // outside of the minimum/maximum range.
-func NewNumericFieldWithException[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue, exception T) *NumericField[T] {
+func NewNumericFieldWithException[T constraints.Integer | constraints.Float](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue, exception T) *NumericField[T] {
 	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
 	f.exception = exception
 	f.hasException = true
@@ -58,7 +58,7 @@ func NewNumericFieldWithException[T xmath.Numeric](targetMgr *TargetMgr, targetK
 	return f
 }
 
-func newBaseNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue T) *NumericField[T] {
+func newBaseNumericField[T constraints.Integer | constraints.Float](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue T) *NumericField[T] {
 	f := &NumericField[T]{
 		Field:         unison.NewField(),
 		targetMgr:     targetMgr,

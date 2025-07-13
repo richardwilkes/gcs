@@ -30,12 +30,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -114,7 +113,7 @@ type SpellSyncData struct {
 
 // SpellNonContainerOnlySyncData holds the spell sync data that is only applicable to traits that aren't containers.
 type SpellNonContainerOnlySyncData struct {
-	Difficulty        AttributeDifficulty `json:"difficulty,omitempty"`
+	Difficulty        AttributeDifficulty `json:"difficulty,omitzero"`
 	College           CollegeList         `json:"college,omitempty"`
 	PowerSource       string              `json:"power_source,omitempty"`
 	Class             string              `json:"spell_class,omitempty"`
@@ -125,7 +124,7 @@ type SpellNonContainerOnlySyncData struct {
 	Duration          string              `json:"duration,omitempty"`
 	RitualSkillName   string              `json:"base_skill,omitempty"`
 	RitualPrereqCount int                 `json:"prereq_count,omitempty"`
-	Prereq            *PrereqList         `json:"prereqs,omitempty"`
+	Prereq            *PrereqList         `json:"prereqs,omitzero"`
 	Weapons           []*Weapon           `json:"weapons,omitempty"`
 }
 
@@ -517,7 +516,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		}
 	case SpellPointsColumn:
 		data.Type = cell.Text
-		var tooltip xio.ByteBuffer
+		var tooltip xbytes.InsertBuffer
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = align.End
 		if tooltip.Len() != 0 {
@@ -634,7 +633,7 @@ func (s *Spell) CalculateLevel() Level {
 // IncrementSkillLevel adds enough points to increment the skill level to the next level.
 func (s *Spell) IncrementSkillLevel() {
 	if !s.Container() {
-		basePoints := s.Points.Trunc() + fxp.One
+		basePoints := s.Points.Floor() + fxp.One
 		maxPoints := basePoints
 		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			maxPoints += fxp.Twelve
@@ -654,7 +653,7 @@ func (s *Spell) IncrementSkillLevel() {
 // DecrementSkillLevel removes enough points to decrement the skill level to the previous level.
 func (s *Spell) DecrementSkillLevel() {
 	if !s.Container() && s.Points > 0 {
-		basePoints := s.Points.Trunc()
+		basePoints := s.Points.Floor()
 		minPoints := basePoints
 		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			minPoints -= fxp.Twelve
@@ -684,14 +683,14 @@ func (s *Spell) DecrementSkillLevel() {
 
 // CalculateSpellLevel returns the calculated spell level.
 func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []string, attrDiff AttributeDifficulty, pts fxp.Int) Level {
-	var tooltip xio.ByteBuffer
+	var tooltip xbytes.InsertBuffer
 	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
 	level := fxp.Min
 	if e != nil {
-		pts = pts.Trunc()
+		pts = pts.Floor()
 		level = e.ResolveAttributeCurrent(attrDiff.Attribute)
 		if attrDiff.Difficulty == difficulty.Wildcard {
-			pts = pts.Div(fxp.Three).Trunc()
+			pts = pts.Div(fxp.Three).Floor()
 		}
 		switch {
 		case pts < fxp.One:
@@ -702,11 +701,11 @@ func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []s
 		case pts < fxp.Four:
 			relativeLevel += fxp.One
 		default:
-			relativeLevel += fxp.One + pts.Div(fxp.Four).Trunc()
+			relativeLevel += fxp.One + pts.Div(fxp.Four).Floor()
 		}
 		if level != fxp.Min {
 			relativeLevel += e.SpellBonusFor(name, powerSource, colleges, tags, &tooltip)
-			relativeLevel = relativeLevel.Trunc()
+			relativeLevel = relativeLevel.Floor()
 			level += relativeLevel
 		}
 	}
@@ -733,9 +732,9 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 		}
 	}
 	if e != nil {
-		tooltip := &xio.ByteBuffer{}
+		tooltip := &xbytes.InsertBuffer{}
 		tooltip.WriteString(skillLevel.Tooltip)
-		levels := e.SpellBonusFor(name, powerSource, colleges, tags, tooltip).Trunc()
+		levels := e.SpellBonusFor(name, powerSource, colleges, tags, tooltip).Floor()
 		skillLevel.Level += levels
 		skillLevel.RelativeLevel += levels
 		skillLevel.Tooltip = tooltip.String()
@@ -748,7 +747,7 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 		DefaultType:    SkillID,
 		Name:           ritualSkillName,
 		Specialization: college,
-		Modifier:       fxp.From(-ritualPrereqCount),
+		Modifier:       fxp.FromInteger(-ritualPrereqCount),
 	}
 	if college == "" {
 		def.Name = ""
@@ -770,7 +769,7 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 }
 
 // RitualMagicSatisfied returns true if the Ritual Magic Spell is satisfied.
-func (s *Spell) RitualMagicSatisfied(tooltip *xio.ByteBuffer, prefix string) bool {
+func (s *Spell) RitualMagicSatisfied(tooltip *xbytes.InsertBuffer, prefix string) bool {
 	if !s.IsRitualMagic() {
 		return true
 	}
@@ -853,7 +852,7 @@ func (s *Spell) Rituals() string {
 		}
 		return ritual + i18n.Text("; Cost: -1")
 	default:
-		adj := fxp.As[int]((level - fxp.Fifteen).Div(fxp.Five))
+		adj := fxp.AsInteger[int]((level - fxp.Fifteen).Div(fxp.Five))
 		class := strings.ToLower(s.ClassWithReplacements())
 		time := ""
 		if !strings.Contains(class, "missile") {
@@ -930,7 +929,7 @@ func (s *Spell) SetRawPoints(points fxp.Int) bool {
 }
 
 // AdjustedPoints returns the points, adjusted for any bonuses.
-func (s *Spell) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
+func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
 		var total fxp.Int
 		for _, one := range s.Children {
@@ -943,7 +942,7 @@ func (s *Spell) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 }
 
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
-func AdjustedPointsForNonContainerSpell(e *Entity, points fxp.Int, name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
+func AdjustedPointsForNonContainerSpell(e *Entity, points fxp.Int, name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if e != nil {
 		points += e.SpellPointBonusFor(name, powerSource, colleges, tags, tooltip)
 		points = points.Max(0)
@@ -1117,7 +1116,7 @@ func (s *Spell) SyncWithSource() {
 					s.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
 					s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
-					s.College = txt.CloneStringSlice(s.College)
+					s.College = slices.Clone(s.College)
 					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 					s.Weapons = CloneWeapons(other.Weapons, false)
 				}
@@ -1138,33 +1137,33 @@ func (s *Spell) Hash(h hash.Hash) {
 }
 
 func (s *SpellSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, s.Name)
-	hashhelper.String(h, s.PageRef)
-	hashhelper.String(h, s.PageRefHighlight)
-	hashhelper.String(h, s.LocalNotes)
-	hashhelper.Num64(h, len(s.Tags))
+	xhash.StringWithLen(h, s.Name)
+	xhash.StringWithLen(h, s.PageRef)
+	xhash.StringWithLen(h, s.PageRefHighlight)
+	xhash.StringWithLen(h, s.LocalNotes)
+	xhash.Num64(h, len(s.Tags))
 	for _, tag := range s.Tags {
-		hashhelper.String(h, tag)
+		xhash.StringWithLen(h, tag)
 	}
 }
 
 func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	s.Difficulty.Hash(h)
-	hashhelper.Num64(h, len(s.College))
+	xhash.Num64(h, len(s.College))
 	for _, college := range s.College {
-		hashhelper.String(h, college)
+		xhash.StringWithLen(h, college)
 	}
-	hashhelper.String(h, s.PowerSource)
-	hashhelper.String(h, s.Class)
-	hashhelper.String(h, s.Resist)
-	hashhelper.String(h, s.CastingCost)
-	hashhelper.String(h, s.MaintenanceCost)
-	hashhelper.String(h, s.CastingTime)
-	hashhelper.String(h, s.Duration)
-	hashhelper.String(h, s.RitualSkillName)
-	hashhelper.Num64(h, s.RitualPrereqCount)
+	xhash.StringWithLen(h, s.PowerSource)
+	xhash.StringWithLen(h, s.Class)
+	xhash.StringWithLen(h, s.Resist)
+	xhash.StringWithLen(h, s.CastingCost)
+	xhash.StringWithLen(h, s.MaintenanceCost)
+	xhash.StringWithLen(h, s.CastingTime)
+	xhash.StringWithLen(h, s.Duration)
+	xhash.StringWithLen(h, s.RitualSkillName)
+	xhash.Num64(h, s.RitualPrereqCount)
 	s.Prereq.Hash(h)
-	hashhelper.Num64(h, len(s.Weapons))
+	xhash.Num64(h, len(s.Weapons))
 	for _, weapon := range s.Weapons {
 		weapon.Hash(h)
 	}
@@ -1182,13 +1181,13 @@ func (s *SpellEditData) ApplyTo(other *Spell) {
 
 func (s *SpellEditData) copyFrom(other *SpellEditData, isContainer, isApply bool) {
 	*s = *other
-	s.Tags = txt.CloneStringSlice(other.Tags)
+	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
 	if other.TechLevel != nil {
 		tl := *other.TechLevel
 		s.TechLevel = &tl
 	}
-	s.College = txt.CloneStringSlice(other.College)
+	s.College = slices.Clone(other.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	s.Weapons = CloneWeapons(other.Weapons, isApply)
 	if len(other.Study) != 0 {

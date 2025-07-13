@@ -18,13 +18,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponParry{}
 	_ json.Marshaler   = WeaponParry{}
 	_ json.Unmarshaler = &(WeaponParry{})
 )
@@ -52,8 +51,8 @@ func ParseWeaponParry(s string) WeaponParry {
 	return wp
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wp WeaponParry) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (wp WeaponParry) IsZero() bool {
 	return !wp.CanParry
 }
 
@@ -75,27 +74,23 @@ func (wp *WeaponParry) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wp WeaponParry) Hash(h hash.Hash) {
-	if wp.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Bool(h, wp.CanParry)
-	hashhelper.Bool(h, wp.Fencing)
-	hashhelper.Bool(h, wp.Unbalanced)
-	hashhelper.Num64(h, wp.Modifier)
+	xhash.Bool(h, wp.CanParry)
+	xhash.Bool(h, wp.Fencing)
+	xhash.Bool(h, wp.Unbalanced)
+	xhash.Num64(h, wp.Modifier)
 }
 
 // Resolve any bonuses that apply.
-func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponParry {
+func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponParry {
 	result := wp
 	result.CanParry = w.ResolveBoolFlag(wswitch.CanParry, result.CanParry)
 	if result.CanParry {
 		result.Fencing = w.ResolveBoolFlag(wswitch.Fencing, result.Fencing)
 		result.Unbalanced = w.ResolveBoolFlag(wswitch.Unbalanced, result.Unbalanced)
 		if entity := w.Entity(); entity != nil {
-			var primaryTooltip *xio.ByteBuffer
+			var primaryTooltip *xbytes.InsertBuffer
 			if modifiersTooltip != nil {
-				primaryTooltip = &xio.ByteBuffer{}
+				primaryTooltip = &xbytes.InsertBuffer{}
 			}
 			preAdj := w.skillLevelBaseAdjustment(entity, primaryTooltip)
 			postAdj := w.skillLevelPostAdjustment(entity, primaryTooltip)
@@ -107,7 +102,7 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 				}
 				level += preAdj
 				if def.Type() != ParryID {
-					level = level.Div(fxp.Two).Trunc()
+					level = level.Div(fxp.Two).Floor()
 				}
 				level += postAdj
 				if best < level {
@@ -128,9 +123,9 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 					}
 				}
 				if percentModifier != 0 {
-					result.Modifier += result.Modifier.Mul(percentModifier).Div(fxp.Hundred).Trunc()
+					result.Modifier += result.Modifier.Mul(percentModifier).Div(fxp.Hundred).Floor()
 				}
-				result.Modifier = result.Modifier.Max(0).Trunc()
+				result.Modifier = result.Modifier.Max(0).Floor()
 			} else {
 				result.Modifier = 0
 			}

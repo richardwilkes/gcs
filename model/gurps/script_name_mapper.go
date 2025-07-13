@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 type scriptNameMapper struct{}
@@ -24,5 +24,5 @@ func uncapitalizeScriptName(s string) string {
 	if strings.EqualFold(s, "parentid") {
 		return "parentID"
 	}
-	return txt.FirstToLower(s)
+	return xstrings.FirstToLower(s)
 }

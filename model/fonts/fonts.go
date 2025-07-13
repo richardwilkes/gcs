@@ -16,10 +16,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/atexit"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/slant"
 	"github.com/richardwilkes/unison/enums/spacing"
@@ -94,7 +93,7 @@ func initialize() {
 	for i, c := range current {
 		if c.Font.Font == nil {
 			errs.Log(errs.New("nil font"), "id", c.ID)
-			atexit.Exit(1)
+			xos.Exit(1)
 		}
 		factory[i] = &ThemedFont{
 			ID:    c.ID,
@@ -140,7 +139,7 @@ func (f *Fonts) MarshalJSON() ([]byte, error) {
 func (f *Fonts) UnmarshalJSON(data []byte) error {
 	f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts()))
 	var err error
-	toolbox.CallWithHandler(func() {
+	xos.SafeCall(func() {
 		err = json.Unmarshal(data, &f.data)
 	}, func(e error) {
 		err = e

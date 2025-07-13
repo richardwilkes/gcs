@@ -15,9 +15,9 @@ import (
 	"github.com/dop251/goja/parser"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 var (
@@ -86,7 +86,7 @@ func scriptIff(condition bool, trueValue, falseValue any) any {
 }
 
 func scriptSigned(value float64) string {
-	return fxp.From(value).StringWithSign()
+	return fxp.FromFloat(value).StringWithSign()
 }
 
 // ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded

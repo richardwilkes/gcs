@@ -16,9 +16,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Prereq = &TraitPrereq{}
@@ -28,9 +28,9 @@ type TraitPrereq struct {
 	Parent        *PrereqList     `json:"-"`
 	Type          prereq.Type     `json:"type"`
 	Has           bool            `json:"has"`
-	NameCriteria  criteria.Text   `json:"name,omitempty"`
-	LevelCriteria criteria.Number `json:"level,omitempty"`
-	NotesCriteria criteria.Text   `json:"notes,omitempty"`
+	NameCriteria  criteria.Text   `json:"name,omitzero"`
+	LevelCriteria criteria.Number `json:"level,omitzero"`
+	NotesCriteria criteria.Text   `json:"notes,omitzero"`
 }
 
 // NewTraitPrereq creates a new TraitPrereq.
@@ -68,7 +68,7 @@ func (p *TraitPrereq) FillWithNameableKeys(m, existing map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
@@ -114,11 +114,11 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 // Hash writes this object's contents into the hasher.
 func (p *TraitPrereq) Hash(h hash.Hash) {
 	if p == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, p.Type)
-	hashhelper.Bool(h, p.Has)
+	xhash.Num8(h, p.Type)
+	xhash.Bool(h, p.Has)
 	p.NameCriteria.Hash(h)
 	p.LevelCriteria.Hash(h)
 	p.NotesCriteria.Hash(h)

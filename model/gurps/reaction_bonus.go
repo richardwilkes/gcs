@@ -15,9 +15,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Bonus = &ReactionBonus{}
@@ -61,17 +61,17 @@ func (r *ReactionBonus) SetLevel(level fxp.Int) {
 }
 
 // AddToTooltip implements Bonus.
-func (r *ReactionBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (r *ReactionBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	r.basicAddToTooltip(&r.LeveledAmount, buffer)
 }
 
 // Hash writes this object's contents into the hasher.
 func (r *ReactionBonus) Hash(h hash.Hash) {
 	if r == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, r.Type)
-	hashhelper.String(h, r.Situation)
+	xhash.Num8(h, r.Type)
+	xhash.StringWithLen(h, r.Situation)
 	r.LeveledAmount.Hash(h)
 }

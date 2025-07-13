@@ -14,10 +14,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 )
 
@@ -43,8 +42,8 @@ func Start(files []string) {
 				unison.DefaultTitleIcons = []*unison.Image{appIcon}
 			}
 			CheckForAppUpdates()
-			wnd, err := unison.NewWindow(cmdline.AppName)
-			fatal.IfErr(err)
+			wnd, err := unison.NewWindow(xos.AppName)
+			xos.ExitIfErr(err)
 			SetupMenuBar(wnd)
 			InitWorkspace(wnd)
 			OpenFiles(files)

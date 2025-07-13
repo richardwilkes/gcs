@@ -16,7 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -60,7 +61,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	hdr.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, colors.Header.Paint(gc, rect, paintstyle.Fill))
 	}
 
@@ -90,7 +91,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	editButton.OnSelectionInk = colors.OnHeader
 	editButton.Font = fonts.PageLabelPrimary
 	if dsvg, ok := editButton.Drawable.(*unison.DrawableSVG); ok {
-		dsvg.Size = unison.NewSize(height, height)
+		dsvg.Size = geom.NewSize(height, height)
 	}
 	editButton.ClickCallback = func() {
 		displayPointsEditor(unison.AncestorOrSelf[Rebuildable](p), p.entity)
@@ -111,18 +112,18 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(colors.Header, 0, unison.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(colors.Header, 0, geom.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,
 		Right:  1,
-	}, false), unison.NewEmptyBorder(unison.Insets{
+	}, false), unison.NewEmptyBorder(geom.Insets{
 		Top:    1,
 		Left:   2,
 		Bottom: 1,
 		Right:  2,
 	})))
-	p.ptsList.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	p.ptsList.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		drawBandedBackground(p.ptsList, gc, rect, 0, 2, func(rowIndex int, ink unison.Ink) unison.Ink {
 			if rowIndex == 0 && p.overSpent == -1 {
 				return unison.ThemeError

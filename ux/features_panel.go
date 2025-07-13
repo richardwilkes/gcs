@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"maps"
 	"reflect"
 	"slices"
 
@@ -24,11 +25,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/collection/dict"
-	"github.com/richardwilkes/toolbox/collection/slice"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xslices"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
@@ -72,8 +73,8 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 			Title: i18n.Text("Features"),
 			Font:  unison.LabelFont,
 		},
-		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		unison.NewEmptyBorder(geom.NewUniformInsets(2))))
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 	addButton := unison.NewSVGButton(svg.CircledAdd)
@@ -284,9 +285,9 @@ func (p *featuresPanel) createHitLocationsCheckBoxes(f *gurps.DRBonus) *unison.P
 		VSpacing:     unison.StdVSpacing,
 		EqualColumns: true,
 	})
-	panel.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	panel.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	bodyType := gurps.BodyFor(p.entity)
-	existing := dict.MapByKey(f.Locations, func(in string) string { return in })
+	existing := xslices.MapFromKeys(f.Locations, func(in string) string { return in })
 	locs := bodyType.UniqueHitLocations(p.entity)
 	boxes := make([]*unison.CheckBox, 0, len(existing)+len(locs))
 	for _, loc := range locs {
@@ -298,7 +299,7 @@ func (p *featuresPanel) createHitLocationsCheckBoxes(f *gurps.DRBonus) *unison.P
 		boxes = append(boxes, box)
 	}
 	const unknownKey = "unknown"
-	for _, loc := range dict.Keys(existing) {
+	for loc := range maps.Keys(existing) {
 		box := unison.NewCheckBox()
 		box.SetTitle(loc + "*")
 		box.State = check.On
@@ -306,7 +307,7 @@ func (p *featuresPanel) createHitLocationsCheckBoxes(f *gurps.DRBonus) *unison.P
 		box.ClickCallback = func() { toggleHitLocation(box, f, loc) }
 		boxes = append(boxes, box)
 	}
-	slice.ColumnSort(boxes, desiredColumns, func(a, b *unison.CheckBox) int {
+	xslices.ColumnSort(boxes, desiredColumns, func(a, b *unison.CheckBox) int {
 		_, au := a.ClientData()[unknownKey]
 		_, bu := b.ClientData()[unknownKey]
 		if au != bu {
@@ -315,7 +316,7 @@ func (p *featuresPanel) createHitLocationsCheckBoxes(f *gurps.DRBonus) *unison.P
 			}
 			return -1
 		}
-		return txt.NaturalCmp(a.Text.String(), b.Text.String(), true)
+		return xstrings.NaturalCmp(a.Text.String(), b.Text.String(), true)
 	})
 	for _, box := range boxes {
 		panel.AddChild(box)
@@ -597,10 +598,10 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison
 	for i := 5; i <= 80; i += 5 {
 		choices = append(choices, fmt.Sprintf(i18n.Text("by %d%%"), i))
 	}
-	choice := choices[max(min((fxp.As[int](f.Percentage)/5)-1, 15), 0)]
+	choice := choices[max(min((fxp.AsInteger[int](f.Percentage)/5)-1, 15), 0)]
 	addPopup(wrapper, choices, &choice).ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
 		popup.SelectIndex(index)
-		f.Percentage = fxp.From((index + 1) * 5)
+		f.Percentage = fxp.FromInteger((index + 1) * 5)
 		MarkModified(wrapper)
 	}
 	p.addWrapperAtIndex(panel, wrapper, -1, true)
@@ -635,7 +636,7 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, f gur
 				ft.SwitchType = wswitch.Types[1]
 			}
 			spacer := unison.NewPanel()
-			spacer.SetLayoutData(&unison.FlexLayoutData{SizeHint: unison.Size{Width: 16}})
+			spacer.SetLayoutData(&unison.FlexLayoutData{SizeHint: geom.Size{Width: 16}})
 			wrapper.AddChild(spacer)
 			addPopup(wrapper, wswitch.Types[1:], &ft.SwitchType)
 			addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &ft.SwitchTypeValue)

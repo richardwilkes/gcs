@@ -17,13 +17,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponReach{}
 	_ json.Marshaler   = WeaponReach{}
 	_ json.Unmarshaler = &(WeaponReach{})
 )
@@ -63,8 +62,8 @@ func ParseWeaponReach(s string) WeaponReach {
 	return wr
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wr WeaponReach) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (wr WeaponReach) IsZero() bool {
 	return wr == WeaponReach{}
 }
 
@@ -86,18 +85,14 @@ func (wr *WeaponReach) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wr WeaponReach) Hash(h hash.Hash) {
-	if wr.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Num64(h, wr.Min)
-	hashhelper.Num64(h, wr.Max)
-	hashhelper.Bool(h, wr.CloseCombat)
-	hashhelper.Bool(h, wr.ChangeRequiresReady)
+	xhash.Num64(h, wr.Min)
+	xhash.Num64(h, wr.Max)
+	xhash.Bool(h, wr.CloseCombat)
+	xhash.Bool(h, wr.ChangeRequiresReady)
 }
 
 // Resolve any bonuses that apply.
-func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponReach {
+func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponReach {
 	result := wr
 	result.CloseCombat = w.ResolveBoolFlag(wswitch.CloseCombat, result.CloseCombat)
 	result.ChangeRequiresReady = w.ResolveBoolFlag(wswitch.ReachChangeRequiresReady, result.ChangeRequiresReady)
@@ -120,10 +115,10 @@ func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 		}
 	}
 	if percentMin != 0 {
-		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Trunc()
+		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Floor()
 	}
 	if percentMax != 0 {
-		result.Max += result.Max.Mul(percentMax).Div(fxp.Hundred).Trunc()
+		result.Max += result.Max.Mul(percentMax).Div(fxp.Hundred).Floor()
 	}
 	result.Validate()
 	return result

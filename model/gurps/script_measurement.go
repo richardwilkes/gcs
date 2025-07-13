@@ -9,11 +9,11 @@ import (
 type scriptMeasurement struct{}
 
 func (s scriptMeasurement) FormatLength(inches float64, toUnits string) string {
-	return fxp.ExtractLengthUnit(toUnits).Format(fxp.Length(fxp.From(inches)))
+	return fxp.ExtractLengthUnit(toUnits).Format(fxp.Length(fxp.FromFloat(inches)))
 }
 
 func (s scriptMeasurement) LengthToInches(value float64, fromUnits string) float64 {
-	return fxp.As[float64](fxp.ExtractLengthUnit(fromUnits).ToInches(fxp.From(value)))
+	return fxp.AsFloat[float64](fxp.ExtractLengthUnit(fromUnits).ToInches(fxp.FromFloat(value)))
 }
 
 func (s scriptMeasurement) StringLengthToInches(str, defaultUnits string) float64 {
@@ -21,15 +21,15 @@ func (s scriptMeasurement) StringLengthToInches(str, defaultUnits string) float6
 	if err != nil {
 		return 0
 	}
-	return fxp.As[float64](fxp.Int(length))
+	return fxp.AsFloat[float64](fxp.Int(length))
 }
 
 func (s scriptMeasurement) FormatWeight(pounds float64, toUnits string) string {
-	return fxp.ExtractWeightUnit(toUnits).Format(fxp.Weight(fxp.From(pounds)))
+	return fxp.ExtractWeightUnit(toUnits).Format(fxp.Weight(fxp.FromFloat(pounds)))
 }
 
 func (s scriptMeasurement) WeightToPounds(value float64, fromUnits string) float64 {
-	return fxp.As[float64](fxp.ExtractWeightUnit(fromUnits).ToPounds(fxp.From(value)))
+	return fxp.AsFloat[float64](fxp.ExtractWeightUnit(fromUnits).ToPounds(fxp.FromFloat(value)))
 }
 
 func (s scriptMeasurement) StringWeightToPounds(str, defaultUnits string) float64 {
@@ -37,15 +37,15 @@ func (s scriptMeasurement) StringWeightToPounds(str, defaultUnits string) float6
 	if err != nil {
 		return 0
 	}
-	return fxp.As[float64](fxp.Int(weight))
+	return fxp.AsFloat[float64](fxp.Int(weight))
 }
 
 func (s scriptMeasurement) RangeModifier(yards float64) int {
-	return -ssrtInchesToValue(fxp.Yard.ToInches(fxp.From(yards)), false)
+	return -ssrtInchesToValue(fxp.Yard.ToInches(fxp.FromFloat(yards)), false)
 }
 
 func (s scriptMeasurement) SizeModifier(yards float64) int {
-	return ssrtInchesToValue(fxp.Yard.ToInches(fxp.From(yards)), true)
+	return ssrtInchesToValue(fxp.Yard.ToInches(fxp.FromFloat(yards)), true)
 }
 
 func (s scriptMeasurement) Modifier(length float64, units string, forSize bool) int {
@@ -61,7 +61,7 @@ func (s scriptMeasurement) Modifier(length float64, units string, forSize bool) 
 }
 
 func (s scriptMeasurement) ModifierToYards(ssrtValue int) float64 {
-	return fxp.As[float64](ssrtToYards(ssrtValue))
+	return fxp.AsFloat[float64](ssrtToYards(ssrtValue))
 }
 
 func ssrtInchesToValue(inches fxp.Int, allowNegative bool) int {

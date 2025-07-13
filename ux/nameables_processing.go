@@ -11,8 +11,9 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -60,7 +61,7 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 // ShowNameablesDialog shows a dialog for editing nameables.
 func ShowNameablesDialog(titles []string, nameables []map[string]string) bool {
 	list := unison.NewPanel()
-	list.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing)))
+	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
 	list.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
@@ -71,7 +72,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string) bool {
 		for k := range nameables[i] {
 			keys = append(keys, k)
 		}
-		txt.SortStringsNaturalAscending(keys)
+		xstrings.SortStringsNaturalAscending(keys)
 		if i != 0 {
 			sep := unison.NewSeparator()
 			sep.SetLayoutData(&unison.FlexLayoutData{
@@ -84,7 +85,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string) bool {
 		}
 		header := unison.NewLabel()
 		header.Font = unison.SystemFont
-		header.SetTitle(txt.Truncate(one, 40, true))
+		header.SetTitle(xstrings.Truncate(one, 40, true))
 		header.SetLayoutData(&unison.FlexLayoutData{
 			HSpan:  2,
 			HAlign: align.Fill,
@@ -104,7 +105,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string) bool {
 		}
 	}
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
 	scroll.SetLayoutData(&unison.FlexLayoutData{

@@ -22,11 +22,11 @@ func NewDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, get func
 			if minValue == fxp.Min {
 				minValue = -fxp.One
 			}
-			minValue = minValue.Trunc() + fxp.One - 1
+			minValue = minValue.Floor() + fxp.One - 1
 			if maxValue == fxp.Max {
 				maxValue = fxp.One
 			}
-			maxValue = maxValue.Trunc() + fxp.One - 1
+			maxValue = maxValue.Floor() + fxp.One - 1
 			return []fxp.Int{minValue, fxp.Two - 1, maxValue}
 		}
 	}

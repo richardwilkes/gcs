@@ -17,12 +17,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponRange{}
 	_ json.Marshaler   = WeaponRange{}
 	_ json.Unmarshaler = &(WeaponRange{})
 )
@@ -76,8 +75,8 @@ func ParseWeaponRange(s string) WeaponRange {
 	return wr
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wr WeaponRange) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (wr WeaponRange) IsZero() bool {
 	return wr == WeaponRange{}
 }
 
@@ -98,19 +97,15 @@ func (wr *WeaponRange) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wr WeaponRange) Hash(h hash.Hash) {
-	if wr.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Num64(h, wr.HalfDamage)
-	hashhelper.Num64(h, wr.Min)
-	hashhelper.Num64(h, wr.Max)
-	hashhelper.Bool(h, wr.MusclePowered)
-	hashhelper.Bool(h, wr.InMiles)
+	xhash.Num64(h, wr.HalfDamage)
+	xhash.Num64(h, wr.Min)
+	xhash.Num64(h, wr.Max)
+	xhash.Bool(h, wr.MusclePowered)
+	xhash.Bool(h, wr.InMiles)
 }
 
 // Resolve any bonuses that apply.
-func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponRange {
+func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponRange {
 	result := wr
 	result.MusclePowered = w.ResolveBoolFlag(wswitch.MusclePowered, result.MusclePowered)
 	result.InMiles = w.ResolveBoolFlag(wswitch.RangeInMiles, result.InMiles)
@@ -135,7 +130,7 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			}
 		}
 		if percentMin != 0 {
-			st += st.Mul(percentMin).Div(fxp.Hundred).Trunc()
+			st += st.Mul(percentMin).Div(fxp.Hundred).Floor()
 		}
 		if st < 0 {
 			st = 0
@@ -144,9 +139,9 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			st = maxST
 		}
 		if st > 0 {
-			result.HalfDamage = result.HalfDamage.Mul(st).Trunc().Max(0)
-			result.Min = result.Min.Mul(st).Trunc().Max(0)
-			result.Max = result.Max.Mul(st).Trunc().Max(0)
+			result.HalfDamage = result.HalfDamage.Mul(st).Floor().Max(0)
+			result.Min = result.Min.Mul(st).Floor().Max(0)
+			result.Max = result.Max.Mul(st).Floor().Max(0)
 		}
 	}
 	var percentHalfDamage, percentMin, percentMax fxp.Int
@@ -175,13 +170,13 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 		}
 	}
 	if percentHalfDamage != 0 {
-		result.HalfDamage += result.HalfDamage.Mul(percentHalfDamage).Div(fxp.Hundred).Trunc()
+		result.HalfDamage += result.HalfDamage.Mul(percentHalfDamage).Div(fxp.Hundred).Floor()
 	}
 	if percentMin != 0 {
-		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Trunc()
+		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Floor()
 	}
 	if percentMax != 0 {
-		result.Max += result.Max.Mul(percentMax).Div(fxp.Hundred).Trunc()
+		result.Max += result.Max.Mul(percentMax).Div(fxp.Hundred).Floor()
 	}
 	result.Validate()
 	return result

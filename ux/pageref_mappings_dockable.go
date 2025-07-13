@@ -20,10 +20,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/desktop"
-	"github.com/richardwilkes/toolbox/i18n"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xflag"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -49,7 +49,7 @@ func ExtractPageReferences(s string) []string {
 func OpenPageReference(ref, highlight string, promptContext map[string]bool) bool {
 	switch {
 	case unison.HasURLPrefix(ref):
-		if err := desktop.Open(ref); err != nil {
+		if err := xos.OpenBrowser(ref); err != nil {
 			Workspace.ErrorHandler(i18n.Text("Unable to open ")+ref, err)
 		}
 		return false
@@ -69,7 +69,7 @@ func openMarkdownPageReference(ref string) {
 		}
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", ref)
-			if xfs.FileIsReadable(filePath) {
+			if xos.FileIsReadable(filePath) {
 				OpenFile(filePath, 0)
 				return
 			}
@@ -141,7 +141,7 @@ func openExternalPDF(filePath string, pageNum int) {
 	cl = strings.ReplaceAll(cl, "$FILE", filePath)
 	cl = strings.ReplaceAll(cl, "$PAGE", strconv.Itoa(pageNum))
 	cl = strings.TrimSpace(cl)
-	parts, err := cmdline.Parse(cl)
+	parts, err := xflag.SplitCommandLine(cl)
 	errTitle := i18n.Text("Unable to use external PDF command line")
 	if err != nil {
 		Workspace.ErrorHandler(errTitle, err)
@@ -260,14 +260,14 @@ func (d *pageRefMappingsDockable) createIDField(ref *gurps.PageRef) {
 	p.HAlign = align.Middle
 	p.OnBackgroundInk = unison.DefaultTooltipTheme.Label.OnBackgroundInk
 	p.SetTitle(ref.ID)
-	p.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false),
-		unison.NewEmptyBorder(unison.Insets{
+	p.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false),
+		unison.NewEmptyBorder(geom.Insets{
 			Top:    1,
 			Left:   unison.StdHSpacing,
 			Bottom: 1,
 			Right:  unison.StdHSpacing,
 		})))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.DefaultTooltipTheme.BackgroundInk.Paint(gc, rect, paintstyle.Fill))
 		p.DefaultDraw(gc, rect)
 	}

@@ -14,8 +14,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // BonusOwner provides a convenience for implementing the owner & sub-owner methods of Bonus.
@@ -50,7 +50,7 @@ func (b *BonusOwner) SetSubOwner(subOwner fmt.Stringer) {
 	b.subOwner = subOwner
 }
 
-func (b *BonusOwner) basicAddToTooltip(amt *LeveledAmount, buffer *xio.ByteBuffer) {
+func (b *BonusOwner) basicAddToTooltip(amt *LeveledAmount, buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
 		buffer.WriteByte('\n')
 		buffer.WriteString(b.parentName())

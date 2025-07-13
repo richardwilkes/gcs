@@ -14,7 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Feature = &CostReduction{}
@@ -53,10 +53,10 @@ func (c *CostReduction) FillWithNameableKeys(_, _ map[string]string) {
 // Hash writes this object's contents into the hasher.
 func (c *CostReduction) Hash(h hash.Hash) {
 	if c == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, c.Type)
-	hashhelper.String(h, c.Attribute)
-	hashhelper.Num64(h, c.Percentage)
+	xhash.Num8(h, c.Type)
+	xhash.StringWithLen(h, c.Attribute)
+	xhash.Num64(h, c.Percentage)
 }

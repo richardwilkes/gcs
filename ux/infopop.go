@@ -14,7 +14,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -34,7 +35,7 @@ func NewInfoPop() *unison.Label {
 	baseline := unison.DefaultButtonTheme.Font.Baseline()
 	infoPop.Drawable = &unison.DrawableSVG{
 		SVG:  svg.Info,
-		Size: unison.NewSize(baseline, baseline).Ceil(),
+		Size: geom.NewSize(baseline, baseline).Ceil(),
 	}
 	return infoPop
 }
@@ -77,11 +78,11 @@ func AddKeyBindingInfoToInfoPop(target unison.Paneler, keyBinding unison.KeyBind
 	keyLabel.SetTitle(keyBinding.String())
 	keyLabel.HAlign = align.Middle
 	keyLabel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	keyLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	keyLabel.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.DefaultTooltipTheme.Label.OnBackgroundInk.Paint(gc, rect, paintstyle.Fill))
 		keyLabel.DefaultDraw(gc, rect)
 	}
-	keyLabel.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(4)))
+	keyLabel.SetBorder(unison.NewEmptyBorder(geom.NewHorizontalInsets(4)))
 	tip := prepareInfoPop(target)
 	tip.AddChild(keyLabel)
 

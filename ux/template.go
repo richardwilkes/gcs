@@ -22,10 +22,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -111,16 +112,16 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		VAlign:  align.Fill,
 	})
 
-	t.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+	t.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
 		t.RequestFocus()
 		return false
 	}
-	t.DataDragOverCallback = func(_ unison.Point, data map[string]any) bool {
+	t.DataDragOverCallback = func(_ geom.Point, data map[string]any) bool {
 		t.dragReroutePanel = nil
 		for _, key := range dropKeys {
 			if _, ok := data[key]; ok {
 				if t.dragReroutePanel = t.keyToPanel(key); t.dragReroutePanel != nil {
-					t.dragReroutePanel.DataDragOverCallback(unison.Point{Y: 100000000}, data)
+					t.dragReroutePanel.DataDragOverCallback(geom.Point{Y: 100000000}, data)
 					return true
 				}
 				break
@@ -134,13 +135,13 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 			t.dragReroutePanel = nil
 		}
 	}
-	t.DataDragDropCallback = func(_ unison.Point, data map[string]any) {
+	t.DataDragDropCallback = func(_ geom.Point, data map[string]any) {
 		if t.dragReroutePanel != nil {
-			t.dragReroutePanel.DataDragDropCallback(unison.Point{Y: 10000000}, data)
+			t.dragReroutePanel.DataDragDropCallback(geom.Point{Y: 10000000}, data)
 			t.dragReroutePanel = nil
 		}
 	}
-	t.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
+	t.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		if t.dragReroutePanel != nil {
 			r := t.RectFromRoot(t.dragReroutePanel.RectToRoot(t.dragReroutePanel.ContentRect(true)))
 			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
@@ -190,7 +191,7 @@ func (t *Template) DockKey() string {
 func (t *Template) createToolbar() {
 	t.toolbar = unison.NewPanel()
 	t.AddChild(t.toolbar)
-	t.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	t.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	t.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -640,7 +641,7 @@ func (t *Template) UndoManager() *unison.UndoManager {
 }
 
 // TitleIcon implements workspace.FileBackedDockable
-func (t *Template) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (t *Template) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(t.path).SVG,
 		Size: suggestedSize,
@@ -649,7 +650,7 @@ func (t *Template) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 
 // Title implements workspace.FileBackedDockable
 func (t *Template) Title() string {
-	return fs.BaseName(t.path)
+	return xfilepath.BaseName(t.path)
 }
 
 func (t *Template) String() string {
@@ -827,7 +828,7 @@ func (t *Template) createLists() {
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 	})
-	panel.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing}))
+	panel.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing}))
 	button := unison.NewButton()
 	button.Font = fonts.PageFieldPrimary
 	button.SetTitle(t.lastBody.Name)

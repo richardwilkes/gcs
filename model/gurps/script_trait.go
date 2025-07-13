@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 type scriptTrait struct {
@@ -49,7 +49,7 @@ func newScriptTrait(trait *Trait) *scriptTrait {
 	if trait.Container() {
 		t.Kind = strings.ReplaceAll(trait.ContainerType.Key(), "_", " ")
 	} else if trait.CanLevel {
-		levels := fxp.As[float64](trait.Levels)
+		levels := fxp.AsFloat[float64](trait.Levels)
 		t.Levels = &levels
 	}
 	return &t

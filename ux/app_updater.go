@@ -19,11 +19,11 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/desktop"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/behavior"
 )
@@ -43,7 +43,7 @@ func (u *appUpdater) Reset() bool {
 	if u.updating {
 		return false
 	}
-	u.result = fmt.Sprintf(i18n.Text("Checking for %s updates…"), cmdline.AppName)
+	u.result = fmt.Sprintf(i18n.Text("Checking for %s updates…"), xos.AppName)
 	u.releases = nil
 	u.updating = true
 	return true
@@ -64,7 +64,7 @@ func (u *appUpdater) SetResult(str string) {
 
 func (u *appUpdater) SetReleases(releases []gurps.Release) {
 	u.lock.Lock()
-	u.result = fmt.Sprintf(i18n.Text("%s v%s is available!"), cmdline.AppName, filterVersion(releases[0].Version))
+	u.result = fmt.Sprintf(i18n.Text("%s v%s is available!"), xos.AppName, filterVersion(releases[0].Version))
 	u.releases = releases
 	u.updating = false
 	u.lock.Unlock()
@@ -72,26 +72,26 @@ func (u *appUpdater) SetReleases(releases []gurps.Release) {
 
 // CheckForAppUpdates initiates a fresh check for application updates.
 func CheckForAppUpdates() {
-	if cmdline.AppVersion == "0.0" {
-		appUpdate.SetResult(fmt.Sprintf(i18n.Text("Development versions don't look for %s updates"), cmdline.AppName))
+	if xos.AppVersion == "0.0" {
+		appUpdate.SetResult(fmt.Sprintf(i18n.Text("Development versions don't look for %s updates"), xos.AppName))
 		return
 	}
 	if appUpdate.Reset() {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 			defer cancel()
-			releases, err := gurps.LoadReleases(ctx, &http.Client{}, "richardwilkes", "", "gcs", cmdline.AppVersion,
+			releases, err := gurps.LoadReleases(ctx, &http.Client{}, "richardwilkes", "", "gcs", xos.AppVersion,
 				func(version, _ string) bool {
 					// Don't bother showing changes from before 5.0.0, since those were the Java version
-					return txt.NaturalLess(version, "5.0.0", true)
+					return xstrings.NaturalLess(version, "5.0.0", true)
 				})
 			if err != nil {
-				appUpdate.SetResult(fmt.Sprintf(i18n.Text("Unable to access the %s update site"), cmdline.AppName))
+				appUpdate.SetResult(fmt.Sprintf(i18n.Text("Unable to access the %s update site"), xos.AppName))
 				errs.Log(err)
 				return
 			}
-			if len(releases) == 0 || releases[0].Version == cmdline.AppVersion {
-				appUpdate.SetResult(fmt.Sprintf(i18n.Text("No %s updates are available"), cmdline.AppName))
+			if len(releases) == 0 || releases[0].Version == xos.AppVersion {
+				appUpdate.SetResult(fmt.Sprintf(i18n.Text("No %s updates are available"), xos.AppName))
 				return
 			}
 			appUpdate.SetReleases(releases)
@@ -109,7 +109,7 @@ func NotifyOfAppUpdate() {
 			if i != 0 {
 				buffer.WriteString("---\n")
 			}
-			fmt.Fprintf(&buffer, "## Release Notes for %s v%s\n", cmdline.AppName, filterVersion(rel.Version))
+			fmt.Fprintf(&buffer, "## Release Notes for %s v%s\n", xos.AppName, filterVersion(rel.Version))
 			buffer.WriteString(rel.Notes)
 			buffer.WriteByte('\n')
 		}
@@ -124,7 +124,7 @@ func NotifyOfAppUpdate() {
 		dialog, err := unison.NewDialog(
 			&unison.DrawableSVG{
 				SVG:  svg.Download,
-				Size: unison.NewSize(48, 48),
+				Size: geom.NewSize(48, 48),
 			},
 			unison.DefaultLabelTheme.OnBackgroundInk, scroll,
 			[]*unison.DialogButtonInfo{
@@ -137,7 +137,7 @@ func NotifyOfAppUpdate() {
 		}
 		gurps.GlobalSettings().LastSeenGCSVersion = releases[0].Version
 		if dialog.RunModal() == unison.ModalResponseOK {
-			if err = desktop.Open("https://" + WebSiteDomain); err != nil {
+			if err = xos.OpenBrowser("https://" + WebSiteDomain); err != nil {
 				Workspace.ErrorHandler(i18n.Text("Unable to open web page for download"), err)
 			}
 		}

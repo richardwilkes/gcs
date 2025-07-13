@@ -15,7 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 const (
@@ -114,7 +114,7 @@ func (o *AncestryOptions) RandomWeight(entity *Entity, not fxp.Weight) fxp.Weigh
 // RandomAge returns a randomized age.
 func (o *AncestryOptions) RandomAge(entity *Entity, not int) int {
 	for range maximumRandomTries {
-		age := fxp.As[int](ResolveToNumber(entity, ScriptSelfProvider{}, o.AgeScript))
+		age := fxp.AsInteger[int](ResolveToNumber(entity, ScriptSelfProvider{}, o.AgeScript))
 		if age <= 0 {
 			age = defaultAge
 		}

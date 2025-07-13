@@ -15,7 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Feature = &ContainedWeightReduction{}
@@ -74,11 +74,11 @@ func (c *ContainedWeightReduction) FixedReduction(defUnits fxp.WeightUnit) fxp.W
 // Hash writes this object's contents into the hasher.
 func (c *ContainedWeightReduction) Hash(h hash.Hash) {
 	if c == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, c.Type)
-	hashhelper.String(h, c.Reduction)
+	xhash.Num8(h, c.Type)
+	xhash.StringWithLen(h, c.Reduction)
 }
 
 // ExtractContainedWeightReduction extracts the weight reduction (which may be a weight or a percentage) and returns

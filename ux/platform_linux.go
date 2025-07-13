@@ -24,10 +24,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/formats/icon"
-	"github.com/richardwilkes/toolbox/xio/fs/paths"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/ximage"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // See https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
@@ -41,8 +40,8 @@ func performPlatformLateStartup() {
 		errs.Log(err)
 		return
 	}
-	if filepath.Base(exePath) != cmdline.AppCmdName {
-		slog.Warn("skipping desktop integration", "name", filepath.Base(exePath), "expected", cmdline.AppCmdName)
+	if filepath.Base(exePath) != xos.AppCmdName {
+		slog.Warn("skipping desktop integration", "name", filepath.Base(exePath), "expected", xos.AppCmdName)
 		return
 	}
 	if err = installDesktopIcons(); err != nil {
@@ -57,7 +56,7 @@ func performPlatformLateStartup() {
 }
 
 func installDesktopFiles(exePath string) error {
-	dir := filepath.Join(paths.HomeDir(), ".local", "share", "applications")
+	dir := filepath.Join(xos.HomeDir(), ".local", "share", "applications")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
 	}
@@ -71,21 +70,21 @@ MimeType=%s;
 Categories=Game;Utility;RolePlaying;
 Keywords=gurps;character;sheet;rpg;roleplaying;utility;
 Terminal=false
-`, cmdline.AppName, AppDescription(), exePath, cmdline.AppIdentifier, strings.Join(gurps.RegisteredMimeTypes(), ";"))
-	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".desktop"), []byte(data), 0o640); err != nil {
+`, xos.AppName, AppDescription(), exePath, xos.AppIdentifier, strings.Join(gurps.RegisteredMimeTypes(), ";"))
+	if err := os.WriteFile(filepath.Join(dir, xos.AppIdentifier+".desktop"), []byte(data), 0o640); err != nil {
 		return errs.Wrap(err)
 	}
 	return nil
 }
 
 func installDesktopIcons() error {
-	hicolorDir := filepath.Join(paths.HomeDir(), ".local", "share", "icons", "hicolor")
+	hicolorDir := filepath.Join(xos.HomeDir(), ".local", "share", "icons", "hicolor")
 	baseDir := filepath.Join(hicolorDir, "256x256")
 	dir := filepath.Join(baseDir, "apps")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".png"), appIconBytes, 0o640); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, xos.AppIdentifier+".png"), appIconBytes, 0o640); err != nil {
 		return errs.Wrap(err)
 	}
 
@@ -108,7 +107,7 @@ func installDesktopIcons() error {
 			return err
 		}
 		targetPath := filepath.Join(dir, strings.ReplaceAll(fi.MimeTypes[0], "/", "-")+".png")
-		if err = writePNG(targetPath, icon.Stack(docIcon, overlay)); err != nil {
+		if err = writePNG(targetPath, ximage.Stack(docIcon, overlay)); err != nil {
 			return err
 		}
 	}
@@ -143,7 +142,7 @@ func writePNG(dstPath string, img image.Image) (err error) {
 }
 
 func installMimeInfo() error {
-	mimeDir := filepath.Join(paths.HomeDir(), ".local", "share", "mime")
+	mimeDir := filepath.Join(xos.HomeDir(), ".local", "share", "mime")
 	dir := filepath.Join(mimeDir, "packages")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
@@ -166,7 +165,7 @@ func installMimeInfo() error {
 		buffer.WriteString("  </mime-type>\n")
 	}
 	buffer.WriteString("</mime-info>\n")
-	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".xml"), buffer.Bytes(), 0o640); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, xos.AppIdentifier+".xml"), buffer.Bytes(), 0o640); err != nil {
 		return errs.Wrap(err)
 	}
 	cmdPath, err := exec.LookPath("update-mime-database")

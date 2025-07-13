@@ -19,10 +19,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 var _ Hashable = &Body{}
@@ -61,7 +61,7 @@ func BodyFor(entity *Entity) *Body {
 // FactoryBody returns a new copy of the default factory Body.
 func FactoryBody() *Body {
 	bodyType, err := NewBodyFromFile(embeddedFS, "embedded_data/Humanoid.body")
-	fatal.IfErr(err)
+	xos.ExitIfErr(err)
 	return bodyType
 }
 
@@ -198,9 +198,9 @@ func (b *Body) UniqueHitLocations(entity *Entity) []*HitLocation {
 		locations = append(locations, v)
 	}
 	slices.SortFunc(locations, func(a, b *HitLocation) int {
-		result := txt.NaturalCmp(a.ChoiceName, b.ChoiceName, true)
+		result := xstrings.NaturalCmp(a.ChoiceName, b.ChoiceName, true)
 		if result == 0 {
-			result = txt.NaturalCmp(a.ID(), b.ID(), true)
+			result = xstrings.NaturalCmp(a.ID(), b.ID(), true)
 		}
 		return result
 	})
@@ -217,9 +217,9 @@ func (b *Body) LookupLocationByID(entity *Entity, idStr string) *HitLocation {
 
 // Hash writes this object's contents into the hasher.
 func (b *Body) Hash(h hash.Hash) {
-	hashhelper.String(h, b.Name)
+	xhash.StringWithLen(h, b.Name)
 	b.Roll.Hash(h)
-	hashhelper.Num64(h, len(b.Locations))
+	xhash.Num64(h, len(b.Locations))
 	for _, one := range b.Locations {
 		one.Hash(h)
 	}

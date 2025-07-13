@@ -18,8 +18,8 @@ import (
 	"os"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xio"
 )
 
 // LoadFromFile loads JSON data from the specified path.

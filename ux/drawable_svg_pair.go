@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -17,16 +18,16 @@ import (
 type DrawableSVGPair struct {
 	Left  *unison.SVG
 	Right *unison.SVG
-	Size  unison.Size
+	Size  geom.Size
 }
 
 // LogicalSize implements the Drawable interface.
-func (s *DrawableSVGPair) LogicalSize() unison.Size {
+func (s *DrawableSVGPair) LogicalSize() geom.Size {
 	return s.Size
 }
 
 // DrawInRect implements the Drawable interface.
-func (s *DrawableSVGPair) DrawInRect(canvas *unison.Canvas, rect unison.Rect, _ *unison.SamplingOptions, paint *unison.Paint) {
+func (s *DrawableSVGPair) DrawInRect(canvas *unison.Canvas, rect geom.Rect, _ *unison.SamplingOptions, paint *unison.Paint) {
 	r := rect
 	r.Width /= 2
 	offset := s.Left.OffsetToCenterWithinScaledSize(r.Size)

@@ -31,11 +31,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -100,7 +99,7 @@ type TraitSyncData struct {
 	PageRefHighlight string              `json:"reference_highlight,omitempty"`
 	LocalNotes       string              `json:"local_notes,omitempty"`
 	Tags             []string            `json:"tags,omitempty"`
-	Prereq           *PrereqList         `json:"prereqs,omitempty"`
+	Prereq           *PrereqList         `json:"prereqs,omitzero"`
 	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
 }
 
@@ -117,7 +116,7 @@ type TraitNonContainerSyncData struct {
 // TraitContainerSyncData holds the Trait sync data that is only applicable to traits that are containers.
 type TraitContainerSyncData struct {
 	Ancestry       string          `json:"ancestry,omitempty"`
-	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
+	TemplatePicker *TemplatePicker `json:"template_picker,omitzero"`
 	ContainerType  container.Type  `json:"container_type,omitempty"`
 }
 
@@ -843,37 +842,37 @@ func (t *Trait) Hash(h hash.Hash) {
 }
 
 func (t *TraitSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, t.Name)
-	hashhelper.String(h, t.PageRef)
-	hashhelper.String(h, t.PageRefHighlight)
-	hashhelper.String(h, t.LocalNotes)
-	hashhelper.Num64(h, len(t.Tags))
+	xhash.StringWithLen(h, t.Name)
+	xhash.StringWithLen(h, t.PageRef)
+	xhash.StringWithLen(h, t.PageRefHighlight)
+	xhash.StringWithLen(h, t.LocalNotes)
+	xhash.Num64(h, len(t.Tags))
 	for _, tag := range t.Tags {
-		hashhelper.String(h, tag)
+		xhash.StringWithLen(h, tag)
 	}
-	hashhelper.Num8(h, t.CRAdj)
+	xhash.Num8(h, t.CRAdj)
 	t.Prereq.Hash(h)
 }
 
 func (t *TraitNonContainerSyncData) hash(h hash.Hash) {
-	hashhelper.Num64(h, t.BasePoints)
-	hashhelper.Num64(h, t.PointsPerLevel)
-	hashhelper.Num64(h, len(t.Weapons))
+	xhash.Num64(h, t.BasePoints)
+	xhash.Num64(h, t.PointsPerLevel)
+	xhash.Num64(h, len(t.Weapons))
 	for _, one := range t.Weapons {
 		one.Hash(h)
 	}
-	hashhelper.Num64(h, len(t.Features))
+	xhash.Num64(h, len(t.Features))
 	for _, one := range t.Features {
 		one.Hash(h)
 	}
-	hashhelper.Bool(h, t.RoundCostDown)
-	hashhelper.Bool(h, t.CanLevel)
+	xhash.Bool(h, t.RoundCostDown)
+	xhash.Bool(h, t.CanLevel)
 }
 
 func (t *TraitContainerSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, t.Ancestry)
+	xhash.StringWithLen(h, t.Ancestry)
 	t.TemplatePicker.Hash(h)
-	hashhelper.Num8(h, t.ContainerType)
+	xhash.Num8(h, t.ContainerType)
 }
 
 // CopyFrom implements node.EditorData.
@@ -888,7 +887,7 @@ func (t *TraitEditData) ApplyTo(other *Trait) {
 
 func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isApply bool) {
 	*t = *other
-	t.Tags = txt.CloneStringSlice(other.Tags)
+	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
 	t.Modifiers = nil
 	if len(other.Modifiers) != 0 {

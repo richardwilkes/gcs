@@ -10,8 +10,9 @@
 package progression
 
 import (
+	"math"
+
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/xmath"
 )
 
 // Thrust returns the thrust damage for the given strength.
@@ -151,9 +152,9 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 		}
 		return d
 	case Tbone2:
-		return Tbone2.Swing(int(xmath.Ceil(float64(strength) * 2 / 3)))
+		return Tbone2.Swing(int(math.Ceil(float64(strength) * 2 / 3)))
 	case Tbone2Clean:
-		return Tbone2Clean.Swing(int(xmath.Ceil(float64(strength) * 2 / 3)))
+		return Tbone2Clean.Swing(int(math.Ceil(float64(strength) * 2 / 3)))
 	default:
 		return BasicSet.Thrust(strength)
 	}
@@ -220,9 +221,9 @@ func (enum Option) Swing(strength int) *dice.Dice {
 	case PhoenixFlameD3:
 		return PhoenixFlameD3.Thrust(strength)
 	case Tbone1:
-		return Tbone1.Thrust(int(xmath.Ceil(float64(strength) * 1.5)))
+		return Tbone1.Thrust(int(math.Ceil(float64(strength) * 1.5)))
 	case Tbone1Clean:
-		return Tbone1Clean.Thrust(int(xmath.Ceil(float64(strength) * 1.5)))
+		return Tbone1Clean.Thrust(int(math.Ceil(float64(strength) * 1.5)))
 	case Tbone2:
 		return Tbone1.Thrust(strength)
 	case Tbone2Clean:

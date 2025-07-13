@@ -13,23 +13,27 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestWeaponRoFSame(t *testing.T) {
+	c := check.New(t)
 	for i, s := range rofModeSameTests {
-		check.Equal(t, s, gurps.ParseWeaponRoF(s).String(), "test %d", i)
+		c.Equal(s, gurps.ParseWeaponRoF(s).String(), "test %d", i)
 	}
-	check.Equal(t, "Jet", gurps.ParseWeaponRoF("Jet").String())
+	c.Equal("Jet", gurps.ParseWeaponRoF("Jet").String())
 }
 
 func TestWeaponRoFAdjusted(t *testing.T) {
-	for i, c := range rofModeAdjustedTests {
-		check.Equal(t, c.expected, gurps.ParseWeaponRoF(c.input).String(), "test %d", i)
+	c := check.New(t)
+
+	for i, one := range rofModeAdjustedTests {
+		c.Equal(one.expected, gurps.ParseWeaponRoF(one.input).String(), "test %d", i)
 	}
 }
 
 func TestWeaponRoFMultiMode(t *testing.T) {
+	c := check.New(t)
 	cases := make([]rofAdjustedCase, 0, len(rofModeSameTests)*len(rofModeAdjustedTests))
 	for _, c1 := range rofModeSameTests {
 		if c1 != "" {
@@ -53,7 +57,7 @@ func TestWeaponRoFMultiMode(t *testing.T) {
 			expected: "1",
 		},
 	)
-	for i, c := range cases {
-		check.Equal(t, c.expected, gurps.ParseWeaponRoF(c.input).String(), "test %d", i)
+	for i, one := range cases {
+		c.Equal(one.expected, gurps.ParseWeaponRoF(one.input).String(), "test %d", i)
 	}
 }

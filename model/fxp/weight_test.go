@@ -13,31 +13,32 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestWeightConversion(t *testing.T) {
-	check.Equal(t, "1 lb", fxp.Pound.Format(fxp.WeightFromInteger(1, fxp.Pound)))
-	check.Equal(t, "15 lb", fxp.Pound.Format(fxp.WeightFromInteger(15, fxp.Pound)))
-	check.Equal(t, "0.5 kg", fxp.Kilogram.Format(fxp.WeightFromInteger(1, fxp.Pound)))
-	check.Equal(t, "7.5 kg", fxp.Kilogram.Format(fxp.WeightFromInteger(15, fxp.Pound)))
+	c := check.New(t)
+	c.Equal("1 lb", fxp.Pound.Format(fxp.WeightFromInteger(1, fxp.Pound)))
+	c.Equal("15 lb", fxp.Pound.Format(fxp.WeightFromInteger(15, fxp.Pound)))
+	c.Equal("0.5 kg", fxp.Kilogram.Format(fxp.WeightFromInteger(1, fxp.Pound)))
+	c.Equal("7.5 kg", fxp.Kilogram.Format(fxp.WeightFromInteger(15, fxp.Pound)))
 
 	w, err := fxp.WeightFromString("1", fxp.Pound)
-	check.NoError(t, err)
-	check.Equal(t, "1 lb", w.String())
+	c.NoError(err)
+	c.Equal("1 lb", w.String())
 	w, err = fxp.WeightFromString("1", fxp.Kilogram)
-	check.NoError(t, err)
-	check.Equal(t, "2 lb", w.String())
+	c.NoError(err)
+	c.Equal("2 lb", w.String())
 	w, err = fxp.WeightFromString("22.34 lb", fxp.Pound)
-	check.NoError(t, err)
-	check.Equal(t, "22.34 lb", w.String())
+	c.NoError(err)
+	c.Equal("22.34 lb", w.String())
 	w, err = fxp.WeightFromString(" +22.34   lb  ", fxp.Pound)
-	check.NoError(t, err)
-	check.Equal(t, "22.34 lb", w.String())
+	c.NoError(err)
+	c.Equal("22.34 lb", w.String())
 	w, err = fxp.WeightFromString("0.5kg", fxp.Pound)
-	check.NoError(t, err)
-	check.Equal(t, "0.5 kg", fxp.Kilogram.Format(w))
+	c.NoError(err)
+	c.Equal("0.5 kg", fxp.Kilogram.Format(w))
 	w, err = fxp.WeightFromString(" 15.25 kg ", fxp.Pound)
-	check.NoError(t, err)
-	check.Equal(t, "15.25 kg", fxp.Kilogram.Format(w))
+	c.NoError(err)
+	c.Equal("15.25 kg", fxp.Kilogram.Format(w))
 }

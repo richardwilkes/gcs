@@ -16,13 +16,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponRecoil{}
 	_ json.Marshaler   = WeaponRecoil{}
 	_ json.Unmarshaler = &(WeaponRecoil{})
 )
@@ -46,8 +45,8 @@ func ParseWeaponRecoil(s string) WeaponRecoil {
 	return wr
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wr WeaponRecoil) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (wr WeaponRecoil) IsZero() bool {
 	return wr == WeaponRecoil{}
 }
 
@@ -68,16 +67,12 @@ func (wr *WeaponRecoil) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wr WeaponRecoil) Hash(h hash.Hash) {
-	if wr.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Num64(h, wr.Shot)
-	hashhelper.Num64(h, wr.Slug)
+	xhash.Num64(h, wr.Shot)
+	xhash.Num64(h, wr.Slug)
 }
 
 // Resolve any bonuses that apply.
-func (wr WeaponRecoil) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponRecoil {
+func (wr WeaponRecoil) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponRecoil {
 	result := wr
 	// 0 means recoil isn't used; 1+ means it is.
 	if wr.Shot > 0 || wr.Slug > 0 {
@@ -92,8 +87,8 @@ func (wr WeaponRecoil) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weap
 			}
 		}
 		if percent != 0 {
-			result.Shot += result.Shot.Mul(percent).Div(fxp.Hundred).Trunc()
-			result.Slug += result.Slug.Mul(percent).Div(fxp.Hundred).Trunc()
+			result.Shot += result.Shot.Mul(percent).Div(fxp.Hundred).Floor()
+			result.Slug += result.Slug.Mul(percent).Div(fxp.Hundred).Floor()
 		}
 		if wr.Shot > 0 {
 			result.Shot = result.Shot.Max(fxp.One)

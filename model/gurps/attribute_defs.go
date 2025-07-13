@@ -19,9 +19,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 var _ Hashable = &AttributeDefs{}
@@ -68,7 +68,7 @@ func AttributeIDFor(entity *Entity, preferred string) string {
 // FactoryAttributeDefs returns the factory AttributeDef set.
 func FactoryAttributeDefs() *AttributeDefs {
 	defs, err := NewAttributeDefsFromFile(embeddedFS, "embedded_data/Standard.attr")
-	fatal.IfErr(err)
+	xos.ExitIfErr(err)
 	return defs
 }
 
@@ -157,7 +157,7 @@ func (a *AttributeDefs) List(omitSeparators bool) []*AttributeDef {
 
 // Hash writes this object's contents into the hasher.
 func (a *AttributeDefs) Hash(h hash.Hash) {
-	hashhelper.Num64(h, len(a.Set))
+	xhash.Num64(h, len(a.Set))
 	for _, one := range a.List(false) {
 		one.Hash(h)
 	}

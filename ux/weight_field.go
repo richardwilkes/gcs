@@ -25,11 +25,11 @@ func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *g
 			if minValue == fxp.Weight(fxp.Min) {
 				minValue = fxp.Weight(-fxp.One)
 			}
-			minValue = fxp.Weight(fxp.Int(minValue).Trunc() + fxp.One - 1)
+			minValue = fxp.Weight(fxp.Int(minValue).Floor() + fxp.One - 1)
 			if maxValue == fxp.Weight(fxp.Max) {
 				maxValue = fxp.Weight(fxp.One)
 			}
-			maxValue = fxp.Weight(fxp.Int(maxValue).Trunc() + fxp.One - 1)
+			maxValue = fxp.Weight(fxp.Int(maxValue).Floor() + fxp.One - 1)
 			return []fxp.Weight{minValue, fxp.Weight(fxp.Two - 1), maxValue}
 		}
 	}

@@ -27,11 +27,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -738,24 +737,24 @@ func (e *EquipmentModifier) Hash(h hash.Hash) {
 }
 
 func (e *EquipmentModifierSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, e.Name)
-	hashhelper.String(h, e.PageRef)
-	hashhelper.String(h, e.PageRefHighlight)
-	hashhelper.String(h, e.LocalNotes)
-	hashhelper.Num64(h, len(e.Tags))
+	xhash.StringWithLen(h, e.Name)
+	xhash.StringWithLen(h, e.PageRef)
+	xhash.StringWithLen(h, e.PageRefHighlight)
+	xhash.StringWithLen(h, e.LocalNotes)
+	xhash.Num64(h, len(e.Tags))
 	for _, tag := range e.Tags {
-		hashhelper.String(h, tag)
+		xhash.StringWithLen(h, tag)
 	}
 }
 
 func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
-	hashhelper.Num8(h, e.CostType)
-	hashhelper.Num8(h, e.WeightType)
-	hashhelper.Bool(h, e.ShowNotesOnWeapon)
-	hashhelper.String(h, e.TechLevel)
-	hashhelper.String(h, e.CostAmount)
-	hashhelper.String(h, e.WeightAmount)
-	hashhelper.Num64(h, len(e.Features))
+	xhash.Num8(h, e.CostType)
+	xhash.Num8(h, e.WeightType)
+	xhash.Bool(h, e.ShowNotesOnWeapon)
+	xhash.StringWithLen(h, e.TechLevel)
+	xhash.StringWithLen(h, e.CostAmount)
+	xhash.StringWithLen(h, e.WeightAmount)
+	xhash.Num64(h, len(e.Features))
 	for _, feature := range e.Features {
 		feature.Hash(h)
 	}
@@ -773,6 +772,6 @@ func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
 
 func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
 	*e = *other
-	e.Tags = txt.CloneStringSlice(other.Tags)
+	e.Tags = slices.Clone(other.Tags)
 	e.Features = other.Features.Clone()
 }

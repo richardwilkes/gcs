@@ -17,12 +17,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponBlock{}
 	_ json.Marshaler   = WeaponBlock{}
 	_ json.Unmarshaler = &(WeaponBlock{})
 )
@@ -46,8 +45,8 @@ func ParseWeaponBlock(s string) WeaponBlock {
 	return wb
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wb WeaponBlock) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (wb WeaponBlock) IsZero() bool {
 	return !wb.CanBlock
 }
 
@@ -69,23 +68,19 @@ func (wb *WeaponBlock) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wb WeaponBlock) Hash(h hash.Hash) {
-	if wb.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Bool(h, wb.CanBlock)
-	hashhelper.Num64(h, wb.Modifier)
+	xhash.Bool(h, wb.CanBlock)
+	xhash.Num64(h, wb.Modifier)
 }
 
 // Resolve any bonuses that apply.
-func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBlock {
+func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponBlock {
 	result := wb
 	result.CanBlock = w.ResolveBoolFlag(wswitch.CanBlock, result.CanBlock)
 	if result.CanBlock {
 		if entity := w.Entity(); entity != nil {
-			var primaryTooltip *xio.ByteBuffer
+			var primaryTooltip *xbytes.InsertBuffer
 			if modifiersTooltip != nil {
-				primaryTooltip = &xio.ByteBuffer{}
+				primaryTooltip = &xbytes.InsertBuffer{}
 			}
 			preAdj := w.skillLevelBaseAdjustment(entity, primaryTooltip)
 			postAdj := w.skillLevelPostAdjustment(entity, primaryTooltip)
@@ -97,7 +92,7 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 				}
 				level += preAdj
 				if def.Type() != BlockID {
-					level = level.Div(fxp.Two).Trunc()
+					level = level.Div(fxp.Two).Floor()
 				}
 				level += postAdj
 				if best < level {
@@ -118,9 +113,9 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 					}
 				}
 				if percentModifier != 0 {
-					result.Modifier += result.Modifier.Mul(percentModifier).Div(fxp.Hundred).Trunc()
+					result.Modifier += result.Modifier.Mul(percentModifier).Div(fxp.Hundred).Floor()
 				}
-				result.Modifier = result.Modifier.Max(0).Trunc()
+				result.Modifier = result.Modifier.Max(0).Floor()
 			} else {
 				result.Modifier = 0
 			}

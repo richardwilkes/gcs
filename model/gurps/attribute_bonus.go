@@ -15,8 +15,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Bonus = &AttributeBonus{}
@@ -70,18 +70,18 @@ func (a *AttributeBonus) SetLevel(level fxp.Int) {
 }
 
 // AddToTooltip implements Bonus.
-func (a *AttributeBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (a *AttributeBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	a.basicAddToTooltip(&a.LeveledAmount, buffer)
 }
 
 // Hash writes this object's contents into the hasher.
 func (a *AttributeBonus) Hash(h hash.Hash) {
 	if a == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, a.Type)
-	hashhelper.Num8(h, a.Limitation)
-	hashhelper.String(h, a.Attribute)
+	xhash.Num8(h, a.Type)
+	xhash.Num8(h, a.Limitation)
+	xhash.StringWithLen(h, a.Attribute)
 	a.LeveledAmount.Hash(h)
 }

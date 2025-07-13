@@ -17,10 +17,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/desktop"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/toolbox/xmath"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xmath"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -69,12 +70,12 @@ type PDFDockable struct {
 	lastPageButton         *unison.Button
 	page                   *PDFPage
 	link                   *PDFLink
-	rolloverRect           unison.Rect
+	rolloverRect           geom.Rect
 	scale                  int
 	historyPos             int
 	history                []int
-	dragStart              unison.Point
-	dragOrigin             unison.Point
+	dragStart              geom.Point
+	dragOrigin             geom.Point
 	autoScaling            autoscale.Option
 	inDrag                 bool
 	noUpdate               bool
@@ -125,7 +126,7 @@ func (d *PDFDockable) DockKey() string {
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
 	outer := unison.NewPanel()
-	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	outer.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -292,7 +293,7 @@ func (d *PDFDockable) createTOC() {
 
 	d.tocScroll = unison.NewScrollPanel()
 	d.tocScrollLayoutData = &unison.FlexLayoutData{
-		SizeHint: unison.Size{Width: 200},
+		SizeHint: geom.Size{Width: 200},
 		HAlign:   align.Fill,
 		VAlign:   align.Fill,
 		VGrab:    true,
@@ -302,25 +303,25 @@ func (d *PDFDockable) createTOC() {
 
 	d.divider = unison.NewPanel()
 	d.divider.SetLayoutData(&unison.FlexLayoutData{
-		SizeHint: unison.Size{Width: unison.DefaultDockTheme.DockDividerSize()},
+		SizeHint: geom.Size{Width: unison.DefaultDockTheme.DockDividerSize()},
 		HAlign:   align.Fill,
 		VAlign:   align.Fill,
 		VGrab:    true,
 	})
-	d.divider.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor {
+	d.divider.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor {
 		return unison.ResizeHorizontalCursor()
 	}
-	d.divider.DrawCallback = func(gc *unison.Canvas, _ unison.Rect) {
+	d.divider.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		unison.DefaultDockTheme.DrawHorizontalGripper(gc, d.divider.ContentRect(true))
 	}
 	var initialPosition float32
 	var eventPosition float32
-	d.divider.MouseDownCallback = func(where unison.Point, _, _ int, _ unison.Modifiers) bool {
+	d.divider.MouseDownCallback = func(where geom.Point, _, _ int, _ unison.Modifiers) bool {
 		initialPosition = d.tocScrollLayoutData.SizeHint.Width
 		eventPosition = d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
 		return true
 	}
-	d.divider.MouseDragCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
+	d.divider.MouseDragCallback = func(where geom.Point, _ int, _ unison.Modifiers) bool {
 		pos := eventPosition - d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
 		old := d.tocScrollLayoutData.SizeHint.Width
 		d.tocScrollLayoutData.SizeHint.Width = max(initialPosition-pos, 1)
@@ -487,12 +488,12 @@ func (d *PDFDockable) pageLoaded() {
 			wnd.Pack()
 			frame := wnd.FrameRect()
 			wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
-			d.searchField.SetScrollOffset(unison.Point{})
+			d.searchField.SetScrollOffset(geom.Point{})
 		}
 	}
 }
 
-func (d *PDFDockable) overLink(where unison.Point) (rect unison.Rect, link *PDFLink) {
+func (d *PDFDockable) overLink(where geom.Point) (rect geom.Rect, link *PDFLink) {
 	if d.page != nil && d.page.Links != nil {
 		where.X /= scaleCompensation
 		where.Y /= scaleCompensation
@@ -505,7 +506,7 @@ func (d *PDFDockable) overLink(where unison.Point) (rect unison.Rect, link *PDFL
 	return rect, nil
 }
 
-func (d *PDFDockable) checkForLinkAt(where unison.Point) bool {
+func (d *PDFDockable) checkForLinkAt(where geom.Point) bool {
 	r, link := d.overLink(where)
 	if r != d.rolloverRect || link != d.link {
 		d.rolloverRect = r
@@ -515,7 +516,7 @@ func (d *PDFDockable) checkForLinkAt(where unison.Point) bool {
 	return link != nil
 }
 
-func (d *PDFDockable) updateCursor(pt unison.Point) *unison.Cursor {
+func (d *PDFDockable) updateCursor(pt geom.Point) *unison.Cursor {
 	if d.inDrag {
 		return unison.MoveCursor()
 	}
@@ -525,7 +526,7 @@ func (d *PDFDockable) updateCursor(pt unison.Point) *unison.Cursor {
 	return unison.ArrowCursor()
 }
 
-func (d *PDFDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifiers) bool {
+func (d *PDFDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifiers) bool {
 	d.dragStart = d.docPanel.PointToRoot(where)
 	d.dragOrigin.X, d.dragOrigin.Y = d.docScroll.Position()
 	d.inDrag = !d.checkForLinkAt(where)
@@ -534,7 +535,7 @@ func (d *PDFDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifiers
 	return true
 }
 
-func (d *PDFDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
+func (d *PDFDockable) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) bool {
 	if d.inDrag {
 		pt := d.dragStart.Sub(d.docPanel.PointToRoot(where)).Add(d.dragOrigin)
 		d.docScroll.SetPosition(pt.X, pt.Y)
@@ -544,12 +545,12 @@ func (d *PDFDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) b
 	return true
 }
 
-func (d *PDFDockable) mouseMove(where unison.Point, _ unison.Modifiers) bool {
+func (d *PDFDockable) mouseMove(where geom.Point, _ unison.Modifiers) bool {
 	d.checkForLinkAt(where)
 	return true
 }
 
-func (d *PDFDockable) mouseUp(where unison.Point, button int, _ unison.Modifiers) bool {
+func (d *PDFDockable) mouseUp(where geom.Point, button int, _ unison.Modifiers) bool {
 	if d.inDrag {
 		d.inDrag = false
 		d.UpdateCursorNow()
@@ -558,7 +559,7 @@ func (d *PDFDockable) mouseUp(where unison.Point, button int, _ unison.Modifiers
 		if button == unison.ButtonLeft && d.link != nil {
 			if d.link.PageNumber >= 0 {
 				d.LoadPage(d.link.PageNumber)
-			} else if err := desktop.Open(d.link.URI); err != nil {
+			} else if err := xos.OpenBrowser(d.link.URI); err != nil {
 				Workspace.ErrorHandler(i18n.Text("Unable to open link"), err)
 			}
 		}
@@ -586,7 +587,7 @@ func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool
 	return true
 }
 
-func (d *PDFDockable) docSizer(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
+func (d *PDFDockable) docSizer(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	if d.page == nil || d.page.Error != nil {
 		prefSize.Width = 400
 		prefSize.Height = 300
@@ -595,10 +596,10 @@ func (d *PDFDockable) docSizer(_ unison.Size) (minSize, prefSize, maxSize unison
 		prefSize.Width *= scaleCompensation
 		prefSize.Height *= scaleCompensation
 	}
-	return unison.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
+	return geom.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
 }
 
-func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
+func (d *PDFDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 	gc.DrawRect(dirty, unison.ThemeSurface.Paint(gc, dirty, paintstyle.Fill))
 	if d.page != nil && d.page.Image != nil {
 		switch d.autoScaling {
@@ -626,7 +627,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 		}
 		gc.Save()
 		gc.Scale(scaleCompensation, scaleCompensation)
-		r := unison.Rect{Size: d.page.Image.LogicalSize()}
+		r := geom.Rect{Size: d.page.Image.LogicalSize()}
 		gc.DrawRect(r, unison.White.Paint(gc, r, paintstyle.Fill))
 		gc.DrawImageInRect(d.page.Image, r, &unison.SamplingOptions{
 			UseCubic:       true,
@@ -666,7 +667,7 @@ func adjustForModulate(c unison.Color) unison.Color {
 	return c
 }
 
-func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty unison.Rect) {
+func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty geom.Rect) {
 	if d.page != nil && d.page.Error != nil {
 		d.drawOverlayMsg(gc, dirty, fmt.Sprintf("%s", d.page.Error), true) //nolint:gocritic // I want the extra processing %s does in this case
 	}
@@ -679,7 +680,7 @@ func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty unison.Rect) {
 	}
 }
 
-func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg string, forError bool) {
+func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty geom.Rect, msg string, forError bool) {
 	var fgInk, bgInk unison.Ink
 	var icon unison.Drawable
 	font := unison.SystemFont.Face().Font(24)
@@ -689,7 +690,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 		bgInk = unison.ThemeError.GetColor().SetAlphaIntensity(0.7)
 		icon = &unison.DrawableSVG{
 			SVG:  unison.CircledExclamationSVG,
-			Size: unison.NewSize(baseline, baseline),
+			Size: geom.NewSize(baseline, baseline),
 		}
 	} else {
 		fgInk = unison.ThemeOnSurface
@@ -704,7 +705,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	cy := r.CenterY()
 	width := text.Width()
 	height := text.Height()
-	var iconSize unison.Size
+	var iconSize geom.Size
 	if icon != nil {
 		iconSize = icon.LogicalSize()
 		width += iconSize.Width + unison.StdHSpacing
@@ -725,7 +726,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	gc.DrawRoundedRect(r, 10, 10, bgInk.Paint(gc, dirty, paintstyle.Fill))
 	x := r.X + (r.Width-width)/2
 	if icon != nil {
-		icon.DrawInRect(gc, unison.NewRect(x, r.Y+(r.Height-iconSize.Height)/2, iconSize.Width, iconSize.Height), nil,
+		icon.DrawInRect(gc, geom.NewRect(x, r.Y+(r.Height-iconSize.Height)/2, iconSize.Width, iconSize.Height), nil,
 			decoration.OnBackgroundInk.Paint(gc, r, paintstyle.Fill))
 		x += iconSize.Width + unison.StdHSpacing
 	}
@@ -733,7 +734,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 }
 
 // TitleIcon implements workspace.FileBackedDockable
-func (d *PDFDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (d *PDFDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(d.path).SVG,
 		Size: suggestedSize,
@@ -742,7 +743,7 @@ func (d *PDFDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 
 // Title implements workspace.FileBackedDockable
 func (d *PDFDockable) Title() string {
-	return fs.BaseName(d.path)
+	return xfilepath.BaseName(d.path)
 }
 
 // Tooltip implements workspace.FileBackedDockable

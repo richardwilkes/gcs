@@ -14,8 +14,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // Prereq holds data necessary to track a prerequisite.
@@ -28,7 +28,7 @@ type Prereq interface {
 	Clone(parent *PrereqList) Prereq
 	// Satisfied returns true if this Prereq is satisfied by the specified Entity. 'buffer' will be used, if not nil, to
 	// write a description of what was unsatisfied. 'prefix' will be appended to each line of the description.
-	Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool
+	Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool
 	// Hash writes this object's contents into the hasher.
 	Hash(h hash.Hash)
 }

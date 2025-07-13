@@ -11,7 +11,8 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -38,20 +39,20 @@ func NewDragHandle(data map[string]any) *DragHandle {
 	baseline := unison.DefaultButtonTheme.Font.Baseline()
 	h.svg = &unison.DrawableSVG{
 		SVG:  svg.Grip,
-		Size: unison.NewSize(baseline, baseline).Ceil(),
+		Size: geom.NewSize(baseline, baseline).Ceil(),
 	}
 	h.SetSizer(h.size)
 	h.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
-	h.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 3}))
+	h.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 3}))
 	return h
 }
 
-func (h *DragHandle) size(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
+func (h *DragHandle) size(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	prefSize = h.svg.LogicalSize().Add(h.Border().Insets().Size()).Ceil()
 	return prefSize, prefSize, prefSize
 }
 
-func (h *DragHandle) draw(gc *unison.Canvas, rect unison.Rect) {
+func (h *DragHandle) draw(gc *unison.Canvas, rect geom.Rect) {
 	var ink unison.Ink
 	if h.rollover {
 		ink = unison.ThemeFocus
@@ -61,7 +62,7 @@ func (h *DragHandle) draw(gc *unison.Canvas, rect unison.Rect) {
 	h.svg.DrawInRect(gc, h.ContentRect(false), nil, ink.Paint(gc, rect, paintstyle.Fill))
 }
 
-func (h *DragHandle) mouseEnter(_ unison.Point, _ unison.Modifiers) bool {
+func (h *DragHandle) mouseEnter(_ geom.Point, _ unison.Modifiers) bool {
 	h.rollover = true
 	h.MarkForRedraw()
 	return true
@@ -73,18 +74,18 @@ func (h *DragHandle) mouseExit() bool {
 	return true
 }
 
-func (h *DragHandle) mouseDown(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+func (h *DragHandle) mouseDown(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
 	return true
 }
 
-func (h *DragHandle) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
+func (h *DragHandle) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) bool {
 	if h.IsDragGesture(where) {
 		size := h.svg.LogicalSize()
 		h.StartDataDrag(&unison.DragData{
 			Data:     h.data,
 			Drawable: h.svg,
 			Ink:      unison.ThemeFocus,
-			Offset:   unison.Point{X: -size.Width / 2, Y: -size.Height / 2},
+			Offset:   geom.Point{X: -size.Width / 2, Y: -size.Height / 2},
 		})
 	}
 	return true

@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -20,9 +21,9 @@ func NewToolbarSeparator() *unison.Separator {
 	spacer := unison.NewSeparator()
 	spacer.LineInk = unison.ThemeSurfaceEdge
 	spacer.Vertical = true
-	spacer.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)))
+	spacer.SetBorder(unison.NewEmptyBorder(geom.NewHorizontalInsets(unison.StdHSpacing)))
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
-	spacer.SetSizer(func(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
+	spacer.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 		minSize, prefSize, maxSize = spacer.DefaultSizes(hint)
 		baseline := unison.DefaultButtonTheme.Font.Baseline()
 		minSize.Height = baseline
@@ -30,7 +31,7 @@ func NewToolbarSeparator() *unison.Separator {
 		maxSize.Height = baseline
 		return
 	})
-	spacer.DrawCallback = func(canvas *unison.Canvas, _ unison.Rect) {
+	spacer.DrawCallback = func(canvas *unison.Canvas, _ geom.Rect) {
 		rect := spacer.ContentRect(false)
 		paint := spacer.LineInk.Paint(canvas, rect, paintstyle.Stroke)
 		paint.SetPathEffect(unison.NewDashPathEffect([]float32{2, 2}, 0))

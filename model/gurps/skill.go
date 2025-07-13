@@ -29,12 +29,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -106,19 +105,19 @@ type SkillSyncData struct {
 // SkillNonContainerOnlySyncData holds the Skill sync data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlySyncData struct {
 	Specialization               string              `json:"specialization,omitempty"`
-	Difficulty                   AttributeDifficulty `json:"difficulty,omitempty"`
+	Difficulty                   AttributeDifficulty `json:"difficulty,omitzero"`
 	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitempty"`
 	Defaults                     []*SkillDefault     `json:"defaults,omitempty"`
 	TechniqueDefault             *SkillDefault       `json:"default,omitempty"`
 	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitempty"`
-	Prereq                       *PrereqList         `json:"prereqs,omitempty"`
+	Prereq                       *PrereqList         `json:"prereqs,omitzero"`
 	Weapons                      []*Weapon           `json:"weapons,omitempty"`
 	Features                     Features            `json:"features,omitempty"`
 }
 
 // SkillContainerOnlySyncData holds the skill sync data that is only applicable to skills that are containers.
 type SkillContainerOnlySyncData struct {
-	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
+	TemplatePicker *TemplatePicker `json:"template_picker,omitzero"`
 }
 
 type skillListData struct {
@@ -443,7 +442,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 		}
 	case SkillPointsColumn:
 		data.Type = cell.Text
-		var tooltip xio.ByteBuffer
+		var tooltip xbytes.InsertBuffer
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = align.End
 		if tooltip.Len() != 0 {
@@ -469,10 +468,10 @@ func FormatRelativeSkill(e *Entity, numOnly bool, diff AttributeDifficulty, rsl 
 	case rsl == fxp.Min:
 		return "-"
 	case numOnly:
-		return rsl.Trunc().StringWithSign()
+		return rsl.Floor().StringWithSign()
 	default:
 		s := ResolveAttributeName(e, diff.Attribute)
-		rsl = rsl.Trunc()
+		rsl = rsl.Floor()
 		if rsl != 0 {
 			s += rsl.StringWithSign()
 		}
@@ -657,7 +656,7 @@ func (s *Skill) SetRawPoints(points fxp.Int) bool {
 }
 
 // AdjustedPoints returns the points, adjusted for any bonuses.
-func (s *Skill) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
+func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
 		var total fxp.Int
 		for _, one := range s.Children {
@@ -670,7 +669,7 @@ func (s *Skill) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
-func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
+func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if e != nil {
 		points += e.SkillPointBonusFor(name, specialization, tags, tooltip)
 		points = points.Max(0)
@@ -681,7 +680,7 @@ func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, na
 // IncrementSkillLevel adds enough points to increment the skill level to the next level.
 func (s *Skill) IncrementSkillLevel() {
 	if !s.Container() {
-		basePoints := s.Points.Trunc() + fxp.One
+		basePoints := s.Points.Floor() + fxp.One
 		maxPoints := basePoints
 		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			maxPoints += fxp.Twelve
@@ -701,7 +700,7 @@ func (s *Skill) IncrementSkillLevel() {
 // DecrementSkillLevel removes enough points to decrement the skill level to the previous level.
 func (s *Skill) DecrementSkillLevel() {
 	if !s.Container() && s.Points > 0 {
-		basePoints := s.Points.Trunc()
+		basePoints := s.Points.Floor()
 		minPoints := basePoints
 		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			minPoints -= fxp.Twelve
@@ -743,26 +742,26 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 
 // CalculateSkillLevel returns the calculated level for a skill.
 func CalculateSkillLevel(e *Entity, name, specialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
-	var tooltip xio.ByteBuffer
+	var tooltip xbytes.InsertBuffer
 	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
 	level := e.ResolveAttributeCurrent(attrDiff.Attribute)
 	if level != fxp.Min {
 		if e.SheetSettings.UseHalfStatDefaults {
-			level = level.Div(fxp.Two).Trunc() + fxp.Five
+			level = level.Div(fxp.Two).Floor() + fxp.Five
 		}
 		if attrDiff.Difficulty == difficulty.Wildcard {
 			points = points.Div(fxp.Three)
 		} else if def != nil && def.Points > 0 {
 			points += def.Points
 		}
-		points = points.Trunc()
+		points = points.Floor()
 		switch {
 		case points == fxp.One:
 			// relativeLevel is preset to this point value
 		case points > fxp.One && points < fxp.Four:
 			relativeLevel += fxp.One
 		case points >= fxp.Four:
-			relativeLevel += fxp.One + points.Div(fxp.Four).Trunc()
+			relativeLevel += fxp.One + points.Div(fxp.Four).Floor()
 		case attrDiff.Difficulty != difficulty.Wildcard && def != nil && def.Points < 0:
 			relativeLevel = def.AdjLevel - level
 		default:
@@ -795,7 +794,7 @@ func CalculateSkillLevel(e *Entity, name, specialization string, tags []string, 
 
 // CalculateTechniqueLevel returns the calculated level for a technique.
 func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, specialization string, tags []string, def *SkillDefault, diffLevel difficulty.Level, points fxp.Int, requirePoints bool, limitModifier *fxp.Int, excludes map[string]bool) Level {
-	var tooltip xio.ByteBuffer
+	var tooltip xbytes.InsertBuffer
 	var relativeLevel fxp.Int
 	level := fxp.Min
 	if e != nil {
@@ -876,8 +875,8 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 	best := s.bestDefault(excluded)
 	if best != nil {
 		baseLine := (EntityFromNode(s).ResolveAttributeCurrent(s.Difficulty.Attribute) +
-			s.Difficulty.Difficulty.BaseRelativeLevel()).Trunc()
-		level := best.Level.Trunc()
+			s.Difficulty.Difficulty.BaseRelativeLevel()).Floor()
+		level := best.Level.Floor()
 		best.AdjLevel = level
 		switch {
 		case level == baseLine:
@@ -969,7 +968,7 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 }
 
 // TechniqueSatisfied returns true if the Technique is satisfied.
-func (s *Skill) TechniqueSatisfied(tooltip *xio.ByteBuffer, prefix string) bool {
+func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) bool {
 	if !s.IsTechnique() || !s.TechniqueDefault.SkillBased() {
 		return true
 	}
@@ -1230,13 +1229,13 @@ func (s *Skill) Hash(h hash.Hash) {
 }
 
 func (s *SkillSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, s.Name)
-	hashhelper.String(h, s.PageRef)
-	hashhelper.String(h, s.PageRefHighlight)
-	hashhelper.String(h, s.LocalNotes)
-	hashhelper.Num64(h, len(s.Tags))
+	xhash.StringWithLen(h, s.Name)
+	xhash.StringWithLen(h, s.PageRef)
+	xhash.StringWithLen(h, s.PageRefHighlight)
+	xhash.StringWithLen(h, s.LocalNotes)
+	xhash.Num64(h, len(s.Tags))
 	for _, tag := range s.Tags {
-		hashhelper.String(h, tag)
+		xhash.StringWithLen(h, tag)
 	}
 }
 
@@ -1245,29 +1244,29 @@ func (s *SkillContainerOnlySyncData) hash(h hash.Hash) {
 }
 
 func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
-	hashhelper.String(h, s.Specialization)
+	xhash.StringWithLen(h, s.Specialization)
 	s.Difficulty.Hash(h)
-	hashhelper.Num64(h, s.EncumbrancePenaltyMultiplier)
-	hashhelper.Num64(h, len(s.Defaults))
+	xhash.Num64(h, s.EncumbrancePenaltyMultiplier)
+	xhash.Num64(h, len(s.Defaults))
 	for _, one := range s.Defaults {
 		one.Hash(h)
 	}
 	if s.TechniqueDefault != nil {
 		s.TechniqueDefault.Hash(h)
 	} else {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 	}
 	if s.TechniqueLimitModifier != nil {
-		hashhelper.Num64(h, *s.TechniqueLimitModifier)
+		xhash.Num64(h, *s.TechniqueLimitModifier)
 	} else {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 	}
 	s.Prereq.Hash(h)
-	hashhelper.Num64(h, len(s.Weapons))
+	xhash.Num64(h, len(s.Weapons))
 	for _, weapon := range s.Weapons {
 		weapon.Hash(h)
 	}
-	hashhelper.Num64(h, len(s.Features))
+	xhash.Num64(h, len(s.Features))
 	for _, feature := range s.Features {
 		feature.Hash(h)
 	}
@@ -1285,7 +1284,7 @@ func (s *SkillEditData) ApplyTo(other *Skill) {
 
 func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply, isTechnique bool) {
 	*s = *other
-	s.Tags = txt.CloneStringSlice(other.Tags)
+	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
 	if other.TechLevel != nil {
 		tl := *other.TechLevel

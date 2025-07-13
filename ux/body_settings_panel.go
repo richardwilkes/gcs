@@ -13,7 +13,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -30,7 +31,7 @@ func newBodySettingsPanel(d *bodySettingsDockable) *bodySettingsPanel {
 		dockable: d,
 	}
 	p.Self = p
-	p.SetBorder(unison.NewEmptyBorder(unison.Insets{
+	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
 		Top:    unison.StdVSpacing,
 		Left:   unison.StdHSpacing,
 		Bottom: unison.StdVSpacing,
@@ -104,7 +105,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 	content.AddChild(field)
 
 	wrapper := unison.NewPanel()
-	wrapper.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
+	wrapper.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false))
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,

@@ -20,9 +20,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -191,7 +192,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	d.namesOnlyCheckBox.ClickCallback = func() { d.ApplyFilter(SelectedTags(filterPopup)) }
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(
@@ -239,7 +240,7 @@ func (d *TableDockable[T]) DockableKind() string {
 }
 
 // TitleIcon implements workspace.FileBackedDockable
-func (d *TableDockable[T]) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (d *TableDockable[T]) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(d.path).SVG,
 		Size: suggestedSize,
@@ -248,7 +249,7 @@ func (d *TableDockable[T]) TitleIcon(suggestedSize unison.Size) unison.Drawable 
 
 // Title implements workspace.FileBackedDockable
 func (d *TableDockable[T]) Title() string {
-	return fs.BaseName(d.path)
+	return xfilepath.BaseName(d.path)
 }
 
 func (d *TableDockable[T]) String() string {

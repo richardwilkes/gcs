@@ -17,8 +17,9 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/thememode"
@@ -38,7 +39,7 @@ func newLootPageExporter(loot *gurps.Loot) *lootPageExporter {
 	p := &lootPageExporter{loot: loot}
 	p.targetMgr = NewTargetMgr(p)
 	pageSize := p.PageSize()
-	r := unison.Rect{Size: pageSize}
+	r := geom.Rect{Size: pageSize}
 	page := createLootTopBlock(loot, p.targetMgr)
 	p.AddChild(page)
 	p.pages = append(p.pages, page)
@@ -72,7 +73,7 @@ func newLootPageExporter(loot *gurps.Loot) *lootPageExporter {
 			page.SetFrameRect(r)
 			page.MarkForLayoutRecursively()
 			page.ValidateLayout()
-			_, pref, _ := page.Sizes(unison.Size{Width: r.Width})
+			_, pref, _ := page.Sizes(geom.Size{Width: r.Width})
 			excess := pref.Height - pageSize.Height
 			if excess <= 0 {
 				break // Not extending off the page, so move to the next row
@@ -96,7 +97,7 @@ func newLootPageExporter(loot *gurps.Loot) *lootPageExporter {
 				page.SetFrameRect(r)
 				page.MarkForLayoutRecursively()
 				page.ValidateLayout()
-				_, pref, _ = page.Sizes(unison.Size{Width: r.Width})
+				_, pref, _ = page.Sizes(geom.Size{Width: r.Width})
 				if excess = pref.Height - pageSize.Height; excess <= 0 {
 					break // Not extending off the page, so move to the next row
 				}
@@ -169,7 +170,7 @@ func (p *lootPageExporter) exportAsPDF(stream unison.Stream) error {
 	defer p.restoreTheme(savedColorMode)
 	return unison.CreatePDF(stream, &unison.PDFMetaData{
 		Title:           p.loot.Name,
-		Author:          toolbox.CurrentUserName(),
+		Author:          xos.CurrentUserName(),
 		Subject:         p.loot.Name,
 		Keywords:        "GCS Loot Sheet",
 		Creator:         "GCS",
@@ -247,10 +248,10 @@ func (p *lootPageExporter) HasPage(pageNumber int) bool {
 }
 
 // PageSize implements unison.PageProvider.
-func (p *lootPageExporter) PageSize() unison.Size {
+func (p *lootPageExporter) PageSize() geom.Size {
 	pageSettings := p.loot.PageSettings()
 	w, h := pageSettings.Orientation.Dimensions(gurps.MustParsePageSize(pageSettings.Size))
-	return unison.NewSize(w.Pixels(), h.Pixels())
+	return geom.NewSize(w.Pixels(), h.Pixels())
 }
 
 // DrawPage implements unison.PageProvider.

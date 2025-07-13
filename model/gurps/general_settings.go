@@ -16,9 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 )
 
@@ -33,7 +32,7 @@ var (
 	TooltipDismissalDef        = fxp.Sixty
 	TooltipDismissalMin        = fxp.One
 	TooltipDismissalMax        = fxp.ThirtySixHundred
-	ScrollWheelMultiplierDef   = fxp.From(unison.MouseWheelMultiplier)
+	ScrollWheelMultiplierDef   = fxp.FromFloat(unison.MouseWheelMultiplier)
 	ScrollWheelMultiplierMin   = fxp.One
 	ScrollWheelMultiplierMax   = fxp.TenThousandMinusOne
 	PermittedScriptExecTimeDef = fxp.FromStringForced("0.05")
@@ -95,12 +94,12 @@ type GeneralSettings struct {
 // NewGeneralSettings creates settings with factory defaults.
 func NewGeneralSettings() *GeneralSettings {
 	return &GeneralSettings{
-		DefaultPlayerName:          toolbox.CurrentUserName(),
+		DefaultPlayerName:          xos.CurrentUserName(),
 		DefaultTechLevel:           "3",
 		InitialPoints:              InitialPointsDef,
 		TooltipDelay:               TooltipDelayDef,
 		TooltipDismissal:           TooltipDismissalDef,
-		ScrollWheelMultiplier:      fxp.From(unison.MouseWheelMultiplier),
+		ScrollWheelMultiplier:      fxp.FromFloat(unison.MouseWheelMultiplier),
 		PermittedPerScriptExecTime: PermittedScriptExecTimeDef,
 		NavigatorUIScale:           InitialNavigatorUIScaleDef,
 		InitialListUIScale:         InitialListUIScaleDef,
@@ -154,7 +153,7 @@ func (s *GeneralSettings) CalendarRef(libraries Libraries) *CalendarRef {
 	ref := LookupCalendarRef(s.CalendarName, libraries)
 	if ref == nil {
 		if ref = LookupCalendarRef("Gregorian", libraries); ref == nil {
-			fatal.IfErr(errs.New("unable to load default calendar (Gregorian)"))
+			xos.ExitIfErr(errs.New("unable to load default calendar (Gregorian)"))
 		}
 	}
 	return ref

@@ -15,13 +15,12 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponRoF{}
 	_ json.Marshaler   = WeaponRoF{}
 	_ json.Unmarshaler = &(WeaponRoF{})
 )
@@ -51,8 +50,8 @@ func ParseWeaponRoF(s string) WeaponRoF {
 	return wr
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wr WeaponRoF) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (wr WeaponRoF) IsZero() bool {
 	return wr == WeaponRoF{}
 }
 
@@ -73,21 +72,17 @@ func (wr *WeaponRoF) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wr WeaponRoF) Hash(h hash.Hash) {
-	if wr.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
 	wr.Mode1.Hash(h)
 	wr.Mode2.Hash(h)
-	hashhelper.Bool(h, wr.Jet)
+	xhash.Bool(h, wr.Jet)
 }
 
 // Resolve any bonuses that apply.
-func (wr WeaponRoF) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponRoF {
+func (wr WeaponRoF) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponRoF {
 	result := wr
 	result.Jet = w.ResolveBoolFlag(wswitch.Jet, result.Jet)
 	if !result.Jet {
-		var buf1, buf2 xio.ByteBuffer
+		var buf1, buf2 xbytes.InsertBuffer
 		result.Mode1 = result.Mode1.Resolve(w, &buf1, true)
 		result.Mode2 = result.Mode2.Resolve(w, &buf2, false)
 		if modifiersTooltip != nil {

@@ -10,7 +10,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -47,7 +48,7 @@ func (d *notFoundDockable) Title() string {
 	return i18n.Text("Not Found")
 }
 
-func (d *notFoundDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (d *notFoundDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  unison.DocumentSVG,
 		Size: suggestedSize,

@@ -10,13 +10,15 @@
 package ux
 
 import (
+	"maps"
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/collection/dict"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -55,9 +57,7 @@ func (p *equipmentProvider) AllTags() []string {
 		}
 		return false
 	}, false, false, p.RootData()...)
-	tags := dict.Keys(set)
-	txt.SortStringsNaturalAscending(tags)
-	return tags
+	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
 }
 
 func (p *equipmentProvider) SetTable(table *unison.Table[*Node[*gurps.Equipment]]) {

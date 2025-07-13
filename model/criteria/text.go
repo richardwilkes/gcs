@@ -14,7 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // Text holds the criteria for matching text.
@@ -28,8 +28,8 @@ type TextData struct {
 	Qualifier string           `json:"qualifier,omitempty"`
 }
 
-// ShouldOmit implements json.Omitter.
-func (t Text) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (t Text) IsZero() bool {
 	return t.Compare.EnsureValid() == AnyText
 }
 
@@ -78,10 +78,10 @@ func (t Text) StringWithPrefix(replacements map[string]string, prefix, notPrefix
 
 // Hash writes this object's contents into the hasher.
 func (t Text) Hash(h hash.Hash) {
-	if t.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
+	if t.IsZero() {
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.String(h, t.Compare)
-	hashhelper.String(h, t.Qualifier)
+	xhash.StringWithLen(h, t.Compare)
+	xhash.StringWithLen(h, t.Qualifier)
 }

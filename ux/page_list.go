@@ -14,8 +14,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -139,7 +140,7 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetBorder(unison.NewLineBorder(header.BackgroundInk, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(header.BackgroundInk, 0, geom.NewUniformInsets(1), false))
 
 	p.Table.PreventUserColumnResize = true
 	p.Table.SyncToModel()
@@ -418,7 +419,7 @@ func (p *PageList[T]) CreateItem(owner Rebuildable, variant ItemVariant) {
 
 // OverheadHeight returns the overhead for this page list, i.e. the border and header space.
 func (p *PageList[T]) OverheadHeight() float32 {
-	_, pref, _ := p.tableHeader.Sizes(unison.Size{})
+	_, pref, _ := p.tableHeader.Sizes(geom.Size{})
 	insets := p.Border().Insets()
 	return insets.Height() + pref.Height
 }

@@ -10,8 +10,9 @@
 package ux
 
 import (
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -22,14 +23,14 @@ const ScaleDelta = 10
 func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(int), afterApply func(), attemptCenter bool, scroller *unison.ScrollPanel) *PercentageField {
 	applyFunc := func() {
 		scale := float32(get()) / 100
-		if header := scroller.ColumnHeader(); !toolbox.IsNil(header) {
+		if header := scroller.ColumnHeader(); !xreflect.IsNil(header) {
 			header.AsPanel().SetScale(scale)
 		}
 		scroller.Content().AsPanel().SetScale(scale)
 	}
 	scaleTitle := i18n.Text("Scale")
 	overrideCenter := false
-	var override unison.Point
+	var override geom.Point
 	var scaleField *PercentageField
 	scaleField = NewPercentageField(nil, "", scaleTitle, get,
 		func(scale int) {
@@ -38,8 +39,8 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 				return
 			}
 			var view, content *unison.Panel
-			var viewRect unison.Rect
-			var center unison.Point
+			var viewRect geom.Rect
+			var center geom.Point
 			var dX, dY float32
 			if attemptCenter {
 				view = scroller.ContentView()
@@ -75,7 +76,7 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 		}, minValue, maxValue, false, false)
 	scaleField.SetMarksModified(false)
 	scaleField.Tooltip = newWrappedTooltip(scaleTitle)
-	scroller.ContentView().MouseWheelCallback = func(where, delta unison.Point, mod unison.Modifiers) bool {
+	scroller.ContentView().MouseWheelCallback = func(where, delta geom.Point, mod unison.Modifiers) bool {
 		if !mod.OptionDown() || !scaleField.Enabled() {
 			return false
 		}
@@ -106,7 +107,7 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 			afterApply()
 		}
 	}
-	if dockable := unison.Ancestor[unison.Dockable](scroller); toolbox.IsNil(dockable) {
+	if dockable := unison.Ancestor[unison.Dockable](scroller); xreflect.IsNil(dockable) {
 		scroller.ParentChangedCallback = installFunc
 	} else {
 		installFunc()

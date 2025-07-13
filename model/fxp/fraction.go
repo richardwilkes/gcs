@@ -9,12 +9,14 @@
 
 package fxp
 
-import "github.com/richardwilkes/toolbox/xmath/fixed/f64"
+import (
+	"github.com/richardwilkes/toolbox/v2/fixed/fixed64"
+)
 
 // Fraction is an alias for the fixed-point fractional type we are using.
-type Fraction = f64.Fraction[DP]
+type Fraction = fixed64.Fraction[DP]
 
 // NewFraction creates a new fractional value from a string.
 func NewFraction(str string) Fraction {
-	return f64.NewFraction[DP](str)
+	return fixed64.NewFraction[DP](str)
 }

@@ -23,10 +23,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -399,9 +399,9 @@ func (n *Note) Hash(h hash.Hash) {
 }
 
 func (n *NoteSyncData) hash(h hash.Hash) {
-	hashhelper.String(h, n.MarkDown)
-	hashhelper.String(h, n.PageRef)
-	hashhelper.String(h, n.PageRefHighlight)
+	xhash.StringWithLen(h, n.MarkDown)
+	xhash.StringWithLen(h, n.PageRef)
+	xhash.StringWithLen(h, n.PageRefHighlight)
 }
 
 // CopyFrom implements node.EditorData.

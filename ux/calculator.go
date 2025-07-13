@@ -19,8 +19,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -177,7 +178,7 @@ func UpdateCalculator(sheet *Sheet) {
 
 func (c *Calculator) createToolbar() *unison.Panel {
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -208,7 +209,7 @@ func (c *Calculator) createToolbar() *unison.Panel {
 
 func (c *Calculator) createContent() {
 	c.content = unison.NewPanel()
-	c.content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
+	c.content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
 	c.content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
@@ -228,7 +229,7 @@ func (c *Calculator) addJumpingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	field := NewDecimalField(nil, "", i18n.Text("Jump Running Start"),
 		func() fxp.Int { return c.jumpingRunningStartYards },
 		func(v fxp.Int) {
@@ -247,7 +248,7 @@ func (c *Calculator) addJumpingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(NewIntegerField(nil, "", i18n.Text("Jumping Extra Effort Penalty"),
 		func() int { return c.jumpingExtraEffortPenalty },
 		func(v int) {
@@ -266,9 +267,9 @@ func (c *Calculator) addJumpingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
+	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
 	divider.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,
@@ -298,7 +299,7 @@ func (c *Calculator) addThrowingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(NewWeightField(nil, "", i18n.Text("Object Weight"),
 		c.sheet.Entity(),
 		func() fxp.Weight { return c.throwingObjectWeight },
@@ -318,7 +319,7 @@ func (c *Calculator) addThrowingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(NewIntegerField(nil, "", i18n.Text("Throwing Extra Effort Penalty"),
 		func() int { return c.throwingExtraEffortPenalty },
 		func(v int) {
@@ -337,9 +338,9 @@ func (c *Calculator) addThrowingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
+	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
 	divider.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,
@@ -369,7 +370,7 @@ func (c *Calculator) addHikingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 
 	terrainPopup := unison.NewPopupMenu[terrainModifier]()
 	roadsAreClearedCheckbox := unison.NewCheckBox()
@@ -434,7 +435,7 @@ func (c *Calculator) addHikingSection() {
 	c.content.AddChild(wrapper)
 
 	roadsAreClearedCheckbox.SetTitle(i18n.Text("Roads are cleared"))
-	roadsAreClearedCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	roadsAreClearedCheckbox.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	roadsAreClearedCheckbox.ClickCallback = func() {
 		c.roadsAreCleared = roadsAreClearedCheckbox.State == check.On
 		c.updateHikingResult()
@@ -442,7 +443,7 @@ func (c *Calculator) addHikingSection() {
 	c.content.AddChild(roadsAreClearedCheckbox)
 
 	usingSkisCheckbox.SetTitle(i18n.Text("Using skis"))
-	usingSkisCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	usingSkisCheckbox.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	usingSkisCheckbox.ClickCallback = func() {
 		c.usingSkis = usingSkisCheckbox.State == check.On
 		hikingAdjuster()
@@ -451,7 +452,7 @@ func (c *Calculator) addHikingSection() {
 	c.content.AddChild(usingSkisCheckbox)
 
 	usingSkatesCheckbox.SetTitle(i18n.Text("Using skates"))
-	usingSkatesCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	usingSkatesCheckbox.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	usingSkatesCheckbox.ClickCallback = func() {
 		c.usingSkates = usingSkatesCheckbox.State == check.On
 		hikingAdjuster()
@@ -460,7 +461,7 @@ func (c *Calculator) addHikingSection() {
 	c.content.AddChild(usingSkatesCheckbox)
 
 	hikingAdjuster()
-	successfulHikingRollCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	successfulHikingRollCheckbox.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	successfulHikingRollCheckbox.ClickCallback = func() {
 		c.successfulHikingRoll = successfulHikingRollCheckbox.State == check.On
 		hikingAdjuster()
@@ -474,7 +475,7 @@ func (c *Calculator) addHikingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(extraEffortPenaltyField)
 	label = unison.NewLabel()
 	label.SetTitle(i18n.Text("penalty for extra effort."))
@@ -486,9 +487,9 @@ func (c *Calculator) addHikingSection() {
 		Columns:  2,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
+	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
 	divider.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,
@@ -520,7 +521,7 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{Columns: 3})
 	if topMargin > 0 {
-		wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: topMargin}))
+		wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: topMargin}))
 	}
 
 	first := unison.NewLabel()
@@ -556,7 +557,7 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 }
 
 // TitleIcon implements unison.Dockable
-func (c *Calculator) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (c *Calculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  svg.Calculator,
 		Size: suggestedSize,
@@ -635,7 +636,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	gurps.Traverse(func(s *gurps.Skill) bool {
 		if strings.EqualFold(s.NameWithReplacements(), "jumping") {
 			s.UpdateLevel()
-			level := s.LevelData.Level.Div(fxp.Two).Trunc()
+			level := s.LevelData.Level.Div(fxp.Two).Floor()
 			if level > basicMove {
 				basicMove = level
 			}
@@ -650,10 +651,10 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	// Adjust Basic Move for high strength
 	st := entity.LiftingStrength()
 	if c.jumpingExtraEffortPenalty < 0 {
-		st = st.Mul(fxp.From(-5*c.jumpingExtraEffortPenalty).Div(fxp.Hundred) + fxp.One).Trunc()
+		st = st.Mul(fxp.FromInteger(-5*c.jumpingExtraEffortPenalty).Div(fxp.Hundred) + fxp.One).Floor()
 	}
 	if basicLift := entity.BasicLiftForST(st); basicLift > entity.Profile.Weight {
-		adjusted := st.Div(fxp.Four).Trunc()
+		adjusted := st.Div(fxp.Four).Floor()
 		if adjusted > basicMove {
 			basicMove = adjusted
 		}
@@ -674,7 +675,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	distance := (basicMove.Mul(multiplier) - reduction).Min((basicMoveWithoutRun.Mul(multiplier) - reduction).Mul(fxp.Two))
 
 	// Adjust for encumbrance
-	distance = distance.Mul(fxp.One - fxp.From(int(entity.EncumbranceLevel(false))).Mul(fxp.Two).Div(fxp.Ten))
+	distance = distance.Mul(fxp.One - fxp.FromInteger(int(entity.EncumbranceLevel(false))).Mul(fxp.Two).Div(fxp.Ten))
 
 	// Adjust for Super Jump
 	levels := -fxp.One
@@ -689,12 +690,12 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 		return false
 	}, true, false, entity.Traits...)
 	if levels > 0 {
-		distance = distance.Mul(fxp.From(math.Pow(2, fxp.As[float64](levels))))
+		distance = distance.Mul(fxp.FromFloat(math.Pow(2, fxp.AsFloat[float64](levels))))
 	}
 	if broad {
 		distance = distance.Mul(fxp.Twelve)
 	}
-	return distance.Trunc()
+	return distance.Floor()
 }
 
 func (c *Calculator) updateJumpingResult() {
@@ -759,9 +760,9 @@ func (c *Calculator) updateThrowingResult() {
 	// Determine distance modifier based on weight ratio
 	st := entity.LiftingStrength() - entity.LiftingStrengthBonus
 	if c.throwingExtraEffortPenalty < 0 {
-		st = st.Mul(fxp.From(-5*c.throwingExtraEffortPenalty).Div(fxp.Hundred) + fxp.One).Trunc()
+		st = st.Mul(fxp.FromInteger(-5*c.throwingExtraEffortPenalty).Div(fxp.Hundred) + fxp.One).Floor()
 	}
-	st += fxp.From(distanceBonus)
+	st += fxp.FromInteger(distanceBonus)
 	basicLift := entity.BasicLiftForST(st)
 	var weightRatio fxp.Int
 	if basicLift > 0 {
@@ -814,7 +815,7 @@ func (c *Calculator) updateThrowingResult() {
 	case weightRatio <= fxp.Twelve:
 		modifier = fxp.Twentieth
 	}
-	inches := st.Mul(modifier).Mul(fxp.ThirtySix).Trunc()
+	inches := st.Mul(modifier).Mul(fxp.ThirtySix).Floor()
 	if inches <= fxp.One {
 		c.throwingDistanceResult.SetTitle(i18n.Text("The object is too heavy for you to throw"))
 		c.throwingDamageResult.SetTitle(i18n.Text("None"))
@@ -824,7 +825,7 @@ func (c *Calculator) updateThrowingResult() {
 	// Determine damage based on weight ratio
 	thrust := entity.Thrust()
 	thrust.Modifier += thrust.Count * damageBonus
-	basicLift = entity.BasicLiftForST(st - fxp.From(distanceBonus))
+	basicLift = entity.BasicLiftForST(st - fxp.FromInteger(distanceBonus))
 	if basicLift > 0 {
 		weightRatio = fxp.Int(c.throwingObjectWeight).Div(fxp.Int(basicLift))
 	} else {
@@ -853,7 +854,7 @@ func (c *Calculator) updateThrowingResult() {
 
 func (c *Calculator) updateHikingResult() {
 	entity := c.sheet.Entity()
-	distance := fxp.From(entity.Move(entity.EncumbranceLevel(false)) * 10)
+	distance := fxp.FromInteger(entity.Move(entity.EncumbranceLevel(false)) * 10)
 
 	// Adjust for enhanced move (ground), if any
 	enhMove := -fxp.One
@@ -914,7 +915,7 @@ func (c *Calculator) updateHikingResult() {
 	if c.successfulHikingRoll {
 		mod = fxp.OnePointTwo
 		if c.hikingExtraEffortPenalty < 0 {
-			mod += fxp.From(-5 * c.hikingExtraEffortPenalty).Div(fxp.Hundred)
+			mod += fxp.FromInteger(-5 * c.hikingExtraEffortPenalty).Div(fxp.Hundred)
 		}
 	}
 	distance = distance.Mul(mod)
@@ -955,7 +956,7 @@ func (c *Calculator) distanceToText(inches fxp.Int) string {
 		}
 	} else {
 		if inches >= fxp.ThirtySix {
-			yards := inches.Div(fxp.ThirtySix).Trunc()
+			yards := inches.Div(fxp.ThirtySix).Floor()
 			if yards == fxp.One {
 				buffer.WriteString(i18n.Text("1 yard"))
 			} else {
@@ -967,7 +968,7 @@ func (c *Calculator) distanceToText(inches fxp.Int) string {
 			if buffer.Len() > 0 {
 				buffer.WriteString(", ")
 			}
-			feet := inches.Div(fxp.Twelve).Trunc()
+			feet := inches.Div(fxp.Twelve).Floor()
 			if feet == fxp.One {
 				buffer.WriteString(i18n.Text("1 foot"))
 			} else {

@@ -14,7 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // Number holds the criteria for matching a number.
@@ -28,8 +28,8 @@ type NumberData struct {
 	Qualifier fxp.Int           `json:"qualifier,omitempty"`
 }
 
-// ShouldOmit implements json.Omitter.
-func (n Number) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (n Number) IsZero() bool {
 	return n.Compare.EnsureValid() == AnyNumber
 }
 
@@ -56,10 +56,6 @@ func (n Number) AltString() string {
 
 // Hash writes this object's contents into the hasher.
 func (n Number) Hash(h hash.Hash) {
-	if n.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.String(h, n.Compare)
-	hashhelper.Num64(h, n.Qualifier)
+	xhash.StringWithLen(h, n.Compare)
+	xhash.Num64(h, n.Qualifier)
 }

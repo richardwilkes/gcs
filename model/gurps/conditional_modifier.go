@@ -19,10 +19,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -69,7 +69,7 @@ func (c *ConditionalModifier) Total() fxp.Int {
 
 // Compare returns -1, 0, 1 if this is less than, equal to, or greater than the other.
 func (c *ConditionalModifier) Compare(other *ConditionalModifier) int {
-	result := txt.NaturalCmp(c.From, other.From, true)
+	result := xstrings.NaturalCmp(c.From, other.From, true)
 	if result == 0 {
 		result = cmp.Compare(c.Total(), other.Total())
 	}
@@ -97,14 +97,14 @@ func (c *ConditionalModifier) ID() tid.TID {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (c *ConditionalModifier) Hash(h hash.Hash) {
-	hashhelper.String(h, c.From)
-	hashhelper.Num64(h, len(c.Amounts))
+	xhash.StringWithLen(h, c.From)
+	xhash.Num64(h, len(c.Amounts))
 	for _, amt := range c.Amounts {
-		hashhelper.Num64(h, amt)
+		xhash.Num64(h, amt)
 	}
-	hashhelper.Num64(h, len(c.Sources))
+	xhash.Num64(h, len(c.Sources))
 	for _, src := range c.Sources {
-		hashhelper.String(h, src)
+		xhash.StringWithLen(h, src)
 	}
 }
 

@@ -25,11 +25,11 @@ func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *g
 			if minValue == fxp.Length(fxp.Min) {
 				minValue = fxp.Length(-fxp.One)
 			}
-			minValue = fxp.Length(fxp.Int(minValue).Trunc() + fxp.One - 1)
+			minValue = fxp.Length(fxp.Int(minValue).Floor() + fxp.One - 1)
 			if maxValue == fxp.Length(fxp.Max) {
 				maxValue = fxp.Length(fxp.One)
 			}
-			maxValue = fxp.Length(fxp.Int(maxValue).Trunc() + fxp.One - 1)
+			maxValue = fxp.Length(fxp.Int(maxValue).Floor() + fxp.One - 1)
 			return []fxp.Length{minValue, fxp.Length(fxp.Two - 1), maxValue}
 		}
 	}

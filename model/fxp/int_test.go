@@ -13,32 +13,35 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestApplyRounding(t *testing.T) {
-	check.Equal(t, fxp.Two, fxp.ApplyRounding(fxp.OneAndAHalf, false))
-	check.Equal(t, fxp.Two, fxp.ApplyRounding(fxp.OnePointTwo, false))
-	check.Equal(t, fxp.One, fxp.ApplyRounding(fxp.OneAndAHalf, true))
-	check.Equal(t, fxp.One, fxp.ApplyRounding(fxp.OnePointTwo, true))
-	check.Equal(t, -fxp.Two, fxp.ApplyRounding(-fxp.OneAndAHalf, true))
-	check.Equal(t, -fxp.Two, fxp.ApplyRounding(-fxp.OnePointTwo, true))
-	check.Equal(t, -fxp.One, fxp.ApplyRounding(-fxp.OneAndAHalf, false))
-	check.Equal(t, -fxp.One, fxp.ApplyRounding(-fxp.OnePointTwo, false))
-	check.Equal(t, fxp.Two, fxp.ApplyRounding(fxp.Two, false))
-	check.Equal(t, fxp.Two, fxp.ApplyRounding(fxp.Two, true))
+	c := check.New(t)
+	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.OneAndAHalf, false))
+	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.OnePointTwo, false))
+	c.Equal(fxp.One, fxp.ApplyRounding(fxp.OneAndAHalf, true))
+	c.Equal(fxp.One, fxp.ApplyRounding(fxp.OnePointTwo, true))
+	c.Equal(-fxp.Two, fxp.ApplyRounding(-fxp.OneAndAHalf, true))
+	c.Equal(-fxp.Two, fxp.ApplyRounding(-fxp.OnePointTwo, true))
+	c.Equal(-fxp.One, fxp.ApplyRounding(-fxp.OneAndAHalf, false))
+	c.Equal(-fxp.One, fxp.ApplyRounding(-fxp.OnePointTwo, false))
+	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.Two, false))
+	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.Two, true))
 }
 
 func TestResetIfOutOfRange(t *testing.T) {
-	check.Equal(t, 15, fxp.ResetIfOutOfRange(5, 10, 20, 15))
-	check.Equal(t, 15, fxp.ResetIfOutOfRange(25, 10, 20, 15))
-	check.Equal(t, 15, fxp.ResetIfOutOfRange(15, 10, 20, 5))
-	check.Equal(t, fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.Five, fxp.Ten, fxp.Twenty, fxp.Fifteen))
-	check.Equal(t, fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.TwentyFive, fxp.Ten, fxp.Twenty, fxp.Fifteen))
-	check.Equal(t, fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.Fifteen, fxp.Ten, fxp.Twenty, fxp.Five))
+	c := check.New(t)
+	c.Equal(15, fxp.ResetIfOutOfRange(5, 10, 20, 15))
+	c.Equal(15, fxp.ResetIfOutOfRange(25, 10, 20, 15))
+	c.Equal(15, fxp.ResetIfOutOfRange(15, 10, 20, 5))
+	c.Equal(fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.Five, fxp.Ten, fxp.Twenty, fxp.Fifteen))
+	c.Equal(fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.TwentyFive, fxp.Ten, fxp.Twenty, fxp.Fifteen))
+	c.Equal(fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.Fifteen, fxp.Ten, fxp.Twenty, fxp.Five))
 }
 
 func TestExtract(t *testing.T) {
+	c := check.New(t)
 	for i, one := range []struct {
 		input             string
 		expectedValue     fxp.Int
@@ -55,7 +58,7 @@ func TestExtract(t *testing.T) {
 		{"", fxp.Int(0), ""},
 	} {
 		value, remainder := fxp.Extract(one.input)
-		check.Equal(t, one.expectedValue, value, "test %d", i)
-		check.Equal(t, one.expectedRemainder, remainder, "test %d", i)
+		c.Equal(one.expectedValue, value, "test %d", i)
+		c.Equal(one.expectedRemainder, remainder, "test %d", i)
 	}
 }

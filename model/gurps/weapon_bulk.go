@@ -17,13 +17,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponBulk{}
 	_ json.Marshaler   = WeaponBulk{}
 	_ json.Unmarshaler = &(WeaponBulk{})
 )
@@ -50,8 +49,8 @@ func ParseWeaponBulk(s string) WeaponBulk {
 	return wb
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wb WeaponBulk) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (wb WeaponBulk) IsZero() bool {
 	return wb == WeaponBulk{}
 }
 
@@ -73,17 +72,13 @@ func (wb *WeaponBulk) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wb WeaponBulk) Hash(h hash.Hash) {
-	if wb.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Num64(h, wb.Normal)
-	hashhelper.Num64(h, wb.Giant)
-	hashhelper.Bool(h, wb.RetractingStock)
+	xhash.Num64(h, wb.Normal)
+	xhash.Num64(h, wb.Giant)
+	xhash.Bool(h, wb.RetractingStock)
 }
 
 // Resolve any bonuses that apply.
-func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBulk {
+func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponBulk {
 	result := wb
 	var percent fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBulkBonus) {
@@ -96,8 +91,8 @@ func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapon
 		}
 	}
 	if percent != 0 {
-		result.Normal += result.Normal.Mul(percent).Div(fxp.Hundred).Trunc()
-		result.Giant += result.Giant.Mul(percent).Div(fxp.Hundred).Trunc()
+		result.Normal += result.Normal.Mul(percent).Div(fxp.Hundred).Floor()
+		result.Giant += result.Giant.Mul(percent).Div(fxp.Hundred).Floor()
 	}
 	result.Validate()
 	return result

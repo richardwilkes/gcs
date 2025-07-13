@@ -23,13 +23,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/gcs/v5/ux"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/formats/icon"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/ximage"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xyaml"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/upack/packager"
+	"github.com/richardwilkes/unison/cmd/upack/packager"
 )
 
 //go:embed doc-1024.png
@@ -40,7 +39,7 @@ func main() {
 	ux.RegisterExternalFileTypes()
 	ux.RegisterGCSFileTypes()
 	const iconsPath = "pkgicons"
-	fatal.IfErr(fs.WalkDir(os.DirFS(iconsPath), ".", func(path string, d fs.DirEntry, _ error) error {
+	xos.ExitIfErr(fs.WalkDir(os.DirFS(iconsPath), ".", func(path string, d fs.DirEntry, _ error) error {
 		if !d.IsDir() && strings.HasSuffix(path, "_doc.png") {
 			return os.Remove(filepath.Join(iconsPath, path))
 		}
@@ -49,15 +48,15 @@ func main() {
 
 	cfg := packager.Config{
 		FullName:        "GURPS Character Sheet",
-		ExecutableName:  cmdline.AppCmdName,
+		ExecutableName:  xos.AppCmdName,
 		AppIcon:         "pkgicons/app.png",
 		Description:     ux.AppDescription(),
-		CopyrightHolder: cmdline.CopyrightHolder,
-		CopyrightYears:  cmdline.ResolveCopyrightYears(),
+		CopyrightHolder: xos.CopyrightHolder,
+		CopyrightYears:  xos.CopyrightYears(),
 		Trademarks:      "GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.",
 		Mac: packager.MacOnlyOpts{
-			FinderAppName:             cmdline.AppName,
-			AppID:                     cmdline.AppIdentifier,
+			FinderAppName:             xos.AppName,
+			AppID:                     xos.AppIdentifier,
 			MinimumSystemVersionAMD64: "10.15",
 			MinimumSystemVersionARM64: "11.0",
 			CategoryUTI:               "public.app-category.role-playing-games",
@@ -92,18 +91,18 @@ func main() {
 		}
 		cfg.FileInfo = append(cfg.FileInfo, &data)
 	}
-	fatal.IfErr(xfs.SaveYAML("packaging.yml", &cfg))
+	xos.ExitIfErr(xyaml.Save("packaging.yml", &cfg))
 
 	// The doc icons use unison's image code to generate the icons, so we need to start it up.
 	unison.Start(
 		unison.StartupFinishedCallback(func() {
 			w, err := unison.NewWindow("")
-			fatal.IfErr(err)
+			xos.ExitIfErr(err)
 			w.ToFront()
 			unison.InvokeTask(func() {
 				var docImg image.Image
 				if docImg, _, err = image.Decode(bytes.NewBuffer(docImgBytes)); err != nil {
-					fatal.IfErr(errs.Wrap(err))
+					xos.ExitIfErr(errs.Wrap(err))
 				}
 				for i := range gurps.KnownFileTypes {
 					fi := gurps.KnownFileTypes[i]
@@ -112,12 +111,12 @@ func main() {
 					}
 					var overlay image.Image
 					overlay, err = svg.CreateImageFromSVG(fi.SVG, 512)
-					fatal.IfErr(err)
+					xos.ExitIfErr(err)
 					var f *os.File
 					f, err = os.Create(filepath.Join(iconsPath, fi.Extensions[0][1:]+"_doc.png"))
-					fatal.IfErr(err)
-					fatal.IfErr(errs.Wrap(png.Encode(f, icon.Stack(docImg, overlay))))
-					fatal.IfErr(f.Close())
+					xos.ExitIfErr(err)
+					xos.ExitIfErr(errs.Wrap(png.Encode(f, ximage.Stack(docImg, overlay))))
+					xos.ExitIfErr(f.Close())
 				}
 				w.Dispose() // Will cause the app to quit.
 			})

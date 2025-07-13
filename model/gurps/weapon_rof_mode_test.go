@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 var rofModeSameTests = []string{
@@ -42,13 +42,15 @@ type rofAdjustedCase struct {
 }
 
 func TestWeaponRoFModeSame(t *testing.T) {
-	for i, s := range rofModeSameTests {
-		check.Equal(t, s, gurps.ParseWeaponRoFMode(s).String(), "test %d", i)
+	c := check.New(t)
+	for i, one := range rofModeSameTests {
+		c.Equal(one, gurps.ParseWeaponRoFMode(one).String(), "test %d", i)
 	}
 }
 
 func TestWeaponRoFModeAdjusted(t *testing.T) {
-	for i, c := range rofModeAdjustedTests {
-		check.Equal(t, c.expected, gurps.ParseWeaponRoFMode(c.input).String(), "test %d", i)
+	c := check.New(t)
+	for i, one := range rofModeAdjustedTests {
+		c.Equal(one.expected, gurps.ParseWeaponRoFMode(one.input).String(), "test %d", i)
 	}
 }

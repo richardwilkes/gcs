@@ -16,6 +16,7 @@ import (
 	"hash"
 	"io/fs"
 	"log/slog"
+	"maps"
 	"math"
 	"slices"
 	"strconv"
@@ -38,12 +39,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/collection/dict"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 var (
@@ -372,14 +372,14 @@ func (e *Entity) processFeatures() {
 		}, true, true, eqp.Modifiers...)
 		return false
 	}, false, false, e.CarriedEquipment...)
-	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.LiftingOnly, nil).Trunc()
-	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.StrikingOnly, nil).Trunc()
-	e.ThrowingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.ThrowingOnly, nil).Trunc()
+	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.LiftingOnly, nil).Floor()
+	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.StrikingOnly, nil).Floor()
+	e.ThrowingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.ThrowingOnly, nil).Floor()
 	for _, attr := range e.Attributes.Set {
 		if def := attr.AttributeDef(); def != nil {
 			attr.Bonus = e.AttributeBonusFor(attr.AttrID, stlimit.None, nil)
 			if !def.AllowsDecimal() {
-				attr.Bonus = attr.Bonus.Trunc()
+				attr.Bonus = attr.Bonus.Floor()
 			}
 			attr.CostReduction = e.CostReductionFor(attr.AttrID)
 		} else {
@@ -389,15 +389,15 @@ func (e *Entity) processFeatures() {
 	}
 	e.Profile.Update(e)
 	if e.ResolveAttribute(DodgeID) == nil {
-		e.DodgeBonus = e.AttributeBonusFor(DodgeID, stlimit.None, nil).Trunc()
+		e.DodgeBonus = e.AttributeBonusFor(DodgeID, stlimit.None, nil).Floor()
 	} else {
 		e.DodgeBonus = 0
 	}
-	var tooltip xio.ByteBuffer
-	e.ParryBonus = e.AttributeBonusFor(ParryID, stlimit.None, &tooltip).Trunc()
+	var tooltip xbytes.InsertBuffer
+	e.ParryBonus = e.AttributeBonusFor(ParryID, stlimit.None, &tooltip).Floor()
 	e.ParryBonusTooltip = tooltip.String()
 	tooltip.Reset()
-	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, &tooltip).Trunc()
+	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, &tooltip).Floor()
 	e.BlockBonusTooltip = tooltip.String()
 }
 
@@ -415,16 +415,16 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 	case *DRBonus:
 		if len(actual.Locations) == 0 { // "this armor"
 			if eqp, ok := owner.(*Equipment); ok {
-				allLocations := make(map[string]bool)
-				locationsMatched := make(map[string]bool)
+				allLocations := make(map[string]struct{})
+				locationsMatched := make(map[string]struct{})
 				for _, f2 := range eqp.FeatureList() {
 					if drBonus, ok2 := f2.(*DRBonus); ok2 && len(drBonus.Locations) != 0 {
 						for _, loc := range drBonus.Locations {
-							allLocations[loc] = true
+							allLocations[loc] = struct{}{}
 						}
 						if drBonus.Specialization == actual.Specialization {
 							for _, loc := range drBonus.Locations {
-								locationsMatched[loc] = true
+								locationsMatched[loc] = struct{}{}
 							}
 							additionalDRBonus := DRBonus{
 								DRBonusData: DRBonusData{
@@ -445,12 +445,10 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 					delete(allLocations, k)
 				}
 				if len(allLocations) != 0 {
-					locations := dict.Keys(allLocations)
-					slices.Sort(locations)
 					additionalDRBonus := DRBonus{
 						DRBonusData: DRBonusData{
 							Type:           feature.DRBonus,
-							Locations:      locations,
+							Locations:      slices.Sorted(maps.Keys(allLocations)),
 							Specialization: actual.Specialization,
 							LeveledAmount:  actual.LeveledAmount,
 						},
@@ -487,7 +485,7 @@ func (e *Entity) processPrereqs() {
 	Traverse(func(a *Trait) bool {
 		a.UnsatisfiedReason = ""
 		if a.Prereq != nil {
-			var tooltip xio.ByteBuffer
+			var tooltip xbytes.InsertBuffer
 			var eqpPenalty bool
 			if !a.Prereq.Satisfied(e, a, &tooltip, prefix, &eqpPenalty) {
 				a.UnsatisfiedReason = notMetPrefix + tooltip.String()
@@ -498,7 +496,7 @@ func (e *Entity) processPrereqs() {
 	Traverse(func(s *Skill) bool {
 		s.UnsatisfiedReason = ""
 		if !s.Container() {
-			var tooltip xio.ByteBuffer
+			var tooltip xbytes.InsertBuffer
 			satisfied := true
 			if s.Prereq != nil {
 				var eqpPenalty bool
@@ -529,7 +527,7 @@ func (e *Entity) processPrereqs() {
 	Traverse(func(s *Spell) bool {
 		s.UnsatisfiedReason = ""
 		if !s.Container() {
-			var tooltip xio.ByteBuffer
+			var tooltip xbytes.InsertBuffer
 			satisfied := true
 			if s.Prereq != nil {
 				var eqpPenalty bool
@@ -558,7 +556,7 @@ func (e *Entity) processPrereqs() {
 	equipmentFunc := func(eqp *Equipment) bool {
 		eqp.UnsatisfiedReason = ""
 		if eqp.Prereq != nil {
-			var tooltip xio.ByteBuffer
+			var tooltip xbytes.InsertBuffer
 			var eqpPenalty bool
 			if !eqp.Prereq.Satisfied(e, eqp, &tooltip, prefix, &eqpPenalty) {
 				eqp.UnsatisfiedReason = notMetPrefix + tooltip.String()
@@ -684,7 +682,7 @@ func (e *Entity) StrikingStrength() fxp.Int {
 		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
 	}
 	st += e.StrikingStrengthBonus
-	return st.Trunc()
+	return st.Floor()
 }
 
 // LiftingStrength returns the adjusted ST for lifting purposes.
@@ -696,7 +694,7 @@ func (e *Entity) LiftingStrength() fxp.Int {
 		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
 	}
 	st += e.LiftingStrengthBonus
-	return st.Trunc()
+	return st.Floor()
 }
 
 // ThrowingStrength returns the adjusted ST for throwing purposes.
@@ -708,7 +706,7 @@ func (e *Entity) ThrowingStrength() fxp.Int {
 		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
 	}
 	st += e.ThrowingStrengthBonus
-	return st.Trunc()
+	return st.Floor()
 }
 
 // TelekineticStrength returns the total telekinetic strength.
@@ -722,27 +720,27 @@ func (e *Entity) TelekineticStrength() fxp.Int {
 		}
 		return false
 	}, true, false, e.Traits...)
-	return levels.Trunc()
+	return levels.Floor()
 }
 
 // Thrust returns the thrust value for the current strength.
 func (e *Entity) Thrust() *dice.Dice {
-	return e.ThrustFor(fxp.As[int](e.StrikingStrength()))
+	return e.ThrustFor(fxp.AsInteger[int](e.StrikingStrength()))
 }
 
 // LiftingThrust returns the lifting thrust value for the current strength.
 func (e *Entity) LiftingThrust() *dice.Dice {
-	return e.ThrustFor(fxp.As[int](e.LiftingStrength()))
+	return e.ThrustFor(fxp.AsInteger[int](e.LiftingStrength()))
 }
 
 // IQThrust returns the IQ thrust value for the current intelligence.
 func (e *Entity) IQThrust() *dice.Dice {
-	return e.ThrustFor(fxp.As[int](e.ResolveAttributeCurrent(IntelligenceID)))
+	return e.ThrustFor(fxp.AsInteger[int](e.ResolveAttributeCurrent(IntelligenceID)))
 }
 
 // TelekineticThrust returns the telekinetic thrust value for the current telekinesis level.
 func (e *Entity) TelekineticThrust() *dice.Dice {
-	return e.ThrustFor(fxp.As[int](e.TelekineticStrength()))
+	return e.ThrustFor(fxp.AsInteger[int](e.TelekineticStrength()))
 }
 
 // ThrustFor returns the thrust value for the provided strength.
@@ -752,22 +750,22 @@ func (e *Entity) ThrustFor(st int) *dice.Dice {
 
 // Swing returns the swing value for the current strength.
 func (e *Entity) Swing() *dice.Dice {
-	return e.SwingFor(fxp.As[int](e.StrikingStrength()))
+	return e.SwingFor(fxp.AsInteger[int](e.StrikingStrength()))
 }
 
 // LiftingSwing returns the lifting swing value for the current strength.
 func (e *Entity) LiftingSwing() *dice.Dice {
-	return e.SwingFor(fxp.As[int](e.LiftingStrength()))
+	return e.SwingFor(fxp.AsInteger[int](e.LiftingStrength()))
 }
 
 // IQSwing returns the IQ swing value for the current intelligence.
 func (e *Entity) IQSwing() *dice.Dice {
-	return e.SwingFor(fxp.As[int](e.ResolveAttributeCurrent(IntelligenceID)))
+	return e.SwingFor(fxp.AsInteger[int](e.ResolveAttributeCurrent(IntelligenceID)))
 }
 
 // TelekineticSwing returns the telekinetic swing value for the current telekinesis level.
 func (e *Entity) TelekineticSwing() *dice.Dice {
-	return e.SwingFor(fxp.As[int](e.TelekineticStrength()))
+	return e.SwingFor(fxp.AsInteger[int](e.TelekineticStrength()))
 }
 
 // SwingFor returns the swing value for the provided strength.
@@ -776,7 +774,7 @@ func (e *Entity) SwingFor(st int) *dice.Dice {
 }
 
 // AttributeBonusFor returns the bonus for the given attribute.
-func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xio.ByteBuffer) fxp.Int {
+func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.attributeBonuses {
 		if one.ActualLimitation() == limitation && one.Attribute == attributeID {
@@ -803,7 +801,7 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 
 // AddDRBonusesFor locates any active DR bonuses and adds them to the map. If 'drMap' is nil, it will be created. The
 // provided map (or the newly created one) will be returned.
-func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drMap map[string]int) map[string]int {
+func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer, drMap map[string]int) map[string]int {
 	if drMap == nil {
 		drMap = make(map[string]int)
 	}
@@ -817,7 +815,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drM
 	for _, one := range e.features.drBonuses {
 		for _, loc := range one.Locations {
 			if (loc == AllID && isTopLevel) || strings.EqualFold(loc, locationID) {
-				drMap[strings.ToLower(one.Specialization)] += fxp.As[int](one.AdjustedAmount())
+				drMap[strings.ToLower(one.Specialization)] += fxp.AsInteger[int](one.AdjustedAmount())
 				one.AddToTooltip(tooltip)
 				break
 			}
@@ -827,7 +825,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drM
 }
 
 // SkillBonusFor returns the total bonus for the matching skill bonuses.
-func (e *Entity) SkillBonusFor(name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
+func (e *Entity) SkillBonusFor(name, specialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillBonuses {
 		if bonus.SelectionType == skillsel.Name {
@@ -847,7 +845,7 @@ func (e *Entity) SkillBonusFor(name, specialization string, tags []string, toolt
 }
 
 // SkillPointBonusFor returns the total point bonus for the matching skill point bonuses.
-func (e *Entity) SkillPointBonusFor(name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
+func (e *Entity) SkillPointBonusFor(name, specialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillPointBonuses {
 		var replacements map[string]string
@@ -865,7 +863,7 @@ func (e *Entity) SkillPointBonusFor(name, specialization string, tags []string, 
 }
 
 // SpellBonusFor returns the total bonus for the matching spell bonuses.
-func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
+func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.spellBonuses {
 		var replacements map[string]string
@@ -882,7 +880,7 @@ func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string
 }
 
 // SpellPointBonusFor returns the total point bonus for the matching spell point bonuses.
-func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
+func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.spellPointBonuses {
 		var replacements map[string]string
@@ -900,7 +898,7 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
 // created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -931,7 +929,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 
 // AddNamedWeaponBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
 // be created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -952,10 +950,10 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 	return m
 }
 
-func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) {
+func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool) {
 	savedLevel := bonus.Level
 	savedDieCount := bonus.DieCount
-	bonus.DieCount = fxp.From(dieCount)
+	bonus.DieCount = fxp.FromInteger(dieCount)
 	bonus.Level = bonus.DerivedLevel()
 	bonus.AddToTooltip(tooltip)
 	bonus.Level = savedLevel
@@ -964,7 +962,7 @@ func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xio.ByteBuff
 }
 
 // NamedWeaponSkillBonusesFor returns the bonuses for matching weapons.
-func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xio.ByteBuffer) []*SkillBonus {
+func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xbytes.InsertBuffer) []*SkillBonus {
 	var bonuses []*SkillBonus
 	for _, bonus := range e.features.skillBonuses {
 		if bonus.SelectionType == skillsel.WeaponsWithName {
@@ -992,16 +990,16 @@ func (e *Entity) Move(enc encumbrance.Level) int {
 		initialMove = e.ResolveAttributeCurrent(BasicMoveID).Max(0)
 	}
 	if divisor := 2 * min(CountThresholdOpMet(threshold.HalveMove, e.Attributes), 2); divisor > 0 {
-		initialMove = initialMove.Div(fxp.From(divisor)).Ceil()
+		initialMove = initialMove.Div(fxp.FromInteger(divisor)).Ceil()
 	}
-	move := initialMove.Mul(fxp.Ten + fxp.Two.Mul(enc.Penalty())).Div(fxp.Ten).Trunc()
+	move := initialMove.Mul(fxp.Ten + fxp.Two.Mul(enc.Penalty())).Div(fxp.Ten).Floor()
 	if move < fxp.One {
 		if initialMove > 0 {
 			return 1
 		}
 		return 0
 	}
-	return fxp.As[int](move)
+	return fxp.AsInteger[int](move)
 }
 
 // BestSkillNamed returns the best skill that matches.
@@ -1047,9 +1045,9 @@ func (e *Entity) Dodge(enc encumbrance.Level) int {
 	dodge += e.DodgeBonus
 	divisor := 2 * min(CountThresholdOpMet(threshold.HalveDodge, e.Attributes), 2)
 	if divisor > 0 {
-		dodge = dodge.Div(fxp.From(divisor)).Ceil()
+		dodge = dodge.Div(fxp.FromInteger(divisor)).Ceil()
 	}
-	return fxp.As[int]((dodge + enc.Penalty()).Max(fxp.One))
+	return fxp.AsInteger[int]((dodge + enc.Penalty()).Max(fxp.One))
 }
 
 // EncumbranceLevel returns the current Encumbrance level.
@@ -1140,11 +1138,11 @@ func (e *Entity) BasicLift() fxp.Weight {
 
 // BasicLiftForST returns the entity's Basic Lift as if their base ST was the given value.
 func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
-	st = st.Trunc()
+	st = st.Floor()
 	if IsThresholdOpMet(threshold.HalveST, e.Attributes) {
 		st = st.Div(fxp.Two)
-		if st != st.Trunc() {
-			st = st.Trunc() + fxp.One
+		if st != st.Floor() {
+			st = st.Floor() + fxp.One
 		}
 	}
 	if st < fxp.One {
@@ -1154,23 +1152,23 @@ func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 	if e.SheetSettings.DamageProgression == progression.KnowingYourOwnStrength {
 		var diff fxp.Int
 		if st > fxp.Nineteen {
-			diff = st.Div(fxp.Ten).Trunc() - fxp.One
+			diff = st.Div(fxp.Ten).Floor() - fxp.One
 			st -= diff.Mul(fxp.Ten)
 		}
-		v = fxp.From(math.Pow(10, fxp.As[float64](st)/10)).Mul(fxp.Two)
+		v = fxp.FromFloat(math.Pow(10, fxp.AsFloat[float64](st)/10)).Mul(fxp.Two)
 		if st <= fxp.Six {
 			v = v.Mul(fxp.Ten).Round().Div(fxp.Ten)
 		} else {
 			v = v.Round()
 		}
-		v = v.Mul(fxp.From(math.Pow(10, fxp.As[float64](diff))))
+		v = v.Mul(fxp.FromFloat(math.Pow(10, fxp.AsFloat[float64](diff))))
 	} else {
 		v = st.Mul(st).Div(fxp.Five)
 	}
 	if v >= fxp.Ten {
 		v = v.Round()
 	}
-	return fxp.Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
+	return fxp.Weight(v.Mul(fxp.Ten).Floor().Div(fxp.Ten))
 }
 
 func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) bool {
@@ -1289,7 +1287,7 @@ func (e *Entity) Ancestry() *Ancestry {
 	}, true, false, e.Traits...)
 	if anc == nil {
 		if anc = LookupAncestry(DefaultAncestry, GlobalSettings().Libraries()); anc == nil {
-			fatal.IfErr(errs.New("unable to load default ancestry (Human)"))
+			xos.ExitIfErr(errs.New("unable to load default ancestry (Human)"))
 		}
 	}
 	return anc
@@ -1369,7 +1367,7 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 			return false
 		}, true, true, a.Modifiers...)
 		if a.CR != selfctrl.NoCR && a.CRAdj == selfctrl.ReactionPenalty {
-			amt := fxp.From(selfctrl.ReactionPenalty.Adjustment(a.CR))
+			amt := fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(a.CR))
 			situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), a.String())
 			if r, exists := m[situation]; exists {
 				r.Add(source, amt)

@@ -21,7 +21,7 @@ type Weight Int
 
 // WeightFromInteger creates a new Weight.
 func WeightFromInteger[T constraints.Integer](value T, unit WeightUnit) Weight {
-	return Weight(unit.ToPounds(From(value)))
+	return Weight(unit.ToPounds(FromInteger(value)))
 }
 
 // WeightFromFixed creates a new Weight.

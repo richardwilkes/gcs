@@ -11,6 +11,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -47,7 +48,7 @@ func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign align.En
 	f.Self = f
 	f.Font = fonts.PageFieldPrimary
 	f.HAlign = hAlign
-	f.SetBorder(unison.NewEmptyBorder(unison.Insets{
+	f.SetBorder(unison.NewEmptyBorder(geom.Insets{
 		Left:   1,
 		Bottom: 1,
 		Right:  1,

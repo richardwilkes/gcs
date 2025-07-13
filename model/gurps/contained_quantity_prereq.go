@@ -15,9 +15,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Prereq = &ContainedQuantityPrereq{}
@@ -27,7 +27,7 @@ type ContainedQuantityPrereq struct {
 	Parent            *PrereqList     `json:"-"`
 	Type              prereq.Type     `json:"type"`
 	Has               bool            `json:"has"`
-	QualifierCriteria criteria.Number `json:"qualifier,omitempty"`
+	QualifierCriteria criteria.Number `json:"qualifier,omitzero"`
 }
 
 // NewContainedQuantityPrereq creates a new ContainedQuantityPrereq.
@@ -62,7 +62,7 @@ func (p *ContainedQuantityPrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (p *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	satisfied := false
 	if eqp, ok := exclude.(*Equipment); ok {
 		if satisfied = !eqp.Container(); !satisfied {
@@ -88,10 +88,10 @@ func (p *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xio
 // Hash writes this object's contents into the hasher.
 func (p *ContainedQuantityPrereq) Hash(h hash.Hash) {
 	if p == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, p.Type)
-	hashhelper.Bool(h, p.Has)
+	xhash.Num8(h, p.Type)
+	xhash.Bool(h, p.Has)
 	p.QualifierCriteria.Hash(h)
 }

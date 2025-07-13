@@ -18,9 +18,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -81,7 +82,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		table.Padding.Bottom = 0
 		table.HierarchyIndent = font.LineHeight()
 		table.MinimumRowHeight = font.LineHeight()
-		layoutData.MinSize = unison.Size{Height: 4 + fonts.PageFieldPrimary.LineHeight()}
+		layoutData.MinSize = geom.Size{Height: 4 + fonts.PageFieldPrimary.LineHeight()}
 	}
 	table.SetLayoutData(layoutData)
 
@@ -89,7 +90,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	headers := provider.Headers()
 	table.Columns = make([]unison.ColumnInfo, len(headers))
 	for i := range table.Columns {
-		_, pref, _ := headers[i].AsPanel().Sizes(unison.Size{})
+		_, pref, _ := headers[i].AsPanel().Sizes(geom.Size{})
 		pref.Width += table.Padding.Left + table.Padding.Right
 		table.Columns[i].ID = ids[i]
 		table.Columns[i].AutoMinimum = pref.Width
@@ -124,7 +125,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		}
 	}
 
-	table.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
+	table.MouseDownCallback = func(where geom.Point, button, clickCount int, mod unison.Modifiers) bool {
 		stop := table.DefaultMouseDown(where, button, clickCount, mod)
 		if button == unison.ButtonRight && clickCount == 1 && !table.Window().InDrag() {
 			f := unison.DefaultMenuFactory()
@@ -144,9 +145,9 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 					cm.RemoveItem(count)
 				}
 				table.FlushDrawing()
-				cm.Popup(unison.Rect{
+				cm.Popup(geom.Rect{
 					Point: table.PointToRoot(where),
-					Size: unison.Size{
+					Size: geom.Size{
 						Width:  1,
 						Height: 1,
 					},
@@ -318,7 +319,7 @@ func flexibleLess(s1, s2 string) bool {
 	if c2 {
 		s2 = s2[1:]
 	}
-	return txt.NaturalLess(strings.ReplaceAll(s1, ",", ""), strings.ReplaceAll(s2, ",", ""), true)
+	return xstrings.NaturalLess(strings.ReplaceAll(s1, ",", ""), strings.ReplaceAll(s2, ",", ""), true)
 }
 
 // OpenEditor opens an editor for each selected row in the table.

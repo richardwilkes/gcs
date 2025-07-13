@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"context"
+	"maps"
 	"os"
 	"os/user"
 	"path"
@@ -27,10 +28,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/collection/dict"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/thememode"
 )
@@ -82,9 +82,9 @@ type Settings struct {
 	DeepSearch         []string                   `json:"deep_search,omitempty"`
 	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
 	ColumnSizing       map[string]map[int]float32 `json:"column_sizing,omitempty"`
-	PageRefs           PageRefs                   `json:"page_refs,omitempty"`
-	KeyBindings        KeyBindings                `json:"key_bindings,omitempty"`
-	WorkspaceFrame     *unison.Rect               `json:"workspace_frame,omitempty"`
+	PageRefs           PageRefs                   `json:"page_refs,omitzero"`
+	KeyBindings        KeyBindings                `json:"key_bindings,omitzero"`
+	WorkspaceFrame     *geom.Rect                 `json:"workspace_frame,omitempty"`
 	TopDockState       *unison.DockState          `json:"top_dock_state,omitempty"`
 	DocDockState       *unison.DockState          `json:"doc_dock_state,omitempty"`
 	Colors             colors.Colors              `json:"theme_colors"`
@@ -114,7 +114,7 @@ func GlobalSettings() *Settings {
 		dice.GURPSFormat = true
 		if err := jio.LoadFromFile(context.Background(), SettingsPath, &globalSettings); err != nil {
 			globalSettings = Settings{
-				LastSeenGCSVersion: cmdline.AppVersion,
+				LastSeenGCSVersion: xos.AppVersion,
 				General:            NewGeneralSettings(),
 				LibrarySet:         NewLibraries(),
 				Sheet:              FactorySheetSettings(),
@@ -125,7 +125,7 @@ func GlobalSettings() *Settings {
 		globalSettings.Colors.MakeCurrent()
 		globalSettings.Fonts.MakeCurrent()
 		unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
-			return fxp.As[float32](globalSettings.General.ScrollWheelMultiplier)
+			return fxp.AsFloat[float32](globalSettings.General.ScrollWheelMultiplier)
 		}
 		unison.DefaultFieldTheme.InitialClickSelectsAll = func(_ *unison.Field) bool {
 			return globalSettings.General.InitialFieldClickSelectsAll
@@ -207,9 +207,7 @@ func SanitizeDockableGroups(groups []dgroup.Group) []dgroup.Group {
 	for _, k := range groups {
 		m[k.EnsureValid()] = true
 	}
-	groups = dict.Keys(m)
-	slices.Sort(groups)
-	return groups
+	return slices.Sorted(maps.Keys(m))
 }
 
 // LastDir returns the last directory used for the given key.
@@ -238,7 +236,7 @@ func (s *Settings) SetLastDir(key, dir string) {
 func (s *Settings) ListRecentFiles() []string {
 	list := make([]string, 0, len(s.RecentFiles))
 	for _, one := range s.RecentFiles {
-		if fs.FileIsReadable(one) {
+		if xos.FileIsReadable(one) {
 			list = append(list, one)
 		}
 	}
@@ -258,7 +256,7 @@ func (s *Settings) AddRecentFile(filePath string) {
 			if err != nil {
 				return
 			}
-			if fs.FileIsReadable(full) {
+			if xos.FileIsReadable(full) {
 				for i, f := range s.RecentFiles {
 					if f == full {
 						copy(s.RecentFiles[i:], s.RecentFiles[i+1:])

@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"golang.org/x/exp/constraints"
 )
 
@@ -25,7 +25,7 @@ type Length Int
 
 // LengthFromInteger creates a new Length.
 func LengthFromInteger[T constraints.Integer](value T, unit LengthUnit) Length {
-	return Length(unit.ToInches(From(value)))
+	return Length(unit.ToInches(FromInteger(value)))
 }
 
 // LengthFromFixed creates a new Length.

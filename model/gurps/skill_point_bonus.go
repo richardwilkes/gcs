@@ -16,9 +16,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Bonus = &SkillPointBonus{}
@@ -26,9 +26,9 @@ var _ Bonus = &SkillPointBonus{}
 // SkillPointBonus holds an adjustment to a skill's points.
 type SkillPointBonus struct {
 	Type                   feature.Type  `json:"type"`
-	NameCriteria           criteria.Text `json:"name,omitempty"`
-	SpecializationCriteria criteria.Text `json:"specialization,omitempty"`
-	TagsCriteria           criteria.Text `json:"tags,alt=category,omitempty"`
+	NameCriteria           criteria.Text `json:"name,omitzero"`
+	SpecializationCriteria criteria.Text `json:"specialization,omitzero"`
+	TagsCriteria           criteria.Text `json:"tags,alt=category,omitzero"`
 	LeveledAmount
 	BonusOwner
 }
@@ -68,7 +68,7 @@ func (s *SkillPointBonus) SetLevel(level fxp.Int) {
 }
 
 // AddToTooltip implements Bonus.
-func (s *SkillPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (s *SkillPointBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
 		buffer.WriteByte('\n')
 		buffer.WriteString(s.parentName())
@@ -85,10 +85,10 @@ func (s *SkillPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 // Hash writes this object's contents into the hasher.
 func (s *SkillPointBonus) Hash(h hash.Hash) {
 	if s == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, s.Type)
+	xhash.Num8(h, s.Type)
 	s.NameCriteria.Hash(h)
 	s.SpecializationCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)

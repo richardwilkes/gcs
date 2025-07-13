@@ -12,11 +12,11 @@
 package {{fileLeaf .Pkg}}
 
 import (
-    "strings"
+	{{if .HasOldKeys}}"slices"
+	{{end}}"strings"
     {{- if .NeedI18N}}
 
-	"github.com/richardwilkes/toolbox/i18n"{{end}}
-	{{if .HasOldKeys}}"github.com/richardwilkes/toolbox/txt"{{end}}
+	"github.com/richardwilkes/toolbox/v2/i18n"{{end}}
 )
 
 // Possible values.
@@ -115,7 +115,8 @@ func Extract{{$name}}(str string) {{$name}} {
 	str = strings.TrimPrefix(strings.TrimPrefix(str, "na-"), "iso-") // For older files that had the Java prefixes
 {{- end}}
     for _, enum := range {{$name}}s {
-        if strings.EqualFold(enum.Key(), str){{if .HasOldKeys}} || txt.CaselessSliceContains(enum.oldKeys(), str){{end}} {
+        if strings.EqualFold(enum.Key(), str){{if .HasOldKeys}} ||
+			slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }){{end}} {
             return enum
         }
     }

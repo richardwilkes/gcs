@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"hash"
 
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/zeebo/xxh3"
 )
 
@@ -46,7 +46,7 @@ func NodesToHashesByID[T NodeTypes](result map[tid.TID]HashAndData, data ...T) {
 // TIDFromHashedString creates a TID from a string.
 func TIDFromHashedString(kind byte, s string) tid.TID {
 	h := xxh3.New()
-	hashhelper.String(h, s)
+	xhash.StringWithLen(h, s)
 	buffer := h.Sum(make([]byte, 0, 12))
 	for len(buffer) < 12 {
 		buffer = append(buffer, 0)

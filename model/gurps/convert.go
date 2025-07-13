@@ -12,35 +12,36 @@ package gurps
 import (
 	"fmt"
 	iofs "io/fs"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
-	"github.com/richardwilkes/toolbox/collection"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xslices"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/yookoala/realpath"
 )
 
 // Convert the GCS files found in the given paths to the current file format.
 func Convert(paths ...string) error {
 	var err error
-	paths, err = fs.UniquePaths(paths...)
+	paths, err = xfilepath.UniquePaths(paths...)
 	if err != nil {
 		return err
 	}
-	extSet := collection.NewSet(GCSExtensions()...)
-	extSet.Add(GCSSecondaryExtensions()...)
-	pathSet := collection.NewSet[string]()
+	extSet := xslices.Set(GCSExtensions())
+	maps.Copy(extSet, xslices.Set(GCSSecondaryExtensions()))
+	pathSet := make(map[string]struct{})
 	f := convertWalker(pathSet, extSet)
 	for _, p := range paths {
 		_ = filepath.WalkDir(p, f) //nolint:errcheck // We want to continue on even if there was an error
 	}
-	list := pathSet.Values()
-	txt.SortStringsNaturalAscending(list)
+	list := slices.SortedFunc(maps.Keys(pathSet), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
 	for _, p := range list {
 		fmt.Printf(i18n.Text("Processing %s\n"), p)
 		switch strings.ToLower(filepath.Ext(p)) {
@@ -219,9 +220,9 @@ func Convert(paths ...string) error {
 	return nil
 }
 
-func convertWalker(pathSet, extSet collection.Set[string]) func(path string, d iofs.DirEntry, err error) error {
+func convertWalker(pathSet, extSet map[string]struct{}) func(path string, d iofs.DirEntry, err error) error {
 	var f func(path string, d iofs.DirEntry, err error) error
-	visited := collection.NewSet[string]()
+	visited := make(map[string]struct{})
 	f = func(path string, d iofs.DirEntry, err error) error {
 		name := d.Name()
 		if strings.HasPrefix(name, ".") {
@@ -232,16 +233,18 @@ func convertWalker(pathSet, extSet collection.Set[string]) func(path string, d i
 		}
 		if err == nil {
 			if d.IsDir() {
-				visited.Add(path)
+				visited[path] = struct{}{}
 			} else {
 				if d.Type() == iofs.ModeSymlink {
-					if path, err = filepath.EvalSymlinks(path); err == nil && !visited.Contains(path) {
-						_ = filepath.WalkDir(path, f) //nolint:errcheck // We want to continue on even if there was an error
+					if path, err = filepath.EvalSymlinks(path); err == nil {
+						if _, exists := visited[path]; !exists {
+							_ = filepath.WalkDir(path, f) //nolint:errcheck // Continue on even if there was an error
+						}
 					}
 				} else {
-					if extSet.Contains(filepath.Ext(name)) {
+					if _, exists := extSet[filepath.Ext(name)]; exists {
 						if path, err = realpath.Realpath(path); err == nil {
-							pathSet.Add(path)
+							pathSet[path] = struct{}{}
 						}
 					}
 				}

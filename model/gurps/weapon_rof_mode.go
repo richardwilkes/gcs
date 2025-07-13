@@ -17,9 +17,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // WeaponRoFMode holds the rate of fire data for one firing mode of a weapon.
@@ -55,14 +55,14 @@ func ParseWeaponRoFMode(s string) WeaponRoFMode {
 
 // Hash writes this object's contents into the hasher.
 func (wr WeaponRoFMode) Hash(h hash.Hash) {
-	hashhelper.Num64(h, wr.ShotsPerAttack)
-	hashhelper.Num64(h, wr.SecondaryProjectiles)
-	hashhelper.Bool(h, wr.FullAutoOnly)
-	hashhelper.Bool(h, wr.HighCyclicControlledBursts)
+	xhash.Num64(h, wr.ShotsPerAttack)
+	xhash.Num64(h, wr.SecondaryProjectiles)
+	xhash.Bool(h, wr.FullAutoOnly)
+	xhash.Bool(h, wr.HighCyclicControlledBursts)
 }
 
 // Resolve any bonuses that apply.
-func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer, firstMode bool) WeaponRoFMode {
+func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer, firstMode bool) WeaponRoFMode {
 	result := wr
 	var shotsFeature, secondaryFeature feature.Type
 	if firstMode {
@@ -95,10 +95,10 @@ func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer, fir
 		}
 	}
 	if percentSPA != 0 {
-		result.ShotsPerAttack += result.ShotsPerAttack.Mul(percentSPA).Div(fxp.Hundred).Trunc()
+		result.ShotsPerAttack += result.ShotsPerAttack.Mul(percentSPA).Div(fxp.Hundred).Floor()
 	}
 	if percentSP != 0 {
-		result.SecondaryProjectiles += result.SecondaryProjectiles.Mul(percentSP).Div(fxp.Hundred).Trunc()
+		result.SecondaryProjectiles += result.SecondaryProjectiles.Mul(percentSP).Div(fxp.Hundred).Floor()
 	}
 	result.Validate()
 	return result

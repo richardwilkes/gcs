@@ -32,7 +32,7 @@ func countPrereqsForList(list *PrereqList, availableSpells []*Spell, nonSpellsCo
 			if p.Has {
 				switch p.LevelCriteria.Compare {
 				case criteria.EqualsNumber, criteria.AtLeastNumber:
-					counts[i] = nonSpellsCountAs * max(fxp.As[int](p.LevelCriteria.Qualifier), 1)
+					counts[i] = nonSpellsCountAs * max(fxp.AsInteger[int](p.LevelCriteria.Qualifier), 1)
 				default:
 					counts[i] = nonSpellsCountAs
 				}
@@ -57,7 +57,7 @@ func countPrereqsForList(list *PrereqList, availableSpells []*Spell, nonSpellsCo
 			if p.Has {
 				switch p.QuantityCriteria.Compare {
 				case criteria.EqualsNumber, criteria.AtLeastNumber:
-					counts[i] = fxp.As[int](p.QuantityCriteria.Qualifier)
+					counts[i] = fxp.AsInteger[int](p.QuantityCriteria.Qualifier)
 				default:
 					counts[i] = 1
 				}

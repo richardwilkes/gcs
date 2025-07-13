@@ -9,9 +9,7 @@
 
 package gurps
 
-import (
-	"github.com/richardwilkes/toolbox"
-)
+import "github.com/richardwilkes/toolbox"
 
 // LineBuilder is an interface that can be used to build a line of text.
 type LineBuilder interface {

@@ -11,8 +11,9 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -47,7 +48,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 		originalDataDragDropCallback := table.DataDragDropCallback
 		originalDrawOverCallback := table.DrawOverCallback
 		altDropRowIndex := -1
-		table.DataDragOverCallback = func(where unison.Point, data map[string]any) bool {
+		table.DataDragOverCallback = func(where geom.Point, data map[string]any) bool {
 			if _, ok := data[altDropSupport.DragKey]; ok {
 				altDropRowIndex = table.OverRow(where.Y)
 				return altDropRowIndex != -1
@@ -58,7 +59,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 			altDropRowIndex = -1
 			originalDataDragExitCallback()
 		}
-		table.DataDragDropCallback = func(where unison.Point, data map[string]any) {
+		table.DataDragDropCallback = func(where geom.Point, data map[string]any) {
 			if altDropRowIndex != -1 {
 				if dd, ok := data[altDropSupport.DragKey]; ok {
 					undo := willDropCallback(nil, table, false)
@@ -71,7 +72,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 				originalDataDragDropCallback(where, data)
 			}
 		}
-		table.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		table.DrawOverCallback = func(gc *unison.Canvas, rect geom.Rect) {
 			originalDrawOverCallback(gc, rect)
 			if altDropRowIndex > -1 && altDropRowIndex <= table.LastRowIndex() {
 				frame := table.RowFrame(altDropRowIndex)
@@ -108,8 +109,8 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 			tableProvider.ProcessDropData(from, to)
 		}
 	}
-	if toEntityProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !toolbox.IsNil(toEntityProvider) {
-		if owner := toEntityProvider.DataOwner(); !toolbox.IsNil(owner) && !toolbox.IsNil(owner.OwningEntity()) {
+	if toEntityProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !xreflect.IsNil(toEntityProvider) {
+		if owner := toEntityProvider.DataOwner(); !xreflect.IsNil(owner) && !xreflect.IsNil(owner.OwningEntity()) {
 			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
 				rebuilder.Rebuild(true)
 			}
@@ -125,7 +126,7 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 }
 
 func isForCharacterOrLootSheet(panel unison.Paneler) bool {
-	if toolbox.IsNil(panel) {
+	if xreflect.IsNil(panel) {
 		return false
 	}
 	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {

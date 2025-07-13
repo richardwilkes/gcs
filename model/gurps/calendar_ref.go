@@ -15,9 +15,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/calendar"
-	"github.com/richardwilkes/toolbox/errs"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/toolbox/xmath/rand"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xrand"
 )
 
 // CalendarRef holds a named reference to a calendar.
@@ -54,7 +54,7 @@ func NewCalendarRefFromFS(fileSystem fs.FS, filePath string) (*CalendarRef, erro
 		return nil, err
 	}
 	return &CalendarRef{
-		Name:     xfs.BaseName(filePath),
+		Name:     xfilepath.BaseName(filePath),
 		Calendar: &c,
 	}, nil
 }
@@ -72,7 +72,7 @@ func (c *CalendarRef) RandomBirthday(not string) string {
 	daysInYear := c.Calendar.Days(year)
 	result := ""
 	for range 5 {
-		if result = c.Calendar.NewDateByDays(base + rand.NewCryptoRand().Intn(daysInYear)).Format("%M %D"); result != not {
+		if result = c.Calendar.NewDateByDays(base + xrand.New().Intn(daysInYear)).Format("%M %D"); result != not {
 			break
 		}
 	}

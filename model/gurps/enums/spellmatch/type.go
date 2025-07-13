@@ -9,7 +9,7 @@
 
 package spellmatch
 
-import "github.com/richardwilkes/toolbox/errs"
+import "github.com/richardwilkes/toolbox/v2/errs"
 
 // Matcher defines the methods that a spell matcher must implement.
 type Matcher interface {

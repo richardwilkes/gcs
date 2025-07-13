@@ -26,9 +26,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 )
 
 const (
@@ -133,7 +133,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "PORTRAIT":
 		if ex.entity.Profile.CanExportPortrait() {
 			if ext := ex.entity.Profile.PortraitExtension(); ext != "" {
-				leafName := fs.TrimExtension(filepath.Base(ex.exportPath)) + ext
+				leafName := xfilepath.TrimExtension(filepath.Base(ex.exportPath)) + ext
 				if err := os.WriteFile(filepath.Join(filepath.Dir(ex.exportPath), leafName), ex.entity.Profile.PortraitData, 0o640); err != nil {
 					return errs.Wrap(err)
 				}
@@ -739,7 +739,7 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 			case "DR":
 				ex.writeEncodedText(location.DisplayDR(ex.entity, nil))
 			case "DR_TOOLTIP":
-				var tooltip xio.ByteBuffer
+				var tooltip xbytes.InsertBuffer
 				location.DisplayDR(ex.entity, &tooltip)
 				ex.writeEncodedText(tooltip.String())
 			case "EQUIPMENT":

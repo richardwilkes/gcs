@@ -11,12 +11,12 @@ package gurps
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/txt"
 )
 
 // DataOwner defines the methods required of data owners.
@@ -111,7 +111,7 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 		parts := strings.Split(one, "/")
 		for _, part := range parts {
 			if part = strings.TrimSpace(part); part != "" {
-				if !txt.CaselessSliceContains(tags, part) {
+				if !slices.ContainsFunc(tags, func(s string) bool { return strings.EqualFold(s, part) }) {
 					tags = append(tags, part)
 				}
 			}

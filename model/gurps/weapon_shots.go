@@ -17,13 +17,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponShots{}
 	_ json.Marshaler   = WeaponShots{}
 	_ json.Unmarshaler = &(WeaponShots{})
 )
@@ -66,8 +65,8 @@ func ParseWeaponShots(s string) WeaponShots {
 	return ws
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (ws WeaponShots) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (ws WeaponShots) IsZero() bool {
 	return ws == WeaponShots{}
 }
 
@@ -88,20 +87,16 @@ func (ws *WeaponShots) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (ws WeaponShots) Hash(h hash.Hash) {
-	if ws.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Num64(h, ws.Count)
-	hashhelper.Num64(h, ws.InChamber)
-	hashhelper.Num64(h, ws.Duration)
-	hashhelper.Num64(h, ws.ReloadTime)
-	hashhelper.Bool(h, ws.ReloadTimeIsPerShot)
-	hashhelper.Bool(h, ws.Thrown)
+	xhash.Num64(h, ws.Count)
+	xhash.Num64(h, ws.InChamber)
+	xhash.Num64(h, ws.Duration)
+	xhash.Num64(h, ws.ReloadTime)
+	xhash.Bool(h, ws.ReloadTimeIsPerShot)
+	xhash.Bool(h, ws.Thrown)
 }
 
 // Resolve any bonuses that apply.
-func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponShots {
+func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponShots {
 	result := ws
 	result.ReloadTimeIsPerShot = w.ResolveBoolFlag(wswitch.ReloadTimeIsPerShot, result.ReloadTimeIsPerShot)
 	result.Thrown = w.ResolveBoolFlag(wswitch.Thrown, result.Thrown)
@@ -137,16 +132,16 @@ func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 		}
 	}
 	if percentCount != 0 {
-		result.Count += result.Count.Mul(percentCount).Div(fxp.Hundred).Trunc()
+		result.Count += result.Count.Mul(percentCount).Div(fxp.Hundred).Floor()
 	}
 	if percentInChamber != 0 {
-		result.InChamber += result.InChamber.Mul(percentInChamber).Div(fxp.Hundred).Trunc()
+		result.InChamber += result.InChamber.Mul(percentInChamber).Div(fxp.Hundred).Floor()
 	}
 	if percentDuration != 0 {
-		result.Duration += result.Duration.Mul(percentDuration).Div(fxp.Hundred).Trunc()
+		result.Duration += result.Duration.Mul(percentDuration).Div(fxp.Hundred).Floor()
 	}
 	if percentReloadTime != 0 {
-		result.ReloadTime += result.ReloadTime.Mul(percentReloadTime).Div(fxp.Hundred).Trunc()
+		result.ReloadTime += result.ReloadTime.Mul(percentReloadTime).Div(fxp.Hundred).Floor()
 	}
 	result.Validate()
 	return result

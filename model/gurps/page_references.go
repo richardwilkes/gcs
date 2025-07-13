@@ -16,12 +16,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/txt"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
-
-var _ json.Omitter = &PageRefs{}
 
 const oldPageRefsKey = "page_refs"
 
@@ -59,8 +57,8 @@ func (p *PageRefs) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&p.data)
 }
 
-// ShouldOmit implements json.Omitter.
-func (p *PageRefs) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (p *PageRefs) IsZero() bool {
 	return p == nil || p.data == nil || len(p.data) == 0
 }
 
@@ -87,7 +85,7 @@ func (p *PageRefs) UnmarshalJSON(data []byte) error {
 
 // Lookup the PageRef for the given ID. If not found or if the path it points to isn't a readable file, returns nil.
 func (p *PageRefs) Lookup(id string) *PageRef {
-	if ref, ok := p.data[id]; ok && xfs.FileIsReadable(ref.Path) {
+	if ref, ok := p.data[id]; ok && xos.FileIsReadable(ref.Path) {
 		r := *ref // Make a copy so that clients can't muck with our data
 		return &r
 	}
@@ -121,6 +119,6 @@ func (p *PageRefs) List() []*PageRef {
 		r := *v
 		list = append(list, &r)
 	}
-	slices.SortFunc(list, func(a, b *PageRef) int { return txt.NaturalCmp(a.ID, b.ID, true) })
+	slices.SortFunc(list, func(a, b *PageRef) int { return xstrings.NaturalCmp(a.ID, b.ID, true) })
 	return list
 }

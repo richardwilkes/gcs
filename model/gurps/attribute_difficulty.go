@@ -15,7 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // AttributeDifficulty holds an attribute ID and a difficulty.
@@ -41,8 +41,8 @@ func (a *AttributeDifficulty) Key() string {
 	return a.Attribute + "/" + a.Difficulty.Key()
 }
 
-// ShouldOmit implements json.Omitter.
-func (a AttributeDifficulty) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (a AttributeDifficulty) IsZero() bool {
 	return a.omit
 }
 
@@ -101,10 +101,6 @@ func (a *AttributeDifficulty) Normalize(entity *Entity) {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (a *AttributeDifficulty) Hash(h hash.Hash) {
-	if a.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.String(h, a.Attribute)
-	hashhelper.Num8(h, a.Difficulty)
+	xhash.StringWithLen(h, a.Attribute)
+	xhash.Num8(h, a.Difficulty)
 }

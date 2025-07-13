@@ -13,7 +13,8 @@ import (
 	_ "embed"
 	"image"
 
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -289,7 +290,7 @@ var (
 // to unison to support scribbling into arbitrary offscreen images yet.
 func CreateImageFromSVG(svg *unison.SVG, size int) (image.Image, error) {
 	img, err := unison.NewImageFromDrawing(size, size, 72, func(gc *unison.Canvas) {
-		svg.DrawInRectPreservingAspectRatio(gc, unison.NewRect(0, 0, float32(size), float32(size)), nil, nil)
+		svg.DrawInRectPreservingAspectRatio(gc, geom.NewRect(0, 0, float32(size), float32(size)), nil, nil)
 	})
 	if err != nil {
 		return nil, errs.Wrap(err)

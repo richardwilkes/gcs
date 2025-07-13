@@ -15,9 +15,8 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/desktop"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 )
 
@@ -896,7 +895,7 @@ func registerActions() {
 	// Actions that may not be assigned a key binding
 	checkForAppUpdatesAction = &unison.Action{
 		ID:    CheckForAppUpdatesItemID,
-		Title: fmt.Sprintf(i18n.Text("Check for %s updates"), cmdline.AppName),
+		Title: fmt.Sprintf(i18n.Text("Check for %s updates"), xos.AppName),
 		EnabledCallback: func(_ *unison.Action, _ any) bool {
 			_, releases, updating := AppUpdateResult()
 			return !updating && releases == nil
@@ -922,7 +921,7 @@ func registerActions() {
 	}
 	makeDonationAction = &unison.Action{
 		ID:    MakeDonationItemID,
-		Title: fmt.Sprintf(i18n.Text("Make a One-time Donation for %s Development"), cmdline.AppName),
+		Title: fmt.Sprintf(i18n.Text("Make a One-time Donation for %s Development"), xos.AppName),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			showWebPage("https://paypal.me/GURPSCharacterSheet")
 		},
@@ -936,7 +935,7 @@ func registerActions() {
 	}
 	sponsorDevelopmentAction = &unison.Action{
 		ID:    SponsorGCSDevelopmentItemID,
-		Title: fmt.Sprintf(i18n.Text("Sponsor %s Development"), cmdline.AppName),
+		Title: fmt.Sprintf(i18n.Text("Sponsor %s Development"), xos.AppName),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			showWebPage("https://github.com/sponsors/richardwilkes")
 		},
@@ -983,7 +982,7 @@ func actionEnabledForSheet(_ *unison.Action, _ any) bool {
 }
 
 func showWebPage(uri string) {
-	if err := desktop.Open(uri); err != nil {
+	if err := xos.OpenBrowser(uri); err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to open link"), err)
 	}
 }

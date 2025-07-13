@@ -13,7 +13,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -107,7 +107,7 @@ func AcceptableExtensions() []string {
 			list = append(list, k)
 		}
 	}
-	txt.SortStringsNaturalAscending(list)
+	xstrings.SortStringsNaturalAscending(list)
 	return list
 }
 
@@ -119,7 +119,7 @@ func DeepSearchableExtensions() []string {
 			list = append(list, k)
 		}
 	}
-	txt.SortStringsNaturalAscending(list)
+	xstrings.SortStringsNaturalAscending(list)
 	return list
 }
 
@@ -131,7 +131,7 @@ func GCSExtensions() []string {
 			list = append(list, k)
 		}
 	}
-	txt.SortStringsNaturalAscending(list)
+	xstrings.SortStringsNaturalAscending(list)
 	return list
 }
 
@@ -170,6 +170,6 @@ func RegisteredMimeTypes() []string {
 	for k := range all {
 		list = append(list, k)
 	}
-	txt.SortStringsNaturalAscending(list)
+	xstrings.SortStringsNaturalAscending(list)
 	return list
 }

@@ -12,7 +12,8 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -41,7 +42,7 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, melee b
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, geom.NewUniformInsets(1), false))
 	p.provider = NewWeaponsProvider(p, p.melee, false)
 	p.table = newEditorTable(p.AsPanel(), p.provider)
 	var id int

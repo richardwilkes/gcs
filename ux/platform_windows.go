@@ -20,11 +20,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/formats/icon"
-	"github.com/richardwilkes/toolbox/formats/icon/ico"
-	"github.com/richardwilkes/toolbox/xio/fs/paths"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/ximage"
+	"github.com/richardwilkes/toolbox/v2/ximage/ico"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -60,7 +59,7 @@ func configureRegistry() error {
 	if docBaseIcon, _, err = image.Decode(bytes.NewBuffer(docIconBytes)); err != nil {
 		return errs.Wrap(err)
 	}
-	appDataDir := paths.AppDataDir()
+	appDataDir := xos.AppDataDir(true)
 	if err = os.MkdirAll(appDataDir, 0o755); err != nil {
 		return errs.Wrap(err)
 	}
@@ -75,12 +74,12 @@ func configureRegistry() error {
 			return err
 		}
 		docPath := filepath.Join(appDataDir, fi.Extensions[0][1:]+".ico")
-		if err = writeIco(icon.Stack(docBaseIcon, overlay), docPath); err != nil {
+		if err = writeIco(ximage.Stack(docBaseIcon, overlay), docPath); err != nil {
 			return err
 		}
 
 		// Create the entry that points to the app's information for the extension
-		appExtKey := cmdline.AppIdentifier + fi.Extensions[0]
+		appExtKey := xos.AppIdentifier + fi.Extensions[0]
 		if err = setRegistryKey(softwareClasses+fi.Extensions[0], "", appExtKey); err != nil {
 			return err
 		}

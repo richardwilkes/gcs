@@ -21,12 +21,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/desktop"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -257,7 +258,7 @@ func (n *Navigator) setupToolBar() {
 		HSpacing: unison.StdHSpacing,
 	})
 
-	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	n.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  1,
@@ -336,7 +337,7 @@ func (n *Navigator) deleteSelection() {
 		case hasLibs && hasOther:
 			return
 		case hasLibs:
-			header := txt.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
+			header := xstrings.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
 			if unison.QuestionDialog(header,
 				i18n.Text("Note: This action will NOT remove any files from disk.")) == unison.ModalResponseOK {
 				libs := gurps.GlobalSettings().LibrarySet
@@ -347,8 +348,8 @@ func (n *Navigator) deleteSelection() {
 				n.Reload()
 			}
 		case hasOther:
-			header := txt.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
-			note := txt.Wrap("", fmt.Sprintf(i18n.Text("Note: This action cannot be undone and will remove %s from disk."), title), 100)
+			header := xstrings.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
+			note := xstrings.Wrap("", fmt.Sprintf(i18n.Text("Note: This action cannot be undone and will remove %s from disk."), title), 100)
 			if unison.QuestionDialog(header, note) == unison.ModalResponseOK {
 				if n.closeSelection(selection) {
 					defer n.Reload()
@@ -584,7 +585,7 @@ func (n *Navigator) tableKeyDown(keyCode unison.KeyCode, mod unison.Modifiers, r
 	}
 }
 
-func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
+func (n *Navigator) mouseDown(where geom.Point, button, clickCount int, mod unison.Modifiers) bool {
 	stop := n.table.DefaultMouseDown(where, button, clickCount, mod)
 	if button == unison.ButtonRight && clickCount == 1 {
 		if sel := n.table.SelectedRows(false); len(sel) != 0 {
@@ -628,9 +629,9 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 					cm.RemoveItem(count)
 				}
 				n.FlushDrawing()
-				cm.Popup(unison.Rect{
+				cm.Popup(geom.Rect{
 					Point: n.table.PointToRoot(where),
-					Size: unison.Size{
+					Size: geom.Size{
 						Width:  1,
 						Height: 1,
 					},
@@ -698,7 +699,7 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 				m[p] = struct{}{}
 			}
 			for p := range m {
-				if err := desktop.Open(p); err != nil {
+				if err := xos.OpenBrowser(p); err != nil {
 					Workspace.ErrorHandler(i18n.Text("Unable to show location on disk"), err)
 				}
 			}
@@ -759,7 +760,7 @@ func (n *Navigator) adjustTableSize() {
 }
 
 // TitleIcon implements unison.Dockable
-func (n *Navigator) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (n *Navigator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  unison.DocumentSVG,
 		Size: suggestedSize,
@@ -846,7 +847,7 @@ func (n *Navigator) handleSelectionDoubleClick() {
 			altered = true
 			row.SetOpen(!row.IsOpen())
 		} else {
-			if d, _ := row.OpenNodeContent(); !toolbox.IsNil(d) {
+			if d, _ := row.OpenNodeContent(); !xreflect.IsNil(d) {
 				if slices.Contains(n.searchResult, row) {
 					// If we didn't match on the file name, copy the search text into the newly opened dockable's search
 					// field

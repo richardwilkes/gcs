@@ -9,8 +9,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -39,7 +40,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	}
 	children := n.NodeChildren()
 	tpp, ok := n.(gurps.TemplatePickerProvider)
-	if !ok || tpp.TemplatePickerData().ShouldOmit() {
+	if !ok || tpp.TemplatePickerData().IsZero() {
 		rowChildren := make([]T, 0, len(children))
 		for _, child := range children {
 			var result []T
@@ -56,7 +57,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	tp := tpp.TemplatePickerData()
 
 	list := unison.NewPanel()
-	list.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing)))
+	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
 	list.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
@@ -66,12 +67,12 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	progress := unison.NewLabel()
 	progressBackground := pickerMatchStateColor(tp.Qualifier.Matches(0))
 	progress.SetBorder(unison.NewCompoundBorder(
-		unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}),
-		unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)),
+		unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}),
+		unison.NewEmptyBorder(geom.NewHorizontalInsets(unison.StdHSpacing)),
 	))
 	progress.Side = side.Right
 	progress.OnBackgroundInk = progressBackground.On()
-	progress.DrawCallback = func(gc *unison.Canvas, _ unison.Rect) {
+	progress.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		if tp.Type == picker.NotApplicable {
 			return
 		}
@@ -108,7 +109,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 			size := max(progress.Font.Baseline()-2, 6)
 			progress.Drawable = &unison.DrawableSVG{
 				SVG:  img,
-				Size: unison.NewSize(size, size),
+				Size: geom.NewSize(size, size),
 			}
 			progressBackground = pickerMatchStateColor(matches)
 			progress.OnBackgroundInk = progressBackground.On()
@@ -122,7 +123,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	}
 
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
 	scroll.SetLayoutData(&unison.FlexLayoutData{
@@ -156,7 +157,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	}
 	label = unison.NewLabel()
 	label.SetTitle(tp.Description())
-	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}))
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Start,
 		VAlign: align.Middle,

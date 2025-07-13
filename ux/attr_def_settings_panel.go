@@ -16,7 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -37,13 +38,13 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 		def:      def,
 	}
 	p.Self = p
-	p.SetBorder(unison.NewEmptyBorder(unison.Insets{
+	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
 		Top:    unison.StdVSpacing,
 		Left:   unison.StdHSpacing,
 		Bottom: unison.StdVSpacing,
 		Right:  unison.StdHSpacing * 2,
 	}))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		var ink unison.Ink
 		if p.Parent().IndexOfChild(p)%2 == 1 {
 			ink = unison.ThemeSurface
@@ -205,8 +206,8 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 			text = i18n.Text("SM Reduction")
 			content.AddChild(NewFieldLeadingLabel(text, false))
 			numField := NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
-				func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
-				func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
+				func() int { return fxp.AsInteger[int](p.def.CostAdjPercentPerSM) },
+				func(v int) { p.def.CostAdjPercentPerSM = fxp.FromInteger(v) },
 				0, 80, false, false)
 			numField.Tooltip = newWrappedTooltip(i18n.Text("The reduction in cost for each SM greater than 0"))
 			content.AddChild(numField)

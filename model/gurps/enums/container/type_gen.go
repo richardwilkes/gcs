@@ -12,10 +12,10 @@
 package container
 
 import (
+	"slices"
 	"strings"
 
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
 // Possible values.
@@ -117,7 +117,8 @@ func (enum *Type) UnmarshalText(text []byte) error {
 // ExtractType extracts the value from a string.
 func ExtractType(str string) Type {
 	for _, enum := range Types {
-		if strings.EqualFold(enum.Key(), str) || txt.CaselessSliceContains(enum.oldKeys(), str) {
+		if strings.EqualFold(enum.Key(), str) ||
+			slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
 			return enum
 		}
 	}

@@ -10,12 +10,14 @@
 package ux
 
 import (
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/collection/dict"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xslices"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/imgfmt"
 )
@@ -46,11 +48,7 @@ func registerSpecialFileInfo(key string, icon *unison.SVG) {
 func RegisterExternalFileTypes() {
 	registerPDFFileInfo()
 	registerMarkdownFileInfo()
-	all := make(map[string]bool)
-	for _, ext := range imgfmt.AllReadableExtensions() {
-		all[ext] = true
-	}
-	groupWith := dict.Keys(all)
+	groupWith := slices.Sorted(maps.Keys(xslices.Set(imgfmt.AllReadableExtensions())))
 	for _, one := range imgfmt.All {
 		if one.CanRead() {
 			registerImageFileInfo(one, groupWith)
@@ -139,7 +137,7 @@ func RegisterGCSFileTypes() {
 func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
 	fi := gurps.FileInfo{
 		Name:             name,
-		UTI:              cmdline.AppIdentifier + ext,
+		UTI:              xos.AppIdentifier + ext,
 		ConformsTo:       []string{"public.data"},
 		Extensions:       []string{ext},
 		GroupWith:        groupWith,
@@ -155,7 +153,7 @@ func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG,
 func registerExportableGCSFileInfo(name, ext string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
 	fi := gurps.FileInfo{
 		Name:             name,
-		UTI:              cmdline.AppIdentifier + ext,
+		UTI:              xos.AppIdentifier + ext,
 		ConformsTo:       []string{"public.data"},
 		Extensions:       []string{ext},
 		GroupWith:        []string{ext},

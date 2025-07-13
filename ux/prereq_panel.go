@@ -18,8 +18,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -56,8 +57,8 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 			Title: i18n.Text("Prerequisites"),
 			Font:  unison.LabelFont,
 		},
-		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		unison.NewEmptyBorder(geom.NewUniformInsets(2))))
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 	p.AddChild(p.createPrereqListPanel(0, *root))
@@ -141,7 +142,7 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 
 func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data gurps.Prereq) {
 	buttons := unison.NewPanel()
-	buttons.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: float32(depth * 20)}))
+	buttons.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: float32(depth * 20)}))
 	parent.AddChild(buttons)
 	if prereqList, ok := data.(*gurps.PrereqList); ok {
 		addPrereqButton := unison.NewSVGButton(svg.CircledAdd)

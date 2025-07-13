@@ -17,9 +17,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Bonus = &DRBonus{}
@@ -89,7 +89,7 @@ func (d *DRBonus) SetLevel(level fxp.Int) {
 }
 
 // AddToTooltip implements Bonus.
-func (d *DRBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (d *DRBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
 		d.Normalize()
 		buffer.WriteByte('\n')
@@ -133,14 +133,14 @@ func (d *DRBonus) UnmarshalJSON(data []byte) error {
 // Hash writes this object's contents into the hasher.
 func (d *DRBonus) Hash(h hash.Hash) {
 	if d == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, d.Type)
-	hashhelper.Num64(h, len(d.Locations))
+	xhash.Num8(h, d.Type)
+	xhash.Num64(h, len(d.Locations))
 	for _, loc := range d.Locations {
-		hashhelper.String(h, loc)
+		xhash.StringWithLen(h, loc)
 	}
-	hashhelper.String(h, d.Specialization)
+	xhash.StringWithLen(h, d.Specialization)
 	d.LeveledAmount.Hash(h)
 }

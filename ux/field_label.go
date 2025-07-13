@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -35,7 +36,7 @@ func NewFieldInteriorLeadingLabel(text string, small bool) *unison.Label {
 		HAlign: align.End,
 		VAlign: align.Middle,
 	})
-	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing}))
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing}))
 	return label
 }
 

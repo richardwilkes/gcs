@@ -20,8 +20,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -83,7 +84,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.SetLayout(&unison.FlexLayout{Columns: 1})
 	e.AddChild(e.createToolbar())
 	e.content = unison.NewPanel()
-	e.content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
+	e.content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
 	e.content.SetLayout(&unison.FlexLayout{
 		Columns:  5,
 		HSpacing: unison.StdHSpacing,
@@ -130,7 +131,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	helpButton := unison.NewSVGButton(svg.Help)
@@ -310,7 +311,7 @@ func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 	}
 }
 
-func (e *pointsEditor) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (e *pointsEditor) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  svg.Edit,
 		Size: suggestedSize,

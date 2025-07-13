@@ -19,7 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // Possible attribute kinds.
@@ -212,7 +212,7 @@ func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int,
 	cost := value.Mul(a.CostPerPoint)
 	if sizeModifier > 0 && a.CostAdjPercentPerSM > 0 &&
 		(a.DefID != "hp" || entity.SheetSettings.DamageProgression != progression.KnowingYourOwnStrength) {
-		costReduction += fxp.From(sizeModifier).Mul(a.CostAdjPercentPerSM)
+		costReduction += fxp.FromInteger(sizeModifier).Mul(a.CostAdjPercentPerSM)
 	}
 	if costReduction > 0 {
 		if costReduction > fxp.Eighty {
@@ -225,15 +225,15 @@ func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int,
 
 // Hash writes this object's contents into the hasher.
 func (a *AttributeDef) Hash(h hash.Hash) {
-	hashhelper.String(h, a.DefID)
-	hashhelper.Num8(h, a.Type)
-	hashhelper.Num8(h, a.Placement)
-	hashhelper.String(h, a.Name)
-	hashhelper.String(h, a.FullName)
-	hashhelper.String(h, a.Base)
-	hashhelper.Num64(h, a.CostPerPoint)
-	hashhelper.Num64(h, a.CostAdjPercentPerSM)
-	hashhelper.Num64(h, len(a.Thresholds))
+	xhash.StringWithLen(h, a.DefID)
+	xhash.Num8(h, a.Type)
+	xhash.Num8(h, a.Placement)
+	xhash.StringWithLen(h, a.Name)
+	xhash.StringWithLen(h, a.FullName)
+	xhash.StringWithLen(h, a.Base)
+	xhash.Num64(h, a.CostPerPoint)
+	xhash.Num64(h, a.CostAdjPercentPerSM)
+	xhash.Num64(h, len(a.Thresholds))
 	for _, one := range a.Thresholds {
 		one.Hash(h)
 	}

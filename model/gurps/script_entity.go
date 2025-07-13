@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/xmath/rand"
+	"github.com/richardwilkes/toolbox/v2/xrand"
 )
 
 type scriptEntity struct {
@@ -53,8 +53,8 @@ func newScriptEntity(entity *Entity) *scriptEntity {
 		e.Hair = entity.Profile.Hair
 		e.Skin = entity.Profile.Skin
 		e.Handedness = entity.Profile.Handedness
-		e.HeightInInches = fxp.As[float64](fxp.Int(entity.Profile.Height))
-		e.WeightInPounds = fxp.As[float64](fxp.Int(entity.Profile.Weight))
+		e.HeightInInches = fxp.AsFloat[float64](fxp.Int(entity.Profile.Height))
+		e.WeightInPounds = fxp.AsFloat[float64](fxp.Int(entity.Profile.Weight))
 		e.SizeModifier = entity.Profile.AdjustedSizeModifier()
 		e.Exists = true
 	}
@@ -142,7 +142,7 @@ func (e *scriptEntity) TraitLevel(name string) float64 {
 		}
 		return false
 	}, true, true, e.entity.Traits...)
-	return fxp.As[float64](level)
+	return fxp.AsFloat[float64](level)
 }
 
 func (e *scriptEntity) Skills() []*scriptSkill {
@@ -182,9 +182,9 @@ func (e *scriptEntity) SkillLevel(name, specialization string, relative bool) in
 			strings.EqualFold(s.SpecializationWithReplacements(), specialization) {
 			s.UpdateLevel()
 			if relative {
-				level = fxp.As[int](s.LevelData.RelativeLevel)
+				level = fxp.AsInteger[int](s.LevelData.RelativeLevel)
 			} else {
-				level = fxp.As[int](s.LevelData.Level)
+				level = fxp.AsInteger[int](s.LevelData.Level)
 			}
 			return true
 		}
@@ -243,7 +243,7 @@ func (e *scriptEntity) CurrentEncumbrance(forSkills, returnMoveFactor bool) floa
 	}
 	level := int(e.entity.EncumbranceLevel(forSkills))
 	if returnMoveFactor {
-		return fxp.As[float64](fxp.One - fxp.From(level).Mul(fxp.Two).Div(fxp.Ten))
+		return fxp.AsFloat[float64](fxp.One - fxp.FromInteger(level).Mul(fxp.Two).Div(fxp.Ten))
 	}
 	return float64(level)
 }
@@ -267,7 +267,7 @@ func (e *scriptEntity) WeaponDamage(name, usage string) string {
 
 // RandomHeightInInches returns a height in inches based on the given strength using the chart from B18.
 func (e *scriptEntity) RandomHeightInInches(st int) int {
-	r := rand.NewCryptoRand()
+	r := xrand.New()
 	return 68 + (st-10)*2 + (r.Intn(6) + 1) - (r.Intn(6) + 1)
 }
 
@@ -306,7 +306,7 @@ func (e *scriptEntity) RandomWeightInPounds(st, shift int) int {
 			shift++
 		}
 	}
-	r := rand.NewCryptoRand()
+	r := xrand.New()
 	mid := 145 + (st-10)*15
 	deviation := mid/5 + 2
 	return ((mid + r.Intn(deviation) - r.Intn(deviation)) * shift) / 3

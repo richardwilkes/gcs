@@ -17,7 +17,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/pdf"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -25,7 +26,7 @@ import (
 type PDFTableOfContents struct {
 	Title        string
 	PageNumber   int
-	PageLocation unison.Point
+	PageLocation geom.Point
 	Children     []*PDFTableOfContents
 }
 
@@ -36,13 +37,13 @@ type PDFPage struct {
 	Image      *unison.Image
 	TOC        []*PDFTableOfContents
 	Links      []*PDFLink
-	Matches    []unison.Rect
+	Matches    []geom.Rect
 }
 
 // PDFLink holds a single link on a page. If PageNumber if >= 0, then this is an internal link and the URI will be
 // empty.
 type PDFLink struct {
-	Bounds     unison.Rect
+	Bounds     geom.Rect
 	PageNumber int
 	URI        string
 }
@@ -264,22 +265,22 @@ func (p *PDFRenderer) convertLinks(pageLinks []*pdf.PageLink) []*PDFLink {
 	return links
 }
 
-func (p *PDFRenderer) convertMatches(hits []image.Rectangle) []unison.Rect {
+func (p *PDFRenderer) convertMatches(hits []image.Rectangle) []geom.Rect {
 	if len(hits) == 0 {
 		return nil
 	}
-	matches := make([]unison.Rect, len(hits))
+	matches := make([]geom.Rect, len(hits))
 	for i, hit := range hits {
 		matches[i] = p.rectFromPageRect(hit)
 	}
 	return matches
 }
 
-func (p *PDFRenderer) pointFromPagePoint(x, y int) unison.Point {
-	return unison.NewPoint(float32(x)*p.scaleAdjust, float32(y)*p.scaleAdjust)
+func (p *PDFRenderer) pointFromPagePoint(x, y int) geom.Point {
+	return geom.NewPoint(float32(x)*p.scaleAdjust, float32(y)*p.scaleAdjust)
 }
 
-func (p *PDFRenderer) rectFromPageRect(r image.Rectangle) unison.Rect {
-	return unison.NewRect(float32(r.Min.X)*p.scaleAdjust, float32(r.Min.Y)*p.scaleAdjust,
+func (p *PDFRenderer) rectFromPageRect(r image.Rectangle) geom.Rect {
+	return geom.NewRect(float32(r.Min.X)*p.scaleAdjust, float32(r.Min.Y)*p.scaleAdjust,
 		float32(r.Dx())*p.scaleAdjust, float32(r.Dy())*p.scaleAdjust)
 }

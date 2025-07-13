@@ -14,6 +14,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -35,7 +36,7 @@ func NewEditorListSVGHeader[T gurps.NodeTypes](icon *unison.SVG, tooltip string,
 		baseline := header.Font.Baseline()
 		header.Drawable = &unison.DrawableSVG{
 			SVG:  icon,
-			Size: unison.NewSize(baseline, baseline),
+			Size: geom.NewSize(baseline, baseline),
 		}
 		return header
 	}
@@ -43,7 +44,7 @@ func NewEditorListSVGHeader[T gurps.NodeTypes](icon *unison.SVG, tooltip string,
 	baseline := header.Font.Baseline()
 	header.Drawable = &unison.DrawableSVG{
 		SVG:  icon,
-		Size: unison.NewSize(baseline, baseline),
+		Size: geom.NewSize(baseline, baseline),
 	}
 	return header
 }
@@ -56,7 +57,7 @@ func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG
 		header.Drawable = &DrawableSVGPair{
 			Left:  leftSVG,
 			Right: rightSVG,
-			Size:  unison.NewSize(baseline*2+4, baseline),
+			Size:  geom.NewSize(baseline*2+4, baseline),
 		}
 		return header
 	}
@@ -65,7 +66,7 @@ func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG
 	header.Drawable = &DrawableSVGPair{
 		Left:  leftSVG,
 		Right: rightSVG,
-		Size:  unison.NewSize(baseline*2+4, baseline),
+		Size:  geom.NewSize(baseline*2+4, baseline),
 	}
 	return header
 }
@@ -154,7 +155,7 @@ func NewPageTableColumnHeader[T gurps.NodeTypes](title, tooltip string, less fun
 }
 
 // DefaultSizes provides the default sizing.
-func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
+func (h *PageTableColumnHeader[T]) DefaultSizes(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	_, prefSize, _ = h.Label.DefaultSizes(hint)
 	if b := h.Border(); b != nil {
 		prefSize = prefSize.Add(b.Insets().Size())
@@ -164,7 +165,7 @@ func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (minSize, pref
 }
 
 // DefaultDraw provides the default drawing.
-func (h *PageTableColumnHeader[T]) DefaultDraw(gc *unison.Canvas, dirty unison.Rect) {
+func (h *PageTableColumnHeader[T]) DefaultDraw(gc *unison.Canvas, dirty geom.Rect) {
 	if h.sortState.Order == 0 {
 		r := h.ContentRect(false)
 		y := r.Y
@@ -200,7 +201,7 @@ func (h *PageTableColumnHeader[T]) SetSortState(state unison.SortState) {
 }
 
 // DefaultMouseUp provides the default mouse up handling.
-func (h *PageTableColumnHeader[T]) DefaultMouseUp(where unison.Point, _ int, _ unison.Modifiers) bool {
+func (h *PageTableColumnHeader[T]) DefaultMouseUp(where geom.Point, _ int, _ unison.Modifiers) bool {
 	if h.sortState.Sortable && where.In(h.ContentRect(false)) {
 		if header, ok := h.Parent().Self.(*unison.TableHeader[*Node[T]]); ok {
 			header.SortOn(h)

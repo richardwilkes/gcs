@@ -17,7 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // Feature holds data that affects another object.
@@ -44,7 +44,7 @@ type Bonus interface {
 	// AdjustedAmount returns the amount, adjusted for level, if requested.
 	AdjustedAmount() fxp.Int
 	// AddToTooltip adds this Bonus's details to the tooltip. 'buffer' may be nil.
-	AddToTooltip(buffer *xio.ByteBuffer)
+	AddToTooltip(buffer *xbytes.InsertBuffer)
 }
 
 // FeaturesForSelfControlRoll returns the set of features to apply for the given self control roll.
@@ -54,6 +54,6 @@ func FeaturesForSelfControlRoll(cr selfctrl.Roll, adj selfctrl.Adjustment) Featu
 	}
 	f := NewSkillBonus()
 	f.NameCriteria.Qualifier = "Merchant"
-	f.Amount = fxp.From(cr.Penalty())
+	f.Amount = fxp.FromInteger(cr.Penalty())
 	return Features{f}
 }

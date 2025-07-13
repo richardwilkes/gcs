@@ -17,7 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -109,7 +110,7 @@ func (d *colorSettingsDockable) fill() {
 func (d *colorSettingsDockable) createHeader(title string, topMargin float32, small bool) {
 	label := unison.NewLabel()
 	if topMargin > 0 {
-		label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: topMargin}))
+		label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: topMargin}))
 	}
 	desc := label.Font.Descriptor()
 	if small {
@@ -201,7 +202,7 @@ func (d *colorSettingsDockable) save(filePath string) error {
 
 // InstallTintFunc installs a tint function for the given panel and theme color.
 func InstallTintFunc(panel unison.Paneler, themeColor *unison.ThemeColor) {
-	panel.AsPanel().DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	panel.AsPanel().DrawOverCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		c := themeColor.GetColor()
 		if c.Invisible() {
 			return

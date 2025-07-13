@@ -26,11 +26,11 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xio"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/rjeczalik/notify"
 )
 
@@ -163,8 +163,8 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 	releases, err := LoadReleases(ctx, client, l.GitHubAccountName, l.AccessToken, l.RepoName, "",
 		func(version, _ string) bool {
 			return incompatibleFutureLibraryVersion == version ||
-				txt.NaturalLess(version, minimumLibraryVersion, true) ||
-				txt.NaturalLess(incompatibleFutureLibraryVersion, version, true)
+				xstrings.NaturalLess(version, minimumLibraryVersion, true) ||
+				xstrings.NaturalLess(incompatibleFutureLibraryVersion, version, true)
 		})
 	if err != nil {
 		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", l.Title, "repo", l.RepoName, "account", l.GitHubAccountName)
@@ -179,7 +179,7 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 	l.current = current
 	l.lock.Unlock()
 	if current != lastRelease && NotifyOfLibraryChangeFunc != nil {
-		toolbox.Call(NotifyOfLibraryChangeFunc)
+		xos.SafeCall(NotifyOfLibraryChangeFunc, nil)
 	}
 }
 
@@ -210,10 +210,10 @@ func (l *Library) Compare(other *Library) int {
 	if other.IsMaster() {
 		return 1
 	}
-	result := txt.NaturalCmp(l.Title, other.Title, true)
+	result := xstrings.NaturalCmp(l.Title, other.Title, true)
 	if result == 0 {
-		if result = txt.NaturalCmp(l.GitHubAccountName, other.GitHubAccountName, true); result == 0 {
-			result = txt.NaturalCmp(l.RepoName, other.RepoName, true)
+		if result = xstrings.NaturalCmp(l.GitHubAccountName, other.GitHubAccountName, true); result == 0 {
+			result = xstrings.NaturalCmp(l.RepoName, other.RepoName, true)
 		}
 	}
 	return result

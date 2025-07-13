@@ -14,8 +14,8 @@ import (
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 // WeaponLeveledAmount holds an amount that can be either a fixed amount, or an amount per level and/or per die.
@@ -69,10 +69,10 @@ func (w *WeaponLeveledAmount) Format(asPercentage bool) string {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (w *WeaponLeveledAmount) Hash(h hash.Hash) {
 	if w == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num64(h, w.Amount)
-	hashhelper.Bool(h, w.PerLevel)
-	hashhelper.Bool(h, w.PerDie)
+	xhash.Num64(h, w.Amount)
+	xhash.Bool(h, w.PerLevel)
+	xhash.Bool(h, w.PerDie)
 }

@@ -19,10 +19,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/toolbox/xmath/rand"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xrand"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -108,16 +109,16 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 		VAlign:  align.Fill,
 	})
 
-	l.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+	l.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
 		l.RequestFocus()
 		return false
 	}
-	l.DataDragOverCallback = func(_ unison.Point, data map[string]any) bool {
+	l.DataDragOverCallback = func(_ geom.Point, data map[string]any) bool {
 		l.dragReroutePanel = nil
 		for _, key := range dropKeys {
 			if _, ok := data[key]; ok {
 				if l.dragReroutePanel = l.keyToPanel(key); l.dragReroutePanel != nil {
-					l.dragReroutePanel.DataDragOverCallback(unison.Point{Y: 100000000}, data)
+					l.dragReroutePanel.DataDragOverCallback(geom.Point{Y: 100000000}, data)
 					return true
 				}
 				break
@@ -131,13 +132,13 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 			l.dragReroutePanel = nil
 		}
 	}
-	l.DataDragDropCallback = func(_ unison.Point, data map[string]any) {
+	l.DataDragDropCallback = func(_ geom.Point, data map[string]any) {
 		if l.dragReroutePanel != nil {
-			l.dragReroutePanel.DataDragDropCallback(unison.Point{Y: 10000000}, data)
+			l.dragReroutePanel.DataDragDropCallback(geom.Point{Y: 10000000}, data)
 			l.dragReroutePanel = nil
 		}
 	}
-	l.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
+	l.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		if l.dragReroutePanel != nil {
 			r := l.RectFromRoot(l.dragReroutePanel.RectToRoot(l.dragReroutePanel.ContentRect(true)))
 			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
@@ -187,7 +188,7 @@ func (l *LootSheet) createToolbar() {
 	l.toolbar = unison.NewPanel()
 	l.AddChild(l.toolbar)
 	l.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
-		unison.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
+		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	l.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
@@ -262,7 +263,7 @@ func createLootTopBlock(loot *gurps.Loot, targetMgr *TargetMgr) *Page {
 		HGrab:  true,
 	})
 	top.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Loot")},
-		unison.NewEmptyBorder(unison.Insets{
+		unison.NewEmptyBorder(geom.Insets{
 			Top:    1,
 			Left:   2,
 			Bottom: 1,
@@ -322,7 +323,7 @@ func (l *LootSheet) UndoManager() *unison.UndoManager {
 }
 
 // TitleIcon implements workspace.FileBackedDockable
-func (l *LootSheet) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (l *LootSheet) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(l.path).SVG,
 		Size: suggestedSize,
@@ -331,7 +332,7 @@ func (l *LootSheet) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 
 // Title implements workspace.FileBackedDockable
 func (l *LootSheet) Title() string {
-	return fs.BaseName(l.path)
+	return xfilepath.BaseName(l.path)
 }
 
 func (l *LootSheet) String() string {
@@ -533,7 +534,7 @@ func (l *LootSheet) exportToPDF() {
 	backingFilePath := l.BackingFilePath()
 	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("pdf")
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -550,7 +551,7 @@ func (l *LootSheet) exportToWEBP() {
 	backingFilePath := l.BackingFilePath()
 	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("webp")
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "webp", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -567,7 +568,7 @@ func (l *LootSheet) exportToPNG() {
 	backingFilePath := l.BackingFilePath()
 	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("png")
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "png", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -584,7 +585,7 @@ func (l *LootSheet) exportToJPEG() {
 	backingFilePath := l.BackingFilePath()
 	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("jpeg")
-	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "jpeg", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -668,7 +669,7 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 		VAlign:   align.Fill,
 	})
 	input.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
-	input.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 4}))
+	input.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 4}))
 	minValue := fxp.Thousand
 	maxValue := fxp.TwoThousand
 	var dialog *unison.Dialog
@@ -685,7 +686,7 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 			minValue = value
 			validateOK()
 		},
-		fxp.One, fxp.MaxSafeMultiply, false, false)
+		fxp.One, fxp.FromInteger(1000000), false, false)
 	input.AddChild(minField)
 	label = i18n.Text("Maximum Value")
 	input.AddChild(NewFieldLeadingLabel(label, false))
@@ -695,12 +696,12 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 			maxValue = value
 			validateOK()
 		},
-		fxp.One, fxp.MaxSafeMultiply, false, false)
+		fxp.One, fxp.FromInteger(1000000), false, false)
 	input.AddChild(maxField)
 	content.AddChild(input)
 	icon := &unison.DrawableSVG{
 		SVG:  svg.MagicWand,
-		Size: unison.Size{Width: 48, Height: 48},
+		Size: geom.Size{Width: 48, Height: 48},
 	}
 	var err error
 	if dialog, err = unison.NewDialog(icon, unison.DefaultDialogTheme.QuestionIconInk, content,
@@ -711,7 +712,7 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 	}
 	if dialog.RunModal() == unison.ModalResponseOK {
 		var current fxp.Int
-		r := rand.NewCryptoRand()
+		r := xrand.New()
 		m := make(map[*gurps.Equipment]int)
 		for range 10 {
 			choices, total, highest := pruneEquipmentList(maxValue-current, l.loot.Equipment)
@@ -751,7 +752,7 @@ or under the maximum value of $%s with the available items.`),
 		loot := gurps.NewLoot()
 		for item, quantity := range m {
 			clone := item.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(item), nil, false)
-			clone.Quantity = fxp.From(quantity)
+			clone.Quantity = fxp.FromInteger(quantity)
 			loot.Equipment = append(loot.Equipment, clone)
 		}
 		loot.EnsureAttachments()

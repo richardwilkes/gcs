@@ -18,10 +18,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -81,7 +82,7 @@ func NewNodeLike[T gurps.NodeTypes](like *Node[T], data T) *Node[T] {
 func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Node[T] {
 	table, ok := target.(*unison.Table[*Node[T]])
 	if !ok {
-		fatal.IfErr(errs.New("unable to convert to table"))
+		xos.ExitIfErr(errs.New("unable to convert to table"))
 	}
 	var owner gurps.DataOwner
 	if provider := DetermineDataOwnerProvider(target); provider != nil {
@@ -329,19 +330,19 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		}
 		button.Drawable = &unison.DrawableSVG{
 			SVG:  s,
-			Size: unison.NewSize(size, size).Ceil(),
+			Size: geom.NewSize(size, size).Ceil(),
 		}
 		button.ClickCallback = func() {
 			gurps.SetClosedState(key, !gurps.IsClosed(key))
 			n.table.SyncToModel()
 		}
 		if baseline-size > 0 {
-			button.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: baseline - size}))
+			button.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: baseline - size}))
 		}
 		button.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
 		outer.AddChild(button)
 		p.AddChild(outer)
-		_, prefSize, _ := button.Sizes(unison.Size{})
+		_, prefSize, _ := button.Sizes(geom.Size{})
 		n.addLabelCell(c, inner, width-((unison.StdHSpacing/2)+prefSize.Width), c.Primary, c.InlineTag,
 			n.primaryFieldFont(), foreground, background, true)
 		if !isClosed {
@@ -359,7 +360,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		height := tag.Font.LineHeight() - 2
 		tag.Drawable = &unison.DrawableSVG{
 			SVG:  unison.TriangleExclamationSVG,
-			Size: unison.NewSize(height, height),
+			Size: geom.NewSize(height, height),
 		}
 		tag.SetTitle(i18n.Text("Unsatisfied prerequisite(s)"))
 		tag.ClientData()[noInvertColorsMarker] = true
@@ -374,7 +375,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		height := tag.Font.LineHeight() - 2
 		tag.Drawable = &unison.DrawableSVG{
 			SVG:  svg.GCSTemplate,
-			Size: unison.NewSize(height, height),
+			Size: geom.NewSize(height, height),
 		}
 		tag.SetTitle(c.TemplateInfo)
 		tag.ClientData()[noInvertColorsMarker] = true
@@ -409,7 +410,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 	var lines []*unison.Text
 	if width > 0 {
 		if tag != nil {
-			_, size, _ := tag.Sizes(unison.Size{})
+			_, size, _ := tag.Sizes(geom.Size{})
 			lines = unison.NewTextWrappedLines(text, decoration, width-(size.Width+unison.StdHSpacing))
 			if len(lines) > 1 {
 				lines = lines[:1]
@@ -455,12 +456,12 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 	fd := font.Descriptor()
 	fd.Size -= 2
 	check.Font = fd.Font()
-	check.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 1}))
+	check.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 1}))
 	baseline := font.Baseline()
 	if c.Checked {
 		check.Drawable = &unison.DrawableSVG{
 			SVG:  unison.CheckmarkSVG,
-			Size: unison.Size{Width: baseline, Height: baseline},
+			Size: geom.Size{Width: baseline, Height: baseline},
 		}
 	}
 	check.HAlign = c.Alignment
@@ -468,13 +469,13 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 	if c.Tooltip != "" {
 		check.Tooltip = newWrappedTooltip(c.Tooltip)
 	}
-	check.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+	check.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
 		c.Checked = !c.Checked
 		handleCheck(n.data, check, c.Checked)
 		if c.Checked {
 			check.Drawable = &unison.DrawableSVG{
 				SVG:  unison.CheckmarkSVG,
-				Size: unison.Size{Width: baseline, Height: baseline},
+				Size: geom.Size{Width: baseline, Height: baseline},
 			}
 		} else {
 			check.Drawable = nil
@@ -653,7 +654,7 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 			height := font.Baseline()
 			icon = &unison.DrawableSVG{
 				SVG:  img,
-				Size: unison.NewSize(height, height).Ceil(),
+				Size: geom.NewSize(height, height).Ceil(),
 			}
 			tooltip = parts[0]
 		}

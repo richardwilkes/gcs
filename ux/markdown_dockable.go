@@ -18,11 +18,12 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/toolbox/xio/fs/safe"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -48,8 +49,8 @@ type MarkdownDockable struct {
 	markdown          *unison.Markdown
 	editor            *StringField
 	scale             int
-	dragStart         unison.Point
-	dragOrigin        unison.Point
+	dragStart         geom.Point
+	dragOrigin        geom.Point
 	savedScrollX      float32
 	savedScrollY      float32
 	inDrag            bool
@@ -99,7 +100,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 
 	d.markdown = unison.NewMarkdown(true)
 	d.markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(d)
-	insets := unison.NewUniformInsets(20)
+	insets := geom.NewUniformInsets(20)
 	d.markdown.SetBorder(unison.NewEmptyBorder(insets))
 	d.markdown.MouseDownCallback = d.mouseDown
 	d.markdown.MouseDragCallback = d.mouseDrag
@@ -114,7 +115,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		}
 		d.original = string(data)
 	}
-	d.content = txt.NormalizeLineEndings(d.original)
+	d.content = xstrings.NormalizeLineEndings(d.original)
 	d.markdown.SetContent(d.content, 0)
 
 	d.editor = NewMultiLineStringField(nil, "", "",
@@ -151,7 +152,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	}
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -213,14 +214,14 @@ func (d *MarkdownDockable) DockKey() string {
 	return filePrefix + d.path
 }
 
-func (d *MarkdownDockable) updateCursor(_ unison.Point) *unison.Cursor {
+func (d *MarkdownDockable) updateCursor(_ geom.Point) *unison.Cursor {
 	if d.inDrag {
 		return unison.MoveCursor()
 	}
 	return unison.ArrowCursor()
 }
 
-func (d *MarkdownDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifiers) bool {
+func (d *MarkdownDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifiers) bool {
 	d.dragStart = d.markdown.PointToRoot(where)
 	d.dragOrigin.X, d.dragOrigin.Y = d.scroller.Position()
 	d.inDrag = true
@@ -229,13 +230,13 @@ func (d *MarkdownDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modi
 	return true
 }
 
-func (d *MarkdownDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
+func (d *MarkdownDockable) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) bool {
 	pt := d.dragStart.Sub(d.markdown.PointToRoot(where)).Add(d.dragOrigin)
 	d.scroller.SetPosition(pt.X, pt.Y)
 	return true
 }
 
-func (d *MarkdownDockable) mouseUp(_ unison.Point, _ int, _ unison.Modifiers) bool {
+func (d *MarkdownDockable) mouseUp(_ geom.Point, _ int, _ unison.Modifiers) bool {
 	d.inDrag = false
 	d.UpdateCursorNow()
 	return true
@@ -247,7 +248,7 @@ func (d *MarkdownDockable) UndoManager() *unison.UndoManager {
 }
 
 // TitleIcon implements workspace.FileBackedDockable
-func (d *MarkdownDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (d *MarkdownDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	if strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		return &unison.DrawableSVG{
 			SVG:  svg.MarkdownFile,
@@ -262,7 +263,7 @@ func (d *MarkdownDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable 
 
 // Title implements workspace.FileBackedDockable
 func (d *MarkdownDockable) Title() string {
-	return xfs.BaseName(d.path)
+	return xfilepath.BaseName(d.path)
 }
 
 // Tooltip implements workspace.FileBackedDockable
@@ -328,12 +329,12 @@ func (d *MarkdownDockable) saveData(filePath string) error {
 	if err := os.MkdirAll(dirPath, 0o750); err != nil {
 		return errs.NewWithCause(dirPath, err)
 	}
-	if err := safe.WriteFileWithMode(filePath, func(w io.Writer) error {
+	if err := xos.WriteSafeFile(filePath, func(w io.Writer) error {
 		if _, innerErr := w.Write([]byte(d.content)); innerErr != nil {
 			return errs.NewWithCause(filePath, innerErr)
 		}
 		return nil
-	}, 0o640); err != nil {
+	}); err != nil {
 		return errs.NewWithCause(filePath, err)
 	}
 	return nil

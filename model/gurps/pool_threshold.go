@@ -17,7 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Hashable = &PoolThreshold{}
@@ -147,12 +147,12 @@ func (p *PoolThreshold) RemoveOp(op threshold.Op) {
 
 // Hash writes this object's contents into the hasher.
 func (p *PoolThreshold) Hash(h hash.Hash) {
-	hashhelper.String(h, p.State)
-	hashhelper.String(h, p.Value)
-	hashhelper.String(h, p.Explanation)
-	hashhelper.Num64(h, len(p.Ops))
+	xhash.StringWithLen(h, p.State)
+	xhash.StringWithLen(h, p.Value)
+	xhash.StringWithLen(h, p.Explanation)
+	xhash.Num64(h, len(p.Ops))
 	for _, one := range p.Ops {
-		hashhelper.Num8(h, one)
+		xhash.Num8(h, one)
 	}
 }
 

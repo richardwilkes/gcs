@@ -10,22 +10,17 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"log"
-	"log/slog"
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux"
-	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/atexit"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/rotation"
-	"github.com/richardwilkes/toolbox/log/tracelog"
-	"github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/toolbox/xio/fs/paths"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xflag"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xslog"
 	"github.com/richardwilkes/unison"
 )
 
@@ -33,58 +28,61 @@ func main() {
 	early.Configure()
 	ux.LoadLanguageSetting()
 	unison.AttachConsole()
-	cl := cmdline.New(true)
-	cl.Description = ux.AppDescription()
-	cl.UsageTrailer = fmt.Sprintf(i18n.Text(`Translations dir: "%s"`), i18n.Dir)
+	xflag.SetUsage(nil, ux.AppDescription(), i18n.Text("<file>..."))
+	savedUsage := flag.CommandLine.Usage
+	flag.CommandLine.Usage = func() {
+		savedUsage()
+		fmt.Fprintf(flag.CommandLine.Output(), i18n.Text("\nTranslations dir: \"%s\"\n"), i18n.Dir)
+	}
 
-	settingsName := cmdline.AppCmdName + "_prefs.json"
-	gurps.SettingsPath = filepath.Join(paths.AppDataDir(), settingsName)
 	// Look for a settings file co-located with the executable and prefer that over the one in the app data dir.
-	if dir, err := toolbox.AppDir(); err == nil {
+	settingsName := xos.AppCmdName + "_prefs.json"
+	gurps.SettingsPath = filepath.Join(xos.AppDataDir(true), settingsName)
+	if dir, err := xos.AppDir(); err == nil {
 		settingsPath := filepath.Join(dir, settingsName)
-		if fs.FileExists(settingsPath) {
+		if xos.FileExists(settingsPath) {
 			gurps.SettingsPath = settingsPath
 		}
 	}
+	flag.StringVar(&gurps.SettingsPath, "settings", gurps.SettingsPath, i18n.Text("The `file` to load settings from and store them into"))
 
-	var textTmplPath string
-	cl.NewGeneralOption(&gurps.SettingsPath).SetName("settings").SetSingle('s').SetArg("file").
-		SetUsage(i18n.Text("The file to load settings from and store them into"))
-	cl.NewGeneralOption(&textTmplPath).SetName("text").SetSingle('x').SetArg("file").
-		SetUsage(i18n.Text("Export sheets using the specified template file"))
-	var convertFiles bool
-	cl.NewGeneralOption(&convertFiles).SetName("convert").SetSingle('c').
-		SetUsage(i18n.Text("Converts all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"))
-	var syncSheetsAndTemplates bool
-	cl.NewGeneralOption(&syncSheetsAndTemplates).SetName("sync").SetSingle('S').
-		SetUsage(fmt.Sprintf(i18n.Text("Syncs all character sheet (%s) and template (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), gurps.SheetExt, gurps.TemplatesExt))
-	fileList := rotation.ParseAndSetupLogging(cl, false)
-	slog.SetDefault(slog.New(tracelog.New(&tracelog.Config{Sink: log.Default().Writer()})))
+	textTmplPath := flag.String("text", "", i18n.Text("Export sheets using the specified template `file`"))
+
+	convertFiles := flag.Bool("convert", false, i18n.Text("Convert all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"))
+
+	syncSheetsAndTemplates := flag.Bool("sync", false, fmt.Sprintf(i18n.Text("Syncs all character sheet (%s) and template (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), gurps.SheetExt, gurps.TemplatesExt))
+
+	var logCfg xslog.Config
+	logCfg.AddFlags()
+	xflag.Parse()
+	ux.PathToLog = logCfg.RotatorCfg.Path
+	fileList := flag.Args()
+
 	ux.RegisterKnownFileTypes()
 	gurps.GlobalSettings() // Here to force early initialization
 
-	if convertFiles && syncSheetsAndTemplates {
-		cl.FatalMsg(i18n.Text("Cannot specify both --convert and --sync"))
+	if *convertFiles && *syncSheetsAndTemplates {
+		xos.ExitWithMsg(i18n.Text("Cannot specify both --convert and --sync"))
 	}
 
 	switch {
-	case convertFiles:
+	case *convertFiles:
 		if err := gurps.Convert(fileList...); err != nil {
-			cl.FatalMsg(err.Error())
+			xos.ExitWithMsg(err.Error())
 		}
-	case syncSheetsAndTemplates:
+	case *syncSheetsAndTemplates:
 		if err := gurps.SyncSheetsAndTemplates(fileList...); err != nil {
-			cl.FatalMsg(err.Error())
+			xos.ExitWithMsg(err.Error())
 		}
-	case textTmplPath != "":
+	case *textTmplPath != "":
 		if len(fileList) == 0 {
-			cl.FatalMsg(i18n.Text("No files to process."))
+			xos.ExitWithMsg(i18n.Text("No files to process."))
 		}
-		if err := gurps.ExportSheets(textTmplPath, fileList); err != nil {
-			cl.FatalMsg(err.Error())
+		if err := gurps.ExportSheets(*textTmplPath, fileList); err != nil {
+			xos.ExitWithMsg(err.Error())
 		}
 	default:
 		ux.Start(fileList) // Never returns
 	}
-	atexit.Exit(0)
+	xos.Exit(0)
 }

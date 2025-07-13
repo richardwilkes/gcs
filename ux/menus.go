@@ -18,10 +18,11 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -425,13 +426,13 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 		for _, entry := range entries {
 			name := entry.Name()
 			fullPath := filepath.Join(dir, outputTemplatesDirName, name)
-			if !strings.HasPrefix(name, ".") && xfs.FileExists(fullPath) {
+			if !strings.HasPrefix(name, ".") && xos.FileExists(fullPath) {
 				list = append(list, fullPath)
 			}
 		}
 		if len(list) > 0 || lib.IsMaster() {
 			s.appendDisabledMenuItem(menu, lib.Title)
-			txt.SortStringsNaturalAscending(list)
+			xstrings.SortStringsNaturalAscending(list)
 			for _, one := range list {
 				menu.InsertItem(-1, s.createExportToTextAction(index, one).NewMenuItem(factory))
 				index++
@@ -446,7 +447,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 func (s menuBarScope) createExportToTextAction(index int, path string) *unison.Action {
 	return &unison.Action{
 		ID:              ExportToTextBaseItemID + index,
-		Title:           "    " + xfs.TrimExtension(filepath.Base(path)),
+		Title:           "    " + xfilepath.TrimExtension(filepath.Base(path)),
 		EnabledCallback: actionEnabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if sheet := ActiveSheet(); sheet != nil {
@@ -455,7 +456,7 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 				settings := gurps.GlobalSettings()
 				dialog.SetInitialDirectory(settings.LastDir(gurps.DefaultLastDirKey))
 				dialog.SetAllowedExtensions(ext)
-				dialog.SetInitialFileName(xfs.SanitizeName(xfs.BaseName(sheet.BackingFilePath())))
+				dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(sheet.BackingFilePath())))
 				if dialog.RunModal() {
 					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
 						settings.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))

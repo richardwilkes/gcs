@@ -16,8 +16,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -209,7 +210,7 @@ func (d *bodySettingsDockable) apply() {
 	d.owner.SetBodySettings(d.body.Clone(d.owner.Entity(), nil))
 }
 
-func (d *bodySettingsDockable) dataDragOver(where unison.Point, data map[string]any) bool {
+func (d *bodySettingsDockable) dataDragOver(where geom.Point, data map[string]any) bool {
 	prevInDragOver := d.inDragOver
 	dragInsert := d.dragInsert
 	dragTarget := d.dragTarget
@@ -251,7 +252,7 @@ func (d *bodySettingsDockable) dataDragExit() {
 	d.MarkForRedraw()
 }
 
-func (d *bodySettingsDockable) dataDragDrop(_ unison.Point, data map[string]any) {
+func (d *bodySettingsDockable) dataDragDrop(_ geom.Point, data map[string]any) {
 	if d.inDragOver && d.dragInsert != -1 {
 		if dragData, ok := data[hitLocationDragDataKey]; ok {
 			var dd *hitLocationSettingsPanel
@@ -273,7 +274,7 @@ func (d *bodySettingsDockable) dataDragDrop(_ unison.Point, data map[string]any)
 	d.dataDragExit()
 }
 
-func (d *bodySettingsDockable) drawOver(gc *unison.Canvas, rect unison.Rect) {
+func (d *bodySettingsDockable) drawOver(gc *unison.Canvas, rect geom.Rect) {
 	if d.inDragOver && d.dragInsert != -1 {
 		children := d.dragTarget.Children()
 		var y float32
@@ -282,7 +283,7 @@ func (d *bodySettingsDockable) drawOver(gc *unison.Canvas, rect unison.Rect) {
 		} else {
 			y = children[len(children)-1].FrameRect().Bottom()
 		}
-		pt := d.content.PointFromRoot(d.dragTarget.PointToRoot(unison.Point{Y: y}))
+		pt := d.content.PointFromRoot(d.dragTarget.PointToRoot(geom.Point{Y: y}))
 		paint := unison.ThemeWarning.Paint(gc, rect, paintstyle.Stroke)
 		paint.SetStrokeWidth(2)
 		r := d.content.RectFromRoot(d.dragTarget.RectToRoot(d.dragTarget.ContentRect(false)))

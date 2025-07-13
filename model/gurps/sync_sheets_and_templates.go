@@ -11,30 +11,31 @@ package gurps
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
-	"github.com/richardwilkes/toolbox/collection"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xslices"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 // SyncSheetsAndTemplates syncs GCS sheet and template files found in the given paths with their source libraries.
 func SyncSheetsAndTemplates(paths ...string) error {
 	var err error
-	paths, err = fs.UniquePaths(paths...)
+	paths, err = xfilepath.UniquePaths(paths...)
 	if err != nil {
 		return err
 	}
-	pathSet := collection.NewSet[string]()
-	f := convertWalker(pathSet, collection.NewSet(SheetExt, TemplatesExt))
+	pathSet := make(map[string]struct{})
+	f := convertWalker(pathSet, xslices.Set([]string{SheetExt, TemplatesExt}))
 	for _, p := range paths {
 		_ = filepath.WalkDir(p, f) //nolint:errcheck // We want to continue on even if there was an error
 	}
-	list := pathSet.Values()
-	txt.SortStringsNaturalAscending(list)
+	list := slices.SortedFunc(maps.Keys(pathSet), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
 	for _, p := range list {
 		fmt.Printf(i18n.Text("Processing %s\n"), p)
 		switch strings.ToLower(filepath.Ext(p)) {

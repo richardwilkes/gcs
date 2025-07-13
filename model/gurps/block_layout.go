@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 // Valid block layout keys
@@ -62,7 +62,7 @@ func NewBlockLayoutFromString(str string) (blockLayout *BlockLayout, inputWasVal
 	inputWasValid = true
 	for _, line := range strings.Split(strings.ToLower(str), "\n") {
 		var parts []string
-		for _, part := range strings.Split(txt.CollapseSpaces(line), " ") {
+		for _, part := range strings.Split(xstrings.CollapseSpaces(line), " ") {
 			if part == "" {
 				continue
 			}
@@ -105,7 +105,7 @@ func (b *BlockLayout) EnsureValidity() {
 	remaining := CreateFullKeySet()
 	for _, line := range b.Layout {
 		var parts []string
-		for _, part := range strings.Split(strings.ToLower(txt.CollapseSpaces(line)), " ") {
+		for _, part := range strings.Split(strings.ToLower(xstrings.CollapseSpaces(line)), " ") {
 			part = mapOldLayoutKeys(part)
 			if remaining[part] {
 				delete(remaining, part)
@@ -135,7 +135,7 @@ func (b *BlockLayout) ByRow() [][]string {
 	remaining := CreateFullKeySet()
 	for _, line := range b.Layout {
 		var parts []string
-		for _, part := range strings.Split(strings.ToLower(txt.CollapseSpaces(line)), " ") {
+		for _, part := range strings.Split(strings.ToLower(xstrings.CollapseSpaces(line)), " ") {
 			part = mapOldLayoutKeys(part)
 			if remaining[part] {
 				delete(remaining, part)
@@ -220,7 +220,7 @@ func (b *BlockLayout) HTMLGridTemplate() string {
 	var buffer strings.Builder
 	remaining := CreateFullKeySet()
 	for _, line := range b.Layout {
-		parts := strings.Split(strings.ToLower(txt.CollapseSpaces(line)), " ")
+		parts := strings.Split(strings.ToLower(xstrings.CollapseSpaces(line)), " ")
 		part := mapOldLayoutKeys(parts[0])
 		if part != "" && remaining[part] {
 			delete(remaining, part)

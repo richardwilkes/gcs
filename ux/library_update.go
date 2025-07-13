@@ -17,7 +17,8 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -49,7 +50,7 @@ documents from the library are open.`))
 		}
 	}
 
-	var frame unison.Rect
+	var frame geom.Rect
 	if focused := unison.ActiveWindow(); focused != nil {
 		frame = focused.FrameRect()
 	} else {
@@ -63,7 +64,7 @@ documents from the library are open.`))
 	}
 	content := unison.NewPanel()
 	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
-		unison.NewUniformInsets(1), false), unison.NewEmptyBorder(unison.NewUniformInsets(2*unison.StdHSpacing))))
+		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.NewUniformInsets(2*unison.StdHSpacing))))
 	content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		VSpacing: unison.StdVSpacing,
@@ -73,7 +74,7 @@ documents from the library are open.`))
 	content.AddChild(label)
 	progress := unison.NewProgressBar(0)
 	progress.SetLayoutData(&unison.FlexLayoutData{
-		MinSize: unison.Size{Width: 500},
+		MinSize: geom.Size{Width: 500},
 		HAlign:  align.Fill,
 		HGrab:   true,
 	})

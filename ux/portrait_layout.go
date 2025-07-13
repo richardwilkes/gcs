@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -20,8 +21,8 @@ type portraitLayout struct {
 	rest     *unison.Panel
 }
 
-func (p *portraitLayout) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, maxSize unison.Size) {
-	_, prefSize, _ = p.rest.Sizes(unison.Size{})
+func (p *portraitLayout) LayoutSizes(_ *unison.Panel, _ geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	_, prefSize, _ = p.rest.Sizes(geom.Size{})
 	insets := p.portrait.Border().Insets()
 	prefSize.Width += 1 + prefSize.Height + insets.Width() - insets.Height()
 	return prefSize, prefSize, prefSize

@@ -18,9 +18,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/names"
 	"github.com/richardwilkes/rpgtools/names/namesets/american"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/rand"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xrand"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 var _ names.Namer = &NameGenerator{}
@@ -99,7 +99,7 @@ func AvailableNameGenerators(libraries Libraries) []*NameGeneratorRef {
 		}
 	}
 	slices.SortFunc(list, func(a, b *NameGeneratorRef) int {
-		return txt.NaturalCmp(a.FileRef.Name, b.FileRef.Name, true)
+		return xstrings.NaturalCmp(a.FileRef.Name, b.FileRef.Name, true)
 	})
 	return list
 }
@@ -133,7 +133,7 @@ func (n *NameGenerator) GenerateName() string {
 }
 
 // GenerateNameWithRandomizer generates a new random name using the specified randomizer.
-func (n *NameGenerator) GenerateNameWithRandomizer(rnd rand.Randomizer) string {
+func (n *NameGenerator) GenerateNameWithRandomizer(rnd xrand.Randomizer) string {
 	return n.namer.GenerateNameWithRandomizer(rnd)
 }
 

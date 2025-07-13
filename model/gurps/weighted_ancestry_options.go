@@ -9,9 +9,7 @@
 
 package gurps
 
-import (
-	"github.com/richardwilkes/toolbox/xmath/rand"
-)
+import "github.com/richardwilkes/toolbox/v2/xrand"
 
 // WeightedAncestryOptions is a string that has a weight associated with it.
 type WeightedAncestryOptions struct {
@@ -33,7 +31,7 @@ func ChooseWeightedAncestryOptions(options []*WeightedAncestryOptions, omitter f
 		}
 	}
 	if total > 0 {
-		choice := 1 + rand.NewCryptoRand().Intn(total)
+		choice := 1 + xrand.New().Intn(total)
 		for _, one := range options {
 			if omitter == nil || !omitter(one.Value) {
 				choice -= one.Weight

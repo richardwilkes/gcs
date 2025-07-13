@@ -18,14 +18,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
-var (
-	factoryBindings              = make(map[string]*Binding)
-	_               json.Omitter = &KeyBindings{}
-)
+var factoryBindings = make(map[string]*Binding)
 
 // KeyBindings holds a set of key bindings.
 type KeyBindings struct {
@@ -62,7 +59,7 @@ func CurrentBindings() []*Binding {
 		})
 	}
 	slices.SortFunc(list, func(a, b *Binding) int {
-		result := txt.NaturalCmp(a.Action.Title, b.Action.Title, true)
+		result := xstrings.NaturalCmp(a.Action.Title, b.Action.Title, true)
 		if result == 0 {
 			result = cmp.Compare(a.ID, b.ID)
 		}
@@ -81,8 +78,8 @@ func NewKeyBindingsFromFS(fileSystem fs.FS, filePath string) (*KeyBindings, erro
 	return &b, nil
 }
 
-// ShouldOmit implements json.Omitter.
-func (b *KeyBindings) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (b *KeyBindings) IsZero() bool {
 	for k, v := range b.data {
 		if info, ok := factoryBindings[k]; ok && v != info.KeyBinding {
 			return false

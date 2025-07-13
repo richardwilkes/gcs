@@ -13,7 +13,8 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/xmath"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -59,7 +60,7 @@ func (c *updatableLibraryCell) updateForeground(fg unison.Ink) {
 	c.title.SetTitle(c.title.String())
 }
 
-func (c *updatableLibraryCell) mouseDown(where unison.Point, btn, clickCount int, mod unison.Modifiers) bool {
+func (c *updatableLibraryCell) mouseDown(where geom.Point, btn, clickCount int, mod unison.Modifiers) bool {
 	if !where.In(c.button.FrameRect()) {
 		return false
 	}
@@ -67,14 +68,14 @@ func (c *updatableLibraryCell) mouseDown(where unison.Point, btn, clickCount int
 	return c.button.DefaultMouseDown(c.button.PointFromRoot(c.PointToRoot(where)), btn, clickCount, mod)
 }
 
-func (c *updatableLibraryCell) mouseDrag(where unison.Point, btn int, mod unison.Modifiers) bool {
+func (c *updatableLibraryCell) mouseDrag(where geom.Point, btn int, mod unison.Modifiers) bool {
 	if !c.inButtonMouseDown {
 		return false
 	}
 	return c.button.DefaultMouseDrag(c.button.PointFromRoot(c.PointToRoot(where)), btn, mod)
 }
 
-func (c *updatableLibraryCell) mouseUp(where unison.Point, btn int, mod unison.Modifiers) bool {
+func (c *updatableLibraryCell) mouseUp(where geom.Point, btn int, mod unison.Modifiers) bool {
 	if !c.inButtonMouseDown {
 		return false
 	}

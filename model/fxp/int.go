@@ -12,14 +12,14 @@ package fxp
 import (
 	"time"
 
-	"github.com/richardwilkes/toolbox/xmath"
-	"github.com/richardwilkes/toolbox/xmath/fixed"
-	"github.com/richardwilkes/toolbox/xmath/fixed/f64"
+	"github.com/richardwilkes/toolbox/v2/fixed"
+	"github.com/richardwilkes/toolbox/v2/fixed/fixed64"
+	"golang.org/x/exp/constraints"
 )
 
 // Common values that can be reused.
 var (
-	Min                 = Int(f64.Min)
+	Min                 = fixed64.Minimum[DP]()
 	NegPointEight       = FromStringForced("-0.8")
 	Twentieth           = FromStringForced("0.05")
 	PointZeroSix        = FromStringForced("0.06")
@@ -39,89 +39,97 @@ var (
 	SevenTenths         = FromStringForced("0.7")
 	ThreeQuarters       = FromStringForced("0.75")
 	FourFifths          = FromStringForced("0.8")
-	One                 = From(1)
+	One                 = FromInteger(1)
 	OnePointOne         = FromStringForced("1.1")
 	OnePointTwo         = FromStringForced("1.2")
 	OneAndAQuarter      = FromStringForced("1.25")
 	OneAndAHalf         = FromStringForced("1.5")
-	Two                 = From(2)
+	Two                 = FromInteger(2)
 	TwoAndAHalf         = FromStringForced("2.5")
-	Three               = From(3)
+	Three               = FromInteger(3)
 	ThreeAndAHalf       = FromStringForced("3.5")
-	Four                = From(4)
-	Five                = From(5)
-	Six                 = From(6)
-	Seven               = From(7)
-	Eight               = From(8)
-	Nine                = From(9)
-	Ten                 = From(10)
-	Eleven              = From(11)
-	Twelve              = From(12)
-	Thirteen            = From(13)
-	Fifteen             = From(15)
-	Sixteen             = From(16)
-	Nineteen            = From(19)
-	Twenty              = From(20)
-	TwentyFour          = From(24)
-	TwentyFive          = From(25)
-	ThirtySix           = From(36)
-	Thirty              = From(30)
-	Forty               = From(40)
-	Fifty               = From(50)
-	Sixty               = From(60)
-	Seventy             = From(70)
-	Eighty              = From(80)
-	NinetyNine          = From(99)
-	Hundred             = From(100)
-	OneHundredFifty     = From(150)
-	FiveHundred         = From(500)
-	SixHundred          = From(600)
-	ThousandMinusOne    = From(999)
-	Thousand            = From(1000)
-	TwoThousand         = From(2000)
-	ThirtySixHundred    = From(3600)
-	TenThousandMinusOne = From(9999)
-	ThirtySixThousand   = From(36000)
-	MileInInches        = From(63360)
-	MillionMinusOne     = From(999999)
-	TenMillionMinusOne  = From(9999999)
-	BillionMinusOne     = From(999999999)
+	Four                = FromInteger(4)
+	Five                = FromInteger(5)
+	Six                 = FromInteger(6)
+	Seven               = FromInteger(7)
+	Eight               = FromInteger(8)
+	Nine                = FromInteger(9)
+	Ten                 = FromInteger(10)
+	Eleven              = FromInteger(11)
+	Twelve              = FromInteger(12)
+	Thirteen            = FromInteger(13)
+	Fifteen             = FromInteger(15)
+	Sixteen             = FromInteger(16)
+	Nineteen            = FromInteger(19)
+	Twenty              = FromInteger(20)
+	TwentyFour          = FromInteger(24)
+	TwentyFive          = FromInteger(25)
+	ThirtySix           = FromInteger(36)
+	Thirty              = FromInteger(30)
+	Forty               = FromInteger(40)
+	Fifty               = FromInteger(50)
+	Sixty               = FromInteger(60)
+	Seventy             = FromInteger(70)
+	Eighty              = FromInteger(80)
+	NinetyNine          = FromInteger(99)
+	Hundred             = FromInteger(100)
+	OneHundredFifty     = FromInteger(150)
+	FiveHundred         = FromInteger(500)
+	SixHundred          = FromInteger(600)
+	ThousandMinusOne    = FromInteger(999)
+	Thousand            = FromInteger(1000)
+	TwoThousand         = FromInteger(2000)
+	ThirtySixHundred    = FromInteger(3600)
+	TenThousandMinusOne = FromInteger(9999)
+	ThirtySixThousand   = FromInteger(36000)
+	MileInInches        = FromInteger(63360)
+	MillionMinusOne     = FromInteger(999999)
+	TenMillionMinusOne  = FromInteger(9999999)
+	BillionMinusOne     = FromInteger(999999999)
 	MaxBasePoints       = MillionMinusOne
-	Max                 = Int(f64.Max)
-	// MaxSafeMultiply returns the maximum value that can be safely multiplied without overflow.
-	MaxSafeMultiply = f64.MaxSafeMultiply[DP]()
+	Max                 = fixed64.Maximum[DP]()
 )
 
 // DP is an alias for the fixed-point decimal places configuration we are using.
 type DP = fixed.D4
 
 // Int is an alias for the fixed-point type we are using.
-type Int = f64.Int[DP]
+type Int = fixed64.Int[DP]
 
-// From creates an Int from a numeric value.
-func From[T xmath.Numeric](value T) Int {
-	return f64.From[DP](value)
+// FromInteger creates an Int from a numeric value.
+func FromInteger[T constraints.Integer](value T) Int {
+	return fixed64.FromInteger[DP](value)
+}
+
+// FromFloat creates an Int from a numeric value.
+func FromFloat[T constraints.Float](value T) Int {
+	return fixed64.FromFloat[DP](value)
 }
 
 // FromString creates an Int from a string.
 func FromString(value string) (Int, error) {
-	return f64.FromString[DP](value)
+	return fixed64.FromString[DP](value)
 }
 
 // FromStringForced creates an Int from a string, ignoring any conversion inaccuracies.
 func FromStringForced(value string) Int {
-	return f64.FromStringForced[DP](value)
+	return fixed64.FromStringForced[DP](value)
 }
 
-// As returns the equivalent value in the destination type.
-func As[T xmath.Numeric](value Int) T {
-	return f64.As[DP, T](value)
+// AsInteger returns the equivalent value in the destination type.
+func AsInteger[T constraints.Integer](value Int) T {
+	return fixed64.AsInteger[DP, T](value)
+}
+
+// AsFloat returns the equivalent value in the destination type.
+func AsFloat[T constraints.Float](value Int) T {
+	return fixed64.AsFloat[DP, T](value)
 }
 
 // ApplyRounding rounds in the positive direction if roundDown is false, or in the negative direction if roundDown is
 // true.
 func ApplyRounding(value Int, roundDown bool) Int {
-	if truncated := value.Trunc(); value != truncated {
+	if truncated := value.Floor(); value != truncated {
 		if roundDown {
 			if value < 0 {
 				return truncated - One
@@ -138,7 +146,7 @@ func ApplyRounding(value Int, roundDown bool) Int {
 
 // ResetIfOutOfRange checks the value and if it is lower than minValue or greater than maxValue, returns defValue,
 // otherwise returns value.
-func ResetIfOutOfRange[T xmath.Numeric | Int](value, minValue, maxValue, defValue T) T {
+func ResetIfOutOfRange[T constraints.Integer | constraints.Float | Int](value, minValue, maxValue, defValue T) T {
 	if value < minValue || value > maxValue {
 		return defValue
 	}
@@ -185,7 +193,7 @@ func Extract(in string) (value Int, remainder string) {
 
 // SecondsToDuration converts a fixed-point value in seconds to a time.Duration.
 func SecondsToDuration(value Int) time.Duration {
-	return time.Duration(As[int64](value.Mul(Thousand))) * time.Millisecond
+	return time.Duration(AsInteger[int64](value.Mul(Thousand))) * time.Millisecond
 }
 
 // IntLessFromString compares two strings as Ints.

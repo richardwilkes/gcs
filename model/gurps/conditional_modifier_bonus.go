@@ -15,9 +15,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Bonus = &ConditionalModifierBonus{}
@@ -61,17 +61,17 @@ func (c *ConditionalModifierBonus) SetLevel(level fxp.Int) {
 }
 
 // AddToTooltip implements Bonus.
-func (c *ConditionalModifierBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (c *ConditionalModifierBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	c.basicAddToTooltip(&c.LeveledAmount, buffer)
 }
 
 // Hash writes this object's contents into the hasher.
 func (c *ConditionalModifierBonus) Hash(h hash.Hash) {
 	if c == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, c.Type)
-	hashhelper.String(h, c.Situation)
+	xhash.Num8(h, c.Type)
+	xhash.StringWithLen(h, c.Situation)
 	c.LeveledAmount.Hash(h)
 }

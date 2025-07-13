@@ -15,8 +15,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -68,7 +69,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 		HAlign:  align.Fill,
 		VAlign:  align.Fill,
 	})
-	c.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+	c.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
 		c.RequestFocus()
 		return false
 	}
@@ -85,7 +86,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Campaign") }
 
 	c.toolbar = unison.NewPanel()
-	c.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+	c.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	c.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -126,7 +127,7 @@ func (c *Campaign) createContent() unison.Paneler {
 }
 
 // TitleIcon implements workspace.FileBackedDockable
-func (c *Campaign) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+func (c *Campaign) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(c.path).SVG,
 		Size: suggestedSize,
@@ -135,7 +136,7 @@ func (c *Campaign) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 
 // Title implements workspace.FileBackedDockable
 func (c *Campaign) Title() string {
-	return fs.BaseName(c.path)
+	return xfilepath.BaseName(c.path)
 }
 
 func (c *Campaign) String() string {

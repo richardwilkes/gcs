@@ -16,7 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/unison"
 )
 
@@ -100,13 +100,13 @@ func (p *Profile) ExportPortrait(filePath string) error {
 
 // AdjustedSizeModifier returns the adjusted size modifier.
 func (p *Profile) AdjustedSizeModifier() int {
-	return p.SizeModifier + fxp.As[int](p.SizeModifierBonus)
+	return p.SizeModifier + fxp.AsInteger[int](p.SizeModifierBonus)
 }
 
 // SetAdjustedSizeModifier sets the adjusted size modifier.
 func (p *Profile) SetAdjustedSizeModifier(value int) {
 	if value != p.AdjustedSizeModifier() {
-		p.SizeModifier = value - fxp.As[int](p.SizeModifierBonus)
+		p.SizeModifier = value - fxp.AsInteger[int](p.SizeModifierBonus)
 	}
 }
 

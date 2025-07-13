@@ -12,7 +12,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -70,7 +70,7 @@ func adjustTraitLevel(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]
 			if increment || t.Levels > 0 {
 				before.List = append(before.List, newTraitLevelAdjuster(t))
 				original := t.Levels
-				levels := original.Trunc()
+				levels := original.Floor()
 				if increment {
 					levels += fxp.One
 				} else if original == levels {

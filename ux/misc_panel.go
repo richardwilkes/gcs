@@ -13,7 +13,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -43,13 +44,13 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 		VAlign: align.Fill,
 	})
 	m.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Miscellaneous")},
-		unison.NewEmptyBorder(unison.Insets{
+		unison.NewEmptyBorder(geom.Insets{
 			Top:    1,
 			Left:   2,
 			Bottom: 1,
 			Right:  2,
 		})))
-	m.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(m, gc, rect, 0, 2, nil) }
+	m.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) { drawBandedBackground(m, gc, rect, 0, 2, nil) }
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Created")))
 	m.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {

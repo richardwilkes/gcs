@@ -15,8 +15,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -92,7 +93,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 		capturePanel.SetTitle(binding.KeyBinding.String())
 		capturePanel.HAlign = align.Middle
 		unison.InstallDefaultFieldBorder(capturePanel, capturePanel)
-		capturePanel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		capturePanel.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 			gc.DrawRect(rect, unison.DefaultFieldTheme.BackgroundInk.Paint(gc, rect, paintstyle.Fill))
 			capturePanel.DefaultDraw(gc, rect)
 		}
@@ -111,7 +112,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 			VAlign:  align.Middle,
 		})
 		capturePanel.SetLayoutData(&unison.FlexLayoutData{
-			MinSize: unison.Size{Width: 100, Height: 50},
+			MinSize: geom.Size{Width: 100, Height: 50},
 			HAlign:  align.Fill,
 			VAlign:  align.Fill,
 			HGrab:   true,

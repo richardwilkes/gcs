@@ -9,14 +9,14 @@
 
 package early
 
-import "github.com/richardwilkes/toolbox/cmdline"
+import "github.com/richardwilkes/toolbox/v2/xos"
 
-// Configure the cmdline data. This is here so that the helper utilities can utilize it as well.
+// Configure the xos data. This is here so that the helper utilities can utilize it as well.
 func Configure() {
-	cmdline.AppName = "GCS"
-	cmdline.AppCmdName = "gcs"
-	cmdline.License = "Mozilla Public License, version 2.0"
-	cmdline.CopyrightStartYear = "1998"
-	cmdline.CopyrightHolder = "Richard A. Wilkes"
-	cmdline.AppIdentifier = "com.trollworks.gcs"
+	xos.AppName = "GCS"
+	xos.AppCmdName = "gcs"
+	xos.License = "Mozilla Public License, version 2.0"
+	xos.CopyrightStartYear = "1998"
+	xos.CopyrightHolder = "Richard A. Wilkes"
+	xos.AppIdentifier = "com.trollworks.gcs"
 }

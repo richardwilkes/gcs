@@ -18,10 +18,9 @@ import (
 	"time"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/atexit"
-	"github.com/richardwilkes/toolbox/cmdline"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xio"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, paths []string) {
@@ -47,23 +46,23 @@ func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, pat
 			}
 			if pathsBuffer, err = json.Marshal(absPaths); err != nil {
 				errs.Log(err, "paths", absPaths)
-				atexit.Exit(1)
+				xos.Exit(1)
 			}
 		}
 		// Port is in use, try connecting as a client and handing off our file list
 		if conn, err := net.DialTimeout("tcp4", address, time.Second); err == nil && handoff(conn, pathsBuffer) {
-			atexit.Exit(0)
+			xos.Exit(0)
 		}
 		// Client can't reach the server, loop around and start the process handoff again
 	}
 	slog.Error("failed to become primary instance and unable to handoff to another copy of GCS")
-	atexit.Exit(1)
+	xos.Exit(1)
 }
 
 func handoff(conn net.Conn, pathsBuffer []byte) bool {
 	slog.Info("handing off to primary instance")
 	defer xio.CloseIgnoringErrors(conn)
-	buffer := make([]byte, len(cmdline.AppIdentifier))
+	buffer := make([]byte, len(xos.AppIdentifier))
 	if err := conn.SetDeadline(time.Now().Add(time.Second)); err != nil {
 		errs.Log(err)
 		return false
@@ -73,7 +72,7 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 		errs.Log(err)
 		return false
 	}
-	if n != len(buffer) || !bytes.Equal(buffer, []byte(cmdline.AppIdentifier)) {
+	if n != len(buffer) || !bytes.Equal(buffer, []byte(xos.AppIdentifier)) {
 		errs.Log(errs.New("unexpected app identifier"))
 		return false
 	}
@@ -113,7 +112,7 @@ func waitForReady(readyChan <-chan struct{}) {
 	case <-time.After(2 * time.Minute):
 		// This is here to try and ensure GCS doesn't hang around in the background if something goes wrong at startup.
 		slog.Error("timed out waiting for app" + driverNote)
-		atexit.Exit(1)
+		xos.Exit(1)
 	}
 }
 
@@ -135,7 +134,7 @@ func processHandoff(conn net.Conn, pathsChan chan<- []string) {
 		errs.Log(err)
 		return
 	}
-	if _, err := conn.Write([]byte(cmdline.AppIdentifier)); err != nil {
+	if _, err := conn.Write([]byte(xos.AppIdentifier)); err != nil {
 		errs.Log(err)
 		return
 	}

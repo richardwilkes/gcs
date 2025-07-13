@@ -18,7 +18,7 @@ func (enum LengthUnit) Format(length Length) string {
 	inches := Int(length)
 	switch enum {
 	case FeetAndInches:
-		feet := inches.Div(Twelve).Trunc()
+		feet := inches.Div(Twelve).Floor()
 		inches -= feet.Mul(Twelve)
 		if feet == 0 && inches == 0 {
 			return "0'"

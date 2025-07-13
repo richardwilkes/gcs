@@ -16,9 +16,9 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xio"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 // Release holds information about a single release of a GitHub repo.
@@ -72,7 +72,7 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 	for _, one := range releases {
 		if strings.HasPrefix(one.TagName, "v") {
 			if version := strings.TrimSpace(one.TagName[1:]); version != "" &&
-				(currentVersion == version || txt.NaturalLess(currentVersion, version, true)) {
+				(currentVersion == version || xstrings.NaturalLess(currentVersion, version, true)) {
 				if filter == nil || !filter(version, one.Body) {
 					versions = append(versions, Release{
 						Version:    version,
@@ -83,7 +83,7 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 			}
 		}
 	}
-	slices.SortFunc(versions, func(a, b Release) int { return txt.NaturalCmp(b.Version, a.Version, true) })
+	slices.SortFunc(versions, func(a, b Release) int { return xstrings.NaturalCmp(b.Version, a.Version, true) })
 	if len(versions) > 1 && versions[len(versions)-1].Version == currentVersion {
 		versions = versions[:len(versions)-1]
 	}

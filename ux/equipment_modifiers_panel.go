@@ -12,6 +12,7 @@ package ux
 import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -36,7 +37,7 @@ func newEquipmentModifiersPanel(owner gurps.DataOwner, modifiers *[]*gurps.Equip
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, geom.NewUniformInsets(1), false))
 	p.provider = NewEquipmentModifiersProvider(p, true)
 	p.table = newEditorTable(p.AsPanel(), p.provider)
 	p.table.RefKey = "equipment-modifiers-" + uuid.New().String()

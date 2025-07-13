@@ -18,8 +18,8 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/xio/fs/safe"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // SaveToFile writes the data as JSON to the given path. Parent directories will be created automatically, if needed.
@@ -27,9 +27,9 @@ func SaveToFile(ctx context.Context, path string, data any) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return errs.Wrap(err)
 	}
-	if err := safe.WriteFileWithMode(path, func(w io.Writer) error {
+	if err := xos.WriteSafeFile(path, func(w io.Writer) error {
 		return Save(ctx, w, data)
-	}, 0o640); err != nil {
+	}); err != nil {
 		return errs.NewWithCause(path, err)
 	}
 	return nil

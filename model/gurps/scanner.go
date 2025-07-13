@@ -16,9 +16,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 // NamedFileRef holds a reference to a file.
@@ -79,7 +79,7 @@ func scanForNamedFileSets(fileSystem fs.FS, dirPath string, extensions []string,
 			return nil
 		}
 		if !d.IsDir() && extMap[path.Ext(name)] {
-			shortName := xfs.TrimExtension(name)
+			shortName := xfilepath.TrimExtension(name)
 			if shortLowerName := strings.ToLower(shortName); !omitDuplicateNames || !set[shortLowerName] {
 				set[shortLowerName] = true
 				list = append(list, &NamedFileRef{
@@ -93,9 +93,9 @@ func scanForNamedFileSets(fileSystem fs.FS, dirPath string, extensions []string,
 	})
 	slices.SortFunc(list, func(a, b *NamedFileRef) int {
 		if a.Name == b.Name {
-			return txt.NaturalCmp(a.FilePath, b.FilePath, true)
+			return xstrings.NaturalCmp(a.FilePath, b.FilePath, true)
 		}
-		return txt.NaturalCmp(a.Name, b.Name, true)
+		return xstrings.NaturalCmp(a.Name, b.Name, true)
 	})
 	return list
 }

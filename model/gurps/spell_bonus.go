@@ -17,8 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Bonus = &SpellBonus{}
@@ -27,8 +27,8 @@ var _ Bonus = &SpellBonus{}
 type SpellBonus struct {
 	Type           feature.Type    `json:"type"`
 	SpellMatchType spellmatch.Type `json:"match"`
-	NameCriteria   criteria.Text   `json:"name,omitempty"`
-	TagsCriteria   criteria.Text   `json:"tags,alt=category,omitempty"`
+	NameCriteria   criteria.Text   `json:"name,omitzero"`
+	TagsCriteria   criteria.Text   `json:"tags,alt=category,omitzero"`
 	LeveledAmount
 	BonusOwner
 }
@@ -69,7 +69,7 @@ func (s *SpellBonus) SetLevel(level fxp.Int) {
 }
 
 // AddToTooltip implements Bonus.
-func (s *SpellBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (s *SpellBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	s.basicAddToTooltip(&s.LeveledAmount, buffer)
 }
 
@@ -81,11 +81,11 @@ func (s *SpellBonus) MatchForType(replacements map[string]string, name, powerSou
 // Hash writes this object's contents into the hasher.
 func (s *SpellBonus) Hash(h hash.Hash) {
 	if s == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, s.Type)
-	hashhelper.Num8(h, s.SpellMatchType)
+	xhash.Num8(h, s.Type)
+	xhash.Num8(h, s.SpellMatchType)
 	s.NameCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)

@@ -18,8 +18,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -56,12 +57,12 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 	locations := gurps.SheetSettingsFor(entity).BodyType
 	p.hash = gurps.Hash64(locations)
 	p.titledBorder = &TitledBorder{Title: locations.Name}
-	p.SetBorder(unison.NewCompoundBorder(p.titledBorder, unison.NewEmptyBorder(unison.Insets{
+	p.SetBorder(unison.NewCompoundBorder(p.titledBorder, unison.NewEmptyBorder(geom.Insets{
 		Left:   2,
 		Bottom: 1,
 		Right:  2,
 	})))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
@@ -100,7 +101,7 @@ func (p *BodyPanel) addContent(locations *gurps.Body) {
 	baseline := header.Font.Baseline() * 0.8
 	header.Drawable = &unison.DrawableSVG{
 		SVG:  svg.FirstAidKit,
-		Size: unison.NewSize(baseline, baseline),
+		Size: geom.NewSize(baseline, baseline),
 	}
 	p.AddChild(header)
 	p.row = nil
@@ -132,7 +133,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		} else {
 			roll = NewPageLabelCenter(rollRange)
 		}
-		border := unison.NewEmptyBorder(unison.Insets{Left: float32(10 * depth), Bottom: 1})
+		border := unison.NewEmptyBorder(geom.Insets{Left: float32(10 * depth), Bottom: 1})
 		roll.SetBorder(border)
 		roll.SetLayoutData(&unison.FlexLayoutData{})
 		p.AddChild(roll)
@@ -162,7 +163,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			size := max(fonts.PageLabelPrimary.Baseline()-2, 6)
 			name.Drawable = &unison.DrawableSVG{
 				SVG:             unison.CircledChevronRightSVG,
-				Size:            unison.NewSize(size, size),
+				Size:            geom.NewSize(size, size),
 				RotationDegrees: rotation,
 			}
 			name.SetLayoutData(&unison.FlexLayoutData{})
@@ -199,7 +200,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		}
 
 		dr := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
-			var tooltip xio.ByteBuffer
+			var tooltip xbytes.InsertBuffer
 			f.SetTitle(location.DisplayDR(p.entity, &tooltip))
 			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"),
 				location.TableName, tooltip.String()))

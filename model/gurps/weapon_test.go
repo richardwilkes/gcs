@@ -14,10 +14,11 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/check"
+	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func TestWeaponParryAndBlockStorage(t *testing.T) {
+	c := check.New(t)
 	const (
 		parryKey = "parry"
 		blockKey = "block"
@@ -25,33 +26,33 @@ func TestWeaponParryAndBlockStorage(t *testing.T) {
 
 	w := gurps.NewWeapon(nil, true)
 	data, err := json.Marshal(w)
-	check.NoError(t, err)
+	c.NoError(err)
 	s := string(data)
-	check.NotContains(t, s, parryKey)
-	check.NotContains(t, s, blockKey)
+	c.NotContains(s, parryKey)
+	c.NotContains(s, blockKey)
 
 	var loadedWeapon gurps.Weapon
-	check.NoError(t, json.Unmarshal(data, &loadedWeapon))
-	check.Equal(t, gurps.WeaponParry{}, loadedWeapon.Parry)
-	check.Equal(t, gurps.WeaponBlock{}, loadedWeapon.Block)
+	c.NoError(json.Unmarshal(data, &loadedWeapon))
+	c.Equal(gurps.WeaponParry{}, loadedWeapon.Parry)
+	c.Equal(gurps.WeaponBlock{}, loadedWeapon.Block)
 
 	w.Parry.CanParry = true
 	w.Block.CanBlock = true
 	data, err = json.Marshal(&w)
-	check.NoError(t, err)
+	c.NoError(err)
 	s = string(data)
-	check.Contains(t, s, parryKey)
-	check.Contains(t, s, blockKey)
+	c.Contains(s, parryKey)
+	c.Contains(s, blockKey)
 
 	w = gurps.NewWeapon(nil, false)
 	data, err = json.Marshal(w)
-	check.NoError(t, err)
+	c.NoError(err)
 	s = string(data)
-	check.NotContains(t, s, parryKey)
-	check.NotContains(t, s, blockKey)
+	c.NotContains(s, parryKey)
+	c.NotContains(s, blockKey)
 
 	loadedWeapon = gurps.Weapon{}
-	check.NoError(t, json.Unmarshal(data, &loadedWeapon))
-	check.Equal(t, gurps.WeaponParry{}, loadedWeapon.Parry)
-	check.Equal(t, gurps.WeaponBlock{}, loadedWeapon.Block)
+	c.NoError(json.Unmarshal(data, &loadedWeapon))
+	c.Equal(gurps.WeaponParry{}, loadedWeapon.Parry)
+	c.Equal(gurps.WeaponBlock{}, loadedWeapon.Block)
 }

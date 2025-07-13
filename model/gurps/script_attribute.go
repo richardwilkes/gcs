@@ -31,14 +31,14 @@ func newScriptAttribute(attr *Attribute) *scriptAttribute {
 		if err != nil {
 			slog.Error("failed to resolve attribute to number", "attr", attr.AttrID, "value", s)
 		}
-		a.Maximum = fxp.As[float64](v)
+		a.Maximum = fxp.AsFloat[float64](v)
 		id := attr.AttrID + ".current"
 		s = attr.Entity.ResolveVariable(id)
 		v, err = fxp.FromString(s)
 		if err != nil {
 			slog.Error("failed to resolve attribute to number", "attr", id, "value", s)
 		}
-		a.Current = fxp.As[float64](v)
+		a.Current = fxp.AsFloat[float64](v)
 	}
 	if def := attr.AttributeDef(); def != nil {
 		switch def.Kind() {

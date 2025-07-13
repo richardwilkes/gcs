@@ -17,9 +17,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Prereq = &SpellPrereq{}
@@ -30,8 +30,8 @@ type SpellPrereq struct {
 	Type              prereq.Type     `json:"type"`
 	SubType           spellcmp.Type   `json:"sub_type"`
 	Has               bool            `json:"has"`
-	QualifierCriteria criteria.Text   `json:"qualifier,omitempty"`
-	QuantityCriteria  criteria.Number `json:"quantity,omitempty"`
+	QualifierCriteria criteria.Text   `json:"qualifier,omitzero"`
+	QuantityCriteria  criteria.Number `json:"quantity,omitzero"`
 }
 
 // NewSpellPrereq creates a new SpellPrereq.
@@ -71,7 +71,7 @@ func (p *SpellPrereq) FillWithNameableKeys(m, existing map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
@@ -120,7 +120,7 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 	if p.SubType == spellcmp.CollegeCount {
 		count = len(colleges)
 	}
-	satisfied := p.QuantityCriteria.Matches(fxp.From(count))
+	satisfied := p.QuantityCriteria.Matches(fxp.FromInteger(count))
 	if !p.Has {
 		satisfied = !satisfied
 	}
@@ -157,12 +157,12 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 // Hash writes this object's contents into the hasher.
 func (p *SpellPrereq) Hash(h hash.Hash) {
 	if p == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, p.Type)
-	hashhelper.Num8(h, p.SubType)
-	hashhelper.Bool(h, p.Has)
+	xhash.Num8(h, p.Type)
+	xhash.Num8(h, p.SubType)
+	xhash.Bool(h, p.Has)
 	p.QualifierCriteria.Hash(h)
 	p.QuantityCriteria.Hash(h)
 }

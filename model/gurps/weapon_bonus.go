@@ -20,9 +20,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Bonus = &WeaponBonus{}
@@ -34,11 +34,11 @@ type WeaponBonus struct {
 	SelectionType          wsel.Type       `json:"selection_type"`
 	SwitchType             wswitch.Type    `json:"switch_type,omitempty"`
 	SwitchTypeValue        bool            `json:"switch_type_value,omitempty"`
-	NameCriteria           criteria.Text   `json:"name,omitempty"`
-	SpecializationCriteria criteria.Text   `json:"specialization,omitempty"`
-	RelativeLevelCriteria  criteria.Number `json:"level,omitempty"`
-	UsageCriteria          criteria.Text   `json:"usage,omitempty"`
-	TagsCriteria           criteria.Text   `json:"tags,alt=category,omitempty"`
+	NameCriteria           criteria.Text   `json:"name,omitzero"`
+	SpecializationCriteria criteria.Text   `json:"specialization,omitzero"`
+	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
+	UsageCriteria          criteria.Text   `json:"usage,omitzero"`
+	TagsCriteria           criteria.Text   `json:"tags,alt=category,omitzero"`
 	WeaponLeveledAmount
 	BonusOwner
 }
@@ -194,7 +194,7 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 		// the per-die feature for this bonus.
 		w.DieCount = fxp.One
 	} else {
-		w.DieCount = fxp.From(wpn.Damage.BaseDamageDice().Count)
+		w.DieCount = fxp.FromInteger(wpn.Damage.BaseDamageDice().Count)
 	}
 	return w.AdjustedAmount()
 }
@@ -215,7 +215,7 @@ func (w *WeaponBonus) SetLevel(level fxp.Int) {
 }
 
 // AddToTooltip implements Bonus.
-func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (w *WeaponBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
 		var buf strings.Builder
 		buf.WriteByte('\n')
@@ -280,14 +280,14 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 // Hash writes this object's contents into the hasher.
 func (w *WeaponBonus) Hash(h hash.Hash) {
 	if w == nil {
-		hashhelper.Num8(h, uint8(255))
+		xhash.Num8(h, uint8(255))
 		return
 	}
-	hashhelper.Num8(h, w.Type)
-	hashhelper.Bool(h, w.Percent)
-	hashhelper.Num8(h, w.SelectionType)
-	hashhelper.Num8(h, w.SwitchType)
-	hashhelper.Bool(h, w.SwitchTypeValue)
+	xhash.Num8(h, w.Type)
+	xhash.Bool(h, w.Percent)
+	xhash.Num8(h, w.SelectionType)
+	xhash.Num8(h, w.SwitchType)
+	xhash.Bool(h, w.SwitchTypeValue)
 	w.NameCriteria.Hash(h)
 	w.SpecializationCriteria.Hash(h)
 	w.RelativeLevelCriteria.Hash(h)

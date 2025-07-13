@@ -17,12 +17,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var (
-	_ json.Omitter     = WeaponAccuracy{}
 	_ json.Marshaler   = WeaponAccuracy{}
 	_ json.Unmarshaler = &(WeaponAccuracy{})
 )
@@ -53,8 +52,8 @@ func ParseWeaponAccuracy(s string) WeaponAccuracy {
 	return wa
 }
 
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wa WeaponAccuracy) ShouldOmit() bool {
+// IsZero implements json.isZero.
+func (wa WeaponAccuracy) IsZero() bool {
 	return wa == WeaponAccuracy{}
 }
 
@@ -75,17 +74,13 @@ func (wa *WeaponAccuracy) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wa WeaponAccuracy) Hash(h hash.Hash) {
-	if wa.ShouldOmit() {
-		hashhelper.Num8(h, uint8(255))
-		return
-	}
-	hashhelper.Num64(h, wa.Base)
-	hashhelper.Num64(h, wa.Scope)
-	hashhelper.Bool(h, wa.Jet)
+	xhash.Num64(h, wa.Base)
+	xhash.Num64(h, wa.Scope)
+	xhash.Bool(h, wa.Jet)
 }
 
 // Resolve any bonuses that apply.
-func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponAccuracy {
+func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponAccuracy {
 	result := wa
 	result.Jet = w.ResolveBoolFlag(wswitch.Jet, result.Jet)
 	if !result.Jet {
@@ -110,10 +105,10 @@ func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 				}
 			}
 			if percentBase != 0 {
-				result.Base += result.Base.Mul(percentBase).Div(fxp.Hundred).Trunc()
+				result.Base += result.Base.Mul(percentBase).Div(fxp.Hundred).Floor()
 			}
 			if percentScope != 0 {
-				result.Scope += result.Scope.Mul(percentScope).Div(fxp.Hundred).Trunc()
+				result.Scope += result.Scope.Mul(percentScope).Div(fxp.Hundred).Floor()
 			}
 		}
 	}

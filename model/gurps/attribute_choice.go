@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
 // AttributeFlags provides flags that can be set to extend the defined attribute choice list.

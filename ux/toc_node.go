@@ -12,7 +12,8 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
 
@@ -98,7 +99,7 @@ func (n *tocNode) ColumnCell(_, _ int, foreground, _ unison.Ink, _, _, _ bool) u
 	label.SetTitle(n.title)
 	label.Drawable = &unison.DrawableSVG{
 		SVG:  img,
-		Size: unison.NewSize(size, size),
+		Size: geom.NewSize(size, size),
 	}
 	return label
 }

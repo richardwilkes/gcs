@@ -17,10 +17,10 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 var _ Hashable = &HitLocation{}
@@ -125,7 +125,7 @@ func (h *HitLocation) OwningTable() *Body {
 
 // DR computes the DR coverage for this HitLocation. If 'tooltip' isn't nil, the buffer will be updated with details on
 // how the DR was calculated. If 'drMap' isn't nil, it will be returned.
-func (h *HitLocation) DR(entity *Entity, tooltip *xio.ByteBuffer, drMap map[string]int) map[string]int {
+func (h *HitLocation) DR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map[string]int) map[string]int {
 	if drMap == nil {
 		drMap = make(map[string]int)
 	}
@@ -144,7 +144,7 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xio.ByteBuffer, drMap map[stri
 		for k := range drMap {
 			keys = append(keys, k)
 		}
-		txt.SortStringsNaturalAscending(keys)
+		xstrings.SortStringsNaturalAscending(keys)
 		base := drMap[AllID]
 		var buffer bytes.Buffer
 		buffer.WriteByte('\n')
@@ -162,7 +162,7 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xio.ByteBuffer, drMap map[stri
 }
 
 // DisplayDR returns the DR for this location, formatted as a string.
-func (h *HitLocation) DisplayDR(entity *Entity, tooltip *xio.ByteBuffer) string {
+func (h *HitLocation) DisplayDR(entity *Entity, tooltip *xbytes.InsertBuffer) string {
 	drMap := h.DR(entity, tooltip, nil)
 	all, exists := drMap[AllID]
 	if !exists {
@@ -175,7 +175,7 @@ func (h *HitLocation) DisplayDR(entity *Entity, tooltip *xio.ByteBuffer) string 
 			keys = append(keys, k)
 		}
 	}
-	txt.SortStringsNaturalAscending(keys[1:])
+	xstrings.SortStringsNaturalAscending(keys[1:])
 	var buffer strings.Builder
 	for _, k := range keys {
 		dr := drMap[k]
@@ -225,18 +225,18 @@ func (h *HitLocation) updateRollRange(start int) int {
 
 // Hash writes this object's contents into the hasher.
 func (h *HitLocation) Hash(hasher hash.Hash) {
-	hashhelper.String(hasher, h.LocID)
-	hashhelper.String(hasher, h.ChoiceName)
-	hashhelper.String(hasher, h.TableName)
-	hashhelper.Num64(hasher, h.Slots)
-	hashhelper.Num64(hasher, h.HitPenalty)
-	hashhelper.Num64(hasher, h.DRBonus)
-	hashhelper.String(hasher, h.Description)
-	hashhelper.String(hasher, h.Notes)
+	xhash.StringWithLen(hasher, h.LocID)
+	xhash.StringWithLen(hasher, h.ChoiceName)
+	xhash.StringWithLen(hasher, h.TableName)
+	xhash.Num64(hasher, h.Slots)
+	xhash.Num64(hasher, h.HitPenalty)
+	xhash.Num64(hasher, h.DRBonus)
+	xhash.StringWithLen(hasher, h.Description)
+	xhash.StringWithLen(hasher, h.Notes)
 	if h.SubTable != nil {
 		h.SubTable.Hash(hasher)
 	} else {
-		hashhelper.Num8(hasher, uint8(255))
+		xhash.Num8(hasher, uint8(255))
 	}
 }
 
@@ -249,7 +249,7 @@ func (h *HitLocation) ResetTargetKeyPrefixes(prefixProvider func() string) {
 }
 
 func (h *HitLocation) rewrap() {
-	h.Description = txt.Wrap("", h.Description, 60)
+	h.Description = xstrings.Wrap("", h.Description, 60)
 	if h.SubTable != nil {
 		for _, loc := range h.SubTable.Locations {
 			loc.rewrap()
