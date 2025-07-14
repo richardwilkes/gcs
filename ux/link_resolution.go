@@ -13,9 +13,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -24,10 +24,10 @@ const WorkingDirKey = "working_dir"
 
 // WorkingDirProvider extracts a working dir for the given panel, if possible, otherwise returns ".".
 func WorkingDirProvider(p unison.Paneler) string {
-	if toolbox.IsNil(p) {
+	if xreflect.IsNil(p) {
 		return "."
 	}
-	if d := unison.AncestorOrSelf[FileBackedDockable](p); !toolbox.IsNil(d) {
+	if d := unison.AncestorOrSelf[FileBackedDockable](p); !xreflect.IsNil(d) {
 		if filePath := d.BackingFilePath(); filePath != "" && !strings.HasPrefix(filePath, markdownContentOnlyPrefix) {
 			return filepath.Dir(filePath)
 		}

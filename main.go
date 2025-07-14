@@ -54,9 +54,13 @@ func main() {
 
 	var logCfg xslog.Config
 	logCfg.AddFlags()
+
+	xflag.AddVersionFlags()
+
 	xflag.Parse()
-	ux.PathToLog = logCfg.RotatorCfg.Path
 	fileList := flag.Args()
+
+	ux.PathToLog = logCfg.RotatorCfg.Path
 
 	ux.RegisterKnownFileTypes()
 	gurps.GlobalSettings() // Here to force early initialization

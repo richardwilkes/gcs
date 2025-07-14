@@ -17,7 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
@@ -130,7 +130,7 @@ func (b *KeyBindings) MakeCurrent() {
 	if len(actions) != 0 {
 		factory := unison.DefaultMenuFactory()
 		for _, w := range unison.Windows() {
-			if bar := factory.BarForWindowNoCreate(w); !toolbox.IsNil(bar) {
+			if bar := factory.BarForWindowNoCreate(w); !xreflect.IsNil(bar) {
 				for _, a := range actions {
 					if item := bar.Item(a.ID); item != nil {
 						item.SetKeyBinding(a.KeyBinding)

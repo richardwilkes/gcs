@@ -11,7 +11,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/check"
 )
@@ -81,7 +81,7 @@ func FocusFirstContent(toolbar, content unison.Paneler) {
 // SetDataOwnerProvider sets the DataOwnerProvider into the client data of the target.
 func SetDataOwnerProvider(target unison.Paneler, provider gurps.DataOwnerProvider) {
 	data := target.AsPanel().ClientData()
-	if toolbox.IsNil(provider) {
+	if xreflect.IsNil(provider) {
 		delete(data, dataOwnerProviderKey)
 	} else {
 		data[dataOwnerProviderKey] = provider

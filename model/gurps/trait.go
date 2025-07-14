@@ -30,11 +30,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -397,7 +397,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 	case TraitLibSrcColumn:
 		data.Type = cell.Text
 		data.Alignment = align.Middle
-		if !toolbox.IsNil(t.owner) {
+		if !xreflect.IsNil(t.owner) {
 			state, _ := t.owner.SourceMatcher().Match(t)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
@@ -811,7 +811,7 @@ func (t *Trait) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (t *Trait) SyncWithSource() {
-	if !toolbox.IsNil(t.owner) {
+	if !xreflect.IsNil(t.owner) {
 		if state, data := t.owner.SourceMatcher().Match(t); state == srcstate.Mismatched {
 			if other, ok := data.(*Trait); ok {
 				t.TraitSyncData = other.TraitSyncData

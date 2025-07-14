@@ -16,10 +16,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
@@ -101,8 +101,8 @@ func (p *spellsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.
 }
 
 func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Spell]]) {
-	if dataOwnerProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !toolbox.IsNil(dataOwnerProvider) {
-		if dataOwner := dataOwnerProvider.DataOwner(); !toolbox.IsNil(dataOwner) {
+	if dataOwnerProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !xreflect.IsNil(dataOwnerProvider) {
+		if dataOwner := dataOwnerProvider.DataOwner(); !xreflect.IsNil(dataOwner) {
 			if entity := dataOwner.OwningEntity(); entity != nil {
 				for _, row := range to.SelectedRows(true) {
 					gurps.Traverse(func(spell *gurps.Spell) bool {

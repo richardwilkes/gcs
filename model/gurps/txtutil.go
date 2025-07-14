@@ -9,7 +9,7 @@
 
 package gurps
 
-import "github.com/richardwilkes/toolbox"
+import "github.com/richardwilkes/toolbox/v2/xreflect"
 
 // LineBuilder is an interface that can be used to build a line of text.
 type LineBuilder interface {
@@ -21,7 +21,7 @@ type LineBuilder interface {
 
 // AppendBufferOntoNewLine appends the contents of the 'from' buffer onto the 'to' buffer, starting on a new line.
 func AppendBufferOntoNewLine(to, from LineBuilder) {
-	if toolbox.IsNil(to) || toolbox.IsNil(from) || from.Len() == 0 {
+	if xreflect.IsNil(to) || xreflect.IsNil(from) || from.Len() == 0 {
 		return
 	}
 	if to.Len() != 0 {
@@ -32,7 +32,7 @@ func AppendBufferOntoNewLine(to, from LineBuilder) {
 
 // AppendStringOntoNewLine appends the contents of the 'from' string onto the 'to' buffer, starting on a new line.
 func AppendStringOntoNewLine(to LineBuilder, from string) {
-	if toolbox.IsNil(to) || from == "" {
+	if xreflect.IsNil(to) || from == "" {
 		return
 	}
 	if to.Len() != 0 {

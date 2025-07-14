@@ -16,7 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
 // DataOwner defines the methods required of data owners.
@@ -93,11 +93,11 @@ func AsNode[T NodeTypes](in T) Node[T] {
 
 // EntityFromNode returns the owning entity of the node, or nil.
 func EntityFromNode[T NodeTypes](node Node[T]) *Entity {
-	if toolbox.IsNil(node) {
+	if xreflect.IsNil(node) {
 		return nil
 	}
 	owner := node.DataOwner()
-	if toolbox.IsNil(owner) {
+	if xreflect.IsNil(owner) {
 		return nil
 	}
 	return owner.OwningEntity()

@@ -28,12 +28,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -451,7 +451,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillLibSrcColumn:
 		data.Type = cell.Text
 		data.Alignment = align.Middle
-		if !toolbox.IsNil(s.owner) {
+		if !xreflect.IsNil(s.owner) {
 			state, _ := s.owner.SourceMatcher().Match(s)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
@@ -1179,7 +1179,7 @@ func (s *Skill) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (s *Skill) SyncWithSource() {
-	if !toolbox.IsNil(s.owner) {
+	if !xreflect.IsNil(s.owner) {
 		if state, data := s.owner.SourceMatcher().Match(s); state == srcstate.Mismatched {
 			if other, ok := data.(*Skill); ok {
 				s.SkillSyncData = other.SkillSyncData

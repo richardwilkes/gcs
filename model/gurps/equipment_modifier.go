@@ -26,11 +26,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -346,7 +346,7 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 	case EquipmentModifierLibSrcColumn:
 		data.Type = cell.Text
 		data.Alignment = align.Middle
-		if !toolbox.IsNil(e.owner) {
+		if !xreflect.IsNil(e.owner) {
 			state, _ := e.owner.SourceMatcher().Match(e)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
@@ -713,7 +713,7 @@ func (e *EquipmentModifier) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (e *EquipmentModifier) SyncWithSource() {
-	if !toolbox.IsNil(e.owner) {
+	if !xreflect.IsNil(e.owner) {
 		if state, data := e.owner.SourceMatcher().Match(e); state == srcstate.Mismatched {
 			if other, ok := data.(*EquipmentModifier); ok {
 				e.EquipmentModifierSyncData = other.EquipmentModifierSyncData

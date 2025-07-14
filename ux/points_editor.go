@@ -19,10 +19,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -71,7 +71,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	slices.SortFunc(e.current, func(a, b *gurps.PointsRecord) int { return b.When.Compare(a.When) })
 
 	if defDC := DefaultDockContainer(); defDC != nil {
-		if e.previousDockable = defDC.CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
+		if e.previousDockable = defDC.CurrentDockable(); !xreflect.IsNil(e.previousDockable) {
 			if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
 				if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
 					e.previousFocusKey = focus.RefKey
@@ -372,7 +372,7 @@ func (e *pointsEditor) AttemptClose() bool {
 	}
 	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
 		dc.Close(e)
-		if !toolbox.IsNil(e.previousDockable) {
+		if !xreflect.IsNil(e.previousDockable) {
 			if dc = unison.Ancestor[*unison.DockContainer](e.previousDockable); dc != nil {
 				dc.SetCurrentDockable(e.previousDockable)
 				if e.previousFocusKey != "" {

@@ -28,12 +28,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -367,7 +367,7 @@ func (w *Weapon) Kind() string {
 }
 
 func (w *Weapon) String() string {
-	if toolbox.IsNil(w.Owner) {
+	if xreflect.IsNil(w.Owner) {
 		return ""
 	}
 	return w.Owner.Description()
@@ -407,7 +407,7 @@ func (w *Weapon) SetOwner(owner WeaponOwner) {
 
 // DataOwner returns the weapon owner's data owner.
 func (w *Weapon) DataOwner() DataOwner {
-	if toolbox.IsNil(w.Owner) {
+	if xreflect.IsNil(w.Owner) {
 		return nil
 	}
 	return w.Owner.DataOwner()
@@ -692,7 +692,7 @@ func (w *Weapon) UsageNotesWithReplacements() string {
 
 // NameableReplacements returns the replacements to be used with this weapon.
 func (w *Weapon) NameableReplacements() map[string]string {
-	if toolbox.IsNil(w.Owner) {
+	if xreflect.IsNil(w.Owner) {
 		return nil
 	}
 	return w.Owner.NameableReplacements()

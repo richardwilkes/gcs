@@ -86,7 +86,7 @@ if [ "$SOMETHING"x != "1x" ]; then
 	BUILD_GO=1
 fi
 
-LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/xos.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
+LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/v2/xos.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
 case $(uname -s) in

@@ -13,9 +13,9 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
 // BonusOwner provides a convenience for implementing the owner & sub-owner methods of Bonus.
@@ -61,11 +61,11 @@ func (b *BonusOwner) basicAddToTooltip(amt *LeveledAmount, buffer *xbytes.Insert
 }
 
 func (b *BonusOwner) parentName() string {
-	if toolbox.IsNil(b.owner) {
+	if xreflect.IsNil(b.owner) {
 		return i18n.Text("Unknown")
 	}
 	owner := b.owner.String()
-	if toolbox.IsNil(b.subOwner) {
+	if xreflect.IsNil(b.subOwner) {
 		return owner
 	}
 	return fmt.Sprintf("%s (%v)", owner, b.subOwner)
@@ -73,12 +73,12 @@ func (b *BonusOwner) parentName() string {
 
 // DerivedLevel returns the level of the sub-owner or owner, if they are LeveledOwners.
 func (b *BonusOwner) DerivedLevel() fxp.Int {
-	if !toolbox.IsNil(b.subOwner) {
+	if !xreflect.IsNil(b.subOwner) {
 		if lo, ok := b.subOwner.(LeveledOwner); ok && lo.IsLeveled() {
 			return lo.CurrentLevel()
 		}
 	}
-	if !toolbox.IsNil(b.owner) {
+	if !xreflect.IsNil(b.owner) {
 		if lo, ok := b.owner.(LeveledOwner); ok && lo.IsLeveled() {
 			return lo.CurrentLevel()
 		}

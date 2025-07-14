@@ -16,8 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
@@ -117,7 +117,7 @@ func (p *traitsProvider) AltDropSupport() *AltDropSupport {
 				rowData := p.table.RowFromIndex(rowIndex).Data()
 				rowData.Modifiers = append(rowData.Modifiers, rows...)
 				p.table.SyncToModel()
-				if !toolbox.IsNil(dataOwner) {
+				if !xreflect.IsNil(dataOwner) {
 					if entity := dataOwner.OwningEntity(); entity != nil {
 						if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
 							rebuilder.Rebuild(true)
