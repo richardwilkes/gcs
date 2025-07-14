@@ -32,7 +32,7 @@ func main() {
 	savedUsage := flag.CommandLine.Usage
 	flag.CommandLine.Usage = func() {
 		savedUsage()
-		fmt.Fprintf(flag.CommandLine.Output(), i18n.Text("\nTranslations dir: \"%s\"\n"), i18n.Dir)
+		fmt.Fprintf(flag.CommandLine.Output(), i18n.Text("Translations dir: \"%s\"\n"), i18n.Dir)
 	}
 
 	// Look for a settings file co-located with the executable and prefer that over the one in the app data dir.
