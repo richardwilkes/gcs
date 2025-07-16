@@ -36,6 +36,7 @@ import (
 
 var (
 	_ FileBackedDockable         = &Template{}
+	_ ExportDockable             = &Template{}
 	_ unison.UndoManagerProvider = &Template{}
 	_ ModifiableRoot             = &Template{}
 	_ Rebuildable                = &Template{}
@@ -177,10 +178,16 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	})
 	t.InstallCmdHandlers(ApplyTemplateItemID, t.canApplyTemplate, t.applyTemplate)
 	t.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, t.newSheetFromTemplate)
+	InstallExportCmdHandlers(t)
 
 	t.template.EnsureAttachments()
 	t.template.SourceMatcher().PrepareHashes(t.template)
 	return t
+}
+
+// PageInfoProvider returns the page info provider for this template.
+func (t *Template) PageInfoProvider() gurps.PageInfoProvider {
+	return t.template
 }
 
 // DockKey implements KeyedDockable.
@@ -640,7 +647,7 @@ func (t *Template) UndoManager() *unison.UndoManager {
 	return t.undoMgr
 }
 
-// TitleIcon implements workspace.FileBackedDockable
+// TitleIcon implements ux.FileBackedDockable
 func (t *Template) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(t.path).SVG,
@@ -648,7 +655,7 @@ func (t *Template) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements workspace.FileBackedDockable
+// Title implements ux.FileBackedDockable
 func (t *Template) Title() string {
 	return xfilepath.BaseName(t.path)
 }
@@ -657,23 +664,23 @@ func (t *Template) String() string {
 	return t.Title()
 }
 
-// Tooltip implements workspace.FileBackedDockable
+// Tooltip implements ux.FileBackedDockable
 func (t *Template) Tooltip() string {
 	return t.path
 }
 
-// BackingFilePath implements workspace.FileBackedDockable
+// BackingFilePath implements ux.FileBackedDockable
 func (t *Template) BackingFilePath() string {
 	return t.path
 }
 
-// SetBackingFilePath implements workspace.FileBackedDockable
+// SetBackingFilePath implements ux.FileBackedDockable
 func (t *Template) SetBackingFilePath(p string) {
 	t.path = p
 	UpdateTitleForDockable(t)
 }
 
-// Modified implements workspace.FileBackedDockable
+// Modified implements ux.FileBackedDockable
 func (t *Template) Modified() bool {
 	return t.hash != gurps.Hash64(t.template)
 }

@@ -1637,3 +1637,8 @@ func (e *Entity) PageTitle() string {
 func (e *Entity) ModifiedOnString() string {
 	return e.ModifiedOn.String()
 }
+
+// PageKeywords implements PageInfoProvider.
+func (e *Entity) PageKeywords() string {
+	return "GCS Character Sheet"
+}

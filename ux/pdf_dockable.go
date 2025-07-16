@@ -733,7 +733,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty geom.Rect, msg str
 	text.Draw(gc, x, r.Y+(r.Height-height)/2+baseline)
 }
 
-// TitleIcon implements workspace.FileBackedDockable
+// TitleIcon implements ux.FileBackedDockable
 func (d *PDFDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(d.path).SVG,
@@ -741,28 +741,28 @@ func (d *PDFDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements workspace.FileBackedDockable
+// Title implements ux.FileBackedDockable
 func (d *PDFDockable) Title() string {
 	return xfilepath.BaseName(d.path)
 }
 
-// Tooltip implements workspace.FileBackedDockable
+// Tooltip implements ux.FileBackedDockable
 func (d *PDFDockable) Tooltip() string {
 	return d.path
 }
 
-// BackingFilePath implements workspace.FileBackedDockable
+// BackingFilePath implements ux.FileBackedDockable
 func (d *PDFDockable) BackingFilePath() string {
 	return d.path
 }
 
-// SetBackingFilePath implements workspace.FileBackedDockable
+// SetBackingFilePath implements ux.FileBackedDockable
 func (d *PDFDockable) SetBackingFilePath(p string) {
 	d.path = p
 	UpdateTitleForDockable(d)
 }
 
-// Modified implements workspace.FileBackedDockable
+// Modified implements ux.FileBackedDockable
 func (d *PDFDockable) Modified() bool {
 	return false
 }

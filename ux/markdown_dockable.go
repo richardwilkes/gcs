@@ -247,7 +247,7 @@ func (d *MarkdownDockable) UndoManager() *unison.UndoManager {
 	return d.undoMgr
 }
 
-// TitleIcon implements workspace.FileBackedDockable
+// TitleIcon implements ux.FileBackedDockable
 func (d *MarkdownDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	if strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		return &unison.DrawableSVG{
@@ -261,12 +261,12 @@ func (d *MarkdownDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements workspace.FileBackedDockable
+// Title implements ux.FileBackedDockable
 func (d *MarkdownDockable) Title() string {
 	return xfilepath.BaseName(d.path)
 }
 
-// Tooltip implements workspace.FileBackedDockable
+// Tooltip implements ux.FileBackedDockable
 func (d *MarkdownDockable) Tooltip() string {
 	if strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		return ""
@@ -274,18 +274,18 @@ func (d *MarkdownDockable) Tooltip() string {
 	return d.BackingFilePath()
 }
 
-// BackingFilePath implements workspace.FileBackedDockable
+// BackingFilePath implements ux.FileBackedDockable
 func (d *MarkdownDockable) BackingFilePath() string {
 	return d.path
 }
 
-// SetBackingFilePath implements workspace.FileBackedDockable
+// SetBackingFilePath implements ux.FileBackedDockable
 func (d *MarkdownDockable) SetBackingFilePath(p string) {
 	d.path = p
 	UpdateTitleForDockable(d)
 }
 
-// Modified implements workspace.FileBackedDockable
+// Modified implements ux.FileBackedDockable
 func (d *MarkdownDockable) Modified() bool {
 	return d.allowEditing && d.original != d.content
 }

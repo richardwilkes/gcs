@@ -157,7 +157,7 @@ func (d *ImageDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 	gc.DrawImage(d.img, 0, 0, nil, nil)
 }
 
-// TitleIcon implements workspace.FileBackedDockable
+// TitleIcon implements ux.FileBackedDockable
 func (d *ImageDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(d.path).SVG,
@@ -165,28 +165,28 @@ func (d *ImageDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements workspace.FileBackedDockable
+// Title implements ux.FileBackedDockable
 func (d *ImageDockable) Title() string {
 	return xfilepath.BaseName(d.path)
 }
 
-// Tooltip implements workspace.FileBackedDockable
+// Tooltip implements ux.FileBackedDockable
 func (d *ImageDockable) Tooltip() string {
 	return d.path
 }
 
-// BackingFilePath implements workspace.FileBackedDockable
+// BackingFilePath implements ux.FileBackedDockable
 func (d *ImageDockable) BackingFilePath() string {
 	return d.path
 }
 
-// SetBackingFilePath implements workspace.FileBackedDockable
+// SetBackingFilePath implements ux.FileBackedDockable
 func (d *ImageDockable) SetBackingFilePath(p string) {
 	d.path = p
 	UpdateTitleForDockable(d)
 }
 
-// Modified implements workspace.FileBackedDockable
+// Modified implements ux.FileBackedDockable
 func (d *ImageDockable) Modified() bool {
 	return false
 }

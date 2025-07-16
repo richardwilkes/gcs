@@ -126,7 +126,7 @@ func (c *Campaign) createContent() unison.Paneler {
 	return c.content
 }
 
-// TitleIcon implements workspace.FileBackedDockable
+// TitleIcon implements ux.FileBackedDockable
 func (c *Campaign) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(c.path).SVG,
@@ -134,7 +134,7 @@ func (c *Campaign) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements workspace.FileBackedDockable
+// Title implements ux.FileBackedDockable
 func (c *Campaign) Title() string {
 	return xfilepath.BaseName(c.path)
 }
@@ -143,12 +143,12 @@ func (c *Campaign) String() string {
 	return c.Title()
 }
 
-// Tooltip implements workspace.FileBackedDockable
+// Tooltip implements ux.FileBackedDockable
 func (c *Campaign) Tooltip() string {
 	return c.path
 }
 
-// Modified implements workspace.FileBackedDockable
+// Modified implements ux.FileBackedDockable
 func (c *Campaign) Modified() bool {
 	return c.hash != gurps.Hash64(c.campaign)
 }
@@ -166,12 +166,12 @@ func (c *Campaign) AttemptClose() bool {
 	return false
 }
 
-// BackingFilePath implements workspace.FileBackedDockable
+// BackingFilePath implements ux.FileBackedDockable
 func (c *Campaign) BackingFilePath() string {
 	return c.path
 }
 
-// SetBackingFilePath implements workspace.FileBackedDockable
+// SetBackingFilePath implements ux.FileBackedDockable
 func (c *Campaign) SetBackingFilePath(p string) {
 	c.path = p
 	UpdateTitleForDockable(c)

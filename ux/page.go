@@ -118,15 +118,21 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	center := unison.NewText(p.infoProvider.PageTitle(), primaryDecorations)
 	left := unison.NewText(fmt.Sprintf(i18n.Text("%s is copyrighted ©%s by %s"), xos.AppName,
 		xos.CopyrightYears(), xos.CopyrightHolder), secondaryDecorations)
-	right := unison.NewText(fmt.Sprintf(i18n.Text("Modified %s"), p.infoProvider.ModifiedOnString()),
+	modifiedOn := p.infoProvider.ModifiedOnString()
+	right := unison.NewText(fmt.Sprintf(i18n.Text("Modified %s"), modifiedOn),
 		secondaryDecorations)
-	if pageNumber&1 == 0 {
-		left, right = right, left
-	}
 	y := r.Y + max(left.Baseline(), right.Baseline(), center.Baseline())
-	left.Draw(gc, r.X, y)
+	leftX := r.X
+	rightX := r.Right() - right.Width()
+	if pageNumber&1 == 0 {
+		leftX = r.Right() - left.Width()
+		rightX = r.X
+	}
+	left.Draw(gc, leftX, y)
 	center.Draw(gc, r.X+(r.Width-center.Width())/2, y)
-	right.Draw(gc, r.Right()-right.Width(), y)
+	if modifiedOn != "" {
+		right.Draw(gc, rightX, y)
+	}
 	y = r.Y + max(left.Height(), right.Height(), center.Height())
 
 	center = unison.NewText(WebSiteDomain, secondaryDecorations)

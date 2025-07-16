@@ -78,7 +78,9 @@ var StdPaperSizes = []PaperSize{
 type PageInfoProvider interface {
 	PageSettings() *PageSettings
 	PageTitle() string
+	PageKeywords() string
 	ModifiedOnString() string
+	ListProvider
 }
 
 // PaperSize holds details about a standard paper size.

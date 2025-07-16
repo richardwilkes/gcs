@@ -239,7 +239,7 @@ func (d *TableDockable[T]) DockableKind() string {
 	return ListDockableKind
 }
 
-// TitleIcon implements workspace.FileBackedDockable
+// TitleIcon implements ux.FileBackedDockable
 func (d *TableDockable[T]) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(d.path).SVG,
@@ -247,7 +247,7 @@ func (d *TableDockable[T]) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements workspace.FileBackedDockable
+// Title implements ux.FileBackedDockable
 func (d *TableDockable[T]) Title() string {
 	return xfilepath.BaseName(d.path)
 }
@@ -256,23 +256,23 @@ func (d *TableDockable[T]) String() string {
 	return d.Title()
 }
 
-// Tooltip implements workspace.FileBackedDockable
+// Tooltip implements ux.FileBackedDockable
 func (d *TableDockable[T]) Tooltip() string {
 	return d.path
 }
 
-// BackingFilePath implements workspace.FileBackedDockable
+// BackingFilePath implements ux.FileBackedDockable
 func (d *TableDockable[T]) BackingFilePath() string {
 	return d.path
 }
 
-// SetBackingFilePath implements workspace.FileBackedDockable
+// SetBackingFilePath implements ux.FileBackedDockable
 func (d *TableDockable[T]) SetBackingFilePath(p string) {
 	d.path = p
 	UpdateTitleForDockable(d)
 }
 
-// Modified implements workspace.FileBackedDockable
+// Modified implements ux.FileBackedDockable
 func (d *TableDockable[T]) Modified() bool {
 	return d.hash != gurps.Hash64(d)
 }

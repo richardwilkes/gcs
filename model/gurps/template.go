@@ -32,7 +32,9 @@ var (
 // Template holds the GURPS Template data that is written to disk.
 type Template struct {
 	TemplateData
-	srcMatcher *SrcMatcher
+	srcMatcher         *SrcMatcher
+	ExplicitModifiedOn string
+	ExplicitPageTitle  string
 }
 
 // TemplateData holds the GURPS Template data that is written to disk.
@@ -83,6 +85,26 @@ func (t *Template) UnmarshalJSON(data []byte) error {
 	}
 	t.EnsureAttachments()
 	return nil
+}
+
+// ModifiedOnString implements PageInfoProvider.
+func (t *Template) ModifiedOnString() string {
+	return t.ExplicitModifiedOn
+}
+
+// PageTitle implements PageInfoProvider.
+func (t *Template) PageTitle() string {
+	return t.ExplicitPageTitle
+}
+
+// PageKeywords implements PageInfoProvider.
+func (t *Template) PageKeywords() string {
+	return "GCS Template Sheet"
+}
+
+// PageSettings implements PageInfoProvider.
+func (t *Template) PageSettings() *PageSettings {
+	return GlobalSettings().Sheet.Page
 }
 
 // DataOwner returns the data owner.

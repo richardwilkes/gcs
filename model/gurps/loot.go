@@ -216,6 +216,11 @@ func (l *Loot) PageTitle() string {
 	return l.Name
 }
 
+// PageKeywords implements PageInfoProvider.
+func (l *Loot) PageKeywords() string {
+	return "GCS Loot Sheet"
+}
+
 // ModifiedOnString implements PageInfoProvider.
 func (l *Loot) ModifiedOnString() string {
 	return l.ModifiedOn.String()

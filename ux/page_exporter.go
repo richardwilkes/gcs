@@ -10,19 +10,26 @@
 package ux
 
 import (
+	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/thememode"
+	"github.com/richardwilkes/unison/printing"
 )
 
 var _ Rebuildable = &pageExporter{}
@@ -32,20 +39,107 @@ const pageKey = "pageKey"
 type pageExporter struct {
 	unison.Panel
 	entity      *gurps.Entity
+	provider    gurps.PageInfoProvider
 	targetMgr   *TargetMgr
 	pages       []*Page
 	currentPage int
 }
 
-func newPageExporter(entity *gurps.Entity) *pageExporter {
-	p := &pageExporter{entity: entity}
+// ExportDockable is an interface for dockables that can be exported to a file.
+type ExportDockable interface {
+	FileBackedDockable
+	PageInfoProvider() gurps.PageInfoProvider
+}
+
+// InstallExportCmdHandlers installs the export command handlers on the given dockable.
+func InstallExportCmdHandlers(dockable ExportDockable) {
+	p := dockable.AsPanel()
+	p.InstallCmdHandlers(ExportAsPDFItemID, unison.AlwaysEnabled, func(_ any) { ExportPage("pdf", dockable) })
+	p.InstallCmdHandlers(ExportAsWEBPItemID, unison.AlwaysEnabled, func(_ any) { ExportPage("webp", dockable) })
+	p.InstallCmdHandlers(ExportAsPNGItemID, unison.AlwaysEnabled, func(_ any) { ExportPage("png", dockable) })
+	p.InstallCmdHandlers(ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { ExportPage("jpeg", dockable) })
+	p.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { Print(dockable) })
+}
+
+// Print the given dockable.
+func Print(dockable ExportDockable) {
+	p := dockable.PageInfoProvider()
+	data, err := newPageExporter(p).exportAsPDFBytes()
+	if err != nil {
+		Workspace.ErrorHandler(i18n.Text("Unable to create print data!"), err)
+		return
+	}
+	dialog := printMgr.NewJobDialog(lastPrinter, "application/pdf", nil)
+	if dialog.RunModal() {
+		go doPrint(p.PageTitle(), dialog.Printer(), dialog.JobAttributes(), data)
+	}
+	if p := dialog.Printer(); p != nil {
+		lastPrinter = p.PrinterID
+	}
+}
+
+func doPrint(title string, printer *printing.Printer, jobAttributes *printing.JobAttributes, data []byte) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	if err := printer.Print(ctx, title, "application/pdf", bytes.NewBuffer(data), len(data), jobAttributes); err != nil {
+		unison.InvokeTask(func() { Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Printing '%s' failed"), title), err) })
+	}
+}
+
+// ExportPage exports the given dockable to the specified file type, one of "pdf", "webp", "png", or "jpeg".
+func ExportPage(ext string, dockable ExportDockable) {
+	if tmplDockable, ok := dockable.(*Template); ok {
+		tmplDockable.template.ExplicitPageTitle = tmplDockable.Title()
+		tmplDockable.template.ExplicitModifiedOn = ""
+	}
+	dockable.AsPanel().Window().ShowCursor()
+	dialog := unison.NewSaveDialog()
+	backingFilePath := dockable.BackingFilePath()
+	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
+	dialog.SetAllowedExtensions(ext)
+	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
+	if dialog.RunModal() {
+		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
+			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
+			exporter := newPageExporter(dockable.PageInfoProvider())
+			var err error
+			switch ext {
+			case "pdf":
+				err = exporter.exportAsPDFFile(filePath)
+			case "webp":
+				err = exporter.exportAsWEBPs(filePath)
+			case "png":
+				err = exporter.exportAsPNGs(filePath)
+			case "jpeg":
+				err = exporter.exportAsJPEGs(filePath)
+			default:
+				err = errs.New("unsupported export format: " + ext)
+			}
+			if err != nil {
+				Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to export as %s!"), ext), err)
+			}
+		}
+	}
+}
+
+func newPageExporter(provider gurps.PageInfoProvider) *pageExporter {
+	p := &pageExporter{provider: provider}
 	p.targetMgr = NewTargetMgr(p)
 	pageSize := p.PageSize()
 	r := geom.Rect{Size: pageSize}
-	page, _, _ := createPageTopBlock(entity, p.targetMgr)
+	var page *Page
+	switch kind := provider.(type) {
+	case *gurps.Entity:
+		p.entity = kind
+		page, _, _ = createPageTopBlock(p.entity, p.targetMgr)
+	case *gurps.Loot:
+		page = createLootTopBlock(kind, p.targetMgr)
+	default:
+		page = NewPage(p.provider)
+	}
 	p.AddChild(page)
 	p.pages = append(p.pages, page)
-	for _, col := range entity.SheetSettings.BlockLayout.ByRow() {
+	for _, col := range gurps.SheetSettingsFor(p.entity).BlockLayout.ByRow() {
 		startAt := make(map[string]int)
 		for {
 			rowPanel := unison.NewPanel()
@@ -56,25 +150,36 @@ func newPageExporter(entity *gurps.Entity) *pageExporter {
 			for _, c := range col {
 				switch c {
 				case gurps.BlockLayoutReactionsKey:
-					addRowPanel(rowPanel, NewReactionsPageList(entity), gurps.BlockLayoutReactionsKey, startAt)
+					if p.entity != nil {
+						addRowPanel(rowPanel, NewReactionsPageList(p.entity), gurps.BlockLayoutReactionsKey, startAt)
+					}
 				case gurps.BlockLayoutConditionalModifiersKey:
-					addRowPanel(rowPanel, NewConditionalModifiersPageList(entity), gurps.BlockLayoutConditionalModifiersKey, startAt)
+					if p.entity != nil {
+						addRowPanel(rowPanel, NewConditionalModifiersPageList(p.entity),
+							gurps.BlockLayoutConditionalModifiersKey, startAt)
+					}
 				case gurps.BlockLayoutMeleeKey:
-					addRowPanel(rowPanel, NewMeleeWeaponsPageList(entity), gurps.BlockLayoutMeleeKey, startAt)
+					if p.entity != nil {
+						addRowPanel(rowPanel, NewMeleeWeaponsPageList(p.entity), gurps.BlockLayoutMeleeKey, startAt)
+					}
 				case gurps.BlockLayoutRangedKey:
-					addRowPanel(rowPanel, NewRangedWeaponsPageList(entity), gurps.BlockLayoutRangedKey, startAt)
+					if p.entity != nil {
+						addRowPanel(rowPanel, NewRangedWeaponsPageList(p.entity), gurps.BlockLayoutRangedKey, startAt)
+					}
 				case gurps.BlockLayoutTraitsKey:
-					addRowPanel(rowPanel, NewTraitsPageList(p, entity), gurps.BlockLayoutTraitsKey, startAt)
+					addRowPanel(rowPanel, NewTraitsPageList(p, provider), gurps.BlockLayoutTraitsKey, startAt)
 				case gurps.BlockLayoutSkillsKey:
-					addRowPanel(rowPanel, NewSkillsPageList(p, entity), gurps.BlockLayoutSkillsKey, startAt)
+					addRowPanel(rowPanel, NewSkillsPageList(p, provider), gurps.BlockLayoutSkillsKey, startAt)
 				case gurps.BlockLayoutSpellsKey:
-					addRowPanel(rowPanel, NewSpellsPageList(p, entity), gurps.BlockLayoutSpellsKey, startAt)
+					addRowPanel(rowPanel, NewSpellsPageList(p, provider), gurps.BlockLayoutSpellsKey, startAt)
 				case gurps.BlockLayoutEquipmentKey:
-					addRowPanel(rowPanel, NewCarriedEquipmentPageList(p, entity), gurps.BlockLayoutEquipmentKey, startAt)
+					addRowPanel(rowPanel, NewCarriedEquipmentPageList(p, provider), gurps.BlockLayoutEquipmentKey,
+						startAt)
 				case gurps.BlockLayoutOtherEquipmentKey:
-					addRowPanel(rowPanel, NewOtherEquipmentPageList(p, entity), gurps.BlockLayoutOtherEquipmentKey, startAt)
+					addRowPanel(rowPanel, NewOtherEquipmentPageList(p, provider), gurps.BlockLayoutOtherEquipmentKey,
+						startAt)
 				case gurps.BlockLayoutNotesKey:
-					addRowPanel(rowPanel, NewNotesPageList(p, entity), gurps.BlockLayoutNotesKey, startAt)
+					addRowPanel(rowPanel, NewNotesPageList(p, provider), gurps.BlockLayoutNotesKey, startAt)
 				}
 			}
 			children := rowPanel.Children()
@@ -108,7 +213,7 @@ func newPageExporter(entity *gurps.Entity) *pageExporter {
 			if startNewPage {
 				// At least one of the columns can't fit at least the header plus the next row, so start a new page
 				page.RemoveChild(rowPanel)
-				page = NewPage(entity)
+				page = NewPage(p.provider)
 				p.AddChild(page)
 				p.pages = append(p.pages, page)
 				page.AddChild(rowPanel)
@@ -147,7 +252,7 @@ func newPageExporter(entity *gurps.Entity) *pageExporter {
 			}
 			if startNewPage {
 				// We've filled the page, so add another
-				page = NewPage(entity)
+				page = NewPage(p.provider)
 				p.AddChild(page)
 				p.pages = append(p.pages, page)
 			}
@@ -240,12 +345,13 @@ func (p *pageExporter) exportAsPDFFile(filePath string) error {
 func (p *pageExporter) exportAsPDF(stream unison.Stream) error {
 	savedColorMode := p.saveTheme()
 	defer p.restoreTheme(savedColorMode)
+	title := p.provider.PageTitle()
 	return unison.CreatePDF(stream, &unison.PDFMetaData{
-		Title:           p.entity.Profile.Name,
+		Title:           title,
 		Author:          xos.CurrentUserName(),
-		Subject:         p.entity.Profile.Name,
-		Keywords:        "GCS Character Sheet",
-		Creator:         "GCS",
+		Subject:         title,
+		Keywords:        p.provider.PageKeywords(),
+		Creator:         xos.AppName,
 		RasterDPI:       300,
 		EncodingQuality: 101,
 	}, p)
@@ -321,7 +427,8 @@ func (p *pageExporter) HasPage(pageNumber int) bool {
 
 // PageSize implements unison.PageProvider.
 func (p *pageExporter) PageSize() geom.Size {
-	w, h := p.entity.SheetSettings.Page.Orientation.Dimensions(gurps.MustParsePageSize(p.entity.SheetSettings.Page.Size))
+	sheetSettings := gurps.SheetSettingsFor(p.entity)
+	w, h := sheetSettings.Page.Orientation.Dimensions(gurps.MustParsePageSize(sheetSettings.Page.Size))
 	return geom.NewSize(w.Pixels(), h.Pixels())
 }
 

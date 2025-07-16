@@ -32,6 +32,7 @@ import (
 
 var (
 	_ FileBackedDockable           = &LootSheet{}
+	_ ExportDockable               = &LootSheet{}
 	_ unison.UndoManagerProvider   = &LootSheet{}
 	_ ModifiableRoot               = &LootSheet{}
 	_ Rebuildable                  = &LootSheet{}
@@ -168,11 +169,7 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	l.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { l.save(true) })
 	l.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, l.Equipment)
 	l.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, l.Notes)
-	l.InstallCmdHandlers(ExportAsPDFItemID, unison.AlwaysEnabled, func(_ any) { l.exportToPDF() })
-	l.InstallCmdHandlers(ExportAsWEBPItemID, unison.AlwaysEnabled, func(_ any) { l.exportToWEBP() })
-	l.InstallCmdHandlers(ExportAsPNGItemID, unison.AlwaysEnabled, func(_ any) { l.exportToPNG() })
-	l.InstallCmdHandlers(ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { l.exportToJPEG() })
-	l.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { l.print() })
+	InstallExportCmdHandlers(l)
 
 	l.loot.EnsureAttachments()
 	l.loot.SourceMatcher().PrepareHashes(l.loot)
@@ -322,7 +319,7 @@ func (l *LootSheet) UndoManager() *unison.UndoManager {
 	return l.undoMgr
 }
 
-// TitleIcon implements workspace.FileBackedDockable
+// TitleIcon implements ux.FileBackedDockable
 func (l *LootSheet) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(l.path).SVG,
@@ -330,7 +327,7 @@ func (l *LootSheet) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements workspace.FileBackedDockable
+// Title implements ux.FileBackedDockable
 func (l *LootSheet) Title() string {
 	return xfilepath.BaseName(l.path)
 }
@@ -339,12 +336,12 @@ func (l *LootSheet) String() string {
 	return l.Title()
 }
 
-// Tooltip implements workspace.FileBackedDockable
+// Tooltip implements ux.FileBackedDockable
 func (l *LootSheet) Tooltip() string {
 	return l.path
 }
 
-// BackingFilePath implements workspace.FileBackedDockable
+// BackingFilePath implements ux.FileBackedDockable
 func (l *LootSheet) BackingFilePath() string {
 	if l.needsSaveAsPrompt {
 		name := strings.TrimSpace(l.loot.Name)
@@ -356,13 +353,13 @@ func (l *LootSheet) BackingFilePath() string {
 	return l.path
 }
 
-// SetBackingFilePath implements workspace.FileBackedDockable
+// SetBackingFilePath implements ux.FileBackedDockable
 func (l *LootSheet) SetBackingFilePath(p string) {
 	l.path = p
 	UpdateTitleForDockable(l)
 }
 
-// Modified implements workspace.FileBackedDockable
+// Modified implements ux.FileBackedDockable
 func (l *LootSheet) Modified() bool {
 	return l.hash != gurps.Hash64(l.loot)
 }
@@ -513,87 +510,9 @@ func (l *LootSheet) createLists() {
 	page.ApplyPreferredSize()
 }
 
-func (l *LootSheet) print() {
-	data, err := newLootPageExporter(l.loot).exportAsPDFBytes()
-	if err != nil {
-		Workspace.ErrorHandler(i18n.Text("Unable to create PDF!"), err)
-		return
-	}
-	dialog := printMgr.NewJobDialog(lastPrinter, "application/pdf", nil)
-	if dialog.RunModal() {
-		go backgroundPrint(l.loot.Name, dialog.Printer(), dialog.JobAttributes(), data)
-	}
-	if p := dialog.Printer(); p != nil {
-		lastPrinter = p.PrinterID
-	}
-}
-
-func (l *LootSheet) exportToPDF() {
-	l.Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
-	backingFilePath := l.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions("pdf")
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			if err := newLootPageExporter(l.loot).exportAsPDFFile(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to export as PDF!"), err)
-			}
-		}
-	}
-}
-
-func (l *LootSheet) exportToWEBP() {
-	l.Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
-	backingFilePath := l.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions("webp")
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "webp", false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			if err := newLootPageExporter(l.loot).exportAsWEBPs(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to export as WEBP!"), err)
-			}
-		}
-	}
-}
-
-func (l *LootSheet) exportToPNG() {
-	l.Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
-	backingFilePath := l.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions("png")
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "png", false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			if err := newLootPageExporter(l.loot).exportAsPNGs(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to export as PNG!"), err)
-			}
-		}
-	}
-}
-
-func (l *LootSheet) exportToJPEG() {
-	l.Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
-	backingFilePath := l.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions("jpeg")
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "jpeg", false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			if err := newLootPageExporter(l.loot).exportAsJPEGs(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to export as JPEG!"), err)
-			}
-		}
-	}
+// PageInfoProvider returns the page info provider for this sheet.
+func (l *LootSheet) PageInfoProvider() gurps.PageInfoProvider {
+	return l.loot
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.

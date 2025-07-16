@@ -10,13 +10,10 @@
 package ux
 
 import (
-	"bytes"
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -40,6 +37,7 @@ const SkipDeepSync = "!deepsync"
 
 var (
 	_ FileBackedDockable           = &Sheet{}
+	_ ExportDockable               = &Sheet{}
 	_ unison.UndoManagerProvider   = &Sheet{}
 	_ ModifiableRoot               = &Sheet{}
 	_ Rebuildable                  = &Sheet{}
@@ -220,15 +218,16 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 			}, gurps.NewNaturalAttacks(s.entity, nil))
 	})
 	s.InstallCmdHandlers(SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
-	s.InstallCmdHandlers(ExportAsPDFItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPDF() })
-	s.InstallCmdHandlers(ExportAsWEBPItemID, unison.AlwaysEnabled, func(_ any) { s.exportToWEBP() })
-	s.InstallCmdHandlers(ExportAsPNGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPNG() })
-	s.InstallCmdHandlers(ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToJPEG() })
-	s.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
+	InstallExportCmdHandlers(s)
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
 	s.InstallCmdHandlers(ExportPortraitItemID, s.canExportPortrait, s.exportPortrait)
 	s.InstallCmdHandlers(CloneSheetItemID, unison.AlwaysEnabled, func(_ any) { s.cloneSheet() })
 	return s
+}
+
+// PageInfoProvider returns the page info provider for this sheet.
+func (s *Sheet) PageInfoProvider() gurps.PageInfoProvider {
+	return s.entity
 }
 
 // CloneSheet loads the specified sheet file and creates a new character sheet from it.
@@ -468,7 +467,7 @@ func (s *Sheet) UndoManager() *unison.UndoManager {
 	return s.undoMgr
 }
 
-// TitleIcon implements workspace.FileBackedDockable
+// TitleIcon implements ux.FileBackedDockable
 func (s *Sheet) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  gurps.FileInfoFor(s.path).SVG,
@@ -476,7 +475,7 @@ func (s *Sheet) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements workspace.FileBackedDockable
+// Title implements ux.FileBackedDockable
 func (s *Sheet) Title() string {
 	return xfilepath.BaseName(s.BackingFilePath())
 }
@@ -485,12 +484,12 @@ func (s *Sheet) String() string {
 	return s.Title()
 }
 
-// Tooltip implements workspace.FileBackedDockable
+// Tooltip implements ux.FileBackedDockable
 func (s *Sheet) Tooltip() string {
 	return s.BackingFilePath()
 }
 
-// BackingFilePath implements workspace.FileBackedDockable
+// BackingFilePath implements ux.FileBackedDockable
 func (s *Sheet) BackingFilePath() string {
 	if s.needsSaveAsPrompt {
 		name := strings.TrimSpace(s.entity.Profile.Name)
@@ -502,13 +501,13 @@ func (s *Sheet) BackingFilePath() string {
 	return s.path
 }
 
-// SetBackingFilePath implements workspace.FileBackedDockable
+// SetBackingFilePath implements ux.FileBackedDockable
 func (s *Sheet) SetBackingFilePath(p string) {
 	s.path = p
 	UpdateTitleForDockable(s)
 }
 
-// Modified implements workspace.FileBackedDockable
+// Modified implements ux.FileBackedDockable
 func (s *Sheet) Modified() bool {
 	return s.hash != gurps.Hash64(s.entity)
 }
@@ -567,97 +566,6 @@ func (s *Sheet) save(forceSaveAs bool) bool {
 		s.needsSaveAsPrompt = false
 	}
 	return success
-}
-
-func (s *Sheet) print() {
-	data, err := newPageExporter(s.entity).exportAsPDFBytes()
-	if err != nil {
-		Workspace.ErrorHandler(i18n.Text("Unable to create PDF!"), err)
-		return
-	}
-	dialog := printMgr.NewJobDialog(lastPrinter, "application/pdf", nil)
-	if dialog.RunModal() {
-		go backgroundPrint(s.entity.Profile.Name, dialog.Printer(), dialog.JobAttributes(), data)
-	}
-	if p := dialog.Printer(); p != nil {
-		lastPrinter = p.PrinterID
-	}
-}
-
-func backgroundPrint(title string, printer *printing.Printer, jobAttributes *printing.JobAttributes, data []byte) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
-	if err := printer.Print(ctx, title, "application/pdf", bytes.NewBuffer(data), len(data), jobAttributes); err != nil {
-		unison.InvokeTask(func() { Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Printing '%s' failed"), title), err) })
-	}
-}
-
-func (s *Sheet) exportToPDF() {
-	s.Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
-	backingFilePath := s.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions("pdf")
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			if err := newPageExporter(s.entity).exportAsPDFFile(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to export as PDF!"), err)
-			}
-		}
-	}
-}
-
-func (s *Sheet) exportToWEBP() {
-	s.Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
-	backingFilePath := s.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions("webp")
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "webp", false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			if err := newPageExporter(s.entity).exportAsWEBPs(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to export as WEBP!"), err)
-			}
-		}
-	}
-}
-
-func (s *Sheet) exportToPNG() {
-	s.Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
-	backingFilePath := s.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions("png")
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "png", false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			if err := newPageExporter(s.entity).exportAsPNGs(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to export as PNG!"), err)
-			}
-		}
-	}
-}
-
-func (s *Sheet) exportToJPEG() {
-	s.Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
-	backingFilePath := s.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions("jpeg")
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "jpeg", false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			if err := newPageExporter(s.entity).exportAsJPEGs(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to export as JPEG!"), err)
-			}
-		}
-	}
 }
 
 func (s *Sheet) createLists() {
