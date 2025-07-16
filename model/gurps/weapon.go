@@ -470,10 +470,17 @@ func (w *Weapon) usesCrossbowSkill() bool {
 func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var adj fxp.Int
 	minST := w.Strength.Resolve(w, nil).Min
-	if !w.IsRanged() || (w.Range.MusclePowered && !w.usesCrossbowSkill()) {
-		minST -= e.StrikingStrength()
-	} else {
-		minST -= e.LiftingStrength()
+	switch w.Damage.StrengthType {
+	case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
+		minST -= e.TelekineticStrength()
+	case stdmg.IQThrust, stdmg.IQSwing:
+		minST -= e.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
+	default:
+		if !w.IsRanged() || (w.Range.MusclePowered && !w.usesCrossbowSkill()) {
+			minST -= e.StrikingStrength()
+		} else {
+			minST -= e.LiftingStrength()
+		}
 	}
 	if minST > 0 {
 		adj -= minST

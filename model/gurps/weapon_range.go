@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -117,7 +118,14 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 		}
 		if st == 0 {
 			if entity := w.Entity(); entity != nil {
-				st = entity.ThrowingStrength()
+				switch w.Damage.StrengthType {
+				case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
+					st = entity.TelekineticStrength()
+				case stdmg.IQThrust, stdmg.IQSwing:
+					st = entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
+				default:
+					st = entity.ThrowingStrength()
+				}
 			}
 		}
 		var percentMin fxp.Int
