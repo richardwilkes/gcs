@@ -41,6 +41,9 @@ linters:
         - (*bufio.Writer).WriteByte
         - (*bufio.Writer).WriteRune
         - (*bufio.Writer).WriteString
+        - (*github.com/richardwilkes/toolbox/v2/xterm.AnsiWriter).Write
+        - (*github.com/richardwilkes/toolbox/v2/xterm.AnsiWriter).WriteByte
+        - (*github.com/richardwilkes/toolbox/v2/xterm.AnsiWriter).WriteString
         - (*github.com/richardwilkes/toolbox/v2/xbytes.InsertBuffer).Insert
         - (*github.com/richardwilkes/toolbox/v2/xbytes.InsertBuffer).InsertByte
         - (*github.com/richardwilkes/toolbox/v2/xbytes.InsertBuffer).InsertRune

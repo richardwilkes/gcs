@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xflag"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xslog"
+	"github.com/richardwilkes/toolbox/v2/xterm"
 	"github.com/richardwilkes/unison"
 )
 
@@ -28,11 +29,22 @@ func main() {
 	early.Configure()
 	ux.LoadLanguageSetting()
 	unison.AttachConsole()
-	xflag.SetUsage(nil, ux.AppDescription(), i18n.Text("<file>..."))
+	xflag.SetUsage(nil, ux.AppDescription(), i18n.Text("[file]..."))
 	savedUsage := flag.CommandLine.Usage
 	flag.CommandLine.Usage = func() {
 		savedUsage()
-		fmt.Fprintf(flag.CommandLine.Output(), i18n.Text("Translations dir: \"%s\"\n"), i18n.Dir)
+		var w *xterm.AnsiWriter
+		switch out := flag.CommandLine.Output().(type) {
+		case *xterm.AnsiWriter:
+			w = out
+		default:
+			w = xterm.NewAnsiWriter(out)
+		}
+		w.WriteString(i18n.Text("Translations dir: "))
+		w.Blue()
+		w.WriteString(i18n.Dir)
+		w.Reset()
+		w.WriteByte('\n')
 	}
 
 	// Look for a settings file co-located with the executable and prefer that over the one in the app data dir.
@@ -46,7 +58,7 @@ func main() {
 	}
 	flag.StringVar(&gurps.SettingsPath, "settings", gurps.SettingsPath, i18n.Text("The `file` to load settings from and store them into"))
 
-	textTmplPath := flag.String("text", "", i18n.Text("Export sheets using the specified template `file`"))
+	textTmplPath := flag.String("text", "", i18n.Text("Export sheets using the specified text template `file`"))
 
 	convertFiles := flag.Bool("convert", false, i18n.Text("Convert all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"))
 
