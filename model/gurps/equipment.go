@@ -83,7 +83,7 @@ type EquipmentEditData struct {
 	Replacements map[string]string    `json:"replacements,omitempty"`
 	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
 	RatedST      fxp.Int              `json:"rated_strength,omitempty"`
-	Quantity     fxp.Int              `json:"quantity,omitempty"`
+	Quantity     fxp.Int              `json:"quantity"`
 	Level        fxp.Int              `json:"level,omitempty"`
 	Uses         int                  `json:"uses,omitempty"`
 	Equipped     bool                 `json:"equipped,omitempty"`

@@ -11,7 +11,7 @@ package early
 
 import "github.com/richardwilkes/toolbox/v2/xos"
 
-// Configure the xos data. This is here so that the helper utilities can utilize it as well.
+// Configure the app data. This is here so that the helper utilities can utilize it as well.
 func Configure() {
 	xos.AppName = "GCS"
 	xos.AppCmdName = "gcs"
