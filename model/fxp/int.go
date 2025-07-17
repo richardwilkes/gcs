@@ -81,6 +81,7 @@ var (
 	TwoThousand         = FromInteger(2000)
 	ThirtySixHundred    = FromInteger(3600)
 	TenThousandMinusOne = FromInteger(9999)
+	TenThousand         = FromInteger(10000)
 	ThirtySixThousand   = FromInteger(36000)
 	MileInInches        = FromInteger(63360)
 	MillionMinusOne     = FromInteger(999999)

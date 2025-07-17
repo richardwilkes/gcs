@@ -93,6 +93,8 @@ type Settings struct {
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
 	Closed             map[string]int64           `json:"closed,omitempty"`
 	PDFs               map[string]*PDFInfo        `json:"pdfs,omitempty"`
+	LootGenMinValue    fxp.Int                    `json:"loot_gen_min_value"`
+	LootGenMaxValue    fxp.Int                    `json:"loot_gen_max_value"`
 }
 
 // IDer defines the methods required of objects that have an ID.
@@ -192,6 +194,15 @@ func (s *Settings) EnsureValidity() {
 	}
 	if s.PDFs == nil {
 		s.PDFs = make(map[string]*PDFInfo)
+	}
+	if s.LootGenMinValue <= 0 {
+		s.LootGenMinValue = fxp.Thousand
+	}
+	if s.LootGenMaxValue <= 0 {
+		s.LootGenMaxValue = fxp.TenThousand
+	}
+	if s.LootGenMaxValue < s.LootGenMinValue {
+		s.LootGenMaxValue = s.LootGenMinValue
 	}
 	if s.Sheet == nil {
 		s.Sheet = FactorySheetSettings()

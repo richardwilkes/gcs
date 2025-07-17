@@ -589,15 +589,16 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 	})
 	input.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 	input.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 4}))
-	minValue := fxp.Thousand
-	maxValue := fxp.TwoThousand
+	settings := gurps.GlobalSettings()
+	minValue := settings.LootGenMinValue
+	maxValue := settings.LootGenMaxValue
 	var dialog *unison.Dialog
 	var minField, maxField *DecimalField
 	validateOK := func() {
 		dialog.Button(unison.ModalResponseOK).SetEnabled(minValue <= maxValue && maxValue >= minValue &&
 			!minField.Invalid() && !maxField.Invalid())
 	}
-	label := i18n.Text("Minimum Value")
+	label := i18n.Text("Target (Minimum) Value")
 	input.AddChild(NewFieldLeadingLabel(label, false))
 	minField = NewDecimalField(nil, "", label,
 		func() fxp.Int { return minValue },
@@ -605,7 +606,7 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 			minValue = value
 			validateOK()
 		},
-		fxp.One, fxp.FromInteger(1000000), false, false)
+		fxp.One, fxp.TenMillionMinusOne, false, false)
 	input.AddChild(minField)
 	label = i18n.Text("Maximum Value")
 	input.AddChild(NewFieldLeadingLabel(label, false))
@@ -615,7 +616,7 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 			maxValue = value
 			validateOK()
 		},
-		fxp.One, fxp.FromInteger(1000000), false, false)
+		fxp.One, fxp.TenMillionMinusOne, false, false)
 	input.AddChild(maxField)
 	content.AddChild(input)
 	icon := &unison.DrawableSVG{
@@ -632,6 +633,8 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 	if dialog.RunModal() == unison.ModalResponseOK {
 		var current fxp.Int
 		r := xrand.New()
+		settings.LootGenMinValue = minValue
+		settings.LootGenMaxValue = maxValue
 		m := make(map[*gurps.Equipment]int)
 		for range 10 {
 			choices, total, highest := pruneEquipmentList(maxValue-current, l.loot.Equipment)
