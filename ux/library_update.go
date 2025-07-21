@@ -63,7 +63,7 @@ documents from the library are open.`))
 		return false
 	}
 	content := unison.NewPanel()
-	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
+	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.NewUniformInsets(2*unison.StdHSpacing))))
 	content.SetLayout(&unison.FlexLayout{
 		Columns:  1,

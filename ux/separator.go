@@ -35,7 +35,7 @@ func NewToolbarSeparator() *unison.Separator {
 		rect := spacer.ContentRect(false)
 		paint := spacer.LineInk.Paint(canvas, rect, paintstyle.Stroke)
 		paint.SetPathEffect(unison.NewDashPathEffect([]float32{2, 2}, 0))
-		canvas.DrawLine(rect.X, rect.Y, rect.X, rect.Bottom(), paint)
+		canvas.DrawLine(rect.Point, rect.BottomLeft(), paint)
 	}
 	return spacer
 }

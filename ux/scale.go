@@ -23,10 +23,11 @@ const ScaleDelta = 10
 func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(int), afterApply func(), attemptCenter bool, scroller *unison.ScrollPanel) *PercentageField {
 	applyFunc := func() {
 		scale := float32(get()) / 100
+		scalePt := geom.NewPoint(scale, scale)
 		if header := scroller.ColumnHeader(); !xreflect.IsNil(header) {
-			header.AsPanel().SetScale(scale)
+			header.AsPanel().SetScale(scalePt)
 		}
-		scroller.Content().AsPanel().SetScale(scale)
+		scroller.Content().AsPanel().SetScale(scalePt)
 	}
 	scaleTitle := i18n.Text("Scale")
 	overrideCenter := false

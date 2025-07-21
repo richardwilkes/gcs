@@ -152,8 +152,8 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	}
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
+		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,

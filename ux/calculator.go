@@ -178,8 +178,8 @@ func UpdateCalculator(sheet *Sheet) {
 
 func (c *Calculator) createToolbar() *unison.Panel {
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
+		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(

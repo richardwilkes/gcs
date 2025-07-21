@@ -98,7 +98,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	})
 	label.SetBorder(
 		unison.NewCompoundBorder(
-			unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1}, false),
+			unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.Insets{Bottom: 1}, false),
 			unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 3}),
 		),
 	)
@@ -107,7 +107,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), gurps.ScriptSelfProvider{}, e.editorData.MarkDown), 0)
 
 	markdownWrapper := unison.NewPanel()
-	markdownWrapper.SetScale(1.33)
+	markdownWrapper.SetScale(geom.NewPoint(1.33, 1.33))
 	markdownWrapper.SetLayout(&unison.FlexLayout{Columns: 1})
 	markdownWrapper.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,

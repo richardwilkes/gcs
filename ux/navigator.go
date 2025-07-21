@@ -99,7 +99,8 @@ func newNavigator() *Navigator {
 	n.needReload = true
 	rows := n.populateRows()
 	n.needReload = false
-	n.table.SetScale(float32(globalSettings.General.NavigatorUIScale) / 100)
+	scale := float32(globalSettings.General.NavigatorUIScale) / 100
+	n.table.SetScale(geom.NewPoint(scale, scale))
 	n.table.SetRootRows(rows)
 	n.table.SizeColumnsToFit(true)
 
@@ -258,8 +259,8 @@ func (n *Navigator) setupToolBar() {
 		HSpacing: unison.StdHSpacing,
 	})
 
-	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
+	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
+		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	n.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		VSpacing: unison.StdVSpacing,

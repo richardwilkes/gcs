@@ -8,12 +8,12 @@ require (
 	github.com/richardwilkes/json v0.4.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
-	github.com/richardwilkes/toolbox/v2 v2.2.0
-	github.com/richardwilkes/unison v0.82.0
+	github.com/richardwilkes/toolbox/v2 v2.2.1-0.20250720231922-7ecdd530286f
+	github.com/richardwilkes/unison v0.82.1-0.20250721185009-02c74eb7ba0e
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
-	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc
+	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792
 	golang.org/x/image v0.29.0
 	golang.org/x/sys v0.34.0
 	golang.org/x/text v0.27.0

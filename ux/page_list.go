@@ -140,7 +140,7 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetBorder(unison.NewLineBorder(header.BackgroundInk, 0, geom.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(header.BackgroundInk, geom.Size{}, geom.NewUniformInsets(1), false))
 
 	p.Table.PreventUserColumnResize = true
 	p.Table.SyncToModel()

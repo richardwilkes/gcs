@@ -79,7 +79,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 		r := progress.ContentRect(true)
 		r.Y += unison.StdVSpacing * 2
 		r.Height -= unison.StdVSpacing * 2
-		gc.DrawRoundedRect(r, 8, 8, progressBackground.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRoundedRect(r, geom.NewUniformSize(8), progressBackground.Paint(gc, r, paintstyle.Fill))
 		progress.DefaultDraw(gc, r)
 	}
 	boxes := make([]*unison.CheckBox, 0, len(children))
@@ -123,7 +123,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	}
 
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
 	scroll.SetLayoutData(&unison.FlexLayoutData{

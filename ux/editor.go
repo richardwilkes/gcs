@@ -149,8 +149,8 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 
 func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
+		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	toolbar.AddChild(NewDefaultInfoPop())
 

@@ -226,8 +226,10 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 						paint := unison.ThemeSurfaceEdge.Paint(gc, rect, paintstyle.Stroke)
 						paint.SetStrokeWidth(1)
 						half := (rect.Width - pref.Width) / 2
-						gc.DrawLine(rect.X, rect.CenterY(), rect.X+half-2, rect.CenterY(), paint)
-						gc.DrawLine(2+rect.Right()-half, rect.CenterY(), rect.Right(), rect.CenterY(), paint)
+						gc.DrawLine(geom.NewPoint(rect.X, rect.CenterY()),
+							geom.NewPoint(rect.X+half-2, rect.CenterY()), paint)
+						gc.DrawLine(geom.NewPoint(2+rect.Right()-half, rect.CenterY()),
+							geom.NewPoint(rect.Right(), rect.CenterY()), paint)
 						label.DefaultDraw(gc, rect)
 					}
 					panel.AddChild(label)

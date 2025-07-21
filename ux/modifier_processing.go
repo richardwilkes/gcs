@@ -134,7 +134,7 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 		children[len(children)-1].SetBorder(unison.NewEmptyBorder(insets))
 	}
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
 	scroll.SetLayoutData(&unison.FlexLayoutData{

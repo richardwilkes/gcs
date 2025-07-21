@@ -128,10 +128,10 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 		leftX = r.Right() - left.Width()
 		rightX = r.X
 	}
-	left.Draw(gc, leftX, y)
-	center.Draw(gc, r.X+(r.Width-center.Width())/2, y)
+	left.Draw(gc, geom.NewPoint(leftX, y))
+	center.Draw(gc, geom.NewPoint(r.X+(r.Width-center.Width())/2, y))
 	if modifiedOn != "" {
-		right.Draw(gc, rightX, y)
+		right.Draw(gc, geom.NewPoint(rightX, y))
 	}
 	y = r.Y + max(left.Height(), right.Height(), center.Height())
 
@@ -142,7 +142,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 		left, right = right, left
 	}
 	y += max(left.Baseline(), right.Baseline(), center.Baseline())
-	left.Draw(gc, r.X, y)
-	center.Draw(gc, r.X+(r.Width-center.Width())/2, y)
-	right.Draw(gc, r.Right()-right.Width(), y)
+	left.Draw(gc, geom.NewPoint(r.X, y))
+	center.Draw(gc, geom.NewPoint(r.X+(r.Width-center.Width())/2, y))
+	right.Draw(gc, geom.NewPoint(r.Right()-right.Width(), y))
 }

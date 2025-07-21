@@ -287,6 +287,6 @@ func (d *bodySettingsDockable) drawOver(gc *unison.Canvas, rect geom.Rect) {
 		paint := unison.ThemeWarning.Paint(gc, rect, paintstyle.Stroke)
 		paint.SetStrokeWidth(2)
 		r := d.content.RectFromRoot(d.dragTarget.RectToRoot(d.dragTarget.ContentRect(false)))
-		gc.DrawLine(r.X, pt.Y, r.Right(), pt.Y, paint)
+		gc.DrawLine(geom.NewPoint(r.X, pt.Y), geom.NewPoint(r.Right(), pt.Y), paint)
 	}
 }

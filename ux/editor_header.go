@@ -172,7 +172,8 @@ func (h *PageTableColumnHeader[T]) DefaultDraw(gc *unison.Canvas, dirty geom.Rec
 		if h.sortState.Ascending {
 			y = r.Bottom() - 1
 		}
-		gc.DrawLine(r.X, y, r.Right(), y, unison.ThemeFocus.Paint(gc, r, paintstyle.Stroke))
+		gc.DrawLine(geom.NewPoint(r.X, y), geom.NewPoint(r.Right(), y),
+			unison.ThemeFocus.Paint(gc, r, paintstyle.Stroke))
 		save := h.OnBackgroundInk
 		h.OnBackgroundInk = unison.ThemeFocus
 		h.Label.DefaultDraw(gc, dirty)

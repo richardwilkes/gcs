@@ -184,7 +184,7 @@ func (l *LootSheet) DockKey() string {
 func (l *LootSheet) createToolbar() {
 	l.toolbar = unison.NewPanel()
 	l.AddChild(l.toolbar)
-	l.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
+	l.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	l.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

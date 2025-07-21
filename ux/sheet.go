@@ -272,7 +272,7 @@ func (s *Sheet) DockKey() string {
 func (s *Sheet) createToolbar() {
 	s.toolbar = unison.NewPanel()
 	s.AddChild(s.toolbar)
-	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
+	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

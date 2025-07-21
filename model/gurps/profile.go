@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -57,7 +58,7 @@ func (p *Profile) Update(entity *Entity) {
 func (p *Profile) Portrait() *unison.Image {
 	if p.PortraitImage == nil && len(p.PortraitData) != 0 {
 		var err error
-		if p.PortraitImage, err = unison.NewImageFromBytes(p.PortraitData, 0.5); err != nil {
+		if p.PortraitImage, err = unison.NewImageFromBytes(p.PortraitData, geom.NewPoint(0.5, 0.5)); err != nil {
 			errs.Log(errs.NewWithCause("unable to load portrait data", err))
 			p.PortraitImage = nil
 			p.PortraitData = nil

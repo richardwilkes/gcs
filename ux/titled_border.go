@@ -58,5 +58,5 @@ func (t *TitledBorder) Draw(gc *unison.Canvas, rect geom.Rect) {
 		Font:            t.font(),
 		OnBackgroundInk: colors.OnHeader,
 	})
-	text.Draw(gc, rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline())
+	text.Draw(gc, geom.NewPoint(rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline()))
 }

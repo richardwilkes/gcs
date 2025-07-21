@@ -34,7 +34,7 @@ import (
 const (
 	minPDFDockableScale                = 50
 	maxPDFDockableScale                = 200
-	scaleCompensation                  = float32(100) / maxPDFDockableScale
+	scaleAdj                           = float32(100) / maxPDFDockableScale
 	maxElapsedRenderTimeWithoutOverlay = time.Second / 2
 	renderTimeSlop                     = time.Millisecond * 10
 )
@@ -126,8 +126,8 @@ func (d *PDFDockable) DockKey() string {
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
 	outer := unison.NewPanel()
-	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, geom.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
+	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
+		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	outer.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
@@ -495,8 +495,7 @@ func (d *PDFDockable) pageLoaded() {
 
 func (d *PDFDockable) overLink(where geom.Point) (rect geom.Rect, link *PDFLink) {
 	if d.page != nil && d.page.Links != nil {
-		where.X /= scaleCompensation
-		where.Y /= scaleCompensation
+		where = where.Div(scaleAdj)
 		for _, link = range d.page.Links {
 			if where.In(link.Bounds) {
 				return link.Bounds, link
@@ -592,9 +591,7 @@ func (d *PDFDockable) docSizer(_ geom.Size) (minSize, prefSize, maxSize geom.Siz
 		prefSize.Width = 400
 		prefSize.Height = 300
 	} else {
-		prefSize = d.page.Image.LogicalSize()
-		prefSize.Width *= scaleCompensation
-		prefSize.Height *= scaleCompensation
+		prefSize = d.page.Image.LogicalSize().Mul(scaleAdj)
 	}
 	return geom.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
 }
@@ -606,7 +603,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 		case autoscale.FitWidth:
 			size := d.page.Image.LogicalSize()
 			cSize := d.docScroll.ContentView().ContentRect(false).Size
-			desiredScale := xmath.Floor((cSize.Width / size.Width / scaleCompensation) * 100)
+			desiredScale := xmath.Floor((cSize.Width / size.Width / scaleAdj) * 100)
 			desiredScaleInt := int(min(max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
 			if d.scaleField.CurrentValue() != desiredScaleInt {
 				d.scaleField.SetEnabled(true)
@@ -616,7 +613,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 		case autoscale.FitPage:
 			size := d.page.Image.LogicalSize()
 			cSize := d.docScroll.ContentView().ContentRect(false).Size
-			desiredScale := xmath.Floor((min(cSize.Width/size.Width, cSize.Height/size.Height) / scaleCompensation) * 100)
+			desiredScale := xmath.Floor((min(cSize.Width/size.Width, cSize.Height/size.Height) / scaleAdj) * 100)
 			desiredScaleInt := int(min(max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
 			if d.scaleField.CurrentValue() != desiredScaleInt {
 				d.scaleField.SetEnabled(true)
@@ -626,7 +623,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 		default:
 		}
 		gc.Save()
-		gc.Scale(scaleCompensation, scaleCompensation)
+		gc.Scale(geom.NewPoint(scaleAdj, scaleAdj))
 		r := geom.Rect{Size: d.page.Image.LogicalSize()}
 		gc.DrawRect(r, unison.White.Paint(gc, r, paintstyle.Fill))
 		gc.DrawImageInRect(d.page.Image, r, &unison.SamplingOptions{
@@ -723,14 +720,14 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty geom.Rect, msg str
 	}
 	r.Width = backWidth
 	r.Height = backHeight
-	gc.DrawRoundedRect(r, 10, 10, bgInk.Paint(gc, dirty, paintstyle.Fill))
+	gc.DrawRoundedRect(r, geom.NewUniformSize(10), bgInk.Paint(gc, dirty, paintstyle.Fill))
 	x := r.X + (r.Width-width)/2
 	if icon != nil {
 		icon.DrawInRect(gc, geom.NewRect(x, r.Y+(r.Height-iconSize.Height)/2, iconSize.Width, iconSize.Height), nil,
 			decoration.OnBackgroundInk.Paint(gc, r, paintstyle.Fill))
 		x += iconSize.Width + unison.StdHSpacing
 	}
-	text.Draw(gc, x, r.Y+(r.Height-height)/2+baseline)
+	text.Draw(gc, geom.NewPoint(x, r.Y+(r.Height-height)/2+baseline))
 }
 
 // TitleIcon implements ux.FileBackedDockable

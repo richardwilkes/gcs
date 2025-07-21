@@ -49,7 +49,7 @@ func ShowAbout(_ unison.MenuItem) {
 func (w *aboutWindow) prepare() error {
 	var err error
 	if w.img == nil {
-		if w.img, err = unison.NewImageFromBytes(aboutImageData, 0.5); err != nil {
+		if w.img, err = unison.NewImageFromBytes(aboutImageData, geom.NewPoint(0.5, 0.5)); err != nil {
 			return errs.NewWithCause("unable to load about image", err)
 		}
 	}
@@ -97,9 +97,9 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ geom.Rect) {
 		OnBackgroundInk: unison.Gray,
 	})
 	text.AddString(i18n.Text(" game, which is used by permission of Steve Jackson Games."), dec)
-	y := r.Height - 10
-	text.Draw(gc, (r.Width-text.Width())/2, y)
-	y -= text.Height()
+	pos := geom.NewPoint((r.Width-text.Width())/2, r.Height-10)
+	text.Draw(gc, pos)
+	pos.Y -= text.Height()
 
 	font := face.Font(8)
 	dec = &unison.TextDecoration{
@@ -111,18 +111,20 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ geom.Rect) {
 		OnBackgroundInk: unison.Gray,
 	})
 	text.AddString(i18n.Text(" is a trademark of Steve Jackson Games, used by permission. All rights reserved."), dec)
-	text.Draw(gc, (r.Width-text.Width())/2, y)
+	pos.X = (r.Width - text.Width()) / 2
+	text.Draw(gc, pos)
 	lineHeight := text.Height()
-	y -= lineHeight * 1.5
+	pos.Y -= lineHeight * 1.5
 
 	fg := unison.RGB(204, 204, 204)
 	text = unison.NewText(xos.Copyright(), &unison.TextDecoration{
 		Font:            font,
 		OnBackgroundInk: fg,
 	})
-	text.Draw(gc, (r.Width-text.Width())/2, y)
+	pos.X = (r.Width - text.Width()) / 2
+	text.Draw(gc, pos)
 
-	buildText := unison.NewText(i18n.Text("Build ")+xos.BuildNumber, &unison.TextDecoration{
+	build := unison.NewText(i18n.Text("Build ")+xos.BuildNumber, &unison.TextDecoration{
 		Font:            font,
 		OnBackgroundInk: fg,
 	})
@@ -132,7 +134,7 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ geom.Rect) {
 	} else {
 		t = i18n.Text("Development")
 	}
-	versionText := unison.NewText(t, &unison.TextDecoration{
+	version := unison.NewText(t, &unison.TextDecoration{
 		Font:            unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Black, spacing.Standard, slant.Upright).Font(10),
 		OnBackgroundInk: unison.White,
 	})
@@ -141,13 +143,16 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ geom.Rect) {
 		hMargin = 8
 		vMargin = 4
 	)
-	width := max(versionText.Width(), buildText.Width()) + hMargin*2
-	backing := geom.NewRect((r.Width-width)/2, 65, width, versionText.Height()+buildText.Height()+vMargin*2)
-	gc.DrawRoundedRect(backing, 8, 8, unison.Black.SetAlphaIntensity(0.7).Paint(gc, backing, paintstyle.Fill))
+	width := max(version.Width(), build.Width()) + hMargin*2
+	backing := geom.NewRect((r.Width-width)/2, 65, width, version.Height()+build.Height()+vMargin*2)
+	cornerRadius := geom.NewUniformSize(8)
+	gc.DrawRoundedRect(backing, cornerRadius, unison.Black.SetAlphaIntensity(0.7).
+		Paint(gc, backing, paintstyle.Fill))
 	p := unison.Black.Paint(gc, backing, paintstyle.Stroke)
 	p.SetStrokeWidth(2)
-	gc.DrawRoundedRect(backing, 8, 8, p)
+	gc.DrawRoundedRect(backing, cornerRadius, p)
 
-	versionText.Draw(gc, (r.Width-versionText.Width())/2, backing.Y+vMargin+versionText.Baseline())
-	buildText.Draw(gc, (r.Width-buildText.Width())/2, backing.Y+vMargin+versionText.Height()+buildText.Baseline())
+	backing.Y += vMargin
+	version.Draw(gc, geom.NewPoint((r.Width-version.Width())/2, backing.Y+version.Baseline()))
+	build.Draw(gc, geom.NewPoint((r.Width-build.Width())/2, backing.Y+version.Height()+build.Baseline()))
 }

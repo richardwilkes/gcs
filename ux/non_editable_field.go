@@ -34,7 +34,7 @@ func newNonEditableField(syncer func(*NonEditableField), hAlign align.Enum) *Non
 	f.Self = f
 	f.Font = unison.FieldFont
 	f.HAlign = hAlign
-	f.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
+	f.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.Insets{Top: 3, Left: 3, Bottom: 2, Right: 3})))
 	f.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

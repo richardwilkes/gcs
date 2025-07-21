@@ -112,7 +112,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(colors.Header, 0, geom.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(colors.Header, geom.Size{}, geom.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,

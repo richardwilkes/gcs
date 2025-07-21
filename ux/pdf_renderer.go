@@ -57,7 +57,7 @@ type pdfParams struct {
 // PDFRenderer holds a PDFRenderer page renderer.
 type PDFRenderer struct {
 	ppi                  float32
-	scaleAdjust          float32
+	scaleAdjust          geom.Point
 	doc                  *pdf.Document
 	pageCount            int
 	pageLoadedCallback   func()
@@ -86,7 +86,7 @@ func NewPDFRenderer(filePath string, pageLoadedCallback func()) (*PDFRenderer, e
 	}
 	return &PDFRenderer{
 		ppi:                float32(ppi),
-		scaleAdjust:        1 / display.ScaleX,
+		scaleAdjust:        geom.NewPoint(1, 1).DivPt(display.Scale),
 		doc:                doc,
 		pageCount:          doc.PageCount(),
 		pageLoadedCallback: pageLoadedCallback,
@@ -154,7 +154,8 @@ func (p *PDFRenderer) render(state *pdfParams) {
 		return
 	}
 
-	dpi := int(((maxPDFDockableScale * p.ppi) / 100) / p.scaleAdjust) // We always render the PDF at the largest scale
+	// We always render the PDF at the largest scale
+	dpi := int(((maxPDFDockableScale * p.ppi) / 100) / min(p.scaleAdjust.X, p.scaleAdjust.Y))
 	toc := p.doc.TableOfContents(dpi)
 	if p.shouldAbortRender(state) {
 		return
@@ -277,10 +278,10 @@ func (p *PDFRenderer) convertMatches(hits []image.Rectangle) []geom.Rect {
 }
 
 func (p *PDFRenderer) pointFromPagePoint(x, y int) geom.Point {
-	return geom.NewPoint(float32(x)*p.scaleAdjust, float32(y)*p.scaleAdjust)
+	return geom.NewPoint(float32(x), float32(y)).MulPt(p.scaleAdjust)
 }
 
 func (p *PDFRenderer) rectFromPageRect(r image.Rectangle) geom.Rect {
-	return geom.NewRect(float32(r.Min.X)*p.scaleAdjust, float32(r.Min.Y)*p.scaleAdjust,
-		float32(r.Dx())*p.scaleAdjust, float32(r.Dy())*p.scaleAdjust)
+	return geom.NewRect(float32(r.Min.X)*p.scaleAdjust.X, float32(r.Min.Y)*p.scaleAdjust.Y,
+		float32(r.Dx())*p.scaleAdjust.X, float32(r.Dy())*p.scaleAdjust.Y)
 }

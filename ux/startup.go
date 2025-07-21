@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
@@ -36,7 +37,7 @@ func Start(files []string) {
 			unison.DefaultMarkdownTheme.LinkHandler = HandleLink
 			unison.DefaultMarkdownTheme.WorkingDirProvider = WorkingDirProvider
 			unison.DefaultMarkdownTheme.AltLinkPrefixes = []string{"md:"}
-			if appIcon, err := unison.NewImageFromBytes(appIconBytes, 0.5); err != nil {
+			if appIcon, err := unison.NewImageFromBytes(appIconBytes, geom.NewPoint(0.5, 0.5)); err != nil {
 				errs.Log(err)
 			} else {
 				unison.DefaultTitleIcons = []*unison.Image{appIcon}

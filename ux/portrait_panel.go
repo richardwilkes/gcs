@@ -101,11 +101,12 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 		for _, line := range text {
 			height += line.Height()
 		}
-		y := r.Y + (r.Height-height)/2 + text[0].Baseline()
+		pt := geom.NewPoint(0, r.Y+(r.Height-height)/2+text[0].Baseline())
 		for _, line := range text {
 			size := line.Extents()
-			line.Draw(gc, r.X+(r.Width-size.Width)/2, y)
-			y += size.Height
+			pt.X = r.X + (r.Width-size.Width)/2
+			line.Draw(gc, pt)
+			pt.Y += size.Height
 		}
 	}
 }
@@ -165,7 +166,8 @@ func (p *PortraitPanel) processFileDrop(f string) {
 }
 
 func convertForPortraitUse(imageData []byte) ([]byte, error) {
-	img, err := unison.NewImageFromBytes(imageData, 0.5)
+	internalScale := geom.NewPoint(0.5, 0.5)
+	img, err := unison.NewImageFromBytes(imageData, internalScale)
 	if err != nil {
 		return nil, errs.NewWithCause("does not appear to be a valid image", err)
 	}
@@ -189,7 +191,7 @@ func convertForPortraitUse(imageData []byte) ([]byte, error) {
 		x := int((size.Width - imgSize.Width*scale) / 2)
 		y := int((size.Height - imgSize.Height*scale) / 2)
 		draw.CatmullRom.Scale(dst, image.Rect(x, y, x+int(size.Width), y+int(size.Height)), src, src.Rect, draw.Over, nil)
-		if img, err = unison.NewImageFromPixels(int(size.Width), int(size.Height), dst.Pix, 0.5); err != nil {
+		if img, err = unison.NewImageFromPixels(int(size.Width), int(size.Height), dst.Pix, internalScale); err != nil {
 			return nil, errs.NewWithCause("unable to create scaled image", err)
 		}
 		if imageData, err = img.ToWebp(80, true); err != nil {
