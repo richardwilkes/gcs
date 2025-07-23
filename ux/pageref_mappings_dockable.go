@@ -137,12 +137,8 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 }
 
 func openExternalPDF(filePath string, pageNum int) {
-	cl := gurps.GlobalSettings().General.ExternalPDFCmdLine
-	cl = strings.ReplaceAll(cl, "$FILE", filePath)
-	cl = strings.ReplaceAll(cl, "$PAGE", strconv.Itoa(pageNum))
-	cl = strings.TrimSpace(cl)
-	parts, err := xflag.SplitCommandLine(cl)
 	errTitle := i18n.Text("Unable to use external PDF command line")
+	parts, err := xflag.SplitCommandLine(strings.TrimSpace(gurps.GlobalSettings().General.ExternalPDFCmdLine))
 	if err != nil {
 		Workspace.ErrorHandler(errTitle, err)
 		return
@@ -150,6 +146,9 @@ func openExternalPDF(filePath string, pageNum int) {
 	if len(parts) == 0 {
 		unison.ErrorDialogWithMessage(errTitle, i18n.Text("invalid path"))
 		return
+	}
+	for i, part := range parts {
+		parts[i] = strings.ReplaceAll(strings.ReplaceAll(part, "$FILE", filePath), "$PAGE", strconv.Itoa(pageNum))
 	}
 	cmd := exec.Command(parts[0], parts[1:]...)
 	if err = cmd.Start(); err != nil {
