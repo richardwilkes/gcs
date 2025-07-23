@@ -405,7 +405,7 @@ func (d *generalSettingsDockable) createExternalPDFCmdLineField(content *unison.
 		HGrab:  true,
 	})
 	d.externalPDFCmdlineField.ValidateCallback = func() bool {
-		_, err := xflag.SplitCommandLine(strings.TrimSpace(d.externalPDFCmdlineField.Text()))
+		_, err := xflag.SplitCommandLineWithoutEscapes(strings.TrimSpace(d.externalPDFCmdlineField.Text()))
 		return err == nil
 	}
 	d.externalPDFCmdlineField.Tooltip = newWrappedTooltip(i18n.Text(`The internal PDF viewer will be used if the External PDF Viewer field is empty.

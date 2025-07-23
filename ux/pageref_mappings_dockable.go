@@ -138,7 +138,8 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 
 func openExternalPDF(filePath string, pageNum int) {
 	errTitle := i18n.Text("Unable to use external PDF command line")
-	parts, err := xflag.SplitCommandLine(strings.TrimSpace(gurps.GlobalSettings().General.ExternalPDFCmdLine))
+	input := strings.TrimSpace(gurps.GlobalSettings().General.ExternalPDFCmdLine)
+	parts, err := xflag.SplitCommandLineWithoutEscapes(input)
 	if err != nil {
 		Workspace.ErrorHandler(errTitle, err)
 		return

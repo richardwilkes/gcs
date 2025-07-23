@@ -8,7 +8,7 @@ require (
 	github.com/richardwilkes/json v0.4.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
-	github.com/richardwilkes/toolbox/v2 v2.3.0
+	github.com/richardwilkes/toolbox/v2 v2.3.1-0.20250723231710-cfade63462df
 	github.com/richardwilkes/unison v0.83.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
