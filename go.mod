@@ -8,8 +8,8 @@ require (
 	github.com/richardwilkes/json v0.4.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
-	github.com/richardwilkes/toolbox/v2 v2.2.1-0.20250722030542-f02659afba1a
-	github.com/richardwilkes/unison v0.82.1-0.20250722030646-ec652d5d9bc3
+	github.com/richardwilkes/toolbox/v2 v2.3.0
+	github.com/richardwilkes/unison v0.83.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
@@ -34,7 +34,7 @@ require (
 	github.com/miekg/dns v1.1.67 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/tc-hib/winres v0.3.1 // indirect
-	github.com/yuin/goldmark v1.7.12 // indirect
+	github.com/yuin/goldmark v1.7.13 // indirect
 	golang.org/x/mod v0.26.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
