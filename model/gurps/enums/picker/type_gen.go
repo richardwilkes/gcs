@@ -63,11 +63,11 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case NotApplicable:
-		return i18n.Text("Not Applicable")
+		return i18n.Text(`Not Applicable`)
 	case Count:
-		return i18n.Text("Count")
+		return i18n.Text(`Count`)
 	case Points:
-		return i18n.Text("Points")
+		return i18n.Text(`Points`)
 	default:
 		return Type(0).String()
 	}

@@ -91,25 +91,25 @@ func (enum Group) Key() string {
 func (enum Group) String() string {
 	switch enum {
 	case CharacterSheets:
-		return i18n.Text("Character Sheets")
+		return i18n.Text(`Character Sheets`)
 	case CharacterTemplates:
-		return i18n.Text("Character Templates")
+		return i18n.Text(`Character Templates`)
 	case LootSheets:
-		return i18n.Text("Loot Sheets")
+		return i18n.Text(`Loot Sheets`)
 	case Editors:
-		return i18n.Text("Editors")
+		return i18n.Text(`Editors`)
 	case Images:
-		return i18n.Text("Images")
+		return i18n.Text(`Images`)
 	case Libraries:
-		return i18n.Text("Libraries")
+		return i18n.Text(`Libraries`)
 	case Markdown:
-		return i18n.Text("Markdown")
+		return i18n.Text(`Markdown`)
 	case PDFs:
-		return i18n.Text("PDFs")
+		return i18n.Text(`PDFs`)
 	case Settings:
-		return i18n.Text("Settings")
+		return i18n.Text(`Settings`)
 	case SubEditors:
-		return i18n.Text("Sub-Editors")
+		return i18n.Text(`Sub-Editors`)
 	default:
 		return Group(0).String()
 	}

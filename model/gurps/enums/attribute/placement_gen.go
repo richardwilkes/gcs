@@ -67,13 +67,13 @@ func (enum Placement) Key() string {
 func (enum Placement) String() string {
 	switch enum {
 	case Automatic:
-		return i18n.Text("Automatic")
+		return i18n.Text(`Automatic`)
 	case Primary:
-		return i18n.Text("Primary")
+		return i18n.Text(`Primary`)
 	case Secondary:
-		return i18n.Text("Secondary")
+		return i18n.Text(`Secondary`)
 	case Hidden:
-		return i18n.Text("Hidden")
+		return i18n.Text(`Hidden`)
 	default:
 		return Placement(0).String()
 	}

@@ -85,21 +85,21 @@ func (enum LengthUnit) Key() string {
 func (enum LengthUnit) String() string {
 	switch enum {
 	case FeetAndInches:
-		return i18n.Text("Feet & Inches")
+		return i18n.Text(`Feet & Inches`)
 	case Inch:
-		return "in"
+		return `in`
 	case Feet:
-		return "ft"
+		return `ft`
 	case Yard:
-		return "yd"
+		return `yd`
 	case Mile:
-		return "mi"
+		return `mi`
 	case Centimeter:
-		return "cm"
+		return `cm`
 	case Kilometer:
-		return "km"
+		return `km`
 	case Meter:
-		return "m"
+		return `m`
 	default:
 		return LengthUnit(0).String()
 	}

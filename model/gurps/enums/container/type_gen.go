@@ -89,15 +89,15 @@ func (enum Type) oldKeys() []string {
 func (enum Type) String() string {
 	switch enum {
 	case Group:
-		return i18n.Text("Group")
+		return i18n.Text(`Group`)
 	case AlternativeAbilities:
-		return i18n.Text("Alternative Abilities")
+		return i18n.Text(`Alternative Abilities`)
 	case Ancestry:
-		return i18n.Text("Ancestry")
+		return i18n.Text(`Ancestry`)
 	case Attributes:
-		return i18n.Text("Attributes")
+		return i18n.Text(`Attributes`)
 	case MetaTrait:
-		return i18n.Text("Meta-Trait")
+		return i18n.Text(`Meta-Trait`)
 	default:
 		return Type(0).String()
 	}

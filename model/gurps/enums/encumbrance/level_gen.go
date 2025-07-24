@@ -71,15 +71,15 @@ func (enum Level) Key() string {
 func (enum Level) String() string {
 	switch enum {
 	case No:
-		return i18n.Text("None")
+		return i18n.Text(`None`)
 	case Light:
-		return i18n.Text("Light")
+		return i18n.Text(`Light`)
 	case Medium:
-		return i18n.Text("Medium")
+		return i18n.Text(`Medium`)
 	case Heavy:
-		return i18n.Text("Heavy")
+		return i18n.Text(`Heavy`)
 	case ExtraHeavy:
-		return i18n.Text("X-Heavy")
+		return i18n.Text(`X-Heavy`)
 	default:
 		return Level(0).String()
 	}

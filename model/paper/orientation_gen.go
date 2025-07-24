@@ -59,9 +59,9 @@ func (enum Orientation) Key() string {
 func (enum Orientation) String() string {
 	switch enum {
 	case Portrait:
-		return i18n.Text("Portrait")
+		return i18n.Text(`Portrait`)
 	case Landscape:
-		return i18n.Text("Landscape")
+		return i18n.Text(`Landscape`)
 	default:
 		return Orientation(0).String()
 	}

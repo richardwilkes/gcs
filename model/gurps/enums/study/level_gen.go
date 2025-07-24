@@ -71,15 +71,15 @@ func (enum Level) Key() string {
 func (enum Level) String() string {
 	switch enum {
 	case Standard:
-		return i18n.Text("Standard")
+		return i18n.Text(`Standard`)
 	case Level1:
-		return i18n.Text("Reduction for Talent level 1")
+		return i18n.Text(`Reduction for Talent level 1`)
 	case Level2:
-		return i18n.Text("Reduction for Talent level 2")
+		return i18n.Text(`Reduction for Talent level 2`)
 	case Level3:
-		return i18n.Text("Reduction for Talent level 3")
+		return i18n.Text(`Reduction for Talent level 3`)
 	case Level4:
-		return i18n.Text("Reduction for Talent level 4")
+		return i18n.Text(`Reduction for Talent level 4`)
 	default:
 		return Level(0).String()
 	}

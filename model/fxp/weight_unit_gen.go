@@ -79,19 +79,19 @@ func (enum WeightUnit) Key() string {
 func (enum WeightUnit) String() string {
 	switch enum {
 	case Pound:
-		return "lb"
+		return `lb`
 	case PoundAlt:
-		return "#"
+		return `#`
 	case Ounce:
-		return "oz"
+		return `oz`
 	case Ton:
-		return "tn"
+		return `tn`
 	case TonAlt:
-		return "t"
+		return `t`
 	case Kilogram:
-		return "kg"
+		return `kg`
 	case Gram:
-		return "g"
+		return `g`
 	default:
 		return WeightUnit(0).String()
 	}

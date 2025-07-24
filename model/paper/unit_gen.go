@@ -61,11 +61,11 @@ func (enum Unit) Key() string {
 func (enum Unit) String() string {
 	switch enum {
 	case Inch:
-		return "in"
+		return `in`
 	case Centimeter:
-		return "cm"
+		return `cm`
 	case Millimeter:
-		return "mm"
+		return `mm`
 	default:
 		return Unit(0).String()
 	}

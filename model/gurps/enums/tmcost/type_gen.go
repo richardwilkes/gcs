@@ -63,11 +63,11 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case Percentage:
-		return i18n.Text("%")
+		return i18n.Text(`%`)
 	case Points:
-		return i18n.Text("points")
+		return i18n.Text(`points`)
 	case Multiplier:
-		return i18n.Text("×")
+		return i18n.Text(`×`)
 	default:
 		return Type(0).String()
 	}

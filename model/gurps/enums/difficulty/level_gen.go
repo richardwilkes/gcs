@@ -69,15 +69,15 @@ func (enum Level) Key() string {
 func (enum Level) String() string {
 	switch enum {
 	case Easy:
-		return "E"
+		return `E`
 	case Average:
-		return "A"
+		return `A`
 	case Hard:
-		return "H"
+		return `H`
 	case VeryHard:
-		return "VH"
+		return `VH`
 	case Wildcard:
-		return "W"
+		return `W`
 	default:
 		return Level(0).String()
 	}

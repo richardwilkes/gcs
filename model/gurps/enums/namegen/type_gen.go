@@ -83,13 +83,13 @@ func (enum Type) oldKeys() []string {
 func (enum Type) String() string {
 	switch enum {
 	case Simple:
-		return i18n.Text("Simple")
+		return i18n.Text(`Simple`)
 	case MarkovLetter:
-		return i18n.Text("Markov Letter")
+		return i18n.Text(`Markov Letter`)
 	case MarkovRun:
-		return i18n.Text("Markov Run")
+		return i18n.Text(`Markov Run`)
 	case Compound:
-		return i18n.Text("Compound")
+		return i18n.Text(`Compound`)
 	default:
 		return Type(0).String()
 	}

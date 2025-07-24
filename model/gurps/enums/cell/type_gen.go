@@ -71,15 +71,15 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case Text:
-		return i18n.Text("Text")
+		return i18n.Text(`Text`)
 	case Tags:
-		return i18n.Text("Tags")
+		return i18n.Text(`Tags`)
 	case Toggle:
-		return i18n.Text("Toggle")
+		return i18n.Text(`Toggle`)
 	case PageRef:
-		return i18n.Text("Page Ref")
+		return i18n.Text(`Page Ref`)
 	case Markdown:
-		return i18n.Text("Markdown")
+		return i18n.Text(`Markdown`)
 	default:
 		return Type(0).String()
 	}

@@ -107,21 +107,21 @@ func (enum Type) oldKeys() []string {
 func (enum Type) String() string {
 	switch enum {
 	case List:
-		return i18n.Text("a list")
+		return i18n.Text(`a list`)
 	case Trait:
-		return i18n.Text("a trait")
+		return i18n.Text(`a trait`)
 	case Attribute:
-		return i18n.Text("the attribute")
+		return i18n.Text(`the attribute`)
 	case ContainedQuantity:
-		return i18n.Text("a contained quantity of")
+		return i18n.Text(`a contained quantity of`)
 	case ContainedWeight:
-		return i18n.Text("a contained weight")
+		return i18n.Text(`a contained weight`)
 	case EquippedEquipment:
-		return i18n.Text("has equipped equipment")
+		return i18n.Text(`has equipped equipment`)
 	case Skill:
-		return i18n.Text("a skill")
+		return i18n.Text(`a skill`)
 	case Spell:
-		return i18n.Text("spell(s)")
+		return i18n.Text(`spell(s)`)
 	default:
 		return Type(0).String()
 	}

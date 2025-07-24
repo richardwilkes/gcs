@@ -63,11 +63,11 @@ func (enum Option) Key() string {
 func (enum Option) String() string {
 	switch enum {
 	case Total:
-		return i18n.Text("to cost")
+		return i18n.Text(`to cost`)
 	case BaseOnly:
-		return i18n.Text("to base cost only")
+		return i18n.Text(`to base cost only`)
 	case LevelsOnly:
-		return i18n.Text("to leveled cost only")
+		return i18n.Text(`to leveled cost only`)
 	default:
 		return Option(0).String()
 	}
@@ -77,11 +77,11 @@ func (enum Option) String() string {
 func (enum Option) AltString() string {
 	switch enum {
 	case Total:
-		return ""
+		return ``
 	case BaseOnly:
-		return i18n.Text("(base only)")
+		return i18n.Text(`(base only)`)
 	case LevelsOnly:
-		return i18n.Text("(levels only)")
+		return i18n.Text(`(levels only)`)
 	default:
 		return Option(0).AltString()
 	}

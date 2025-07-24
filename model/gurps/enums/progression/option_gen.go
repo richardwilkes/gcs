@@ -91,25 +91,25 @@ func (enum Option) Key() string {
 func (enum Option) String() string {
 	switch enum {
 	case BasicSet:
-		return i18n.Text("Basic Set")
+		return i18n.Text(`Basic Set`)
 	case KnowingYourOwnStrength:
-		return i18n.Text("Knowing Your Own Strength")
+		return i18n.Text(`Knowing Your Own Strength`)
 	case NoSchoolGrognardDamage:
-		return i18n.Text("No School Grognard Damage")
+		return i18n.Text(`No School Grognard Damage`)
 	case ThrustEqualsSwingMinus2:
-		return i18n.Text("Thrust = Swing-2")
+		return i18n.Text(`Thrust = Swing-2`)
 	case SwingEqualsThrustPlus2:
-		return i18n.Text("Swing = Thrust+2")
+		return i18n.Text(`Swing = Thrust+2`)
 	case Tbone1:
-		return i18n.Text("T Bone's New Damage for ST (option 1)")
+		return i18n.Text(`T Bone's New Damage for ST (option 1)`)
 	case Tbone1Clean:
-		return i18n.Text("T Bone's New Damage for ST (option 1, cleaned)")
+		return i18n.Text(`T Bone's New Damage for ST (option 1, cleaned)`)
 	case Tbone2:
-		return i18n.Text("T Bone's New Damage for ST (option 2)")
+		return i18n.Text(`T Bone's New Damage for ST (option 2)`)
 	case Tbone2Clean:
-		return i18n.Text("T Bone's New Damage for ST (option 2, cleaned)")
+		return i18n.Text(`T Bone's New Damage for ST (option 2, cleaned)`)
 	case PhoenixFlameD3:
-		return i18n.Text("Phoenix Flame D3")
+		return i18n.Text(`Phoenix Flame D3`)
 	default:
 		return Option(0).String()
 	}
@@ -119,25 +119,25 @@ func (enum Option) String() string {
 func (enum Option) AltString() string {
 	switch enum {
 	case BasicSet:
-		return i18n.Text("*The standard damage progression*")
+		return i18n.Text(`*The standard damage progression*`)
 	case KnowingYourOwnStrength:
-		return i18n.Text("*From [Pyramid 3-83, pages 16-19](PY83:16)*")
+		return i18n.Text(`*From [Pyramid 3-83, pages 16-19](PY83:16)*`)
 	case NoSchoolGrognardDamage:
-		return i18n.Text("*From [Adjusting Swing Damage in Dungeon Fantasy](https://noschoolgrognard.blogspot.com/2013/04/adjusting-swing-damage-in-dungeon.html)*")
+		return i18n.Text(`*From [Adjusting Swing Damage in Dungeon Fantasy](https://noschoolgrognard.blogspot.com/2013/04/adjusting-swing-damage-in-dungeon.html)*`)
 	case ThrustEqualsSwingMinus2:
-		return i18n.Text("*From [Alternate Damage Scheme (Thr = Sw-2)](https://github.com/richardwilkes/gcs/issues/97)*")
+		return i18n.Text(`*From [Alternate Damage Scheme (Thr = Sw-2)](https://github.com/richardwilkes/gcs/issues/97)*`)
 	case SwingEqualsThrustPlus2:
-		return i18n.Text("*From a [house rule](https://gamingballistic.com/2020/12/04/df-eastmarch-boss-fight-and-house-rules/) originating with Kevin Smyth*")
+		return i18n.Text(`*From a [house rule](https://gamingballistic.com/2020/12/04/df-eastmarch-boss-fight-and-house-rules/) originating with Kevin Smyth*`)
 	case Tbone1:
-		return i18n.Text("*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*")
+		return i18n.Text(`*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
 	case Tbone1Clean:
-		return i18n.Text("*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*")
+		return i18n.Text(`*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
 	case Tbone2:
-		return i18n.Text("*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*")
+		return i18n.Text(`*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
 	case Tbone2Clean:
-		return i18n.Text("*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*")
+		return i18n.Text(`*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
 	case PhoenixFlameD3:
-		return i18n.Text("*From a [house rule](https://github.com/richardwilkes/gcs/pull/393) that uses d3s instead of d6s for damage*")
+		return i18n.Text(`*From a [house rule](https://github.com/richardwilkes/gcs/pull/393) that uses d3s instead of d6s for damage*`)
 	default:
 		return Option(0).AltString()
 	}

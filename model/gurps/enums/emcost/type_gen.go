@@ -67,13 +67,13 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case Original:
-		return i18n.Text("to original cost")
+		return i18n.Text(`to original cost`)
 	case Base:
-		return i18n.Text("to base cost")
+		return i18n.Text(`to base cost`)
 	case FinalBase:
-		return i18n.Text("to final base cost")
+		return i18n.Text(`to final base cost`)
 	case Final:
-		return i18n.Text("to final cost")
+		return i18n.Text(`to final cost`)
 	default:
 		return Type(0).String()
 	}
@@ -83,13 +83,13 @@ func (enum Type) String() string {
 func (enum Type) AltString() string {
 	switch enum {
 	case Original:
-		return i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\"")
+		return i18n.Text(`"+5", "-5", "+10%", "-10%", "x3.2"`)
 	case Base:
-		return i18n.Text("\"x2\", \"+2 CF\", \"-0.2 CF\"")
+		return i18n.Text(`"x2", "+2 CF", "-0.2 CF"`)
 	case FinalBase:
-		return i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\"")
+		return i18n.Text(`"+5", "-5", "+10%", "-10%", "x3.2"`)
 	case Final:
-		return i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\"")
+		return i18n.Text(`"+5", "-5", "+10%", "-10%", "x3.2"`)
 	default:
 		return Type(0).AltString()
 	}

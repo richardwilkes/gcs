@@ -67,13 +67,13 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case AllColleges:
-		return i18n.Text("to all colleges")
+		return i18n.Text(`to all colleges`)
 	case CollegeName:
-		return i18n.Text("to the college whose name")
+		return i18n.Text(`to the college whose name`)
 	case PowerSource:
-		return i18n.Text("to the power source whose name")
+		return i18n.Text(`to the power source whose name`)
 	case Name:
-		return i18n.Text("to the spell whose name")
+		return i18n.Text(`to the spell whose name`)
 	default:
 		return Type(0).String()
 	}

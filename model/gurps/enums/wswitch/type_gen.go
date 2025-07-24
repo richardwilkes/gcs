@@ -139,49 +139,49 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case NotSwitched:
-		return ""
+		return ``
 	case CanBlock:
-		return i18n.Text("Can Block")
+		return i18n.Text(`Can Block`)
 	case CanParry:
-		return i18n.Text("Can Parry")
+		return i18n.Text(`Can Parry`)
 	case CloseCombat:
-		return i18n.Text("Close Combat")
+		return i18n.Text(`Close Combat`)
 	case Fencing:
-		return i18n.Text("Fencing")
+		return i18n.Text(`Fencing`)
 	case FullAuto1:
-		return i18n.Text("Fully Automatic (Mode 1)")
+		return i18n.Text(`Fully Automatic (Mode 1)`)
 	case FullAuto2:
-		return i18n.Text("Fully Automatic (Mode 2)")
+		return i18n.Text(`Fully Automatic (Mode 2)`)
 	case Bipod:
-		return i18n.Text("Has Bipod")
+		return i18n.Text(`Has Bipod`)
 	case ControlledBursts1:
-		return i18n.Text("High-cyclic Controlled Bursts (Mode 1)")
+		return i18n.Text(`High-cyclic Controlled Bursts (Mode 1)`)
 	case ControlledBursts2:
-		return i18n.Text("High-cyclic Controlled Bursts (Mode 2)")
+		return i18n.Text(`High-cyclic Controlled Bursts (Mode 2)`)
 	case Jet:
-		return i18n.Text("Jet")
+		return i18n.Text(`Jet`)
 	case Mounted:
-		return i18n.Text("Mounted")
+		return i18n.Text(`Mounted`)
 	case MusclePowered:
-		return i18n.Text("Muscle Powered")
+		return i18n.Text(`Muscle Powered`)
 	case RangeInMiles:
-		return i18n.Text("Range In Miles")
+		return i18n.Text(`Range In Miles`)
 	case ReachChangeRequiresReady:
-		return i18n.Text("Reach Change Requires Ready")
+		return i18n.Text(`Reach Change Requires Ready`)
 	case ReloadTimeIsPerShot:
-		return i18n.Text("Reload Time Is Per Shot")
+		return i18n.Text(`Reload Time Is Per Shot`)
 	case RetractingStock:
-		return i18n.Text("Retracting Stock")
+		return i18n.Text(`Retracting Stock`)
 	case TwoHanded:
-		return i18n.Text("Two-handed")
+		return i18n.Text(`Two-handed`)
 	case Thrown:
-		return i18n.Text("Thrown")
+		return i18n.Text(`Thrown`)
 	case Unbalanced:
-		return i18n.Text("Unbalanced")
+		return i18n.Text(`Unbalanced`)
 	case TwoHandedAndUnreadyAfterAttack:
-		return i18n.Text("Two-handed and Unready After Attack")
+		return i18n.Text(`Two-handed and Unready After Attack`)
 	case MusketRest:
-		return i18n.Text("Uses a Musket Rest")
+		return i18n.Text(`Uses a Musket Rest`)
 	default:
 		return Type(0).String()
 	}

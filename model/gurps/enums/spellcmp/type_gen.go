@@ -89,15 +89,15 @@ func (enum Type) oldKeys() []string {
 func (enum Type) String() string {
 	switch enum {
 	case Name:
-		return i18n.Text("whose name")
+		return i18n.Text(`whose name`)
 	case Tag:
-		return i18n.Text("with a tag which")
+		return i18n.Text(`with a tag which`)
 	case College:
-		return i18n.Text("whose college name")
+		return i18n.Text(`whose college name`)
 	case CollegeCount:
-		return i18n.Text("from different colleges")
+		return i18n.Text(`from different colleges`)
 	case Any:
-		return i18n.Text("of any kind")
+		return i18n.Text(`of any kind`)
 	default:
 		return Type(0).String()
 	}

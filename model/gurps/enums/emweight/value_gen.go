@@ -65,13 +65,13 @@ func (enum Value) Key() string {
 func (enum Value) String() string {
 	switch enum {
 	case Addition:
-		return "+"
+		return `+`
 	case PercentageAdder:
-		return "%"
+		return `%`
 	case PercentageMultiplier:
-		return "x%"
+		return `x%`
 	case Multiplier:
-		return "x"
+		return `x`
 	default:
 		return Value(0).String()
 	}

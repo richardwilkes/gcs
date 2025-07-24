@@ -67,13 +67,13 @@ func (enum Option) Key() string {
 func (enum Option) String() string {
 	switch enum {
 	case NotShown:
-		return i18n.Text("Not Shown")
+		return i18n.Text(`Not Shown`)
 	case Inline:
-		return i18n.Text("Inline")
+		return i18n.Text(`Inline`)
 	case Tooltip:
-		return i18n.Text("Tooltip")
+		return i18n.Text(`Tooltip`)
 	case InlineAndTooltip:
-		return i18n.Text("Inline & Tooltip")
+		return i18n.Text(`Inline & Tooltip`)
 	default:
 		return Option(0).String()
 	}

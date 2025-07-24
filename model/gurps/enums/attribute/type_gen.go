@@ -87,23 +87,23 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case Integer:
-		return i18n.Text("Integer")
+		return i18n.Text(`Integer`)
 	case IntegerRef:
-		return i18n.Text("Integer (Display Only)")
+		return i18n.Text(`Integer (Display Only)`)
 	case Decimal:
-		return i18n.Text("Decimal")
+		return i18n.Text(`Decimal`)
 	case DecimalRef:
-		return i18n.Text("Decimal (Display Only)")
+		return i18n.Text(`Decimal (Display Only)`)
 	case Pool:
-		return i18n.Text("Pool")
+		return i18n.Text(`Pool`)
 	case PoolRef:
-		return i18n.Text("Pool (Display Only for Maximum)")
+		return i18n.Text(`Pool (Display Only for Maximum)`)
 	case PrimarySeparator:
-		return i18n.Text("Primary Separator")
+		return i18n.Text(`Primary Separator`)
 	case SecondarySeparator:
-		return i18n.Text("Secondary Separator")
+		return i18n.Text(`Secondary Separator`)
 	case PoolSeparator:
-		return i18n.Text("Pool Separator")
+		return i18n.Text(`Pool Separator`)
 	default:
 		return Type(0).String()
 	}

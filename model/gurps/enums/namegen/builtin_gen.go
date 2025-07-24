@@ -79,19 +79,19 @@ func (enum Builtin) Key() string {
 func (enum Builtin) String() string {
 	switch enum {
 	case None:
-		return i18n.Text("None")
+		return i18n.Text(`None`)
 	case AmericanMale:
-		return i18n.Text("American Male")
+		return i18n.Text(`American Male`)
 	case AmericanFemale:
-		return i18n.Text("American Female")
+		return i18n.Text(`American Female`)
 	case AmericanLast:
-		return i18n.Text("American Last")
+		return i18n.Text(`American Last`)
 	case UnweightedAmericanMale:
-		return i18n.Text("Unweighted American Male")
+		return i18n.Text(`Unweighted American Male`)
 	case UnweightedAmericanFemale:
-		return i18n.Text("Unweighted American Female")
+		return i18n.Text(`Unweighted American Female`)
 	case UnweightedAmericanLast:
-		return i18n.Text("Unweighted American Last")
+		return i18n.Text(`Unweighted American Last`)
 	default:
 		return Builtin(0).String()
 	}

@@ -95,27 +95,27 @@ func (enum Option) Key() string {
 func (enum Option) String() string {
 	switch enum {
 	case None:
-		return i18n.Text("None")
+		return i18n.Text(`None`)
 	case Thrust:
-		return "thr"
+		return `thr`
 	case LiftingThrust:
-		return i18n.Text("lifting thr")
+		return i18n.Text(`lifting thr`)
 	case TelekineticThrust:
-		return i18n.Text("telekinetic thr")
+		return i18n.Text(`telekinetic thr`)
 	case IQThrust:
-		return i18n.Text("iq thr")
+		return i18n.Text(`iq thr`)
 	case Swing:
-		return "sw"
+		return `sw`
 	case LiftingSwing:
-		return i18n.Text("lifting sw")
+		return i18n.Text(`lifting sw`)
 	case TelekineticSwing:
-		return i18n.Text("telekinetic sw")
+		return i18n.Text(`telekinetic sw`)
 	case IQSwing:
-		return i18n.Text("iq sw")
+		return i18n.Text(`iq sw`)
 	case OldLeveledThrust:
-		return i18n.Text("thr (leveled)")
+		return i18n.Text(`thr (leveled)`)
 	case OldLeveledSwing:
-		return i18n.Text("sw (leveled)")
+		return i18n.Text(`sw (leveled)`)
 	default:
 		return Option(0).String()
 	}

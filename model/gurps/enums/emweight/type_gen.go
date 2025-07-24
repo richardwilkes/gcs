@@ -67,13 +67,13 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case Original:
-		return i18n.Text("to original weight")
+		return i18n.Text(`to original weight`)
 	case Base:
-		return i18n.Text("to base weight")
+		return i18n.Text(`to base weight`)
 	case FinalBase:
-		return i18n.Text("to final base weight")
+		return i18n.Text(`to final base weight`)
 	case Final:
-		return i18n.Text("to final weight")
+		return i18n.Text(`to final weight`)
 	default:
 		return Type(0).String()
 	}
@@ -83,13 +83,13 @@ func (enum Type) String() string {
 func (enum Type) AltString() string {
 	switch enum {
 	case Original:
-		return i18n.Text("\"+5 lb\", \"-5 lb\", \"+10%\", \"-10%\"")
+		return i18n.Text(`"+5 lb", "-5 lb", "+10%", "-10%"`)
 	case Base:
-		return i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\"")
+		return i18n.Text(`"+5 lb", "-5 lb", "x10%", "x3", "x2/3"`)
 	case FinalBase:
-		return i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\"")
+		return i18n.Text(`"+5 lb", "-5 lb", "x10%", "x3", "x2/3"`)
 	case Final:
-		return i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\"")
+		return i18n.Text(`"+5 lb", "-5 lb", "x10%", "x3", "x2/3"`)
 	default:
 		return Type(0).AltString()
 	}

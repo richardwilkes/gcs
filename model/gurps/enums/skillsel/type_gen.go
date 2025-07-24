@@ -63,11 +63,11 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case Name:
-		return i18n.Text("to skills whose name")
+		return i18n.Text(`to skills whose name`)
 	case ThisWeapon:
-		return i18n.Text("to this weapon")
+		return i18n.Text(`to this weapon`)
 	case WeaponsWithName:
-		return i18n.Text("to weapons whose name")
+		return i18n.Text(`to weapons whose name`)
 	default:
 		return Type(0).String()
 	}

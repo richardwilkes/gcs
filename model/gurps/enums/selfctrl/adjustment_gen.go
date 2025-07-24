@@ -79,19 +79,19 @@ func (enum Adjustment) Key() string {
 func (enum Adjustment) String() string {
 	switch enum {
 	case NoCRAdj:
-		return i18n.Text("None")
+		return i18n.Text(`None`)
 	case ActionPenalty:
-		return i18n.Text("Includes an Action Penalty for Failure")
+		return i18n.Text(`Includes an Action Penalty for Failure`)
 	case ReactionPenalty:
-		return i18n.Text("Includes a Reaction Penalty for Failure")
+		return i18n.Text(`Includes a Reaction Penalty for Failure`)
 	case FrightCheckPenalty:
-		return i18n.Text("Includes Fright Check Penalty")
+		return i18n.Text(`Includes Fright Check Penalty`)
 	case FrightCheckBonus:
-		return i18n.Text("Includes Fright Check Bonus")
+		return i18n.Text(`Includes Fright Check Bonus`)
 	case MinorCostOfLivingIncrease:
-		return i18n.Text("Includes a Minor Cost of Living Increase")
+		return i18n.Text(`Includes a Minor Cost of Living Increase`)
 	case MajorCostOfLivingIncrease:
-		return i18n.Text("Includes a Major Cost of Living Increase and Merchant Skill Penalty")
+		return i18n.Text(`Includes a Major Cost of Living Increase and Merchant Skill Penalty`)
 	default:
 		return Adjustment(0).String()
 	}
@@ -101,19 +101,19 @@ func (enum Adjustment) String() string {
 func (enum Adjustment) AltString() string {
 	switch enum {
 	case NoCRAdj:
-		return i18n.Text("None")
+		return i18n.Text(`None`)
 	case ActionPenalty:
-		return i18n.Text("%d Action Penalty")
+		return i18n.Text(`%d Action Penalty`)
 	case ReactionPenalty:
-		return i18n.Text("%d Reaction Penalty")
+		return i18n.Text(`%d Reaction Penalty`)
 	case FrightCheckPenalty:
-		return i18n.Text("%d Fright Check Penalty")
+		return i18n.Text(`%d Fright Check Penalty`)
 	case FrightCheckBonus:
-		return i18n.Text("+%d Fright Check Bonus")
+		return i18n.Text(`+%d Fright Check Bonus`)
 	case MinorCostOfLivingIncrease:
-		return i18n.Text("+%d%% Cost of Living Increase")
+		return i18n.Text(`+%d%% Cost of Living Increase`)
 	case MajorCostOfLivingIncrease:
-		return i18n.Text("+%d%% Cost of Living Increase")
+		return i18n.Text(`+%d%% Cost of Living Increase`)
 	default:
 		return Adjustment(0).AltString()
 	}

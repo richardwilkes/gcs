@@ -67,13 +67,13 @@ func (enum Type) Key() string {
 func (enum Type) String() string {
 	switch enum {
 	case Self:
-		return i18n.Text("Self-Taught")
+		return i18n.Text(`Self-Taught`)
 	case Job:
-		return i18n.Text("On-the-Job Training")
+		return i18n.Text(`On-the-Job Training`)
 	case Teacher:
-		return i18n.Text("Professional Teacher")
+		return i18n.Text(`Professional Teacher`)
 	case Intensive:
-		return i18n.Text("Intensive Training")
+		return i18n.Text(`Intensive Training`)
 	default:
 		return Type(0).String()
 	}

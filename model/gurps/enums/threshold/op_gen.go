@@ -67,13 +67,13 @@ func (enum Op) Key() string {
 func (enum Op) String() string {
 	switch enum {
 	case Unknown:
-		return i18n.Text("Unknown")
+		return i18n.Text(`Unknown`)
 	case HalveMove:
-		return i18n.Text("Halve Move")
+		return i18n.Text(`Halve Move`)
 	case HalveDodge:
-		return i18n.Text("Halve Dodge")
+		return i18n.Text(`Halve Dodge`)
 	case HalveST:
-		return i18n.Text("Halve Strength")
+		return i18n.Text(`Halve Strength`)
 	default:
 		return Op(0).String()
 	}
@@ -83,13 +83,13 @@ func (enum Op) String() string {
 func (enum Op) AltString() string {
 	switch enum {
 	case Unknown:
-		return i18n.Text("Unknown")
+		return i18n.Text(`Unknown`)
 	case HalveMove:
-		return i18n.Text("Halve Move (round up)")
+		return i18n.Text(`Halve Move (round up)`)
 	case HalveDodge:
-		return i18n.Text("Halve Dodge (round up)")
+		return i18n.Text(`Halve Dodge (round up)`)
 	case HalveST:
-		return i18n.Text("Halve Strength (round up; does not affect HP and damage)")
+		return i18n.Text(`Halve Strength (round up; does not affect HP and damage)`)
 	default:
 		return Op(0).AltString()
 	}

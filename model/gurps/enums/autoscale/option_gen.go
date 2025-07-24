@@ -63,11 +63,11 @@ func (enum Option) Key() string {
 func (enum Option) String() string {
 	switch enum {
 	case No:
-		return i18n.Text("No Auto-Scaling")
+		return i18n.Text(`No Auto-Scaling`)
 	case FitWidth:
-		return i18n.Text("Fit Width")
+		return i18n.Text(`Fit Width`)
 	case FitPage:
-		return i18n.Text("Fit Page")
+		return i18n.Text(`Fit Page`)
 	default:
 		return Option(0).String()
 	}

@@ -67,13 +67,13 @@ func (enum Option) Key() string {
 func (enum Option) String() string {
 	switch enum {
 	case None:
-		return ""
+		return ``
 	case StrikingOnly:
-		return i18n.Text("for striking only")
+		return i18n.Text(`for striking only`)
 	case LiftingOnly:
-		return i18n.Text("for lifting only")
+		return i18n.Text(`for lifting only`)
 	case ThrowingOnly:
-		return i18n.Text("for throwing only")
+		return i18n.Text(`for throwing only`)
 	default:
 		return Option(0).String()
 	}
