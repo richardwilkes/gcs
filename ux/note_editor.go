@@ -27,12 +27,24 @@ func EditNote(owner Rebuildable, note *gurps.Note) {
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
 	markdown.Font = fonts.PageFieldPrimary
-	markdown.HeadingFont[0] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 1) }}
-	markdown.HeadingFont[1] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 2) }}
-	markdown.HeadingFont[2] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 3) }}
-	markdown.HeadingFont[3] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 4) }}
-	markdown.HeadingFont[4] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 5) }}
-	markdown.HeadingFont[5] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 6) }}
+	markdown.HeadingFont[0] = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 1) },
+	}
+	markdown.HeadingFont[1] = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 2) },
+	}
+	markdown.HeadingFont[2] = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 3) },
+	}
+	markdown.HeadingFont[3] = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 4) },
+	}
+	markdown.HeadingFont[4] = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 5) },
+	}
+	markdown.HeadingFont[5] = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 6) },
+	}
 	markdown.CodeBlockFont = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			fd := unison.MonospacedFont.Font.Descriptor()

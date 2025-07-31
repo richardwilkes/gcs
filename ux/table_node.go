@@ -144,15 +144,15 @@ func (n *Node[T]) CellDataForSort(index int) string {
 }
 
 // ColumnCell implements unison.TableRowData.
-func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, _, _, _ bool) unison.Paneler {
+func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, selected, indirectlySelected, _ bool) unison.Paneler {
 	var cellData gurps.CellData
 	n.dataAsNode.CellData(n.table.Columns[col].ID, &cellData)
 	width := n.table.CellWidth(row, col)
 	if n.cellCache[col].Matches(width, &cellData) {
-		applyInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground, background)
+		applyInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground, background, selected || indirectlySelected)
 		return n.cellCache[col].Panel
 	}
-	c := n.CellFromCellData(&cellData, width, foreground, background)
+	c := n.CellFromCellData(&cellData, width, foreground, background, selected || indirectlySelected)
 	n.cellCache[col] = &CellCache{
 		Panel: c,
 		Data:  cellData,
@@ -161,11 +161,19 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, _,
 	return c
 }
 
-func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink) {
+func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink, selected bool) {
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
 		if part.OnBackgroundInk != foreground {
-			part.OnBackgroundInk = foreground
+			if selected {
+				part.OnBackgroundInk = foreground
+				part.LinkInk = foreground
+				part.LinkOnPressedInk = background
+			} else {
+				part.OnBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
+				part.LinkInk = unison.DefaultMarkdownTheme.LinkInk
+				part.LinkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
+			}
 			part.Rebuild()
 		}
 		return
@@ -186,7 +194,7 @@ func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink)
 		}
 	}
 	for _, child := range panel.Children() {
-		applyInkRecursively(child, foreground, background)
+		applyInkRecursively(child, foreground, background, selected)
 	}
 }
 
@@ -261,7 +269,7 @@ func (n *Node[T]) Match(text string) bool {
 }
 
 // CellFromCellData creates a new panel for the given cell data.
-func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground, background unison.Ink) unison.Paneler {
+func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {
 	switch c.Type {
 	case cell.Text, cell.Tags:
 		return n.createLabelCell(c, width, foreground, background)
@@ -270,13 +278,13 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground,
 	case cell.PageRef:
 		return n.createPageRefCell(c, foreground)
 	case cell.Markdown:
-		return n.createMarkdownCell(c, width, foreground)
+		return n.createMarkdownCell(c, width, foreground, background, selected)
 	default:
 		return unison.NewPanel()
 	}
 }
 
-func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
+func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {
 	m := unison.NewMarkdown(false)
 	if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
 		m.ClientData()[WorkingDirKey] = wd
@@ -284,8 +292,16 @@ func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foregroun
 	if n.forPage {
 		adjustMarkdownThemeForPage(m)
 	}
-	if i, ok := m.OnBackgroundInk.(*unison.IndirectInk); ok {
-		i.Target = foreground
+	if m.OnBackgroundInk != foreground {
+		if selected {
+			m.OnBackgroundInk = foreground
+			m.LinkInk = foreground
+			m.LinkOnPressedInk = background
+		} else {
+			m.OnBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
+			m.LinkInk = unison.DefaultMarkdownTheme.LinkInk
+			m.LinkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
+		}
 	}
 	m.SetContent(c.Primary, width)
 	return m
