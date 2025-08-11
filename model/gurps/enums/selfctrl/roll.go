@@ -11,6 +11,7 @@ package selfctrl
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -53,10 +54,8 @@ type Roll byte
 
 // EnsureValid ensures this is of a known value.
 func (s Roll) EnsureValid() Roll {
-	for _, one := range Rolls {
-		if one == s {
-			return s
-		}
+	if slices.Contains(Rolls, s) {
+		return s
 	}
 	return Rolls[0]
 }
@@ -65,9 +64,9 @@ func (s Roll) EnsureValid() Roll {
 func (s Roll) String() string {
 	switch s {
 	case NoCR:
-		return i18n.Text("None Required")
+		return i18n.Text("CR: None Required")
 	case CRNone:
-		return i18n.Text("None Allowed")
+		return i18n.Text("CR: None Allowed")
 	case CR6:
 		return i18n.Text("CR: 6 (Resist rarely)")
 	case CR9:
