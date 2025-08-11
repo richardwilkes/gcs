@@ -102,11 +102,17 @@ func newScriptSpell(entity *Entity, spell *Spell) *scriptSpell {
 }
 
 func (s *scriptSpell) Level() int {
+	if s.entity == nil {
+		return 0
+	}
 	s.ensureCachedLevels()
 	return s.level
 }
 
 func (s *scriptSpell) RelativeLevel() int {
+	if s.entity == nil {
+		return 0
+	}
 	s.ensureCachedLevels()
 	return s.relativeLevel
 }

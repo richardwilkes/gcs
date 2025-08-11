@@ -84,11 +84,17 @@ func newScriptSkill(entity *Entity, skill *Skill) *scriptSkill {
 }
 
 func (s *scriptSkill) Level() int {
+	if s.entity == nil {
+		return 0
+	}
 	s.ensureCachedLevels()
 	return s.level
 }
 
 func (s *scriptSkill) RelativeLevel() int {
+	if s.entity == nil {
+		return 0
+	}
 	s.ensureCachedLevels()
 	return s.relativeLevel
 }
