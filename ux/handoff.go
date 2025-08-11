@@ -105,7 +105,7 @@ func waitForReady(readyChan <-chan struct{}) {
 	select {
 	case <-readyChan:
 		elapsed := time.Since(started)
-		slog.Info("app is ready", "elapsed", elapsed)
+		slog.Info("app is ready", "elapsed", elapsed.String())
 		if elapsed > 10*time.Second {
 			slog.Warn("app took an excessive amount of time" + driverNote)
 		}
