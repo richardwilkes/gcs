@@ -81,9 +81,9 @@ func (enum Adjustment) String() string {
 	case NoCRAdj:
 		return i18n.Text(`None`)
 	case ActionPenalty:
-		return i18n.Text(`Includes an Action Penalty for Failure`)
+		return i18n.Text(`Includes an Action Penalty even on Success`)
 	case ReactionPenalty:
-		return i18n.Text(`Includes a Reaction Penalty for Failure`)
+		return i18n.Text(`Includes a Reaction Penalty`)
 	case FrightCheckPenalty:
 		return i18n.Text(`Includes Fright Check Penalty`)
 	case FrightCheckBonus:

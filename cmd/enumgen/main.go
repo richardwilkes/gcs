@@ -899,12 +899,12 @@ var allEnums = []*enumInfo{
 			},
 			{
 				Key:    "action_penalty",
-				String: "Includes an Action Penalty for Failure",
+				String: "Includes an Action Penalty even on Success",
 				Alt:    "%d Action Penalty",
 			},
 			{
 				Key:    "reaction_penalty",
-				String: "Includes a Reaction Penalty for Failure",
+				String: "Includes a Reaction Penalty",
 				Alt:    "%d Reaction Penalty",
 			},
 			{
