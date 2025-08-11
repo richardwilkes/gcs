@@ -643,8 +643,26 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 				choice := fxp.Int(r.Intn(int(total)))
 				for _, item := range choices {
 					if item.Quantity >= choice {
-						m[item]++
-						current += item.ExtendedValueOfJustOne()
+						singleValue := item.ExtendedValueOfJustOne()
+						switch {
+						case len(choices) == 1:
+							count := (minValue - current).Div(singleValue).Ceil()
+							if current+count.Mul(singleValue) > maxValue {
+								count = count.Dec()
+							}
+							m[item] += fxp.AsInteger[int](count)
+							current += count.Mul(singleValue)
+						case singleValue < fxp.OneHundredth && minValue-current > fxp.One:
+							count := fxp.One.Div(singleValue).Ceil()
+							if current+count.Mul(singleValue) > maxValue {
+								count = count.Dec()
+							}
+							m[item] += fxp.AsInteger[int](count)
+							current += count.Mul(singleValue)
+						default:
+							m[item]++
+							current += singleValue
+						}
 						found = true
 						break
 					}
@@ -688,7 +706,7 @@ func pruneEquipmentList(remaining fxp.Int, items []*gurps.Equipment) (revisedIte
 	for _, item := range items {
 		if item.Quantity > 0 {
 			one := item.ExtendedValueOfJustOne()
-			if one <= remaining {
+			if one > 0 && one <= remaining {
 				revisedItems = append(revisedItems, item)
 				total += item.Quantity
 				if highest < one {
