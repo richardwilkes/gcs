@@ -222,24 +222,65 @@ func pickerMatchStateColor(matches bool) unison.Color {
 }
 
 func addPickerRow[T gurps.NodeTypes](parent *unison.Panel, row T, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
+	wrapper := unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+	})
+	parent.AddChild(wrapper)
 	checkBox := unison.NewCheckBox()
 	updatePickerCheckBoxTitle(checkBox, row)
 	checkBox.ClickCallback = callback
-	parent.AddChild(checkBox)
+	wrapper.AddChild(checkBox)
 	boxes = append(boxes, checkBox)
 	var onClick func()
-	switch actual := interface{}(row).(type) {
+	pageRef := ""
+	pageRefHighlight := ""
+	switch actual := any(row).(type) {
 	case *gurps.Trait:
 		if actual.IsLeveled() {
 			onClick = func() { pickerRowLevelEditor(actual, checkBox, callback) }
 		}
+		pageRef = actual.PageRef
+		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Skill:
 		if !actual.Container() {
 			onClick = func() { pickerRowPointEditor(actual, checkBox, callback) }
 		}
+		pageRef = actual.PageRef
+		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Spell:
 		if !actual.Container() {
 			onClick = func() { pickerRowPointEditor(actual, checkBox, callback) }
+		}
+		pageRef = actual.PageRef
+		pageRefHighlight = actual.PageRefHighlight
+	}
+	if pageRef != "" {
+		if pageRefs := ExtractPageReferences(pageRef); len(pageRefs) > 0 {
+			var tooltip string
+			var icon *unison.DrawableSVG
+			title, img := convertLinksForPageRef(pageRefs[0])
+			if img != nil {
+				title = ""
+				height := unison.DefaultLinkTheme.Font.Baseline()
+				icon = &unison.DrawableSVG{
+					SVG:  img,
+					Size: geom.NewSize(height, height).Ceil(),
+				}
+				tooltip = pageRefs[0]
+			}
+			link := unison.NewLink(title, tooltip, "", unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
+				OpenPageReference(pageRefs[0], pageRefHighlight, nil)
+			})
+			link.VAlign = align.Start
+			if icon != nil {
+				link.Drawable = icon
+			}
+			if tooltip != "" {
+				link.Tooltip = newWrappedTooltip(tooltip)
+			}
+			wrapper.AddChild(link)
 		}
 	}
 	if onClick == nil {
