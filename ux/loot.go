@@ -242,7 +242,6 @@ func (l *LootSheet) createToolbar() {
 const (
 	lootPanelFieldPrefix         = "loot:"
 	lootPanelNameFieldRefKey     = lootPanelFieldPrefix + "name"
-	lootPanelDescFieldRefKey     = lootPanelFieldPrefix + "desc"
 	lootPanelLocationFieldRefKey = lootPanelFieldPrefix + "location"
 	lootPanelSessionFieldRefKey  = lootPanelFieldPrefix + "session"
 )
