@@ -30,7 +30,8 @@ type WeaponDamageData struct {
 	StrengthType              stdmg.Option `json:"st,omitempty"`
 	Leveled                   bool         `json:"leveled,omitempty"`
 	StrengthMultiplier        fxp.Int      `json:"st_mul,omitempty"`
-	Base                      *dice.Dice   `json:"base,omitempty"`
+	BaseNotLeveled            *dice.Dice   `json:"base_not_leveled,omitempty"`
+	BaseLeveled               *dice.Dice   `json:"base,omitempty"`
 	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitempty"`
 	Fragmentation             *dice.Dice   `json:"fragmentation,omitempty"`
 	FragmentationArmorDivisor fxp.Int      `json:"fragmentation_armor_divisor,omitempty"`
@@ -54,7 +55,8 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 	xhash.Num8(h, w.StrengthType)
 	xhash.Bool(h, w.Leveled)
 	xhash.Num64(h, w.StrengthMultiplier)
-	w.Base.Hash(h)
+	w.BaseNotLeveled.Hash(h)
+	w.BaseLeveled.Hash(h)
 	xhash.Num64(h, w.ArmorDivisor)
 	w.Fragmentation.Hash(h)
 	xhash.Num64(h, w.FragmentationArmorDivisor)
@@ -66,9 +68,13 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 	other := *w
 	other.Owner = owner
-	if other.Base != nil {
-		d := *other.Base
-		other.Base = &d
+	if other.BaseNotLeveled != nil {
+		d := *other.BaseNotLeveled
+		other.BaseNotLeveled = &d
+	}
+	if other.BaseLeveled != nil {
+		d := *other.BaseLeveled
+		other.BaseLeveled = &d
 	}
 	if other.Fragmentation != nil {
 		d := *other.Fragmentation
@@ -142,12 +148,21 @@ func (w *WeaponDamage) String() string {
 	if w.Owner != nil {
 		convertMods = SheetSettingsFor(EntityFromNode(w.Owner)).UseModifyingDicePlusAdds
 	}
-	if w.Base != nil {
-		if base := w.Base.StringExtra(convertMods); base != "0" {
+	if w.BaseNotLeveled != nil {
+		if base := w.BaseNotLeveled.StringExtra(convertMods); base != "0" {
 			if buffer.Len() != 0 && base[0] != '+' && base[0] != '-' {
 				buffer.WriteByte('+')
 			}
 			buffer.WriteString(base)
+		}
+	}
+	if w.BaseLeveled != nil {
+		if base := w.BaseLeveled.StringExtra(convertMods); base != "0" {
+			if buffer.Len() != 0 && base[0] != '+' && base[0] != '-' {
+				buffer.WriteByte('+')
+			}
+			buffer.WriteString(base)
+			buffer.WriteString(i18n.Text(" per level "))
 		}
 	}
 	if w.ArmorDivisor != fxp.One {
@@ -247,10 +262,10 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		Sides:      6,
 		Multiplier: 1,
 	}
-	if w.Base != nil {
-		*base = *w.Base
+	if w.BaseNotLeveled != nil {
+		*base = *w.BaseNotLeveled
 	}
-	levels := -1
+	levels := 0
 	switch t := w.Owner.Owner.(type) {
 	case *Trait:
 		if t.IsLeveled() {
@@ -261,8 +276,10 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 			levels = fxp.AsInteger[int](t.Level)
 		}
 	}
-	if levels >= 0 {
-		multiplyDice(levels, base)
+	if levels > 0 && w.BaseLeveled != nil {
+		leveled := *w.BaseLeveled
+		multiplyDice(levels, &leveled)
+		base = addDice(base, &leveled)
 	}
 	intST := fxp.AsInteger[int](st)
 	var stDamage *dice.Dice

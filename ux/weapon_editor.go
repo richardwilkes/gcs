@@ -132,9 +132,14 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 		&damage.StrengthMultiplier, fxp.Tenth, fxp.BillionMinusOne)
 
 	wrapper = addFillWrapper(content, "", 2)
-	text := i18n.Text("Damage Modifier")
-	addNullableDice(wrapper, text, text, &damage.Base, true)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(per level, if leveled)"), false))
+	text := i18n.Text("Non-Leveled Damage Modifier")
+	addNullableDice(wrapper, text, text, &damage.BaseNotLeveled, true)
+	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(unaffected by levels)"), false))
+
+	wrapper = addFillWrapper(content, "", 2)
+	text = i18n.Text("Leveled Damage Modifier")
+	addNullableDice(wrapper, text, text, &damage.BaseLeveled, true)
+	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per level"), false))
 
 	wrapper = addFillWrapper(content, "", 2)
 	text = i18n.Text("Damage Modifier Per Die")

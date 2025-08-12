@@ -143,7 +143,7 @@ func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
 		w.Damage.StrengthType = stdmg.Thrust
 	} else {
 		w.RateOfFire.Mode1.ShotsPerAttack = fxp.One
-		w.Damage.Base = dice.New("1d")
+		w.Damage.BaseNotLeveled = dice.New("1d")
 	}
 	return &w
 }
