@@ -250,9 +250,19 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	if w.Base != nil {
 		*base = *w.Base
 	}
-	t, tOK := w.Owner.Owner.(*Trait)
-	if tOK && t.IsLeveled() {
-		multiplyDice(fxp.AsInteger[int](t.Levels), base)
+	levels := -1
+	switch t := w.Owner.Owner.(type) {
+	case *Trait:
+		if t.IsLeveled() {
+			levels = fxp.AsInteger[int](t.Levels)
+		}
+	case *Equipment:
+		if t.IsLeveled() {
+			levels = fxp.AsInteger[int](t.Level)
+		}
+	}
+	if levels >= 0 {
+		multiplyDice(levels, base)
 	}
 	intST := fxp.AsInteger[int](st)
 	var stDamage *dice.Dice
@@ -264,8 +274,8 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	default:
 		return base
 	}
-	if w.Leveled && tOK && t.IsLeveled() {
-		multiplyDice(fxp.AsInteger[int](t.Levels), stDamage)
+	if w.Leveled && levels >= 0 {
+		multiplyDice(levels, stDamage)
 	}
 	base = addDice(base, stDamage)
 	return base

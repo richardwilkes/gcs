@@ -123,13 +123,23 @@ func (we *weaponEditor) addBlockBlock(w *gurps.Weapon, content *unison.Panel) {
 
 func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 	damage := &w.Damage
-	wrapper := addFillWrapper(content, i18n.Text("Damage"), 5)
+	wrapper := addFillWrapper(content, i18n.Text("Damage"), 4)
 	addPopup(wrapper, filteredDamageOptions(), &damage.StrengthType)
-	addCheckBox(wrapper, i18n.Text("(leveled)"), &damage.Leveled)
+	addCheckBox(wrapper, i18n.Text("Leveled"), &damage.Leveled)
+
+	wrapper = addFillWrapper(content, "", 2)
+	addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Multiply ST used for sw or thr damage calculation by"), "",
+		&damage.StrengthMultiplier, fxp.Tenth, fxp.BillionMinusOne)
+
+	wrapper = addFillWrapper(content, "", 2)
 	text := i18n.Text("Damage Modifier")
 	addNullableDice(wrapper, text, text, &damage.Base, true)
+	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(per level, if leveled)"), false))
+
+	wrapper = addFillWrapper(content, "", 2)
 	text = i18n.Text("Damage Modifier Per Die")
-	addDecimalFieldWithSign(wrapper, nil, "", text, text, &damage.ModifierPerDie, -fxp.BillionMinusOne, fxp.BillionMinusOne)
+	addDecimalFieldWithSign(wrapper, nil, "", text, text, &damage.ModifierPerDie, -fxp.BillionMinusOne,
+		fxp.BillionMinusOne)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per die"), false))
 
 	wrapper = addFillWrapper(content, "", 4)
@@ -139,10 +149,6 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 	text = i18n.Text("Damage Type")
 	wrapper.AddChild(NewFieldTrailingLabel(typeText, false))
 	addStringField(wrapper, text, text, &damage.Type)
-
-	wrapper = addFillWrapper(content, "", 2)
-	addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Multiply ST used for sw or thr damage calculation by"), "",
-		&damage.StrengthMultiplier, fxp.Tenth, fxp.BillionMinusOne)
 
 	wrapper = addFillWrapper(content, i18n.Text("Fragmentation"), 5)
 	text = i18n.Text("Fragmentation Base Damage")
