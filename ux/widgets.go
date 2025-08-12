@@ -110,8 +110,7 @@ func addPageRefHighlightLabelAndField(parent *unison.Panel, fieldData *string) {
 
 func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
 	labelText := i18n.Text("Notes")
-	label := NewFieldLeadingLabel(labelText, false)
-	parent.AddChild(label)
+	addLabel(parent, labelText, "")
 	addScriptField(parent, nil, "", labelText,
 		i18n.Text("These notes may have scripts embedded in them by wrapping each script in <script>your script goes here</script> tags."),
 		func() string { return *fieldData },
@@ -210,11 +209,7 @@ func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {
 
 func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip string, fieldData *[]string) {
 	tooltip := fmt.Sprintf(i18n.Text("Separate multiple %s with commas"), pluralForTooltip)
-	label := NewFieldLeadingLabel(labelText, false)
-	if tooltip != "" {
-		label.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(label)
+	addLabel(parent, labelText, tooltip)
 	field := NewMultiLineStringField(nil, "", labelText,
 		func() string { return gurps.CombineTags(*fieldData) },
 		func(value string) {
@@ -230,11 +225,7 @@ func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip stri
 }
 
 func addLabelAndStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
-	label := NewFieldLeadingLabel(labelText, false)
-	if tooltip != "" {
-		label.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(label)
+	addLabel(parent, labelText, tooltip)
 	return addStringField(parent, labelText, tooltip, fieldData)
 }
 
@@ -265,11 +256,7 @@ func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *
 }
 
 func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) {
-	label := NewFieldLeadingLabel(labelText, false)
-	if tooltip != "" {
-		label.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(label)
+	addLabel(parent, labelText, tooltip)
 	field := NewMultiLineStringField(nil, "", labelText,
 		func() string { return *fieldData },
 		func(value string) {
@@ -298,12 +285,16 @@ func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 	return field
 }
 
-func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
+func addLabel(parent *unison.Panel, labelText, tooltip string) {
 	label := NewFieldLeadingLabel(labelText, false)
 	if tooltip != "" {
 		label.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(label)
+}
+
+func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
+	addLabel(parent, labelText, tooltip)
 	return addDecimalField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, minValue, maxValue)
 }
 
@@ -417,11 +408,7 @@ func addNullableDice(parent *unison.Panel, labelText, tooltip string, fieldData 
 }
 
 func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip string, choices []T, fieldData *T) *unison.PopupMenu[T] {
-	label := NewFieldLeadingLabel(labelText, false)
-	if tooltip != "" {
-		label.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(label)
+	addLabel(parent, labelText, tooltip)
 	return addPopup(parent, choices, fieldData)
 }
 
