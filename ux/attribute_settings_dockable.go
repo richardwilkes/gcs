@@ -277,7 +277,31 @@ func (d *attributeSettingsDockable) load(fileSystem fs.FS, filePath string) erro
 	if err != nil {
 		return err
 	}
-	defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
+	replacements, replace, canceled := SelectAttributeDefs(defs)
+	if canceled {
+		return nil
+	}
+	if !replace {
+		existing := d.defs.Clone()
+		nextOrder := 0
+		for _, def := range d.defs.Set {
+			if def.Order > nextOrder {
+				nextOrder = def.Order
+			}
+		}
+		nextOrder++
+		for key, def := range replacements.Set {
+			if origDef, exists := existing.Set[key]; exists {
+				def.Order = origDef.Order
+			} else {
+				def.Order = nextOrder
+				nextOrder++
+			}
+			existing.Set[key] = def
+		}
+		replacements = existing
+	}
+	replacements.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
 		ID:         unison.NextUndoID(),
 		EditName:   i18n.Text("Load Attributes"),
@@ -286,8 +310,8 @@ func (d *attributeSettingsDockable) load(fileSystem fs.FS, filePath string) erro
 		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
 		BeforeData: d.defs.Clone(),
 	}
-	d.defs = defs
-	undo.AfterData = d.defs.Clone()
+	d.defs = replacements
+	undo.AfterData = replacements.Clone()
 	d.UndoManager().Add(undo)
 	d.sync()
 	return nil
