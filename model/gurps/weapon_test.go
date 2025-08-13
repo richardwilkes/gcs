@@ -10,10 +10,10 @@
 package gurps_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 

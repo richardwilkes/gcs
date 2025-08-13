@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"context"
 	"maps"
 	"os"
 	"os/user"
@@ -77,7 +76,7 @@ type Settings struct {
 	General            *GeneralSettings           `json:"general,omitempty"`
 	LibrarySet         Libraries                  `json:"libraries,omitempty"`
 	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
-	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
+	ThemeMode          thememode.Enum             `json:"theme_mode"`
 	RecentFiles        []string                   `json:"recent_files,omitempty"`
 	DeepSearch         []string                   `json:"deep_search,omitempty"`
 	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
@@ -114,7 +113,7 @@ type Openable interface {
 func GlobalSettings() *Settings {
 	globalOnce.Do(func() {
 		dice.GURPSFormat = true
-		if err := jio.LoadFromFile(context.Background(), SettingsPath, &globalSettings); err != nil {
+		if err := jio.LoadFromFile(SettingsPath, &globalSettings); err != nil {
 			globalSettings = Settings{
 				LastSeenGCSVersion: xos.AppVersion,
 				General:            NewGeneralSettings(),
@@ -165,7 +164,7 @@ func (s *Settings) Save() error {
 			delete(s.PDFs, k)
 		}
 	}
-	return jio.SaveToFile(context.Background(), SettingsPath, s)
+	return jio.SaveToFile(SettingsPath, s)
 }
 
 // ToColumnCutoff converts a unix timestamp (in seconds) to a column cutoff value.

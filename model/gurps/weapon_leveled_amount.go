@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json"
 	"fmt"
 	"hash"
 
@@ -22,9 +23,14 @@ import (
 type WeaponLeveledAmount struct {
 	Level    fxp.Int `json:"-"`
 	DieCount fxp.Int `json:"-"`
+	WeaponLeveledAmountData
+}
+
+// WeaponLeveledAmountData holds the data for a weapon leveled amount which is persisted.
+type WeaponLeveledAmountData struct {
 	Amount   fxp.Int `json:"amount"`
 	PerLevel bool    `json:"leveled,omitempty"`
-	PerDie   bool    `json:"per_die,alt=per_level,omitempty"`
+	PerDie   bool    `json:"per_die,omitempty"`
 }
 
 // AdjustedAmount returns the amount, adjusted for level, if requested.
@@ -75,4 +81,25 @@ func (w *WeaponLeveledAmount) Hash(h hash.Hash) {
 	xhash.Num64(h, w.Amount)
 	xhash.Bool(h, w.PerLevel)
 	xhash.Bool(h, w.PerDie)
+}
+
+// MarshalJSON implements json.Marshaler.
+func (w *WeaponLeveledAmount) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&w.WeaponLeveledAmountData)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (w *WeaponLeveledAmount) UnmarshalJSON(data []byte) error {
+	var content struct {
+		WeaponLeveledAmountData
+		OldPerDie bool `json:"per_level"`
+	}
+	if err := json.Unmarshal(data, &content); err != nil {
+		return err
+	}
+	w.WeaponLeveledAmountData = content.WeaponLeveledAmountData
+	if !w.PerDie && content.OldPerDie {
+		w.PerDie = true
+	}
+	return nil
 }

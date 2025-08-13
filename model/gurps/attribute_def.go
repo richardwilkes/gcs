@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"strings"
@@ -18,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 

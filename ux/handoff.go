@@ -12,12 +12,12 @@ package ux
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"log/slog"
 	"net"
 	"path/filepath"
 	"time"
 
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/toolbox/v2/xos"

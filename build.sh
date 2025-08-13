@@ -110,8 +110,7 @@ fi
 
 # Generate the translation file
 if [ "$I18N"x == "1x" ]; then
-	i18n $(go list -f "{{.Dir}}" -m github.com/richardwilkes/json) \
-		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/pdf) \
+	i18n $(go list -f "{{.Dir}}" -m github.com/richardwilkes/pdf) \
 		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/rpgtools) \
 		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/toolbox/v2) \
 		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/unison) \

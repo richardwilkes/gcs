@@ -11,13 +11,12 @@ package gurps
 
 import (
 	"bytes"
-	"context"
+	"encoding/json"
 	"hash"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
@@ -45,7 +44,7 @@ type CampaignData struct {
 // NewCampaignFromFile loads a Campaign from a file.
 func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 	var campaign Campaign
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &campaign); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &campaign); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(campaign.Version); err != nil {
@@ -66,7 +65,7 @@ func NewCampaign() *Campaign {
 
 // Save the Campaign to a file as JSON.
 func (c *Campaign) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, c)
+	return jio.SaveToFile(filePath, c)
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -78,7 +77,7 @@ func (c *Campaign) MarshalJSON() ([]byte, error) {
 // Hash writes this object's contents into the hasher.
 func (c *Campaign) Hash(h hash.Hash) {
 	var buffer bytes.Buffer
-	if err := jio.Save(context.Background(), &buffer, c); err != nil {
+	if err := jio.Save(&buffer, c); err != nil {
 		errs.Log(err)
 		return
 	}

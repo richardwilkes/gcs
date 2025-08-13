@@ -10,12 +10,11 @@
 package gurps
 
 import (
-	"context"
+	"encoding/json"
 	"io/fs"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -38,7 +37,7 @@ type PageRef struct {
 // NewPageRefsFromFS creates a new set of page references from a file.
 func NewPageRefsFromFS(fileSystem fs.FS, filePath string) (*PageRefs, error) {
 	var p PageRefs
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &p); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &p); err != nil {
 		return nil, err
 	}
 	return &p, nil
@@ -46,7 +45,7 @@ func NewPageRefsFromFS(fileSystem fs.FS, filePath string) (*PageRefs, error) {
 
 // Save writes the PageRefs to the file as JSON.
 func (p *PageRefs) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, p)
+	return jio.SaveToFile(filePath, p)
 }
 
 // MarshalJSON implements json.Marshaler.

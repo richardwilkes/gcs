@@ -10,10 +10,10 @@
 package criteria
 
 import (
+	"encoding/json"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 

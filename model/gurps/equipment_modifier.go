@@ -10,7 +10,7 @@
 package gurps
 
 import (
-	"context"
+	"encoding/json"
 	"hash"
 	"io/fs"
 	"slices"
@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -114,7 +113,7 @@ type equipmentModifierListData struct {
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
 	var data equipmentModifierListData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
@@ -125,7 +124,7 @@ func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*Equipm
 
 // SaveEquipmentModifiers writes the EquipmentModifier list to the file as JSON.
 func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &equipmentModifierListData{
+	return jio.SaveToFile(filePath, &equipmentModifierListData{
 		Version: jio.CurrentDataVersion,
 		Rows:    modifiers,
 	})

@@ -12,12 +12,12 @@ package gurps
 import (
 	"bytes"
 	"cmp"
+	"encoding/json"
 	"hash"
 	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 

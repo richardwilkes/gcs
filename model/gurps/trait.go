@@ -10,7 +10,7 @@
 package gurps
 
 import (
-	"context"
+	"encoding/json"
 	"hash"
 	"io/fs"
 	"maps"
@@ -29,7 +29,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -128,7 +127,7 @@ type traitListData struct {
 // NewTraitsFromFile loads an Trait list from a file.
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 	var data traitListData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
@@ -143,7 +142,7 @@ func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 
 // SaveTraits writes the Trait list to the file as JSON.
 func SaveTraits(traits []*Trait, filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &traitListData{
+	return jio.SaveToFile(filePath, &traitListData{
 		Version: jio.CurrentDataVersion,
 		Rows:    traits,
 	})

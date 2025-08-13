@@ -11,12 +11,12 @@ package colors
 
 import (
 	"context"
+	"encoding/json"
 	"io/fs"
 	"log/slog"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
@@ -138,7 +138,7 @@ func initialize() {
 // NewFromFS creates a new set of colors from a file. Any missing values will be filled in with defaults.
 func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	var data fileData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
 	if data.Version < minimumVersion {
@@ -152,7 +152,7 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 
 // Save writes the Colors to the file as JSON.
 func (c *Colors) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &fileData{
+	return jio.SaveToFile(filePath, &fileData{
 		Version: currentVersion,
 		Colors:  *c,
 	})

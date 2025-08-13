@@ -10,14 +10,13 @@
 package gurps
 
 import (
-	"context"
 	"embed"
+	"encoding/json"
 	"hash"
 	"io/fs"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -68,7 +67,7 @@ func FactoryBody() *Body {
 // NewBodyFromFile loads a Body from a file.
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data standaloneBodyData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
@@ -128,7 +127,7 @@ func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 
 // Save writes the Body to the file as JSON.
 func (b *Body) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &standaloneBodyData{
+	return jio.SaveToFile(filePath, &standaloneBodyData{
 		Version:  jio.CurrentDataVersion,
 		BodyData: b.BodyData,
 	})

@@ -38,8 +38,6 @@ github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 h1:zYyBkD/k9seD2A7fsi6
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
-github.com/richardwilkes/json v0.4.0 h1:eN/Rn0u/HdXI8EpVNJn3Ksy334LP47aTMUYXr9t29Mg=
-github.com/richardwilkes/json v0.4.0/go.mod h1:+7qk1QXSKh+NkY0meiJwK57rPnVRbltG3bYnt40Ak4c=
 github.com/richardwilkes/pdf v1.25.4 h1:KeHha1QirxOriB2vv+UchMg+AztdSRP7Jqga05yy6F0=
 github.com/richardwilkes/pdf v1.25.4/go.mod h1:1YodEIf0UuprtDG35GCDs7lWurtBdGGslstrC51hm4U=
 github.com/richardwilkes/rpgtools v1.11.0 h1:z/CR8cXC+YZEnFTdx0ClP6ZrS/g36XyfWZ85lOMyu60=

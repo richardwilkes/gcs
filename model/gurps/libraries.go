@@ -11,13 +11,13 @@ package gurps
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"slices"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 

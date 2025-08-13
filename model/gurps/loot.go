@@ -11,14 +11,13 @@ package gurps
 
 import (
 	"bytes"
-	"context"
+	"encoding/json"
 	"hash"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
@@ -51,7 +50,7 @@ type LootData struct {
 // NewLootFromFile loads Loot from a file.
 func NewLootFromFile(fileSystem fs.FS, filePath string) (*Loot, error) {
 	var l Loot
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &l); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &l); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(l.Version); err != nil {
@@ -70,7 +69,7 @@ func NewLoot() *Loot {
 
 // Save the Loot to a file as JSON.
 func (l *Loot) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, l)
+	return jio.SaveToFile(filePath, l)
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -112,7 +111,7 @@ func (l *Loot) Hash(h hash.Hash) {
 	saved := l.ModifiedOn
 	l.ModifiedOn = jio.Time{}
 	defer func() { l.ModifiedOn = saved }()
-	if err := jio.Save(context.Background(), &buffer, l); err != nil {
+	if err := jio.Save(&buffer, l); err != nil {
 		errs.Log(err)
 		return
 	}

@@ -12,13 +12,12 @@ package gurps
 import (
 	"bytes"
 	"cmp"
-	"context"
+	"encoding/json"
 	"hash"
 	"io/fs"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -74,20 +73,24 @@ func FactoryAttributeDefs() *AttributeDefs {
 
 type attributeDefsData struct {
 	Version int            `json:"version"`
-	Rows    *AttributeDefs `json:"rows,alt=attributes"`
+	Rows    *AttributeDefs `json:"rows"`
 }
 
 // NewAttributeDefsFromFile loads an AttributeDef set from a file.
 func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs, error) {
 	var data struct {
 		attributeDefsData
+		OldRows   *AttributeDefs `json:"attributes"`
 		OldestKey *AttributeDefs `json:"attribute_settings"`
 	}
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
+	}
+	if data.Rows == nil && data.OldRows != nil {
+		data.Rows = data.OldRows
 	}
 	var defs *AttributeDefs
 	if data.Rows != nil {
@@ -104,7 +107,7 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 
 // Save writes the AttributeDefs to the file as JSON.
 func (a *AttributeDefs) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &attributeDefsData{
+	return jio.SaveToFile(filePath, &attributeDefsData{
 		Version: jio.CurrentDataVersion,
 		Rows:    a,
 	})

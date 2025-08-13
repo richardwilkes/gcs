@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"context"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -123,7 +122,7 @@ func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSett
 		GeneralSettings
 		OldLocation *GeneralSettings `json:"general"`
 	}
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, err
 	}
 	var s *GeneralSettings
@@ -139,7 +138,7 @@ func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSett
 
 // Save writes the settings to the file as JSON.
 func (s *GeneralSettings) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, s)
+	return jio.SaveToFile(filePath, s)
 }
 
 // UpdateToolTipTiming updates the default tooltip theme to use the timing values from this object.

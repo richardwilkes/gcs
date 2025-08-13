@@ -10,11 +10,11 @@
 package gurps
 
 import (
+	"encoding/json"
 	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 

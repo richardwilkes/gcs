@@ -5,7 +5,6 @@ go 1.25.0
 require (
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
 	github.com/google/uuid v1.6.0
-	github.com/richardwilkes/json v0.4.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
 	github.com/richardwilkes/toolbox/v2 v2.5.0

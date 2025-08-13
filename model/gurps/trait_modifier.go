@@ -10,7 +10,7 @@
 package gurps
 
 import (
-	"context"
+	"encoding/json"
 	"hash"
 	"io/fs"
 	"slices"
@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -121,7 +120,7 @@ type traitModifierListData struct {
 // NewTraitModifiersFromFile loads a TraitModifier list from a file.
 func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModifier, error) {
 	var data traitModifierListData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
@@ -132,7 +131,7 @@ func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModif
 
 // SaveTraitModifiers writes the TraitModifier list to the file as JSON.
 func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &traitModifierListData{
+	return jio.SaveToFile(filePath, &traitModifierListData{
 		Version: jio.CurrentDataVersion,
 		Rows:    modifiers,
 	})

@@ -10,7 +10,7 @@
 package gurps
 
 import (
-	"context"
+	"encoding/json"
 	"hash"
 	"io/fs"
 	"maps"
@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -78,7 +77,7 @@ type noteListData struct {
 // NewNotesFromFile loads an Note list from a file.
 func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
 	var data noteListData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
@@ -93,7 +92,7 @@ func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
 
 // SaveNotes writes the Note list to the file as JSON.
 func SaveNotes(notes []*Note, filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &noteListData{
+	return jio.SaveToFile(filePath, &noteListData{
 		Version: jio.CurrentDataVersion,
 		Rows:    notes,
 	})

@@ -11,7 +11,6 @@ package ux
 
 import (
 	"bytes"
-	"context"
 	"hash"
 	"strings"
 	"time"
@@ -431,7 +430,7 @@ func (d *TableDockable[T]) Hash(h hash.Hash) {
 	for _, row := range rows {
 		data = append(data, row.Data())
 	}
-	if err := jio.Save(context.Background(), &buffer, data); err != nil {
+	if err := jio.Save(&buffer, data); err != nil {
 		errs.Log(err)
 		return
 	}

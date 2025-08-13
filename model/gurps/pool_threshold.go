@@ -11,12 +11,12 @@ package gurps
 
 import (
 	"bytes"
+	"encoding/json"
 	"hash"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 

@@ -10,11 +10,11 @@
 package gurps
 
 import (
+	"encoding/json"
 	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"

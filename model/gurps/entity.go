@@ -11,7 +11,7 @@ package gurps
 
 import (
 	"bytes"
-	"context"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -37,7 +37,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -78,7 +77,7 @@ type EntityData struct {
 	Profile          Profile         `json:"profile"`
 	SheetSettings    *SheetSettings  `json:"settings,omitempty"`
 	Attributes       *Attributes     `json:"attributes,omitempty"`
-	Traits           []*Trait        `json:"traits,alt=advantages,omitempty"`
+	Traits           []*Trait        `json:"traits,omitempty"`
 	Skills           []*Skill        `json:"skills,omitempty"`
 	Spells           []*Spell        `json:"spells,omitempty"`
 	CarriedEquipment []*Equipment    `json:"equipment,omitempty"`
@@ -126,7 +125,7 @@ type Entity struct {
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var e Entity
 	e.DiscardCaches()
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &e); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &e); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(e.Version); err != nil {
@@ -186,7 +185,7 @@ func (e *Entity) Entity() *Entity {
 
 // Save the Entity to a file as JSON.
 func (e *Entity) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, e)
+	return jio.SaveToFile(filePath, e)
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -234,9 +233,16 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (e *Entity) UnmarshalJSON(data []byte) error {
-	e.EntityData = EntityData{}
-	if err := json.Unmarshal(data, &e.EntityData); err != nil {
+	var content struct {
+		EntityData
+		OldTraits []*Trait `json:"advantages"`
+	}
+	if err := json.Unmarshal(data, &content); err != nil {
 		return err
+	}
+	e.EntityData = content.EntityData
+	if e.Traits == nil && content.OldTraits != nil {
+		e.Traits = content.OldTraits
 	}
 	if !tid.IsKindAndValid(e.ID, kinds.Entity) {
 		e.ID = tid.MustNewTID(kinds.Entity)
@@ -1563,7 +1569,7 @@ func (e *Entity) Hash(h hash.Hash) {
 	saved := e.ModifiedOn
 	e.ModifiedOn = jio.Time{}
 	defer func() { e.ModifiedOn = saved }()
-	if err := jio.Save(context.Background(), &buffer, e); err != nil {
+	if err := jio.Save(&buffer, e); err != nil {
 		errs.Log(err)
 		return
 	}

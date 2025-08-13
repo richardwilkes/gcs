@@ -11,10 +11,10 @@ package gurps
 
 import (
 	"bytes"
+	"encoding/json"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 )
 

@@ -11,12 +11,12 @@ package gurps
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"strconv"
 	"strings"
 
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"

@@ -11,12 +11,11 @@ package gurps
 
 import (
 	"cmp"
-	"context"
+	"encoding/json"
 	"io/fs"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
@@ -72,7 +71,7 @@ func CurrentBindings() []*Binding {
 // defaults.
 func NewKeyBindingsFromFS(fileSystem fs.FS, filePath string) (*KeyBindings, error) {
 	var b KeyBindings
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &b); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &b); err != nil {
 		return nil, err
 	}
 	return &b, nil
@@ -90,7 +89,7 @@ func (b *KeyBindings) IsZero() bool {
 
 // Save writes the Fonts to the file as JSON.
 func (b *KeyBindings) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, b)
+	return jio.SaveToFile(filePath, b)
 }
 
 // MarshalJSON implements json.Marshaler.

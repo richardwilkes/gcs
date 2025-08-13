@@ -11,14 +11,13 @@ package gurps
 
 import (
 	"bytes"
-	"context"
+	"encoding/json"
 	"hash"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
@@ -29,7 +28,7 @@ var (
 	_ Hashable     = &Template{}
 )
 
-// Template holds the GURPS Template data that is written to disk.
+// Template holds the GURPS Template data.
 type Template struct {
 	TemplateData
 	srcMatcher         *SrcMatcher
@@ -41,7 +40,7 @@ type Template struct {
 type TemplateData struct {
 	Version   int          `json:"version"`
 	ID        tid.TID      `json:"id"`
-	Traits    []*Trait     `json:"traits,alt=advantages,omitempty"`
+	Traits    []*Trait     `json:"traits,omitempty"`
 	Skills    []*Skill     `json:"skills,omitempty"`
 	Spells    []*Spell     `json:"spells,omitempty"`
 	Equipment []*Equipment `json:"equipment,omitempty"`
@@ -52,7 +51,7 @@ type TemplateData struct {
 // NewTemplateFromFile loads a Template from a file.
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var t Template
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &t); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &t); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(t.Version); err != nil {
@@ -77,8 +76,16 @@ func (t *Template) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (t *Template) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &t.TemplateData); err != nil {
+	var content struct {
+		TemplateData
+		OldTraits []*Trait `json:"advantages"`
+	}
+	if err := json.Unmarshal(data, &content); err != nil {
 		return err
+	}
+	t.TemplateData = content.TemplateData
+	if t.Traits == nil && content.OldTraits != nil {
+		t.Traits = content.OldTraits
 	}
 	if !tid.IsKindAndValid(t.ID, kinds.Template) {
 		t.ID = tid.MustNewTID(kinds.Template)
@@ -132,7 +139,7 @@ func (t *Template) SourceMatcher() *SrcMatcher {
 
 // Save the Template to a file as JSON.
 func (t *Template) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, t)
+	return jio.SaveToFile(filePath, t)
 }
 
 // TraitList implements ListProvider
@@ -197,7 +204,7 @@ func (t *Template) SetNoteList(list []*Note) {
 // Hash writes this object's contents into the hasher.
 func (t *Template) Hash(h hash.Hash) {
 	var buffer bytes.Buffer
-	if err := jio.Save(context.Background(), &buffer, t); err != nil {
+	if err := jio.Save(&buffer, t); err != nil {
 		errs.Log(err)
 		return
 	}

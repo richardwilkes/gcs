@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"context"
 	"io/fs"
 	"slices"
 
@@ -107,7 +106,7 @@ func AvailableNameGenerators(libraries Libraries) []*NameGeneratorRef {
 // NewNameGeneratorFromFS creates a new NameGenerator from a file.
 func NewNameGeneratorFromFS(fileSystem fs.FS, filePath string) (*NameGenerator, error) {
 	var generator NameGenerator
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &generator); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &generator); err != nil {
 		return nil, err
 	}
 	if err := generator.createNamer(); err != nil {

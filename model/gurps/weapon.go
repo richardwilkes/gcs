@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"cmp"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"strings"
@@ -26,7 +27,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"

@@ -10,10 +10,10 @@
 package fxp
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 )

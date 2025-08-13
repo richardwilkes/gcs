@@ -10,10 +10,9 @@
 package gurps
 
 import (
+	"encoding/json"
 	"regexp"
 	"strings"
-
-	"github.com/richardwilkes/json"
 )
 
 var collegeSepRegex = regexp.MustCompile(`(\s+or\s+)|/`)

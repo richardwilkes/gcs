@@ -10,9 +10,9 @@
 package jio
 
 import (
+	"encoding/json"
 	"time"
 
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 )
 

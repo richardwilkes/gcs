@@ -12,44 +12,42 @@ package jio
 import (
 	"bytes"
 	"compress/gzip"
-	"context"
+	"encoding/json"
 	"io"
 	"io/fs"
 	"os"
 
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xio"
 )
 
 // LoadFromFile loads JSON data from the specified path.
-func LoadFromFile(ctx context.Context, path string, data any) error {
+func LoadFromFile(path string, data any) error {
 	f, err := os.Open(path)
 	if err != nil {
 		return errs.NewWithCause(path, err)
 	}
 	defer xio.CloseIgnoringErrors(f)
-	return Load(ctx, f, data)
+	return Load(f, data)
 }
 
 // LoadFromFS loads JSON data from the specified filesystem path.
-func LoadFromFS(ctx context.Context, fileSystem fs.FS, path string, data any) error {
+func LoadFromFS(fileSystem fs.FS, path string, data any) error {
 	f, err := fileSystem.Open(path)
 	if err != nil {
 		return errs.NewWithCause(path, err)
 	}
 	defer xio.CloseIgnoringErrors(f)
-	return Load(ctx, f, data)
+	return Load(f, data)
 }
 
 // Load JSON data.
-func Load(ctx context.Context, r io.Reader, data any) error {
+func Load(r io.Reader, data any) error {
 	buffer, err := xio.NewBOMStripper(r)
 	if err != nil {
 		return err
 	}
 	decoder := json.NewDecoder(buffer)
-	decoder.SetContext(ctx)
 	decoder.UseNumber()
 	if err = decoder.Decode(data); err != nil {
 		return errs.Wrap(err)

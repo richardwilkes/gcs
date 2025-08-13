@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -25,10 +26,15 @@ var _ Bonus = &SkillPointBonus{}
 
 // SkillPointBonus holds an adjustment to a skill's points.
 type SkillPointBonus struct {
+	SkillPointBonusData
+}
+
+// SkillPointBonusData holds an adjustment to a skill's points which is persisted.
+type SkillPointBonusData struct {
 	Type                   feature.Type  `json:"type"`
 	NameCriteria           criteria.Text `json:"name,omitzero"`
 	SpecializationCriteria criteria.Text `json:"specialization,omitzero"`
-	TagsCriteria           criteria.Text `json:"tags,alt=category,omitzero"`
+	TagsCriteria           criteria.Text `json:"tags,omitzero"`
 	LeveledAmount
 	BonusOwner
 }
@@ -93,4 +99,25 @@ func (s *SkillPointBonus) Hash(h hash.Hash) {
 	s.SpecializationCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)
+}
+
+// MarshalJSON implements json.Marshaler.
+func (s *SkillPointBonus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&s.SkillPointBonusData)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (s *SkillPointBonus) UnmarshalJSON(data []byte) error {
+	var content struct {
+		SkillPointBonusData
+		OldTagsCriteria criteria.Text `json:"category"`
+	}
+	if err := json.Unmarshal(data, &content); err != nil {
+		return err
+	}
+	s.SkillPointBonusData = content.SkillPointBonusData
+	if s.TagsCriteria.IsZero() && !content.OldTagsCriteria.IsZero() {
+		s.TagsCriteria = content.OldTagsCriteria
+	}
+	return nil
 }

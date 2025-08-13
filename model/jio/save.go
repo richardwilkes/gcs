@@ -12,23 +12,22 @@ package jio
 import (
 	"bytes"
 	"compress/gzip"
-	"context"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
 
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // SaveToFile writes the data as JSON to the given path. Parent directories will be created automatically, if needed.
-func SaveToFile(ctx context.Context, path string, data any) error {
+func SaveToFile(path string, data any) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return errs.Wrap(err)
 	}
 	if err := xos.WriteSafeFile(path, func(w io.Writer) error {
-		return Save(ctx, w, data)
+		return Save(w, data)
 	}); err != nil {
 		return errs.NewWithCause(path, err)
 	}
@@ -36,9 +35,8 @@ func SaveToFile(ctx context.Context, path string, data any) error {
 }
 
 // Save writes the data as JSON.
-func Save(ctx context.Context, w io.Writer, data any) error {
+func Save(w io.Writer, data any) error {
 	encoder := json.NewEncoder(w)
-	encoder.SetContext(ctx)
 	encoder.SetEscapeHTML(false)
 	encoder.SetIndent("", "\t")
 	return errs.Wrap(encoder.Encode(data))

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -25,10 +26,15 @@ var _ Bonus = &SpellBonus{}
 
 // SpellBonus holds the data for a bonus to a spell.
 type SpellBonus struct {
+	SpellBonusData
+}
+
+// SpellBonusData holds the data for a bonus to a spell which is persisted.
+type SpellBonusData struct {
 	Type           feature.Type    `json:"type"`
 	SpellMatchType spellmatch.Type `json:"match"`
 	NameCriteria   criteria.Text   `json:"name,omitzero"`
-	TagsCriteria   criteria.Text   `json:"tags,alt=category,omitzero"`
+	TagsCriteria   criteria.Text   `json:"tags,omitzero"`
 	LeveledAmount
 	BonusOwner
 }
@@ -89,4 +95,25 @@ func (s *SpellBonus) Hash(h hash.Hash) {
 	s.NameCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)
+}
+
+// MarshalJSON implements json.Marshaler.
+func (s *SpellBonus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&s.SpellBonusData)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (s *SpellBonus) UnmarshalJSON(data []byte) error {
+	var content struct {
+		SpellBonusData
+		OldTagsCriteria criteria.Text `json:"category"`
+	}
+	if err := json.Unmarshal(data, &content); err != nil {
+		return err
+	}
+	s.SpellBonusData = content.SpellBonusData
+	if s.TagsCriteria.IsZero() && !content.OldTagsCriteria.IsZero() {
+		s.TagsCriteria = content.OldTagsCriteria
+	}
+	return nil
 }

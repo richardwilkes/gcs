@@ -10,12 +10,11 @@
 package fonts
 
 import (
-	"context"
+	"encoding/json"
 	"io/fs"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -109,7 +108,7 @@ func initialize() {
 // NewFromFS creates a new set of fonts from a file. Any missing values will be filled in with defaults.
 func NewFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 	var data fileData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
@@ -120,7 +119,7 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 
 // Save writes the Fonts to the file as JSON.
 func (f *Fonts) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &fileData{
+	return jio.SaveToFile(filePath, &fileData{
 		Version: jio.CurrentDataVersion,
 		Fonts:   *f,
 	})

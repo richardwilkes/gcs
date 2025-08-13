@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"context"
 	"io/fs"
 	"strings"
 
@@ -60,7 +59,7 @@ func LookupAncestry(name string, libraries Libraries) *Ancestry {
 // NewAncestryFromFile creates a new Ancestry from a file.
 func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 	var ancestry ancestryData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &ancestry); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &ancestry); err != nil {
 		return nil, err
 	}
 	if ancestry.Version == 0 { // for some older files
@@ -77,7 +76,7 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 
 // Save writes the Ancestry to the file as JSON.
 func (a *Ancestry) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &ancestryData{
+	return jio.SaveToFile(filePath, &ancestryData{
 		Version:  jio.CurrentDataVersion,
 		Ancestry: *a,
 	})

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json"
 	"fmt"
 	"hash"
 	"strings"
@@ -29,6 +30,11 @@ var _ Bonus = &WeaponBonus{}
 
 // WeaponBonus holds the data for an adjustment to weapon damage.
 type WeaponBonus struct {
+	WeaponBonusData
+}
+
+// WeaponBonusData holds the data for an adjustment to weapon damage which is persisted.
+type WeaponBonusData struct {
 	Type                   feature.Type    `json:"type"`
 	Percent                bool            `json:"percent,omitempty"`
 	SelectionType          wsel.Type       `json:"selection_type"`
@@ -38,7 +44,7 @@ type WeaponBonus struct {
 	SpecializationCriteria criteria.Text   `json:"specialization,omitzero"`
 	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
 	UsageCriteria          criteria.Text   `json:"usage,omitzero"`
-	TagsCriteria           criteria.Text   `json:"tags,alt=category,omitzero"`
+	TagsCriteria           criteria.Text   `json:"tags,omitzero"`
 	WeaponLeveledAmount
 	BonusOwner
 }
@@ -294,4 +300,25 @@ func (w *WeaponBonus) Hash(h hash.Hash) {
 	w.UsageCriteria.Hash(h)
 	w.TagsCriteria.Hash(h)
 	w.WeaponLeveledAmount.Hash(h)
+}
+
+// MarshalJSON implements json.Marshaler.
+func (w *WeaponBonus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&w.WeaponBonusData)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (w *WeaponBonus) UnmarshalJSON(data []byte) error {
+	var content struct {
+		WeaponBonusData
+		OldTagsCriteria criteria.Text `json:"category"`
+	}
+	if err := json.Unmarshal(data, &content); err != nil {
+		return err
+	}
+	w.WeaponBonusData = content.WeaponBonusData
+	if w.TagsCriteria.IsZero() && !content.OldTagsCriteria.IsZero() {
+		w.TagsCriteria = content.OldTagsCriteria
+	}
+	return nil
 }

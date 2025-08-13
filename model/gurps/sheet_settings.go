@@ -10,14 +10,13 @@
 package gurps
 
 import (
-	"context"
+	"encoding/json"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/json"
 )
 
 // SheetSettingsResponder defines the method required to be notified of updates to the SheetSettings.
@@ -33,7 +32,7 @@ type SheetSettingsData struct {
 	Page                          *PageSettings      `json:"page,omitempty"`
 	BlockLayout                   *BlockLayout       `json:"block_layout,omitempty"`
 	Attributes                    *AttributeDefs     `json:"attributes,omitempty"`
-	BodyType                      *Body              `json:"body_type,alt=hit_locations,omitempty"`
+	BodyType                      *Body              `json:"body_type,omitempty"`
 	DamageProgression             progression.Option `json:"damage_progression"`
 	DefaultLengthUnits            fxp.LengthUnit     `json:"default_length_units"`
 	DefaultWeightUnits            fxp.WeightUnit     `json:"default_weight_units"`
@@ -44,7 +43,7 @@ type SheetSettingsData struct {
 	UseMultiplicativeModifiers    bool               `json:"use_multiplicative_modifiers,omitempty"`
 	UseModifyingDicePlusAdds      bool               `json:"use_modifying_dice_plus_adds,omitempty"`
 	UseHalfStatDefaults           bool               `json:"use_half_stat_defaults,omitempty"`
-	ShowTraitModifierAdj          bool               `json:"show_trait_modifier_adj,alt=show_advantage_modifier_adj,omitempty"`
+	ShowTraitModifierAdj          bool               `json:"show_trait_modifier_adj,omitempty"`
 	ShowEquipmentModifierAdj      bool               `json:"show_equipment_modifier_adj,omitempty"`
 	ShowSpellAdj                  bool               `json:"show_spell_adj,omitempty"`
 	HideSourceMismatch            bool               `json:"hide_source_mismatch,omitempty"`
@@ -96,7 +95,7 @@ func NewSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*SheetSettings
 		SheetSettings
 		OldLocation *SheetSettings `json:"sheet_settings"`
 	}
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
 		return nil, err
 	}
 	var s *SheetSettings
@@ -144,9 +143,20 @@ func (s *SheetSettings) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (s *SheetSettings) UnmarshalJSON(data []byte) error {
-	s.SheetSettingsData = SheetSettingsData{}
-	if err := json.Unmarshal(data, &s.SheetSettingsData); err != nil {
+	var content struct {
+		SheetSettingsData
+		OldBodyType             *Body `json:"hit_locations"`
+		OldShowTraitModifierAdj bool  `json:"show_advantage_modifier_adj"`
+	}
+	if err := json.Unmarshal(data, &content); err != nil {
 		return err
+	}
+	s.SheetSettingsData = content.SheetSettingsData
+	if s.BodyType == nil && content.OldBodyType != nil {
+		s.BodyType = content.OldBodyType
+	}
+	if !s.ShowTraitModifierAdj && content.OldShowTraitModifierAdj {
+		s.ShowTraitModifierAdj = true
 	}
 	s.EnsureValidity()
 	return nil
@@ -170,5 +180,5 @@ func (s *SheetSettings) SetOwningEntity(entity *Entity) {
 
 // Save writes the settings to the file as JSON.
 func (s *SheetSettings) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, s)
+	return jio.SaveToFile(filePath, s)
 }

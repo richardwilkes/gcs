@@ -10,10 +10,10 @@
 package paper
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
