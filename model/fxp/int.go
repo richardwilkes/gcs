@@ -14,7 +14,7 @@ import (
 
 	"github.com/richardwilkes/toolbox/v2/fixed"
 	"github.com/richardwilkes/toolbox/v2/fixed/fixed64"
-	"golang.org/x/exp/constraints"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 )
 
 // Common values that can be reused.
@@ -99,12 +99,12 @@ type DP = fixed.D4
 type Int = fixed64.Int[DP]
 
 // FromInteger creates an Int from a numeric value.
-func FromInteger[T constraints.Integer](value T) Int {
+func FromInteger[T xmath.Integer](value T) Int {
 	return fixed64.FromInteger[DP](value)
 }
 
 // FromFloat creates an Int from a numeric value.
-func FromFloat[T constraints.Float](value T) Int {
+func FromFloat[T xmath.Float](value T) Int {
 	return fixed64.FromFloat[DP](value)
 }
 
@@ -119,12 +119,12 @@ func FromStringForced(value string) Int {
 }
 
 // AsInteger returns the equivalent value in the destination type.
-func AsInteger[T constraints.Integer](value Int) T {
+func AsInteger[T xmath.Integer](value Int) T {
 	return fixed64.AsInteger[DP, T](value)
 }
 
 // AsFloat returns the equivalent value in the destination type.
-func AsFloat[T constraints.Float](value Int) T {
+func AsFloat[T xmath.Float](value Int) T {
 	return fixed64.AsFloat[DP, T](value)
 }
 
@@ -148,7 +148,7 @@ func ApplyRounding(value Int, roundDown bool) Int {
 
 // ResetIfOutOfRange checks the value and if it is lower than minValue or greater than maxValue, returns defValue,
 // otherwise returns value.
-func ResetIfOutOfRange[T constraints.Integer | constraints.Float | Int](value, minValue, maxValue, defValue T) T {
+func ResetIfOutOfRange[T xmath.Integer | xmath.Float | Int](value, minValue, maxValue, defValue T) T {
 	if value < minValue || value > maxValue {
 		return defValue
 	}

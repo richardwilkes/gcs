@@ -1,6 +1,6 @@
 module github.com/richardwilkes/gcs/v5
 
-go 1.24.5
+go 1.25.0
 
 require (
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
@@ -8,12 +8,11 @@ require (
 	github.com/richardwilkes/json v0.4.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
-	github.com/richardwilkes/toolbox/v2 v2.4.0
-	github.com/richardwilkes/unison v0.83.1
+	github.com/richardwilkes/toolbox/v2 v2.5.0
+	github.com/richardwilkes/unison v0.83.2
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
-	golang.org/x/exp v0.0.0-20250811191247-51f88131bc50
 	golang.org/x/image v0.30.0
 	golang.org/x/sys v0.35.0
 	golang.org/x/text v0.28.0

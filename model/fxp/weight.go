@@ -13,14 +13,14 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/json"
-	"golang.org/x/exp/constraints"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 )
 
 // Weight contains a fixed-point value in pounds.
 type Weight Int
 
 // WeightFromInteger creates a new Weight.
-func WeightFromInteger[T constraints.Integer](value T, unit WeightUnit) Weight {
+func WeightFromInteger[T xmath.Integer](value T, unit WeightUnit) Weight {
 	return Weight(unit.ToPounds(FromInteger(value)))
 }
 

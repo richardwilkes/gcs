@@ -15,7 +15,7 @@ import (
 
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"golang.org/x/exp/constraints"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 )
 
 // Length contains a fixed-point value in inches. Conversions to/from metric are done using the simplified Length metric
@@ -24,7 +24,7 @@ import (
 type Length Int
 
 // LengthFromInteger creates a new Length.
-func LengthFromInteger[T constraints.Integer](value T, unit LengthUnit) Length {
+func LengthFromInteger[T xmath.Integer](value T, unit LengthUnit) Length {
 	return Length(unit.ToInches(FromInteger(value)))
 }
 
