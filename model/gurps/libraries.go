@@ -95,12 +95,8 @@ func (l Libraries) PerformUpdateChecks() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	var wg sync.WaitGroup
-	wg.Add(len(l))
 	for _, lib := range l {
-		go func(one *Library) {
-			defer wg.Done()
-			one.CheckForAvailableUpgrade(ctx, client)
-		}(lib)
+		wg.Go(func() { lib.CheckForAvailableUpgrade(ctx, client) })
 	}
 	wg.Wait()
 }
