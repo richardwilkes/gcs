@@ -134,18 +134,18 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
-
-	// Fix up some bad data in standalone skill lists where Hard techniques incorrectly had 1 point assigned to them
-	// instead of 2.
 	Traverse(func(skill *Skill) bool {
+		// Fix up some bad data in standalone skill lists where Hard techniques incorrectly had 1 point assigned to them
+		// instead of 2.
 		if skill.IsTechnique() &&
 			skill.Difficulty.Difficulty == difficulty.Hard &&
 			skill.Points == fxp.One {
 			skill.Points = fxp.Two
 		}
+
+		skill.SetDataOwner(nil)
 		return false
 	}, false, true, data.Rows...)
-
 	return data.Rows, nil
 }
 

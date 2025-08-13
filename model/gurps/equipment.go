@@ -121,6 +121,10 @@ func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, erro
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
+	Traverse(func(item *Equipment) bool {
+		item.SetDataOwner(nil)
+		return false
+	}, false, true, data.Rows...)
 	return data.Rows, nil
 }
 

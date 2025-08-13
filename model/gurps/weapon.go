@@ -42,6 +42,8 @@ import (
 
 var _ Node[*Weapon] = &Weapon{}
 
+const currentWeaponSubVersion = 1
+
 // Columns that can be used with the weapon method .CellData()
 const (
 	WeaponHideColumn = iota
@@ -76,6 +78,7 @@ type WeaponOwner interface {
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
 	TID        tid.TID         `json:"id"`
+	SubVersion int             `json:"sv"`
 	Damage     WeaponDamage    `json:"damage"`
 	Strength   WeaponStrength  `json:"strength,omitzero"`
 	Usage      string          `json:"usage,omitempty"`
@@ -262,6 +265,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		Recoil     string  `json:"recoil,omitempty"`
 		Strength   string  `json:"strength,omitempty"`
 	}
+	w.SubVersion = currentWeaponSubVersion
 	data := struct {
 		WeaponData
 		Calc *calc `json:"calc,omitempty"`
@@ -403,6 +407,23 @@ func (w *Weapon) Notes() string {
 func (w *Weapon) SetOwner(owner WeaponOwner) {
 	w.Owner = owner
 	w.Damage.Owner = w
+	w.performDataSubVersionFixups()
+}
+
+func (w *Weapon) performDataSubVersionFixups() {
+	switch w.SubVersion {
+	case currentWeaponSubVersion:
+	case 0: // Prior to sub-versioning
+		swap := true
+		if leveler, ok := w.Owner.(interface{ IsLeveled() bool }); ok {
+			swap = !leveler.IsLeveled()
+		}
+		if swap && w.Damage.BaseNotLeveled == nil {
+			w.Damage.BaseNotLeveled = w.Damage.BaseLeveled
+			w.Damage.BaseLeveled = nil
+		}
+	}
+	w.SubVersion = currentWeaponSubVersion
 }
 
 // DataOwner returns the weapon owner's data owner.

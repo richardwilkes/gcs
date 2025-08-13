@@ -134,6 +134,10 @@ func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
+	Traverse(func(trait *Trait) bool {
+		trait.SetDataOwner(nil)
+		return false
+	}, false, true, data.Rows...)
 	return data.Rows, nil
 }
 

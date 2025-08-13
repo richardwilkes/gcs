@@ -300,11 +300,14 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 
 // ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible.
 func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
-	base := w.BaseDamageDice()
-	if base.Count == 0 && base.Modifier == 0 {
+	if w.Owner == nil {
 		return w.String()
 	}
 	entity := w.Owner.Entity()
+	if entity == nil {
+		return w.String()
+	}
+	base := w.BaseDamageDice()
 	adjustForPhoenixFlame := entity.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.ArmorDivisor

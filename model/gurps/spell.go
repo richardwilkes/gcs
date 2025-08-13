@@ -142,6 +142,10 @@ func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
+	Traverse(func(spell *Spell) bool {
+		spell.SetDataOwner(nil)
+		return false
+	}, false, true, data.Rows...)
 	return data.Rows, nil
 }
 

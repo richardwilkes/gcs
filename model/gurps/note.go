@@ -84,6 +84,10 @@ func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
+	Traverse(func(note *Note) bool {
+		note.SetDataOwner(nil)
+		return false
+	}, false, true, data.Rows...)
 	return data.Rows, nil
 }
 
