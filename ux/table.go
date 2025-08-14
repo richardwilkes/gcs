@@ -207,7 +207,7 @@ func libraryFileFromTable[T gurps.NodeTypes](table *unison.Table[*Node[T]]) gurp
 			if strings.HasPrefix(filePathOnDisk, libPathOnDisk) {
 				return gurps.LibraryFile{
 					Library: lib.Key(),
-					Path:    strings.TrimPrefix(filePathOnDisk, libPathOnDisk),
+					Path:    filepath.ToSlash(strings.TrimPrefix(filePathOnDisk, libPathOnDisk)),
 				}
 			}
 		}
