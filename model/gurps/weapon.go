@@ -146,7 +146,7 @@ func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
 		w.Damage.StrengthType = stdmg.Thrust
 	} else {
 		w.RateOfFire.Mode1.ShotsPerAttack = fxp.One
-		w.Damage.BaseNotLeveled = dice.New("1d")
+		w.Damage.Base = dice.New("1d")
 	}
 	return &w
 }
@@ -279,7 +279,6 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	if data.Calc.Strength = w.Strength.Resolve(w, nil).String(); data.Calc.Strength == w.Strength.String() {
 		data.Calc.Strength = ""
 	}
-	musclePowerIsResolved := w.Entity() != nil
 	if w.IsMelee() {
 		data.Accuracy = WeaponAccuracy{}
 		data.Range = WeaponRange{}
@@ -303,7 +302,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		if data.Calc.Accuracy = w.Accuracy.Resolve(w, nil).String(); data.Calc.Accuracy == w.Accuracy.String() {
 			data.Calc.Accuracy = ""
 		}
-		if data.Calc.Range = w.Range.Resolve(w, nil).String(musclePowerIsResolved); data.Calc.Range == w.Range.String(false) {
+		if data.Calc.Range = w.Range.Resolve(w, nil).String(w.musclePowerIsResolved()); data.Calc.Range == w.Range.String(false) {
 			data.Calc.Range = ""
 		}
 		if data.Calc.RateOfFire = w.RateOfFire.Resolve(w, nil).String(); data.Calc.RateOfFire == w.RateOfFire.String() {
@@ -323,6 +322,10 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		data.Calc = nil
 	}
 	return json.Marshal(&data)
+}
+
+func (w *Weapon) musclePowerIsResolved() bool {
+	return w.Entity() != nil || (w.Owner != nil && w.Owner.RatedStrength() > 0)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -414,13 +417,9 @@ func (w *Weapon) performDataSubVersionFixups() {
 	switch w.SubVersion {
 	case currentWeaponSubVersion:
 	case 0: // Prior to sub-versioning
-		swap := true
-		if leveler, ok := w.Owner.(interface{ IsLeveled() bool }); ok {
-			swap = !leveler.IsLeveled()
-		}
-		if swap && w.Damage.BaseNotLeveled == nil {
-			w.Damage.BaseNotLeveled = w.Damage.BaseLeveled
-			w.Damage.BaseLeveled = nil
+		if leveler, ok := w.Owner.(interface{ IsLeveled() bool }); ok && leveler.IsLeveled() {
+			w.Damage.BaseLeveled = w.Damage.Base
+			w.Damage.Base = nil
 		}
 	}
 	w.SubVersion = currentWeaponSubVersion
@@ -870,7 +869,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponAccColumn:
 		data.Primary = w.Accuracy.Resolve(w, &buffer).String()
 	case WeaponRangeColumn:
-		data.Primary = w.Range.Resolve(w, &buffer).String(w.Entity() != nil)
+		data.Primary = w.Range.Resolve(w, &buffer).String(w.musclePowerIsResolved())
 	case WeaponRoFColumn:
 		rof := w.RateOfFire.Resolve(w, &buffer)
 		data.Primary = rof.String()

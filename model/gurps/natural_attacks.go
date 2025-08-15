@@ -42,7 +42,7 @@ func newBite(owner WeaponOwner) *Weapon {
 	}
 	bite.Damage.Type = "cr"
 	bite.Damage.StrengthType = stdmg.Thrust
-	bite.Damage.BaseNotLeveled = &dice.Dice{
+	bite.Damage.Base = &dice.Dice{
 		Sides:      6,
 		Modifier:   -1,
 		Multiplier: 1,
@@ -79,7 +79,7 @@ func newPunch(owner WeaponOwner) *Weapon {
 	}
 	punch.Damage.Type = "cr"
 	punch.Damage.StrengthType = stdmg.Thrust
-	punch.Damage.BaseNotLeveled = &dice.Dice{
+	punch.Damage.Base = &dice.Dice{
 		Sides:      6,
 		Modifier:   -1,
 		Multiplier: 1,

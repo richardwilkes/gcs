@@ -133,7 +133,7 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 
 	wrapper = addFillWrapper(content, "", 2)
 	text := i18n.Text("Non-Leveled Damage Modifier")
-	addNullableDice(wrapper, text, text, &damage.BaseNotLeveled, true)
+	addNullableDice(wrapper, text, text, &damage.Base, true)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(unaffected by levels)"), false))
 
 	wrapper = addFillWrapper(content, "", 2)

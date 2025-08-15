@@ -30,8 +30,8 @@ type WeaponDamageData struct {
 	StrengthType              stdmg.Option `json:"st,omitempty"`
 	Leveled                   bool         `json:"leveled,omitempty"`
 	StrengthMultiplier        fxp.Int      `json:"st_mul,omitempty"`
-	BaseNotLeveled            *dice.Dice   `json:"base_not_leveled,omitempty"`
-	BaseLeveled               *dice.Dice   `json:"base,omitempty"`
+	Base                      *dice.Dice   `json:"base,omitempty"`
+	BaseLeveled               *dice.Dice   `json:"base_leveled,omitempty"`
 	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitempty"`
 	Fragmentation             *dice.Dice   `json:"fragmentation,omitempty"`
 	FragmentationArmorDivisor fxp.Int      `json:"fragmentation_armor_divisor,omitempty"`
@@ -55,7 +55,7 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 	xhash.Num8(h, w.StrengthType)
 	xhash.Bool(h, w.Leveled)
 	xhash.Num64(h, w.StrengthMultiplier)
-	w.BaseNotLeveled.Hash(h)
+	w.Base.Hash(h)
 	w.BaseLeveled.Hash(h)
 	xhash.Num64(h, w.ArmorDivisor)
 	w.Fragmentation.Hash(h)
@@ -68,9 +68,9 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 	other := *w
 	other.Owner = owner
-	if other.BaseNotLeveled != nil {
-		d := *other.BaseNotLeveled
-		other.BaseNotLeveled = &d
+	if other.Base != nil {
+		d := *other.Base
+		other.Base = &d
 	}
 	if other.BaseLeveled != nil {
 		d := *other.BaseLeveled
@@ -148,8 +148,8 @@ func (w *WeaponDamage) String() string {
 	if w.Owner != nil {
 		convertMods = SheetSettingsFor(EntityFromNode(w.Owner)).UseModifyingDicePlusAdds
 	}
-	if w.BaseNotLeveled != nil {
-		if base := w.BaseNotLeveled.StringExtra(convertMods); base != "0" {
+	if w.Base != nil {
+		if base := w.Base.StringExtra(convertMods); base != "0" {
 			if buffer.Len() != 0 && base[0] != '+' && base[0] != '-' {
 				buffer.WriteByte('+')
 			}
@@ -262,8 +262,8 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		Sides:      6,
 		Multiplier: 1,
 	}
-	if w.BaseNotLeveled != nil {
-		*base = *w.BaseNotLeveled
+	if w.Base != nil {
+		*base = *w.Base
 	}
 	levels := 0
 	switch t := w.Owner.Owner.(type) {
