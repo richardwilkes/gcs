@@ -34,7 +34,7 @@ type WeaponBonus struct {
 }
 
 // WeaponBonusData holds the data for an adjustment to weapon damage which is persisted.
-type WeaponBonusData struct {
+type WeaponBonusData struct { //nolint:govet // The field alignment here is poor, but kept to reduce diffs in the data
 	Type                   feature.Type    `json:"type"`
 	Percent                bool            `json:"percent,omitempty"`
 	SelectionType          wsel.Type       `json:"selection_type"`
@@ -45,7 +45,11 @@ type WeaponBonusData struct {
 	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
 	UsageCriteria          criteria.Text   `json:"usage,omitzero"`
 	TagsCriteria           criteria.Text   `json:"tags,omitzero"`
-	WeaponLeveledAmount
+	Level                  fxp.Int         `json:"-"`
+	DieCount               fxp.Int         `json:"-"`
+	Amount                 fxp.Int         `json:"amount"`
+	PerLevel               bool            `json:"leveled,omitempty"`
+	PerDie                 bool            `json:"per_die,omitempty"`
 	BonusOwner
 }
 
@@ -205,6 +209,24 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 	return w.AdjustedAmount()
 }
 
+// AdjustedAmount returns the amount, adjusted for level, if requested.
+func (w *WeaponBonus) AdjustedAmount() fxp.Int {
+	amt := w.Amount
+	if w.PerDie {
+		if w.DieCount < 0 {
+			return 0
+		}
+		amt = amt.Mul(w.DieCount)
+	}
+	if w.PerLevel {
+		if w.Level < 0 {
+			return 0
+		}
+		amt = amt.Mul(w.Level)
+	}
+	return amt
+}
+
 // FillWithNameableKeys implements Feature.
 func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(w.SpecializationCriteria.Qualifier, m, existing)
@@ -230,7 +252,22 @@ func (w *WeaponBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 		if w.Type == feature.WeaponSwitch {
 			fmt.Fprintf(&buf, "%v set to %v", w.SwitchType, w.SwitchTypeValue)
 		} else {
-			buf.WriteString(w.Format(w.Percent))
+			amt := w.Amount.StringWithSign()
+			adjustedAmt := w.AdjustedAmount().StringWithSign()
+			if w.Percent {
+				amt += "%"
+				adjustedAmt += "%"
+			}
+			switch {
+			case w.PerDie && w.PerLevel:
+				buf.WriteString(fmt.Sprintf(i18n.Text("%s (%s per die, per level)"), adjustedAmt, amt))
+			case w.PerDie:
+				buf.WriteString(fmt.Sprintf(i18n.Text("%s (%s per die)"), adjustedAmt, amt))
+			case w.PerLevel:
+				buf.WriteString(fmt.Sprintf(i18n.Text("%s (%s per level)"), adjustedAmt, amt))
+			default:
+				buf.WriteString(amt)
+			}
 			buf.WriteString(i18n.Text(" to "))
 			switch w.Type {
 			case feature.WeaponBonus:
@@ -299,7 +336,9 @@ func (w *WeaponBonus) Hash(h hash.Hash) {
 	w.RelativeLevelCriteria.Hash(h)
 	w.UsageCriteria.Hash(h)
 	w.TagsCriteria.Hash(h)
-	w.WeaponLeveledAmount.Hash(h)
+	xhash.Num64(h, w.Amount)
+	xhash.Bool(h, w.PerLevel)
+	xhash.Bool(h, w.PerDie)
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -312,11 +351,15 @@ func (w *WeaponBonus) UnmarshalJSON(data []byte) error {
 	var content struct {
 		WeaponBonusData
 		OldTagsCriteria criteria.Text `json:"category"`
+		OldPerDie       bool          `json:"per_level"`
 	}
 	if err := json.Unmarshal(data, &content); err != nil {
 		return err
 	}
 	w.WeaponBonusData = content.WeaponBonusData
+	if !w.PerDie && content.OldPerDie {
+		w.PerDie = true
+	}
 	if w.TagsCriteria.IsZero() && !content.OldTagsCriteria.IsZero() {
 		w.TagsCriteria = content.OldTagsCriteria
 	}

@@ -482,7 +482,7 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 
 func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
-	p.addWeaponLeveledModifierLine(panel, f, &f.WeaponLeveledAmount)
+	p.addWeaponLeveledModifierLine(panel, f)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
@@ -624,47 +624,45 @@ func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Fea
 	parent.AddChild(panel)
 }
 
-func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.WeaponLeveledAmount) {
+func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *gurps.WeaponBonus) {
 	panel := unison.NewPanel()
-	switcher := p.addTypeSwitcher(panel, f)
-	if ft, ok := f.(*gurps.WeaponBonus); ok {
-		if ft.Type == feature.WeaponSwitch {
-			wrapper := unison.NewPanel()
-			wrapper.AddChild(switcher)
-			switcher.SetLayoutData(&unison.FlexLayoutData{HSpan: 3})
-			if ft.SwitchType == wswitch.NotSwitched {
-				ft.SwitchType = wswitch.Types[1]
-			}
-			spacer := unison.NewPanel()
-			spacer.SetLayoutData(&unison.FlexLayoutData{SizeHint: geom.Size{Width: 16}})
-			wrapper.AddChild(spacer)
-			addPopup(wrapper, wswitch.Types[1:], &ft.SwitchType)
-			addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &ft.SwitchTypeValue)
-			wrapper.SetLayout(&unison.FlexLayout{
-				Columns:  3,
-				HSpacing: unison.StdHSpacing,
-				VSpacing: unison.StdVSpacing,
-			})
-			wrapper.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: align.Fill,
-				HGrab:  true,
-			})
-			panel.AddChild(wrapper)
-		} else {
-			panel.AddChild(NewDecimalField(nil, "", i18n.Text("Amount"),
-				func() fxp.Int { return amount.Amount },
-				func(value fxp.Int) {
-					amount.Amount = value
-					MarkModified(panel)
-				}, fxp.Min, fxp.Max, true, false))
-			addCheckBox(panel, i18n.Text("per level"), &amount.PerLevel)
-			if ft.Type != feature.WeaponMinSTBonus && ft.Type != feature.WeaponEffectiveSTBonus {
-				// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on
-				// resolution.
-				addCheckBox(panel, i18n.Text("per die"), &amount.PerDie)
-			}
-			addCheckBox(panel, i18n.Text("as a %"), &ft.Percent)
+	switcher := p.addTypeSwitcher(panel, wb)
+	if wb.Type == feature.WeaponSwitch {
+		wrapper := unison.NewPanel()
+		wrapper.AddChild(switcher)
+		switcher.SetLayoutData(&unison.FlexLayoutData{HSpan: 3})
+		if wb.SwitchType == wswitch.NotSwitched {
+			wb.SwitchType = wswitch.Types[1]
 		}
+		spacer := unison.NewPanel()
+		spacer.SetLayoutData(&unison.FlexLayoutData{SizeHint: geom.Size{Width: 16}})
+		wrapper.AddChild(spacer)
+		addPopup(wrapper, wswitch.Types[1:], &wb.SwitchType)
+		addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &wb.SwitchTypeValue)
+		wrapper.SetLayout(&unison.FlexLayout{
+			Columns:  3,
+			HSpacing: unison.StdHSpacing,
+			VSpacing: unison.StdVSpacing,
+		})
+		wrapper.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: align.Fill,
+			HGrab:  true,
+		})
+		panel.AddChild(wrapper)
+	} else {
+		panel.AddChild(NewDecimalField(nil, "", i18n.Text("Amount"),
+			func() fxp.Int { return wb.Amount },
+			func(value fxp.Int) {
+				wb.Amount = value
+				MarkModified(panel)
+			}, fxp.Min, fxp.Max, true, false))
+		addCheckBox(panel, i18n.Text("per level"), &wb.PerLevel)
+		if wb.Type != feature.WeaponMinSTBonus && wb.Type != feature.WeaponEffectiveSTBonus {
+			// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on
+			// resolution.
+			addCheckBox(panel, i18n.Text("per die"), &wb.PerDie)
+		}
+		addCheckBox(panel, i18n.Text("as a %"), &wb.Percent)
 	}
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
