@@ -101,6 +101,12 @@ type SpellNonContainerOnlyEditData struct {
 	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
 }
 
+// SpellItem holds the data for an item that could be enchanted with the spell.
+type SpellItem struct {
+	What string `json:"what"`
+	Cost string `json:"cost"`
+}
+
 // SpellSyncData holds the spell sync data that is common to both containers and non-containers.
 type SpellSyncData struct {
 	Name             string   `json:"name,omitempty"`
@@ -124,6 +130,7 @@ type SpellNonContainerOnlySyncData struct {
 	RitualSkillName   string              `json:"base_skill,omitempty"`
 	RitualPrereqCount int                 `json:"prereq_count,omitempty"`
 	Prereq            *PrereqList         `json:"prereqs,omitzero"`
+	Items             []*SpellItem        `json:"items,omitempty"`
 	Weapons           []*Weapon           `json:"weapons,omitempty"`
 }
 
@@ -167,8 +174,8 @@ func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 	} else {
 		s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), IntelligenceID)
 		s.Difficulty.Difficulty = difficulty.Hard
-		s.PowerSource = i18n.Text("Arcane")
-		s.Class = i18n.Text("Regular")
+		s.PowerSource = "Arcane"
+		s.Class = "Regular"
 		s.CastingCost = "1"
 		s.CastingTime = "1 sec"
 		s.Duration = "Instant"
@@ -188,8 +195,8 @@ func NewRitualMagicSpell(owner DataOwner, parent *Spell, _ bool) *Spell {
 	s.owner = owner
 	s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), IntelligenceID)
 	s.Difficulty.Difficulty = difficulty.Hard
-	s.PowerSource = i18n.Text("Arcane")
-	s.Class = i18n.Text("Regular")
+	s.PowerSource = "Arcane"
+	s.Class = "Regular"
 	s.CastingCost = "1"
 	s.CastingTime = "1 sec"
 	s.Duration = "Instant"
@@ -536,6 +543,42 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			addPartToBuffer(&buffer, i18n.Text("Time"), s.CastingTimeWithReplacements())
 			addPartToBuffer(&buffer, i18n.Text("Duration"), s.DurationWithReplacements())
 			addPartToBuffer(&buffer, i18n.Text("College"), strings.Join(s.CollegeWithReplacements(), ", "))
+			switch len(s.Items) {
+			case 0:
+			case 1:
+				buffer.WriteString("\n\n")
+				buffer.WriteString(i18n.Text("Item"))
+				buffer.WriteString(": ")
+				what := nameable.Apply(s.Items[0].What, s.Replacements)
+				buffer.WriteString(what)
+				if !strings.HasSuffix(what, ".") {
+					buffer.WriteByte('.')
+				}
+				buffer.WriteByte(' ')
+				buffer.WriteString(i18n.Text("Cost"))
+				buffer.WriteString(": ")
+				cost := nameable.Apply(s.Items[0].Cost, s.Replacements)
+				buffer.WriteString(cost)
+			default:
+				buffer.WriteString("\n\n")
+				buffer.WriteString(i18n.Text("Items"))
+				buffer.WriteByte(':')
+				for i, item := range s.Items {
+					buffer.WriteString("\n(")
+					buffer.WriteByte('a' + byte(i))
+					buffer.WriteString(") ")
+					what := nameable.Apply(item.What, s.Replacements)
+					buffer.WriteString(what)
+					if !strings.HasSuffix(what, ".") {
+						buffer.WriteByte('.')
+					}
+					buffer.WriteByte(' ')
+					buffer.WriteString(i18n.Text("Cost"))
+					buffer.WriteString(": ")
+					cost := nameable.Apply(item.Cost, s.Replacements)
+					buffer.WriteString(cost)
+				}
+			}
 			if buffer.Len() != 0 {
 				if data.Secondary == "" {
 					data.Secondary = buffer.String()
@@ -1059,6 +1102,10 @@ func (s *Spell) FillWithNameableKeys(m, existing map[string]string) {
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m, existing)
 	}
+	for _, one := range s.Items {
+		nameable.Extract(one.What, m, existing)
+		nameable.Extract(one.Cost, m, existing)
+	}
 	for _, one := range s.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
@@ -1121,11 +1168,24 @@ func (s *Spell) SyncWithSource() {
 					s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
 					s.College = slices.Clone(s.College)
 					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+					s.Items = cloneSpellItems(other.Items)
 					s.Weapons = CloneWeapons(other.Weapons, false)
 				}
 			}
 		}
 	}
+}
+
+func cloneSpellItems(items []*SpellItem) []*SpellItem {
+	if len(items) == 0 {
+		return nil
+	}
+	result := make([]*SpellItem, len(items))
+	for i, item := range items {
+		itemClone := *item
+		result[i] = &itemClone
+	}
+	return result
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
@@ -1166,6 +1226,11 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.RitualSkillName)
 	xhash.Num64(h, s.RitualPrereqCount)
 	s.Prereq.Hash(h)
+	xhash.Num64(h, len(s.Items))
+	for _, item := range s.Items {
+		xhash.StringWithLen(h, item.What)
+		xhash.StringWithLen(h, item.Cost)
+	}
 	xhash.Num64(h, len(s.Weapons))
 	for _, weapon := range s.Weapons {
 		weapon.Hash(h)
@@ -1192,6 +1257,7 @@ func (s *SpellEditData) copyFrom(other *SpellEditData, isContainer, isApply bool
 	}
 	s.College = slices.Clone(other.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
+	s.Items = cloneSpellItems(other.Items)
 	s.Weapons = CloneWeapons(other.Weapons, isApply)
 	if len(other.Study) != 0 {
 		s.Study = make([]*Study, len(other.Study))
