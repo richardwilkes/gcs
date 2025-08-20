@@ -832,6 +832,11 @@ var allEnums = []*enumInfo{
 				Key:    "spell_prereq",
 				String: "spell(s)",
 			},
+			{
+				Name:   "Script",
+				Key:    "script_prereq",
+				String: "has script",
+			},
 		},
 	},
 	{

@@ -31,7 +31,8 @@ type scriptTrait struct {
 	cachedChildren bool
 }
 
-func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
+// DeferredNewScriptTrait creates a deferred ScriptSelfProvider for the given Equipment.
+func DeferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
 	if trait == nil {
 		return ScriptSelfProvider{}
 	}

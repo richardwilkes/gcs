@@ -960,7 +960,7 @@ func (s *Spell) String() string {
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (s *Spell) ResolveLocalNotes() string {
 	entity := EntityFromNode(s)
-	return ResolveText(entity, deferredNewScriptSpell(entity, s), s.LocalNotesWithReplacements())
+	return ResolveText(entity, DeferredNewScriptSpell(entity, s), s.LocalNotesWithReplacements())
 }
 
 // RawPoints returns the unadjusted points.

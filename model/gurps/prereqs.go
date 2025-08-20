@@ -52,6 +52,8 @@ func (p *Prereqs) UnmarshalJSON(data []byte) error {
 			pr = &SkillPrereq{}
 		case prereq.Spell:
 			pr = &SpellPrereq{}
+		case prereq.Script:
+			pr = &ScriptPrereq{}
 		default:
 			return errs.Newf(i18n.Text("Unknown prerequisite type: %s"), typeData.Type)
 		}

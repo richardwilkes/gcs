@@ -39,7 +39,8 @@ type scriptSkill struct {
 	cachedLevels   bool
 }
 
-func deferredNewScriptSkill(entity *Entity, skill *Skill) ScriptSelfProvider {
+// DeferredNewScriptSkill creates a deferred ScriptSelfProvider for the given Skill.
+func DeferredNewScriptSkill(entity *Entity, skill *Skill) ScriptSelfProvider {
 	if skill == nil {
 		return ScriptSelfProvider{}
 	}

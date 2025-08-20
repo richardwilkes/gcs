@@ -48,7 +48,8 @@ type scriptSpell struct {
 	cachedLevels      bool
 }
 
-func deferredNewScriptSpell(entity *Entity, spell *Spell) ScriptSelfProvider {
+// DeferredNewScriptSpell creates a deferred ScriptSelfProvider for the given Spell.
+func DeferredNewScriptSpell(entity *Entity, spell *Spell) ScriptSelfProvider {
 	if spell == nil {
 		return ScriptSelfProvider{}
 	}

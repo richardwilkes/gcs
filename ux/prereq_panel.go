@@ -119,6 +119,8 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 		panel = p.createSkillPrereqPanel(depth, one)
 	case *gurps.SpellPrereq:
 		panel = p.createSpellPrereqPanel(depth, one)
+	case *gurps.ScriptPrereq:
+		panel = p.createScriptPrereqPanel(depth, one)
 	default:
 		errs.Log(errs.New("unknown prerequisite type"), "type", reflect.TypeOf(child).String())
 	}
@@ -283,6 +285,10 @@ func (p *prereqPanel) createPrereqForType(prereqType prereq.Type, parentList *gu
 		return one
 	case prereq.Spell:
 		one := gurps.NewSpellPrereq()
+		one.Parent = parentList
+		return one
+	case prereq.Script:
+		one := gurps.NewScriptPrereq()
 		one.Parent = parentList
 		return one
 	default:
@@ -488,5 +494,28 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 	})
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(second)
+	return panel
+}
+
+func (p *prereqPanel) createScriptPrereqPanel(depth int, pr *gurps.ScriptPrereq) *unison.Panel {
+	panel := unison.NewPanel()
+	p.createButtonsPanel(panel, depth, pr)
+	inFront := andOrText(pr) != noAndOr
+	if inFront {
+		p.addAndOr(panel, pr)
+	}
+	p.addPrereqTypeSwitcher(panel, depth, pr)
+	if !inFront {
+		p.addAndOr(panel, pr)
+	}
+	addScriptField(panel, nil, "", i18n.Text("Prereq Script"),
+		i18n.Text("The script should return text describing the missing prerequisite or an empty string if the prerequisite has been met"),
+		func() string { return pr.Script }, func(text string) { pr.Script = text })
+	columns := len(panel.Children())
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  columns,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
 	return panel
 }

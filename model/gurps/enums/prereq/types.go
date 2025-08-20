@@ -18,6 +18,7 @@ var TypesForEquipment = []Type{
 	EquippedEquipment,
 	Skill,
 	Spell,
+	Script,
 }
 
 // TypesForNonEquipment holds the types that can be used for things other than equipment.
@@ -27,4 +28,5 @@ var TypesForNonEquipment = []Type{
 	EquippedEquipment,
 	Skill,
 	Spell,
+	Script,
 }
