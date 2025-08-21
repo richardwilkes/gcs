@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
@@ -23,6 +24,7 @@ type scriptSpell struct {
 	ID                tid.TID
 	ParentID          tid.TID
 	Name              string
+	Notes             string
 	Kind              string
 	TechLevel         string
 	Attribute         string
@@ -74,6 +76,7 @@ func newScriptSpell(entity *Entity, spell *Spell) *scriptSpell {
 		ID:          spell.TID,
 		ParentID:    parentID,
 		Name:        spell.NameWithReplacements(),
+		Notes:       spell.SecondaryText(func(_ display.Option) bool { return true }),
 		Tags:        slices.Clone(spell.Tags),
 		TechLevel:   tl,
 		Container:   spell.Container(),

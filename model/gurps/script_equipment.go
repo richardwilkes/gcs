@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
@@ -22,6 +23,7 @@ type scriptEquipment struct {
 	ID                     tid.TID
 	ParentID               tid.TID
 	Name                   string
+	Notes                  string
 	TechLevel              string
 	LegalityClass          string
 	children               []*scriptEquipment
@@ -66,6 +68,7 @@ func newScriptEquipment(equipment *Equipment) *scriptEquipment {
 		ID:                     equipment.TID,
 		ParentID:               parentID,
 		Name:                   equipment.NameWithReplacements(),
+		Notes:                  equipment.SecondaryText(func(_ display.Option) bool { return true }),
 		TechLevel:              equipment.TechLevel,
 		LegalityClass:          equipment.LegalityClass,
 		Tags:                   slices.Clone(equipment.Tags),

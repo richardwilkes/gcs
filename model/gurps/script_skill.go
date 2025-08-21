@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
@@ -24,6 +25,7 @@ type scriptSkill struct {
 	ParentID       tid.TID
 	Name           string
 	Specialization string
+	Notes          string
 	Kind           string
 	TechLevel      string
 	Attribute      string
@@ -65,6 +67,7 @@ func newScriptSkill(entity *Entity, skill *Skill) *scriptSkill {
 		ID:             skill.TID,
 		ParentID:       parentID,
 		Name:           skill.NameWithReplacements(),
+		Notes:          skill.SecondaryText(func(_ display.Option) bool { return true }),
 		Specialization: skill.SpecializationWithReplacements(),
 		Tags:           slices.Clone(skill.Tags),
 		TechLevel:      tl,

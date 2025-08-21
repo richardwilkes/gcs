@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
@@ -22,6 +23,7 @@ type scriptTrait struct {
 	ID             tid.TID
 	ParentID       tid.TID
 	Name           string
+	Notes          string
 	Kind           string
 	Levels         *float64
 	children       []*scriptTrait
@@ -52,6 +54,7 @@ func newScriptTrait(trait *Trait) *scriptTrait {
 		ID:          trait.TID,
 		ParentID:    parentID,
 		Name:        trait.NameWithReplacements(),
+		Notes:       trait.SecondaryText(func(_ display.Option) bool { return true }),
 		Tags:        slices.Clone(trait.Tags),
 		Container:   trait.Container(),
 		HasChildren: trait.HasChildren(),
