@@ -475,7 +475,11 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 		VSpacing: unison.StdVSpacing,
 	})
 	second := unison.NewPanel()
-	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
+	second.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  columns - 1,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
 	subTypePopup := addPopup(second, spellcmp.Types, &pr.SubType)
 	popup, field := addStringCriteriaPanel(second, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
 	savedCallback := subTypePopup.SelectionChangedCallback
@@ -491,6 +495,7 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 		Columns:  len(second.Children()),
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
+		HAlign:   align.Fill,
 	})
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(second)
