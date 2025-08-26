@@ -37,6 +37,7 @@ type scriptSpell struct {
 	MaintenanceCost   string
 	CastingTime       string
 	Duration          string
+	Item              string
 	RitualSkillName   string
 	children          []*scriptSpell
 	Tags              []string
@@ -91,14 +92,15 @@ func newScriptSpell(entity *Entity, spell *Spell) *scriptSpell {
 		s.Attribute = spell.Difficulty.Attribute
 		s.Difficulty = spell.Difficulty.Difficulty.Key()
 		s.College = slices.Clone([]string(spell.College))
-		s.PowerSource = spell.PowerSource
-		s.SpellClass = spell.Class
-		s.Resist = spell.Resist
-		s.CastingCost = spell.CastingCost
-		s.MaintenanceCost = spell.MaintenanceCost
-		s.CastingTime = spell.CastingTime
-		s.Duration = spell.Duration
-		s.RitualSkillName = spell.RitualSkillName
+		s.PowerSource = spell.PowerSourceWithReplacements()
+		s.SpellClass = spell.ClassWithReplacements()
+		s.Resist = spell.ResistWithReplacements()
+		s.CastingCost = spell.CastingCostWithReplacements()
+		s.MaintenanceCost = spell.MaintenanceCostWithReplacements()
+		s.CastingTime = spell.CastingTimeWithReplacements()
+		s.Duration = spell.DurationWithReplacements()
+		s.Item = spell.ItemWithReplacements()
+		s.RitualSkillName = spell.RitualSkillNameWithReplacements()
 		s.RitualPrereqCount = spell.RitualPrereqCount
 		s.Points = fxp.AsInteger[int](spell.AdjustedPoints(nil))
 	}

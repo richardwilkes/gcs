@@ -90,6 +90,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		addLabelAndStringField(content, i18n.Text("Maintenance Cost"), "", &e.editorData.MaintenanceCost)
 		addLabelAndStringField(content, i18n.Text("Casting Time"), "", &e.editorData.CastingTime)
 		addLabelAndStringField(content, i18n.Text("Duration"), "", &e.editorData.Duration)
+		addLabelAndStringField(content, i18n.Text("Item"), "", &e.editorData.Item)
 	}
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
