@@ -381,33 +381,12 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 	}
 	tooltip := c.Tooltip
 	if c.UnsatisfiedReason != "" {
-		tag := unison.NewTag()
-		tag.BackgroundInk = unison.ThemeError
-		tag.OnBackgroundInk = unison.ThemeOnError
-		tag.Font = n.secondaryFieldFont()
-		height := tag.Font.LineHeight() - 2
-		tag.Drawable = &unison.DrawableSVG{
-			SVG:  unison.TriangleExclamationSVG,
-			Size: geom.NewSize(height, height),
-		}
-		tag.SetTitle(i18n.Text("Unsatisfied prerequisite(s)"))
-		tag.ClientData()[noInvertColorsMarker] = true
-		p.AddChild(tag)
+		p.AddChild(makeTagForNode(i18n.Text("Unsatisfied prerequisite(s)"), unison.ThemeError, unison.ThemeOnError,
+			n.secondaryFieldFont(), unison.TriangleExclamationSVG))
 		tooltip = c.UnsatisfiedReason
 	}
 	if c.TemplateInfo != "" {
-		tag := unison.NewTag()
-		tag.BackgroundInk = foreground
-		tag.OnBackgroundInk = background
-		tag.Font = n.secondaryFieldFont()
-		height := tag.Font.LineHeight() - 2
-		tag.Drawable = &unison.DrawableSVG{
-			SVG:  svg.GCSTemplate,
-			Size: geom.NewSize(height, height),
-		}
-		tag.SetTitle(c.TemplateInfo)
-		tag.ClientData()[noInvertColorsMarker] = true
-		p.AddChild(tag)
+		p.AddChild(makeTagForNode(c.TemplateInfo, foreground, background, n.secondaryFieldFont(), svg.GCSTemplate))
 	}
 	if tooltip != "" {
 		var workingDir string
@@ -419,6 +398,22 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		p.Tooltip = newMarkdownTooltip(tooltip, workingDir)
 	}
 	return p
+}
+
+func makeTagForNode(title string, bg, fg unison.Ink, font unison.Font, img *unison.SVG) *unison.Tag {
+	tag := unison.NewTag()
+	tag.BackgroundInk = bg
+	tag.OnBackgroundInk = fg
+	tag.Font = font
+	tag.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(1)))
+	height := font.LineHeight() - 2
+	tag.Drawable = &unison.DrawableSVG{
+		SVG:  img,
+		Size: geom.NewSize(height, height),
+	}
+	tag.SetTitle(title)
+	tag.ClientData()[noInvertColorsMarker] = true
+	return tag
 }
 
 func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width float32, text, inlineTag string, f unison.Font, foreground, background unison.Ink, primary bool) {
