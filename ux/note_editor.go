@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -25,8 +26,8 @@ func EditNote(owner Rebuildable, note *gurps.Note) {
 		nil, initNoteEditor, nil)
 }
 
-func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
-	markdown.Font = fonts.PageFieldPrimary
+func adjustMarkdownThemeForPage(markdown *unison.Markdown, baseFont unison.Font) {
+	markdown.Font = baseFont
 	markdown.HeadingFont[0] = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 1) },
 	}
@@ -61,7 +62,8 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	adjustMarkdownThemeForPage(markdown)
+	adjustMarkdownThemeForPage(markdown, fonts.PageFieldPrimary)
+	markdown.SetVSpacing(xmath.Floor(markdown.Font.LineHeight() / 2))
 
 	labelText := i18n.Text("Notes")
 	label := NewFieldLeadingLabel(labelText, false)
@@ -119,7 +121,8 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), gurps.ScriptSelfProvider{}, e.editorData.MarkDown), 0)
 
 	markdownWrapper := unison.NewPanel()
-	markdownWrapper.SetScale(geom.NewPoint(1.33, 1.33))
+	scale := float32(gurps.GlobalSettings().General.InitialSheetUIScale) / 100
+	markdownWrapper.SetScale(geom.NewPoint(scale, scale))
 	markdownWrapper.SetLayout(&unison.FlexLayout{Columns: 1})
 	markdownWrapper.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,

@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -192,6 +193,15 @@ func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink,
 				part.SetTitle(part.Text.String())
 			}
 		}
+	case *unison.Button:
+		if part.OnBackgroundInk != foreground {
+			if _, exists := part.ClientData()[noInvertColorsMarker]; !exists {
+				part.OnBackgroundInk = foreground
+				if part.HideBase {
+					part.SelectionInk = foreground
+				}
+			}
+		}
 	}
 	for _, child := range panel.Children() {
 		applyInkRecursively(child, foreground, background, selected)
@@ -272,26 +282,27 @@ func (n *Node[T]) Match(text string) bool {
 func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {
 	switch c.Type {
 	case cell.Text, cell.Tags:
-		return n.createLabelCell(c, width, foreground, background)
+		return n.createLabelCell(c, width, foreground, background, selected)
 	case cell.Toggle:
 		return n.createToggleCell(c, foreground)
 	case cell.PageRef:
 		return n.createPageRefCell(c, foreground)
 	case cell.Markdown:
-		return n.createMarkdownCell(c, width, foreground, background, selected)
+		return n.createMarkdownCell(c.Primary, width, fonts.PageFieldPrimary, foreground, background, selected)
 	default:
 		return unison.NewPanel()
 	}
 }
 
-func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {
+func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.Font, foreground, background unison.Ink, selected bool) unison.Paneler {
 	m := unison.NewMarkdown(false)
 	if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
 		m.ClientData()[WorkingDirKey] = wd
 	}
 	if n.forPage {
-		adjustMarkdownThemeForPage(m)
+		adjustMarkdownThemeForPage(m, font)
 	}
+	m.SetVSpacing(xmath.Floor(m.Font.LineHeight() / 2))
 	if m.OnBackgroundInk != foreground {
 		if selected {
 			m.OnBackgroundInk = foreground
@@ -303,11 +314,11 @@ func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foregroun
 			m.LinkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
 		}
 	}
-	m.SetContent(c.Primary, width)
+	m.SetContent(content, width)
 	return m
 }
 
-func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, background unison.Ink) unison.Paneler {
+func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {
 	p := unison.NewPanel()
 	p.SetLayout(&unison.FlexLayout{
 		Columns: 1,
@@ -362,7 +373,8 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		n.addLabelCell(c, inner, width-((unison.StdHSpacing/2)+prefSize.Width), c.Primary, c.InlineTag,
 			n.primaryFieldFont(), foreground, background, true)
 		if !isClosed {
-			n.addLabelCell(c, p, width, c.Secondary, "", n.secondaryFieldFont(), foreground, background, false)
+			p.AddChild(n.createMarkdownCell(c.Secondary, width, n.secondaryFieldFont(), foreground, background,
+				selected))
 		}
 	} else {
 		n.addLabelCell(c, p, width, c.Primary, c.InlineTag, n.primaryFieldFont(), foreground, background, true)
@@ -398,7 +410,13 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		p.AddChild(tag)
 	}
 	if tooltip != "" {
-		p.Tooltip = newWrappedTooltip(tooltip)
+		var workingDir string
+		if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
+			if wdStr, ok2 := wd.(string); ok2 {
+				workingDir = wdStr
+			}
+		}
+		p.Tooltip = newMarkdownTooltip(tooltip, workingDir)
 	}
 	return p
 }

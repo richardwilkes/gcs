@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -227,6 +228,24 @@ func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip stri
 func addLabelAndStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
 	addLabel(parent, labelText, tooltip)
 	return addStringField(parent, labelText, tooltip, fieldData)
+}
+
+func newMarkdownTooltip(text, workingDir string) *unison.Panel {
+	tip := unison.NewTooltipBase()
+	tip.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	m := unison.NewMarkdown(false)
+	if workingDir != "" {
+		m.ClientData()[WorkingDirKey] = workingDir
+	}
+	adjustMarkdownThemeForPage(m, unison.DefaultTooltipTheme.Label.Font)
+	m.SetVSpacing(xmath.Floor(m.Font.LineHeight() / 2))
+	m.SetContent(text, 500)
+	tip.AddChild(m)
+	return tip
 }
 
 func newWrappedTooltip(tooltip string) *unison.Panel {

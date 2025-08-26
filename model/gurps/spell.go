@@ -546,44 +546,55 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			switch len(s.Items) {
 			case 0:
 			case 1:
-				buffer.WriteString("\n\n")
+				buffer.WriteString("\n\n**")
 				buffer.WriteString(i18n.Text("Item"))
-				buffer.WriteString(": ")
+				buffer.WriteString(":** ")
 				what := nameable.Apply(s.Items[0].What, s.Replacements)
 				buffer.WriteString(what)
 				if !strings.HasSuffix(what, ".") {
 					buffer.WriteByte('.')
 				}
-				buffer.WriteByte(' ')
+				buffer.WriteString(" **")
 				buffer.WriteString(i18n.Text("Cost"))
-				buffer.WriteString(": ")
+				buffer.WriteString(":** ")
 				cost := nameable.Apply(s.Items[0].Cost, s.Replacements)
 				buffer.WriteString(cost)
 			default:
-				buffer.WriteString("\n\n")
+				buffer.WriteString("\n\n**")
 				buffer.WriteString(i18n.Text("Items"))
 				buffer.WriteByte(':')
 				for i, item := range s.Items {
-					buffer.WriteString("\n(")
+					buffer.WriteString("\n\n**(")
 					buffer.WriteByte('a' + byte(i))
-					buffer.WriteString(") ")
+					buffer.WriteString(")** ")
 					what := nameable.Apply(item.What, s.Replacements)
 					buffer.WriteString(what)
 					if !strings.HasSuffix(what, ".") {
 						buffer.WriteByte('.')
 					}
-					buffer.WriteByte(' ')
+					buffer.WriteString(" **")
 					buffer.WriteString(i18n.Text("Cost"))
-					buffer.WriteString(": ")
+					buffer.WriteString(":** ")
 					cost := nameable.Apply(item.Cost, s.Replacements)
 					buffer.WriteString(cost)
 				}
 			}
 			if buffer.Len() != 0 {
-				if data.Secondary == "" {
-					data.Secondary = buffer.String()
-				} else {
-					data.Secondary += "\n" + buffer.String()
+				text := buffer.String()
+				nd := SheetSettingsFor(EntityFromNode(s)).NotesDisplay
+				if nd.Inline() {
+					if data.Secondary == "" {
+						data.Secondary = text
+					} else {
+						data.Secondary += "\n\n" + text
+					}
+				}
+				if nd.Tooltip() {
+					if data.Tooltip == "" {
+						data.Tooltip = text
+					} else {
+						data.Tooltip += "\n\n" + text
+					}
 				}
 			}
 		}
@@ -606,8 +617,9 @@ func addPartToBuffer(buffer *strings.Builder, label, content string) {
 		if buffer.Len() != 0 {
 			buffer.WriteString("; ")
 		}
+		buffer.WriteString("**")
 		buffer.WriteString(label)
-		buffer.WriteString(": ")
+		buffer.WriteString(":** ")
 		buffer.WriteString(content)
 	}
 }
@@ -885,30 +897,36 @@ func (s *Spell) Rituals() string {
 	if s.Container() || e == nil || !e.SheetSettings.ShowSpellAdj {
 		return ""
 	}
+	var buffer strings.Builder
 	level := s.CalculateLevel().Level
+	ritualText := i18n.Text("Ritual")
 	switch {
 	case level < fxp.Ten:
-		return i18n.Text("Ritual: need both hands and feet free and must speak; Time: 2x")
+		addPartToBuffer(&buffer, ritualText, i18n.Text("need both hands and feet free and must speak"))
+		addPartToBuffer(&buffer, i18n.Text("Time"), "Doubled")
+		return buffer.String()
 	case level < fxp.Fifteen:
-		return i18n.Text("Ritual: speak quietly and make a gesture")
+		addPartToBuffer(&buffer, ritualText, i18n.Text("speak quietly and make a gesture"))
+		return buffer.String()
 	case level < fxp.Twenty:
-		ritual := i18n.Text("Ritual: speak a word or two OR make a small gesture")
+		addPartToBuffer(&buffer, ritualText, i18n.Text("speak a word or two OR make a small gesture"))
 		if strings.Contains(strings.ToLower(s.ClassWithReplacements()), "blocking") {
-			return ritual
+			return buffer.String()
 		}
-		return ritual + i18n.Text("; Cost: -1")
+		addPartToBuffer(&buffer, i18n.Text("Cost"), "-1")
+		return buffer.String()
 	default:
+		addPartToBuffer(&buffer, ritualText, i18n.Text("none"))
 		adj := fxp.AsInteger[int]((level - fxp.Fifteen).Div(fxp.Five))
 		class := strings.ToLower(s.ClassWithReplacements())
-		time := ""
 		if !strings.Contains(class, "missile") {
-			time = fmt.Sprintf(i18n.Text("; Time: x1/%d, rounded up, min 1 sec"), 1<<adj)
+			addPartToBuffer(&buffer, i18n.Text("Time"),
+				fmt.Sprintf(i18n.Text("x1/%d, rounded up (min 1 second)"), 1<<adj))
 		}
-		cost := ""
 		if !strings.Contains(class, "blocking") {
-			cost = fmt.Sprintf(i18n.Text("; Cost: -%d"), adj+1)
+			addPartToBuffer(&buffer, i18n.Text("Cost"), fmt.Sprintf("-%d", adj+1))
 		}
-		return i18n.Text("Ritual: none") + time + cost
+		return buffer.String()
 	}
 }
 
