@@ -31,8 +31,10 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	owner := e.owner.AsPanel().Self
 	_, ownerIsSheet := owner.(*Sheet)
 	_, ownerIsTemplate := owner.(*Template)
-	addNameLabelAndField(content, &e.editorData.Name)
 	entity := gurps.EntityFromNode(e.target)
+	addNameLabelAndField(content, &e.editorData.Name)
+	addNotesLabelAndField(content, &e.editorData.LocalNotes)
+	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	if !e.target.Container() {
 		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)
 		addLabelAndListField(content, i18n.Text("College"), i18n.Text("colleges"), (*[]string)(&e.editorData.College))
@@ -92,8 +94,6 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		addLabelAndStringField(content, i18n.Text("Duration"), "", &e.editorData.Duration)
 		addLabelAndStringField(content, i18n.Text("Item"), "", &e.editorData.Item)
 	}
-	addNotesLabelAndField(content, &e.editorData.LocalNotes)
-	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	if e.target.Container() {
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
