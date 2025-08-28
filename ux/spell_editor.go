@@ -88,11 +88,11 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			wrapper.AddChild(levelField)
 		}
 		addLabelAndStringField(content, i18n.Text("Resistance"), "", &e.editorData.Resist)
-		addLabelAndStringField(content, i18n.Text("Casting Cost"), "", &e.editorData.CastingCost)
-		addLabelAndStringField(content, i18n.Text("Maintenance Cost"), "", &e.editorData.MaintenanceCost)
-		addLabelAndStringField(content, i18n.Text("Casting Time"), "", &e.editorData.CastingTime)
-		addLabelAndStringField(content, i18n.Text("Duration"), "", &e.editorData.Duration)
-		addLabelAndStringField(content, i18n.Text("Item"), "", &e.editorData.Item)
+		addLabelAndMultiLineStringField(content, i18n.Text("Casting Cost"), "", &e.editorData.CastingCost)
+		addLabelAndMultiLineStringField(content, i18n.Text("Maintenance Cost"), "", &e.editorData.MaintenanceCost)
+		addLabelAndMultiLineStringField(content, i18n.Text("Casting Time"), "", &e.editorData.CastingTime)
+		addLabelAndMultiLineStringField(content, i18n.Text("Duration"), "", &e.editorData.Duration)
+		addLabelAndMultiLineStringField(content, i18n.Text("Item"), "", &e.editorData.Item)
 	}
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	if e.target.Container() {
