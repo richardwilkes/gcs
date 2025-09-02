@@ -132,7 +132,7 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map
 	if h.DRBonus != 0 {
 		drMap[AllID] += h.DRBonus
 		if tooltip != nil {
-			fmt.Fprintf(tooltip, "\n%s [%+d against %s attacks]", h.ChoiceName, h.DRBonus, AllID)
+			fmt.Fprintf(tooltip, i18n.Text("\n- %s [%+d against %s attacks]"), h.ChoiceName, h.DRBonus, AllID)
 		}
 	}
 	drMap = entity.AddDRBonusesFor(h.LocID, tooltip, drMap)
@@ -153,9 +153,9 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map
 			if !strings.EqualFold(AllID, k) {
 				value += base
 			}
-			fmt.Fprintf(&buffer, "\n%d against %s attacks", value, k)
+			fmt.Fprintf(&buffer, i18n.Text("\n- **DR %d** against **%s** attacks"), value, k)
 		}
-		buffer.WriteByte('\n')
+		buffer.WriteString("\n---\n")
 		_ = tooltip.Insert(0, buffer.Bytes())
 	}
 	return drMap

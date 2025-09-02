@@ -202,8 +202,11 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		dr := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
 			var tooltip xbytes.InsertBuffer
 			f.SetTitle(location.DisplayDR(p.entity, &tooltip))
-			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"),
-				location.TableName, tooltip.String()))
+			tip := fmt.Sprintf(i18n.Text("The DR covering the **%s** hit location"), location.TableName)
+			if detail := tooltip.String(); detail != "" {
+				tip += ":" + detail
+			}
+			f.Tooltip = newMarkdownTooltip(tip, "")
 			MarkForLayoutWithinDockable(f)
 		})
 		dr.SetLayoutData(&unison.FlexLayoutData{})
@@ -213,10 +216,10 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			p.addSeparator()
 		}
 
-		title := fmt.Sprintf(i18n.Text("Notes for %s"), location.TableName)
+		title := fmt.Sprintf(i18n.Text("Notes for the **%s** hit location"), location.TableName)
 		notesField := NewStringPageField(p.targetMgr, "body:"+location.ID(), title,
 			func() string { return location.Notes }, func(value string) { location.Notes = value })
-		notesField.Tooltip = newWrappedTooltip(title)
+		notesField.Tooltip = newMarkdownTooltip(title, "")
 		notesField.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		p.AddChild(notesField)
 

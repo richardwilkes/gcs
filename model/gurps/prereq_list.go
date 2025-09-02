@@ -119,7 +119,7 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.Inser
 		}
 	}
 	if local != nil && local.Len() != 0 {
-		indented := strings.ReplaceAll(local.String(), "\n", "\n\u00a0\u00a0\u00a0")
+		indented := strings.ReplaceAll(local.String(), "\n", "\n\t")
 		local = &xbytes.InsertBuffer{}
 		local.WriteString(indented)
 	}

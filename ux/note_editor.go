@@ -53,6 +53,7 @@ func adjustMarkdownThemeForPage(markdown *unison.Markdown, baseFont unison.Font)
 			return fd
 		},
 	}
+	markdown.OnBackgroundInk = unison.ThemeOnTooltip
 }
 
 func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison.Panel) func() {

@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"encoding/json"
+	"fmt"
 	"hash"
 	"slices"
 	"strings"
@@ -92,13 +93,7 @@ func (d *DRBonus) SetLevel(level fxp.Int) {
 func (d *DRBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
 		d.Normalize()
-		buffer.WriteByte('\n')
-		buffer.WriteString(d.parentName())
-		buffer.WriteString(" [")
-		buffer.WriteString(d.Format())
-		buffer.WriteString(i18n.Text(" against "))
-		buffer.WriteString(d.Specialization)
-		buffer.WriteString(i18n.Text(" attacks]"))
+		fmt.Fprintf(buffer, i18n.Text("\n- %s [%s against %s attacks]"), d.parentName(), d.Format(), d.Specialization)
 	}
 }
 

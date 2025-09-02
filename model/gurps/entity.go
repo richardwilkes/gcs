@@ -486,7 +486,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 }
 
 func (e *Entity) processPrereqs() {
-	const prefix = "\n● "
+	const prefix = "\n- "
 	notMetPrefix := i18n.Text("Prerequisites have not been met:")
 	Traverse(func(a *Trait) bool {
 		a.UnsatisfiedReason = ""
