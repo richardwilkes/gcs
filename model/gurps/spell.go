@@ -171,7 +171,7 @@ func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 		s.PowerSource = "Arcane"
 		s.Class = "Regular"
 		s.CastingCost = "1"
-		s.CastingTime = "1 sec"
+		s.CastingTime = "1 second"
 		s.Duration = "Instant"
 		s.Points = fxp.One
 	}
@@ -192,7 +192,7 @@ func NewRitualMagicSpell(owner DataOwner, parent *Spell, _ bool) *Spell {
 	s.PowerSource = "Arcane"
 	s.Class = "Regular"
 	s.CastingCost = "1"
-	s.CastingTime = "1 sec"
+	s.CastingTime = "1 second"
 	s.Duration = "Instant"
 	s.Points = fxp.One
 	s.RitualSkillName = "Ritual Magic"
