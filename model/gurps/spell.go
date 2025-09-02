@@ -270,6 +270,7 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserve
 	other.AdjustSource(from, s.SourcedID, preserveID)
 	other.ThirdParty = s.ThirdParty
 	other.CopyFrom(s)
+	PropagateNodeNoteClosedState(s, other)
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
 		for _, child := range s.Children {

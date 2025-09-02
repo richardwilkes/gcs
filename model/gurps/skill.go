@@ -262,6 +262,7 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserve
 	other.AdjustSource(from, s.SourcedID, preserveID)
 	other.ThirdParty = s.ThirdParty
 	other.CopyFrom(s)
+	PropagateNodeNoteClosedState(s, other)
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
 		for _, child := range s.Children {

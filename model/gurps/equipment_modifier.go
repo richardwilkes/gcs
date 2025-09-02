@@ -200,6 +200,7 @@ func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *Equ
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
 	other.CopyFrom(e)
+	PropagateNodeNoteClosedState(e, other)
 	if e.HasChildren() {
 		other.Children = make([]*EquipmentModifier, 0, len(e.Children))
 		for _, child := range e.Children {

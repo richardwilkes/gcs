@@ -221,6 +221,7 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, preserve
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.CopyFrom(t)
+	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
 		for _, child := range t.Children {

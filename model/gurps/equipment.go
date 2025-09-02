@@ -208,6 +208,7 @@ func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, 
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
 	other.CopyFrom(e)
+	PropagateNodeNoteClosedState(e, other)
 	if e.HasChildren() {
 		other.Children = make([]*Equipment, 0, len(e.Children))
 		for _, child := range e.Children {

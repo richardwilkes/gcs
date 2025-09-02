@@ -119,3 +119,8 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 	}
 	return tags
 }
+
+// PropagateNodeNoteClosedState propagates the note closed state from one node to another.
+func PropagateNodeNoteClosedState[T NodeTypes](from, to Node[T]) {
+	SetClosedState("N:"+string(to.ID()), IsClosed("N:"+string(from.ID())))
+}
