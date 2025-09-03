@@ -40,15 +40,16 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		addLabelAndListField(content, i18n.Text("College"), i18n.Text("colleges"), (*[]string)(&e.editorData.College))
 		addLabelAndStringField(content, i18n.Text("Class"), "", &e.editorData.Class)
 		addLabelAndStringField(content, i18n.Text("Power Source"), "", &e.editorData.PowerSource)
+		prereqCount := i18n.Text("Prerequisite Count")
 		if e.target.IsRitualMagic() {
 			addLabelAndStringField(content, i18n.Text("Base Skill"), "", &e.editorData.RitualSkillName)
 			wrapper := addFlowWrapper(content, i18n.Text("Difficulty"), 3)
 			addPopup(wrapper, difficulty.TechniqueLevels, &e.editorData.Difficulty.Difficulty)
-			prereqCount := i18n.Text("Prerequisite Count")
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(prereqCount, false))
-			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 99)
+			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 999)
 		} else {
 			addDifficultyLabelAndFields(content, entity, &e.editorData.Difficulty)
+			addLabelAndIntegerField(content, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 999)
 		}
 		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")

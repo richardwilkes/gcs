@@ -290,6 +290,11 @@ func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip st
 	parent.AddChild(field)
 }
 
+func addLabelAndIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *int, minValue, maxValue int) *IntegerField {
+	addLabel(parent, labelText, tooltip)
+	return addIntegerField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, minValue, maxValue)
+}
+
 func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *int, minValue, maxValue int) *IntegerField {
 	field := NewIntegerField(targetMgr, targetKey, labelText,
 		func() int { return *fieldData },

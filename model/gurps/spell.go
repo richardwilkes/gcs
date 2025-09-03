@@ -477,10 +477,12 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			data.Primary = s.Difficulty.Description(EntityFromNode(s))
 		}
 	case SpellPrereqCountColumn:
-		if !s.Container() && s.IsRitualMagic() {
+		if !s.Container() {
 			data.Type = cell.Text
 			data.Alignment = align.End
-			data.Primary = strconv.Itoa(s.RitualPrereqCount)
+			if s.RitualPrereqCount > 0 {
+				data.Primary = strconv.Itoa(s.RitualPrereqCount)
+			}
 		}
 	case SpellTagsColumn:
 		data.Type = cell.Tags
