@@ -94,40 +94,41 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 }
 
 func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
-	var panel *unison.Panel
+	var panel, focus unison.Paneler
 	switch one := f.(type) {
 	case *gurps.AttributeBonus:
-		panel = p.createAttributeBonusPanel(one)
+		panel, focus = p.createAttributeBonusPanel(one)
 	case *gurps.ConditionalModifierBonus:
-		panel = p.createConditionalModifierPanel(one)
+		panel, focus = p.createConditionalModifierPanel(one)
 	case *gurps.ContainedWeightReduction:
-		panel = p.createContainedWeightReductionPanel(one)
+		panel, focus = p.createContainedWeightReductionPanel(one)
 	case *gurps.CostReduction:
-		panel = p.createCostReductionPanel(one)
+		panel, focus = p.createCostReductionPanel(one)
 	case *gurps.DRBonus:
-		panel = p.createDRBonusPanel(one)
+		panel, focus = p.createDRBonusPanel(one)
 	case *gurps.ReactionBonus:
-		panel = p.createReactionBonusPanel(one)
+		panel, focus = p.createReactionBonusPanel(one)
 	case *gurps.SkillBonus:
-		panel = p.createSkillBonusPanel(one)
+		panel, focus = p.createSkillBonusPanel(one)
 	case *gurps.SkillPointBonus:
-		panel = p.createSkillPointBonusPanel(one)
+		panel, focus = p.createSkillPointBonusPanel(one)
 	case *gurps.SpellBonus:
-		panel = p.createSpellBonusPanel(one)
+		panel, focus = p.createSpellBonusPanel(one)
 	case *gurps.SpellPointBonus:
-		panel = p.createSpellPointBonusPanel(one)
+		panel, focus = p.createSpellPointBonusPanel(one)
 	case *gurps.WeaponBonus:
-		panel = p.createWeaponBonusPanel(one)
+		panel, focus = p.createWeaponBonusPanel(one)
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", reflect.TypeOf(f).String())
 		return
 	}
 	if panel != nil {
-		panel.SetLayoutData(&unison.FlexLayoutData{
+		panel.AsPanel().SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.Fill,
 			HGrab:  true,
 		})
 		p.AddChildAtIndex(panel, index)
+		focus.AsPanel().RequestFocus()
 	}
 }
 
@@ -152,9 +153,9 @@ func (p *featuresPanel) createBasePanel(f gurps.Feature) *unison.Panel {
 	return panel
 }
 
-func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) *unison.Panel {
+func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var limitationPopup *unison.PopupMenu[stlimit.Option]
@@ -171,12 +172,12 @@ func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) *unis
 	limitationPopup = addPopup(wrapper, stlimit.Options, &f.Limitation)
 	adjustPopupBlank(limitationPopup, f.Attribute != gurps.StrengthID)
 	p.addWrapperAtIndex(panel, wrapper, -1, true)
-	return panel
+	return panel, focus
 }
 
-func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModifierBonus) *unison.Panel {
+func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModifierBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	watermark := i18n.Text("Triggering Condition")
 	field := NewMultiLineStringField(nil, "", watermark, func() string { return f.Situation },
@@ -192,12 +193,12 @@ func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModif
 		HGrab:  true,
 	})
 	panel.AddChild(field)
-	return panel
+	return panel, focus
 }
 
-func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
+func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(p.createHitLocationChoicesPanel(f))
 	panel.AddChild(unison.NewPanel())
@@ -219,7 +220,7 @@ func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
 	wrapper.AddChild(field)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("attacks"), false))
 	panel.AddChild(wrapper)
-	return panel
+	return panel, focus
 }
 
 func (p *featuresPanel) createHitLocationChoicesPanel(f *gurps.DRBonus) *unison.Panel {
@@ -355,9 +356,9 @@ func (p *featuresPanel) isCurrentLocationList() bool {
 	return (p.forEquipmentModifier && p.currentLocation == 2) || (!p.forEquipmentModifier && p.currentLocation == 1)
 }
 
-func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) *unison.Panel {
+func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	watermark := i18n.Text("from/to target group")
 	field := NewMultiLineStringField(nil, "", watermark, func() string { return f.Situation },
@@ -373,12 +374,12 @@ func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) *unison
 		HGrab:  true,
 	})
 	panel.AddChild(field)
-	return panel
+	return panel, focus
 }
 
-func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel {
+func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
@@ -402,7 +403,7 @@ func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel
 	adjustPopupBlank(criteriaPopup, f.SelectionType == skillsel.ThisWeapon)
 	adjustFieldBlank(criteriaField, f.SelectionType == skillsel.ThisWeapon)
 	p.createSecondarySkillPanels(panel, len(panel.Children()), f)
-	return panel
+	return panel, focus
 }
 
 func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index int, f *gurps.SkillBonus) {
@@ -425,19 +426,19 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	}
 }
 
-func (p *featuresPanel) createSkillPointBonusPanel(f *gurps.SkillPointBonus) *unison.Panel {
+func (p *featuresPanel) createSkillPointBonusPanel(f *gurps.SkillPointBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	prefix := i18n.Text("to skills whose name")
 	addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name Qualifier"), &f.NameCriteria, 1, true)
 	addSpecializationCriteriaPanel(panel, &f.SpecializationCriteria, 1, true)
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
-	return panel
+	return panel, focus
 }
 
-func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) *unison.Panel {
+func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
@@ -455,12 +456,12 @@ func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) *unison.Panel
 	adjustPopupBlank(criteriaPopup, f.SpellMatchType == spellmatch.AllColleges)
 	adjustFieldBlank(criteriaField, f.SpellMatchType == spellmatch.AllColleges)
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
-	return panel
+	return panel, focus
 }
 
-func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *unison.Panel {
+func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	wrapper, _ := p.prepareNewWrapper(panel, -1)
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
@@ -477,12 +478,12 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 	adjustPopupBlank(criteriaPopup, f.SpellMatchType == spellmatch.AllColleges)
 	adjustFieldBlank(criteriaField, f.SpellMatchType == spellmatch.AllColleges)
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
-	return panel
+	return panel, focus
 }
 
-func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) *unison.Panel {
+func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addWeaponLeveledModifierLine(panel, f)
+	_, focus = p.addWeaponLeveledModifierLine(panel, f)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
@@ -504,7 +505,7 @@ func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) *unison.Pan
 	p.addWrapperAtIndex(panel, wrapper, -1, false)
 	p.adjustCriteriaPopupAndField(f, criteriaPopup, criteriaField)
 	p.createSecondaryWeaponPanels(panel, len(panel.Children()), f)
-	return panel
+	return panel, focus
 }
 
 func (p *featuresPanel) adjustCriteriaPopupAndField(f *gurps.WeaponBonus, criteriaPopup *unison.PopupMenu[string], criteriaField *StringField) {
@@ -565,11 +566,10 @@ func (p *featuresPanel) addWrapperAtIndex(parent, wrapper *unison.Panel, index i
 	return index
 }
 
-func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWeightReduction) *unison.Panel {
+func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWeightReduction) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	wrapper := unison.NewPanel()
 	p.addTypeSwitcher(wrapper, f)
-
 	field := NewStringField(nil, "", i18n.Text("Contained Weight Reduction"),
 		func() string { return f.Reduction },
 		func(value string) {
@@ -586,10 +586,10 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWe
 	}
 	wrapper.AddChild(field)
 	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	return panel
+	return panel, field
 }
 
-func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison.Panel {
+func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	wrapper := unison.NewPanel()
 	p.addTypeSwitcher(wrapper, f)
@@ -599,19 +599,20 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison
 		choices = append(choices, fmt.Sprintf(i18n.Text("by %d%%"), i))
 	}
 	choice := choices[max(min((fxp.AsInteger[int](f.Percentage)/5)-1, 15), 0)]
-	addPopup(wrapper, choices, &choice).ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
+	pop := addPopup(wrapper, choices, &choice)
+	pop.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
 		popup.SelectIndex(index)
 		f.Percentage = fxp.FromInteger((index + 1) * 5)
 		MarkModified(wrapper)
 	}
 	p.addWrapperAtIndex(panel, wrapper, -1, true)
-	return panel
+	return panel, pop
 }
 
-func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.LeveledAmount) {
+func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.LeveledAmount) *DecimalField {
 	panel := unison.NewPanel()
 	p.addTypeSwitcher(panel, f)
-	addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
+	field, _ := addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -622,9 +623,10 @@ func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Fea
 		HGrab:  true,
 	})
 	parent.AddChild(panel)
+	return field
 }
 
-func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *gurps.WeaponBonus) {
+func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *gurps.WeaponBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	switcher := p.addTypeSwitcher(panel, wb)
 	if wb.Type == feature.WeaponSwitch {
@@ -638,7 +640,7 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 		spacer.SetLayoutData(&unison.FlexLayoutData{SizeHint: geom.Size{Width: 16}})
 		wrapper.AddChild(spacer)
 		addPopup(wrapper, wswitch.Types[1:], &wb.SwitchType)
-		addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &wb.SwitchTypeValue)
+		focus = addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &wb.SwitchTypeValue)
 		wrapper.SetLayout(&unison.FlexLayout{
 			Columns:  3,
 			HSpacing: unison.StdHSpacing,
@@ -650,12 +652,14 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 		})
 		panel.AddChild(wrapper)
 	} else {
-		panel.AddChild(NewDecimalField(nil, "", i18n.Text("Amount"),
+		field := NewDecimalField(nil, "", i18n.Text("Amount"),
 			func() fxp.Int { return wb.Amount },
 			func(value fxp.Int) {
 				wb.Amount = value
 				MarkModified(panel)
-			}, fxp.Min, fxp.Max, true, false))
+			}, fxp.Min, fxp.Max, true, false)
+		focus = field
+		panel.AddChild(field)
 		addCheckBox(panel, i18n.Text("per level"), &wb.PerLevel)
 		if wb.Type != feature.WeaponMinSTBonus && wb.Type != feature.WeaponEffectiveSTBonus {
 			// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on
@@ -674,6 +678,7 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 		HGrab:  true,
 	})
 	parent.AddChild(panel)
+	return panel, focus
 }
 
 func (p *featuresPanel) featureTypesList() []feature.Type {

@@ -679,14 +679,16 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 	return popup, field
 }
 
-func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, title string, amount *gurps.LeveledAmount) {
-	parent.AddChild(NewDecimalField(targetMgr, targetKey, i18n.Text("Amount"),
+func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, title string, amount *gurps.LeveledAmount) (field *DecimalField, checkBox *CheckBox) {
+	field = NewDecimalField(targetMgr, targetKey, i18n.Text("Amount"),
 		func() fxp.Int { return amount.Amount },
 		func(value fxp.Int) {
 			amount.Amount = value
 			MarkModified(parent)
-		}, fxp.Min, fxp.Max, true, false))
-	addCheckBox(parent, title, &amount.PerLevel)
+		}, fxp.Min, fxp.Max, true, false)
+	parent.AddChild(field)
+	checkBox = addCheckBox(parent, title, &amount.PerLevel)
+	return field, checkBox
 }
 
 func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey string, tp **gurps.TemplatePicker) {
