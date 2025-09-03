@@ -61,18 +61,19 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
-	p.AddChild(p.createPrereqListPanel(0, *root))
+	list, _ := p.createPrereqListPanel(0, *root)
+	p.AddChild(list)
 	return p
 }
 
-func (p *prereqPanel) createPrereqListPanel(depth int, list *gurps.PrereqList) *unison.Panel {
+func (p *prereqPanel) createPrereqListPanel(depth int, list *gurps.PrereqList) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, list)
 	inFront := andOrText(list) != noAndOr
 	if inFront {
 		p.addAndOr(panel, list)
 	}
-	addNumericCriteriaPanel(panel, nil, "", i18n.Text("When the Tech Level"), i18n.Text("When Tech Level"),
+	_, focus = addNumericCriteriaPanel(panel, nil, "", i18n.Text("When the Tech Level"), i18n.Text("When Tech Level"),
 		&list.WhenTL, 0, fxp.Twelve, 1, true, true)
 	popup := addBoolPopup(panel, i18n.Text("requires all of:"), i18n.Text("requires at least one of:"), &list.All)
 	callback := popup.SelectionChangedCallback
@@ -97,30 +98,30 @@ func (p *prereqPanel) createPrereqListPanel(depth int, list *gurps.PrereqList) *
 	for _, child := range list.Prereqs {
 		p.addToList(panel, depth+1, -1, child)
 	}
-	return panel
+	return panel, focus
 }
 
 func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gurps.Prereq) {
-	var panel *unison.Panel
+	var panel, focus unison.Paneler
 	switch one := child.(type) {
 	case *gurps.PrereqList:
-		panel = p.createPrereqListPanel(depth, one)
+		panel, focus = p.createPrereqListPanel(depth, one)
 	case *gurps.TraitPrereq:
-		panel = p.createTraitPrereqPanel(depth, one)
+		panel, focus = p.createTraitPrereqPanel(depth, one)
 	case *gurps.AttributePrereq:
-		panel = p.createAttributePrereqPanel(depth, one)
+		panel, focus = p.createAttributePrereqPanel(depth, one)
 	case *gurps.ContainedQuantityPrereq:
-		panel = p.createContainedQuantityPrereqPanel(depth, one)
+		panel, focus = p.createContainedQuantityPrereqPanel(depth, one)
 	case *gurps.ContainedWeightPrereq:
-		panel = p.createContainedWeightPrereqPanel(depth, one)
+		panel, focus = p.createContainedWeightPrereqPanel(depth, one)
 	case *gurps.EquippedEquipmentPrereq:
-		panel = p.createEquippedEquipmentPrereqPanel(depth, one)
+		panel, focus = p.createEquippedEquipmentPrereqPanel(depth, one)
 	case *gurps.SkillPrereq:
-		panel = p.createSkillPrereqPanel(depth, one)
+		panel, focus = p.createSkillPrereqPanel(depth, one)
 	case *gurps.SpellPrereq:
-		panel = p.createSpellPrereqPanel(depth, one)
+		panel, focus = p.createSpellPrereqPanel(depth, one)
 	case *gurps.ScriptPrereq:
-		panel = p.createScriptPrereqPanel(depth, one)
+		panel, focus = p.createScriptPrereqPanel(depth, one)
 	default:
 		errs.Log(errs.New("unknown prerequisite type"), "type", reflect.TypeOf(child).String())
 	}
@@ -129,7 +130,7 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 		if parentLayout, ok := parent.Layout().(*unison.FlexLayout); ok {
 			columns = parentLayout.Columns
 		}
-		panel.SetLayoutData(&unison.FlexLayoutData{
+		panel.AsPanel().SetLayoutData(&unison.FlexLayoutData{
 			HSpan:  columns,
 			HAlign: align.Fill,
 			HGrab:  true,
@@ -139,6 +140,7 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 		} else {
 			parent.AddChildAtIndex(panel, columns+index)
 		}
+		focus.AsPanel().RequestFocus()
 	}
 }
 
@@ -297,7 +299,7 @@ func (p *prereqPanel) createPrereqForType(prereqType prereq.Type, parentList *gu
 	}
 }
 
-func (p *prereqPanel) createTraitPrereqPanel(depth int, pr *gurps.TraitPrereq) *unison.Panel {
+func (p *prereqPanel) createTraitPrereqPanel(depth int, pr *gurps.TraitPrereq) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -315,13 +317,13 @@ func (p *prereqPanel) createTraitPrereqPanel(depth int, pr *gurps.TraitPrereq) *
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
+	_, focus = addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
 	addNotesCriteriaPanel(panel, &pr.NotesCriteria, columns-1, true)
 	addLevelCriteriaPanel(panel, nil, "", &pr.LevelCriteria, columns-1, true)
-	return panel
+	return panel, focus
 }
 
-func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributePrereq) *unison.Panel {
+func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributePrereq) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -344,7 +346,7 @@ func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributeP
 	extra := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
 	addAttributeChoicePopup(second, p.entity, noAndOr, &pr.Which, extra)
 	addAttributeChoicePopup(second, p.entity, i18n.Text("combined with"), &pr.CombinedWith, extra|gurps.BlankFlag)
-	addNumericCriteriaPanel(second, nil, "", i18n.Text("which"), i18n.Text("Attribute Qualifier"),
+	_, focus = addNumericCriteriaPanel(second, nil, "", i18n.Text("which"), i18n.Text("Attribute Qualifier"),
 		&pr.QualifierCriteria, fxp.Min, fxp.Max, 1, false, false)
 	second.SetLayout(&unison.FlexLayout{
 		Columns:  len(second.Children()),
@@ -353,10 +355,10 @@ func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributeP
 	})
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(second)
-	return panel
+	return panel, focus
 }
 
-func (p *prereqPanel) createContainedQuantityPrereqPanel(depth int, pr *gurps.ContainedQuantityPrereq) *unison.Panel {
+func (p *prereqPanel) createContainedQuantityPrereqPanel(depth int, pr *gurps.ContainedQuantityPrereq) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -365,7 +367,7 @@ func (p *prereqPanel) createContainedQuantityPrereqPanel(depth int, pr *gurps.Co
 	}
 	addHasPopup(panel, &pr.Has)
 	p.addPrereqTypeSwitcher(panel, depth, pr)
-	addQuantityCriteriaPanel(panel, nil, "", &pr.QualifierCriteria)
+	_, focus = addQuantityCriteriaPanel(panel, nil, "", &pr.QualifierCriteria)
 	if !inFront {
 		p.addAndOr(panel, pr)
 	}
@@ -375,10 +377,10 @@ func (p *prereqPanel) createContainedQuantityPrereqPanel(depth int, pr *gurps.Co
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	return panel
+	return panel, focus
 }
 
-func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.ContainedWeightPrereq) *unison.Panel {
+func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.ContainedWeightPrereq) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -398,7 +400,7 @@ func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.Cont
 	})
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
-	addWeightCriteriaPanel(second, nil, "", p.entity, &pr.WeightCriteria)
+	_, focus = addWeightCriteriaPanel(second, nil, "", p.entity, &pr.WeightCriteria)
 	second.SetLayout(&unison.FlexLayout{
 		Columns:  len(second.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -406,10 +408,10 @@ func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.Cont
 	})
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(second)
-	return panel
+	return panel, focus
 }
 
-func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.EquippedEquipmentPrereq) *unison.Panel {
+func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.EquippedEquipmentPrereq) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -426,12 +428,12 @@ func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.Eq
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
+	_, focus = addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
 	addTagCriteriaPanel(panel, &pr.TagsCriteria, columns-1, true)
-	return panel
+	return panel, focus
 }
 
-func (p *prereqPanel) createSkillPrereqPanel(depth int, pr *gurps.SkillPrereq) *unison.Panel {
+func (p *prereqPanel) createSkillPrereqPanel(depth int, pr *gurps.SkillPrereq) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -449,13 +451,13 @@ func (p *prereqPanel) createSkillPrereqPanel(depth int, pr *gurps.SkillPrereq) *
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
+	_, focus = addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
 	addSpecializationCriteriaPanel(panel, &pr.SpecializationCriteria, columns-1, true)
 	addLevelCriteriaPanel(panel, nil, "", &pr.LevelCriteria, columns-1, true)
-	return panel
+	return panel, focus
 }
 
-func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *unison.Panel {
+func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -463,7 +465,7 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 		p.addAndOr(panel, pr)
 	}
 	addHasPopup(panel, &pr.Has)
-	addQuantityCriteriaPanel(panel, nil, "", &pr.QuantityCriteria)
+	_, focus = addQuantityCriteriaPanel(panel, nil, "", &pr.QuantityCriteria)
 	p.addPrereqTypeSwitcher(panel, depth, pr)
 	if !inFront {
 		p.addAndOr(panel, pr)
@@ -491,6 +493,9 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 	}
 	adjustPopupBlank(popup, pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount)
 	adjustFieldBlank(field, pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount)
+	if field.Enabled() {
+		focus = field
+	}
 	second.SetLayout(&unison.FlexLayout{
 		Columns:  len(second.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -499,10 +504,10 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 	})
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(second)
-	return panel
+	return panel, focus
 }
 
-func (p *prereqPanel) createScriptPrereqPanel(depth int, pr *gurps.ScriptPrereq) *unison.Panel {
+func (p *prereqPanel) createScriptPrereqPanel(depth int, pr *gurps.ScriptPrereq) (main, focus unison.Paneler) {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -513,7 +518,7 @@ func (p *prereqPanel) createScriptPrereqPanel(depth int, pr *gurps.ScriptPrereq)
 	if !inFront {
 		p.addAndOr(panel, pr)
 	}
-	addScriptField(panel, nil, "", i18n.Text("Prereq Script"),
+	focus = addScriptField(panel, nil, "", i18n.Text("Prereq Script"),
 		i18n.Text("The script should return text describing the missing prerequisite or an empty string if the prerequisite has been met"),
 		func() string { return pr.Script }, func(text string) { pr.Script = text })
 	columns := len(panel.Children())
@@ -522,5 +527,5 @@ func (p *prereqPanel) createScriptPrereqPanel(depth int, pr *gurps.ScriptPrereq)
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	return panel
+	return panel, focus
 }
