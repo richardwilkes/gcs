@@ -31,8 +31,12 @@ func LoadFromFile(path string, data any) error {
 	return Load(f, data)
 }
 
-// LoadFromFS loads JSON data from the specified filesystem path.
+// LoadFromFS loads JSON data from the specified filesystem path. If 'fileSystem' is nil, falls back to calling
+// LoadFromFile(path, data) instead.
 func LoadFromFS(fileSystem fs.FS, path string, data any) error {
+	if fileSystem == nil {
+		return LoadFromFile(path, data)
+	}
 	f, err := fileSystem.Open(path)
 	if err != nil {
 		return errs.NewWithCause(path, err)
