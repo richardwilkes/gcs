@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"fmt"
+	"maps"
+	"strconv"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -18,82 +21,98 @@ import (
 )
 
 // CountPrereqsForSpell returns the number of prerequisites for the specified spell.
-func CountPrereqsForSpell(spell *Spell, availableSpells []*Spell, nonSpellsCountAs int, useHighestInOr bool) int {
-	return countPrereqsForList(spell.Prereq, availableSpells, nonSpellsCountAs, useHighestInOr)
+func CountPrereqsForSpell(spell *Spell, allSpells []*Spell) int {
+	collect := make(map[string]int)
+	collectPrereqsForPrereq(spell.Prereq, allSpells, collect)
+	return countPrereqSet(collect)
 }
 
-func countPrereqsForList(list *PrereqList, availableSpells []*Spell, nonSpellsCountAs int, useHighestInOr bool) int {
-	counts := make([]int, len(list.Prereqs))
-	for i, prereq := range list.Prereqs {
-		switch p := prereq.(type) {
-		case *PrereqList:
-			counts[i] = countPrereqsForList(p, availableSpells, nonSpellsCountAs, useHighestInOr)
-		case *TraitPrereq:
-			if p.Has {
-				switch p.LevelCriteria.Compare {
-				case criteria.EqualsNumber, criteria.AtLeastNumber:
-					counts[i] = nonSpellsCountAs * max(fxp.AsInteger[int](p.LevelCriteria.Qualifier), 1)
-				default:
-					counts[i] = nonSpellsCountAs
+func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]int) {
+	switch p := one.(type) {
+	case *PrereqList:
+		if p.All {
+			for _, one := range p.Prereqs {
+				collectPrereqsForPrereq(one, allSpells, collect)
+			}
+		} else {
+			var current map[string]int
+			for _, one := range p.Prereqs {
+				set := make(map[string]int)
+				maps.Copy(set, collect)
+				collectPrereqsForPrereq(one, allSpells, set)
+				if current == nil || countPrereqSet(set) < countPrereqSet(current) {
+					current = set
 				}
 			}
-		case *AttributePrereq:
-			if p.Has {
-				counts[i] = nonSpellsCountAs
-			}
-		case *ContainedQuantityPrereq:
-			if p.Has {
-				counts[i] = nonSpellsCountAs
-			}
-		case *ContainedWeightPrereq:
-			if p.Has {
-				counts[i] = nonSpellsCountAs
-			}
-		case *SkillPrereq:
-			if p.Has {
-				counts[i] = nonSpellsCountAs
-			}
-		case *SpellPrereq:
-			if p.Has {
-				switch p.QuantityCriteria.Compare {
-				case criteria.EqualsNumber, criteria.AtLeastNumber:
-					counts[i] = fxp.AsInteger[int](p.QuantityCriteria.Qualifier)
-				default:
-					counts[i] = 1
+			maps.Copy(collect, current)
+		}
+	case *TraitPrereq:
+		if p.Has {
+			switch p.LevelCriteria.Compare {
+			case criteria.EqualsNumber, criteria.AtLeastNumber:
+				levels := fxp.AsInteger[int](p.LevelCriteria.Qualifier)
+				base := 1
+				if p.NameCriteria.Qualifier == "Magery" {
+					base = 0
 				}
-				if counts[i] == 1 && p.SubType == spellcmp.Name && p.QualifierCriteria.Compare == criteria.IsText {
-					Traverse(func(s *Spell) bool {
-						if strings.EqualFold(s.NameWithReplacements(), p.QualifierCriteria.Qualifier) {
-							counts[i] = 1 + countPrereqsForList(s.Prereq, availableSpells, nonSpellsCountAs, useHighestInOr)
-							return true
-						}
+				for i := base; i <= levels; i++ {
+					collect[fmt.Sprintf("T:%s %d", strings.ToLower(p.NameCriteria.Qualifier), i)] = 1
+				}
+			default:
+				collect["T:"+strings.ToLower(p.NameCriteria.Qualifier)] = 1
+			}
+		}
+	case *AttributePrereq:
+		if p.Has {
+			collect["A:"+strings.ToLower(p.Which+p.CombinedWith)] = 1
+		}
+	case *SkillPrereq:
+		if p.Has {
+			collect["Sk:"+strings.ToLower(p.NameCriteria.Qualifier)] = 1
+		}
+	case *SpellPrereq:
+		if p.Has {
+			count := 1
+			if p.QuantityCriteria.Compare == criteria.EqualsNumber ||
+				p.QuantityCriteria.Compare == criteria.AtLeastNumber {
+				count = fxp.AsInteger[int](p.QuantityCriteria.Qualifier)
+			}
+			key := "Sp:" + strings.ToLower(p.QualifierCriteria.Qualifier)
+			needTraverse := count == 1 && p.SubType == spellcmp.Name && p.QualifierCriteria.Compare == criteria.IsText
+			if v, ok := collect[key]; ok {
+				if v < count {
+					collect[key] = count
+				}
+				needTraverse = false
+			} else {
+				collect[key] = count
+			}
+			if needTraverse {
+				Traverse(func(s *Spell) bool {
+					if !strings.EqualFold(s.Name, p.QualifierCriteria.Qualifier) {
 						return false
-					}, false, true, availableSpells...)
-				}
-			}
-		default:
-			counts[i] = nonSpellsCountAs
-		}
-	}
-	if list.All {
-		total := 0
-		for _, count := range counts {
-			total += count
-		}
-		return total
-	}
-	result := 0
-	for _, count := range counts {
-		if result < count {
-			result = count
-		}
-	}
-	if !useHighestInOr {
-		for _, count := range counts {
-			if count > 0 && result > count {
-				result = count
+					}
+					collectPrereqsForPrereq(s.Prereq, allSpells, collect)
+					return true
+				}, false, true, allSpells...)
 			}
 		}
+	case *ScriptPrereq:
+		count := 1
+		script := strings.ToLower(p.Script)
+		if revised, found := strings.CutPrefix(script, "// prereq count:"); found {
+			if n, err := strconv.Atoi(strings.TrimSpace(strings.SplitN(revised, "\n", 2)[0])); err == nil {
+				count = n
+			}
+		}
+		collect["Sc:"+script] = count
 	}
-	return result
+}
+
+func countPrereqSet(set map[string]int) int {
+	var total int
+	for _, count := range set {
+		total += count
+	}
+	return total
 }
