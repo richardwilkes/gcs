@@ -12,3 +12,4 @@
 /release_notes.md
 /__debug_bin*
 /todo.md
+/*.prof
