@@ -652,9 +652,10 @@ func (t *Trait) ModifierNotes() string {
 func (t *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(EntityFromNode(t))
-	userDesc := t.UserDescWithReplacements()
-	if userDesc != "" && optionChecker(settings.UserDescriptionDisplay) {
-		buffer.WriteString(userDesc)
+	if optionChecker(settings.UserDescriptionDisplay) {
+		if userDesc := t.UserDescWithReplacements(); userDesc != "" {
+			buffer.WriteString(userDesc)
+		}
 	}
 	if optionChecker(settings.ModifiersDisplay) {
 		AppendStringOntoNewLine(&buffer, t.ModifierNotes())

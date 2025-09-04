@@ -45,6 +45,7 @@ var (
 		mustSet(vm, "measure", scriptMeasurement{})
 		mustSet(vm, "Math.exp2", math.Exp2)
 		mustSet(vm, "signedValue", scriptSigned)
+		mustSet(vm, "formatNum", scriptFormatNum)
 		return vm
 	}}
 )
@@ -98,8 +99,21 @@ func scriptSigned(value float64) string {
 	return fxp.FromFloat(value).StringWithSign()
 }
 
-// ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
-// expressions inside || pairs inside the text and evaluate them.
+func scriptFormatNum(value float64, withCommas, withSign bool) string {
+	v := fxp.FromFloat(value)
+	if withSign {
+		if withCommas {
+			return v.CommaWithSign()
+		}
+		return v.StringWithSign()
+	}
+	if withCommas {
+		return v.Comma()
+	}
+	return v.String()
+}
+
+// ResolveText will process embedded scripts.
 func ResolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
 	return embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
 		return resolveScript(entity, selfProvider, s[len(scriptStart):len(s)-len(scriptEnd)])
@@ -146,6 +160,8 @@ func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text strin
 	return w
 }
 
+var scriptIDsResolving = make(map[string]struct{})
+
 func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
 	var resolveCache map[scriptResolveKey]string
 	if entity == nil {
@@ -156,6 +172,13 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
 	if cached, exists := resolveCache[key]; exists {
 		return cached
+	}
+	if id := string(selfProvider.ID); id != "" {
+		if _, exists := scriptIDsResolving[id]; exists {
+			return "script contains circular reference to ID " + id
+		}
+		scriptIDsResolving[id] = struct{}{}
+		defer delete(scriptIDsResolving, id)
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
