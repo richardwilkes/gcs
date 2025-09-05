@@ -52,6 +52,7 @@ type sheetSettingsDockable struct {
 	useHalfStatDefaults                *unison.CheckBox
 	showLiftingSTDamage                *unison.CheckBox
 	showIQBasedDamage                  *unison.CheckBox
+	UseSkillTrees                      *unison.CheckBox
 	lengthUnitsPopup                   *unison.PopupMenu[fxp.LengthUnit]
 	weightUnitsPopup                   *unison.PopupMenu[fxp.WeightUnit]
 	userDescDisplayPopup               *unison.PopupMenu[display.Option]
@@ -219,6 +220,11 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 	d.showIQBasedDamage = d.addCheckBoxWithLink(panel, i18n.Text("Show IQ-based damage"), "PY120:7",
 		s.ShowIQBasedDamage, func() {
 			d.settings().ShowIQBasedDamage = d.showIQBasedDamage.State == check.On
+			d.syncSheet(false)
+		})
+	d.UseSkillTrees = d.addCheckBoxWithLink(panel, i18n.Text("Use Skill Trees"), "PU10:1+",
+		s.UseSkillTrees, func() {
+			d.settings().UseSkillTrees = d.UseSkillTrees.State == check.On
 			d.syncSheet(false)
 		})
 	content.AddChild(panel)
@@ -481,6 +487,7 @@ func (d *sheetSettingsDockable) sync() {
 	d.showTitleInsteadOfNameInPageFooter.State = check.FromBool(s.UseTitleInFooter)
 	d.showLiftingSTDamage.State = check.FromBool(s.ShowLiftingSTDamage)
 	d.showIQBasedDamage.State = check.FromBool(s.ShowIQBasedDamage)
+	d.UseSkillTrees.State = check.FromBool(s.UseSkillTrees)
 	d.useMultiplicativeModifiers.State = check.FromBool(s.UseMultiplicativeModifiers)
 	d.useHalfStatDefaults.State = check.FromBool(s.UseHalfStatDefaults)
 	d.useModifyDicePlusAdds.State = check.FromBool(s.UseModifyingDicePlusAdds)

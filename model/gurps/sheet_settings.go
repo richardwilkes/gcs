@@ -53,6 +53,7 @@ type SheetSettingsData struct {
 	ExcludeUnspentPointsFromTotal bool               `json:"exclude_unspent_points_from_total,omitempty"`
 	ShowLiftingSTDamage           bool               `json:"show_lifting_st_damage,omitempty"`
 	ShowIQBasedDamage             bool               `json:"show_iq_based_damage,omitempty"`
+	UseSkillTrees				  bool				 `json:"use_skill_trees,omitempty"`
 }
 
 // SheetSettings holds sheet settings.
