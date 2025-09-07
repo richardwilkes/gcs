@@ -24,6 +24,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/go-git/go-billy/v6/memfs"
+	"github.com/go-git/go-billy/v6/util"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -48,6 +50,7 @@ type Library struct {
 	RepoName          string   `json:"-"`
 	PathOnDisk        string   `json:"path,omitempty"`
 	Favorites         []string `json:"favorites,omitempty"`
+	UseLatest         bool     `json:"use_latest,omitempty"`
 	monitor           *monitor
 	lock              sync.RWMutex
 	releases          []Release
@@ -165,7 +168,7 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 			return incompatibleFutureLibraryVersion == version ||
 				xstrings.NaturalLess(version, minimumLibraryVersion, true) ||
 				xstrings.NaturalLess(incompatibleFutureLibraryVersion, version, true)
-		})
+		}, l.UseLatest)
 	if err != nil {
 		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", l.Title, "repo", l.RepoName, "account", l.GitHubAccountName)
 	}
@@ -238,7 +241,6 @@ func (l *Library) VersionOnDisk() string {
 // Download the release onto the local disk.
 func (l *Library) Download(ctx context.Context, client *http.Client, release Release) error {
 	p := l.Path()
-
 	tmpDir, err := os.MkdirTemp(filepath.Dir(p), filepath.Base(p)+"_*")
 	if err != nil {
 		return errs.NewWithCause("unable to create temporary directory", err)
@@ -264,52 +266,90 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 			}
 		}
 	}()
-
-	const unableToCreatePrefix = "unable to create "
 	if err = os.MkdirAll(p, 0o750); err != nil {
-		return errs.NewWithCause(unableToCreatePrefix+p, err)
-	}
-	var data []byte
-	data, err = l.downloadRelease(ctx, client, release)
-	if err != nil {
-		return err
-	}
-	var zr *zip.Reader
-	if zr, err = zip.NewReader(bytes.NewReader(data), int64(len(data))); err != nil {
-		return errs.NewWithCause("unable to open archive "+release.ZipFileURL, err)
+		return errs.NewWithCause("unable to create directory "+p, err)
 	}
 	root := filepath.Clean(p)
 	rootWithTrailingSep := root
 	if !strings.HasSuffix(rootWithTrailingSep, string(filepath.Separator)) {
 		rootWithTrailingSep += string(filepath.Separator)
 	}
-	for _, f := range zr.File {
-		fi := f.FileInfo()
-		mode := fi.Mode()
-		if mode&os.ModeType == 0 { // normal files only
-			parts := strings.SplitN(filepath.ToSlash(f.Name), "/", 3)
-			if len(parts) != 3 {
-				continue
+	if l.UseLatest {
+		mfs := memfs.New()
+		var hash string
+		if hash, err = downloadLatestCommit(ctx, "https://github.com/"+l.GitHubAccountName+"/"+l.RepoName+".git",
+			l.AccessToken, mfs); err != nil {
+			return err
+		}
+		// use hash that was actually downloaded, in case a commit occurred between our original check and the download
+		release.Version = hash
+		if err = util.Walk(mfs, "Library", func(path string, info os.FileInfo, walkErr error) error {
+			if walkErr != nil {
+				return walkErr
 			}
-			if !strings.EqualFold("Library", parts[1]) {
-				continue
+			parts := strings.SplitN(filepath.ToSlash(path), "/", 2)
+			if len(parts) != 2 {
+				return nil
 			}
-			fullPath := filepath.Join(root, parts[2])
+			if !strings.EqualFold("Library", parts[0]) {
+				return nil
+			}
+			fullPath := filepath.Join(p, parts[1])
 			if !strings.HasPrefix(fullPath, rootWithTrailingSep) {
-				return errs.Newf("path outside of root is not permitted: %s", fullPath)
+				return errs.Newf("path outside of destination directory is not permitted: %s", fullPath)
 			}
-			parent := filepath.Dir(fullPath)
-			if err = os.MkdirAll(parent, 0o750); err != nil {
-				return errs.NewWithCause(unableToCreatePrefix+parent, err)
+			if info.IsDir() {
+				return os.Mkdir(fullPath, 0o750)
 			}
-			if err = l.extractFile(f, fullPath); err != nil {
-				return errs.NewWithCause(unableToCreatePrefix+fullPath, err)
+			var data []byte
+			if data, walkErr = util.ReadFile(mfs, path); walkErr != nil {
+				return errs.NewWithCause("unable to read "+fullPath, walkErr)
+			}
+			if walkErr = os.WriteFile(fullPath, data, 0o640); walkErr != nil {
+				return errs.NewWithCause("unable to write "+fullPath, walkErr)
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+	} else {
+		var data []byte
+		data, err = l.downloadRelease(ctx, client, release)
+		if err != nil {
+			return err
+		}
+		var zr *zip.Reader
+		if zr, err = zip.NewReader(bytes.NewReader(data), int64(len(data))); err != nil {
+			return errs.NewWithCause("unable to open archive "+release.ZipFileURL, err)
+		}
+		for _, f := range zr.File {
+			fi := f.FileInfo()
+			mode := fi.Mode()
+			if mode&os.ModeType == 0 { // normal files only
+				parts := strings.SplitN(filepath.ToSlash(f.Name), "/", 3)
+				if len(parts) != 3 {
+					continue
+				}
+				if !strings.EqualFold("Library", parts[1]) {
+					continue
+				}
+				fullPath := filepath.Join(root, parts[2])
+				if !strings.HasPrefix(fullPath, rootWithTrailingSep) {
+					return errs.Newf("path outside of destination directory is not permitted: %s", fullPath)
+				}
+				parent := filepath.Dir(fullPath)
+				if err = os.MkdirAll(parent, 0o750); err != nil {
+					return errs.NewWithCause("unable to create directory "+parent, err)
+				}
+				if err = l.extractFile(f, fullPath); err != nil {
+					return errs.NewWithCause("unable to create file "+fullPath, err)
+				}
 			}
 		}
 	}
 	f := filepath.Join(root, releaseFile)
 	if err = os.WriteFile(f, []byte(release.Version+"\n"), 0o640); err != nil {
-		return errs.NewWithCause(unableToCreatePrefix+f, err)
+		return errs.NewWithCause("unable to write version file "+f, err)
 	}
 	current := l.VersionOnDisk()
 	l.lock.Lock()

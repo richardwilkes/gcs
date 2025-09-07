@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/slant"
 )
 
@@ -43,7 +44,9 @@ type librarySettingsDockable struct {
 	token         string
 	repo          string
 	path          string
+	useLatest     bool
 	special       bool
+	isUser        bool
 	promptForSave bool
 }
 
@@ -57,14 +60,17 @@ func ShowLibrarySettings(lib *gurps.Library) {
 	}) {
 		return
 	}
+	isUser := lib.IsUser()
 	d := &librarySettingsDockable{
-		library: lib,
-		name:    lib.Title,
-		github:  lib.GitHubAccountName,
-		token:   lib.AccessToken,
-		repo:    lib.RepoName,
-		path:    lib.PathOnDisk,
-		special: lib.IsMaster() || lib.IsUser(),
+		library:   lib,
+		name:      lib.Title,
+		github:    lib.GitHubAccountName,
+		token:     lib.AccessToken,
+		repo:      lib.RepoName,
+		path:      lib.PathOnDisk,
+		useLatest: lib.UseLatest,
+		special:   isUser || lib.IsMaster(),
+		isUser:    isUser,
 	}
 	d.Self = d
 	d.TabTitle = fmt.Sprintf(i18n.Text("Library Settings: %s"), lib.Title)
@@ -160,6 +166,19 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	}
 	content.AddChild(d.repoField)
 
+	content.AddChild(unison.NewPanel())
+	checkbox := unison.NewCheckBox()
+	checkbox.SetTitle(i18n.Text("Use the most recent commit (possibly unreleased) of this repository"))
+	checkbox.State = check.FromBool(d.useLatest)
+	checkbox.ClickCallback = func() {
+		d.useLatest = !d.useLatest
+		checkbox.State = check.FromBool(d.useLatest)
+		checkbox.MarkForRedraw()
+		d.updateToolbar()
+	}
+	checkbox.SetEnabled(!d.isUser)
+	content.AddChild(checkbox)
+
 	title = i18n.Text("Path")
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.pathField = NewStringField(nil, "", title,
@@ -249,7 +268,8 @@ func (d *librarySettingsDockable) updateToolbar() {
 	d.repoField.Validate()
 	d.pathField.Validate()
 	modified := d.library.Title != d.name || d.library.GitHubAccountName != d.github ||
-		d.library.AccessToken != d.token || d.library.RepoName != d.repo || d.library.PathOnDisk != d.path
+		d.library.AccessToken != d.token || d.library.RepoName != d.repo || d.library.PathOnDisk != d.path ||
+		d.library.UseLatest != d.useLatest
 	d.applyButton.SetEnabled(modified && !d.nameField.Invalid() && !d.githubField.Invalid() &&
 		!d.repoField.Invalid() && !d.pathField.Invalid())
 	d.cancelButton.SetEnabled(modified)
@@ -264,6 +284,7 @@ func (d *librarySettingsDockable) apply() {
 	d.library.GitHubAccountName = d.github
 	d.library.AccessToken = d.token
 	d.library.RepoName = d.repo
+	d.library.UseLatest = d.useLatest
 	libs[d.library.Key()] = d.library
 	if err := d.library.SetPath(d.path); err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to update library location"), err)

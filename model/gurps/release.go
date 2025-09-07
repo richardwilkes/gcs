@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
@@ -40,9 +41,22 @@ func (r *Release) HasReleaseNotes() bool {
 }
 
 // LoadReleases loads the list of releases available from a given GitHub repo.
-func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, accessToken, repoName, currentVersion string, filter func(version, notes string) bool) ([]Release, error) {
+func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, accessToken, repoName, currentVersion string, filter func(version, notes string) bool, useLatest bool) ([]Release, error) {
 	if githubAccountName == "" || repoName == "" {
 		return nil, nil
+	}
+	if useLatest {
+		commit, err := discoverLatestCommit(ctx, "https://github.com/"+githubAccountName+"/"+repoName+".git",
+			accessToken)
+		if err != nil {
+			return nil, err
+		}
+		return []Release{
+			{
+				Version: commit,
+				Notes:   i18n.Text("Latest commit from repository. No release notes available. No data version compatibility guarantees."),
+			},
+		}, nil
 	}
 	var versions []Release
 	uri := "https://api.github.com/repos/" + githubAccountName + "/" + repoName + "/releases"

@@ -64,7 +64,7 @@ func (u *appUpdater) SetResult(str string) {
 
 func (u *appUpdater) SetReleases(releases []gurps.Release) {
 	u.lock.Lock()
-	u.result = fmt.Sprintf(i18n.Text("%s v%s is available!"), xos.AppName, filterVersion(releases[0].Version))
+	u.result = fmt.Sprintf(i18n.Text("%s %s is available!"), xos.AppName, filterVersion(releases[0].Version))
 	u.releases = releases
 	u.updating = false
 	u.lock.Unlock()
@@ -84,7 +84,7 @@ func CheckForAppUpdates() {
 				func(version, _ string) bool {
 					// Don't bother showing changes from before 5.0.0, since those were the Java version
 					return xstrings.NaturalLess(version, "5.0.0", true)
-				})
+				}, false)
 			if err != nil {
 				appUpdate.SetResult(fmt.Sprintf(i18n.Text("Unable to access the %s update site"), xos.AppName))
 				errs.Log(err)
@@ -109,7 +109,7 @@ func NotifyOfAppUpdate() {
 			if i != 0 {
 				buffer.WriteString("---\n")
 			}
-			fmt.Fprintf(&buffer, "## Release Notes for %s v%s\n", xos.AppName, filterVersion(rel.Version))
+			fmt.Fprintf(&buffer, "## Release Notes for %s %s\n", xos.AppName, filterVersion(rel.Version))
 			buffer.WriteString(rel.Notes)
 			buffer.WriteByte('\n')
 		}
