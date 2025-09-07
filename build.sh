@@ -56,6 +56,11 @@ for arg in "$@"; do
 		BUILD_GEN=1
 		SOMETHING=1
 		;;
+	--custom | -c)
+		EXTRA_LD_FLAGS="-s -w"
+		BUILD_GO=1
+		SOMETHING=1
+		;;
 	--help | -h)
 		echo "$0 [options]"
 		echo "  -a, --all    Equivalent to --gen --go --lint --race"
