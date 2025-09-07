@@ -10,10 +10,11 @@
 package ux
 
 import (
-	"fmt"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 )
@@ -45,7 +46,13 @@ func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel gurps.
 	fd := c.button.Font.Descriptor()
 	fd.Size = xmath.Round(fd.Size * 0.8)
 	c.button.Font = fd.Font()
-	c.button.SetTitle(fmt.Sprintf("Update to v%s", filterVersion(rel.Version)))
+	version := filterVersion(rel.Version)
+	if strings.HasPrefix(version, "v") {
+		version = i18n.Text("Update to") + " " + version
+	} else {
+		version = i18n.Text("Update")
+	}
+	c.button.SetTitle(version)
 	c.button.ClickCallback = func() { initiateLibraryUpdate(c.library, c.release) }
 	c.AddChild(c.button)
 

@@ -24,7 +24,7 @@ import (
 )
 
 func initiateLibraryUpdate(lib *gurps.Library, rel gurps.Release) bool {
-	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Update %s to v%s?"), lib.Title, filterVersion(rel.Version)),
+	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Update %s to %s?"), lib.Title, filterVersion(rel.Version)),
 		i18n.Text(`Existing content for this library will be removed and replaced.
 Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 		return false
@@ -70,7 +70,7 @@ documents from the library are open.`))
 		VSpacing: unison.StdVSpacing,
 	})
 	label := unison.NewLabel()
-	label.SetTitle(fmt.Sprintf(i18n.Text("Updating %s to v%s…"), lib.Title, filterVersion(rel.Version)))
+	label.SetTitle(fmt.Sprintf(i18n.Text("Updating %s to %s…"), lib.Title, filterVersion(rel.Version)))
 	content.AddChild(label)
 	progress := unison.NewProgressBar(0)
 	progress.SetLayoutData(&unison.FlexLayoutData{

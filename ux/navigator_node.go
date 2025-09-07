@@ -11,7 +11,6 @@ package ux
 
 import (
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path"
@@ -187,13 +186,15 @@ func (n *NavigatorNode) CellDataForSort(col int) string {
 }
 
 func filterVersion(version string) string {
-	if strings.Index(version, ".") == strings.LastIndex(version, ".") {
-		return version
+	first := strings.Index(version, ".")
+	switch {
+	case first != -1 && first == strings.LastIndex(version, "."):
+	case strings.HasSuffix(version, ".0"):
+		version = version[:len(version)-2]
+	case first == -1 && len(version) > 7:
+		return version[:7] // Shorten long commit hashes to 7 characters to match github's style
 	}
-	if strings.HasSuffix(version, ".0") {
-		return version[:len(version)-2]
-	}
-	return version
+	return "v" + version
 }
 
 func (n *NavigatorNode) primaryColumnText() string {
@@ -208,7 +209,10 @@ func (n *NavigatorNode) primaryColumnText() string {
 		if current == "" || current == "0" {
 			return n.library.Title
 		}
-		return fmt.Sprintf("%s v%s", n.library.Title, filterVersion(current))
+		if n.library.UseLatest {
+			return n.library.Title + " (" + filterVersion(current) + ")"
+		}
+		return n.library.Title + " " + filterVersion(current)
 	default:
 		return xfilepath.TrimExtension(path.Base(n.path))
 	}

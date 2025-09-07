@@ -257,6 +257,8 @@ var PageRefKeyNameMappings = map[string]string{
 	"SS8:":    "Spaceships 8: Transhuman Spacecraft",
 	"SSS":     "Sorcery: Sound Spells",
 	"SU":      "Supers",
+	"SW":      "Star Wars",
+	"SWF":     "Star Wars: The Force",
 	"T":       "Thaumatology",
 	"TAB":     "Thaumatology: Alchemical Baroque",
 	"TAG":     "Thaumatology: Age of Gold",
