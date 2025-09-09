@@ -524,7 +524,7 @@ func (s *Skill) DefaultSkill() *Skill {
 	if e == nil {
 		return nil
 	}
-	requirePoints := e.SheetSettings.UseSkillTrees
+	requirePoints := !e.SheetSettings.UseSkillTrees
 	if s.IsTechnique() {
 		return s.BaseSkill(e, s.TechniqueDefault, requirePoints)
 	}
@@ -734,7 +734,10 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 	points := s.AdjustedPoints(nil)
 	if s.IsTechnique() {
 		e := EntityFromNode(s)
-		requirePoints := !e.SheetSettings.UseSkillTrees
+		requirePoints := true
+		if e != nil {
+			requirePoints = !e.SheetSettings.UseSkillTrees
+		}
 		return CalculateTechniqueLevel(e, s.Replacements, s.NameWithReplacements(),
 			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.Difficulty.Difficulty, points, requirePoints,
 			s.TechniqueLimitModifier, excludes)
@@ -833,7 +836,6 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 			}
 		} else {
 			// Take the modifier back out, as we wanted the base, not the final value.
-			requirePoints := !e.SheetSettings.UseSkillTrees
 			level = def.SkillLevelFast(e, replacements, requirePoints, nil, false) - def.Modifier
 		}
 		if level != fxp.Min {
@@ -897,17 +899,18 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 }
 
 func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
-	if EntityFromNode(s) == nil || len(s.Defaults) == 0 {
+	e := EntityFromNode(s)
+	if e == nil || len(s.Defaults) == 0 {
 		return nil
 	}
-	e := EntityFromNode(s)
+	requirePoints := !e.SheetSettings.UseSkillTrees
 	excludes := make(map[string]bool)
 	excludes[s.String()] = true
 	var bestDef *SkillDefault
 	best := fxp.Min
 	for _, def := range s.resolveToSpecificDefaults() {
 		// For skill-based defaults, prune out any that already use a default that we are involved with
-		if def.Equivalent(s.Replacements, excluded) || (s.inDefaultChain(def, make(map[*Skill]bool)) && !e.SheetSettings.UseSkillTrees) {
+		if def.Equivalent(s.Replacements, excluded) || (s.inDefaultChain(def, make(map[*Skill]bool)) && requirePoints) {
 			continue
 		}
 		if level := s.calcSkillDefaultLevel(def, excludes); best < level {
@@ -921,11 +924,15 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 
 func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
 	e := EntityFromNode(s)
-	level := def.SkillLevel(e, s.Replacements, !e.SheetSettings.UseSkillTrees, excludes, !s.IsTechnique())
-	if def.SkillBased() && e != nil && e.SheetSettings.UseSkillTrees {
+	requirePoints := true
+	if e != nil {
+		requirePoints = !e.SheetSettings.UseSkillTrees
+	}
+	level := def.SkillLevel(e, s.Replacements, requirePoints, excludes, !s.IsTechnique())
+	if def.SkillBased() && e != nil {
 		defName := def.NameWithReplacements(s.Replacements)
 		defSpec := def.SpecializationWithReplacements(s.Replacements)
-		if other := e.BestSkillNamed(defName, defSpec, !e.SheetSettings.UseSkillTrees, excludes); other != nil {
+		if other := e.BestSkillNamed(defName, defSpec, requirePoints, excludes); other != nil {
 			level -= e.SkillBonusFor(defName, defSpec, s.Tags, nil)
 		}
 	}
@@ -980,7 +987,7 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 		return true
 	}
 	e := EntityFromNode(s)
-	if e.SheetSettings.UseSkillTrees {
+	if e != nil && e.SheetSettings.UseSkillTrees {
 		return true
 	}
 	sk := e.BestSkillNamed(s.TechniqueDefault.NameWithReplacements(s.Replacements),
