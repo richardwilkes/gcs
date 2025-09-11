@@ -156,11 +156,23 @@ func (p *skillsProvider) ColumnIDs() []int {
 			gurps.SkillTagsColumn,
 		)
 	}
-	columnIDs = append(columnIDs, gurps.SkillReferenceColumn)
+	var sheetSettings *gurps.SheetSettings
 	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity == nil || !entity.SheetSettings.HideSourceMismatch {
+		if entity := p.DataOwner().OwningEntity(); entity != nil {
+			sheetSettings = entity.SheetSettings
+		} else {
+			sheetSettings = gurps.GlobalSettings().SheetSettings()
+		}
+	}
+	if p.forPage {
+		if sheetSettings == nil || !sheetSettings.HidePageRefColumn {
+			columnIDs = append(columnIDs, gurps.SkillReferenceColumn)
+		}
+		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
 			columnIDs = append(columnIDs, gurps.SkillLibSrcColumn)
 		}
+	} else {
+		columnIDs = append(columnIDs, gurps.SkillReferenceColumn)
 	}
 	return columnIDs
 }

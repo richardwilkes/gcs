@@ -170,11 +170,23 @@ func (p *spellsProvider) ColumnIDs() []int {
 			gurps.SpellTagsColumn,
 		)
 	}
-	columnIDs = append(columnIDs, gurps.SpellReferenceColumn)
+	var sheetSettings *gurps.SheetSettings
 	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity == nil || !entity.SheetSettings.HideSourceMismatch {
+		if entity := p.DataOwner().OwningEntity(); entity != nil {
+			sheetSettings = entity.SheetSettings
+		} else {
+			sheetSettings = gurps.GlobalSettings().SheetSettings()
+		}
+	}
+	if p.forPage {
+		if sheetSettings == nil || !sheetSettings.HidePageRefColumn {
+			columnIDs = append(columnIDs, gurps.SpellReferenceColumn)
+		}
+		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
 			columnIDs = append(columnIDs, gurps.SpellLibSrcColumn)
 		}
+	} else {
+		columnIDs = append(columnIDs, gurps.SpellReferenceColumn)
 	}
 	return columnIDs
 }

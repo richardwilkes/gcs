@@ -49,6 +49,7 @@ type SheetSettingsData struct {
 	HideSourceMismatch            bool               `json:"hide_source_mismatch,omitempty"`
 	HideTLColumn                  bool               `json:"hide_tl_column,omitempty"`
 	HideLCColumn                  bool               `json:"hide_lc_column,omitempty"`
+	HidePageRefColumn             bool               `json:"hide_page_ref_column,omitempty"`
 	UseTitleInFooter              bool               `json:"use_title_in_footer,omitempty"`
 	ExcludeUnspentPointsFromTotal bool               `json:"exclude_unspent_points_from_total,omitempty"`
 	ShowLiftingSTDamage           bool               `json:"show_lifting_st_damage,omitempty"`

@@ -112,14 +112,22 @@ func (p *notesProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Not
 }
 
 func (p *notesProvider) ColumnIDs() []int {
-	columnIDs := []int{
-		gurps.NoteTextColumn,
-		gurps.NoteReferenceColumn,
-	}
+	columnIDs := []int{gurps.NoteTextColumn}
+	var sheetSettings *gurps.SheetSettings
 	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity == nil || !entity.SheetSettings.HideSourceMismatch {
+		if entity := p.DataOwner().OwningEntity(); entity != nil {
+			sheetSettings = entity.SheetSettings
+		} else {
+			sheetSettings = gurps.GlobalSettings().SheetSettings()
+		}
+		if sheetSettings == nil || !sheetSettings.HidePageRefColumn {
+			columnIDs = append(columnIDs, gurps.NoteReferenceColumn)
+		}
+		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
 			columnIDs = append(columnIDs, gurps.NoteLibSrcColumn)
 		}
+	} else {
+		columnIDs = append(columnIDs, gurps.NoteReferenceColumn)
 	}
 	return columnIDs
 }
