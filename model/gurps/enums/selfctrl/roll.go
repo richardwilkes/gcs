@@ -62,24 +62,28 @@ func (s Roll) EnsureValid() Roll {
 
 // String implements fmt.Stringer.
 func (s Roll) String() string {
-	switch s {
-	case NoCR:
+	if s <= NoCR || s > CR15 {
 		return i18n.Text("CR: None Required")
-	case CRNone:
-		return i18n.Text("CR: None Allowed")
-	case CR6:
-		return i18n.Text("CR: 6 (Resist rarely)")
-	case CR9:
-		return i18n.Text("CR: 9 (Resist fairly often)")
-	case CR12:
-		return i18n.Text("CR: 12 (Resist quite often)")
-	case CR15:
-		return i18n.Text("CR: 15 (Resist almost all the time)")
-	case CR7, CR8, CR10, CR11, CR13, CR14:
-		return fmt.Sprintf(i18n.Text("CR: %d (non-standard)"), s)
-	default:
-		return NoCR.String()
 	}
+	if s == CRNone {
+		return i18n.Text("CR: None Allowed")
+	}
+	var text string
+	switch {
+	case s < CR8:
+		text = i18n.Text("Resist rarely")
+	case s < CR11:
+		text = i18n.Text("Resist fairly often")
+	case s < CR14:
+		text = i18n.Text("Resist quite often")
+	default:
+		text = i18n.Text("Resist almost all the time")
+	}
+	var nonStandard string
+	if s%3 != 0 {
+		nonStandard = i18n.Text("; non-standard")
+	}
+	return fmt.Sprintf("CR: %d (%s%s)", s, text, nonStandard)
 }
 
 // DescriptionWithCost returns a formatted description that includes the cost multiplier.
