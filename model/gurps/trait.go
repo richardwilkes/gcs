@@ -367,7 +367,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		data.Primary = t.String()
 		if t.CR > selfctrl.CRNone {
-			data.Primary += fmt.Sprintf(" (%d)", t.CR)
+			data.Primary += fmt.Sprintf(" (CR %d)", t.CR)
 		}
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
