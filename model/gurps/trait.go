@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"encoding/json"
+	"fmt"
 	"hash"
 	"io/fs"
 	"maps"
@@ -365,6 +366,9 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 	case TraitDescriptionColumn:
 		data.Type = cell.Text
 		data.Primary = t.String()
+		if t.CR > selfctrl.CRNone {
+			data.Primary += fmt.Sprintf(" (%d)", t.CR)
+		}
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
 		data.UnsatisfiedReason = t.UnsatisfiedReason
