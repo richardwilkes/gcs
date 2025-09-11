@@ -188,7 +188,6 @@ func (p *equipmentProvider) ColumnIDs() []int {
 	columnIDs = append(columnIDs,
 		gurps.EquipmentQuantityColumn,
 		gurps.EquipmentDescriptionColumn,
-		gurps.EquipmentUsesColumn,
 	)
 	var sheetSettings *gurps.SheetSettings
 	if p.forPage {
