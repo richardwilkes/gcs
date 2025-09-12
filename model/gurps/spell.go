@@ -432,11 +432,11 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case SpellDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = s.Description()
+		data.Primary = s.String()
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
 		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
-		data.TemplateInfo = s.TemplatePicker.Description()
+		data.TemplateInfo = s.TemplatePicker.String()
 	case SpellResistColumn:
 		if !s.Container() {
 			data.Type = cell.Text
@@ -906,11 +906,6 @@ func (s *Spell) TagList() []string {
 // RatedStrength always return 0 for spells.
 func (s *Spell) RatedStrength() fxp.Int {
 	return 0
-}
-
-// Description implements WeaponOwner.
-func (s *Spell) Description() string {
-	return s.String()
 }
 
 // SecondaryText returns the less important information that should be displayed with the description.

@@ -513,11 +513,6 @@ func (e *Equipment) CurrentLevel() fxp.Int {
 	return 0
 }
 
-// Description returns a description, which doesn't include any levels.
-func (e *Equipment) Description() string {
-	return e.NameWithReplacements()
-}
-
 // SecondaryText returns the "secondary" text: the text display below the description.
 func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
@@ -551,7 +546,7 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 // String implements fmt.Stringer.
 func (e *Equipment) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(e.Description())
+	buffer.WriteString(e.NameWithReplacements())
 	if e.IsLeveled() {
 		buffer.WriteByte(' ')
 		buffer.WriteString(e.Level.String())
