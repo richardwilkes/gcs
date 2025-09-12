@@ -264,6 +264,7 @@ func NotesHeaderData(columnID int) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (n *Note) CellData(columnID int, data *CellData) {
+	data.Self = n
 	switch columnID {
 	case NoteTextColumn:
 		data.Type = cell.Markdown

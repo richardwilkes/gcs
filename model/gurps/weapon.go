@@ -837,6 +837,7 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 // CellData returns the cell data information for the given column.
 func (w *Weapon) CellData(columnID int, data *CellData) {
 	var buffer xbytes.InsertBuffer
+	data.Self = w
 	data.Type = cell.Text
 	switch columnID {
 	case WeaponHideColumn:

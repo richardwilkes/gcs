@@ -361,6 +361,7 @@ func TraitsHeaderData(columnID int) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (t *Trait) CellData(columnID int, data *CellData) {
+	data.Self = t
 	data.Dim = !t.Enabled()
 	switch columnID {
 	case TraitDescriptionColumn:

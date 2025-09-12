@@ -305,6 +305,7 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
+	data.Self = e
 	switch columnID {
 	case EquipmentModifierEnabledColumn:
 		if !e.Container() {

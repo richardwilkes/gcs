@@ -394,6 +394,7 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 
 // CellData returns the cell data information for the given column.
 func (e *Equipment) CellData(columnID int, data *CellData) {
+	data.Self = e
 	data.Dim = e.Quantity == 0
 	e1 := e
 	for !data.Dim && e1.parent != nil {

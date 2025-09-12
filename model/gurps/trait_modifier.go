@@ -307,6 +307,7 @@ func TraitModifierHeaderData(columnID int) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (t *TraitModifier) CellData(columnID int, data *CellData) {
+	data.Self = t
 	switch columnID {
 	case TraitModifierEnabledColumn:
 		if !t.Container() {

@@ -397,6 +397,7 @@ func SkillsHeaderData(columnID int) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (s *Skill) CellData(columnID int, data *CellData) {
+	data.Self = s
 	switch columnID {
 	case SkillDescriptionColumn:
 		data.Type = cell.Text

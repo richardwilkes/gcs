@@ -39,6 +39,7 @@ type HeaderData struct {
 
 // CellData holds data for creating a cell's visual representation.
 type CellData struct {
+	Self              any
 	Type              cell.Type
 	Disabled          bool
 	Dim               bool
