@@ -165,16 +165,20 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, se
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink, selected bool) {
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
-		if part.OnBackgroundInk != foreground {
-			if selected {
-				part.OnBackgroundInk = foreground
-				part.LinkInk = foreground
-				part.LinkOnPressedInk = background
-			} else {
-				part.OnBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
-				part.LinkInk = unison.DefaultMarkdownTheme.LinkInk
-				part.LinkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
-			}
+		var onBackgroundInk, linkInk, linkOnPressedInk unison.Ink
+		if selected {
+			onBackgroundInk = foreground
+			linkInk = foreground
+			linkOnPressedInk = background
+		} else {
+			onBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
+			linkInk = unison.DefaultMarkdownTheme.LinkInk
+			linkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
+		}
+		if part.OnBackgroundInk != onBackgroundInk {
+			part.OnBackgroundInk = onBackgroundInk
+			part.LinkInk = linkInk
+			part.LinkOnPressedInk = linkOnPressedInk
 			part.Rebuild()
 		}
 		return
