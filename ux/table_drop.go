@@ -39,7 +39,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 		// top-to-bottom sweep fills in the defaults.
 		unison.InvokeTaskAfter(func() {
 			MarkModified(table)
-			table.RequestFocus()
+			table.RequestFocusWithoutScroll()
 		}, 1)
 	}
 	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
