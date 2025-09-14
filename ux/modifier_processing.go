@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -67,63 +68,58 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 	list.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
+		VSpacing: 2 * unison.StdVSpacing,
 	})
 	tracker := make(map[*unison.CheckBox]gurps.GeneralModifier)
+	indentIncrement := xmath.Ceil(unison.DefaultMarkdownTheme.Font.Baseline() * 1.5)
 	gurps.Traverse(func(m T) bool {
 		if mod, ok := any(m).(gurps.GeneralModifier); ok {
 			text := mod.FullDescription()
 			if cost := mod.FullCostDescription(); cost != "" {
-				text += " (" + cost + ")"
+				text += "; **" + cost + "**"
 			}
-			indent := float32(mod.Depth()) * 16
-			lines := unison.NewTextWrappedLines(text, &unison.TextDecoration{
-				Font: unison.DefaultCheckBoxTheme.Font,
-			}, max(400, 800-indent))
-			var cb *unison.CheckBox
+			wrapper := unison.NewPanel()
+			indent := float32(mod.Depth()) * indentIncrement
+			md := unison.NewMarkdown(false)
+			md.SetLayoutData(&unison.FlexLayoutData{
+				HAlign: align.Fill,
+				VAlign: align.Start,
+				HGrab:  true,
+			})
+			md.SetContent(text, 800-indent)
+			md.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
+				return true
+			}
+			md.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor {
+				return unison.PointingCursor()
+			}
 			if !mod.Container() {
-				cb = unison.NewCheckBox()
-				cb.SetTitle(lines[0].String())
+				cb := unison.NewCheckBox()
+				cb.Font = unison.DefaultMarkdownTheme.Font
 				cb.State = check.FromBool(mod.Enabled())
-				_, cbPref, _ := cb.Sizes(geom.Size{})
-				label := unison.NewLabel()
-				label.Font = unison.DefaultCheckBoxTheme.Font
-				label.Text = cb.Text
-				_, labelPref, _ := label.Sizes(geom.Size{})
 				tracker[cb] = mod
-				vspacing := float32(unison.StdVSpacing)
-				if len(lines) == 1 {
-					vspacing *= 2
+				cb.SetLayoutData(&unison.FlexLayoutData{
+					VAlign: align.Start,
+				})
+				cb.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2}))
+				md.MouseUpCallback = func(where geom.Point, _ int, _ unison.Modifiers) bool {
+					if cb != nil && where.In(md.ContentRect(false)) {
+						cb.Click()
+					}
+					return true
 				}
-				cb.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: indent, Bottom: vspacing}))
-				list.AddChild(cb)
-				lines = lines[1:]
-				indent += cbPref.Width - labelPref.Width
+				wrapper.AddChild(cb)
 			}
-			for i, line := range lines {
-				label := unison.NewLabel()
-				label.Font = unison.DefaultCheckBoxTheme.Font
-				label.SetTitle(line.String())
-				vspacing := float32(unison.StdVSpacing)
-				if len(lines)-1 == i {
-					vspacing *= 2
-				}
-				label.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: indent, Bottom: vspacing}))
-				if cb != nil {
-					label.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
-						return true
-					}
-					label.MouseUpCallback = func(where geom.Point, _ int, _ unison.Modifiers) bool {
-						if where.In(label.ContentRect(false)) {
-							cb.Click()
-						}
-						return true
-					}
-					label.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor {
-						return unison.PointingCursor()
-					}
-				}
-				list.AddChild(label)
-			}
+			wrapper.AddChild(md)
+			wrapper.SetLayout(&unison.FlexLayout{
+				Columns:  len(wrapper.Children()),
+				HSpacing: unison.StdHSpacing,
+				VSpacing: unison.StdVSpacing,
+				HAlign:   align.Fill,
+				VAlign:   align.Start,
+			})
+			wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: indent}))
+			list.AddChild(wrapper)
 		}
 		return false
 	}, false, false, modifiers...)
@@ -152,7 +148,7 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
-	label.SetTitle(i18n.Text("Select Modifiers for"))
+	label.SetTitle(i18n.Text("Select Modifiers for:"))
 	panel.AddChild(label)
 	label = unison.NewLabel()
 	label.Font = unison.SystemFont
