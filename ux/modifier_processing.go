@@ -157,15 +157,10 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 	panel.AddChild(scroll)
 	if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {
 		changed := false
-		for _, row := range list.Children() {
-			if cb, ok := row.Self.(*unison.CheckBox); ok {
-				var mod gurps.GeneralModifier
-				if mod, ok = tracker[cb]; ok {
-					if on := cb.State == check.On; mod.Enabled() != on {
-						mod.SetEnabled(on)
-						changed = true
-					}
-				}
+		for cb, mod := range tracker {
+			if on := cb.State == check.On; mod.Enabled() != on {
+				mod.SetEnabled(on)
+				changed = true
 			}
 		}
 		return changed
