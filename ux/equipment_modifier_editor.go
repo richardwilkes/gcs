@@ -54,7 +54,7 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 
 func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]) {
 	label := i18n.Text("Cost Modifier")
-	wrapper := addFlowWrapper(parent, label, 3)
+	wrapper := addFlowWrapper(parent, label, 4)
 	field := NewStringField(nil, "", label,
 		func() string { return e.editorData.CostType.Format(e.editorData.CostAmount) },
 		func(value string) {
@@ -77,6 +77,9 @@ func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModi
 	wrapper.AddChild(NewCheckBox(nil, "", i18n.Text("Per Level"),
 		func() check.Enum { return check.FromBool(e.editorData.CostIsPerLevel) },
 		func(in check.Enum) { e.editorData.CostIsPerLevel = in == check.On }))
+	wrapper.AddChild(NewCheckBox(nil, "", i18n.Text("Per Pound"),
+		func() check.Enum { return check.FromBool(e.editorData.CostIsPerPound) },
+		func(in check.Enum) { e.editorData.CostIsPerPound = in == check.On }))
 }
 
 func addEquipmentWeightFields(parent *unison.Panel, e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]) {

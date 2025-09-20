@@ -96,6 +96,7 @@ type EquipmentModifierSyncData struct {
 type EquipmentModifierNonContainerSyncData struct {
 	CostType          emcost.Type   `json:"cost_type,omitempty"`
 	CostIsPerLevel    bool          `json:"cost_is_per_level,omitempty"`
+	CostIsPerPound    bool          `json:"cost_is_per_pound,omitempty"`
 	WeightType        emweight.Type `json:"weight_type,omitempty"`
 	WeightIsPerLevel  bool          `json:"weight_is_per_level,omitempty"`
 	ShowNotesOnWeapon bool          `json:"show_notes_on_weapon,omitempty"`
@@ -546,16 +547,20 @@ func (e *EquipmentModifier) SetEnabled(enabled bool) {
 
 // CostMultiplier returns the amount to multiply the cost by.
 func (e *EquipmentModifier) CostMultiplier() fxp.Int {
-	return MultiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
+	multiplier := multiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
+	if e.CostIsPerPound {
+		weight := fxp.Int(e.equipment.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
+		multiplier = multiplier.Mul(weight.Ceil().Max(fxp.One))
+	}
+	return multiplier
 }
 
 // WeightMultiplier returns the amount to multiply the weight by.
 func (e *EquipmentModifier) WeightMultiplier() fxp.Int {
-	return MultiplierForEquipmentModifier(e.equipment, e.WeightIsPerLevel)
+	return multiplierForEquipmentModifier(e.equipment, e.WeightIsPerLevel)
 }
 
-// MultiplierForEquipmentModifier returns the amount to multiply the cost or weight by.
-func MultiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.Int {
+func multiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.Int {
 	var multiplier fxp.Int
 	if isPerLevel && equipment != nil && equipment.IsLeveled() {
 		multiplier = equipment.CurrentLevel()
