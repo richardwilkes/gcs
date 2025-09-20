@@ -20,6 +20,10 @@ import (
 
 // Pre-defined SVG images used by GCS.
 var (
+	//go:embed app_icon.svg
+	appIconData string
+	AppIcon     = unison.MustSVGFromContentString(appIconData)
+
 	//go:embed attributes.svg
 	attributesData string
 	Attributes     = unison.MustSVGFromContentString(attributesData)

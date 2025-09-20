@@ -38,8 +38,8 @@ github.com/go-git/go-billy/v6 v6.0.0-20250906064328-0118fd22f1d9 h1:eGuqmy/d/UAy
 github.com/go-git/go-billy/v6 v6.0.0-20250906064328-0118fd22f1d9/go.mod h1:YHaZW7f/lRfWtqV0WlobVJaVjE3oWbY2t7pCrAgwjoc=
 github.com/go-git/go-git-fixtures/v5 v5.1.0 h1:b8cWxDLTk0s09Ihm9x1HvNGUzxUVlRwIH7EAM0gGDKg=
 github.com/go-git/go-git-fixtures/v5 v5.1.0/go.mod h1:CdmU0oQeDuy4Xh8V0i9Ym+vsTkgDDPKEiofBFEVT+aE=
-github.com/go-git/go-git/v6 v6.0.0-20250910120214-3a68d0404116 h1:YtWRF4qTPh9YEh2m6lhaKDQDyErFLp/UfWJC9MjLEvk=
-github.com/go-git/go-git/v6 v6.0.0-20250910120214-3a68d0404116/go.mod h1:qikYwcUCOy1+Pq2SPaUmoubCmJ2PT+Lg9ti8sgwtmJg=
+github.com/go-git/go-git/v6 v6.0.0-20250917085037-6e57f9e4da1e h1:Cp8YJWVGOaBuwO3AHVGudxrC8PBJYFSu65NEjeq8h4Y=
+github.com/go-git/go-git/v6 v6.0.0-20250917085037-6e57f9e4da1e/go.mod h1:qikYwcUCOy1+Pq2SPaUmoubCmJ2PT+Lg9ti8sgwtmJg=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 h1:5BVwOaUSBTlVZowGO6VZGw2H/zl9nrd3eCZfYV+NfQA=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71/go.mod h1:9YTyiznxEY1fVinfM7RvRcjRHbw2xLBJ3AAGIT0I4Nw=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728 h1:RkGhqHxEVAvPM0/R+8g7XRwQnHatO0KAuVcwHo8q9W8=
@@ -50,8 +50,8 @@ github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 h1:f+oWsMOmNPc8J
 github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8/go.mod h1:wcDNUvekVysuuOpQKo3191zZyTpiI6se1N1ULghS0sw=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
-github.com/google/pprof v0.0.0-20250903194437-c28834ac2320 h1:c7ayAhbRP9HnEl/hg/WQOM9s0snWztfW6feWXZbGHw0=
-github.com/google/pprof v0.0.0-20250903194437-c28834ac2320/go.mod h1:I6V7YzU0XDpsHqbsyrghnFZLO1gwK6NPTNvmetQIk9U=
+github.com/google/pprof v0.0.0-20250919162441-8b542baf5bcf h1:ekSWtXn05ARVCly6JvQLXzAqHfVR4Jq14KjVL1f+1JY=
+github.com/google/pprof v0.0.0-20250919162441-8b542baf5bcf/go.mod h1:I6V7YzU0XDpsHqbsyrghnFZLO1gwK6NPTNvmetQIk9U=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/grandcat/zeroconf v1.0.0 h1:uHhahLBKqwWBV6WZUDAT71044vwOTL+McW0mBJvo6kE=
@@ -86,8 +86,8 @@ github.com/richardwilkes/rpgtools v1.11.0 h1:z/CR8cXC+YZEnFTdx0ClP6ZrS/g36XyfWZ8
 github.com/richardwilkes/rpgtools v1.11.0/go.mod h1:ikFmcFo1qwW6fk1SNNuoEp8a8gIrqjh7ccU8n095z9A=
 github.com/richardwilkes/toolbox/v2 v2.5.0 h1:ewiM+ifol5iQH9CSdUSjHmFa6DekzB5/9OcJGGd4la8=
 github.com/richardwilkes/toolbox/v2 v2.5.0/go.mod h1:zDAaPYFr5dXdGPv+RzoNUMahpKU1jj63cyfqO5jDHiU=
-github.com/richardwilkes/unison v0.84.0 h1:8bOBHKR4EYK77l302qDqnq+LxQC9++agzOJjmWmQs7M=
-github.com/richardwilkes/unison v0.84.0/go.mod h1:mNsE8nelQdreXlZsnCTH/DlI325rGhzHWYECYkswVnI=
+github.com/richardwilkes/unison v0.85.0 h1:w6VGXGMClCaFxYIAs6kxU/GQzoCpJsoBQKeDyDeyVJ8=
+github.com/richardwilkes/unison v0.85.0/go.mod h1:mNsE8nelQdreXlZsnCTH/DlI325rGhzHWYECYkswVnI=
 github.com/rjeczalik/notify v0.9.3 h1:6rJAzHTGKXGj76sbRgDiDcYj/HniypXmSJo1SWakZeY=
 github.com/rjeczalik/notify v0.9.3/go.mod h1:gF3zSOrafR9DQEWSE8TjfI9NkooDxbyT4UgRGKZA0lc=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
