@@ -714,5 +714,5 @@ func pruneEquipmentList(remaining fxp.Int, items []*gurps.Equipment) (revisedIte
 			}
 		}
 	}
-	return
+	return revisedItems, total, highest
 }

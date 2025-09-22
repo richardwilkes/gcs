@@ -375,7 +375,7 @@ func (l *Library) extractFile(f *zip.File, dst string) (err error) {
 	if closeErr := file.Close(); closeErr != nil && err == nil {
 		err = errs.Wrap(closeErr)
 	}
-	return
+	return err
 }
 
 func (l *Library) downloadRelease(ctx context.Context, client *http.Client, release Release) ([]byte, error) {

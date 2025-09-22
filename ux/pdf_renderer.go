@@ -212,7 +212,7 @@ func (p *PDFRenderer) RenderingFinished() (finished bool, pageNumber int, reques
 		}
 		requested = time.Now()
 	}
-	return
+	return finished, pageNumber, requested
 }
 
 func (p *PDFRenderer) shouldAbortRender(state *pdfParams) bool {

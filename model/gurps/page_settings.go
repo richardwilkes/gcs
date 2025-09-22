@@ -156,14 +156,14 @@ func ParsePageSize(size string) (width, height paper.Length, valid bool) {
 	}
 	i := strings.Index(size, "x")
 	if i == -1 {
-		return
+		return width, height, false
 	}
 	var err error
 	if width, err = paper.ParseLengthFromString(size[:i]); err != nil || outOfPaperRange(width) {
-		return
+		return width, height, false
 	}
 	if height, err = paper.ParseLengthFromString(size[i+1:]); err != nil || outOfPaperRange(height) {
-		return
+		return width, height, false
 	}
 	return width, height, true
 }
