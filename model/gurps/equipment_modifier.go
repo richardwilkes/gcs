@@ -476,16 +476,33 @@ func (e *EquipmentModifier) CostDescription() string {
 	if e.Container() || (e.CostType == emcost.Original && (e.CostAmount == "" || e.CostAmount == "+0")) {
 		return ""
 	}
-	return e.CostType.Format(e.CostAmount) + " " + e.CostType.String()
+	var buffer strings.Builder
+	buffer.WriteString(e.CostType.Format(e.CostAmount))
+	if e.CostIsPerLevel {
+		buffer.WriteString(i18n.Text(" per level"))
+	}
+	if e.CostIsPerPound {
+		buffer.WriteString(i18n.Text(" per pound"))
+	}
+	buffer.WriteByte(' ')
+	buffer.WriteString(e.CostType.String())
+	return buffer.String()
 }
 
 // WeightDescription returns the formatted weight.
 func (e *EquipmentModifier) WeightDescription() string {
-	if e.Container() || (e.WeightType == emweight.Original && (e.WeightAmount == "" || strings.HasPrefix(e.WeightAmount, "+0 "))) {
+	if e.Container() || (e.WeightType == emweight.Original &&
+		(e.WeightAmount == "" || strings.HasPrefix(e.WeightAmount, "+0 "))) {
 		return ""
 	}
-	return e.WeightType.Format(e.WeightAmount, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits) + " " +
-		e.WeightType.String()
+	var buffer strings.Builder
+	buffer.WriteString(e.WeightType.Format(e.WeightAmount, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
+	if e.WeightIsPerLevel {
+		buffer.WriteString(i18n.Text(" per level"))
+	}
+	buffer.WriteByte(' ')
+	buffer.WriteString(e.WeightType.String())
+	return buffer.String()
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.
@@ -550,7 +567,8 @@ func (e *EquipmentModifier) CostMultiplier() fxp.Int {
 	multiplier := multiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
 	if e.CostIsPerPound {
 		weight := fxp.Int(e.equipment.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
-		multiplier = multiplier.Mul(weight.Ceil().Max(fxp.One))
+		baseWeight := fxp.Int(e.equipment.ResolvedBaseWeight())
+		multiplier = multiplier.Mul(max(weight, baseWeight).Ceil().Max(fxp.One))
 	}
 	return multiplier
 }
