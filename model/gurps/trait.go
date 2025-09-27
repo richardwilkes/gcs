@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"encoding/json"
+	"fmt"
 	"hash"
 	"io/fs"
 	"maps"
@@ -360,16 +361,20 @@ func TraitsHeaderData(columnID int) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (t *Trait) CellData(columnID int, data *CellData) {
+	data.Self = t
 	data.Dim = !t.Enabled()
 	switch columnID {
 	case TraitDescriptionColumn:
 		data.Type = cell.Text
 		data.Primary = t.String()
+		if t.CR > selfctrl.CRNone {
+			data.Primary += fmt.Sprintf(" (CR %d)", t.CR)
+		}
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
 		data.UnsatisfiedReason = t.UnsatisfiedReason
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
-		data.TemplateInfo = t.TemplatePicker.Description()
+		data.TemplateInfo = t.TemplatePicker.String()
 		if t.Container() {
 			switch t.ContainerType {
 			case container.AlternativeAbilities:
@@ -536,15 +541,10 @@ func (t *Trait) UserDescWithReplacements() string {
 	return nameable.Apply(t.UserDesc, t.Replacements)
 }
 
-// Description returns a description, which doesn't include any levels.
-func (t *Trait) Description() string {
-	return t.NameWithReplacements()
-}
-
 // String implements fmt.Stringer.
 func (t *Trait) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(t.Description())
+	buffer.WriteString(t.NameWithReplacements())
 	if t.IsLeveled() {
 		buffer.WriteByte(' ')
 		buffer.WriteString(t.Levels.String())

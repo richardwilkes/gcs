@@ -206,6 +206,7 @@ func ReactionModifiersHeaderData(columnID int) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (c *ConditionalModifier) CellData(columnID int, data *CellData) {
+	data.Self = c
 	switch columnID {
 	case ConditionalModifierValueColumn:
 		data.Type = cell.Text

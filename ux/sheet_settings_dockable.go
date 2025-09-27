@@ -43,6 +43,7 @@ type sheetSettingsDockable struct {
 	showEquipmentModifier              *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
 	hideSourceMismatch                 *unison.CheckBox
+	hidePageRefColumn                  *unison.CheckBox
 	hideTLColumn                       *unison.CheckBox
 	hideLCColumn                       *unison.CheckBox
 	showTitleInsteadOfNameInPageFooter *unison.CheckBox
@@ -160,6 +161,11 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 	d.hideSourceMismatch = d.addCheckBox(panel, i18n.Text("Show library source column"),
 		!s.HideSourceMismatch, func() {
 			d.settings().HideSourceMismatch = d.hideSourceMismatch.State != check.On
+			d.syncSheet(true)
+		})
+	d.hidePageRefColumn = d.addCheckBox(panel, i18n.Text("Show page reference column"),
+		!s.HidePageRefColumn, func() {
+			d.settings().HidePageRefColumn = d.hidePageRefColumn.State != check.On
 			d.syncSheet(true)
 		})
 	d.hideTLColumn = d.addCheckBox(panel, i18n.Text("Show tech level (TL) column"),
@@ -479,6 +485,7 @@ func (d *sheetSettingsDockable) sync() {
 	s := d.settings()
 	d.damageProgressionPopup.Select(s.DamageProgression)
 	d.hideSourceMismatch.State = check.FromBool(!s.HideSourceMismatch)
+	d.hidePageRefColumn.State = check.FromBool(!s.HidePageRefColumn)
 	d.hideTLColumn.State = check.FromBool(!s.HideTLColumn)
 	d.hideLCColumn.State = check.FromBool(!s.HideLCColumn)
 	d.showTraitModifier.State = check.FromBool(s.ShowTraitModifierAdj)

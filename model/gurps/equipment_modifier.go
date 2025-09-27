@@ -96,6 +96,7 @@ type EquipmentModifierSyncData struct {
 type EquipmentModifierNonContainerSyncData struct {
 	CostType          emcost.Type   `json:"cost_type,omitempty"`
 	CostIsPerLevel    bool          `json:"cost_is_per_level,omitempty"`
+	CostIsPerPound    bool          `json:"cost_is_per_pound,omitempty"`
 	WeightType        emweight.Type `json:"weight_type,omitempty"`
 	WeightIsPerLevel  bool          `json:"weight_is_per_level,omitempty"`
 	ShowNotesOnWeapon bool          `json:"show_notes_on_weapon,omitempty"`
@@ -305,6 +306,7 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 
 // CellData returns the cell data information for the given column.
 func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
+	data.Self = e
 	switch columnID {
 	case EquipmentModifierEnabledColumn:
 		if !e.Container() {
@@ -474,16 +476,33 @@ func (e *EquipmentModifier) CostDescription() string {
 	if e.Container() || (e.CostType == emcost.Original && (e.CostAmount == "" || e.CostAmount == "+0")) {
 		return ""
 	}
-	return e.CostType.Format(e.CostAmount) + " " + e.CostType.String()
+	var buffer strings.Builder
+	buffer.WriteString(e.CostType.Format(e.CostAmount))
+	if e.CostIsPerLevel {
+		buffer.WriteString(i18n.Text(" per level"))
+	}
+	if e.CostIsPerPound {
+		buffer.WriteString(i18n.Text(" per pound"))
+	}
+	buffer.WriteByte(' ')
+	buffer.WriteString(e.CostType.String())
+	return buffer.String()
 }
 
 // WeightDescription returns the formatted weight.
 func (e *EquipmentModifier) WeightDescription() string {
-	if e.Container() || (e.WeightType == emweight.Original && (e.WeightAmount == "" || strings.HasPrefix(e.WeightAmount, "+0 "))) {
+	if e.Container() || (e.WeightType == emweight.Original &&
+		(e.WeightAmount == "" || strings.HasPrefix(e.WeightAmount, "+0 "))) {
 		return ""
 	}
-	return e.WeightType.Format(e.WeightAmount, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits) + " " +
-		e.WeightType.String()
+	var buffer strings.Builder
+	buffer.WriteString(e.WeightType.Format(e.WeightAmount, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
+	if e.WeightIsPerLevel {
+		buffer.WriteString(i18n.Text(" per level"))
+	}
+	buffer.WriteByte(' ')
+	buffer.WriteString(e.WeightType.String())
+	return buffer.String()
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.
@@ -545,16 +564,21 @@ func (e *EquipmentModifier) SetEnabled(enabled bool) {
 
 // CostMultiplier returns the amount to multiply the cost by.
 func (e *EquipmentModifier) CostMultiplier() fxp.Int {
-	return MultiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
+	multiplier := multiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
+	if e.CostIsPerPound {
+		weight := fxp.Int(e.equipment.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
+		baseWeight := fxp.Int(e.equipment.ResolvedBaseWeight())
+		multiplier = multiplier.Mul(max(weight, baseWeight).Ceil().Max(fxp.One))
+	}
+	return multiplier
 }
 
 // WeightMultiplier returns the amount to multiply the weight by.
 func (e *EquipmentModifier) WeightMultiplier() fxp.Int {
-	return MultiplierForEquipmentModifier(e.equipment, e.WeightIsPerLevel)
+	return multiplierForEquipmentModifier(e.equipment, e.WeightIsPerLevel)
 }
 
-// MultiplierForEquipmentModifier returns the amount to multiply the cost or weight by.
-func MultiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.Int {
+func multiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.Int {
 	var multiplier fxp.Int
 	if isPerLevel && equipment != nil && equipment.IsLeveled() {
 		multiplier = equipment.CurrentLevel()

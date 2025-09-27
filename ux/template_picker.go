@@ -165,7 +165,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 		}
 	}
 	label = unison.NewLabel()
-	label.SetTitle(tp.Description())
+	label.SetTitle(tp.String())
 	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}))
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Start,

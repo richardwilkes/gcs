@@ -188,7 +188,6 @@ func (p *equipmentProvider) ColumnIDs() []int {
 	columnIDs = append(columnIDs,
 		gurps.EquipmentQuantityColumn,
 		gurps.EquipmentDescriptionColumn,
-		gurps.EquipmentUsesColumn,
 	)
 	var sheetSettings *gurps.SheetSettings
 	if p.forPage {
@@ -220,11 +219,15 @@ func (p *equipmentProvider) ColumnIDs() []int {
 	if !p.forPage {
 		columnIDs = append(columnIDs, gurps.EquipmentTagsColumn)
 	}
-	columnIDs = append(columnIDs, gurps.EquipmentReferenceColumn)
 	if p.forPage {
+		if sheetSettings == nil || !sheetSettings.HidePageRefColumn {
+			columnIDs = append(columnIDs, gurps.EquipmentReferenceColumn)
+		}
 		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
 			columnIDs = append(columnIDs, gurps.EquipmentLibSrcColumn)
 		}
+	} else {
+		columnIDs = append(columnIDs, gurps.EquipmentReferenceColumn)
 	}
 	return columnIDs
 }

@@ -10,149 +10,81 @@
 package ux
 
 import (
-	_ "embed"
 	"fmt"
+	"strings"
 
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/paintstyle"
-	"github.com/richardwilkes/unison/enums/slant"
-	"github.com/richardwilkes/unison/enums/spacing"
-	"github.com/richardwilkes/unison/enums/weight"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
-var (
-	//go:embed "images/about-1200x820.png"
-	aboutImageData []byte
-	aboutWnd       = &aboutWindow{}
-)
-
-type aboutWindow struct {
-	*unison.Window
-	img *unison.Image
-}
+var aboutWnd *unison.Window
 
 // ShowAbout displays the about box.
 func ShowAbout(_ unison.MenuItem) {
-	if aboutWnd.Window == nil {
-		if err := aboutWnd.prepare(); err != nil {
-			errs.Log(err)
+	if aboutWnd == nil {
+		var err error
+		if aboutWnd, err = unison.NewWindow(fmt.Sprintf(i18n.Text("About %s"), xos.AppName),
+			unison.NotResizableWindowOption()); err != nil {
+			errs.Log(errs.NewWithCause("unable to create about window", err))
 			return
 		}
+		aboutWnd.WillCloseCallback = func() {
+			aboutWnd = nil
+		}
+		SetupMenuBar(aboutWnd)
+
+		content := aboutWnd.Content()
+		content.SetLayout(&unison.FlexLayout{
+			Columns:  2,
+			HSpacing: 16,
+			VSpacing: 16,
+			HAlign:   align.Middle,
+			VAlign:   align.Middle,
+		})
+		content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(16)))
+
+		img := unison.NewPanel()
+		img.SetSizer(func(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
+			size := geom.NewSize(256, 256)
+			return size, size, size
+		})
+		img.DrawCallback = func(canvas *unison.Canvas, rect geom.Rect) {
+			svg.AppIcon.DrawInRectPreservingAspectRatio(canvas, rect, nil, nil)
+		}
+		content.AddChild(img)
+
+		var version string
+		if xos.AppVersion != "" && xos.AppVersion != "0.0" && !strings.HasSuffix(xos.AppVersion, "+dirty") {
+			version = "Version **" + xos.AppVersion + "**"
+		} else {
+			version = "_**Development Version**_"
+		}
+		md := unison.NewMarkdown(false)
+		md.SetContent(fmt.Sprintf(`# GURPS Character Sheet
+
+> %s<br>Build **%s**
+
+%s
+
+**GURPS** is a trademark of Steve Jackson Games, used by permission. All rights reserved.
+
+This product includes copyrighted material from the **GURPS** game, which is used by permission of Steve Jackson Games.`,
+			version, xos.BuildNumber, xos.Copyright()), 400)
+		content.AddChild(md)
+
+		aboutWnd.Pack()
+		r := aboutWnd.FrameRect()
+		primary := unison.PrimaryDisplay()
+		usable := primary.Usable
+		r.X = usable.X + (usable.Width-r.Width)/2
+		r.Y = usable.Y + (usable.Height-r.Height)/3
+		r = r.Align()
+		aboutWnd.SetFrameRect(primary.FitRectOnto(r))
 	}
 	aboutWnd.ToFront()
-}
-
-func (w *aboutWindow) prepare() error {
-	var err error
-	if w.img == nil {
-		if w.img, err = unison.NewImageFromBytes(aboutImageData, geom.NewPoint(0.5, 0.5)); err != nil {
-			return errs.NewWithCause("unable to load about image", err)
-		}
-	}
-	if w.Window, err = unison.NewWindow(fmt.Sprintf(i18n.Text("About %s"), xos.AppName),
-		unison.NotResizableWindowOption()); err != nil {
-		return errs.NewWithCause("unable to create about window", err)
-	}
-	SetupMenuBar(w.Window)
-	content := w.Content()
-	content.SetSizer(func(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
-		prefSize = w.img.LogicalSize()
-		return prefSize, prefSize, prefSize
-	})
-	content.SetLayout(nil)
-	content.DrawCallback = w.drawContentBackground
-	w.WillCloseCallback = func() {
-		aboutWnd.Window = nil
-	}
-	w.Pack()
-	r := w.FrameRect()
-	primary := unison.PrimaryDisplay()
-	usable := primary.Usable
-	r.X = usable.X + (usable.Width-r.Width)/2
-	r.Y = usable.Y + (usable.Height-r.Height)/3
-	r = r.Align()
-	w.SetFrameRect(primary.FitRectOnto(r))
-	return nil
-}
-
-func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ geom.Rect) {
-	r := w.Content().ContentRect(true)
-	gc.DrawImageInRect(w.img, r, nil, nil)
-	gc.DrawRect(r, unison.NewEvenlySpacedGradient(geom.Point{Y: 0.25}, geom.Point{Y: 1}, 0, 0,
-		unison.Transparent, unison.Black).Paint(gc, r, paintstyle.Fill))
-
-	face := unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright)
-	boldFace := unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Black, spacing.Standard, slant.Upright)
-	dec := &unison.TextDecoration{
-		Font:            face.Font(7),
-		OnBackgroundInk: unison.Gray,
-	}
-	text := unison.NewText(i18n.Text("This product includes copyrighted material from the "), dec)
-	text.AddString("GURPS", &unison.TextDecoration{
-		Font:            boldFace.Font(7),
-		OnBackgroundInk: unison.Gray,
-	})
-	text.AddString(i18n.Text(" game, which is used by permission of Steve Jackson Games."), dec)
-	pos := geom.NewPoint((r.Width-text.Width())/2, r.Height-10)
-	text.Draw(gc, pos)
-	pos.Y -= text.Height()
-
-	font := face.Font(8)
-	dec = &unison.TextDecoration{
-		Font:            font,
-		OnBackgroundInk: unison.Gray,
-	}
-	text = unison.NewText("GURPS", &unison.TextDecoration{
-		Font:            boldFace.Font(8),
-		OnBackgroundInk: unison.Gray,
-	})
-	text.AddString(i18n.Text(" is a trademark of Steve Jackson Games, used by permission. All rights reserved."), dec)
-	pos.X = (r.Width - text.Width()) / 2
-	text.Draw(gc, pos)
-	lineHeight := text.Height()
-	pos.Y -= lineHeight * 1.5
-
-	fg := unison.RGB(204, 204, 204)
-	text = unison.NewText(xos.Copyright(), &unison.TextDecoration{
-		Font:            font,
-		OnBackgroundInk: fg,
-	})
-	pos.X = (r.Width - text.Width()) / 2
-	text.Draw(gc, pos)
-
-	build := unison.NewText(i18n.Text("Build ")+xos.BuildNumber, &unison.TextDecoration{
-		Font:            font,
-		OnBackgroundInk: fg,
-	})
-	var t string
-	if xos.AppVersion != "" && xos.AppVersion != "0.0" {
-		t = i18n.Text("Version ") + xos.AppVersion
-	} else {
-		t = i18n.Text("Development")
-	}
-	version := unison.NewText(t, &unison.TextDecoration{
-		Font:            unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Black, spacing.Standard, slant.Upright).Font(10),
-		OnBackgroundInk: unison.White,
-	})
-
-	const (
-		hMargin = 8
-		vMargin = 4
-	)
-	width := max(version.Width(), build.Width()) + hMargin*2
-	backing := geom.NewRect((r.Width-width)/2, 65, width, version.Height()+build.Height()+vMargin*2)
-	cornerRadius := geom.NewUniformSize(8)
-	gc.DrawRoundedRect(backing, cornerRadius, unison.Black.SetAlphaIntensity(0.7).
-		Paint(gc, backing, paintstyle.Fill))
-	p := unison.Black.Paint(gc, backing, paintstyle.Stroke)
-	p.SetStrokeWidth(2)
-	gc.DrawRoundedRect(backing, cornerRadius, p)
-
-	backing.Y += vMargin
-	version.Draw(gc, geom.NewPoint((r.Width-version.Width())/2, backing.Y+version.Baseline()))
-	build.Draw(gc, geom.NewPoint((r.Width-build.Width())/2, backing.Y+version.Height()+build.Baseline()))
 }

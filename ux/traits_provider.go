@@ -155,11 +155,23 @@ func (p *traitsProvider) ColumnIDs() []int {
 	if !p.forPage {
 		columnIDs = append(columnIDs, gurps.TraitTagsColumn)
 	}
-	columnIDs = append(columnIDs, gurps.TraitReferenceColumn)
+	var sheetSettings *gurps.SheetSettings
 	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity == nil || !entity.SheetSettings.HideSourceMismatch {
+		if entity := p.DataOwner().OwningEntity(); entity != nil {
+			sheetSettings = entity.SheetSettings
+		} else {
+			sheetSettings = gurps.GlobalSettings().SheetSettings()
+		}
+	}
+	if p.forPage {
+		if sheetSettings == nil || !sheetSettings.HidePageRefColumn {
+			columnIDs = append(columnIDs, gurps.TraitReferenceColumn)
+		}
+		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
 			columnIDs = append(columnIDs, gurps.TraitLibSrcColumn)
 		}
+	} else {
+		columnIDs = append(columnIDs, gurps.TraitReferenceColumn)
 	}
 	return columnIDs
 }

@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
@@ -170,11 +169,23 @@ func (p *spellsProvider) ColumnIDs() []int {
 			gurps.SpellTagsColumn,
 		)
 	}
-	columnIDs = append(columnIDs, gurps.SpellReferenceColumn)
+	var sheetSettings *gurps.SheetSettings
 	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity == nil || !entity.SheetSettings.HideSourceMismatch {
+		if entity := p.DataOwner().OwningEntity(); entity != nil {
+			sheetSettings = entity.SheetSettings
+		} else {
+			sheetSettings = gurps.GlobalSettings().SheetSettings()
+		}
+	}
+	if p.forPage {
+		if sheetSettings == nil || !sheetSettings.HidePageRefColumn {
+			columnIDs = append(columnIDs, gurps.SpellReferenceColumn)
+		}
+		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
 			columnIDs = append(columnIDs, gurps.SpellLibSrcColumn)
 		}
+	} else {
+		columnIDs = append(columnIDs, gurps.SpellReferenceColumn)
 	}
 	return columnIDs
 }
@@ -205,7 +216,7 @@ func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 		item = gurps.NewRitualMagicSpell(p.DataOwner(), nil, false)
 	default:
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
-		xos.Exit(1)
+		return
 	}
 	InsertItems(owner, table, p.provider.SpellList, p.provider.SetSpellList,
 		func(_ *unison.Table[*Node[*gurps.Spell]]) []*Node[*gurps.Spell] { return p.RootRows() }, item)

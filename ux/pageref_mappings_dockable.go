@@ -67,8 +67,17 @@ func openMarkdownPageReference(ref string) {
 		if !strings.HasSuffix(strings.ToLower(ref), gurps.MarkdownExt) {
 			ref += gurps.MarkdownExt
 		}
+		// First check in the Markdown directory of each library.
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", ref)
+			if xos.FileIsReadable(filePath) {
+				OpenFile(filePath, 0)
+				return
+			}
+		}
+		// Then check in the root of each library.
+		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
+			filePath := filepath.Join(lib.Path(), ref)
 			if xos.FileIsReadable(filePath) {
 				OpenFile(filePath, 0)
 				return

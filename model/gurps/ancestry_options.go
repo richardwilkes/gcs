@@ -84,45 +84,48 @@ func (o *AncestryOptions) UnmarshalJSON(data []byte) error {
 // RandomHeight returns a randomized height.
 func (o *AncestryOptions) RandomHeight(entity *Entity, not fxp.Length) fxp.Length {
 	def := fxp.LengthFromInteger(defaultHeight, fxp.Inch)
-	for range maximumRandomTries {
+	i := 0
+	for {
 		value := fxp.Length(ResolveToNumber(entity, ScriptSelfProvider{}, o.HeightScript))
 		if value <= 0 {
 			value = def
 		}
-		if value != not {
+		i++
+		if value != not || i >= maximumRandomTries {
 			return value
 		}
 	}
-	return def
 }
 
 // RandomWeight returns a randomized weight.
 func (o *AncestryOptions) RandomWeight(entity *Entity, not fxp.Weight) fxp.Weight {
 	def := fxp.WeightFromInteger(defaultWeight, fxp.Pound)
-	for range maximumRandomTries {
+	i := 0
+	for {
 		value := fxp.Weight(ResolveToNumber(entity, ScriptSelfProvider{}, o.WeightScript))
 		if value <= 0 {
 			value = def
 		}
+		i++
 		if value != not {
 			return value
 		}
 	}
-	return def
 }
 
 // RandomAge returns a randomized age.
 func (o *AncestryOptions) RandomAge(entity *Entity, not int) int {
-	for range maximumRandomTries {
+	i := 0
+	for {
 		age := fxp.AsInteger[int](ResolveToNumber(entity, ScriptSelfProvider{}, o.AgeScript))
 		if age <= 0 {
 			age = defaultAge
 		}
-		if age != not {
+		i++
+		if age != not || i >= maximumRandomTries {
 			return age
 		}
 	}
-	return defaultAge
 }
 
 // RandomHair returns a randomized hair.

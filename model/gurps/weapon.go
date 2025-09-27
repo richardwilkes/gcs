@@ -68,7 +68,6 @@ type WeaponOwner interface {
 	fmt.Stringer
 	nameable.Accesser
 	DataOwner() DataOwner
-	Description() string
 	ResolveLocalNotes() string
 	FeatureList() Features
 	TagList() []string
@@ -377,7 +376,7 @@ func (w *Weapon) String() string {
 	if xreflect.IsNil(w.Owner) {
 		return ""
 	}
-	return w.Owner.Description()
+	return w.Owner.String()
 }
 
 // Notes returns the notes for this weapon.
@@ -837,6 +836,7 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 // CellData returns the cell data information for the given column.
 func (w *Weapon) CellData(columnID int, data *CellData) {
 	var buffer xbytes.InsertBuffer
+	data.Self = w
 	data.Type = cell.Text
 	switch columnID {
 	case WeaponHideColumn:

@@ -19,16 +19,16 @@ import (
 func (enum Value) Format(value fxp.Int) string {
 	switch enum {
 	case Addition:
-		return value.StringWithSign()
+		return value.CommaWithSign()
 	case Percentage:
-		return value.StringWithSign() + enum.String()
+		return value.CommaWithSign() + enum.String()
 	case Multiplier:
 		if value <= 0 {
 			value = fxp.One
 		}
-		return enum.String() + value.String()
+		return enum.String() + value.Comma()
 	case CostFactor:
-		return value.StringWithSign() + " " + enum.String()
+		return value.CommaWithSign() + " " + enum.String()
 	default:
 		return Addition.Format(value)
 	}

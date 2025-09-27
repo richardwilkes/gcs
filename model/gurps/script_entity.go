@@ -36,6 +36,9 @@ type scriptEntity struct {
 	HeightInInches         float64
 	WeightInPounds         float64
 	SizeModifier           int
+	LiftingStrength        int
+	StrikingStrength       int
+	ThrowingStrength       int
 	ExtraDiceFromModifiers bool
 	Exists                 bool
 }
@@ -65,6 +68,9 @@ func newScriptEntity(entity *Entity) *scriptEntity {
 		e.HeightInInches = fxp.AsFloat[float64](fxp.Int(entity.Profile.Height))
 		e.WeightInPounds = fxp.AsFloat[float64](fxp.Int(entity.Profile.Weight))
 		e.SizeModifier = entity.Profile.AdjustedSizeModifier()
+		e.LiftingStrength = fxp.AsInteger[int](entity.LiftingStrength())
+		e.StrikingStrength = fxp.AsInteger[int](entity.StrikingStrength())
+		e.ThrowingStrength = fxp.AsInteger[int](entity.ThrowingStrength())
 		e.Exists = true
 	}
 	return e

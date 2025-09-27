@@ -45,8 +45,7 @@ func (t *TemplatePicker) IsZero() bool {
 	return t == nil || t.Type == picker.NotApplicable
 }
 
-// Description returns a description of the picker action.
-func (t *TemplatePicker) Description() string {
+func (t *TemplatePicker) String() string {
 	if t.IsZero() {
 		return ""
 	}

@@ -56,6 +56,11 @@ func HandleLink(p unison.Paneler, target string) {
 			OpenFile(revised, 0)
 			return
 		}
+		md := revised + ".md"
+		if xos.FileIsReadable(md) {
+			OpenFile(md, 0)
+			return
+		}
 		revised = target
 	}
 	OpenPageReference(revised, "", nil)

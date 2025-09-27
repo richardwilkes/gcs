@@ -29,7 +29,7 @@ func NewToolbarSeparator() *unison.Separator {
 		minSize.Height = baseline
 		prefSize.Height = baseline
 		maxSize.Height = baseline
-		return
+		return minSize, prefSize, maxSize
 	})
 	spacer.DrawCallback = func(canvas *unison.Canvas, _ geom.Rect) {
 		rect := spacer.ContentRect(false)

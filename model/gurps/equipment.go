@@ -16,7 +16,6 @@ import (
 	"io/fs"
 	"maps"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -31,6 +30,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -47,7 +47,7 @@ const (
 	EquipmentEquippedColumn = iota
 	EquipmentQuantityColumn
 	EquipmentDescriptionColumn
-	EquipmentUsesColumn
+	_ // Was EquipmentUsesColumn
 	EquipmentTLColumn
 	EquipmentLCColumn
 	EquipmentCostColumn
@@ -352,10 +352,6 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 			}
 		}
 		data.Primary = true
-	case EquipmentUsesColumn:
-		data.Title = i18n.Text("Uses")
-		data.Detail = i18n.Text("The number of uses remaining")
-		data.Less = fxp.IntLessFromString
 	case EquipmentTLColumn:
 		data.Title = i18n.Text("TL")
 		data.Detail = i18n.Text("Tech Level")
@@ -398,6 +394,7 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 
 // CellData returns the cell data information for the given column.
 func (e *Equipment) CellData(columnID int, data *CellData) {
+	data.Self = e
 	data.Dim = e.Quantity == 0
 	e1 := e
 	for !data.Dim && e1.parent != nil {
@@ -419,13 +416,6 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
-	case EquipmentUsesColumn:
-		if e.MaxUses > 0 {
-			data.Type = cell.Text
-			data.Primary = strconv.Itoa(e.Uses)
-			data.Alignment = align.End
-			data.Tooltip = fmt.Sprintf(i18n.Text("Maximum Uses: %d"), e.MaxUses)
-		}
 	case EquipmentTLColumn:
 		data.Type = cell.Text
 		data.Primary = e.TechLevel
@@ -523,11 +513,6 @@ func (e *Equipment) CurrentLevel() fxp.Int {
 	return 0
 }
 
-// Description returns a description, which doesn't include any levels.
-func (e *Equipment) Description() string {
-	return e.NameWithReplacements()
-}
-
 // SecondaryText returns the "secondary" text: the text display below the description.
 func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
@@ -538,8 +523,14 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 	if optionChecker(settings.NotesDisplay) {
 		var localBuffer strings.Builder
 		if e.RatedST != 0 {
-			localBuffer.WriteString(i18n.Text("Rated ST "))
-			localBuffer.WriteString(e.RatedST.String())
+			fmt.Fprintf(&localBuffer, i18n.Text("Rated ST %s"), e.RatedST.Comma())
+		}
+		if e.MaxUses > 0 {
+			if localBuffer.Len() != 0 {
+				localBuffer.WriteString("; ")
+			}
+			fmt.Fprintf(&localBuffer, i18n.Text("%s of %s uses left"), xstrings.CommaInt(e.Uses),
+				xstrings.CommaInt(e.MaxUses))
 		}
 		if localNotes := e.ResolveLocalNotes(); localNotes != "" {
 			if localBuffer.Len() != 0 {
@@ -555,7 +546,7 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 // String implements fmt.Stringer.
 func (e *Equipment) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(e.Description())
+	buffer.WriteString(e.NameWithReplacements())
 	if e.IsLeveled() {
 		buffer.WriteByte(' ')
 		buffer.WriteString(e.Level.String())
