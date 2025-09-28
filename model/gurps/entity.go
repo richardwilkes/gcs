@@ -1327,7 +1327,7 @@ func (e *Entity) EquippedWeapons(melee, excludeHidden bool) []*Weapon {
 		return false
 	}, true, true, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
-		if eqp.Equipped {
+		if eqp.Equipped && eqp.Quantity > 0 {
 			for _, w := range eqp.Weapons {
 				if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 					m[w.HashResolved()] = w
