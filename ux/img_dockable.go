@@ -148,7 +148,7 @@ func (d *ImageDockable) mouseUp(_ geom.Point, _ int, _ unison.Modifiers) bool {
 }
 
 func (d *ImageDockable) imageSizer(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
-	prefSize = d.img.Size()
+	prefSize = d.img.LogicalSize()
 	return geom.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
 }
 
