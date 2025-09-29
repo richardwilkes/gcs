@@ -220,6 +220,7 @@ func (t *Template) createToolbar() {
 			func(scale int) { t.scale = scale },
 			nil,
 			false,
+			true,
 			t.scroll,
 		),
 	)

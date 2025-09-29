@@ -201,6 +201,7 @@ func (l *LootSheet) createToolbar() {
 			func(scale int) { l.scale = scale },
 			nil,
 			false,
+			true,
 			l.scroll,
 		),
 	)

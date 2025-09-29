@@ -294,6 +294,7 @@ func (s *Sheet) createToolbar() {
 			func(scale int) { s.scale = scale },
 			nil,
 			false,
+			true,
 			s.scroll,
 		),
 	)

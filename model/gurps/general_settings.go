@@ -51,7 +51,7 @@ const (
 	InitialNavigatorUIScaleDef = 100
 	InitialListUIScaleDef      = 100
 	InitialEditorUIScaleDef    = 100
-	InitialSheetUIScaleDef     = 150
+	InitialSheetUIScaleDef     = 100
 	InitialPDFUIScaleDef       = 100
 	InitialMarkdownUIScaleDef  = 100
 	InitialImageUIScaleDef     = 100
@@ -60,6 +60,8 @@ const (
 	AutoColWidthMax            = 9999
 	MaximumAutoColWidthDef     = 800
 )
+
+const currentGeneralSettingsVersion = 1
 
 // GeneralSettings holds general settings for a sheet.
 type GeneralSettings struct {
@@ -72,6 +74,7 @@ type GeneralSettings struct {
 	TooltipDismissal            fxp.Int          `json:"tooltip_dismissal"`
 	ScrollWheelMultiplier       fxp.Int          `json:"scroll_wheel_multiplier"`
 	PermittedPerScriptExecTime  fxp.Int          `json:"permitted_per_script_exec_time,omitempty"`
+	Version                     int              `json:"version,omitempty"`
 	NavigatorUIScale            int              `json:"navigator_scale"`
 	InitialListUIScale          int              `json:"initial_list_scale"`
 	InitialEditorUIScale        int              `json:"initial_editor_scale"`
@@ -100,6 +103,7 @@ func NewGeneralSettings() *GeneralSettings {
 		TooltipDismissal:           TooltipDismissalDef,
 		ScrollWheelMultiplier:      fxp.FromFloat(unison.MouseWheelMultiplier),
 		PermittedPerScriptExecTime: PermittedScriptExecTimeDef,
+		Version:                    currentGeneralSettingsVersion,
 		NavigatorUIScale:           InitialNavigatorUIScaleDef,
 		InitialListUIScale:         InitialListUIScaleDef,
 		InitialEditorUIScale:       InitialEditorUIScaleDef,
@@ -138,6 +142,7 @@ func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSett
 
 // Save writes the settings to the file as JSON.
 func (s *GeneralSettings) Save(filePath string) error {
+	s.EnsureValidity()
 	return jio.SaveToFile(filePath, s)
 }
 
@@ -158,8 +163,29 @@ func (s *GeneralSettings) CalendarRef(libraries Libraries) *CalendarRef {
 	return ref
 }
 
+var primaryDisplayPPI = 0
+
+// MonitorPPI returns the monitor PPI to use, either from the settings or from the primary display.
+func (s *GeneralSettings) MonitorPPI() int {
+	if s.MonitorResolution != 0 {
+		return s.MonitorResolution
+	}
+	if primaryDisplayPPI == 0 {
+		primaryDisplayPPI = unison.PrimaryDisplay().PPI()
+	}
+	if primaryDisplayPPI != 0 {
+		return primaryDisplayPPI
+	}
+	return 96 // Default to 96 PPI if not set
+}
+
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
 func (s *GeneralSettings) EnsureValidity() {
+	if s.Version != currentGeneralSettingsVersion {
+		// Adjust from old default of 150% to new default of 100%
+		s.InitialSheetUIScale = s.InitialSheetUIScale * 100 / 150
+		s.Version = currentGeneralSettingsVersion
+	}
 	s.InitialPoints = fxp.ResetIfOutOfRange(s.InitialPoints, InitialPointsMin, InitialPointsMax, InitialPointsDef)
 	s.TooltipDelay = fxp.ResetIfOutOfRange(s.TooltipDelay, TooltipDelayMin, TooltipDelayMax, TooltipDelayDef)
 	s.TooltipDismissal = fxp.ResetIfOutOfRange(s.TooltipDismissal, TooltipDismissalMin, TooltipDismissalMax,

@@ -202,6 +202,7 @@ func (n *Navigator) setupToolBar() {
 			func(scale int) { gurps.GlobalSettings().General.NavigatorUIScale = scale },
 			nil,
 			false,
+			false,
 			n.scroll,
 		),
 	)

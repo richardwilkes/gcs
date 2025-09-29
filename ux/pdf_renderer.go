@@ -79,14 +79,9 @@ func NewPDFRenderer(filePath string, pageLoadedCallback func()) (*PDFRenderer, e
 	if doc, err = pdf.New(data, 0); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	display := unison.PrimaryDisplay()
-	ppi := gurps.GlobalSettings().General.MonitorResolution
-	if ppi == 0 {
-		ppi = display.PPI()
-	}
 	return &PDFRenderer{
-		ppi:                float32(ppi),
-		scaleAdjust:        geom.NewPoint(1, 1).DivPt(display.Scale),
+		ppi:                float32(gurps.GlobalSettings().General.MonitorPPI()),
+		scaleAdjust:        geom.NewPoint(1, 1).DivPt(unison.PrimaryDisplay().Scale),
 		doc:                doc,
 		pageCount:          doc.PageCount(),
 		pageLoadedCallback: pageLoadedCallback,

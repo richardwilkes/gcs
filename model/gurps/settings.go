@@ -164,6 +164,7 @@ func (s *Settings) Save() error {
 			delete(s.PDFs, k)
 		}
 	}
+	s.EnsureValidity()
 	return jio.SaveToFile(SettingsPath, s)
 }
 

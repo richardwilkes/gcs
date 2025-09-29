@@ -170,6 +170,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 			func(scale int) { e.scale = scale },
 			nil,
 			false,
+			false,
 			e.scroll,
 		),
 	)
