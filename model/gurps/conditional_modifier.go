@@ -221,7 +221,7 @@ func (c *ConditionalModifier) CellData(columnID int, data *CellData) {
 		}
 		data.Tooltip = buffer.String()
 	case ConditionalModifierDescriptionColumn:
-		data.Type = cell.Text
+		data.Type = cell.Markdown
 		data.Primary = c.From
 	case PageRefCellAlias:
 		data.Type = cell.PageRef
