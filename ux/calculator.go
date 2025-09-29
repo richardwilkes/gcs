@@ -191,6 +191,7 @@ func (c *Calculator) createToolbar() *unison.Panel {
 			func(scale int) { c.scale = scale },
 			nil,
 			false,
+			false,
 			c.scroll,
 		),
 	)

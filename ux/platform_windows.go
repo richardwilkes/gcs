@@ -118,7 +118,7 @@ func writeIco(img image.Image, path string) (err error) {
 		}
 	}()
 	err = errs.Wrap(ico.Encode(f, img))
-	return
+	return err
 }
 
 func setRegistryKey(path, name, value string) error {

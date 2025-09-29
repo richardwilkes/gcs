@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
@@ -20,9 +21,12 @@ import (
 const ScaleDelta = 10
 
 // NewScaleField creates a new scale field and hooks it into the target.
-func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(int), afterApply func(), attemptCenter bool, scroller *unison.ScrollPanel) *PercentageField {
+func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(int), afterApply func(), attemptCenter, adjustForDisplayPPI bool, scroller *unison.ScrollPanel) *PercentageField {
 	applyFunc := func() {
 		scale := float32(get()) / 100
+		if adjustForDisplayPPI {
+			scale *= float32(gurps.GlobalSettings().General.MonitorPPI()) / 72
+		}
 		scalePt := geom.NewPoint(scale, scale)
 		if header := scroller.ColumnHeader(); !xreflect.IsNil(header) {
 			header.AsPanel().SetScale(scalePt)

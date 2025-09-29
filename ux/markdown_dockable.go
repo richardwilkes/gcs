@@ -168,6 +168,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 			func(scale int) { d.scale = scale },
 			nil,
 			false,
+			false,
 			d.scroller,
 		),
 	)

@@ -138,7 +138,7 @@ func writePNG(dstPath string, img image.Image) (err error) {
 		}
 	}()
 	err = errs.Wrap(png.Encode(f, img))
-	return
+	return err
 }
 
 func installMimeInfo() error {

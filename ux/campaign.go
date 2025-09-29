@@ -103,6 +103,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 			func(scale int) { c.scale = scale },
 			nil,
 			false,
+			false,
 			c.scroll,
 		),
 	)

@@ -203,6 +203,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 			func(scale int) { d.scale = scale },
 			nil,
 			false,
+			false,
 			d.scroll,
 		),
 	)

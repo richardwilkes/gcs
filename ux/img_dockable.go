@@ -103,6 +103,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 			func(scale int) { d.scale = scale },
 			nil,
 			true,
+			false,
 			d.scroll,
 		),
 	)

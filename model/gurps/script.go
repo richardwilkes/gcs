@@ -25,7 +25,6 @@ import (
 	"github.com/dop251/goja/parser"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
@@ -160,9 +159,21 @@ func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text strin
 	return w
 }
 
-var scriptIDsResolving = make(map[string]struct{})
+const maximumAllowedResolvingDepth = 20
+
+var (
+	scriptIDsResolving   = make(map[string]struct{})
+	scriptResolvingDepth = 0
+)
 
 func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
+	scriptResolvingDepth++
+	defer func() {
+		scriptResolvingDepth--
+	}()
+	if scriptResolvingDepth > maximumAllowedResolvingDepth {
+		return "script resolution exceeded maximum depth (possible circular reference)"
+	}
 	var resolveCache map[scriptResolveKey]string
 	if entity == nil {
 		resolveCache = globalResolveCache
@@ -182,9 +193,15 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
-	args := []ScriptArg{{Name: "entity", Value: newScriptEntity(entity)}}
+	args := []ScriptArg{{
+		Name:  "entity",
+		Value: func() any { return newScriptEntity(entity) },
+	}}
 	if selfProvider.Provider != nil {
-		args = append(args, ScriptArg{Name: "self", Value: selfProvider.Provider})
+		args = append(args, ScriptArg{
+			Name:  "self",
+			Value: selfProvider.Provider,
+		})
 	}
 	if entity != nil {
 		list := entity.Attributes.List()
@@ -203,7 +220,7 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	if v, err := RunScript(fxp.SecondsToDuration(maxTime), text, args...); err != nil {
 		var interruptedErr *goja.InterruptedError
 		if errors.As(err, &interruptedErr) {
-			result = fmt.Sprintf(i18n.Text("script execution timed out (limited to %v seconds)"), maxTime)
+			result = fmt.Sprintf("script execution timed out (limited to %v seconds)", maxTime)
 		} else {
 			result = err.Error()
 		}

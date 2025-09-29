@@ -158,6 +158,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 		func(scale int) { d.scale = scale },
 		d.MarkForRedraw,
 		false,
+		false,
 		d.docScroll,
 	)
 	d.scaleField.SetEnabled(false)
