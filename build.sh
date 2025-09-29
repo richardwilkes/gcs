@@ -5,6 +5,7 @@ trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
 
 # Process args
 RELEASE="0.0"
+EXTRA_LD_FLAGS="-s -w"
 for arg in "$@"; do
 	case "$arg" in
 	--all | -a)
@@ -48,7 +49,6 @@ for arg in "$@"; do
 		;;
 	--dist | -d)
 		EXTRA_BUILD_FLAGS="-a -trimpath"
-		EXTRA_LD_FLAGS="-s -w"
 		RELEASE="5.40.0"
 		PACKAGER=1
 		DIST=--dist

@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"io/fs"
+	"runtime"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
@@ -163,20 +164,21 @@ func (s *GeneralSettings) CalendarRef(libraries Libraries) *CalendarRef {
 	return ref
 }
 
-var primaryDisplayPPI = 0
-
 // MonitorPPI returns the monitor PPI to use, either from the settings or from the primary display.
 func (s *GeneralSettings) MonitorPPI() int {
 	if s.MonitorResolution != 0 {
 		return s.MonitorResolution
 	}
-	if primaryDisplayPPI == 0 {
-		primaryDisplayPPI = unison.PrimaryDisplay().PPI()
+	d := unison.PrimaryDisplay()
+	ppi := d.PPI()
+	if runtime.GOOS == xos.WindowsOS {
+		// On Windows, we need to adjust this by the scale factor to get the actual PPI
+		ppi = int(float32(ppi) / d.Scale.X)
 	}
-	if primaryDisplayPPI != 0 {
-		return primaryDisplayPPI
+	if ppi != 0 {
+		return ppi
 	}
-	return 96 // Default to 96 PPI if not set
+	return 108 // Default to 108 PPI if not set
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
