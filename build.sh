@@ -49,7 +49,7 @@ for arg in "$@"; do
 		;;
 	--dist | -d)
 		EXTRA_BUILD_FLAGS="-a -trimpath"
-		RELEASE="5.40.0"
+		RELEASE="5.40.1"
 		PACKAGER=1
 		DIST=--dist
 		BUILD_GO=1
