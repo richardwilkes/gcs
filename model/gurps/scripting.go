@@ -138,7 +138,7 @@ func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text strin
 const maximumAllowedResolvingDepth = 20
 
 var (
-	scriptIDsResolving   = make(map[string]int)
+	scriptIDsResolving   = make(map[string]struct{})
 	scriptResolvingDepth = 0
 )
 
@@ -161,20 +161,11 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		return cached
 	}
 	if id := string(selfProvider.ID); id != "" {
-		depth, exists := scriptIDsResolving[id]
-		if exists && depth > maximumAllowedResolvingDepth/2 {
+		if _, exists := scriptIDsResolving[id]; exists {
 			return "script contains circular reference to ID " + id
 		}
-		scriptIDsResolving[id] = depth + 1
-		defer func() {
-			if depth, exists = scriptIDsResolving[id]; exists {
-				if depth < 2 {
-					delete(scriptIDsResolving, id)
-				} else {
-					scriptIDsResolving[id] = depth - 1
-				}
-			}
-		}()
+		scriptIDsResolving[id] = struct{}{}
+		defer delete(scriptIDsResolving, id)
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
