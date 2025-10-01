@@ -556,7 +556,7 @@ func (e *Equipment) String() string {
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (e *Equipment) ResolveLocalNotes() string {
-	return ResolveText(EntityFromNode(e), DeferredNewScriptEquipment(e), e.LocalNotesWithReplacements())
+	return ResolveText(EntityFromNode(e), deferredNewScriptEquipment(e), e.LocalNotesWithReplacements())
 }
 
 // Notes returns the local notes.
@@ -586,7 +586,7 @@ func (e *Equipment) BaseValueWithReplacements() string {
 
 // ResolvedBaseValue resolves the base value, running any embedded scripts to get the final result.
 func (e *Equipment) ResolvedBaseValue() fxp.Int {
-	return ResolveToNumber(EntityFromNode(e), DeferredNewScriptEquipment(e), e.BaseValueWithReplacements()).
+	return ResolveToNumber(EntityFromNode(e), deferredNewScriptEquipment(e), e.BaseValueWithReplacements()).
 		Min(fxp.Max - 1).Max(0)
 }
 
@@ -632,7 +632,7 @@ func (e *Equipment) BaseWeightWithReplacements() string {
 // ResolvedBaseWeight resolves the base weight, running any embedded scripts to get the final result.
 func (e *Equipment) ResolvedBaseWeight() fxp.Weight {
 	entity := EntityFromNode(e)
-	return ResolveToWeight(entity, DeferredNewScriptEquipment(e), e.BaseWeightWithReplacements(),
+	return ResolveToWeight(entity, deferredNewScriptEquipment(e), e.BaseWeightWithReplacements(),
 		SheetSettingsFor(entity).DefaultWeightUnits)
 }
 

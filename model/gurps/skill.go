@@ -1046,8 +1046,7 @@ func (s *Skill) ModifierNotes() string {
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (s *Skill) ResolveLocalNotes() string {
-	entity := EntityFromNode(s)
-	return ResolveText(entity, DeferredNewScriptSkill(entity, s), s.LocalNotesWithReplacements())
+	return ResolveText(EntityFromNode(s), deferredNewScriptSkill(s), s.LocalNotesWithReplacements())
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.

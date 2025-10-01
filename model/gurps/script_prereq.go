@@ -81,13 +81,13 @@ func (s *ScriptPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.In
 	var self ScriptSelfProvider
 	switch what := exclude.(type) {
 	case *Equipment:
-		self = DeferredNewScriptEquipment(what)
+		self = deferredNewScriptEquipment(what)
 	case *Skill:
-		self = DeferredNewScriptSkill(entity, what)
+		self = deferredNewScriptSkill(what)
 	case *Spell:
-		self = DeferredNewScriptSpell(entity, what)
+		self = deferredNewScriptSpell(what)
 	case *Trait:
-		self = DeferredNewScriptTrait(what)
+		self = deferredNewScriptTrait(what)
 	}
 	if result := ResolveText(entity, self, script); result != "" {
 		if tooltip != nil {

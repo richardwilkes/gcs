@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 var (
@@ -52,7 +53,7 @@ var (
 // ScriptSelfProvider is a provider for the "self" variable in scripts.
 type ScriptSelfProvider struct {
 	ID       tid.TID
-	Provider func() any
+	Provider func(r *goja.Runtime) any
 }
 
 // ResolveID returns the ID of the provider. If the the underlying Provider is nil, an empty string is returned.
@@ -85,31 +86,6 @@ func mustSet(vm *goja.Runtime, name string, value any) {
 	if err := vm.Set(name, value); err != nil {
 		panic(errs.Newf("failed to set %s: %s", name, err.Error()))
 	}
-}
-
-func scriptIff(condition bool, trueValue, falseValue any) any {
-	if condition {
-		return trueValue
-	}
-	return falseValue
-}
-
-func scriptSigned(value float64) string {
-	return fxp.FromFloat(value).StringWithSign()
-}
-
-func scriptFormatNum(value float64, withCommas, withSign bool) string {
-	v := fxp.FromFloat(value)
-	if withSign {
-		if withCommas {
-			return v.CommaWithSign()
-		}
-		return v.StringWithSign()
-	}
-	if withCommas {
-		return v.Comma()
-	}
-	return v.String()
 }
 
 // ResolveText will process embedded scripts.
@@ -162,7 +138,7 @@ func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text strin
 const maximumAllowedResolvingDepth = 20
 
 var (
-	scriptIDsResolving   = make(map[string]struct{})
+	scriptIDsResolving   = make(map[string]int)
 	scriptResolvingDepth = 0
 )
 
@@ -185,17 +161,26 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		return cached
 	}
 	if id := string(selfProvider.ID); id != "" {
-		if _, exists := scriptIDsResolving[id]; exists {
+		depth, exists := scriptIDsResolving[id]
+		if exists && depth > maximumAllowedResolvingDepth/2 {
 			return "script contains circular reference to ID " + id
 		}
-		scriptIDsResolving[id] = struct{}{}
-		defer delete(scriptIDsResolving, id)
+		scriptIDsResolving[id] = depth + 1
+		defer func() {
+			if depth, exists = scriptIDsResolving[id]; exists {
+				if depth < 2 {
+					delete(scriptIDsResolving, id)
+				} else {
+					scriptIDsResolving[id] = depth - 1
+				}
+			}
+		}()
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
 	args := []ScriptArg{{
 		Name:  "entity",
-		Value: func() any { return newScriptEntity(entity) },
+		Value: func(r *goja.Runtime) any { return newScriptEntity(r, entity) },
 	}}
 	if selfProvider.Provider != nil {
 		args = append(args, ScriptArg{
@@ -212,12 +197,16 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 				}
 				args = append(args, ScriptArg{
 					Name:  "$" + attr.AttrID,
-					Value: func() any { return newScriptAttribute(attr) },
+					Value: func(r *goja.Runtime) any { return newScriptAttribute(r, attr) },
 				})
 			}
 		}
 	}
-	if v, err := RunScript(fxp.SecondsToDuration(maxTime), text, args...); err != nil {
+	var v goja.Value
+	var err error
+	xos.SafeCall(func() { v, err = runScript(fxp.SecondsToDuration(maxTime), text, args...) },
+		func(panicErr error) { err = panicErr })
+	if err != nil {
 		var interruptedErr *goja.InterruptedError
 		if errors.As(err, &interruptedErr) {
 			result = fmt.Sprintf("script execution timed out (limited to %v seconds)", maxTime)
@@ -225,21 +214,17 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 			result = err.Error()
 		}
 	} else {
-		if attr, ok := v.Export().(*scriptAttribute); ok {
-			result = fmt.Sprintf("%v", attr.ValueOf())
-		} else {
-			result = v.String()
-		}
+		xos.SafeCall(func() { result = v.String() }, func(panicErr error) { result = panicErr.Error() })
 	}
 	resolveCache[key] = result
 	return result
 }
 
-// RunScript compiles and runs a script with the provided arguments. A timeout of 0 or less means no timeout.
+// runScript compiles and runs a script with the provided arguments. A timeout of 0 or less means no timeout.
 // The script should be a valid JavaScript function body, and it will be wrapped in an anonymous function to avoid
 // polluting the global scope. The arguments will be set as global variables in the script's context. The return value
 // is the result of the script execution, or an error if it fails.
-func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Value, error) {
+func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Value, error) {
 	program, exists := scriptCache[text]
 	if !exists {
 		jsBytes, err := json.Marshal(text)
@@ -267,11 +252,11 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 		vmPool.Put(vm)
 	}()
 	for _, arg := range args {
-		if valueProvider, ok2 := arg.Value.(func() any); ok2 {
+		if valueProvider, ok2 := arg.Value.(func(r *goja.Runtime) any); ok2 {
 			var cachedResult goja.Value
 			if err := globals.DefineAccessorProperty(arg.Name, vm.ToValue(func(_ goja.FunctionCall) goja.Value {
 				if cachedResult == nil {
-					cachedResult = vm.ToValue(valueProvider())
+					cachedResult = vm.ToValue(valueProvider(vm))
 				}
 				return cachedResult
 			}), nil, goja.FLAG_TRUE, goja.FLAG_TRUE); err != nil {
@@ -287,4 +272,40 @@ func RunScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 		defer time.AfterFunc(timeout, func() { vm.Interrupt("timeout") }).Stop()
 	}
 	return vm.RunProgram(program)
+}
+
+func callArgAsTrimmedString(call goja.FunctionCall, index int) string {
+	return strings.TrimSpace(callArgAsString(call, index))
+}
+
+func callArgAsString(call goja.FunctionCall, index int) string {
+	if arg := call.Argument(index); !goja.IsUndefined(arg) {
+		return arg.String()
+	}
+	return ""
+}
+
+func scriptIff(condition bool, trueValue, falseValue any) any {
+	if condition {
+		return trueValue
+	}
+	return falseValue
+}
+
+func scriptSigned(value float64) string {
+	return fxp.FromFloat(value).StringWithSign()
+}
+
+func scriptFormatNum(value float64, withCommas, withSign bool) string {
+	v := fxp.FromFloat(value)
+	if withSign {
+		if withCommas {
+			return v.CommaWithSign()
+		}
+		return v.StringWithSign()
+	}
+	if withCommas {
+		return v.Comma()
+	}
+	return v.String()
 }

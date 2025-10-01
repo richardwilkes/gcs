@@ -465,7 +465,7 @@ func (t *TraitModifier) String() string {
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (t *TraitModifier) ResolveLocalNotes() string {
-	return ResolveText(EntityFromNode(t), DeferredNewScriptTrait(t.trait), t.LocalNotesWithReplacements())
+	return ResolveText(EntityFromNode(t), deferredNewScriptTrait(t.trait), t.LocalNotesWithReplacements())
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
