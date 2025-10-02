@@ -165,22 +165,7 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, se
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink, selected bool) {
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
-		var onBackgroundInk, linkInk, linkOnPressedInk unison.Ink
-		if selected {
-			onBackgroundInk = foreground
-			linkInk = foreground
-			linkOnPressedInk = background
-		} else {
-			onBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
-			linkInk = unison.DefaultMarkdownTheme.LinkInk
-			linkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
-		}
-		if part.OnBackgroundInk != onBackgroundInk {
-			part.OnBackgroundInk = onBackgroundInk
-			part.LinkInk = linkInk
-			part.LinkOnPressedInk = linkOnPressedInk
-			part.Rebuild()
-		}
+		adjustMarkdownInk(part, foreground, background, selected, true)
 		return
 	case *unison.Label:
 		if part.OnBackgroundInk != foreground {
@@ -307,19 +292,44 @@ func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.
 		adjustMarkdownThemeForPage(m, font)
 	}
 	m.SetVSpacing(xmath.Floor(m.Font.LineHeight() / 2))
-	if m.OnBackgroundInk != foreground {
-		if selected {
-			m.OnBackgroundInk = foreground
-			m.LinkInk = foreground
-			m.LinkOnPressedInk = background
-		} else {
-			m.OnBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
-			m.LinkInk = unison.DefaultMarkdownTheme.LinkInk
-			m.LinkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
-		}
-	}
+	adjustMarkdownInk(m, foreground, background, selected, false)
 	m.SetContent(content, width)
 	return m
+}
+
+func adjustMarkdownInk(md *unison.Markdown, foreground, background unison.Ink, selected, okToRebuild bool) {
+	var onBackgroundInk, linkInk, linkOnPressedInk unison.Ink
+	if selected {
+		c, ok := foreground.(*unison.ThemeColor)
+		if ok {
+			c = &unison.ThemeColor{
+				Light: c.Light.AdjustHue(180),
+				Dark:  c.Dark.AdjustHue(180),
+			}
+		} else {
+			c = &unison.ThemeColor{
+				Light: unison.Yellow,
+				Dark:  unison.Yellow,
+			}
+		}
+		onBackgroundInk = foreground
+		linkInk = c
+		linkOnPressedInk = background
+	} else {
+		onBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
+		linkInk = unison.DefaultMarkdownTheme.LinkInk
+		linkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
+	}
+	if md.OnBackgroundInk != onBackgroundInk ||
+		md.LinkInk != linkInk ||
+		md.LinkOnPressedInk != linkOnPressedInk {
+		md.OnBackgroundInk = onBackgroundInk
+		md.LinkInk = linkInk
+		md.LinkOnPressedInk = linkOnPressedInk
+		if okToRebuild {
+			md.Rebuild()
+		}
+	}
 }
 
 func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {
