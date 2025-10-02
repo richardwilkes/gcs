@@ -320,9 +320,7 @@ func adjustMarkdownInk(md *unison.Markdown, foreground, background unison.Ink, s
 		linkInk = unison.DefaultMarkdownTheme.LinkInk
 		linkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
 	}
-	if md.OnBackgroundInk != onBackgroundInk ||
-		md.LinkInk != linkInk ||
-		md.LinkOnPressedInk != linkOnPressedInk {
+	if md.OnBackgroundInk != onBackgroundInk {
 		md.OnBackgroundInk = onBackgroundInk
 		md.LinkInk = linkInk
 		md.LinkOnPressedInk = linkOnPressedInk
