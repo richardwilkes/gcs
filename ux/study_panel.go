@@ -144,13 +144,13 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 			entry.Hours = v
 			p.updateTotal()
 		},
-		0, fxp.Thousand, false, false)
+		-fxp.MaxBasePoints, fxp.MaxBasePoints, false, false)
 	panel.AddChild(hoursField)
 
 	adjustedHoursField = NewDecimalField(nil, "", i18n.Text("Hours of Study"),
 		func() fxp.Int { return entry.Hours.Mul(entry.Type.Multiplier()) },
 		func(_ fxp.Int) {},
-		0, fxp.Thousand, false, false)
+		-fxp.MaxBasePoints, fxp.MaxBasePoints, false, false)
 	adjustedHoursField.SetEnabled(false)
 	panel.AddChild(adjustedHoursField)
 

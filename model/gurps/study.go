@@ -51,5 +51,5 @@ func StudyHoursProgressText(hours fxp.Int, needed study.Level, force bool) strin
 	if needed != study.Standard {
 		studyNeeded = needed.Key()
 	}
-	return fmt.Sprintf(i18n.Text("Studied %v of %s hours"), hours, studyNeeded)
+	return fmt.Sprintf(i18n.Text("Studied %s of %s hours"), hours.Comma(), studyNeeded)
 }
