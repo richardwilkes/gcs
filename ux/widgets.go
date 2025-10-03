@@ -242,6 +242,7 @@ func newMarkdownTooltip(text, workingDir string) *unison.Panel {
 		m.ClientData()[WorkingDirKey] = workingDir
 	}
 	adjustMarkdownThemeForPage(m, unison.DefaultTooltipTheme.Label.Font)
+	m.OnBackgroundInk = unison.ThemeOnTooltip
 	m.SetVSpacing(xmath.Floor(m.Font.LineHeight() / 2))
 	m.SetContent(text, 500)
 	tip.AddChild(m)

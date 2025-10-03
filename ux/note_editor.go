@@ -53,17 +53,23 @@ func adjustMarkdownThemeForPage(markdown *unison.Markdown, baseFont unison.Font)
 			return fd
 		},
 	}
-	markdown.OnBackgroundInk = unison.ThemeOnTooltip
 }
 
 func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison.Panel) func() {
 	markdown := unison.NewMarkdown(true)
 	markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(e.owner)
 	markdown.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	adjustMarkdownThemeForPage(markdown, fonts.PageFieldPrimary)
+	adjustMarkdownThemeForPage(markdown, &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor {
+			fd := fonts.PageFieldPrimary.Descriptor()
+			fd.Size = fonts.BaseMarkdown.Size()
+			return fd
+		},
+	})
 	markdown.SetVSpacing(xmath.Floor(markdown.Font.LineHeight() / 2))
 
 	labelText := i18n.Text("Notes")
@@ -119,20 +125,8 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	)
 	content.AddChild(label)
 
-	markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), gurps.ScriptSelfProvider{}, e.editorData.MarkDown), 0)
-
-	markdownWrapper := unison.NewPanel()
-	scale := float32(gurps.GlobalSettings().General.InitialSheetUIScale) / 100
-	markdownWrapper.SetScale(geom.NewPoint(scale, scale))
-	markdownWrapper.SetLayout(&unison.FlexLayout{Columns: 1})
-	markdownWrapper.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	content.AddChild(markdownWrapper)
-
-	markdownWrapper.AddChild(markdown)
-
+	markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), gurps.ScriptSelfProvider{},
+		e.editorData.MarkDown), 0)
+	content.AddChild(markdown)
 	return nil
 }
