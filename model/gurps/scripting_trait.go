@@ -23,7 +23,7 @@ func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
 		return ScriptSelfProvider{}
 	}
 	return ScriptSelfProvider{
-		ID:       trait.TID,
+		ID:       string(trait.TID),
 		Provider: func(r *goja.Runtime) any { return newScriptTrait(r, trait) },
 	}
 }
@@ -32,32 +32,33 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	m := make(map[string]func() goja.Value)
 	m["id"] = func() goja.Value { return r.ToValue(trait.TID) }
 	m["parentID"] = func() goja.Value {
-		if trait.parent != nil {
-			return r.ToValue(trait.parent.TID)
+		if trait.parent == nil {
+			return goja.Undefined()
 		}
-		return r.ToValue("")
+		return r.ToValue(trait.parent.TID)
+	}
+	m["parent"] = func() goja.Value {
+		if trait.parent == nil {
+			return goja.Undefined()
+		}
+		return newScriptTrait(r, trait.parent)
 	}
 	m["name"] = func() goja.Value { return r.ToValue(trait.NameWithReplacements()) }
 	m["notes"] = func() goja.Value {
-		return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-			return r.ToValue(trait.SecondaryText(func(_ display.Option) bool { return true }))
-		})
+		return r.ToValue(trait.SecondaryText(func(_ display.Option) bool { return true }))
 	}
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(trait.Tags)) }
 	m["container"] = func() goja.Value { return r.ToValue(trait.Container()) }
-	m["hasChildren"] = func() goja.Value { return r.ToValue(trait.HasChildren()) }
 	if trait.Container() {
 		m["kind"] = func() goja.Value { return r.ToValue(strings.ReplaceAll(trait.ContainerType.Key(), "_", " ")) }
 		m["children"] = func() goja.Value {
-			return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-				children := make([]*goja.Object, 0, len(trait.Children))
-				for _, child := range trait.Children {
-					if child.Enabled() {
-						children = append(children, newScriptTrait(r, child))
-					}
+			children := make([]*goja.Object, 0, len(trait.Children))
+			for _, child := range trait.Children {
+				if child.Enabled() {
+					children = append(children, newScriptTrait(r, child))
 				}
-				return r.ToValue(children)
-			})
+			}
+			return r.ToValue(children)
 		}
 		m["find"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
@@ -67,9 +68,27 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 			})
 		}
 	} else if trait.CanLevel {
-		m["levels"] = func() goja.Value {
+		m["level"] = func() goja.Value {
 			return r.ToValue(fxp.AsFloat[float64](trait.Levels))
 		}
+	}
+	m["activeModifierNamed"] = func() goja.Value {
+		return r.ToValue(func(call goja.FunctionCall) goja.Value {
+			name := callArgAsString(call, 0)
+			mod := trait.ActiveModifierFor(name)
+			if mod == nil {
+				return goja.Null()
+			}
+			return newScriptTraitModifier(r, mod)
+		})
+	}
+	m["activeModifiers"] = func() goja.Value {
+		mods := make([]*goja.Object, 0, len(trait.Modifiers))
+		Traverse(func(mod *TraitModifier) bool {
+			mods = append(mods, newScriptTraitModifier(r, mod))
+			return false
+		}, true, true, trait.Modifiers...)
+		return r.ToValue(mods)
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

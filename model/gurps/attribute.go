@@ -119,7 +119,7 @@ func (a *Attribute) Maximum() fxp.Int {
 	if def == nil || def.IsSeparator() {
 		return 0
 	}
-	maximum := def.BaseValue(a.Entity) + a.Adjustment + a.Bonus
+	maximum := def.BaseValue(a) + a.Adjustment + a.Bonus
 	if !def.AllowsDecimal() {
 		maximum = maximum.Floor()
 	}
@@ -132,7 +132,7 @@ func (a *Attribute) SetMaximum(value fxp.Int) {
 		return
 	}
 	if def := a.AttributeDef(); def != nil && !def.IsSeparator() {
-		a.Adjustment = value - (def.BaseValue(a.Entity) + a.Bonus)
+		a.Adjustment = value - (def.BaseValue(a) + a.Bonus)
 	}
 }
 
@@ -167,7 +167,7 @@ func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	if len(def.Thresholds) != 0 {
 		cur := a.Current()
 		for _, t := range def.Thresholds {
-			if cur <= t.Threshold(a.Entity) {
+			if cur <= t.Threshold(a) {
 				return t
 			}
 		}

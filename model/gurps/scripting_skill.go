@@ -23,7 +23,7 @@ func deferredNewScriptSkill(skill *Skill) ScriptSelfProvider {
 		return ScriptSelfProvider{}
 	}
 	return ScriptSelfProvider{
-		ID:       skill.TID,
+		ID:       string(skill.TID),
 		Provider: func(r *goja.Runtime) any { return newScriptSkill(r, skill) },
 	}
 }
@@ -32,45 +32,32 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 	m := make(map[string]func() goja.Value)
 	m["id"] = func() goja.Value { return r.ToValue(skill.TID) }
 	m["parentID"] = func() goja.Value {
-		if skill.parent != nil {
-			return r.ToValue(skill.parent.TID)
+		if skill.parent == nil {
+			return goja.Undefined()
 		}
-		return r.ToValue("")
+		return r.ToValue(skill.parent.TID)
+	}
+	m["parent"] = func() goja.Value {
+		if skill.parent == nil {
+			return goja.Undefined()
+		}
+		return newScriptSkill(r, skill.parent)
 	}
 	m["name"] = func() goja.Value { return r.ToValue(skill.NameWithReplacements()) }
-	m["specialization"] = func() goja.Value { return r.ToValue(skill.SpecializationWithReplacements()) }
 	m["notes"] = func() goja.Value {
 		return r.ToValue(skill.SecondaryText(func(_ display.Option) bool { return true }))
 	}
-	m["kind"] = func() goja.Value {
-		if skill.Container() {
-			return r.ToValue("")
-		}
-		if skill.IsTechnique() {
-			return r.ToValue("technique")
-		}
-		return r.ToValue("skill")
-	}
-	m["techLevel"] = func() goja.Value {
-		if skill.TechLevel != nil {
-			return r.ToValue(*skill.TechLevel)
-		}
-		return r.ToValue("")
-	}
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(skill.Tags)) }
 	m["container"] = func() goja.Value { return r.ToValue(skill.Container()) }
-	m["hasChildren"] = func() goja.Value { return r.ToValue(skill.HasChildren()) }
 	if skill.Container() {
 		m["children"] = func() goja.Value {
-			return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-				children := make([]*goja.Object, 0, len(skill.Children))
-				for _, child := range skill.Children {
-					if child.Enabled() {
-						children = append(children, newScriptSkill(r, child))
-					}
+			children := make([]*goja.Object, 0, len(skill.Children))
+			for _, child := range skill.Children {
+				if child.Enabled() {
+					children = append(children, newScriptSkill(r, child))
 				}
-				return r.ToValue(children)
-			})
+			}
+			return r.ToValue(children)
 		}
 		m["find"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
@@ -81,36 +68,45 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			})
 		}
 	} else {
+		m["specialization"] = func() goja.Value { return r.ToValue(skill.SpecializationWithReplacements()) }
+		m["techLevel"] = func() goja.Value {
+			if skill.TechLevel != nil {
+				return r.ToValue(*skill.TechLevel)
+			}
+			return r.ToValue("")
+		}
+		m["kind"] = func() goja.Value {
+			if skill.IsTechnique() {
+				return r.ToValue("technique")
+			}
+			return r.ToValue("skill")
+		}
 		m["attribute"] = func() goja.Value { return r.ToValue(skill.Difficulty.Attribute) }
-		m["difficulty"] = func() goja.Value { return r.ToValue(skill.Difficulty.Key()) }
+		m["difficulty"] = func() goja.Value { return r.ToValue(skill.Difficulty.Difficulty.Key()) }
 		m["points"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](skill.AdjustedPoints(nil))) }
 		m["level"] = func() goja.Value {
-			return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-				entity := EntityFromNode(skill)
-				if entity == nil {
-					return r.ToValue(0)
-				}
-				if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization) {
-					entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
-					skill.UpdateLevel()
-					entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
-				}
-				return r.ToValue(fxp.AsInteger[int](skill.LevelData.Level))
-			})
+			entity := EntityFromNode(skill)
+			if entity == nil {
+				return r.ToValue(0)
+			}
+			if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization) {
+				entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
+				skill.UpdateLevel()
+				entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
+			}
+			return r.ToValue(fxp.AsInteger[int](skill.LevelData.Level))
 		}
 		m["relativeLevel"] = func() goja.Value {
-			return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-				entity := EntityFromNode(skill)
-				if entity == nil {
-					return r.ToValue(0)
-				}
-				if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization) {
-					entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
-					skill.UpdateLevel()
-					entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
-				}
-				return r.ToValue(fxp.AsInteger[int](skill.LevelData.RelativeLevel))
-			})
+			entity := EntityFromNode(skill)
+			if entity == nil {
+				return r.ToValue(0)
+			}
+			if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization) {
+				entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
+				skill.UpdateLevel()
+				entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
+			}
+			return r.ToValue(fxp.AsInteger[int](skill.LevelData.RelativeLevel))
 		}
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))

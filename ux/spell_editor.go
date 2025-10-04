@@ -46,10 +46,10 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			wrapper := addFlowWrapper(content, i18n.Text("Difficulty"), 3)
 			addPopup(wrapper, difficulty.TechniqueLevels, &e.editorData.Difficulty.Difficulty)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(prereqCount, false))
-			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 999)
+			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.PrereqCount, 0, 999)
 		} else {
 			addDifficultyLabelAndFields(content, entity, &e.editorData.Difficulty)
-			addLabelAndIntegerField(content, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 999)
+			addLabelAndIntegerField(content, nil, "", prereqCount, "", &e.editorData.PrereqCount, 0, 999)
 		}
 		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
@@ -67,7 +67,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 				if e.target.IsRitualMagic() {
 					level = gurps.CalculateRitualMagicSpellLevel(entity, localName, localPowerSource,
 						nameable.Apply(e.editorData.RitualSkillName, replacements),
-						e.editorData.RitualPrereqCount, localColleges, e.editorData.Tags, e.editorData.Difficulty,
+						e.editorData.PrereqCount, localColleges, e.editorData.Tags, e.editorData.Difficulty,
 						points)
 				} else {
 					level = gurps.CalculateSpellLevel(entity, localName, localPowerSource, localColleges,

@@ -112,20 +112,20 @@ type SpellSyncData struct {
 
 // SpellNonContainerOnlySyncData holds the spell sync data that is only applicable to traits that aren't containers.
 type SpellNonContainerOnlySyncData struct {
-	Difficulty        AttributeDifficulty `json:"difficulty,omitzero"`
-	College           CollegeList         `json:"college,omitempty"`
-	PowerSource       string              `json:"power_source,omitempty"`
-	Class             string              `json:"spell_class,omitempty"`
-	Resist            string              `json:"resist,omitempty"`
-	CastingCost       string              `json:"casting_cost,omitempty"`
-	MaintenanceCost   string              `json:"maintenance_cost,omitempty"`
-	CastingTime       string              `json:"casting_time,omitempty"`
-	Duration          string              `json:"duration,omitempty"`
-	Item              string              `json:"item,omitempty"`
-	RitualSkillName   string              `json:"base_skill,omitempty"`
-	RitualPrereqCount int                 `json:"prereq_count,omitempty"`
-	Prereq            *PrereqList         `json:"prereqs,omitzero"`
-	Weapons           []*Weapon           `json:"weapons,omitempty"`
+	Difficulty      AttributeDifficulty `json:"difficulty,omitzero"`
+	College         CollegeList         `json:"college,omitempty"`
+	PowerSource     string              `json:"power_source,omitempty"`
+	Class           string              `json:"spell_class,omitempty"`
+	Resist          string              `json:"resist,omitempty"`
+	CastingCost     string              `json:"casting_cost,omitempty"`
+	MaintenanceCost string              `json:"maintenance_cost,omitempty"`
+	CastingTime     string              `json:"casting_time,omitempty"`
+	Duration        string              `json:"duration,omitempty"`
+	Item            string              `json:"item,omitempty"`
+	RitualSkillName string              `json:"base_skill,omitempty"`
+	PrereqCount     int                 `json:"prereq_count,omitempty"`
+	Prereq          *PrereqList         `json:"prereqs,omitzero"`
+	Weapons         []*Weapon           `json:"weapons,omitempty"`
 }
 
 type spellListData struct {
@@ -481,8 +481,8 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		if !s.Container() {
 			data.Type = cell.Text
 			data.Alignment = align.End
-			if s.RitualPrereqCount > 0 {
-				data.Primary = strconv.Itoa(s.RitualPrereqCount)
+			if s.PrereqCount > 0 {
+				data.Primary = strconv.Itoa(s.PrereqCount)
 			}
 		}
 	case SpellTagsColumn:
@@ -631,7 +631,7 @@ func (s *Spell) UpdateLevel() bool {
 	colleges := s.CollegeWithReplacements()
 	if s.IsRitualMagic() {
 		s.LevelData = CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
-			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.RitualPrereqCount, colleges,
+			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount, colleges,
 			s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 	} else {
 		s.LevelData = CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
@@ -644,7 +644,7 @@ func (s *Spell) UpdateLevel() bool {
 func (s *Spell) CalculateLevel() Level {
 	if s.IsRitualMagic() {
 		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
-			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.RitualPrereqCount,
+			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount,
 			s.CollegeWithReplacements(), s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 	}
 	return CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
@@ -738,15 +738,15 @@ func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []s
 }
 
 // CalculateRitualMagicSpellLevel returns the calculated spell level.
-func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillName string, ritualPrereqCount int, colleges, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
+func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillName string, prereqCount int, colleges, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
 	var skillLevel Level
 	if len(colleges) == 0 {
-		skillLevel = determineRitualMagicSkillLevelForCollege(e, name, "", ritualSkillName, ritualPrereqCount,
+		skillLevel = determineRitualMagicSkillLevelForCollege(e, name, "", ritualSkillName, prereqCount,
 			tags, diff, points)
 	} else {
 		for _, college := range colleges {
 			possible := determineRitualMagicSkillLevelForCollege(e, name, college, ritualSkillName,
-				ritualPrereqCount, tags, diff, points)
+				prereqCount, tags, diff, points)
 			if skillLevel.Level < possible.Level {
 				skillLevel = possible
 			}
@@ -763,12 +763,12 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 	return skillLevel
 }
 
-func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, ritualPrereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
+func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, prereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
 	def := &SkillDefault{
 		DefaultType:    SkillID,
 		Name:           ritualSkillName,
 		Specialization: college,
-		Modifier:       fxp.FromInteger(-ritualPrereqCount),
+		Modifier:       fxp.FromInteger(-prereqCount),
 	}
 	if college == "" {
 		def.Name = ""
@@ -1189,7 +1189,7 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.Duration)
 	xhash.StringWithLen(h, s.Item)
 	xhash.StringWithLen(h, s.RitualSkillName)
-	xhash.Num64(h, s.RitualPrereqCount)
+	xhash.Num64(h, s.PrereqCount)
 	s.Prereq.Hash(h)
 	xhash.Num64(h, len(s.Weapons))
 	for _, weapon := range s.Weapons {

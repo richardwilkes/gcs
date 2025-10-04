@@ -16,6 +16,16 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
+func deferredNewScriptAttribute(attr *Attribute) ScriptSelfProvider {
+	if attr == nil {
+		return ScriptSelfProvider{}
+	}
+	return ScriptSelfProvider{
+		ID:       "$" + attr.AttrID,
+		Provider: func(r *goja.Runtime) any { return newScriptAttribute(r, attr) },
+	}
+}
+
 func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 	m := make(map[string]func() goja.Value)
 	m["id"] = func() goja.Value { return r.ToValue(attr.AttrID) }

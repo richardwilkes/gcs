@@ -18,6 +18,14 @@ import (
 type scriptConsole struct{}
 
 func (c scriptConsole) Log(args ...any) {
+	slog.Info(makeLogMsg(args...))
+}
+
+func (c scriptConsole) Error(args ...any) {
+	slog.Error(makeLogMsg(args...))
+}
+
+func makeLogMsg(args ...any) string {
 	var buffer strings.Builder
 	for argNum, arg := range args {
 		if argNum > 0 {
@@ -25,5 +33,5 @@ func (c scriptConsole) Log(args ...any) {
 		}
 		fmt.Fprintf(&buffer, "%v", arg)
 	}
-	slog.Info(buffer.String())
+	return buffer.String()
 }

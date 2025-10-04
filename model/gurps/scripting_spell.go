@@ -23,7 +23,7 @@ func deferredNewScriptSpell(spell *Spell) ScriptSelfProvider {
 		return ScriptSelfProvider{}
 	}
 	return ScriptSelfProvider{
-		ID:       spell.TID,
+		ID:       string(spell.TID),
 		Provider: func(r *goja.Runtime) any { return newScriptSpell(r, spell) },
 	}
 }
@@ -32,44 +32,30 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 	m := make(map[string]func() goja.Value)
 	m["id"] = func() goja.Value { return r.ToValue(spell.TID) }
 	m["parentID"] = func() goja.Value {
-		if spell.parent != nil {
-			return r.ToValue(spell.parent.TID)
+		if spell.parent == nil {
+			return goja.Undefined()
 		}
-		return r.ToValue("")
+		return r.ToValue(spell.parent.TID)
+	}
+	m["parent"] = func() goja.Value {
+		if spell.parent == nil {
+			return goja.Undefined()
+		}
+		return newScriptSpell(r, spell.parent)
 	}
 	m["name"] = func() goja.Value { return r.ToValue(spell.NameWithReplacements()) }
 	m["notes"] = func() goja.Value {
 		return r.ToValue(spell.SecondaryText(func(_ display.Option) bool { return true }))
 	}
-	m["kind"] = func() goja.Value {
-		if spell.Container() {
-			return r.ToValue("")
-		}
-		if spell.IsRitualMagic() {
-			return r.ToValue("ritual magic spell")
-		}
-		return r.ToValue("spell")
-	}
-	m["techLevel"] = func() goja.Value {
-		if spell.TechLevel != nil {
-			return r.ToValue(*spell.TechLevel)
-		}
-		return r.ToValue("")
-	}
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(spell.Tags)) }
 	m["container"] = func() goja.Value { return r.ToValue(spell.Container()) }
-	m["hasChildren"] = func() goja.Value { return r.ToValue(spell.HasChildren()) }
 	if spell.Container() {
 		m["children"] = func() goja.Value {
-			return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-				children := make([]*goja.Object, 0, len(spell.Children))
-				for _, child := range spell.Children {
-					if child.Enabled() {
-						children = append(children, newScriptSpell(r, child))
-					}
-				}
-				return r.ToValue(children)
-			})
+			children := make([]*goja.Object, 0, len(spell.Children))
+			for _, child := range spell.Children {
+				children = append(children, newScriptSpell(r, child))
+			}
+			return r.ToValue(children)
 		}
 		m["find"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
@@ -79,8 +65,20 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 			})
 		}
 	} else {
+		m["techLevel"] = func() goja.Value {
+			if spell.TechLevel != nil {
+				return r.ToValue(*spell.TechLevel)
+			}
+			return goja.Undefined()
+		}
+		m["kind"] = func() goja.Value {
+			if spell.IsRitualMagic() {
+				return r.ToValue("ritual magic spell")
+			}
+			return r.ToValue("spell")
+		}
 		m["attribute"] = func() goja.Value { return r.ToValue(spell.Difficulty.Attribute) }
-		m["difficulty"] = func() goja.Value { return r.ToValue(spell.Difficulty.Key()) }
+		m["difficulty"] = func() goja.Value { return r.ToValue(spell.Difficulty.Difficulty.String()) }
 		m["points"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](spell.AdjustedPoints(nil))) }
 		m["college"] = func() goja.Value { return r.ToValue(slices.Clone([]string(spell.College))) }
 		m["powerSource"] = func() goja.Value { return r.ToValue(spell.PowerSourceWithReplacements()) }
@@ -92,18 +90,14 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 		m["duration"] = func() goja.Value { return r.ToValue(spell.DurationWithReplacements()) }
 		m["item"] = func() goja.Value { return r.ToValue(spell.ItemWithReplacements()) }
 		m["ritualSkillName"] = func() goja.Value { return r.ToValue(spell.RitualSkillNameWithReplacements()) }
-		m["ritualPrereqCount"] = func() goja.Value { return r.ToValue(spell.RitualPrereqCount) }
+		m["prereqCount"] = func() goja.Value { return r.ToValue(spell.PrereqCount) }
 		m["level"] = func() goja.Value {
-			return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-				spell.UpdateLevel()
-				return r.ToValue(fxp.AsInteger[int](spell.LevelData.Level))
-			})
+			spell.UpdateLevel()
+			return r.ToValue(fxp.AsInteger[int](spell.LevelData.Level))
 		}
 		m["relativeLevel"] = func() goja.Value {
-			return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-				spell.UpdateLevel()
-				return r.ToValue(fxp.AsInteger[int](spell.LevelData.RelativeLevel))
-			})
+			spell.UpdateLevel()
+			return r.ToValue(fxp.AsInteger[int](spell.LevelData.RelativeLevel))
 		}
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))

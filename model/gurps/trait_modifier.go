@@ -421,6 +421,19 @@ func (t *TraitModifier) IsLeveled() bool {
 	return t.Levels > 0
 }
 
+// RawCurrentLevel returns the current level of the modifier or zero if it is not leveled.
+func (t *TraitModifier) RawCurrentLevel() fxp.Int {
+	var level fxp.Int
+	if t.UseLevelFromTrait {
+		if t.trait != nil && t.trait.IsLeveled() {
+			level = t.trait.CurrentLevel()
+		}
+	} else {
+		level = t.Levels
+	}
+	return level
+}
+
 // CostMultiplier returns the amount to multiply the cost by.
 func (t *TraitModifier) CostMultiplier() fxp.Int {
 	if !t.IsLeveled() {
@@ -445,7 +458,8 @@ func CostMultiplierForTraitModifier(baseLevels fxp.Int, trait *Trait, useLevelFr
 	return multiplier
 }
 
-// CurrentLevel returns the current level of the modifier or zero if it is not leveled.
+// CurrentLevel returns the current level of the modifier or zero if it is not leveled. Minimum of 1 will be returned
+// if it has levels at all.
 func (t *TraitModifier) CurrentLevel() fxp.Int {
 	if t.Enabled() && t.IsLeveled() {
 		return t.CostMultiplier()
@@ -465,7 +479,7 @@ func (t *TraitModifier) String() string {
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (t *TraitModifier) ResolveLocalNotes() string {
-	return ResolveText(EntityFromNode(t), deferredNewScriptTrait(t.trait), t.LocalNotesWithReplacements())
+	return ResolveText(EntityFromNode(t), deferredNewScriptTraitModifier(t), t.LocalNotesWithReplacements())
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.

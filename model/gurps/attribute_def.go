@@ -197,11 +197,11 @@ func (a *AttributeDef) AllowsDecimal() bool {
 }
 
 // BaseValue returns the resolved base value.
-func (a *AttributeDef) BaseValue(entity *Entity) fxp.Int {
+func (a *AttributeDef) BaseValue(attr *Attribute) fxp.Int {
 	if a.IsSeparator() {
 		return 0
 	}
-	return ResolveToNumber(entity, ScriptSelfProvider{}, a.Base)
+	return ResolveToNumber(attr.Entity, deferredNewScriptAttribute(attr), a.Base)
 }
 
 // ComputeCost returns the value adjusted for a cost reduction.

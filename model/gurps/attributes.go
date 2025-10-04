@@ -137,7 +137,7 @@ func (a *Attributes) PoolThreshold(attrID, state string) fxp.Int {
 		if def := attr.AttributeDef(); def != nil {
 			for _, one := range def.Thresholds {
 				if strings.EqualFold(one.State, state) {
-					return one.Threshold(attr.Entity)
+					return one.Threshold(attr)
 				}
 			}
 		}

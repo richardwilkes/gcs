@@ -32,7 +32,7 @@ func main() {
 		spells, err := gurps.NewSpellsFromFile(nil, one)
 		xos.ExitIfErr(err)
 		gurps.Traverse(func(spell *gurps.Spell) bool {
-			spell.RitualPrereqCount = gurps.CountPrereqsForSpell(spell, spells)
+			spell.PrereqCount = gurps.CountPrereqsForSpell(spell, spells)
 			return false
 		}, false, true, spells...)
 		xos.ExitIfErr(gurps.SaveSpells(spells, one))

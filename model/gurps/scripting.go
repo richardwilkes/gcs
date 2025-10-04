@@ -25,7 +25,6 @@ import (
 	"github.com/dop251/goja/parser"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
@@ -52,12 +51,12 @@ var (
 
 // ScriptSelfProvider is a provider for the "self" variable in scripts.
 type ScriptSelfProvider struct {
-	ID       tid.TID
+	ID       string
 	Provider func(r *goja.Runtime) any
 }
 
 // ResolveID returns the ID of the provider. If the the underlying Provider is nil, an empty string is returned.
-func (s ScriptSelfProvider) ResolveID() tid.TID {
+func (s ScriptSelfProvider) ResolveID() string {
 	if s.Provider == nil {
 		return ""
 	}
@@ -65,7 +64,7 @@ func (s ScriptSelfProvider) ResolveID() tid.TID {
 }
 
 type scriptResolveKey struct {
-	id   tid.TID
+	id   string
 	text string
 }
 
