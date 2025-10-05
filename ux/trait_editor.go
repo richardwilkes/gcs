@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -42,7 +43,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		wrapper := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
 			field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
-				e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.CR, e.editorData.Modifiers,
+				e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency, e.editorData.Modifiers,
 				e.editorData.RoundCostDown).String())
 			field.MarkForLayoutAndRedraw()
 		})
@@ -76,12 +77,13 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		adjustFieldBlank(perLevelField, !e.editorData.CanLevel)
 		adjustFieldBlank(levelField, !e.editorData.CanLevel)
 	}
-	addLabelAndPopup(content, i18n.Text("Self-Control Roll"), "", selfctrl.Rolls, &e.editorData.CR)
-	crAdjPopup := addLabelAndPopup(content, i18n.Text("CR Adjustment"), i18n.Text("Self-Control Roll Adjustment"),
-		selfctrl.Adjustments, &e.editorData.CRAdj)
-	if e.editorData.CR == selfctrl.NoCR {
+	addLabelAndPopup(content, i18n.Text("Self-Control"), "", selfctrl.Rolls, &e.editorData.SelfControl)
+	adjustment := i18n.Text("Self-Control Adjustment")
+	crAdjPopup := addLabelAndPopup(content, adjustment, adjustment, selfctrl.Adjustments, &e.editorData.SelfControlAdj)
+	if e.editorData.SelfControl == selfctrl.None {
 		crAdjPopup.SetEnabled(false)
 	}
+	addLabelAndPopup(content, i18n.Text("Frequency of Appearance"), "", frequency.Rolls, &e.editorData.Frequency)
 	var ancestryPopup *unison.PopupMenu[string]
 	if e.target.Container() {
 		addLabelAndPopup(content, i18n.Text("Container Type"), "", container.Types,
@@ -121,9 +123,9 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		if levelField != nil {
 			adjustFieldBlank(levelField, !e.editorData.CanLevel)
 		}
-		if e.editorData.CR == selfctrl.NoCR {
+		if e.editorData.SelfControl == selfctrl.None {
 			crAdjPopup.SetEnabled(false)
-			crAdjPopup.Select(selfctrl.NoCRAdj)
+			crAdjPopup.Select(selfctrl.NoAdjustment)
 		} else {
 			crAdjPopup.SetEnabled(true)
 		}

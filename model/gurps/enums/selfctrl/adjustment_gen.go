@@ -19,7 +19,7 @@ import (
 
 // Possible values.
 const (
-	NoCRAdj Adjustment = iota
+	NoAdjustment Adjustment = iota
 	ActionPenalty
 	ReactionPenalty
 	FrightCheckPenalty
@@ -33,7 +33,7 @@ const LastAdjustment Adjustment = MajorCostOfLivingIncrease
 
 // Adjustments holds all possible values.
 var Adjustments = []Adjustment{
-	NoCRAdj,
+	NoAdjustment,
 	ActionPenalty,
 	ReactionPenalty,
 	FrightCheckPenalty,
@@ -56,7 +56,7 @@ func (enum Adjustment) EnsureValid() Adjustment {
 // Key returns the key used in serialization.
 func (enum Adjustment) Key() string {
 	switch enum {
-	case NoCRAdj:
+	case NoAdjustment:
 		return "none"
 	case ActionPenalty:
 		return "action_penalty"
@@ -78,7 +78,7 @@ func (enum Adjustment) Key() string {
 // String implements fmt.Stringer.
 func (enum Adjustment) String() string {
 	switch enum {
-	case NoCRAdj:
+	case NoAdjustment:
 		return i18n.Text(`None`)
 	case ActionPenalty:
 		return i18n.Text(`Includes an Action Penalty even on Success`)
@@ -100,7 +100,7 @@ func (enum Adjustment) String() string {
 // AltString returns the alternate string.
 func (enum Adjustment) AltString() string {
 	switch enum {
-	case NoCRAdj:
+	case NoAdjustment:
 		return i18n.Text(`None`)
 	case ActionPenalty:
 		return i18n.Text(`%d Action Penalty`)

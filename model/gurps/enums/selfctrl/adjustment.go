@@ -12,38 +12,38 @@ package selfctrl
 import "fmt"
 
 // Adjustment returns the adjustment amount.
-func (enum Adjustment) Adjustment(cr Roll) int {
-	if cr == NoCR {
+func (enum Adjustment) Adjustment(sc Roll) int {
+	if sc == None {
 		return 0
 	}
 	switch enum {
-	case NoCRAdj:
+	case NoAdjustment:
 		return 0
 	case ActionPenalty:
-		return cr.Penalty()
+		return sc.Penalty()
 	case ReactionPenalty:
-		return cr.Penalty()
+		return sc.Penalty()
 	case FrightCheckPenalty:
-		return cr.Penalty()
+		return sc.Penalty()
 	case FrightCheckBonus:
-		return -cr.Penalty()
+		return -sc.Penalty()
 	case MinorCostOfLivingIncrease:
-		return -cr.Penalty() * 5
+		return -sc.Penalty() * 5
 	case MajorCostOfLivingIncrease:
-		return 10 * (1 << (-(cr.Penalty() + 1)))
+		return 10 * (1 << (-(sc.Penalty() + 1)))
 	default:
-		return NoCRAdj.Adjustment(cr)
+		return NoAdjustment.Adjustment(sc)
 	}
 }
 
 // Description returns a formatted description.
-func (enum Adjustment) Description(cr Roll) string {
+func (enum Adjustment) Description(sc Roll) string {
 	switch {
-	case cr == NoCR:
+	case sc == None:
 		return ""
-	case enum == NoCRAdj:
+	case enum == NoAdjustment:
 		return enum.AltString()
 	default:
-		return fmt.Sprintf(enum.AltString(), enum.Adjustment(cr))
+		return fmt.Sprintf(enum.AltString(), enum.Adjustment(sc))
 	}
 }

@@ -902,7 +902,7 @@ var allEnums = []*enumInfo{
 		Desc: "holds an Adjustment for a self-control roll",
 		Values: []*enumValue{
 			{
-				Name: "NoCRAdj",
+				Name: "NoAdjustment",
 				Key:  "none",
 				Alt:  "None",
 			},

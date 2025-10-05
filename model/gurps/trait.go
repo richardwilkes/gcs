@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
@@ -78,7 +79,8 @@ type TraitEditData struct {
 	UserDesc     string            `json:"userdesc,omitempty"`
 	Replacements map[string]string `json:"replacements,omitempty"`
 	Modifiers    []*TraitModifier  `json:"modifiers,omitempty"`
-	CR           selfctrl.Roll     `json:"cr,omitempty"`
+	SelfControl  selfctrl.Roll     `json:"cr,omitempty"`
+	Frequency    frequency.Roll    `json:"frequency,omitempty"`
 	Disabled     bool              `json:"disabled,omitempty"`
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
@@ -100,7 +102,7 @@ type TraitSyncData struct {
 	LocalNotes       string              `json:"local_notes,omitempty"`
 	Tags             []string            `json:"tags,omitempty"`
 	Prereq           *PrereqList         `json:"prereqs,omitzero"`
-	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
+	SelfControlAdj   selfctrl.Adjustment `json:"cr_adj,omitempty"`
 }
 
 // TraitNonContainerSyncData holds the Trait sync data that is only applicable to traits that aren't containers.
@@ -372,8 +374,18 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 	case TraitDescriptionColumn:
 		data.Type = cell.Text
 		data.Primary = t.String()
-		if t.CR > selfctrl.CRNone {
-			data.Primary += fmt.Sprintf(" (CR %d)", t.CR)
+		var buffer strings.Builder
+		if t.SelfControl > selfctrl.Always {
+			buffer.WriteString(t.SelfControl.ShortString())
+		}
+		if t.Frequency > frequency.None {
+			if buffer.Len() > 0 {
+				buffer.WriteString(", ")
+			}
+			buffer.WriteString(t.Frequency.ShortString())
+		}
+		if buffer.Len() > 0 {
+			data.Primary += " (" + buffer.String() + ")"
 		}
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
@@ -486,8 +498,8 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 		return 0
 	}
 	if !t.Container() {
-		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.CR,
-			t.AllModifiers(), t.RoundCostDown)
+		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
+			t.SelfControl, t.Frequency, t.AllModifiers(), t.RoundCostDown)
 	}
 	var points fxp.Int
 	if t.ContainerType == container.AlternativeAbilities {
@@ -646,14 +658,21 @@ func (t *Trait) ActiveModifierFor(name string) *TraitModifier {
 
 // ModifierNotes returns the notes due to modifiers.
 func (t *Trait) ModifierNotes() string {
-	var buffer strings.Builder
-	if t.CR != selfctrl.NoCR {
-		buffer.WriteString(t.CR.String())
-		if t.CRAdj != selfctrl.NoCRAdj {
+	var lines []string
+	if t.SelfControl != selfctrl.None {
+		var buffer strings.Builder
+		buffer.WriteString(i18n.Text("Self-Control Roll (CR): "))
+		buffer.WriteString(t.SelfControl.String())
+		if t.SelfControlAdj != selfctrl.NoAdjustment {
 			buffer.WriteString(", ")
-			buffer.WriteString(t.CRAdj.Description(t.CR))
+			buffer.WriteString(t.SelfControlAdj.Description(t.SelfControl))
 		}
+		lines = append(lines, buffer.String())
 	}
+	if t.Frequency != frequency.None {
+		lines = append(lines, fmt.Sprintf(i18n.Text("Frequency Roll (FR): %s"), t.Frequency))
+	}
+	var buffer strings.Builder
 	Traverse(func(mod *TraitModifier) bool {
 		if buffer.Len() != 0 {
 			buffer.WriteString("; ")
@@ -661,7 +680,13 @@ func (t *Trait) ModifierNotes() string {
 		buffer.WriteString(mod.FullDescription())
 		return false
 	}, true, true, t.Modifiers...)
-	return buffer.String()
+	if buffer.Len() != 0 {
+		lines = append(lines, buffer.String())
+	}
+	if len(lines) == 0 {
+		return ""
+	}
+	return strings.Join(lines, "<br>")
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
@@ -715,13 +740,13 @@ func ExtractTags(tags string) []string {
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' and 'dataOwner' may be
 // nil.
-func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
+func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, fr frequency.Roll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
 	if !canLevel {
 		levels = 0
 		pointsPerLevel = 0
 	}
 	var baseEnh, levelEnh, baseLim, levelLim fxp.Int
-	multiplier := cr.Multiplier()
+	multiplier := cr.Multiplier().Mul(fr.Multiplier())
 	Traverse(func(mod *TraitModifier) bool {
 		mod.setTrait(trait)
 		modifier := mod.CostModifier()
@@ -871,7 +896,7 @@ func (t *TraitSyncData) hash(h hash.Hash) {
 	for _, tag := range t.Tags {
 		xhash.StringWithLen(h, tag)
 	}
-	xhash.Num8(h, t.CRAdj)
+	xhash.Num8(h, t.SelfControlAdj)
 	t.Prereq.Hash(h)
 }
 

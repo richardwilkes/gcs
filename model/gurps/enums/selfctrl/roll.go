@@ -19,8 +19,8 @@ import (
 
 // Possible Roll values.
 const (
-	NoCR   = Roll(0)
-	CRNone = Roll(1)
+	None   = Roll(0)
+	Always = Roll(1)
 	CR6    = Roll(6)
 	CR7    = Roll(7)
 	CR8    = Roll(8)
@@ -35,8 +35,8 @@ const (
 
 // Rolls is the complete set of Roll values.
 var Rolls = []Roll{
-	NoCR,
-	CRNone,
+	None,
+	Always,
 	CR6,
 	CR7,
 	CR8,
@@ -53,54 +53,57 @@ var Rolls = []Roll{
 type Roll byte
 
 // EnsureValid ensures this is of a known value.
-func (s Roll) EnsureValid() Roll {
-	if slices.Contains(Rolls, s) {
-		return s
+func (r Roll) EnsureValid() Roll {
+	if slices.Contains(Rolls, r) {
+		return r
 	}
-	return Rolls[0]
+	return None
 }
 
 // String implements fmt.Stringer.
-func (s Roll) String() string {
-	if s <= NoCR || s > CR15 {
-		return i18n.Text("CR: None Required")
-	}
-	if s == CRNone {
-		return i18n.Text("CR: None Allowed")
-	}
+func (r Roll) String() string {
 	var text string
 	switch {
-	case s < CR8:
+	case r == None:
+		return i18n.Text("None required")
+	case r == Always:
+		return i18n.Text("Never resist")
+	case r < CR8:
 		text = i18n.Text("Resist rarely")
-	case s < CR11:
+	case r < CR11:
 		text = i18n.Text("Resist fairly often")
-	case s < CR14:
+	case r < CR14:
 		text = i18n.Text("Resist quite often")
-	default:
+	case r <= CR15:
 		text = i18n.Text("Resist almost all the time")
+	default:
+		return None.String()
 	}
 	var nonStandard string
-	if s%3 != 0 {
+	if r%3 != 0 {
 		nonStandard = i18n.Text("; non-standard")
 	}
-	return fmt.Sprintf("CR: %d (%s%s)", s, text, nonStandard)
+	return fmt.Sprintf("%d or less (%s%s)", r, text, nonStandard)
 }
 
-// DescriptionWithCost returns a formatted description that includes the cost multiplier.
-func (s Roll) DescriptionWithCost() string {
-	v := s.EnsureValid()
-	if v == NoCR {
+// ShortString returns a short description of the frequency.
+func (r Roll) ShortString() string {
+	switch {
+	case r == Always:
+		return i18n.Text("No CR")
+	case r >= CR6 && r <= CR15:
+		return fmt.Sprintf(i18n.Text("CR%d"), r)
+	default:
 		return ""
 	}
-	return v.String() + ", x" + v.Multiplier().String()
 }
 
 // Multiplier returns the cost multiplier.
-func (s Roll) Multiplier() fxp.Int {
-	switch s {
-	case NoCR:
+func (r Roll) Multiplier() fxp.Int {
+	switch r {
+	case None:
 		return fxp.One
-	case CRNone:
+	case Always:
 		return fxp.TwoAndAHalf
 	case CR6:
 		return fxp.Two
@@ -123,14 +126,14 @@ func (s Roll) Multiplier() fxp.Int {
 	case CR15:
 		return fxp.Half
 	default:
-		return NoCR.Multiplier()
+		return None.Multiplier()
 	}
 }
 
 // Penalty returns the general penalty for this roll.
-func (s Roll) Penalty() int {
-	switch s {
-	case NoCR:
+func (r Roll) Penalty() int {
+	switch r {
+	case None:
 		return 0
 	case CR14, CR15:
 		return -1
@@ -140,7 +143,7 @@ func (s Roll) Penalty() int {
 		return -3
 	case CR6, CR7:
 		return -4
-	case CRNone:
+	case Always:
 		return -5 // No actual rules for this from Z60, so just extend the progression
 	default:
 		return 0

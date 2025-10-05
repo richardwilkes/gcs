@@ -343,7 +343,7 @@ func (e *Entity) processFeatures() {
 				e.processFeature(t, nil, f, t)
 			}
 		}
-		for _, f := range FeaturesForSelfControlRoll(t.CR, t.CRAdj) {
+		for _, f := range FeaturesForSelfControlRoll(t.SelfControl, t.SelfControlAdj) {
 			e.processFeature(t, nil, f, t)
 		}
 		Traverse(func(mod *TraitModifier) bool {
@@ -487,13 +487,13 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 func (e *Entity) processPrereqs() {
 	const prefix = "\n- "
 	notMetPrefix := i18n.Text("Prerequisites have not been met:")
-	Traverse(func(a *Trait) bool {
-		a.UnsatisfiedReason = ""
-		if a.Prereq != nil {
+	Traverse(func(t *Trait) bool {
+		t.UnsatisfiedReason = ""
+		if t.Prereq != nil {
 			var tooltip xbytes.InsertBuffer
 			var eqpPenalty bool
-			if !a.Prereq.Satisfied(e, a, &tooltip, prefix, &eqpPenalty) {
-				a.UnsatisfiedReason = notMetPrefix + tooltip.String()
+			if !t.Prereq.Satisfied(e, t, &tooltip, prefix, &eqpPenalty) {
+				t.UnsatisfiedReason = notMetPrefix + tooltip.String()
 			}
 		}
 		return false
@@ -1334,8 +1334,8 @@ func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 // EquippedWeapons returns a sorted list of equipped weapons.
 func (e *Entity) EquippedWeapons(melee, excludeHidden bool) []*Weapon {
 	m := make(map[uint64]*Weapon)
-	Traverse(func(a *Trait) bool {
-		for _, w := range a.Weapons {
+	Traverse(func(t *Trait) bool {
+		for _, w := range t.Weapons {
 			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 				m[w.HashResolved()] = w
 			}
@@ -1379,18 +1379,18 @@ func (e *Entity) EquippedWeapons(melee, excludeHidden bool) []*Weapon {
 // Reactions returns the current set of reactions.
 func (e *Entity) Reactions() []*ConditionalModifier {
 	m := make(map[string]*ConditionalModifier)
-	Traverse(func(a *Trait) bool {
-		source := i18n.Text("from trait ") + a.String()
-		if !a.Container() {
-			e.reactionsFromFeatureList(source, a.Features, m)
+	Traverse(func(t *Trait) bool {
+		source := i18n.Text("from trait ") + t.String()
+		if !t.Container() {
+			e.reactionsFromFeatureList(source, t.Features, m)
 		}
 		Traverse(func(mod *TraitModifier) bool {
 			e.reactionsFromFeatureList(source, mod.Features, m)
 			return false
-		}, true, true, a.Modifiers...)
-		if a.CR != selfctrl.NoCR && a.CRAdj == selfctrl.ReactionPenalty {
-			amt := fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(a.CR))
-			situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), a.String())
+		}, true, true, t.Modifiers...)
+		if t.SelfControl != selfctrl.None && t.SelfControlAdj == selfctrl.ReactionPenalty {
+			amt := fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(t.SelfControl))
+			situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String())
 			if r, exists := m[situation]; exists {
 				r.Add(source, amt)
 			} else {
@@ -1446,15 +1446,15 @@ func (e *Entity) reactionsFromFeatureList(source string, features Features, m ma
 // ConditionalModifiers returns the current set of conditional modifiers.
 func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 	m := make(map[string]*ConditionalModifier)
-	Traverse(func(a *Trait) bool {
-		source := i18n.Text("from trait ") + a.String()
-		if !a.Container() {
-			e.conditionalModifiersFromFeatureList(source, a.Features, m)
+	Traverse(func(t *Trait) bool {
+		source := i18n.Text("from trait ") + t.String()
+		if !t.Container() {
+			e.conditionalModifiersFromFeatureList(source, t.Features, m)
 		}
 		Traverse(func(mod *TraitModifier) bool {
 			e.conditionalModifiersFromFeatureList(source, mod.Features, m)
 			return false
-		}, true, true, a.Modifiers...)
+		}, true, true, t.Modifiers...)
 		return false
 	}, true, false, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
