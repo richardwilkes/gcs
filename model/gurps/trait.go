@@ -472,7 +472,7 @@ func (t *Trait) CurrentLevel() fxp.Int {
 func (t *Trait) internalCurrentLevel() fxp.Int {
 	if t.IsLeveled() {
 		var levelAdjustment fxp.Int
-		if entity := t.DataOwner().OwningEntity(); entity != nil {
+		if entity := EntityFromNode(t); entity != nil {
 			levelAdjustment = entity.TraitBonusFor(t.Name, t.Tags, nil)
 		}
 		return (t.Levels + levelAdjustment).Max(0)
