@@ -108,6 +108,21 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			}
 			return r.ToValue(fxp.AsInteger[int](skill.LevelData.RelativeLevel))
 		}
+		m["weapons"] = func() goja.Value {
+			weapons := make([]*goja.Object, 0, len(skill.Weapons))
+			for _, w := range skill.Weapons {
+				weapons = append(weapons, newScriptWeapon(r, w))
+			}
+			return r.ToValue(weapons)
+		}
+		m["findWeapons"] = func() goja.Value {
+			return r.ToValue(func(call goja.FunctionCall) goja.Value {
+				melee := call.Argument(0).ToBoolean()
+				name := callArgAsString(call, 1)
+				usage := callArgAsString(call, 2)
+				return matchWeapons(r, skill.Weapons, name, usage, melee)
+			})
+		}
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

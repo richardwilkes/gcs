@@ -18,11 +18,11 @@ import (
 
 // NewNaturalAttacks creates a new "Natural Attacks" trait.
 func NewNaturalAttacks(entity *Entity, parent *Trait) *Trait {
-	a := NewTrait(entity, parent, false)
-	a.Name = i18n.Text("Natural Attacks")
-	a.PageRef = "B271"
-	a.Weapons = []*Weapon{newBite(a), newPunch(a), newKick(a)}
-	return a
+	t := NewTrait(entity, parent, false)
+	t.Name = i18n.Text("Natural Attacks")
+	t.PageRef = "B271"
+	t.Weapons = []*Weapon{newBite(t), newPunch(t), newKick(t)}
+	return t
 }
 
 func newBite(owner WeaponOwner) *Weapon {

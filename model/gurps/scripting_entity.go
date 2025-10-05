@@ -202,17 +202,35 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
 				name := callArgAsString(call, 0)
 				usage := callArgAsString(call, 1)
-				for _, w := range entity.Weapons(true, false) {
+				for _, w := range entity.EquippedWeapons(true, false) {
 					if strings.EqualFold(w.String(), name) && strings.EqualFold(w.UsageWithReplacements(), usage) {
 						return r.ToValue(w.Damage.ResolvedDamage(nil))
 					}
 				}
-				for _, w := range entity.Weapons(false, false) {
+				for _, w := range entity.EquippedWeapons(false, false) {
 					if strings.EqualFold(w.String(), name) && strings.EqualFold(w.UsageWithReplacements(), usage) {
 						return r.ToValue(w.Damage.ResolvedDamage(nil))
 					}
 				}
 				return goja.Undefined()
+			})
+		}
+		m["weapons"] = func() goja.Value {
+			var weapons []*goja.Object
+			for _, w := range entity.EquippedWeapons(true, true) {
+				weapons = append(weapons, newScriptWeapon(r, w))
+			}
+			for _, w := range entity.EquippedWeapons(false, true) {
+				weapons = append(weapons, newScriptWeapon(r, w))
+			}
+			return r.ToValue(weapons)
+		}
+		m["findWeapons"] = func() goja.Value {
+			return r.ToValue(func(call goja.FunctionCall) goja.Value {
+				melee := call.Argument(0).ToBoolean()
+				name := callArgAsString(call, 1)
+				usage := callArgAsString(call, 2)
+				return matchWeapons(r, entity.EquippedWeapons(melee, true), name, usage, melee)
 			})
 		}
 	}

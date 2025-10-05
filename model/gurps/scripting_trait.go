@@ -71,8 +71,23 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 		m["level"] = func() goja.Value {
 			return r.ToValue(fxp.AsFloat[float64](trait.Levels))
 		}
+		m["weapons"] = func() goja.Value {
+			weapons := make([]*goja.Object, 0, len(trait.Weapons))
+			for _, w := range trait.Weapons {
+				weapons = append(weapons, newScriptWeapon(r, w))
+			}
+			return r.ToValue(weapons)
+		}
+		m["findWeapons"] = func() goja.Value {
+			return r.ToValue(func(call goja.FunctionCall) goja.Value {
+				melee := call.Argument(0).ToBoolean()
+				name := callArgAsString(call, 1)
+				usage := callArgAsString(call, 2)
+				return matchWeapons(r, trait.Weapons, name, usage, melee)
+			})
+		}
 	}
-	m["activeModifierNamed"] = func() goja.Value {
+	m["findActiveModifier"] = func() goja.Value {
 		return r.ToValue(func(call goja.FunctionCall) goja.Value {
 			name := callArgAsString(call, 0)
 			mod := trait.ActiveModifierFor(name)
