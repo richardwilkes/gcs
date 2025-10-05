@@ -55,9 +55,9 @@ func (c *ConditionalModifierBonus) FillWithNameableKeys(m, existing map[string]s
 	nameable.Extract(c.Situation, m, existing)
 }
 
-// SetLevel implements Bonus.
-func (c *ConditionalModifierBonus) SetLevel(level fxp.Int) {
-	c.Level = level
+// SetLeveledOwner implements Bonus.
+func (c *ConditionalModifierBonus) SetLeveledOwner(owner LeveledOwner) {
+	c.LeveledOwner = owner
 }
 
 // AddToTooltip implements Bonus.

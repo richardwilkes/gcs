@@ -235,9 +235,10 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, preserve
 // MarshalJSON implements json.Marshaler.
 func (t *Trait) MarshalJSON() ([]byte, error) {
 	type calc struct {
-		Points            fxp.Int `json:"points"`
-		UnsatisfiedReason string  `json:"unsatisfied_reason,omitempty"`
-		ResolvedNotes     string  `json:"resolved_notes,omitempty"`
+		Points            fxp.Int  `json:"points"`
+		UnsatisfiedReason string   `json:"unsatisfied_reason,omitempty"`
+		ResolvedNotes     string   `json:"resolved_notes,omitempty"`
+		CurrentLevel      *fxp.Int `json:"current_level,omitempty"`
 	}
 	t.ClearUnusedFieldsForType()
 	data := struct {
@@ -253,6 +254,10 @@ func (t *Trait) MarshalJSON() ([]byte, error) {
 	notes := t.ResolveLocalNotes()
 	if notes != t.LocalNotes {
 		data.Calc.ResolvedNotes = notes
+	}
+	if t.IsLeveled() {
+		level := t.CurrentLevel()
+		data.Calc.CurrentLevel = &level
 	}
 	return json.Marshal(&data)
 }
@@ -458,8 +463,19 @@ func (t *Trait) IsLeveled() bool {
 
 // CurrentLevel returns the current level of the trait or zero if it is not leveled.
 func (t *Trait) CurrentLevel() fxp.Int {
-	if t.Enabled() && t.IsLeveled() {
-		return t.Levels
+	if t.Enabled() {
+		return t.internalCurrentLevel()
+	}
+	return 0
+}
+
+func (t *Trait) internalCurrentLevel() fxp.Int {
+	if t.IsLeveled() {
+		var levelAdjustment fxp.Int
+		if entity := t.DataOwner().OwningEntity(); entity != nil {
+			levelAdjustment = entity.TraitBonusFor(t.Name, t.Tags, nil)
+		}
+		return (t.Levels + levelAdjustment).Max(0)
 	}
 	return 0
 }
@@ -547,7 +563,7 @@ func (t *Trait) String() string {
 	buffer.WriteString(t.NameWithReplacements())
 	if t.IsLeveled() {
 		buffer.WriteByte(' ')
-		buffer.WriteString(t.Levels.String())
+		buffer.WriteString(t.internalCurrentLevel().String())
 	}
 	return buffer.String()
 }

@@ -20,18 +20,19 @@ import (
 
 // LeveledAmount holds an amount that can be either a fixed amount, or an amount per level.
 type LeveledAmount struct {
-	Level    fxp.Int `json:"-"`
-	Amount   fxp.Int `json:"amount"`
-	PerLevel bool    `json:"per_level,omitempty"`
+	LeveledOwner LeveledOwner `json:"-"`
+	Amount       fxp.Int      `json:"amount"`
+	PerLevel     bool         `json:"per_level,omitempty"`
 }
 
 // AdjustedAmount returns the amount, adjusted for level, if requested.
 func (l *LeveledAmount) AdjustedAmount() fxp.Int {
 	if l.PerLevel {
-		if l.Level < 0 {
+		level := l.LeveledOwner.CurrentLevel()
+		if level < 0 {
 			return 0
 		}
-		return l.Amount.Mul(l.Level)
+		return l.Amount.Mul(level)
 	}
 	return l.Amount
 }

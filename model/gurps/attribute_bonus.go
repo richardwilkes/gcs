@@ -64,9 +64,9 @@ func (a *AttributeBonus) Clone() Feature {
 func (a *AttributeBonus) FillWithNameableKeys(_, _ map[string]string) {
 }
 
-// SetLevel implements Bonus.
-func (a *AttributeBonus) SetLevel(level fxp.Int) {
-	a.Level = level
+// SetLeveledOwner implements Bonus.
+func (a *AttributeBonus) SetLeveledOwner(owner LeveledOwner) {
+	a.LeveledOwner = owner
 }
 
 // AddToTooltip implements Bonus.

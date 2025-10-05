@@ -39,8 +39,8 @@ type Bonus interface {
 	SubOwner() fmt.Stringer
 	// SetSubOwner sets the sub-owner to use.
 	SetSubOwner(owner fmt.Stringer)
-	// SetLevel sets the level.
-	SetLevel(level fxp.Int)
+	// SetLeveledOwner sets the LeveledOwner.
+	SetLeveledOwner(provider LeveledOwner)
 	// AdjustedAmount returns the amount, adjusted for level, if requested.
 	AdjustedAmount() fxp.Int
 	// AddToTooltip adds this Bonus's details to the tooltip. 'buffer' may be nil.

@@ -68,6 +68,8 @@ func (f *Features) UnmarshalJSON(data []byte) error {
 			feat = &SpellBonus{}
 		case feature.SpellPointBonus:
 			feat = &SpellPointBonus{}
+		case feature.TraitBonus:
+			feat = &TraitBonus{}
 		case feature.WeaponBonus,
 			feature.WeaponAccBonus,
 			feature.WeaponScopeAccBonus,

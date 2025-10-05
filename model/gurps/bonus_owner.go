@@ -71,17 +71,22 @@ func (b *BonusOwner) parentName() string {
 	return fmt.Sprintf("%s (%v)", owner, b.subOwner)
 }
 
-// DerivedLevel returns the level of the sub-owner or owner, if they are LeveledOwners.
-func (b *BonusOwner) DerivedLevel() fxp.Int {
+// DerivedLeveledOwner returns the sub-owner or owner, if they are LeveledOwners.
+func (b *BonusOwner) DerivedLeveledOwner() LeveledOwner {
 	if !xreflect.IsNil(b.subOwner) {
 		if lo, ok := b.subOwner.(LeveledOwner); ok && lo.IsLeveled() {
-			return lo.CurrentLevel()
+			return lo
 		}
 	}
 	if !xreflect.IsNil(b.owner) {
 		if lo, ok := b.owner.(LeveledOwner); ok && lo.IsLeveled() {
-			return lo.CurrentLevel()
+			return lo
 		}
 	}
-	return 0
+	return zeroLeveledOwner{}
 }
+
+type zeroLeveledOwner struct{}
+
+func (z zeroLeveledOwner) IsLeveled() bool       { return false }
+func (z zeroLeveledOwner) CurrentLevel() fxp.Int { return 0 }

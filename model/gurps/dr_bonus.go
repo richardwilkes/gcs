@@ -84,9 +84,9 @@ func (d *DRBonus) Normalize() {
 func (d *DRBonus) FillWithNameableKeys(_, _ map[string]string) {
 }
 
-// SetLevel implements Bonus.
-func (d *DRBonus) SetLevel(level fxp.Int) {
-	d.Level = level
+// SetLeveledOwner implements Bonus.
+func (d *DRBonus) SetLeveledOwner(owner LeveledOwner) {
+	d.LeveledOwner = owner
 }
 
 // AddToTooltip implements Bonus.

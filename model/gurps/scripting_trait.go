@@ -69,7 +69,7 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 		}
 	} else if trait.CanLevel {
 		m["level"] = func() goja.Value {
-			return r.ToValue(fxp.AsFloat[float64](trait.Levels))
+			return r.ToValue(fxp.AsFloat[float64](trait.CurrentLevel()))
 		}
 		m["weapons"] = func() goja.Value {
 			weapons := make([]*goja.Object, 0, len(trait.Weapons))

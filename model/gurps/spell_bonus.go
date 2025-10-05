@@ -69,9 +69,9 @@ func (s *SpellBonus) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(s.TagsCriteria.Qualifier, m, existing)
 }
 
-// SetLevel implements Bonus.
-func (s *SpellBonus) SetLevel(level fxp.Int) {
-	s.Level = level
+// SetLeveledOwner implements Bonus.
+func (s *SpellBonus) SetLeveledOwner(owner LeveledOwner) {
+	s.LeveledOwner = owner
 }
 
 // AddToTooltip implements Bonus.

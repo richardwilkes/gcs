@@ -186,10 +186,11 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 				Traverse(func(t *Trait) bool {
 					if strings.EqualFold(t.NameWithReplacements(), name) {
 						if t.IsLeveled() {
+							current := t.CurrentLevel()
 							if level == -fxp.One {
-								level = t.Levels
+								level = current
 							} else {
-								level += t.Levels
+								level += current
 							}
 						}
 					}

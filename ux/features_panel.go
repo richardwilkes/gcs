@@ -116,6 +116,8 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 		panel, focus = p.createSpellBonusPanel(one)
 	case *gurps.SpellPointBonus:
 		panel, focus = p.createSpellPointBonusPanel(one)
+	case *gurps.TraitBonus:
+		panel, focus = p.createTraitBonusPanel(one)
 	case *gurps.WeaponBonus:
 		panel, focus = p.createWeaponBonusPanel(one)
 	default:
@@ -481,6 +483,15 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) (ma
 	return panel, focus
 }
 
+func (p *featuresPanel) createTraitBonusPanel(f *gurps.TraitBonus) (main *unison.Panel, focus unison.Paneler) {
+	panel := p.createBasePanel(f)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	prefix := i18n.Text("to traits whose name")
+	addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name Qualifier"), &f.NameCriteria, 1, true)
+	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
+	return panel, focus
+}
+
 func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	_, focus = p.addWeaponLeveledModifierLine(panel, f)
@@ -730,6 +741,8 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		bonus = gurps.NewSpellBonus()
 	case feature.SpellPointBonus:
 		bonus = gurps.NewSpellPointBonus()
+	case feature.TraitBonus:
+		bonus = gurps.NewTraitBonus()
 	case feature.WeaponBonus:
 		bonus = gurps.NewWeaponDamageBonus()
 	case feature.WeaponAccBonus:

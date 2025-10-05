@@ -269,7 +269,7 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	switch t := w.Owner.Owner.(type) {
 	case *Trait:
 		if t.IsLeveled() {
-			levels = fxp.AsInteger[int](t.Levels)
+			levels = fxp.AsInteger[int](t.CurrentLevel())
 		}
 	case *Equipment:
 		if t.IsLeveled() {

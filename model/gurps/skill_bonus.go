@@ -72,9 +72,9 @@ func (s *SkillBonus) FillWithNameableKeys(m, existing map[string]string) {
 	}
 }
 
-// SetLevel implements Bonus.
-func (s *SkillBonus) SetLevel(level fxp.Int) {
-	s.Level = level
+// SetLeveledOwner implements Bonus.
+func (s *SkillBonus) SetLeveledOwner(owner LeveledOwner) {
+	s.LeveledOwner = owner
 }
 
 // AddToTooltip implements Bonus.

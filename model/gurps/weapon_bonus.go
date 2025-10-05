@@ -45,7 +45,7 @@ type WeaponBonusData struct { //nolint:govet // The field alignment here is poor
 	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
 	UsageCriteria          criteria.Text   `json:"usage,omitzero"`
 	TagsCriteria           criteria.Text   `json:"tags,omitzero"`
-	Level                  fxp.Int         `json:"-"`
+	LeveledOwner           LeveledOwner    `json:"-"`
 	DieCount               fxp.Int         `json:"-"`
 	Amount                 fxp.Int         `json:"amount"`
 	PerLevel               bool            `json:"leveled,omitempty"`
@@ -219,10 +219,11 @@ func (w *WeaponBonus) AdjustedAmount() fxp.Int {
 		amt = amt.Mul(w.DieCount)
 	}
 	if w.PerLevel {
-		if w.Level < 0 {
+		level := w.LeveledOwner.CurrentLevel()
+		if level < 0 {
 			return 0
 		}
-		amt = amt.Mul(w.Level)
+		amt = amt.Mul(level)
 	}
 	return amt
 }
@@ -237,9 +238,9 @@ func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
 	}
 }
 
-// SetLevel implements Bonus.
-func (w *WeaponBonus) SetLevel(level fxp.Int) {
-	w.Level = level
+// SetLeveledOwner implements Bonus.
+func (w *WeaponBonus) SetLeveledOwner(owner LeveledOwner) {
+	w.LeveledOwner = owner
 }
 
 // AddToTooltip implements Bonus.

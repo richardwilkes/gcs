@@ -674,9 +674,9 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer
 func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount fxp.Int, tooltip *xbytes.InsertBuffer) {
 	if allowedFeatureTypes[f.FeatureType()] {
 		if bonus, ok := f.(*WeaponBonus); ok {
-			savedLevel := bonus.Level
+			savedLeveledOwner := bonus.LeveledOwner
 			savedDieCount := bonus.DieCount
-			bonus.Level = bonus.DerivedLevel()
+			bonus.LeveledOwner = bonus.DerivedLeveledOwner()
 			bonus.DieCount = dieCount
 			replacements := w.NameableReplacements()
 			switch bonus.SelectionType {
@@ -700,7 +700,7 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 			default:
 				errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
 			}
-			bonus.Level = savedLevel
+			bonus.LeveledOwner = savedLeveledOwner
 			bonus.DieCount = savedDieCount
 		}
 	}

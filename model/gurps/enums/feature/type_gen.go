@@ -27,6 +27,7 @@ const (
 	SkillPointBonus
 	SpellBonus
 	SpellPointBonus
+	TraitBonus
 	WeaponBonus
 	WeaponAccBonus
 	WeaponScopeAccBonus
@@ -68,6 +69,7 @@ var Types = []Type{
 	SkillPointBonus,
 	SpellBonus,
 	SpellPointBonus,
+	TraitBonus,
 	WeaponBonus,
 	WeaponAccBonus,
 	WeaponScopeAccBonus,
@@ -126,6 +128,8 @@ func (enum Type) Key() string {
 		return "spell_bonus"
 	case SpellPointBonus:
 		return "spell_point_bonus"
+	case TraitBonus:
+		return "trait_bonus"
 	case WeaponBonus:
 		return "weapon_bonus"
 	case WeaponAccBonus:
@@ -202,6 +206,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Gives a spell level modifier of`)
 	case SpellPointBonus:
 		return i18n.Text(`Gives a spell point modifier of`)
+	case TraitBonus:
+		return i18n.Text(`Gives a trait level modifier of`)
 	case WeaponBonus:
 		return i18n.Text(`Gives a weapon damage modifier of`)
 	case WeaponAccBonus:

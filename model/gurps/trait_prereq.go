@@ -87,7 +87,7 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		}
 		var levels fxp.Int
 		if t.IsLeveled() {
-			levels = t.Levels.Max(0)
+			levels = t.CurrentLevel()
 		}
 		satisfied = p.LevelCriteria.Matches(levels)
 		return satisfied

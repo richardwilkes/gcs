@@ -643,6 +643,10 @@ var allEnums = []*enumInfo{
 				String: "Gives a spell point modifier of",
 			},
 			{
+				Key:    "trait_bonus",
+				String: "Gives a trait level modifier of",
+			},
+			{
 				Key:    "weapon_bonus",
 				String: "Gives a weapon damage modifier of",
 			},

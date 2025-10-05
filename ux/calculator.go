@@ -617,10 +617,11 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 		enhMove := -fxp.One
 		gurps.Traverse(func(t *gurps.Trait) bool {
 			if strings.EqualFold(t.NameWithReplacements(), "enhanced move (ground)") && t.IsLeveled() {
+				current := t.CurrentLevel()
 				if enhMove == -fxp.One {
-					enhMove = t.Levels
+					enhMove = current
 				} else {
-					enhMove += t.Levels
+					enhMove += current
 				}
 			}
 			return false
@@ -682,10 +683,11 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	levels := -fxp.One
 	gurps.Traverse(func(t *gurps.Trait) bool {
 		if strings.EqualFold(t.NameWithReplacements(), "super jump") && t.IsLeveled() {
+			current := t.CurrentLevel()
 			if levels == -fxp.One {
-				levels = t.Levels
+				levels = current
 			} else {
-				levels += t.Levels
+				levels += current
 			}
 		}
 		return false
@@ -861,10 +863,11 @@ func (c *Calculator) updateHikingResult() {
 	enhMove := -fxp.One
 	gurps.Traverse(func(t *gurps.Trait) bool {
 		if strings.EqualFold(t.NameWithReplacements(), "enhanced move (ground)") && t.IsLeveled() {
+			current := t.CurrentLevel()
 			if enhMove == -fxp.One {
-				enhMove = t.Levels
+				enhMove = current
 			} else {
-				enhMove += t.Levels
+				enhMove += current
 			}
 		}
 		return false

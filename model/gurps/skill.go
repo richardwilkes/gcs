@@ -610,6 +610,16 @@ func (s *Skill) String() string {
 	return buffer.String()
 }
 
+// IsLeveled implements LeveledOwner
+func (s *Skill) IsLeveled() bool {
+	return !s.Container()
+}
+
+// CurrentLevel implements LeveledOwner
+func (s *Skill) CurrentLevel() fxp.Int {
+	return s.LevelData.Level
+}
+
 // RelativeLevel returns the adjusted relative level as a string.
 func (s *Skill) RelativeLevel() string {
 	if s.Container() || s.LevelData.Level <= 0 {

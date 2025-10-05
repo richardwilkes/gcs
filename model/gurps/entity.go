@@ -96,6 +96,7 @@ type features struct {
 	skillPointBonuses []*SkillPointBonus
 	spellBonuses      []*SpellBonus
 	spellPointBonuses []*SpellPointBonus
+	traitBonuses      []*TraitBonus
 	weaponBonuses     []*WeaponBonus
 }
 
@@ -336,30 +337,26 @@ func (e *Entity) ensureAttachments() {
 
 func (e *Entity) processFeatures() {
 	e.features = features{}
-	Traverse(func(a *Trait) bool {
-		var levels fxp.Int
-		if a.IsLeveled() {
-			levels = a.Levels.Max(0)
-		}
-		if !a.Container() {
-			for _, f := range a.Features {
-				e.processFeature(a, nil, f, levels)
+	Traverse(func(t *Trait) bool {
+		if !t.Container() {
+			for _, f := range t.Features {
+				e.processFeature(t, nil, f, t)
 			}
 		}
-		for _, f := range FeaturesForSelfControlRoll(a.CR, a.CRAdj) {
-			e.processFeature(a, nil, f, levels)
+		for _, f := range FeaturesForSelfControlRoll(t.CR, t.CRAdj) {
+			e.processFeature(t, nil, f, t)
 		}
 		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
-				e.processFeature(a, nil, f, mod.CurrentLevel())
+				e.processFeature(t, nil, f, mod)
 			}
 			return false
-		}, true, true, a.Modifiers...)
+		}, true, true, t.Modifiers...)
 		return false
 	}, true, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
 		for _, f := range s.Features {
-			e.processFeature(s, nil, f, s.LevelData.Level)
+			e.processFeature(s, nil, f, s)
 		}
 		return false
 	}, false, true, e.Skills...)
@@ -368,11 +365,11 @@ func (e *Entity) processFeatures() {
 			return false
 		}
 		for _, f := range eqp.Features {
-			e.processFeature(eqp, nil, f, eqp.Level.Max(0))
+			e.processFeature(eqp, nil, f, eqp)
 		}
 		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
-				e.processFeature(eqp, mod, f, eqp.Level.Max(0))
+				e.processFeature(eqp, mod, f, eqp)
 			}
 			return false
 		}, true, true, eqp.Modifiers...)
@@ -407,11 +404,11 @@ func (e *Entity) processFeatures() {
 	e.BlockBonusTooltip = tooltip.String()
 }
 
-func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels fxp.Int) {
+func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveledOwner LeveledOwner) {
 	if bonus, ok := f.(Bonus); ok {
 		bonus.SetOwner(owner)
 		bonus.SetSubOwner(subOwner)
-		bonus.SetLevel(levels)
+		bonus.SetLeveledOwner(leveledOwner)
 	}
 	switch actual := f.(type) {
 	case *AttributeBonus:
@@ -442,7 +439,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 							}
 							additionalDRBonus.SetOwner(owner)
 							additionalDRBonus.SetSubOwner(subOwner)
-							additionalDRBonus.SetLevel(levels)
+							additionalDRBonus.SetLeveledOwner(leveledOwner)
 							e.features.drBonuses = append(e.features.drBonuses, &additionalDRBonus)
 						}
 					}
@@ -461,7 +458,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 					}
 					additionalDRBonus.SetOwner(owner)
 					additionalDRBonus.SetSubOwner(subOwner)
-					additionalDRBonus.SetLevel(levels)
+					additionalDRBonus.SetLeveledOwner(leveledOwner)
 					e.features.drBonuses = append(e.features.drBonuses, &additionalDRBonus)
 				}
 			}
@@ -476,6 +473,8 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 		e.features.spellBonuses = append(e.features.spellBonuses, actual)
 	case *SpellPointBonus:
 		e.features.spellPointBonuses = append(e.features.spellPointBonuses, actual)
+	case *TraitBonus:
+		e.features.traitBonuses = append(e.features.traitBonuses, actual)
 	case *WeaponBonus:
 		e.features.weaponBonuses = append(e.features.weaponBonuses, actual)
 	case *ConditionalModifierBonus, *ContainedWeightReduction, *ReactionBonus:
@@ -718,10 +717,10 @@ func (e *Entity) ThrowingStrength() fxp.Int {
 // TelekineticStrength returns the total telekinetic strength.
 func (e *Entity) TelekineticStrength() fxp.Int {
 	var levels fxp.Int
-	Traverse(func(a *Trait) bool {
-		if !a.Container() && a.IsLeveled() {
-			if strings.EqualFold(a.NameWithReplacements(), "telekinesis") {
-				levels += a.Levels.Max(0)
+	Traverse(func(t *Trait) bool {
+		if !t.Container() && t.IsLeveled() {
+			if strings.EqualFold(t.NameWithReplacements(), "telekinesis") {
+				levels += t.CurrentLevel()
 			}
 		}
 		return false
@@ -902,6 +901,23 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 	return total
 }
 
+// TraitBonusFor returns the total bonus for the matching trait bonuses.
+func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
+	var total fxp.Int
+	for _, bonus := range e.features.traitBonuses {
+		var replacements map[string]string
+		if na, ok := bonus.Owner().(nameable.Accesser); ok {
+			replacements = na.NameableReplacements()
+		}
+		if bonus.NameCriteria.Matches(replacements, name) &&
+			bonus.TagsCriteria.MatchesList(replacements, tags...) {
+			total += bonus.AdjustedAmount()
+			bonus.AddToTooltip(tooltip)
+		}
+	}
+	return total
+}
+
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
 // created. The provided map (or the newly created one) will be returned.
 func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
@@ -957,12 +973,12 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 }
 
 func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool) {
-	savedLevel := bonus.Level
+	savedLeveledOwner := bonus.LeveledOwner
 	savedDieCount := bonus.DieCount
 	bonus.DieCount = fxp.FromInteger(dieCount)
-	bonus.Level = bonus.DerivedLevel()
+	bonus.LeveledOwner = bonus.DerivedLeveledOwner()
 	bonus.AddToTooltip(tooltip)
-	bonus.Level = savedLevel
+	bonus.LeveledOwner = savedLeveledOwner
 	bonus.DieCount = savedDieCount
 	m[bonus] = true
 }

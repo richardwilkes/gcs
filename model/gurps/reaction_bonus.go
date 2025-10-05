@@ -55,9 +55,9 @@ func (r *ReactionBonus) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(r.Situation, m, existing)
 }
 
-// SetLevel implements Bonus.
-func (r *ReactionBonus) SetLevel(level fxp.Int) {
-	r.Level = level
+// SetLeveledOwner implements Bonus.
+func (r *ReactionBonus) SetLeveledOwner(owner LeveledOwner) {
+	r.LeveledOwner = owner
 }
 
 // AddToTooltip implements Bonus.
