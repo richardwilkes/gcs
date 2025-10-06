@@ -391,7 +391,6 @@ func (w *Weapon) String() string {
 func (w *Weapon) Notes() string {
 	var buffer strings.Builder
 	if w.Owner != nil {
-		buffer.WriteString(w.Owner.ResolveLocalNotes())
 		switch owner := w.Owner.(type) {
 		case *Equipment:
 			Traverse(func(mod *EquipmentModifier) bool {
