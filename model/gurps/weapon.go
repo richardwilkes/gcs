@@ -98,11 +98,13 @@ type WeaponData struct {
 // Weapon holds the stats for a weapon.
 type Weapon struct {
 	WeaponData
-	Owner WeaponOwner
+	Owner       WeaponOwner
+	NotEquipped bool
+	NotCarried  bool
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
-func ExtractWeaponsOfType(melee, excludeHidden bool, list []*Weapon) []*Weapon {
+func ExtractWeaponsOfType(melee, _, excludeHidden bool, list []*Weapon) []*Weapon {
 	var result []*Weapon
 	for _, w := range list {
 		if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
@@ -376,7 +378,13 @@ func (w *Weapon) String() string {
 	if xreflect.IsNil(w.Owner) {
 		return ""
 	}
-	return w.Owner.String()
+	s := w.Owner.String()
+	if w.NotCarried {
+		s += " (" + i18n.Text("not carried") + ")"
+	} else if w.NotEquipped {
+		s += " (" + i18n.Text("not equipped") + ")"
+	}
+	return s
 }
 
 // Notes returns the notes for this weapon.

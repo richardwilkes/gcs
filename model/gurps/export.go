@@ -600,7 +600,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		data.Notes = append(data.Notes, note)
 		return false
 	}, true, false, entity.Notes...)
-	for _, w := range entity.EquippedWeapons(true, true) {
+	for _, w := range entity.Weapons(true, entity.SheetSettings.ShowAllWeapons, true) {
 		weaponST := w.Strength.Resolve(w, nil)
 		parry := w.Parry.Resolve(w, nil)
 		block := w.Block.Resolve(w, nil)
@@ -621,7 +621,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			StrengthParts: weaponST,
 		})
 	}
-	for _, w := range entity.EquippedWeapons(false, true) {
+	for _, w := range entity.Weapons(false, entity.SheetSettings.ShowAllWeapons, true) {
 		accuracy := w.Accuracy.Resolve(w, nil)
 		weaponRange := w.Range.Resolve(w, nil)
 		rof := w.RateOfFire.Resolve(w, nil)

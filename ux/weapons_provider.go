@@ -14,6 +14,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -50,12 +51,24 @@ func (p *weaponsProvider) SetTable(table *unison.Table[*Node[*gurps.Weapon]]) {
 	p.table = table
 }
 
+func (p *weaponsProvider) showAllWeapons() bool {
+	owner := p.provider.DataOwner()
+	if xreflect.IsNil(owner) {
+		return false
+	}
+	entity := owner.OwningEntity()
+	if entity == nil {
+		return false
+	}
+	return entity.SheetSettings.ShowAllWeapons
+}
+
 func (p *weaponsProvider) RootRowCount() int {
-	return len(p.provider.Weapons(p.melee, p.forPage))
+	return len(p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage))
 }
 
 func (p *weaponsProvider) RootRows() []*Node[*gurps.Weapon] {
-	data := p.provider.Weapons(p.melee, p.forPage)
+	data := p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage)
 	rows := make([]*Node[*gurps.Weapon], 0, len(data))
 	for _, one := range data {
 		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
@@ -68,7 +81,7 @@ func (p *weaponsProvider) SetRootRows(rows []*Node[*gurps.Weapon]) {
 }
 
 func (p *weaponsProvider) RootData() []*gurps.Weapon {
-	return p.provider.Weapons(p.melee, p.forPage)
+	return p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage)
 }
 
 func (p *weaponsProvider) SetRootData(data []*gurps.Weapon) {
@@ -170,7 +183,7 @@ func (p *weaponsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Nod
 	if !p.forPage {
 		w := gurps.NewWeapon(p.provider.WeaponOwner(), p.melee)
 		InsertItems(owner, table,
-			func() []*gurps.Weapon { return p.provider.Weapons(p.melee, false) },
+			func() []*gurps.Weapon { return p.provider.Weapons(p.melee, p.showAllWeapons(), false) },
 			func(list []*gurps.Weapon) { p.provider.SetWeapons(p.melee, list) },
 			func(_ *unison.Table[*Node[*gurps.Weapon]]) []*Node[*gurps.Weapon] { return p.RootRows() }, w)
 		EditWeapon(owner, w)
@@ -181,7 +194,7 @@ func (p *weaponsProvider) Serialize() ([]byte, error) {
 	if p.forPage {
 		return nil, errs.New("not allowed")
 	}
-	return jio.SerializeAndCompress(p.provider.Weapons(p.melee, false))
+	return jio.SerializeAndCompress(p.provider.Weapons(p.melee, p.showAllWeapons(), false))
 }
 
 func (p *weaponsProvider) Deserialize(data []byte) error {

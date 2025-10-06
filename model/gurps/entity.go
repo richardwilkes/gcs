@@ -1322,17 +1322,7 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 }
 
 // Weapons implements WeaponListProvider.
-func (e *Entity) Weapons(melee, excludeHidden bool) []*Weapon {
-	return e.EquippedWeapons(melee, excludeHidden)
-}
-
-// SetWeapons implements WeaponListProvider.
-func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
-	// Not permitted
-}
-
-// EquippedWeapons returns a sorted list of equipped weapons.
-func (e *Entity) EquippedWeapons(melee, excludeHidden bool) []*Weapon {
+func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
 	m := make(map[uint64]*Weapon)
 	Traverse(func(t *Trait) bool {
 		for _, w := range t.Weapons {
@@ -1343,15 +1333,31 @@ func (e *Entity) EquippedWeapons(melee, excludeHidden bool) []*Weapon {
 		return false
 	}, true, true, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
-		if eqp.Equipped && eqp.Quantity > 0 {
+		if (includeUnequipped || eqp.Equipped) && eqp.Quantity > 0 {
 			for _, w := range eqp.Weapons {
 				if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
+					w.NotEquipped = !eqp.Equipped
+					w.NotCarried = false
 					m[w.HashResolved()] = w
 				}
 			}
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
+	if includeUnequipped {
+		Traverse(func(eqp *Equipment) bool {
+			if eqp.Quantity > 0 {
+				for _, w := range eqp.Weapons {
+					if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
+						w.NotEquipped = true
+						w.NotCarried = true
+						m[w.HashResolved()] = w
+					}
+				}
+			}
+			return false
+		}, false, false, e.OtherEquipment...)
+	}
 	Traverse(func(s *Skill) bool {
 		for _, w := range s.Weapons {
 			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
@@ -1374,6 +1380,11 @@ func (e *Entity) EquippedWeapons(melee, excludeHidden bool) []*Weapon {
 	}
 	slices.SortFunc(list, func(a, b *Weapon) int { return a.Compare(b) })
 	return list
+}
+
+// SetWeapons implements WeaponListProvider.
+func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
+	// Not permitted
 }
 
 // Reactions returns the current set of reactions.

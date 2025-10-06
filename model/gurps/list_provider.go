@@ -85,6 +85,6 @@ type ReactionModifierListProvider interface {
 type WeaponListProvider interface {
 	DataOwnerProvider
 	WeaponOwner() WeaponOwner
-	Weapons(melee, excludeHidden bool) []*Weapon
+	Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 	SetWeapons(melee bool, list []*Weapon)
 }

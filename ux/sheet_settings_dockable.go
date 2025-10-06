@@ -41,6 +41,7 @@ type sheetSettingsDockable struct {
 	damageProgressionPopup             *unison.PopupMenu[progression.Option]
 	showTraitModifier                  *unison.CheckBox
 	showEquipmentModifier              *unison.CheckBox
+	showAllWeapons                     *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
 	hideSourceMismatch                 *unison.CheckBox
 	hidePageRefColumn                  *unison.CheckBox
@@ -186,6 +187,11 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 		s.ShowEquipmentModifierAdj, func() {
 			d.settings().ShowEquipmentModifierAdj = d.showEquipmentModifier.State == check.On
 			d.syncSheet(false)
+		})
+	d.showAllWeapons = d.addCheckBox(panel, i18n.Text("Show all weapons"),
+		s.ShowAllWeapons, func() {
+			d.settings().ShowAllWeapons = d.showAllWeapons.State == check.On
+			d.syncSheet(true)
 		})
 	d.showSpellAdjustments = d.addCheckBox(panel, i18n.Text("Show spell ritual, cost & time adjustments"),
 		s.ShowSpellAdj, func() {
@@ -484,6 +490,7 @@ func (d *sheetSettingsDockable) sync() {
 	d.hideLCColumn.State = check.FromBool(!s.HideLCColumn)
 	d.showTraitModifier.State = check.FromBool(s.ShowTraitModifierAdj)
 	d.showEquipmentModifier.State = check.FromBool(s.ShowEquipmentModifierAdj)
+	d.showAllWeapons.State = check.FromBool(s.ShowAllWeapons)
 	d.showSpellAdjustments.State = check.FromBool(s.ShowSpellAdj)
 	d.showTitleInsteadOfNameInPageFooter.State = check.FromBool(s.UseTitleInFooter)
 	d.showLiftingSTDamage.State = check.FromBool(s.ShowLiftingSTDamage)

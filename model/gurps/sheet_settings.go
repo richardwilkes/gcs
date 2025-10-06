@@ -45,6 +45,7 @@ type SheetSettingsData struct {
 	UseHalfStatDefaults           bool               `json:"use_half_stat_defaults,omitempty"`
 	ShowTraitModifierAdj          bool               `json:"show_trait_modifier_adj,omitempty"`
 	ShowEquipmentModifierAdj      bool               `json:"show_equipment_modifier_adj,omitempty"`
+	ShowAllWeapons                bool               `json:"show_all_weapons,omitempty"`
 	ShowSpellAdj                  bool               `json:"show_spell_adj,omitempty"`
 	HideSourceMismatch            bool               `json:"hide_source_mismatch,omitempty"`
 	HideTLColumn                  bool               `json:"hide_tl_column,omitempty"`
