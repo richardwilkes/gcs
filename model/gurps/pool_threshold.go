@@ -125,6 +125,11 @@ func (p *PoolThreshold) Threshold(attr *Attribute) fxp.Int {
 	return ResolveToNumber(attr.Entity, deferredNewScriptAttribute(attr), p.Value)
 }
 
+// ResolveExplanation returns the explanation with any embedded scripts resolved.
+func (p *PoolThreshold) ResolveExplanation(attr *Attribute) string {
+	return ResolveText(attr.Entity, deferredNewScriptAttribute(attr), p.Explanation)
+}
+
 // ContainsOp returns true if this PoolThreshold contains the specified ThresholdOp.
 func (p *PoolThreshold) ContainsOp(op threshold.Op) bool {
 	return slices.Contains(p.Ops, op)

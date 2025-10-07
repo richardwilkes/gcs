@@ -285,7 +285,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					if threshold := attr.CurrentThreshold(); threshold != nil {
 						state := NewPageLabel("[" + threshold.State + "]")
 						if threshold.Explanation != "" {
-							state.Tooltip = newWrappedTooltip(threshold.Explanation)
+							state.Tooltip = newMarkdownTooltip(threshold.ResolveExplanation(attr), "")
 						}
 						a.AddChild(state)
 						a.stateLabels[def.ID()] = state
@@ -362,7 +362,7 @@ func (a *AttrPanel) Sync() {
 								OnBackgroundInk: unison.ThemeOnSurface,
 							})
 							if threshold.Explanation != "" {
-								label.Tooltip = newWrappedTooltip(threshold.Explanation)
+								label.Tooltip = newMarkdownTooltip(threshold.ResolveExplanation(attr), "")
 							}
 						} else {
 							label.Text = unison.NewSmallCapsText("", &unison.TextDecoration{

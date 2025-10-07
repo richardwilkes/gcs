@@ -124,11 +124,14 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 
 	text = i18n.Text("Explanation")
 	content.AddChild(NewFieldLeadingLabel(text, false))
-	field = NewMultiLineStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"explanation", text,
+	addScriptField(content, p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"explanation", text,
+		i18n.Text("A explanation of the effects of the threshold state. This field may have scripts embedded in it by wrapping each script in <script>your script goes here</script> tags."),
 		func() string { return p.threshold.Explanation },
-		func(s string) { p.threshold.Explanation = s })
-	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = newWrappedTooltip(i18n.Text("A explanation of the effects of the threshold state"))
+		func(value string) {
+			p.threshold.Explanation = value
+			content.MarkForLayoutAndRedraw()
+			MarkModified(content)
+		})
 	content.AddChild(field)
 
 	return content
