@@ -17,6 +17,16 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
+func deferredNewScriptWeapon(w *Weapon) ScriptSelfProvider {
+	if w == nil {
+		return ScriptSelfProvider{}
+	}
+	return ScriptSelfProvider{
+		ID:       string(w.TID),
+		Provider: func(r *goja.Runtime) any { return newScriptWeapon(r, w) },
+	}
+}
+
 func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
 	m := make(map[string]func() goja.Value)
 	m["id"] = func() goja.Value { return r.ToValue(w.TID) }

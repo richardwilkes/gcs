@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -133,12 +134,16 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 
 	wrapper = addFillWrapper(content, "", 2)
 	text := i18n.Text("Non-Leveled Damage Modifier")
-	addNullableDice(wrapper, text, text, &damage.Base, true)
+	addScriptField(wrapper, nil, "", text, text,
+		func() string { return damage.Base },
+		func(s string) { damage.Base = strings.TrimSpace(s) })
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(unaffected by levels)"), false))
 
 	wrapper = addFillWrapper(content, "", 2)
 	text = i18n.Text("Leveled Damage Modifier")
-	addNullableDice(wrapper, text, text, &damage.BaseLeveled, true)
+	addScriptField(wrapper, nil, "", text, text,
+		func() string { return damage.BaseLeveled },
+		func(s string) { damage.BaseLeveled = strings.TrimSpace(s) })
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per level"), false))
 
 	wrapper = addFillWrapper(content, "", 2)
@@ -157,7 +162,9 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 
 	wrapper = addFillWrapper(content, i18n.Text("Fragmentation"), 5)
 	text = i18n.Text("Fragmentation Base Damage")
-	addNullableDice(wrapper, text, text, &damage.Fragmentation, false)
+	addScriptField(wrapper, nil, "", text, text,
+		func() string { return damage.Fragmentation },
+		func(s string) { damage.Fragmentation = strings.TrimSpace(s) })
 	wrapper.AddChild(NewFieldTrailingLabel(armorDivisor, false))
 	text = i18n.Text("Fragmentation Armor Divisor")
 	addDecimalField(wrapper, nil, "", text, text, &damage.FragmentationArmorDivisor, 0, fxp.MillionMinusOne)

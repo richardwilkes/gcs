@@ -12,7 +12,6 @@ package gurps
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -42,11 +41,7 @@ func newBite(owner WeaponOwner) *Weapon {
 	}
 	bite.Damage.Type = "cr"
 	bite.Damage.StrengthType = stdmg.Thrust
-	bite.Damage.Base = &dice.Dice{
-		Sides:      6,
-		Modifier:   -1,
-		Multiplier: 1,
-	}
+	bite.Damage.Base = "-1"
 	bite.Damage.ArmorDivisor = fxp.One
 	bite.Damage.FragmentationArmorDivisor = fxp.One
 	bite.Damage.Owner = bite
@@ -79,11 +74,7 @@ func newPunch(owner WeaponOwner) *Weapon {
 	}
 	punch.Damage.Type = "cr"
 	punch.Damage.StrengthType = stdmg.Thrust
-	punch.Damage.Base = &dice.Dice{
-		Sides:      6,
-		Modifier:   -1,
-		Multiplier: 1,
-	}
+	punch.Damage.Base = "-1"
 	punch.Damage.ArmorDivisor = fxp.One
 	punch.Damage.FragmentationArmorDivisor = fxp.One
 	punch.Damage.Owner = punch

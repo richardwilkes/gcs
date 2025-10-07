@@ -27,7 +27,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -148,7 +147,7 @@ func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
 		w.Damage.StrengthType = stdmg.Thrust
 	} else {
 		w.RateOfFire.Mode1.ShotsPerAttack = fxp.One
-		w.Damage.Base = dice.New("1d")
+		w.Damage.Base = "1d"
 	}
 	return &w
 }
@@ -427,7 +426,7 @@ func (w *Weapon) performDataSubVersionFixups() {
 	case 0: // Prior to sub-versioning
 		if leveler, ok := w.Owner.(interface{ IsLeveled() bool }); ok && leveler.IsLeveled() {
 			w.Damage.BaseLeveled = w.Damage.Base
-			w.Damage.Base = nil
+			w.Damage.Base = ""
 		}
 	}
 	w.SubVersion = currentWeaponSubVersion

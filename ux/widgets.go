@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -402,34 +401,6 @@ func addFillWrapper(parent *unison.Panel, labelText string, count int) *unison.P
 		HGrab:  true,
 	})
 	return wrapper
-}
-
-func addNullableDice(parent *unison.Panel, labelText, tooltip string, fieldData **dice.Dice, useSign bool) *StringField {
-	var data string
-	if *fieldData != nil {
-		data = (*fieldData).String()
-	}
-	field := NewStringField(nil, "", labelText,
-		func() string {
-			if useSign && data != "" && !strings.HasPrefix(data, "+") && !strings.HasPrefix(data, "-") {
-				return "+" + data
-			}
-			return data
-		},
-		func(value string) {
-			data = strings.TrimPrefix(strings.TrimSpace(value), "+")
-			if value == "" {
-				*fieldData = nil
-			} else {
-				*fieldData = dice.New(data)
-			}
-			MarkModified(parent)
-		})
-	if tooltip != "" {
-		field.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(field)
-	return field
 }
 
 func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip string, choices []T, fieldData *T) *unison.PopupMenu[T] {

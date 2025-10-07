@@ -90,7 +90,7 @@ func mustSet(vm *goja.Runtime, name string, value any) {
 // ResolveText will process embedded scripts.
 func ResolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
 	return embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
-		return resolveScript(entity, selfProvider, s[len(scriptStart):len(s)-len(scriptEnd)])
+		return ResolveScript(entity, selfProvider, s[len(scriptStart):len(s)-len(scriptEnd)])
 	})
 }
 
@@ -105,7 +105,7 @@ func ResolveToNumber(entity *Entity, selfProvider ScriptSelfProvider, text strin
 	if v, err := fxp.FromString(trimmed); err == nil {
 		return v
 	}
-	result := resolveScript(entity, selfProvider, text)
+	result := ResolveScript(entity, selfProvider, text)
 	value, err := fxp.FromString(result)
 	if err != nil {
 		slog.Error("unable to resolve script result to a number", "result", result, "script", text)
@@ -125,7 +125,7 @@ func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text strin
 	if w, err := fxp.WeightFromString(trimmed, defUnits); err == nil {
 		return w
 	}
-	result := resolveScript(entity, selfProvider, text)
+	result := ResolveScript(entity, selfProvider, text)
 	w, err := fxp.WeightFromString(result, defUnits)
 	if err != nil {
 		slog.Error("unable to resolve script result to a weight", "result", result, "script", text)
@@ -138,7 +138,8 @@ const maximumAllowedResolvingDepth = 20
 
 var scriptResolvingDepth = 0
 
-func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
+// ResolveScript will process a script.
+func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
 	scriptResolvingDepth++
 	defer func() {
 		scriptResolvingDepth--

@@ -30,10 +30,10 @@ type WeaponDamageData struct {
 	StrengthType              stdmg.Option `json:"st,omitempty"`
 	Leveled                   bool         `json:"leveled,omitempty"`
 	StrengthMultiplier        fxp.Int      `json:"st_mul,omitempty"`
-	Base                      *dice.Dice   `json:"base,omitempty"`
-	BaseLeveled               *dice.Dice   `json:"base_leveled,omitempty"`
+	Base                      string       `json:"base,omitempty"`
+	BaseLeveled               string       `json:"base_leveled,omitempty"`
 	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitempty"`
-	Fragmentation             *dice.Dice   `json:"fragmentation,omitempty"`
+	Fragmentation             string       `json:"fragmentation,omitempty"`
 	FragmentationArmorDivisor fxp.Int      `json:"fragmentation_armor_divisor,omitempty"`
 	FragmentationType         string       `json:"fragmentation_type,omitempty"`
 	ModifierPerDie            fxp.Int      `json:"modifier_per_die,omitempty"`
@@ -55,10 +55,10 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 	xhash.Num8(h, w.StrengthType)
 	xhash.Bool(h, w.Leveled)
 	xhash.Num64(h, w.StrengthMultiplier)
-	w.Base.Hash(h)
-	w.BaseLeveled.Hash(h)
+	xhash.StringWithLen(h, w.Base)
+	xhash.StringWithLen(h, w.BaseLeveled)
 	xhash.Num64(h, w.ArmorDivisor)
-	w.Fragmentation.Hash(h)
+	xhash.StringWithLen(h, w.Fragmentation)
 	xhash.Num64(h, w.FragmentationArmorDivisor)
 	xhash.StringWithLen(h, w.FragmentationType)
 	xhash.Num64(h, w.ModifierPerDie)
@@ -68,18 +68,6 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 	other := *w
 	other.Owner = owner
-	if other.Base != nil {
-		d := *other.Base
-		other.Base = &d
-	}
-	if other.BaseLeveled != nil {
-		d := *other.BaseLeveled
-		other.BaseLeveled = &d
-	}
-	if other.Fragmentation != nil {
-		d := *other.Fragmentation
-		other.Fragmentation = &d
-	}
 	return &other
 }
 
@@ -102,7 +90,8 @@ func (w *WeaponDamage) UnmarshalJSON(data []byte) error {
 	if w.ArmorDivisor == 0 {
 		w.ArmorDivisor = fxp.One
 	}
-	if w.Fragmentation != nil && w.FragmentationArmorDivisor == 0 {
+	w.Fragmentation = strings.TrimSpace(w.Fragmentation)
+	if w.Fragmentation != "" && w.FragmentationArmorDivisor == 0 {
 		w.FragmentationArmorDivisor = fxp.One
 	}
 	return nil
@@ -120,19 +109,22 @@ func (w *WeaponDamage) MarshalJSON() ([]byte, error) {
 	if armorDivisor == fxp.One {
 		w.ArmorDivisor = 0
 	}
-	fragArmorDivisor := w.FragmentationArmorDivisor
-	if w.Fragmentation == nil {
+	w.Fragmentation = strings.TrimSpace(w.Fragmentation)
+	if w.Fragmentation == "" {
 		w.FragmentationArmorDivisor = 0
 		w.FragmentationType = ""
 	} else if w.FragmentationArmorDivisor == fxp.One {
 		w.FragmentationArmorDivisor = 0
 	}
+	// An armor divisor of 0 is not valid and 1 is very common, so suppress its output when 1.
+	fragArmorDivisor := w.FragmentationArmorDivisor
+	if fragArmorDivisor == fxp.One {
+		fragArmorDivisor = 0
+	}
 	data, err := json.Marshal(&w.WeaponDamageData)
 	w.StrengthMultiplier = strengthMultiplier
 	w.ArmorDivisor = armorDivisor
-	if w.Fragmentation != nil {
-		w.FragmentationArmorDivisor = fragArmorDivisor
-	}
+	w.FragmentationArmorDivisor = fragArmorDivisor
 	return data, err
 }
 
@@ -148,21 +140,15 @@ func (w *WeaponDamage) String() string {
 	if w.Owner != nil {
 		convertMods = SheetSettingsFor(EntityFromNode(w.Owner)).UseModifyingDicePlusAdds
 	}
-	if w.Base != nil {
-		if base := w.Base.StringExtra(convertMods); base != "0" {
-			if buffer.Len() != 0 && base[0] != '+' && base[0] != '-' {
-				buffer.WriteByte('+')
-			}
-			buffer.WriteString(base)
-		}
+	if w.Base != "" {
+		buffer.WriteString(w.formatDiceWithSub(w.Base, convertMods, buffer.Len() != 0))
 	}
-	if w.BaseLeveled != nil {
-		if base := w.BaseLeveled.StringExtra(convertMods); base != "0" {
-			if buffer.Len() != 0 && base[0] != '+' && base[0] != '-' {
-				buffer.WriteByte('+')
-			}
-			buffer.WriteString(base)
-			buffer.WriteString(i18n.Text(" per level "))
+	if w.BaseLeveled != "" {
+		if s := w.formatDiceWithSub(w.BaseLeveled, convertMods, buffer.Len() != 0); s != "" {
+			buffer.WriteString(s)
+			buffer.WriteByte(' ')
+			buffer.WriteString(i18n.Text("per level"))
+			buffer.WriteByte(' ')
 		}
 	}
 	if w.ArmorDivisor != fxp.One {
@@ -182,10 +168,10 @@ func (w *WeaponDamage) String() string {
 		buffer.WriteByte(' ')
 		buffer.WriteString(t)
 	}
-	if w.Fragmentation != nil {
-		if frag := w.Fragmentation.StringExtra(convertMods); frag != "0" {
+	if w.Fragmentation != "" {
+		if s := w.formatDiceWithSub(w.Fragmentation, convertMods, false); s != "" {
 			buffer.WriteString(" [")
-			buffer.WriteString(frag)
+			buffer.WriteString(s)
 			if w.FragmentationArmorDivisor != fxp.One {
 				buffer.WriteByte('(')
 				buffer.WriteString(w.FragmentationArmorDivisor.String())
@@ -262,8 +248,9 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		Sides:      6,
 		Multiplier: 1,
 	}
-	if w.Base != nil {
-		*base = *w.Base
+	baseSub := false
+	if w.Base != "" {
+		base, baseSub = w.resolveDiceSpec(w.Base)
 	}
 	levels := 0
 	switch t := w.Owner.Owner.(type) {
@@ -276,10 +263,10 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 			levels = fxp.AsInteger[int](t.Level)
 		}
 	}
-	if levels > 0 && w.BaseLeveled != nil {
-		leveled := *w.BaseLeveled
-		multiplyDice(levels, &leveled)
-		base = addDice(base, &leveled)
+	if levels > 0 && w.BaseLeveled != "" {
+		leveled, leveledSub := w.resolveDiceSpec(w.BaseLeveled)
+		multiplyDice(levels, leveled)
+		base, baseSub = addDice(base, leveled, baseSub, leveledSub)
 	}
 	intST := fxp.AsInteger[int](st)
 	var stDamage *dice.Dice
@@ -294,7 +281,11 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	if w.Leveled && levels >= 0 {
 		multiplyDice(levels, stDamage)
 	}
-	base = addDice(base, stDamage)
+	base, baseSub = addDice(base, stDamage, baseSub, false)
+	if baseSub {
+		// Still negative, so return 0 damage.
+		base = &dice.Dice{Sides: 6, Multiplier: 1}
+	}
 	return base
 }
 
@@ -368,8 +359,13 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		}
 		buffer.WriteString(t)
 	}
-	if w.Fragmentation != nil {
-		if frag := w.Fragmentation.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds); frag != "0" {
+	if w.Fragmentation != "" {
+		d, sub := w.resolveDiceSpec(w.Fragmentation)
+		if sub {
+			// Negative fragmentation doesn't make sense, so ignore it.
+			d = &dice.Dice{Sides: 6, Multiplier: 1}
+		}
+		if frag := d.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds); frag != "0" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte(' ')
 			}
@@ -399,26 +395,46 @@ func multiplyDice(multiplier int, d *dice.Dice) {
 	}
 }
 
-func addDice(left, right *dice.Dice) *dice.Dice {
+func addDice(left, right *dice.Dice, leftSub, rightSub bool) (d *dice.Dice, sub bool) {
+	if leftSub {
+		left.Count = -left.Count
+	}
+	if rightSub {
+		right.Count = -right.Count
+	}
+	defer func() {
+		if leftSub {
+			left.Count = -left.Count
+		}
+		if rightSub {
+			right.Count = -right.Count
+		}
+	}()
 	if left.Sides > 1 && right.Sides > 1 && left.Sides != right.Sides {
 		sides := min(left.Sides, right.Sides)
 		average := fxp.FromInteger(sides + 1).Div(fxp.Two)
 		averageLeft := fxp.FromInteger(left.Count * (left.Sides + 1)).Div(fxp.Two).Mul(fxp.FromInteger(left.Multiplier))
 		averageRight := fxp.FromInteger(right.Count * (right.Sides + 1)).Div(fxp.Two).Mul(fxp.FromInteger(right.Multiplier))
 		averageBoth := averageLeft + averageRight
-		return &dice.Dice{
+		d = &dice.Dice{
 			Count:      fxp.AsInteger[int](averageBoth.Div(average)),
 			Sides:      sides,
 			Modifier:   fxp.AsInteger[int](averageBoth.Mod(average).Round()) + left.Modifier + right.Modifier,
 			Multiplier: 1,
 		}
+	} else {
+		d = &dice.Dice{
+			Count:      left.Count + right.Count,
+			Sides:      max(left.Sides, right.Sides),
+			Modifier:   left.Modifier + right.Modifier,
+			Multiplier: left.Multiplier + right.Multiplier - 1,
+		}
 	}
-	return &dice.Dice{
-		Count:      left.Count + right.Count,
-		Sides:      max(left.Sides, right.Sides),
-		Modifier:   left.Modifier + right.Modifier,
-		Multiplier: left.Multiplier + right.Multiplier - 1,
+	if d.Count < 0 {
+		d.Count = -d.Count
+		sub = true
 	}
+	return d, sub
 }
 
 func adjustDiceForPercentBonus(d *dice.Dice, percent fxp.Int) *dice.Dice {
@@ -440,4 +456,62 @@ func adjustDiceForPercentBonus(d *dice.Dice, percent fxp.Int) *dice.Dice {
 		Modifier:   fxp.AsInteger[int](modifier),
 		Multiplier: d.Multiplier,
 	}
+}
+
+func (w *WeaponDamage) formatDiceWithSub(s string, convertMods, following bool) string {
+	d, sub := w.resolveDiceSpec(s)
+	if base := d.StringExtra(convertMods); base != "0" {
+		if sub {
+			return "-" + base
+		}
+		if following && base[0] != '+' && base[0] != '-' {
+			return "+" + base
+		}
+		return base
+	}
+	return ""
+}
+
+func (w *WeaponDamage) resolveDiceSpec(s string) (d *dice.Dice, sub bool) {
+	if d, sub = parsePotentialDiceSpec(s); d != nil {
+		return d, sub
+	}
+	value := ResolveScript(w.Owner.Entity(), deferredNewScriptWeapon(w.Owner), s)
+	value = strings.TrimPrefix(strings.TrimSpace(value), "+")
+	if sub = isDiceSubtraction(value); sub {
+		value = value[1:]
+	}
+	return dice.New(value), sub
+}
+
+func parsePotentialDiceSpec(s string) (d *dice.Dice, sub bool) {
+	spec := strings.TrimLeft(strings.TrimSpace(s), "+")
+	if !strings.Contains(spec, " ") {
+		if sub = isDiceSubtraction(spec); sub {
+			spec = spec[1:]
+		}
+		d = dice.New(spec)
+		if spec == "0" || spec == "-0" {
+			return d, false
+		}
+		empty := dice.Dice{}
+		empty.Normalize()
+		if *d != empty {
+			return d, sub
+		}
+	}
+	return nil, false
+}
+
+func isDiceSubtraction(s string) bool {
+	if strings.HasPrefix(s, "-") {
+		i := 1
+		for i < len(s) && (s[i] >= '0' && s[i] <= '9') {
+			i++
+		}
+		if i < len(s) && (s[i] == 'd' || s[i] == 'D') {
+			return true
+		}
+	}
+	return false
 }

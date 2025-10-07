@@ -305,7 +305,11 @@ func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 }
 
 func (e *editor[N, D]) Rebuild(_ bool) {
-	gurps.DiscardGlobalResolveCache()
+	if entity := gurps.EntityFromNode(gurps.AsNode(e.target)); entity != nil {
+		entity.DiscardCaches()
+	} else {
+		gurps.DiscardGlobalResolveCache()
+	}
 	e.MarkModified(nil)
 	e.MarkForLayoutRecursively()
 	e.MarkForRedraw()
