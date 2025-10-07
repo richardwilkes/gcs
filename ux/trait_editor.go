@@ -24,9 +24,8 @@ import (
 )
 
 // EditTrait displays the editor for a trait.
-func EditTrait(owner Rebuildable, t *gurps.Trait) {
-	displayEditor(owner, t, svg.GCSTraits, "md:Help/Interface/Trait", nil,
-		initTraitEditor, nil)
+func EditTrait(owner Rebuildable, t *gurps.Trait) *editor[*gurps.Trait, *gurps.TraitEditData] {
+	return displayEditor(owner, t, svg.GCSTraits, "md:Help/Interface/Trait", nil, initTraitEditor, nil)
 }
 
 func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *unison.Panel) func() {
@@ -108,8 +107,10 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	} else {
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		content.AddChild(modifiersPanel)
-		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
-		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
+		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
+		content.AddChild(e.meleeWeapons)
+		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
+		content.AddChild(e.rangedWeapons)
 		content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	e.InstallCmdHandlers(NewTraitModifierItemID, unison.AlwaysEnabled,

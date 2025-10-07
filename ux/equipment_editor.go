@@ -21,8 +21,8 @@ import (
 )
 
 // EditEquipment displays the editor for equipment.
-func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) {
-	displayEditor(owner, equipment, svg.GCSEquipment,
+func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) *editor[*gurps.Equipment, *gurps.EquipmentEditData] {
+	return displayEditor(owner, equipment, svg.GCSEquipment,
 		"md:Help/Interface/Equipment", nil,
 		func(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel) func() {
 			addNameLabelAndField(content, &e.editorData.Name)
@@ -108,8 +108,10 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 			modifiersPanel := newEquipmentModifiersPanel(entity, &e.editorData.Modifiers)
 			content.AddChild(modifiersPanel)
-			content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
-			content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
+			e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
+			content.AddChild(e.meleeWeapons)
+			e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
+			content.AddChild(e.rangedWeapons)
 			e.InstallCmdHandlers(NewEquipmentModifierItemID, unison.AlwaysEnabled,
 				func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, NoItemVariant) })
 			e.InstallCmdHandlers(NewEquipmentContainerModifierItemID, unison.AlwaysEnabled,

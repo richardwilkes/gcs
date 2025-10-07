@@ -49,6 +49,8 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	applyButton          *unison.Button
 	cancelButton         *unison.Button
 	nameablesButton      *unison.Button
+	meleeWeapons         *weaponsPanel
+	rangedWeapons        *weaponsPanel
 	beforeData           D
 	editorData           D
 	modificationCallback func()
@@ -57,15 +59,19 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	promptForSave        bool
 }
 
-func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, icon *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) {
+func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, icon *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) *editor[N, D] {
+	var found *editor[N, D]
 	lookFor := gurps.AsNode(target).ID()
 	if Activate(func(d unison.Dockable) bool {
 		if e, ok := d.AsPanel().Self.(*editor[N, D]); ok {
-			return e.owner == owner && gurps.AsNode(e.target).ID() == lookFor
+			if e.owner == owner && gurps.AsNode(e.target).ID() == lookFor {
+				found = e
+				return true
+			}
 		}
 		return false
 	}) {
-		return
+		return found
 	}
 	e := &editor[N, D]{
 		owner:            owner,
@@ -145,6 +151,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 	}
 	PlaceInDock(e, group, false)
 	content.RequestFocus()
+	return e
 }
 
 func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {

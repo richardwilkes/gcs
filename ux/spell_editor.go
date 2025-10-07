@@ -22,9 +22,8 @@ import (
 )
 
 // EditSpell displays the editor for an spell.
-func EditSpell(owner Rebuildable, spell *gurps.Spell) {
-	displayEditor(owner, spell, svg.GCSSpells, "md:Help/Interface/Spell", nil,
-		initSpellEditor, nil)
+func EditSpell(owner Rebuildable, spell *gurps.Spell) *editor[*gurps.Spell, *gurps.SpellEditData] {
+	return displayEditor(owner, spell, svg.GCSSpells, "md:Help/Interface/Spell", nil, initSpellEditor, nil)
 }
 
 func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *unison.Panel) func() {
@@ -104,8 +103,10 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	addSourceFields(content, &e.target.SourcedID)
 	if !e.target.Container() {
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment))
-		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
-		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
+		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
+		content.AddChild(e.meleeWeapons)
+		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
+		content.AddChild(e.rangedWeapons)
 		content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	return nil

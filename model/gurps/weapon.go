@@ -98,9 +98,10 @@ type WeaponData struct {
 // Weapon holds the stats for a weapon.
 type Weapon struct {
 	WeaponData
-	Owner       WeaponOwner
-	NotEquipped bool
-	NotCarried  bool
+	Owner         WeaponOwner
+	ClonedFromTID tid.TID
+	NotEquipped   bool
+	NotCarried    bool
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
@@ -186,6 +187,7 @@ func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, preserveID bool) *
 	other := *w
 	if !preserveID {
 		other.TID = tid.MustNewTID(w.TID[0])
+		other.ClonedFromTID = w.TID
 	}
 	other.Damage = *w.Damage.Clone(&other)
 	other.Defaults = nil

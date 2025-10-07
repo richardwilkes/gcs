@@ -10,6 +10,9 @@
 package ux
 
 import (
+	"log/slog"
+	"reflect"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -174,9 +177,88 @@ func (p *weaponsProvider) ExcessWidthColumnID() int {
 }
 
 func (p *weaponsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Weapon]]) {
-	if !p.forPage {
+	if p.forPage {
+		OpenEditor(table, func(item *gurps.Weapon) {
+			if sheet := unison.Ancestor[*Sheet](table.AsPanel()); sheet != nil {
+				switch itemOwner := item.Owner.(type) {
+				case *gurps.Equipment:
+					if !openWeaponEditor(sheet, sheet.CarriedEquipment, item, itemOwner,
+						func(owner Rebuildable, eq *gurps.Equipment) *editor[*gurps.Equipment, *gurps.EquipmentEditData] {
+							return EditEquipment(owner, eq, true)
+						}) {
+						openWeaponEditor(sheet, sheet.OtherEquipment, item, itemOwner,
+							func(owner Rebuildable, eq *gurps.Equipment) *editor[*gurps.Equipment, *gurps.EquipmentEditData] {
+								return EditEquipment(owner, eq, false)
+							})
+					}
+				case *gurps.Skill:
+					openWeaponEditor(sheet, sheet.Skills, item, itemOwner, EditSkill)
+				case *gurps.Spell:
+					openWeaponEditor(sheet, sheet.Spells, item, itemOwner, EditSpell)
+				case *gurps.Trait:
+					openWeaponEditor(sheet, sheet.Traits, item, itemOwner, EditTrait)
+				default:
+					// Should not happen.
+					slog.Warn("unexpected weapon owner type", "type", reflect.TypeOf(item.Owner).String())
+				}
+			}
+		})
+	} else {
 		OpenEditor(table, func(item *gurps.Weapon) { EditWeapon(owner, item) })
 	}
+}
+
+func openWeaponEditor[T gurps.NodeTypes, D gurps.EditorData[T]](sheet *Sheet, pageList *PageList[T], item *gurps.Weapon, itemOwner T, editFunc func(Rebuildable, T) *editor[T, D]) bool {
+	if node := searchSheetTableFor(pageList, itemOwner); node != nil {
+		pageList.Table.DiscloseRow(node, false)
+		pageList.Table.ClearSelection()
+		pageList.Table.SelectByIndex(pageList.Table.RowToIndex(node))
+		OpenEditor(pageList.Table, func(data T) {
+			if editor := editFunc(sheet, data); editor != nil {
+				var p *weaponsPanel
+				if item.IsMelee() {
+					p = editor.meleeWeapons
+				} else {
+					p = editor.rangedWeapons
+				}
+				if p != nil {
+					wt := p.table
+					for _, row := range wt.RootRows() {
+						if row.data.ClonedFromTID == item.TID {
+							wt.ClearSelection()
+							wt.SelectByIndex(wt.RowToIndex(row))
+							OpenEditor(wt, func(w *gurps.Weapon) { EditWeapon(editor, w) })
+						}
+					}
+				}
+			}
+		})
+		return true
+	}
+	return false
+}
+
+func searchSheetTableFor[T gurps.NodeTypes](pageList *PageList[T], what T) *Node[T] {
+	for _, row := range pageList.Table.RootRows() {
+		if result := searchSheetTableRowsFor(pageList.Table, row, what); result != nil {
+			return result
+		}
+	}
+	return nil
+}
+
+func searchSheetTableRowsFor[T gurps.NodeTypes](table *unison.Table[*Node[T]], row *Node[T], what T) *Node[T] {
+	if what == row.data {
+		return row
+	}
+	if row.CanHaveChildren() {
+		for _, child := range row.Children() {
+			if result := searchSheetTableRowsFor(table, child, what); result != nil {
+				return result
+			}
+		}
+	}
+	return nil
 }
 
 func (p *weaponsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Weapon]], _ ItemVariant) {

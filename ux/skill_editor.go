@@ -24,8 +24,8 @@ import (
 )
 
 // EditSkill displays the editor for an skill.
-func EditSkill(owner Rebuildable, skill *gurps.Skill) {
-	displayEditor(owner, skill, svg.GCSSkills, "md:Help/Interface/Skill", nil, initSkillEditor, nil)
+func EditSkill(owner Rebuildable, skill *gurps.Skill) *editor[*gurps.Skill, *gurps.SkillEditData] {
+	return displayEditor(owner, skill, svg.GCSSkills, "md:Help/Interface/Skill", nil, initSkillEditor, nil)
 }
 
 func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *unison.Panel) func() {
@@ -196,8 +196,10 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			content.AddChild(newDefaultsPanel(entity, &e.editorData.Defaults))
 		}
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
-		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
-		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
+		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
+		content.AddChild(e.meleeWeapons)
+		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
+		content.AddChild(e.rangedWeapons)
 		content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	return nil

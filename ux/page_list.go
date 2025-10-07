@@ -146,11 +146,11 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	p.Table.SyncToModel()
 	p.AddChild(p.tableHeader)
 	p.AddChild(p.Table)
+	p.InstallCmdHandlers(OpenEditorItemID,
+		func(_ any) bool { return p.Table.HasSelection() },
+		func(_ any) { p.provider.OpenEditor(owner, p.Table) })
 	if owner != nil {
 		InstallTableDropSupport(p.Table, p.provider)
-		p.InstallCmdHandlers(OpenEditorItemID,
-			func(_ any) bool { return p.Table.HasSelection() },
-			func(_ any) { p.provider.OpenEditor(owner, p.Table) })
 		p.InstallCmdHandlers(unison.DeleteItemID,
 			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
 			func(_ any) { DeleteSelection(p.Table, true) })
