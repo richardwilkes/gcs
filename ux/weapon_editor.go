@@ -77,7 +77,7 @@ func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon]
 
 func (we *weaponEditor) addUsageBlock(w *gurps.Weapon, content *unison.Panel) {
 	addLabelAndStringField(content, i18n.Text("Usage"), "", &w.Usage)
-	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &w.UsageNotes)
+	addNotesLabelAndField(content, &w.UsageNotes)
 }
 
 func (we *weaponEditor) addParryBlock(w *gurps.Weapon, content *unison.Panel) {

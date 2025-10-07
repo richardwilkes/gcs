@@ -45,7 +45,7 @@ func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(w.String()) }
 	m["notes"] = func() goja.Value { return r.ToValue(w.Notes()) }
 	m["usage"] = func() goja.Value { return r.ToValue(w.UsageWithReplacements()) }
-	m["usageNotes"] = func() goja.Value { return r.ToValue(w.UsageNotesWithReplacements()) }
+	m["usageNotes"] = func() goja.Value { return r.ToValue(w.ResolveUsageNotes()) }
 	m["level"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](w.SkillLevel(nil).Max(0))) }
 	m["damage"] = func() goja.Value { return r.ToValue(w.Damage.ResolvedDamage(nil)) }
 	m["strength"] = func() goja.Value { return r.ToValue(w.Strength.Resolve(w, nil).String()) }

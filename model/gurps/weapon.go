@@ -205,7 +205,7 @@ func (w *Weapon) Compare(other *Weapon) int {
 	result := xstrings.NaturalCmp(w.String(), other.String(), true)
 	if result == 0 {
 		if result = xstrings.NaturalCmp(w.UsageWithReplacements(), other.UsageWithReplacements(), true); result == 0 {
-			if result = xstrings.NaturalCmp(w.UsageNotesWithReplacements(), other.UsageNotesWithReplacements(), true); result == 0 {
+			if result = xstrings.NaturalCmp(w.ResolveUsageNotes(), other.ResolveUsageNotes(), true); result == 0 {
 				//nolint:gosec // Just need a tie-breaker
 				result = cmp.Compare(uintptr(unsafe.Pointer(w)), uintptr(unsafe.Pointer(other)))
 			}
@@ -409,7 +409,7 @@ func (w *Weapon) Notes() string {
 			}, true, true, owner.Modifiers...)
 		}
 	}
-	AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.UsageNotesWithReplacements()))
+	AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.ResolveUsageNotes()))
 	return buffer.String()
 }
 
@@ -722,6 +722,11 @@ func (w *Weapon) UsageWithReplacements() string {
 // UsageNotesWithReplacements returns the usage notes of the weapon with any nameable keys replaced.
 func (w *Weapon) UsageNotesWithReplacements() string {
 	return nameable.Apply(w.UsageNotes, w.NameableReplacements())
+}
+
+// ResolveUsageNotes resolves the usage notes, running any embedded scripts to get the final result.
+func (w *Weapon) ResolveUsageNotes() string {
+	return ResolveText(w.Entity(), deferredNewScriptWeapon(w), w.UsageNotesWithReplacements())
 }
 
 // NameableReplacements returns the replacements to be used with this weapon.
