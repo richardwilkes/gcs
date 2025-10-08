@@ -31,7 +31,7 @@ func (enum Type) Permitted() []Value {
 // DetermineModifierWeightValueTypeFromString examines a string to determine what type it is, but restricts the result
 // to those allowed for this Type.
 func (enum Type) DetermineModifierWeightValueTypeFromString(s string) Value {
-	mvt := LastValue.FromString(s)
+	mvt := ValueFromString(s)
 	permitted := enum.Permitted()
 	for _, one := range permitted {
 		if one == mvt {

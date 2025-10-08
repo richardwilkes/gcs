@@ -20,8 +20,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -104,8 +104,7 @@ type TraitModifierSyncData struct {
 // TraitModifierNonContainerSyncData holds the TraitModifier sync data that is only applicable to TraitModifiers that
 // aren't containers.
 type TraitModifierNonContainerSyncData struct {
-	Cost              fxp.Int        `json:"cost,omitempty"`
-	CostType          tmcost.Type    `json:"cost_type,omitempty"`
+	CostAdj           string         `json:"cost_adj,omitempty"`
 	UseLevelFromTrait bool           `json:"use_level_from_trait,omitempty"`
 	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitempty"`
 	Affects           affects.Option `json:"affects,omitempty"`
@@ -241,6 +240,8 @@ func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		TraitModifierData
 		// Old data fields
+		Cost       fxp.Int  `json:"cost"`
+		CostType   string   `json:"cost_type"`
 		Type       string   `json:"type"`
 		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
@@ -254,6 +255,16 @@ func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 		// Fixup old data that used UUIDs instead of TIDs
 		localData.TID = tid.MustNewTID(traitModifierKind(strings.HasSuffix(localData.Type, containerKeyPostfix)))
 		setOpen = localData.IsOpen
+	}
+	if localData.CostAdj == "" && localData.Cost != 0 {
+		switch localData.CostType {
+		case "points":
+			localData.CostAdj = localData.Cost.String()
+		case "multiplier":
+			localData.CostAdj = "x" + localData.Cost.String()
+		default:
+			localData.CostAdj = localData.Cost.String() + "%"
+		}
 	}
 	t.TraitModifierData = localData.TraitModifierData
 	if t.LocalNotes == "" && localData.ExprNotes != "" {
@@ -402,9 +413,17 @@ func (t *TraitModifier) SetDataOwner(owner DataOwner) {
 	}
 }
 
+// CostModifierType returns the type of cost modifier.
+func (t *TraitModifier) CostModifierType() emweight.Value {
+	return emweight.ValueFromString(t.CostAdj)
+}
+
 // CostModifier returns the total cost modifier.
-func (t *TraitModifier) CostModifier() fxp.Int {
-	return t.Cost.Mul(t.CostMultiplier())
+func (t *TraitModifier) CostModifier() fxp.Fraction {
+	f := t.CostModifierType().ExtractFraction(t.CostAdj)
+	f.Numerator = f.Numerator.Mul(t.CostMultiplier())
+	f.Normalize()
+	return f
 }
 
 // IsLeveled returns true if this TraitModifier is leveled.
@@ -517,18 +536,8 @@ func (t *TraitModifier) CostDescription() string {
 	if t.Container() {
 		return ""
 	}
-	var base string
-	switch t.CostType {
-	case tmcost.Percentage:
-		base = t.CostModifier().StringWithSign() + tmcost.Percentage.String()
-	case tmcost.Points:
-		base = t.CostModifier().StringWithSign()
-	case tmcost.Multiplier:
-		return t.CostType.String() + t.CostModifier().String()
-	default:
-		errs.Log(errs.New("unknown cost type"), "type", int(t.CostType))
-		base = t.CostModifier().StringWithSign() + tmcost.Percentage.String()
-	}
+	v := t.CostModifierType()
+	base := v.Format(v.ExtractFraction(t.CostAdj))
 	if desc := t.Affects.AltString(); desc != "" {
 		base += " " + desc
 	}
@@ -658,8 +667,7 @@ func (t *TraitModifierSyncData) hash(h hash.Hash) {
 }
 
 func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
-	xhash.Num64(h, t.Cost)
-	xhash.Num8(h, t.CostType)
+	xhash.StringWithLen(h, t.CostAdj)
 	xhash.Bool(h, t.UseLevelFromTrait)
 	xhash.Bool(h, t.ShowNotesOnWeapon)
 	xhash.Num8(h, t.Affects)

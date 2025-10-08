@@ -1210,25 +1210,6 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
-		Pkg:  "model/gurps/enums/tmcost",
-		Name: "type",
-		Desc: "describes how a TraitModifier's point cost is applied",
-		Values: []*enumValue{
-			{
-				Key:    "percentage",
-				String: "%",
-			},
-			{
-				Key:    "points",
-				String: "points",
-			},
-			{
-				Key:    "multiplier",
-				String: "×",
-			},
-		},
-	},
-	{
 		Pkg:  "model/gurps/enums/wsel",
 		Name: "type",
 		Desc: "holds the type of a weapon selection",

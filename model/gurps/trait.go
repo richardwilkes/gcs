@@ -23,11 +23,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -516,7 +516,7 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 			if !found && maximum == v {
 				found = true
 			} else {
-				points += fxp.ApplyRounding(calculateModifierPoints(v, fxp.Twenty), t.RoundCostDown)
+				points += fxp.ApplyRounding(v.Mul(fxp.Twenty).Div(fxp.Hundred), t.RoundCostDown)
 			}
 		}
 	} else {
@@ -745,79 +745,105 @@ func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, lev
 		levels = 0
 		pointsPerLevel = 0
 	}
-	var baseEnh, levelEnh, baseLim, levelLim fxp.Int
-	multiplier := cr.Multiplier().Mul(fr.Multiplier())
+	baseLim := fxp.Fraction{Denominator: fxp.One}
+	levelLim := fxp.Fraction{Denominator: fxp.One}
+	baseEnh := fxp.Fraction{Denominator: fxp.One}
+	levelEnh := fxp.Fraction{Denominator: fxp.One}
+	multiplier := fxp.Fraction{
+		Numerator:   cr.Multiplier().Mul(fr.Multiplier()),
+		Denominator: fxp.One,
+	}
 	Traverse(func(mod *TraitModifier) bool {
 		mod.setTrait(trait)
 		modifier := mod.CostModifier()
-		switch mod.CostType {
-		case tmcost.Percentage:
-			switch mod.Affects {
-			case affects.Total:
-				if modifier < 0 {
-					baseLim += modifier
-					levelLim += modifier
-				} else {
-					baseEnh += modifier
-					levelEnh += modifier
-				}
-			case affects.BaseOnly:
-				if modifier < 0 {
-					baseLim += modifier
-				} else {
-					baseEnh += modifier
-				}
-			case affects.LevelsOnly:
-				if modifier < 0 {
-					levelLim += modifier
-				} else {
-					levelEnh += modifier
-				}
-			}
-		case tmcost.Points:
+		switch mod.CostModifierType() {
+		case emweight.Addition:
 			if mod.Affects == affects.LevelsOnly {
 				if canLevel {
-					pointsPerLevel += modifier
+					pointsPerLevel += modifier.Value()
 				}
 			} else {
-				basePoints += modifier
+				basePoints += modifier.Value()
 			}
-		case tmcost.Multiplier:
+		case emweight.PercentageAdder:
+			switch mod.Affects {
+			case affects.Total:
+				if modifier.Numerator < 0 {
+					baseLim = baseLim.Add(modifier)
+					levelLim = levelLim.Add(modifier)
+				} else {
+					baseEnh = baseEnh.Add(modifier)
+					levelEnh = levelEnh.Add(modifier)
+				}
+			case affects.BaseOnly:
+				if modifier.Numerator < 0 {
+					baseLim = baseLim.Add(modifier)
+				} else {
+					baseEnh = baseEnh.Add(modifier)
+				}
+			case affects.LevelsOnly:
+				if modifier.Numerator < 0 {
+					levelLim = levelLim.Add(modifier)
+				} else {
+					levelEnh = levelEnh.Add(modifier)
+				}
+			}
+		case emweight.PercentageMultiplier:
+			multiplier = multiplier.Mul(modifier).Div(fxp.Fraction{Numerator: fxp.Hundred, Denominator: fxp.One})
+		case emweight.Multiplier:
 			multiplier = multiplier.Mul(modifier)
 		}
 		return false
 	}, true, true, modifiers...)
-	modifiedBasePoints := basePoints
-	leveledPoints := pointsPerLevel.Mul(levels)
-	if baseEnh != 0 || baseLim != 0 || levelEnh != 0 || levelLim != 0 {
+	modifiedBasePoints := fxp.Fraction{Numerator: basePoints, Denominator: fxp.One}
+	leveledPoints := fxp.Fraction{Numerator: pointsPerLevel.Mul(levels), Denominator: fxp.One}
+	if baseEnh.Numerator != 0 || baseLim.Numerator != 0 || levelEnh.Numerator != 0 || levelLim.Numerator != 0 {
 		if SheetSettingsFor(entity).UseMultiplicativeModifiers {
 			if baseEnh == levelEnh && baseLim == levelLim {
-				modifiedBasePoints = modifyPoints(modifyPoints(modifiedBasePoints+leveledPoints, baseEnh), (-fxp.Eighty).Max(baseLim))
+				if baseLim.Value() < -fxp.Eighty {
+					baseLim.Numerator = -fxp.Eighty
+					baseLim.Denominator = fxp.One
+				}
+				modifiedBasePoints = modifyPoints(modifyPoints(modifiedBasePoints.Add(leveledPoints), baseEnh), baseLim)
 			} else {
-				modifiedBasePoints = modifyPoints(modifyPoints(modifiedBasePoints, baseEnh), (-fxp.Eighty).Max(baseLim)) +
-					modifyPoints(modifyPoints(leveledPoints, levelEnh), (-fxp.Eighty).Max(levelLim))
+				if baseLim.Value() < -fxp.Eighty {
+					baseLim.Numerator = -fxp.Eighty
+					baseLim.Denominator = fxp.One
+				}
+				modifiedBasePoints = modifyPoints(modifyPoints(modifiedBasePoints, baseEnh), baseLim)
+				if levelLim.Value() < -fxp.Eighty {
+					levelLim.Numerator = -fxp.Eighty
+					levelLim.Denominator = fxp.One
+				}
+				leveledPts := modifyPoints(modifyPoints(leveledPoints, levelEnh), levelLim)
+				modifiedBasePoints = modifiedBasePoints.Add(leveledPts)
 			}
 		} else {
-			baseMod := (-fxp.Eighty).Max(baseEnh + baseLim)
-			levelMod := (-fxp.Eighty).Max(levelEnh + levelLim)
+			baseMod := baseEnh.Add(baseLim)
+			if baseMod.Value() < -fxp.Eighty {
+				baseMod.Numerator = -fxp.Eighty
+				baseMod.Denominator = fxp.One
+			}
+			levelMod := levelEnh.Add(levelLim)
+			if levelMod.Value() < -fxp.Eighty {
+				levelMod.Numerator = -fxp.Eighty
+				levelMod.Denominator = fxp.One
+			}
 			if baseMod == levelMod {
-				modifiedBasePoints = modifyPoints(modifiedBasePoints+leveledPoints, baseMod)
+				modifiedBasePoints = modifyPoints(modifiedBasePoints.Add(leveledPoints), baseMod)
 			} else {
-				modifiedBasePoints = modifyPoints(modifiedBasePoints, baseMod) + modifyPoints(leveledPoints, levelMod)
+				modifiedBasePoints = modifyPoints(modifiedBasePoints, baseMod)
+				modifiedBasePoints = modifiedBasePoints.Add(modifyPoints(leveledPoints, levelMod))
 			}
 		}
 	} else {
-		modifiedBasePoints += leveledPoints
+		modifiedBasePoints = modifiedBasePoints.Add(leveledPoints)
 	}
-	return fxp.ApplyRounding(modifiedBasePoints.Mul(multiplier), roundCostDown)
+	return fxp.ApplyRounding(modifiedBasePoints.Mul(multiplier).Value(), roundCostDown)
 }
 
-func modifyPoints(points, modifier fxp.Int) fxp.Int {
-	return points + calculateModifierPoints(points, modifier)
-}
-
-func calculateModifierPoints(points, modifier fxp.Int) fxp.Int {
-	return points.Mul(modifier).Div(fxp.Hundred)
+func modifyPoints(points, modifier fxp.Fraction) fxp.Fraction {
+	return points.Add(points.Mul(modifier).Div(fxp.Fraction{Numerator: fxp.Hundred, Denominator: fxp.One}))
 }
 
 // Kind returns the kind of data.

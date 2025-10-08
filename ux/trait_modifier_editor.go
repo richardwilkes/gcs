@@ -13,9 +13,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -37,12 +36,20 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		content.AddChild(unison.NewPanel())
 		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
 		costLabel := i18n.Text("Cost")
-		wrapper := addFlowWrapper(content, costLabel, 3)
-		addDecimalField(wrapper, nil, "", costLabel, "", &e.editorData.Cost, -fxp.MaxBasePoints, fxp.MaxBasePoints)
-		costTypePopup := unison.NewPopupMenu[tmcost.Type]()
-		costTypePopup.AddItem(tmcost.Types...)
-		costTypePopup.Select(e.editorData.CostType)
-		wrapper.AddChild(costTypePopup)
+		wrapper := addFlowWrapper(content, costLabel, 2)
+		field := NewStringField(nil, "", costLabel,
+			func() string {
+				v := emweight.ValueFromString(e.editorData.CostAdj)
+				return v.Format(v.ExtractFraction(e.editorData.CostAdj))
+			},
+			func(value string) {
+				v := emweight.ValueFromString(value)
+				e.editorData.CostAdj = v.Format(v.ExtractFraction(value))
+				MarkModified(wrapper)
+			})
+		field.SetMinimumTextWidthUsing("x1000000")
+		field.Tooltip = newWrappedTooltip(i18n.Text("Enter a cost adjustment, such as +5, -5, +50%, -25%, x2, x2/3, x10%."))
+		wrapper.AddChild(field)
 		affectsPopup := addPopup(wrapper, affects.Options, &e.editorData.Affects)
 		levelLabel := i18n.Text("Level")
 		wrapper = addFlowWrapper(content, levelLabel, 2)
@@ -51,27 +58,17 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		box.OnSet = func() { adjustFieldBlank(levels, e.editorData.UseLevelFromTrait) }
 		adjustFieldBlank(levels, e.editorData.UseLevelFromTrait)
 		total := NewNonEditableField(func(field *NonEditableField) {
-			enabled := true
 			costMultiplier := gurps.CostMultiplierForTraitModifier(e.editorData.Levels, e.target.OwningTrait(),
 				e.editorData.UseLevelFromTrait)
-			costType, ok := costTypePopup.Selected()
-			if ok {
-				switch costType {
-				case tmcost.Percentage:
-					field.SetTitle(e.editorData.Cost.Mul(costMultiplier).StringWithSign() + tmcost.Percentage.String())
-				case tmcost.Points:
-					field.SetTitle(e.editorData.Cost.Mul(costMultiplier).StringWithSign())
-				case tmcost.Multiplier:
-					field.SetTitle(tmcost.Multiplier.String() + e.editorData.Cost.Mul(costMultiplier).String())
-					affectsPopup.Select(affects.Total)
-					enabled = false
-				default:
-					ok = false
-				}
-			}
-			if !ok {
-				errs.Log(errs.New("unhandled cost type"), "index", costTypePopup.SelectedIndex())
-				field.SetTitle(e.editorData.Cost.Mul(costMultiplier).StringWithSign() + tmcost.Percentage.String())
+			v := emweight.ValueFromString(e.editorData.CostAdj)
+			f := v.ExtractFraction(e.editorData.CostAdj)
+			f.Numerator = f.Numerator.Mul(costMultiplier)
+			f.Normalize()
+			f = f.Simplify()
+			field.SetTitle(v.Format(f))
+			enabled := v != emweight.Multiplier && v != emweight.PercentageMultiplier
+			if !enabled {
+				affectsPopup.Select(affects.Total)
 			}
 			affectsPopup.SetEnabled(enabled)
 			field.MarkForLayoutAndRedraw()
@@ -82,12 +79,6 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		})
 		content.AddChild(NewFieldLeadingLabel(i18n.Text("Total"), false))
 		content.AddChild(total)
-		costTypePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[tmcost.Type]) {
-			if what, ok := popup.Selected(); ok {
-				e.editorData.CostType = what
-				MarkModified(popup)
-			}
-		}
 	}
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)

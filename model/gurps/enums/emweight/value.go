@@ -63,16 +63,17 @@ func (enum Value) ExtractFraction(s string) fxp.Fraction {
 	return fraction
 }
 
-// FromString examines a string to determine what type it is.
-func (enum Value) FromString(s string) Value {
+// ValueFromString examines a string to determine what type it is.
+func ValueFromString(s string) Value {
 	s = strings.ToLower(strings.TrimSpace(s))
 	switch {
 	case strings.HasSuffix(s, "%"):
-		if strings.HasPrefix(s, "x") {
+		if strings.HasPrefix(s, "x") || strings.HasPrefix(s, "×") {
 			return PercentageMultiplier
 		}
 		return PercentageAdder
-	case strings.HasPrefix(s, "x") || strings.HasSuffix(s, "x"):
+	case strings.HasPrefix(s, "x") || strings.HasPrefix(s, "×") ||
+		strings.HasSuffix(s, "x") || strings.HasSuffix(s, "×"):
 		return Multiplier
 	default:
 		return Addition
