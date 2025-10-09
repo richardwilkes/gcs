@@ -502,6 +502,7 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 			SVG:  unison.CheckmarkSVG,
 			Size: geom.Size{Width: baseline, Height: baseline},
 		}
+		check.SetEnabled(!c.Dim)
 	}
 	check.HAlign = c.Alignment
 	check.OnBackgroundInk = foreground

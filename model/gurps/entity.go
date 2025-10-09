@@ -361,7 +361,7 @@ func (e *Entity) processFeatures() {
 		return false
 	}, false, true, e.Skills...)
 	Traverse(func(eqp *Equipment) bool {
-		if !eqp.Equipped || eqp.Quantity <= 0 {
+		if !eqp.ReallyEquipped() {
 			return false
 		}
 		for _, f := range eqp.Features {
@@ -1333,10 +1333,10 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 		return false
 	}, true, true, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
-		if (includeUnequipped || eqp.Equipped) && eqp.Quantity > 0 {
+		if eqp.Quantity > 0 && (includeUnequipped || eqp.ReallyEquipped()) {
 			for _, w := range eqp.Weapons {
 				if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
-					w.NotEquipped = !eqp.Equipped
+					w.NotEquipped = !eqp.ReallyEquipped()
 					w.NotCarried = false
 					m[w.HashResolved()] = w
 				}
@@ -1411,7 +1411,7 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 		return false
 	}, true, false, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
-		if eqp.Equipped && eqp.Quantity > 0 {
+		if eqp.ReallyEquipped() {
 			source := i18n.Text("from equipment ") + eqp.NameWithReplacements()
 			e.reactionsFromFeatureList(source, eqp.Features, m)
 			Traverse(func(mod *EquipmentModifier) bool {
@@ -1469,7 +1469,7 @@ func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 		return false
 	}, true, false, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
-		if eqp.Equipped && eqp.Quantity > 0 {
+		if eqp.ReallyEquipped() {
 			source := i18n.Text("from equipment ") + eqp.NameWithReplacements()
 			e.conditionalModifiersFromFeatureList(source, eqp.Features, m)
 			Traverse(func(mod *EquipmentModifier) bool {

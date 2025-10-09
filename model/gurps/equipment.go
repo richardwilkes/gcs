@@ -249,7 +249,7 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 	if notes != e.LocalNotes {
 		data.Calc.ResolvedNotes = notes
 	}
-	if e.WeightIgnoredForSkills && e.Equipped {
+	if e.WeightIgnoredForSkills && e.ReallyEquipped() {
 		w := e.ExtendedWeight(true, defUnits)
 		data.Calc.ExtendedWeightForSkills = &w
 	}
@@ -406,6 +406,10 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Type = cell.Toggle
 		data.Checked = e.Equipped
 		data.Alignment = align.Middle
+		data.Tooltip = i18n.Text("Click to toggle whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character. Note that if a parent container is not equipped, none of its contents are considered to be equipped either and any checkmark here will be dimmed to reflect this.")
+		if !e.ReallyEquipped() {
+			data.Dim = true
+		}
 	case EquipmentQuantityColumn:
 		data.Type = cell.Text
 		data.Primary = e.Quantity.Comma()
@@ -465,6 +469,21 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			}
 		}
 	}
+}
+
+// ReallyEquipped returns true if this equipment is equipped and has a quantity > 0 and all of its parents do too.
+func (e *Equipment) ReallyEquipped() bool {
+	if !e.Equipped || e.Quantity <= 0 {
+		return false
+	}
+	p := e.parent
+	for p != nil {
+		if !p.Equipped || p.Quantity <= 0 {
+			return false
+		}
+		p = p.parent
+	}
+	return true
 }
 
 // Depth returns the number of parents this node has.
@@ -638,7 +657,7 @@ func (e *Equipment) ResolvedBaseWeight() fxp.Weight {
 
 // AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children.
 func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
-	if forSkills && e.WeightIgnoredForSkills && e.Equipped {
+	if forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped() {
 		return 0
 	}
 	return WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits)
@@ -646,7 +665,7 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.
 
 // ExtendedWeight returns the extended weight.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
-	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.ResolvedBaseWeight(), e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.Equipped)
+	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.ResolvedBaseWeight(), e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.ReallyEquipped())
 }
 
 // ExtendedWeightAdjustedForModifiers calculates the extended weight.

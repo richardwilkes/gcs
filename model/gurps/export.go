@@ -712,7 +712,7 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 			ExtendedCost:      e.ExtendedValue(),
 			Weight:            entity.SheetSettings.DefaultWeightUnits.Format(e.AdjustedWeight(false, entity.SheetSettings.DefaultWeightUnits)),
 			ExtendedWeight:    entity.SheetSettings.DefaultWeightUnits.Format(e.ExtendedWeight(false, entity.SheetSettings.DefaultWeightUnits)),
-			Equipped:          carried && e.Equipped,
+			Equipped:          carried && e.ReallyEquipped(),
 		}
 		if parent := e.Parent(); parent != nil {
 			equipment.ParentID = parent.TID

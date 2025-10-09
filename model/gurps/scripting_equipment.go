@@ -63,7 +63,7 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 		return r.ToValue(fxp.AsFloat[float64](fxp.Int(item.ExtendedWeight(false, fxp.Pound))))
 	}
 	m["weightIgnoredForSkills"] = func() goja.Value { return r.ToValue(item.WeightIgnoredForSkills) }
-	m["equipped"] = func() goja.Value { return r.ToValue(item.Equipped) }
+	m["equipped"] = func() goja.Value { return r.ToValue(item.ReallyEquipped()) }
 	m["container"] = func() goja.Value { return r.ToValue(item.Container()) }
 	m["notes"] = func() goja.Value {
 		return r.ToValue(item.SecondaryText(func(_ display.Option) bool { return true }))

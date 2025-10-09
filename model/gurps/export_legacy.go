@@ -761,7 +761,7 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 	var list []string
 	Traverse(func(eqp *Equipment) bool {
-		if eqp.Equipped {
+		if eqp.ReallyEquipped() {
 			for _, f := range eqp.Features {
 				if bonus, ok := f.(*DRBonus); ok {
 					for _, loc := range bonus.Locations {
@@ -1022,21 +1022,21 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 					switch {
 					case !carried:
 						ex.writeEncodedText("-")
-					case eqp.Equipped:
+					case eqp.ReallyEquipped():
 						ex.writeEncodedText("E")
 					default:
 						ex.writeEncodedText("C")
 					}
 				case "EQUIPPED":
-					if carried && eqp.Equipped {
+					if carried && eqp.ReallyEquipped() {
 						ex.writeEncodedText("✓")
 					}
 				case "EQUIPPED_FA":
-					if carried && eqp.Equipped {
+					if carried && eqp.ReallyEquipped() {
 						ex.out.WriteString(`<i class="fas fa-check-circle"></i>`)
 					}
 				case "EQUIPPED_NUM":
-					if carried && eqp.Equipped {
+					if carried && eqp.ReallyEquipped() {
 						ex.writeEncodedText("1")
 					} else {
 						ex.writeEncodedText("0")
@@ -1045,7 +1045,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 					switch {
 					case !carried:
 						ex.writeEncodedText("0")
-					case eqp.Equipped:
+					case eqp.ReallyEquipped():
 						ex.writeEncodedText("2")
 					default:
 						ex.writeEncodedText("1")
@@ -1403,7 +1403,7 @@ func (ex *legacyExporter) ammoFor(weaponEqp *Equipment) fxp.Int {
 	}
 	var total fxp.Int
 	Traverse(func(eqp *Equipment) bool {
-		if eqp.Equipped && eqp.Quantity > 0 {
+		if eqp.ReallyEquipped() {
 			for _, cat := range eqp.Tags {
 				if strings.HasPrefix(strings.ToLower(cat), "ammotype:") {
 					if uses == strings.ReplaceAll(cat[len("ammotype:"):], " ", "") {

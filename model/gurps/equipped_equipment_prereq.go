@@ -71,7 +71,7 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 	}
 	satisfied := false
 	Traverse(func(eqp *Equipment) bool {
-		satisfied = exclude != eqp && eqp.Equipped && eqp.Quantity > 0 &&
+		satisfied = exclude != eqp && eqp.ReallyEquipped() &&
 			p.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
 			p.TagsCriteria.MatchesList(replacements, eqp.Tags...)
 		return satisfied
