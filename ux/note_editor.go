@@ -15,15 +15,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
 // EditNote displays the editor for a note.
 func EditNote(owner Rebuildable, note *gurps.Note) {
-	displayEditor(owner, note, svg.GCSNotes, "md:Help/Interface/Note",
-		nil, initNoteEditor, nil)
+	displayEditor(owner, note, svg.GCSNotes, "md:Help/Interface/Note", nil, initNoteEditor, nil)
 }
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown, baseFont unison.Font) {
@@ -70,7 +68,6 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 			return fd
 		},
 	})
-	markdown.SetVSpacing(xmath.Floor(markdown.Font.LineHeight() / 2))
 
 	labelText := i18n.Text("Notes")
 	label := NewFieldLeadingLabel(labelText, false)

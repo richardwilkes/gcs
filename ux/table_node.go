@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
-	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -291,7 +290,6 @@ func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.
 	if n.forPage {
 		adjustMarkdownThemeForPage(m, font)
 	}
-	m.SetVSpacing(xmath.Floor(m.Font.LineHeight() / 2))
 	adjustMarkdownInk(m, foreground, background, selected, false)
 	m.SetContent(content, width)
 	return m

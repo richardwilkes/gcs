@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -242,7 +241,6 @@ func newMarkdownTooltip(text, workingDir string) *unison.Panel {
 	}
 	adjustMarkdownThemeForPage(m, unison.DefaultTooltipTheme.Label.Font)
 	m.OnBackgroundInk = unison.ThemeOnTooltip
-	m.SetVSpacing(xmath.Floor(m.Font.LineHeight() / 2))
 	m.SetContent(text, 500)
 	tip.AddChild(m)
 	return tip
