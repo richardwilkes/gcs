@@ -85,7 +85,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 			markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), gurps.ScriptSelfProvider{}, value), 0)
 			content.MarkForLayoutAndRedraw()
 			MarkModified(content)
-		})
+		}, true)
 	field.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			fd := unison.MonospacedFont.Font.Descriptor()
@@ -93,14 +93,6 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 			return fd
 		},
 	}
-	parent := field.Parent()
-	if layout, ok := parent.Layout().(*unison.FlexLayout); ok {
-		layout.Columns++
-	}
-	markdownHelpButton := unison.NewSVGButton(svg.MarkdownFile)
-	markdownHelpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Markdown%20Guide") }
-	markdownHelpButton.Tooltip = newWrappedTooltip(i18n.Text("Markdown Guide"))
-	parent.AddChild(markdownHelpButton)
 
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)

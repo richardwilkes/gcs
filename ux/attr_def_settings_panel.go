@@ -197,7 +197,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		addScriptField(content, p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
 			i18n.Text("The base value, which may be a number or a script expression"),
 			func() string { return p.def.Base },
-			func(s string) { p.def.Base = s })
+			func(s string) { p.def.Base = s }, false)
 
 		if p.def.Type != attribute.IntegerRef && p.def.Type != attribute.DecimalRef && p.def.Type != attribute.PoolRef {
 			addLabelAndDecimalField(content, p.dockable.targetMgr, p.def.KeyPrefix+"cost", i18n.Text("Cost per Point"),

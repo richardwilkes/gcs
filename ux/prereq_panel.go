@@ -520,7 +520,7 @@ func (p *prereqPanel) createScriptPrereqPanel(depth int, pr *gurps.ScriptPrereq)
 	}
 	focus = addScriptField(panel, nil, "", i18n.Text("Prereq Script"),
 		i18n.Text("The script should return text describing the missing prerequisite or an empty string if the prerequisite has been met"),
-		func() string { return pr.Script }, func(text string) { pr.Script = text })
+		func() string { return pr.Script }, func(text string) { pr.Script = text }, true)
 	columns := len(panel.Children())
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  columns,

@@ -118,7 +118,7 @@
 				{
 					"state": "Collapse",
 					"value": "0",
-					"explanation": "Roll vs. Will to do anything besides talk or rest; failure causes unconsciousness\nEach FP you lose below 0 also causes 1 HP of injury\nMove, Dodge and ST are halved (B426)",
+					"explanation": "- Roll vs. Will to do anything besides talk or rest; failure causes unconsciousness\n- Each FP you lose below 0 also causes 1 HP of injury\n- Move, Dodge and ST are halved (B426)",
 					"ops": [
 						"halve_move",
 						"halve_dodge",
@@ -165,7 +165,7 @@
 				{
 					"state": "Dying #4",
 					"value": "Math.round(-$hp * 4)",
-					"explanation": "Roll vs. HT to avoid death\nRoll vs. HT-4 every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-4 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
 					"ops": [
 						"halve_move",
 						"halve_dodge"
@@ -174,7 +174,7 @@
 				{
 					"state": "Dying #3",
 					"value": "Math.round(-$hp * 3)",
-					"explanation": "Roll vs. HT to avoid death\nRoll vs. HT-3 every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-3 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
 					"ops": [
 						"halve_move",
 						"halve_dodge"
@@ -183,7 +183,7 @@
 				{
 					"state": "Dying #2",
 					"value": "Math.round(-$hp * 2)",
-					"explanation": "Roll vs. HT to avoid death\nRoll vs. HT-2 every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-2 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
 					"ops": [
 						"halve_move",
 						"halve_dodge"
@@ -192,7 +192,7 @@
 				{
 					"state": "Dying #1",
 					"value": "-$hp",
-					"explanation": "Roll vs. HT to avoid death\nRoll vs. HT-1 every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-1 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
 					"ops": [
 						"halve_move",
 						"halve_dodge"
@@ -201,7 +201,7 @@
 				{
 					"state": "Collapse",
 					"value": "0",
-					"explanation": "Roll vs. HT every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+					"explanation": "- Roll vs. HT every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
 					"ops": [
 						"halve_move",
 						"halve_dodge"

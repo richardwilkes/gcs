@@ -48,7 +48,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 				func(value string) {
 					e.editorData.BaseValue = value
 					MarkModified(content)
-				})
+				}, false)
 			entity := gurps.EntityFromNode(e.target)
 			extendedValueLabel := i18n.Text("Extended Value")
 			content.AddChild(NewFieldLeadingLabel(extendedValueLabel, false))
@@ -75,7 +75,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 				func(value string) {
 					e.editorData.BaseWeight = value
 					MarkModified(content)
-				})
+				}, false)
 			extendedWeightLabel := i18n.Text("Extended Weight")
 			content.AddChild(NewFieldLeadingLabel(extendedWeightLabel, false))
 			content.AddChild(NewNonEditableField(func(field *NonEditableField) {

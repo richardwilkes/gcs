@@ -115,7 +115,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 	addScriptField(content, p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"threshold", text,
 		i18n.Text("The value where the threshold takes effect, which may be a number or a script expression"),
 		func() string { return p.threshold.Value },
-		func(s string) { p.threshold.Value = s })
+		func(s string) { p.threshold.Value = s }, false)
 
 	for _, op := range threshold.Ops[1:] {
 		content.AddChild(unison.NewPanel())
@@ -125,14 +125,13 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 	text = i18n.Text("Explanation")
 	content.AddChild(NewFieldLeadingLabel(text, false))
 	addScriptField(content, p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"explanation", text,
-		i18n.Text("A explanation of the effects of the threshold state. This field may have scripts embedded in it by wrapping each script in <script>your script goes here</script> tags."),
+		i18n.Text("A explanation of the effects of the threshold state. This field will be interpreted as markdown and may have scripts embedded in it by wrapping each script in <script>your script goes here</script> tags."),
 		func() string { return p.threshold.Explanation },
 		func(value string) {
 			p.threshold.Explanation = value
 			content.MarkForLayoutAndRedraw()
 			MarkModified(content)
-		})
-	content.AddChild(field)
+		}, true)
 
 	return content
 }

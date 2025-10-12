@@ -117,7 +117,7 @@ func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
 			*fieldData = value
 			parent.MarkForLayoutAndRedraw()
 			MarkModified(parent)
-		})
+		}, true)
 }
 
 func addVTTNotesLabelAndField(parent *unison.Panel, fieldData *string) {
@@ -689,15 +689,21 @@ func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey st
 	adjustFieldBlank(field, (*tp).Type == picker.NotApplicable)
 }
 
-func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoTitle, tooltip string, get func() string, set func(string)) *StringField {
+func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoTitle, tooltip string, get func() string, set func(string), includeMarkdownButton bool) *StringField {
+	var list []unison.Paneler
 	field := NewMultiLineStringField(targetMgr, targetKey, undoTitle, get, set)
 	field.AutoScroll = false
 	field.SetMinimumTextWidthUsing("floor($basic_speed)")
 	field.Tooltip = newWrappedTooltip(tooltip)
+	list = append(list, field)
 	scriptHelpButton := unison.NewSVGButton(svg.Script)
 	scriptHelpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Scripting%20Guide") }
 	scriptHelpButton.Tooltip = newWrappedTooltip(i18n.Text("Scripting Guide"))
-	parent.AddChild(WrapWithSpan(1, field, scriptHelpButton))
+	list = append(list, scriptHelpButton)
+	if includeMarkdownButton {
+		list = append(list, NewMarkdownGuideButton())
+	}
+	parent.AddChild(WrapWithSpan(1, list...))
 	return field
 }
 
@@ -735,4 +741,12 @@ func NewSVGButtonForFont(svgData *unison.SVG, font unison.Font, sizeAdjust float
 		Size: geom.NewSize(baseline, baseline).Ceil(),
 	}
 	return b
+}
+
+// NewMarkdownGuideButton creates a button that links to the markdown guide.
+func NewMarkdownGuideButton() *unison.Button {
+	button := unison.NewSVGButton(svg.MarkdownFile)
+	button.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Markdown%20Guide") }
+	button.Tooltip = newWrappedTooltip(i18n.Text("Markdown Guide"))
+	return button
 }
