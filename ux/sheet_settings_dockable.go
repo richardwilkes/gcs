@@ -97,7 +97,7 @@ func ShowSheetSettings(owner EntityPanel) {
 func (d *sheetSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Sheet Settings") }
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Sheet%20Settings") }
 	toolbar.AddChild(helpButton)
 }
 

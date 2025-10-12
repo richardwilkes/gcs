@@ -208,7 +208,7 @@ func (t *Template) createToolbar() {
 
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Template") }
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Character%20Templates") }
 	t.toolbar.AddChild(helpButton)
 
 	t.toolbar.AddChild(

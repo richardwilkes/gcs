@@ -695,7 +695,7 @@ func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoT
 	field.SetMinimumTextWidthUsing("floor($basic_speed)")
 	field.Tooltip = newWrappedTooltip(tooltip)
 	scriptHelpButton := unison.NewSVGButton(svg.Script)
-	scriptHelpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Scripting Guide") }
+	scriptHelpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Scripting%20Guide") }
 	scriptHelpButton.Tooltip = newWrappedTooltip(i18n.Text("Scripting Guide"))
 	parent.AddChild(WrapWithSpan(1, field, scriptHelpButton))
 	return field

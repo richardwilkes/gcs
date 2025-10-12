@@ -107,7 +107,7 @@ func (d *bodySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Body Type") }
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Body%20Type") }
 	toolbar.AddChild(helpButton)
 
 	d.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)

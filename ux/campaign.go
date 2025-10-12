@@ -14,9 +14,7 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
-	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -81,10 +79,6 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 		VGrab:  true,
 	})
 
-	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Campaign") }
-
 	c.toolbar = unison.NewPanel()
 	c.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
@@ -93,7 +87,6 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 		HGrab:  true,
 	})
 	c.toolbar.AddChild(NewDefaultInfoPop())
-	c.toolbar.AddChild(helpButton)
 	c.toolbar.AddChild(
 		NewScaleField(
 			gurps.InitialUIScaleMin,

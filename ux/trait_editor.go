@@ -25,7 +25,7 @@ import (
 
 // EditTrait displays the editor for a trait.
 func EditTrait(owner Rebuildable, t *gurps.Trait) *editor[*gurps.Trait, *gurps.TraitEditData] {
-	return displayEditor(owner, t, svg.GCSTraits, "md:Help/Interface/Trait", nil, initTraitEditor, nil)
+	return displayEditor(owner, t, svg.GCSTraits, "md:User%20Guide/Traits", nil, initTraitEditor, nil)
 }
 
 func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *unison.Panel) func() {

@@ -97,7 +97,7 @@ func ShowGeneralSettings() {
 func (d *generalSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/General Settings") }
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/General%20Settings") }
 	toolbar.AddChild(helpButton)
 }
 

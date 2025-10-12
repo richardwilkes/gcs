@@ -25,7 +25,7 @@ import (
 
 // EditSkill displays the editor for an skill.
 func EditSkill(owner Rebuildable, skill *gurps.Skill) *editor[*gurps.Skill, *gurps.SkillEditData] {
-	return displayEditor(owner, skill, svg.GCSSkills, "md:Help/Interface/Skill", nil, initSkillEditor, nil)
+	return displayEditor(owner, skill, svg.GCSSkills, "md:User%20Guide/Skills", nil, initSkillEditor, nil)
 }
 
 func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *unison.Panel) func() {

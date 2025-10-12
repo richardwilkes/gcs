@@ -233,7 +233,7 @@ func ShowPageRefMappings() {
 func (d *pageRefMappingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Page Reference Mappings") }
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Page%20References") }
 	toolbar.AddChild(helpButton)
 }
 

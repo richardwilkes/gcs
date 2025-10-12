@@ -21,7 +21,7 @@ import (
 
 // EditNote displays the editor for a note.
 func EditNote(owner Rebuildable, note *gurps.Note) {
-	displayEditor(owner, note, svg.GCSNotes, "md:Help/Interface/Note", nil, initNoteEditor, nil)
+	displayEditor(owner, note, svg.GCSNotes, "md:User%20Guide/Notes", nil, initNoteEditor, nil)
 }
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown, baseFont unison.Font) {
@@ -98,7 +98,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 		layout.Columns++
 	}
 	markdownHelpButton := unison.NewSVGButton(svg.MarkdownFile)
-	markdownHelpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Markdown Guide") }
+	markdownHelpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Markdown%20Guide") }
 	markdownHelpButton.Tooltip = newWrappedTooltip(i18n.Text("Markdown Guide"))
 	parent.AddChild(markdownHelpButton)
 

@@ -30,13 +30,7 @@ type weaponEditor struct {
 // EditWeapon displays the editor for a weapon.
 func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 	var we weaponEditor
-	var part string
-	if w.IsMelee() {
-		part = "Melee"
-	} else {
-		part = "Ranged"
-	}
-	displayEditor(owner, w, gurps.WeaponSVG(w.IsMelee()), "md:Help/Interface/"+part+" Weapon Usage", nil,
+	displayEditor(owner, w, gurps.WeaponSVG(w.IsMelee()), "md:User%20Guide/Melee%20and%20Ranged%20Weapons", nil,
 		we.initWeaponEditor, we.preApply)
 }
 

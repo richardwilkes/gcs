@@ -967,7 +967,7 @@ func registerActions() {
 		ID:    UserGuideItemID,
 		Title: i18n.Text("User Guide"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			HandleLink(nil, "md:Help/Interface/Overview")
+			HandleLink(nil, "md:User%20Guide/Home")
 		},
 	}
 }

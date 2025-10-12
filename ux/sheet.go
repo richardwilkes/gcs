@@ -283,7 +283,7 @@ func (s *Sheet) createToolbar() {
 
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Sheet") }
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Character%20Sheet%20Overview") }
 	s.toolbar.AddChild(helpButton)
 	s.toolbar.AddChild(
 		NewScaleField(

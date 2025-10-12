@@ -23,7 +23,7 @@ const equipmentCostAndWeightPrototype = "-99.99 CF"
 
 // EditEquipmentModifier displays the editor for an equipment modifier.
 func EditEquipmentModifier(owner Rebuildable, modifier *gurps.EquipmentModifier) {
-	displayEditor(owner, modifier, svg.GCSEquipmentModifiers, "md:Help/Interface/Equipment Modifiers", nil,
+	displayEditor(owner, modifier, svg.GCSEquipmentModifiers, "md:User%20Guide/Equipment%20Modifiers", nil,
 		initEquipmentModifierEditor, nil)
 }
 

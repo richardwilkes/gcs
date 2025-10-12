@@ -152,7 +152,7 @@ func (n *Navigator) mapDeepSearch() {
 func (n *Navigator) setupToolBar() {
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Library Tree") }
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Library%20Explorer") }
 
 	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
 	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))

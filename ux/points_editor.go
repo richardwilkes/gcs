@@ -136,7 +136,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Points Record") }
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Character%20Points") }
 	toolbar.AddChild(helpButton)
 
 	e.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
