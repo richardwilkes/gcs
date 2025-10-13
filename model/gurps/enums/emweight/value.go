@@ -23,13 +23,13 @@ func (enum Value) Format(fraction fxp.Fraction) string {
 	case PercentageAdder:
 		return fraction.StringWithSign() + enum.String()
 	case PercentageMultiplier:
-		if fraction.Numerator <= 0 {
+		if fraction.Numerator < 0 {
 			fraction.Numerator = fxp.Hundred
 			fraction.Denominator = fxp.One
 		}
 		return Multiplier.String() + fraction.String() + PercentageAdder.String()
 	case Multiplier:
-		if fraction.Numerator <= 0 {
+		if fraction.Numerator < 0 {
 			fraction.Numerator = fxp.One
 			fraction.Denominator = fxp.One
 		}
@@ -49,12 +49,12 @@ func (enum Value) ExtractFraction(s string) fxp.Fraction {
 	revised := enum.EnsureValid()
 	switch revised {
 	case PercentageMultiplier:
-		if fraction.Numerator <= 0 {
+		if fraction.Numerator < 0 {
 			fraction.Numerator = fxp.Hundred
 			fraction.Denominator = fxp.One
 		}
 	case Multiplier:
-		if fraction.Numerator <= 0 {
+		if fraction.Numerator < 0 {
 			fraction.Numerator = fxp.One
 			fraction.Denominator = fxp.One
 		}
