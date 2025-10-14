@@ -11,10 +11,14 @@ package ux
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -35,38 +39,60 @@ var (
 // ImageDockable holds the view for an image file.
 type ImageDockable struct {
 	unison.Panel
-	path       string
-	img        *unison.Image
-	imgPanel   *unison.Panel
-	scroll     *unison.ScrollPanel
-	scale      int
-	dragStart  geom.Point
-	dragOrigin geom.Point
-	inDrag     bool
+	path          string
+	drawable      unison.Drawable
+	drawablePanel *unison.Panel
+	scroll        *unison.ScrollPanel
+	scale         int
+	dragStart     geom.Point
+	dragOrigin    geom.Point
+	inDrag        bool
 }
 
 // NewImageDockable creates a new unison.Dockable for image files.
 func NewImageDockable(filePath string) (unison.Dockable, error) {
-	img, err := unison.NewImageFromFilePathOrURL(filePath, geom.NewPoint(1, 1).DivPt(unison.PrimaryDisplay().Scale))
-	if err != nil {
-		return nil, err
+	var drawable unison.Drawable
+	var size geom.Size
+	if strings.HasSuffix(strings.ToLower(filePath), ".svg") {
+		r, err := os.Open(filePath)
+		if err != nil {
+			return nil, errs.Wrap(err)
+		}
+		defer xio.CloseIgnoringErrors(r)
+		var svg *unison.SVG
+		if svg, err = unison.NewSVGFromReader(r, unison.SVGOptionIgnoreUnsupported(),
+			unison.SVGOptionWarnParseErrors()); err != nil {
+			return nil, err
+		}
+		drawable = &unison.DrawableSVG{
+			SVG:  svg,
+			Size: svg.SuggestedSize(),
+		}
+		size = svg.Size()
+	} else {
+		img, err := unison.NewImageFromFilePathOrURL(filePath, geom.NewPoint(1, 1).DivPt(unison.PrimaryDisplay().Scale))
+		if err != nil {
+			return nil, err
+		}
+		drawable = img
+		size = img.Size()
 	}
 	d := &ImageDockable{
-		path:  filePath,
-		img:   img,
-		scale: gurps.GlobalSettings().General.InitialImageUIScale,
+		path:     filePath,
+		drawable: drawable,
+		scale:    gurps.GlobalSettings().General.InitialImageUIScale,
 	}
 	d.Self = d
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
-	d.imgPanel = unison.NewPanel()
-	d.imgPanel.SetSizer(d.imageSizer)
-	d.imgPanel.DrawCallback = d.draw
-	d.imgPanel.MouseDownCallback = d.mouseDown
-	d.imgPanel.MouseDragCallback = d.mouseDrag
-	d.imgPanel.MouseUpCallback = d.mouseUp
-	d.imgPanel.UpdateCursorCallback = d.updateCursor
-	d.imgPanel.SetFocusable(true)
+	d.drawablePanel = unison.NewPanel()
+	d.drawablePanel.SetSizer(d.imageSizer)
+	d.drawablePanel.DrawCallback = d.draw
+	d.drawablePanel.MouseDownCallback = d.mouseDown
+	d.drawablePanel.MouseDragCallback = d.mouseDrag
+	d.drawablePanel.MouseUpCallback = d.mouseUp
+	d.drawablePanel.UpdateCursorCallback = d.updateCursor
+	d.drawablePanel.SetFocusable(true)
 
 	d.scroll = unison.NewScrollPanel()
 	d.scroll.SetLayoutData(&unison.FlexLayoutData{
@@ -75,14 +101,13 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		HGrab:  true,
 		VGrab:  true,
 	})
-	d.scroll.SetContent(d.imgPanel, behavior.Fill, behavior.Fill)
+	d.scroll.SetContent(d.drawablePanel, behavior.Fill, behavior.Fill)
 
 	typeLabel := unison.NewLabel()
 	typeLabel.Font = unison.DefaultFieldTheme.Font
 	typeLabel.SetTitle(imgfmt.ForPath(filePath).String())
 
 	sizeLabel := unison.NewLabel()
-	size := img.Size()
 	sizeLabel.Font = unison.DefaultFieldTheme.Font
 	sizeLabel.SetTitle(fmt.Sprintf("%d x %d pixels", int(size.Width), int(size.Height)))
 
@@ -128,7 +153,7 @@ func (d *ImageDockable) updateCursor(_ geom.Point) *unison.Cursor {
 }
 
 func (d *ImageDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifiers) bool {
-	d.dragStart = d.imgPanel.PointToRoot(where)
+	d.dragStart = d.drawablePanel.PointToRoot(where)
 	d.dragOrigin.X, d.dragOrigin.Y = d.scroll.Position()
 	d.inDrag = true
 	d.RequestFocus()
@@ -137,7 +162,7 @@ func (d *ImageDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifiers
 }
 
 func (d *ImageDockable) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) bool {
-	pt := d.dragStart.Sub(d.imgPanel.PointToRoot(where)).Add(d.dragOrigin)
+	pt := d.dragStart.Sub(d.drawablePanel.PointToRoot(where)).Add(d.dragOrigin)
 	d.scroll.SetPosition(pt.X, pt.Y)
 	return true
 }
@@ -149,13 +174,13 @@ func (d *ImageDockable) mouseUp(_ geom.Point, _ int, _ unison.Modifiers) bool {
 }
 
 func (d *ImageDockable) imageSizer(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
-	prefSize = d.img.LogicalSize()
+	prefSize = d.drawable.LogicalSize()
 	return geom.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
 }
 
 func (d *ImageDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 	gc.DrawRect(dirty, unison.ThemeSurface.Paint(gc, dirty, paintstyle.Fill))
-	gc.DrawImage(d.img, geom.Point{}, nil, nil)
+	d.drawable.DrawInRect(gc, geom.Rect{Size: d.drawable.LogicalSize()}, nil, nil)
 }
 
 // TitleIcon implements ux.FileBackedDockable

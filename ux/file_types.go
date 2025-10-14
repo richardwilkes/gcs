@@ -54,6 +54,19 @@ func RegisterExternalFileTypes() {
 			registerImageFileInfo(one, groupWith)
 		}
 	}
+	// Register SVG as well
+	fi := gurps.FileInfo{
+		Name:       "SVG Image",
+		UTI:        "public.svg-image",
+		ConformsTo: []string{"public.image"},
+		Extensions: []string{".svg"},
+		GroupWith:  groupWith,
+		MimeTypes:  []string{"image/svg+xml"},
+		SVG:        svg.ImageFile,
+		Load:       func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
+		IsImage:    true,
+	}
+	fi.Register()
 }
 
 func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
