@@ -159,6 +159,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		HGrab:  true,
 	})
 	toolbar.AddChild(NewDefaultInfoPop())
+	toolbar.AddChild(NewMarkdownGuideButton())
 	toolbar.AddChild(
 		NewScaleField(
 			minPDFDockableScale,
