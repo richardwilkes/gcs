@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024">
 	<defs>
-		<linearGradient id="a" x1="1024" x2="0" y1="0" y2="1024" gradientUnits="userSpaceOnUse">
+		<linearGradient id="a" x1="100%" x2="0" y1="0" y2="100%">
 			<stop offset="0" stop-color="#52bc7e" />
 			<stop offset="1" stop-color="#0a795b" />
 		</linearGradient>

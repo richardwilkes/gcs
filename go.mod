@@ -9,8 +9,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
-	github.com/richardwilkes/toolbox/v2 v2.6.0
-	github.com/richardwilkes/unison v0.88.0
+	github.com/richardwilkes/toolbox/v2 v2.7.0
+	github.com/richardwilkes/unison v0.89.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
@@ -38,7 +38,6 @@ require (
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lafriks/go-svg v0.5.1 // indirect
 	github.com/miekg/dns v1.1.68 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pjbgf/sha1cd v0.5.0 // indirect

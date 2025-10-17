@@ -60,8 +60,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		}
 		defer xio.CloseIgnoringErrors(r)
 		var svg *unison.SVG
-		if svg, err = unison.NewSVGFromReader(r, unison.SVGOptionIgnoreUnsupported(),
-			unison.SVGOptionWarnParseErrors()); err != nil {
+		if svg, err = unison.NewSVGFromReader(r); err != nil {
 			return nil, err
 		}
 		drawable = &unison.DrawableSVG{
