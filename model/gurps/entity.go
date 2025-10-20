@@ -1327,7 +1327,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 	Traverse(func(t *Trait) bool {
 		for _, w := range t.Weapons {
 			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
-				m[w.HashResolved()] = w
+				m[w.HashDisplayedState()] = w
 			}
 		}
 		return false
@@ -1338,7 +1338,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 				if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 					w.NotEquipped = !eqp.ReallyEquipped()
 					w.NotCarried = false
-					m[w.HashResolved()] = w
+					m[w.HashDisplayedState()] = w
 				}
 			}
 		}
@@ -1351,7 +1351,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 					if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 						w.NotEquipped = true
 						w.NotCarried = true
-						m[w.HashResolved()] = w
+						m[w.HashDisplayedState()] = w
 					}
 				}
 			}
@@ -1361,7 +1361,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 	Traverse(func(s *Skill) bool {
 		for _, w := range s.Weapons {
 			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
-				m[w.HashResolved()] = w
+				m[w.HashDisplayedState()] = w
 			}
 		}
 		return false
@@ -1369,7 +1369,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 	Traverse(func(s *Spell) bool {
 		for _, w := range s.Weapons {
 			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
-				m[w.HashResolved()] = w
+				m[w.HashDisplayedState()] = w
 			}
 		}
 		return false

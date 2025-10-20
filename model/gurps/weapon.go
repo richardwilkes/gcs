@@ -214,14 +214,29 @@ func (w *Weapon) Compare(other *Weapon) int {
 	return result
 }
 
-// HashResolved returns a hash value for this weapon's resolved state.
-func (w *Weapon) HashResolved() uint64 {
+// HashDisplayedState returns a hash value for this weapon's displayed state. Useful for detecting unique weapon entries
+// to list on the sheet.
+func (w *Weapon) HashDisplayedState() uint64 {
 	h := xxh3.New()
 	w.Hash(h)
 	xhash.StringWithLen(h, w.String())
+	xhash.StringWithLen(h, w.Notes())
+	xhash.StringWithLen(h, w.UsageWithReplacements())
 	xhash.Num64(h, w.SkillLevel(nil))
 	xhash.StringWithLen(h, w.Damage.ResolvedDamage(nil))
-	xhash.Bool(h, w.Hide)
+	xhash.StringWithLen(h, w.Strength.Resolve(w, nil).String())
+	if w.IsMelee() {
+		xhash.StringWithLen(h, w.Parry.Resolve(w, nil).String())
+		xhash.StringWithLen(h, w.Block.Resolve(w, nil).String())
+		xhash.StringWithLen(h, w.Reach.Resolve(w, nil).String())
+	} else {
+		xhash.StringWithLen(h, w.Accuracy.Resolve(w, nil).String())
+		xhash.StringWithLen(h, w.Range.Resolve(w, nil).String(w.musclePowerIsResolved()))
+		xhash.StringWithLen(h, w.RateOfFire.Resolve(w, nil).String())
+		xhash.StringWithLen(h, w.Shots.Resolve(w, nil).String())
+		xhash.StringWithLen(h, w.Bulk.Resolve(w, nil).String())
+		xhash.StringWithLen(h, w.Recoil.Resolve(w, nil).String())
+	}
 	return h.Sum64()
 }
 
