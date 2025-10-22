@@ -28,12 +28,12 @@ import (
 
 var _ Bonus = &WeaponBonus{}
 
-// WeaponBonus holds the data for an adjustment to weapon damage.
+// WeaponBonus holds the data for an adjustment to weapon stats.
 type WeaponBonus struct {
 	WeaponBonusData
 }
 
-// WeaponBonusData holds the data for an adjustment to weapon damage which is persisted.
+// WeaponBonusData holds the data for an adjustment to weapon stats which are persisted.
 type WeaponBonusData struct { //nolint:govet // The field alignment here is poor, but kept to reduce diffs in the data
 	Type                   feature.Type    `json:"type"`
 	Percent                bool            `json:"percent,omitempty"`
