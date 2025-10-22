@@ -34,6 +34,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
@@ -373,7 +374,8 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case TraitDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = t.String()
+		var tooltip xbytes.InsertBuffer
+		data.Primary = t.NameAndLevel(&tooltip)
 		var buffer strings.Builder
 		if t.SelfControl > selfctrl.Always {
 			buffer.WriteString(t.SelfControl.ShortString())
@@ -391,6 +393,14 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Disabled = t.EffectivelyDisabled()
 		data.UnsatisfiedReason = t.UnsatisfiedReason
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		if tooltip.Len() != 0 {
+			t := i18n.Text("Trait level adjustments:\n") + strings.ReplaceAll(tooltip.String(), "\n", "\n- ")
+			if data.Tooltip == "" {
+				data.Tooltip = t
+			} else {
+				data.Tooltip = t + "\n---\n" + data.Tooltip
+			}
+		}
 		data.TemplateInfo = t.TemplatePicker.String()
 		if t.Container() {
 			switch t.ContainerType {
@@ -476,16 +486,16 @@ func (t *Trait) IsLeveled() bool {
 // CurrentLevel returns the current level of the trait or zero if it is not leveled.
 func (t *Trait) CurrentLevel() fxp.Int {
 	if t.Enabled() {
-		return t.internalCurrentLevel()
+		return t.internalCurrentLevel(nil)
 	}
 	return 0
 }
 
-func (t *Trait) internalCurrentLevel() fxp.Int {
+func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if t.IsLeveled() {
 		var levelAdjustment fxp.Int
 		if entity := EntityFromNode(t); entity != nil {
-			levelAdjustment = entity.TraitBonusFor(t.Name, t.Tags, nil)
+			levelAdjustment = entity.TraitBonusFor(t.Name, t.Tags, tooltip)
 		}
 		return (t.Levels + levelAdjustment).Max(0)
 	}
@@ -571,11 +581,16 @@ func (t *Trait) UserDescWithReplacements() string {
 
 // String implements fmt.Stringer.
 func (t *Trait) String() string {
+	return t.NameAndLevel(nil)
+}
+
+// NameAndLevel returns the name and level of the trait.
+func (t *Trait) NameAndLevel(tooltip *xbytes.InsertBuffer) string {
 	var buffer strings.Builder
 	buffer.WriteString(t.NameWithReplacements())
 	if t.IsLeveled() {
 		buffer.WriteByte(' ')
-		buffer.WriteString(t.internalCurrentLevel().String())
+		buffer.WriteString(t.internalCurrentLevel(tooltip).String())
 	}
 	return buffer.String()
 }
