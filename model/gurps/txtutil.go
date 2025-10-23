@@ -25,7 +25,7 @@ func AppendBufferOntoNewLine(to, from LineBuilder) {
 		return
 	}
 	if to.Len() != 0 {
-		to.WriteString("\n\n") //nolint:errcheck // Writing a string to a buffer can't fail.
+		to.WriteString("<br>\n") //nolint:errcheck // Writing a string to a buffer can't fail.
 	}
 	to.WriteString(from.String()) //nolint:errcheck // Writing a string to a buffer can't fail.
 }
@@ -36,7 +36,7 @@ func AppendStringOntoNewLine(to LineBuilder, from string) {
 		return
 	}
 	if to.Len() != 0 {
-		to.WriteString("\n\n") //nolint:errcheck // Writing a string to a buffer can't fail.
+		to.WriteString("<br>\n") //nolint:errcheck // Writing a string to a buffer can't fail.
 	}
 	to.WriteString(from) //nolint:errcheck // Writing a string to a buffer can't fail.
 }

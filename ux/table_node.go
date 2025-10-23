@@ -284,6 +284,7 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground,
 
 func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.Font, foreground, background unison.Ink, selected bool) unison.Paneler {
 	m := unison.NewMarkdown(false)
+	m.StripBottomEmptyMargin = true
 	if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
 		m.ClientData()[WorkingDirKey] = wd
 	}

@@ -36,8 +36,8 @@ github.com/go-git/go-billy/v6 v6.0.0-20251016063423-4289a4e54aa4 h1:xQLkKmWcw9n5
 github.com/go-git/go-billy/v6 v6.0.0-20251016063423-4289a4e54aa4/go.mod h1:TpCYxdQ0tWZkrnAkd7yqK+z1C8RKcyjcaYAJNAcnUnM=
 github.com/go-git/go-git-fixtures/v5 v5.1.1 h1:OH8i1ojV9bWfr0ZfasfpgtUXQHQyVS8HXik/V1C099w=
 github.com/go-git/go-git-fixtures/v5 v5.1.1/go.mod h1:Altk43lx3b1ks+dVoAG2300o5WWUnktvfY3VI6bcaXU=
-github.com/go-git/go-git/v6 v6.0.0-20251020083923-0fe67ec8dc1d h1:hvQ7hYUflE00+G/N1QwBQhib9QXsTZRSYLJX7nuXEJs=
-github.com/go-git/go-git/v6 v6.0.0-20251020083923-0fe67ec8dc1d/go.mod h1:xtOWa43AoQlsqYogmpf0MnjBJHKPL2/3teh4fmZ/k+Y=
+github.com/go-git/go-git/v6 v6.0.0-20251021092831-91c33c9361ce h1:DFvDcCiFZk2yDXVreC9+B+SAZYHH2RssMmtR2zBwANE=
+github.com/go-git/go-git/v6 v6.0.0-20251021092831-91c33c9361ce/go.mod h1:xtOWa43AoQlsqYogmpf0MnjBJHKPL2/3teh4fmZ/k+Y=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 h1:5BVwOaUSBTlVZowGO6VZGw2H/zl9nrd3eCZfYV+NfQA=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71/go.mod h1:9YTyiznxEY1fVinfM7RvRcjRHbw2xLBJ3AAGIT0I4Nw=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728 h1:RkGhqHxEVAvPM0/R+8g7XRwQnHatO0KAuVcwHo8q9W8=
@@ -82,8 +82,8 @@ github.com/richardwilkes/rpgtools v1.11.0 h1:z/CR8cXC+YZEnFTdx0ClP6ZrS/g36XyfWZ8
 github.com/richardwilkes/rpgtools v1.11.0/go.mod h1:ikFmcFo1qwW6fk1SNNuoEp8a8gIrqjh7ccU8n095z9A=
 github.com/richardwilkes/toolbox/v2 v2.7.0 h1:ZUSm9yma3oNVilGTmvau5Qwomo+qycLLn4aGwZX7txQ=
 github.com/richardwilkes/toolbox/v2 v2.7.0/go.mod h1:RDvOon2cBRXL4+1HOVT7YsHbIbpOgPjK7ntYFNpXnRs=
-github.com/richardwilkes/unison v0.90.0 h1:AL4gfH/eHHlGEA24ZaCZc5H+5xEqjESk1tYUaeOSuSY=
-github.com/richardwilkes/unison v0.90.0/go.mod h1:Kpdu29SJpQ2/2te3R69lsbRkRRVLiwLDDm56f4vARuw=
+github.com/richardwilkes/unison v0.90.1 h1:IYSYApWjN1olIqxS6z0j1/apPEcp/puDzt9lxiXXFJ0=
+github.com/richardwilkes/unison v0.90.1/go.mod h1:Kpdu29SJpQ2/2te3R69lsbRkRRVLiwLDDm56f4vARuw=
 github.com/rjeczalik/notify v0.9.3 h1:6rJAzHTGKXGj76sbRgDiDcYj/HniypXmSJo1SWakZeY=
 github.com/rjeczalik/notify v0.9.3/go.mod h1:gF3zSOrafR9DQEWSE8TjfI9NkooDxbyT4UgRGKZA0lc=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=

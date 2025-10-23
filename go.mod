@@ -5,12 +5,12 @@ go 1.25.0
 require (
 	github.com/dop251/goja v0.0.0-20251008123653-cf18d89f3cf6
 	github.com/go-git/go-billy/v6 v6.0.0-20251016063423-4289a4e54aa4
-	github.com/go-git/go-git/v6 v6.0.0-20251020083923-0fe67ec8dc1d
+	github.com/go-git/go-git/v6 v6.0.0-20251021092831-91c33c9361ce
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
 	github.com/richardwilkes/toolbox/v2 v2.7.0
-	github.com/richardwilkes/unison v0.90.0
+	github.com/richardwilkes/unison v0.90.1
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
