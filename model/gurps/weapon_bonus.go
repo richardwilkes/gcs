@@ -219,7 +219,11 @@ func (w *WeaponBonus) AdjustedAmount() fxp.Int {
 		amt = amt.Mul(w.DieCount)
 	}
 	if w.PerLevel {
-		level := w.LeveledOwner.CurrentLevel()
+		leveledOwner := w.LeveledOwner
+		if leveledOwner == nil {
+			leveledOwner = w.DerivedLeveledOwner()
+		}
+		level := leveledOwner.CurrentLevel()
 		if level < 0 {
 			return 0
 		}
