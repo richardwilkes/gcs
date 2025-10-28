@@ -236,6 +236,7 @@ func newMarkdownTooltip(text, workingDir string) *unison.Panel {
 		VSpacing: unison.StdVSpacing,
 	})
 	m := unison.NewMarkdown(false)
+	m.StripBottomEmptyMargin = true
 	if workingDir != "" {
 		m.ClientData()[WorkingDirKey] = workingDir
 	}

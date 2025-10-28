@@ -4,8 +4,8 @@ go 1.25.0
 
 require (
 	github.com/dop251/goja v0.0.0-20251008123653-cf18d89f3cf6
-	github.com/go-git/go-billy/v6 v6.0.0-20251016063423-4289a4e54aa4
-	github.com/go-git/go-git/v6 v6.0.0-20251021092831-91c33c9361ce
+	github.com/go-git/go-billy/v6 v6.0.0-20251026101908-623011986e70
+	github.com/go-git/go-git/v6 v6.0.0-20251027195115-1e327a99f5f4
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
