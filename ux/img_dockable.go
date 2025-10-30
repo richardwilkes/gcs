@@ -53,6 +53,7 @@ type ImageDockable struct {
 func NewImageDockable(filePath string) (unison.Dockable, error) {
 	var drawable unison.Drawable
 	var size geom.Size
+	var kind string
 	if strings.HasSuffix(strings.ToLower(filePath), ".svg") {
 		r, err := os.Open(filePath)
 		if err != nil {
@@ -68,6 +69,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 			Size: svg.SuggestedSize(),
 		}
 		size = svg.Size()
+		kind = "SVG"
 	} else {
 		img, err := unison.NewImageFromFilePathOrURL(filePath, geom.NewPoint(1, 1).DivPt(unison.PrimaryDisplay().Scale))
 		if err != nil {
@@ -75,6 +77,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		}
 		drawable = img
 		size = img.Size()
+		kind = imgfmt.ForPath(filePath).String()
 	}
 	d := &ImageDockable{
 		path:     filePath,
@@ -104,7 +107,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 
 	typeLabel := unison.NewLabel()
 	typeLabel.Font = unison.DefaultFieldTheme.Font
-	typeLabel.SetTitle(imgfmt.ForPath(filePath).String())
+	typeLabel.SetTitle(kind)
 
 	sizeLabel := unison.NewLabel()
 	sizeLabel.Font = unison.DefaultFieldTheme.Font
