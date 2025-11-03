@@ -1,11 +1,11 @@
 module github.com/richardwilkes/gcs/v5
 
-go 1.25.0
+go 1.25.3
 
 require (
-	github.com/dop251/goja v0.0.0-20251008123653-cf18d89f3cf6
-	github.com/go-git/go-billy/v6 v6.0.0-20251026101908-623011986e70
-	github.com/go-git/go-git/v6 v6.0.0-20251027195115-1e327a99f5f4
+	github.com/dop251/goja v0.0.0-20251103141225-af2ceb9156d7
+	github.com/go-git/go-billy/v6 v6.0.0-20251103194943-ae9e5d5b5b37
+	github.com/go-git/go-git/v6 v6.0.0-20251103200709-47b1ed2930c9
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/pdf v1.25.4
 	github.com/richardwilkes/rpgtools v1.11.0
@@ -25,7 +25,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.3.0 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
-	github.com/cyphar/filepath-securejoin v0.5.0 // indirect
+	github.com/cyphar/filepath-securejoin v0.6.0 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
