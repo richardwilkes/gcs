@@ -3,6 +3,8 @@ set -eo pipefail
 
 trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
 
+export GOEXPERIMENT=jsonv2
+
 # Process args
 RELEASE="0.0"
 EXTRA_LD_FLAGS="-s -w"
