@@ -10,8 +10,7 @@
 package gurps
 
 import (
-	"bytes"
-	"encoding/json"
+	"encoding/json/v2"
 	"hash"
 	"io/fs"
 
@@ -50,7 +49,7 @@ type LootData struct {
 // NewLootFromFile loads Loot from a file.
 func NewLootFromFile(fileSystem fs.FS, filePath string) (*Loot, error) {
 	var l Loot
-	if err := jio.LoadFromFS(fileSystem, filePath, &l); err != nil {
+	if err := jio.Load(fileSystem, filePath, &l); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(l.Version); err != nil {
@@ -107,15 +106,12 @@ func (l *Loot) SourceMatcher() *SrcMatcher {
 
 // Hash implements Hashable.
 func (l *Loot) Hash(h hash.Hash) {
-	var buffer bytes.Buffer
 	saved := l.ModifiedOn
 	l.ModifiedOn = jio.Time{}
 	defer func() { l.ModifiedOn = saved }()
-	if err := jio.Save(&buffer, l); err != nil {
+	if err := json.MarshalWrite(h, l, json.Deterministic(true)); err != nil {
 		errs.Log(err)
-		return
 	}
-	_, _ = h.Write(buffer.Bytes())
 }
 
 // EnsureAttachments ensures that all attachments have their data owner set properly.

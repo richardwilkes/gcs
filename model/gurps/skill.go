@@ -86,7 +86,7 @@ type SkillEditData struct {
 type SkillNonContainerOnlyEditData struct {
 	SkillNonContainerOnlySyncData
 	TechLevel        *string       `json:"tech_level,omitempty"`
-	Points           fxp.Int       `json:"points,omitempty"`
+	Points           fxp.Int       `json:"points,omitzero"`
 	DefaultedFrom    *SkillDefault `json:"defaulted_from,omitempty"`
 	Study            []*Study      `json:"study,omitempty"`
 	StudyHoursNeeded study.Level   `json:"study_hours_needed,omitempty"`
@@ -105,7 +105,7 @@ type SkillSyncData struct {
 type SkillNonContainerOnlySyncData struct {
 	Specialization               string              `json:"specialization,omitempty"`
 	Difficulty                   AttributeDifficulty `json:"difficulty,omitzero"`
-	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitempty"`
+	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitzero"`
 	Defaults                     []*SkillDefault     `json:"defaults,omitempty"`
 	TechniqueDefault             *SkillDefault       `json:"default,omitempty"`
 	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitempty"`
@@ -127,7 +127,7 @@ type skillListData struct {
 // NewSkillsFromFile loads an Skill list from a file.
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	var data skillListData
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

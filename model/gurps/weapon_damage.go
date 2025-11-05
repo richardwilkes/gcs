@@ -29,14 +29,14 @@ type WeaponDamageData struct {
 	Type                      string       `json:"type"`
 	StrengthType              stdmg.Option `json:"st,omitempty"`
 	Leveled                   bool         `json:"leveled,omitempty"`
-	StrengthMultiplier        fxp.Int      `json:"st_mul,omitempty"`
-	Base                      string       `json:"base,omitempty"`
+	StrengthMultiplier        fxp.Int      `json:"st_mul,omitzero"`
+	Base                      string       `json:"base,omitzero"`
 	BaseLeveled               string       `json:"base_leveled,omitempty"`
-	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitempty"`
+	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitzero"`
 	Fragmentation             string       `json:"fragmentation,omitempty"`
-	FragmentationArmorDivisor fxp.Int      `json:"fragmentation_armor_divisor,omitempty"`
+	FragmentationArmorDivisor fxp.Int      `json:"fragmentation_armor_divisor,omitzero"`
 	FragmentationType         string       `json:"fragmentation_type,omitempty"`
-	ModifierPerDie            fxp.Int      `json:"modifier_per_die,omitempty"`
+	ModifierPerDie            fxp.Int      `json:"modifier_per_die,omitzero"`
 }
 
 // WeaponDamage holds the damage information for a weapon.

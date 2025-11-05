@@ -26,7 +26,7 @@ var _ Hashable = &Attribute{}
 type AttributeData struct {
 	AttrID     string  `json:"attr_id"`
 	Adjustment fxp.Int `json:"adj"`
-	Damage     fxp.Int `json:"damage,omitempty"`
+	Damage     fxp.Int `json:"damage,omitzero"`
 }
 
 // Attribute holds the current state of an AttributeDef.

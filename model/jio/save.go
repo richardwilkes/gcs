@@ -12,7 +12,8 @@ package jio
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"io"
 	"os"
 	"path/filepath"
@@ -27,26 +28,30 @@ func SaveToFile(path string, data any) error {
 		return errs.Wrap(err)
 	}
 	if err := xos.WriteSafeFile(path, func(w io.Writer) error {
-		return Save(w, data)
+		return save(w, data)
 	}); err != nil {
 		return errs.NewWithCause(path, err)
 	}
 	return nil
 }
 
-// Save writes the data as JSON.
-func Save(w io.Writer, data any) error {
-	encoder := json.NewEncoder(w)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", "\t")
-	return errs.Wrap(encoder.Encode(data))
+func save(w io.Writer, data any) error {
+	if err := json.MarshalWrite(w, data, json.Deterministic(true), jsontext.WithIndent("\t")); err != nil {
+		return errs.Wrap(err)
+	}
+	// Add a newline at the end of the file for POSIX compliance.
+	if _, err := w.Write([]byte{'\n'}); err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
 }
 
-// SerializeAndCompress writes the data as JSON into a buffer, then compresses it.
+// SerializeAndCompress writes the data as JSON into a buffer, then compresses it. Unlike with SaveToFile, no attempt is
+// made to make the output "pretty".
 func SerializeAndCompress(data any) ([]byte, error) {
 	var buffer bytes.Buffer
 	gz := gzip.NewWriter(&buffer)
-	if err := json.NewEncoder(gz).Encode(data); err != nil {
+	if err := json.MarshalWrite(gz, data); err != nil {
 		return nil, errs.Wrap(err)
 	}
 	if err := gz.Close(); err != nil {

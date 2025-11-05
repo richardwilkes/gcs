@@ -96,7 +96,7 @@ type SpellEditData struct {
 type SpellNonContainerOnlyEditData struct {
 	SpellNonContainerOnlySyncData
 	TechLevel        *string     `json:"tech_level,omitempty"`
-	Points           fxp.Int     `json:"points,omitempty"`
+	Points           fxp.Int     `json:"points,omitzero"`
 	Study            []*Study    `json:"study,omitempty"`
 	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
 }
@@ -136,7 +136,7 @@ type spellListData struct {
 // NewSpellsFromFile loads an Spell list from a file.
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 	var data spellListData
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

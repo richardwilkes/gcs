@@ -114,7 +114,7 @@ type equipmentModifierListData struct {
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
 	var data equipmentModifierListData
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

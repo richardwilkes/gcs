@@ -24,7 +24,7 @@ type PointsRecord struct {
 // ClonePointsRecordList creates a clone of the provided PointsRecord list.
 func ClonePointsRecordList(list []*PointsRecord) []*PointsRecord {
 	clone := make([]*PointsRecord, len(list))
-	for i := 0; i < len(list); i++ {
+	for i := range list {
 		record := *list[i]
 		clone[i] = &record
 	}

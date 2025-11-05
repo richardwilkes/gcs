@@ -74,7 +74,7 @@ type GeneralSettings struct {
 	TooltipDelay                fxp.Int          `json:"tooltip_delay"`
 	TooltipDismissal            fxp.Int          `json:"tooltip_dismissal"`
 	ScrollWheelMultiplier       fxp.Int          `json:"scroll_wheel_multiplier"`
-	PermittedPerScriptExecTime  fxp.Int          `json:"permitted_per_script_exec_time,omitempty"`
+	PermittedPerScriptExecTime  fxp.Int          `json:"permitted_per_script_exec_time,omitzero"`
 	Version                     int              `json:"version,omitempty"`
 	NavigatorUIScale            int              `json:"navigator_scale"`
 	InitialListUIScale          int              `json:"initial_list_scale"`
@@ -127,7 +127,7 @@ func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSett
 		GeneralSettings
 		OldLocation *GeneralSettings `json:"general"`
 	}
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, err
 	}
 	var s *GeneralSettings

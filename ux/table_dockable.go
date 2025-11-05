@@ -10,14 +10,13 @@
 package ux
 
 import (
-	"bytes"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -425,17 +424,14 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 
 // Hash writes this object's contents into the hasher.
 func (d *TableDockable[T]) Hash(h hash.Hash) {
-	var buffer bytes.Buffer
 	rows := d.provider.RootRows()
 	data := make([]any, 0, len(rows))
 	for _, row := range rows {
 		data = append(data, row.Data())
 	}
-	if err := jio.Save(&buffer, data); err != nil {
+	if err := json.MarshalWrite(h, data, json.Deterministic(true)); err != nil {
 		errs.Log(err)
-		return
 	}
-	_, _ = h.Write(buffer.Bytes())
 }
 
 // AllTags returns all tags currently present in the data.

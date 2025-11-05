@@ -31,10 +31,10 @@ type SkillDefault struct {
 	DefaultType    string          `json:"type"`
 	Name           string          `json:"name,omitempty"`
 	Specialization string          `json:"specialization,omitempty"`
-	Modifier       fxp.Int         `json:"modifier,omitempty"`
-	Level          fxp.Int         `json:"level,omitempty"`
-	AdjLevel       fxp.Int         `json:"adjusted_level,omitempty"`
-	Points         fxp.Int         `json:"points,omitempty"`
+	Modifier       fxp.Int         `json:"modifier,omitzero"`
+	Level          fxp.Int         `json:"level,omitzero"`
+	AdjLevel       fxp.Int         `json:"adjusted_level,omitzero"`
+	Points         fxp.Int         `json:"points,omitzero"`
 	WhenTL         criteria.Number `json:"when_tl,omitzero"`
 }
 

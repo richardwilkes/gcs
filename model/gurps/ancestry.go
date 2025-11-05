@@ -59,7 +59,7 @@ func LookupAncestry(name string, libraries Libraries) *Ancestry {
 // NewAncestryFromFile creates a new Ancestry from a file.
 func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 	var ancestry ancestryData
-	if err := jio.LoadFromFS(fileSystem, filePath, &ancestry); err != nil {
+	if err := jio.Load(fileSystem, filePath, &ancestry); err != nil {
 		return nil, err
 	}
 	if ancestry.Version == 0 { // for some older files

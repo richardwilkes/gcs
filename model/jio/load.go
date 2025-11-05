@@ -12,7 +12,7 @@ package jio
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/json"
+	"encoding/json/v2"
 	"io"
 	"io/fs"
 	"os"
@@ -21,52 +21,31 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xio"
 )
 
-// LoadFromFile loads JSON data from the specified path.
-func LoadFromFile(path string, data any) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return errs.NewWithCause(path, err)
-	}
-	defer xio.CloseIgnoringErrors(f)
-	return Load(f, data)
-}
-
-// LoadFromFS loads JSON data from the specified filesystem path. If 'fileSystem' is nil, falls back to calling
-// LoadFromFile(path, data) instead.
-func LoadFromFS(fileSystem fs.FS, path string, data any) error {
+// Load JSON data from the specified filesystem path. 'fileSystem' may be nil, in which case os.Open() is used instead.
+func Load(fileSystem fs.FS, path string, result any) error {
+	var f fs.File
+	var err error
 	if fileSystem == nil {
-		return LoadFromFile(path, data)
+		f, err = os.Open(path)
+	} else {
+		f, err = fileSystem.Open(path)
 	}
-	f, err := fileSystem.Open(path)
 	if err != nil {
 		return errs.NewWithCause(path, err)
 	}
 	defer xio.CloseIgnoringErrors(f)
-	return Load(f, data)
-}
-
-// Load JSON data.
-func Load(r io.Reader, data any) error {
-	buffer, err := xio.NewBOMStripper(r)
-	if err != nil {
+	var r io.Reader
+	if r, err = xio.NewBOMStripper(f); err != nil {
 		return err
 	}
-	decoder := json.NewDecoder(buffer)
-	decoder.UseNumber()
-	if err = decoder.Decode(data); err != nil {
-		return errs.Wrap(err)
-	}
-	return nil
+	return errs.Wrap(json.UnmarshalRead(r, result))
 }
 
 // DecompressAndDeserialize decompresses the buffer, then loads JSON data from it.
 func DecompressAndDeserialize(data []byte, result any) error {
-	gz, err := gzip.NewReader(bytes.NewReader(data))
+	r, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return errs.Wrap(err)
 	}
-	if err = json.NewDecoder(gz).Decode(result); err != nil {
-		return errs.Wrap(err)
-	}
-	return nil
+	return errs.Wrap(json.UnmarshalRead(r, result))
 }

@@ -10,8 +10,7 @@
 package gurps
 
 import (
-	"bytes"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -126,7 +125,7 @@ type Entity struct {
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var e Entity
 	e.DiscardCaches()
-	if err := jio.LoadFromFS(fileSystem, filePath, &e); err != nil {
+	if err := jio.Load(fileSystem, filePath, &e); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(e.Version); err != nil {
@@ -196,12 +195,12 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 		Swing                 *dice.Dice `json:"swing"`
 		Thrust                *dice.Dice `json:"thrust"`
 		BasicLift             fxp.Weight `json:"basic_lift"`
-		LiftingStrengthBonus  fxp.Int    `json:"lifting_st_bonus,omitempty"`
-		StrikingStrengthBonus fxp.Int    `json:"striking_st_bonus,omitempty"`
-		ThrowingStrengthBonus fxp.Int    `json:"throwing_st_bonus,omitempty"`
-		DodgeBonus            fxp.Int    `json:"dodge_bonus,omitempty"`
-		ParryBonus            fxp.Int    `json:"parry_bonus,omitempty"`
-		BlockBonus            fxp.Int    `json:"block_bonus,omitempty"`
+		LiftingStrengthBonus  fxp.Int    `json:"lifting_st_bonus,omitzero"`
+		StrikingStrengthBonus fxp.Int    `json:"striking_st_bonus,omitzero"`
+		ThrowingStrengthBonus fxp.Int    `json:"throwing_st_bonus,omitzero"`
+		DodgeBonus            fxp.Int    `json:"dodge_bonus,omitzero"`
+		ParryBonus            fxp.Int    `json:"parry_bonus,omitzero"`
+		BlockBonus            fxp.Int    `json:"block_bonus,omitzero"`
 		Move                  []int      `json:"move"`
 		Dodge                 []int      `json:"dodge"`
 	}
@@ -1592,15 +1591,12 @@ func (e *Entity) SetNoteList(list []*Note) {
 
 // Hash writes this object's contents into the hasher.
 func (e *Entity) Hash(h hash.Hash) {
-	var buffer bytes.Buffer
 	saved := e.ModifiedOn
 	e.ModifiedOn = jio.Time{}
 	defer func() { e.ModifiedOn = saved }()
-	if err := jio.Save(&buffer, e); err != nil {
+	if err := json.MarshalWrite(h, e, json.Deterministic(true)); err != nil {
 		errs.Log(err)
-		return
 	}
-	_, _ = h.Write(buffer.Bytes())
 }
 
 // SetPointsRecord sets a new points record list, adjusting the total points.

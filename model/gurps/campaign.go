@@ -10,8 +10,7 @@
 package gurps
 
 import (
-	"bytes"
-	"encoding/json"
+	"encoding/json/v2"
 	"hash"
 	"io/fs"
 
@@ -44,7 +43,7 @@ type CampaignData struct {
 // NewCampaignFromFile loads a Campaign from a file.
 func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 	var campaign Campaign
-	if err := jio.LoadFromFS(fileSystem, filePath, &campaign); err != nil {
+	if err := jio.Load(fileSystem, filePath, &campaign); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(campaign.Version); err != nil {
@@ -76,10 +75,7 @@ func (c *Campaign) MarshalJSON() ([]byte, error) {
 
 // Hash writes this object's contents into the hasher.
 func (c *Campaign) Hash(h hash.Hash) {
-	var buffer bytes.Buffer
-	if err := jio.Save(&buffer, c); err != nil {
+	if err := json.MarshalWrite(h, c, json.Deterministic(true)); err != nil {
 		errs.Log(err)
-		return
 	}
-	_, _ = h.Write(buffer.Bytes())
 }

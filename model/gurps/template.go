@@ -10,8 +10,7 @@
 package gurps
 
 import (
-	"bytes"
-	"encoding/json"
+	"encoding/json/v2"
 	"hash"
 	"io/fs"
 
@@ -51,7 +50,7 @@ type TemplateData struct {
 // NewTemplateFromFile loads a Template from a file.
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var t Template
-	if err := jio.LoadFromFS(fileSystem, filePath, &t); err != nil {
+	if err := jio.Load(fileSystem, filePath, &t); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(t.Version); err != nil {
@@ -203,12 +202,9 @@ func (t *Template) SetNoteList(list []*Note) {
 
 // Hash writes this object's contents into the hasher.
 func (t *Template) Hash(h hash.Hash) {
-	var buffer bytes.Buffer
-	if err := jio.Save(&buffer, t); err != nil {
+	if err := json.MarshalWrite(h, t, json.Deterministic(true)); err != nil {
 		errs.Log(err)
-		return
 	}
-	_, _ = h.Write(buffer.Bytes())
 }
 
 // EnsureAttachments ensures that all attachments have their data owner set to the Template.

@@ -97,7 +97,7 @@ func NewSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*SheetSettings
 		SheetSettings
 		OldLocation *SheetSettings `json:"sheet_settings"`
 	}
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, err
 	}
 	var s *SheetSettings

@@ -90,7 +90,7 @@ type TraitEditData struct {
 // TraitNonContainerOnlyEditData holds the Trait data that is only applicable to traits that aren't containers.
 type TraitNonContainerOnlyEditData struct {
 	TraitNonContainerSyncData
-	Levels           fxp.Int     `json:"levels,omitempty"`
+	Levels           fxp.Int     `json:"levels,omitzero"`
 	Study            []*Study    `json:"study,omitempty"`
 	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
 }
@@ -108,8 +108,8 @@ type TraitSyncData struct {
 
 // TraitNonContainerSyncData holds the Trait sync data that is only applicable to traits that aren't containers.
 type TraitNonContainerSyncData struct {
-	BasePoints     fxp.Int   `json:"base_points,omitempty"`
-	PointsPerLevel fxp.Int   `json:"points_per_level,omitempty"`
+	BasePoints     fxp.Int   `json:"base_points,omitzero"`
+	PointsPerLevel fxp.Int   `json:"points_per_level,omitzero"`
 	Weapons        []*Weapon `json:"weapons,omitempty"`
 	Features       Features  `json:"features,omitempty"`
 	RoundCostDown  bool      `json:"round_down,omitempty"`
@@ -131,7 +131,7 @@ type traitListData struct {
 // NewTraitsFromFile loads an Trait list from a file.
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 	var data traitListData
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

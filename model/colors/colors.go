@@ -138,7 +138,7 @@ func initialize() {
 // NewFromFS creates a new set of colors from a file. Any missing values will be filled in with defaults.
 func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	var data fileData
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
 	if data.Version < minimumVersion {

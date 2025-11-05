@@ -81,9 +81,9 @@ type EquipmentEditData struct {
 	VTTNotes     string               `json:"vtt_notes,omitempty"`
 	Replacements map[string]string    `json:"replacements,omitempty"`
 	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
-	RatedST      fxp.Int              `json:"rated_strength,omitempty"`
+	RatedST      fxp.Int              `json:"rated_strength,omitzero"`
 	Quantity     fxp.Int              `json:"quantity"`
-	Level        fxp.Int              `json:"level,omitempty"`
+	Level        fxp.Int              `json:"level,omitzero"`
 	Uses         int                  `json:"uses,omitempty"`
 	Equipped     bool                 `json:"equipped,omitempty"`
 }
@@ -114,7 +114,7 @@ type equipmentListData struct {
 // NewEquipmentFromFile loads an Equipment list from a file.
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
 	var data equipmentListData
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

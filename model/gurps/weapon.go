@@ -269,7 +269,7 @@ func (w *WeaponData) Hash(h hash.Hash) {
 // MarshalJSON implements json.Marshaler.
 func (w *Weapon) MarshalJSON() ([]byte, error) {
 	type calc struct {
-		Level      fxp.Int `json:"level,omitempty"`
+		Level      fxp.Int `json:"level,omitzero"`
 		Damage     string  `json:"damage,omitempty"`
 		Parry      string  `json:"parry,omitempty"`
 		Block      string  `json:"block,omitempty"`

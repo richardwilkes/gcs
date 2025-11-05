@@ -49,7 +49,7 @@ func LookupCalendarRef(name string, libraries Libraries) *CalendarRef {
 // NewCalendarRefFromFS creates a new CalendarRef from a file.
 func NewCalendarRefFromFS(fileSystem fs.FS, filePath string) (*CalendarRef, error) {
 	var c calendar.Calendar
-	if err := jio.LoadFromFS(fileSystem, filePath, &c); err != nil {
+	if err := jio.Load(fileSystem, filePath, &c); err != nil {
 		return nil, err
 	}
 	return &CalendarRef{

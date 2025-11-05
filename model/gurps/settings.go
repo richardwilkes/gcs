@@ -113,7 +113,7 @@ type Openable interface {
 func GlobalSettings() *Settings {
 	globalOnce.Do(func() {
 		dice.GURPSFormat = true
-		if err := jio.LoadFromFile(SettingsPath, &globalSettings); err != nil {
+		if err := jio.Load(nil, SettingsPath, &globalSettings); err != nil {
 			globalSettings = Settings{
 				LastSeenGCSVersion: xos.AppVersion,
 				General:            NewGeneralSettings(),

@@ -23,7 +23,7 @@ var _ Feature = &CostReduction{}
 type CostReduction struct {
 	Type       feature.Type `json:"type"`
 	Attribute  string       `json:"attribute,omitempty"`
-	Percentage fxp.Int      `json:"percentage,omitempty"`
+	Percentage fxp.Int      `json:"percentage,omitzero"`
 }
 
 // NewCostReduction creates a new CostReduction.

@@ -67,7 +67,7 @@ func FactoryBody() *Body {
 // NewBodyFromFile loads a Body from a file.
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data standaloneBodyData
-	if err := jio.LoadFromFS(fileSystem, filePath, &data); err != nil {
+	if err := jio.Load(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

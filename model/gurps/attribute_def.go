@@ -49,8 +49,8 @@ type AttributeDefData struct {
 	Name                string              `json:"name"`
 	FullName            string              `json:"full_name,omitempty"`
 	Base                string              `json:"base,omitempty"`
-	CostPerPoint        fxp.Int             `json:"cost_per_point,omitempty"`
-	CostAdjPercentPerSM fxp.Int             `json:"cost_adj_percent_per_sm,omitempty"`
+	CostPerPoint        fxp.Int             `json:"cost_per_point,omitzero"`
+	CostAdjPercentPerSM fxp.Int             `json:"cost_adj_percent_per_sm,omitzero"`
 	Thresholds          []*PoolThreshold    `json:"thresholds,omitempty"`
 }
 
