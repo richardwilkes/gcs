@@ -10,8 +10,8 @@
 package gurps
 
 import (
-	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -47,17 +47,13 @@ type AncestryOptionsData struct {
 	NameGenerators    []string                `json:"name_generators,omitempty"`
 }
 
-// MarshalJSON implements json.Marshaler.
-func (o *AncestryOptions) MarshalJSON() ([]byte, error) {
-	var buffer bytes.Buffer
-	e := json.NewEncoder(&buffer)
-	e.SetEscapeHTML(false)
-	err := e.Encode(&o.AncestryOptionsData)
-	return buffer.Bytes(), err
+// MarshalJSONTo implements json.MarshalerTo.
+func (o *AncestryOptions) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &o.AncestryOptionsData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (o *AncestryOptions) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (o *AncestryOptions) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var legacy struct {
 		AncestryOptionsData
 		// Old data fields
@@ -65,7 +61,7 @@ func (o *AncestryOptions) UnmarshalJSON(data []byte) error {
 		WeightFormula string `json:"weight_formula"`
 		AgeFormula    string `json:"age_formula"`
 	}
-	if err := json.Unmarshal(data, &legacy); err != nil {
+	if err := json.UnmarshalDecode(dec, &legacy); err != nil {
 		return err
 	}
 	o.AncestryOptionsData = legacy.AncestryOptionsData

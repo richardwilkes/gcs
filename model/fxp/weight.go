@@ -10,7 +10,8 @@
 package fxp
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"strings"
 
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -64,15 +65,15 @@ func (w Weight) String() string {
 	return Pound.Format(w)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (w Weight) MarshalJSON() ([]byte, error) {
-	return json.Marshal(w.String())
+// MarshalJSONTo implements json.MarshalerTo.
+func (w Weight) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, w.String())
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (w *Weight) UnmarshalJSON(in []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (w *Weight) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	if err := json.Unmarshal(in, &s); err != nil {
+	if err := json.UnmarshalDecode(dec, &s); err != nil {
 		return err
 	}
 	var err error

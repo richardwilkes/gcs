@@ -10,7 +10,8 @@
 package criteria
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -33,9 +34,9 @@ func (t Text) IsZero() bool {
 	return t.Compare.EnsureValid() == AnyText
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (t *Text) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, &t.TextData)
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (t *Text) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	err := json.UnmarshalDecode(dec, &t.TextData)
 	t.Compare = t.Compare.EnsureValid()
 	return err
 }

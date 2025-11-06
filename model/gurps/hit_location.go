@@ -11,7 +11,8 @@ package gurps
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"strconv"
@@ -71,8 +72,8 @@ func (h *HitLocation) Clone(entity *Entity, owningTable *Body) *HitLocation {
 	return &clone
 }
 
-// MarshalJSON implements json.Marshaler.
-func (h *HitLocation) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (h *HitLocation) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
 		RollRange string         `json:"roll_range"`
 		DR        map[string]int `json:"dr,omitempty"`
@@ -92,13 +93,13 @@ func (h *HitLocation) MarshalJSON() ([]byte, error) {
 			data.Calc.DR[AllID] = 0
 		}
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (h *HitLocation) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (h *HitLocation) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	h.HitLocationData = HitLocationData{}
-	if err := json.Unmarshal(data, &h.HitLocationData); err != nil {
+	if err := json.UnmarshalDecode(dec, &h.HitLocationData); err != nil {
 		return err
 	}
 	if h.SubTable != nil {

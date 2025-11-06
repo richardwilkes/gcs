@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -49,8 +50,8 @@ func NewAttribute(entity *Entity, attrID string, order int) *Attribute {
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (a *Attribute) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (a *Attribute) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if a.Entity != nil {
 		if def := a.AttributeDef(); def != nil {
 			type calc struct {
@@ -59,7 +60,7 @@ func (a *Attribute) MarshalJSON() ([]byte, error) {
 				Points  fxp.Int  `json:"points"`
 			}
 			if def.IsSeparator() {
-				return json.Marshal(&a.AttributeData)
+				return json.MarshalEncode(enc, &a.AttributeData)
 			}
 			data := struct {
 				AttributeData
@@ -75,16 +76,16 @@ func (a *Attribute) MarshalJSON() ([]byte, error) {
 				current := a.Current()
 				data.Calc.Current = &current
 			}
-			return json.Marshal(&data)
+			return json.MarshalEncode(enc, &data)
 		}
 	}
-	return json.Marshal(&a.AttributeData)
+	return json.MarshalEncode(enc, &a.AttributeData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (a *Attribute) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (a *Attribute) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	a.AttributeData = AttributeData{}
-	return json.Unmarshal(data, &a.AttributeData)
+	return json.UnmarshalDecode(dec, &a.AttributeData)
 }
 
 // Clone a copy of this.

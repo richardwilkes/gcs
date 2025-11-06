@@ -10,9 +10,9 @@
 package gurps
 
 import (
-	"bytes"
 	"cmp"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"io/fs"
 	"slices"
@@ -113,19 +113,15 @@ func (a *AttributeDefs) Save(filePath string) error {
 	})
 }
 
-// MarshalJSON implements json.Marshaler.
-func (a *AttributeDefs) MarshalJSON() ([]byte, error) {
-	var buffer bytes.Buffer
-	e := json.NewEncoder(&buffer)
-	e.SetEscapeHTML(false)
-	err := e.Encode(a.List(false))
-	return buffer.Bytes(), err
+// MarshalJSONTo implements json.MarshalerTo.
+func (a *AttributeDefs) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, a.List(false))
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (a *AttributeDefs) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (a *AttributeDefs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var list []*AttributeDef
-	if err := json.Unmarshal(data, &list); err != nil {
+	if err := json.UnmarshalDecode(dec, &list); err != nil {
 		return err
 	}
 	a.Set = make(map[string]*AttributeDef, len(list))

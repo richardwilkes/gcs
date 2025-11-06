@@ -10,15 +10,13 @@
 package colors
 
 import (
-	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"io/fs"
-	"log/slog"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 )
 
@@ -158,39 +156,41 @@ func (c *Colors) Save(filePath string) error {
 	})
 }
 
-// MarshalJSON implements json.Marshaler.
-func (c *Colors) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (c *Colors) MarshalJSONTo(enc *jsontext.Encoder) error {
 	cc := Current()
-	c.data = make(map[string]*unison.ThemeColor, len(cc))
-	for _, one := range cc {
-		c.data[one.ID] = one.Color
+	if err := enc.WriteToken(jsontext.BeginObject); err != nil {
+		return err
 	}
-	return json.Marshal(&c.data)
+	for _, one := range cc {
+		if err := enc.WriteToken(jsontext.String(one.ID)); err != nil {
+			return err
+		}
+		if err := json.MarshalEncode(enc, one.Color); err != nil {
+			return err
+		}
+	}
+	return enc.WriteToken(jsontext.EndObject)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (c *Colors) UnmarshalJSON(data []byte) error {
-	c.data = nil
-	var err error
-	xos.SafeCall(func() {
-		err = json.Unmarshal(data, &c.data)
-	}, func(e error) {
-		err = e
-	})
-	if err != nil {
-		c.data = nil
-		errs.LogWithLevel(context.Background(), slog.LevelWarn, slog.Default(),
-			errs.NewWithCause("Unable to load theme color data", err))
-	}
-	f := Factory()
-	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(f))
-	}
-	for _, one := range f {
-		if _, ok := c.data[one.ID]; !ok {
-			clr := *one.Color
-			c.data[one.ID] = &clr
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (c *Colors) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	defer func() {
+		f := Factory()
+		if c.data == nil {
+			c.data = make(map[string]*unison.ThemeColor, len(f))
 		}
+		for _, one := range f {
+			if _, ok := c.data[one.ID]; !ok {
+				clr := *one.Color
+				c.data[one.ID] = &clr
+			}
+		}
+	}()
+	c.data = nil
+	if err := json.UnmarshalDecode(dec, &c.data); err != nil {
+		c.data = nil
+		return err
 	}
 	return nil
 }

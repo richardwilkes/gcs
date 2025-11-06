@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"regexp"
 	"strings"
 )
@@ -21,16 +22,17 @@ var collegeSepRegex = regexp.MustCompile(`(\s+or\s+)|/`)
 // string with ' or ' or '/' separating the colleges. We need to be able to load both types.
 type CollegeList []string
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (c *CollegeList) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (c *CollegeList) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var list []string
-	if err := json.Unmarshal(data, &list); err != nil {
-		// Try older format
+	if dec.PeekKind() == '"' { // old format was a single string
 		var str string
-		if err = json.Unmarshal(data, &str); err != nil {
+		if err := json.UnmarshalDecode(dec, &str); err != nil {
 			return err
 		}
 		list = collegeSepRegex.Split(str, -1)
+	} else if err := json.UnmarshalDecode(dec, &list); err != nil {
+		return err
 	}
 	pruned := make([]string, 0, len(list))
 	for _, one := range list {

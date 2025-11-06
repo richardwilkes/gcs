@@ -11,7 +11,8 @@ package gurps
 
 import (
 	"embed"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"io/fs"
 	"slices"
@@ -86,15 +87,15 @@ func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	return &body, nil
 }
 
-// MarshalJSON implements json.Marshaler.
-func (b *Body) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&b.BodyData)
+// MarshalJSONTo implements json.MarshalerTo.
+func (b *Body) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &b.BodyData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (b *Body) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (b *Body) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	b.BodyData = BodyData{}
-	if err := json.Unmarshal(data, &b.BodyData); err != nil {
+	if err := json.UnmarshalDecode(dec, &b.BodyData); err != nil {
 		return err
 	}
 	b.Update(nil)

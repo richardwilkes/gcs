@@ -41,7 +41,7 @@ func ParseWeaponParry(s string) WeaponParry {
 	var wp WeaponParry
 	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
-	if s != "" && s != "-" && s != "–" && !strings.Contains(s, "no") {
+	if s != "" && s != "-" && s != "–" && s != "—" && !strings.Contains(s, "no") {
 		wp.CanParry = true
 		wp.Fencing = strings.Contains(s, "f")
 		wp.Unbalanced = strings.Contains(s, "u")

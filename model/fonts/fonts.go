@@ -10,7 +10,8 @@
 package fonts
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"io/fs"
 	"sync"
 
@@ -125,58 +126,40 @@ func (f *Fonts) Save(filePath string) error {
 	})
 }
 
-// MarshalJSON implements json.Marshaler.
-func (f *Fonts) MarshalJSON() ([]byte, error) {
-	f.data = make(map[string]unison.FontDescriptor, len(CurrentFonts()))
-	for _, one := range CurrentFonts() {
-		f.data[one.ID] = one.Font.Descriptor()
+// MarshalJSONTo implements json.MarshalerTo.
+func (f *Fonts) MarshalJSONTo(enc *jsontext.Encoder) error {
+	cf := CurrentFonts()
+	if err := enc.WriteToken(jsontext.BeginObject); err != nil {
+		return err
 	}
-	return json.Marshal(&f.data)
+	for _, one := range cf {
+		if err := enc.WriteToken(jsontext.String(one.ID)); err != nil {
+			return err
+		}
+		if err := json.MarshalEncode(enc, one.Font.Descriptor()); err != nil {
+			return err
+		}
+	}
+	return enc.WriteToken(jsontext.EndObject)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (f *Fonts) UnmarshalJSON(data []byte) error {
-	f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts()))
-	var err error
-	xos.SafeCall(func() {
-		err = json.Unmarshal(data, &f.data)
-	}, func(e error) {
-		err = e
-	})
-	if err != nil {
-		type oldFont struct {
-			Name  string `json:"name"`
-			Style string `json:"style"`
-			Size  int    `json:"size"`
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (f *Fonts) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	defer func() {
+		ff := FactoryFonts()
+		if f.data == nil {
+			f.data = make(map[string]unison.FontDescriptor, len(ff))
 		}
-		var old map[string]*oldFont
-		if err = json.Unmarshal(data, &old); err != nil {
-			return errs.New("invalid font data")
-		}
-		f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts()))
-		for _, ff := range FactoryFonts() {
-			if of, ok := old[ff.ID]; ok {
-				f.data[ff.ID] = unison.FontDescriptor{
-					FontFaceDescriptor: unison.FontFaceDescriptor{
-						Family:  of.Name,
-						Weight:  weight.Extract(of.Style),
-						Spacing: spacing.Extract(of.Style),
-						Slant:   slant.Extract(of.Style),
-					},
-					Size: float32(of.Size),
-				}
-			} else {
-				f.data[ff.ID] = ff.Font.Descriptor()
+		for _, one := range ff {
+			if _, ok := f.data[one.ID]; !ok {
+				f.data[one.ID] = one.Font.Descriptor()
 			}
 		}
-	}
-	if f.data == nil {
-		f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts()))
-	}
-	for _, one := range FactoryFonts() {
-		if _, ok := f.data[one.ID]; !ok {
-			f.data[one.ID] = one.Font.Descriptor()
-		}
+	}()
+	f.data = nil
+	if err := json.UnmarshalDecode(dec, &f.data); err != nil {
+		f.data = nil
+		return err
 	}
 	return nil
 }

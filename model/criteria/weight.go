@@ -10,7 +10,8 @@
 package criteria
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -33,9 +34,9 @@ func (w Weight) IsZero() bool {
 	return w.Compare.EnsureValid() == AnyNumber
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (w *Weight) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, &w.WeightData)
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (w *Weight) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	err := json.UnmarshalDecode(dec, &w.WeightData)
 	w.Compare = w.Compare.EnsureValid()
 	return err
 }

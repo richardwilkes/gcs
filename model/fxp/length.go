@@ -10,7 +10,8 @@
 package fxp
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"strings"
 
@@ -93,15 +94,15 @@ func (l Length) String() string {
 	return FeetAndInches.Format(l)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (l Length) MarshalJSON() ([]byte, error) {
-	return json.Marshal(l.String())
+// MarshalJSONTo implements json.MarshalerTo.
+func (l Length) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, l.String())
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (l *Length) UnmarshalJSON(in []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (l *Length) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	if err := json.Unmarshal(in, &s); err != nil {
+	if err := json.UnmarshalDecode(dec, &s); err != nil {
 		return err
 	}
 	var err error

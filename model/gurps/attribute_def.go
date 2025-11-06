@@ -10,8 +10,8 @@
 package gurps
 
 import (
-	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"strings"
@@ -54,23 +54,19 @@ type AttributeDefData struct {
 	Thresholds          []*PoolThreshold    `json:"thresholds,omitempty"`
 }
 
-// MarshalJSON implements json.Marshaler.
-func (a *AttributeDef) MarshalJSON() ([]byte, error) {
-	var buffer bytes.Buffer
-	e := json.NewEncoder(&buffer)
-	e.SetEscapeHTML(false)
-	err := e.Encode(&a.AttributeDefData)
-	return buffer.Bytes(), err
+// MarshalJSONTo implements json.MarshalerTo.
+func (a *AttributeDef) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &a.AttributeDefData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (a *AttributeDef) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var legacy struct {
 		AttributeDefData
 		// Old data fields
 		AttributeBase string `json:"attribute_base"`
 	}
-	if err := json.Unmarshal(data, &legacy); err != nil {
+	if err := json.UnmarshalDecode(dec, &legacy); err != nil {
 		return err
 	}
 	a.AttributeDefData = legacy.AttributeDefData

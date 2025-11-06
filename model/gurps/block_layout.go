@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"strings"
 
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -165,15 +166,15 @@ func (b *BlockLayout) String() string {
 	return strings.TrimSpace(buffer.String())
 }
 
-// MarshalJSON implements json.Marshaler.
-func (b *BlockLayout) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&b.Layout)
+// MarshalJSONTo implements json.MarshalerTo.
+func (b *BlockLayout) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &b.Layout)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (b *BlockLayout) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (b *BlockLayout) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	b.Layout = nil
-	if err := json.Unmarshal(data, &b.Layout); err != nil {
+	if err := json.UnmarshalDecode(dec, &b.Layout); err != nil {
 		return err
 	}
 	if len(b.Layout) == 0 {

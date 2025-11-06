@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
 	"io/fs"
@@ -67,10 +68,10 @@ func (c *Campaign) Save(filePath string) error {
 	return jio.SaveToFile(filePath, c)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (c *Campaign) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (c *Campaign) MarshalJSONTo(enc *jsontext.Encoder) error {
 	c.Version = jio.CurrentDataVersion
-	return json.Marshal(&c.CampaignData)
+	return json.MarshalEncode(enc, &c.CampaignData)
 }
 
 // Hash writes this object's contents into the hasher.

@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -46,15 +47,15 @@ func (a AttributeDifficulty) IsZero() bool {
 	return a.omit
 }
 
-// MarshalJSON implements json.Marshaler.
-func (a *AttributeDifficulty) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.Key())
+// MarshalJSONTo implements json.MarshalerTo.
+func (a *AttributeDifficulty) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, a.Key())
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (a *AttributeDifficulty) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (a *AttributeDifficulty) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
+	if err := json.UnmarshalDecode(dec, &s); err != nil {
 		return err
 	}
 	parts := strings.SplitN(s, "/", 2)

@@ -37,7 +37,7 @@ func ParseWeaponBlock(s string) WeaponBlock {
 	var wb WeaponBlock
 	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
-	if s != "" && s != "-" && s != "–" && !strings.Contains(s, "no") {
+	if s != "" && s != "-" && s != "–" && s != "—" && !strings.Contains(s, "no") {
 		wb.CanBlock = true
 		wb.Modifier, _ = fxp.Extract(s)
 	}
