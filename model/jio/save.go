@@ -28,14 +28,15 @@ func SaveToFile(path string, data any) error {
 		return errs.Wrap(err)
 	}
 	if err := xos.WriteSafeFile(path, func(w io.Writer) error {
-		return save(w, data)
+		return Save(w, data)
 	}); err != nil {
 		return errs.NewWithCause(path, err)
 	}
 	return nil
 }
 
-func save(w io.Writer, data any) error {
+// Save writes the data as nicely-formatted JSON to the given writer.
+func Save(w io.Writer, data any) error {
 	if err := json.MarshalWrite(w, data, json.Deterministic(true), jsontext.WithIndent("\t")); err != nil {
 		return errs.Wrap(err)
 	}
