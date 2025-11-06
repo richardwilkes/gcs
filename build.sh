@@ -58,6 +58,11 @@ for arg in "$@"; do
 		BUILD_GEN=1
 		SOMETHING=1
 		;;
+	--win | -w)
+		EXTRA_LD_FLAGS="-s -w"
+		BUILD_GO=1
+		SOMETHING=1
+		;;
 	--help | -h)
 		echo "$0 [options]"
 		echo "  -a, --all    Equivalent to --gen --go --lint --race"
@@ -69,6 +74,7 @@ for arg in "$@"; do
 		echo "  -l, --lint   Run the linters"
 		echo "  -r, --race   Run the tests with race-checking enabled"
 		echo "  -t, --test   Run the tests"
+		echo "  -w, --win    Force Build for Windows"
 		echo "  -h, --help   This help text"
 		exit 0
 		;;

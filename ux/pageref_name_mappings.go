@@ -227,6 +227,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"PU7:":    "Power-Ups 7: Wildcard Skills",
 	"PU8:":    "Power-Ups 8: Limitations",
 	"PU9:":    "Power-Ups 9: Alternate Attributes",
+	"PU10:":   "Power-Ups 10: Skill Trees",
 	"PW":      "Powers: The Weird",
 	"PY#:":    "Pyramid 3 issues (replace # with the issue number, but leave out the leading \"3-\")",
 	"PY4-#:":  "Pyramid 4 issues (replace # with the issue number)",
