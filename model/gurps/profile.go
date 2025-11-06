@@ -23,29 +23,29 @@ import (
 
 // ProfileRandom holds the portion of the profile that is affected by the randomizer.
 type ProfileRandom struct {
-	Name       string     `json:"name,omitempty"`
-	Age        string     `json:"age,omitempty"`
-	Birthday   string     `json:"birthday,omitempty"`
-	Eyes       string     `json:"eyes,omitempty"`
-	Hair       string     `json:"hair,omitempty"`
-	Skin       string     `json:"skin,omitempty"`
-	Handedness string     `json:"handedness,omitempty"`
-	Gender     string     `json:"gender,omitempty"`
-	Height     fxp.Length `json:"height,omitempty"`
-	Weight     fxp.Weight `json:"weight,omitempty"`
+	Name       string     `json:"name,omitzero"`
+	Age        string     `json:"age,omitzero"`
+	Birthday   string     `json:"birthday,omitzero"`
+	Eyes       string     `json:"eyes,omitzero"`
+	Hair       string     `json:"hair,omitzero"`
+	Skin       string     `json:"skin,omitzero"`
+	Handedness string     `json:"handedness,omitzero"`
+	Gender     string     `json:"gender,omitzero"`
+	Height     fxp.Length `json:"height,omitzero"`
+	Weight     fxp.Weight `json:"weight,omitzero"`
 }
 
 // Profile holds the profile information for an NPC.
 type Profile struct {
 	ProfileRandom
-	PlayerName        string        `json:"player_name,omitempty"`
-	Title             string        `json:"title,omitempty"`
-	Organization      string        `json:"organization,omitempty"`
-	Religion          string        `json:"religion,omitempty"`
-	TechLevel         string        `json:"tech_level,omitempty"`
-	PortraitData      []byte        `json:"portrait,omitempty"`
+	PlayerName        string        `json:"player_name,omitzero"`
+	Title             string        `json:"title,omitzero"`
+	Organization      string        `json:"organization,omitzero"`
+	Religion          string        `json:"religion,omitzero"`
+	TechLevel         string        `json:"tech_level,omitzero"`
+	PortraitData      []byte        `json:"portrait,omitzero"`
 	PortraitImage     *unison.Image `json:"-"`
-	SizeModifier      int           `json:"SM,omitempty"`
+	SizeModifier      int           `json:"SM,omitzero"`
 	SizeModifierBonus fxp.Int       `json:"-"`
 }
 

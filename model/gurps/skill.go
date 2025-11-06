@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -68,16 +69,16 @@ type Skill struct {
 type SkillData struct {
 	SourcedID
 	SkillEditData
-	ThirdParty map[string]any `json:"third_party,omitempty"`
-	Children   []*Skill       `json:"children,omitempty"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitzero"`
+	Children   []*Skill       `json:"children,omitzero"` // Only for containers
 	parent     *Skill
 }
 
 // SkillEditData holds the Skill data that can be edited by the UI detail editor.
 type SkillEditData struct {
 	SkillSyncData
-	VTTNotes     string            `json:"vtt_notes,omitempty"`
-	Replacements map[string]string `json:"replacements,omitempty"`
+	VTTNotes     string            `json:"vtt_notes,omitzero"`
+	Replacements map[string]string `json:"replacements,omitzero"`
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 }
@@ -85,33 +86,33 @@ type SkillEditData struct {
 // SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlyEditData struct {
 	SkillNonContainerOnlySyncData
-	TechLevel        *string       `json:"tech_level,omitempty"`
+	TechLevel        *string       `json:"tech_level,omitzero"`
 	Points           fxp.Int       `json:"points,omitzero"`
-	DefaultedFrom    *SkillDefault `json:"defaulted_from,omitempty"`
-	Study            []*Study      `json:"study,omitempty"`
-	StudyHoursNeeded study.Level   `json:"study_hours_needed,omitempty"`
+	DefaultedFrom    *SkillDefault `json:"defaulted_from,omitzero"`
+	Study            []*Study      `json:"study,omitzero"`
+	StudyHoursNeeded study.Level   `json:"study_hours_needed,omitzero"`
 }
 
 // SkillSyncData holds the skill sync data that is common to both containers and non-containers.
 type SkillSyncData struct {
-	Name             string   `json:"name,omitempty"`
-	PageRef          string   `json:"reference,omitempty"`
-	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"local_notes,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
+	Name             string   `json:"name,omitzero"`
+	PageRef          string   `json:"reference,omitzero"`
+	PageRefHighlight string   `json:"reference_highlight,omitzero"`
+	LocalNotes       string   `json:"local_notes,omitzero"`
+	Tags             []string `json:"tags,omitzero"`
 }
 
 // SkillNonContainerOnlySyncData holds the Skill sync data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlySyncData struct {
-	Specialization               string              `json:"specialization,omitempty"`
+	Specialization               string              `json:"specialization,omitzero"`
 	Difficulty                   AttributeDifficulty `json:"difficulty,omitzero"`
 	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitzero"`
-	Defaults                     []*SkillDefault     `json:"defaults,omitempty"`
-	TechniqueDefault             *SkillDefault       `json:"default,omitempty"`
-	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitempty"`
+	Defaults                     []*SkillDefault     `json:"defaults,omitzero"`
+	TechniqueDefault             *SkillDefault       `json:"default,omitzero"`
+	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitzero"`
 	Prereq                       *PrereqList         `json:"prereqs,omitzero"`
-	Weapons                      []*Weapon           `json:"weapons,omitempty"`
-	Features                     Features            `json:"features,omitempty"`
+	Weapons                      []*Weapon           `json:"weapons,omitzero"`
+	Features                     Features            `json:"features,omitzero"`
 }
 
 // SkillContainerOnlySyncData holds the skill sync data that is only applicable to skills that are containers.
@@ -272,12 +273,12 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserve
 	return other
 }
 
-// MarshalJSON implements json.Marshaler.
-func (s *Skill) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (s *Skill) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
 	type calcNoLevel struct {
-		ResolvedNotes     string `json:"resolved_notes,omitempty"`
-		UnsatisfiedReason string `json:"unsatisfied_reason,omitempty"`
+		ResolvedNotes     string `json:"resolved_notes,omitzero"`
+		UnsatisfiedReason string `json:"unsatisfied_reason,omitzero"`
 	}
 	cnl := calcNoLevel{UnsatisfiedReason: s.UnsatisfiedReason}
 	notes := s.ResolveLocalNotes()
@@ -287,21 +288,21 @@ func (s *Skill) MarshalJSON() ([]byte, error) {
 	if s.Container() || s.LevelData.Level <= 0 {
 		value := &struct {
 			SkillData
-			Calc *calcNoLevel `json:"calc,omitempty"`
+			Calc *calcNoLevel `json:"calc,omitzero"`
 		}{
 			SkillData: s.SkillData,
 		}
 		if cnl != (calcNoLevel{}) {
 			value.Calc = &cnl
 		}
-		return json.Marshal(value)
+		return json.MarshalEncode(enc, value)
 	}
 	type calc struct {
 		Level              fxp.Int `json:"level"`
 		RelativeSkillLevel string  `json:"rsl"`
 		calcNoLevel
 	}
-	return json.Marshal(&struct {
+	return json.MarshalEncode(enc, &struct {
 		SkillData
 		Calc calc `json:"calc"`
 	}{
@@ -314,8 +315,8 @@ func (s *Skill) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (s *Skill) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
 		SkillData
 		// Old data fields
@@ -324,7 +325,7 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
-	if err := json.Unmarshal(data, &localData); err != nil {
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	setOpen := false

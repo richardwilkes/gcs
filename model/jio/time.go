@@ -10,7 +10,8 @@
 package jio
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"time"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -48,15 +49,15 @@ func (e Time) String() string {
 	return time.Time(e).In(time.Local).Format(timeLayout)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e Time) MarshalJSON() ([]byte, error) {
-	return json.Marshal(time.Time(e).Format(time.RFC3339))
+// MarshalJSONTo implements json.MarshalerTo.
+func (e Time) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, time.Time(e).Format(time.RFC3339))
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (e *Time) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (e *Time) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
+	if err := json.UnmarshalDecode(dec, &s); err != nil {
 		return err
 	}
 	t, err := NewTimeFrom(s)

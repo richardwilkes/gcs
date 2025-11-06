@@ -18,7 +18,7 @@ import (
 type PointsRecord struct {
 	When   jio.Time `json:"when"`
 	Points fxp.Int  `json:"points"`
-	Reason string   `json:"reason,omitempty"`
+	Reason string   `json:"reason,omitzero"`
 }
 
 // ClonePointsRecordList creates a clone of the provided PointsRecord list.

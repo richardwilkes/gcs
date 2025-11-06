@@ -33,9 +33,9 @@ type NameGeneratorRef struct {
 // TrainingData is only valid when Type is not namegen.Compound. Only one will be used, and they are checked
 // in the order listed here.
 type TrainingData struct {
-	BuiltIn    namegen.Builtin `json:"built_in_training_data,omitempty"`
-	Weighted   map[string]int  `json:"weighted_training_data,omitempty"`
-	Unweighted []string        `json:"training_data,omitempty"`
+	BuiltIn    namegen.Builtin `json:"built_in_training_data,omitzero"`
+	Weighted   map[string]int  `json:"weighted_training_data,omitzero"`
+	Unweighted []string        `json:"training_data,omitzero"`
 }
 
 func (t *TrainingData) data() map[string]int {
@@ -75,11 +75,11 @@ func toUnweighted(data map[string]int) map[string]int {
 // NameGenerator holds the data necessary to create a Namer.
 type NameGenerator struct {
 	Type           namegen.Type     `json:"type"`
-	NoLowered      bool             `json:"no_lowered,omitempty"`
-	NoFirstToUpper bool             `json:"no_first_to_upper,omitempty"`
-	Separator      string           `json:"separator,omitempty"` // Only valid for namegen.Compound
-	Depth          int              `json:"depth,omitempty"`     // Only valid for namegen.MarkovLetter
-	Compound       []*NameGenerator `json:"compound,omitempty"`  // Only valid for namegen.Compound
+	NoLowered      bool             `json:"no_lowered,omitzero"`
+	NoFirstToUpper bool             `json:"no_first_to_upper,omitzero"`
+	Separator      string           `json:"separator,omitzero"` // Only valid for namegen.Compound
+	Depth          int              `json:"depth,omitzero"`     // Only valid for namegen.MarkovLetter
+	Compound       []*NameGenerator `json:"compound,omitzero"`  // Only valid for namegen.Compound
 	TrainingData
 	namer names.Namer
 }

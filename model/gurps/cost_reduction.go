@@ -22,7 +22,7 @@ var _ Feature = &CostReduction{}
 // CostReduction holds the data for a cost reduction.
 type CostReduction struct {
 	Type       feature.Type `json:"type"`
-	Attribute  string       `json:"attribute,omitempty"`
+	Attribute  string       `json:"attribute,omitzero"`
 	Percentage fxp.Int      `json:"percentage,omitzero"`
 }
 

@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -18,11 +19,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-)
-
-var (
-	_ json.Marshaler   = WeaponRoF{}
-	_ json.Unmarshaler = &(WeaponRoF{})
 )
 
 // WeaponRoF holds the rate of fire data for a weapon.
@@ -50,24 +46,24 @@ func ParseWeaponRoF(s string) WeaponRoF {
 	return wr
 }
 
-// IsZero implements json.isZero.
-func (wr WeaponRoF) IsZero() bool {
-	return wr == WeaponRoF{}
+// MarshalJSONTo implements json.MarshalerTo.
+func (wr WeaponRoF) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, wr.String())
 }
 
-// MarshalJSON marshals the data to JSON.
-func (wr WeaponRoF) MarshalJSON() ([]byte, error) {
-	return json.Marshal(wr.String())
-}
-
-// UnmarshalJSON unmarshals the data from JSON.
-func (wr *WeaponRoF) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (wr *WeaponRoF) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
+	if err := json.UnmarshalDecode(dec, &s); err != nil {
 		return err
 	}
 	*wr = ParseWeaponRoF(s)
 	return nil
+}
+
+// IsZero implements json.isZero.
+func (wr WeaponRoF) IsZero() bool {
+	return wr == WeaponRoF{}
 }
 
 // Hash writes this object's contents into the hasher.

@@ -25,8 +25,8 @@ type Weight struct {
 
 // WeightData holds the criteria for matching a weight that should be written to disk.
 type WeightData struct {
-	Compare   NumericComparison `json:"compare,omitempty"`
-	Qualifier fxp.Weight        `json:"qualifier,omitempty"`
+	Compare   NumericComparison `json:"compare,omitzero"`
+	Qualifier fxp.Weight        `json:"qualifier,omitzero"`
 }
 
 // IsZero implements json.isZero.

@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"slices"
@@ -28,15 +29,15 @@ var _ Bonus = &DRBonus{}
 // DRBonusData is split out so that it can be adjusted before and after being serialized.
 type DRBonusData struct {
 	Type           feature.Type `json:"type"`
-	Locations      []string     `json:"locations,omitempty"`
-	Specialization string       `json:"specialization,omitempty"`
+	Locations      []string     `json:"locations,omitzero"`
+	Specialization string       `json:"specialization,omitzero"`
 	LeveledAmount
 }
 
 // DRBonus holds the data for a DR adjustment.
 type DRBonus struct {
 	DRBonusData
-	BonusOwner
+	BonusOwner `json:"-"`
 }
 
 // NewDRBonus creates a new DRBonus.
@@ -97,24 +98,24 @@ func (d *DRBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (d *DRBonus) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (d *DRBonus) MarshalJSONTo(enc *jsontext.Encoder) error {
 	d.Normalize()
 	if d.Specialization == AllID {
 		d.Specialization = ""
 	}
-	data, err := json.Marshal(&d.DRBonusData)
+	err := json.MarshalEncode(enc, &d.DRBonusData)
 	d.Normalize()
-	return data, err
+	return err
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (d *DRBonus) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (d *DRBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var dataWithOld struct {
 		DRBonusData
 		Location string `json:"location"`
 	}
-	if err := json.Unmarshal(data, &dataWithOld); err != nil {
+	if err := json.UnmarshalDecode(dec, &dataWithOld); err != nil {
 		return err
 	}
 	if dataWithOld.Location != "" {

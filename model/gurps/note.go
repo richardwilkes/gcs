@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"io/fs"
 	"maps"
@@ -51,22 +52,22 @@ type Note struct {
 type NoteData struct {
 	SourcedID
 	NoteEditData
-	ThirdParty map[string]any `json:"third_party,omitempty"`
-	Children   []*Note        `json:"children,omitempty"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitzero"`
+	Children   []*Note        `json:"children,omitzero"` // Only for containers
 	parent     *Note
 }
 
 // NoteEditData holds the Note data that can be edited by the UI detail editor.
 type NoteEditData struct {
 	NoteSyncData
-	Replacements map[string]string `json:"replacements,omitempty"`
+	Replacements map[string]string `json:"replacements,omitzero"`
 }
 
 // NoteSyncData holds the note sync data that is common to both containers and non-containers.
 type NoteSyncData struct {
-	MarkDown         string `json:"markdown,omitempty"`
-	PageRef          string `json:"reference,omitempty"`
-	PageRefHighlight string `json:"reference_highlight,omitempty"`
+	MarkDown         string `json:"markdown,omitzero"`
+	PageRef          string `json:"reference,omitzero"`
+	PageRefHighlight string `json:"reference_highlight,omitzero"`
 }
 
 type noteListData struct {
@@ -177,15 +178,15 @@ func (n *Note) Clone(from LibraryFile, owner DataOwner, parent *Note, preserveID
 	return other
 }
 
-// MarshalJSON implements json.Marshaler.
-func (n *Note) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (n *Note) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
-		ResolvedNotes string `json:"resolved_text,omitempty"`
+		ResolvedNotes string `json:"resolved_text,omitzero"`
 	}
 	n.ClearUnusedFieldsForType()
 	data := struct {
 		NoteData
-		Calc *calc `json:"calc,omitempty"`
+		Calc *calc `json:"calc,omitzero"`
 	}{
 		NoteData: n.NoteData,
 	}
@@ -193,11 +194,11 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 	if notes != n.MarkDown {
 		data.Calc = &calc{ResolvedNotes: notes}
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (n *Note) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (n *Note) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
 		NoteData
 		// Old data fields
@@ -205,7 +206,7 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 		ExprText string `json:"text"`
 		IsOpen   bool   `json:"open"`
 	}
-	if err := json.Unmarshal(data, &localData); err != nil {
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	setOpen := false

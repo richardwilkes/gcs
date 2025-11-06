@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"io/fs"
 	"slices"
@@ -71,16 +72,16 @@ type TraitModifier struct {
 type TraitModifierData struct {
 	SourcedID
 	TraitModifierEditData
-	ThirdParty map[string]any   `json:"third_party,omitempty"`
-	Children   []*TraitModifier `json:"children,omitempty"` // Only for containers
+	ThirdParty map[string]any   `json:"third_party,omitzero"`
+	Children   []*TraitModifier `json:"children,omitzero"` // Only for containers
 	parent     *TraitModifier
 }
 
 // TraitModifierEditData holds the TraitModifier data that can be edited by the UI detail editor.
 type TraitModifierEditData struct {
 	TraitModifierSyncData
-	VTTNotes     string            `json:"vtt_notes,omitempty"`
-	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
+	VTTNotes     string            `json:"vtt_notes,omitzero"`
+	Replacements map[string]string `json:"replacements,omitzero"` // Not actually used any longer, but kept so that we can migrate old data
 	TraitModifierEditDataNonContainerOnly
 }
 
@@ -89,26 +90,26 @@ type TraitModifierEditData struct {
 type TraitModifierEditDataNonContainerOnly struct {
 	TraitModifierNonContainerSyncData
 	Levels   fxp.Int `json:"levels,omitzero"`
-	Disabled bool    `json:"disabled,omitempty"`
+	Disabled bool    `json:"disabled,omitzero"`
 }
 
 // TraitModifierSyncData holds the TraitModifier sync data that is common to both containers and non-containers.
 type TraitModifierSyncData struct {
-	Name             string   `json:"name,omitempty"`
-	PageRef          string   `json:"reference,omitempty"`
-	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"local_notes,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
+	Name             string   `json:"name,omitzero"`
+	PageRef          string   `json:"reference,omitzero"`
+	PageRefHighlight string   `json:"reference_highlight,omitzero"`
+	LocalNotes       string   `json:"local_notes,omitzero"`
+	Tags             []string `json:"tags,omitzero"`
 }
 
 // TraitModifierNonContainerSyncData holds the TraitModifier sync data that is only applicable to TraitModifiers that
 // aren't containers.
 type TraitModifierNonContainerSyncData struct {
-	CostAdj           string         `json:"cost_adj,omitempty"`
-	UseLevelFromTrait bool           `json:"use_level_from_trait,omitempty"`
-	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitempty"`
-	Affects           affects.Option `json:"affects,omitempty"`
-	Features          Features       `json:"features,omitempty"`
+	CostAdj           string         `json:"cost_adj,omitzero"`
+	UseLevelFromTrait bool           `json:"use_level_from_trait,omitzero"`
+	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitzero"`
+	Affects           affects.Option `json:"affects,omitzero"`
+	Features          Features       `json:"features,omitzero"`
 }
 
 type traitModifierListData struct {
@@ -216,15 +217,15 @@ func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitMo
 	return other
 }
 
-// MarshalJSON implements json.Marshaler.
-func (t *TraitModifier) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (t *TraitModifier) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
-		ResolvedNotes string `json:"resolved_notes,omitempty"`
+		ResolvedNotes string `json:"resolved_notes,omitzero"`
 	}
 	t.ClearUnusedFieldsForType()
 	data := struct {
 		TraitModifierData
-		Calc *calc `json:"calc,omitempty"`
+		Calc *calc `json:"calc,omitzero"`
 	}{
 		TraitModifierData: t.TraitModifierData,
 	}
@@ -232,11 +233,11 @@ func (t *TraitModifier) MarshalJSON() ([]byte, error) {
 	if notes != t.LocalNotes {
 		data.Calc = &calc{ResolvedNotes: notes}
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (t *TraitModifier) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
 		TraitModifierData
 		// Old data fields
@@ -247,7 +248,7 @@ func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
-	if err := json.Unmarshal(data, &localData); err != nil {
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	setOpen := false

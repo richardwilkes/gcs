@@ -44,13 +44,13 @@ var NotifyOfLibraryChangeFunc func()
 // Library holds information about a library of data files.
 type Library struct {
 	ID                tid.TID  `json:"id"`
-	Title             string   `json:"title,omitempty"`
+	Title             string   `json:"title,omitzero"`
 	GitHubAccountName string   `json:"-"`
-	AccessToken       string   `json:"access_token,omitempty"`
+	AccessToken       string   `json:"access_token,omitzero"`
 	RepoName          string   `json:"-"`
-	PathOnDisk        string   `json:"path,omitempty"`
-	Favorites         []string `json:"favorites,omitempty"`
-	UseLatest         bool     `json:"use_latest,omitempty"`
+	PathOnDisk        string   `json:"path,omitzero"`
+	Favorites         []string `json:"favorites,omitzero"`
+	UseLatest         bool     `json:"use_latest,omitzero"`
 	monitor           *monitor
 	lock              sync.RWMutex
 	releases          []Release

@@ -27,7 +27,7 @@ type AttributePrereq struct {
 	Parent            *PrereqList     `json:"-"`
 	Type              prereq.Type     `json:"type"`
 	Has               bool            `json:"has"`
-	CombinedWith      string          `json:"combined_with,omitempty"`
+	CombinedWith      string          `json:"combined_with,omitzero"`
 	QualifierCriteria criteria.Number `json:"qualifier,omitzero"`
 	Which             string          `json:"which"`
 }

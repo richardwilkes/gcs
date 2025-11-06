@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"io/fs"
 	"slices"
@@ -62,16 +63,16 @@ type EquipmentModifier struct {
 type EquipmentModifierData struct {
 	SourcedID
 	EquipmentModifierEditData
-	ThirdParty map[string]any       `json:"third_party,omitempty"`
-	Children   []*EquipmentModifier `json:"children,omitempty"` // Only for containers
+	ThirdParty map[string]any       `json:"third_party,omitzero"`
+	Children   []*EquipmentModifier `json:"children,omitzero"` // Only for containers
 	parent     *EquipmentModifier
 }
 
 // EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
 type EquipmentModifierEditData struct {
 	EquipmentModifierSyncData
-	VTTNotes     string            `json:"vtt_notes,omitempty"`
-	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
+	VTTNotes     string            `json:"vtt_notes,omitzero"`
+	Replacements map[string]string `json:"replacements,omitzero"` // Not actually used any longer, but kept so that we can migrate old data
 	EquipmentModifierEditDataNonContainerOnly
 }
 
@@ -79,31 +80,31 @@ type EquipmentModifierEditData struct {
 // EquipmentModifiers that aren't containers.
 type EquipmentModifierEditDataNonContainerOnly struct {
 	EquipmentModifierNonContainerSyncData
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled bool `json:"disabled,omitzero"`
 }
 
 // EquipmentModifierSyncData holds the EquipmentModifier sync data that is common to both containers and non-containers.
 type EquipmentModifierSyncData struct {
-	Name             string   `json:"name,omitempty"`
-	PageRef          string   `json:"reference,omitempty"`
-	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"local_notes,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
+	Name             string   `json:"name,omitzero"`
+	PageRef          string   `json:"reference,omitzero"`
+	PageRefHighlight string   `json:"reference_highlight,omitzero"`
+	LocalNotes       string   `json:"local_notes,omitzero"`
+	Tags             []string `json:"tags,omitzero"`
 }
 
 // EquipmentModifierNonContainerSyncData holds the EquipmentModifier sync data that is only applicable to Equipment
 // Modifiers that aren't containers.
 type EquipmentModifierNonContainerSyncData struct {
-	CostType          emcost.Type   `json:"cost_type,omitempty"`
-	CostIsPerLevel    bool          `json:"cost_is_per_level,omitempty"`
-	CostIsPerPound    bool          `json:"cost_is_per_pound,omitempty"`
-	WeightType        emweight.Type `json:"weight_type,omitempty"`
-	WeightIsPerLevel  bool          `json:"weight_is_per_level,omitempty"`
-	ShowNotesOnWeapon bool          `json:"show_notes_on_weapon,omitempty"`
-	TechLevel         string        `json:"tech_level,omitempty"`
-	CostAmount        string        `json:"cost,omitempty"`
-	WeightAmount      string        `json:"weight,omitempty"`
-	Features          Features      `json:"features,omitempty"`
+	CostType          emcost.Type   `json:"cost_type,omitzero"`
+	CostIsPerLevel    bool          `json:"cost_is_per_level,omitzero"`
+	CostIsPerPound    bool          `json:"cost_is_per_pound,omitzero"`
+	WeightType        emweight.Type `json:"weight_type,omitzero"`
+	WeightIsPerLevel  bool          `json:"weight_is_per_level,omitzero"`
+	ShowNotesOnWeapon bool          `json:"show_notes_on_weapon,omitzero"`
+	TechLevel         string        `json:"tech_level,omitzero"`
+	CostAmount        string        `json:"cost,omitzero"`
+	WeightAmount      string        `json:"weight,omitzero"`
+	Features          Features      `json:"features,omitzero"`
 }
 
 type equipmentModifierListData struct {
@@ -211,15 +212,15 @@ func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *Equ
 	return other
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e *EquipmentModifier) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (e *EquipmentModifier) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
-		ResolvedNotes string `json:"resolved_notes,omitempty"`
+		ResolvedNotes string `json:"resolved_notes,omitzero"`
 	}
 	e.ClearUnusedFieldsForType()
 	data := struct {
 		EquipmentModifierData
-		Calc *calc `json:"calc,omitempty"`
+		Calc *calc `json:"calc,omitzero"`
 	}{
 		EquipmentModifierData: e.EquipmentModifierData,
 	}
@@ -227,11 +228,11 @@ func (e *EquipmentModifier) MarshalJSON() ([]byte, error) {
 	if notes != e.LocalNotes {
 		data.Calc = &calc{ResolvedNotes: notes}
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
 		EquipmentModifierData
 		// Old data fields
@@ -240,7 +241,7 @@ func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
-	if err := json.Unmarshal(data, &localData); err != nil {
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	setOpen := false

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
 	"io/fs"
@@ -38,12 +39,12 @@ type Loot struct {
 type LootData struct {
 	Version    int          `json:"version"`
 	ID         tid.TID      `json:"id"`
-	Name       string       `json:"name,omitempty"`
-	Location   string       `json:"location,omitempty"`
-	Session    string       `json:"session,omitempty"`
+	Name       string       `json:"name,omitzero"`
+	Location   string       `json:"location,omitzero"`
+	Session    string       `json:"session,omitzero"`
 	ModifiedOn jio.Time     `json:"modified_date"`
-	Equipment  []*Equipment `json:"equipment,omitempty"`
-	Notes      []*Note      `json:"notes,omitempty"`
+	Equipment  []*Equipment `json:"equipment,omitzero"`
+	Notes      []*Note      `json:"notes,omitzero"`
 }
 
 // NewLootFromFile loads Loot from a file.
@@ -71,17 +72,17 @@ func (l *Loot) Save(filePath string) error {
 	return jio.SaveToFile(filePath, l)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (l *Loot) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (l *Loot) MarshalJSONTo(enc *jsontext.Encoder) error {
 	l.EnsureAttachments()
 	l.Version = jio.CurrentDataVersion
-	return json.Marshal(&l.LootData)
+	return json.MarshalEncode(enc, &l.LootData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (l *Loot) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (l *Loot) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	l.LootData = LootData{}
-	if err := json.Unmarshal(data, &l.LootData); err != nil {
+	if err := json.UnmarshalDecode(dec, &l.LootData); err != nil {
 		return err
 	}
 	if !tid.IsKindAndValid(l.ID, kinds.Loot) {

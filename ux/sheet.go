@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"encoding/json/v2"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -244,13 +245,13 @@ func CloneSheet(filePath string) {
 
 func (s *Sheet) cloneSheet() {
 	unableToCloneMsg := i18n.Text("Unable to clone character sheet")
-	data, err := s.entity.MarshalJSON()
+	data, err := json.Marshal(s.entity)
 	if err != nil {
 		Workspace.ErrorHandler(unableToCloneMsg, err)
 		return
 	}
 	entity := gurps.NewEntity()
-	if err = entity.UnmarshalJSON(data); err != nil {
+	if err = json.Unmarshal(data, entity); err != nil {
 		Workspace.ErrorHandler(unableToCloneMsg, err)
 		return
 	}

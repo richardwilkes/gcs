@@ -25,7 +25,7 @@ type Number struct {
 
 // NumberData holds the criteria for matching a number that should be written to disk.
 type NumberData struct {
-	Compare   NumericComparison `json:"compare,omitempty"`
+	Compare   NumericComparison `json:"compare,omitzero"`
 	Qualifier fxp.Int           `json:"qualifier,omitzero"`
 }
 

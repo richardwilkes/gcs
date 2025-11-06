@@ -10,8 +10,8 @@
 package gurps
 
 import (
-	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"slices"
 
@@ -32,21 +32,17 @@ type PoolThreshold struct {
 type PoolThresholdData struct {
 	State       string         `json:"state"`
 	Value       string         `json:"value"`
-	Explanation string         `json:"explanation,omitempty"`
-	Ops         []threshold.Op `json:"ops,omitempty"`
+	Explanation string         `json:"explanation,omitzero"`
+	Ops         []threshold.Op `json:"ops,omitzero"`
 }
 
-// MarshalJSON implements json.Marshaler.
-func (p *PoolThreshold) MarshalJSON() ([]byte, error) {
-	var buffer bytes.Buffer
-	e := json.NewEncoder(&buffer)
-	e.SetEscapeHTML(false)
-	err := e.Encode(&p.PoolThresholdData)
-	return buffer.Bytes(), err
+// MarshalJSONTo implements json.MarshalerTo.
+func (p *PoolThreshold) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &p.PoolThresholdData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (p *PoolThreshold) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (p *PoolThreshold) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var legacy struct {
 		PoolThresholdData
 		Expression string  `json:"expression"`
@@ -54,7 +50,7 @@ func (p *PoolThreshold) UnmarshalJSON(data []byte) error {
 		Divisor    fxp.Int `json:"divisor"`
 		Addition   fxp.Int `json:"addition"`
 	}
-	if err := json.Unmarshal(data, &legacy); err != nil {
+	if err := json.UnmarshalDecode(dec, &legacy); err != nil {
 		return err
 	}
 	if legacy.Value == "" {

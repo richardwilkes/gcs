@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -37,7 +38,7 @@ type SkillBonusData struct {
 	SpecializationCriteria criteria.Text `json:"specialization,omitzero"`
 	TagsCriteria           criteria.Text `json:"tags,omitzero"`
 	LeveledAmount
-	BonusOwner
+	BonusOwner `json:"-"`
 }
 
 // NewSkillBonus creates a new SkillBonus.
@@ -96,18 +97,18 @@ func (s *SkillBonus) Hash(h hash.Hash) {
 	s.LeveledAmount.Hash(h)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (s *SkillBonus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&s.SkillBonusData)
+// MarshalJSONTo implements json.MarshalerTo.
+func (s *SkillBonus) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &s.SkillBonusData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (s *SkillBonus) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (s *SkillBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content struct {
 		SkillBonusData
 		OldTagsCriteria criteria.Text `json:"category"`
 	}
-	if err := json.Unmarshal(data, &content); err != nil {
+	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err
 	}
 	s.SkillBonusData = content.SkillBonusData

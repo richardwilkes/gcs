@@ -56,7 +56,7 @@ func (a *Attribute) MarshalJSONTo(enc *jsontext.Encoder) error {
 		if def := a.AttributeDef(); def != nil {
 			type calc struct {
 				Value   fxp.Int  `json:"value"`
-				Current *fxp.Int `json:"current,omitempty"`
+				Current *fxp.Int `json:"current,omitzero"`
 				Points  fxp.Int  `json:"points"`
 			}
 			if def.IsSeparator() {

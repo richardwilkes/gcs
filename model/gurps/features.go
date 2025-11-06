@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -32,18 +33,18 @@ func (f Features) Clone() Features {
 	return result
 }
 
-// UnmarshalJSON implements the json.Unmarshaler interface.
-func (f *Features) UnmarshalJSON(data []byte) error {
-	var s []*json.RawMessage
-	if err := json.Unmarshal(data, &s); err != nil {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	var v []jsontext.Value
+	if err := json.UnmarshalDecode(dec, &v); err != nil {
 		return errs.Wrap(err)
 	}
-	*f = make([]Feature, len(s))
-	for i, one := range s {
+	*f = make([]Feature, len(v))
+	for i, one := range v {
 		var justTypeData struct {
 			Type feature.Type `json:"type"`
 		}
-		if err := json.Unmarshal(*one, &justTypeData); err != nil {
+		if err := json.Unmarshal(one, &justTypeData); err != nil {
 			return errs.Wrap(err)
 		}
 		var feat Feature
@@ -98,7 +99,7 @@ func (f *Features) UnmarshalJSON(data []byte) error {
 		default:
 			return errs.Newf(i18n.Text("Unknown feature type: %s"), justTypeData.Type)
 		}
-		if err := json.Unmarshal(*one, &feat); err != nil {
+		if err := json.Unmarshal(one, &feat); err != nil {
 			return errs.Wrap(err)
 		}
 		(*f)[i] = feat

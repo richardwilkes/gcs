@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -19,11 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-)
-
-var (
-	_ json.Marshaler   = WeaponAccuracy{}
-	_ json.Unmarshaler = &(WeaponAccuracy{})
 )
 
 // WeaponAccuracy holds the accuracy data for a weapon.
@@ -57,15 +53,15 @@ func (wa WeaponAccuracy) IsZero() bool {
 	return wa == WeaponAccuracy{}
 }
 
-// MarshalJSON marshals the data to JSON.
-func (wa WeaponAccuracy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(wa.String())
+// MarshalJSONTo implements json.MarshalerTo.
+func (wa WeaponAccuracy) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, wa.String())
 }
 
-// UnmarshalJSON unmarshals the data from JSON.
-func (wa *WeaponAccuracy) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (wa *WeaponAccuracy) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
+	if err := json.UnmarshalDecode(dec, &s); err != nil {
 		return err
 	}
 	*wa = ParseWeaponAccuracy(s)

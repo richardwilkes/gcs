@@ -12,7 +12,7 @@ package ux
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
+	"encoding/json/v2"
 	"log/slog"
 	"net"
 	"path/filepath"

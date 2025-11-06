@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -27,15 +28,15 @@ import (
 // WeaponDamageData holds the WeaponDamage data that is written to disk.
 type WeaponDamageData struct {
 	Type                      string       `json:"type"`
-	StrengthType              stdmg.Option `json:"st,omitempty"`
-	Leveled                   bool         `json:"leveled,omitempty"`
+	StrengthType              stdmg.Option `json:"st,omitzero"`
+	Leveled                   bool         `json:"leveled,omitzero"`
 	StrengthMultiplier        fxp.Int      `json:"st_mul,omitzero"`
 	Base                      string       `json:"base,omitzero"`
-	BaseLeveled               string       `json:"base_leveled,omitempty"`
+	BaseLeveled               string       `json:"base_leveled,omitzero"`
 	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitzero"`
-	Fragmentation             string       `json:"fragmentation,omitempty"`
+	Fragmentation             string       `json:"fragmentation,omitzero"`
 	FragmentationArmorDivisor fxp.Int      `json:"fragmentation_armor_divisor,omitzero"`
-	FragmentationType         string       `json:"fragmentation_type,omitempty"`
+	FragmentationType         string       `json:"fragmentation_type,omitzero"`
 	ModifierPerDie            fxp.Int      `json:"modifier_per_die,omitzero"`
 }
 
@@ -71,34 +72,8 @@ func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 	return &other
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (w *WeaponDamage) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &w.WeaponDamageData); err != nil {
-		return err
-	}
-	switch w.StrengthType {
-	case stdmg.OldLeveledThrust:
-		w.StrengthType = stdmg.Thrust
-		w.Leveled = true
-	case stdmg.OldLeveledSwing:
-		w.StrengthType = stdmg.Swing
-		w.Leveled = true
-	}
-	if w.StrengthMultiplier == 0 {
-		w.StrengthMultiplier = fxp.One
-	}
-	if w.ArmorDivisor == 0 {
-		w.ArmorDivisor = fxp.One
-	}
-	w.Fragmentation = strings.TrimSpace(w.Fragmentation)
-	if w.Fragmentation != "" && w.FragmentationArmorDivisor == 0 {
-		w.FragmentationArmorDivisor = fxp.One
-	}
-	return nil
-}
-
-// MarshalJSON implements json.Marshaler.
-func (w *WeaponDamage) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (w *WeaponDamage) MarshalJSONTo(enc *jsontext.Encoder) error {
 	// A ST multiplier of 0 is not valid and 1 is very common, so suppress its output when 1.
 	strengthMultiplier := w.StrengthMultiplier
 	if strengthMultiplier == fxp.One {
@@ -121,11 +96,37 @@ func (w *WeaponDamage) MarshalJSON() ([]byte, error) {
 	if fragArmorDivisor == fxp.One {
 		fragArmorDivisor = 0
 	}
-	data, err := json.Marshal(&w.WeaponDamageData)
+	err := json.MarshalEncode(enc, &w.WeaponDamageData)
 	w.StrengthMultiplier = strengthMultiplier
 	w.ArmorDivisor = armorDivisor
 	w.FragmentationArmorDivisor = fragArmorDivisor
-	return data, err
+	return err
+}
+
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (w *WeaponDamage) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	if err := json.UnmarshalDecode(dec, &w.WeaponDamageData); err != nil {
+		return err
+	}
+	switch w.StrengthType {
+	case stdmg.OldLeveledThrust:
+		w.StrengthType = stdmg.Thrust
+		w.Leveled = true
+	case stdmg.OldLeveledSwing:
+		w.StrengthType = stdmg.Swing
+		w.Leveled = true
+	}
+	if w.StrengthMultiplier == 0 {
+		w.StrengthMultiplier = fxp.One
+	}
+	if w.ArmorDivisor == 0 {
+		w.ArmorDivisor = fxp.One
+	}
+	w.Fragmentation = strings.TrimSpace(w.Fragmentation)
+	if w.Fragmentation != "" && w.FragmentationArmorDivisor == 0 {
+		w.FragmentationArmorDivisor = fxp.One
+	}
+	return nil
 }
 
 func (w *WeaponDamage) String() string {

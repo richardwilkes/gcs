@@ -28,7 +28,7 @@ type PrereqList struct {
 	Type    prereq.Type     `json:"type"`
 	All     bool            `json:"all"`
 	WhenTL  criteria.Number `json:"when_tl,omitzero"`
-	Prereqs Prereqs         `json:"prereqs,omitempty"`
+	Prereqs Prereqs         `json:"prereqs,omitzero"`
 }
 
 // NewPrereqList creates a new PrereqList.

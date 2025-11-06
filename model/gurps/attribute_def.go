@@ -45,13 +45,13 @@ type AttributeDef struct {
 type AttributeDefData struct {
 	DefID               string              `json:"id"`
 	Type                attribute.Type      `json:"type"`
-	Placement           attribute.Placement `json:"placement,omitempty"`
+	Placement           attribute.Placement `json:"placement,omitzero"`
 	Name                string              `json:"name"`
-	FullName            string              `json:"full_name,omitempty"`
-	Base                string              `json:"base,omitempty"`
+	FullName            string              `json:"full_name,omitzero"`
+	Base                string              `json:"base,omitzero"`
 	CostPerPoint        fxp.Int             `json:"cost_per_point,omitzero"`
 	CostAdjPercentPerSM fxp.Int             `json:"cost_adj_percent_per_sm,omitzero"`
-	Thresholds          []*PoolThreshold    `json:"thresholds,omitempty"`
+	Thresholds          []*PoolThreshold    `json:"thresholds,omitzero"`
 }
 
 // MarshalJSONTo implements json.MarshalerTo.

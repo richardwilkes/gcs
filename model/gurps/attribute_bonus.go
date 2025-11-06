@@ -24,10 +24,10 @@ var _ Bonus = &AttributeBonus{}
 // AttributeBonus holds the data for a bonus to an attribute.
 type AttributeBonus struct {
 	Type       feature.Type   `json:"type"`
-	Limitation stlimit.Option `json:"limitation,omitempty"`
+	Limitation stlimit.Option `json:"limitation,omitzero"`
 	Attribute  string         `json:"attribute"`
 	LeveledAmount
-	BonusOwner
+	BonusOwner `json:"-"`
 }
 
 // NewAttributeBonus creates a new AttributeBonus.

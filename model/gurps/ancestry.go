@@ -25,9 +25,9 @@ const DefaultAncestry = "Human"
 
 // Ancestry holds details necessary to generate ancestry-specific customizations.
 type Ancestry struct {
-	Name          string                     `json:"name,omitempty"`
-	CommonOptions *AncestryOptions           `json:"common_options,omitempty"`
-	GenderOptions []*WeightedAncestryOptions `json:"gender_options,omitempty"`
+	Name          string                     `json:"name,omitzero"`
+	CommonOptions *AncestryOptions           `json:"common_options,omitzero"`
+	GenderOptions []*WeightedAncestryOptions `json:"gender_options,omitzero"`
 }
 
 type ancestryData struct {

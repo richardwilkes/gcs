@@ -22,7 +22,7 @@ import (
 type LeveledAmount struct {
 	LeveledOwner LeveledOwner `json:"-"`
 	Amount       fxp.Int      `json:"amount"`
-	PerLevel     bool         `json:"per_level,omitempty"`
+	PerLevel     bool         `json:"per_level,omitzero"`
 }
 
 // AdjustedAmount returns the amount, adjusted for level, if requested.

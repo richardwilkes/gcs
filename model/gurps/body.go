@@ -34,9 +34,9 @@ var embeddedFS embed.FS
 
 // BodyData holds the Body data that gets written to disk.
 type BodyData struct {
-	Name      string         `json:"name,omitempty"`
+	Name      string         `json:"name,omitzero"`
 	Roll      *dice.Dice     `json:"roll"`
-	Locations []*HitLocation `json:"locations,omitempty"`
+	Locations []*HitLocation `json:"locations,omitzero"`
 }
 
 // Body holds a set of hit locations.
@@ -50,7 +50,7 @@ type Body struct {
 type standaloneBodyData struct {
 	Version int `json:"version"`
 	BodyData
-	OldHitLocations *Body `json:"hit_locations,omitempty"`
+	OldHitLocations *Body `json:"hit_locations,omitzero"`
 }
 
 // BodyFor returns the Body for the given Entity, or the global settings if the Entity is nil.

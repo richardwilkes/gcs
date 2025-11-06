@@ -11,7 +11,8 @@ package gurps
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"net/http"
 	"slices"
 	"strings"
@@ -38,10 +39,10 @@ func NewLibraries() Libraries {
 	return libs
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (l *Libraries) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (l *Libraries) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var loaded map[string]*Library
-	if err := json.Unmarshal(data, &loaded); err != nil {
+	if err := json.UnmarshalDecode(dec, &loaded); err != nil {
 		return err
 	}
 	libs := make(map[string]*Library)

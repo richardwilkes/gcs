@@ -11,7 +11,7 @@ package gurps
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"net/http"
 	"slices"
 	"strings"
@@ -80,7 +80,7 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 		Body       string `json:"body"`
 		ZipBallURL string `json:"zipball_url"`
 	}
-	if err = json.NewDecoder(rsp.Body).Decode(&releases); err != nil {
+	if err = json.UnmarshalRead(rsp.Body, &releases); err != nil {
 		return nil, errs.NewWithCause("unable to decode response from GitHub API "+uri, err)
 	}
 	for _, one := range releases {

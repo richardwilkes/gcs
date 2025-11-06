@@ -21,7 +21,7 @@ import (
 type Study struct {
 	Type  study.Type `json:"type"`
 	Hours fxp.Int    `json:"hours"`
-	Note  string     `json:"note,omitempty"`
+	Note  string     `json:"note,omitzero"`
 }
 
 // Clone creates a copy of the TemplatePicker.

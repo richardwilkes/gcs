@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -20,18 +21,18 @@ import (
 // Prereqs holds a list of prerequisites.
 type Prereqs []Prereq
 
-// UnmarshalJSON implements the json.Unmarshaler interface.
-func (p *Prereqs) UnmarshalJSON(data []byte) error {
-	var s []*json.RawMessage
-	if err := json.Unmarshal(data, &s); err != nil {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (p *Prereqs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	var v []jsontext.Value
+	if err := json.UnmarshalDecode(dec, &v); err != nil {
 		return errs.Wrap(err)
 	}
-	*p = make([]Prereq, len(s))
-	for i, one := range s {
+	*p = make([]Prereq, len(v))
+	for i, one := range v {
 		var typeData struct {
 			Type prereq.Type `json:"type"`
 		}
-		if err := json.Unmarshal(*one, &typeData); err != nil {
+		if err := json.Unmarshal(one, &typeData); err != nil {
 			return errs.Wrap(err)
 		}
 		var pr Prereq
@@ -57,7 +58,7 @@ func (p *Prereqs) UnmarshalJSON(data []byte) error {
 		default:
 			return errs.Newf(i18n.Text("Unknown prerequisite type: %s"), typeData.Type)
 		}
-		if err := json.Unmarshal(*one, &pr); err != nil {
+		if err := json.Unmarshal(one, &pr); err != nil {
 			return errs.Wrap(err)
 		}
 		(*p)[i] = pr

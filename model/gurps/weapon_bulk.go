@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"strings"
@@ -20,11 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-)
-
-var (
-	_ json.Marshaler   = WeaponBulk{}
-	_ json.Unmarshaler = &(WeaponBulk{})
 )
 
 // WeaponBulk holds the bulk data for a weapon.
@@ -54,15 +50,15 @@ func (wb WeaponBulk) IsZero() bool {
 	return wb == WeaponBulk{}
 }
 
-// MarshalJSON marshals the data to JSON.
-func (wb WeaponBulk) MarshalJSON() ([]byte, error) {
-	return json.Marshal(wb.String())
+// MarshalJSONTo implements json.MarshalerTo.
+func (wb WeaponBulk) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, wb.String())
 }
 
-// UnmarshalJSON unmarshals the data from JSON.
-func (wb *WeaponBulk) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (wb *WeaponBulk) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	err := json.Unmarshal(data, &s)
+	err := json.UnmarshalDecode(dec, &s)
 	if err != nil {
 		return err
 	}

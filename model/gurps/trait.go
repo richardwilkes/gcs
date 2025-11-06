@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -68,21 +69,21 @@ type Trait struct {
 type TraitData struct {
 	SourcedID
 	TraitEditData
-	ThirdParty map[string]any `json:"third_party,omitempty"`
-	Children   []*Trait       `json:"children,omitempty"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitzero"`
+	Children   []*Trait       `json:"children,omitzero"` // Only for containers
 	parent     *Trait
 }
 
 // TraitEditData holds the Trait data that can be edited by the UI detail editor.
 type TraitEditData struct {
 	TraitSyncData
-	VTTNotes     string            `json:"vtt_notes,omitempty"`
-	UserDesc     string            `json:"userdesc,omitempty"`
-	Replacements map[string]string `json:"replacements,omitempty"`
-	Modifiers    []*TraitModifier  `json:"modifiers,omitempty"`
-	SelfControl  selfctrl.Roll     `json:"cr,omitempty"`
-	Frequency    frequency.Roll    `json:"frequency,omitempty"`
-	Disabled     bool              `json:"disabled,omitempty"`
+	VTTNotes     string            `json:"vtt_notes,omitzero"`
+	UserDesc     string            `json:"userdesc,omitzero"`
+	Replacements map[string]string `json:"replacements,omitzero"`
+	Modifiers    []*TraitModifier  `json:"modifiers,omitzero"`
+	SelfControl  selfctrl.Roll     `json:"cr,omitzero"`
+	Frequency    frequency.Roll    `json:"frequency,omitzero"`
+	Disabled     bool              `json:"disabled,omitzero"`
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
 }
@@ -91,36 +92,36 @@ type TraitEditData struct {
 type TraitNonContainerOnlyEditData struct {
 	TraitNonContainerSyncData
 	Levels           fxp.Int     `json:"levels,omitzero"`
-	Study            []*Study    `json:"study,omitempty"`
-	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
+	Study            []*Study    `json:"study,omitzero"`
+	StudyHoursNeeded study.Level `json:"study_hours_needed,omitzero"`
 }
 
 // TraitSyncData holds the Trait sync data that is common to both containers and non-containers.
 type TraitSyncData struct {
-	Name             string              `json:"name,omitempty"`
-	PageRef          string              `json:"reference,omitempty"`
-	PageRefHighlight string              `json:"reference_highlight,omitempty"`
-	LocalNotes       string              `json:"local_notes,omitempty"`
-	Tags             []string            `json:"tags,omitempty"`
+	Name             string              `json:"name,omitzero"`
+	PageRef          string              `json:"reference,omitzero"`
+	PageRefHighlight string              `json:"reference_highlight,omitzero"`
+	LocalNotes       string              `json:"local_notes,omitzero"`
+	Tags             []string            `json:"tags,omitzero"`
 	Prereq           *PrereqList         `json:"prereqs,omitzero"`
-	SelfControlAdj   selfctrl.Adjustment `json:"cr_adj,omitempty"`
+	SelfControlAdj   selfctrl.Adjustment `json:"cr_adj,omitzero"`
 }
 
 // TraitNonContainerSyncData holds the Trait sync data that is only applicable to traits that aren't containers.
 type TraitNonContainerSyncData struct {
 	BasePoints     fxp.Int   `json:"base_points,omitzero"`
 	PointsPerLevel fxp.Int   `json:"points_per_level,omitzero"`
-	Weapons        []*Weapon `json:"weapons,omitempty"`
-	Features       Features  `json:"features,omitempty"`
-	RoundCostDown  bool      `json:"round_down,omitempty"`
-	CanLevel       bool      `json:"can_level,omitempty"`
+	Weapons        []*Weapon `json:"weapons,omitzero"`
+	Features       Features  `json:"features,omitzero"`
+	RoundCostDown  bool      `json:"round_down,omitzero"`
+	CanLevel       bool      `json:"can_level,omitzero"`
 }
 
 // TraitContainerSyncData holds the Trait sync data that is only applicable to traits that are containers.
 type TraitContainerSyncData struct {
-	Ancestry       string          `json:"ancestry,omitempty"`
+	Ancestry       string          `json:"ancestry,omitzero"`
 	TemplatePicker *TemplatePicker `json:"template_picker,omitzero"`
-	ContainerType  container.Type  `json:"container_type,omitempty"`
+	ContainerType  container.Type  `json:"container_type,omitzero"`
 }
 
 type traitListData struct {
@@ -235,13 +236,13 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, preserve
 	return other
 }
 
-// MarshalJSON implements json.Marshaler.
-func (t *Trait) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
 		Points            fxp.Int  `json:"points"`
-		UnsatisfiedReason string   `json:"unsatisfied_reason,omitempty"`
-		ResolvedNotes     string   `json:"resolved_notes,omitempty"`
-		CurrentLevel      *fxp.Int `json:"current_level,omitempty"`
+		UnsatisfiedReason string   `json:"unsatisfied_reason,omitzero"`
+		ResolvedNotes     string   `json:"resolved_notes,omitzero"`
+		CurrentLevel      *fxp.Int `json:"current_level,omitzero"`
 	}
 	t.ClearUnusedFieldsForType()
 	data := struct {
@@ -262,11 +263,11 @@ func (t *Trait) MarshalJSON() ([]byte, error) {
 		level := t.CurrentLevel()
 		data.Calc.CurrentLevel = &level
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (t *Trait) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
 		TraitData
 		// Old data fields
@@ -280,7 +281,7 @@ func (t *Trait) UnmarshalJSON(data []byte) error {
 		Supernatural bool     `json:"supernatural"`
 		IsOpen       bool     `json:"open"`
 	}
-	if err := json.Unmarshal(data, &localData); err != nil {
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	setOpen := false

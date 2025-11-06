@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"io/fs"
 	"slices"
 
@@ -20,8 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
-const oldPageRefsKey = "page_refs"
-
 // PageRefs holds a set of page references.
 type PageRefs struct {
 	data map[string]*PageRef
@@ -30,8 +29,8 @@ type PageRefs struct {
 // PageRef holds a path to a file and an offset for all page references within that file.
 type PageRef struct {
 	ID     string `json:"-"`
-	Path   string `json:"path,omitempty"`
-	Offset int    `json:"offset,omitempty"`
+	Path   string `json:"path,omitzero"`
+	Offset int    `json:"offset,omitzero"`
 }
 
 // NewPageRefsFromFS creates a new set of page references from a file.
@@ -48,38 +47,28 @@ func (p *PageRefs) Save(filePath string) error {
 	return jio.SaveToFile(filePath, p)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (p *PageRefs) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (p *PageRefs) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if p.data == nil {
 		p.data = make(map[string]*PageRef)
 	}
-	return json.Marshal(&p.data)
+	return json.MarshalEncode(enc, &p.data)
 }
 
-// IsZero implements json.isZero.
-func (p *PageRefs) IsZero() bool {
-	return p == nil || p.data == nil || len(p.data) == 0
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (p *PageRefs) UnmarshalJSON(data []byte) error {
-	var old struct {
-		PageRefs map[string]*PageRef `json:"page_refs"`
-	}
-	if err := json.Unmarshal(data, &old); err == nil && len(old.PageRefs) != 0 {
-		p.data = old.PageRefs
-	} else {
-		if err = json.Unmarshal(data, &p.data); err != nil {
-			return err
-		}
-	}
-	if p.data != nil {
-		delete(p.data, oldPageRefsKey)
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (p *PageRefs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	if err := json.UnmarshalDecode(dec, &p.data); err != nil {
+		return err
 	}
 	for k, v := range p.data {
 		v.ID = k
 	}
 	return nil
+}
+
+// IsZero implements json.isZero.
+func (p *PageRefs) IsZero() bool {
+	return p == nil || p.data == nil || len(p.data) == 0
 }
 
 // Lookup the PageRef for the given ID. If not found or if the path it points to isn't a readable file, returns nil.
@@ -93,7 +82,7 @@ func (p *PageRefs) Lookup(id string) *PageRef {
 
 // Set the PageRef.
 func (p *PageRefs) Set(pageRef *PageRef) {
-	if pageRef.ID == "" || pageRef.ID == oldPageRefsKey {
+	if pageRef.ID == "" {
 		errs.Log(errs.New("invalid page reference ID"), "id", pageRef.ID)
 		return
 	}

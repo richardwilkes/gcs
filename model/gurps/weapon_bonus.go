@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"strings"
@@ -36,10 +37,10 @@ type WeaponBonus struct {
 // WeaponBonusData holds the data for an adjustment to weapon stats which are persisted.
 type WeaponBonusData struct { //nolint:govet // The field alignment here is poor, but kept to reduce diffs in the data
 	Type                   feature.Type    `json:"type"`
-	Percent                bool            `json:"percent,omitempty"`
+	Percent                bool            `json:"percent,omitzero"`
 	SelectionType          wsel.Type       `json:"selection_type"`
-	SwitchType             wswitch.Type    `json:"switch_type,omitempty"`
-	SwitchTypeValue        bool            `json:"switch_type_value,omitempty"`
+	SwitchType             wswitch.Type    `json:"switch_type,omitzero"`
+	SwitchTypeValue        bool            `json:"switch_type_value,omitzero"`
 	NameCriteria           criteria.Text   `json:"name,omitzero"`
 	SpecializationCriteria criteria.Text   `json:"specialization,omitzero"`
 	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
@@ -48,9 +49,9 @@ type WeaponBonusData struct { //nolint:govet // The field alignment here is poor
 	LeveledOwner           LeveledOwner    `json:"-"`
 	DieCount               fxp.Int         `json:"-"`
 	Amount                 fxp.Int         `json:"amount"`
-	PerLevel               bool            `json:"leveled,omitempty"`
-	PerDie                 bool            `json:"per_die,omitempty"`
-	BonusOwner
+	PerLevel               bool            `json:"leveled,omitzero"`
+	PerDie                 bool            `json:"per_die,omitzero"`
+	BonusOwner             `json:"-"`
 }
 
 // NewWeaponDamageBonus creates a new weapon damage bonus.
@@ -346,19 +347,19 @@ func (w *WeaponBonus) Hash(h hash.Hash) {
 	xhash.Bool(h, w.PerDie)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (w *WeaponBonus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&w.WeaponBonusData)
+// MarshalJSONTo implements json.MarshalerTo.
+func (w *WeaponBonus) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &w.WeaponBonusData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (w *WeaponBonus) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (w *WeaponBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content struct {
 		WeaponBonusData
 		OldTagsCriteria criteria.Text `json:"category"`
 		OldPerDie       bool          `json:"per_level"`
 	}
-	if err := json.Unmarshal(data, &content); err != nil {
+	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err
 	}
 	w.WeaponBonusData = content.WeaponBonusData

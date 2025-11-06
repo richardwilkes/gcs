@@ -23,7 +23,7 @@ type Document struct {
 	Name       string `json:"name"`
 	Ext        string `json:"ext"`
 	Content    []byte `json:"content"`
-	Compressed bool   `json:"compressed,omitempty"`
+	Compressed bool   `json:"compressed,omitzero"`
 }
 
 // NewDocument creates a new document.

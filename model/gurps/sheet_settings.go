@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -29,10 +30,10 @@ type SheetSettingsResponder interface {
 
 // SheetSettingsData holds the SheetSettings data that is written to disk.
 type SheetSettingsData struct {
-	Page                          *PageSettings      `json:"page,omitempty"`
-	BlockLayout                   *BlockLayout       `json:"block_layout,omitempty"`
-	Attributes                    *AttributeDefs     `json:"attributes,omitempty"`
-	BodyType                      *Body              `json:"body_type,omitempty"`
+	Page                          *PageSettings      `json:"page,omitzero"`
+	BlockLayout                   *BlockLayout       `json:"block_layout,omitzero"`
+	Attributes                    *AttributeDefs     `json:"attributes,omitzero"`
+	BodyType                      *Body              `json:"body_type,omitzero"`
 	DamageProgression             progression.Option `json:"damage_progression"`
 	DefaultLengthUnits            fxp.LengthUnit     `json:"default_length_units"`
 	DefaultWeightUnits            fxp.WeightUnit     `json:"default_weight_units"`
@@ -40,21 +41,21 @@ type SheetSettingsData struct {
 	ModifiersDisplay              display.Option     `json:"modifiers_display"`
 	NotesDisplay                  display.Option     `json:"notes_display"`
 	SkillLevelAdjDisplay          display.Option     `json:"skill_level_adj_display"`
-	UseMultiplicativeModifiers    bool               `json:"use_multiplicative_modifiers,omitempty"`
-	UseModifyingDicePlusAdds      bool               `json:"use_modifying_dice_plus_adds,omitempty"`
-	UseHalfStatDefaults           bool               `json:"use_half_stat_defaults,omitempty"`
-	ShowTraitModifierAdj          bool               `json:"show_trait_modifier_adj,omitempty"`
-	ShowEquipmentModifierAdj      bool               `json:"show_equipment_modifier_adj,omitempty"`
-	ShowAllWeapons                bool               `json:"show_all_weapons,omitempty"`
-	ShowSpellAdj                  bool               `json:"show_spell_adj,omitempty"`
-	HideSourceMismatch            bool               `json:"hide_source_mismatch,omitempty"`
-	HideTLColumn                  bool               `json:"hide_tl_column,omitempty"`
-	HideLCColumn                  bool               `json:"hide_lc_column,omitempty"`
-	HidePageRefColumn             bool               `json:"hide_page_ref_column,omitempty"`
-	UseTitleInFooter              bool               `json:"use_title_in_footer,omitempty"`
-	ExcludeUnspentPointsFromTotal bool               `json:"exclude_unspent_points_from_total,omitempty"`
-	ShowLiftingSTDamage           bool               `json:"show_lifting_st_damage,omitempty"`
-	ShowIQBasedDamage             bool               `json:"show_iq_based_damage,omitempty"`
+	UseMultiplicativeModifiers    bool               `json:"use_multiplicative_modifiers,omitzero"`
+	UseModifyingDicePlusAdds      bool               `json:"use_modifying_dice_plus_adds,omitzero"`
+	UseHalfStatDefaults           bool               `json:"use_half_stat_defaults,omitzero"`
+	ShowTraitModifierAdj          bool               `json:"show_trait_modifier_adj,omitzero"`
+	ShowEquipmentModifierAdj      bool               `json:"show_equipment_modifier_adj,omitzero"`
+	ShowAllWeapons                bool               `json:"show_all_weapons,omitzero"`
+	ShowSpellAdj                  bool               `json:"show_spell_adj,omitzero"`
+	HideSourceMismatch            bool               `json:"hide_source_mismatch,omitzero"`
+	HideTLColumn                  bool               `json:"hide_tl_column,omitzero"`
+	HideLCColumn                  bool               `json:"hide_lc_column,omitzero"`
+	HidePageRefColumn             bool               `json:"hide_page_ref_column,omitzero"`
+	UseTitleInFooter              bool               `json:"use_title_in_footer,omitzero"`
+	ExcludeUnspentPointsFromTotal bool               `json:"exclude_unspent_points_from_total,omitzero"`
+	ShowLiftingSTDamage           bool               `json:"show_lifting_st_damage,omitzero"`
+	ShowIQBasedDamage             bool               `json:"show_iq_based_damage,omitzero"`
 }
 
 // SheetSettings holds sheet settings.
@@ -138,19 +139,19 @@ func (s *SheetSettings) EnsureValidity() {
 	s.SkillLevelAdjDisplay = s.SkillLevelAdjDisplay.EnsureValid()
 }
 
-// MarshalJSON implements json.Marshaler.
-func (s *SheetSettings) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&s.SheetSettingsData)
+// MarshalJSONTo implements json.MarshalerTo.
+func (s *SheetSettings) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &s.SheetSettingsData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (s *SheetSettings) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (s *SheetSettings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content struct {
 		SheetSettingsData
 		OldBodyType             *Body `json:"hit_locations"`
 		OldShowTraitModifierAdj bool  `json:"show_advantage_modifier_adj"`
 	}
-	if err := json.Unmarshal(data, &content); err != nil {
+	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err
 	}
 	s.SheetSettingsData = content.SheetSettingsData

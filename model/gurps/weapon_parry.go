@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"strings"
@@ -21,11 +22,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-)
-
-var (
-	_ json.Marshaler   = WeaponParry{}
-	_ json.Unmarshaler = &(WeaponParry{})
 )
 
 // WeaponParry holds the parry data for a weapon.
@@ -56,15 +52,15 @@ func (wp WeaponParry) IsZero() bool {
 	return !wp.CanParry
 }
 
-// MarshalJSON marshals the data to JSON.
-func (wp WeaponParry) MarshalJSON() ([]byte, error) {
-	return json.Marshal(wp.String())
+// MarshalJSONTo implements json.MarshalerTo.
+func (wp WeaponParry) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, wp.String())
 }
 
-// UnmarshalJSON unmarshals the data from JSON.
-func (wp *WeaponParry) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (wp *WeaponParry) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	err := json.Unmarshal(data, &s)
+	err := json.UnmarshalDecode(dec, &s)
 	if err != nil {
 		return err
 	}

@@ -66,16 +66,16 @@ const currentGeneralSettingsVersion = 1
 
 // GeneralSettings holds general settings for a sheet.
 type GeneralSettings struct {
-	DefaultPlayerName           string           `json:"default_player_name,omitempty"`
-	DefaultTechLevel            string           `json:"default_tech_level,omitempty"`
-	CalendarName                string           `json:"calendar_ref,omitempty"`
-	ExternalPDFCmdLine          string           `json:"external_pdf_cmd_line,omitempty"`
+	DefaultPlayerName           string           `json:"default_player_name,omitzero"`
+	DefaultTechLevel            string           `json:"default_tech_level,omitzero"`
+	CalendarName                string           `json:"calendar_ref,omitzero"`
+	ExternalPDFCmdLine          string           `json:"external_pdf_cmd_line,omitzero"`
 	InitialPoints               fxp.Int          `json:"initial_points"`
 	TooltipDelay                fxp.Int          `json:"tooltip_delay"`
 	TooltipDismissal            fxp.Int          `json:"tooltip_dismissal"`
 	ScrollWheelMultiplier       fxp.Int          `json:"scroll_wheel_multiplier"`
 	PermittedPerScriptExecTime  fxp.Int          `json:"permitted_per_script_exec_time,omitzero"`
-	Version                     int              `json:"version,omitempty"`
+	Version                     int              `json:"version,omitzero"`
 	NavigatorUIScale            int              `json:"navigator_scale"`
 	InitialListUIScale          int              `json:"initial_list_scale"`
 	InitialEditorUIScale        int              `json:"initial_editor_scale"`
@@ -85,8 +85,8 @@ type GeneralSettings struct {
 	InitialImageUIScale         int              `json:"initial_img_scale"`
 	MaximumAutoColWidth         int              `json:"maximum_auto_col_width"`
 	ImageResolution             int              `json:"image_resolution"`
-	MonitorResolution           int              `json:"monitor_resolution,omitempty"`
-	PDFAutoScaling              autoscale.Option `json:"pdf_auto_scaling,omitempty"`
+	MonitorResolution           int              `json:"monitor_resolution,omitzero"`
+	PDFAutoScaling              autoscale.Option `json:"pdf_auto_scaling,omitzero"`
 	AutoFillProfile             bool             `json:"auto_fill_profile"`
 	AutoAddNaturalAttacks       bool             `json:"add_natural_attacks"`
 	GroupContainersOnSort       bool             `json:"group_containers_on_sort"`

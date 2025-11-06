@@ -55,7 +55,7 @@ var (
 
 // NavigatorSettings holds settings for the navigator view.
 type NavigatorSettings struct {
-	Nodes map[string]*NavNodeInfo `json:"nodes,omitempty"`
+	Nodes map[string]*NavNodeInfo `json:"nodes,omitzero"`
 }
 
 // NavNodeInfo holds the ID and last used timestamp for a navigator node.
@@ -66,32 +66,32 @@ type NavNodeInfo struct {
 
 // PDFInfo holds IDs and last opened timestamp for a PDF's table of contents.
 type PDFInfo struct {
-	TOC        map[string]map[int]tid.TID `json:"toc,omitempty"`
+	TOC        map[string]map[int]tid.TID `json:"toc,omitzero"`
 	LastOpened int64                      `json:"last"`
 }
 
 // Settings holds the application settings.
 type Settings struct {
-	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitempty"`
-	General            *GeneralSettings           `json:"general,omitempty"`
-	LibrarySet         Libraries                  `json:"libraries,omitempty"`
+	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitzero"`
+	General            *GeneralSettings           `json:"general,omitzero"`
+	LibrarySet         Libraries                  `json:"libraries,omitzero"`
 	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
 	ThemeMode          thememode.Enum             `json:"theme_mode"`
-	RecentFiles        []string                   `json:"recent_files,omitempty"`
-	DeepSearch         []string                   `json:"deep_search,omitempty"`
-	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
-	ColumnSizing       map[string]map[int]float32 `json:"column_sizing,omitempty"`
+	RecentFiles        []string                   `json:"recent_files,omitzero"`
+	DeepSearch         []string                   `json:"deep_search,omitzero"`
+	LastDirs           map[string]string          `json:"last_dirs,omitzero"`
+	ColumnSizing       map[string]map[int]float32 `json:"column_sizing,omitzero"`
 	PageRefs           PageRefs                   `json:"page_refs,omitzero"`
 	KeyBindings        KeyBindings                `json:"key_bindings,omitzero"`
-	WorkspaceFrame     *geom.Rect                 `json:"workspace_frame,omitempty"`
-	TopDockState       *unison.DockState          `json:"top_dock_state,omitempty"`
-	DocDockState       *unison.DockState          `json:"doc_dock_state,omitempty"`
+	WorkspaceFrame     *geom.Rect                 `json:"workspace_frame,omitzero"`
+	TopDockState       *unison.DockState          `json:"top_dock_state,omitzero"`
+	DocDockState       *unison.DockState          `json:"doc_dock_state,omitzero"`
 	Colors             colors.Colors              `json:"theme_colors"`
 	Fonts              fonts.Fonts                `json:"fonts"`
-	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
-	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
-	Closed             map[string]int64           `json:"closed,omitempty"`
-	PDFs               map[string]*PDFInfo        `json:"pdfs,omitempty"`
+	Sheet              *SheetSettings             `json:"sheet_settings,omitzero"`
+	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitzero"`
+	Closed             map[string]int64           `json:"closed,omitzero"`
+	PDFs               map[string]*PDFInfo        `json:"pdfs,omitzero"`
 	LootGenMinValue    fxp.Int                    `json:"loot_gen_min_value"`
 	LootGenMaxValue    fxp.Int                    `json:"loot_gen_max_value"`
 }

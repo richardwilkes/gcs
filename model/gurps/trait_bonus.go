@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -34,7 +35,7 @@ type TraitBonusData struct {
 	NameCriteria criteria.Text `json:"name,omitzero"`
 	TagsCriteria criteria.Text `json:"tags,omitzero"`
 	LeveledAmount
-	BonusOwner
+	BonusOwner `json:"-"`
 }
 
 // NewTraitBonus creates a new TraitBonus.
@@ -86,15 +87,15 @@ func (s *TraitBonus) Hash(h hash.Hash) {
 	s.LeveledAmount.Hash(h)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (s *TraitBonus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&s.TraitBonusData)
+// MarshalJSONTo implements json.MarshalerTo.
+func (s *TraitBonus) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, &s.TraitBonusData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (s *TraitBonus) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (s *TraitBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content TraitBonusData
-	if err := json.Unmarshal(data, &content); err != nil {
+	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err
 	}
 	s.TraitBonusData = content

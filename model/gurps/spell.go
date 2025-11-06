@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -78,16 +79,16 @@ type Spell struct {
 type SpellData struct {
 	SourcedID
 	SpellEditData
-	ThirdParty map[string]any `json:"third_party,omitempty"`
-	Children   []*Spell       `json:"children,omitempty"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitzero"`
+	Children   []*Spell       `json:"children,omitzero"` // Only for containers
 	parent     *Spell
 }
 
 // SpellEditData holds the Spell data that can be edited by the UI detail editor.
 type SpellEditData struct {
 	SpellSyncData
-	VTTNotes     string            `json:"vtt_notes,omitempty"`
-	Replacements map[string]string `json:"replacements,omitempty"`
+	VTTNotes     string            `json:"vtt_notes,omitzero"`
+	Replacements map[string]string `json:"replacements,omitzero"`
 	SpellNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 }
@@ -95,37 +96,37 @@ type SpellEditData struct {
 // SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.
 type SpellNonContainerOnlyEditData struct {
 	SpellNonContainerOnlySyncData
-	TechLevel        *string     `json:"tech_level,omitempty"`
+	TechLevel        *string     `json:"tech_level,omitzero"`
 	Points           fxp.Int     `json:"points,omitzero"`
-	Study            []*Study    `json:"study,omitempty"`
-	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
+	Study            []*Study    `json:"study,omitzero"`
+	StudyHoursNeeded study.Level `json:"study_hours_needed,omitzero"`
 }
 
 // SpellSyncData holds the spell sync data that is common to both containers and non-containers.
 type SpellSyncData struct {
-	Name             string   `json:"name,omitempty"`
-	PageRef          string   `json:"reference,omitempty"`
-	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"local_notes,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
+	Name             string   `json:"name,omitzero"`
+	PageRef          string   `json:"reference,omitzero"`
+	PageRefHighlight string   `json:"reference_highlight,omitzero"`
+	LocalNotes       string   `json:"local_notes,omitzero"`
+	Tags             []string `json:"tags,omitzero"`
 }
 
 // SpellNonContainerOnlySyncData holds the spell sync data that is only applicable to traits that aren't containers.
 type SpellNonContainerOnlySyncData struct {
 	Difficulty      AttributeDifficulty `json:"difficulty,omitzero"`
-	College         CollegeList         `json:"college,omitempty"`
-	PowerSource     string              `json:"power_source,omitempty"`
-	Class           string              `json:"spell_class,omitempty"`
-	Resist          string              `json:"resist,omitempty"`
-	CastingCost     string              `json:"casting_cost,omitempty"`
-	MaintenanceCost string              `json:"maintenance_cost,omitempty"`
-	CastingTime     string              `json:"casting_time,omitempty"`
-	Duration        string              `json:"duration,omitempty"`
-	Item            string              `json:"item,omitempty"`
-	RitualSkillName string              `json:"base_skill,omitempty"`
-	PrereqCount     int                 `json:"prereq_count,omitempty"`
+	College         CollegeList         `json:"college,omitzero"`
+	PowerSource     string              `json:"power_source,omitzero"`
+	Class           string              `json:"spell_class,omitzero"`
+	Resist          string              `json:"resist,omitzero"`
+	CastingCost     string              `json:"casting_cost,omitzero"`
+	MaintenanceCost string              `json:"maintenance_cost,omitzero"`
+	CastingTime     string              `json:"casting_time,omitzero"`
+	Duration        string              `json:"duration,omitzero"`
+	Item            string              `json:"item,omitzero"`
+	RitualSkillName string              `json:"base_skill,omitzero"`
+	PrereqCount     int                 `json:"prereq_count,omitzero"`
 	Prereq          *PrereqList         `json:"prereqs,omitzero"`
-	Weapons         []*Weapon           `json:"weapons,omitempty"`
+	Weapons         []*Weapon           `json:"weapons,omitzero"`
 }
 
 type spellListData struct {
@@ -280,11 +281,11 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserve
 	return other
 }
 
-// MarshalJSON implements json.Marshaler.
-func (s *Spell) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (s *Spell) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
 	type calcLeast struct {
-		ResolvedNotes string `json:"resolved_notes,omitempty"`
+		ResolvedNotes string `json:"resolved_notes,omitzero"`
 	}
 	var cl calcLeast
 	notes := s.ResolveLocalNotes()
@@ -294,19 +295,19 @@ func (s *Spell) MarshalJSON() ([]byte, error) {
 	if s.Container() || s.LevelData.Level <= 0 {
 		value := &struct {
 			SpellData
-			Calc *calcLeast `json:"calc,omitempty"`
+			Calc *calcLeast `json:"calc,omitzero"`
 		}{
 			SpellData: s.SpellData,
 		}
 		if cl != (calcLeast{}) {
 			value.Calc = &cl
 		}
-		return json.Marshal(value)
+		return json.MarshalEncode(enc, value)
 	}
 	type calc struct {
 		Level              fxp.Int `json:"level"`
 		RelativeSkillLevel string  `json:"rsl"`
-		UnsatisfiedReason  string  `json:"unsatisfied_reason,omitempty"`
+		UnsatisfiedReason  string  `json:"unsatisfied_reason,omitzero"`
 		calcLeast
 	}
 	data := struct {
@@ -321,11 +322,11 @@ func (s *Spell) MarshalJSON() ([]byte, error) {
 			calcLeast:          cl,
 		},
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (s *Spell) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
 		SpellData
 		// Old data fields
@@ -334,7 +335,7 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
 	}
-	if err := json.Unmarshal(data, &localData); err != nil {
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	setOpen := false

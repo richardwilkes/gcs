@@ -25,9 +25,9 @@ var _ Bonus = &ReactionBonus{}
 // ReactionBonus holds a modifier due to a reaction.
 type ReactionBonus struct {
 	Type      feature.Type `json:"type"`
-	Situation string       `json:"situation,omitempty"`
+	Situation string       `json:"situation,omitzero"`
 	LeveledAmount
-	BonusOwner
+	BonusOwner `json:"-"`
 }
 
 // NewReactionBonus creates a new ReactionBonus.

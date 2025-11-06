@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -70,40 +71,40 @@ type Equipment struct {
 type EquipmentData struct {
 	SourcedID
 	EquipmentEditData
-	ThirdParty map[string]any `json:"third_party,omitempty"`
-	Children   []*Equipment   `json:"children,omitempty"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitzero"`
+	Children   []*Equipment   `json:"children,omitzero"` // Only for containers
 	parent     *Equipment
 }
 
 // EquipmentEditData holds the Equipment data that can be edited by the UI detail editor.
 type EquipmentEditData struct {
 	EquipmentSyncData
-	VTTNotes     string               `json:"vtt_notes,omitempty"`
-	Replacements map[string]string    `json:"replacements,omitempty"`
-	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
+	VTTNotes     string               `json:"vtt_notes,omitzero"`
+	Replacements map[string]string    `json:"replacements,omitzero"`
+	Modifiers    []*EquipmentModifier `json:"modifiers,omitzero"`
 	RatedST      fxp.Int              `json:"rated_strength,omitzero"`
 	Quantity     fxp.Int              `json:"quantity"`
 	Level        fxp.Int              `json:"level,omitzero"`
-	Uses         int                  `json:"uses,omitempty"`
-	Equipped     bool                 `json:"equipped,omitempty"`
+	Uses         int                  `json:"uses,omitzero"`
+	Equipped     bool                 `json:"equipped,omitzero"`
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
 type EquipmentSyncData struct {
-	Name                   string      `json:"description,omitempty"`
-	PageRef                string      `json:"reference,omitempty"`
-	PageRefHighlight       string      `json:"reference_highlight,omitempty"`
-	LocalNotes             string      `json:"local_notes,omitempty"`
-	TechLevel              string      `json:"tech_level,omitempty"`
-	LegalityClass          string      `json:"legality_class,omitempty"`
-	Tags                   []string    `json:"tags,omitempty"`
-	BaseValue              string      `json:"base_value,omitempty"`
-	BaseWeight             string      `json:"base_weight,omitempty"`
-	MaxUses                int         `json:"max_uses,omitempty"`
+	Name                   string      `json:"description,omitzero"`
+	PageRef                string      `json:"reference,omitzero"`
+	PageRefHighlight       string      `json:"reference_highlight,omitzero"`
+	LocalNotes             string      `json:"local_notes,omitzero"`
+	TechLevel              string      `json:"tech_level,omitzero"`
+	LegalityClass          string      `json:"legality_class,omitzero"`
+	Tags                   []string    `json:"tags,omitzero"`
+	BaseValue              string      `json:"base_value,omitzero"`
+	BaseWeight             string      `json:"base_weight,omitzero"`
+	MaxUses                int         `json:"max_uses,omitzero"`
 	Prereq                 *PrereqList `json:"prereqs,omitzero"`
-	Weapons                []*Weapon   `json:"weapons,omitempty"`
-	Features               Features    `json:"features,omitempty"`
-	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitempty"`
+	Weapons                []*Weapon   `json:"weapons,omitzero"`
+	Features               Features    `json:"features,omitzero"`
+	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
 }
 
 type equipmentListData struct {
@@ -218,16 +219,16 @@ func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, 
 	return other
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e *Equipment) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (e *Equipment) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
 		Value                   fxp.Int     `json:"value"`
 		ExtendedValue           fxp.Int     `json:"extended_value"`
 		Weight                  fxp.Weight  `json:"weight"`
 		ExtendedWeight          fxp.Weight  `json:"extended_weight"`
-		ExtendedWeightForSkills *fxp.Weight `json:"extended_weight_for_skills,omitempty"`
-		ResolvedNotes           string      `json:"resolved_notes,omitempty"`
-		UnsatisfiedReason       string      `json:"unsatisfied_reason,omitempty"`
+		ExtendedWeightForSkills *fxp.Weight `json:"extended_weight_for_skills,omitzero"`
+		ResolvedNotes           string      `json:"resolved_notes,omitzero"`
+		UnsatisfiedReason       string      `json:"unsatisfied_reason,omitzero"`
 	}
 	e.ClearUnusedFieldsForType()
 	defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
@@ -253,11 +254,11 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 		w := e.ExtendedWeight(true, defUnits)
 		data.Calc.ExtendedWeightForSkills = &w
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (e *Equipment) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
 		EquipmentData
 		// Old data fields
@@ -268,7 +269,7 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 		Weight     fxp.Weight `json:"weight"`
 		IsOpen     bool       `json:"open"`
 	}
-	if err := json.Unmarshal(data, &localData); err != nil {
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	setOpen := false
@@ -291,16 +292,6 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 	e.Tags = convertOldCategoriesToTags(e.Tags, localData.Categories)
 	slices.Sort(e.Tags)
 	if e.Container() {
-		if e.Quantity == 0 {
-			// Old formats omitted the quantity for containers. Try to see if it was omitted or if it was explicitly
-			// set to zero.
-			m := make(map[string]any)
-			if err := json.Unmarshal(data, &m); err == nil {
-				if _, exists := m["quantity"]; !exists {
-					e.Quantity = fxp.One
-				}
-			}
-		}
 		for _, one := range e.Children {
 			one.parent = e
 		}

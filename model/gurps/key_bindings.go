@@ -11,7 +11,8 @@ package gurps
 
 import (
 	"cmp"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"io/fs"
 	"slices"
 
@@ -92,21 +93,21 @@ func (b *KeyBindings) Save(filePath string) error {
 	return jio.SaveToFile(filePath, b)
 }
 
-// MarshalJSON implements json.Marshaler.
-func (b *KeyBindings) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (b *KeyBindings) MarshalJSONTo(enc *jsontext.Encoder) error {
 	data := make(map[string]unison.KeyBinding, len(b.data))
 	for k, v := range b.data {
 		if info, ok := factoryBindings[k]; ok && info.KeyBinding != v {
 			data[k] = v
 		}
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (b *KeyBindings) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (b *KeyBindings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	m := make(map[string]unison.KeyBinding, len(factoryBindings))
-	if err := json.Unmarshal(data, &m); err != nil {
+	if err := json.UnmarshalDecode(dec, &m); err != nil {
 		return err
 	}
 	b.data = m

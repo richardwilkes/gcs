@@ -31,12 +31,12 @@ type HitLocationData struct {
 	LocID       string `json:"id"`
 	ChoiceName  string `json:"choice_name"`
 	TableName   string `json:"table_name"`
-	Slots       int    `json:"slots,omitempty"`
-	HitPenalty  int    `json:"hit_penalty,omitempty"`
-	DRBonus     int    `json:"dr_bonus,omitempty"`
-	Description string `json:"description,omitempty"`
-	Notes       string `json:"notes,omitempty"`
-	SubTable    *Body  `json:"sub_table,omitempty"`
+	Slots       int    `json:"slots,omitzero"`
+	HitPenalty  int    `json:"hit_penalty,omitzero"`
+	DRBonus     int    `json:"dr_bonus,omitzero"`
+	Description string `json:"description,omitzero"`
+	Notes       string `json:"notes,omitzero"`
+	SubTable    *Body  `json:"sub_table,omitzero"`
 }
 
 // HitLocation holds a single hit location.
@@ -76,7 +76,7 @@ func (h *HitLocation) Clone(entity *Entity, owningTable *Body) *HitLocation {
 func (h *HitLocation) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
 		RollRange string         `json:"roll_range"`
-		DR        map[string]int `json:"dr,omitempty"`
+		DR        map[string]int `json:"dr,omitzero"`
 	}
 	data := struct {
 		HitLocationData

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
 	"io/fs"
@@ -39,12 +40,12 @@ type Template struct {
 type TemplateData struct {
 	Version   int          `json:"version"`
 	ID        tid.TID      `json:"id"`
-	Traits    []*Trait     `json:"traits,omitempty"`
-	Skills    []*Skill     `json:"skills,omitempty"`
-	Spells    []*Spell     `json:"spells,omitempty"`
-	Equipment []*Equipment `json:"equipment,omitempty"`
-	Notes     []*Note      `json:"notes,omitempty"`
-	BodyType  *Body        `json:"body_type,omitempty"`
+	Traits    []*Trait     `json:"traits,omitzero"`
+	Skills    []*Skill     `json:"skills,omitzero"`
+	Spells    []*Spell     `json:"spells,omitzero"`
+	Equipment []*Equipment `json:"equipment,omitzero"`
+	Notes     []*Note      `json:"notes,omitzero"`
+	BodyType  *Body        `json:"body_type,omitzero"`
 }
 
 // NewTemplateFromFile loads a Template from a file.
@@ -66,20 +67,20 @@ func NewTemplate() *Template {
 	return &t
 }
 
-// MarshalJSON implements json.Marshaler.
-func (t *Template) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (t *Template) MarshalJSONTo(enc *jsontext.Encoder) error {
 	t.EnsureAttachments()
 	t.Version = jio.CurrentDataVersion
-	return json.Marshal(&t.TemplateData)
+	return json.MarshalEncode(enc, &t.TemplateData)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (t *Template) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (t *Template) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content struct {
 		TemplateData
 		OldTraits []*Trait `json:"advantages"`
 	}
-	if err := json.Unmarshal(data, &content); err != nil {
+	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err
 	}
 	t.TemplateData = content.TemplateData

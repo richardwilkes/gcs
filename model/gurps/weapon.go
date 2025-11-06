@@ -11,7 +11,8 @@ package gurps
 
 import (
 	"cmp"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"strings"
@@ -79,8 +80,8 @@ type WeaponData struct {
 	SubVersion int             `json:"sv"`
 	Damage     WeaponDamage    `json:"damage"`
 	Strength   WeaponStrength  `json:"strength,omitzero"`
-	Usage      string          `json:"usage,omitempty"`
-	UsageNotes string          `json:"usage_notes,omitempty"`
+	Usage      string          `json:"usage,omitzero"`
+	UsageNotes string          `json:"usage_notes,omitzero"`
 	Reach      WeaponReach     `json:"reach,omitzero"`
 	Parry      WeaponParry     `json:"parry,omitzero"`
 	Block      WeaponBlock     `json:"block,omitzero"`
@@ -90,8 +91,8 @@ type WeaponData struct {
 	Shots      WeaponShots     `json:"shots,omitzero"`
 	Bulk       WeaponBulk      `json:"bulk,omitzero"`
 	Recoil     WeaponRecoil    `json:"recoil,omitzero"`
-	Defaults   []*SkillDefault `json:"defaults,omitempty"`
-	Hide       bool            `json:"hide,omitempty"`
+	Defaults   []*SkillDefault `json:"defaults,omitzero"`
+	Hide       bool            `json:"hide,omitzero"`
 }
 
 // Weapon holds the stats for a weapon.
@@ -266,26 +267,26 @@ func (w *WeaponData) Hash(h hash.Hash) {
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (w *Weapon) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements json.MarshalerTo.
+func (w *Weapon) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
 		Level      fxp.Int `json:"level,omitzero"`
-		Damage     string  `json:"damage,omitempty"`
-		Parry      string  `json:"parry,omitempty"`
-		Block      string  `json:"block,omitempty"`
-		Accuracy   string  `json:"accuracy,omitempty"`
-		Reach      string  `json:"reach,omitempty"`
-		Range      string  `json:"range,omitempty"`
-		RateOfFire string  `json:"rate_of_fire,omitempty"`
-		Shots      string  `json:"shots,omitempty"`
-		Bulk       string  `json:"bulk,omitempty"`
-		Recoil     string  `json:"recoil,omitempty"`
-		Strength   string  `json:"strength,omitempty"`
+		Damage     string  `json:"damage,omitzero"`
+		Parry      string  `json:"parry,omitzero"`
+		Block      string  `json:"block,omitzero"`
+		Accuracy   string  `json:"accuracy,omitzero"`
+		Reach      string  `json:"reach,omitzero"`
+		Range      string  `json:"range,omitzero"`
+		RateOfFire string  `json:"rate_of_fire,omitzero"`
+		Shots      string  `json:"shots,omitzero"`
+		Bulk       string  `json:"bulk,omitzero"`
+		Recoil     string  `json:"recoil,omitzero"`
+		Strength   string  `json:"strength,omitzero"`
 	}
 	w.SubVersion = currentWeaponSubVersion
 	data := struct {
 		WeaponData
-		Calc *calc `json:"calc,omitempty"`
+		Calc *calc `json:"calc,omitzero"`
 	}{
 		WeaponData: w.WeaponData,
 		Calc: &calc{
@@ -338,21 +339,21 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	if *data.Calc == (calc{}) {
 		data.Calc = nil
 	}
-	return json.Marshal(&data)
+	return json.MarshalEncode(enc, &data)
 }
 
 func (w *Weapon) musclePowerIsResolved() bool {
 	return w.Entity() != nil || (w.Owner != nil && w.Owner.RatedStrength() > 0)
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (w *Weapon) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (w *Weapon) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
 		WeaponData
 		// Old data fields
 		Type string `json:"type"`
 	}
-	if err := json.Unmarshal(data, &localData); err != nil {
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	if !tid.IsValid(localData.TID) {

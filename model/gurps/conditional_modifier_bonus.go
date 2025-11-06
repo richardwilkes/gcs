@@ -25,9 +25,9 @@ var _ Bonus = &ConditionalModifierBonus{}
 // ConditionalModifierBonus holds the data for a conditional modifier bonus.
 type ConditionalModifierBonus struct {
 	Type      feature.Type `json:"type"`
-	Situation string       `json:"situation,omitempty"`
+	Situation string       `json:"situation,omitzero"`
 	LeveledAmount
-	BonusOwner
+	BonusOwner `json:"-"`
 }
 
 // NewConditionalModifierBonus creates a new ConditionalModifierBonus.

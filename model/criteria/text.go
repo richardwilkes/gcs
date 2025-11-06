@@ -25,8 +25,8 @@ type Text struct {
 
 // TextData holds the criteria for matching text that should be written to disk.
 type TextData struct {
-	Compare   StringComparison `json:"compare,omitempty"`
-	Qualifier string           `json:"qualifier,omitempty"`
+	Compare   StringComparison `json:"compare,omitzero"`
+	Qualifier string           `json:"qualifier,omitzero"`
 }
 
 // IsZero implements json.isZero.

@@ -29,8 +29,8 @@ var skillBasedDefaultTypes = map[string]bool{
 // SkillDefault holds data for a Skill default.
 type SkillDefault struct {
 	DefaultType    string          `json:"type"`
-	Name           string          `json:"name,omitempty"`
-	Specialization string          `json:"specialization,omitempty"`
+	Name           string          `json:"name,omitzero"`
+	Specialization string          `json:"specialization,omitzero"`
 	Modifier       fxp.Int         `json:"modifier,omitzero"`
 	Level          fxp.Int         `json:"level,omitzero"`
 	AdjLevel       fxp.Int         `json:"adjusted_level,omitzero"`

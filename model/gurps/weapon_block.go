@@ -10,7 +10,8 @@
 package gurps
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -19,11 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-)
-
-var (
-	_ json.Marshaler   = WeaponBlock{}
-	_ json.Unmarshaler = &(WeaponBlock{})
 )
 
 // WeaponBlock holds the block data for a weapon.
@@ -50,15 +46,15 @@ func (wb WeaponBlock) IsZero() bool {
 	return !wb.CanBlock
 }
 
-// MarshalJSON marshals the data to JSON.
-func (wb WeaponBlock) MarshalJSON() ([]byte, error) {
-	return json.Marshal(wb.String())
+// MarshalJSONTo implements json.MarshalerTo.
+func (wb WeaponBlock) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, wb.String())
 }
 
-// UnmarshalJSON unmarshals the data from JSON.
-func (wb *WeaponBlock) UnmarshalJSON(data []byte) error {
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (wb *WeaponBlock) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var s string
-	err := json.Unmarshal(data, &s)
+	err := json.UnmarshalDecode(dec, &s)
 	if err != nil {
 		return err
 	}
