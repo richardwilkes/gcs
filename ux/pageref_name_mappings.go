@@ -170,6 +170,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"LMM":     "Locations: Metro of Madness",
 	"LOLTA":   "Loadouts: Low-Tech Armor",
 	"LOMH":    "Loadouts: Monster Hunters",
+	"LOSC":    "Loadouts: Starship Crew",
 	"LOT":     "Lands Out of Time",
 	"LSGC":    "Locations: St. George's Cathedral",
 	"LT":      "Low-Tech",
