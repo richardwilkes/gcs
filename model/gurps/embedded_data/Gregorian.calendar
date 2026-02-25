@@ -91,7 +91,7 @@
   ],
   "era": "AD",
   "previous_era": "BC",
-  "leap": {
+  "leapyear": {
     "month": 2,
     "every": 4,
     "except": 100,
