@@ -71,6 +71,7 @@ func (pb *PointsBreakdown) Total() fxp.Int {
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
 	Version          int             `json:"version"`
+	GCSVersion       string          `json:"gcs_version,omitzero"`
 	ID               tid.TID         `json:"id"`
 	TotalPoints      fxp.Int         `json:"total_points"`
 	PointsRecord     []*PointsRecord `json:"points_record,omitzero"`
@@ -225,6 +226,7 @@ func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 		},
 	}
 	data.Version = jio.CurrentDataVersion
+	data.GCSVersion = xos.AppVersion
 	for i, one := range encumbrance.Levels {
 		data.Calc.Move[i] = e.Move(one)
 		data.Calc.Dodge[i] = e.Dodge(one)

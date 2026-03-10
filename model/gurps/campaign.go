@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // Campaign holds the data set to be used for a campaign.
@@ -29,6 +30,7 @@ type Campaign struct {
 // CampaignData holds the campaign file data.
 type CampaignData struct {
 	Version       int            `json:"version"`
+	GCSVersion    string         `json:"gcs_version,omitzero"`
 	ID            tid.TID        `json:"id"`
 	SheetSettings *SheetSettings `json:"settings,omitzero"`
 	Traits        []*Trait       `json:"traits,omitzero"`
@@ -71,6 +73,7 @@ func (c *Campaign) Save(filePath string) error {
 // MarshalJSONTo implements json.MarshalerTo.
 func (c *Campaign) MarshalJSONTo(enc *jsontext.Encoder) error {
 	c.Version = jio.CurrentDataVersion
+	c.GCSVersion = xos.AppVersion
 	return json.MarshalEncode(enc, &c.CampaignData)
 }
 

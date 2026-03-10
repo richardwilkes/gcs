@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 var (
@@ -38,6 +39,7 @@ type Loot struct {
 // LootData holds the Loot data that is written to disk.
 type LootData struct {
 	Version    int          `json:"version"`
+	GCSVersion string       `json:"gcs_version,omitzero"`
 	ID         tid.TID      `json:"id"`
 	Name       string       `json:"name,omitzero"`
 	Location   string       `json:"location,omitzero"`
@@ -76,6 +78,7 @@ func (l *Loot) Save(filePath string) error {
 func (l *Loot) MarshalJSONTo(enc *jsontext.Encoder) error {
 	l.EnsureAttachments()
 	l.Version = jio.CurrentDataVersion
+	l.GCSVersion = xos.AppVersion
 	return json.MarshalEncode(enc, &l.LootData)
 }
 

@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 var (
@@ -38,14 +39,15 @@ type Template struct {
 
 // TemplateData holds the GURPS Template data that is written to disk.
 type TemplateData struct {
-	Version   int          `json:"version"`
-	ID        tid.TID      `json:"id"`
-	Traits    []*Trait     `json:"traits,omitzero"`
-	Skills    []*Skill     `json:"skills,omitzero"`
-	Spells    []*Spell     `json:"spells,omitzero"`
-	Equipment []*Equipment `json:"equipment,omitzero"`
-	Notes     []*Note      `json:"notes,omitzero"`
-	BodyType  *Body        `json:"body_type,omitzero"`
+	Version    int          `json:"version"`
+	GCSVersion string       `json:"gcs_version,omitzero"`
+	ID         tid.TID      `json:"id"`
+	Traits     []*Trait     `json:"traits,omitzero"`
+	Skills     []*Skill     `json:"skills,omitzero"`
+	Spells     []*Spell     `json:"spells,omitzero"`
+	Equipment  []*Equipment `json:"equipment,omitzero"`
+	Notes      []*Note      `json:"notes,omitzero"`
+	BodyType   *Body        `json:"body_type,omitzero"`
 }
 
 // NewTemplateFromFile loads a Template from a file.
@@ -71,6 +73,7 @@ func NewTemplate() *Template {
 func (t *Template) MarshalJSONTo(enc *jsontext.Encoder) error {
 	t.EnsureAttachments()
 	t.Version = jio.CurrentDataVersion
+	t.GCSVersion = xos.AppVersion
 	return json.MarshalEncode(enc, &t.TemplateData)
 }
 
