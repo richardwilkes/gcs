@@ -21,6 +21,7 @@ import (
 var (
 	Min                 = fixed64.Minimum[DP]()
 	NegPointEight       = FromStringForced("-0.8")
+	Zero                = FromInteger(0)
 	OneHundredth        = FromStringForced("0.01")
 	Twentieth           = FromStringForced("0.05")
 	PointZeroSix        = FromStringForced("0.06")

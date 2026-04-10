@@ -66,6 +66,13 @@ var (
 		{Name: i18n.Text("Snow"), Modifier: fxp.Half, IsSnow: true},
 		{Name: i18n.Text("Snow, Heavy"), Modifier: fxp.Quarter, IsSnow: true},
 	}
+
+	hikingIntensity = []hikingIntensityHours{
+		{Name: i18n.Text("Force March"), HoursHiking: fxp.Sixteen},
+		{Name: i18n.Text("Normal"), HoursHiking: fxp.Eight, Default: true},
+		{Name: i18n.Text("Foraging"), HoursHiking: fxp.Four},
+		{Name: i18n.Text("Custom"), IsCustom: true},
+	}
 )
 
 type terrainModifier struct {
@@ -83,6 +90,22 @@ func (t terrainModifier) String() string {
 	return t.Name
 }
 
+type hikingIntensityHours struct {
+	Name        string
+	HoursHiking fxp.Int
+	IsCustom    bool
+	Default     bool
+}
+
+func (t hikingIntensityHours) String() string {
+	return t.Name
+}
+
+type linkSpec struct {
+	pageRef   string
+	highlight string
+}
+
 // Calculator provides calculations for various physical tasks, such as jumping.
 type Calculator struct {
 	unison.Panel
@@ -96,6 +119,8 @@ type Calculator struct {
 	throwingDistanceResult     *unison.Label
 	throwingDamageResult       *unison.Label
 	hikingResult               *unison.Label
+	hikingDistanceLabel        *unison.Label
+	hikingTimeLabel            *unison.Label
 	scale                      int
 	jumpingRunningStartYards   fxp.Int
 	throwingObjectWeight       fxp.Weight
@@ -104,6 +129,9 @@ type Calculator struct {
 	hikingExtraEffortPenalty   int
 	terrainIndex               int
 	weatherIndex               int
+	hikingIntensityIndex       int
+	hikingHours                fxp.Int
+	hikingDistance             fxp.Int
 	usingSkis                  bool
 	usingSkates                bool
 	roadsAreCleared            bool
@@ -126,6 +154,9 @@ func DisplayCalculator(sheet *Sheet) {
 		throwingObjectWeight: fxp.Weight(fxp.One),
 		terrainIndex:         slices.IndexFunc(terrain, func(t terrainModifier) bool { return t.Default }),
 		weatherIndex:         slices.IndexFunc(weather, func(t terrainModifier) bool { return t.Default }),
+		hikingIntensityIndex: slices.IndexFunc(hikingIntensity, func(t hikingIntensityHours) bool { return t.Default }),
+		hikingHours:          fxp.Eight,
+		hikingDistance:       fxp.Zero,
 	}
 	c.Self = c
 
@@ -222,7 +253,7 @@ func (c *Calculator) createContent() {
 }
 
 func (c *Calculator) addJumpingSection() {
-	c.content.AddChild(c.createHeader(i18n.Text("Jumping"), "BX352", "Jumping", 0))
+	c.content.AddChild(c.createHeader(i18n.Text("Jumping"), []linkSpec{{"BX352", "Jumping"}}, 0))
 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
@@ -292,7 +323,7 @@ func (c *Calculator) addJumpingSection() {
 }
 
 func (c *Calculator) addThrowingSection() {
-	c.content.AddChild(c.createHeader(i18n.Text("Throwing"), "BX355", "Throwing", unison.StdVSpacing*3))
+	c.content.AddChild(c.createHeader(i18n.Text("Throwing"), []linkSpec{{"BX355", "Throwing"}}, unison.StdVSpacing*3))
 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
@@ -363,7 +394,7 @@ func (c *Calculator) addThrowingSection() {
 }
 
 func (c *Calculator) addHikingSection() {
-	c.content.AddChild(c.createHeader(i18n.Text("Hiking"), "BX351", "Hiking", unison.StdVSpacing*3))
+	c.content.AddChild(c.createHeader(i18n.Text("Hiking"), []linkSpec{{"BX351", "Hiking"}, {"HT55", "Hiking"}}, unison.StdVSpacing*3))
 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
@@ -378,6 +409,20 @@ func (c *Calculator) addHikingSection() {
 	usingSkisCheckbox := unison.NewCheckBox()
 	usingSkatesCheckbox := unison.NewCheckBox()
 	successfulHikingRollCheckbox := unison.NewCheckBox()
+	hikingHoursField := NewDecimalField(nil, "", i18n.Text("Traveling Hours per Day"),
+		func() fxp.Int { return c.hikingHours },
+		func(v fxp.Int) {
+			c.hikingHours = v
+			c.updateHikingResult()
+		},
+		fxp.Zero, fxp.Sixteen, false, false)
+	distanceToCoverField := NewDecimalField(nil, "", i18n.Text("Distance to Cover"),
+		func() fxp.Int { return c.hikingDistance },
+		func(v fxp.Int) {
+			c.hikingDistance = v
+			c.updateHikingResult()
+		},
+		fxp.Zero, fxp.Max, false, false)
 	extraEffortPenaltyField := NewIntegerField(nil, "", i18n.Text("Hiking Extra Effort Penalty"),
 		func() int { return c.hikingExtraEffortPenalty },
 		func(v int) {
@@ -398,6 +443,15 @@ func (c *Calculator) addHikingSection() {
 			usingSkatesCheckbox.SetEnabled(true)
 			usingSkisCheckbox.SetEnabled(true)
 		}
+
+		i := hikingIntensity[c.hikingIntensityIndex]
+		hikingHoursField.SetEnabled(true)
+		if !i.IsCustom {
+			c.hikingHours = i.HoursHiking
+			hikingHoursField.Sync()
+			hikingHoursField.SetEnabled(false)
+		}
+
 		w := weather[c.weatherIndex]
 		roadsAreClearedCheckbox.SetEnabled(terrain[c.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
 		extraEffortPenaltyField.SetEnabled(c.successfulHikingRoll)
@@ -432,6 +486,20 @@ func (c *Calculator) addHikingSection() {
 		c.updateHikingResult()
 	}
 	wrapper.AddChild(weatherPopup)
+
+	label = unison.NewLabel()
+	label.SetTitle(i18n.Text("Intensity:"))
+	wrapper.AddChild(label)
+
+	hikingIntensityPopup := unison.NewPopupMenu[hikingIntensityHours]()
+	hikingIntensityPopup.AddItem(hikingIntensity...)
+	hikingIntensityPopup.SelectIndex(c.hikingIntensityIndex)
+	hikingIntensityPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[hikingIntensityHours]) {
+		c.hikingIntensityIndex = popup.SelectedIndex()
+		hikingAdjuster()
+		c.updateHikingResult()
+	}
+	wrapper.AddChild(hikingIntensityPopup)
 
 	c.content.AddChild(wrapper)
 
@@ -477,6 +545,19 @@ func (c *Calculator) addHikingSection() {
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.AddChild(hikingHoursField)
+	label = unison.NewLabel()
+	label.SetTitle(i18n.Text("hours hiking per day"))
+	wrapper.AddChild(label)
+	c.content.AddChild(wrapper)
+
+	wrapper = unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(extraEffortPenaltyField)
 	label = unison.NewLabel()
 	label.SetTitle(i18n.Text("penalty for extra effort."))
@@ -488,6 +569,23 @@ func (c *Calculator) addHikingSection() {
 		Columns:  2,
 		VSpacing: unison.StdVSpacing,
 	})
+
+	c.hikingResult = c.createResultLabel()
+	c.hikingTimeLabel = c.createResultLabel()
+	c.hikingDistanceLabel = unison.NewLabel()
+	c.updateHikingResult()
+
+	wrapper = unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.AddChild(distanceToCoverField)
+	wrapper.AddChild(c.hikingDistanceLabel)
+	c.content.AddChild(wrapper)
+
 	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
 	divider := unison.NewSeparator()
 	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
@@ -497,11 +595,13 @@ func (c *Calculator) addHikingSection() {
 		HGrab:  true,
 	})
 	wrapper.AddChild(divider)
-	c.hikingResult = c.createResultLabel()
-	c.updateHikingResult()
 	wrapper.AddChild(c.hikingResult)
 	label = unison.NewLabel()
-	label.SetTitle(i18n.Text(" per full day"))
+	label.SetTitle(i18n.Text(" per day"))
+	wrapper.AddChild(label)
+	wrapper.AddChild(c.hikingTimeLabel)
+	label = unison.NewLabel()
+	label.SetTitle(i18n.Text(" to hike"))
 	wrapper.AddChild(label)
 	c.content.AddChild(wrapper)
 }
@@ -518,9 +618,9 @@ func (c *Calculator) createResultLabel() *unison.Label {
 	return label
 }
 
-func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin float32) *unison.Panel {
+func (c *Calculator) createHeader(text string, linkSpecs []linkSpec, topMargin float32) *unison.Panel {
 	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{Columns: 3})
+	wrapper.SetLayout(&unison.FlexLayout{Columns: 2 + 2*len(linkSpecs) - 1})
 	if topMargin > 0 {
 		wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: topMargin}))
 	}
@@ -534,8 +634,14 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 			return desc
 		},
 	}
-	first.SetTitle(text + " (")
-	wrapper.AddChild(first)
+	if len(linkSpecs) > 0 {
+		first.SetTitle(text + " (")
+		wrapper.AddChild(first)
+	} else {
+		first.SetTitle(text)
+		wrapper.AddChild(first)
+		return wrapper
+	}
 
 	linkTheme := unison.DefaultLinkTheme
 	linkTheme.Font = &unison.DynamicFont{
@@ -545,10 +651,18 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 			return desc
 		},
 	}
-	link := unison.NewLink(linkRef, "", linkRef, linkTheme, func(_ unison.Paneler, _ string) {
-		OpenPageReference(linkRef, linkHighlight, nil)
-	})
-	wrapper.AddChild(link)
+	for index, linkSpec := range linkSpecs {
+		link := unison.NewLink(linkSpec.pageRef, "", linkSpec.pageRef, linkTheme, func(_ unison.Paneler, _ string) {
+			OpenPageReference(linkSpec.pageRef, linkSpec.highlight, nil)
+		})
+		wrapper.AddChild(link)
+		if index < len(linkSpecs)-1 {
+			comma := unison.NewLabel()
+			comma.Font = first.Font
+			comma.SetTitle(", ")
+			wrapper.AddChild(comma)
+		}
+	}
 
 	last := unison.NewLabel()
 	last.Font = first.Font
@@ -860,6 +974,9 @@ func (c *Calculator) updateHikingResult() {
 	entity := c.sheet.Entity()
 	distance := fxp.FromInteger(entity.Move(entity.EncumbranceLevel(false)) * 10)
 
+	//Adjust for traveling hours
+	distance = distance.Mul(c.hikingHours).Div(fxp.Sixteen)
+
 	// Adjust for enhanced move (ground), if any
 	enhMove := -fxp.One
 	gurps.Traverse(func(t *gurps.Trait) bool {
@@ -928,7 +1045,7 @@ func (c *Calculator) updateHikingResult() {
 	var units string
 	if c.useMeters() {
 		// miles -> inches -> GURPS kilometers
-		distance = fxp.Kilometer.FromInches(fxp.Mile.ToInches(distance)).Round()
+		distance = fxp.Kilometer.FromInches(fxp.Mile.ToInches(distance))
 		if distance == fxp.One {
 			units = i18n.Text("kilometer")
 		} else {
@@ -941,8 +1058,20 @@ func (c *Calculator) updateHikingResult() {
 			units = i18n.Text("miles")
 		}
 	}
-	c.hikingResult.SetTitle(fmt.Sprintf("%s %s", distance.Comma(), units))
+	timeInDays := c.hikingDistance.Mul(fxp.Ten).Div(distance).Round().Div(fxp.Ten)
+
+	c.hikingResult.SetTitle(fmt.Sprintf("%s %s", distance.Round().Comma(), units))
+	c.hikingDistanceLabel.SetTitle(fmt.Sprintf(i18n.Text("%s to travel"), units))
+
+	if timeInDays == 1 {
+		c.hikingTimeLabel.SetTitle(i18n.Text("1 day"))
+	} else {
+		c.hikingTimeLabel.SetTitle(fmt.Sprintf(i18n.Text("%s days"), timeInDays))
+	}
+
 	c.hikingResult.MarkForLayoutRecursivelyUpward()
+	c.hikingTimeLabel.MarkForLayoutRecursivelyUpward()
+	c.hikingDistanceLabel.MarkForLayoutRecursivelyUpward()
 }
 
 func (c *Calculator) useMeters() bool {
