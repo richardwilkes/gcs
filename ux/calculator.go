@@ -674,6 +674,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 		multiplier = fxp.Six
 		reduction = fxp.Ten
 	}
+
 	distance := (basicMove.Mul(multiplier) - reduction).Min((basicMoveWithoutRun.Mul(multiplier) - reduction).Mul(fxp.Two))
 
 	// Adjust for encumbrance
@@ -927,7 +928,7 @@ func (c *Calculator) updateHikingResult() {
 	var units string
 	if c.useMeters() {
 		// miles -> inches -> GURPS kilometers
-		distance = distance.Mul(fxp.MileInInches).Div(fxp.ThirtySixThousand)
+		distance = fxp.Kilometer.FromInches(fxp.Mile.ToInches(distance)).Round()
 		if distance == fxp.One {
 			units = i18n.Text("kilometer")
 		} else {
@@ -952,7 +953,7 @@ func (c *Calculator) useMeters() bool {
 func (c *Calculator) distanceToText(inches fxp.Int) string {
 	var buffer strings.Builder
 	if c.useMeters() {
-		meters := inches.Div(fxp.ThirtySix).Mul(fxp.Hundred).Round().Div(fxp.Hundred)
+		meters := fxp.Meter.FromInches(inches).Mul(fxp.Hundred).Round().Div(fxp.Hundred)
 		if meters == fxp.One {
 			buffer.WriteString(i18n.Text("1 meter"))
 		} else {
