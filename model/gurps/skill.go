@@ -105,6 +105,7 @@ type SkillSyncData struct {
 // SkillNonContainerOnlySyncData holds the Skill sync data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlySyncData struct {
 	Specialization               string              `json:"specialization,omitzero"`
+	OptionalSpecialization       string              `json:"optional_specialization,omitzero"`
 	Difficulty                   AttributeDifficulty `json:"difficulty,omitzero"`
 	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitzero"`
 	Defaults                     []*SkillDefault     `json:"defaults,omitzero"`
@@ -410,7 +411,8 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillDifficultyColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = s.Difficulty.Description(EntityFromNode(s))
+			diff := s.AdjustedDifficulty()
+			data.Primary = diff.Description(EntityFromNode(s))
 		}
 	case SkillTagsColumn:
 		data.Type = cell.Tags
@@ -436,7 +438,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillRelativeLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = FormatRelativeSkill(EntityFromNode(s), s.IsTechnique(), s.Difficulty,
+			data.Primary = FormatRelativeSkill(EntityFromNode(s), s.IsTechnique(), s.AdjustedDifficulty(),
 				s.AdjustedRelativeLevel())
 			if tooltip := s.CalculateLevel(nil).Tooltip; tooltip != "" {
 				data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
@@ -602,9 +604,18 @@ func (s *Skill) String() string {
 			buffer.WriteString("/TL")
 			buffer.WriteString(*s.TechLevel)
 		}
-		if s.Specialization != "" {
+		if s.Specialization != "" || s.OptionalSpecialization != "" {
 			buffer.WriteString(" (")
-			buffer.WriteString(s.SpecializationWithReplacements())
+			if s.Specialization != "" {
+				buffer.WriteString(s.SpecializationWithReplacements())
+
+				if s.OptionalSpecialization != "" {
+					buffer.WriteString(", ")
+				}
+			}
+			if s.OptionalSpecialization != "" {
+				buffer.WriteString(s.OptionalSpecializationWithReplacements())
+			}
 			buffer.WriteByte(')')
 		}
 	}
@@ -633,7 +644,7 @@ func (s *Skill) RelativeLevel() string {
 	case s.IsTechnique():
 		return rsl.StringWithSign()
 	default:
-		return ResolveAttributeName(EntityFromNode(s), s.Difficulty.Attribute) + rsl.StringWithSign()
+		return ResolveAttributeName(EntityFromNode(s), s.AdjustedDifficulty().Attribute) + rsl.StringWithSign()
 	}
 }
 
@@ -673,6 +684,19 @@ func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	}
 	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points, s.NameWithReplacements(),
 		s.SpecializationWithReplacements(), s.Tags, tooltip)
+}
+
+// AdjustedDifficulty returns the difficulty, adjusted in case of an optional specialization.
+func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
+	diff := s.Difficulty
+
+	if s.OptionalSpecializationWithReplacements() != "" {
+		if diff.Difficulty > difficulty.Easy && diff.Difficulty != difficulty.Wildcard {
+			diff.Difficulty--
+		}
+	}
+
+	return diff
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
@@ -1028,6 +1052,11 @@ func (s *Skill) NameWithReplacements() string {
 // SpecializationWithReplacements returns the specialization with any replacements applied.
 func (s *Skill) SpecializationWithReplacements() string {
 	return nameable.Apply(s.Specialization, s.Replacements)
+}
+
+// OptionalSpecializationWithReplacements returns the optional specialization with any replacements applied.
+func (s *Skill) OptionalSpecializationWithReplacements() string {
+	return nameable.Apply(s.OptionalSpecialization, s.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
