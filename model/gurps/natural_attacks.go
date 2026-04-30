@@ -10,10 +10,15 @@
 package gurps
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
+
+func skillName(name string) criteria.Text {
+	return criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: name}}
+}
 
 // NewNaturalAttacks creates a new "Natural Attacks" trait.
 func NewNaturalAttacks(entity *Entity, parent *Trait) *Trait {
@@ -36,7 +41,7 @@ func newBite(owner WeaponOwner) *Weapon {
 		},
 		{
 			DefaultType: SkillID,
-			Name:        "Brawling",
+			Name:        skillName("Brawling"),
 		},
 	}
 	bite.Damage.Type = "cr"
@@ -61,15 +66,15 @@ func newPunch(owner WeaponOwner) *Weapon {
 		},
 		{
 			DefaultType: SkillID,
-			Name:        "Boxing",
+			Name:        skillName("Boxing"),
 		},
 		{
 			DefaultType: SkillID,
-			Name:        "Brawling",
+			Name:        skillName("Brawling"),
 		},
 		{
 			DefaultType: SkillID,
-			Name:        "Karate",
+			Name:        skillName("Karate"),
 		},
 	}
 	punch.Damage.Type = "cr"
@@ -94,16 +99,16 @@ func newKick(owner WeaponOwner) *Weapon {
 		},
 		{
 			DefaultType: SkillID,
-			Name:        "Brawling",
+			Name:        skillName("Brawling"),
 			Modifier:    -fxp.Two,
 		},
 		{
 			DefaultType: SkillID,
-			Name:        "Kicking",
+			Name:        skillName("Kicking"),
 		},
 		{
 			DefaultType: SkillID,
-			Name:        "Karate",
+			Name:        skillName("Karate"),
 			Modifier:    -fxp.Two,
 		},
 	}

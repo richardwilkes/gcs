@@ -156,11 +156,12 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
 				name := callArgAsTrimmedString(call, 0)
 				specialization := callArgAsTrimmedString(call, 1)
-				if entity.isSkillLevelResolutionExcluded(name, specialization) {
+				optionalSpecialization := callArgAsTrimmedString(call, 2)
+				if entity.isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization) {
 					return r.ToValue(0)
 				}
-				entity.registerSkillLevelResolutionExclusion(name, specialization)
-				defer entity.unregisterSkillLevelResolutionExclusion(name, specialization)
+				entity.registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
+				defer entity.unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
 				relative := call.Argument(2).ToBoolean()
 				var level int
 				Traverse(func(s *Skill) bool {

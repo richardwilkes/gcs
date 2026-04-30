@@ -77,7 +77,7 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) {
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
-		Columns:  5,
+		Columns:  4,
 		HAlign:   align.Fill,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
@@ -101,37 +101,35 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 	}
 	panel.AddChild(deleteButton)
 
-	name := i18n.Text("Name")
-	nameField := NewStringField(nil, "", name, func() string { return def.Name },
-		func(s string) { def.Name = s })
-	nameField.Watermark = name
-	specialization := i18n.Text("Specialization")
-	specializationField := NewStringField(nil, "", specialization,
-		func() string { return def.Specialization }, func(s string) { def.Specialization = s })
-	specializationField.Watermark = specialization
-	modifierField := NewDecimalField(nil, "", i18n.Text("Modifier"),
-		func() fxp.Int { return def.Modifier },
-		func(v fxp.Int) { def.Modifier = v },
-		-fxp.Thousand, fxp.Thousand, true, false)
 	attrChoicePopup := addAttributeChoicePopup(panel, p.entity, "", &def.DefaultType,
 		gurps.TenFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.SkillFlag)
+	addLabel(panel, i18n.Text("Modifier"), "")
+	addDecimalFieldWithSign(panel, nil, "", i18n.Text("Modifier"), "", &def.Modifier, -fxp.Thousand, fxp.Thousand)
+
+	// Rows after the first are rebuilt whenever the type changes.
+	rebuildDynamicRows := func() {
+		for len(panel.Children()) > 4 {
+			panel.RemoveChildAtIndex(len(panel.Children()) - 1)
+		}
+		if def.DefaultType == gurps.SkillID {
+			panel.AddChild(unison.NewPanel())
+			addNameCriteriaPanel(panel, &def.Name, 3, false)
+			panel.AddChild(unison.NewPanel())
+			addSpecializationCriteriaPanel(panel, &def.Specialization, 3, false)
+		}
+		addNumericCriteriaPanel(panel, nil, "", i18n.Text("when the Tech Level"), i18n.Text("When Tech Level"),
+			&def.WhenTL, 0, fxp.Twelve, 3, true, true)
+	}
 	callback := attrChoicePopup.SelectionChangedCallback
 	attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*gurps.AttributeChoice]) {
 		if item, ok := popup.Selected(); ok {
 			lastDefaultTypeUsed = item.Key
 			callback(popup)
-			adjustFieldBlank(nameField, item.Key != gurps.SkillID)
-			adjustFieldBlank(specializationField, item.Key != gurps.SkillID)
+			rebuildDynamicRows()
+			MarkRootAncestorForLayoutRecursively(p)
 		}
 	}
-	panel.AddChild(nameField)
-	panel.AddChild(specializationField)
-	panel.AddChild(modifierField)
-	adjustFieldBlank(nameField, def.DefaultType != gurps.SkillID)
-	adjustFieldBlank(specializationField, def.DefaultType != gurps.SkillID)
-
-	addNumericCriteriaPanel(panel, nil, "", i18n.Text("when the Tech Level"), i18n.Text("When Tech Level"),
-		&def.WhenTL, 0, fxp.Twelve, 4, true, true)
+	rebuildDynamicRows()
 
 	panel.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

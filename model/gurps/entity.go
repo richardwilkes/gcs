@@ -511,6 +511,7 @@ func (e *Entity) processPrereqs() {
 					penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 					penalty.SpecializationCriteria.Compare = criteria.IsText
 					penalty.SpecializationCriteria.Qualifier = s.SpecializationWithReplacements()
+					penalty.OptionalSpecializationCriteria.Qualifier = s.OptionalSpecializationWithReplacements()
 					if s.TechLevel != nil && *s.TechLevel != "" {
 						penalty.Amount = -fxp.Ten
 					} else {
@@ -830,7 +831,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 }
 
 // SkillBonusFor returns the total bonus for the matching skill bonuses.
-func (e *Entity) SkillBonusFor(name, specialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
+func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillBonuses {
 		if bonus.SelectionType == skillsel.Name {
@@ -840,6 +841,7 @@ func (e *Entity) SkillBonusFor(name, specialization string, tags []string, toolt
 			}
 			if bonus.NameCriteria.Matches(replacements, name) &&
 				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
+				bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
 				bonus.TagsCriteria.MatchesList(replacements, tags...) {
 				total += bonus.AdjustedAmount()
 				bonus.AddToTooltip(tooltip)
@@ -850,7 +852,7 @@ func (e *Entity) SkillBonusFor(name, specialization string, tags []string, toolt
 }
 
 // SkillPointBonusFor returns the total point bonus for the matching skill point bonuses.
-func (e *Entity) SkillPointBonusFor(name, specialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
+func (e *Entity) SkillPointBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillPointBonuses {
 		var replacements map[string]string
@@ -859,6 +861,7 @@ func (e *Entity) SkillPointBonusFor(name, specialization string, tags []string, 
 		}
 		if bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
+			bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
 			bonus.TagsCriteria.MatchesList(replacements, tags...) {
 			total += bonus.AdjustedAmount()
 			bonus.AddToTooltip(tooltip)
@@ -1038,7 +1041,7 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 	return best
 }
 
-// SkillNamed returns a list of skills that match.
+// SkillNamed returns a list of skills that match by exact (case-insensitive) name and specialization.
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
@@ -1048,6 +1051,37 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 					if specialization == "" || strings.EqualFold(sk.SpecializationWithReplacements(), specialization) {
 						list = append(list, sk)
 					}
+				}
+			}
+		}
+		return false
+	}, false, true, e.Skills...)
+	return list
+}
+
+// BestSkillMatching returns the highest-level skill whose name and specialization match the given criteria.
+func (e *Entity) BestSkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) *Skill {
+	var best *Skill
+	level := fxp.Min
+	for _, sk := range e.SkillMatching(nameCriteria, specializationCriteria, replacements, requirePoints, excludes) {
+		skillLevel := sk.CalculateLevel(excludes).Level
+		if best == nil || level < skillLevel {
+			best = sk
+			level = skillLevel
+		}
+	}
+	return best
+}
+
+// SkillMatching returns a list of skills whose name and specialization match the given criteria.
+func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
+	var list []*Skill
+	Traverse(func(sk *Skill) bool {
+		if !excludes[sk.String()] {
+			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
+				if nameCriteria.Matches(replacements, sk.NameWithReplacements()) &&
+					specializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) {
+					list = append(list, sk)
 				}
 			}
 		}
@@ -1193,11 +1227,14 @@ func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 	return fxp.Weight(v.Mul(fxp.Ten).Floor().Div(fxp.Ten))
 }
 
-func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) bool {
-	if e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization)] {
+func (e *Entity) isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization string) bool {
+	if e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization, optionalSpecialization)] {
 		args := []any{"name", name}
 		if specialization != "" {
 			args = append(args, "specialization", specialization)
+		}
+		if optionalSpecialization != "" {
+			args = append(args, "optionalSpecialization", optionalSpecialization)
 		}
 		slog.Error("attempt to resolve skill level via itself", args...)
 		return true
@@ -1205,16 +1242,16 @@ func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) boo
 	return false
 }
 
-func (e *Entity) registerSkillLevelResolutionExclusion(name, specialization string) {
-	e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization)] = true
+func (e *Entity) registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization string) {
+	e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization, optionalSpecialization)] = true
 }
 
-func (e *Entity) unregisterSkillLevelResolutionExclusion(name, specialization string) {
-	delete(e.skillResolverExclusions, e.skillLevelResolutionKey(name, specialization))
+func (e *Entity) unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization string) {
+	delete(e.skillResolverExclusions, e.skillLevelResolutionKey(name, specialization, optionalSpecialization))
 }
 
-func (e *Entity) skillLevelResolutionKey(name, specialization string) string {
-	return name + "\u0000" + specialization
+func (e *Entity) skillLevelResolutionKey(name, specialization, optionalSpecialization string) string {
+	return name + "\u0000" + specialization + "\u0000" + optionalSpecialization
 }
 
 // ResolveVariable resolves a variable to a value.

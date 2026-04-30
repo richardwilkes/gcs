@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
@@ -767,19 +768,19 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, prereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
 	def := &SkillDefault{
 		DefaultType:    SkillID,
-		Name:           ritualSkillName,
-		Specialization: college,
+		Specialization: criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: college}},
 		Modifier:       fxp.FromInteger(-prereqCount),
 	}
-	if college == "" {
-		def.Name = ""
+	if ritualSkillName != "" {
+		def.Name.Compare = criteria.IsText
+		def.Name.Qualifier = ritualSkillName
 	}
 	var limit fxp.Int
 	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
 		&limit, nil)
 	// CalculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
 	skillLevel.RelativeLevel += def.Modifier
-	def.Specialization = ""
+	def.Specialization.Qualifier = ""
 	def.Modifier -= fxp.Six
 	fallback := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
 		&limit, nil)

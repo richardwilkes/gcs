@@ -19,6 +19,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
@@ -194,10 +195,9 @@ func NewTechnique(owner DataOwner, parent *Skill, skillName string) *Skill {
 	if skillName == "" {
 		skillName = i18n.Text("Skill")
 	}
-	s.TechniqueDefault = &SkillDefault{
-		DefaultType: SkillID,
-		Name:        skillName,
-	}
+	s.TechniqueDefault = &SkillDefault{DefaultType: SkillID}
+	s.TechniqueDefault.Name.Compare = criteria.IsText
+	s.TechniqueDefault.Name.Qualifier = skillName
 	s.Name = s.Kind()
 	return &s
 }
@@ -256,7 +256,7 @@ func (s *Skill) IsTechnique() bool {
 func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
 	if s.IsTechnique() {
-		other = NewTechnique(owner, parent, s.TechniqueDefault.Name)
+		other = NewTechnique(owner, parent, s.TechniqueDefault.Name.Qualifier)
 	} else {
 		other = NewSkill(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
@@ -683,7 +683,7 @@ func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		return total
 	}
 	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points, s.NameWithReplacements(),
-		s.SpecializationWithReplacements(), s.Tags, tooltip)
+		s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags, tooltip)
 }
 
 // AdjustedDifficulty returns the difficulty, adjusted in case of an optional specialization.
@@ -700,9 +700,9 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
-func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
+func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization string, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if e != nil {
-		points += e.SkillPointBonusFor(name, specialization, tags, tooltip)
+		points += e.SkillPointBonusFor(name, specialization, optionalSpecialization, tags, tooltip)
 		points = points.Max(0)
 	}
 	return points
@@ -713,7 +713,7 @@ func (s *Skill) IncrementSkillLevel() {
 	if !s.Container() {
 		basePoints := s.Points.Floor() + fxp.One
 		maxPoints := basePoints
-		if s.Difficulty.Difficulty == difficulty.Wildcard {
+		if s.AdjustedDifficulty().Difficulty == difficulty.Wildcard {
 			maxPoints += fxp.Twelve
 		} else {
 			maxPoints += fxp.Four
@@ -733,7 +733,7 @@ func (s *Skill) DecrementSkillLevel() {
 	if !s.Container() && s.Points > 0 {
 		basePoints := s.Points.Floor()
 		minPoints := basePoints
-		if s.Difficulty.Difficulty == difficulty.Wildcard {
+		if s.AdjustedDifficulty().Difficulty == difficulty.Wildcard {
 			minPoints -= fxp.Twelve
 		} else {
 			minPoints -= fxp.Four
@@ -764,15 +764,15 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 	points := s.AdjustedPoints(nil)
 	if s.IsTechnique() {
 		return CalculateTechniqueLevel(EntityFromNode(s), s.Replacements, s.NameWithReplacements(),
-			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.Difficulty.Difficulty, points, true,
+			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.AdjustedDifficulty().Difficulty, points, true,
 			s.TechniqueLimitModifier, excludes)
 	}
-	return CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.Tags,
-		s.DefaultedFrom, s.Difficulty, points, s.EncumbrancePenaltyMultiplier)
+	return CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
+		s.DefaultedFrom, s.AdjustedDifficulty(), points, s.EncumbrancePenaltyMultiplier)
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
-func CalculateSkillLevel(e *Entity, name, specialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
+func CalculateSkillLevel(e *Entity, name, specialization string, optionalSpecialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
 	var tooltip xbytes.InsertBuffer
 	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
 	level := e.ResolveAttributeCurrent(attrDiff.Attribute)
@@ -805,7 +805,7 @@ func CalculateSkillLevel(e *Entity, name, specialization string, tags []string, 
 				level = def.AdjLevel
 			}
 			if e != nil {
-				bonus := e.SkillBonusFor(name, specialization, tags, &tooltip)
+				bonus := e.SkillBonusFor(name, specialization, optionalSpecialization, tags, &tooltip)
 				level += bonus
 				relativeLevel += bonus
 				bonus = e.EncumbranceLevel(true).Penalty().Mul(encumbrancePenaltyMultiplier)
@@ -873,7 +873,7 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 				relativeLevel = points
 			}
 			if level != fxp.Min {
-				relativeLevel += e.SkillBonusFor(name, specialization, tags, &tooltip)
+				relativeLevel += e.SkillBonusFor(name, specialization, "", tags, &tooltip)
 				level += relativeLevel
 			}
 			if limitModifier != nil {
@@ -905,8 +905,8 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 	}
 	best := s.bestDefault(excluded)
 	if best != nil {
-		baseLine := (EntityFromNode(s).ResolveAttributeCurrent(s.Difficulty.Attribute) +
-			s.Difficulty.Difficulty.BaseRelativeLevel()).Floor()
+		baseLine := (EntityFromNode(s).ResolveAttributeCurrent(s.AdjustedDifficulty().Attribute) +
+			s.AdjustedDifficulty().Difficulty.BaseRelativeLevel()).Floor()
 		level := best.Level.Floor()
 		best.AdjLevel = level
 		switch {
@@ -924,7 +924,7 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 }
 
 func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
-	if EntityFromNode(s) == nil || len(s.Defaults) == 0 {
+	if EntityFromNode(s) == nil {
 		return nil
 	}
 	excludes := make(map[string]bool)
@@ -933,7 +933,7 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 	best := fxp.Min
 	for _, def := range s.resolveToSpecificDefaults() {
 		// For skill-based defaults, prune out any that already use a default that we are involved with
-		if def.Equivalent(s.Replacements, excluded) || s.inDefaultChain(def, make(map[*Skill]bool)) {
+		if def.Equivalent(s.Replacements, excluded) || s.inDefaultChain(def, make(map[*Skill]bool), excludes) {
 			continue
 		}
 		if level := s.calcSkillDefaultLevel(def, excludes); best < level {
@@ -949,28 +949,26 @@ func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]boo
 	e := EntityFromNode(s)
 	level := def.SkillLevel(e, s.Replacements, true, excludes, !s.IsTechnique())
 	if def.SkillBased() {
-		defName := def.NameWithReplacements(s.Replacements)
-		defSpec := def.SpecializationWithReplacements(s.Replacements)
-		if other := e.BestSkillNamed(defName, defSpec, true, excludes); other != nil {
-			level -= e.SkillBonusFor(defName, defSpec, s.Tags, nil)
+		if other := e.BestSkillMatching(def.Name, def.Specialization, s.Replacements, true, excludes); other != nil {
+			level -= e.SkillBonusFor(other.NameWithReplacements(), other.SpecializationWithReplacements(),
+				other.OptionalSpecializationWithReplacements(), s.Tags, nil)
 		}
 	}
 	return level
 }
 
-func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool {
+func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool, excludes map[string]bool) bool {
 	e := EntityFromNode(s)
 	if e == nil || def == nil || !def.SkillBased() {
 		return false
 	}
-	for _, one := range e.SkillNamed(def.NameWithReplacements(s.Replacements),
-		def.SpecializationWithReplacements(s.Replacements), true, nil) {
+	for _, one := range e.SkillMatching(def.Name, def.Specialization, s.Replacements, true, excludes) {
 		if one == s {
 			return true
 		}
 		if !lookedAt[one] {
 			lookedAt[one] = true
-			if s.inDefaultChain(one.DefaultedFrom, lookedAt) {
+			if s.inDefaultChain(one.DefaultedFrom, lookedAt, nil) {
 				return true
 			}
 		}
@@ -980,21 +978,41 @@ func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool
 
 func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 	e := EntityFromNode(s)
+
 	result := make([]*SkillDefault, 0, len(s.Defaults))
 	for _, def := range s.Defaults {
 		if e == nil || def == nil || !def.SkillBased() {
 			result = append(result, def)
 		} else {
-			for _, one := range e.SkillNamed(def.NameWithReplacements(s.Replacements),
-				def.SpecializationWithReplacements(s.Replacements), true,
+			for _, one := range e.SkillMatching(def.Name, def.Specialization, s.Replacements, true,
 				map[string]bool{s.String(): true}) {
 				local := *def
-				local.Name = one.NameWithReplacements()
-				local.Specialization = one.SpecializationWithReplacements()
+				local.Name.Compare = criteria.IsText
+				local.Name.Qualifier = one.NameWithReplacements()
+				local.Specialization.Compare = criteria.IsText
+				local.Specialization.Qualifier = one.SpecializationWithReplacements()
+				if one.OptionalSpecializationWithReplacements() != "" {
+					local.Modifier -= fxp.Two
+				}
 				result = append(result, &local)
 			}
 		}
 	}
+
+	if e != nil && s.OptionalSpecializationWithReplacements() == "" {
+		excludes := map[string]bool{s.String(): true}
+		for _, one := range e.SkillNamed(s.NameWithReplacements(), s.SpecializationWithReplacements(), true, excludes) {
+			if one.OptionalSpecializationWithReplacements() != "" {
+				def := &SkillDefault{DefaultType: SkillID, Modifier: -fxp.Two}
+				def.Name.Compare = criteria.IsText
+				def.Name.Qualifier = one.NameWithReplacements()
+				def.Specialization.Compare = criteria.IsText
+				def.Specialization.Qualifier = one.SpecializationWithReplacements()
+				result = append(result, def)
+			}
+		}
+	}
+
 	return result
 }
 
@@ -1075,7 +1093,7 @@ func (s *Skill) ModifierNotes() string {
 		return i18n.Text("Default: ") + s.TechniqueDefault.FullName(EntityFromNode(s), s.Replacements) +
 			s.TechniqueDefault.ModifierAsString()
 	}
-	if s.Difficulty.Difficulty != difficulty.Wildcard {
+	if s.AdjustedDifficulty().Difficulty != difficulty.Wildcard {
 		defSkill := s.DefaultSkill()
 		if defSkill != nil && s.DefaultedFrom != nil {
 			return i18n.Text("Default: ") + defSkill.String() + s.DefaultedFrom.ModifierAsString()
@@ -1235,8 +1253,8 @@ func (s *Skill) SyncWithSource() {
 						def := *other.TechniqueDefault
 						s.TechniqueDefault = &def
 						if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-							s.TechniqueDefault.Name = ""
-							s.TechniqueDefault.Specialization = ""
+							s.TechniqueDefault.Name = criteria.Text{}
+							s.TechniqueDefault.Specialization = criteria.Text{}
 						}
 					}
 					if other.TechniqueLimitModifier != nil {
@@ -1337,8 +1355,8 @@ func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply, isT
 			def := *other.TechniqueDefault
 			s.TechniqueDefault = &def
 			if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-				s.TechniqueDefault.Name = ""
-				s.TechniqueDefault.Specialization = ""
+				s.TechniqueDefault.Name.Qualifier = ""
+				s.TechniqueDefault.Specialization.Qualifier = ""
 			}
 		}
 		if other.TechniqueLimitModifier != nil {

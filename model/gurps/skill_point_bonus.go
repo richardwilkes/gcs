@@ -32,10 +32,11 @@ type SkillPointBonus struct {
 
 // SkillPointBonusData holds an adjustment to a skill's points which is persisted.
 type SkillPointBonusData struct {
-	Type                   feature.Type  `json:"type"`
-	NameCriteria           criteria.Text `json:"name,omitzero"`
-	SpecializationCriteria criteria.Text `json:"specialization,omitzero"`
-	TagsCriteria           criteria.Text `json:"tags,omitzero"`
+	Type                           feature.Type  `json:"type"`
+	NameCriteria                   criteria.Text `json:"name,omitzero"`
+	SpecializationCriteria         criteria.Text `json:"specialization,omitzero"`
+	OptionalSpecializationCriteria criteria.Text `json:"optional_specialization,omitzero"`
+	TagsCriteria                   criteria.Text `json:"tags,omitzero"`
 	LeveledAmount
 	BonusOwner `json:"-"`
 }
@@ -46,6 +47,7 @@ func NewSkillPointBonus() *SkillPointBonus {
 	s.Type = feature.SkillPointBonus
 	s.NameCriteria.Compare = criteria.IsText
 	s.SpecializationCriteria.Compare = criteria.AnyText
+	s.OptionalSpecializationCriteria.Compare = criteria.AnyText
 	s.TagsCriteria.Compare = criteria.AnyText
 	s.Amount = fxp.One
 	return &s
@@ -66,6 +68,7 @@ func (s *SkillPointBonus) Clone() Feature {
 func (s *SkillPointBonus) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(s.NameCriteria.Qualifier, m, existing)
 	nameable.Extract(s.SpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(s.OptionalSpecializationCriteria.Qualifier, m, existing)
 	nameable.Extract(s.TagsCriteria.Qualifier, m, existing)
 }
 
@@ -98,6 +101,7 @@ func (s *SkillPointBonus) Hash(h hash.Hash) {
 	xhash.Num8(h, s.Type)
 	s.NameCriteria.Hash(h)
 	s.SpecializationCriteria.Hash(h)
+	s.OptionalSpecializationCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)
 }

@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -29,13 +31,31 @@ var skillBasedDefaultTypes = map[string]bool{
 // SkillDefault holds data for a Skill default.
 type SkillDefault struct {
 	DefaultType    string          `json:"type"`
-	Name           string          `json:"name,omitzero"`
-	Specialization string          `json:"specialization,omitzero"`
+	Name           criteria.Text   `json:"name,omitzero"`
+	Specialization criteria.Text   `json:"specialization,omitzero"`
 	Modifier       fxp.Int         `json:"modifier,omitzero"`
 	Level          fxp.Int         `json:"level,omitzero"`
 	AdjLevel       fxp.Int         `json:"adjusted_level,omitzero"`
 	Points         fxp.Int         `json:"points,omitzero"`
 	WhenTL         criteria.Number `json:"when_tl,omitzero"`
+}
+
+func migrateStringToCriteriaText(raw jsontext.Value, dst *criteria.Text) error {
+	if len(raw) == 0 {
+		return nil
+	}
+	if raw[0] == '"' {
+		var str string
+		if err := json.Unmarshal(raw, &str); err != nil {
+			return err
+		}
+		if str != "" {
+			dst.Compare = criteria.IsText
+			dst.Qualifier = str
+		}
+		return nil
+	}
+	return json.Unmarshal(raw, dst)
 }
 
 // DefaultTypeIsSkillBased returns true if the SkillDefault type is Skill-based.
@@ -50,6 +70,36 @@ func (s *SkillDefault) CloneWithoutLevelOrPoints() *SkillDefault {
 	clone.AdjLevel = 0
 	clone.Points = 0
 	return &clone
+}
+
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	var localData struct {
+		DefaultType    string          `json:"type"`
+		Name           jsontext.Value  `json:"name,omitzero"`
+		Specialization jsontext.Value  `json:"specialization,omitzero"`
+		Modifier       fxp.Int         `json:"modifier,omitzero"`
+		Level          fxp.Int         `json:"level,omitzero"`
+		AdjLevel       fxp.Int         `json:"adjusted_level,omitzero"`
+		Points         fxp.Int         `json:"points,omitzero"`
+		WhenTL         criteria.Number `json:"when_tl,omitzero"`
+	}
+	if err := json.UnmarshalDecode(dec, &localData); err != nil {
+		return err
+	}
+	s.DefaultType = localData.DefaultType
+	s.Modifier = localData.Modifier
+	s.Level = localData.Level
+	s.AdjLevel = localData.AdjLevel
+	s.Points = localData.Points
+	s.WhenTL = localData.WhenTL
+	if err := migrateStringToCriteriaText(localData.Name, &s.Name); err != nil {
+		return err
+	}
+	if err := migrateStringToCriteriaText(localData.Specialization, &s.Specialization); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Equivalent returns true if this can be considered equivalent to other.
@@ -77,7 +127,7 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 	if s.SkillBased() {
 		var buffer strings.Builder
 		buffer.WriteString(s.NameWithReplacements(replacements))
-		if s.Specialization != "" {
+		if s.Specialization.Qualifier != "" {
 			buffer.WriteString(" (")
 			buffer.WriteString(s.SpecializationWithReplacements(replacements))
 			buffer.WriteByte(')')
@@ -97,19 +147,19 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 
 // NameWithReplacements returns the name of the skill to default from with any nameable keys replaced.
 func (s *SkillDefault) NameWithReplacements(replacements map[string]string) string {
-	return nameable.Apply(s.Name, replacements)
+	return nameable.Apply(s.Name.Qualifier, replacements)
 }
 
 // SpecializationWithReplacements returns the specialization of the skill to default from with any nameable keys
 // replaced.
 func (s *SkillDefault) SpecializationWithReplacements(replacements map[string]string) string {
-	return nameable.Apply(s.Specialization, replacements)
+	return nameable.Apply(s.Specialization.Qualifier, replacements)
 }
 
 // FillWithNameableKeys adds any nameable keys found in this SkillDefault to the provided map.
 func (s *SkillDefault) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(s.Name, m, existing)
-	nameable.Extract(s.Specialization, m, existing)
+	nameable.Extract(s.Name.Qualifier, m, existing)
+	nameable.Extract(s.Specialization.Qualifier, m, existing)
 }
 
 // ModifierAsString returns the modifier as a string suitable for appending.
@@ -163,8 +213,7 @@ func (s *SkillDefault) isTLPermitted(entity *Entity) bool {
 
 func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
-	for _, sk := range entity.SkillNamed(s.NameWithReplacements(replacements),
-		s.SpecializationWithReplacements(replacements), requirePoints, excludes) {
+	for _, sk := range entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes) {
 		if best < sk.LevelData.Level {
 			level := sk.CalculateLevel(excludes).Level
 			if best < level {
@@ -215,8 +264,7 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
-	for _, sk := range entity.SkillNamed(s.NameWithReplacements(replacements),
-		s.SpecializationWithReplacements(replacements), requirePoints, excludes) {
+	for _, sk := range entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes) {
 		if best < sk.LevelData.Level {
 			best = sk.LevelData.Level
 		}
@@ -235,9 +283,14 @@ func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (s *SkillDefault) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.DefaultType)
-	xhash.StringWithLen(h, s.Name)
-	xhash.StringWithLen(h, s.Specialization)
 	xhash.Num64(h, s.Modifier)
+	if !s.Name.IsZero() {
+		s.Name.Hash(h)
+	}
+	if !s.Specialization.IsZero() {
+		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
+		s.Specialization.Hash(h)
+	}
 	if !s.WhenTL.IsZero() {
 		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
 		s.WhenTL.Hash(h)

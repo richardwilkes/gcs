@@ -97,6 +97,10 @@ func addSpecializationLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndStringField(parent, i18n.Text("Specialization"), "", fieldData)
 }
 
+func addOptionalSpecializationLabelAndField(parent *unison.Panel, fieldData *string) {
+	addLabelAndStringField(parent, i18n.Text("Optional Specialization"), "", fieldData)
+}
+
 func addPageRefLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndStringField(parent, i18n.Text("Page Reference"), gurps.PageRefTooltip(), fieldData)
 }
