@@ -33,20 +33,34 @@ func (enum LengthUnit) Format(length Length) string {
 			buffer.WriteByte('"')
 		}
 		return buffer.String()
-	case Inch:
-		return inches.String() + " " + enum.Key()
-	case Feet:
-		return inches.Div(Twelve).Comma() + " " + enum.Key()
-	case Yard, Meter:
-		return inches.Div(ThirtySix).Comma() + " " + enum.Key()
-	case Mile:
-		return inches.Div(MileInInches).Comma() + " " + enum.Key()
-	case Centimeter:
-		return inches.Div(ThirtySix).Mul(Hundred).Comma() + " " + enum.Key()
-	case Kilometer:
-		return inches.Div(ThirtySixThousand).Comma() + " " + enum.Key()
+
 	default:
-		return FeetAndInches.Format(length)
+		return enum.FromInches(inches).Comma() + " " + enum.String()
+	}
+}
+
+// FromInches converts inches to LengthUnit
+func (enum LengthUnit) FromInches(inches Int) Int {
+	switch enum {
+	case Inch:
+		return inches
+	case Feet:
+		return inches.Div(Twelve)
+	case Yard:
+		return inches.Div(ThirtySix)
+	case Mile:
+		return inches.Div(MileInInches)
+	case Centimeter:
+		// using 2.5cm per inch
+		return inches.Mul(TwoAndAHalf)
+	case Meter:
+		// forty = 100 / 2.5 cm per inch
+		return inches.Div(Forty)
+	case Kilometer:
+		// forty = 100 / 2.5 cm per inch
+		return inches.Div(Forty).Div(Thousand)
+	default:
+		return inches
 	}
 }
 
@@ -62,11 +76,14 @@ func (enum LengthUnit) ToInches(length Int) Int {
 	case Mile:
 		return length.Mul(MileInInches)
 	case Centimeter:
-		return length.Mul(ThirtySix).Div(Hundred)
-	case Kilometer:
-		return length.Mul(ThirtySixThousand)
+		// using 2.5cm per inch
+		return length.Div(TwoAndAHalf)
 	case Meter:
-		return length.Mul(ThirtySix)
+		// forty = 100 / 2.5cm per inch
+		return length.Mul(Forty)
+	case Kilometer:
+		// forty = 100 / 2.5cm per inch
+		return length.Mul(Forty).Mul(Thousand)
 	default:
 		return FeetAndInches.ToInches(length)
 	}
