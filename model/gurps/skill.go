@@ -924,6 +924,9 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
 	e := EntityFromNode(s)
 	level := def.SkillLevel(e, s.Replacements, true, excludes, !s.IsTechnique())
+	if level == fxp.Min {
+		return level
+	}
 	if def.SkillBased() {
 		defName := def.NameWithReplacements(s.Replacements)
 		defSpec := def.SpecializationWithReplacements(s.Replacements)
