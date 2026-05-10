@@ -162,6 +162,53 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map
 	return drMap
 }
 
+// PD computes the PD (Passive Defense) coverage for this HitLocation. If 'tooltip' isn't nil, the buffer will be
+// updated with details on how the PD was calculated. If 'pdMap' isn't nil, it will be returned.
+// PD only applies if UsePassiveDefense is enabled in sheet settings (GURPS 3e optional rule).
+func (h *HitLocation) PD(entity *Entity, tooltip *xbytes.InsertBuffer, pdMap map[string]int) map[string]int {
+	if pdMap == nil {
+		pdMap = make(map[string]int)
+	}
+	// PD is an optional rule - only calculate if enabled
+	if entity.SheetSettings == nil || !entity.SheetSettings.UsePassiveDefense {
+		return pdMap
+	}
+	pdMap = entity.AddPDBonusesFor(h.LocID, tooltip, pdMap)
+	if h.owningTable != nil && h.owningTable.owningLocation != nil {
+		pdMap = h.owningTable.owningLocation.PD(entity, tooltip, pdMap)
+	}
+	if tooltip != nil && len(pdMap) != 0 {
+		// PD is simpler than DR - it doesn't have specializations, just a total value
+		// stored under PDSpecializationKey. Show the total PD value.
+		pdValue := pdMap[PDSpecializationKey]
+		if pdValue > 0 {
+			var buffer bytes.Buffer
+			buffer.WriteByte('\n')
+			fmt.Fprintf(&buffer, i18n.Text("\n- **PD %d**"), pdValue)
+			buffer.WriteString("\n---\n")
+			_ = tooltip.Insert(0, buffer.Bytes())
+		}
+	}
+	return pdMap
+}
+
+// DisplayPD returns the PD for this location, formatted as a string.
+// Returns just the total PD value (not broken down by specialization like DR).
+func (h *HitLocation) DisplayPD(entity *Entity, tooltip *xbytes.InsertBuffer) string {
+	if entity.SheetSettings == nil || !entity.SheetSettings.UsePassiveDefense {
+		return "0"
+	}
+	pdMap := h.PD(entity, tooltip, nil)
+	// PD bonuses are stored under the PDSpecializationKey ("pd") from AddPDBonusesFor.
+	// All PD bonuses for a location are accumulated under this single key.
+	// For display, we just want the total PD value, not a ratio like DR.
+	pdValue := pdMap[PDSpecializationKey]
+	if pdValue == 0 {
+		return "0"
+	}
+	return strconv.Itoa(pdValue)
+}
+
 // DisplayDR returns the DR for this location, formatted as a string.
 func (h *HitLocation) DisplayDR(entity *Entity, tooltip *xbytes.InsertBuffer) string {
 	drMap := h.DR(entity, tooltip, nil)

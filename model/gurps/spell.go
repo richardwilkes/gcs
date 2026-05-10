@@ -706,7 +706,11 @@ func (s *Spell) DecrementSkillLevel() {
 // CalculateSpellLevel returns the calculated spell level.
 func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []string, attrDiff AttributeDifficulty, pts fxp.Int) Level {
 	var tooltip xbytes.InsertBuffer
-	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
+	var settings *SheetSettings
+	if e != nil {
+		settings = e.SheetSettings
+	}
+	relativeLevel := BaseRelativeLevelWithSettings(attrDiff.Difficulty, settings)
 	level := fxp.Min
 	if e != nil {
 		pts = pts.Floor()

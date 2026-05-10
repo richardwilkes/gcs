@@ -59,6 +59,8 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			feat = &CostReduction{}
 		case feature.DRBonus:
 			feat = &DRBonus{}
+		case feature.PassiveDefenseBonus:
+			feat = &DRBonus{} // PassiveDefenseBonus is a DRBonus with PD specialization
 		case feature.ReactionBonus:
 			feat = &ReactionBonus{}
 		case feature.SkillBonus:

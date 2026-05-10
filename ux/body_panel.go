@@ -45,8 +45,9 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 		targetMgr: targetMgr,
 	}
 	p.Self = p
+	// Layout will be set in addContent based on whether PD column is shown
 	p.SetLayout(&unison.FlexLayout{
-		Columns:  8,
+		Columns:  8, // Default, will be updated in addContent
 		HSpacing: 4,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
@@ -88,6 +89,19 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 
 func (p *BodyPanel) addContent(locations *gurps.Body) {
 	p.RemoveAllChildren()
+	// Update layout columns based on whether PD column is shown
+	// PD column is shown when UsePassiveDefense is enabled
+	settings := gurps.SheetSettingsFor(p.entity)
+	showPD := settings.UsePassiveDefense
+	columns := 8
+	if showPD {
+		columns = 10 // Add 2 columns for PD (header + spacer)
+	}
+	p.SetLayout(&unison.FlexLayout{
+		Columns:  columns,
+		HSpacing: 4,
+	})
+	
 	p.AddChild(NewPageHeader(i18n.Text("Roll"), 1))
 	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Location"), 2))
@@ -96,6 +110,13 @@ func (p *BodyPanel) addContent(locations *gurps.Body) {
 	header.Tooltip = newWrappedTooltip(i18n.Text("Damage Resistance for the hit location"))
 	p.AddChild(header)
 	p.AddChild(unison.NewPanel())
+	// Add PD column header if enabled
+	if showPD {
+		header = NewPageHeader(i18n.Text("PD"), 1)
+		header.Tooltip = newWrappedTooltip(i18n.Text("Passive Defense for the hit location (GURPS 3e optional rule)"))
+		p.AddChild(header)
+		p.AddChild(unison.NewPanel())
+	}
 	header = NewPageHeader("", 1)
 	header.Tooltip = newWrappedTooltip(i18n.Text("Notes for the hit location"))
 	baseline := header.Font.Baseline() * 0.8
@@ -216,6 +237,27 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			p.addSeparator()
 		}
 
+		// Add PD field if column is enabled (when UsePassiveDefense is on)
+		showPD := gurps.SheetSettingsFor(p.entity).UsePassiveDefense
+		if showPD {
+			pd := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
+				var tooltip xbytes.InsertBuffer
+				f.SetTitle(location.DisplayPD(p.entity, &tooltip))
+				tip := fmt.Sprintf(i18n.Text("The PD (Passive Defense) covering the **%s** hit location"), location.TableName)
+				if detail := tooltip.String(); detail != "" {
+					tip += ":" + detail
+				}
+				f.Tooltip = newMarkdownTooltip(tip, "")
+				MarkForLayoutWithinDockable(f)
+			})
+			pd.SetLayoutData(&unison.FlexLayoutData{})
+			p.AddChild(pd)
+
+			if i == 0 && depth == 0 {
+				p.addSeparator()
+			}
+		}
+
 		title := fmt.Sprintf(i18n.Text("Notes for the **%s** hit location"), location.TableName)
 		notesField := NewStringPageField(p.targetMgr, "body:"+location.ID(), title,
 			func() string { return location.Notes }, func(value string) { location.Notes = value })
@@ -250,7 +292,15 @@ func (p *BodyPanel) Sync() {
 
 func (p *BodyPanel) sync(force bool) {
 	locations := gurps.SheetSettingsFor(p.entity).BodyType
-	if hash := gurps.Hash64(locations); force || hash != p.hash {
+	settings := gurps.SheetSettingsFor(p.entity)
+	// Include UsePassiveDefense in hash calculation so panel rebuilds when PD setting changes
+	hash := gurps.Hash64(locations)
+	if settings.UsePassiveDefense {
+		hash = hash*31 + 1
+	} else {
+		hash = hash*31 + 0
+	}
+	if force || hash != p.hash {
 		p.hash = hash
 		p.titledBorder.Title = locations.Name
 		p.addContent(locations)

@@ -106,6 +106,7 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 		panel, focus = p.createCostReductionPanel(one)
 	case *gurps.DRBonus:
 		panel, focus = p.createDRBonusPanel(one)
+		// PassiveDefenseBonus is also handled as DRBonus
 	case *gurps.ReactionBonus:
 		panel, focus = p.createReactionBonusPanel(one)
 	case *gurps.SkillBonus:
@@ -731,6 +732,8 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		return gurps.NewCostReduction(lastAttributeIDUsed)
 	case feature.DRBonus:
 		bonus = gurps.NewDRBonus()
+	case feature.PassiveDefenseBonus:
+		bonus = gurps.NewPassiveDefenseBonus()
 	case feature.ReactionBonus:
 		bonus = gurps.NewReactionBonus()
 	case feature.SkillBonus:

@@ -747,12 +747,98 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 		s.DefaultedFrom, s.Difficulty, points, s.EncumbrancePenaltyMultiplier)
 }
 
+// BaseRelativeLevelWithSettings returns the base relative skill level at 0 points, using custom settings if provided.
+//
+// Mode behavior:
+//   - When UseSkillModifierAdjustments is false (default): Adjustment mode - adds adjustment values to GURPS defaults
+//   - When UseSkillModifierAdjustments is true: Override mode - replaces defaults with override values if set
+//
+// Override mode logic:
+//   - For Easy: 0 means "use default" (which is 0). Non-zero values override the default.
+//     NOTE: There is an ambiguity - setting override to 0 cannot distinguish between "use default" and "override to 0".
+//     This is acceptable since Easy's default is 0, so both interpretations yield the same result.
+//   - For Average/Hard/VeryHard: 0 means "not set, use default". Values matching the default also use the default.
+//     Only values that are non-zero AND different from the default will override.
+func BaseRelativeLevelWithSettings(diffLevel difficulty.Level, settings *SheetSettings) fxp.Int {
+	defaultValue := diffLevel.BaseRelativeLevel()
+	if settings == nil {
+		return defaultValue
+	}
+	
+	if settings.UseSkillModifierAdjustments {
+		// Override mode: replace defaults (when toggle is checked)
+		switch diffLevel {
+		case difficulty.Easy:
+			// For Easy, default is 0. If override is explicitly set to non-zero, use that. Otherwise use default 0.
+			// NOTE: Setting override to 0 cannot distinguish between "use default" and "override to 0", but since
+			// Easy's default is 0, both interpretations yield the same result.
+			if settings.EasySkillModifierOverride != 0 {
+				return settings.EasySkillModifierOverride
+			}
+			// 0 means use default (which is also 0 for Easy)
+		case difficulty.Average:
+			// For Average, default is -1. If 0, it means "not set", use default. Otherwise use the override value.
+			if settings.AverageSkillModifierOverride == 0 {
+				// Not set, use default
+			} else if settings.AverageSkillModifierOverride != -fxp.One {
+				// Override value that's not the default
+				return settings.AverageSkillModifierOverride
+			}
+			// Matches default, use default
+		case difficulty.Hard:
+			// For Hard, default is -2. If 0, it means "not set", use default. Otherwise use the override value.
+			if settings.HardSkillModifierOverride == 0 {
+				// Not set, use default
+			} else if settings.HardSkillModifierOverride != -fxp.Two {
+				// Override value that's not the default
+				return settings.HardSkillModifierOverride
+			}
+			// Matches default, use default
+		case difficulty.VeryHard, difficulty.Wildcard:
+			// For Very Hard, default is -3. If 0, it means "not set", use default. Otherwise use the override value.
+			if settings.VeryHardSkillModifierOverride == 0 {
+				// Not set, use default
+			} else if settings.VeryHardSkillModifierOverride != -fxp.Three {
+				// Override value that's not the default
+				return settings.VeryHardSkillModifierOverride
+			}
+			// Matches default, use default
+		default:
+			// Unknown difficulty level - fall back to default
+			return defaultValue
+		}
+		// Fall back to defaults if no override was applied
+		return defaultValue
+	} else {
+		// Adjustment mode: add to defaults (default behavior)
+		switch diffLevel {
+		case difficulty.Easy:
+			return defaultValue + settings.EasySkillModifierAdjustment
+		case difficulty.Average:
+			return defaultValue + settings.AverageSkillModifierAdjustment
+		case difficulty.Hard:
+			return defaultValue + settings.HardSkillModifierAdjustment
+		case difficulty.VeryHard, difficulty.Wildcard:
+			return defaultValue + settings.VeryHardSkillModifierAdjustment
+		default:
+			return defaultValue
+		}
+	}
+}
+
 // CalculateSkillLevel returns the calculated level for a skill.
 func CalculateSkillLevel(e *Entity, name, specialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
 	var tooltip xbytes.InsertBuffer
-	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
-	level := e.ResolveAttributeCurrent(attrDiff.Attribute)
-	if level != fxp.Min {
+	var settings *SheetSettings
+	if e != nil {
+		settings = e.SheetSettings
+	}
+	relativeLevel := BaseRelativeLevelWithSettings(attrDiff.Difficulty, settings)
+	level := fxp.Min
+	if e != nil {
+		level = e.ResolveAttributeCurrent(attrDiff.Attribute)
+	}
+	if level != fxp.Min && e != nil {
 		if e.SheetSettings.UseHalfStatDefaults {
 			level = level.Div(fxp.Two).Floor() + fxp.Five
 		}
@@ -881,8 +967,13 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 	}
 	best := s.bestDefault(excluded)
 	if best != nil {
-		baseLine := (EntityFromNode(s).ResolveAttributeCurrent(s.Difficulty.Attribute) +
-			s.Difficulty.Difficulty.BaseRelativeLevel()).Floor()
+		entity := EntityFromNode(s)
+		var settings *SheetSettings
+		if entity != nil {
+			settings = entity.SheetSettings
+		}
+		baseLine := (entity.ResolveAttributeCurrent(s.Difficulty.Attribute) +
+			BaseRelativeLevelWithSettings(s.Difficulty.Difficulty, settings)).Floor()
 		level := best.Level.Floor()
 		best.AdjLevel = level
 		switch {

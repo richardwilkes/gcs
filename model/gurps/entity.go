@@ -818,6 +818,10 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 		}
 	}
 	for _, one := range e.features.drBonuses {
+		// Skip PD bonuses - they're handled separately by AddPDBonusesFor
+		if strings.EqualFold(one.Specialization, "PD") {
+			continue
+		}
 		for _, loc := range one.Locations {
 			if (loc == AllID && isTopLevel) || strings.EqualFold(loc, locationID) {
 				drMap[strings.ToLower(one.Specialization)] += fxp.AsInteger[int](one.AdjustedAmount())
@@ -827,6 +831,41 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 		}
 	}
 	return drMap
+}
+
+// AddPDBonusesFor locates any active PD (Passive Defense) bonuses for the given location and adds them to the map.
+// If 'pdMap' is nil, it will be created. The provided map (or the newly created one) will be returned.
+// PD only applies if UsePassiveDefense is enabled in sheet settings (GURPS 3e optional rule).
+func (e *Entity) AddPDBonusesFor(locationID string, tooltip *xbytes.InsertBuffer, pdMap map[string]int) map[string]int {
+	if pdMap == nil {
+		pdMap = make(map[string]int)
+	}
+	// PD is an optional rule - only calculate if enabled
+	if e.SheetSettings == nil || !e.SheetSettings.UsePassiveDefense {
+		return pdMap
+	}
+	isTopLevel := false
+	for _, one := range e.SheetSettings.BodyType.Locations {
+		if one.LocID == locationID {
+			isTopLevel = true
+			break
+		}
+	}
+	for _, one := range e.features.drBonuses {
+		// Only process PD bonuses (specialization="PD")
+		if !strings.EqualFold(one.Specialization, "PD") {
+			continue
+		}
+		for _, loc := range one.Locations {
+			if (loc == AllID && isTopLevel) || strings.EqualFold(loc, locationID) {
+				// PD bonuses are always stored under PDSpecializationKey regardless of specialization value
+				pdMap[PDSpecializationKey] += fxp.AsInteger[int](one.AdjustedAmount())
+				one.AddToTooltip(tooltip)
+				break
+			}
+		}
+	}
+	return pdMap
 }
 
 // SkillBonusFor returns the total bonus for the matching skill bonuses.
@@ -1057,14 +1096,40 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 }
 
 // Dodge returns the current Dodge value for the given Encumbrance.
+// If DodgeOverride is set (non-zero), it returns that value directly without calculation.
+// Note: PD (Passive Defense) does NOT affect base Dodge. PD is applied separately during
+// combat resolution when an active defense fails and only if armor covers the hit location.
 func (e *Entity) Dodge(enc encumbrance.Level) int {
+	settings := e.SheetSettings
+	// Check for manual override first
+	if settings != nil && settings.DodgeOverride != 0 {
+		return fxp.AsInteger[int](settings.DodgeOverride.Max(fxp.One))
+	}
+	
 	var dodge fxp.Int
 	if e.ResolveAttribute(DodgeID) != nil {
 		dodge = e.ResolveAttributeCurrent(DodgeID)
 	} else {
-		dodge = e.ResolveAttributeCurrent(BasicSpeedID).Max(0) + fxp.Three
+		if settings == nil {
+			// Fall back to GURPS 4E defaults if settings are nil
+			dodge = e.ResolveAttributeCurrent(BasicSpeedID).Max(0) + fxp.Three
+		} else {
+			// Use BasicMove or BasicSpeed based on settings
+			if settings.UseBasicMoveForDodge {
+				dodge = e.ResolveAttributeCurrent(BasicMoveID).Max(0)
+			} else {
+				dodge = e.ResolveAttributeCurrent(BasicSpeedID).Max(0)
+			}
+			// Include flat +3 bonus if enabled
+			if settings.IncludeDodgeFlatBonus {
+				dodge += fxp.Three
+			}
+		}
 	}
 	dodge += e.DodgeBonus
+	// NOTE: PD (Passive Defense) is NOT added to base Dodge. PD is a separate mechanic
+	// that applies during combat resolution when an active defense fails and only
+	// if the armor covers the hit location. PD would be handled in combat resolution logic.
 	divisor := 2 * min(CountThresholdOpMet(threshold.HalveDodge, e.Attributes), 2)
 	if divisor > 0 {
 		dodge = dodge.Div(fxp.FromInteger(divisor)).Ceil()
@@ -1098,6 +1163,108 @@ func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
 		e.encumbranceLevelCache = encumbrance.ExtraHeavy
 	}
 	return encumbrance.ExtraHeavy
+}
+
+// PassiveDefenseFromArmor returns the total Passive Defense from equipped armor.
+// PD is identified by DRBonus features with "PD" specialization (case-insensitive).
+// Armor is identified as equipment that is equipped and does not have a "Shield" tag.
+//
+// NOTE: PD does NOT affect base Dodge. PD is a GURPS 3e mechanic that applies during
+// combat resolution when an active defense (Dodge/Parry/Block) fails. PD is added to
+// the failed defense roll only if the armor covers the hit location, providing a
+// second chance to avoid the attack. This function is provided for use in combat
+// resolution logic, not for base Dodge calculation.
+func (e *Entity) PassiveDefenseFromArmor() fxp.Int {
+	var total fxp.Int
+	for _, eqp := range e.CarriedEquipment {
+		if !eqp.ReallyEquipped() {
+			continue
+		}
+		// Skip shields - they're handled by PassiveDefenseFromShields()
+		isShield := false
+		for _, tag := range eqp.Tags {
+			if strings.EqualFold(strings.TrimSpace(tag), "Shield") {
+				isShield = true
+				break
+			}
+		}
+		if isShield {
+			continue
+		}
+		// Look for DRBonus features with "PD" specialization
+		for _, f := range eqp.FeatureList() {
+			if drBonus, ok := f.(*DRBonus); ok {
+				// Check if this DRBonus has "PD" specialization (case-insensitive)
+				spec := strings.TrimSpace(drBonus.Specialization)
+				if strings.EqualFold(spec, "PD") {
+					total += drBonus.AdjustedAmount()
+				}
+			}
+		}
+		// Also check modifiers for PD features
+		for _, mod := range eqp.Modifiers {
+			for _, f := range mod.Features {
+				if drBonus, ok := f.(*DRBonus); ok {
+					spec := strings.TrimSpace(drBonus.Specialization)
+					if strings.EqualFold(spec, "PD") {
+						total += drBonus.AdjustedAmount()
+					}
+				}
+			}
+		}
+	}
+	return total.Floor()
+}
+
+// PassiveDefenseFromShields returns the total Passive Defense from equipped shields.
+// PD is identified by DRBonus features with "PD" specialization (case-insensitive).
+// Shields are identified as equipment that is equipped and has a "Shield" tag.
+//
+// NOTE: PD does NOT affect base Dodge. PD is a GURPS 3e mechanic that applies during
+// combat resolution when an active defense (Dodge/Parry/Block) fails. PD is added to
+// the failed defense roll only if the armor covers the hit location, providing a
+// second chance to avoid the attack. This function is provided for use in combat
+// resolution logic, not for base Dodge calculation.
+func (e *Entity) PassiveDefenseFromShields() fxp.Int {
+	var total fxp.Int
+	for _, eqp := range e.CarriedEquipment {
+		if !eqp.ReallyEquipped() {
+			continue
+		}
+		// Only process items with "Shield" tag
+		isShield := false
+		for _, tag := range eqp.Tags {
+			if strings.EqualFold(strings.TrimSpace(tag), "Shield") {
+				isShield = true
+				break
+			}
+		}
+		if !isShield {
+			continue
+		}
+		// Look for DRBonus features with "PD" specialization
+		for _, f := range eqp.FeatureList() {
+			if drBonus, ok := f.(*DRBonus); ok {
+				// Check if this DRBonus has "PD" specialization (case-insensitive)
+				spec := strings.TrimSpace(drBonus.Specialization)
+				if strings.EqualFold(spec, "PD") {
+					total += drBonus.AdjustedAmount()
+				}
+			}
+		}
+		// Also check modifiers for PD features
+		for _, mod := range eqp.Modifiers {
+			for _, f := range mod.Features {
+				if drBonus, ok := f.(*DRBonus); ok {
+					spec := strings.TrimSpace(drBonus.Specialization)
+					if strings.EqualFold(spec, "PD") {
+						total += drBonus.AdjustedAmount()
+					}
+				}
+			}
+		}
+	}
+	return total.Floor()
 }
 
 // WeightUnit returns the weight unit that should be used for display.

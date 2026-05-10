@@ -620,7 +620,12 @@ var allEnums = []*enumInfo{
 			{
 				Name:   "DRBonus",
 				Key:    "dr_bonus",
-				String: "Gives a DR bonus of",
+				String: "Gives a Damage Resistance (DR) bonus of",
+			},
+			{
+				Name:   "PassiveDefenseBonus",
+				Key:    "passive_defense_bonus",
+				String: "Gives a Passive Defense (PD) bonus of",
 			},
 			{
 				Key:    "reaction_bonus",

@@ -38,6 +38,10 @@ const (
 	TorsoID            = "torso"
 )
 
+// PDSpecializationKey is the key used in DR bonus maps for Passive Defense bonuses.
+// PD bonuses use specialization="PD" which gets lowercased to "pd" in the map.
+const PDSpecializationKey = "pd"
+
 // SanitizeID ensures the ID is not empty and consists of only lowercase alphanumeric characters. If permitLeadingDigits
 // is false, then leading digits are stripped. A list of reserved values can be passed in to disallow specific IDs.
 func SanitizeID(id string, permitLeadingDigits bool, reserved ...string) string {

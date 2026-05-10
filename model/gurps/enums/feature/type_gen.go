@@ -22,6 +22,7 @@ const (
 	AttributeBonus Type = iota
 	ConditionalModifier
 	DRBonus
+	PassiveDefenseBonus
 	ReactionBonus
 	SkillBonus
 	SkillPointBonus
@@ -64,6 +65,7 @@ var Types = []Type{
 	AttributeBonus,
 	ConditionalModifier,
 	DRBonus,
+	PassiveDefenseBonus,
 	ReactionBonus,
 	SkillBonus,
 	SkillPointBonus,
@@ -118,6 +120,8 @@ func (enum Type) Key() string {
 		return "conditional_modifier"
 	case DRBonus:
 		return "dr_bonus"
+	case PassiveDefenseBonus:
+		return "passive_defense_bonus"
 	case ReactionBonus:
 		return "reaction_bonus"
 	case SkillBonus:
@@ -196,6 +200,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Gives a conditional modifier of`)
 	case DRBonus:
 		return i18n.Text(`Gives a DR bonus of`)
+	case PassiveDefenseBonus:
+		return i18n.Text(`Gives a Passive Defense (PD) bonus of`)
 	case ReactionBonus:
 		return i18n.Text(`Gives a reaction modifier of`)
 	case SkillBonus:
