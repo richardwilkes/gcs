@@ -1062,7 +1062,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 // BestSkillMatching returns the highest-level skill whose name and specialization match the given criteria.
 func (e *Entity) BestSkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) *Skill {
 	var best *Skill
-	level := fxp.Min
+	level := fxp.FromInteger(0)
 	for _, sk := range e.SkillMatching(nameCriteria, specializationCriteria, replacements, requirePoints, excludes) {
 		skillLevel := sk.CalculateLevel(excludes).Level
 		if best == nil || level < skillLevel {
