@@ -713,7 +713,7 @@ func (s *Skill) IncrementSkillLevel() {
 	if !s.Container() {
 		basePoints := s.Points.Floor() + fxp.One
 		maxPoints := basePoints
-		if s.AdjustedDifficulty().Difficulty == difficulty.Wildcard {
+		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			maxPoints += fxp.Twelve
 		} else {
 			maxPoints += fxp.Four
@@ -733,7 +733,7 @@ func (s *Skill) DecrementSkillLevel() {
 	if !s.Container() && s.Points > 0 {
 		basePoints := s.Points.Floor()
 		minPoints := basePoints
-		if s.AdjustedDifficulty().Difficulty == difficulty.Wildcard {
+		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			minPoints -= fxp.Twelve
 		} else {
 			minPoints -= fxp.Four
