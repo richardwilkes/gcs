@@ -968,7 +968,7 @@ func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool, excl
 		}
 		if !lookedAt[one] {
 			lookedAt[one] = true
-			if s.inDefaultChain(one.DefaultedFrom, lookedAt, nil) {
+			if s.inDefaultChain(one.DefaultedFrom, lookedAt, excludes) {
 				return true
 			}
 		}
