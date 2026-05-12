@@ -284,13 +284,8 @@ func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
 func (s *SkillDefault) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.DefaultType)
 	xhash.Num64(h, s.Modifier)
-	if !s.Name.IsZero() {
-		s.Name.Hash(h)
-	}
-	if !s.Specialization.IsZero() {
-		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
-		s.Specialization.Hash(h)
-	}
+	s.Name.Hash(h)
+	s.Specialization.Hash(h)
 	if !s.WhenTL.IsZero() {
 		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
 		s.WhenTL.Hash(h)
