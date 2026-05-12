@@ -141,7 +141,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			adjustedDiffField := NewNonEditableField(func(field *NonEditableField) {
 				localOptSpec := nameable.Apply(e.editorData.OptionalSpecialization, e.target.Replacements)
 				diff := e.editorData.Difficulty
-				if localOptSpec != "" && diff.Difficulty > difficulty.Easy {
+				if localOptSpec != "" && diff.Difficulty != difficulty.Wildcard && diff.Difficulty > difficulty.Easy {
 					diff.Difficulty--
 				}
 				field.SetTitle(diff.Description(entity))
@@ -173,7 +173,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 						true, e.editorData.TechniqueLimitModifier, nil)
 				} else {
 					adjDiff := e.editorData.Difficulty
-					if localOptionalSpec != "" && adjDiff.Difficulty > difficulty.Easy {
+					if localOptionalSpec != "" && adjDiff.Difficulty != difficulty.Wildcard && adjDiff.Difficulty > difficulty.Easy {
 						adjDiff.Difficulty--
 					}
 					level = gurps.CalculateSkillLevel(entity, localName, localSpec, localOptionalSpec, e.editorData.Tags,
