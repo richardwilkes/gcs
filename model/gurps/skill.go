@@ -185,19 +185,18 @@ func skillKind(container bool) byte {
 }
 
 // NewTechnique creates a new technique (i.e. a specialized use of a Skill). All parameters may be nil or empty.
-func NewTechnique(owner DataOwner, parent *Skill, skillName string) *Skill {
+func NewTechnique(owner DataOwner, parent *Skill, skillName criteria.Text) *Skill {
 	var s Skill
 	s.TID = tid.MustNewTID(kinds.Technique)
 	s.parent = parent
 	s.owner = owner
 	s.Difficulty.Difficulty = difficulty.Average
 	s.Points = fxp.One
-	if skillName == "" {
-		skillName = i18n.Text("Skill")
+	if skillName.Qualifier == "" {
+		skillName.Qualifier = i18n.Text("Skill")
 	}
 	s.TechniqueDefault = &SkillDefault{DefaultType: SkillID}
-	s.TechniqueDefault.Name.Compare = criteria.IsText
-	s.TechniqueDefault.Name.Qualifier = skillName
+	s.TechniqueDefault.Name = skillName
 	s.Name = s.Kind()
 	return &s
 }
@@ -256,7 +255,7 @@ func (s *Skill) IsTechnique() bool {
 func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
 	if s.IsTechnique() {
-		other = NewTechnique(owner, parent, s.TechniqueDefault.Name.Qualifier)
+		other = NewTechnique(owner, parent, s.TechniqueDefault.Name)
 	} else {
 		other = NewSkill(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
