@@ -1008,7 +1008,8 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 				} else {
 					local.Specialization.Qualifier = one.OptionalSpecializationWithReplacements()
 				}
-				if one.OptionalSpecializationWithReplacements() != "" {
+				if one.OptionalSpecializationWithReplacements() != "" &&
+					def.Specialization.Matches(s.Replacements, one.SpecializationWithReplacements()) {
 					local.Modifier -= fxp.Two
 				}
 				result = append(result, &local)
