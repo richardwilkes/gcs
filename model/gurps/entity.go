@@ -1081,9 +1081,7 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 		if !excludes[sk.String()] {
 			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
 				if nameCriteria.Matches(replacements, sk.NameWithReplacements()) &&
-					(specializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) ||
-						(sk.SpecializationWithReplacements() == "" &&
-							specializationCriteria.Matches(replacements, sk.OptionalSpecializationWithReplacements()))) {
+					(specializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) || specializationCriteria.Matches(replacements, sk.OptionalSpecializationWithReplacements())) {
 					list = append(list, sk)
 				}
 			}
