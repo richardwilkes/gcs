@@ -176,10 +176,14 @@ func (p *traitModifiersProvider) Deserialize(data []byte) error {
 }
 
 func (p *traitModifiersProvider) ContextMenuItems() []ContextMenuItem {
-	var list []ContextMenuItem
-	list = append(list,
-		ContextMenuItem{i18n.Text("New Trait Modifier"), NewTraitModifierItemID},
-		ContextMenuItem{i18n.Text("New Trait Modifier Container"), NewTraitContainerModifierItemID},
-	)
-	return AppendDefaultContextMenuItems(list)
+	return AppendDefaultContextMenuItems([]ContextMenuItem{
+		{
+			Title: i18n.Text("New Trait Modifier"),
+			ID:    NewTraitModifierItemID,
+		},
+		{
+			Title: i18n.Text("New Trait Modifier Container"),
+			ID:    NewTraitContainerModifierItemID,
+		},
+	})
 }

@@ -710,7 +710,7 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
-func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization string, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
+func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if e != nil {
 		points += e.SkillPointBonusFor(name, specialization, optionalSpecialization, tags, tooltip)
 		points = points.Max(0)
@@ -782,7 +782,7 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
-func CalculateSkillLevel(e *Entity, name, specialization string, optionalSpecialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
+func CalculateSkillLevel(e *Entity, name, specialization, optionalSpecialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
 	var tooltip xbytes.InsertBuffer
 	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
 	level := e.ResolveAttributeCurrent(attrDiff.Attribute)
@@ -1020,18 +1020,20 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 	if e != nil && s.OptionalSpecializationWithReplacements() == "" {
 		excludes := map[string]bool{s.String(): true}
 		for _, one := range e.SkillNamed(s.NameWithReplacements(), s.SpecializationWithReplacements(), true, excludes) {
-			if one.OptionalSpecializationWithReplacements() != "" {
-				def := &SkillDefault{DefaultType: SkillID, Modifier: -fxp.Two}
-				def.Name.Compare = criteria.IsText
-				def.Name.Qualifier = one.NameWithReplacements()
-				def.Specialization.Compare = criteria.IsText
-				if spec := one.SpecializationWithReplacements(); spec != "" {
-					def.Specialization.Qualifier = spec
-				} else {
-					def.Specialization.Qualifier = one.OptionalSpecializationWithReplacements()
-				}
-				result = append(result, def)
+			optSpec := one.OptionalSpecializationWithReplacements()
+			if optSpec == "" {
+				continue
 			}
+			def := &SkillDefault{DefaultType: SkillID, Modifier: -fxp.Two}
+			def.Name.Compare = criteria.IsText
+			def.Name.Qualifier = one.NameWithReplacements()
+			def.Specialization.Compare = criteria.IsText
+			if spec := one.SpecializationWithReplacements(); spec != "" {
+				def.Specialization.Qualifier = spec
+			} else {
+				def.Specialization.Qualifier = optSpec
+			}
+			result = append(result, def)
 		}
 	}
 

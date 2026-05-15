@@ -22,6 +22,8 @@ import (
 	"github.com/richardwilkes/unison/enums/imgfmt"
 )
 
+const publicDataType = "public.data"
+
 // RegisterKnownFileTypes registers the known files types.
 func RegisterKnownFileTypes() {
 	registerNavigatorFileTypes()
@@ -88,7 +90,7 @@ func registerPDFFileInfo() {
 	fi := gurps.FileInfo{
 		Name:       "PDF Document",
 		UTI:        "com.adobe.pdf",
-		ConformsTo: []string{"public.data"},
+		ConformsTo: []string{publicDataType},
 		Extensions: []string{".pdf"},
 		GroupWith:  []string{".pdf"},
 		MimeTypes:  []string{"application/pdf", "application/x-pdf"},
@@ -151,7 +153,7 @@ func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG,
 	fi := gurps.FileInfo{
 		Name:             name,
 		UTI:              xos.AppIdentifier + ext,
-		ConformsTo:       []string{"public.data"},
+		ConformsTo:       []string{publicDataType},
 		Extensions:       []string{ext},
 		GroupWith:        groupWith,
 		MimeTypes:        []string{"application/x-gcs-" + ext[1:]},
@@ -167,7 +169,7 @@ func registerExportableGCSFileInfo(name, ext string, icon *unison.SVG, loader fu
 	fi := gurps.FileInfo{
 		Name:             name,
 		UTI:              xos.AppIdentifier + ext,
-		ConformsTo:       []string{"public.data"},
+		ConformsTo:       []string{publicDataType},
 		Extensions:       []string{ext},
 		GroupWith:        []string{ext},
 		MimeTypes:        []string{"application/x-gcs-" + ext[1:]},

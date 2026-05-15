@@ -397,8 +397,15 @@ func (c *Calculator) addThrowingSection() {
 func (c *Calculator) addHikingSection() {
 	c.content.AddChild(c.createHeader(i18n.Text("Hiking"),
 		[]linkSpec{
-			{pageRef: "BX351", highlight: "Hiking"},
-			{pageRef: "HT55", highlight: "Hiking"}},
+			{
+				pageRef:   "BX351",
+				highlight: "Hiking",
+			},
+			{
+				pageRef:   "HT55",
+				highlight: "Hiking",
+			},
+		},
 		unison.StdVSpacing*3))
 
 	wrapper := unison.NewPanel()

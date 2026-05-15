@@ -237,11 +237,18 @@ func (p *spellsProvider) Deserialize(data []byte) error {
 }
 
 func (p *spellsProvider) ContextMenuItems() []ContextMenuItem {
-	var list []ContextMenuItem
-	list = append(list,
-		ContextMenuItem{i18n.Text("New Spell"), NewSpellItemID},
-		ContextMenuItem{i18n.Text("New Spell Container"), NewSpellContainerItemID},
-		ContextMenuItem{i18n.Text("New Ritual Magic Spell"), NewRitualMagicSpellItemID},
-	)
-	return AppendDefaultContextMenuItems(list)
+	return AppendDefaultContextMenuItems([]ContextMenuItem{
+		{
+			Title: i18n.Text("New Spell"),
+			ID:    NewSpellItemID,
+		},
+		{
+			Title: i18n.Text("New Spell Container"),
+			ID:    NewSpellContainerItemID,
+		},
+		{
+			Title: i18n.Text("New Ritual Magic Spell"),
+			ID:    NewRitualMagicSpellItemID,
+		},
+	})
 }

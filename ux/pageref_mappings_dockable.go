@@ -146,9 +146,9 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 	return false
 }
 
-var VariablesRegexp = regexp.MustCompile(`\$(\w+)`)
+var variablesRegexp = regexp.MustCompile(`\$(\w+)`)
 
-func openExternalPDF(filePath string, highlight string, pageNum int) {
+func openExternalPDF(filePath, highlight string, pageNum int) {
 	errTitle := i18n.Text("Unable to use external PDF command line")
 	input := strings.TrimSpace(gurps.GlobalSettings().General.ExternalPDFCmdLine)
 	parts, err := xflag.SplitCommandLineWithoutEscapes(input)
@@ -161,7 +161,7 @@ func openExternalPDF(filePath string, highlight string, pageNum int) {
 		return
 	}
 	for i, part := range parts {
-		parts[i] = VariablesRegexp.ReplaceAllStringFunc(part, func(s string) string {
+		parts[i] = variablesRegexp.ReplaceAllStringFunc(part, func(s string) string {
 			switch s {
 			case "$FILE":
 				return filePath

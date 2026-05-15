@@ -7,6 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
+//nolint:goconst // I'd rather have the strings inline than extracted out into a constant for the generation code.
 package main
 
 //go:generate go run main.go
@@ -17,6 +18,7 @@ import (
 	"fmt"
 	"go/format"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -75,15 +77,15 @@ func main() {
 func removeExistingGenFiles(rootDir string) {
 	root, err := filepath.Abs(rootDir)
 	xos.ExitIfErr(err)
-	xos.ExitIfErr(filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
-		name := info.Name()
+	xos.ExitIfErr(fs.WalkDir(os.DirFS(root), ".", func(path string, d fs.DirEntry, _ error) error {
+		name := d.Name()
 		switch {
-		case info.IsDir():
+		case d.IsDir():
 			if name == ".git" {
 				return filepath.SkipDir
 			}
 		case strings.HasSuffix(name, genSuffix):
-			xos.ExitIfErr(os.Remove(path))
+			xos.ExitIfErr(os.Remove(filepath.Join(root, path)))
 		}
 		return nil
 	}))

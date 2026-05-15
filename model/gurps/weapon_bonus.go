@@ -269,11 +269,11 @@ func (w *WeaponBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 			}
 			switch {
 			case w.PerDie && w.PerLevel:
-				buf.WriteString(fmt.Sprintf(i18n.Text("%s (%s per die, per level)"), adjustedAmt, amt))
+				fmt.Fprintf(&buf, i18n.Text("%s (%s per die, per level)"), adjustedAmt, amt)
 			case w.PerDie:
-				buf.WriteString(fmt.Sprintf(i18n.Text("%s (%s per die)"), adjustedAmt, amt))
+				fmt.Fprintf(&buf, i18n.Text("%s (%s per die)"), adjustedAmt, amt)
 			case w.PerLevel:
-				buf.WriteString(fmt.Sprintf(i18n.Text("%s (%s per level)"), adjustedAmt, amt))
+				fmt.Fprintf(&buf, i18n.Text("%s (%s per level)"), adjustedAmt, amt)
 			default:
 				buf.WriteString(amt)
 			}

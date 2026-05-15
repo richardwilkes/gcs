@@ -96,10 +96,7 @@ func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := migrateStringToCriteriaText(localData.Name, &s.Name); err != nil {
 		return err
 	}
-	if err := migrateStringToCriteriaText(localData.Specialization, &s.Specialization); err != nil {
-		return err
-	}
-	return nil
+	return migrateStringToCriteriaText(localData.Specialization, &s.Specialization)
 }
 
 // Equivalent returns true if this can be considered equivalent to other.

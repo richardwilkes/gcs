@@ -218,11 +218,13 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			})
 		}
 		m["weapons"] = func() goja.Value {
-			var weapons []*goja.Object
-			for _, w := range entity.Weapons(true, false, true) {
+			melee := entity.Weapons(true, false, true)
+			ranged := entity.Weapons(false, false, true)
+			weapons := make([]*goja.Object, 0, len(melee)+len(ranged))
+			for _, w := range melee {
 				weapons = append(weapons, newScriptWeapon(r, w))
 			}
-			for _, w := range entity.Weapons(false, false, true) {
+			for _, w := range ranged {
 				weapons = append(weapons, newScriptWeapon(r, w))
 			}
 			return r.ToValue(weapons)

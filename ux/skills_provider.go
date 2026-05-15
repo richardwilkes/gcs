@@ -220,11 +220,18 @@ func (p *skillsProvider) Deserialize(data []byte) error {
 }
 
 func (p *skillsProvider) ContextMenuItems() []ContextMenuItem {
-	var list []ContextMenuItem
-	list = append(list,
-		ContextMenuItem{i18n.Text("New Skill"), NewSkillItemID},
-		ContextMenuItem{i18n.Text("New Skill Container"), NewSkillContainerItemID},
-		ContextMenuItem{i18n.Text("New Technique"), NewTechniqueItemID},
-	)
-	return AppendDefaultContextMenuItems(list)
+	return AppendDefaultContextMenuItems([]ContextMenuItem{
+		{
+			Title: i18n.Text("New Skill"),
+			ID:    NewSkillItemID,
+		},
+		{
+			Title: i18n.Text("New Skill Container"),
+			ID:    NewSkillContainerItemID,
+		},
+		{
+			Title: i18n.Text("New Technique"),
+			ID:    NewTechniqueItemID,
+		},
+	})
 }

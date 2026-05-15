@@ -179,10 +179,14 @@ func (p *eqpModProvider) Deserialize(data []byte) error {
 }
 
 func (p *eqpModProvider) ContextMenuItems() []ContextMenuItem {
-	var list []ContextMenuItem
-	list = append(list,
-		ContextMenuItem{i18n.Text("New Equipment Modifier"), NewEquipmentModifierItemID},
-		ContextMenuItem{i18n.Text("New Equipment Modifier Container"), NewEquipmentContainerModifierItemID},
-	)
-	return AppendDefaultContextMenuItems(list)
+	return AppendDefaultContextMenuItems([]ContextMenuItem{
+		{
+			Title: i18n.Text("New Equipment Modifier"),
+			ID:    NewEquipmentModifierItemID,
+		},
+		{
+			Title: i18n.Text("New Equipment Modifier Container"),
+			ID:    NewEquipmentContainerModifierItemID,
+		},
+	})
 }
