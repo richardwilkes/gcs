@@ -68,7 +68,18 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			if !lastWasSkillBased {
 				skillDefNameField.RemoveFromParent()
 			}
-			addDecimalField(wrapper, nil, "", i18n.Text("Technique Default Adjustment"),
+			var specPanel *unison.Panel
+			addSpecPanel := func() {
+				prefix := i18n.Text("whose specialization")
+				addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Specialization Qualifier"),
+					&e.editorData.TechniqueDefault.Specialization, 1, false)
+				children := wrapper.Children()
+				specPanel = children[len(children)-1]
+			}
+			if lastWasSkillBased {
+				addSpecPanel()
+			}
+			modifierField := addDecimalField(wrapper, nil, "", i18n.Text("Technique Default Adjustment"),
 				i18n.Text("Default Adjustment"), &e.editorData.TechniqueDefault.Modifier, -fxp.NinetyNine,
 				fxp.NinetyNine)
 			attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*gurps.AttributeChoice]) {
@@ -77,10 +88,16 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					if skillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType); skillBased != lastWasSkillBased {
 						lastWasSkillBased = skillBased
 						if skillBased {
-							wrapper.AddChildAtIndex(skillDefNameField, len(wrapper.Children())-1)
-							addSpecializationCriteriaPanel(wrapper, &e.editorData.TechniqueDefault.Specialization, 1, false)
+							modifierField.RemoveFromParent()
+							wrapper.AddChild(skillDefNameField)
+							addSpecPanel()
+							wrapper.AddChild(modifierField)
 						} else {
 							skillDefNameField.RemoveFromParent()
+							if specPanel != nil {
+								specPanel.RemoveFromParent()
+								specPanel = nil
+							}
 						}
 					}
 					MarkModified(content)
