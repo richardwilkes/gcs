@@ -185,18 +185,25 @@ func skillKind(container bool) byte {
 }
 
 // NewTechnique creates a new technique (i.e. a specialized use of a Skill). All parameters may be nil or empty.
-func NewTechnique(owner DataOwner, parent *Skill, skillName criteria.Text) *Skill {
+func NewTechnique(owner DataOwner, parent *Skill, skillName string) *Skill {
 	var s Skill
 	s.TID = tid.MustNewTID(kinds.Technique)
 	s.parent = parent
 	s.owner = owner
 	s.Difficulty.Difficulty = difficulty.Average
 	s.Points = fxp.One
-	if skillName.Qualifier == "" {
-		skillName.Qualifier = i18n.Text("Skill")
+	if skillName == "" {
+		skillName = i18n.Text("Skill")
 	}
-	s.TechniqueDefault = &SkillDefault{DefaultType: SkillID}
-	s.TechniqueDefault.Name = skillName
+	s.TechniqueDefault = &SkillDefault{
+		DefaultType: SkillID,
+		Name: criteria.Text{
+			TextData: criteria.TextData{
+				Qualifier: skillName,
+				Compare:   criteria.IsText,
+			},
+		},
+	}
 	s.Name = s.Kind()
 	return &s
 }
@@ -255,7 +262,7 @@ func (s *Skill) IsTechnique() bool {
 func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
 	if s.IsTechnique() {
-		other = NewTechnique(owner, parent, s.TechniqueDefault.Name)
+		other = NewTechnique(owner, parent, s.TechniqueDefault.Name.Qualifier)
 	} else {
 		other = NewSkill(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
@@ -341,6 +348,9 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	s.SkillData = localData.SkillData
+	if s.TechniqueDefault != nil {
+		s.TechniqueDefault.Name.Compare = criteria.IsText
+	}
 	if s.LocalNotes == "" && localData.ExprNotes != "" {
 		s.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}
