@@ -943,7 +943,7 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 	best := fxp.Min
 	for _, def := range s.resolveToSpecificDefaults() {
 		// For skill-based defaults, prune out any that already use a default that we are involved with
-		if def.Equivalent(s.Replacements, excluded) || s.inDefaultChain(def, make(map[*Skill]bool), excludes) {
+		if def.Equivalent(s.Replacements, excluded) || s.inDefaultChain(def, make(map[*Skill]bool)) {
 			continue
 		}
 		if level := s.calcSkillDefaultLevel(def, excludes); best < level {
@@ -970,18 +970,18 @@ func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]boo
 	return level
 }
 
-func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool, excludes map[string]bool) bool {
+func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool {
 	e := EntityFromNode(s)
 	if e == nil || def == nil || !def.SkillBased() {
 		return false
 	}
-	for _, one := range e.SkillMatching(def.Name, def.Specialization, s.Replacements, true, excludes) {
+	for _, one := range e.SkillMatching(def.Name, def.Specialization, s.Replacements, true, nil) {
 		if one == s {
 			return true
 		}
 		if !lookedAt[one] {
 			lookedAt[one] = true
-			if s.inDefaultChain(one.DefaultedFrom, lookedAt, excludes) {
+			if s.inDefaultChain(one.DefaultedFrom, lookedAt) {
 				return true
 			}
 		}
