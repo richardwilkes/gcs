@@ -32,11 +32,12 @@ type SkillBonus struct {
 
 // SkillBonusData holds an adjustment to a skill which is persisted.
 type SkillBonusData struct {
-	Type                   feature.Type  `json:"type"`
-	SelectionType          skillsel.Type `json:"selection_type"`
-	NameCriteria           criteria.Text `json:"name,omitzero"`
-	SpecializationCriteria criteria.Text `json:"specialization,omitzero"`
-	TagsCriteria           criteria.Text `json:"tags,omitzero"`
+	Type                           feature.Type  `json:"type"`
+	SelectionType                  skillsel.Type `json:"selection_type"`
+	NameCriteria                   criteria.Text `json:"name,omitzero"`
+	SpecializationCriteria         criteria.Text `json:"specialization,omitzero"`
+	OptionalSpecializationCriteria criteria.Text `json:"optional_specialization,omitzero"`
+	TagsCriteria                   criteria.Text `json:"tags,omitzero"`
 	LeveledAmount
 	BonusOwner `json:"-"`
 }
@@ -48,6 +49,7 @@ func NewSkillBonus() *SkillBonus {
 	s.SelectionType = skillsel.Name
 	s.NameCriteria.Compare = criteria.IsText
 	s.SpecializationCriteria.Compare = criteria.AnyText
+	s.OptionalSpecializationCriteria.Compare = criteria.AnyText
 	s.TagsCriteria.Compare = criteria.AnyText
 	s.Amount = fxp.One
 	return &s
@@ -67,6 +69,7 @@ func (s *SkillBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (s *SkillBonus) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(s.SpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(s.OptionalSpecializationCriteria.Qualifier, m, existing)
 	if s.SelectionType != skillsel.ThisWeapon {
 		nameable.Extract(s.NameCriteria.Qualifier, m, existing)
 		nameable.Extract(s.TagsCriteria.Qualifier, m, existing)
@@ -93,6 +96,7 @@ func (s *SkillBonus) Hash(h hash.Hash) {
 	xhash.Num8(h, s.SelectionType)
 	s.NameCriteria.Hash(h)
 	s.SpecializationCriteria.Hash(h)
+	s.OptionalSpecializationCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)
 }

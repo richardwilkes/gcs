@@ -36,22 +36,23 @@ type WeaponBonus struct {
 
 // WeaponBonusData holds the data for an adjustment to weapon stats which are persisted.
 type WeaponBonusData struct { //nolint:govet // The field alignment here is poor, but kept to reduce diffs in the data
-	Type                   feature.Type    `json:"type"`
-	Percent                bool            `json:"percent,omitzero"`
-	SelectionType          wsel.Type       `json:"selection_type"`
-	SwitchType             wswitch.Type    `json:"switch_type,omitzero"`
-	SwitchTypeValue        bool            `json:"switch_type_value,omitzero"`
-	NameCriteria           criteria.Text   `json:"name,omitzero"`
-	SpecializationCriteria criteria.Text   `json:"specialization,omitzero"`
-	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
-	UsageCriteria          criteria.Text   `json:"usage,omitzero"`
-	TagsCriteria           criteria.Text   `json:"tags,omitzero"`
-	LeveledOwner           LeveledOwner    `json:"-"`
-	DieCount               fxp.Int         `json:"-"`
-	Amount                 fxp.Int         `json:"amount"`
-	PerLevel               bool            `json:"leveled,omitzero"`
-	PerDie                 bool            `json:"per_die,omitzero"`
-	BonusOwner             `json:"-"`
+	Type                           feature.Type    `json:"type"`
+	Percent                        bool            `json:"percent,omitzero"`
+	SelectionType                  wsel.Type       `json:"selection_type"`
+	SwitchType                     wswitch.Type    `json:"switch_type,omitzero"`
+	SwitchTypeValue                bool            `json:"switch_type_value,omitzero"`
+	NameCriteria                   criteria.Text   `json:"name,omitzero"`
+	SpecializationCriteria         criteria.Text   `json:"specialization,omitzero"`
+	OptionalSpecializationCriteria criteria.Text   `json:"optional_specialization,omitzero"`
+	RelativeLevelCriteria          criteria.Number `json:"level,omitzero"`
+	UsageCriteria                  criteria.Text   `json:"usage,omitzero"`
+	TagsCriteria                   criteria.Text   `json:"tags,omitzero"`
+	LeveledOwner                   LeveledOwner    `json:"-"`
+	DieCount                       fxp.Int         `json:"-"`
+	Amount                         fxp.Int         `json:"amount"`
+	PerLevel                       bool            `json:"leveled,omitzero"`
+	PerDie                         bool            `json:"per_die,omitzero"`
+	BonusOwner                     `json:"-"`
 }
 
 // NewWeaponDamageBonus creates a new weapon damage bonus.
@@ -180,6 +181,7 @@ func newWeaponBonus(t feature.Type) *WeaponBonus {
 	w.SelectionType = wsel.WithRequiredSkill
 	w.NameCriteria.Compare = criteria.IsText
 	w.SpecializationCriteria.Compare = criteria.AnyText
+	w.OptionalSpecializationCriteria.Compare = criteria.AnyText
 	w.RelativeLevelCriteria.Compare = criteria.AtLeastNumber
 	w.UsageCriteria.Compare = criteria.AnyText
 	w.TagsCriteria.Compare = criteria.AnyText
@@ -236,6 +238,7 @@ func (w *WeaponBonus) AdjustedAmount() fxp.Int {
 // FillWithNameableKeys implements Feature.
 func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(w.SpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(w.OptionalSpecializationCriteria.Qualifier, m, existing)
 	if w.SelectionType != wsel.ThisWeapon {
 		nameable.Extract(w.NameCriteria.Qualifier, m, existing)
 		nameable.Extract(w.UsageCriteria.Qualifier, m, existing)
@@ -339,6 +342,7 @@ func (w *WeaponBonus) Hash(h hash.Hash) {
 	xhash.Bool(h, w.SwitchTypeValue)
 	w.NameCriteria.Hash(h)
 	w.SpecializationCriteria.Hash(h)
+	w.OptionalSpecializationCriteria.Hash(h)
 	w.RelativeLevelCriteria.Hash(h)
 	w.UsageCriteria.Hash(h)
 	w.TagsCriteria.Hash(h)

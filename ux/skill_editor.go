@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
@@ -35,6 +36,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addNameLabelAndField(content, &e.editorData.Name)
 	if !e.target.Container() && !e.target.IsTechnique() {
 		addSpecializationLabelAndField(content, &e.editorData.Specialization)
+		addOptionalSpecializationLabelAndField(content, &e.editorData.OptionalSpecialization)
 		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)
 	}
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
@@ -54,26 +56,30 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				gurps.TenFlag|gurps.SkillFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.DodgeFlag,
 				e.editorData.TechniqueDefault.DefaultType)
 			attrChoicePopup := addPopup(wrapper, choices, &attrChoice)
+			e.editorData.TechniqueDefault.Name.Compare = criteria.IsText
 			skillDefNameField := addStringField(wrapper, i18n.Text("Technique Default Skill Name"),
-				i18n.Text("Skill Name"), &e.editorData.TechniqueDefault.Name)
+				i18n.Text("Skill Name"), &e.editorData.TechniqueDefault.Name.Qualifier)
 			skillDefNameField.Watermark = i18n.Text("Skill")
 			skillDefNameField.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: align.Fill,
-				HGrab:  true,
-			})
-			skillDefSpecialtyField := addStringField(wrapper, i18n.Text("Technique Default Skill Specialization"),
-				i18n.Text("Skill Specialization"), &e.editorData.TechniqueDefault.Specialization)
-			skillDefSpecialtyField.Watermark = i18n.Text("Specialization")
-			skillDefSpecialtyField.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: align.Fill,
 				HGrab:  true,
 			})
 			lastWasSkillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType)
 			if !lastWasSkillBased {
 				skillDefNameField.RemoveFromParent()
-				skillDefSpecialtyField.RemoveFromParent()
 			}
-			addDecimalField(wrapper, nil, "", i18n.Text("Technique Default Adjustment"),
+			var specPanel *unison.Panel
+			addSpecPanel := func() {
+				prefix := i18n.Text("whose specialization")
+				addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Specialization Qualifier"),
+					&e.editorData.TechniqueDefault.Specialization, 1, false)
+				children := wrapper.Children()
+				specPanel = children[len(children)-1]
+			}
+			if lastWasSkillBased {
+				addSpecPanel()
+			}
+			modifierField := addDecimalField(wrapper, nil, "", i18n.Text("Technique Default Adjustment"),
 				i18n.Text("Default Adjustment"), &e.editorData.TechniqueDefault.Modifier, -fxp.NinetyNine,
 				fxp.NinetyNine)
 			attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*gurps.AttributeChoice]) {
@@ -82,11 +88,16 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					if skillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType); skillBased != lastWasSkillBased {
 						lastWasSkillBased = skillBased
 						if skillBased {
-							wrapper.AddChildAtIndex(skillDefNameField, len(wrapper.Children())-1)
-							wrapper.AddChildAtIndex(skillDefSpecialtyField, len(wrapper.Children())-1)
+							modifierField.RemoveFromParent()
+							wrapper.AddChild(skillDefNameField)
+							addSpecPanel()
+							wrapper.AddChild(modifierField)
 						} else {
 							skillDefNameField.RemoveFromParent()
-							skillDefSpecialtyField.RemoveFromParent()
+							if specPanel != nil {
+								specPanel.RemoveFromParent()
+								specPanel = nil
+							}
 						}
 					}
 					MarkModified(content)
@@ -139,7 +150,22 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				}
 			}
 		} else {
-			addDifficultyLabelAndFields(content, entity, &e.editorData.Difficulty)
+			diffWrapper := addFlowWrapper(content, i18n.Text("Difficulty"), 5)
+			addAttributeChoicePopup(diffWrapper, entity, "", &e.editorData.Difficulty.Attribute, gurps.TenFlag)
+			diffWrapper.AddChild(NewFieldTrailingLabel("/", false))
+			addPopup(diffWrapper, difficulty.Levels, &e.editorData.Difficulty.Difficulty)
+			diffWrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Adjusted Difficulty"), false))
+			adjustedDiffField := NewNonEditableField(func(field *NonEditableField) {
+				localOptSpec := nameable.Apply(e.editorData.OptionalSpecialization, e.target.Replacements)
+				diff := e.editorData.Difficulty
+				if localOptSpec != "" && diff.Difficulty != difficulty.Wildcard && diff.Difficulty > difficulty.Easy {
+					diff.Difficulty--
+				}
+				field.SetTitle(diff.Description(entity))
+				field.MarkForLayoutAndRedraw()
+			})
+			diffWrapper.AddChild(adjustedDiffField)
+
 			encLabel := i18n.Text("Encumbrance Penalty")
 			wrapper := addFlowWrapper(content, encLabel, 2)
 			addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine)
@@ -154,16 +180,21 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			levelField := NewNonEditableField(func(field *NonEditableField) {
 				localName := nameable.Apply(e.editorData.Name, e.target.Replacements)
 				localSpec := nameable.Apply(e.editorData.Specialization, e.target.Replacements)
+				localOptionalSpec := nameable.Apply(e.editorData.OptionalSpecialization, e.target.Replacements)
 				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, e.editorData.Points, localName,
-					localSpec, e.editorData.Tags, nil)
+					localSpec, localOptionalSpec, e.editorData.Tags, nil)
 				var level gurps.Level
 				if e.target.IsTechnique() {
 					level = gurps.CalculateTechniqueLevel(entity, e.target.NameableReplacements(), localName, localSpec,
 						e.editorData.Tags, e.editorData.TechniqueDefault, e.editorData.Difficulty.Difficulty, points,
 						true, e.editorData.TechniqueLimitModifier, nil)
 				} else {
-					level = gurps.CalculateSkillLevel(entity, localName, localSpec, e.editorData.Tags,
-						e.editorData.DefaultedFrom, e.editorData.Difficulty, points,
+					adjDiff := e.editorData.Difficulty
+					if localOptionalSpec != "" && adjDiff.Difficulty != difficulty.Wildcard && adjDiff.Difficulty > difficulty.Easy {
+						adjDiff.Difficulty--
+					}
+					level = gurps.CalculateSkillLevel(entity, localName, localSpec, localOptionalSpec, e.editorData.Tags,
+						e.editorData.DefaultedFrom, adjDiff, points,
 						e.editorData.EncumbrancePenaltyMultiplier)
 				}
 				lvl := level.Level.Floor()

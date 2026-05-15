@@ -89,10 +89,10 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			if entity == nil {
 				return r.ToValue(0)
 			}
-			if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization) {
-				entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
+			if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization, skill.OptionalSpecialization) {
+				entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization, skill.OptionalSpecialization)
 				skill.UpdateLevel()
-				entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
+				entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization, skill.OptionalSpecialization)
 			}
 			return r.ToValue(fxp.AsInteger[int](skill.LevelData.Level))
 		}
@@ -101,10 +101,10 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			if entity == nil {
 				return r.ToValue(0)
 			}
-			if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization) {
-				entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
+			if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization, skill.OptionalSpecialization) {
+				entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization, skill.OptionalSpecialization)
 				skill.UpdateLevel()
-				entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization)
+				entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization, skill.OptionalSpecialization)
 			}
 			return r.ToValue(fxp.AsInteger[int](skill.LevelData.RelativeLevel))
 		}

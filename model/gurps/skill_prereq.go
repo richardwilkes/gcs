@@ -24,12 +24,13 @@ var _ Prereq = &SkillPrereq{}
 
 // SkillPrereq holds a prerequisite for a skill.
 type SkillPrereq struct {
-	Parent                 *PrereqList     `json:"-"`
-	Type                   prereq.Type     `json:"type"`
-	Has                    bool            `json:"has"`
-	NameCriteria           criteria.Text   `json:"name,omitzero"`
-	LevelCriteria          criteria.Number `json:"level,omitzero"`
-	SpecializationCriteria criteria.Text   `json:"specialization,omitzero"`
+	Parent                         *PrereqList     `json:"-"`
+	Type                           prereq.Type     `json:"type"`
+	Has                            bool            `json:"has"`
+	NameCriteria                   criteria.Text   `json:"name,omitzero"`
+	LevelCriteria                  criteria.Number `json:"level,omitzero"`
+	SpecializationCriteria         criteria.Text   `json:"specialization,omitzero"`
+	OptionalSpecializationCriteria criteria.Text   `json:"optional_specialization,omitzero"`
 }
 
 // NewSkillPrereq creates a new SkillPrereq.
@@ -39,6 +40,7 @@ func NewSkillPrereq() *SkillPrereq {
 	p.NameCriteria.Compare = criteria.IsText
 	p.LevelCriteria.Compare = criteria.AtLeastNumber
 	p.SpecializationCriteria.Compare = criteria.AnyText
+	p.OptionalSpecializationCriteria.Compare = criteria.AnyText
 	p.Has = true
 	return &p
 }
@@ -64,6 +66,7 @@ func (p *SkillPrereq) Clone(parent *PrereqList) Prereq {
 func (p *SkillPrereq) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(p.NameCriteria.Qualifier, m, existing)
 	nameable.Extract(p.SpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(p.OptionalSpecializationCriteria.Qualifier, m, existing)
 }
 
 // Satisfied implements Prereq.
@@ -79,7 +82,8 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	Traverse(func(sk *Skill) bool {
 		if exclude == sk || !p.NameCriteria.Matches(replacements, sk.NameWithReplacements()) ||
-			!p.SpecializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) {
+			!p.SpecializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) ||
+			!p.OptionalSpecializationCriteria.Matches(replacements, sk.OptionalSpecializationWithReplacements()) {
 			return false
 		}
 		satisfied = p.LevelCriteria.Matches(sk.LevelData.Level)
@@ -101,11 +105,16 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 			tooltip.WriteString(p.SpecializationCriteria.String(replacements))
 			tooltip.WriteByte(',')
 		}
+		if p.OptionalSpecializationCriteria.Compare != criteria.AnyText {
+			tooltip.WriteString(i18n.Text(", optional specialization "))
+			tooltip.WriteString(p.OptionalSpecializationCriteria.String(replacements))
+			tooltip.WriteByte(',')
+		}
 		if techLevel == nil {
 			tooltip.WriteString(i18n.Text(" and level "))
 			tooltip.WriteString(p.LevelCriteria.String())
 		} else {
-			if p.SpecializationCriteria.Compare != criteria.AnyText {
+			if p.SpecializationCriteria.Compare != criteria.AnyText || p.OptionalSpecializationCriteria.Compare != criteria.AnyText {
 				tooltip.WriteByte(',')
 			}
 			tooltip.WriteString(i18n.Text(" level "))
@@ -127,4 +136,5 @@ func (p *SkillPrereq) Hash(h hash.Hash) {
 	p.NameCriteria.Hash(h)
 	p.LevelCriteria.Hash(h)
 	p.SpecializationCriteria.Hash(h)
+	p.OptionalSpecializationCriteria.Hash(h)
 }
