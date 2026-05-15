@@ -548,7 +548,8 @@ func (s *Skill) HasDefaultTo(other *Skill) bool {
 	for _, def := range s.resolveToSpecificDefaults() {
 		if def.SkillBased() && def.NameWithReplacements(s.Replacements) == other.NameWithReplacements() {
 			specialization := def.SpecializationWithReplacements(s.Replacements)
-			if specialization == "" || specialization == other.SpecializationWithReplacements() {
+			if specialization == "" || specialization == other.SpecializationWithReplacements() ||
+				specialization == other.OptionalSpecializationWithReplacements() {
 				return true
 			}
 		}
@@ -1002,7 +1003,11 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 				local.Name.Compare = criteria.IsText
 				local.Name.Qualifier = one.NameWithReplacements()
 				local.Specialization.Compare = criteria.IsText
-				local.Specialization.Qualifier = one.SpecializationWithReplacements()
+				if spec := one.SpecializationWithReplacements(); spec != "" {
+					local.Specialization.Qualifier = spec
+				} else {
+					local.Specialization.Qualifier = one.OptionalSpecializationWithReplacements()
+				}
 				if one.OptionalSpecializationWithReplacements() != "" {
 					local.Modifier -= fxp.Two
 				}
@@ -1019,7 +1024,11 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 				def.Name.Compare = criteria.IsText
 				def.Name.Qualifier = one.NameWithReplacements()
 				def.Specialization.Compare = criteria.IsText
-				def.Specialization.Qualifier = one.SpecializationWithReplacements()
+				if spec := one.SpecializationWithReplacements(); spec != "" {
+					def.Specialization.Qualifier = spec
+				} else {
+					def.Specialization.Qualifier = one.OptionalSpecializationWithReplacements()
+				}
 				result = append(result, def)
 			}
 		}
