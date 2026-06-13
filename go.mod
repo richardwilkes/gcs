@@ -7,7 +7,7 @@ require (
 	github.com/go-git/go-billy/v6 v6.0.0-alpha.1
 	github.com/go-git/go-git/v6 v6.0.0-alpha.4
 	github.com/google/uuid v1.6.0
-	github.com/richardwilkes/pdf v1.26.11
+	github.com/richardwilkes/pdf v1.26.12
 	github.com/richardwilkes/rpgtools v1.12.0
 	github.com/richardwilkes/toolbox/v2 v2.13.1
 	github.com/richardwilkes/unison v0.90.6-0.20260613211454-c6563afe9c6e
