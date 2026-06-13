@@ -25,7 +25,7 @@ GOEXPERIMENT=jsonv2 go vet ./...
 All builds go through `./build.sh` (run `./build.sh -h` for the full list):
 
 | Command | Purpose |
-|---|---|
+| --- | --- |
 | `./build.sh` | Default: generate source, then build the Go binary |
 | `./build.sh -G` | Regenerate generated source (enums) |
 | `./build.sh -t` | Run all tests |
