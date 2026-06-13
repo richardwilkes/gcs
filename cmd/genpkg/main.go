@@ -15,10 +15,8 @@ import (
 	"image"
 	"image/png"
 	"io/fs"
-	"maps"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/early"
@@ -128,14 +126,9 @@ func main() {
 }
 
 func extractConformsTo(u *uti.DataType) []string {
-	m := make(map[string]struct{})
-	_extractConformsTo(u, m)
-	return slices.Sorted(maps.Keys(m))
-}
-
-func _extractConformsTo(u *uti.DataType, m map[string]struct{}) {
-	m[u.UTI] = struct{}{}
-	for _, child := range u.Parents {
-		_extractConformsTo(child, m)
+	list := make([]string, len(u.Parents))
+	for i, p := range u.Parents {
+		list[i] = p.UTI
 	}
+	return list
 }

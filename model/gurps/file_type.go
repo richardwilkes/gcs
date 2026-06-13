@@ -38,7 +38,6 @@ const (
 	TemplatesExt          = ".gct"
 	TraitModifiersExt     = ".adm"
 	TraitsExt             = ".adq"
-	MarkdownExt           = ".md"
 )
 
 // Secondary GCS file extensions (no visible display for these, since you don't open them into a view).

@@ -30,19 +30,45 @@ file_info:
       - markdown
     mime_types:
       - text/markdown
-  - name: BMP Image
-    icon: pkgicons/bmp_doc.png
+  - name: PNG Image
+    icon: pkgicons/png_doc.png
     role: Viewer
     rank: Alternate
-    uti: com.microsoft.bmp
+    uti: public.png
     conforms_to:
       - public.image
     extensions:
-      - bmp
-      - dib
+      - png
     mime_types:
-      - image/bmp
-      - image/x-bmp
+      - image/png
+  - name: WEBP Image
+    icon: pkgicons/webp_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: org.webmproject.webp
+    conforms_to:
+      - public.image
+    extensions:
+      - webp
+    mime_types:
+      - image/webp
+  - name: JPEG Image
+    icon: pkgicons/jpeg_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: public.jpeg
+    conforms_to:
+      - public.image
+    extensions:
+      - jpeg
+      - jpg
+      - jpe
+      - jif
+      - jfif
+      - jfi
+    mime_types:
+      - image/jpeg
+      - image/jpg
   - name: GIF Image
     icon: pkgicons/gif_doc.png
     role: Viewer
@@ -66,33 +92,6 @@ file_info:
     mime_types:
       - image/x-icon
       - image/vnd.microsoft.icon
-  - name: JPG Image
-    icon: pkgicons/jpg_doc.png
-    role: Viewer
-    rank: Alternate
-    uti: public.jpeg
-    conforms_to:
-      - public.image
-    extensions:
-      - jpg
-      - jpeg
-      - jpe
-      - jif
-      - jfif
-      - jfi
-    mime_types:
-      - image/jpeg
-  - name: PNG Image
-    icon: pkgicons/png_doc.png
-    role: Viewer
-    rank: Alternate
-    uti: public.png
-    conforms_to:
-      - public.image
-    extensions:
-      - png
-    mime_types:
-      - image/png
   - name: WBMP Image
     icon: pkgicons/wbmp_doc.png
     role: Viewer
@@ -104,17 +103,19 @@ file_info:
       - wbmp
     mime_types:
       - image/vnd.wap.wbmp
-  - name: WEBP Image
-    icon: pkgicons/webp_doc.png
+  - name: BMP Image
+    icon: pkgicons/bmp_doc.png
     role: Viewer
     rank: Alternate
-    uti: org.webmproject.webp
+    uti: com.microsoft.bmp
     conforms_to:
       - public.image
     extensions:
-      - webp
+      - bmp
+      - dib
     mime_types:
-      - image/webp
+      - image/bmp
+      - image/x-bmp
   - name: SVG Image
     icon: pkgicons/svg_doc.png
     role: Viewer
@@ -122,8 +123,10 @@ file_info:
     uti: public.svg-image
     conforms_to:
       - public.image
+      - public.xml
     extensions:
       - svg
+      - svgz
     mime_types:
       - image/svg+xml
   - name: GCS Sheet
@@ -132,7 +135,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.gcs
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - gcs
     mime_types:
@@ -143,7 +146,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.gct
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - gct
     mime_types:
@@ -154,7 +157,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.loot
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - loot
     mime_types:
@@ -165,7 +168,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.adq
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - adq
     mime_types:
@@ -176,7 +179,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.adm
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - adm
     mime_types:
@@ -187,7 +190,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.eqp
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - eqp
     mime_types:
@@ -198,7 +201,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.eqm
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - eqm
     mime_types:
@@ -209,7 +212,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.skl
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - skl
     mime_types:
@@ -220,7 +223,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.spl
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - spl
     mime_types:
@@ -231,7 +234,7 @@ file_info:
     rank: Owner
     uti: com.trollworks.gcs.not
     conforms_to:
-      - public.data
+      - public.json
     extensions:
       - not
     mime_types:
