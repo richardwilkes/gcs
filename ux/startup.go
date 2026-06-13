@@ -45,6 +45,7 @@ func Start(files []string) {
 			CheckForAppUpdates()
 			wnd, err := unison.NewWindow(xos.AppName)
 			xos.ExitIfErr(err)
+			registerWindowDragTypes(wnd)
 			SetupMenuBar(wnd)
 			InitWorkspace(wnd)
 			OpenFiles(files)

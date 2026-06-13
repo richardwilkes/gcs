@@ -13,13 +13,14 @@ import (
 	"path"
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
 // Some special "extension" values.
 const (
-	GenericFile  = "file"
+	GenericFile  = ".file"
 	ClosedFolder = ".folder-closed"
 	OpenFolder   = ".folder-open"
 )
@@ -62,11 +63,8 @@ const (
 // FileInfo contains some static information about a given file type.
 type FileInfo struct {
 	Name             string
-	UTI              string
-	ConformsTo       []string
-	Extensions       []string
+	UTI              *uti.DataType
 	GroupWith        []string
-	MimeTypes        []string
 	SVG              *unison.SVG
 	Load             func(filePath string, initialPage int) (unison.Dockable, error)
 	IsSpecial        bool
@@ -85,7 +83,7 @@ var (
 
 // Register with the central registry.
 func (f *FileInfo) Register() {
-	for _, ext := range f.Extensions {
+	for _, ext := range f.UTI.Extensions {
 		fileTypeRegistry[ext] = f
 	}
 	KnownFileTypes = append(KnownFileTypes, f)
@@ -161,7 +159,7 @@ func RegisteredMimeTypes() []string {
 	all := make(map[string]bool)
 	for _, v := range fileTypeRegistry {
 		if !v.IsSpecial {
-			for _, one := range v.MimeTypes {
+			for _, one := range v.UTI.MimeTypes {
 				all[one] = true
 			}
 		}

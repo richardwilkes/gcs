@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 var (
@@ -67,7 +68,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 		HAlign:  align.Fill,
 		VAlign:  align.Fill,
 	})
-	c.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
+	c.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
 		c.RequestFocus()
 		return false
 	}

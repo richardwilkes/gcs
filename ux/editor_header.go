@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/side"
 )
@@ -202,7 +203,7 @@ func (h *PageTableColumnHeader[T]) SetSortState(state unison.SortState) {
 }
 
 // DefaultMouseUp provides the default mouse up handling.
-func (h *PageTableColumnHeader[T]) DefaultMouseUp(where geom.Point, _ int, _ unison.Modifiers) bool {
+func (h *PageTableColumnHeader[T]) DefaultMouseUp(where geom.Point, _ int, _ mod.Modifiers) bool {
 	if h.sortState.Sortable && where.In(h.ContentRect(false)) {
 		if header, ok := h.Parent().Self.(*unison.TableHeader[*Node[T]]); ok {
 			header.SortOn(h)

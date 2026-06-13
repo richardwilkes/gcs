@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -97,9 +98,9 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 			gc.DrawRect(rect, unison.DefaultFieldTheme.BackgroundInk.Paint(gc, rect, paintstyle.Fill))
 			capturePanel.DefaultDraw(gc, rect)
 		}
-		capturePanel.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, _ bool) bool {
+		capturePanel.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
 			localBinding.KeyCode = keyCode
-			localBinding.Modifiers = mod
+			localBinding.Modifiers = mods
 			capturePanel.SetTitle(localBinding.String())
 			capturePanel.MarkForRedraw()
 			return true

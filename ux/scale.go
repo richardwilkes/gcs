@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // ScaleDelta is the delta used when adjusting the view scale incrementally.
@@ -81,8 +82,8 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 		}, minValue, maxValue, false, false)
 	scaleField.SetMarksModified(false)
 	scaleField.Tooltip = newWrappedTooltip(scaleTitle)
-	scroller.ContentView().MouseWheelCallback = func(where, delta geom.Point, mod unison.Modifiers) bool {
-		if !mod.OptionDown() || !scaleField.Enabled() {
+	scroller.ContentView().MouseWheelCallback = func(where, delta geom.Point, mods mod.Modifiers) bool {
+		if !mods.OptionDown() || !scaleField.Enabled() {
 			return false
 		}
 		current := get()

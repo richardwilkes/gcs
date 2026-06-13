@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 type modifiersOnly interface {
@@ -73,13 +74,13 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 	tracker := make(map[*unison.CheckBox]gurps.GeneralModifier)
 	indentIncrement := xmath.Ceil(unison.DefaultMarkdownTheme.Font.Baseline() * 1.5)
 	gurps.Traverse(func(m T) bool {
-		if mod, ok := any(m).(gurps.GeneralModifier); ok {
-			text := mod.FullDescription()
-			if cost := mod.FullCostDescription(); cost != "" {
+		if gm, ok := any(m).(gurps.GeneralModifier); ok {
+			text := gm.FullDescription()
+			if cost := gm.FullCostDescription(); cost != "" {
 				text += "; **" + cost + "**"
 			}
 			wrapper := unison.NewPanel()
-			indent := float32(mod.Depth()) * indentIncrement
+			indent := float32(gm.Depth()) * indentIncrement
 			md := unison.NewMarkdown(false)
 			md.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: align.Fill,
@@ -87,22 +88,22 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 				HGrab:  true,
 			})
 			md.SetContent(text, 800-indent)
-			md.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
+			md.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
 				return true
 			}
 			md.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor {
 				return unison.PointingCursor()
 			}
-			if !mod.Container() {
+			if !gm.Container() {
 				cb := unison.NewCheckBox()
 				cb.Font = unison.DefaultMarkdownTheme.Font
-				cb.State = check.FromBool(mod.Enabled())
-				tracker[cb] = mod
+				cb.State = check.FromBool(gm.Enabled())
+				tracker[cb] = gm
 				cb.SetLayoutData(&unison.FlexLayoutData{
 					VAlign: align.Start,
 				})
 				cb.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2}))
-				md.MouseUpCallback = func(where geom.Point, _ int, _ unison.Modifiers) bool {
+				md.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
 					if cb != nil && where.In(md.ContentRect(false)) {
 						cb.Click()
 					}
@@ -157,9 +158,9 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 	panel.AddChild(scroll)
 	if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {
 		changed := false
-		for cb, mod := range tracker {
-			if on := cb.State == check.On; mod.Enabled() != on {
-				mod.SetEnabled(on)
+		for cb, gm := range tracker {
+			if on := cb.State == check.On; gm.Enabled() != on {
+				gm.SetEnabled(on)
 				changed = true
 			}
 		}

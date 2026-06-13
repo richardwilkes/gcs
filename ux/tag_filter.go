@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // TagProvider defines the methods required for the tag filter popup.
@@ -57,7 +58,7 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 		simple := index == 0
 		if !simple {
 			modifiers := popup.Window().CurrentKeyModifiers()
-			simple = !modifiers.ShiftDown() && !modifiers.OSMenuCmdModifierDown()
+			simple = !modifiers.ShiftDown() && !modifiers.OSMenuCommandDown()
 		}
 		if simple {
 			popup.SelectIndex(index)
@@ -84,7 +85,7 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 		}
 	}
 	tagFilterTooltip := i18n.Text("Tag Filter")
-	baseTooltip := fmt.Sprintf(i18n.Text("Shift-Click or %v-Click to select more than one"), unison.OSMenuCmdModifier())
+	baseTooltip := fmt.Sprintf(i18n.Text("Shift-Click or %v-Click to select more than one"), mod.OSMenuCommand())
 	p.Tooltip = newWrappedTooltipWithSecondaryText(tagFilterTooltip, baseTooltip)
 	p.SelectionChangedCallback = func(_ *unison.PopupMenu[string]) {
 		tags := SelectedTags(p)

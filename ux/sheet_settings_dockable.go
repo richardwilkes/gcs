@@ -257,7 +257,7 @@ func (d *sheetSettingsDockable) addCheckBoxWithLink(panel *unison.Panel, title, 
 	label.Font = checkbox.Font
 	label.SetTitle(" (")
 	wrapper.AddChild(label)
-	wrapper.AddChild(unison.NewLink(ref, "", ref, unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
+	wrapper.AddChild(unison.NewLink(ref, "", ref, &unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
 		OpenPageReference(ref, "", nil)
 	}))
 	label = unison.NewLabel()

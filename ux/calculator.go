@@ -665,7 +665,7 @@ func (c *Calculator) createHeader(text string, linkSpecs []linkSpec, topMargin f
 		},
 	}
 	for index, linkSpec := range linkSpecs {
-		link := unison.NewLink(linkSpec.pageRef, "", linkSpec.pageRef, linkTheme, func(_ unison.Paneler, _ string) {
+		link := unison.NewLink(linkSpec.pageRef, "", linkSpec.pageRef, &linkTheme, func(_ unison.Paneler, _ string) {
 			OpenPageReference(linkSpec.pageRef, linkSpec.highlight, nil)
 		})
 		wrapper.AddChild(link)

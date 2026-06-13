@@ -270,7 +270,7 @@ func addPickerRow[T gurps.NodeTypes](parent *unison.Panel, row T, callback func(
 				}
 				tooltip = pageRefs[0]
 			}
-			link := unison.NewLink(title, tooltip, "", unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
+			link := unison.NewLink(title, tooltip, "", &unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
 				OpenPageReference(pageRefs[0], pageRefHighlight, nil)
 			})
 			link.VAlign = align.Start

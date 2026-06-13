@@ -28,6 +28,7 @@ import (
 	"github.com/richardwilkes/unison/enums/blendmode"
 	"github.com/richardwilkes/unison/enums/filtermode"
 	"github.com/richardwilkes/unison/enums/mipmapmode"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -317,12 +318,12 @@ func (d *PDFDockable) createTOC() {
 	}
 	var initialPosition float32
 	var eventPosition float32
-	d.divider.MouseDownCallback = func(where geom.Point, _, _ int, _ unison.Modifiers) bool {
+	d.divider.MouseDownCallback = func(where geom.Point, _, _ int, _ mod.Modifiers) bool {
 		initialPosition = d.tocScrollLayoutData.SizeHint.Width
 		eventPosition = d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
 		return true
 	}
-	d.divider.MouseDragCallback = func(where geom.Point, _ int, _ unison.Modifiers) bool {
+	d.divider.MouseDragCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
 		pos := eventPosition - d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
 		old := d.tocScrollLayoutData.SizeHint.Width
 		d.tocScrollLayoutData.SizeHint.Width = max(initialPosition-pos, 1)
@@ -526,7 +527,7 @@ func (d *PDFDockable) updateCursor(pt geom.Point) *unison.Cursor {
 	return unison.ArrowCursor()
 }
 
-func (d *PDFDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifiers) bool {
+func (d *PDFDockable) mouseDown(where geom.Point, _, _ int, _ mod.Modifiers) bool {
 	d.dragStart = d.docPanel.PointToRoot(where)
 	d.dragOrigin.X, d.dragOrigin.Y = d.docScroll.Position()
 	d.inDrag = !d.checkForLinkAt(where)
@@ -535,7 +536,7 @@ func (d *PDFDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifiers) 
 	return true
 }
 
-func (d *PDFDockable) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) bool {
+func (d *PDFDockable) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
 	if d.inDrag {
 		pt := d.dragStart.Sub(d.docPanel.PointToRoot(where)).Add(d.dragOrigin)
 		d.docScroll.SetPosition(pt.X, pt.Y)
@@ -545,12 +546,12 @@ func (d *PDFDockable) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) boo
 	return true
 }
 
-func (d *PDFDockable) mouseMove(where geom.Point, _ unison.Modifiers) bool {
+func (d *PDFDockable) mouseMove(where geom.Point, _ mod.Modifiers) bool {
 	d.checkForLinkAt(where)
 	return true
 }
 
-func (d *PDFDockable) mouseUp(where geom.Point, button int, _ unison.Modifiers) bool {
+func (d *PDFDockable) mouseUp(where geom.Point, button int, _ mod.Modifiers) bool {
 	if d.inDrag {
 		d.inDrag = false
 		d.UpdateCursorNow()
@@ -571,7 +572,7 @@ func (d *PDFDockable) focusChangeInHierarchy(_, _ *unison.Panel) {
 	d.pdf.RequestRenderPriority()
 }
 
-func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool) bool {
+func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ mod.Modifiers, _ bool) bool {
 	switch keyCode {
 	case unison.KeyHome:
 		d.LoadPage(0)

@@ -170,7 +170,7 @@ func (s *GeneralSettings) MonitorPPI() int {
 		return s.MonitorResolution
 	}
 	d := unison.PrimaryDisplay()
-	ppi := d.PPI()
+	ppi := d.PPI
 	if runtime.GOOS == xos.WindowsOS {
 		// On Windows, we need to adjust this by the scale factor to get the actual PPI
 		ppi = int(float32(ppi) / d.Scale.X)

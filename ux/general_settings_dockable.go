@@ -388,7 +388,7 @@ func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, tit
 	addButton := unison.NewSVGButton(svg.Copy)
 	addButton.Tooltip = newWrappedTooltip(i18n.Text("Copy to clipboard"))
 	addButton.ClickCallback = func() {
-		unison.GlobalClipboard.SetText(value)
+		unison.ClipboardSetText(value)
 	}
 	content.AddChild(addButton)
 }
@@ -453,7 +453,7 @@ func (d *generalSettingsDockable) createDeepSearchCheckboxes(content *unison.Pan
 	extMap := make(map[string]string)
 	for _, ext := range extensions {
 		fi := gurps.FileInfoFor(ext)
-		extMap[strings.TrimPrefix(fi.Name, "GCS ")] = fi.Extensions[0]
+		extMap[strings.TrimPrefix(fi.Name, "GCS ")] = fi.UTI.Extensions[0]
 	}
 	keys := slices.Collect(maps.Keys(extMap))
 	xslices.ColumnSort(keys, 2, cmp.Compare[string])

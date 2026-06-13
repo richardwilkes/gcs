@@ -15,8 +15,10 @@ import (
 	"image"
 	"image/png"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/early"
@@ -24,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/ximage"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xyaml"
@@ -71,8 +74,8 @@ func main() {
 		if one.IsSpecial {
 			continue
 		}
-		extensions := make([]string, len(one.Extensions))
-		for i, ext := range one.Extensions {
+		extensions := make([]string, len(one.UTI.Extensions))
+		for i, ext := range one.UTI.Extensions {
 			extensions[i] = ext[1:]
 		}
 		data := packager.FileData{
@@ -80,10 +83,10 @@ func main() {
 			Icon:       "pkgicons/" + extensions[0] + "_doc.png",
 			Role:       "Viewer",
 			Rank:       "Alternate",
-			UTI:        one.UTI,
-			ConformsTo: one.ConformsTo,
+			UTI:        one.UTI.UTI,
+			ConformsTo: extractConformsTo(one.UTI),
 			Extensions: extensions,
-			MimeTypes:  one.MimeTypes,
+			MimeTypes:  one.UTI.MimeTypes,
 		}
 		if one.IsGCSData {
 			data.Role = "Editor"
@@ -113,7 +116,7 @@ func main() {
 					overlay, err = svg.CreateImageFromSVG(fi.SVG, 512)
 					xos.ExitIfErr(err)
 					var f *os.File
-					f, err = os.Create(filepath.Join(iconsPath, fi.Extensions[0][1:]+"_doc.png"))
+					f, err = os.Create(filepath.Join(iconsPath, fi.UTI.Extensions[0][1:]+"_doc.png"))
 					xos.ExitIfErr(err)
 					xos.ExitIfErr(errs.Wrap(png.Encode(f, ximage.Stack(docImg, overlay))))
 					xos.ExitIfErr(f.Close())
@@ -122,4 +125,17 @@ func main() {
 			})
 		}),
 	)
+}
+
+func extractConformsTo(u *uti.DataType) []string {
+	m := make(map[string]struct{})
+	_extractConformsTo(u, m)
+	return slices.Sorted(maps.Keys(m))
+}
+
+func _extractConformsTo(u *uti.DataType, m map[string]struct{}) {
+	m[u.UTI] = struct{}{}
+	for _, child := range u.Parents {
+		_extractConformsTo(child, m)
+	}
 }

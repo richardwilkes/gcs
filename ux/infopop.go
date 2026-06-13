@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -66,7 +67,7 @@ func AddHelpToInfoPop(target unison.Paneler, text string) {
 func AddScalingHelpToInfoPop(target unison.Paneler) {
 	AddHelpToInfoPop(target, fmt.Sprintf(i18n.Text(`
 Holding down the %s key while using
-the mouse wheel will change the scale.`), unison.OptionModifier.String()))
+the mouse wheel will change the scale.`), mod.Option.String()))
 }
 
 // AddKeyBindingInfoToInfoPop adds information about a key binding to an InfoPop.

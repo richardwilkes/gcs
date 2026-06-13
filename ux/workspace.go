@@ -472,6 +472,7 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	if err != nil {
 		return nil, err
 	}
+	registerWindowDragTypes(wnd)
 	SetupMenuBar(wnd)
 	content := wnd.Content()
 	content.SetLayout(&unison.FlexLayout{Columns: 1})

@@ -16,13 +16,12 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xslices"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/imgfmt"
 )
-
-const publicDataType = "public.data"
 
 // RegisterKnownFileTypes registers the known files types.
 func RegisterKnownFileTypes() {
@@ -37,11 +36,15 @@ func registerNavigatorFileTypes() {
 	registerSpecialFileInfo(gurps.GenericFile, svg.GenericFile)
 }
 
-func registerSpecialFileInfo(key string, icon *unison.SVG) {
+func registerSpecialFileInfo(extension string, icon *unison.SVG) {
+	dt := uti.Register(&uti.DataType{
+		UTI:        "private.gcs.nav" + extension,
+		Extensions: []string{extension},
+	})
 	fi := gurps.FileInfo{
-		Extensions: []string{key},
-		SVG:        icon,
-		IsSpecial:  true,
+		UTI:       dt,
+		SVG:       icon,
+		IsSpecial: true,
 	}
 	fi.Register()
 }
@@ -57,59 +60,64 @@ func RegisterExternalFileTypes() {
 		}
 	}
 	// Register SVG as well
-	fi := gurps.FileInfo{
-		Name:       "SVG Image",
+	dt := uti.Register(&uti.DataType{
 		UTI:        "public.svg-image",
-		ConformsTo: []string{"public.image"},
-		Extensions: []string{".svg"},
-		GroupWith:  groupWith,
+		Parents:    []*uti.DataType{uti.Image},
 		MimeTypes:  []string{"image/svg+xml"},
-		SVG:        svg.ImageFile,
-		Load:       func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
-		IsImage:    true,
+		Extensions: []string{".svg"},
+	})
+	fi := gurps.FileInfo{
+		Name:      "SVG Image",
+		UTI:       dt,
+		GroupWith: groupWith,
+		SVG:       svg.ImageFile,
+		Load:      func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
+		IsImage:   true,
 	}
 	fi.Register()
 }
 
 func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
 	fi := gurps.FileInfo{
-		Name:       strings.ToUpper(format.Extension()[1:]) + " Image",
-		UTI:        format.UTI(),
-		ConformsTo: []string{"public.image"},
-		Extensions: format.Extensions(),
-		GroupWith:  groupWith,
-		MimeTypes:  format.MimeTypes(),
-		SVG:        svg.ImageFile,
-		Load:       func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
-		IsImage:    true,
+		Name:      strings.ToUpper(format.Extension()[1:]) + " Image",
+		UTI:       format.UTI(),
+		GroupWith: groupWith,
+		SVG:       svg.ImageFile,
+		Load:      func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
+		IsImage:   true,
 	}
 	fi.Register()
 }
 
 func registerPDFFileInfo() {
-	fi := gurps.FileInfo{
-		Name:       "PDF Document",
+	dt := uti.Register(&uti.DataType{
 		UTI:        "com.adobe.pdf",
-		ConformsTo: []string{publicDataType},
-		Extensions: []string{".pdf"},
-		GroupWith:  []string{".pdf"},
+		Parents:    []*uti.DataType{uti.Data},
 		MimeTypes:  []string{"application/pdf", "application/x-pdf"},
-		SVG:        svg.PDFFile,
-		Load:       NewPDFDockable,
-		IsPDF:      true,
+		Extensions: []string{".pdf"},
+	})
+	fi := gurps.FileInfo{
+		Name:      "PDF Document",
+		UTI:       dt,
+		GroupWith: dt.Extensions,
+		SVG:       svg.PDFFile,
+		Load:      NewPDFDockable,
+		IsPDF:     true,
 	}
 	fi.Register()
 }
 
 func registerMarkdownFileInfo() {
-	extensions := []string{gurps.MarkdownExt, ".markdown"}
+	dt := uti.Register(&uti.DataType{
+		UTI:        "net.daringfireball.markdown",
+		Parents:    []*uti.DataType{uti.PlainText},
+		MimeTypes:  []string{"text/markdown"},
+		Extensions: []string{gurps.MarkdownExt, ".markdown"},
+	})
 	fi := gurps.FileInfo{
 		Name:             "Markdown Document",
-		UTI:              "net.daringfireball.markdown",
-		ConformsTo:       []string{"public.plain-text"},
-		Extensions:       extensions,
-		GroupWith:        extensions,
-		MimeTypes:        []string{"text/markdown"},
+		UTI:              dt,
+		GroupWith:        dt.Extensions,
 		SVG:              svg.MarkdownFile,
 		IsDeepSearchable: true,
 		Load: func(filePath string, _ int) (unison.Dockable, error) {
@@ -150,13 +158,16 @@ func RegisterGCSFileTypes() {
 }
 
 func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
+	dt := uti.Register(&uti.DataType{
+		UTI:        xos.AppIdentifier + ext,
+		Parents:    []*uti.DataType{uti.JSON},
+		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
+		Extensions: []string{ext},
+	})
 	fi := gurps.FileInfo{
 		Name:             name,
-		UTI:              xos.AppIdentifier + ext,
-		ConformsTo:       []string{publicDataType},
-		Extensions:       []string{ext},
+		UTI:              dt,
 		GroupWith:        groupWith,
-		MimeTypes:        []string{"application/x-gcs-" + ext[1:]},
 		SVG:              icon,
 		Load:             func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:        true,
@@ -166,13 +177,16 @@ func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG,
 }
 
 func registerExportableGCSFileInfo(name, ext string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
+	dt := uti.Register(&uti.DataType{
+		UTI:        xos.AppIdentifier + ext,
+		Parents:    []*uti.DataType{uti.JSON},
+		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
+		Extensions: []string{ext},
+	})
 	fi := gurps.FileInfo{
 		Name:             name,
-		UTI:              xos.AppIdentifier + ext,
-		ConformsTo:       []string{publicDataType},
-		Extensions:       []string{ext},
+		UTI:              dt,
 		GroupWith:        []string{ext},
-		MimeTypes:        []string{"application/x-gcs-" + ext[1:]},
 		SVG:              icon,
 		Load:             func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:        true,

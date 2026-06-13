@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 type updatableLibraryCell struct {
@@ -67,25 +68,25 @@ func (c *updatableLibraryCell) updateForeground(fg unison.Ink) {
 	c.title.SetTitle(c.title.String())
 }
 
-func (c *updatableLibraryCell) mouseDown(where geom.Point, btn, clickCount int, mod unison.Modifiers) bool {
+func (c *updatableLibraryCell) mouseDown(where geom.Point, btn, clickCount int, mods mod.Modifiers) bool {
 	if !where.In(c.button.FrameRect()) {
 		return false
 	}
 	c.inButtonMouseDown = true
-	return c.button.DefaultMouseDown(c.button.PointFromRoot(c.PointToRoot(where)), btn, clickCount, mod)
+	return c.button.DefaultMouseDown(c.button.PointFromRoot(c.PointToRoot(where)), btn, clickCount, mods)
 }
 
-func (c *updatableLibraryCell) mouseDrag(where geom.Point, btn int, mod unison.Modifiers) bool {
+func (c *updatableLibraryCell) mouseDrag(where geom.Point, btn int, mods mod.Modifiers) bool {
 	if !c.inButtonMouseDown {
 		return false
 	}
-	return c.button.DefaultMouseDrag(c.button.PointFromRoot(c.PointToRoot(where)), btn, mod)
+	return c.button.DefaultMouseDrag(c.button.PointFromRoot(c.PointToRoot(where)), btn, mods)
 }
 
-func (c *updatableLibraryCell) mouseUp(where geom.Point, btn int, mod unison.Modifiers) bool {
+func (c *updatableLibraryCell) mouseUp(where geom.Point, btn int, mods mod.Modifiers) bool {
 	if !c.inButtonMouseDown {
 		return false
 	}
 	c.inButtonMouseDown = false
-	return c.button.DefaultMouseUp(c.button.PointFromRoot(c.PointToRoot(where)), btn, mod)
+	return c.button.DefaultMouseUp(c.button.PointFromRoot(c.PointToRoot(where)), btn, mods)
 }
