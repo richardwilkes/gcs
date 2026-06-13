@@ -12,7 +12,6 @@ package ux
 import (
 	"maps"
 	"slices"
-	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -59,16 +58,9 @@ func RegisterExternalFileTypes() {
 			registerImageFileInfo(one, groupWith)
 		}
 	}
-	// Register SVG as well
-	dt := uti.Register(&uti.DataType{
-		UTI:        "public.svg-image",
-		Parents:    []*uti.DataType{uti.Image},
-		MimeTypes:  []string{"image/svg+xml"},
-		Extensions: []string{".svg"},
-	})
 	fi := gurps.FileInfo{
 		Name:      "SVG Image",
-		UTI:       dt,
+		UTI:       uti.SVG,
 		GroupWith: groupWith,
 		SVG:       svg.ImageFile,
 		Load:      func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
@@ -79,7 +71,7 @@ func RegisterExternalFileTypes() {
 
 func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
 	fi := gurps.FileInfo{
-		Name:      strings.ToUpper(format.Extension()[1:]) + " Image",
+		Name:      format.String() + " Image",
 		UTI:       format.UTI(),
 		GroupWith: groupWith,
 		SVG:       svg.ImageFile,
@@ -90,16 +82,10 @@ func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
 }
 
 func registerPDFFileInfo() {
-	dt := uti.Register(&uti.DataType{
-		UTI:        "com.adobe.pdf",
-		Parents:    []*uti.DataType{uti.Data},
-		MimeTypes:  []string{"application/pdf", "application/x-pdf"},
-		Extensions: []string{".pdf"},
-	})
 	fi := gurps.FileInfo{
 		Name:      "PDF Document",
-		UTI:       dt,
-		GroupWith: dt.Extensions,
+		UTI:       uti.PDF,
+		GroupWith: uti.PDF.Extensions,
 		SVG:       svg.PDFFile,
 		Load:      NewPDFDockable,
 		IsPDF:     true,
@@ -108,16 +94,10 @@ func registerPDFFileInfo() {
 }
 
 func registerMarkdownFileInfo() {
-	dt := uti.Register(&uti.DataType{
-		UTI:        "net.daringfireball.markdown",
-		Parents:    []*uti.DataType{uti.PlainText},
-		MimeTypes:  []string{"text/markdown"},
-		Extensions: []string{gurps.MarkdownExt, ".markdown"},
-	})
 	fi := gurps.FileInfo{
 		Name:             "Markdown Document",
-		UTI:              dt,
-		GroupWith:        dt.Extensions,
+		UTI:              uti.Markdown,
+		GroupWith:        uti.Markdown.Extensions,
 		SVG:              svg.MarkdownFile,
 		IsDeepSearchable: true,
 		Load: func(filePath string, _ int) (unison.Dockable, error) {
