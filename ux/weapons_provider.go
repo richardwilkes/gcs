@@ -21,6 +21,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+const (
+	meleeWeaponDragKey  = "melee_weapon"
+	rangedWeaponDragKey = "ranged_weapon"
+)
+
 var _ TableProvider[*gurps.Weapon] = &weaponsProvider{}
 
 type weaponsProvider struct {
@@ -41,9 +46,9 @@ func NewWeaponsProvider(provider gurps.WeaponListProvider, melee, forPage bool) 
 
 func (p *weaponsProvider) RefKey() string {
 	if p.melee {
-		return "melee_weapon"
+		return meleeWeaponDragKey
 	}
-	return "ranged_weapon"
+	return rangedWeaponDragKey
 }
 
 func (p *weaponsProvider) AllTags() []string {

@@ -25,8 +25,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xrand"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -110,34 +112,42 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 		VAlign:  align.Fill,
 	})
 
-	l.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
+	l.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
 		l.RequestFocus()
 		return false
 	}
-	l.DataDragOverCallback = func(_ geom.Point, data map[string]any) bool {
+	dragUpdate := func(di drag.Info, _ geom.Point, mods mod.Modifiers) drag.Op {
 		l.dragReroutePanel = nil
 		for _, key := range dropKeys {
-			if _, ok := data[key]; ok {
+			if di.HasDataType(dragDataType(key).UTI) {
 				if l.dragReroutePanel = l.keyToPanel(key); l.dragReroutePanel != nil {
-					l.dragReroutePanel.DataDragOverCallback(geom.Point{Y: 100000000}, data)
-					return true
+					return l.dragReroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
 				}
 				break
 			}
 		}
-		return false
+		return drag.None
 	}
-	l.DataDragExitCallback = func() {
+	l.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataKey(di, dropKeys...) }
+	l.DragEnteredCallback = dragUpdate
+	l.DragUpdatedCallback = dragUpdate
+	l.DragExitedCallback = func() {
 		if l.dragReroutePanel != nil {
-			l.dragReroutePanel.DataDragExitCallback()
+			if l.dragReroutePanel.DragExitedCallback != nil {
+				l.dragReroutePanel.DragExitedCallback()
+			}
 			l.dragReroutePanel = nil
 		}
 	}
-	l.DataDragDropCallback = func(_ geom.Point, data map[string]any) {
+	l.DropCallback = func(di drag.Info, _ geom.Point, mods mod.Modifiers) bool {
+		handled := false
 		if l.dragReroutePanel != nil {
-			l.dragReroutePanel.DataDragDropCallback(geom.Point{Y: 10000000}, data)
+			if l.dragReroutePanel.DropCallback != nil {
+				handled = l.dragReroutePanel.DropCallback(di, geom.Point{Y: 10000000}, mods)
+			}
 			l.dragReroutePanel = nil
 		}
+		return handled
 	}
 	l.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		if l.dragReroutePanel != nil {

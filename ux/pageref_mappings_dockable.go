@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xflag"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
@@ -65,8 +66,8 @@ func OpenPageReference(ref, highlight string, promptContext map[string]bool) boo
 func openMarkdownPageReference(ref string) {
 	ref = ref[3:]
 	if ref != "" {
-		if !strings.HasSuffix(strings.ToLower(ref), gurps.MarkdownExt) {
-			ref += gurps.MarkdownExt
+		if !strings.HasSuffix(strings.ToLower(ref), uti.Markdown.Extensions[0]) {
+			ref += uti.Markdown.Extensions[0]
 		}
 		// First check in the Markdown directory of each library.
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {

@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -1019,7 +1020,7 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 						if data, err := gurps.NewTraitsFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
-					case gurps.MarkdownExt:
+					case uti.Markdown.Extensions[0]:
 						if data, err := os.ReadFile(p); err == nil {
 							content = string(bytes.ToLower(data))
 						}
@@ -1206,7 +1207,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 			fi.UTI.Extensions[0] == gurps.NotesExt:
 			g := dgroup.Libraries
 			group = &g
-		case fi.UTI.Extensions[0] == gurps.MarkdownExt:
+		case fi.UTI == uti.Markdown:
 			g := dgroup.Markdown
 			group = &g
 		}

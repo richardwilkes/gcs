@@ -16,6 +16,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+const reactionModifierDragKey = "reaction_modifier"
+
 var _ TableProvider[*gurps.ConditionalModifier] = &reactionModProvider{}
 
 type reactionModProvider struct {
@@ -68,7 +70,7 @@ func (p *reactionModProvider) DataOwner() gurps.DataOwner {
 }
 
 func (p *reactionModProvider) DragKey() string {
-	return "reaction_modifier"
+	return reactionModifierDragKey
 }
 
 func (p *reactionModProvider) DragSVG() *unison.SVG {

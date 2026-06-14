@@ -15,6 +15,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -31,7 +33,7 @@ type AltDropSupport struct {
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
-	unison.InstallDropSupport(table, provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
+	unison.InstallDropSupport(table, dragDataType(provider.DragKey()), provider.DropShouldMoveData, willDropCallback[T],
 		didDropCallback[T])
 	table.DragRemovedRowsCallback = func() { MarkModified(table) }
 	table.DropOccurredCallback = func() {
@@ -43,34 +45,50 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 		}, 1)
 	}
 	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
-		originalDataDragOverCallback := table.DataDragOverCallback
-		originalDataDragExitCallback := table.DataDragExitCallback
-		originalDataDragDropCallback := table.DataDragDropCallback
+		altDataType := dragDataType(altDropSupport.DragKey)
+		originalCanAcceptDropCallback := table.CanAcceptDropCallback
+		originalDragUpdatedCallback := table.DragUpdatedCallback
+		originalDragExitedCallback := table.DragExitedCallback
+		originalDropCallback := table.DropCallback
 		originalDrawOverCallback := table.DrawOverCallback
 		altDropRowIndex := -1
-		table.DataDragOverCallback = func(where geom.Point, data map[string]any) bool {
-			if _, ok := data[altDropSupport.DragKey]; ok {
+		table.CanAcceptDropCallback = func(di drag.Info) bool {
+			if table.Enabled() && !table.IsFiltered() && di.HasDataType(altDataType.UTI) {
+				return true
+			}
+			return originalCanAcceptDropCallback(di)
+		}
+		dragUpdate := func(di drag.Info, where geom.Point, mods mod.Modifiers) drag.Op {
+			if di.HasDataType(altDataType.UTI) {
 				altDropRowIndex = table.OverRow(where.Y)
-				return altDropRowIndex != -1
-			}
-			return originalDataDragOverCallback(where, data)
-		}
-		table.DataDragExitCallback = func() {
-			altDropRowIndex = -1
-			originalDataDragExitCallback()
-		}
-		table.DataDragDropCallback = func(where geom.Point, data map[string]any) {
-			if altDropRowIndex != -1 {
-				if dd, ok := data[altDropSupport.DragKey]; ok {
-					undo := willDropCallback(nil, table, false)
-					altDropSupport.Drop(altDropRowIndex, dd)
-					finishDidDrop(undo, nil, table, false)
+				if altDropRowIndex != -1 {
+					table.MarkForRedraw()
+					return drag.Copy
 				}
-				altDropRowIndex = -1
-				table.MarkForRedraw()
-			} else {
-				originalDataDragDropCallback(where, data)
+				return drag.None
 			}
+			return originalDragUpdatedCallback(di, where, mods)
+		}
+		table.DragEnteredCallback = dragUpdate
+		table.DragUpdatedCallback = dragUpdate
+		table.DragExitedCallback = func() {
+			altDropRowIndex = -1
+			originalDragExitedCallback()
+		}
+		table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
+			if di.HasDataType(altDataType.UTI) {
+				handled := false
+				if altDropRowIndex != -1 {
+					undo := willDropCallback(nil, table, false)
+					altDropSupport.Drop(altDropRowIndex, draggedTableData)
+					finishDidDrop(undo, nil, table, false)
+					altDropRowIndex = -1
+					table.MarkForRedraw()
+					handled = true
+				}
+				return handled
+			}
+			return originalDropCallback(di, where, mods)
 		}
 		table.DrawOverCallback = func(gc *unison.Canvas, rect geom.Rect) {
 			originalDrawOverCallback(gc, rect)

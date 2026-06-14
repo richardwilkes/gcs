@@ -214,9 +214,7 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 func (d *attributeSettingsDockable) initContent(content *unison.Panel) {
 	d.content = content
-	d.content.DataDragOverCallback = d.dataDragOver
-	d.content.DataDragExitCallback = d.dataDragExit
-	d.content.DataDragDropCallback = d.dataDragDrop
+	installPanelDragDrop(d.content, attributeSettingsDragDataKey, d.dataDragOver, d.dataDragExit, d.dataDragDrop)
 	d.content.DrawOverCallback = d.drawOver
 	content.SetBorder(nil)
 	content.SetLayout(&unison.FlexLayout{Columns: 1})

@@ -23,9 +23,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhttp"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/filtermode"
 	"github.com/richardwilkes/unison/enums/imgfmt"
 	"github.com/richardwilkes/unison/enums/mipmapmode"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"golang.org/x/image/draw"
 )
@@ -46,9 +48,12 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 	p.SetLayoutData(&unison.FlexLayoutData{VSpan: 2})
 	p.SetBorder(&TitledBorder{Title: i18n.Text("Portrait")})
 	p.DrawCallback = p.drawSelf
-	p.FileDropCallback = p.fileDrop
+	p.CanAcceptDropCallback = p.acceptableDrag
+	p.DragEnteredCallback = p.dragOver
+	p.DragUpdatedCallback = p.dragOver
+	p.DropCallback = p.drop
 	p.MouseDownCallback = p.mouseDown
-	p.MouseEnterCallback = func(_ geom.Point, _ unison.Modifiers) bool {
+	p.MouseEnterCallback = func(_ geom.Point, _ mod.Modifiers) bool {
 		p.mouseIsOver = true
 		p.MarkForRedraw()
 		return false
@@ -116,7 +121,7 @@ func (p *PortraitPanel) Sync() {
 	// Nothing to do
 }
 
-func (p *PortraitPanel) mouseDown(_ geom.Point, button, clickCount int, _ unison.Modifiers) bool {
+func (p *PortraitPanel) mouseDown(_ geom.Point, button, clickCount int, _ mod.Modifiers) bool {
 	if button == unison.ButtonLeft && clickCount == 2 {
 		d := unison.NewOpenDialog()
 		d.SetAllowsMultipleSelection(false)
@@ -139,6 +144,51 @@ func (p *PortraitPanel) fileDrop(files []string) {
 	for _, f := range files {
 		p.processFileDrop(f)
 	}
+}
+
+func (p *PortraitPanel) acceptableDrag(di drag.Info) bool {
+	if di.HasFilePaths() {
+		for _, f := range di.FilePaths() {
+			if imgfmt.ForExtension(filepath.Ext(f)).CanRead() {
+				return true
+			}
+		}
+	}
+	if di.HasURLs() {
+		return true
+	}
+	for _, dataType := range imgfmt.AllReadableUTIs() {
+		if di.HasDataType(dataType.UTI) {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *PortraitPanel) dragOver(di drag.Info, _ geom.Point, _ mod.Modifiers) drag.Op {
+	if p.acceptableDrag(di) {
+		return drag.Copy
+	}
+	return drag.None
+}
+
+func (p *PortraitPanel) drop(di drag.Info, _ geom.Point, _ mod.Modifiers) bool {
+	handled := false
+	if di.HasFilePaths() {
+		for _, f := range di.FilePaths() {
+			if imgfmt.ForExtension(filepath.Ext(f)).CanRead() {
+				p.processFileDrop(f)
+				handled = true
+			}
+		}
+	}
+	if !handled && di.HasURLs() {
+		for _, u := range di.URLs() {
+			p.processFileDrop(u.String())
+			handled = true
+		}
+	}
+	return handled
 }
 
 func (p *PortraitPanel) processFileDrop(f string) {
