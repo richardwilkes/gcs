@@ -8,8 +8,12 @@
 			"name": "GCS",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
-			"program": ".",
+			"mode": "exec",
+			"preLaunchTask": "build GCS",
+			"program": "${workspaceFolder}/gcs",
+			"windows": {
+				"program": "${workspaceFolder}/gcs.exe"
+			},
 			"args": [
 				"-console"
 			]
