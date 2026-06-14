@@ -209,6 +209,9 @@ func (d *bodySettingsDockable) apply() {
 }
 
 func (d *bodySettingsDockable) dataDragOver(where geom.Point, data any) bool {
+	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
+	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
+
 	prevInDragOver := d.inDragOver
 	dragInsert := d.dragInsert
 	dragTarget := d.dragTarget
