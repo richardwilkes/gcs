@@ -134,19 +134,21 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	l.DragUpdatedCallback = dragUpdate
 	l.DragExitedCallback = func() {
 		if l.dragReroutePanel != nil {
-			if l.dragReroutePanel.DragExitedCallback != nil {
-				l.dragReroutePanel.DragExitedCallback()
-			}
+			panel := l.dragReroutePanel
 			l.dragReroutePanel = nil
+			if panel.DragExitedCallback != nil {
+				panel.DragExitedCallback()
+			}
 		}
 	}
 	l.DropCallback = func(di drag.Info, _ geom.Point, mods mod.Modifiers) bool {
 		handled := false
 		if l.dragReroutePanel != nil {
-			if l.dragReroutePanel.DropCallback != nil {
-				handled = l.dragReroutePanel.DropCallback(di, geom.Point{Y: 10000000}, mods)
-			}
+			panel := l.dragReroutePanel
 			l.dragReroutePanel = nil
+			if panel.DropCallback != nil {
+				handled = panel.DropCallback(di, geom.Point{Y: 100000000}, mods)
+			}
 		}
 		return handled
 	}

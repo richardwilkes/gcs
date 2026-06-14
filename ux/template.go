@@ -137,19 +137,21 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t.DragUpdatedCallback = dragUpdate
 	t.DragExitedCallback = func() {
 		if t.dragReroutePanel != nil {
-			if t.dragReroutePanel.DragExitedCallback != nil {
-				t.dragReroutePanel.DragExitedCallback()
-			}
+			panel := t.dragReroutePanel
 			t.dragReroutePanel = nil
+			if panel.DragExitedCallback != nil {
+				panel.DragExitedCallback()
+			}
 		}
 	}
 	t.DropCallback = func(di drag.Info, _ geom.Point, mods mod.Modifiers) bool {
 		handled := false
 		if t.dragReroutePanel != nil {
-			if t.dragReroutePanel.DropCallback != nil {
-				handled = t.dragReroutePanel.DropCallback(di, geom.Point{Y: 10000000}, mods)
-			}
+			panel := t.dragReroutePanel
 			t.dragReroutePanel = nil
+			if panel.DropCallback != nil {
+				handled = panel.DropCallback(di, geom.Point{Y: 100000000}, mods)
+			}
 		}
 		return handled
 	}

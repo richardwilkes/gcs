@@ -170,19 +170,21 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.DragUpdatedCallback = dragUpdate
 	s.DragExitedCallback = func() {
 		if s.dragReroutePanel != nil {
-			if s.dragReroutePanel.DragExitedCallback != nil {
-				s.dragReroutePanel.DragExitedCallback()
-			}
+			panel := s.dragReroutePanel
 			s.dragReroutePanel = nil
+			if panel.DragExitedCallback != nil {
+				panel.DragExitedCallback()
+			}
 		}
 	}
 	s.DropCallback = func(di drag.Info, _ geom.Point, mods mod.Modifiers) bool {
 		handled := false
 		if s.dragReroutePanel != nil {
-			if s.dragReroutePanel.DropCallback != nil {
-				handled = s.dragReroutePanel.DropCallback(di, geom.Point{Y: 100000000}, mods)
-			}
+			panel := s.dragReroutePanel
 			s.dragReroutePanel = nil
+			if panel.DropCallback != nil {
+				handled = panel.DropCallback(di, geom.Point{Y: 100000000}, mods)
+			}
 		}
 		return handled
 	}
