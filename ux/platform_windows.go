@@ -73,14 +73,14 @@ func configureRegistry() error {
 		if overlay, err = svg.CreateImageFromSVG(fi.SVG, 128); err != nil {
 			return err
 		}
-		docPath := filepath.Join(appDataDir, fi.Extensions[0][1:]+".ico")
+		docPath := filepath.Join(appDataDir, fi.UTI.Extensions[0][1:]+".ico")
 		if err = writeIco(ximage.Stack(docBaseIcon, overlay), docPath); err != nil {
 			return err
 		}
 
 		// Create the entry that points to the app's information for the extension
-		appExtKey := xos.AppIdentifier + fi.Extensions[0]
-		if err = setRegistryKey(softwareClasses+fi.Extensions[0], "", appExtKey); err != nil {
+		appExtKey := xos.AppIdentifier + fi.UTI.Extensions[0]
+		if err = setRegistryKey(softwareClasses+fi.UTI.Extensions[0], "", appExtKey); err != nil {
 			return err
 		}
 
