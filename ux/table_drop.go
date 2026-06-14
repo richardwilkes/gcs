@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
@@ -26,14 +27,14 @@ const TableProviderClientKey = "table-provider"
 // AltDropSupport holds handlers for supporting an alternate drop type that drops onto a specific row, rather than
 // moving or adding rows.
 type AltDropSupport struct {
-	DragKey string
+	DragKey *uti.DataType
 	Drop    func(rowIndex int, data any)
 }
 
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
-	unison.InstallDropSupport(table, dragDataType(provider.DragKey()), provider.DropShouldMoveData, willDropCallback[T],
+	unison.InstallDropSupport(table, provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
 		didDropCallback[T])
 	table.DragRemovedRowsCallback = func() { MarkModified(table) }
 	table.DropOccurredCallback = func() {
@@ -45,7 +46,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 		}, 1)
 	}
 	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
-		altDataType := dragDataType(altDropSupport.DragKey)
+		altDataType := altDropSupport.DragKey
 		originalCanAcceptDropCallback := table.CanAcceptDropCallback
 		originalDragUpdatedCallback := table.DragUpdatedCallback
 		originalDragExitedCallback := table.DragExitedCallback

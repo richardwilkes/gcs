@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -132,7 +133,7 @@ func (d *bodySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 func (d *bodySettingsDockable) initContent(content *unison.Panel) {
 	d.content = content
-	installPanelDragDrop(d.content, hitLocationDragDataKey, d.dataDragOver, d.dataDragExit, d.dataDragDrop)
+	installPanelDragDrop(d.content, hitLocationDragKey, d.dataDragOver, d.dataDragExit, d.dataDragDrop)
 	d.content.DrawOverCallback = d.drawOver
 	content.SetBorder(nil)
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -208,7 +209,7 @@ func (d *bodySettingsDockable) apply() {
 	d.owner.SetBodySettings(d.body.Clone(d.owner.Entity(), nil))
 }
 
-func (d *bodySettingsDockable) dataDragOver(where geom.Point, data map[string]any) bool {
+func (d *bodySettingsDockable) dataDragOver(where geom.Point, data map[*uti.DataType]any) bool {
 	prevInDragOver := d.inDragOver
 	dragInsert := d.dragInsert
 	dragTarget := d.dragTarget
@@ -216,7 +217,7 @@ func (d *bodySettingsDockable) dataDragOver(where geom.Point, data map[string]an
 	d.dragInsert = -1
 	d.dragTargetBody = nil
 	d.dragTarget = nil
-	if dragData, ok := data[hitLocationDragDataKey]; ok {
+	if dragData, ok := data[hitLocationDragKey]; ok {
 		var dd *hitLocationSettingsPanel
 		if dd, ok = dragData.(*hitLocationSettingsPanel); ok && dd.dockable == d {
 			parent := dd.Parent()
@@ -250,9 +251,9 @@ func (d *bodySettingsDockable) dataDragExit() {
 	d.MarkForRedraw()
 }
 
-func (d *bodySettingsDockable) dataDragDrop(_ geom.Point, data map[string]any) {
+func (d *bodySettingsDockable) dataDragDrop(_ geom.Point, data map[*uti.DataType]any) {
 	if d.inDragOver && d.dragInsert != -1 {
-		if dragData, ok := data[hitLocationDragDataKey]; ok {
+		if dragData, ok := data[hitLocationDragKey]; ok {
 			var dd *hitLocationSettingsPanel
 			if dd, ok = dragData.(*hitLocationSettingsPanel); ok && dd.dockable == d && d.dragInsert != -1 {
 				undo := d.prepareUndo(i18n.Text("Hit Location Drag"))

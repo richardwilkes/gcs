@@ -14,6 +14,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
@@ -25,15 +26,15 @@ import (
 type DragHandle struct {
 	unison.Panel
 	svg      *unison.DrawableSVG
-	key      string
-	data     map[string]any
+	key      *uti.DataType
+	data     map[*uti.DataType]any
 	rollover bool
 }
 
 // NewDragHandle creates a new draggable handle widget. The supplied data is delivered to drop targets under the given
-// key during a drag.
-func NewDragHandle(key string, data any) *DragHandle {
-	h := &DragHandle{key: key, data: map[string]any{key: data}}
+// data type during a drag.
+func NewDragHandle(key *uti.DataType, data any) *DragHandle {
+	h := &DragHandle{key: key, data: map[*uti.DataType]any{key: data}}
 	h.Self = h
 	h.DrawCallback = h.draw
 	h.MouseEnterCallback = h.mouseEnter
@@ -98,7 +99,7 @@ func (h *DragHandle) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
 		where.Y -= size.Height / 2
 		panelDragData = h.data
 		h.StartDrag(img, where, func() { panelDragData = nil }, drag.Move, drag.Data{
-			Type: dragDataType(h.key),
+			Type: h.key,
 			Data: []byte{0},
 		})
 	}

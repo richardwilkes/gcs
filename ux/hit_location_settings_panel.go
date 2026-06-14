@@ -63,7 +63,7 @@ func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitL
 		gc.DrawRect(rect, ink.Paint(gc, rect, paintstyle.Fill))
 	}
 
-	p.AddChild(NewDragHandle(hitLocationDragDataKey, p))
+	p.AddChild(NewDragHandle(hitLocationDragKey, p))
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())
 

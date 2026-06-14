@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
@@ -122,7 +123,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	dragUpdate := func(di drag.Info, _ geom.Point, mods mod.Modifiers) drag.Op {
 		t.dragReroutePanel = nil
 		for _, key := range dropKeys {
-			if di.HasDataType(dragDataType(key).UTI) {
+			if di.HasDataType(key.UTI) {
 				if t.dragReroutePanel = t.keyToPanel(key); t.dragReroutePanel != nil {
 					return t.dragReroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
 				}
@@ -131,7 +132,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		}
 		return drag.None
 	}
-	t.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataKey(di, dropKeys...) }
+	t.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataType(di, dropKeys...) }
 	t.DragEnteredCallback = dragUpdate
 	t.DragUpdatedCallback = dragUpdate
 	t.DragExitedCallback = func() {
@@ -279,14 +280,14 @@ func (t *Template) createToolbar() {
 	})
 }
 
-func (t *Template) keyToPanel(key string) *unison.Panel {
+func (t *Template) keyToPanel(key *uti.DataType) *unison.Panel {
 	var p unison.Paneler
 	switch key {
 	case equipmentDragKey:
 		p = t.Equipment.Table
-	case gurps.SkillID:
+	case skillDragKey:
 		p = t.Skills.Table
-	case gurps.SpellID:
+	case spellDragKey:
 		p = t.Spells.Table
 	case traitDragKey:
 		p = t.Traits.Table

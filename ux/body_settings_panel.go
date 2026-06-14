@@ -19,8 +19,6 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-const hitLocationDragDataKey = "drag.body"
-
 type bodySettingsPanel struct {
 	unison.Panel
 	dockable *bodySettingsDockable

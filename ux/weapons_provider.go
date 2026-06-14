@@ -17,13 +17,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
 const (
-	meleeWeaponDragKey  = "melee_weapon"
-	rangedWeaponDragKey = "ranged_weapon"
+	meleeWeaponRefKey  = "melee_weapon"
+	rangedWeaponRefKey = "ranged_weapon"
 )
 
 var _ TableProvider[*gurps.Weapon] = &weaponsProvider{}
@@ -46,9 +47,9 @@ func NewWeaponsProvider(provider gurps.WeaponListProvider, melee, forPage bool) 
 
 func (p *weaponsProvider) RefKey() string {
 	if p.melee {
-		return meleeWeaponDragKey
+		return meleeWeaponRefKey
 	}
-	return rangedWeaponDragKey
+	return rangedWeaponRefKey
 }
 
 func (p *weaponsProvider) AllTags() []string {
@@ -100,8 +101,11 @@ func (p *weaponsProvider) DataOwner() gurps.DataOwner {
 	return p.provider.DataOwner()
 }
 
-func (p *weaponsProvider) DragKey() string {
-	return p.RefKey()
+func (p *weaponsProvider) DragKey() *uti.DataType {
+	if p.melee {
+		return meleeWeaponDragKey
+	}
+	return rangedWeaponDragKey
 }
 
 func (p *weaponsProvider) DragSVG() *unison.SVG {

@@ -63,7 +63,7 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 		HGrab:  true,
 	})
 
-	p.AddChild(NewDragHandle(attributeSettingsDragDataKey, &attributeSettingsDragData{
+	p.AddChild(NewDragHandle(attributeSettingsDragKey, &attributeSettingsDragData{
 		owner: dockable.Entity(),
 		def:   def,
 	}))

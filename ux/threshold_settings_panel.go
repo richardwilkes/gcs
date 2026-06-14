@@ -59,7 +59,7 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, thresh *gurps.PoolThresh
 		HGrab:  true,
 	})
 
-	p.AddChild(NewDragHandle(attributeSettingsDragDataKey, &attributeSettingsDragData{
+	p.AddChild(NewDragHandle(attributeSettingsDragKey, &attributeSettingsDragData{
 		owner:     pool.dockable.Entity(),
 		def:       pool.def,
 		threshold: thresh,

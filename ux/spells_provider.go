@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
@@ -87,8 +88,8 @@ func (p *spellsProvider) DataOwner() gurps.DataOwner {
 	return p.provider.DataOwner()
 }
 
-func (p *spellsProvider) DragKey() string {
-	return gurps.SpellID
+func (p *spellsProvider) DragKey() *uti.DataType {
+	return spellDragKey
 }
 
 func (p *spellsProvider) DragSVG() *unison.SVG {

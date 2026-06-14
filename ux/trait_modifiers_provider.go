@@ -17,11 +17,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
-const traitModifierDragKey = "trait_modifier"
+const traitModifierRefKey = "trait_modifier"
 
 var _ TableProvider[*gurps.TraitModifier] = &traitModifiersProvider{}
 
@@ -40,7 +41,7 @@ func NewTraitModifiersProvider(provider gurps.TraitModifierListProvider, forEdit
 }
 
 func (p *traitModifiersProvider) RefKey() string {
-	return traitModifierDragKey
+	return traitModifierRefKey
 }
 
 func (p *traitModifiersProvider) AllTags() []string {
@@ -87,7 +88,7 @@ func (p *traitModifiersProvider) DataOwner() gurps.DataOwner {
 	return p.provider.DataOwner()
 }
 
-func (p *traitModifiersProvider) DragKey() string {
+func (p *traitModifiersProvider) DragKey() *uti.DataType {
 	return traitModifierDragKey
 }
 

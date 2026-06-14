@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
@@ -51,10 +52,10 @@ var (
 
 	printMgr    printing.PrintManager
 	lastPrinter printing.PrinterID
-	dropKeys    = []string{
+	dropKeys    = []*uti.DataType{
 		equipmentDragKey,
-		gurps.SkillID,
-		gurps.SpellID,
+		skillDragKey,
+		spellDragKey,
 		traitDragKey,
 		noteDragKey,
 	}
@@ -155,7 +156,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	dragUpdate := func(di drag.Info, _ geom.Point, mods mod.Modifiers) drag.Op {
 		s.dragReroutePanel = nil
 		for _, key := range dropKeys {
-			if di.HasDataType(dragDataType(key).UTI) {
+			if di.HasDataType(key.UTI) {
 				if s.dragReroutePanel = s.keyToPanel(key); s.dragReroutePanel != nil {
 					return s.dragReroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
 				}
@@ -164,7 +165,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		}
 		return drag.None
 	}
-	s.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataKey(di, dropKeys...) }
+	s.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataType(di, dropKeys...) }
 	s.DragEnteredCallback = dragUpdate
 	s.DragUpdatedCallback = dragUpdate
 	s.DragExitedCallback = func() {
@@ -434,14 +435,14 @@ func (s *Sheet) updatePortrait(data []byte) {
 	s.MarkModified(s)
 }
 
-func (s *Sheet) keyToPanel(key string) *unison.Panel {
+func (s *Sheet) keyToPanel(key *uti.DataType) *unison.Panel {
 	var p unison.Paneler
 	switch key {
 	case equipmentDragKey:
 		p = s.CarriedEquipment.Table
-	case gurps.SkillID:
+	case skillDragKey:
 		p = s.Skills.Table
-	case gurps.SpellID:
+	case spellDragKey:
 		p = s.Spells.Table
 	case traitDragKey:
 		p = s.Traits.Table

@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xrand"
 	"github.com/richardwilkes/unison"
@@ -119,7 +120,7 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	dragUpdate := func(di drag.Info, _ geom.Point, mods mod.Modifiers) drag.Op {
 		l.dragReroutePanel = nil
 		for _, key := range dropKeys {
-			if di.HasDataType(dragDataType(key).UTI) {
+			if di.HasDataType(key.UTI) {
 				if l.dragReroutePanel = l.keyToPanel(key); l.dragReroutePanel != nil {
 					return l.dragReroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
 				}
@@ -128,7 +129,7 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 		}
 		return drag.None
 	}
-	l.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataKey(di, dropKeys...) }
+	l.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataType(di, dropKeys...) }
 	l.DragEnteredCallback = dragUpdate
 	l.DragUpdatedCallback = dragUpdate
 	l.DragExitedCallback = func() {
@@ -301,7 +302,7 @@ func (l *LootSheet) installNewItemCmdHandlers(itemID, containerID int, creator i
 	l.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator.CreateItem(l, variant) })
 }
 
-func (l *LootSheet) keyToPanel(key string) *unison.Panel {
+func (l *LootSheet) keyToPanel(key *uti.DataType) *unison.Panel {
 	var p unison.Paneler
 	switch key {
 	case equipmentDragKey:

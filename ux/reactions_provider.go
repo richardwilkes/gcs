@@ -13,10 +13,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 )
-
-const reactionModifierDragKey = "reaction_modifier"
 
 var _ TableProvider[*gurps.ConditionalModifier] = &reactionModProvider{}
 
@@ -69,7 +68,7 @@ func (p *reactionModProvider) DataOwner() gurps.DataOwner {
 	return p.provider.DataOwner()
 }
 
-func (p *reactionModProvider) DragKey() string {
+func (p *reactionModProvider) DragKey() *uti.DataType {
 	return reactionModifierDragKey
 }
 

@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -46,7 +47,7 @@ type TableProvider[T gurps.NodeTypes] interface {
 	SetTable(table *unison.Table[*Node[T]])
 	RootData() []T
 	SetRootData(data []T)
-	DragKey() string
+	DragKey() *uti.DataType
 	DragSVG() *unison.SVG
 	DropShouldMoveData(from, to *unison.Table[*Node[T]]) bool
 	ProcessDropData(from, to *unison.Table[*Node[T]])
@@ -119,7 +120,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		return table.DefaultKeyDown(keyCode, mods, repeat)
 	}
 	singular, plural := provider.ItemNames()
-	table.InstallDragSupport(provider.DragSVG(), dragDataType(provider.DragKey()), singular, plural)
+	table.InstallDragSupport(provider.DragSVG(), provider.DragKey(), singular, plural)
 	// Mirror the dragged rows into our own storage so that alternate drop handlers (which deal with a different row
 	// type than the destination table) can access them, since unison only retains them internally.
 	origMouseDrag := table.MouseDragCallback

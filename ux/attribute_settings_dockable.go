@@ -21,11 +21,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
-
-const attributeSettingsDragDataKey = "drag.attr"
 
 var _ GroupedCloser = &attributeSettingsDockable{}
 
@@ -43,7 +42,7 @@ type attributeSettingsDockable struct {
 	dragTargetPool  *poolSettingsPanel
 	defInsert       int
 	thresholdInsert int
-	lastDragData    map[string]any
+	lastDragData    map[*uti.DataType]any
 	promptForSave   bool
 	inDragOver      bool
 	waitingForTimer bool
@@ -214,7 +213,7 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 func (d *attributeSettingsDockable) initContent(content *unison.Panel) {
 	d.content = content
-	installPanelDragDrop(d.content, attributeSettingsDragDataKey, d.dataDragOver, d.dataDragExit, d.dataDragDrop)
+	installPanelDragDrop(d.content, attributeSettingsDragKey, d.dataDragOver, d.dataDragExit, d.dataDragDrop)
 	d.content.DrawOverCallback = d.drawOver
 	content.SetBorder(nil)
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -346,7 +345,7 @@ func (d *attributeSettingsDockable) apply() {
 	}
 }
 
-func (d *attributeSettingsDockable) dataDragOver(where geom.Point, data map[string]any) bool {
+func (d *attributeSettingsDockable) dataDragOver(where geom.Point, data map[*uti.DataType]any) bool {
 	d.lastDragData = data
 	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
 	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
@@ -358,7 +357,7 @@ func (d *attributeSettingsDockable) dataDragOver(where geom.Point, data map[stri
 	d.defInsert = -1
 	d.thresholdInsert = -1
 	d.dragTargetPool = nil
-	if dragData, ok := data[attributeSettingsDragDataKey]; ok {
+	if dragData, ok := data[attributeSettingsDragKey]; ok {
 		var dd *attributeSettingsDragData
 		if dd, ok = dragData.(*attributeSettingsDragData); ok && dd.owner == d.Entity() {
 			children := d.content.Children()
@@ -425,9 +424,9 @@ func (d *attributeSettingsDockable) dataDragExit() {
 	d.MarkForRedraw()
 }
 
-func (d *attributeSettingsDockable) dataDragDrop(_ geom.Point, data map[string]any) {
+func (d *attributeSettingsDockable) dataDragDrop(_ geom.Point, data map[*uti.DataType]any) {
 	if d.inDragOver && d.defInsert != -1 {
-		if dragData, ok := data[attributeSettingsDragDataKey]; ok {
+		if dragData, ok := data[attributeSettingsDragKey]; ok {
 			var dd *attributeSettingsDragData
 			if dd, ok = dragData.(*attributeSettingsDragData); ok {
 				undo := &unison.UndoEdit[*gurps.AttributeDefs]{
