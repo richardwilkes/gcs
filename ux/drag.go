@@ -92,13 +92,19 @@ func installPanelDragDrop(panel *unison.Panel, dataType *uti.DataType,
 	update := func(di drag.Info, where geom.Point, _ mod.Modifiers) drag.Op {
 		if di.HasDataType(dataType.UTI) {
 			over(where, panelDragData)
+			// A native drag has no continuous redraw loop, so any drawing marked dirty by the over handler must be
+			// flushed explicitly or the drop feedback never appears.
+			panel.FlushDrawing()
 			return drag.Move
 		}
 		return drag.None
 	}
 	panel.DragEnteredCallback = update
 	panel.DragUpdatedCallback = update
-	panel.DragExitedCallback = exit
+	panel.DragExitedCallback = func() {
+		exit()
+		panel.FlushDrawing()
+	}
 	panel.DropCallback = func(di drag.Info, where geom.Point, _ mod.Modifiers) bool {
 		if di.HasDataType(dataType.UTI) {
 			drop(where, panelDragData)
