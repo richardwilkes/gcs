@@ -180,7 +180,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		handled := false
 		if s.dragReroutePanel != nil {
 			if s.dragReroutePanel.DropCallback != nil {
-				handled = s.dragReroutePanel.DropCallback(di, geom.Point{Y: 10000000}, mods)
+				handled = s.dragReroutePanel.DropCallback(di, geom.Point{Y: 100000000}, mods)
 			}
 			s.dragReroutePanel = nil
 		}

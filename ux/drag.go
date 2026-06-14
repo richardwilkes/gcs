@@ -40,7 +40,6 @@ var (
 	// panelDragData holds the data for an in-progress panel-based drag (initiated by a DragHandle). It is refreshed at
 	// the start of each drag.
 	panelDragData any
-
 	// draggedTableData holds the data for an in-progress table row drag. It mirrors the data unison tracks internally
 	// so that our alternate drop handlers can access the dragged rows. It is refreshed at the start of each drag.
 	draggedTableData any
