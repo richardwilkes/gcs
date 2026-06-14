@@ -37,12 +37,12 @@ var (
 )
 
 var (
-	// panelDragData holds the data for an in-progress panel-based drag (initiated by a DragHandle). It is keyed by the
-	// drag data type and refreshed at the start of each drag.
-	panelDragData map[*uti.DataType]any
+	// panelDragData holds the data for an in-progress panel-based drag (initiated by a DragHandle). It is refreshed at
+	// the start of each drag.
+	panelDragData any
 
-	// draggedTableData holds the data for an in-progress table row drag. It mirrors the data unison tracks internally so
-	// that our alternate drop handlers can access the dragged rows. It is refreshed at the start of each drag.
+	// draggedTableData holds the data for an in-progress table row drag. It mirrors the data unison tracks internally
+	// so that our alternate drop handlers can access the dragged rows. It is refreshed at the start of each drag.
 	draggedTableData any
 )
 
@@ -85,9 +85,9 @@ func registerWindowDragTypes(wnd *unison.Window) {
 // installPanelDragDrop wires the supplied panel-based drag handlers to a panel using the current unison drag callbacks.
 // The over and drop handlers receive the in-progress panel drag data, keyed by drag data type.
 func installPanelDragDrop(panel *unison.Panel, dataType *uti.DataType,
-	over func(where geom.Point, data map[*uti.DataType]any) bool,
+	over func(where geom.Point, data any) bool,
 	exit func(),
-	drop func(where geom.Point, data map[*uti.DataType]any),
+	drop func(where geom.Point, data any),
 ) {
 	panel.CanAcceptDropCallback = func(di drag.Info) bool { return di.HasDataType(dataType.UTI) }
 	update := func(di drag.Info, where geom.Point, _ mod.Modifiers) drag.Op {

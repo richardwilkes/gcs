@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -42,7 +41,7 @@ type attributeSettingsDockable struct {
 	dragTargetPool  *poolSettingsPanel
 	defInsert       int
 	thresholdInsert int
-	lastDragData    map[*uti.DataType]any
+	lastDragData    any
 	promptForSave   bool
 	inDragOver      bool
 	waitingForTimer bool
@@ -345,7 +344,7 @@ func (d *attributeSettingsDockable) apply() {
 	}
 }
 
-func (d *attributeSettingsDockable) dataDragOver(where geom.Point, data map[*uti.DataType]any) bool {
+func (d *attributeSettingsDockable) dataDragOver(where geom.Point, data any) bool {
 	d.lastDragData = data
 	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
 	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
@@ -357,54 +356,51 @@ func (d *attributeSettingsDockable) dataDragOver(where geom.Point, data map[*uti
 	d.defInsert = -1
 	d.thresholdInsert = -1
 	d.dragTargetPool = nil
-	if dragData, ok := data[attributeSettingsDragKey]; ok {
-		var dd *attributeSettingsDragData
-		if dd, ok = dragData.(*attributeSettingsDragData); ok && dd.owner == d.Entity() {
-			children := d.content.Children()
-			rootPt := d.content.PointToRoot(where)
-			if dd.threshold == nil {
-				pt := d.content.PointFromRoot(rootPt)
-				for i, child := range children {
-					rect := child.FrameRect()
-					if pt.In(rect) {
-						if rect.CenterY() <= pt.Y {
-							d.defInsert = i + 1
-						} else {
-							d.defInsert = i
-						}
-						d.inDragOver = true
-						break
-					}
-				}
-			} else {
-				for i, def := range d.defs.List(false) {
-					if def != dd.def || (def.Type != attribute.Pool && def.Type != attribute.PoolRef) {
-						continue
-					}
-					pp, ok2 := children[i].Self.(*attrDefSettingsPanel)
-					if !ok2 {
-						continue
-					}
-					p := pp.poolPanel
-					pt := p.PointFromRoot(rootPt)
-					for j, child := range p.Children() {
-						rect := child.FrameRect()
-						if !pt.In(rect) {
-							continue
-						}
-						d.dragTargetPool = p
+	if dd, ok := data.(*attributeSettingsDragData); ok && dd.owner == d.Entity() {
+		children := d.content.Children()
+		rootPt := d.content.PointToRoot(where)
+		if dd.threshold == nil {
+			pt := d.content.PointFromRoot(rootPt)
+			for i, child := range children {
+				rect := child.FrameRect()
+				if pt.In(rect) {
+					if rect.CenterY() <= pt.Y {
+						d.defInsert = i + 1
+					} else {
 						d.defInsert = i
-						if rect.CenterY() <= pt.Y {
-							d.thresholdInsert = j + 1
-						} else {
-							d.thresholdInsert = j
-						}
-						d.inDragOver = true
-						break
 					}
-					if d.inDragOver {
-						break
+					d.inDragOver = true
+					break
+				}
+			}
+		} else {
+			for i, def := range d.defs.List(false) {
+				if def != dd.def || (def.Type != attribute.Pool && def.Type != attribute.PoolRef) {
+					continue
+				}
+				pp, ok2 := children[i].Self.(*attrDefSettingsPanel)
+				if !ok2 {
+					continue
+				}
+				p := pp.poolPanel
+				pt := p.PointFromRoot(rootPt)
+				for j, child := range p.Children() {
+					rect := child.FrameRect()
+					if !pt.In(rect) {
+						continue
 					}
+					d.dragTargetPool = p
+					d.defInsert = i
+					if rect.CenterY() <= pt.Y {
+						d.thresholdInsert = j + 1
+					} else {
+						d.thresholdInsert = j
+					}
+					d.inDragOver = true
+					break
+				}
+				if d.inDragOver {
+					break
 				}
 			}
 		}
@@ -424,45 +420,42 @@ func (d *attributeSettingsDockable) dataDragExit() {
 	d.MarkForRedraw()
 }
 
-func (d *attributeSettingsDockable) dataDragDrop(_ geom.Point, data map[*uti.DataType]any) {
+func (d *attributeSettingsDockable) dataDragDrop(_ geom.Point, data any) {
 	if d.inDragOver && d.defInsert != -1 {
-		if dragData, ok := data[attributeSettingsDragKey]; ok {
-			var dd *attributeSettingsDragData
-			if dd, ok = dragData.(*attributeSettingsDragData); ok {
-				undo := &unison.UndoEdit[*gurps.AttributeDefs]{
-					ID:         unison.NextUndoID(),
-					UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-					RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-					AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
-				}
-				undo.BeforeData = d.defs.Clone()
-				if d.thresholdInsert != -1 {
-					undo.EditName = i18n.Text("Pool Threshold Drag")
-					i := slices.Index(dd.def.Thresholds, dd.threshold)
-					dd.def.Thresholds = slices.Delete(dd.def.Thresholds, i, i+1)
-					if i < d.thresholdInsert {
-						d.thresholdInsert--
-					}
-					dd.def.Thresholds = slices.Insert(dd.def.Thresholds, d.thresholdInsert, dd.threshold)
-				} else {
-					undo.EditName = i18n.Text("Attribute Definition Drag")
-					list := d.defs.List(false)
-					i := slices.Index(list, dd.def)
-					list = slices.Delete(list, i, i+1)
-					if i < d.defInsert {
-						d.defInsert--
-					}
-					list = slices.Insert(list, d.defInsert, dd.def)
-					for j, def := range list {
-						def.Order = j
-					}
-				}
-				undo.AfterData = d.defs.Clone()
-				d.applyAttrDefs(undo.AfterData)
-				d.UndoManager().Add(undo)
-				d.MarkModified(nil)
-				d.MarkForLayoutAndRedraw()
+		if dd, ok := data.(*attributeSettingsDragData); ok {
+			undo := &unison.UndoEdit[*gurps.AttributeDefs]{
+				ID:         unison.NextUndoID(),
+				UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+				RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+				AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
 			}
+			undo.BeforeData = d.defs.Clone()
+			if d.thresholdInsert != -1 {
+				undo.EditName = i18n.Text("Pool Threshold Drag")
+				i := slices.Index(dd.def.Thresholds, dd.threshold)
+				dd.def.Thresholds = slices.Delete(dd.def.Thresholds, i, i+1)
+				if i < d.thresholdInsert {
+					d.thresholdInsert--
+				}
+				dd.def.Thresholds = slices.Insert(dd.def.Thresholds, d.thresholdInsert, dd.threshold)
+			} else {
+				undo.EditName = i18n.Text("Attribute Definition Drag")
+				list := d.defs.List(false)
+				i := slices.Index(list, dd.def)
+				list = slices.Delete(list, i, i+1)
+				if i < d.defInsert {
+					d.defInsert--
+				}
+				list = slices.Insert(list, d.defInsert, dd.def)
+				for j, def := range list {
+					def.Order = j
+				}
+			}
+			undo.AfterData = d.defs.Clone()
+			d.applyAttrDefs(undo.AfterData)
+			d.UndoManager().Add(undo)
+			d.MarkModified(nil)
+			d.MarkForLayoutAndRedraw()
 		}
 	}
 	d.dataDragExit()

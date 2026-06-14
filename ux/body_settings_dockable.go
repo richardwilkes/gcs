@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -209,7 +208,7 @@ func (d *bodySettingsDockable) apply() {
 	d.owner.SetBodySettings(d.body.Clone(d.owner.Entity(), nil))
 }
 
-func (d *bodySettingsDockable) dataDragOver(where geom.Point, data map[*uti.DataType]any) bool {
+func (d *bodySettingsDockable) dataDragOver(where geom.Point, data any) bool {
 	prevInDragOver := d.inDragOver
 	dragInsert := d.dragInsert
 	dragTarget := d.dragTarget
@@ -217,23 +216,20 @@ func (d *bodySettingsDockable) dataDragOver(where geom.Point, data map[*uti.Data
 	d.dragInsert = -1
 	d.dragTargetBody = nil
 	d.dragTarget = nil
-	if dragData, ok := data[hitLocationDragKey]; ok {
-		var dd *hitLocationSettingsPanel
-		if dd, ok = dragData.(*hitLocationSettingsPanel); ok && dd.dockable == d {
-			parent := dd.Parent()
-			where = parent.PointFromRoot(d.content.PointToRoot(where))
-			for i, child := range parent.Children() {
-				rect := child.FrameRect()
-				if where.In(rect) {
-					d.dragTarget = parent
-					if rect.CenterY() <= where.Y {
-						d.dragInsert = i + 1
-					} else {
-						d.dragInsert = i
-					}
-					d.inDragOver = true
-					break
+	if dd, ok := data.(*hitLocationSettingsPanel); ok && dd.dockable == d {
+		parent := dd.Parent()
+		where = parent.PointFromRoot(d.content.PointToRoot(where))
+		for i, child := range parent.Children() {
+			rect := child.FrameRect()
+			if where.In(rect) {
+				d.dragTarget = parent
+				if rect.CenterY() <= where.Y {
+					d.dragInsert = i + 1
+				} else {
+					d.dragInsert = i
 				}
+				d.inDragOver = true
+				break
 			}
 		}
 	}
@@ -251,23 +247,20 @@ func (d *bodySettingsDockable) dataDragExit() {
 	d.MarkForRedraw()
 }
 
-func (d *bodySettingsDockable) dataDragDrop(_ geom.Point, data map[*uti.DataType]any) {
+func (d *bodySettingsDockable) dataDragDrop(_ geom.Point, data any) {
 	if d.inDragOver && d.dragInsert != -1 {
-		if dragData, ok := data[hitLocationDragKey]; ok {
-			var dd *hitLocationSettingsPanel
-			if dd, ok = dragData.(*hitLocationSettingsPanel); ok && dd.dockable == d && d.dragInsert != -1 {
-				undo := d.prepareUndo(i18n.Text("Hit Location Drag"))
-				table := dd.loc.OwningTable()
-				i := slices.Index(table.Locations, dd.loc)
-				table.Locations = slices.Delete(table.Locations, i, i+1)
-				if i < d.dragInsert {
-					d.dragInsert--
-				}
-				table.Locations = slices.Insert(table.Locations, d.dragInsert, dd.loc)
-				table.Update(d.Entity())
-				d.finishAndPostUndo(undo)
-				d.sync()
+		if dd, ok := data.(*hitLocationSettingsPanel); ok && dd.dockable == d && d.dragInsert != -1 {
+			undo := d.prepareUndo(i18n.Text("Hit Location Drag"))
+			table := dd.loc.OwningTable()
+			i := slices.Index(table.Locations, dd.loc)
+			table.Locations = slices.Delete(table.Locations, i, i+1)
+			if i < d.dragInsert {
+				d.dragInsert--
 			}
+			table.Locations = slices.Insert(table.Locations, d.dragInsert, dd.loc)
+			table.Update(d.Entity())
+			d.finishAndPostUndo(undo)
+			d.sync()
 		}
 	}
 	d.dataDragExit()
