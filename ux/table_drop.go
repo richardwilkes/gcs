@@ -47,34 +47,41 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 	}
 	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
 		altDataType := altDropSupport.DragKey
-		originalCanAcceptDropCallback := table.CanAcceptDropCallback
-		originalDragUpdatedCallback := table.DragUpdatedCallback
-		originalDragExitedCallback := table.DragExitedCallback
-		originalDropCallback := table.DropCallback
+		originalDragCallbacks := table.Callbacks
 		originalDrawOverCallback := table.DrawOverCallback
 		altDropRowIndex := -1
 		table.CanAcceptDropCallback = func(di drag.Info) bool {
 			if table.Enabled() && !table.IsFiltered() && di.HasDataType(altDataType.UTI) {
 				return true
 			}
-			return originalCanAcceptDropCallback(di)
+			return originalDragCallbacks.CanAcceptDropCallback(di)
 		}
-		dragUpdate := func(di drag.Info, where geom.Point, mods mod.Modifiers) drag.Op {
+		dragEnterOrUpdate := func(di drag.Info, where geom.Point) (drag.Op, bool) {
 			if di.HasDataType(altDataType.UTI) {
 				altDropRowIndex = table.OverRow(where.Y)
 				if altDropRowIndex != -1 {
 					table.MarkForRedraw()
-					return drag.Copy
+					return drag.Copy, true
 				}
-				return drag.None
+				return drag.None, true
 			}
-			return originalDragUpdatedCallback(di, where, mods)
+			return drag.None, false
 		}
-		table.DragEnteredCallback = dragUpdate
-		table.DragUpdatedCallback = dragUpdate
+		table.DragEnteredCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) drag.Op {
+			if op, ok := dragEnterOrUpdate(di, where); ok {
+				return op
+			}
+			return originalDragCallbacks.DragEnteredCallback(di, where, mods)
+		}
+		table.DragUpdatedCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) drag.Op {
+			if op, ok := dragEnterOrUpdate(di, where); ok {
+				return op
+			}
+			return originalDragCallbacks.DragUpdatedCallback(di, where, mods)
+		}
 		table.DragExitedCallback = func() {
 			altDropRowIndex = -1
-			originalDragExitedCallback()
+			originalDragCallbacks.DragExitedCallback()
 		}
 		table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
 			if di.HasDataType(altDataType.UTI) {
@@ -89,7 +96,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 				}
 				return handled
 			}
-			return originalDropCallback(di, where, mods)
+			return originalDragCallbacks.DropCallback(di, where, mods)
 		}
 		table.DrawOverCallback = func(gc *unison.Canvas, rect geom.Rect) {
 			originalDrawOverCallback(gc, rect)
