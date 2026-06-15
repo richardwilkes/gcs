@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			// Build GCS so the debugger can attach to a binary that launches and renders correctly. Paths are relative
-			// (with cwd set below) so they survive whatever shell the task runs in.
+			// (with cwd set below) so they survive whatever shell the task runs in. Only used on Windows.
 			//
 			// Windows: force Go's internal linker (-linkmode=internal). With the default external mingw linker, large
 			// unstripped (debug-info) binaries are rejected by the Windows loader with error 193 ("not a valid Win32

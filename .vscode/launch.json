@@ -8,10 +8,11 @@
 			"name": "GCS",
 			"type": "go",
 			"request": "launch",
-			"mode": "exec",
-			"preLaunchTask": "build GCS",
-			"program": "${workspaceFolder}/gcs",
+			"mode": "auto",
+			"program": "${workspaceFolder}",
 			"windows": {
+				"mode": "exec",
+				"preLaunchTask": "build GCS",
 				"program": "${workspaceFolder}/gcs.exe"
 			},
 			"args": [
