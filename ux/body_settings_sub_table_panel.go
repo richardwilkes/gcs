@@ -11,7 +11,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -57,12 +56,12 @@ func (p *bodySettingsSubTablePanel) createButtons() *unison.Panel {
 	})
 	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
-	p.deleteButton = unison.NewSVGButton(svg.Trash)
+	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = p.removeSubTable
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove sub-table"))
 	buttons.AddChild(p.deleteButton)
 
-	p.addButton = unison.NewSVGButton(svg.CircledAdd)
+	p.addButton = unison.NewSVGButton(unison.CircledAddSVG)
 	p.addButton.ClickCallback = p.addHitLocation
 	p.addButton.Tooltip = newWrappedTooltip(i18n.Text("Add hit location"))
 	buttons.AddChild(p.addButton)

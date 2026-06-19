@@ -143,7 +143,7 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 	toolbar.AddChild(NewToolbarSeparator())
 
-	addButton := unison.NewSVGButton(svg.CircledAdd)
+	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addAttributeText := i18n.Text("Add Attribute")
 	addButton.Tooltip = newWrappedTooltip(addAttributeText)
 	addButton.ClickCallback = func() {

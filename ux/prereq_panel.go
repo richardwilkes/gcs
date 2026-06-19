@@ -149,7 +149,7 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 	buttons.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: float32(depth * 20)}))
 	parent.AddChild(buttons)
 	if prereqList, ok := data.(*gurps.PrereqList); ok {
-		addPrereqButton := unison.NewSVGButton(svg.CircledAdd)
+		addPrereqButton := unison.NewSVGButton(unison.CircledAddSVG)
 		addPrereqButton.ClickCallback = func() {
 			if created := p.createPrereqForType(lastPrereqTypeUsed, prereqList); created != nil {
 				prereqList.Prereqs = slices.Insert(prereqList.Prereqs, 0, created)
@@ -175,7 +175,7 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 	}
 	parentList := data.ParentList()
 	if parentList != nil {
-		deleteButton := unison.NewSVGButton(svg.Trash)
+		deleteButton := unison.NewSVGButton(unison.TrashSVG)
 		deleteButton.ClickCallback = func() {
 			delete(p.andOrMap, data)
 			if i := slices.IndexFunc(parentList.Prereqs, func(elem gurps.Prereq) bool { return elem == data }); i != -1 {

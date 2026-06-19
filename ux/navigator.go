@@ -160,7 +160,7 @@ func (n *Navigator) setupToolBar() {
 	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
 	hierarchyButton.ClickCallback = n.toggleHierarchy
 
-	n.deleteButton = unison.NewSVGButton(svg.Trash)
+	n.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	n.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Delete"))
 	n.deleteButton.ClickCallback = n.deleteSelection
 
@@ -172,7 +172,7 @@ func (n *Navigator) setupToolBar() {
 	n.newFolderButton.Tooltip = newWrappedTooltip(i18n.Text("New Folder"))
 	n.newFolderButton.ClickCallback = n.newFolder
 
-	addLibraryButton := unison.NewSVGButton(svg.CircledAdd)
+	addLibraryButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addLibraryButton.Tooltip = newWrappedTooltip(i18n.Text("Add Library"))
 	addLibraryButton.ClickCallback = n.addLibrary
 

@@ -341,7 +341,7 @@ func (d *pageRefMappingsDockable) createEditField(ref *gurps.PageRef) {
 }
 
 func (d *pageRefMappingsDockable) createTrashField(ref *gurps.PageRef) {
-	b := unison.NewSVGButton(svg.Trash)
+	b := unison.NewSVGButton(unison.TrashSVG)
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to remove\n%s (%s)?"), ref.ID,
 			filepath.Base(ref.Path)), "") == unison.ModalResponseOK {

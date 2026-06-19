@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -81,12 +80,12 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 	})
 	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
-	p.deleteButton = unison.NewSVGButton(svg.Trash)
+	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = p.deleteAttrDef
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove attribute"))
 	buttons.AddChild(p.deleteButton)
 
-	p.addThresholdButton = unison.NewSVGButton(svg.CircledAdd)
+	p.addThresholdButton = unison.NewSVGButton(unison.CircledAddSVG)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
 	p.addThresholdButton.Tooltip = newWrappedTooltip(i18n.Text("Add pool threshold"))
 	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef)

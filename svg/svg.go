@@ -44,10 +44,6 @@ var (
 	calculatorData string
 	Calculator     = unison.MustSVGFromContentString(calculatorData)
 
-	//go:embed circled_add.svg
-	circledAddData string
-	CircledAdd     = unison.MustSVGFromContentString(circledAddData)
-
 	//go:embed circled_vertical_ellipsis.svg
 	circledVerticalEllipsisData string
 	CircledVerticalEllipsis     = unison.MustSVGFromContentString(circledVerticalEllipsisData)
@@ -275,10 +271,6 @@ var (
 	//go:embed star.svg
 	starData string
 	Star     = unison.MustSVGFromContentString(starData)
-
-	//go:embed trash.svg
-	trashData string
-	Trash     = unison.MustSVGFromContentString(trashData)
 
 	//go:embed magic_wand.svg
 	magicWandData string

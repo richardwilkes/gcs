@@ -14,7 +14,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -55,7 +54,7 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
-	addButton := unison.NewSVGButton(svg.CircledAdd)
+	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addButton.ClickCallback = func() {
 		def := &gurps.SkillDefault{DefaultType: lastDefaultTypeUsed}
 		// See the comment for the delete button as to why we don't just use slices.Insert here.
@@ -83,7 +82,7 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 		VSpacing: unison.StdVSpacing,
 	})
 
-	deleteButton := unison.NewSVGButton(svg.Trash)
+	deleteButton := unison.NewSVGButton(unison.TrashSVG)
 	deleteButton.ClickCallback = func() {
 		if i := slices.IndexFunc(*p.defaults, func(elem *gurps.SkillDefault) bool { return elem == def }); i != -1 {
 			// Cannot use this here: *p.defaults = slices.Delete(*p.defaults, i, i+1)

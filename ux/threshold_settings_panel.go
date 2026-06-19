@@ -12,7 +12,6 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -78,7 +77,7 @@ func (p *thresholdSettingsPanel) createButtons() *unison.Panel {
 	})
 	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
-	p.deleteButton = unison.NewSVGButton(svg.Trash)
+	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = func() { p.pool.deleteThreshold(p) }
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove pool threshold"))
 	p.deleteButton.SetEnabled(len(p.pool.def.Thresholds) > 1)

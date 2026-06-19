@@ -11,7 +11,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -57,7 +56,7 @@ func (p *bodySettingsPanel) createButtons() *unison.Panel {
 	})
 	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
-	addButton := unison.NewSVGButton(svg.CircledAdd)
+	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addButton.ClickCallback = p.addHitLocation
 	addButton.Tooltip = newWrappedTooltip(i18n.Text("Add hit location"))
 	buttons.AddChild(addButton)

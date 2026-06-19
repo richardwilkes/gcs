@@ -163,7 +163,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 
 	toolbar.AddChild(NewToolbarSeparator())
 
-	addButton := unison.NewSVGButton(svg.CircledAdd)
+	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addButton.Tooltip = newWrappedTooltip(i18n.Text("Add Entry"))
 	addButton.ClickCallback = e.addEntry
 	toolbar.AddChild(addButton)
@@ -182,7 +182,7 @@ func (e *pointsEditor) initContent() {
 }
 
 func (e *pointsEditor) createRow(rec *gurps.PointsRecord, index int) {
-	deleteButton := unison.NewSVGButton(svg.Trash)
+	deleteButton := unison.NewSVGButton(unison.TrashSVG)
 	deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove Entry"))
 	deleteButton.ClickCallback = func() { e.removeEntry(rec) }
 	e.content.AddChildAtIndex(deleteButton, index)
