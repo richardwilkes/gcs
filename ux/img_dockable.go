@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -72,7 +73,8 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		size = svg.Size()
 		kind = "SVG"
 	} else {
-		img, err := unison.NewImageFromFilePathOrURL(filePath, geom.NewPoint(1, 1).DivPt(unison.PrimaryDisplay().Scale))
+		img, err := unison.NewImageFromFilePathOrURL(context.Background(), nil, filePath,
+			geom.NewPoint(1, 1).DivPt(unison.PrimaryDisplay().Scale), 0)
 		if err != nil {
 			return nil, err
 		}
