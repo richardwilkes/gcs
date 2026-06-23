@@ -1,5 +1,17 @@
 # Changes since v5.42.0
 
+## ⚠️ Minimum System Requirements Have Changed
+
+This release raises the minimum operating system requirements. Please check that your system meets these before
+updating:
+
+- **macOS:** macOS 11 (Big Sur) or newer. On Intel Macs this was previously macOS 10.15 (Catalina); Apple Silicon was
+  already macOS 11.
+- **Windows:** Windows 10 or newer (unchanged).
+- **Linux:** glibc 2.35 or newer — this corresponds to Ubuntu 22.04, Debian 12, Fedora 36, or equivalent, and newer
+  (previously glibc 2.29: Ubuntu 19.04, Debian 11, Fedora 30, or equivalent). The Linux kernel must also be 3.2 or newer
+  on x86-64 and 3.7 or newer on ARM64, but glibc is the binding requirement in practice.
+
 ## New & Improved
 
 - **Drag & drop now works between windows and other applications.** You can drag items (equipment, traits, skills,
