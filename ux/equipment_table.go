@@ -44,6 +44,9 @@ func (p *equipmentListProvider) CarriedEquipmentList() []*gurps.Equipment {
 }
 
 func (p *equipmentListProvider) SetCarriedEquipmentList(list []*gurps.Equipment) {
+	for _, one := range list {
+		one.SetDataOwner(nil)
+	}
 	p.carried = list
 }
 
@@ -52,6 +55,9 @@ func (p *equipmentListProvider) OtherEquipmentList() []*gurps.Equipment {
 }
 
 func (p *equipmentListProvider) SetOtherEquipmentList(list []*gurps.Equipment) {
+	for _, one := range list {
+		one.SetDataOwner(nil)
+	}
 	p.other = list
 }
 

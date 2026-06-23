@@ -30,6 +30,9 @@ func (p *skillListProvider) SkillList() []*gurps.Skill {
 }
 
 func (p *skillListProvider) SetSkillList(list []*gurps.Skill) {
+	for _, one := range list {
+		one.SetDataOwner(nil)
+	}
 	p.skills = list
 }
 

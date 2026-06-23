@@ -30,6 +30,9 @@ func (p *noteListProvider) NoteList() []*gurps.Note {
 }
 
 func (p *noteListProvider) SetNoteList(list []*gurps.Note) {
+	for _, one := range list {
+		one.SetDataOwner(nil)
+	}
 	p.notes = list
 }
 

@@ -55,3 +55,5 @@ updating:
   another skill whose Tech Level didn't actually satisfy the constraint. (#1040)
 - Fixed a crash that could occur when an adjustment was based on the level of its owner and the owner, or any of the
   owner's ancestors, was disabled. (#1029)
+- Fixed a crash that could occur after undoing a change in a standalone equipment, trait, skill, or spell list and then
+  saving the file. (#1015)

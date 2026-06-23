@@ -30,6 +30,9 @@ func (p *traitListProvider) TraitList() []*gurps.Trait {
 }
 
 func (p *traitListProvider) SetTraitList(list []*gurps.Trait) {
+	for _, one := range list {
+		one.SetDataOwner(nil)
+	}
 	p.traits = list
 }
 
