@@ -61,14 +61,20 @@ jobs:
 
       - name: Build
         run: |
-          # build.sh exports GOEXPERIMENT itself. --all also runs the race
-          # detector, which isn't supported on windows/arm64, so build/lint/test
-          # without it there.
+          # The race detector isn't supported on windows/arm64, so build & test without it there.
           if [ "$RUNNER_OS" = "Windows" ] && [ "$RUNNER_ARCH" = "ARM64" ]; then
-            ./build.sh --go --lint --test
+            ./build.sh --go --test
           else
-            ./build.sh --all
+            ./build.sh --go --race
           fi
+
+      # Lint via the official action rather than build.sh's --lint step: the
+      # latter downloads golangci-lint through its upstream install.sh, whose
+      # checksum verification fails for unauthenticated release downloads in CI.
+      - name: Lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
 
       - name: Stage artifact
         id: stage
