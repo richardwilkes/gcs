@@ -174,9 +174,6 @@ func (s *SkillDefault) SkillBased() bool {
 
 // SkillLevel returns the base skill level for this SkillDefault.
 func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
-	if !s.isTLPermitted(entity) {
-		return fxp.Min
-	}
 	switch s.Type() {
 	case ParryID:
 		best := s.best(entity, replacements, requirePoints, excludes)
@@ -197,11 +194,21 @@ func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string
 	}
 }
 
-func (s *SkillDefault) isTLPermitted(entity *Entity) bool {
-	if entity == nil || s.WhenTL.Compare == criteria.AnyNumber {
+// isTLPermitted reports whether the WhenTL constraint (if any) is satisfied. skillTL is the tech level of the skill the
+// default is resolving against; when empty (the skill has no tech level, or the default isn't skill-based), it falls
+// back to the entity's tech level.
+func (s *SkillDefault) isTLPermitted(entity *Entity, skillTL string) bool {
+	if s.WhenTL.Compare == criteria.AnyNumber {
 		return true
 	}
-	tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
+	tlStr := skillTL
+	if tlStr == "" {
+		if entity == nil {
+			return true
+		}
+		tlStr = entity.Profile.TechLevel
+	}
+	tl, _, _ := ExtractTechLevel(tlStr)
 	if tl < 0 {
 		tl = 0
 	}
@@ -211,6 +218,9 @@ func (s *SkillDefault) isTLPermitted(entity *Entity) bool {
 func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
 	for _, sk := range entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes) {
+		if !s.isTLPermitted(entity, sk.TL()) {
+			continue
+		}
 		if best < sk.LevelData.Level {
 			level := sk.CalculateLevel(excludes).Level
 			if best < level {
@@ -223,11 +233,11 @@ func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requ
 
 // SkillLevelFast returns the base skill level for this SkillDefault.
 func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
-	if !s.isTLPermitted(entity) {
-		return fxp.Min
-	}
 	switch s.Type() {
 	case DodgeID:
+		if !s.isTLPermitted(entity, "") {
+			return fxp.Min
+		}
 		level := entity.Dodge(entity.EncumbranceLevel(false))
 		if ruleOf20 && level > 20 {
 			level = 20
@@ -248,6 +258,9 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 	case SkillID:
 		return s.finalLevel(s.bestFast(entity, replacements, requirePoints, excludes))
 	default:
+		if !s.isTLPermitted(entity, "") {
+			return fxp.Min
+		}
 		level := entity.ResolveAttributeCurrent(s.Type())
 		if ruleOf20 {
 			level = level.Min(fxp.Twenty)
@@ -262,6 +275,9 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
 	for _, sk := range entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes) {
+		if !s.isTLPermitted(entity, sk.TL()) {
+			continue
+		}
 		if best < sk.LevelData.Level {
 			best = sk.LevelData.Level
 		}
