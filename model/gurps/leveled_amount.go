@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
 // LeveledAmount holds an amount that can be either a fixed amount, or an amount per level.
@@ -28,8 +29,11 @@ type LeveledAmount struct {
 // AdjustedAmount returns the amount, adjusted for level, if requested.
 func (l *LeveledAmount) AdjustedAmount() fxp.Int {
 	if l.PerLevel {
+		if xreflect.IsNil(l.LeveledOwner) {
+			return 0
+		}
 		level := l.LeveledOwner.CurrentLevel()
-		if level < 0 {
+		if level <= 0 {
 			return 0
 		}
 		return l.Amount.Mul(level)
