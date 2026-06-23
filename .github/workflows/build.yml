@@ -73,6 +73,8 @@ jobs:
       # checksum verification fails for unauthenticated release downloads in CI.
       - name: Lint
         uses: golangci/golangci-lint-action@v9
+        env:
+          GOEXPERIMENT: jsonv2,nodwarf5
         with:
           version: latest
 
