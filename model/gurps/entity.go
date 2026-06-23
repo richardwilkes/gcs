@@ -42,7 +42,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
-	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 var (
@@ -1347,7 +1346,11 @@ func (e *Entity) Ancestry() *Ancestry {
 	}, true, false, e.Traits...)
 	if anc == nil {
 		if anc = LookupAncestry(DefaultAncestry, GlobalSettings().Libraries()); anc == nil {
-			xos.ExitIfErr(errs.New("unable to load default ancestry (Human)"))
+			// The default ancestry couldn't be loaded (e.g. a library file with the same name is present but contains
+			// invalid data). Rather than crashing, log the problem and fall back to an empty ancestry so randomization
+			// still produces sane defaults.
+			errs.Log(errs.New("unable to load default ancestry (Human); using built-in defaults"))
+			anc = &Ancestry{Name: DefaultAncestry}
 		}
 	}
 	return anc

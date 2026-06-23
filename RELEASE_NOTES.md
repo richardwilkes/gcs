@@ -57,3 +57,6 @@ updating:
   owner's ancestors, was disabled. (#1029)
 - Fixed a crash that could occur after undoing a change in a standalone equipment, trait, skill, or spell list and then
   saving the file. (#1015)
+- Fixed a crash that could occur when randomizing a value (such as a name, age, height, or weight) if an ancestry file
+  contained invalid data. Such a file is now reported as an error and skipped instead of bringing down the application.
+  (#1007)
