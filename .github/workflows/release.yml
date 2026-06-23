@@ -1,0 +1,209 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. 5.42.0); leave blank to use build.sh's default"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Same target set as the regular build; everything is built natively per platform/arch because both Unison
+        # (Skia/GL) and the MuPDF-backed pdf dependency are cgo with per-arch static libraries.
+        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-26-intel, macos-26, windows-2022, windows-11-arm]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config \
+            libx11-dev \
+            libgl1-mesa-dev \
+            libfontconfig1-dev \
+            libfreetype-dev
+
+      - name: Install Windows ARM64 toolchain
+        if: runner.os == 'Windows' && runner.arch == 'ARM64'
+        env:
+          LLVM_MINGW_VERSION: "20260616"
+        run: |
+          # The default mingw gcc on the Windows/ARM64 runner is an x86_64 build
+          # that emits x86 code and can't link the native arm64 static libraries,
+          # so install a native aarch64 llvm-mingw toolchain instead.
+          name="llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-aarch64"
+          curl -fsSL -o "$RUNNER_TEMP/$name.zip" \
+            "https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/$name.zip"
+          7z x "$RUNNER_TEMP/$name.zip" -o"$RUNNER_TEMP" >/dev/null
+          echo "$RUNNER_TEMP/$name/bin" >> "$GITHUB_PATH"
+          echo "CC=aarch64-w64-mingw32-gcc" >> "$GITHUB_ENV"
+
+      - name: Install create-dmg
+        if: runner.os == 'macOS'
+        run: brew install create-dmg
+
+      # The tag (v1.2.3 -> 1.2.3) drives the version on tag pushes; a manual run may supply one; otherwise build.sh
+      # falls back to its built-in default.
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            version="${{ github.event.inputs.version }}"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version=""
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # Import the "Developer ID Application" certificate into a throwaway keychain so codesign can use it
+      # non-interactively. The keychain lives only on this ephemeral runner and is discarded when the job ends.
+      - name: Import signing certificate
+        if: runner.os == 'macOS'
+        env:
+          CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+        run: |
+          cert_path="$RUNNER_TEMP/cert.p12"
+          keychain_path="$RUNNER_TEMP/app-signing.keychain-db"
+          echo "$CERT_P12_BASE64" | base64 --decode > "$cert_path"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$keychain_path"
+          security import "$cert_path" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$keychain_path"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$keychain_path"
+          security list-keychain -d user -s "$keychain_path"
+          rm -f "$cert_path"
+
+      # macOS distribution is signed and notarized. The App Store Connect API key is written out, used directly by
+      # notarytool (nothing stored in any keychain), and removed immediately after the build. These secrets are scoped
+      # to this step so they are never exposed on the Linux/Windows runners.
+      - name: Build distribution (macOS)
+        if: runner.os == 'macOS'
+        env:
+          GCS_RELEASE: ${{ steps.version.outputs.version }}
+          NOTARY_API_KEY_P8: ${{ secrets.NOTARY_API_KEY_P8 }}
+          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_API_KEY_ISSUER: ${{ secrets.NOTARY_API_KEY_ISSUER }}
+        run: |
+          p8_path="$RUNNER_TEMP/AuthKey.p8"
+          printf '%s' "$NOTARY_API_KEY_P8" > "$p8_path"
+          export NOTARY_API_KEY="$p8_path"
+          trap 'rm -f "$p8_path"' EXIT
+          ./build.sh -d
+
+      - name: Build distribution
+        if: runner.os != 'macOS'
+        env:
+          GCS_RELEASE: ${{ steps.version.outputs.version }}
+        run: ./build.sh -d
+
+      - name: Stage artifact
+        id: stage
+        run: |
+          shopt -s nullglob
+          mkdir -p dist
+          files=(gcs-*-*.dmg gcs-*-*.tgz gcs-*-*.zip)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "no distribution artifact was produced" >&2
+            exit 1
+          fi
+          mv "${files[@]}" dist/
+          goos=$(go env GOOS)
+          goarch=$(go env GOARCH)
+          platform=$goos
+          [ "$goos" = "darwin" ] && platform=macos
+          echo "artifact_name=gcs-$platform-$goarch" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.stage.outputs.artifact_name }}
+          path: dist/
+          if-no-files-found: error
+
+  # The translation template is platform-independent, so it is extracted once here rather than on a build runner.
+  i18n:
+    name: Translation template
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install i18n tool
+        run: |
+          version=$(go list -m -f '{{.Version}}' github.com/richardwilkes/toolbox/v2)
+          go install "github.com/richardwilkes/toolbox/v2/cmd/i18n@${version}"
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Extract translation template
+        run: ./build.sh -i
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: gcs-i18n
+          path: language.i18n
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: [build, i18n]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: dist
+          pattern: gcs-*
+          merge-multiple: true
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          shopt -s nullglob
+          files=(dist/*.dmg dist/*.tgz dist/*.zip dist/*.i18n)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "no release assets were downloaded" >&2
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" "${files[@]}" --generate-notes

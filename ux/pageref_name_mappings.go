@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -129,6 +129,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"FFE":     "Fantasy Folk: Elves",
 	"FFGH":    "Fantasy Folk: Goblins and Hobgoblins",
 	"FFK":     "Fantasy Folk: Kobolds",
+	"FFRR":    "Fantasy Folk: The Reptilian Races",
 	"FFWF":    "Fantasy Folk: Winged Folk",
 	"FH":      "Future History",
 	"FPR":     "Fantasy: Portal Realms",

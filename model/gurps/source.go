@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -141,10 +141,10 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 		dir := os.DirFS(filepath.Dir(p))
 		file := filepath.Base(p)
 		fi := FileInfoFor(p)
-		if fi == nil || len(fi.Extensions) == 0 {
+		if fi == nil || len(fi.UTI.Extensions) == 0 {
 			continue
 		}
-		switch fi.Extensions[0] {
+		switch fi.UTI.Extensions[0] {
 		case TraitsExt:
 			var data []*Trait
 			if data, err = NewTraitsFromFile(dir, file); err == nil {

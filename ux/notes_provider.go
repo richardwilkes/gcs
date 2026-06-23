@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,10 +14,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 )
-
-const noteDragKey = "note"
 
 var _ TableProvider[*gurps.Note] = &notesProvider{}
 
@@ -76,7 +75,7 @@ func (p *notesProvider) DataOwner() gurps.DataOwner {
 	return p.provider.DataOwner()
 }
 
-func (p *notesProvider) DragKey() string {
+func (p *notesProvider) DragKey() *uti.DataType {
 	return noteDragKey
 }
 

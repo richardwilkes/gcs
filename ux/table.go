@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -21,9 +21,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 const containerMarker = "\000"
@@ -45,7 +47,7 @@ type TableProvider[T gurps.NodeTypes] interface {
 	SetTable(table *unison.Table[*Node[T]])
 	RootData() []T
 	SetRootData(data []T)
-	DragKey() string
+	DragKey() *uti.DataType
 	DragSVG() *unison.SVG
 	DropShouldMoveData(from, to *unison.Table[*Node[T]]) bool
 	ProcessDropData(from, to *unison.Table[*Node[T]])
@@ -110,24 +112,33 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	})
 
 	table.DoubleClickCallback = func() { table.PerformCmd(nil, OpenEditorItemID) }
-	table.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
-		if mod == 0 && (keyCode == unison.KeyBackspace || keyCode == unison.KeyDelete) {
+	table.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if mods == 0 && (keyCode == unison.KeyBackspace || keyCode == unison.KeyDelete) {
 			table.PerformCmd(table, unison.DeleteItemID)
 			return true
 		}
-		return table.DefaultKeyDown(keyCode, mod, repeat)
+		return table.DefaultKeyDown(keyCode, mods, repeat)
 	}
 	singular, plural := provider.ItemNames()
 	table.InstallDragSupport(provider.DragSVG(), provider.DragKey(), singular, plural)
+	// Mirror the dragged rows into our own storage so that alternate drop handlers (which deal with a different row
+	// type than the destination table) can access them, since unison only retains them internally.
+	origMouseDrag := table.MouseDragCallback
+	table.MouseDragCallback = func(where geom.Point, button int, mods mod.Modifiers) bool {
+		if button == unison.ButtonLeft && table.HasSelection() && table.IsDragGesture(where) {
+			draggedTableData = &unison.TableDragData[*Node[T]]{Table: table, Rows: table.SelectedRows(true)}
+		}
+		return origMouseDrag(where, button, mods)
+	}
 	if font != nil {
 		table.FrameChangeCallback = func() {
 			table.SizeColumnsToFitWithExcessIn(provider.ExcessWidthColumnID())
 		}
 	}
 
-	table.MouseDownCallback = func(where geom.Point, button, clickCount int, mod unison.Modifiers) bool {
-		stop := table.DefaultMouseDown(where, button, clickCount, mod)
-		if button == unison.ButtonRight && clickCount == 1 && !table.Window().InDrag() {
+	table.MouseDownCallback = func(where geom.Point, button, clickCount int, mods mod.Modifiers) bool {
+		stop := table.DefaultMouseDown(where, button, clickCount, mods)
+		if button == unison.ButtonRight && clickCount == 1 {
 			f := unison.DefaultMenuFactory()
 			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 			id := 1

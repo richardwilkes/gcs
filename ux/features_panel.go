@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -24,7 +24,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -77,7 +76,7 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
-	addButton := unison.NewSVGButton(svg.CircledAdd)
+	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addButton.ClickCallback = func() {
 		if created := p.createFeatureForType(lastFeatureTypeUsed); created != nil {
 			*features = slices.Insert(*features, 0, created)
@@ -142,7 +141,7 @@ func (p *featuresPanel) createBasePanel(f gurps.Feature) *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	deleteButton := unison.NewSVGButton(svg.Trash)
+	deleteButton := unison.NewSVGButton(unison.TrashSVG)
 	deleteButton.ClickCallback = func() {
 		if i := slices.IndexFunc(*p.features, func(elem gurps.Feature) bool { return elem == f }); i != -1 {
 			*p.features = slices.Delete(*p.features, i, i+1)

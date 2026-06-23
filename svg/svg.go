@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -43,10 +43,6 @@ var (
 	//go:embed calculator.svg
 	calculatorData string
 	Calculator     = unison.MustSVGFromContentString(calculatorData)
-
-	//go:embed circled_add.svg
-	circledAddData string
-	CircledAdd     = unison.MustSVGFromContentString(circledAddData)
 
 	//go:embed circled_vertical_ellipsis.svg
 	circledVerticalEllipsisData string
@@ -275,10 +271,6 @@ var (
 	//go:embed star.svg
 	starData string
 	Star     = unison.MustSVGFromContentString(starData)
-
-	//go:embed trash.svg
-	trashData string
-	Trash     = unison.MustSVGFromContentString(trashData)
 
 	//go:embed magic_wand.svg
 	magicWandData string

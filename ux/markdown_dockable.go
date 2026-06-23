@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 const markdownContentOnlyPrefix = "//////////"
@@ -223,7 +224,7 @@ func (d *MarkdownDockable) updateCursor(_ geom.Point) *unison.Cursor {
 	return unison.ArrowCursor()
 }
 
-func (d *MarkdownDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifiers) bool {
+func (d *MarkdownDockable) mouseDown(where geom.Point, _, _ int, _ mod.Modifiers) bool {
 	d.dragStart = d.markdown.PointToRoot(where)
 	d.dragOrigin.X, d.dragOrigin.Y = d.scroller.Position()
 	d.inDrag = true
@@ -232,13 +233,13 @@ func (d *MarkdownDockable) mouseDown(where geom.Point, _, _ int, _ unison.Modifi
 	return true
 }
 
-func (d *MarkdownDockable) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) bool {
+func (d *MarkdownDockable) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
 	pt := d.dragStart.Sub(d.markdown.PointToRoot(where)).Add(d.dragOrigin)
 	d.scroller.SetPosition(pt.X, pt.Y)
 	return true
 }
 
-func (d *MarkdownDockable) mouseUp(_ geom.Point, _ int, _ unison.Modifiers) bool {
+func (d *MarkdownDockable) mouseUp(_ geom.Point, _ int, _ mod.Modifiers) bool {
 	d.inDrag = false
 	d.UpdateCursorNow()
 	return true

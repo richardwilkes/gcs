@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -132,9 +132,7 @@ func (d *bodySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 func (d *bodySettingsDockable) initContent(content *unison.Panel) {
 	d.content = content
-	d.content.DataDragOverCallback = d.dataDragOver
-	d.content.DataDragExitCallback = d.dataDragExit
-	d.content.DataDragDropCallback = d.dataDragDrop
+	installPanelDragDrop(d.content, hitLocationDragKey, d.dataDragOver, d.dataDragExit, d.dataDragDrop)
 	d.content.DrawOverCallback = d.drawOver
 	content.SetBorder(nil)
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -210,7 +208,10 @@ func (d *bodySettingsDockable) apply() {
 	d.owner.SetBodySettings(d.body.Clone(d.owner.Entity(), nil))
 }
 
-func (d *bodySettingsDockable) dataDragOver(where geom.Point, data map[string]any) bool {
+func (d *bodySettingsDockable) dataDragOver(where geom.Point, data any) bool {
+	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
+	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
+
 	prevInDragOver := d.inDragOver
 	dragInsert := d.dragInsert
 	dragTarget := d.dragTarget
@@ -218,23 +219,20 @@ func (d *bodySettingsDockable) dataDragOver(where geom.Point, data map[string]an
 	d.dragInsert = -1
 	d.dragTargetBody = nil
 	d.dragTarget = nil
-	if dragData, ok := data[hitLocationDragDataKey]; ok {
-		var dd *hitLocationSettingsPanel
-		if dd, ok = dragData.(*hitLocationSettingsPanel); ok && dd.dockable == d {
-			parent := dd.Parent()
-			where = parent.PointFromRoot(d.content.PointToRoot(where))
-			for i, child := range parent.Children() {
-				rect := child.FrameRect()
-				if where.In(rect) {
-					d.dragTarget = parent
-					if rect.CenterY() <= where.Y {
-						d.dragInsert = i + 1
-					} else {
-						d.dragInsert = i
-					}
-					d.inDragOver = true
-					break
+	if dd, ok := data.(*hitLocationSettingsPanel); ok && dd.dockable == d {
+		parent := dd.Parent()
+		where = parent.PointFromRoot(d.content.PointToRoot(where))
+		for i, child := range parent.Children() {
+			rect := child.FrameRect()
+			if where.In(rect) {
+				d.dragTarget = parent
+				if rect.CenterY() <= where.Y {
+					d.dragInsert = i + 1
+				} else {
+					d.dragInsert = i
 				}
+				d.inDragOver = true
+				break
 			}
 		}
 	}
@@ -252,23 +250,20 @@ func (d *bodySettingsDockable) dataDragExit() {
 	d.MarkForRedraw()
 }
 
-func (d *bodySettingsDockable) dataDragDrop(_ geom.Point, data map[string]any) {
+func (d *bodySettingsDockable) dataDragDrop(_ geom.Point, data any) {
 	if d.inDragOver && d.dragInsert != -1 {
-		if dragData, ok := data[hitLocationDragDataKey]; ok {
-			var dd *hitLocationSettingsPanel
-			if dd, ok = dragData.(*hitLocationSettingsPanel); ok && dd.dockable == d && d.dragInsert != -1 {
-				undo := d.prepareUndo(i18n.Text("Hit Location Drag"))
-				table := dd.loc.OwningTable()
-				i := slices.Index(table.Locations, dd.loc)
-				table.Locations = slices.Delete(table.Locations, i, i+1)
-				if i < d.dragInsert {
-					d.dragInsert--
-				}
-				table.Locations = slices.Insert(table.Locations, d.dragInsert, dd.loc)
-				table.Update(d.Entity())
-				d.finishAndPostUndo(undo)
-				d.sync()
+		if dd, ok := data.(*hitLocationSettingsPanel); ok && dd.dockable == d && d.dragInsert != -1 {
+			undo := d.prepareUndo(i18n.Text("Hit Location Drag"))
+			table := dd.loc.OwningTable()
+			i := slices.Index(table.Locations, dd.loc)
+			table.Locations = slices.Delete(table.Locations, i, i+1)
+			if i < d.dragInsert {
+				d.dragInsert--
 			}
+			table.Locations = slices.Insert(table.Locations, d.dragInsert, dd.loc)
+			table.Update(d.Entity())
+			d.finishAndPostUndo(undo)
+			d.sync()
 		}
 	}
 	d.dataDragExit()

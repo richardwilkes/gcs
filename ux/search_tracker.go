@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 type searchRef struct {
@@ -57,16 +58,16 @@ func InstallSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	searchText := i18n.Text("Search")
 	s.searchField = NewSearchField(searchText, s.searchModified)
 	s.searchField.Tooltip = newWrappedTooltipWithSecondaryText(searchText, i18n.Text("Press RETURN to select the next match\nPress SHIFT-RETURN to select the previous match"))
-	s.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+	s.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
-			if mod.ShiftDown() {
+			if mods.ShiftDown() {
 				s.previousMatch()
 			} else {
 				s.nextMatch()
 			}
 			return true
 		}
-		return s.searchField.DefaultKeyDown(keyCode, mod, repeat)
+		return s.searchField.DefaultKeyDown(keyCode, mods, repeat)
 	}
 
 	s.namesOnlyCheckBox = unison.NewCheckBox()

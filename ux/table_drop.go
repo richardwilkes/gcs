@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,8 +13,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -24,7 +27,7 @@ const TableProviderClientKey = "table-provider"
 // AltDropSupport holds handlers for supporting an alternate drop type that drops onto a specific row, rather than
 // moving or adding rows.
 type AltDropSupport struct {
-	DragKey string
+	DragKey *uti.DataType
 	Drop    func(rowIndex int, data any)
 }
 
@@ -43,34 +46,57 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 		}, 1)
 	}
 	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
-		originalDataDragOverCallback := table.DataDragOverCallback
-		originalDataDragExitCallback := table.DataDragExitCallback
-		originalDataDragDropCallback := table.DataDragDropCallback
+		altDataType := altDropSupport.DragKey
+		originalDragCallbacks := table.Callbacks
 		originalDrawOverCallback := table.DrawOverCallback
 		altDropRowIndex := -1
-		table.DataDragOverCallback = func(where geom.Point, data map[string]any) bool {
-			if _, ok := data[altDropSupport.DragKey]; ok {
+		table.CanAcceptDropCallback = func(di drag.Info) bool {
+			if table.Enabled() && !table.IsFiltered() && di.HasDataType(altDataType.UTI) {
+				return true
+			}
+			return originalDragCallbacks.CanAcceptDropCallback(di)
+		}
+		dragEnterOrUpdate := func(di drag.Info, where geom.Point) (drag.Op, bool) {
+			if di.HasDataType(altDataType.UTI) {
 				altDropRowIndex = table.OverRow(where.Y)
-				return altDropRowIndex != -1
-			}
-			return originalDataDragOverCallback(where, data)
-		}
-		table.DataDragExitCallback = func() {
-			altDropRowIndex = -1
-			originalDataDragExitCallback()
-		}
-		table.DataDragDropCallback = func(where geom.Point, data map[string]any) {
-			if altDropRowIndex != -1 {
-				if dd, ok := data[altDropSupport.DragKey]; ok {
-					undo := willDropCallback(nil, table, false)
-					altDropSupport.Drop(altDropRowIndex, dd)
-					finishDidDrop(undo, nil, table, false)
+				if altDropRowIndex != -1 {
+					table.MarkForRedraw()
+					return drag.Copy, true
 				}
-				altDropRowIndex = -1
-				table.MarkForRedraw()
-			} else {
-				originalDataDragDropCallback(where, data)
+				return drag.None, true
 			}
+			return drag.None, false
+		}
+		table.DragEnteredCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) drag.Op {
+			if op, ok := dragEnterOrUpdate(di, where); ok {
+				return op
+			}
+			return originalDragCallbacks.DragEnteredCallback(di, where, mods)
+		}
+		table.DragUpdatedCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) drag.Op {
+			if op, ok := dragEnterOrUpdate(di, where); ok {
+				return op
+			}
+			return originalDragCallbacks.DragUpdatedCallback(di, where, mods)
+		}
+		table.DragExitedCallback = func() {
+			altDropRowIndex = -1
+			originalDragCallbacks.DragExitedCallback()
+		}
+		table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
+			if di.HasDataType(altDataType.UTI) {
+				handled := false
+				if altDropRowIndex != -1 {
+					undo := willDropCallback(nil, table, false)
+					altDropSupport.Drop(altDropRowIndex, draggedTableData)
+					finishDidDrop(undo, nil, table, false)
+					altDropRowIndex = -1
+					table.MarkForRedraw()
+					handled = true
+				}
+				return handled
+			}
+			return originalDragCallbacks.DropCallback(di, where, mods)
 		}
 		table.DrawOverCallback = func(gc *unison.Canvas, rect geom.Rect) {
 			originalDrawOverCallback(gc, rect)

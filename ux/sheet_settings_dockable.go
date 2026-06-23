@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -257,7 +257,7 @@ func (d *sheetSettingsDockable) addCheckBoxWithLink(panel *unison.Panel, title, 
 	label.Font = checkbox.Font
 	label.SetTitle(" (")
 	wrapper.AddChild(label)
-	wrapper.AddChild(unison.NewLink(ref, "", ref, unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
+	wrapper.AddChild(unison.NewLink(ref, "", ref, &unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
 		OpenPageReference(ref, "", nil)
 	}))
 	label = unison.NewLabel()

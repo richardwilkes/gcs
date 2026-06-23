@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -63,7 +62,7 @@ func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitL
 		gc.DrawRect(rect, ink.Paint(gc, rect, paintstyle.Fill))
 	}
 
-	p.AddChild(NewDragHandle(map[string]any{hitLocationDragDataKey: p}))
+	p.AddChild(NewDragHandle(hitLocationDragKey, p))
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())
 
@@ -79,14 +78,14 @@ func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
 	})
 	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
-	p.deleteButton = unison.NewSVGButton(svg.Trash)
+	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = p.removeHitLocation
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove hit location"))
 	owningTable := p.loc.OwningTable()
 	p.deleteButton.SetEnabled(owningTable != nil && len(owningTable.Locations) > 1)
 	buttons.AddChild(p.deleteButton)
 
-	p.addButton = unison.NewSVGButton(svg.CircledAdd)
+	p.addButton = unison.NewSVGButton(unison.CircledAddSVG)
 	p.addButton.ClickCallback = p.addSubTable
 	p.addButton.Tooltip = newWrappedTooltip(i18n.Text("Add sub-table"))
 	p.addButton.SetEnabled(p.loc.SubTable == nil)

@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 var (
@@ -67,7 +68,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 		HAlign:  align.Fill,
 		VAlign:  align.Fill,
 	})
-	c.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
+	c.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
 		c.RequestFocus()
 		return false
 	}

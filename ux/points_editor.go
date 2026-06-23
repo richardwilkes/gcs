@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 var (
@@ -90,14 +91,14 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	e.content.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, _ bool) bool {
+	e.content.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
 		switch {
-		case mod.OSMenuCmdModifierDown() && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter):
+		case mods.OSMenuCommandDown() && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter):
 			if e.applyButton.Enabled() {
 				e.applyButton.Click()
 			}
 			return true
-		case mod == 0 && keyCode == unison.KeyEscape:
+		case mods == 0 && keyCode == unison.KeyEscape:
 			if e.cancelButton.Enabled() {
 				e.cancelButton.Click()
 			}
@@ -141,7 +142,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 
 	e.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
 	e.applyButton.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Apply Changes"),
-		fmt.Sprintf(i18n.Text("%v%v or %v%v"), unison.OSMenuCmdModifier(), unison.KeyReturn, unison.OSMenuCmdModifier(),
+		fmt.Sprintf(i18n.Text("%v%v or %v%v"), mod.OSMenuCommand(), unison.KeyReturn, mod.OSMenuCommand(),
 			unison.KeyNumPadEnter))
 	e.applyButton.SetEnabled(false)
 	e.applyButton.ClickCallback = func() {
@@ -162,7 +163,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 
 	toolbar.AddChild(NewToolbarSeparator())
 
-	addButton := unison.NewSVGButton(svg.CircledAdd)
+	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addButton.Tooltip = newWrappedTooltip(i18n.Text("Add Entry"))
 	addButton.ClickCallback = e.addEntry
 	toolbar.AddChild(addButton)
@@ -181,7 +182,7 @@ func (e *pointsEditor) initContent() {
 }
 
 func (e *pointsEditor) createRow(rec *gurps.PointsRecord, index int) {
-	deleteButton := unison.NewSVGButton(svg.Trash)
+	deleteButton := unison.NewSVGButton(unison.TrashSVG)
 	deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove Entry"))
 	deleteButton.ClickCallback = func() { e.removeEntry(rec) }
 	e.content.AddChildAtIndex(deleteButton, index)

@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -665,7 +665,7 @@ func (c *Calculator) createHeader(text string, linkSpecs []linkSpec, topMargin f
 		},
 	}
 	for index, linkSpec := range linkSpecs {
-		link := unison.NewLink(linkSpec.pageRef, "", linkSpec.pageRef, linkTheme, func(_ unison.Paneler, _ string) {
+		link := unison.NewLink(linkSpec.pageRef, "", linkSpec.pageRef, &linkTheme, func(_ unison.Paneler, _ string) {
 			OpenPageReference(linkSpec.pageRef, linkSpec.highlight, nil)
 		})
 		wrapper.AddChild(link)

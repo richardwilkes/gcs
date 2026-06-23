@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xflag"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
@@ -65,8 +66,8 @@ func OpenPageReference(ref, highlight string, promptContext map[string]bool) boo
 func openMarkdownPageReference(ref string) {
 	ref = ref[3:]
 	if ref != "" {
-		if !strings.HasSuffix(strings.ToLower(ref), gurps.MarkdownExt) {
-			ref += gurps.MarkdownExt
+		if !strings.HasSuffix(strings.ToLower(ref), uti.Markdown.Extensions[0]) {
+			ref += uti.Markdown.Extensions[0]
 		}
 		// First check in the Markdown directory of each library.
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
@@ -340,7 +341,7 @@ func (d *pageRefMappingsDockable) createEditField(ref *gurps.PageRef) {
 }
 
 func (d *pageRefMappingsDockable) createTrashField(ref *gurps.PageRef) {
-	b := unison.NewSVGButton(svg.Trash)
+	b := unison.NewSVGButton(unison.TrashSVG)
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to remove\n%s (%s)?"), ref.ID,
 			filepath.Base(ref.Path)), "") == unison.ModalResponseOK {

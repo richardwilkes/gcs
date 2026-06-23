@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -388,7 +388,7 @@ func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, tit
 	addButton := unison.NewSVGButton(svg.Copy)
 	addButton.Tooltip = newWrappedTooltip(i18n.Text("Copy to clipboard"))
 	addButton.ClickCallback = func() {
-		unison.GlobalClipboard.SetText(value)
+		unison.ClipboardSetText(value)
 	}
 	content.AddChild(addButton)
 }
@@ -453,7 +453,7 @@ func (d *generalSettingsDockable) createDeepSearchCheckboxes(content *unison.Pan
 	extMap := make(map[string]string)
 	for _, ext := range extensions {
 		fi := gurps.FileInfoFor(ext)
-		extMap[strings.TrimPrefix(fi.Name, "GCS ")] = fi.Extensions[0]
+		extMap[strings.TrimPrefix(fi.Name, "GCS ")] = fi.UTI.Extensions[0]
 	}
 	keys := slices.Collect(maps.Keys(extMap))
 	xslices.ColumnSort(keys, 2, cmp.Compare[string])

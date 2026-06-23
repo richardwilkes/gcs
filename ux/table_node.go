@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 const noInvertColorsMarker = "no_invert"
@@ -510,7 +511,7 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 	if c.Tooltip != "" {
 		check.Tooltip = newWrappedTooltip(c.Tooltip)
 	}
-	check.MouseDownCallback = func(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
+	check.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
 		c.Checked = !c.Checked
 		handleCheck(n.data, check, c.Checked)
 		if c.Checked {
@@ -526,10 +527,10 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 		return true
 	}
 	unison.NewCheckBox()
-	check.MouseDragCallback = func(_ geom.Point, _ int, _ unison.Modifiers) bool {
+	check.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
 		return true
 	}
-	check.MouseUpCallback = func(_ geom.Point, _ int, _ unison.Modifiers) bool {
+	check.MouseUpCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
 		return true
 	}
 	return check
@@ -714,7 +715,7 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 	theme := unison.DefaultLinkTheme
 	theme.OnBackgroundInk = foreground
 	theme.Font = font
-	link := unison.NewLink(title, tooltip, "", theme, func(_ unison.Paneler, _ string) {
+	link := unison.NewLink(title, tooltip, "", &theme, func(_ unison.Paneler, _ string) {
 		list := ExtractPageReferences(c.Primary)
 		if len(list) != 0 {
 			OpenPageReference(list[0], c.Secondary, nil)

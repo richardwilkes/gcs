@@ -3,11 +3,10 @@ set -eo pipefail
 
 trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
 
-export GOEXPERIMENT=jsonv2
+export GOEXPERIMENT=jsonv2,nodwarf5
 
 # Process args
 RELEASE="0.0"
-EXTRA_LD_FLAGS="-s -w"
 for arg in "$@"; do
 	case "$arg" in
 	--all | -a)
@@ -50,8 +49,9 @@ for arg in "$@"; do
 		SOMETHING=1
 		;;
 	--dist | -d)
+		EXTRA_LD_FLAGS="-s -w"
 		EXTRA_BUILD_FLAGS="-a -trimpath"
-		RELEASE="5.42.0"
+		RELEASE="${GCS_RELEASE:-5.42.0}"
 		PACKAGER=1
 		DIST=--dist
 		BUILD_GO=1
@@ -88,21 +88,17 @@ if [ "$SOMETHING"x != "1x" ]; then
 	BUILD_GO=1
 fi
 
-LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/v2/xos.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
-STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
-
 case $(uname -s) in
 Darwin*)
-	if [ "$(uname -p)" == "arm" ]; then
-		export MACOSX_DEPLOYMENT_TARGET=11
-	else
-		export MACOSX_DEPLOYMENT_TARGET=10.15
-	fi
+	export MACOSX_DEPLOYMENT_TARGET=11
 	;;
-MINGW*)
-	LDFLAGS_ALL="$LDFLAGS_ALL -H windowsgui"
+MINGW*|MSYS*)
+	EXTRA_LD_FLAGS="$EXTRA_LD_FLAGS -H windowsgui"
 	;;
 esac
+
+LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/v2/xos.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
+STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
 # Generate the source
 if [ "$BUILD_GEN"x == "1x" ]; then

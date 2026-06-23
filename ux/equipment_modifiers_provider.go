@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,11 +17,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
-const equipmentModifierDragKey = "equipment_modifier"
+const equipmentModifierRefKey = "equipment_modifier"
 
 var _ TableProvider[*gurps.EquipmentModifier] = &eqpModProvider{}
 
@@ -40,7 +41,7 @@ func NewEquipmentModifiersProvider(provider gurps.EquipmentModifierListProvider,
 }
 
 func (p *eqpModProvider) RefKey() string {
-	return equipmentModifierDragKey
+	return equipmentModifierRefKey
 }
 
 func (p *eqpModProvider) AllTags() []string {
@@ -87,7 +88,7 @@ func (p *eqpModProvider) DataOwner() gurps.DataOwner {
 	return p.provider.DataOwner()
 }
 
-func (p *eqpModProvider) DragKey() string {
+func (p *eqpModProvider) DragKey() *uti.DataType {
 	return equipmentModifierDragKey
 }
 

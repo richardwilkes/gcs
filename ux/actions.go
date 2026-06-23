@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // WebSiteDomain holds the web site domain for GCS.
@@ -160,7 +161,7 @@ func registerActions() {
 	applyTemplateAction = registerKeyBindableAction("apply.template", &unison.Action{
 		ID:              ApplyTemplateItemID,
 		Title:           i18n.Text("Apply Template to Character Sheet"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyA, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyA, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -173,7 +174,7 @@ func registerActions() {
 	newSheetFromTemplateAction = registerKeyBindableAction("new.sheet.from.template", &unison.Action{
 		ID:              NewSheetFromTemplateItemID,
 		Title:           i18n.Text("New Character Sheet from Template"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -198,7 +199,7 @@ func registerActions() {
 	closeTabAction = registerKeyBindableAction("close", &unison.Action{
 		ID:         CloseTabID,
 		Title:      i18n.Text("Close"),
-		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyW, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyW, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: func(_ *unison.Action, _ any) bool {
 			if wnd := unison.ActiveWindow(); wnd != nil {
 				if Workspace.Window != wnd {
@@ -245,14 +246,14 @@ func registerActions() {
 	copyToSheetAction = registerKeyBindableAction("copy.to_sheet", &unison.Action{
 		ID:              CopyToSheetItemID,
 		Title:           i18n.Text("Copy to Character Sheet"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyC, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyC, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	copyToTemplateAction = registerKeyBindableAction("copy.to_template", &unison.Action{
 		ID:              CopyToTemplateItemID,
 		Title:           i18n.Text("Copy to Template"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -265,28 +266,28 @@ func registerActions() {
 	decreaseSkillLevelAction = registerKeyBindableAction("dec.sl", &unison.Action{
 		ID:              DecrementSkillLevelItemID,
 		Title:           i18n.Text("Decrease Skill Level"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyPeriod, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyPeriod, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	decreaseTechLevelAction = registerKeyBindableAction("dec.tl", &unison.Action{
 		ID:              DecrementTechLevelItemID,
 		Title:           i18n.Text("Decrease Tech Level"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyOpenBracket, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyOpenBracket, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	decreaseUsesAction = registerKeyBindableAction("dec.uses", &unison.Action{
 		ID:              DecrementUsesItemID,
 		Title:           i18n.Text("Decrease Uses"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyDown, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyDown, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	decrementAction = registerKeyBindableAction("dec", &unison.Action{
 		ID:              DecrementItemID,
 		Title:           i18n.Text("Decrement"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyMinus, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyMinus, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -303,20 +304,20 @@ func registerActions() {
 	defaultSheetSettingsAction = registerKeyBindableAction("settings.sheet.default", &unison.Action{
 		ID:              DefaultSheetSettingsItemID,
 		Title:           i18n.Text("Default Sheet Settings…"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: mod.OSMenuCommand()},
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowSheetSettings(nil) },
 	})
 	dockUnDockAction = registerKeyBindableAction("dock_undock", &unison.Action{
 		ID:              DockUnDockItemID,
 		Title:           i18n.Text("Undock From Workspace"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeySlash, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeySlash, Modifiers: mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	duplicateAction = registerKeyBindableAction("duplicate", &unison.Action{
 		ID:              DuplicateItemID,
 		Title:           i18n.Text("Duplicate"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyU, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyU, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -329,7 +330,7 @@ func registerActions() {
 	exportAsPDFAction = registerKeyBindableAction("export.pdf", &unison.Action{
 		ID:              ExportAsPDFItemID,
 		Title:           i18n.Text("PDF"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -348,7 +349,7 @@ func registerActions() {
 	jumpToSearchFilterAction = registerKeyBindableAction("jump-to-search", &unison.Action{
 		ID:              JumpToSearchFilterItemID,
 		Title:           i18n.Text("Jump to Search/Filter Field"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyJ, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyJ, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -371,28 +372,28 @@ func registerActions() {
 	increaseSkillLevelAction = registerKeyBindableAction("inc.sl", &unison.Action{
 		ID:              IncrementSkillLevelItemID,
 		Title:           i18n.Text("Increase Skill Level"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeySlash, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeySlash, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	increaseTechLevelAction = registerKeyBindableAction("inc.tl", &unison.Action{
 		ID:              IncrementTechLevelItemID,
 		Title:           i18n.Text("Increase Tech Level"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyCloseBracket, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyCloseBracket, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	increaseUsesAction = registerKeyBindableAction("inc.uses", &unison.Action{
 		ID:              IncrementUsesItemID,
 		Title:           i18n.Text("Increase Uses"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyUp, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyUp, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	incrementAction = registerKeyBindableAction("inc", &unison.Action{
 		ID:              IncrementItemID,
 		Title:           i18n.Text("Increment"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyEqual, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyEqual, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -416,21 +417,21 @@ func registerActions() {
 	newCarriedEquipmentAction = registerKeyBindableAction("new.eqp", &unison.Action{
 		ID:              NewCarriedEquipmentItemID,
 		Title:           i18n.Text("New Carried Equipment"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newCarriedEquipmentContainerAction = registerKeyBindableAction("new.eqp.container", &unison.Action{
 		ID:              NewCarriedEquipmentContainerItemID,
 		Title:           i18n.Text("New Carried Equipment Container"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newCharacterSheetAction = registerKeyBindableAction("new.char.sheet", &unison.Action{
 		ID:         NewSheetItemID,
 		Title:      i18n.Text("New Character Sheet"),
-		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: mod.OSMenuCommand()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			e := gurps.NewEntity()
 			DisplayNewDockable(NewSheet(e.Profile.Name+gurps.SheetExt, e))
@@ -461,7 +462,7 @@ func registerActions() {
 	newEquipmentContainerModifierAction = registerKeyBindableAction("new.eqm.container", &unison.Action{
 		ID:              NewEquipmentContainerModifierItemID,
 		Title:           i18n.Text("New Equipment Modifier Container"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyF, Modifiers: unison.ShiftModifier | unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyF, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -475,7 +476,7 @@ func registerActions() {
 	newEquipmentModifierAction = registerKeyBindableAction("new.eqm", &unison.Action{
 		ID:              NewEquipmentModifierItemID,
 		Title:           i18n.Text("New Equipment Modifier"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyF, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyF, Modifiers: mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -501,21 +502,21 @@ func registerActions() {
 	newMeleeWeaponAction = registerKeyBindableAction("new.melee", &unison.Action{
 		ID:              NewMeleeWeaponItemID,
 		Title:           i18n.Text("New Melee Weapon"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newNoteAction = registerKeyBindableAction("new.not", &unison.Action{
 		ID:              NewNoteItemID,
 		Title:           i18n.Text("New Note"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newNoteContainerAction = registerKeyBindableAction("new.not.container", &unison.Action{
 		ID:              NewNoteContainerItemID,
 		Title:           i18n.Text("New Note Container"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.ShiftModifier | unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -529,42 +530,42 @@ func registerActions() {
 	newOtherEquipmentAction = registerKeyBindableAction("new.eqp.other", &unison.Action{
 		ID:              NewOtherEquipmentItemID,
 		Title:           i18n.Text("New Other Equipment"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newOtherEquipmentContainerAction = registerKeyBindableAction("new.eqp.other.container", &unison.Action{
 		ID:              NewOtherEquipmentContainerItemID,
 		Title:           i18n.Text("New Other Equipment Container"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: unison.ShiftModifier | unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newRangedWeaponAction = registerKeyBindableAction("new.ranged", &unison.Action{
 		ID:              NewRangedWeaponItemID,
 		Title:           i18n.Text("New Ranged Weapon"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyR, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyR, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newRitualMagicSpellAction = registerKeyBindableAction("new.spl.ritual", &unison.Action{
 		ID:              NewRitualMagicSpellItemID,
 		Title:           i18n.Text("New Ritual Magic Spell"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: unison.ShiftModifier | unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newSkillAction = registerKeyBindableAction("new.skl", &unison.Action{
 		ID:              NewSkillItemID,
 		Title:           i18n.Text("New Skill"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newSkillContainerAction = registerKeyBindableAction("new.skl.container", &unison.Action{
 		ID:              NewSkillContainerItemID,
 		Title:           i18n.Text("New Skill Container"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -578,14 +579,14 @@ func registerActions() {
 	newSpellAction = registerKeyBindableAction("new.spl", &unison.Action{
 		ID:              NewSpellItemID,
 		Title:           i18n.Text("New Spell"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newSpellContainerAction = registerKeyBindableAction("new.spl.container", &unison.Action{
 		ID:              NewSpellContainerItemID,
 		Title:           i18n.Text("New Spell Container"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -599,35 +600,35 @@ func registerActions() {
 	newTechniqueAction = registerKeyBindableAction("new.skl.technique", &unison.Action{
 		ID:              NewTechniqueItemID,
 		Title:           i18n.Text("New Technique"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newTraitAction = registerKeyBindableAction("new.adq", &unison.Action{
 		ID:              NewTraitItemID,
 		Title:           i18n.Text("New Trait"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyD, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyD, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newTraitContainerAction = registerKeyBindableAction("new.adq.container", &unison.Action{
 		ID:              NewTraitContainerItemID,
 		Title:           i18n.Text("New Trait Container"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyD, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyD, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newTraitContainerModifierAction = registerKeyBindableAction("new.adm.container", &unison.Action{
 		ID:              NewTraitContainerModifierItemID,
 		Title:           i18n.Text("New Trait Modifier Container"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: unison.ShiftModifier | unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newTraitModifierAction = registerKeyBindableAction("new.adm", &unison.Action{
 		ID:              NewTraitModifierItemID,
 		Title:           i18n.Text("New Trait Modifier"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -648,7 +649,7 @@ func registerActions() {
 	openAction = registerKeyBindableAction("open", &unison.Action{
 		ID:         OpenItemID,
 		Title:      i18n.Text("Open…"),
-		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyO, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyO, Modifiers: mod.OSMenuCommand()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			dialog := unison.NewOpenDialog()
 			dialog.SetAllowsMultipleSelection(true)
@@ -668,21 +669,21 @@ func registerActions() {
 	openEachPageReferenceAction = registerKeyBindableAction("pageref.open.all", &unison.Action{
 		ID:              OpenEachPageReferenceItemID,
 		Title:           i18n.Text("Open Each Page Reference"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyG, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyG, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	openEditorAction = registerKeyBindableAction("open.editor", &unison.Action{
 		ID:              OpenEditorItemID,
 		Title:           i18n.Text("Open Detail Editor"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyI, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyI, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	openOnePageReferenceAction = registerKeyBindableAction("pageref.open.first", &unison.Action{
 		ID:              OpenOnePageReferenceItemID,
 		Title:           i18n.Text("Open Page Reference"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyG, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyG, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -714,7 +715,7 @@ func registerActions() {
 	perSheetSettingsAction = registerKeyBindableAction("settings.sheet.per_sheet", &unison.Action{
 		ID:              PerSheetSettingsItemID,
 		Title:           i18n.Text("Sheet Settings…"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: actionEnabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if s := ActiveSheet(); s != nil {
@@ -725,14 +726,14 @@ func registerActions() {
 	printAction = registerKeyBindableAction("print", &unison.Action{
 		ID:              PrintItemID,
 		Title:           i18n.Text("Print…"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	redoAction = registerKeyBindableAction("redo", &unison.Action{
 		ID:         RedoItemID,
 		Title:      unison.CannotRedoTitle(),
-		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyY, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyY, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: func(action *unison.Action, _ any) bool {
 			if wnd := unison.ActiveWindow(); wnd != nil {
 				if mgr := wnd.UndoManager(); mgr != nil {
@@ -754,98 +755,98 @@ func registerActions() {
 	saveAction = registerKeyBindableAction("save", &unison.Action{
 		ID:              SaveItemID,
 		Title:           i18n.Text("Save"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	saveAsAction = registerKeyBindableAction("save_as", &unison.Action{
 		ID:              SaveAsItemID,
 		Title:           i18n.Text("Save As…"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale25Action = registerKeyBindableAction("scale.25", &unison.Action{
 		ID:              Scale25ItemID,
 		Title:           i18n.Text("25% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyQ, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyQ, Modifiers: mod.OSMenuCommand() | mod.Option},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale50Action = registerKeyBindableAction("scale.50", &unison.Action{
 		ID:              Scale50ItemID,
 		Title:           i18n.Text("50% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyH, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyH, Modifiers: mod.OSMenuCommand() | mod.Option},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale75Action = registerKeyBindableAction("scale.75", &unison.Action{
 		ID:              Scale75ItemID,
 		Title:           i18n.Text("75% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: mod.OSMenuCommand() | mod.Option},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale100Action = registerKeyBindableAction("scale.100", &unison.Action{
 		ID:              Scale100ItemID,
 		Title:           i18n.Text("100% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key1, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key1, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale200Action = registerKeyBindableAction("scale.200", &unison.Action{
 		ID:              Scale200ItemID,
 		Title:           i18n.Text("200% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key2, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key2, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale300Action = registerKeyBindableAction("scale.300", &unison.Action{
 		ID:              Scale300ItemID,
 		Title:           i18n.Text("300% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key3, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key3, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale400Action = registerKeyBindableAction("scale.400", &unison.Action{
 		ID:              Scale400ItemID,
 		Title:           i18n.Text("400% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key4, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key4, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale500Action = registerKeyBindableAction("scale.500", &unison.Action{
 		ID:              Scale500ItemID,
 		Title:           i18n.Text("500% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key5, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key5, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scale600Action = registerKeyBindableAction("scale.600", &unison.Action{
 		ID:              Scale600ItemID,
 		Title:           i18n.Text("600% Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key6, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key6, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scaleDefaultAction = registerKeyBindableAction("scale.default", &unison.Action{
 		ID:              ScaleDefaultItemID,
 		Title:           i18n.Text("Default Scale"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key0, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.Key0, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scaleDownAction = registerKeyBindableAction("scale.down", &unison.Action{
 		ID:              ScaleDownItemID,
 		Title:           i18n.Text("Scale Down"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyMinus, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyMinus, Modifiers: mod.OSMenuCommand() | mod.Option},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	scaleUpAction = registerKeyBindableAction("scale.up", &unison.Action{
 		ID:              ScaleUpItemID,
 		Title:           i18n.Text("Scale Up"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyEqual, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyEqual, Modifiers: mod.OSMenuCommand() | mod.Option},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -858,21 +859,21 @@ func registerActions() {
 	swapDefaultsAction = registerKeyBindableAction("swap.defaults", &unison.Action{
 		ID:              SwapDefaultsItemID,
 		Title:           i18n.Text("Swap Defaults"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyX, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyX, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	toggleStateAction = registerKeyBindableAction("toggle", &unison.Action{
 		ID:              ToggleStateItemID,
 		Title:           i18n.Text("Toggle State"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyApostrophe, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyApostrophe, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	undoAction = registerKeyBindableAction("undo", &unison.Action{
 		ID:         UndoItemID,
 		Title:      unison.CannotUndoTitle(),
-		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyZ, Modifiers: unison.OSMenuCmdModifier()},
+		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyZ, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: func(action *unison.Action, _ any) bool {
 			if wnd := unison.ActiveWindow(); wnd != nil {
 				if mgr := wnd.UndoManager(); mgr != nil {

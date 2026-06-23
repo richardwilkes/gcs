@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -66,7 +67,7 @@ func AddHelpToInfoPop(target unison.Paneler, text string) {
 func AddScalingHelpToInfoPop(target unison.Paneler) {
 	AddHelpToInfoPop(target, fmt.Sprintf(i18n.Text(`
 Holding down the %s key while using
-the mouse wheel will change the scale.`), unison.OptionModifier.String()))
+the mouse wheel will change the scale.`), mod.Option.String()))
 }
 
 // AddKeyBindingInfoToInfoPop adds information about a key binding to an InfoPop.

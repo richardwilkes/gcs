@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"io/fs"
-	"runtime"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
@@ -170,12 +169,7 @@ func (s *GeneralSettings) MonitorPPI() int {
 		return s.MonitorResolution
 	}
 	d := unison.PrimaryDisplay()
-	ppi := d.PPI()
-	if runtime.GOOS == xos.WindowsOS {
-		// On Windows, we need to adjust this by the scale factor to get the actual PPI
-		ppi = int(float32(ppi) / d.Scale.X)
-	}
-	if ppi != 0 {
+	if ppi := int(float32(d.PPI) / d.Scale.X); ppi != 0 {
 		return ppi
 	}
 	return 108 // Default to 108 PPI if not set

@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -63,10 +62,10 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 		HGrab:  true,
 	})
 
-	p.AddChild(NewDragHandle(map[string]any{attributeSettingsDragDataKey: &attributeSettingsDragData{
+	p.AddChild(NewDragHandle(attributeSettingsDragKey, &attributeSettingsDragData{
 		owner: dockable.Entity(),
 		def:   def,
-	}}))
+	}))
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())
 	return p
@@ -81,12 +80,12 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 	})
 	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
-	p.deleteButton = unison.NewSVGButton(svg.Trash)
+	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = p.deleteAttrDef
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove attribute"))
 	buttons.AddChild(p.deleteButton)
 
-	p.addThresholdButton = unison.NewSVGButton(svg.CircledAdd)
+	p.addThresholdButton = unison.NewSVGButton(unison.CircledAddSVG)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
 	p.addThresholdButton.Tooltip = newWrappedTooltip(i18n.Text("Add pool threshold"))
 	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef)

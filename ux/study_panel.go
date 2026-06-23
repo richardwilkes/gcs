@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -69,7 +68,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.S
 	})
 	p.AddChild(top)
 
-	addButton := unison.NewSVGButton(svg.CircledAdd)
+	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addButton.ClickCallback = func() {
 		def := &gurps.Study{Type: lastStudyTypeUsed}
 		*s = slices.Insert(*s, 0, def)
@@ -110,7 +109,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.S
 func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocus bool) {
 	panel := unison.NewPanel()
 
-	deleteButton := unison.NewSVGButton(svg.Trash)
+	deleteButton := unison.NewSVGButton(unison.TrashSVG)
 	deleteButton.ClickCallback = func() {
 		if i := slices.IndexFunc(*p.study, func(one *gurps.Study) bool { return one == entry }); i != -1 {
 			*p.study = slices.Delete(*p.study, i, i+1)

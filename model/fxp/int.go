@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -131,19 +131,10 @@ func AsFloat[T xmath.Float](value Int) T {
 // ApplyRounding rounds in the positive direction if roundDown is false, or in the negative direction if roundDown is
 // true.
 func ApplyRounding(value Int, roundDown bool) Int {
-	if truncated := value.Floor(); value != truncated {
-		if roundDown {
-			if value < 0 {
-				return truncated - One
-			}
-		} else {
-			if value > 0 {
-				return truncated + One
-			}
-		}
-		return truncated
+	if roundDown {
+		return value.Floor()
 	}
-	return value
+	return value.Ceil()
 }
 
 // ResetIfOutOfRange checks the value and if it is lower than minValue or greater than maxValue, returns defValue,

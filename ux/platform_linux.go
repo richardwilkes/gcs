@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -106,7 +106,7 @@ func installDesktopIcons() error {
 		if err != nil {
 			return err
 		}
-		targetPath := filepath.Join(dir, strings.ReplaceAll(fi.MimeTypes[0], "/", "-")+".png")
+		targetPath := filepath.Join(dir, strings.ReplaceAll(fi.UTI.MimeTypes[0], "/", "-")+".png")
 		if err = writePNG(targetPath, ximage.Stack(docIcon, overlay)); err != nil {
 			return err
 		}
@@ -154,12 +154,12 @@ func installMimeInfo() error {
 		if !fi.IsGCSData {
 			continue
 		}
-		fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.MimeTypes[0])
+		fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.UTI.MimeTypes[0])
 		fmt.Fprintf(&buffer, "    <comment>%s</comment>\n", fi.Name)
-		for _, mimeType := range fi.MimeTypes[1:] {
+		for _, mimeType := range fi.UTI.MimeTypes[1:] {
 			fmt.Fprintf(&buffer, "    <alias type=\"%s\"/>\n", mimeType)
 		}
-		for _, ext := range fi.Extensions {
+		for _, ext := range fi.UTI.Extensions {
 			fmt.Fprintf(&buffer, "    <glob pattern=\"*%s\"/>\n", ext)
 		}
 		buffer.WriteString("  </mime-type>\n")

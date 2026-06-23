@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,14 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -22,13 +26,15 @@ import (
 type DragHandle struct {
 	unison.Panel
 	svg      *unison.DrawableSVG
-	data     map[string]any
+	key      *uti.DataType
+	data     any
 	rollover bool
 }
 
-// NewDragHandle creates a new draggable handle widget.
-func NewDragHandle(data map[string]any) *DragHandle {
-	h := &DragHandle{data: data}
+// NewDragHandle creates a new draggable handle widget. The supplied data is delivered to drop targets under the given
+// data type during a drag.
+func NewDragHandle(key *uti.DataType, data any) *DragHandle {
+	h := &DragHandle{key: key, data: data}
 	h.Self = h
 	h.DrawCallback = h.draw
 	h.MouseEnterCallback = h.mouseEnter
@@ -62,7 +68,7 @@ func (h *DragHandle) draw(gc *unison.Canvas, rect geom.Rect) {
 	h.svg.DrawInRect(gc, h.ContentRect(false), nil, ink.Paint(gc, rect, paintstyle.Fill))
 }
 
-func (h *DragHandle) mouseEnter(_ geom.Point, _ unison.Modifiers) bool {
+func (h *DragHandle) mouseEnter(_ geom.Point, _ mod.Modifiers) bool {
 	h.rollover = true
 	h.MarkForRedraw()
 	return true
@@ -74,18 +80,27 @@ func (h *DragHandle) mouseExit() bool {
 	return true
 }
 
-func (h *DragHandle) mouseDown(_ geom.Point, _, _ int, _ unison.Modifiers) bool {
+func (h *DragHandle) mouseDown(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
 	return true
 }
 
-func (h *DragHandle) mouseDrag(where geom.Point, _ int, _ unison.Modifiers) bool {
+func (h *DragHandle) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
 	if h.IsDragGesture(where) {
 		size := h.svg.LogicalSize()
-		h.StartDataDrag(&unison.DragData{
-			Data:     h.data,
-			Drawable: h.svg,
-			Ink:      unison.ThemeFocus,
-			Offset:   geom.Point{X: -size.Width / 2, Y: -size.Height / 2},
+		img, err := unison.NewImageFromDrawing(int(size.Width), int(size.Height), 144, func(c *unison.Canvas) {
+			rect := geom.Rect{Size: size}
+			h.svg.DrawInRect(c, rect, nil, unison.ThemeFocus.Paint(c, rect, paintstyle.Fill))
+		})
+		if err != nil {
+			errs.Log(err)
+			return true
+		}
+		where.X -= size.Width / 2
+		where.Y -= size.Height / 2
+		panelDragData = h.data
+		h.StartDrag(img, where, func() { panelDragData = nil }, drag.Move, drag.Data{
+			Type: h.key,
+			Data: []byte{0},
 		})
 	}
 	return true

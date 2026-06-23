@@ -7,24 +7,24 @@ import (
 	"github.com/go-git/go-billy/v6"
 	"github.com/go-git/go-git/v6"
 	"github.com/go-git/go-git/v6/plumbing"
+	"github.com/go-git/go-git/v6/plumbing/client"
 	"github.com/go-git/go-git/v6/plumbing/protocol/packp"
-	"github.com/go-git/go-git/v6/plumbing/transport"
-	githttp "github.com/go-git/go-git/v6/plumbing/transport/http"
+	"github.com/go-git/go-git/v6/plumbing/transport/http"
 	"github.com/go-git/go-git/v6/storage/memory"
 	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 func discoverLatestCommit(ctx context.Context, repoURL, accessToken string) (string, error) {
 	repo, err := git.CloneContext(ctx, memory.NewStorage(), nil, &git.CloneOptions{
-		URL:          repoURL,
-		Auth:         gitAuthMethod(accessToken),
-		SingleBranch: true,
-		NoCheckout:   true,
-		Depth:        1,
-		Tags:         plumbing.NoTags,
-		Filter:       packp.FilterTreeDepth(0),
-		Bare:         true,
-		Progress:     &logGitProgress{},
+		URL:           repoURL,
+		ClientOptions: clientOptions(accessToken),
+		SingleBranch:  true,
+		NoCheckout:    true,
+		Depth:         1,
+		Tags:          plumbing.NoTags,
+		Filter:        packp.FilterTreeDepth(0),
+		Bare:          true,
+		Progress:      &logGitProgress{},
 	})
 	if err != nil {
 		return "", errs.NewWithCause("unable to minimally clone "+repoURL, err)
@@ -39,12 +39,12 @@ func discoverLatestCommit(ctx context.Context, repoURL, accessToken string) (str
 func downloadLatestCommit(ctx context.Context, repoURL, accessToken string, fs billy.Filesystem) (hash string, err error) {
 	var repo *git.Repository
 	repo, err = git.CloneContext(ctx, memory.NewStorage(), fs, &git.CloneOptions{
-		URL:          repoURL,
-		Auth:         gitAuthMethod(accessToken),
-		SingleBranch: true,
-		Depth:        1,
-		Tags:         plumbing.NoTags,
-		Progress:     &logGitProgress{},
+		URL:           repoURL,
+		ClientOptions: clientOptions(accessToken),
+		SingleBranch:  true,
+		Depth:         1,
+		Tags:          plumbing.NoTags,
+		Progress:      &logGitProgress{},
 	})
 	if err != nil {
 		return "", errs.NewWithCause("unable to clone "+repoURL, err)
@@ -56,14 +56,15 @@ func downloadLatestCommit(ctx context.Context, repoURL, accessToken string, fs b
 	return ref.Hash().String(), nil
 }
 
-func gitAuthMethod(accessToken string) transport.AuthMethod {
-	if accessToken == "" {
-		return nil
+func clientOptions(accessToken string) []client.Option {
+	var options []client.Option
+	if accessToken != "" {
+		options = append(options, client.WithHTTPAuth(&http.BasicAuth{
+			Username: "gcs",
+			Password: accessToken,
+		}))
 	}
-	return &githttp.BasicAuth{
-		Username: "gcs",
-		Password: accessToken,
-	}
+	return options
 }
 
 type logGitProgress struct{}

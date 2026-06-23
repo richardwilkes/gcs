@@ -1,4 +1,4 @@
-// Copyright (c) 1998-2025 by Richard A. Wilkes. All rights reserved.
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, version 2.0. If a copy of the MPL was not distributed with
@@ -25,12 +25,14 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/side"
 	"github.com/rjeczalik/notify"
 )
@@ -143,7 +145,7 @@ func (n *Navigator) DockKey() string {
 func (n *Navigator) mapDeepSearch() {
 	n.deepSearch = make(map[string]bool)
 	for _, one := range gurps.GlobalSettings().DeepSearch {
-		for _, ext := range gurps.FileInfoFor(one).Extensions {
+		for _, ext := range gurps.FileInfoFor(one).UTI.Extensions {
 			n.deepSearch[ext] = true
 		}
 	}
@@ -158,7 +160,7 @@ func (n *Navigator) setupToolBar() {
 	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
 	hierarchyButton.ClickCallback = n.toggleHierarchy
 
-	n.deleteButton = unison.NewSVGButton(svg.Trash)
+	n.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	n.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Delete"))
 	n.deleteButton.ClickCallback = n.deleteSelection
 
@@ -170,7 +172,7 @@ func (n *Navigator) setupToolBar() {
 	n.newFolderButton.Tooltip = newWrappedTooltip(i18n.Text("New Folder"))
 	n.newFolderButton.ClickCallback = n.newFolder
 
-	addLibraryButton := unison.NewSVGButton(svg.CircledAdd)
+	addLibraryButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addLibraryButton.Tooltip = newWrappedTooltip(i18n.Text("Add Library"))
 	addLibraryButton.ClickCallback = n.addLibrary
 
@@ -560,21 +562,21 @@ func (n *Navigator) configureSelection() {
 	}
 }
 
-func (n *Navigator) searchKeydown(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+func (n *Navigator) searchKeydown(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 	if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
-		if mod.ShiftDown() {
+		if mods.ShiftDown() {
 			n.previousMatch()
 		} else {
 			n.nextMatch()
 		}
 		return true
 	}
-	return n.searchField.DefaultKeyDown(keyCode, mod, repeat)
+	return n.searchField.DefaultKeyDown(keyCode, mods, repeat)
 }
 
-func (n *Navigator) tableKeyDown(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
-	if unison.IsControlAction(keyCode, mod) {
-		return n.table.DefaultKeyDown(keyCode, mod, repeat)
+func (n *Navigator) tableKeyDown(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+	if unison.IsControlAction(keyCode, mods) {
+		return n.table.DefaultKeyDown(keyCode, mods, repeat)
 	}
 	switch keyCode {
 	case unison.KeyBackspace, unison.KeyDelete:
@@ -583,12 +585,12 @@ func (n *Navigator) tableKeyDown(keyCode unison.KeyCode, mod unison.Modifiers, r
 		}
 		return true
 	default:
-		return n.table.DefaultKeyDown(keyCode, mod, repeat)
+		return n.table.DefaultKeyDown(keyCode, mods, repeat)
 	}
 }
 
-func (n *Navigator) mouseDown(where geom.Point, button, clickCount int, mod unison.Modifiers) bool {
-	stop := n.table.DefaultMouseDown(where, button, clickCount, mod)
+func (n *Navigator) mouseDown(where geom.Point, button, clickCount int, mods mod.Modifiers) bool {
+	stop := n.table.DefaultMouseDown(where, button, clickCount, mods)
 	if button == unison.ButtonRight && clickCount == 1 {
 		if sel := n.table.SelectedRows(false); len(sel) != 0 {
 			f := unison.DefaultMenuFactory()
@@ -925,10 +927,10 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 			content, ok := n.contentCache[p]
 			if !ok {
 				fi := gurps.FileInfoFor(p)
-				if n.deepSearch[fi.Extensions[0]] {
+				if n.deepSearch[fi.UTI.Extensions[0]] {
 					dir := os.DirFS(filepath.Dir(p))
 					fileName := filepath.Base(p)
-					switch fi.Extensions[0] {
+					switch fi.UTI.Extensions[0] {
 					case gurps.EquipmentExt:
 						if data, err := gurps.NewEquipmentFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
@@ -1018,7 +1020,7 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 						if data, err := gurps.NewTraitsFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
-					case gurps.MarkdownExt:
+					case uti.Markdown.Extensions[0]:
 						if data, err := os.ReadFile(p); err == nil {
 							content = string(bytes.ToLower(data))
 						}
@@ -1183,29 +1185,29 @@ func DisplayNewDockable(dockable unison.Dockable) {
 		case fi.IsPDF:
 			g := dgroup.PDFs
 			group = &g
-		case fi.Extensions[0] == gurps.SheetExt:
+		case fi.UTI.Extensions[0] == gurps.SheetExt:
 			g := dgroup.CharacterSheets
 			group = &g
-		case fi.Extensions[0] == gurps.TemplatesExt:
+		case fi.UTI.Extensions[0] == gurps.TemplatesExt:
 			g := dgroup.CharacterTemplates
 			group = &g
-		case fi.Extensions[0] == gurps.LootExt:
+		case fi.UTI.Extensions[0] == gurps.LootExt:
 			g := dgroup.LootSheets
 			group = &g
 		// TODO: Re-enable Campaign files
-		// case fi.Extensions[0] == gurps.CampaignExt:
+		// case fi.UTI.Extensions[0] == gurps.CampaignExt:
 		// 	g := dgroup.Campaigns
 		// 	group = &g
-		case fi.Extensions[0] == gurps.TraitsExt,
-			fi.Extensions[0] == gurps.TraitModifiersExt,
-			fi.Extensions[0] == gurps.EquipmentExt,
-			fi.Extensions[0] == gurps.EquipmentModifiersExt,
-			fi.Extensions[0] == gurps.SkillsExt,
-			fi.Extensions[0] == gurps.SpellsExt,
-			fi.Extensions[0] == gurps.NotesExt:
+		case fi.UTI.Extensions[0] == gurps.TraitsExt,
+			fi.UTI.Extensions[0] == gurps.TraitModifiersExt,
+			fi.UTI.Extensions[0] == gurps.EquipmentExt,
+			fi.UTI.Extensions[0] == gurps.EquipmentModifiersExt,
+			fi.UTI.Extensions[0] == gurps.SkillsExt,
+			fi.UTI.Extensions[0] == gurps.SpellsExt,
+			fi.UTI.Extensions[0] == gurps.NotesExt:
 			g := dgroup.Libraries
 			group = &g
-		case fi.Extensions[0] == gurps.MarkdownExt:
+		case fi.UTI == uti.Markdown:
 			g := dgroup.Markdown
 			group = &g
 		}
