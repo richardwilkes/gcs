@@ -51,7 +51,7 @@ for arg in "$@"; do
 	--dist | -d)
 		EXTRA_LD_FLAGS="-s -w"
 		EXTRA_BUILD_FLAGS="-a -trimpath"
-		RELEASE="5.42.0"
+		RELEASE="${GCS_RELEASE:-5.42.0}"
 		PACKAGER=1
 		DIST=--dist
 		BUILD_GO=1
@@ -90,11 +90,7 @@ fi
 
 case $(uname -s) in
 Darwin*)
-	if [ "$(uname -p)" == "arm" ]; then
-		export MACOSX_DEPLOYMENT_TARGET=11
-	else
-		export MACOSX_DEPLOYMENT_TARGET=10.15
-	fi
+	export MACOSX_DEPLOYMENT_TARGET=11
 	;;
 MINGW*|MSYS*)
 	EXTRA_LD_FLAGS="$EXTRA_LD_FLAGS -H windowsgui"
