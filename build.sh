@@ -108,6 +108,9 @@ fi
 
 # Generate the translation file
 if [ "$I18N"x == "1x" ]; then
+	# Ensure all dependencies are present in the module cache; otherwise the `go list -f "{{.Dir}}"` lookups below
+	# resolve to empty strings for any module that hasn't been downloaded yet, silently excluding it from the scan.
+	go mod download
 	i18n $(go list -f "{{.Dir}}" -m github.com/richardwilkes/pdf) \
 		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/rpgtools) \
 		$(go list -f "{{.Dir}}" -m github.com/richardwilkes/toolbox/v2) \

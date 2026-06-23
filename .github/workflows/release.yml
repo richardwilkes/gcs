@@ -52,9 +52,8 @@ jobs:
         env:
           LLVM_MINGW_VERSION: "20260616"
         run: |
-          # The default mingw gcc on the Windows/ARM64 runner is an x86_64 build
-          # that emits x86 code and can't link the native arm64 static libraries,
-          # so install a native aarch64 llvm-mingw toolchain instead.
+          # The default mingw gcc on the Windows/ARM64 runner is an x86_64 build that emits x86 code and can't link the
+          # native arm64 static libraries, so install a native aarch64 llvm-mingw toolchain instead.
           name="llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-aarch64"
           curl -fsSL -o "$RUNNER_TEMP/$name.zip" \
             "https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/$name.zip"
@@ -64,7 +63,14 @@ jobs:
 
       - name: Install create-dmg
         if: runner.os == 'macOS'
-        run: brew install create-dmg
+        env:
+          HOMEBREW_NO_ENV_HINTS: 1
+        run: |
+          # The runner image ships with aws/tap and azure/bicep pre-tapped. GCS uses neither, but Homebrew now warns
+          # about them as "untrusted" on every `brew install` (and will enforce trust by default in 5.2/6.0). Drop them
+          # so the install runs cleanly; tolerate their absence on future runner images that no longer include them.
+          brew untap aws/tap azure/bicep || true
+          brew install create-dmg
 
       # The tag (v1.2.3 -> 1.2.3) drives the version on tag pushes; a manual run may supply one; otherwise build.sh
       # falls back to its built-in default.
