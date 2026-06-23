@@ -30,3 +30,23 @@ updating:
 - **New platform builds: Windows and Linux on ARM64.** GCS is now built for ARM64 (aarch64) on both Windows and Linux,
   in addition to the existing x86-64 builds. Note that I have not been able to test these builds due to a lack of ARM64
   hardware, so please report any issues you encounter.
+- **Optional specialties for skills.** A skill's specialty is now split into a required part and an optional part,
+  matching the GURPS distinction between the two. (#1038)
+- **External PDF viewers now jump to the searched text.** When you open a page reference in an external PDF viewer, GCS
+  passes the highlighted phrase along (via the `$TEXT` placeholder) so a viewer that supports it can navigate directly
+  to the term. (#1023)
+- **Metric length now converts at 25 mm per inch.** Lengths entered in metric units convert using the GURPS simplified
+  value of 25 mm per inch, replacing the previous conversion of 1 m per yard. (#1032)
+- **Improved hiking calculations in the Calculator.** Hiking distance now follows the clarification in HT55, the daily
+  hiking duration can be chosen from a drop-down (in 4-hour increments, or a custom value) with a more typical default
+  of 8 hours, and a new field computes how many days a given total distance would take with the current parameters.
+  (#1035)
+- **Added page reference mapping for *Loadouts: Starship Crew*.** Page references to this book now resolve correctly.
+  (#1021)
+
+## Bug Fixes
+
+- Traits now contribute their weapons to the scripting context even when they aren't leveled. Previously only leveled
+  traits exposed their weapons to scripts. (#1044)
+- Fixed skill levels showing an enormous bogus value (e.g. 922337203685477) when a skill defaulted from another skill
+  whose qualifier — such as a minimum Tech Level — wasn't met. (#1031)
