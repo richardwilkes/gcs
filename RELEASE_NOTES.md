@@ -50,3 +50,5 @@ updating:
   traits exposed their weapons to scripts. (#1044)
 - Fixed skill levels showing an enormous bogus value (e.g. 922337203685477) when a skill defaulted from another skill
   whose qualifier — such as a minimum Tech Level — wasn't met. (#1031)
+- Fixed a crash that could occur when an adjustment was based on the level of its owner and the owner, or any of the
+  owner's ancestors, was disabled. (#1029)
