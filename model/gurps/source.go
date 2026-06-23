@@ -10,8 +10,11 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
@@ -56,6 +59,28 @@ type SrcMatcher struct {
 // IsZero implements json.isZero.
 func (s Source) IsZero() bool {
 	return s.TID == "" || s.Library == "" || s.Path == ""
+}
+
+// MarshalJSONTo implements json.MarshalerTo. It normalizes the stored path to use forward slashes so that sources are
+// always written in a platform-independent form, regardless of how the path was constructed in memory.
+func (s Source) MarshalJSONTo(enc *jsontext.Encoder) error {
+	type alias Source
+	a := alias(s)
+	a.Path = strings.ReplaceAll(a.Path, "\\", "/")
+	return json.MarshalEncode(enc, &a)
+}
+
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. It normalizes the stored path to use forward slashes so that
+// sources created on one platform (e.g. Windows, which uses backslash separators) remain usable on others.
+func (s *Source) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	type alias Source
+	var a alias
+	if err := json.UnmarshalDecode(dec, &a); err != nil {
+		return err
+	}
+	*s = Source(a)
+	s.Path = strings.ReplaceAll(s.Path, "\\", "/")
+	return nil
 }
 
 func (s Source) collectInto(m map[LibraryFile]struct{}) {
@@ -122,7 +147,7 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 		if !ok {
 			continue
 		}
-		p := filepath.Join(lib.Path(), libFile.Path)
+		p := filepath.Join(lib.Path(), filepath.FromSlash(libFile.Path))
 		stat, err := os.Stat(p)
 		if err != nil {
 			delete(sm.libHashes, libFile)
