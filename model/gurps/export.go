@@ -24,6 +24,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -168,18 +170,25 @@ type exportedSkill struct {
 }
 
 type exportedTrait struct {
-	ID                tid.TID
-	ParentID          tid.TID
-	Type              string
-	Points            fxp.Int
-	Description       string
-	UserDescription   string
-	ModifierNotes     string
-	Notes             string
-	UnsatisfiedReason string
-	PageRef           string
-	Tags              []string
-	Depth             int
+	ID                   tid.TID
+	ParentID             tid.TID
+	Type                 string
+	Points               fxp.Int
+	Description          string
+	UserDescription      string
+	CR                   int
+	CRFull               string
+	FR                   int
+	FRFull               string
+	ModifierNotes        string
+	ModifierNotesNoCR    string
+	ModifierNotesNoFR    string
+	ModifierNotesNoRolls string
+	Notes                string
+	UnsatisfiedReason    string
+	PageRef              string
+	Tags                 []string
+	Depth                int
 }
 
 type exportedSource struct {
@@ -507,16 +516,27 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}
 	Traverse(func(t *Trait) bool {
 		trait := &exportedTrait{
-			ID:                t.TID,
-			Points:            t.AdjustedPoints(),
-			Description:       t.String(),
-			UserDescription:   t.UserDescWithReplacements(),
-			ModifierNotes:     t.ModifierNotes(),
-			Notes:             t.Notes(),
-			UnsatisfiedReason: t.UnsatisfiedReason,
-			PageRef:           t.PageRef,
-			Tags:              slices.Clone(t.Tags),
-			Depth:             t.Depth(),
+			ID:                   t.TID,
+			Points:               t.AdjustedPoints(),
+			Description:          t.String(),
+			UserDescription:      t.UserDescWithReplacements(),
+			CR:                   t.SelfControl.Number(),
+			FR:                   t.Frequency.Number(),
+			ModifierNotes:        t.ModifierNotes(),
+			ModifierNotesNoCR:    t.modifierNotes(false, true),
+			ModifierNotesNoFR:    t.modifierNotes(true, false),
+			ModifierNotesNoRolls: t.modifierNotes(false, false),
+			Notes:                t.Notes(),
+			UnsatisfiedReason:    t.UnsatisfiedReason,
+			PageRef:              t.PageRef,
+			Tags:                 slices.Clone(t.Tags),
+			Depth:                t.Depth(),
+		}
+		if t.SelfControl != selfctrl.None {
+			trait.CRFull = t.SelfControl.String()
+		}
+		if t.Frequency != frequency.None {
+			trait.FRFull = t.Frequency.String()
 		}
 		if parent := t.Parent(); parent != nil {
 			trait.ParentID = parent.TID

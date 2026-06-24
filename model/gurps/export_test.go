@@ -10,11 +10,15 @@
 package gurps
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"text/template"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -49,4 +53,42 @@ func TestTemplateFuncs(t *testing.T) {
 		c.NoError(tmpl.Execute(&buffer, values), "Test %d", i)
 		c.Equal(data.out, buffer.String(), "Test %d", i)
 	}
+}
+
+func TestExportTraitSelfControlAndFrequency(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+
+	plain := NewTrait(entity, nil, false)
+	plain.Name = "Plain"
+
+	rolls := NewTrait(entity, nil, false)
+	rolls.Name = "Rolls"
+	rolls.SelfControl = selfctrl.CR12
+	rolls.Frequency = frequency.FR9
+	entity.Traits = append(entity.Traits, plain, rolls)
+
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.txt")
+	const tmpl = "GCS Text Template v1\n" +
+		"{{range .Traits}}" +
+		"<<{{.Description}}|{{.CR}}|{{.CRFull}}|{{.FR}}|{{.FRFull}}|" +
+		"{{.ModifierNotes}}|{{.ModifierNotesNoCR}}|{{.ModifierNotesNoFR}}|{{.ModifierNotesNoRolls}}>>\n" +
+		"{{end}}"
+	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
+	outPath := filepath.Join(dir, "out.txt")
+	c.NoError(Export(entity, tmplPath, outPath))
+	data, err := os.ReadFile(outPath)
+	c.NoError(err)
+	out := string(data)
+
+	// A trait with no self-control or frequency roll emits nothing for any of the new fields.
+	c.Contains(out, "<<Plain|0||0|||||>>")
+
+	// A trait with both rolls set emits the numeric value, the full descriptor, and the modifier-notes variants that
+	// individually suppress each roll line.
+	cr := "Self-Control Roll (CR): 12 or less (Resist quite often)"
+	fr := "Frequency Roll (FR): 9 or less (Fairly often)"
+	c.Contains(out, "<<Rolls|12|12 or less (Resist quite often)|9|9 or less (Fairly often)|"+
+		cr+"<br>"+fr+"|"+fr+"|"+cr+"|>>")
 }

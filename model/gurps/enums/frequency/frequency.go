@@ -68,6 +68,15 @@ func (r Roll) String() string {
 	return fmt.Sprintf("%d or less (%s)", r, text)
 }
 
+// Number returns the numeric frequency-of-appearance roll target (6 through 15), or 0 if there is no specific number
+// associated with this roll (i.e. None or Constant).
+func (r Roll) Number() int {
+	if r >= FR6 && r <= FR15 {
+		return int(r)
+	}
+	return 0
+}
+
 // ShortString returns a short description of the frequency.
 func (r Roll) ShortString() string {
 	switch r {

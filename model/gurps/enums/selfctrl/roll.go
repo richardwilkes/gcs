@@ -86,6 +86,15 @@ func (r Roll) String() string {
 	return fmt.Sprintf("%d or less (%s%s)", r, text, nonStandard)
 }
 
+// Number returns the numeric self-control roll target (6 through 15), or 0 if there is no specific number associated
+// with this roll (i.e. None or Always).
+func (r Roll) Number() int {
+	if r >= CR6 && r <= CR15 {
+		return int(r)
+	}
+	return 0
+}
+
 // ShortString returns a short description of the frequency.
 func (r Roll) ShortString() string {
 	switch {
