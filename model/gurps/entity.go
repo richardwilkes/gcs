@@ -1073,6 +1073,19 @@ func (e *Entity) BestSkillMatching(nameCriteria, specializationCriteria criteria
 	return best
 }
 
+// skillSpecializationMatches reports whether a specialization criteria matches a skill that has the given required and
+// optional specializations. A skill with a required specialization may be matched by either it or its optional
+// specialization. A skill with no required specialization is matched by its optional specialization (which is the empty
+// string for a fully unspecialized skill) - this keeps an unspecialized skill distinct from a sibling that carries an
+// optional specialization, so e.g. an "is empty" criteria matches only the truly unspecialized skill.
+func skillSpecializationMatches(specializationCriteria criteria.Text, replacements map[string]string, requiredSpecialization, optionalSpecialization string) bool {
+	if requiredSpecialization != "" {
+		return specializationCriteria.Matches(replacements, requiredSpecialization) ||
+			(optionalSpecialization != "" && specializationCriteria.Matches(replacements, optionalSpecialization))
+	}
+	return specializationCriteria.Matches(replacements, optionalSpecialization)
+}
+
 // SkillMatching returns a list of skills whose name and specialization match the given criteria.
 func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
@@ -1080,7 +1093,8 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 		if !excludes[sk.String()] {
 			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
 				if nameCriteria.Matches(replacements, sk.NameWithReplacements()) &&
-					(specializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) || specializationCriteria.Matches(replacements, sk.OptionalSpecializationWithReplacements())) {
+					skillSpecializationMatches(specializationCriteria, replacements,
+						sk.SpecializationWithReplacements(), sk.OptionalSpecializationWithReplacements()) {
 					list = append(list, sk)
 				}
 			}

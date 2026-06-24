@@ -46,6 +46,8 @@ updating:
 
 ## Bug Fixes
 
+- Fixed how a skill chooses its default when several skills share a name.
+- The Swap Defaults command is now more consistent.
 - Ritual Magic spells now require the Ritual Magic skill for the spell's own college. Previously a Ritual Magic skill
   for any college would satisfy the prerequisite and could supply the spell's level, even though the requirement listed
   a specific college. (#1018)

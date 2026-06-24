@@ -713,7 +713,9 @@ func (s *Sheet) canSwapDefaults(_ any) bool {
 		if skill.IsTechnique() {
 			return false
 		}
-		if !skill.CanSwapDefaultsWith(skill.DefaultSkill()) && skill.BestSwappableSkill() == nil {
+		if !skill.CanSwapDefaultsWith(skill.DefaultSkill()) &&
+			skill.BestSwappableSkill() == nil &&
+			!skill.AlternateDefaultsAvailable() {
 			return false
 		}
 		canSwap = true
@@ -737,13 +739,17 @@ func (s *Sheet) swapDefaults(_ any) {
 		if !skill.CanSwapDefaults() {
 			continue
 		}
-		swap := skill.DefaultSkill()
-		if !skill.CanSwapDefaultsWith(swap) {
-			swap = skill.BestSwappableSkill()
+		if skill.AlternateDefaultsAvailable() {
+			skill.SwapToNextDefault()
+		} else if swap := skill.DefaultSkill(); skill.CanSwapDefaultsWith(swap) {
+			skill.DefaultedFrom = nil
+			swap.SwapDefaults()
+		} else if other := skill.BestSwappableSkill(); other != nil {
+			skill.DefaultedFrom = nil
+			other.SwapDefaults()
 		}
-		skill.DefaultedFrom = nil
-		swap.SwapDefaults()
 	}
+	s.entity.Recalculate()
 	s.Skills.Sync()
 	undo.AfterData = NewTableUndoEditData(s.Skills.Table)
 	s.UndoManager().Add(undo)
