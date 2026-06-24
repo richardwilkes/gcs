@@ -65,3 +65,6 @@ updating:
 - Library source paths are now stored using forward slashes so they work across platforms. Previously, files created on
   Windows recorded source paths with backslashes, which prevented the library source from being located on Linux or
   macOS and showed the source match status as a question mark. (#1005)
+- A pool's State now updates correctly as its current value crosses a threshold. Previously, if the pool's starting
+  value was outside every threshold, the State name would never appear even after the value dropped into a threshold's
+  range. (#1009)

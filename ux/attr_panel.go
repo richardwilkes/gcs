@@ -282,16 +282,10 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					}
 					a.AddChild(name)
 
-					if threshold := attr.CurrentThreshold(); threshold != nil {
-						state := NewPageLabel("[" + threshold.State + "]")
-						if threshold.Explanation != "" {
-							state.Tooltip = newMarkdownTooltip(threshold.ResolveExplanation(attr), "")
-						}
-						a.AddChild(state)
-						a.stateLabels[def.ID()] = state
-					} else {
-						a.AddChild(unison.NewPanel())
-					}
+					state := NewPageLabel("")
+					a.updateThreshold(state, attr)
+					a.AddChild(state)
+					a.stateLabels[def.ID()] = state
 				} else {
 					if def.Type == attribute.IntegerRef || def.Type == attribute.DecimalRef {
 						field := NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
@@ -355,28 +349,39 @@ func (a *AttrPanel) Sync() {
 				id := def.ID()
 				if label, exists := a.stateLabels[id]; exists {
 					if attr, ok := a.entity.Attributes.Set[id]; ok {
-						label.DrawCallback = label.DefaultDraw
-						if threshold := attr.CurrentThreshold(); threshold != nil {
-							label.Text = unison.NewSmallCapsText("["+threshold.State+"]", &unison.TextDecoration{
-								Font:            fonts.PageLabelPrimary,
-								OnBackgroundInk: unison.ThemeOnSurface,
-							})
-							if threshold.Explanation != "" {
-								label.Tooltip = newMarkdownTooltip(threshold.ResolveExplanation(attr), "")
-							}
-						} else {
-							label.Text = unison.NewSmallCapsText("", &unison.TextDecoration{
-								Font:            fonts.PageLabelPrimary,
-								OnBackgroundInk: unison.ThemeOnSurface,
-							})
-							label.Tooltip = nil
-						}
+						a.updateThreshold(label, attr)
 					}
 				}
 			}
 		}
 	}
 	MarkForLayoutWithinDockable(a)
+}
+
+var poolThresholdDescFont = &unison.DynamicFont{
+	Resolver: func() unison.FontDescriptor {
+		fd := fonts.PageLabelPrimary.Descriptor()
+		fd.Size *= 0.8
+		return fd
+	},
+}
+
+func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) {
+	label.DrawCallback = label.DefaultDraw
+	label.Font = poolThresholdDescFont
+	var txt string
+	var tip *unison.Panel
+	if threshold := attr.CurrentThreshold(); threshold != nil {
+		txt = "[" + threshold.State + "]"
+		if threshold.Explanation != "" {
+			tip = newMarkdownTooltip(threshold.ResolveExplanation(attr), "")
+		}
+	}
+	label.Text = unison.NewSmallCapsText(txt, &unison.TextDecoration{
+		Font:            poolThresholdDescFont,
+		OnBackgroundInk: unison.ThemeOnSurface,
+	})
+	label.Tooltip = tip
 }
 
 func (a *AttrPanel) forceSync() {
