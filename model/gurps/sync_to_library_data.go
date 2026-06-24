@@ -23,15 +23,15 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
-// SyncSheetsAndTemplates syncs GCS sheet and template files found in the given paths with their source libraries.
-func SyncSheetsAndTemplates(paths ...string) error {
+// SyncToLibraryData syncs GCS sheet, template, and loot files found in the given paths with their source libraries.
+func SyncToLibraryData(paths ...string) error {
 	var err error
 	paths, err = xfilepath.UniquePaths(paths...)
 	if err != nil {
 		return err
 	}
 	pathSet := make(map[string]struct{})
-	f := convertWalker(pathSet, xslices.Set([]string{SheetExt, TemplatesExt}))
+	f := convertWalker(pathSet, xslices.Set([]string{SheetExt, TemplatesExt, LootExt}))
 	for _, p := range paths {
 		_ = filepath.WalkDir(p, f) //nolint:errcheck // We want to continue on even if there was an error
 	}
@@ -44,9 +44,21 @@ func SyncSheetsAndTemplates(paths ...string) error {
 			if tmpl, err = NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			tmpl.SyncWithLibrarySources()
 			tmpl.EnsureAttachments()
+			tmpl.SourceMatcher().PrepareHashes(tmpl)
+			tmpl.SyncWithLibrarySources()
 			if err = tmpl.Save(p); err != nil {
+				return err
+			}
+		case LootExt:
+			var loot *Loot
+			if loot, err = NewLootFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+				return err
+			}
+			loot.EnsureAttachments()
+			loot.SourceMatcher().PrepareHashes(loot)
+			loot.SyncWithLibrarySources()
+			if err = loot.Save(p); err != nil {
 				return err
 			}
 		case SheetExt:
@@ -54,6 +66,8 @@ func SyncSheetsAndTemplates(paths ...string) error {
 			if entity, err = NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
+			entity.ensureAttachments()
+			entity.SourceMatcher().PrepareHashes(entity)
 			entity.SyncWithLibrarySources()
 			entity.Recalculate()
 			if err = entity.Save(p); err != nil {

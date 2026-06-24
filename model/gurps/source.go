@@ -155,8 +155,8 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 		}
 		modTime := stat.ModTime()
 		if data, exists := sm.libHashes[libFile]; exists {
-			if modTime.Compare(data.timestamp) >= 0 {
-				continue // We've already loaded this file and it hasn't changed.
+			if modTime.Equal(data.timestamp) {
+				continue // We've already loaded this exact version of the file.
 			}
 			delete(sm.libHashes, libFile)
 		}

@@ -62,7 +62,7 @@ func main() {
 
 	convertFiles := flag.Bool("convert", false, i18n.Text("Convert all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"))
 
-	syncSheetsAndTemplates := flag.Bool("sync", false, fmt.Sprintf(i18n.Text("Syncs all character sheet (%s) and template (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), gurps.SheetExt, gurps.TemplatesExt))
+	syncToLibraryData := flag.Bool("sync", false, fmt.Sprintf(i18n.Text("Syncs all character sheet (%s), template (%s), and loot (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), gurps.SheetExt, gurps.TemplatesExt, gurps.LootExt))
 
 	var logCfg xslog.Config
 	logCfg.AddFlags()
@@ -77,7 +77,7 @@ func main() {
 	ux.RegisterKnownFileTypes()
 	gurps.GlobalSettings() // Here to force early initialization
 
-	if *convertFiles && *syncSheetsAndTemplates {
+	if *convertFiles && *syncToLibraryData {
 		xos.ExitWithMsg(i18n.Text("Cannot specify both --convert and --sync"))
 	}
 
@@ -86,8 +86,8 @@ func main() {
 		if err := gurps.Convert(fileList...); err != nil {
 			xos.ExitWithMsg(err.Error())
 		}
-	case *syncSheetsAndTemplates:
-		if err := gurps.SyncSheetsAndTemplates(fileList...); err != nil {
+	case *syncToLibraryData:
+		if err := gurps.SyncToLibraryData(fileList...); err != nil {
 			xos.ExitWithMsg(err.Error())
 		}
 	case *textTmplPath != "":

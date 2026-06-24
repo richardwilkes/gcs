@@ -85,3 +85,9 @@ updating:
   range. (#1009)
 - The `Math.exp2(x)` function (base-2 exponentiation, i.e. 2ˣ) is now actually available to scripts. It was meant to be
   exposed, but due to the way it was registered, calling it raised a `TypeError` instead of returning a value.
+- The `--sync` command-line option now correctly syncs template files and also handles loot files. Previously it loaded
+  each file's library source data but never prepared it for matching, so every item was treated as having no source and
+  nothing was synced for template files; loot files weren't processed at all.
+- Library source files that are edited while GCS is running are now detected and reloaded. Previously, once a source
+  library file had been loaded, later changes to it were ignored until GCS was restarted, leaving the source match
+  status based on the stale, originally loaded data.
