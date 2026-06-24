@@ -653,11 +653,27 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer
 		name = bestDef.NameWithReplacements(replacements)
 		specialization = bestDef.SpecializationWithReplacements(replacements)
 	}
-	entity.AddWeaponWithSkillBonusesFor(name, specialization, w.UsageWithReplacements(), tags, dieCount, tooltip,
-		bonusSet, allowed)
+	usage := w.UsageWithReplacements()
+	entity.AddWeaponWithSkillBonusesFor(name, specialization, usage, tags, dieCount, tooltip, bonusSet, allowed)
+	// When the weapon's best skill default resolves to a technique, also apply weapon bonuses that are qualified by the
+	// skill the technique is based on, evaluated against that base skill's relative level rather than the technique's.
+	// Per the rules, certain bonuses are determined by the base skill, not the technique - e.g. a Kick that defaults to
+	// the Kicking technique still gets the Brawling/Karate damage bonus based on the Brawling/Karate relative skill
+	// level (issue #767).
+	sk := entity.BestSkillNamed(name, specialization, false, nil)
+	seen := make(map[*Skill]bool)
+	for sk != nil && sk.IsTechnique() && !seen[sk] {
+		seen[sk] = true
+		base := sk.DefaultSkill()
+		if base == nil {
+			break
+		}
+		entity.AddWeaponWithSkillBonusesFor(base.NameWithReplacements(), base.SpecializationWithReplacements(), usage,
+			tags, dieCount, tooltip, bonusSet, allowed)
+		sk = base
+	}
 	nameQualifier := w.String()
-	entity.AddNamedWeaponBonusesFor(nameQualifier, w.UsageWithReplacements(), tags, dieCount, tooltip, bonusSet,
-		allowed)
+	entity.AddNamedWeaponBonusesFor(nameQualifier, usage, tags, dieCount, tooltip, bonusSet, allowed)
 	for _, f := range w.Owner.FeatureList() {
 		w.extractWeaponBonus(f, bonusSet, allowed, fxp.FromInteger(dieCount), tooltip)
 	}

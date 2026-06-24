@@ -975,6 +975,9 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 }
 
 func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool) {
+	if m[bonus] {
+		return
+	}
 	savedLeveledOwner := bonus.LeveledOwner
 	savedDieCount := bonus.DieCount
 	bonus.DieCount = fxp.FromInteger(dieCount)

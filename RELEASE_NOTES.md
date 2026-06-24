@@ -46,6 +46,10 @@ updating:
 
 ## Bug Fixes
 
+- Weapons that default to a technique now also receive the damage and other bonuses granted by the skill the technique
+  is based on, qualified by that base skill's relative level. Previously, for example, learning the Kicking technique
+  caused a Kick to lose the Brawling/Karate damage bonus, since the bonus was matched against the technique instead of
+  the underlying skill. (#767)
 - Fixed how a skill chooses its default when several skills share a name.
 - The Swap Defaults command is now more consistent.
 - Ritual Magic spells now require the Ritual Magic skill for the spell's own college. Previously a Ritual Magic skill
