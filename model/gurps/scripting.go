@@ -296,14 +296,24 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 	if !ok {
 		return nil, errors.New("failed to get VM from pool")
 	}
+	// Clear any interrupt that might still be set from a prior, timed-out execution before running. time.Timer.Stop
+	// does not wait for an AfterFunc that has already begun firing, so a timeout interrupt can land on the VM after it
+	// was returned to the pool. Clearing it here, on the next use, guarantees it cannot spuriously interrupt this run.
+	vm.ClearInterrupt()
 	globals := vm.GlobalObject()
+	reusable := false
 	defer func() {
+		// Only return the VM to the pool if the run completed without panicking. A panic (e.g. from a Go function
+		// invoked by the script) can leave the VM in an inconsistent state, so in that case we discard it and let the
+		// pool create a fresh one rather than risk reusing a corrupt VM.
+		if !reusable {
+			return
+		}
 		for _, arg := range args {
 			if localErr := globals.Delete(arg.Name); localErr != nil {
 				errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, localErr, "name", arg.Name)
 			}
 		}
-		vm.ClearInterrupt()
 		vmPool.Put(vm)
 	}()
 	for _, arg := range args {
@@ -326,7 +336,11 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 	if timeout > 0 {
 		defer time.AfterFunc(timeout, func() { vm.Interrupt("timeout") }).Stop()
 	}
-	return vm.RunProgram(program)
+	value, err := vm.RunProgram(program)
+	// A returned error (including a timeout interrupt or a script exception) leaves the VM reusable; only a panic,
+	// which would prevent reaching this line, marks it as corrupt.
+	reusable = true
+	return value, err
 }
 
 func callArgAsTrimmedString(call goja.FunctionCall, index int) string {
