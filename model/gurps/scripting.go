@@ -42,7 +42,7 @@ var (
 		mustSet(vm, "dice", scriptDice{})
 		mustSet(vm, "iff", scriptIff)
 		mustSet(vm, "measure", scriptMeasurement{})
-		mustSet(vm, "Math.exp2", math.Exp2)
+		mustSetMember(vm.GlobalObject().Get("Math").ToObject(vm), "exp2", math.Exp2)
 		mustSet(vm, "signedValue", scriptSigned)
 		mustSet(vm, "formatNum", scriptFormatNum)
 		return vm
@@ -83,6 +83,14 @@ func DiscardGlobalResolveCache() {
 
 func mustSet(vm *goja.Runtime, name string, value any) {
 	if err := vm.Set(name, value); err != nil {
+		panic(errs.Newf("failed to set %s: %s", name, err.Error()))
+	}
+}
+
+// mustSetMember sets a member on an existing object (e.g. adding a function to the built-in Math object). Unlike
+// Runtime.Set, this resolves a property on the object rather than creating a top-level global with a dotted name.
+func mustSetMember(obj *goja.Object, name string, value any) {
+	if err := obj.Set(name, value); err != nil {
 		panic(errs.Newf("failed to set %s: %s", name, err.Error()))
 	}
 }

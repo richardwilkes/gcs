@@ -83,3 +83,5 @@ updating:
 - A pool's State now updates correctly as its current value crosses a threshold. Previously, if the pool's starting
   value was outside every threshold, the State name would never appear even after the value dropped into a threshold's
   range. (#1009)
+- The `Math.exp2(x)` function (base-2 exponentiation, i.e. 2ˣ) is now actually available to scripts. It was meant to be
+  exposed, but due to the way it was registered, calling it raised a `TypeError` instead of returning a value.
