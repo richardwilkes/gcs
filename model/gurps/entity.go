@@ -417,51 +417,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		e.features.costReductions = append(e.features.costReductions, actual)
 	case *DRBonus:
 		if len(actual.Locations) == 0 { // "this armor"
-			if eqp, ok := owner.(*Equipment); ok {
-				allLocations := make(map[string]struct{})
-				locationsMatched := make(map[string]struct{})
-				for _, f2 := range eqp.FeatureList() {
-					if drBonus, ok2 := f2.(*DRBonus); ok2 && len(drBonus.Locations) != 0 {
-						for _, loc := range drBonus.Locations {
-							allLocations[loc] = struct{}{}
-						}
-						if drBonus.Specialization == actual.Specialization {
-							for _, loc := range drBonus.Locations {
-								locationsMatched[loc] = struct{}{}
-							}
-							additionalDRBonus := DRBonus{
-								DRBonusData: DRBonusData{
-									Type:           feature.DRBonus,
-									Locations:      slices.Clone(drBonus.Locations),
-									Specialization: actual.Specialization,
-									LeveledAmount:  actual.LeveledAmount,
-								},
-							}
-							additionalDRBonus.SetOwner(owner)
-							additionalDRBonus.SetSubOwner(subOwner)
-							additionalDRBonus.SetLeveledOwner(leveledOwner)
-							e.features.drBonuses = append(e.features.drBonuses, &additionalDRBonus)
-						}
-					}
-				}
-				for k := range locationsMatched {
-					delete(allLocations, k)
-				}
-				if len(allLocations) != 0 {
-					additionalDRBonus := DRBonus{
-						DRBonusData: DRBonusData{
-							Type:           feature.DRBonus,
-							Locations:      slices.Sorted(maps.Keys(allLocations)),
-							Specialization: actual.Specialization,
-							LeveledAmount:  actual.LeveledAmount,
-						},
-					}
-					additionalDRBonus.SetOwner(owner)
-					additionalDRBonus.SetSubOwner(subOwner)
-					additionalDRBonus.SetLeveledOwner(leveledOwner)
-					e.features.drBonuses = append(e.features.drBonuses, &additionalDRBonus)
-				}
-			}
+			e.expandThisArmorDRBonus(owner, subOwner, leveledOwner, actual)
 		} else {
 			e.features.drBonuses = append(e.features.drBonuses, actual)
 		}
@@ -481,6 +437,55 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		// Not collected at this stage
 	default:
 		errs.Log(errs.New("unhandled feature"), "type", f.FeatureType())
+	}
+}
+
+// expandThisArmorDRBonus handles a DR bonus that specifies no locations (a "this armor" bonus). Such a bonus applies to
+// whatever locations the owning piece of equipment already grants DR to, so we resolve those locations by scanning the
+// equipment's other DR bonuses: locations covered by a bonus with a matching specialization receive a copy carrying
+// that same specialization, and any remaining covered locations receive a single combined copy. If the owner isn't a
+// piece of equipment, the bonus is dropped, since there is nothing for it to attach to.
+func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwner LeveledOwner, src *DRBonus) {
+	eqp, ok := owner.(*Equipment)
+	if !ok {
+		return
+	}
+	add := func(locations []string) {
+		bonus := &DRBonus{
+			DRBonusData: DRBonusData{
+				Type:           feature.DRBonus,
+				Locations:      locations,
+				Specialization: src.Specialization,
+				LeveledAmount:  src.LeveledAmount,
+			},
+		}
+		bonus.SetOwner(owner)
+		bonus.SetSubOwner(subOwner)
+		bonus.SetLeveledOwner(leveledOwner)
+		e.features.drBonuses = append(e.features.drBonuses, bonus)
+	}
+	allLocations := make(map[string]struct{})
+	locationsMatched := make(map[string]struct{})
+	for _, f := range eqp.FeatureList() {
+		drBonus, ok2 := f.(*DRBonus)
+		if !ok2 || len(drBonus.Locations) == 0 {
+			continue
+		}
+		for _, loc := range drBonus.Locations {
+			allLocations[loc] = struct{}{}
+		}
+		if drBonus.Specialization == src.Specialization {
+			for _, loc := range drBonus.Locations {
+				locationsMatched[loc] = struct{}{}
+			}
+			add(slices.Clone(drBonus.Locations))
+		}
+	}
+	for k := range locationsMatched {
+		delete(allLocations, k)
+	}
+	if len(allLocations) != 0 {
+		add(slices.Sorted(maps.Keys(allLocations)))
 	}
 }
 
