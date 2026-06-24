@@ -19,6 +19,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/dop251/goja"
@@ -32,8 +33,6 @@ var (
 	scriptStart         = "<script>"
 	scriptEnd           = "</script>"
 	embeddedScriptRegex = regexp.MustCompile(`(?s)` + scriptStart + `.*?` + scriptEnd)
-	scriptCache         = make(map[string]*goja.Program)
-	globalResolveCache  = make(map[scriptResolveKey]string)
 	vmPool              = sync.Pool{New: func() any {
 		vm := goja.New()
 		vm.SetFieldNameMapper(scriptNameMapper{})
@@ -74,11 +73,26 @@ type ScriptArg struct {
 	Value any
 }
 
+// scriptCache holds compiled programs keyed by their source text. It is shared by every entity and every goroutine that
+// resolves scripts, so all access is guarded by scriptCacheMutex.
+var (
+	scriptCacheMutex sync.RWMutex
+	scriptCache      = make(map[string]*goja.Program)
+)
+
+// globalResolveCache holds resolved results for scripts that have no associated entity. Unlike an entity's own
+// scriptCache (which is only touched while recalculating that single entity), this is package-global state that may be
+// reached from multiple goroutines, so all access is guarded by globalResolveMutex.
+var (
+	globalResolveMutex sync.Mutex
+	globalResolveCache = make(map[scriptResolveKey]string)
+)
+
 // DiscardGlobalResolveCache clears the global resolve cache.
 func DiscardGlobalResolveCache() {
-	if len(globalResolveCache) != 0 {
-		globalResolveCache = make(map[scriptResolveKey]string)
-	}
+	globalResolveMutex.Lock()
+	defer globalResolveMutex.Unlock()
+	clear(globalResolveCache)
 }
 
 func mustSet(vm *goja.Runtime, name string, value any) {
@@ -144,25 +158,33 @@ func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text strin
 
 const maximumAllowedResolvingDepth = 20
 
-var scriptResolvingDepth = 0
+// globalScriptResolvingDepth guards entity-less script resolution against runaway or circular references. Entity-scoped
+// resolution uses the entity's own scriptResolvingDepth field instead (see enterScriptResolution); only scripts with no
+// associated entity (e.g. nodes in a standalone library file) fall back to this package-global counter, which is atomic
+// so that concurrent entity-less resolutions stay race-free.
+var globalScriptResolvingDepth atomic.Int32
+
+// enterScriptResolution increments the appropriate recursion-depth counter and returns the new depth along with a
+// function that restores it. Resolution recurses through the goja boundary on the calling goroutine (resolving one
+// script can read a value whose own script must be resolved); tracking the depth per-entity keeps that count accurate
+// even when unrelated entities are resolved concurrently on different goroutines.
+func enterScriptResolution(entity *Entity) (depth int, leave func()) {
+	if entity != nil {
+		entity.scriptResolvingDepth++
+		return entity.scriptResolvingDepth, func() { entity.scriptResolvingDepth-- }
+	}
+	return int(globalScriptResolvingDepth.Add(1)), func() { globalScriptResolvingDepth.Add(-1) }
+}
 
 // ResolveScript will process a script.
 func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
-	scriptResolvingDepth++
-	defer func() {
-		scriptResolvingDepth--
-	}()
-	if scriptResolvingDepth > maximumAllowedResolvingDepth {
+	depth, leave := enterScriptResolution(entity)
+	defer leave()
+	if depth > maximumAllowedResolvingDepth {
 		return "script resolution exceeded maximum depth (possible circular reference)"
 	}
-	var resolveCache map[scriptResolveKey]string
-	if entity == nil {
-		resolveCache = globalResolveCache
-	} else {
-		resolveCache = entity.scriptCache
-	}
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
-	if cached, exists := resolveCache[key]; exists {
+	if cached, exists := lookupResolvedScript(entity, key); exists {
 		return cached
 	}
 	var result string
@@ -205,8 +227,60 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	} else {
 		xos.SafeCall(func() { result = v.String() }, func(panicErr error) { result = panicErr.Error() })
 	}
-	resolveCache[key] = result
+	storeResolvedScript(entity, key, result)
 	return result
+}
+
+// lookupResolvedScript returns a previously resolved result for the given key. Entity-scoped results live in the
+// entity's own cache (only touched while recalculating that entity); entity-less results live in the package-global
+// cache and are read under globalResolveMutex.
+func lookupResolvedScript(entity *Entity, key scriptResolveKey) (string, bool) {
+	if entity != nil {
+		cached, exists := entity.scriptCache[key]
+		return cached, exists
+	}
+	globalResolveMutex.Lock()
+	defer globalResolveMutex.Unlock()
+	cached, exists := globalResolveCache[key]
+	return cached, exists
+}
+
+// storeResolvedScript records a resolved result for the given key. See lookupResolvedScript for where each is kept.
+func storeResolvedScript(entity *Entity, key scriptResolveKey, result string) {
+	if entity != nil {
+		entity.scriptCache[key] = result
+		return
+	}
+	globalResolveMutex.Lock()
+	defer globalResolveMutex.Unlock()
+	globalResolveCache[key] = result
+}
+
+// compiledProgram returns the compiled program for the given script text, compiling and caching it on first use. The
+// text is wrapped in an anonymous strict-mode function so it cannot pollute the global scope.
+func compiledProgram(text string) (*goja.Program, error) {
+	scriptCacheMutex.RLock()
+	program, exists := scriptCache[text]
+	scriptCacheMutex.RUnlock()
+	if exists {
+		return program, nil
+	}
+	jsBytes, err := json.Marshal(text)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal script text: %w", err)
+	}
+	if program, err = goja.Compile("", "(function() { 'use strict'; return eval("+string(jsBytes)+"); })();", true); err != nil {
+		return nil, fmt.Errorf("failed to compile script: %w", err)
+	}
+	scriptCacheMutex.Lock()
+	defer scriptCacheMutex.Unlock()
+	// Re-check in case another goroutine compiled and stored the same text while we were compiling, so all callers
+	// share a single program instance.
+	if existing, ok := scriptCache[text]; ok {
+		return existing, nil
+	}
+	scriptCache[text] = program
+	return program, nil
 }
 
 // runScript compiles and runs a script with the provided arguments. A timeout of 0 or less means no timeout.
@@ -214,17 +288,9 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 // polluting the global scope. The arguments will be set as global variables in the script's context. The return value
 // is the result of the script execution, or an error if it fails.
 func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Value, error) {
-	program, exists := scriptCache[text]
-	if !exists {
-		jsBytes, err := json.Marshal(text)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal script text: %w", err)
-		}
-		program, err = goja.Compile("", "(function() { 'use strict'; return eval("+string(jsBytes)+"); })();", true)
-		if err != nil {
-			return nil, fmt.Errorf("failed to compile script: %w", err)
-		}
-		scriptCache[text] = program
+	program, err := compiledProgram(text)
+	if err != nil {
+		return nil, err
 	}
 	vm, ok := vmPool.Get().(*goja.Runtime)
 	if !ok {
@@ -233,8 +299,8 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 	globals := vm.GlobalObject()
 	defer func() {
 		for _, arg := range args {
-			if err := globals.Delete(arg.Name); err != nil {
-				errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, err, "name", arg.Name)
+			if localErr := globals.Delete(arg.Name); localErr != nil {
+				errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, localErr, "name", arg.Name)
 			}
 		}
 		vm.ClearInterrupt()
@@ -243,7 +309,7 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 	for _, arg := range args {
 		if valueProvider, ok2 := arg.Value.(func(r *goja.Runtime) any); ok2 {
 			var cachedResult goja.Value
-			if err := globals.DefineAccessorProperty(arg.Name, vm.ToValue(func(_ goja.FunctionCall) goja.Value {
+			if err = globals.DefineAccessorProperty(arg.Name, vm.ToValue(func(_ goja.FunctionCall) goja.Value {
 				if cachedResult == nil {
 					cachedResult = vm.ToValue(valueProvider(vm))
 				}
@@ -253,7 +319,7 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 			}
 			continue
 		}
-		if err := vm.Set(arg.Name, arg.Value); err != nil {
+		if err = vm.Set(arg.Name, arg.Value); err != nil {
 			return nil, fmt.Errorf("failed to set argument %q: %w", arg.Name, err)
 		}
 	}

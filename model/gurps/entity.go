@@ -115,6 +115,7 @@ type Entity struct {
 	variableResolverExclusions     map[string]bool
 	skillResolverExclusions        map[string]bool
 	scriptCache                    map[scriptResolveKey]string
+	scriptResolvingDepth           int
 	variableCache                  map[string]string
 	basicLiftCache                 fxp.Weight
 	encumbranceLevelCache          encumbrance.Level
