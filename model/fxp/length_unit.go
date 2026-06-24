@@ -10,8 +10,23 @@
 package fxp
 
 import (
+	"slices"
 	"strings"
 )
+
+// lengthUnitsBySuffixLen holds the length units (excluding FeetAndInches, which is parsed specially) ordered by
+// descending key length, so that suffix matching always prefers the most specific unit (e.g. "cm" before "m")
+// regardless of the order in which the enum is declared.
+var lengthUnitsBySuffixLen = func() []LengthUnit {
+	units := make([]LengthUnit, 0, len(LengthUnits))
+	for _, unit := range LengthUnits {
+		if unit != FeetAndInches {
+			units = append(units, unit)
+		}
+	}
+	slices.SortStableFunc(units, func(a, b LengthUnit) int { return len(b.Key()) - len(a.Key()) })
+	return units
+}()
 
 // Format the length for this LengthUnit.
 func (enum LengthUnit) Format(length Length) string {

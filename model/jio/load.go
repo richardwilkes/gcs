@@ -47,5 +47,8 @@ func DecompressAndDeserialize(data []byte, result any) error {
 	if err != nil {
 		return errs.Wrap(err)
 	}
-	return errs.Wrap(json.UnmarshalRead(r, result))
+	if err = json.UnmarshalRead(r, result); err != nil {
+		return errs.Wrap(err)
+	}
+	return errs.Wrap(r.Close())
 }

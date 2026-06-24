@@ -10,13 +10,22 @@
 package fxp
 
 import (
+	"slices"
 	"strings"
 )
+
+// weightUnitsBySuffixLen holds the weight units ordered by descending key length, so that suffix matching always
+// prefers the most specific unit (e.g. "kg" before "g") regardless of the order in which the enum is declared.
+var weightUnitsBySuffixLen = func() []WeightUnit {
+	units := slices.Clone(WeightUnits)
+	slices.SortStableFunc(units, func(a, b WeightUnit) int { return len(b.Key()) - len(a.Key()) })
+	return units
+}()
 
 // TrailingWeightUnitFromString extracts a trailing WeightUnit from a string.
 func TrailingWeightUnitFromString(s string, defUnits WeightUnit) WeightUnit {
 	s = strings.ToLower(strings.TrimSpace(s))
-	for _, one := range WeightUnits {
+	for _, one := range weightUnitsBySuffixLen {
 		if strings.HasSuffix(s, one.Key()) {
 			return one
 		}

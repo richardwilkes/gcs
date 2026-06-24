@@ -39,3 +39,33 @@ func TestGURPSLengthConversion(t *testing.T) {
 	c.NoError(err)
 	c.Equal("1 cm", fxp.Centimeter.Format(w))
 }
+
+// TestLengthFromStringUnitSuffixes verifies that every unit's key (other than FeetAndInches, which is parsed via the
+// '/" notation), when appended to a number, parses back to that same unit. This guards against the suffix-matching
+// being sensitive to the order in which the enum is declared (e.g. "m" must not greedily match the "cm" / "km" / "m"
+// overlap).
+func TestLengthFromStringUnitSuffixes(t *testing.T) {
+	c := check.New(t)
+	for _, unit := range fxp.LengthUnits {
+		if unit == fxp.FeetAndInches {
+			continue
+		}
+		text := "3" + unit.Key()
+		w, err := fxp.LengthFromString(text, fxp.Meter)
+		c.NoError(err, "parsing %q", text)
+		c.Equal(fxp.LengthFromInteger(3, unit), w, "parsing %q", text)
+	}
+}
+
+// TestLengthFromStringCaseInsensitive verifies that unit suffixes are matched without regard to case.
+func TestLengthFromStringCaseInsensitive(t *testing.T) {
+	c := check.New(t)
+	for _, text := range []string{"0.5M", "0.5 M"} {
+		w, err := fxp.LengthFromString(text, fxp.Inch)
+		c.NoError(err, "parsing %q", text)
+		c.Equal("50 cm", fxp.Centimeter.Format(w), "parsing %q", text)
+	}
+	w, err := fxp.LengthFromString("32 YD", fxp.Inch)
+	c.NoError(err)
+	c.Equal("96'", fxp.FeetAndInches.Format(w))
+}

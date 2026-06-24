@@ -43,8 +43,8 @@ func WeightFromStringForced(text string, defaultUnits WeightUnit) Weight {
 // WeightFromString creates a new Weight. May have any of the known Weight suffixes or no notation at all, in which case
 // defaultUnits is used.
 func WeightFromString(text string, defaultUnits WeightUnit) (Weight, error) {
-	text = strings.TrimLeft(strings.TrimSpace(text), "+")
-	for _, unit := range WeightUnits {
+	text = strings.ToLower(strings.TrimLeft(strings.TrimSpace(text), "+"))
+	for _, unit := range weightUnitsBySuffixLen {
 		if strings.HasSuffix(text, unit.Key()) {
 			value, err := FromString(strings.TrimSpace(strings.TrimSuffix(text, unit.Key())))
 			if err != nil {
