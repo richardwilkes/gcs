@@ -714,18 +714,17 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer
 func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount fxp.Int, tooltip *xbytes.InsertBuffer) {
 	if allowedFeatureTypes[f.FeatureType()] {
 		if bonus, ok := f.(*WeaponBonus); ok {
-			savedLeveledOwner := bonus.LeveledOwner
-			savedDieCount := bonus.DieCount
-			bonus.LeveledOwner = bonus.DerivedLeveledOwner()
-			bonus.DieCount = dieCount
 			replacements := w.NameableReplacements()
+			addTooltip := func() {
+				bonus.addToTooltip(bonus.adjustedAmount(dieCount, bonus.DerivedLeveledOwner()), tooltip)
+			}
 			switch bonus.SelectionType {
 			case wsel.WithRequiredSkill:
 			case wsel.ThisWeapon:
 				if bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) {
 					if _, exists := set[bonus]; !exists {
 						set[bonus] = true
-						bonus.AddToTooltip(tooltip)
+						addTooltip()
 					}
 				}
 			case wsel.WithName:
@@ -734,14 +733,12 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 					bonus.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...) {
 					if _, exists := set[bonus]; !exists {
 						set[bonus] = true
-						bonus.AddToTooltip(tooltip)
+						addTooltip()
 					}
 				}
 			default:
 				errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
 			}
-			bonus.LeveledOwner = savedLeveledOwner
-			bonus.DieCount = savedDieCount
 		}
 	}
 }

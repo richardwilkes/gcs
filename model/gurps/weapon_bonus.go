@@ -214,15 +214,21 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 
 // AdjustedAmount returns the amount, adjusted for level, if requested.
 func (w *WeaponBonus) AdjustedAmount() fxp.Int {
+	return w.adjustedAmount(w.DieCount, w.LeveledOwner)
+}
+
+// adjustedAmount returns the amount adjusted for the given die count and leveled owner. Taking these as parameters
+// rather than reading the DieCount/LeveledOwner scratch fields lets callers compute an amount without mutating the
+// shared bonus, which is not safe when the bonus may be read concurrently.
+func (w *WeaponBonus) adjustedAmount(dieCount fxp.Int, leveledOwner LeveledOwner) fxp.Int {
 	amt := w.Amount
 	if w.PerDie {
-		if w.DieCount < 0 {
+		if dieCount < 0 {
 			return 0
 		}
-		amt = amt.Mul(w.DieCount)
+		amt = amt.Mul(dieCount)
 	}
 	if w.PerLevel {
-		leveledOwner := w.LeveledOwner
 		if leveledOwner == nil {
 			leveledOwner = w.DerivedLeveledOwner()
 		}
@@ -253,6 +259,12 @@ func (w *WeaponBonus) SetLeveledOwner(owner LeveledOwner) {
 
 // AddToTooltip implements Bonus.
 func (w *WeaponBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
+	w.addToTooltip(w.AdjustedAmount(), buffer)
+}
+
+// addToTooltip writes the tooltip using a pre-computed adjusted amount, so it has no dependence on the mutable
+// DieCount/LeveledOwner scratch fields.
+func (w *WeaponBonus) addToTooltip(adjustedAmount fxp.Int, buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
 		var buf strings.Builder
 		buf.WriteByte('\n')
@@ -262,7 +274,7 @@ func (w *WeaponBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 			fmt.Fprintf(&buf, "%v set to %v", w.SwitchType, w.SwitchTypeValue)
 		} else {
 			amt := w.Amount.StringWithSign()
-			adjustedAmt := w.AdjustedAmount().StringWithSign()
+			adjustedAmt := adjustedAmount.StringWithSign()
 			if w.Percent {
 				amt += "%"
 				adjustedAmt += "%"

@@ -963,13 +963,7 @@ func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xbytes.Inser
 	if m[bonus] {
 		return
 	}
-	savedLeveledOwner := bonus.LeveledOwner
-	savedDieCount := bonus.DieCount
-	bonus.DieCount = fxp.FromInteger(dieCount)
-	bonus.LeveledOwner = bonus.DerivedLeveledOwner()
-	bonus.AddToTooltip(tooltip)
-	bonus.LeveledOwner = savedLeveledOwner
-	bonus.DieCount = savedDieCount
+	bonus.addToTooltip(bonus.adjustedAmount(fxp.FromInteger(dieCount), bonus.DerivedLeveledOwner()), tooltip)
 	m[bonus] = true
 }
 
