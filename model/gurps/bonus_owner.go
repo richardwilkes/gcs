@@ -13,10 +13,20 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
+
+// bonusReplacements returns the nameable replacements provided by the given Bonus's owner, or nil if the owner does
+// not provide any.
+func bonusReplacements(b Bonus) map[string]string {
+	if na, ok := b.Owner().(nameable.Accesser); ok {
+		return na.NameableReplacements()
+	}
+	return nil
+}
 
 // BonusOwner provides a convenience for implementing the owner & sub-owner methods of Bonus.
 type BonusOwner struct {

@@ -114,7 +114,7 @@ type Entity struct {
 	features                       features
 	variableResolverExclusions     map[string]bool
 	skillResolverExclusions        map[string]bool
-	scriptCache                    map[scriptResolveKey]string
+	scriptCache                    map[scriptResolveKey]string // not safe for concurrent use on the same entity
 	scriptResolvingDepth           int
 	variableCache                  map[string]string
 	basicLiftCache                 fxp.Weight
@@ -835,10 +835,7 @@ func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization stri
 	var total fxp.Int
 	for _, bonus := range e.features.skillBonuses {
 		if bonus.SelectionType == skillsel.Name {
-			var replacements map[string]string
-			if na, ok := bonus.Owner().(nameable.Accesser); ok {
-				replacements = na.NameableReplacements()
-			}
+			replacements := bonusReplacements(bonus)
 			if bonus.NameCriteria.Matches(replacements, name) &&
 				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
 				bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
@@ -855,10 +852,7 @@ func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization stri
 func (e *Entity) SkillPointBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillPointBonuses {
-		var replacements map[string]string
-		if na, ok := bonus.Owner().(nameable.Accesser); ok {
-			replacements = na.NameableReplacements()
-		}
+		replacements := bonusReplacements(bonus)
 		if bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
 			bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
@@ -874,10 +868,7 @@ func (e *Entity) SkillPointBonusFor(name, specialization, optionalSpecialization
 func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.spellBonuses {
-		var replacements map[string]string
-		if na, ok := bonus.Owner().(nameable.Accesser); ok {
-			replacements = na.NameableReplacements()
-		}
+		replacements := bonusReplacements(bonus)
 		if bonus.TagsCriteria.MatchesList(replacements, tags...) &&
 			bonus.MatchForType(replacements, name, powerSource, colleges) {
 			total += bonus.AdjustedAmount()
@@ -891,10 +882,7 @@ func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string
 func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.spellPointBonuses {
-		var replacements map[string]string
-		if na, ok := bonus.Owner().(nameable.Accesser); ok {
-			replacements = na.NameableReplacements()
-		}
+		replacements := bonusReplacements(bonus)
 		if bonus.TagsCriteria.MatchesList(replacements, tags...) &&
 			bonus.MatchForType(replacements, name, powerSource, colleges) {
 			total += bonus.AdjustedAmount()
@@ -908,10 +896,7 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.traitBonuses {
-		var replacements map[string]string
-		if na, ok := bonus.Owner().(nameable.Accesser); ok {
-			replacements = na.NameableReplacements()
-		}
+		replacements := bonusReplacements(bonus)
 		if bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.TagsCriteria.MatchesList(replacements, tags...) {
 			total += bonus.AdjustedAmount()
@@ -937,10 +922,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 		if allowedFeatureTypes[bonus.Type] &&
 			bonus.SelectionType == wsel.WithRequiredSkill &&
 			bonus.RelativeLevelCriteria.Matches(rsl) {
-			var replacements map[string]string
-			if na, ok := bonus.Owner().(nameable.Accesser); ok {
-				replacements = na.NameableReplacements()
-			}
+			replacements := bonusReplacements(bonus)
 			if bonus.NameCriteria.Matches(replacements, name) &&
 				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
 				bonus.UsageCriteria.Matches(replacements, usage) &&
@@ -961,10 +943,7 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 	for _, bonus := range e.features.weaponBonuses {
 		if allowedFeatureTypes[bonus.Type] &&
 			bonus.SelectionType == wsel.WithName {
-			var replacements map[string]string
-			if na, ok := bonus.Owner().(nameable.Accesser); ok {
-				replacements = na.NameableReplacements()
-			}
+			replacements := bonusReplacements(bonus)
 			if bonus.NameCriteria.Matches(replacements, nameQualifier) &&
 				bonus.SpecializationCriteria.Matches(replacements, usageQualifier) &&
 				bonus.TagsCriteria.MatchesList(replacements, tagsQualifier...) {
@@ -994,10 +973,7 @@ func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, t
 	var bonuses []*SkillBonus
 	for _, bonus := range e.features.skillBonuses {
 		if bonus.SelectionType == skillsel.WeaponsWithName {
-			var replacements map[string]string
-			if na, ok := bonus.Owner().(nameable.Accesser); ok {
-				replacements = na.NameableReplacements()
-			}
+			replacements := bonusReplacements(bonus)
 			if bonus.NameCriteria.Matches(replacements, name) &&
 				bonus.SpecializationCriteria.Matches(replacements, usage) &&
 				bonus.TagsCriteria.MatchesList(replacements, tags...) {
@@ -1499,11 +1475,7 @@ func (e *Entity) reactionsFromFeatureList(source string, features Features, m ma
 			continue
 		}
 		amt := bonus.AdjustedAmount()
-		var replacements map[string]string
-		var na nameable.Accesser
-		if na, ok = bonus.Owner().(nameable.Accesser); ok {
-			replacements = na.NameableReplacements()
-		}
+		replacements := bonusReplacements(bonus)
 		situation := nameable.Apply(bonus.Situation, replacements)
 		if r, exists := m[situation]; exists {
 			r.Add(source, amt)
@@ -1557,11 +1529,7 @@ func (e *Entity) conditionalModifiersFromFeatureList(source string, features Fea
 			continue
 		}
 		amt := bonus.AdjustedAmount()
-		var replacements map[string]string
-		var na nameable.Accesser
-		if na, ok = bonus.Owner().(nameable.Accesser); ok {
-			replacements = na.NameableReplacements()
-		}
+		replacements := bonusReplacements(bonus)
 		situation := nameable.Apply(bonus.Situation, replacements)
 		if r, exists := m[situation]; exists {
 			r.Add(source, amt)
