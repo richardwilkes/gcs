@@ -90,7 +90,7 @@ func (a *AttributeDef) Clone() *AttributeDef {
 			}
 		}
 	} else {
-		a.Thresholds = nil
+		clone.Thresholds = nil
 	}
 	return &clone
 }
