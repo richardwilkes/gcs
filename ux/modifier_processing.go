@@ -125,6 +125,9 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 		return false
 	}, false, false, modifiers...)
 	children := list.Children()
+	if len(children) == 0 {
+		return false
+	}
 	if border, ok := children[len(children)-1].Border().(*unison.EmptyBorder); ok {
 		insets := border.Insets()
 		insets.Bottom = 0
