@@ -127,18 +127,10 @@ func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 		default:
 		}
 	}
-	if percentCount != 0 {
-		result.Count += result.Count.Mul(percentCount).Div(fxp.Hundred).Floor()
-	}
-	if percentInChamber != 0 {
-		result.InChamber += result.InChamber.Mul(percentInChamber).Div(fxp.Hundred).Floor()
-	}
-	if percentDuration != 0 {
-		result.Duration += result.Duration.Mul(percentDuration).Div(fxp.Hundred).Floor()
-	}
-	if percentReloadTime != 0 {
-		result.ReloadTime += result.ReloadTime.Mul(percentReloadTime).Div(fxp.Hundred).Floor()
-	}
+	result.Count = addWeaponPercentBonus(result.Count, percentCount)
+	result.InChamber = addWeaponPercentBonus(result.InChamber, percentInChamber)
+	result.Duration = addWeaponPercentBonus(result.Duration, percentDuration)
+	result.ReloadTime = addWeaponPercentBonus(result.ReloadTime, percentReloadTime)
 	result.Validate()
 	return result
 }

@@ -110,12 +110,8 @@ func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 			}
 		}
 	}
-	if percentMin != 0 {
-		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Floor()
-	}
-	if percentMax != 0 {
-		result.Max += result.Max.Mul(percentMax).Div(fxp.Hundred).Floor()
-	}
+	result.Min = addWeaponPercentBonus(result.Min, percentMin)
+	result.Max = addWeaponPercentBonus(result.Max, percentMax)
 	result.Validate()
 	return result
 }

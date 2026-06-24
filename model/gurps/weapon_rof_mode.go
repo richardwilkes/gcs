@@ -94,12 +94,8 @@ func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer
 			}
 		}
 	}
-	if percentSPA != 0 {
-		result.ShotsPerAttack += result.ShotsPerAttack.Mul(percentSPA).Div(fxp.Hundred).Floor()
-	}
-	if percentSP != 0 {
-		result.SecondaryProjectiles += result.SecondaryProjectiles.Mul(percentSP).Div(fxp.Hundred).Floor()
-	}
+	result.ShotsPerAttack = addWeaponPercentBonus(result.ShotsPerAttack, percentSPA)
+	result.SecondaryProjectiles = addWeaponPercentBonus(result.SecondaryProjectiles, percentSP)
 	result.Validate()
 	return result
 }

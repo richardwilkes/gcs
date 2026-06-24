@@ -225,9 +225,7 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 			st += amt
 		}
 	}
-	if percentMin != 0 {
-		st += st.Mul(percentMin).Div(fxp.Hundred).Floor()
-	}
+	st = addWeaponPercentBonus(st, percentMin)
 	if st < 0 {
 		st = 0
 	}

@@ -82,10 +82,8 @@ func (wr WeaponRecoil) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer)
 				result.Slug += amt
 			}
 		}
-		if percent != 0 {
-			result.Shot += result.Shot.Mul(percent).Div(fxp.Hundred).Floor()
-			result.Slug += result.Slug.Mul(percent).Div(fxp.Hundred).Floor()
-		}
+		result.Shot = addWeaponPercentBonus(result.Shot, percent)
+		result.Slug = addWeaponPercentBonus(result.Slug, percent)
 		if wr.Shot > 0 {
 			result.Shot = result.Shot.Max(fxp.One)
 		} else {

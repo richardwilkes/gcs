@@ -86,10 +86,8 @@ func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) W
 			result.Giant += amt
 		}
 	}
-	if percent != 0 {
-		result.Normal += result.Normal.Mul(percent).Div(fxp.Hundred).Floor()
-		result.Giant += result.Giant.Mul(percent).Div(fxp.Hundred).Floor()
-	}
+	result.Normal = addWeaponPercentBonus(result.Normal, percent)
+	result.Giant = addWeaponPercentBonus(result.Giant, percent)
 	result.Validate()
 	return result
 }

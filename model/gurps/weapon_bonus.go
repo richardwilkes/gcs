@@ -29,6 +29,15 @@ import (
 
 var _ Bonus = &WeaponBonus{}
 
+// addWeaponPercentBonus returns value increased by the given percentage of itself, with the increment floored toward
+// zero. A percent of 0 returns value unchanged. This is the standard way weapon stat percentage bonuses are applied.
+func addWeaponPercentBonus(value, percent fxp.Int) fxp.Int {
+	if percent == 0 {
+		return value
+	}
+	return value + value.Mul(percent).Div(fxp.Hundred).Floor()
+}
+
 // WeaponBonus holds the data for an adjustment to weapon stats.
 type WeaponBonus struct {
 	WeaponBonusData

@@ -73,6 +73,11 @@ func ParseWeaponRange(s string) WeaponRange {
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
+//
+// The data is persisted as the unresolved display string. Passing false for musclePowerIsResolved is deliberate and
+// load-bearing: it emits the "x" prefixes (e.g. "x10/x100") that encode the MusclePowered flag, which ParseWeaponRange
+// detects on load to restore that flag. Passing true here would silently drop MusclePowered on a save/reload
+// round-trip.
 func (wr WeaponRange) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wr.String(false))
 }
@@ -133,9 +138,7 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 				st += amt
 			}
 		}
-		if percentMin != 0 {
-			st += st.Mul(percentMin).Div(fxp.Hundred).Floor()
-		}
+		st = addWeaponPercentBonus(st, percentMin)
 		if st < 0 {
 			st = 0
 		}
@@ -173,21 +176,20 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 		default:
 		}
 	}
-	if percentHalfDamage != 0 {
-		result.HalfDamage += result.HalfDamage.Mul(percentHalfDamage).Div(fxp.Hundred).Floor()
-	}
-	if percentMin != 0 {
-		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Floor()
-	}
-	if percentMax != 0 {
-		result.Max += result.Max.Mul(percentMax).Div(fxp.Hundred).Floor()
-	}
+	result.HalfDamage = addWeaponPercentBonus(result.HalfDamage, percentHalfDamage)
+	result.Min = addWeaponPercentBonus(result.Min, percentMin)
+	result.Max = addWeaponPercentBonus(result.Max, percentMax)
 	result.Validate()
 	return result
 }
 
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
 // data. Call .Resolve() prior to calling this method if you want the resolved values.
+//
+// When MusclePowered is set, passing false for musclePowerIsResolved prefixes the range values with "x" (the GURPS
+// notation for "multiply by ST"); pass true once the ranges have already been multiplied by ST so the "x" is omitted.
+// ParseWeaponRange relies on the "x" prefix to recover the MusclePowered flag, so persistence must stringify with
+// false.
 func (wr WeaponRange) String(musclePowerIsResolved bool) string {
 	var buffer strings.Builder
 	if wr.HalfDamage != 0 {

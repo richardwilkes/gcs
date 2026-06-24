@@ -98,9 +98,7 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffe
 			result.Min += amt
 		}
 	}
-	if percentMin != 0 {
-		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Floor()
-	}
+	result.Min = addWeaponPercentBonus(result.Min, percentMin)
 	result.Validate()
 	return result
 }

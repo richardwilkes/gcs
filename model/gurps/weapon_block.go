@@ -108,9 +108,7 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 						result.Modifier += amt
 					}
 				}
-				if percentModifier != 0 {
-					result.Modifier += result.Modifier.Mul(percentModifier).Div(fxp.Hundred).Floor()
-				}
+				result.Modifier = addWeaponPercentBonus(result.Modifier, percentModifier)
 				result.Modifier = result.Modifier.Max(0).Floor()
 			} else {
 				result.Modifier = 0

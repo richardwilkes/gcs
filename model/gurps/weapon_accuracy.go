@@ -100,12 +100,8 @@ func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffe
 				default:
 				}
 			}
-			if percentBase != 0 {
-				result.Base += result.Base.Mul(percentBase).Div(fxp.Hundred).Floor()
-			}
-			if percentScope != 0 {
-				result.Scope += result.Scope.Mul(percentScope).Div(fxp.Hundred).Floor()
-			}
+			result.Base = addWeaponPercentBonus(result.Base, percentBase)
+			result.Scope = addWeaponPercentBonus(result.Scope, percentScope)
 		}
 	}
 	result.Validate()
