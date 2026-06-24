@@ -836,7 +836,7 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 	var tooltip xbytes.InsertBuffer
 	var relativeLevel fxp.Int
 	level := fxp.Min
-	if e != nil {
+	if e != nil && def != nil {
 		if def.DefaultType == SkillID {
 			defName := def.NameWithReplacements(replacements)
 			defSpec := def.SpecializationWithReplacements(replacements)

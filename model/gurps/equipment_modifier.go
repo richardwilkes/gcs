@@ -609,7 +609,6 @@ func ValueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []
 		return false
 	}, true, true, modifiers...)
 	if cf != 0 {
-		cf = cf.Max(fxp.NegPointEight)
 		cost = cost.Mul(cf.Max(fxp.NegPointEight) + fxp.One)
 	}
 
