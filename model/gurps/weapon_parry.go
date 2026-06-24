@@ -90,9 +90,10 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 			}
 			preAdj := w.skillLevelBaseAdjustment(entity, primaryTooltip)
 			postAdj := w.skillLevelPostAdjustment(entity, primaryTooltip)
+			replacements := w.NameableReplacements()
 			best := fxp.Min
 			for _, def := range w.Defaults {
-				level := def.SkillLevelFast(entity, w.NameableReplacements(), false, nil, true)
+				level := def.SkillLevelFast(entity, replacements, false, nil, true)
 				if level == fxp.Min {
 					continue
 				}

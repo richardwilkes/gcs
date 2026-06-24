@@ -105,7 +105,7 @@ type Weapon struct {
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
-func ExtractWeaponsOfType(melee, _, excludeHidden bool, list []*Weapon) []*Weapon {
+func ExtractWeaponsOfType(melee, excludeHidden bool, list []*Weapon) []*Weapon {
 	var result []*Weapon
 	for _, w := range list {
 		if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
