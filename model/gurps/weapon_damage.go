@@ -306,7 +306,6 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
-			bonus.DieCount = fxp.FromInteger(base.Count)
 			amt := bonus.AdjustedAmountForWeapon(w.Owner)
 			if bonus.Percent {
 				percentDamageBonus += amt
