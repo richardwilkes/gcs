@@ -60,6 +60,8 @@ updating:
 - Fixed a crash that could occur when randomizing a value (such as a name, age, height, or weight) if an ancestry file
   contained invalid data. Such a file is now reported as an error and skipped instead of bringing down the application.
   (#1007)
+- Fixed text inside markdown tables wrapping to a new line prematurely, before the table had used the available width.
+  (#1011)
 - Library source paths are now stored using forward slashes so they work across platforms. Previously, files created on
   Windows recorded source paths with backslashes, which prevented the library source from being located on Linux or
   macOS and showed the source match status as a question mark. (#1005)
