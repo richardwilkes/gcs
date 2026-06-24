@@ -74,33 +74,25 @@ func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 
 // MarshalJSONTo implements json.MarshalerTo.
 func (w *WeaponDamage) MarshalJSONTo(enc *jsontext.Encoder) error {
+	// Marshal a copy so that suppressing "default" values for output doesn't mutate the receiver.
+	data := w.WeaponDamageData
 	// A ST multiplier of 0 is not valid and 1 is very common, so suppress its output when 1.
-	strengthMultiplier := w.StrengthMultiplier
-	if strengthMultiplier == fxp.One {
-		w.StrengthMultiplier = 0
+	if data.StrengthMultiplier == fxp.One {
+		data.StrengthMultiplier = 0
 	}
 	// An armor divisor of 0 is not valid and 1 is very common, so suppress its output when 1.
-	armorDivisor := w.ArmorDivisor
-	if armorDivisor == fxp.One {
-		w.ArmorDivisor = 0
+	if data.ArmorDivisor == fxp.One {
+		data.ArmorDivisor = 0
 	}
-	w.Fragmentation = strings.TrimSpace(w.Fragmentation)
-	if w.Fragmentation == "" {
-		w.FragmentationArmorDivisor = 0
-		w.FragmentationType = ""
-	} else if w.FragmentationArmorDivisor == fxp.One {
-		w.FragmentationArmorDivisor = 0
+	data.Fragmentation = strings.TrimSpace(data.Fragmentation)
+	if data.Fragmentation == "" {
+		data.FragmentationArmorDivisor = 0
+		data.FragmentationType = ""
+	} else if data.FragmentationArmorDivisor == fxp.One {
+		// An armor divisor of 0 is not valid and 1 is very common, so suppress its output when 1.
+		data.FragmentationArmorDivisor = 0
 	}
-	// An armor divisor of 0 is not valid and 1 is very common, so suppress its output when 1.
-	fragArmorDivisor := w.FragmentationArmorDivisor
-	if fragArmorDivisor == fxp.One {
-		fragArmorDivisor = 0
-	}
-	err := json.MarshalEncode(enc, &w.WeaponDamageData)
-	w.StrengthMultiplier = strengthMultiplier
-	w.ArmorDivisor = armorDivisor
-	w.FragmentationArmorDivisor = fragArmorDivisor
-	return err
+	return json.MarshalEncode(enc, &data)
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
