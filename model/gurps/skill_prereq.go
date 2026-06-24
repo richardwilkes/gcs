@@ -71,6 +71,9 @@ func (p *SkillPrereq) FillWithNameableKeys(m, existing map[string]string) {
 
 // Satisfied implements Prereq.
 func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
+	if entity == nil {
+		return true
+	}
 	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()

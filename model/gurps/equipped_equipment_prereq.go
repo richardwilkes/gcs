@@ -65,6 +65,9 @@ func (p *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]st
 
 // Satisfied implements Prereq.
 func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
+	if entity == nil {
+		return true
+	}
 	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()

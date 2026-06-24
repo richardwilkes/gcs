@@ -98,6 +98,9 @@ func (p *PrereqList) FillWithNameableKeys(m, existing map[string]string) {
 
 // Satisfied implements Prereq.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
+	if entity == nil {
+		return true
+	}
 	if p.WhenTL.Compare != criteria.AnyNumber {
 		tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
 		if tl < 0 {

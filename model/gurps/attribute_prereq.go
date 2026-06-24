@@ -66,6 +66,9 @@ func (p *AttributePrereq) FillWithNameableKeys(_, _ map[string]string) {
 
 // Satisfied implements Prereq.
 func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
+	if entity == nil {
+		return true
+	}
 	value := entity.ResolveAttributeCurrent(p.Which)
 	if p.CombinedWith != "" {
 		value += entity.ResolveAttributeCurrent(p.CombinedWith)
