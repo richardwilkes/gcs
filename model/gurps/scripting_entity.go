@@ -156,17 +156,19 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
 				name := callArgAsTrimmedString(call, 0)
 				specialization := callArgAsTrimmedString(call, 1)
-				optionalSpecialization := callArgAsTrimmedString(call, 2)
+				relative := call.Argument(2).ToBoolean()
+				optionalSpecialization := callArgAsTrimmedString(call, 3)
 				if entity.isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization) {
 					return r.ToValue(0)
 				}
 				entity.registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
 				defer entity.unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
-				relative := call.Argument(2).ToBoolean()
 				var level int
 				Traverse(func(s *Skill) bool {
 					if strings.EqualFold(s.NameWithReplacements(), name) &&
-						strings.EqualFold(s.SpecializationWithReplacements(), specialization) {
+						strings.EqualFold(s.SpecializationWithReplacements(), specialization) &&
+						(optionalSpecialization == "" ||
+							strings.EqualFold(s.OptionalSpecializationWithReplacements(), optionalSpecialization)) {
 						s.UpdateLevel()
 						if relative {
 							level = fxp.AsInteger[int](s.LevelData.RelativeLevel)
