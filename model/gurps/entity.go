@@ -1427,42 +1427,42 @@ func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 	// Not permitted
 }
 
-// Reactions returns the current set of reactions.
-func (e *Entity) Reactions() []*ConditionalModifier {
+// gatherConditionalModifiers walks the entity, collecting conditional modifiers (or reactions) into a sorted list.
+// collectFromList extracts the relevant bonuses from a feature list into the working map, and perTrait, if non-nil,
+// contributes any additional per-trait modifiers (used for self-control reaction penalties). Reactions and
+// ConditionalModifiers share this traversal so their selection of nodes and merge ordering stay identical.
+func (e *Entity) gatherConditionalModifiers(
+	collectFromList func(source string, features Features, m map[string]*ConditionalModifier),
+	perTrait func(source string, t *Trait, m map[string]*ConditionalModifier),
+) []*ConditionalModifier {
 	m := make(map[string]*ConditionalModifier)
 	Traverse(func(t *Trait) bool {
 		source := i18n.Text("from trait ") + t.String()
 		if !t.Container() {
-			e.reactionsFromFeatureList(source, t.Features, m)
+			collectFromList(source, t.Features, m)
 		}
 		Traverse(func(mod *TraitModifier) bool {
-			e.reactionsFromFeatureList(source, mod.Features, m)
+			collectFromList(source, mod.Features, m)
 			return false
 		}, true, true, t.Modifiers...)
-		if t.SelfControl != selfctrl.None && t.SelfControlAdj == selfctrl.ReactionPenalty {
-			amt := fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(t.SelfControl))
-			situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String())
-			if r, exists := m[situation]; exists {
-				r.Add(source, amt)
-			} else {
-				m[situation] = NewConditionalModifier(source, situation, amt)
-			}
+		if perTrait != nil {
+			perTrait(source, t, m)
 		}
 		return false
 	}, true, false, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
 		if eqp.ReallyEquipped() {
 			source := i18n.Text("from equipment ") + eqp.NameWithReplacements()
-			e.reactionsFromFeatureList(source, eqp.Features, m)
+			collectFromList(source, eqp.Features, m)
 			Traverse(func(mod *EquipmentModifier) bool {
-				e.reactionsFromFeatureList(source, mod.Features, m)
+				collectFromList(source, mod.Features, m)
 				return false
 			}, true, true, eqp.Modifiers...)
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
 	Traverse(func(sk *Skill) bool {
-		e.reactionsFromFeatureList(i18n.Text("from skill ")+sk.String(), sk.Features, m)
+		collectFromList(i18n.Text("from skill ")+sk.String(), sk.Features, m)
 		return false
 	}, false, true, e.Skills...)
 	list := make([]*ConditionalModifier, 0, len(m))
@@ -1471,6 +1471,22 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 	}
 	slices.SortFunc(list, func(a, b *ConditionalModifier) int { return a.Compare(b) })
 	return list
+}
+
+// Reactions returns the current set of reactions.
+func (e *Entity) Reactions() []*ConditionalModifier {
+	return e.gatherConditionalModifiers(e.reactionsFromFeatureList,
+		func(source string, t *Trait, m map[string]*ConditionalModifier) {
+			if t.SelfControl != selfctrl.None && t.SelfControlAdj == selfctrl.ReactionPenalty {
+				amt := fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(t.SelfControl))
+				situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String())
+				if r, exists := m[situation]; exists {
+					r.Add(source, amt)
+				} else {
+					m[situation] = NewConditionalModifier(source, situation, amt)
+				}
+			}
+		})
 }
 
 func (e *Entity) reactionsFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {
@@ -1492,39 +1508,7 @@ func (e *Entity) reactionsFromFeatureList(source string, features Features, m ma
 
 // ConditionalModifiers returns the current set of conditional modifiers.
 func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
-	m := make(map[string]*ConditionalModifier)
-	Traverse(func(t *Trait) bool {
-		source := i18n.Text("from trait ") + t.String()
-		if !t.Container() {
-			e.conditionalModifiersFromFeatureList(source, t.Features, m)
-		}
-		Traverse(func(mod *TraitModifier) bool {
-			e.conditionalModifiersFromFeatureList(source, mod.Features, m)
-			return false
-		}, true, true, t.Modifiers...)
-		return false
-	}, true, false, e.Traits...)
-	Traverse(func(eqp *Equipment) bool {
-		if eqp.ReallyEquipped() {
-			source := i18n.Text("from equipment ") + eqp.NameWithReplacements()
-			e.conditionalModifiersFromFeatureList(source, eqp.Features, m)
-			Traverse(func(mod *EquipmentModifier) bool {
-				e.conditionalModifiersFromFeatureList(source, mod.Features, m)
-				return false
-			}, true, true, eqp.Modifiers...)
-		}
-		return false
-	}, false, false, e.CarriedEquipment...)
-	Traverse(func(sk *Skill) bool {
-		e.conditionalModifiersFromFeatureList(i18n.Text("from skill ")+sk.String(), sk.Features, m)
-		return false
-	}, false, true, e.Skills...)
-	list := make([]*ConditionalModifier, 0, len(m))
-	for _, v := range m {
-		list = append(list, v)
-	}
-	slices.SortFunc(list, func(a, b *ConditionalModifier) int { return a.Compare(b) })
-	return list
+	return e.gatherConditionalModifiers(e.conditionalModifiersFromFeatureList, nil)
 }
 
 func (e *Entity) conditionalModifiersFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {
