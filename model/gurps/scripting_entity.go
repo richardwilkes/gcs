@@ -270,7 +270,7 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 						overweight = true
 					case "fat":
 						fat = true
-					case "very Fat":
+					case "very fat":
 						veryFat = true
 					}
 					return false
