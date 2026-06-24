@@ -64,7 +64,7 @@ func adjustRawPoints[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*
 	before := &adjustRawPointsList[T]{Owner: owner}
 	after := &adjustRawPointsList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok {
+		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok && !provider.Container() {
 			if increment || provider.RawPoints() > 0 {
 				before.List = append(before.List, newRawPointsAdjuster(provider))
 				rawPts := provider.RawPoints()
