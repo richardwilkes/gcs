@@ -103,7 +103,7 @@ func (o *AncestryOptions) RandomWeight(entity *Entity, not fxp.Weight) fxp.Weigh
 			value = def
 		}
 		i++
-		if value != not {
+		if value != not || i >= maximumRandomTries {
 			return value
 		}
 	}
