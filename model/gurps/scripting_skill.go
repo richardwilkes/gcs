@@ -69,6 +69,9 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 		}
 	} else {
 		m["specialization"] = func() goja.Value { return r.ToValue(skill.SpecializationWithReplacements()) }
+		m["optionalSpecialization"] = func() goja.Value {
+			return r.ToValue(skill.OptionalSpecializationWithReplacements())
+		}
 		m["techLevel"] = func() goja.Value {
 			if skill.TechLevel != nil {
 				return r.ToValue(*skill.TechLevel)
