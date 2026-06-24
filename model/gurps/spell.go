@@ -782,13 +782,35 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 	skillLevel.RelativeLevel += def.Modifier
 	def.Specialization.Qualifier = ""
 	def.Modifier -= fxp.Six
+	// The fallback defaults from a generically-named skill that carries no specialization. SkillNamed() treats an empty
+	// specialization as a wildcard, so exclude the skills that do have a specialization to avoid matching one that
+	// belongs to a different college.
 	fallback := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
-		&limit, nil)
+		&limit, specializedRitualSkills(e, ritualSkillName))
 	fallback.RelativeLevel += def.Modifier
 	if skillLevel.Level >= fallback.Level {
 		return skillLevel
 	}
 	return fallback
+}
+
+// specializedRitualSkills returns the set of skills (keyed by Skill.String()) named ritualSkillName that carry a
+// specialization, suitable for use as an excludes set when looking up a generically-named ritual skill that has no
+// specialization.
+func specializedRitualSkills(e *Entity, ritualSkillName string) map[string]bool {
+	if e == nil || ritualSkillName == "" {
+		return nil
+	}
+	var excludes map[string]bool
+	for _, sk := range e.SkillNamed(ritualSkillName, "", false, nil) {
+		if sk.SpecializationWithReplacements() != "" {
+			if excludes == nil {
+				excludes = make(map[string]bool)
+			}
+			excludes[sk.String()] = true
+		}
+	}
+	return excludes
 }
 
 // RitualMagicSatisfied returns true if the Ritual Magic Spell is satisfied.
@@ -805,18 +827,23 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xbytes.InsertBuffer, prefix string
 		return false
 	}
 	e := EntityFromNode(s)
+	ritual := s.RitualSkillNameWithReplacements()
 	for _, college := range colleges {
-		if e.BestSkillNamed(s.RitualSkillNameWithReplacements(), college, false, nil) != nil {
+		if e.BestSkillNamed(ritual, college, false, nil) != nil {
 			return true
 		}
 	}
-	if e.BestSkillNamed(s.RitualSkillNameWithReplacements(), "", false, nil) != nil {
-		return true
+	// Fall back to a generically-named skill that carries no specialization. A specialization here is treated as an
+	// exact match by SkillNamed only when non-empty; passing "" would match any specialization, so the result must be
+	// checked to ensure the skill truly has no specialization.
+	for _, sk := range e.SkillNamed(ritual, "", false, nil) {
+		if sk.SpecializationWithReplacements() == "" {
+			return true
+		}
 	}
 	if tooltip != nil {
 		tooltip.WriteString(prefix)
 		tooltip.WriteString(i18n.Text("Requires a skill named "))
-		ritual := s.RitualSkillNameWithReplacements()
 		tooltip.WriteString(ritual)
 		tooltip.WriteString(" (")
 		tooltip.WriteString(colleges[0])
