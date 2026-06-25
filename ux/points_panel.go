@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -140,48 +141,54 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		}
 	})
 	p.unspentLabel = p.addPointsField(p.unspentField, i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
-	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Ancestry.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Ancestry"), i18n.Text("Total points spent on an ancestry package"))
-	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Attributes.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Attributes"), i18n.Text("Total points spent on attributes"))
-	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Advantages.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Advantages"), i18n.Text("Total points spent on advantages"))
-	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Disadvantages.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Disadvantages"), i18n.Text("Total points spent on disadvantages"))
-	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Quirks.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Quirks"), i18n.Text("Total points spent on quirks"))
-	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Skills.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Skills"), i18n.Text("Total points spent on skills"))
-	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Spells.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Spells"), i18n.Text("Total points spent on spells"))
+	for _, one := range []struct {
+		get     func(*gurps.PointsBreakdown) fxp.Int
+		title   string
+		tooltip string
+	}{
+		{
+			get:     func(pb *gurps.PointsBreakdown) fxp.Int { return pb.Ancestry },
+			title:   i18n.Text("Ancestry"),
+			tooltip: i18n.Text("Total points spent on an ancestry package"),
+		},
+		{
+			get:     func(pb *gurps.PointsBreakdown) fxp.Int { return pb.Attributes },
+			title:   i18n.Text("Attributes"),
+			tooltip: i18n.Text("Total points spent on attributes"),
+		},
+		{
+			get:     func(pb *gurps.PointsBreakdown) fxp.Int { return pb.Advantages },
+			title:   i18n.Text("Advantages"),
+			tooltip: i18n.Text("Total points spent on advantages"),
+		},
+		{
+			get:     func(pb *gurps.PointsBreakdown) fxp.Int { return pb.Disadvantages },
+			title:   i18n.Text("Disadvantages"),
+			tooltip: i18n.Text("Total points spent on disadvantages"),
+		},
+		{
+			get:     func(pb *gurps.PointsBreakdown) fxp.Int { return pb.Quirks },
+			title:   i18n.Text("Quirks"),
+			tooltip: i18n.Text("Total points spent on quirks"),
+		},
+		{
+			get:     func(pb *gurps.PointsBreakdown) fxp.Int { return pb.Skills },
+			title:   i18n.Text("Skills"),
+			tooltip: i18n.Text("Total points spent on skills"),
+		},
+		{
+			get:     func(pb *gurps.PointsBreakdown) fxp.Int { return pb.Spells },
+			title:   i18n.Text("Spells"),
+			tooltip: i18n.Text("Total points spent on spells"),
+		},
+	} {
+		p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+			if text := one.get(p.entity.PointsBreakdown()).String(); text != f.Text.String() {
+				f.SetTitle(text)
+				MarkForLayoutWithinDockable(f)
+			}
+		}), one.title, one.tooltip)
+	}
 	p.adjustUnspent()
 
 	InstallTintFunc(p, colors.TintPoints)

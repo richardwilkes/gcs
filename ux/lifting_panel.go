@@ -11,6 +11,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -47,50 +48,54 @@ func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
 	InstallTintFunc(p, colors.TintLifting)
-	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.BasicLift()); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Basic Lift"), i18n.Text("The weight that can be lifted overhead with one hand in one second"))
-	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.OneHandedLift()); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("One-Handed Lift"), i18n.Text("The weight that can be lifted overhead with one hand in two seconds"))
-	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.TwoHandedLift()); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Two-Handed Lift"),
-		i18n.Text("The weight that can be lifted overhead with both hands in four seconds"))
-	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.ShoveAndKnockOver()); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Shove & Knock Over"), i18n.Text("The weight of an object that can be shoved and knocked over"))
-	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.RunningShoveAndKnockOver()); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Running Shove & Knock Over"),
-		i18n.Text("The weight of an object that can be shoved and knocked over with a running start"))
-	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.CarryOnBack()); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Carry On Back"), i18n.Text("The weight that can be carried slung across the back"))
-	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.ShiftSlightly()); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}), i18n.Text("Shift Slightly"), i18n.Text("The weight that can be shifted slightly on a floor"))
+	for _, one := range []struct {
+		get     func() fxp.Weight
+		title   string
+		tooltip string
+	}{
+		{
+			get:     entity.BasicLift,
+			title:   i18n.Text("Basic Lift"),
+			tooltip: i18n.Text("The weight that can be lifted overhead with one hand in one second"),
+		},
+		{
+			get:     entity.OneHandedLift,
+			title:   i18n.Text("One-Handed Lift"),
+			tooltip: i18n.Text("The weight that can be lifted overhead with one hand in two seconds"),
+		},
+		{
+			get:     entity.TwoHandedLift,
+			title:   i18n.Text("Two-Handed Lift"),
+			tooltip: i18n.Text("The weight that can be lifted overhead with both hands in four seconds"),
+		},
+		{
+			get:     entity.ShoveAndKnockOver,
+			title:   i18n.Text("Shove & Knock Over"),
+			tooltip: i18n.Text("The weight of an object that can be shoved and knocked over"),
+		},
+		{
+			get:     entity.RunningShoveAndKnockOver,
+			title:   i18n.Text("Running Shove & Knock Over"),
+			tooltip: i18n.Text("The weight of an object that can be shoved and knocked over with a running start"),
+		},
+		{
+			get:     entity.CarryOnBack,
+			title:   i18n.Text("Carry On Back"),
+			tooltip: i18n.Text("The weight that can be carried slung across the back"),
+		},
+		{
+			get:     entity.ShiftSlightly,
+			title:   i18n.Text("Shift Slightly"),
+			tooltip: i18n.Text("The weight that can be shifted slightly on a floor"),
+		},
+	} {
+		p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+			if text := p.entity.SheetSettings.DefaultWeightUnits.Format(one.get()); text != f.Text.String() {
+				f.SetTitle(text)
+				MarkForLayoutWithinDockable(f)
+			}
+		}), one.title, one.tooltip)
+	}
 	return p
 }
 
