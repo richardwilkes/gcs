@@ -16,88 +16,36 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-type adjustTraitLevelListUndoEdit = *unison.UndoEdit[*adjustTraitLevelList]
-
-type adjustTraitLevelList struct {
-	Owner Rebuildable
-	List  []*traitLevelAdjuster
-}
-
-func (a *adjustTraitLevelList) Apply() {
-	for _, one := range a.List {
-		one.Apply()
+func traitLevelExtractor(increment bool) func(*gurps.Trait) (*gurps.Trait, bool) {
+	return func(t *gurps.Trait) (*gurps.Trait, bool) {
+		if t != nil && t.IsLeveled() && (increment || t.Levels > 0) {
+			return t, true
+		}
+		return nil, false
 	}
-	a.Finish()
-}
-
-func (a *adjustTraitLevelList) Finish() {
-	gurps.EntityFromNode(a.List[0].Target).Recalculate()
-	MarkModified(a.Owner)
-}
-
-type traitLevelAdjuster struct {
-	Target *gurps.Trait
-	Levels fxp.Int
-}
-
-func newTraitLevelAdjuster(target *gurps.Trait) *traitLevelAdjuster {
-	return &traitLevelAdjuster{
-		Target: target,
-		Levels: target.Levels,
-	}
-}
-
-func (a *traitLevelAdjuster) Apply() {
-	a.Target.Levels = a.Levels
 }
 
 func canAdjustTraitLevel(table *unison.Table[*Node[*gurps.Trait]], increment bool) bool {
-	for _, row := range table.SelectedRows(false) {
-		if t := row.Data(); t != nil && t.IsLeveled() {
-			if increment || t.Levels > 0 {
-				return true
-			}
-		}
-	}
-	return false
+	return canAdjustSelection(table, traitLevelExtractor(increment))
 }
 
 func adjustTraitLevel(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]], increment bool) {
-	before := &adjustTraitLevelList{Owner: owner}
-	after := &adjustTraitLevelList{Owner: owner}
-	for _, row := range table.SelectedRows(false) {
-		if t := row.Data(); t != nil && t.IsLeveled() {
-			if increment || t.Levels > 0 {
-				before.List = append(before.List, newTraitLevelAdjuster(t))
-				original := t.Levels
-				levels := original.Floor()
-				if increment {
-					levels += fxp.One
-				} else if original == levels {
-					levels -= fxp.One
-				}
-				t.Levels = levels.Max(0)
-				after.List = append(after.List, newTraitLevelAdjuster(t))
-			}
-		}
+	title := i18n.Text("Decrement Level")
+	if increment {
+		title = i18n.Text("Increment Level")
 	}
-	if len(before.List) > 0 {
-		if mgr := unison.UndoManagerFor(table); mgr != nil {
-			var name string
+	adjustSelection(title, owner, table, traitLevelExtractor(increment),
+		func(t *gurps.Trait) fxp.Int { return t.Levels },
+		func(t *gurps.Trait, v fxp.Int) { t.Levels = v },
+		func(t *gurps.Trait) {
+			original := t.Levels
+			levels := original.Floor()
 			if increment {
-				name = i18n.Text("Increment Level")
-			} else {
-				name = i18n.Text("Decrement Level")
+				levels += fxp.One
+			} else if original == levels {
+				levels -= fxp.One
 			}
-			mgr.Add(&unison.UndoEdit[*adjustTraitLevelList]{
-				ID:         unison.NextUndoID(),
-				EditName:   name,
-				UndoFunc:   func(edit adjustTraitLevelListUndoEdit) { edit.BeforeData.Apply() },
-				RedoFunc:   func(edit adjustTraitLevelListUndoEdit) { edit.AfterData.Apply() },
-				BeforeData: before,
-				AfterData:  after,
-			})
-		}
-		before.Finish()
-	}
+			t.Levels = levels.Max(0)
+		},
+		true, false)
 }

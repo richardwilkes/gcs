@@ -16,86 +16,37 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-type adjustRawPointsList[T gurps.NodeTypes] struct {
-	Owner Rebuildable
-	List  []*rawPointsAdjuster[T]
-}
-
-func (a *adjustRawPointsList[T]) Apply() {
-	for _, one := range a.List {
-		one.Apply()
+func rawPointsExtractor[T gurps.NodeTypes](increment bool) func(T) (gurps.RawPointsAdjuster[T], bool) {
+	return func(data T) (gurps.RawPointsAdjuster[T], bool) {
+		if provider, ok := any(data).(gurps.RawPointsAdjuster[T]); ok && !provider.Container() &&
+			(increment || provider.RawPoints() > 0) {
+			return provider, true
+		}
+		return nil, false
 	}
-	a.Finish()
-}
-
-func (a *adjustRawPointsList[T]) Finish() {
-	gurps.EntityFromNode(a.List[0].Target).Recalculate()
-	MarkModified(a.Owner)
-}
-
-type rawPointsAdjuster[T gurps.NodeTypes] struct {
-	Target gurps.RawPointsAdjuster[T]
-	Points fxp.Int
-}
-
-func newRawPointsAdjuster[T gurps.NodeTypes](target gurps.RawPointsAdjuster[T]) *rawPointsAdjuster[T] {
-	return &rawPointsAdjuster[T]{
-		Target: target,
-		Points: target.RawPoints(),
-	}
-}
-
-func (a *rawPointsAdjuster[T]) Apply() {
-	a.Target.SetRawPoints(a.Points)
 }
 
 func canAdjustRawPoints[T gurps.NodeTypes](table *unison.Table[*Node[T]], increment bool) bool {
-	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok && !provider.Container() {
-			if increment || provider.RawPoints() > 0 {
-				return true
-			}
-		}
-	}
-	return false
+	return canAdjustSelection(table, rawPointsExtractor[T](increment))
 }
 
 func adjustRawPoints[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
-	before := &adjustRawPointsList[T]{Owner: owner}
-	after := &adjustRawPointsList[T]{Owner: owner}
-	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok && !provider.Container() {
-			if increment || provider.RawPoints() > 0 {
-				before.List = append(before.List, newRawPointsAdjuster(provider))
-				rawPts := provider.RawPoints()
-				pts := rawPts.Floor()
-				if increment {
-					pts += fxp.One
-				} else if rawPts == pts {
-					pts -= fxp.One
-				}
-				provider.SetRawPoints(pts.Max(0))
-				after.List = append(after.List, newRawPointsAdjuster(provider))
-			}
-		}
+	title := i18n.Text("Decrement Points")
+	if increment {
+		title = i18n.Text("Increment Points")
 	}
-	if len(before.List) > 0 {
-		if mgr := unison.UndoManagerFor(table); mgr != nil {
-			var name string
+	adjustSelection(title, owner, table, rawPointsExtractor[T](increment),
+		func(p gurps.RawPointsAdjuster[T]) fxp.Int { return p.RawPoints() },
+		func(p gurps.RawPointsAdjuster[T], v fxp.Int) { p.SetRawPoints(v) },
+		func(p gurps.RawPointsAdjuster[T]) {
+			rawPts := p.RawPoints()
+			pts := rawPts.Floor()
 			if increment {
-				name = i18n.Text("Increment Points")
-			} else {
-				name = i18n.Text("Decrement Points")
+				pts += fxp.One
+			} else if rawPts == pts {
+				pts -= fxp.One
 			}
-			mgr.Add(&unison.UndoEdit[*adjustRawPointsList[T]]{
-				ID:         unison.NextUndoID(),
-				EditName:   name,
-				UndoFunc:   func(edit *unison.UndoEdit[*adjustRawPointsList[T]]) { edit.BeforeData.Apply() },
-				RedoFunc:   func(edit *unison.UndoEdit[*adjustRawPointsList[T]]) { edit.AfterData.Apply() },
-				BeforeData: before,
-				AfterData:  after,
-			})
-		}
-		before.Finish()
-	}
+			p.SetRawPoints(pts.Max(0))
+		},
+		true, false)
 }

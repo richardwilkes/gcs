@@ -16,88 +16,36 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-type adjustQuantityListUndoEdit = *unison.UndoEdit[*adjustQuantityList]
-
-type adjustQuantityList struct {
-	Owner Rebuildable
-	List  []*quantityAdjuster
-}
-
-func (a *adjustQuantityList) Apply() {
-	for _, one := range a.List {
-		one.Apply()
+func quantityExtractor(increment bool) func(*gurps.Equipment) (*gurps.Equipment, bool) {
+	return func(eqp *gurps.Equipment) (*gurps.Equipment, bool) {
+		if eqp != nil && (increment || eqp.Quantity > 0) {
+			return eqp, true
+		}
+		return nil, false
 	}
-	a.Finish()
-}
-
-func (a *adjustQuantityList) Finish() {
-	gurps.EntityFromNode(a.List[0].Target).Recalculate()
-	MarkModified(a.Owner)
-}
-
-type quantityAdjuster struct {
-	Target   *gurps.Equipment
-	Quantity fxp.Int
-}
-
-func newQuantityAdjuster(target *gurps.Equipment) *quantityAdjuster {
-	return &quantityAdjuster{
-		Target:   target,
-		Quantity: target.Quantity,
-	}
-}
-
-func (a *quantityAdjuster) Apply() {
-	a.Target.Quantity = a.Quantity
 }
 
 func canAdjustQuantity(table *unison.Table[*Node[*gurps.Equipment]], increment bool) bool {
-	for _, row := range table.SelectedRows(false) {
-		if eqp := row.Data(); eqp != nil {
-			if increment || eqp.Quantity > 0 {
-				return true
-			}
-		}
-	}
-	return false
+	return canAdjustSelection(table, quantityExtractor(increment))
 }
 
 func adjustQuantity(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]], increment bool) {
-	before := &adjustQuantityList{Owner: owner}
-	after := &adjustQuantityList{Owner: owner}
-	for _, row := range table.SelectedRows(false) {
-		if eqp := row.Data(); eqp != nil {
-			if increment || eqp.Quantity > 0 {
-				before.List = append(before.List, newQuantityAdjuster(eqp))
-				original := eqp.Quantity
-				qty := original.Floor()
-				if increment {
-					qty += fxp.One
-				} else if original == qty {
-					qty -= fxp.One
-				}
-				eqp.Quantity = qty.Max(0)
-				after.List = append(after.List, newQuantityAdjuster(eqp))
-			}
-		}
+	title := i18n.Text("Decrement Quantity")
+	if increment {
+		title = i18n.Text("Increment Quantity")
 	}
-	if len(before.List) > 0 {
-		if mgr := unison.UndoManagerFor(table); mgr != nil {
-			var name string
+	adjustSelection(title, owner, table, quantityExtractor(increment),
+		func(e *gurps.Equipment) fxp.Int { return e.Quantity },
+		func(e *gurps.Equipment, v fxp.Int) { e.Quantity = v },
+		func(e *gurps.Equipment) {
+			original := e.Quantity
+			qty := original.Floor()
 			if increment {
-				name = i18n.Text("Increment Quantity")
-			} else {
-				name = i18n.Text("Decrement Quantity")
+				qty += fxp.One
+			} else if original == qty {
+				qty -= fxp.One
 			}
-			mgr.Add(&unison.UndoEdit[*adjustQuantityList]{
-				ID:         unison.NextUndoID(),
-				EditName:   name,
-				UndoFunc:   func(edit adjustQuantityListUndoEdit) { edit.BeforeData.Apply() },
-				RedoFunc:   func(edit adjustQuantityListUndoEdit) { edit.AfterData.Apply() },
-				BeforeData: before,
-				AfterData:  after,
-			})
-		}
-		before.Finish()
-	}
+			e.Quantity = qty.Max(0)
+		},
+		true, false)
 }

@@ -14,78 +14,29 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-type adjustUsesListUndoEdit = *unison.UndoEdit[*adjustUsesList]
-
-type adjustUsesList struct {
-	Owner Rebuildable
-	List  []*usesAdjuster
-}
-
-func (a *adjustUsesList) Apply() {
-	for _, one := range a.List {
-		one.Apply()
+func usesExtractor(amount int) func(*gurps.Equipment) (*gurps.Equipment, bool) {
+	return func(eqp *gurps.Equipment) (*gurps.Equipment, bool) {
+		if eqp != nil {
+			if total := eqp.Uses + amount; total >= 0 && total <= eqp.MaxUses {
+				return eqp, true
+			}
+		}
+		return nil, false
 	}
-	MarkModified(a.Owner)
-}
-
-type usesAdjuster struct {
-	Target *gurps.Equipment
-	Uses   int
-}
-
-func newUsesAdjuster(target *gurps.Equipment) *usesAdjuster {
-	return &usesAdjuster{
-		Target: target,
-		Uses:   target.Uses,
-	}
-}
-
-func (a *usesAdjuster) Apply() {
-	a.Target.Uses = a.Uses
 }
 
 func canAdjustUses(table *unison.Table[*Node[*gurps.Equipment]], amount int) bool {
-	for _, row := range table.SelectedRows(false) {
-		if eqp := row.Data(); eqp != nil {
-			total := eqp.Uses + amount
-			if total >= 0 && total <= eqp.MaxUses {
-				return true
-			}
-		}
-	}
-	return false
+	return canAdjustSelection(table, usesExtractor(amount))
 }
 
 func adjustUses(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]], amount int) {
-	before := &adjustUsesList{Owner: owner}
-	after := &adjustUsesList{Owner: owner}
-	for _, row := range table.SelectedRows(false) {
-		if eqp := row.Data(); eqp != nil {
-			total := eqp.Uses + amount
-			if total >= 0 && total <= eqp.MaxUses {
-				before.List = append(before.List, newUsesAdjuster(eqp))
-				eqp.Uses = total
-				after.List = append(after.List, newUsesAdjuster(eqp))
-			}
-		}
+	title := increaseUsesAction.Title
+	if amount < 0 {
+		title = decreaseUsesAction.Title
 	}
-	if len(before.List) > 0 {
-		if mgr := unison.UndoManagerFor(table); mgr != nil {
-			var name string
-			if amount < 0 {
-				name = decreaseUsesAction.Title
-			} else {
-				name = increaseUsesAction.Title
-			}
-			mgr.Add(&unison.UndoEdit[*adjustUsesList]{
-				ID:         unison.NextUndoID(),
-				EditName:   name,
-				UndoFunc:   func(edit adjustUsesListUndoEdit) { edit.BeforeData.Apply() },
-				RedoFunc:   func(edit adjustUsesListUndoEdit) { edit.AfterData.Apply() },
-				BeforeData: before,
-				AfterData:  after,
-			})
-		}
-		MarkModified(before.Owner)
-	}
+	adjustSelection(title, owner, table, usesExtractor(amount),
+		func(e *gurps.Equipment) int { return e.Uses },
+		func(e *gurps.Equipment, v int) { e.Uses = v },
+		func(e *gurps.Equipment) { e.Uses += amount },
+		false, false)
 }
