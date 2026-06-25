@@ -43,14 +43,9 @@ updating:
   (#1035)
 - **Added page reference mapping for *Loadouts: Starship Crew*.** Page references to this book now resolve correctly.
   (#1021)
-- **Export templates can format a trait's self-control and frequency rolls on their own.** Each trait now exposes `CR`
-  and `FR` (the numeric roll, e.g. `12`) and `CRFull` and `FRFull` (the full descriptor, e.g.
-  `12 or less (Resist quite often)`), so a template can render something compact like `CR: 12`. To avoid duplicating
-  these when you place them yourself, the modifier notes are also available with either or both roll lines removed via
-  `ModifierNotesNoCR`, `ModifierNotesNoFR`, and `ModifierNotesNoRolls`. The existing `ModifierNotes` field is unchanged.
-  (#1037)
-- **Export templates can now access a trait's level.** Leveled traits now expose `Level`. This will be -1 for containers
-  and non-leveled traits.
+- **Export templates can now export more data.** New keys have been added. See the Export Templates documentation for
+  details.
+- **Scripting has access to more data.** New fields and objects have been added. See the Scripting Guide for details.
 
 ## Bug Fixes
 
