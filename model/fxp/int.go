@@ -20,6 +20,7 @@ import (
 // Common values that can be reused.
 var (
 	Min                 = fixed64.Minimum[DP]()
+	NegOne              = FromInteger(-1)
 	NegPointEight       = FromStringForced("-0.8")
 	OneHundredth        = FromStringForced("0.01")
 	Twentieth           = FromStringForced("0.05")

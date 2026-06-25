@@ -176,6 +176,7 @@ type exportedTrait struct {
 	Points               fxp.Int
 	Description          string
 	UserDescription      string
+	Level                fxp.Int
 	CR                   int
 	CRFull               string
 	FR                   int
@@ -531,6 +532,11 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			PageRef:              t.PageRef,
 			Tags:                 slices.Clone(t.Tags),
 			Depth:                t.Depth(),
+		}
+		if t.IsLeveled() {
+			trait.Level = t.CurrentLevel()
+		} else {
+			trait.Level = fxp.NegOne
 		}
 		if t.SelfControl != selfctrl.None {
 			trait.CRFull = t.SelfControl.String()

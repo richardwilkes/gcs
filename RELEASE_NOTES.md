@@ -49,6 +49,8 @@ updating:
   these when you place them yourself, the modifier notes are also available with either or both roll lines removed via
   `ModifierNotesNoCR`, `ModifierNotesNoFR`, and `ModifierNotesNoRolls`. The existing `ModifierNotes` field is unchanged.
   (#1037)
+- **Export templates can now access a trait's level.** Leveled traits now expose `Level`. This will be -1 for containers
+  and non-leveled traits.
 
 ## Bug Fixes
 
