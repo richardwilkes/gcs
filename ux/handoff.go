@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json/v2"
+	"io"
 	"log/slog"
 	"net"
 	"path/filepath"
@@ -67,19 +68,18 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 		errs.Log(err)
 		return false
 	}
-	n, err := conn.Read(buffer)
-	if err != nil {
+	if _, err := io.ReadFull(conn, buffer); err != nil {
 		errs.Log(err)
 		return false
 	}
-	if n != len(buffer) || !bytes.Equal(buffer, []byte(xos.AppIdentifier)) {
+	if !bytes.Equal(buffer, []byte(xos.AppIdentifier)) {
 		errs.Log(errs.New("unexpected app identifier"))
 		return false
 	}
 	buffer = make([]byte, 5)
 	buffer[0] = 22
 	binary.LittleEndian.PutUint32(buffer[1:], uint32(len(pathsBuffer))) //nolint:gosec // No, this won't overflow
-	n, err = conn.Write(buffer)
+	n, err := conn.Write(buffer)
 	if err != nil {
 		errs.Log(err)
 		return false
@@ -139,13 +139,8 @@ func processHandoff(conn net.Conn, pathsChan chan<- []string) {
 		return
 	}
 	var single [1]byte
-	n, err := conn.Read(single[:])
-	if err != nil {
+	if _, err := io.ReadFull(conn, single[:]); err != nil {
 		errs.Log(err)
-		return
-	}
-	if n != 1 {
-		errs.Log(errs.Newf("unexpected value for n: %d", n))
 		return
 	}
 	if single[0] != 22 {
@@ -153,26 +148,18 @@ func processHandoff(conn net.Conn, pathsChan chan<- []string) {
 		return
 	}
 	var sizeBuffer [4]byte
-	if n, err = conn.Read(sizeBuffer[:]); err != nil {
+	if _, err := io.ReadFull(conn, sizeBuffer[:]); err != nil {
 		errs.Log(err)
-		return
-	}
-	if n != 4 {
-		errs.Log(errs.Newf("unexpected value for n: %d", n))
 		return
 	}
 	size := int(binary.LittleEndian.Uint32(sizeBuffer[:]))
 	buffer := make([]byte, size)
-	if n, err = conn.Read(buffer); err != nil {
+	if _, err := io.ReadFull(conn, buffer); err != nil {
 		errs.Log(err)
 		return
 	}
-	if n != size {
-		errs.Log(errs.Newf("unexpected value for n: %d, size: %d", n, size))
-		return
-	}
 	var paths []string
-	if err = json.Unmarshal(buffer, &paths); err != nil {
+	if err := json.Unmarshal(buffer, &paths); err != nil {
 		errs.Log(err)
 		return
 	}
