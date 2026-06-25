@@ -584,7 +584,9 @@ func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 		undo.AfterData = NewTableUndoEditData(table)
 		mgr.Add(undo)
 	}
-	unison.Ancestor[Rebuildable](table).Rebuild(true)
+	if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
+		builder.Rebuild(true)
+	}
 }
 
 // DisableSorting disables the sorting capability in the table headers.
