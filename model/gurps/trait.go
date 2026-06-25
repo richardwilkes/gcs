@@ -975,6 +975,11 @@ func (t *TraitEditData) CopyFrom(other *Trait) {
 	t.copyFrom(other.owner, &other.TraitEditData, false)
 }
 
+// SetNameableReplacements sets the replacements to be used with Nameables.
+func (t *TraitEditData) SetNameableReplacements(replacements map[string]string) {
+	t.Replacements = replacements
+}
+
 // ApplyTo implements node.EditorData.
 func (t *TraitEditData) ApplyTo(other *Trait) {
 	other.copyFrom(other.owner, t, true)

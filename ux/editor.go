@@ -38,6 +38,11 @@ var (
 	_ Rebuildable                = &editor[*gurps.Note, *gurps.NoteEditData]{}
 )
 
+// nameableReplacementsSetter is implemented by editor data that can have its nameable replacements set directly.
+type nameableReplacementsSetter interface {
+	SetNameableReplacements(replacements map[string]string)
+}
+
 type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	unison.Panel
 	owner                Rebuildable
@@ -54,6 +59,8 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	rangedWeapons        *weaponsPanel
 	beforeData           D
 	editorData           D
+	nameablesScratch     N
+	nameablesKeys        map[string]string
 	modificationCallback func()
 	preApplyCallback     func(D)
 	scale                int
@@ -214,7 +221,15 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 					if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
 						ShowNameablesDialog([]string{tmp.String()}, []map[string]string{m})
 						tmp.ApplyNameableKeys(m)
-						e.editorData.CopyFrom(tmp)
+						// Applying nameable keys only alters the replacements map, so copy just that back into the
+						// editor data. Using CopyFrom here would replace the entire object graph with fresh
+						// sub-objects, orphaning the widgets that are already bound to the existing ones (e.g. the
+						// modifiers table), causing their subsequent edits to be silently lost.
+						if setter, ok2 := any(e.editorData).(nameableReplacementsSetter); ok2 {
+							setter.SetNameableReplacements(tmp.NameableReplacements())
+						} else {
+							e.editorData.CopyFrom(tmp)
+						}
 						e.Rebuild(false)
 					}
 				}
@@ -291,10 +306,24 @@ func (e *editor[N, D]) Modified() bool {
 	e.applyButton.SetEnabled(modified)
 	e.cancelButton.SetEnabled(modified)
 	if e.nameablesButton != nil {
-		_, m := e.prepareForSubstitutions()
-		e.nameablesButton.SetEnabled(len(m) > 0)
+		e.nameablesButton.SetEnabled(e.hasNameableKeys())
 	}
 	return modified
+}
+
+// hasNameableKeys reports whether the current editor data contains any nameable keys. It reuses a single scratch node
+// to avoid cloning the target on every call, since Modified is invoked frequently during layout and redraw.
+func (e *editor[N, D]) hasNameableKeys() bool {
+	if xreflect.IsNil(e.nameablesScratch) {
+		node := gurps.AsNode(e.target)
+		e.nameablesScratch = node.Clone(node.GetSource().LibraryFile, node.DataOwner(), nil, true)
+		e.nameablesKeys = make(map[string]string)
+	} else {
+		clear(e.nameablesKeys)
+	}
+	e.editorData.ApplyTo(e.nameablesScratch)
+	gurps.AsNode(e.nameablesScratch).FillWithNameableKeys(e.nameablesKeys, nil)
+	return len(e.nameablesKeys) > 0
 }
 
 func (e *editor[N, D]) MarkModified(_ unison.Paneler) {

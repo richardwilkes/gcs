@@ -1452,6 +1452,11 @@ func (s *SkillEditData) CopyFrom(other *Skill) {
 	s.copyFrom(&other.SkillEditData, other.Container(), false, other.IsTechnique())
 }
 
+// SetNameableReplacements sets the replacements to be used with Nameables.
+func (s *SkillEditData) SetNameableReplacements(replacements map[string]string) {
+	s.Replacements = replacements
+}
+
 // ApplyTo implements node.EditorData.
 func (s *SkillEditData) ApplyTo(other *Skill) {
 	other.copyFrom(s, other.Container(), true, other.IsTechnique())

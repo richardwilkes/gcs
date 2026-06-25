@@ -414,6 +414,11 @@ func (n *NoteEditData) CopyFrom(other *Note) {
 	n.copyFrom(&other.NoteEditData)
 }
 
+// SetNameableReplacements sets the replacements to be used with Nameables.
+func (n *NoteEditData) SetNameableReplacements(replacements map[string]string) {
+	n.Replacements = replacements
+}
+
 // ApplyTo implements node.EditorData.
 func (n *NoteEditData) ApplyTo(other *Note) {
 	other.copyFrom(n)

@@ -91,3 +91,6 @@ updating:
 - Library source files that are edited while GCS is running are now detected and reloaded. Previously, once a source
   library file had been loaded, later changes to it were ignored until GCS was restarted, leaving the source match
   status based on the stale, originally loaded data.
+- Edits made in a detail editor after setting nameable substitutions are no longer silently lost. Previously, using the
+  "Set Substitutions" button and then changing something else (such as enabling or disabling a modifier) before saving
+  could discard that later change.

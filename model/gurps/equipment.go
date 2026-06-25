@@ -912,6 +912,11 @@ func (e *EquipmentEditData) CopyFrom(other *Equipment) {
 	e.copyFrom(other.owner, &other.EquipmentEditData, false)
 }
 
+// SetNameableReplacements sets the replacements to be used with Nameables.
+func (e *EquipmentEditData) SetNameableReplacements(replacements map[string]string) {
+	e.Replacements = replacements
+}
+
 // ApplyTo implements node.EditorData.
 func (e *EquipmentEditData) ApplyTo(other *Equipment) {
 	other.copyFrom(other.owner, e, true)

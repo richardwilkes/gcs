@@ -1231,6 +1231,11 @@ func (s *SpellEditData) CopyFrom(other *Spell) {
 	s.copyFrom(&other.SpellEditData, other.Container(), false)
 }
 
+// SetNameableReplacements sets the replacements to be used with Nameables.
+func (s *SpellEditData) SetNameableReplacements(replacements map[string]string) {
+	s.Replacements = replacements
+}
+
 // ApplyTo implements node.EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
 	other.copyFrom(s, other.Container(), true)
