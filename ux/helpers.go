@@ -52,6 +52,7 @@ func FocusFirstContent(toolbar, content unison.Paneler) {
 	c := content.AsPanel()
 	c.RequestFocus()
 	wnd := c.Window()
+	start := wnd.Focus()
 	for {
 		actual := wnd.Focus()
 		parent := actual
@@ -75,6 +76,12 @@ func FocusFirstContent(toolbar, content unison.Paneler) {
 			break
 		}
 		wnd.FocusNext()
+		if wnd.Focus() == start {
+			// Every focusable widget within the content is a button and the focus cycled all the way around, so
+			// settle for the first one rather than looping forever.
+			c.RequestFocus()
+			break
+		}
 	}
 }
 
