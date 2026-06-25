@@ -334,9 +334,6 @@ func (n *Navigator) deleteSelection() {
 				}
 			}
 		}
-		if hasLibs && hasOther {
-			return
-		}
 		switch {
 		case hasLibs && hasOther:
 			return
@@ -465,9 +462,16 @@ func (n *Navigator) renameSelection() {
 			trimmed := strings.TrimSpace(newName)
 			valid := trimmed != "" && !strings.HasPrefix(trimmed, ".") && !strings.ContainsAny(newName, `/\:`) &&
 				!disallowedWindowsFileNames[strings.ToLower(newName)]
+			if valid {
+				oldPath := row.Path()
+				if _, err = os.Stat(filepath.Join(filepath.Dir(oldPath), trimmed+filepath.Ext(oldPath))); err == nil {
+					valid = false
+				}
+			}
 			dialog.Button(unison.ModalResponseOK).SetEnabled(valid)
 			return valid
 		}
+		newField.Validate() // Here to update the OK button
 		if dialog.RunModal() == unison.ModalResponseOK {
 			oldPath := row.Path()
 			newPath := filepath.Join(filepath.Dir(oldPath), newName+filepath.Ext(oldPath))
