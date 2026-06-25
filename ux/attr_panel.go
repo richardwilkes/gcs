@@ -109,7 +109,7 @@ func (a *AttrPanel) drawSelf(gc *unison.Canvas, rect geom.Rect) {
 	gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 	children := a.Children()
 	for i, rowIndex := range a.rowStarts {
-		if rowIndex > len(children) {
+		if rowIndex >= len(children) {
 			break
 		}
 		if i&1 == 0 {
