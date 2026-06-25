@@ -268,6 +268,18 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 				return matchWeapons(r, entity.Weapons(melee, false, true), name, usage, melee)
 			})
 		}
+		m["thrustFor"] = func() goja.Value {
+			return r.ToValue(func(call goja.FunctionCall) goja.Value {
+				d := entity.ThrustFor(int(call.Argument(0).ToInteger()))
+				return r.ToValue(d.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds))
+			})
+		}
+		m["swingFor"] = func() goja.Value {
+			return r.ToValue(func(call goja.FunctionCall) goja.Value {
+				d := entity.SwingFor(int(call.Argument(0).ToInteger()))
+				return r.ToValue(d.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds))
+			})
+		}
 	}
 	m["randomHeightInInches"] = func() goja.Value {
 		// Returns a height in inches based on the given strength using the chart from B18.
