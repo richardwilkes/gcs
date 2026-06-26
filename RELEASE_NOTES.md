@@ -35,6 +35,11 @@ updating:
 - **External PDF viewers now jump to the searched text.** When you open a page reference in an external PDF viewer, GCS
   passes the highlighted phrase along (via the `$TEXT` placeholder) so a viewer that supports it can navigate directly
   to the term. (#1023)
+- **Page reference columns can show more than one reference.** Page reference columns now display as many of an item's
+  page references as will fit, each individually clickable, instead of always collapsing to the first one followed by a
+  "+". A new General Setting, "Show additional page references when space allows," controls this for character sheets,
+  loot sheets, and templates and is on by default. Standalone list windows are unaffected by the setting, since their
+  columns can already be resized directly. (#1046)
 - **Metric length now converts at 25 mm per inch.** Lengths entered in metric units convert using the GURPS simplified
   value of 25 mm per inch, replacing the previous conversion of 1 m per yard. (#1032)
 - **Improved hiking calculations in the Calculator.** Hiking distance now follows the clarification in HT55, the daily

@@ -275,7 +275,7 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground,
 	case cell.Toggle:
 		return n.createToggleCell(c, foreground)
 	case cell.PageRef:
-		return n.createPageRefCell(c, foreground)
+		return n.createPageRefCell(c, width, foreground)
 	case cell.Markdown:
 		return n.createMarkdownCell(c.Primary, width, fonts.PageFieldPrimary, foreground, background, selected)
 	default:
@@ -688,16 +688,73 @@ func convertLinksForPageRef(in string) (string, *unison.SVG) {
 	}
 }
 
-func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
+// pageRefSeparator is placed between individual page references when more than one is shown in a page reference cell.
+const pageRefSeparator = ", "
+
+func (n *Node[T]) createPageRefCell(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
+	font := n.primaryFieldFont()
+	parts := ExtractPageReferences(c.Primary)
+	if len(parts) == 0 {
+		return n.createPageRefLink(c, "", font, foreground)
+	}
+	links := make([]*unison.Label, len(parts))
+	for i, part := range parts {
+		links[i] = n.createPageRefLink(c, part, font, foreground)
+	}
+	// Determine how many references fit within the available width, always showing at least the first one. References
+	// that don't fit are clipped, and a trailing "+" is added to the last shown reference to indicate there are more.
+	// A non-positive width means we're being asked for the preferred size (e.g. while the table is sizing its columns);
+	// in that case we only claim the space needed for a single reference so the column doesn't grow to fit them all.
+	shown := 1
+	if width > 0 {
+		sepWidth := pageRefSeparatorWidth(font)
+		_, size, _ := links[0].Sizes(geom.Size{})
+		cumulative := size.Width
+		for i := 1; i < len(parts); i++ {
+			_, size, _ = links[i].Sizes(geom.Size{})
+			next := cumulative + sepWidth + size.Width
+			if next > width {
+				break
+			}
+			cumulative = next
+			shown = i + 1
+		}
+	}
+	if shown < len(parts) {
+		last := links[shown-1]
+		last.SetTitle(last.String() + "+")
+		last.Tooltip = newWrappedTooltip(strings.Join(parts, "\n"))
+	}
+	if shown == 1 {
+		return links[0]
+	}
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns: shown*2 - 1,
+		VAlign:  align.Start,
+	})
+	for i := range shown {
+		if i > 0 {
+			separator := unison.NewLabel()
+			separator.Font = font
+			separator.OnBackgroundInk = foreground
+			separator.VAlign = align.Start
+			separator.SetTitle(pageRefSeparator)
+			panel.AddChild(separator)
+		}
+		panel.AddChild(links[i])
+	}
+	return panel
+}
+
+// createPageRefLink creates an individually-clickable hyperlink for a single page reference. An empty ref produces a
+// disabled, empty link.
+func (n *Node[T]) createPageRefLink(c *gurps.CellData, ref string, font unison.Font, foreground unison.Ink) *unison.Label {
 	var title, tooltip string
 	var icon *unison.DrawableSVG
-	font := n.primaryFieldFont()
-	parts := strings.FieldsFunc(c.Primary, func(ch rune) bool { return ch == ',' || ch == ';' })
-	switch len(parts) {
-	case 0:
-	case 1:
+	if ref != "" {
 		var img *unison.SVG
-		title, img = convertLinksForPageRef(parts[0])
+		title, img = convertLinksForPageRef(ref)
 		if img != nil {
 			title = ""
 			height := font.Baseline()
@@ -705,21 +762,14 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 				SVG:  img,
 				Size: geom.NewSize(height, height).Ceil(),
 			}
-			tooltip = parts[0]
+			tooltip = ref
 		}
-	default:
-		title, _ = convertLinksForPageRef(parts[0])
-		title += "+"
-		tooltip = strings.Join(parts, "\n")
 	}
 	theme := unison.DefaultLinkTheme
 	theme.OnBackgroundInk = foreground
 	theme.Font = font
-	link := unison.NewLink(title, tooltip, "", &theme, func(_ unison.Paneler, _ string) {
-		list := ExtractPageReferences(c.Primary)
-		if len(list) != 0 {
-			OpenPageReference(list[0], c.Secondary, nil)
-		}
+	link := unison.NewLink(title, tooltip, ref, &theme, func(_ unison.Paneler, target string) {
+		OpenPageReference(target, c.Secondary, nil)
 	})
 	link.VAlign = align.Start
 	if icon != nil {
@@ -730,6 +780,67 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 	}
 	link.SetEnabled(!c.Dim && (title != "" || icon != nil))
 	return link
+}
+
+// pageRefSeparatorWidth returns the width of the separator placed between adjacent page references.
+func pageRefSeparatorWidth(font unison.Font) float32 {
+	return unison.NewText(pageRefSeparator, &unison.TextDecoration{Font: font}).Width()
+}
+
+// pageRefColumnFullWidth returns the content width needed to display every page reference in the given column for this
+// row. It returns -1 if the column isn't a page reference column. This is used to let page reference columns claim
+// excess width (up to the point where all references are visible) before the remainder goes to the excess-width column.
+func (n *Node[T]) pageRefColumnFullWidth(col int) float32 {
+	var c gurps.CellData
+	n.dataAsNode.CellData(n.table.Columns[col].ID, &c)
+	if c.Type != cell.PageRef {
+		return -1
+	}
+	parts := ExtractPageReferences(c.Primary)
+	if len(parts) == 0 {
+		return 0
+	}
+	font := n.primaryFieldFont()
+	sepWidth := pageRefSeparatorWidth(font)
+	var width float32
+	for i, part := range parts {
+		if i > 0 {
+			width += sepWidth
+		}
+		_, size, _ := n.createPageRefLink(&c, part, font, unison.DefaultLinkTheme.OnBackgroundInk).Sizes(geom.Size{})
+		width += size.Width
+	}
+	return width
+}
+
+// excessColumnCollapsedWidth returns the column width needed to display the given column's primary content with any
+// secondary (note) content collapsed, including padding and any hierarchy indent for this row. It returns -1 if the
+// column isn't a text column. This is used to reserve enough room for the primary column before handing leftover space
+// to page reference columns.
+func (n *Node[T]) excessColumnCollapsedWidth(col int) float32 {
+	var c gurps.CellData
+	n.dataAsNode.CellData(n.table.Columns[col].ID, &c)
+	if c.Type != cell.Text {
+		return -1
+	}
+	hadSecondary := c.Secondary != ""
+	c.Secondary = ""
+	_, size, _ := n.createLabelCell(&c, 0, unison.ThemeOnSurface, unison.ThemeSurface, false).AsPanel().Sizes(geom.Size{})
+	width := size.Width + n.table.Padding.Left + n.table.Padding.Right
+	if hadSecondary {
+		// Account for the disclosure button shown to the left of collapsible notes.
+		width += n.primaryFieldFont().Baseline() + unison.StdHSpacing/2
+	}
+	if n.table.Columns[col].ID == n.table.HierarchyColumnID {
+		if indent := n.table.CurrentHierarchyIndent(); indent > 0 {
+			depth := 0
+			for p := n.parent; p != nil; p = p.parent {
+				depth++
+			}
+			width += n.table.Padding.Left + indent*float32(depth+1)
+		}
+	}
+	return width
 }
 
 func (n *Node[T]) primaryFieldFont() unison.Font {

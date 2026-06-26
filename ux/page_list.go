@@ -405,6 +405,9 @@ func (p *PageList[T]) Sync() {
 	selection := p.RecordSelection()
 	p.Table.SyncToModel()
 	p.ApplySelection(selection)
+	// Re-evaluate page reference column expansion here, since a change to that setting won't necessarily alter the
+	// table's frame and thus won't trigger the table's FrameChangeCallback.
+	sizePageTableColumns(p.Table, p.provider.ExcessWidthColumnID())
 	p.Table.NeedsLayout = true
 	p.NeedsLayout = true
 	if parent := p.Parent(); parent != nil {

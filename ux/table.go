@@ -132,7 +132,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	}
 	if font != nil {
 		table.FrameChangeCallback = func() {
-			table.SizeColumnsToFitWithExcessIn(provider.ExcessWidthColumnID())
+			sizePageTableColumns(table, provider.ExcessWidthColumnID())
 		}
 	}
 
@@ -189,6 +189,82 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	}
 
 	return header, table
+}
+
+// sizePageTableColumns sizes the columns of a fixed-width page table to fit, then, when the user can't resize columns
+// and the setting is enabled, lets any page reference columns claim leftover space so they can show more than one
+// reference before the rest goes to the excess column. This is run both when the table's frame changes and when it is
+// synced, since a settings change won't necessarily alter the frame.
+func sizePageTableColumns[T gurps.NodeTypes](table *unison.Table[*Node[T]], excessColumnID int) {
+	table.SizeColumnsToFitWithExcessIn(excessColumnID)
+	if table.PreventUserColumnResize && gurps.GlobalSettings().General.ExpandPageReferences &&
+		expandPageRefColumns(table, excessColumnID) {
+		table.SyncRowHeights()
+	}
+}
+
+// expandPageRefColumns hands leftover horizontal space to any page reference columns so they can display more than a
+// single reference, taking that space from the excess-width column. The excess column first keeps enough room to show
+// its primary content with notes collapsed; only the space beyond that is offered to the page reference columns, and
+// each grows only up to the width needed to show all of its references (capped by its AutoMaximum). Whatever isn't
+// claimed stays with the excess column. Returns true if any column width was changed.
+func expandPageRefColumns[T gurps.NodeTypes](table *unison.Table[*Node[T]], excessColumnID int) bool {
+	excess := table.ColumnIndexForID(excessColumnID)
+	if excess < 0 || excess >= len(table.Columns) {
+		return false
+	}
+	lastRow := table.LastRowIndex()
+	if lastRow < 0 {
+		return false
+	}
+	// Reserve enough room for the excess column to show its primary content with notes collapsed. Computed lazily,
+	// since it isn't needed unless a page reference column actually has room to grow.
+	floor := float32(-1)
+	excessFloor := func() float32 {
+		if floor < 0 {
+			floor = table.Columns[excess].Minimum
+			for row := 0; row <= lastRow; row++ {
+				floor = max(floor, table.RowFromIndex(row).excessColumnCollapsedWidth(excess))
+			}
+		}
+		return floor
+	}
+	changed := false
+	for col := range table.Columns {
+		if col == excess {
+			continue
+		}
+		// Determine the width needed to show every reference in this column across all rows, skipping the column
+		// entirely if it isn't a page reference column.
+		content := float32(-1)
+		isPageRef := true
+		for row := 0; row <= lastRow; row++ {
+			w := table.RowFromIndex(row).pageRefColumnFullWidth(col)
+			if w < 0 {
+				isPageRef = false
+				break
+			}
+			content = max(content, w)
+		}
+		if !isPageRef {
+			continue
+		}
+		target := content + table.Padding.Left + table.Padding.Right
+		if m := table.Columns[col].AutoMaximum; m > 0 && target > m {
+			target = m
+		}
+		want := target - table.Columns[col].Current
+		if want <= 0 {
+			continue
+		}
+		available := table.Columns[excess].Current - excessFloor()
+		if give := min(want, available); give > 0 {
+			table.Columns[col].Current += give
+			table.Columns[excess].Current -= give
+			changed = true
+		}
+	}
+	return changed
 }
 
 func isAcceptableTypeForSheetOrTemplate(data any) bool {

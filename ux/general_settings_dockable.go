@@ -49,6 +49,7 @@ type generalSettingsDockable struct {
 	autoAddNaturalAttacksCheckbox   *CheckBox
 	groupContainersOnSortCheckbox   *CheckBox
 	initialClickSelectsAllCheckbox  *CheckBox
+	expandPageReferencesCheckbox    *CheckBox
 	restoreWorkspaceOnStartCheckbox *CheckBox
 	deepSearchableCheckbox          []*CheckBox
 	openInWindowCheckbox            []*CheckBox
@@ -252,6 +253,24 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.initialClickSelectsAllCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel("", false))
 	content.AddChild(d.initialClickSelectsAllCheckbox)
+
+	d.expandPageReferencesCheckbox = NewCheckBox(nil, "",
+		i18n.Text("Show additional page references when space allows"),
+		func() check.Enum {
+			return check.FromBool(gurps.GlobalSettings().General.ExpandPageReferences)
+		},
+		func(state check.Enum) {
+			gurps.GlobalSettings().General.ExpandPageReferences = state == check.On
+			for _, one := range AllDockables() {
+				if r, ok := one.(Rebuildable); ok {
+					r.Rebuild(false)
+				}
+			}
+		})
+	d.expandPageReferencesCheckbox.Tooltip = newWrappedTooltip(i18n.Text(`When enabled, the page reference column on character sheets, loot sheets, and templates will display more than one page reference when there is room, rather than always collapsing to a single reference. Standalone lists are unaffected, since their columns can be resized directly.`))
+	d.expandPageReferencesCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(NewFieldLeadingLabel("", false))
+	content.AddChild(d.expandPageReferencesCheckbox)
 }
 
 func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Panel) {
@@ -545,6 +564,7 @@ func (d *generalSettingsDockable) sync() {
 	SetCheckBoxState(d.groupContainersOnSortCheckbox, gs.GroupContainersOnSort)
 	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, gs.AutoAddNaturalAttacks)
 	SetCheckBoxState(d.initialClickSelectsAllCheckbox, gs.InitialFieldClickSelectsAll)
+	SetCheckBoxState(d.expandPageReferencesCheckbox, gs.ExpandPageReferences)
 	d.pointsField.SetText(gs.InitialPoints.String())
 	d.techLevelField.SetText(gs.DefaultTechLevel)
 	d.calendarPopup.Select(gs.CalendarRef(s.Libraries()).Name)
