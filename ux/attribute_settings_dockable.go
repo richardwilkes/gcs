@@ -181,7 +181,7 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 		undo.AfterData = d.defs.Clone()
 		d.UndoManager().Add(undo)
 		d.MarkModified(nil)
-		d.MarkForLayoutAndRedraw()
+		p.MarkForLayoutRecursivelyUpward()
 		d.ValidateLayout()
 		FocusFirstContent(d.toolbar, p.AsPanel())
 		d.Window().Focus().ScrollIntoView()
