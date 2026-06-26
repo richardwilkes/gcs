@@ -31,7 +31,6 @@ var (
 	TooltipDismissalDef        = fxp.Sixty
 	TooltipDismissalMin        = fxp.One
 	TooltipDismissalMax        = fxp.ThirtySixHundred
-	ScrollWheelMultiplierDef   = fxp.FromFloat(unison.MouseWheelMultiplier)
 	ScrollWheelMultiplierMin   = fxp.One
 	ScrollWheelMultiplierMax   = fxp.TenThousandMinusOne
 	PermittedScriptExecTimeDef = fxp.FromStringForced("0.05")
@@ -197,7 +196,7 @@ func (s *GeneralSettings) EnsureValidity() {
 	s.PermittedPerScriptExecTime = fxp.ResetIfOutOfRange(s.PermittedPerScriptExecTime, PermittedScriptExecTimeMin,
 		PermittedScriptExecTimeMax, PermittedScriptExecTimeDef)
 	s.ScrollWheelMultiplier = fxp.ResetIfOutOfRange(s.ScrollWheelMultiplier, ScrollWheelMultiplierMin,
-		ScrollWheelMultiplierMax, ScrollWheelMultiplierDef)
+		ScrollWheelMultiplierMax, fxp.FromFloat(unison.MouseWheelMultiplier))
 	if s.MonitorResolution != 0 {
 		s.MonitorResolution = fxp.ResetIfOutOfRange(s.MonitorResolution, MonitorResolutionMin, MonitorResolutionMax, 0)
 	}
