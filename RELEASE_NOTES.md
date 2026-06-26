@@ -51,6 +51,7 @@ updating:
 - **Export templates can now export more data.** New keys have been added. See the Export Templates documentation for
   details.
 - **Scripting has access to more data.** New fields and objects have been added. See the Scripting Guide for details.
+- **Added additional page reference codes.**
 
 ## Bug Fixes
 
