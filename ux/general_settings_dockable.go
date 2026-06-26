@@ -550,9 +550,13 @@ func (d *generalSettingsDockable) createOpenInWindowCheckboxes(content *unison.P
 }
 
 func (d *generalSettingsDockable) reset() {
-	*gurps.GlobalSettings().General = *gurps.NewGeneralSettings()
+	s := gurps.GlobalSettings()
+	*s.General = *gurps.NewGeneralSettings()
+	s.DeepSearch = nil
+	s.OpenInWindow = nil
 	languageSetting = ""
 	d.sync()
+	Workspace.Navigator.mapDeepSearch()
 }
 
 func (d *generalSettingsDockable) sync() {
