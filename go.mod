@@ -7,10 +7,10 @@ require (
 	github.com/go-git/go-billy/v6 v6.0.0-alpha.1
 	github.com/go-git/go-git/v6 v6.0.0-alpha.4
 	github.com/google/uuid v1.6.0
-	github.com/richardwilkes/pdf v1.27.2
+	github.com/richardwilkes/pdf v1.27.3
 	github.com/richardwilkes/rpgtools v1.12.0
 	github.com/richardwilkes/toolbox/v2 v2.14.0
-	github.com/richardwilkes/unison v0.92.4-0.20260626145317-894e11e7d91f
+	github.com/richardwilkes/unison v0.92.4-0.20260626234934-07c33f812beb
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.1.0

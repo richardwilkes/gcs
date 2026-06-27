@@ -97,6 +97,9 @@ func newNavigator() *Navigator {
 
 	n.setupToolBar()
 
+	n.table.PreventUserColumnResize = true
+	n.table.ShowFirstColumnDivider = false
+	n.table.ShowLastColumnDivider = false
 	n.table.Columns = make([]unison.ColumnInfo, 1)
 	n.needReload = true
 	rows := n.populateRows()

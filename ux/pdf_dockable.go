@@ -290,6 +290,9 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 func (d *PDFDockable) createTOC() {
 	d.tocPanel = unison.NewTable(&unison.SimpleTableModel[*tocNode]{})
 	d.tocPanel.Columns = make([]unison.ColumnInfo, 1)
+	d.tocPanel.ShowFirstColumnDivider = false
+	d.tocPanel.ShowLastColumnDivider = false
+	d.tocPanel.PreventUserColumnResize = true
 	d.tocPanel.DoubleClickCallback = d.tocDoubleClick
 	d.tocPanel.SelectionChangedCallback = d.tocSelectionChanged
 

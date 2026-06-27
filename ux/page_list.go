@@ -143,6 +143,7 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	p.SetBorder(unison.NewLineBorder(header.BackgroundInk, geom.Size{}, geom.NewUniformInsets(1), false))
 
 	p.Table.PreventUserColumnResize = true
+	p.Table.ShowLastColumnDivider = false
 	p.Table.SyncToModel()
 	p.AddChild(p.tableHeader)
 	p.AddChild(p.Table)
