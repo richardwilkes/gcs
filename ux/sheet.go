@@ -531,25 +531,32 @@ func (s *Sheet) Modified() bool {
 func (s *Sheet) MarkModified(src unison.Paneler) {
 	if !s.awaitingUpdate {
 		s.awaitingUpdate = true
-		h, v := s.scroll.Position()
-		focusRefKey := s.targetMgr.CurrentFocusRef()
 		s.entity.DiscardCaches()
 		s.modifiedFunc()
 		UpdateTitleForDockable(s)
-		// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
-		//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way to
-		//       determine that the content of a table doesn't need to be refreshed.
 		skipDeepSync := false
 		if !xreflect.IsNil(src) {
 			_, skipDeepSync = src.AsPanel().ClientData()[SkipDeepSync]
 		}
-		if !skipDeepSync {
+		if skipDeepSync {
+			// The deep sync is what rebuilds the tables, and it is also the only thing here that can disturb the
+			// focus and scroll position or change which rows match the active search. When it is skipped (e.g. while
+			// typing into a simple field such as the name or title), saving and restoring the focus and scroll
+			// position and refreshing the search results is just wasted work, and that overhead is enough to make
+			// interactive typing stutter on slower platforms. So none of it is done in that case.
+			s.awaitingUpdate = false
+		} else {
+			h, v := s.scroll.Position()
+			focusRefKey := s.targetMgr.CurrentFocusRef()
+			// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
+			//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way
+			//       to determine that the content of a table doesn't need to be refreshed.
 			DeepSync(s)
+			s.awaitingUpdate = false
+			s.searchTracker.Refresh()
+			s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
+			s.scroll.SetPosition(h, v)
 		}
-		s.awaitingUpdate = false
-		s.searchTracker.Refresh()
-		s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
-		s.scroll.SetPosition(h, v)
 		UpdateCalculator(s)
 	}
 }
