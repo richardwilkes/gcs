@@ -10,7 +10,7 @@ require (
 	github.com/richardwilkes/pdf v1.27.3
 	github.com/richardwilkes/rpgtools v1.12.0
 	github.com/richardwilkes/toolbox/v2 v2.14.0
-	github.com/richardwilkes/unison v0.92.4-0.20260627232929-e93cdc357f07
+	github.com/richardwilkes/unison v0.93.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.1.0
@@ -43,6 +43,6 @@ require (
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/term v0.44.0 // indirect
-	golang.org/x/tools v0.46.0 // indirect
+	golang.org/x/tools v0.47.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
