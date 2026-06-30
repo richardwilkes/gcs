@@ -229,6 +229,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"MSDM":    "Magical Styles: Dungeon Magic",
 	"MSHM":    "Magical Styles: Horror Magic",
 	"MSMM":    "Magical Styles: Modern Magic",
+	"MSTM":    "Magical Styles: Traditional Styles",
 	"MT":      "Meta-Tech",
 	"MTLOS":   "Magic: The Least of Spells",
 	"MYST":    "Mysteries",
