@@ -32,6 +32,11 @@ updating:
   hardware, so please report any issues you encounter.
 - **Optional specialties for skills.** A skill's specialty is now split into a required part and an optional part,
   matching the GURPS distinction between the two. (#1038)
+- **Download the GURPS Rules Lookup file.** A new **Download GURPS Rules Lookup File** command in the File menu fetches
+  the community-maintained GURPS Rules Lookup data and saves it as a notes file you can open, search, and reference from
+  within GCS. If you already have the file, it can be updated in place.
+- **Notes can now be tagged.** Notes now support tags, just like traits, skills, spells, and equipment. Tags can be
+  assigned in the note editor, and a Tags column now appears for notes, so notes can be organized and filtered by tag.
 - **External PDF viewers now jump to the searched text.** When you open a page reference in an external PDF viewer, GCS
   passes the highlighted phrase along (via the `$TEXT` placeholder) so a viewer that supports it can navigate directly
   to the term. (#1023)
@@ -52,6 +57,8 @@ updating:
   details.
 - **Scripting has access to more data.** New fields and objects have been added. See the Scripting Guide for details.
 - **Added additional page reference codes.**
+- **More responsive typing in text fields.** Reduced the lag the can occur when typing into text fields on some
+  platforms, especially on slower machines.
 
 ## Bug Fixes
 
