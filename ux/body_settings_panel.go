@@ -11,7 +11,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -95,8 +94,8 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 	text = i18n.Text("Roll")
 	content.AddChild(NewFieldLeadingLabel(text, false))
 	field = NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"roll", text,
-		func() string { return p.dockable.body.Roll.String() },
-		func(s string) { p.dockable.body.Roll = dice.New(s) })
+		func() string { return gurps.Roller.Format(p.dockable.body.Roll) },
+		func(s string) { p.dockable.body.Roll = gurps.Roller.Parse(s) })
 	field.SetMinimumTextWidthUsing("100d1000")
 	field.Tooltip = newWrappedTooltip(i18n.Text("The dice to roll on the table"))
 	content.AddChild(field)

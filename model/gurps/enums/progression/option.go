@@ -16,11 +16,11 @@ import (
 )
 
 // Thrust returns the thrust damage for the given strength.
-func (enum Option) Thrust(strength int) *dice.Dice {
+func (enum Option) Thrust(strength int) dice.Dice {
 	switch enum {
 	case BasicSet:
 		if strength < 19 {
-			return &dice.Dice{
+			return dice.Dice{
 				Count:      1,
 				Sides:      6,
 				Modifier:   -(6 - (strength-1)/2),
@@ -34,7 +34,7 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 				value -= 1 + (strength-80)/5
 			}
 		}
-		return &dice.Dice{
+		return dice.Dice{
 			Count:      value/8 + 1,
 			Sides:      6,
 			Modifier:   value%8/2 - 1,
@@ -42,14 +42,14 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 		}
 	case KnowingYourOwnStrength:
 		if strength < 12 {
-			return &dice.Dice{
+			return dice.Dice{
 				Count:      1,
 				Sides:      6,
 				Modifier:   strength - 12,
 				Multiplier: 1,
 			}
 		}
-		return &dice.Dice{
+		return dice.Dice{
 			Count:      (strength - 7) / 4,
 			Sides:      6,
 			Modifier:   (strength+1)%4 - 1,
@@ -57,7 +57,7 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 		}
 	case NoSchoolGrognardDamage:
 		if strength < 11 {
-			return &dice.Dice{
+			return dice.Dice{
 				Count:      1,
 				Sides:      6,
 				Modifier:   -(14 - strength) / 2,
@@ -65,7 +65,7 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 			}
 		}
 		strength -= 11
-		return &dice.Dice{
+		return dice.Dice{
 			Count:      strength/8 + 1,
 			Sides:      6,
 			Modifier:   (strength%8)/2 - 1,
@@ -82,7 +82,7 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 			if strength < 1 {
 				strength = 1
 			}
-			return &dice.Dice{
+			return dice.Dice{
 				Count:      1,
 				Sides:      6,
 				Modifier:   ((strength + 1) / 2) - 7,
@@ -90,7 +90,7 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 			}
 		}
 		if strength < 10 {
-			return &dice.Dice{
+			return dice.Dice{
 				Count:      1,
 				Sides:      3,
 				Modifier:   ((strength + 1) / 2) - 5,
@@ -98,7 +98,7 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 			}
 		}
 		strength -= 8
-		return &dice.Dice{
+		return dice.Dice{
 			Count:      strength / 2,
 			Sides:      3,
 			Modifier:   strength % 2,
@@ -106,13 +106,13 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 		}
 	case Tbone1:
 		if strength < 10 {
-			return &dice.Dice{
+			return dice.Dice{
 				Count:    1,
 				Sides:    6,
 				Modifier: -(6 - (strength+2)/2),
 			}
 		}
-		d := &dice.Dice{
+		d := dice.Dice{
 			Count: strength / 10,
 			Sides: 6,
 		}
@@ -136,7 +136,7 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 		if strength < 10 {
 			return Tbone1.Thrust(strength)
 		}
-		d := &dice.Dice{
+		d := dice.Dice{
 			Count: strength / 10,
 			Sides: 6,
 		}
@@ -161,11 +161,11 @@ func (enum Option) Thrust(strength int) *dice.Dice {
 }
 
 // Swing returns the swing damage for the given strength.
-func (enum Option) Swing(strength int) *dice.Dice {
+func (enum Option) Swing(strength int) dice.Dice {
 	switch enum {
 	case BasicSet:
 		if strength < 10 {
-			return &dice.Dice{
+			return dice.Dice{
 				Count:      1,
 				Sides:      6,
 				Modifier:   -(5 - (strength-1)/2),
@@ -174,7 +174,7 @@ func (enum Option) Swing(strength int) *dice.Dice {
 		}
 		if strength < 28 {
 			strength -= 9
-			return &dice.Dice{
+			return dice.Dice{
 				Count:      strength/4 + 1,
 				Sides:      6,
 				Modifier:   strength%4 - 1,
@@ -189,7 +189,7 @@ func (enum Option) Swing(strength int) *dice.Dice {
 			value++
 		}
 		value += 9
-		return &dice.Dice{
+		return dice.Dice{
 			Count:      value/8 + 1,
 			Sides:      6,
 			Modifier:   value%8/2 - 1,
@@ -197,14 +197,14 @@ func (enum Option) Swing(strength int) *dice.Dice {
 		}
 	case KnowingYourOwnStrength:
 		if strength < 10 {
-			return &dice.Dice{
+			return dice.Dice{
 				Count:      1,
 				Sides:      6,
 				Modifier:   strength - 10,
 				Multiplier: 1,
 			}
 		}
-		return &dice.Dice{
+		return dice.Dice{
 			Count:      (strength - 5) / 4,
 			Sides:      6,
 			Modifier:   (strength-1)%4 - 1,

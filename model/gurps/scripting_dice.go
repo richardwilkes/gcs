@@ -41,12 +41,12 @@ func (d scriptDice) From(count, sides, modifier, multiplier *int) string {
 	} else {
 		result.Multiplier = 1
 	}
-	return result.String()
+	return Roller.Format(result)
 }
 
 func (d scriptDice) Add(left, right string) (string, error) {
-	d1 := dice.New(left)
-	d2 := dice.New(right)
+	d1 := Roller.Parse(left)
+	d2 := Roller.Parse(right)
 	if d1.Sides != d2.Sides {
 		return "", errors.New("dice sides must match")
 	}
@@ -62,12 +62,12 @@ func (d scriptDice) Add(left, right string) (string, error) {
 	}
 	d1.Count += d2.Count
 	d1.Modifier += d2.Modifier
-	return d1.String(), nil
+	return Roller.Format(d1), nil
 }
 
 func (d scriptDice) Subtract(left, right string) (string, error) {
-	d1 := dice.New(left)
-	d2 := dice.New(right)
+	d1 := Roller.Parse(left)
+	d2 := Roller.Parse(right)
 	if d1.Sides != d2.Sides {
 		return "", errors.New("dice sides must match")
 	}
@@ -84,25 +84,25 @@ func (d scriptDice) Subtract(left, right string) (string, error) {
 	d1.Count -= d2.Count
 	d1.Count = max(d1.Count, 0)
 	d1.Modifier -= d2.Modifier
-	return d1.String(), nil
+	return Roller.Format(d1), nil
 }
 
 func (d scriptDice) Count(diceSpec string) int {
-	return dice.New(diceSpec).Count
+	return Roller.Parse(diceSpec).Count
 }
 
 func (d scriptDice) Sides(diceSpec string) int {
-	return dice.New(diceSpec).Sides
+	return Roller.Parse(diceSpec).Sides
 }
 
 func (d scriptDice) Modifier(diceSpec string) int {
-	return dice.New(diceSpec).Modifier
+	return Roller.Parse(diceSpec).Modifier
 }
 
 func (d scriptDice) Multiplier(diceSpec string) int {
-	return dice.New(diceSpec).Multiplier
+	return Roller.Parse(diceSpec).Multiplier
 }
 
 func (d scriptDice) Roll(diceSpec string, extraDiceFromModifiers bool) int {
-	return dice.Roll(diceSpec, extraDiceFromModifiers)
+	return Roll(Roller.Parse(diceSpec), extraDiceFromModifiers)
 }

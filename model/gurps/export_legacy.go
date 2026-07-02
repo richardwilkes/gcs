@@ -260,9 +260,9 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "TOUCH":
 		ex.writeEncodedText(ex.entity.Attributes.Current("touch").String())
 	case "THRUST":
-		ex.writeEncodedText(ex.entity.Thrust().String())
+		ex.writeEncodedText(Roller.Format(ex.entity.Thrust()))
 	case "SWING":
-		ex.writeEncodedText(ex.entity.Swing().String())
+		ex.writeEncodedText(Roller.Format(ex.entity.Swing()))
 	case "GENERAL_DR":
 		dr := 0
 		if torso := ex.entity.SheetSettings.BodyType.LookupLocationByID(ex.entity, TorsoID); torso != nil {

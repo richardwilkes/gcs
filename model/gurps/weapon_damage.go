@@ -189,13 +189,13 @@ func (w *WeaponDamage) DamageTooltip() string {
 }
 
 // BaseDamageDice returns the base damage dice for this weapon (i.e. the dice before any bonuses are applied).
-func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
+func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	if w.Owner == nil {
-		return &dice.Dice{Sides: 6, Multiplier: 1}
+		return dice.Dice{Sides: 6, Multiplier: 1}
 	}
 	entity := w.Owner.Entity()
 	if entity == nil {
-		return &dice.Dice{Sides: 6, Multiplier: 1}
+		return dice.Dice{Sides: 6, Multiplier: 1}
 	}
 	maxST := w.Owner.Strength.Resolve(w.Owner, nil).Min.Mul(fxp.Three)
 	var st fxp.Int
@@ -235,7 +235,7 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	if w.StrengthMultiplier > 0 { // Just in case it somehow got set to 0
 		st = st.Mul(w.StrengthMultiplier)
 	}
-	base := &dice.Dice{
+	base := dice.Dice{
 		Sides:      6,
 		Multiplier: 1,
 	}
@@ -256,11 +256,11 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	}
 	if levels > 0 && w.BaseLeveled != "" {
 		leveled, leveledSub := w.resolveDiceSpec(w.BaseLeveled)
-		multiplyDice(levels, leveled)
+		leveled = multiplyDice(levels, leveled)
 		base, baseSub = addDice(base, leveled, baseSub, leveledSub)
 	}
 	intST := fxp.AsInteger[int](st)
-	var stDamage *dice.Dice
+	var stDamage dice.Dice
 	switch w.StrengthType {
 	case stdmg.Thrust, stdmg.LiftingThrust, stdmg.TelekineticThrust, stdmg.IQThrust:
 		stDamage = entity.ThrustFor(intST)
@@ -270,12 +270,12 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		return base
 	}
 	if w.Leveled && levels >= 0 {
-		multiplyDice(levels, stDamage)
+		stDamage = multiplyDice(levels, stDamage)
 	}
 	base, baseSub = addDice(base, stDamage, baseSub, false)
 	if baseSub {
 		// Still negative, so return 0 damage.
-		base = &dice.Dice{Sides: 6, Multiplier: 1}
+		base = dice.Dice{Sides: 6, Multiplier: 1}
 	}
 	return base
 }
@@ -335,7 +335,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	}
 	var buffer strings.Builder
 	if base.Count != 0 || base.Modifier != 0 {
-		buffer.WriteString(base.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds))
+		buffer.WriteString(FormatDice(base, entity.SheetSettings.UseModifyingDicePlusAdds))
 	}
 	if armorDivisor != fxp.One {
 		buffer.WriteByte('(')
@@ -353,9 +353,9 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		d, sub := w.resolveDiceSpec(w.Fragmentation)
 		if sub {
 			// Negative fragmentation doesn't make sense, so ignore it.
-			d = &dice.Dice{Sides: 6, Multiplier: 1}
+			d = dice.Dice{Sides: 6, Multiplier: 1}
 		}
-		if frag := d.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds); frag != "0" {
+		if frag := FormatDice(d, entity.SheetSettings.UseModifyingDicePlusAdds); frag != "0" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte(' ')
 			}
@@ -377,43 +377,36 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	return buffer.String()
 }
 
-func multiplyDice(multiplier int, d *dice.Dice) {
+func multiplyDice(multiplier int, d dice.Dice) dice.Dice {
 	d.Count *= multiplier
 	d.Modifier *= multiplier
 	if d.Multiplier != 1 {
 		d.Multiplier *= multiplier
 	}
+	return d
 }
 
-func addDice(left, right *dice.Dice, leftSub, rightSub bool) (d *dice.Dice, sub bool) {
+func addDice(left, right dice.Dice, leftSub, rightSub bool) (d dice.Dice, sub bool) {
 	if leftSub {
 		left.Count = -left.Count
 	}
 	if rightSub {
 		right.Count = -right.Count
 	}
-	defer func() {
-		if leftSub {
-			left.Count = -left.Count
-		}
-		if rightSub {
-			right.Count = -right.Count
-		}
-	}()
 	if left.Sides > 1 && right.Sides > 1 && left.Sides != right.Sides {
 		sides := min(left.Sides, right.Sides)
 		average := fxp.FromInteger(sides + 1).Div(fxp.Two)
 		averageLeft := fxp.FromInteger(left.Count * (left.Sides + 1)).Div(fxp.Two).Mul(fxp.FromInteger(left.Multiplier))
 		averageRight := fxp.FromInteger(right.Count * (right.Sides + 1)).Div(fxp.Two).Mul(fxp.FromInteger(right.Multiplier))
 		averageBoth := averageLeft + averageRight
-		d = &dice.Dice{
+		d = dice.Dice{
 			Count:      fxp.AsInteger[int](averageBoth.Div(average)),
 			Sides:      sides,
 			Modifier:   fxp.AsInteger[int](averageBoth.Mod(average).Round()) + left.Modifier + right.Modifier,
 			Multiplier: 1,
 		}
 	} else {
-		d = &dice.Dice{
+		d = dice.Dice{
 			Count:      left.Count + right.Count,
 			Sides:      max(left.Sides, right.Sides),
 			Modifier:   left.Modifier + right.Modifier,
@@ -427,7 +420,7 @@ func addDice(left, right *dice.Dice, leftSub, rightSub bool) (d *dice.Dice, sub 
 	return d, sub
 }
 
-func adjustDiceForPercentBonus(d *dice.Dice, percent fxp.Int) *dice.Dice {
+func adjustDiceForPercentBonus(d dice.Dice, percent fxp.Int) dice.Dice {
 	count := fxp.FromInteger(d.Count)
 	modifier := fxp.FromInteger(d.Modifier)
 	averagePerDie := fxp.FromInteger(d.Sides + 1).Div(fxp.Two)
@@ -440,7 +433,7 @@ func adjustDiceForPercentBonus(d *dice.Dice, percent fxp.Int) *dice.Dice {
 		count = average.Div(averagePerDie).Floor().Max(0)
 		modifier += (average - count.Mul(averagePerDie)).Round()
 	}
-	return &dice.Dice{
+	return dice.Dice{
 		Count:      fxp.AsInteger[int](count),
 		Sides:      d.Sides,
 		Modifier:   fxp.AsInteger[int](modifier),
@@ -450,7 +443,7 @@ func adjustDiceForPercentBonus(d *dice.Dice, percent fxp.Int) *dice.Dice {
 
 func (w *WeaponDamage) formatDiceWithSub(s string, convertMods, following bool) string {
 	d, sub := w.resolveDiceSpec(s)
-	if base := d.StringExtra(convertMods); base != "0" {
+	if base := FormatDice(d, convertMods); base != "0" {
 		if sub {
 			return "-" + base
 		}
@@ -462,8 +455,9 @@ func (w *WeaponDamage) formatDiceWithSub(s string, convertMods, following bool) 
 	return ""
 }
 
-func (w *WeaponDamage) resolveDiceSpec(s string) (d *dice.Dice, sub bool) {
-	if d, sub = parsePotentialDiceSpec(s); d != nil {
+func (w *WeaponDamage) resolveDiceSpec(s string) (d dice.Dice, sub bool) {
+	var ok bool
+	if d, sub, ok = parsePotentialDiceSpec(s); ok {
 		return d, sub
 	}
 	var entity *Entity
@@ -475,26 +469,25 @@ func (w *WeaponDamage) resolveDiceSpec(s string) (d *dice.Dice, sub bool) {
 	if sub = isDiceSubtraction(value); sub {
 		value = value[1:]
 	}
-	return dice.New(value), sub
+	return Roller.Parse(value), sub
 }
 
-func parsePotentialDiceSpec(s string) (d *dice.Dice, sub bool) {
+func parsePotentialDiceSpec(s string) (d dice.Dice, sub, ok bool) {
 	spec := strings.TrimLeft(strings.TrimSpace(s), "+")
 	if !strings.Contains(spec, " ") {
 		if sub = isDiceSubtraction(spec); sub {
 			spec = spec[1:]
 		}
-		d = dice.New(spec)
+		d = Roller.Parse(spec)
 		if spec == "0" || spec == "-0" {
-			return d, false
+			return d, false, true
 		}
-		empty := dice.Dice{}
-		empty.Normalize()
-		if *d != empty {
-			return d, sub
+		empty := Roller.Normalize(dice.Dice{})
+		if d != empty {
+			return d, sub, true
 		}
 	}
-	return nil, false
+	return dice.Dice{}, false, false
 }
 
 func isDiceSubtraction(s string) bool {

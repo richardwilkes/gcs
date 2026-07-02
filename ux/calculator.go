@@ -978,7 +978,7 @@ func (c *Calculator) updateThrowingResult() {
 	}
 
 	c.throwingDistanceResult.SetTitle(c.distanceToText(inches))
-	c.throwingDamageResult.SetTitle(thrust.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds))
+	c.throwingDamageResult.SetTitle(gurps.FormatDice(thrust, entity.SheetSettings.UseModifyingDicePlusAdds))
 	c.throwingDistanceResult.MarkForLayoutRecursivelyUpward()
 	c.throwingDamageResult.MarkForLayoutRecursivelyUpward()
 }

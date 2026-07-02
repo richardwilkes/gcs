@@ -15,7 +15,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/xflag"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
@@ -24,7 +23,7 @@ func main() {
 	early.Configure()
 	xos.AppName += " Prerequisite Counts"
 	xos.AppCmdName = "prereq-counts"
-	dice.GURPSFormat = true
+	xos.ExitIfErr(gurps.InitRollers())
 	xflag.SetUsage(nil, "A tool for updating the prerequisite field data in GURPS spell files.", "")
 	xflag.Parse()
 	for _, one := range flag.Args() {

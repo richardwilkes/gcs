@@ -35,7 +35,7 @@ var embeddedFS embed.FS
 // BodyData holds the Body data that gets written to disk.
 type BodyData struct {
 	Name      string         `json:"name,omitzero"`
-	Roll      *dice.Dice     `json:"roll"`
+	Roll      dice.Dice      `json:"roll"`
 	Locations []*HitLocation `json:"locations,omitzero"`
 }
 
@@ -111,19 +111,14 @@ func (b *Body) Rewrap() {
 
 // Clone a copy of this.
 func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
-	clone := &Body{
-		BodyData: BodyData{
-			Name:      b.Name,
-			Roll:      dice.New(b.Roll.String()),
-			Locations: make([]*HitLocation, len(b.Locations)),
-		},
-		owningLocation: owningLocation,
-	}
+	clone := *b
+	clone.owningLocation = owningLocation
+	clone.Locations = make([]*HitLocation, len(b.Locations))
 	for i, one := range b.Locations {
-		clone.Locations[i] = one.Clone(entity, clone)
+		clone.Locations[i] = one.Clone(entity, &clone)
 	}
 	clone.Update(entity)
-	return clone
+	return &clone
 }
 
 // Save writes the Body to the file as JSON.
@@ -158,7 +153,7 @@ func (b *Body) SetOwningLocation(loc *HitLocation) {
 }
 
 func (b *Body) updateRollRanges() {
-	start := b.Roll.Minimum(false)
+	start := Roller.Minimum(b.Roll)
 	for _, location := range b.Locations {
 		start = location.updateRollRange(start)
 	}

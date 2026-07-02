@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -96,7 +95,7 @@ func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
 func (p *hitLocationSettingsPanel) addSubTable() {
 	undo := p.dockable.prepareUndo(i18n.Text("Add Sub-Table"))
 	p.loc.SubTable = &gurps.Body{
-		BodyData:  gurps.BodyData{Roll: dice.New("1d")},
+		BodyData:  gurps.BodyData{Roll: gurps.Roller.Parse("1d")},
 		KeyPrefix: p.dockable.targetMgr.NextPrefix(),
 	}
 	p.loc.SubTable.SetOwningLocation(p.loc)
@@ -199,8 +198,8 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		text = i18n.Text("Sub-Roll")
 		content.AddChild(NewFieldLeadingLabel(text, false))
 		field = NewStringField(p.dockable.targetMgr, p.loc.SubTable.KeyPrefix+"subroll", text,
-			func() string { return p.loc.SubTable.Roll.String() },
-			func(s string) { p.loc.SubTable.Roll = dice.New(s) })
+			func() string { return gurps.Roller.Format(p.loc.SubTable.Roll) },
+			func(s string) { p.loc.SubTable.Roll = gurps.Roller.Parse(s) })
 		field.SetMinimumTextWidthUsing("100d1000")
 		field.Tooltip = newWrappedTooltip(i18n.Text("The dice to roll on the sub-table"))
 		content.AddChild(field)

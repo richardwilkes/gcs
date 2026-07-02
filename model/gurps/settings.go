@@ -26,7 +26,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -112,7 +111,7 @@ type Openable interface {
 // GlobalSettings returns the global settings.
 func GlobalSettings() *Settings {
 	globalOnce.Do(func() {
-		dice.GURPSFormat = true
+		xos.ExitIfErr(InitRollers())
 		if err := jio.Load(nil, SettingsPath, &globalSettings); err != nil {
 			globalSettings = Settings{
 				LastSeenGCSVersion: xos.AppVersion,

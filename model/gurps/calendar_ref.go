@@ -48,13 +48,17 @@ func LookupCalendarRef(name string, libraries Libraries) *CalendarRef {
 
 // NewCalendarRefFromFS creates a new CalendarRef from a file.
 func NewCalendarRefFromFS(fileSystem fs.FS, filePath string) (*CalendarRef, error) {
-	var c calendar.Calendar
-	if err := jio.Load(fileSystem, filePath, &c); err != nil {
+	var cfg calendar.Config
+	if err := jio.Load(fileSystem, filePath, &cfg); err != nil {
+		return nil, err
+	}
+	c, err := calendar.New(&cfg)
+	if err != nil {
 		return nil, err
 	}
 	return &CalendarRef{
 		Name:     xfilepath.BaseName(filePath),
-		Calendar: &c,
+		Calendar: c,
 	}, nil
 }
 
@@ -62,11 +66,13 @@ func NewCalendarRefFromFS(fileSystem fs.FS, filePath string) (*CalendarRef, erro
 func (c *CalendarRef) RandomBirthday(not string) string {
 	year := 1
 	base := 0
-	if c.Calendar.LeapYear != nil {
+	cfg := c.Calendar.Config()
+	if cfg.LeapYear != nil {
+		year = cfg.LeapYear.Every
 		for !c.Calendar.IsLeapYear(year) {
 			year++
 		}
-		base = c.Calendar.MustNewDate(1, 1, year).Days
+		base = c.Calendar.MustNewDate(1, 1, year).Days()
 	}
 	daysInYear := c.Calendar.Days(year)
 	result := ""

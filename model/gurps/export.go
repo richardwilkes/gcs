@@ -436,8 +436,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		Gender:       entity.Profile.Gender,
 		Height:       entity.SheetSettings.DefaultLengthUnits.Format(entity.Profile.Height),
 		Weight:       entity.SheetSettings.DefaultWeightUnits.Format(entity.Profile.Weight),
-		Thrust:       entity.Thrust().String(),
-		Swing:        entity.Swing().String(),
+		Thrust:       Roller.Format(entity.Thrust()),
+		Swing:        Roller.Format(entity.Swing()),
 		Lift: exportedLift{
 			Basic:         entity.SheetSettings.DefaultWeightUnits.Format(entity.BasicLift()),
 			OneHanded:     entity.SheetSettings.DefaultWeightUnits.Format(entity.OneHandedLift()),

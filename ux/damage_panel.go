@@ -58,19 +58,31 @@ func NewDamagePanel(entity *gurps.Entity, targetMgr *TargetMgr) *DamagePanel {
 
 func (p *DamagePanel) rebuild() {
 	p.RemoveAllChildren()
-	p.addDamageField(i18n.Text("Basic Thrust"), func() string { return p.entity.Thrust().String() })
-	p.addDamageField(i18n.Text("Basic Swing"), func() string { return p.entity.Swing().String() })
+	p.addDamageField(i18n.Text("Basic Thrust"), func() string { return gurps.Roller.Format(p.entity.Thrust()) })
+	p.addDamageField(i18n.Text("Basic Swing"), func() string { return gurps.Roller.Format(p.entity.Swing()) })
 	if p.showLiftingSTDamage = p.entity.SheetSettings.ShowLiftingSTDamage; p.showLiftingSTDamage {
-		p.addDamageField(i18n.Text("Lifting Thrust"), func() string { return p.entity.LiftingThrust().String() })
-		p.addDamageField(i18n.Text("Lifting Swing"), func() string { return p.entity.LiftingSwing().String() })
+		p.addDamageField(i18n.Text("Lifting Thrust"), func() string {
+			return gurps.Roller.Format(p.entity.LiftingThrust())
+		})
+		p.addDamageField(i18n.Text("Lifting Swing"), func() string {
+			return gurps.Roller.Format(p.entity.LiftingSwing())
+		})
 	}
 	if p.showEffectDamage = p.entity.SheetSettings.ShowIQBasedDamage; p.showEffectDamage {
-		p.addDamageField(i18n.Text("IQ-based Thrust"), func() string { return p.entity.IQThrust().String() })
-		p.addDamageField(i18n.Text("IQ-based Swing"), func() string { return p.entity.IQSwing().String() })
+		p.addDamageField(i18n.Text("IQ-based Thrust"), func() string {
+			return gurps.Roller.Format(p.entity.IQThrust())
+		})
+		p.addDamageField(i18n.Text("IQ-based Swing"), func() string {
+			return gurps.Roller.Format(p.entity.IQSwing())
+		})
 	}
 	if p.showTKDamage = p.entity.TelekineticStrength() > 0; p.showTKDamage {
-		p.addDamageField(i18n.Text("Telekinetic Thrust"), func() string { return p.entity.TelekineticThrust().String() })
-		p.addDamageField(i18n.Text("Telekinetic Swing"), func() string { return p.entity.TelekineticSwing().String() })
+		p.addDamageField(i18n.Text("Telekinetic Thrust"), func() string {
+			return gurps.Roller.Format(p.entity.TelekineticThrust())
+		})
+		p.addDamageField(i18n.Text("Telekinetic Swing"), func() string {
+			return gurps.Roller.Format(p.entity.TelekineticSwing())
+		})
 	}
 }
 
