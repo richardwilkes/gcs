@@ -10,11 +10,15 @@
 package ux
 
 import (
+	"maps"
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -39,7 +43,14 @@ func (p *notesProvider) RefKey() string {
 }
 
 func (p *notesProvider) AllTags() []string {
-	return nil
+	set := make(map[string]struct{})
+	gurps.Traverse(func(note *gurps.Note) bool {
+		for _, tag := range note.Tags {
+			set[tag] = struct{}{}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
 }
 
 func (p *notesProvider) SetTable(table *unison.Table[*Node[*gurps.Note]]) {
@@ -126,7 +137,7 @@ func (p *notesProvider) ColumnIDs() []int {
 			columnIDs = append(columnIDs, gurps.NoteLibSrcColumn)
 		}
 	} else {
-		columnIDs = append(columnIDs, gurps.NoteReferenceColumn)
+		columnIDs = append(columnIDs, gurps.NoteTagsColumn, gurps.NoteReferenceColumn)
 	}
 	return columnIDs
 }

@@ -15,6 +15,7 @@ import (
 	"hash"
 	"io/fs"
 	"maps"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
@@ -38,6 +39,7 @@ var (
 // Columns that can be used with the note method .CellData()
 const (
 	NoteTextColumn = iota
+	NoteTagsColumn
 	NoteReferenceColumn
 	NoteLibSrcColumn
 )
@@ -65,9 +67,10 @@ type NoteEditData struct {
 
 // NoteSyncData holds the note sync data that is common to both containers and non-containers.
 type NoteSyncData struct {
-	MarkDown         string `json:"markdown,omitzero"`
-	PageRef          string `json:"reference,omitzero"`
-	PageRefHighlight string `json:"reference_highlight,omitzero"`
+	MarkDown         string   `json:"markdown,omitzero"`
+	PageRef          string   `json:"reference,omitzero"`
+	PageRefHighlight string   `json:"reference_highlight,omitzero"`
+	Tags             []string `json:"tags,omitzero"`
 }
 
 type noteListData struct {
@@ -220,6 +223,7 @@ func (n *Note) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		n.MarkDown = EmbeddedExprToScript(localData.ExprText)
 	}
 	n.ClearUnusedFieldsForType()
+	slices.Sort(n.Tags)
 	if n.Container() {
 		for _, one := range n.Children {
 			one.parent = n
@@ -241,7 +245,7 @@ func (n *Note) String() string {
 }
 
 func (n *Note) resolveText() string {
-	return ResolveText(EntityFromNode(n), ScriptSelfProvider{}, n.TextWithReplacements())
+	return ResolveText(EntityFromNode(n), deferredNewScriptNote(n), n.TextWithReplacements())
 }
 
 // NotesHeaderData returns the header data information for the given note column.
@@ -251,6 +255,8 @@ func NotesHeaderData(columnID int) HeaderData {
 	case NoteTextColumn:
 		data.Title = i18n.Text("Note")
 		data.Primary = true
+	case NoteTagsColumn:
+		data.Title = i18n.Text("Tags")
 	case NoteReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
@@ -270,6 +276,9 @@ func (n *Note) CellData(columnID int, data *CellData) {
 	case NoteTextColumn:
 		data.Type = cell.Markdown
 		data.Primary = n.resolveText()
+	case NoteTagsColumn:
+		data.Type = cell.Tags
+		data.Primary = CombineTags(n.Tags)
 	case NoteReferenceColumn, PageRefCellAlias:
 		data.Type = cell.PageRef
 		data.Primary = n.PageRef
@@ -321,6 +330,11 @@ func (n *Note) SetDataOwner(owner DataOwner) {
 // Enabled returns true if this node is enabled.
 func (n *Note) Enabled() bool {
 	return true
+}
+
+// TagList returns the list of tags.
+func (n *Note) TagList() []string {
+	return n.Tags
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.
@@ -392,6 +406,7 @@ func (n *Note) SyncWithSource() {
 		if state, data := n.owner.SourceMatcher().Match(n); state == srcstate.Mismatched {
 			if other, ok := data.(*Note); ok {
 				n.NoteSyncData = other.NoteSyncData
+				n.Tags = slices.Clone(other.Tags)
 			}
 		}
 	}
@@ -407,6 +422,10 @@ func (n *NoteSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, n.MarkDown)
 	xhash.StringWithLen(h, n.PageRef)
 	xhash.StringWithLen(h, n.PageRefHighlight)
+	xhash.Num64(h, len(n.Tags))
+	for _, tag := range n.Tags {
+		xhash.StringWithLen(h, tag)
+	}
 }
 
 // CopyFrom implements node.EditorData.
@@ -426,5 +445,6 @@ func (n *NoteEditData) ApplyTo(other *Note) {
 
 func (n *NoteEditData) copyFrom(other *NoteEditData) {
 	*n = *other
+	n.Tags = slices.Clone(other.Tags)
 	n.Replacements = maps.Clone(other.Replacements)
 }

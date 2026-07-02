@@ -67,6 +67,13 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			}
 			return r.ToValue(items)
 		}
+		m["notes"] = func() goja.Value {
+			notes := make([]*goja.Object, 0, len(entity.Notes))
+			for _, note := range entity.Notes {
+				notes = append(notes, newScriptNote(r, note))
+			}
+			return r.ToValue(notes)
+		}
 		m["skills"] = func() goja.Value {
 			skills := make([]*goja.Object, 0, len(entity.Skills))
 			for _, skill := range entity.Skills {
@@ -143,6 +150,13 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 				name := callArgAsString(call, 0)
 				tag := callArgAsString(call, 1)
 				return findScriptEquipment(r, name, tag, entity.CarriedEquipment...)
+			})
+		}
+		m["findNotes"] = func() goja.Value {
+			return r.ToValue(func(call goja.FunctionCall) goja.Value {
+				name := callArgAsString(call, 0)
+				tag := callArgAsString(call, 1)
+				return findScriptNotes(r, name, tag, entity.Notes...)
 			})
 		}
 		m["findSkills"] = func() goja.Value {

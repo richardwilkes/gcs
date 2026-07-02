@@ -89,6 +89,7 @@ type exportedNote struct {
 	ParentID    tid.TID
 	Type        string
 	Description string
+	Tags        []string
 	PageRef     string
 	Depth       int
 }
@@ -617,6 +618,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			ID:          n.TID,
 			Type:        groupOrItem(n.Container()),
 			Description: n.String(),
+			Tags:        slices.Clone(n.Tags),
 			PageRef:     n.PageRef,
 			Depth:       n.Depth(),
 		}
