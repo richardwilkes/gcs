@@ -54,6 +54,7 @@ const (
 	UndoItemID
 	RedoItemID
 	DuplicateItemID
+	DownloadRulesFileItemID
 	ExportPortraitItemID
 	ClearPortraitItemID
 	ClearSourceItemID
@@ -213,6 +214,9 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	i = m.Item(unison.CloseItemID).Index()
 	m.RemoveItem(i)
 	i = s.insertMenuItem(m, i, closeTabAction.NewMenuItem(f))
+
+	i = s.insertMenuSeparator(m, i)
+	i = s.insertMenuItem(m, i, downloadRulesFileAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, saveAction.NewMenuItem(f))

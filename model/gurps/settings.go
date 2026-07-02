@@ -40,9 +40,10 @@ const DefaultNavigatorDividerPosition = 330
 
 // Last directory keys
 const (
-	DefaultLastDirKey  = "default"
-	ImagesLastDirKey   = "images"
-	SettingsLastDirKey = "settings"
+	DefaultLastDirKey     = "default"
+	ImagesLastDirKey      = "images"
+	RulesLookupLastDirKey = "rules_lookup"
+	SettingsLastDirKey    = "settings"
 )
 
 var (
@@ -224,6 +225,9 @@ func SanitizeDockableGroups(groups []dgroup.Group) []dgroup.Group {
 func (s *Settings) LastDir(key string) string {
 	if last, ok := s.LastDirs[key]; ok {
 		return last
+	}
+	if key == RulesLookupLastDirKey {
+		return DefaultUserLibraryPath()
 	}
 	var home string
 	if u, err := user.Current(); err != nil {

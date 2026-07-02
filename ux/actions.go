@@ -49,6 +49,7 @@ var (
 	defaultBodyTypeSettingsAction  *unison.Action
 	defaultSheetSettingsAction     *unison.Action
 	dockUnDockAction               *unison.Action
+	downloadRulesFileAction        *unison.Action
 	duplicateAction                *unison.Action
 	exportAsJPEGAction             *unison.Action
 	exportAsPDFAction              *unison.Action
@@ -177,6 +178,11 @@ func registerActions() {
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	downloadRulesFileAction = registerKeyBindableAction("download.rules.file", &unison.Action{
+		ID:              DownloadRulesFileItemID,
+		Title:           i18n.Text("Download GURPS Rules Lookup File"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { downloadRulesLookupFile() },
 	})
 	exportPortraitAction = registerKeyBindableAction("export.portrait", &unison.Action{
 		ID:              ExportPortraitItemID,
