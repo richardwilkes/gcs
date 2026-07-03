@@ -1071,18 +1071,31 @@ func (c *Calculator) updateHikingResult() {
 			units = i18n.Text("miles")
 		}
 	}
-	timeInDays := c.hikingDistance.Mul(fxp.Ten).Div(distance).Round().Div(fxp.Ten)
-
 	c.hikingResult.SetTitle(fmt.Sprintf("%s %s", distance.Round().Comma(), units))
 	c.hikingDistanceLabel.SetTitle(fmt.Sprintf(i18n.Text("%s to travel"), units))
 
-	if timeInDays == 1 {
+	if timeInDays, ok := hikingTimeInDays(c.hikingDistance, distance); !ok {
+		// Ground can't be covered at 0 Move (very low DX/HT, heavy encumbrance, or a Move-reducing effect), so the
+		// travel time is undefined.
+		c.hikingTimeLabel.SetTitle("—")
+	} else if timeInDays == fxp.One {
 		c.hikingTimeLabel.SetTitle(i18n.Text("1 day"))
 	} else {
 		c.hikingTimeLabel.SetTitle(fmt.Sprintf(i18n.Text("%s days"), timeInDays))
 	}
 
 	c.hikingTimeLabel.MarkForLayoutRecursivelyUpward()
+}
+
+// hikingTimeInDays returns the number of days needed to cover distanceToCover while traveling distancePerDay each day,
+// rounded to a tenth of a day. It returns ok == false when distancePerDay is 0, since no ground can be covered at 0 Move
+// and the travel time is therefore undefined; guarding here also avoids a division by zero (fxp.Int.Div panics on a zero
+// divisor with a non-zero numerator).
+func hikingTimeInDays(distanceToCover, distancePerDay fxp.Int) (days fxp.Int, ok bool) {
+	if distancePerDay == 0 {
+		return 0, false
+	}
+	return distanceToCover.Mul(fxp.Ten).Div(distancePerDay).Round().Div(fxp.Ten), true
 }
 
 func (c *Calculator) useMeters() bool {
