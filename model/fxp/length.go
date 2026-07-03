@@ -68,6 +68,10 @@ func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 		}
 		return Length(defaultUnits.ToInches(value)), nil
 	}
+	// The formatter (see LengthUnit.Format) carries the sign only on a leading '-' and always emits the feet and inches
+	// magnitudes unsigned (e.g. -30 inches -> `-2'6"`). Derive the sign here and apply it to the combined magnitude;
+	// applying it to the feet contribution alone would corrupt any value <= -12 inches on round-trip.
+	negative := strings.HasPrefix(text, "-")
 	var feet, inches Int
 	var err error
 	if feetIndex != -1 {
@@ -87,7 +91,11 @@ func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 			return 0, err
 		}
 	}
-	return Length(feet.Mul(Twelve) + inches), nil
+	length := feet.Abs().Mul(Twelve) + inches.Abs()
+	if negative {
+		length = -length
+	}
+	return Length(length), nil
 }
 
 func (l Length) String() string {

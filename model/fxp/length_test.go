@@ -66,6 +66,41 @@ func TestFeetAndInchesFormat(t *testing.T) {
 	}
 }
 
+// TestLengthFeetAndInchesRoundTrip verifies that formatting a length and parsing the result back yields the original
+// value. It guards against the regression where the parser applied the sign to the feet contribution alone while the
+// formatter emitted both magnitudes unsigned, corrupting any value <= -12 inches (e.g. -30 inches -> `-2'6"` ->
+// -2*12+6 = -18 inches).
+func TestLengthFeetAndInchesRoundTrip(t *testing.T) {
+	c := check.New(t)
+	for _, inches := range []int{0, 1, 6, 12, 15, 24, 30, -1, -6, -12, -15, -24, -30, -144} {
+		original := fxp.LengthFromInteger(inches, fxp.Inch)
+		text := original.String()
+		parsed, err := fxp.LengthFromString(text, fxp.Inch)
+		c.NoError(err, "parsing %q", text)
+		c.Equal(original, parsed, "round-trip of %d inches (formatted as %q)", inches, text)
+	}
+}
+
+// TestLengthFromStringNegativeFeetAndInches verifies the exact feet-and-inches strings the formatter produces for
+// negative lengths parse back to the correct negative inch counts.
+func TestLengthFromStringNegativeFeetAndInches(t *testing.T) {
+	c := check.New(t)
+	for _, d := range []struct {
+		text     string
+		expected int
+	}{
+		{text: `-6"`, expected: -6},
+		{text: `-1'`, expected: -12},
+		{text: `-1'3"`, expected: -15},
+		{text: `-2'`, expected: -24},
+		{text: `-2'6"`, expected: -30},
+	} {
+		w, err := fxp.LengthFromString(d.text, fxp.Inch)
+		c.NoError(err, "parsing %q", d.text)
+		c.Equal(fxp.LengthFromInteger(d.expected, fxp.Inch), w, "parsing %q", d.text)
+	}
+}
+
 // TestLengthFromStringUnitSuffixes verifies that every unit's key (other than FeetAndInches, which is parsed via the
 // '/" notation), when appended to a number, parses back to that same unit. This guards against the suffix-matching
 // being sensitive to the order in which the enum is declared (e.g. "m" must not greedily match the "cm" / "km" / "m"
