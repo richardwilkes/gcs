@@ -14,3 +14,5 @@
 - Fixed library "update to latest" option failing on reserved device names. (#1057)
 - Fixed substitutions in a skill's optional specialty not being detected. (#1054)
 - Fixed crashes on some configurations (primarily Linux) when the primary display cannot be determined.
+- Fixed newly opened character sheets, lists, PDFs and other views sometimes not receiving the keyboard focus, or
+  losing it immediately, so you can now interact with them via the keyboard right after opening.
