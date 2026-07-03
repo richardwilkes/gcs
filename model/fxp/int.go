@@ -152,7 +152,7 @@ func ResetIfOutOfRange[T xmath.Integer | xmath.Float | Int](value, minValue, max
 func Extract(in string) (value Int, remainder string) {
 	last := 0
 	maximum := len(in)
-	if last < maximum && in[last] == ' ' {
+	for last < maximum && in[last] == ' ' {
 		last++
 	}
 	if last >= maximum {

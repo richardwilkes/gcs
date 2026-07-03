@@ -49,6 +49,9 @@ func TestExtract(t *testing.T) {
 		expectedRemainder string
 	}{
 		{" 24abc", fxp.TwentyFour, "abc"},
+		{"   24abc", fxp.TwentyFour, "abc"},
+		{"  -0.125abc", -fxp.Eighth, "abc"},
+		{"   ", fxp.Int(0), "   "},
 		{"24abc", fxp.TwentyFour, "abc"},
 		{"24 abc", fxp.TwentyFour, " abc"},
 		{"0.125abc", fxp.Eighth, "abc"},
