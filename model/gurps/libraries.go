@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -51,7 +52,10 @@ func (l *Libraries) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			if strings.HasPrefix(k, "*/") { // GCS v5.4 and earlier use * for local dirs that weren't on github
 				k = k[1:]
 			}
-			lib.ConfigureForKey(k)
+			if err := lib.ConfigureForKey(k); err != nil {
+				errs.Log(err, "key", k)
+				continue
+			}
 			lib.monitor = newMonitor(lib)
 			libs[lib.Key()] = lib
 		}

@@ -78,10 +78,16 @@ func (l *Library) Valid() bool {
 }
 
 // ConfigureForKey configures the GitHubAccountName and RepoName from the given key.
-func (l *Library) ConfigureForKey(key string) {
+func (l *Library) ConfigureForKey(key string) error {
 	parts := strings.SplitN(key, "/", 2)
+	if len(parts) != 2 {
+		return errs.Newf("invalid library key: %s", key)
+	}
 	l.GitHubAccountName = strings.TrimSpace(parts[0])
-	l.RepoName = strings.TrimSpace(parts[1])
+	if l.RepoName = strings.TrimSpace(parts[1]); l.RepoName == "" {
+		return errs.Newf("invalid library key: %s", key)
+	}
+	return nil
 }
 
 // Key returns a key representing this Library.
@@ -170,7 +176,8 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 				xstrings.NaturalLess(incompatibleFutureLibraryVersion, version, true)
 		}, l.UseLatest)
 	if err != nil {
-		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", l.Title, "repo", l.RepoName, "account", l.GitHubAccountName)
+		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", l.Title, "repo",
+			l.RepoName, "account", l.GitHubAccountName)
 		return
 	}
 	current := l.VersionOnDisk()
