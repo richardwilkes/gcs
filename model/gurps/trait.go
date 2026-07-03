@@ -295,8 +295,13 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}
 	// Force the CanLevel flag, if needed
-	if !t.Container() && (t.Levels != 0 || t.PointsPerLevel != 0) {
-		t.CanLevel = true
+	if !t.Container() {
+		if t.Levels < 0 {
+			t.Levels = 0
+		}
+		if t.Levels != 0 || t.PointsPerLevel != 0 {
+			t.CanLevel = true
+		}
 	}
 	t.ClearUnusedFieldsForType()
 	t.transferOldTypeFlagToTags(i18n.Text("Mental"), localData.Mental)
