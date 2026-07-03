@@ -17,6 +17,7 @@ import (
 	"image"
 	"image/png"
 	"log/slog"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -53,6 +54,37 @@ func performPlatformLateStartup() {
 	if err = installMimeInfo(); err != nil {
 		errs.Log(err)
 	}
+	if err = installExecutableIcon(exePath); err != nil {
+		errs.Log(err)
+	}
+}
+
+// installExecutableIcon attaches the application icon to the executable file itself so that file managers display it
+// with our icon rather than the generic "executable" icon. Unlike Windows (PE resource) and macOS (bundle), a Linux ELF
+// binary can't embed an icon a file manager will read; instead, GVfs-based file managers (e.g. GNOME Files) honor a
+// per-file "custom-icon" metadata attribute, which is what we set here. This is re-applied on every launch, so it also
+// fixes itself up if the binary is moved to a new location.
+//
+// This is GNOME/GVfs-specific. KDE's Dolphin has no equivalent: KIO's KFileItem resolves a custom icon only for
+// .desktop files (via their Icon= entry) and directories (via a .directory file), otherwise falling back to the
+// MIME-type icon, so the bare executable stays generic there. KDE still picks up the app-menu launcher icon from the
+// .desktop file installed by installDesktopFiles.
+func installExecutableIcon(exePath string) error {
+	cmdPath, err := exec.LookPath("gio")
+	if err != nil {
+		if errors.Is(err, exec.ErrNotFound) {
+			slog.Warn("gio not found: skipping executable icon assignment")
+			return nil
+		}
+		return errs.Wrap(err)
+	}
+	iconPath := filepath.Join(xos.HomeDir(), ".local", "share", "icons", "hicolor", "256x256", "apps",
+		xos.AppIdentifier+".png")
+	iconURI := (&url.URL{Scheme: "file", Path: iconPath}).String()
+	if out, err := exec.Command(cmdPath, "set", exePath, "metadata::custom-icon", iconURI).CombinedOutput(); err != nil {
+		return errs.NewWithCause(string(out), err)
+	}
+	return nil
 }
 
 func installDesktopFiles(exePath string) error {
