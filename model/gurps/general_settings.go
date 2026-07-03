@@ -169,9 +169,17 @@ func (s *GeneralSettings) MonitorPPI() int {
 	if s.MonitorResolution != 0 {
 		return s.MonitorResolution
 	}
-	d := unison.PrimaryDisplay()
-	if ppi := int(float32(d.PPI) / d.Scale.X); ppi != 0 {
-		return ppi
+	return monitorPPIForDisplay(unison.PrimaryDisplay())
+}
+
+// monitorPPIForDisplay derives the monitor PPI from a display, defaulting to 108 when the display is unavailable (e.g.
+// on some Linux configurations PrimaryDisplay() can return nil when no monitor is enumerated) or reports values that
+// would yield a non-positive result.
+func monitorPPIForDisplay(d *unison.Display) int {
+	if d != nil && d.Scale.X != 0 {
+		if ppi := int(float32(d.PPI) / d.Scale.X); ppi > 0 {
+			return ppi
+		}
 	}
 	return 108 // Default to 108 PPI if not set
 }

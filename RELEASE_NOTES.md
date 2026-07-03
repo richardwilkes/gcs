@@ -13,3 +13,4 @@
   cut/copy/paste/select-all handling in text fields, and Return/Enter in the file dialog's file name field.
 - Fixed library "update to latest" option failing on reserved device names. (#1057)
 - Fixed substitutions in a skill's optional specialty not being detected. (#1054)
+- Fixed crashes on some configurations (primarily Linux) when the primary display cannot be determined.

@@ -81,7 +81,7 @@ func NewPDFRenderer(filePath string, pageLoadedCallback func()) (*PDFRenderer, e
 	}
 	return &PDFRenderer{
 		ppi:                float32(gurps.GlobalSettings().General.MonitorPPI()),
-		scaleAdjust:        geom.NewPoint(1, 1).DivPt(unison.PrimaryDisplay().Scale),
+		scaleAdjust:        geom.NewPoint(1, 1).DivPt(primaryDisplayScale()),
 		doc:                doc,
 		pageCount:          doc.PageCount(),
 		pageLoadedCallback: pageLoadedCallback,

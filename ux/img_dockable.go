@@ -74,7 +74,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		kind = "SVG"
 	} else {
 		img, err := unison.NewImageFromFilePathOrURL(context.Background(), nil, filePath,
-			geom.NewPoint(1, 1).DivPt(unison.PrimaryDisplay().Scale), 0)
+			geom.NewPoint(1, 1).DivPt(primaryDisplayScale()), 0)
 		if err != nil {
 			return nil, err
 		}

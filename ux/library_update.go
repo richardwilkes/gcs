@@ -50,12 +50,7 @@ documents from the library are open.`))
 		}
 	}
 
-	var frame geom.Rect
-	if focused := unison.ActiveWindow(); focused != nil {
-		frame = focused.FrameRect()
-	} else {
-		frame = unison.PrimaryDisplay().Usable
-	}
+	frame := windowPlacementFrame()
 	wnd, err := unison.NewWindow(i18n.Text("Updating…"), unison.FloatingWindowOption(),
 		unison.NotResizableWindowOption(), unison.UndecoratedWindowOption(), unison.TransientWindowOption())
 	if err != nil {

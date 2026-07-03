@@ -41,12 +41,7 @@ type rule struct {
 
 func downloadRulesLookupFile() {
 	unableMsg := i18n.Text("Unable to download the GURPS Rules Lookup data.")
-	var frame geom.Rect
-	if focused := unison.ActiveWindow(); focused != nil {
-		frame = focused.FrameRect()
-	} else {
-		frame = unison.PrimaryDisplay().Usable
-	}
+	frame := windowPlacementFrame()
 	wnd, err := unison.NewWindow(i18n.Text("Downloading…"), unison.FloatingWindowOption(),
 		unison.NotResizableWindowOption(), unison.UndecoratedWindowOption(), unison.TransientWindowOption())
 	if err != nil {

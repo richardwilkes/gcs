@@ -84,11 +84,13 @@ func InitWorkspace(wnd *unison.Window) {
 		if r.Height < 100 {
 			r.Height = 100
 		}
-		r = unison.BestDisplayForRect(r).FitRectOnto(r)
+		if d := unison.BestDisplayForRect(r); d != nil {
+			r = d.FitRectOnto(r)
+		}
 		*global.WorkspaceFrame = r
 		wnd.SetFrameRect(r)
 	} else {
-		wnd.SetFrameRect(unison.PrimaryDisplay().Usable)
+		wnd.SetFrameRect(primaryDisplayUsableRect())
 	}
 	wnd.ToFront()
 }
@@ -462,12 +464,7 @@ func InstallDockUndockCmd(dockable unison.Dockable) {
 
 // NewWindowForDockable creates a new window and places a Dockable inside it.
 func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison.Window, error) {
-	var frame geom.Rect
-	if focused := unison.ActiveWindow(); focused != nil {
-		frame = focused.FrameRect()
-	} else {
-		frame = unison.PrimaryDisplay().Usable
-	}
+	frame := windowPlacementFrame()
 	wnd, err := unison.NewWindow(dockable.Title())
 	if err != nil {
 		return nil, err
