@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-git/go-billy/v6"
 	"github.com/go-git/go-git/v6"
+	"github.com/go-git/go-git/v6/config"
 	"github.com/go-git/go-git/v6/plumbing"
 	"github.com/go-git/go-git/v6/plumbing/client"
 	"github.com/go-git/go-git/v6/plumbing/protocol/packp"
@@ -37,8 +38,19 @@ func discoverLatestCommit(ctx context.Context, repoURL, accessToken string) (str
 }
 
 func downloadLatestCommit(ctx context.Context, repoURL, accessToken string, fs billy.Filesystem) (hash string, err error) {
+	// Disable go-git's NTFS/HFS+ path protections for the checkout. They default to on for all platforms and reject
+	// path components whose base name collides with a Windows reserved device name (e.g. "Con Man.gct", where "Con"
+	// matches "CON"). Our libraries legitimately contain such names, GCS copies the files to disk itself afterward, and
+	// this mirrors cloning with `git -c core.protectNTFS=false -c core.protectHFS=false`.
+	storage := memory.NewStorage()
+	cfg := config.NewConfig()
+	cfg.Core.ProtectNTFS = config.NewOptBool(false)
+	cfg.Core.ProtectHFS = config.NewOptBool(false)
+	if err = storage.SetConfig(cfg); err != nil {
+		return "", errs.NewWithCause("unable to configure clone of "+repoURL, err)
+	}
 	var repo *git.Repository
-	repo, err = git.CloneContext(ctx, memory.NewStorage(), fs, &git.CloneOptions{
+	repo, err = git.CloneContext(ctx, storage, fs, &git.CloneOptions{
 		URL:           repoURL,
 		ClientOptions: clientOptions(accessToken),
 		SingleBranch:  true,
