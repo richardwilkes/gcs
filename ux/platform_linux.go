@@ -81,7 +81,8 @@ func installExecutableIcon(exePath string) error {
 	iconPath := filepath.Join(xos.HomeDir(), ".local", "share", "icons", "hicolor", "256x256", "apps",
 		xos.AppIdentifier+".png")
 	iconURI := (&url.URL{Scheme: "file", Path: iconPath}).String()
-	if out, err := exec.Command(cmdPath, "set", exePath, "metadata::custom-icon", iconURI).CombinedOutput(); err != nil {
+	var out []byte
+	if out, err = exec.Command(cmdPath, "set", exePath, "metadata::custom-icon", iconURI).CombinedOutput(); err != nil {
 		return errs.NewWithCause(string(out), err)
 	}
 	return nil
