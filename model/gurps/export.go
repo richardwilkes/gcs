@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
@@ -311,6 +312,7 @@ type exportedEntity struct {
 
 // ExportSheets exports the files to a text representation.
 func ExportSheets(templatePath string, fileList []string) error {
+	var exported int
 	for _, one := range fileList {
 		if FileInfoFor(one).IsExportable {
 			// Currently, only one file type supports exporting. Should this change, this will need to be adjusted to
@@ -322,9 +324,13 @@ func ExportSheets(templatePath string, fileList []string) error {
 			if err = Export(entity, templatePath, xfilepath.TrimExtension(one)+filepath.Ext(templatePath)); err != nil {
 				return err
 			}
+			exported++
 		} else {
 			errs.Log(errs.New("not exportable, skipping"), "file", one)
 		}
+	}
+	if exported == 0 {
+		return errs.New(i18n.Text("No exportable files were provided"))
 	}
 	return nil
 }

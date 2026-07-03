@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/uti"
 )
 
 func TestTemplateFuncs(t *testing.T) {
@@ -91,4 +92,28 @@ func TestExportTraitSelfControlAndFrequency(t *testing.T) {
 	fr := "Frequency Roll (FR): 9 or less (Fairly often)"
 	c.Contains(out, "<<Rolls|12|12 or less (Resist quite often)|9|9 or less (Fairly often)|"+
 		cr+"<br>"+fr+"|"+fr+"|"+cr+"|>>")
+}
+
+func TestExportSheetsNoExportableFiles(t *testing.T) {
+	c := check.New(t)
+
+	// The model tests don't run the ux-layer file-type registration, so register a non-exportable type for the
+	// extension used below.
+	(&FileInfo{
+		Name:         "Test Non-Exportable",
+		UTI:          &uti.DataType{Extensions: []string{".unsupported"}},
+		IsExportable: false,
+	}).Register()
+
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.txt")
+	c.NoError(os.WriteFile(tmplPath, []byte("GCS Text Template v1\n"), 0o600))
+
+	// A non-exportable file must not be reported as a successful export.
+	notExportable := filepath.Join(dir, "data.unsupported")
+	c.NoError(os.WriteFile(notExportable, []byte("nope"), 0o600))
+	c.HasError(ExportSheets(tmplPath, []string{notExportable}))
+
+	// An empty file list also exports nothing and must surface an error rather than a silent success.
+	c.HasError(ExportSheets(tmplPath, nil))
 }
