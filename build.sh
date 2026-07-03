@@ -93,6 +93,7 @@ Darwin*)
 	export MACOSX_DEPLOYMENT_TARGET=11
 	;;
 MINGW*|MSYS*)
+	WINDOWS=1
 	EXTRA_LD_FLAGS="$EXTRA_LD_FLAGS -H windowsgui"
 	;;
 esac
@@ -120,6 +121,15 @@ fi
 
 # Build our Go code
 if [ "$BUILD_GO"x == "1x" ]; then
+	# On Windows the app icon and the version info shown in Explorer's Properties dialog are embedded via a .syso
+	# resource object that the Go linker only links in if it is already present when `go build` runs. That object is
+	# produced by the packager, so on Windows it must be generated *before* the build; the packaging step below re-emits
+	# the same file, but by then the build has already consumed it. Without this, packaged Windows binaries end up as
+	# generic, info-less executables.
+	if [ "$PACKAGER"x == "1x" ] && [ "$WINDOWS"x == "1x" ]; then
+		echo -e "\033[33mGenerating Windows resources...\033[0m"
+		go run ./cmd/pack/main.go --release "$RELEASE"
+	fi
 	echo -e "\033[33mBuilding the Go code...\033[0m"
 	go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
 fi

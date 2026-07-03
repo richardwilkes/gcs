@@ -16,3 +16,5 @@
 - Fixed crashes on some configurations (primarily Linux) when the primary display cannot be determined.
 - Fixed newly opened character sheets, lists, PDFs and other views sometimes not receiving the keyboard focus, or
   losing it immediately, so you can now interact with them via the keyboard right after opening.
+- Windows only: Fixed the packaged executable showing a generic icon and missing its version details in the Properties
+  dialog, caused by the icon and version resources not being embedded during the release build.
