@@ -14,6 +14,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/dop251/goja"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -34,6 +35,19 @@ func TestScriptMathExp2(t *testing.T) {
 		v, err := runScript(0, tc.script)
 		c.NoError(err, "script %q", tc.script)
 		c.Equal(tc.want, v.String(), "script %q", tc.script)
+	}
+}
+
+// TestScriptRandomWeightInPounds verifies that entity.randomWeightInPounds returns a numeric result without panicking
+// for very low (even negative) strength values. At such ST the internal deviation used as the bound for rnd.Intn would
+// otherwise go non-positive; the clamp keeps the call safe regardless of how rnd.Intn treats a non-positive bound.
+func TestScriptRandomWeightInPounds(t *testing.T) {
+	c := check.New(t)
+	entityArg := ScriptArg{Name: "entity", Value: func(r *goja.Runtime) any { return newScriptEntity(r, nil) }}
+	for _, st := range []int{-100, -20, -1, 0, 1, 10, 20} {
+		v, err := runScript(0, fmt.Sprintf("entity.randomWeightInPounds(%d, 0)", st), entityArg)
+		c.NoError(err, "st %d", st)
+		c.NotNil(v, "st %d", st)
 	}
 }
 

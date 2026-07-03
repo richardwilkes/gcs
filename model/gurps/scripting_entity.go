@@ -343,7 +343,10 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			}
 			rnd := xrand.New()
 			mid := 145 + (st-10)*15
-			deviation := mid/5 + 2
+			// Clamp the deviation to at least 1 so a very low (or negative) ST can't feed a non-positive bound to
+			// rnd.Intn. The current xrand.Intn returns 0 for a non-positive bound, but this keeps correctness from
+			// depending on that internal behavior.
+			deviation := max(mid/5+2, 1)
 			return r.ToValue(((mid + rnd.Intn(deviation) - rnd.Intn(deviation)) * shift) / 3)
 		})
 	}
