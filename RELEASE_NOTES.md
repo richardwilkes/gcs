@@ -1,106 +1,13 @@
-# Changes since v5.42.0
-
-## ⚠️ Minimum System Requirements Have Changed
-
-This release raises the minimum operating system requirements. Please check that your system meets these before
-updating:
-
-- **macOS:** macOS 11 (Big Sur) or newer. On Intel Macs this was previously macOS 10.15 (Catalina); Apple Silicon was
-  already macOS 11.
-- **Windows:** Windows 10 or newer (unchanged).
-- **Linux:** glibc 2.35 or newer — this corresponds to Ubuntu 22.04, Debian 12, Fedora 36, or equivalent, and newer
-  (previously glibc 2.29: Ubuntu 19.04, Debian 11, Fedora 30, or equivalent). The Linux kernel must also be 3.2 or newer
-  on x86-64 and 3.7 or newer on ARM64, but glibc is the binding requirement in practice.
+# Changes since v5.43.0
 
 ## New & Improved
 
-- **Drag & drop now works between windows and other applications.** You can drag items (equipment, traits, skills,
-  spells, notes, and more) from one open sheet, template, or loot window and drop them into another. Previously, drag &
-  drop was limited to within a single window. You can also keep scrolling with the mouse wheel while a drag is in
-  progress.
-- **More ways to set a character portrait.** You can now drop an image directly onto the portrait — including image data
-  dragged from another application or a web link — instead of only dropping an image file.
-- **Easier reordering in the body (hit location) settings.** Dragging an item near the top or bottom edge of the body
-  settings now scrolls the list automatically, so you can move things past the visible area without letting go.
-- **Improved PDF viewing.** PDFs render more accurately (cleaner anti-aliased edges and colors), and the viewer is more
-  stable when opening unusual or damaged PDFs. Internal links within a PDF now navigate to the correct named
-  destination.
-- **Dark mode on Linux.** GCS now follows the system light/dark appearance preference on Linux, as it already did on
-  macOS and Windows.
-- **New platform builds: Windows and Linux on ARM64.** GCS is now built for ARM64 (aarch64) on both Windows and Linux,
-  in addition to the existing x86-64 builds. Note that I have not been able to test these builds due to a lack of ARM64
-  hardware, so please report any issues you encounter.
-- **Optional specialties for skills.** A skill's specialty is now split into a required part and an optional part,
-  matching the GURPS distinction between the two. (#1038)
-- **Download the GURPS Rules Lookup file.** A new **Download GURPS Rules Lookup File** command in the File menu fetches
-  the community-maintained GURPS Rules Lookup data and saves it as a notes file you can open, search, and reference from
-  within GCS. If you already have the file, it can be updated in place.
-- **Notes can now be tagged.** Notes now support tags, just like traits, skills, spells, and equipment. Tags can be
-  assigned in the note editor, and a Tags column now appears for notes, so notes can be organized and filtered by tag.
-- **External PDF viewers now jump to the searched text.** When you open a page reference in an external PDF viewer, GCS
-  passes the highlighted phrase along (via the `$TEXT` placeholder) so a viewer that supports it can navigate directly
-  to the term. (#1023)
-- **Page reference columns can show more than one reference.** Page reference columns now display as many of an item's
-  page references as will fit, each individually clickable, instead of always collapsing to the first one followed by a
-  "+". A new General Setting, "Show additional page references when space allows," controls this for character sheets,
-  loot sheets, and templates and is on by default. Standalone list windows are unaffected by the setting, since their
-  columns can already be resized directly. (#1046)
-- **Metric length now converts at 25 mm per inch.** Lengths entered in metric units convert using the GURPS simplified
-  value of 25 mm per inch, replacing the previous conversion of 1 m per yard. (#1032)
-- **Improved hiking calculations in the Calculator.** Hiking distance now follows the clarification in HT55, the daily
-  hiking duration can be chosen from a drop-down (in 4-hour increments, or a custom value) with a more typical default
-  of 8 hours, and a new field computes how many days a given total distance would take with the current parameters.
-  (#1035)
-- **Added page reference mapping for *Loadouts: Starship Crew*.** Page references to this book now resolve correctly.
-  (#1021)
-- **Export templates can now export more data.** New keys have been added. See the Export Templates documentation for
-  details.
-- **Scripting has access to more data.** New fields and objects have been added. See the Scripting Guide for details.
-- **Added additional page reference codes.**
-- **More responsive typing in text fields.** Reduced the lag the can occur when typing into text fields on some
-  platforms, especially on slower machines.
+- Text fields now show a context menu on right-click containing the standard Cut, Copy, Paste and Select All actions.
+  Only the actions that can currently be performed are included, and if none of them apply, no menu is shown.
 
 ## Bug Fixes
 
-- Weapons that default to a technique now also receive the damage and other bonuses granted by the skill the technique
-  is based on, qualified by that base skill's relative level. Previously, for example, learning the Kicking technique
-  caused a Kick to lose the Brawling/Karate damage bonus, since the bonus was matched against the technique instead of
-  the underlying skill. (#767)
-- Fixed how a skill chooses its default when several skills share a name.
-- The Swap Defaults command is now more consistent.
-- Ritual Magic spells now require the Ritual Magic skill for the spell's own college. Previously a Ritual Magic skill
-  for any college would satisfy the prerequisite and could supply the spell's level, even though the requirement listed
-  a specific college. (#1018)
-- Traits now contribute their weapons to the scripting context even when they aren't leveled. Previously only leveled
-  traits exposed their weapons to scripts. (#1044)
-- Fixed skill levels showing an enormous bogus value (e.g. 922337203685477) when a skill defaulted from another skill
-  whose qualifier — such as a minimum Tech Level — wasn't met. (#1031)
-- A skill default's Tech Level constraint is now evaluated against the Tech Level of the skill being defaulted from,
-  rather than the character's Tech Level. Previously, changing the sheet's Tech Level could cause a skill to default
-  from another skill whose Tech Level didn't actually satisfy the constraint. (#1040)
-- Fixed a crash that could occur when an adjustment was based on the level of its owner and the owner, or any of the
-  owner's ancestors, was disabled. (#1029)
-- Fixed a crash that could occur after undoing a change in a standalone equipment, trait, skill, or spell list and then
-  saving the file. (#1015)
-- Fixed a crash that could occur when randomizing a value (such as a name, age, height, or weight) if an ancestry file
-  contained invalid data. Such a file is now reported as an error and skipped instead of bringing down the application.
-  (#1007)
-- Fixed text inside markdown tables wrapping to a new line prematurely, before the table had used the available width.
-  (#1011)
-- Library source paths are now stored using forward slashes so they work across platforms. Previously, files created on
-  Windows recorded source paths with backslashes, which prevented the library source from being located on Linux or
-  macOS and showed the source match status as a question mark. (#1005)
-- A pool's State now updates correctly as its current value crosses a threshold. Previously, if the pool's starting
-  value was outside every threshold, the State name would never appear even after the value dropped into a threshold's
-  range. (#1009)
-- The `Math.exp2(x)` function (base-2 exponentiation, i.e. 2ˣ) is now actually available to scripts. It was meant to be
-  exposed, but due to the way it was registered, calling it raised a `TypeError` instead of returning a value.
-- The `--sync` command-line option now correctly syncs template files and also handles loot files. Previously it loaded
-  each file's library source data but never prepared it for matching, so every item was treated as having no source and
-  nothing was synced for template files; loot files weren't processed at all.
-- Library source files that are edited while GCS is running are now detected and reloaded. Previously, once a source
-  library file had been loaded, later changes to it were ignored until GCS was restarted, leaving the source match
-  status based on the stale, originally loaded data.
-- Edits made in a detail editor after setting nameable substitutions are no longer silently lost. Previously, using the
-  "Set Substitutions" button and then changing something else (such as enabling or disabling a modifier) before saving
-  could discard that later change.
+- Linux only: Fix use of NumLock causing mouse clicks to be misinterpreted.
+- Key handling now properly masks out sticky modifier keys (i.e. CapsLock & NumLock) before handling them. This affected
+  menu accelerator matching (menu command key sequences were ignored), key navigation within open menus, the fallback
+  cut/copy/paste/select-all handling in text fields, and Return/Enter in the file dialog's file name field.
