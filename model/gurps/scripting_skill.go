@@ -92,10 +92,13 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			if entity == nil {
 				return r.ToValue(0)
 			}
-			if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization, skill.OptionalSpecialization) {
-				entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization, skill.OptionalSpecialization)
+			name := skill.NameWithReplacements()
+			specialization := skill.SpecializationWithReplacements()
+			optionalSpecialization := skill.OptionalSpecializationWithReplacements()
+			if !entity.isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization) {
+				entity.registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
 				skill.UpdateLevel()
-				entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization, skill.OptionalSpecialization)
+				entity.unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
 			}
 			return r.ToValue(fxp.AsInteger[int](skill.LevelData.Level))
 		}
@@ -104,10 +107,13 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			if entity == nil {
 				return r.ToValue(0)
 			}
-			if !entity.isSkillLevelResolutionExcluded(skill.Name, skill.Specialization, skill.OptionalSpecialization) {
-				entity.registerSkillLevelResolutionExclusion(skill.Name, skill.Specialization, skill.OptionalSpecialization)
+			name := skill.NameWithReplacements()
+			specialization := skill.SpecializationWithReplacements()
+			optionalSpecialization := skill.OptionalSpecializationWithReplacements()
+			if !entity.isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization) {
+				entity.registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
 				skill.UpdateLevel()
-				entity.unregisterSkillLevelResolutionExclusion(skill.Name, skill.Specialization, skill.OptionalSpecialization)
+				entity.unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
 			}
 			return r.ToValue(fxp.AsInteger[int](skill.LevelData.RelativeLevel))
 		}

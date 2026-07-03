@@ -80,7 +80,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 		m["attribute"] = func() goja.Value { return r.ToValue(spell.Difficulty.Attribute) }
 		m["difficulty"] = func() goja.Value { return r.ToValue(spell.Difficulty.Difficulty.String()) }
 		m["points"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](spell.AdjustedPoints(nil))) }
-		m["college"] = func() goja.Value { return r.ToValue(slices.Clone([]string(spell.College))) }
+		m["college"] = func() goja.Value { return r.ToValue(spell.CollegeWithReplacements()) }
 		m["powerSource"] = func() goja.Value { return r.ToValue(spell.PowerSourceWithReplacements()) }
 		m["spellClass"] = func() goja.Value { return r.ToValue(spell.ClassWithReplacements()) }
 		m["resist"] = func() goja.Value { return r.ToValue(spell.ResistWithReplacements()) }

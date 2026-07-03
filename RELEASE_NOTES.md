@@ -18,3 +18,8 @@
   losing it immediately, so you can now interact with them via the keyboard right after opening.
 - Windows only: Fixed the packaged executable showing a generic icon and missing its version details in the Properties
   dialog, caused by the icon and version resources not being embedded during the release build.
+- Fixed a leveled trait's level-adjusting bonus not being applied when the trait's name uses a substitution (such as a
+  Talent with a fill-in-the-blank name).
+- Fixed a spell's college not having its substitutions applied when accessed from a script.
+- Fixed the safeguard that keeps a skill's level from being resolved through itself not working when the skill's name
+  uses a substitution, which could cause an error when a script reads that skill's level.

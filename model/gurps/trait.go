@@ -501,7 +501,7 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if t.IsLeveled() {
 		var levelAdjustment fxp.Int
 		if entity := EntityFromNode(t); entity != nil {
-			levelAdjustment = entity.TraitBonusFor(t.Name, t.Tags, tooltip)
+			levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
 		}
 		return (t.Levels + levelAdjustment).Max(0)
 	}
