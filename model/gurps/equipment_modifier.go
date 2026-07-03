@@ -773,7 +773,10 @@ func (e *EquipmentModifierSyncData) hash(h hash.Hash) {
 
 func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Num8(h, e.CostType)
+	xhash.Bool(h, e.CostIsPerLevel)
+	xhash.Bool(h, e.CostIsPerPound)
 	xhash.Num8(h, e.WeightType)
+	xhash.Bool(h, e.WeightIsPerLevel)
 	xhash.Bool(h, e.ShowNotesOnWeapon)
 	xhash.StringWithLen(h, e.TechLevel)
 	xhash.StringWithLen(h, e.CostAmount)
