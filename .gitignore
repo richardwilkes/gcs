@@ -11,3 +11,4 @@
 /go.work.sum
 /__debug_bin*
 /*.prof
+/notes.md

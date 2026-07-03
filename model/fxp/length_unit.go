@@ -33,12 +33,17 @@ func (enum LengthUnit) Format(length Length) string {
 	inches := Int(length)
 	switch enum {
 	case FeetAndInches:
+		negative := inches < 0
+		inches = inches.Abs()
 		feet := inches.Div(Twelve).Floor()
 		inches -= feet.Mul(Twelve)
 		if feet == 0 && inches == 0 {
 			return "0'"
 		}
 		var buffer strings.Builder
+		if negative {
+			buffer.WriteByte('-')
+		}
 		if feet > 0 {
 			buffer.WriteString(feet.Comma())
 			buffer.WriteByte('\'')

@@ -40,6 +40,32 @@ func TestGURPSLengthConversion(t *testing.T) {
 	c.Equal("1 cm", fxp.Centimeter.Format(w))
 }
 
+// TestFeetAndInchesFormat verifies that the FeetAndInches formatter handles zero, positive, and negative lengths. It
+// guards against the negative-length regression where floor-toward-negative-infinity dropped the sign and mangled the
+// remainder (e.g. -30 inches formatting as `6"` and -12 inches formatting as an empty string).
+func TestFeetAndInchesFormat(t *testing.T) {
+	c := check.New(t)
+	for _, d := range []struct {
+		inches   int
+		expected string
+	}{
+		{inches: 0, expected: "0'"},
+		{inches: 1, expected: `1"`},
+		{inches: 12, expected: "1'"},
+		{inches: 15, expected: `1'3"`},
+		{inches: 30, expected: `2'6"`},
+		{inches: -1, expected: `-1"`},
+		{inches: -12, expected: "-1'"},
+		{inches: -15, expected: `-1'3"`},
+		{inches: -30, expected: `-2'6"`},
+	} {
+		c.Equal(d.expected, fxp.FeetAndInches.Format(fxp.LengthFromInteger(d.inches, fxp.Inch)),
+			"formatting %d inches", d.inches)
+		// Length.String() routes through the same formatter, so it must agree.
+		c.Equal(d.expected, fxp.LengthFromInteger(d.inches, fxp.Inch).String(), "String() of %d inches", d.inches)
+	}
+}
+
 // TestLengthFromStringUnitSuffixes verifies that every unit's key (other than FeetAndInches, which is parsed via the
 // '/" notation), when appended to a number, parses back to that same unit. This guards against the suffix-matching
 // being sensitive to the order in which the enum is declared (e.g. "m" must not greedily match the "cm" / "km" / "m"
