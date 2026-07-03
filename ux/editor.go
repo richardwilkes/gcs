@@ -123,7 +123,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 				e.applyButton.Click()
 			}
 			return true
-		case mods == 0 && keyCode == unison.KeyEscape:
+		case noModifiersDown(mods) && keyCode == unison.KeyEscape:
 			if e.cancelButton.Enabled() {
 				e.cancelButton.Click()
 			}

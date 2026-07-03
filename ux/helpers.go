@@ -14,9 +14,17 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 const dataOwnerProviderKey = "data_owner_provider"
+
+// noModifiersDown returns true if none of the non-sticky modifier keys (Shift, Control, Option, Command) were down when
+// the event occurred. The sticky lock keys (CapsLock, NumLock) are masked out first, since a latched CapsLock or
+// NumLock must not prevent a plain keypress from being recognized.
+func noModifiersDown(mods mod.Modifiers) bool {
+	return mods&mod.NonSticky == 0
+}
 
 // SetFieldValue sets the value of this field, marking the field and all of its parents as needing to be laid out again
 // if the value is not what is currently in the field.

@@ -114,7 +114,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 
 	table.DoubleClickCallback = func() { table.PerformCmd(nil, OpenEditorItemID) }
 	table.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
-		if mods == 0 && (keyCode == unison.KeyBackspace || keyCode == unison.KeyDelete) {
+		if noModifiersDown(mods) && (keyCode == unison.KeyBackspace || keyCode == unison.KeyDelete) {
 			table.PerformCmd(table, unison.DeleteItemID)
 			return true
 		}

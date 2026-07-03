@@ -98,7 +98,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 				e.applyButton.Click()
 			}
 			return true
-		case mods == 0 && keyCode == unison.KeyEscape:
+		case noModifiersDown(mods) && keyCode == unison.KeyEscape:
 			if e.cancelButton.Enabled() {
 				e.cancelButton.Click()
 			}
