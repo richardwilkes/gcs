@@ -11,3 +11,4 @@
 - Key handling now properly masks out sticky modifier keys (i.e. CapsLock & NumLock) before handling them. This affected
   menu accelerator matching (menu command key sequences were ignored), key navigation within open menus, the fallback
   cut/copy/paste/select-all handling in text fields, and Return/Enter in the file dialog's file name field.
+- Fixed library "update to latest" option failing on reserved device names. (#1057)
