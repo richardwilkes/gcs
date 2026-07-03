@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -77,8 +78,8 @@ func main() {
 	ux.RegisterKnownFileTypes()
 	gurps.GlobalSettings() // Here to force early initialization
 
-	if *convertFiles && *syncToLibraryData {
-		xos.ExitWithMsg(i18n.Text("Cannot specify both --convert and --sync"))
+	if msg := exclusiveModeMsg(*convertFiles, *syncToLibraryData, *textTmplPath); msg != "" {
+		xos.ExitWithMsg(msg)
 	}
 
 	switch {
@@ -101,4 +102,24 @@ func main() {
 		ux.Start(fileList) // Never returns
 	}
 	xos.Exit(0)
+}
+
+// exclusiveModeMsg returns a non-empty error message if more than one of the mutually exclusive command-line modes
+// (--convert, --sync, --text) has been specified. These modes each take over the process and exit, so only one may be
+// requested at a time.
+func exclusiveModeMsg(convert, sync bool, textTmplPath string) string {
+	var modes []string
+	if convert {
+		modes = append(modes, "--convert")
+	}
+	if sync {
+		modes = append(modes, "--sync")
+	}
+	if textTmplPath != "" {
+		modes = append(modes, "--text")
+	}
+	if len(modes) > 1 {
+		return fmt.Sprintf(i18n.Text("Cannot specify more than one of %s"), strings.Join(modes, ", "))
+	}
+	return ""
 }
