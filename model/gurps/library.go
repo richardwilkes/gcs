@@ -171,6 +171,7 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 		}, l.UseLatest)
 	if err != nil {
 		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", l.Title, "repo", l.RepoName, "account", l.GitHubAccountName)
+		return
 	}
 	current := l.VersionOnDisk()
 	lastRelease := ""
