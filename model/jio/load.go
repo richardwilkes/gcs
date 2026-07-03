@@ -48,6 +48,8 @@ func DecompressAndDeserialize(data []byte, result any) error {
 		return errs.Wrap(err)
 	}
 	if err = json.UnmarshalRead(r, result); err != nil {
+		// Note that we don't explicitly close the gzip reader on error because this is all done in memory and it isn't
+		// necessary to free resources.
 		return errs.Wrap(err)
 	}
 	return errs.Wrap(r.Close())
