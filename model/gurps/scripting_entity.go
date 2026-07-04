@@ -106,32 +106,17 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			})
 		}
 		m["points"] = func() goja.Value {
+			pb := entity.PointsBreakdown()
 			p := make(map[string]func() goja.Value)
-			p["total"] = func() goja.Value {
-				return r.ToValue(fxp.AsInteger[int](entity.PointsBreakdown().Total()))
-			}
-			p["unspent"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](entity.UnspentPoints())) }
-			p["ancestry"] = func() goja.Value {
-				return r.ToValue(fxp.AsInteger[int](entity.PointsBreakdown().Ancestry))
-			}
-			p["attributes"] = func() goja.Value {
-				return r.ToValue(fxp.AsInteger[int](entity.PointsBreakdown().Attributes))
-			}
-			p["advantages"] = func() goja.Value {
-				return r.ToValue(fxp.AsInteger[int](entity.PointsBreakdown().Advantages))
-			}
-			p["disadvantages"] = func() goja.Value {
-				return r.ToValue(fxp.AsInteger[int](entity.PointsBreakdown().Disadvantages))
-			}
-			p["quirks"] = func() goja.Value {
-				return r.ToValue(fxp.AsInteger[int](entity.PointsBreakdown().Quirks))
-			}
-			p["skills"] = func() goja.Value {
-				return r.ToValue(fxp.AsInteger[int](entity.PointsBreakdown().Skills))
-			}
-			p["spells"] = func() goja.Value {
-				return r.ToValue(fxp.AsInteger[int](entity.PointsBreakdown().Spells))
-			}
+			p["total"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Total())) }
+			p["unspent"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](entity.TotalPoints - pb.Total())) }
+			p["ancestry"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Ancestry)) }
+			p["attributes"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Attributes)) }
+			p["advantages"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Advantages)) }
+			p["disadvantages"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Disadvantages)) }
+			p["quirks"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Quirks)) }
+			p["skills"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Skills)) }
+			p["spells"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Spells)) }
 			return r.NewDynamicObject(NewScriptObject(r, p))
 		}
 		m["currentEncumbrance"] = func() goja.Value {

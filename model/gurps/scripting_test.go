@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/dop251/goja"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -43,11 +44,45 @@ func TestScriptMathExp2(t *testing.T) {
 // otherwise go non-positive; the clamp keeps the call safe regardless of how rnd.Intn treats a non-positive bound.
 func TestScriptRandomWeightInPounds(t *testing.T) {
 	c := check.New(t)
-	entityArg := ScriptArg{Name: "entity", Value: func(r *goja.Runtime) any { return newScriptEntity(r, nil) }}
+	entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, nil) }}
 	for _, st := range []int{-100, -20, -1, 0, 1, 10, 20} {
 		v, err := runScript(0, fmt.Sprintf("entity.randomWeightInPounds(%d, 0)", st), entityArg)
 		c.NoError(err, "st %d", st)
 		c.NotNil(v, "st %d", st)
+	}
+}
+
+// TestScriptEntityPoints verifies that reading the fields of entity.points reports values consistent with
+// entity.PointsBreakdown(). The implementation computes the breakdown once per access to entity.points and reads each
+// field (total, unspent, skills, spells, …) from that single result, so this also guards against the fields drifting
+// apart from the canonical breakdown.
+func TestScriptEntityPoints(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	sk := NewSkill(e, nil, false)
+	sk.Points = fxp.FromInteger(2)
+	e.Skills = append(e.Skills, sk)
+	sp := NewSpell(e, nil, false)
+	sp.Points = fxp.FromInteger(3)
+	e.Spells = append(e.Spells, sp)
+	e.Recalculate()
+	e.TotalPoints = fxp.FromInteger(10)
+
+	pb := e.PointsBreakdown()
+	entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, e) }}
+	for _, tc := range []struct {
+		field string
+		want  int
+	}{
+		{field: "total", want: fxp.AsInteger[int](pb.Total())},
+		{field: "unspent", want: fxp.AsInteger[int](e.TotalPoints - pb.Total())},
+		{field: "skills", want: fxp.AsInteger[int](pb.Skills)},
+		{field: "spells", want: fxp.AsInteger[int](pb.Spells)},
+		{field: "attributes", want: fxp.AsInteger[int](pb.Attributes)},
+	} {
+		v, err := runScript(0, "entity.points."+tc.field, entityArg)
+		c.NoError(err, "field %q", tc.field)
+		c.Equal(int64(tc.want), v.ToInteger(), "field %q", tc.field)
 	}
 }
 

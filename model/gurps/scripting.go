@@ -158,6 +158,9 @@ func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text strin
 
 const maximumAllowedResolvingDepth = 20
 
+// entityScriptArgName is the name the entity is bound to within scripts.
+const entityScriptArgName = "entity"
+
 // globalScriptResolvingDepth guards entity-less script resolution against runaway or circular references. Entity-scoped
 // resolution uses the entity's own scriptResolvingDepth field instead (see enterScriptResolution); only scripts with no
 // associated entity (e.g. nodes in a standalone library file) fall back to this package-global counter, which is atomic
@@ -190,7 +193,7 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
 	args := []ScriptArg{{
-		Name:  "entity",
+		Name:  entityScriptArgName,
 		Value: func(r *goja.Runtime) any { return newScriptEntity(r, entity) },
 	}}
 	if selfProvider.Provider != nil {
