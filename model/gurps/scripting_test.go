@@ -16,6 +16,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -83,6 +84,34 @@ func TestScriptEntityPoints(t *testing.T) {
 		v, err := runScript(0, "entity.points."+tc.field, entityArg)
 		c.NoError(err, "field %q", tc.field)
 		c.Equal(int64(tc.want), v.ToInteger(), "field %q", tc.field)
+	}
+}
+
+// TestScriptThrustSwingFor exercises the entity.thrustFor and entity.swingFor script bindings, which format their dice
+// using the UseModifyingDicePlusAdds flag read through the entity's sheet settings (via SheetSettingsFor(entity)). The
+// GURPS damage progression keeps thrust/swing modifiers within the -3..+2 range, so the plain and modifying-dice
+// formats never actually diverge for these dice; the flag is therefore behaviorally invisible here. The test guards the
+// wiring itself: the bindings must exist, resolve without error, and return exactly what FormatDice produces for the
+// entity's current setting, regardless of how that flag is toggled.
+func TestScriptThrustSwingFor(t *testing.T) {
+	c := check.New(t)
+	for _, fn := range []string{"thrustFor", "swingFor"} {
+		roll := func(e *Entity, st int) dice.Dice {
+			if fn == "thrustFor" {
+				return e.ThrustFor(st)
+			}
+			return e.SwingFor(st)
+		}
+		for _, extra := range []bool{false, true} {
+			e := NewEntity()
+			e.SheetSettings.UseModifyingDicePlusAdds = extra
+			const st = 20 // Yields a multi-die result (thrust 2d-1, swing 3d+2) rather than a trivial 1d.
+			want := FormatDice(roll(e, st), extra)
+			entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, e) }}
+			v, err := runScript(0, fmt.Sprintf("entity.%s(%d)", fn, st), entityArg)
+			c.NoError(err, "%s extra=%v", fn, extra)
+			c.Equal(want, v.String(), "%s extra=%v", fn, extra)
+		}
 	}
 }
 
