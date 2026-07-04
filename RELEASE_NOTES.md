@@ -21,5 +21,7 @@
   toward that spell's own prerequisites, avoiding a circular prerequisite relationship. (#737)
 - Fixed markdown page references whose path is URL-encoded (e.g. `md:User%20Guide/Scripting%20Guide`) so they resolve to
   the correct file, just like their non-encoded equivalents.
+- Fixed the display of a skill whose optional specialization resolves to an empty string, so it no longer shows an empty
+  set of parentheses `()` after the skill name.
 - Fixed the Linux desktop integration so the application window is correctly associated with its launcher icon (added
   the missing `StartupWMClass` and the matching window `WM_CLASS`). (#1059)

@@ -612,17 +612,18 @@ func (s *Skill) String() string {
 			buffer.WriteString("/TL")
 			buffer.WriteString(*s.TechLevel)
 		}
-		if s.Specialization != "" || s.OptionalSpecialization != "" {
+		specialization := s.SpecializationWithReplacements()
+		optionalSpecialization := s.OptionalSpecializationWithReplacements()
+		if specialization != "" || optionalSpecialization != "" {
 			buffer.WriteString(" (")
-			if s.Specialization != "" {
-				buffer.WriteString(s.SpecializationWithReplacements())
-
-				if s.OptionalSpecialization != "" {
+			if specialization != "" {
+				buffer.WriteString(specialization)
+				if optionalSpecialization != "" {
 					buffer.WriteString(", ")
 				}
 			}
-			if s.OptionalSpecialization != "" {
-				buffer.WriteString(s.OptionalSpecializationWithReplacements())
+			if optionalSpecialization != "" {
+				buffer.WriteString(optionalSpecialization)
 			}
 			buffer.WriteByte(')')
 		}
