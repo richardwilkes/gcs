@@ -11,6 +11,8 @@
 
 ## Bug Fixes
 
+- Fixed another case of the key handling not properly masking out sticky modifier keys, this time affecting use of the
+  Tab key to move focus between fields.
 - Fixed and extended the merging of identical entries added to a character sheet, so a matching entry now adds to the
   existing one rather than creating a duplicate row: skills and spells combine their points, and leveled traits combine
   their levels (only when their modifiers, including which are enabled, are identical). This works whether the entry
