@@ -47,6 +47,7 @@ type SheetSettingsData struct {
 	ShowTraitModifierAdj          bool               `json:"show_trait_modifier_adj,omitzero"`
 	ShowEquipmentModifierAdj      bool               `json:"show_equipment_modifier_adj,omitzero"`
 	ShowAllWeapons                bool               `json:"show_all_weapons,omitzero"`
+	HideUnusedWeaponColumns       bool               `json:"hide_unused_weapon_columns,omitzero"`
 	ShowSpellAdj                  bool               `json:"show_spell_adj,omitzero"`
 	HideSourceMismatch            bool               `json:"hide_source_mismatch,omitzero"`
 	HideTLColumn                  bool               `json:"hide_tl_column,omitzero"`
@@ -76,18 +77,19 @@ func SheetSettingsFor(entity *Entity) *SheetSettings {
 func FactorySheetSettings() *SheetSettings {
 	return &SheetSettings{
 		SheetSettingsData: SheetSettingsData{
-			Page:                   NewPageSettings(),
-			BlockLayout:            NewBlockLayout(),
-			Attributes:             FactoryAttributeDefs(),
-			BodyType:               FactoryBody(),
-			DamageProgression:      progression.BasicSet,
-			DefaultLengthUnits:     fxp.FeetAndInches,
-			DefaultWeightUnits:     fxp.Pound,
-			UserDescriptionDisplay: display.Tooltip,
-			ModifiersDisplay:       display.Inline,
-			NotesDisplay:           display.Inline,
-			SkillLevelAdjDisplay:   display.Tooltip,
-			ShowSpellAdj:           true,
+			Page:                    NewPageSettings(),
+			BlockLayout:             NewBlockLayout(),
+			Attributes:              FactoryAttributeDefs(),
+			BodyType:                FactoryBody(),
+			DamageProgression:       progression.BasicSet,
+			DefaultLengthUnits:      fxp.FeetAndInches,
+			DefaultWeightUnits:      fxp.Pound,
+			UserDescriptionDisplay:  display.Tooltip,
+			ModifiersDisplay:        display.Inline,
+			NotesDisplay:            display.Inline,
+			SkillLevelAdjDisplay:    display.Tooltip,
+			ShowSpellAdj:            true,
+			HideUnusedWeaponColumns: false,
 		},
 	}
 }

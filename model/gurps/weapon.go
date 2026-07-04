@@ -939,6 +939,39 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	}
 }
 
+// ColumnHasData returns true if this weapon has meaningful data to display in the given column. Columns that are not
+// eligible to be hidden always report true.
+func (w *Weapon) ColumnHasData(columnID int) bool {
+	var buffer xbytes.InsertBuffer
+	switch columnID {
+	case WeaponUsageColumn:
+		return w.UsageWithReplacements() != ""
+	case WeaponParryColumn:
+		return w.Parry.Resolve(w, &buffer).CanParry
+	case WeaponBlockColumn:
+		return w.Block.Resolve(w, &buffer).CanBlock
+	case WeaponReachColumn:
+		return w.Reach.Resolve(w, &buffer).String() != ""
+	case WeaponAccColumn:
+		acc := w.Accuracy.Resolve(w, &buffer)
+		return acc.Jet || acc.Base != 0 || acc.Scope != 0
+	case WeaponRangeColumn:
+		return w.Range.Resolve(w, &buffer).String(w.musclePowerIsResolved()) != ""
+	case WeaponRoFColumn:
+		return w.RateOfFire.Resolve(w, &buffer).String() != ""
+	case WeaponShotsColumn:
+		return w.Shots.Resolve(w, &buffer).String() != ""
+	case WeaponBulkColumn:
+		return w.Bulk.Resolve(w, &buffer).String() != ""
+	case WeaponRecoilColumn:
+		return w.Recoil.Resolve(w, &buffer).String() != ""
+	case WeaponSTColumn:
+		return w.Strength.Resolve(w, &buffer).String() != ""
+	default:
+		return true
+	}
+}
+
 // CopyFrom implements node.EditorData.
 func (w *Weapon) CopyFrom(t *Weapon) {
 	*w = *t.Clone(LibraryFile{}, t.DataOwner(), nil, false)

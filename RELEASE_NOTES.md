@@ -2,6 +2,9 @@
 
 ## New & Improved
 
+- Added a "Hide unused columns in the melee & ranged weapon tables" sheet setting (off by default) that omits any weapon
+  table column whose cells are all empty, such as the accuracy, range and other stat columns for powers that don't use
+  them. (#161)
 - Scripts can now read a trait's total point value via `self.points` (and the `points` field on any trait obtained
   through a script). The value accounts for base points, cost-per-level, trait modifiers, and the reduced cost of
   children within an Alternative Abilities container. (#1053)

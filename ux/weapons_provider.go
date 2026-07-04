@@ -72,6 +72,18 @@ func (p *weaponsProvider) showAllWeapons() bool {
 	return entity.SheetSettings.ShowAllWeapons
 }
 
+func (p *weaponsProvider) hideUnusedColumns() bool {
+	owner := p.provider.DataOwner()
+	if xreflect.IsNil(owner) {
+		return false
+	}
+	entity := owner.OwningEntity()
+	if entity == nil {
+		return false
+	}
+	return entity.SheetSettings.HideUnusedWeaponColumns
+}
+
 func (p *weaponsProvider) RootRowCount() int {
 	return len(p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage))
 }
@@ -171,7 +183,34 @@ func (p *weaponsProvider) ColumnIDs() []int {
 			gurps.WeaponRecoilColumn,
 		)
 	}
-	return append(columnIDs, gurps.WeaponSTColumn)
+	columnIDs = append(columnIDs, gurps.WeaponSTColumn)
+	if p.forPage && p.hideUnusedColumns() {
+		columnIDs = p.removeUnusedColumns(columnIDs)
+	}
+	return columnIDs
+}
+
+// removeUnusedColumns removes any columns from the provided list that have no meaningful data in any of the weapons
+// that will be displayed.
+func (p *weaponsProvider) removeUnusedColumns(columnIDs []int) []int {
+	weapons := p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage)
+	if len(weapons) == 0 {
+		return columnIDs
+	}
+	filtered := columnIDs[:0]
+	for _, id := range columnIDs {
+		used := false
+		for _, w := range weapons {
+			if w.ColumnHasData(id) {
+				used = true
+				break
+			}
+		}
+		if used {
+			filtered = append(filtered, id)
+		}
+	}
+	return filtered
 }
 
 func (p *weaponsProvider) HierarchyColumnID() int {

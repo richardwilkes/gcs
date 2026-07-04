@@ -42,6 +42,7 @@ type sheetSettingsDockable struct {
 	showTraitModifier                  *unison.CheckBox
 	showEquipmentModifier              *unison.CheckBox
 	showAllWeapons                     *unison.CheckBox
+	hideUnusedWeaponColumns            *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
 	hideSourceMismatch                 *unison.CheckBox
 	hidePageRefColumn                  *unison.CheckBox
@@ -191,6 +192,11 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 	d.showAllWeapons = d.addCheckBox(panel, i18n.Text("Show all weapons"),
 		s.ShowAllWeapons, func() {
 			d.settings().ShowAllWeapons = d.showAllWeapons.State == check.On
+			d.syncSheet(true)
+		})
+	d.hideUnusedWeaponColumns = d.addCheckBox(panel,
+		i18n.Text("Hide unused columns in the melee & ranged weapon tables"), s.HideUnusedWeaponColumns, func() {
+			d.settings().HideUnusedWeaponColumns = d.hideUnusedWeaponColumns.State == check.On
 			d.syncSheet(true)
 		})
 	d.showSpellAdjustments = d.addCheckBox(panel, i18n.Text("Show spell ritual, cost & time adjustments"),
@@ -491,6 +497,7 @@ func (d *sheetSettingsDockable) sync() {
 	d.showTraitModifier.State = check.FromBool(s.ShowTraitModifierAdj)
 	d.showEquipmentModifier.State = check.FromBool(s.ShowEquipmentModifierAdj)
 	d.showAllWeapons.State = check.FromBool(s.ShowAllWeapons)
+	d.hideUnusedWeaponColumns.State = check.FromBool(s.HideUnusedWeaponColumns)
 	d.showSpellAdjustments.State = check.FromBool(s.ShowSpellAdj)
 	d.showTitleInsteadOfNameInPageFooter.State = check.FromBool(s.UseTitleInFooter)
 	d.showLiftingSTDamage.State = check.FromBool(s.ShowLiftingSTDamage)

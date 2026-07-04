@@ -632,7 +632,7 @@ func (s *Sheet) createLists() {
 					rowPanel.AddChild(s.ConditionalModifiers)
 				}
 			case gurps.BlockLayoutMeleeKey:
-				if s.MeleeWeapons == nil {
+				if s.MeleeWeapons.needReconstruction() {
 					s.MeleeWeapons = NewMeleeWeaponsPageList(s.entity)
 				} else {
 					s.MeleeWeapons.Sync()
@@ -642,7 +642,7 @@ func (s *Sheet) createLists() {
 					rowPanel.AddChild(s.MeleeWeapons)
 				}
 			case gurps.BlockLayoutRangedKey:
-				if s.RangedWeapons == nil {
+				if s.RangedWeapons.needReconstruction() {
 					s.RangedWeapons = NewRangedWeaponsPageList(s.entity)
 				} else {
 					s.RangedWeapons.Sync()
