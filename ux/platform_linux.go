@@ -93,7 +93,18 @@ func installDesktopFiles(exePath string) error {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
 	}
-	data := fmt.Sprintf(`[Desktop Entry]
+	data := desktopEntry(exePath)
+	if err := os.WriteFile(filepath.Join(dir, xos.AppIdentifier+".desktop"), []byte(data), 0o640); err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+// desktopEntry returns the contents of the .desktop file used to integrate with the Linux desktop environment. The
+// StartupWMClass entry must match the WM_CLASS that Unison sets on our windows (xos.AppIdentifier) so that window
+// managers can associate our windows with this launcher entry (e.g. for the taskbar/dock icon and launcher feedback).
+func desktopEntry(exePath string) string {
+	return fmt.Sprintf(`[Desktop Entry]
 Type=Application
 Name=%s
 Comment=%s
@@ -102,12 +113,10 @@ Icon=%s
 MimeType=%s;
 Categories=Game;Utility;RolePlaying;
 Keywords=gurps;character;sheet;rpg;roleplaying;utility;
+StartupWMClass=%s
 Terminal=false
-`, xos.AppName, AppDescription(), exePath, xos.AppIdentifier, strings.Join(gurps.RegisteredMimeTypes(), ";"))
-	if err := os.WriteFile(filepath.Join(dir, xos.AppIdentifier+".desktop"), []byte(data), 0o640); err != nil {
-		return errs.Wrap(err)
-	}
-	return nil
+`, xos.AppName, AppDescription(), exePath, xos.AppIdentifier, strings.Join(gurps.RegisteredMimeTypes(), ";"),
+		xos.AppIdentifier)
 }
 
 func installDesktopIcons() error {
