@@ -2,8 +2,14 @@
 
 ## New & Improved
 
+- Scripts can now read a trait's total point value via `self.points` (and the `points` field on any trait obtained
+  through a script). The value accounts for base points, cost-per-level, trait modifiers, and the reduced cost of
+  children within an Alternative Abilities container. (#1053)
 - Text fields now show a context menu on right-click containing the standard Cut, Copy, Paste and Select All actions.
   Only the actions that can currently be performed are included, and if none of them apply, no menu is shown.
+- Linux only: GCS now installs a desktop icon when it starts, so it shows up properly in the file viewer. This is done
+  when launched, so the icon will not show up until you've launched GCS once. Also note that it only applies to
+  Gnome-based desktops.
 
 ## Bug Fixes
 
@@ -23,3 +29,16 @@
 - Fixed a spell's college not having its substitutions applied when accessed from a script.
 - Fixed the safeguard that keeps a skill's level from being resolved through itself not working when the skill's name
   uses a substitution, which could cause an error when a script reads that skill's level.
+- Fixed a crash in the Hiking distance calculator when a character's Move was 0. In that case, the travel time is now
+  shown as a dash, since no distance can be covered. Also fixed the travel time reading "1 days" instead of "1 day"
+  for a one-day hike.
+- Fixed changes to an equipment modifier's per-level and per-pound cost and weight options not being noticed when
+  comparing against a library source, so those options now sync correctly.
+- Fixed a crash that could occur when a script requested a random weight for a character with a very low Strength.
+- Fixed a trait loaded from a file with a negative level (which can really only occur if someone edited the file by
+  hand) being left at that invalid value; such traits are now corrected to a level of 0.
+- Fixed a crash when adding or configuring a library with invalid settings; GCS now reports the problem instead of
+  quitting.
+- Command-line only: Combining the `--text` export option with `--convert` or `--sync` is now reported as an error
+  rather than being silently ignored, and requesting a `--text` export with no exportable files is now reported as an
+  error instead of doing nothing.

@@ -16,6 +16,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -113,6 +114,48 @@ func TestScriptThrustSwingFor(t *testing.T) {
 			c.Equal(want, v.String(), "%s extra=%v", fn, extra)
 		}
 	}
+}
+
+// TestScriptTraitPoints verifies that reading self.points from a trait script returns the trait's AdjustedPoints(),
+// which already accounts for base points, cost-per-level, trait modifiers, and the reduced cost of children within an
+// Alternative Abilities container. This addresses GitHub issue #1053 (exposing a trait's total value to scripts).
+func TestScriptTraitPoints(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	// A simple, non-leveled trait.
+	simple := NewTrait(e, nil, false)
+	simple.BasePoints = fxp.FromInteger(10)
+
+	// A leveled trait: 5 points per level, 3 levels.
+	leveled := NewTrait(e, nil, false)
+	leveled.CanLevel = true
+	leveled.PointsPerLevel = fxp.FromInteger(5)
+	leveled.Levels = fxp.FromInteger(3)
+
+	// An Alternative Abilities container whose children have differing costs; the container total is reduced per the
+	// Alternative Abilities rules rather than being the simple sum.
+	altAbilities := NewTrait(e, nil, true)
+	altAbilities.ContainerType = container.AlternativeAbilities
+	child1 := NewTrait(e, altAbilities, false)
+	child1.BasePoints = fxp.FromInteger(20)
+	child2 := NewTrait(e, altAbilities, false)
+	child2.BasePoints = fxp.FromInteger(10)
+	altAbilities.Children = []*Trait{child1, child2}
+
+	for _, trait := range []*Trait{simple, leveled, altAbilities} {
+		want := fxp.AsFloat[float64](trait.AdjustedPoints())
+		selfArg := ScriptArg{Name: "self", Value: func(r *goja.Runtime) any { return newScriptTrait(r, trait) }}
+		v, err := runScript(0, "self.points", selfArg)
+		c.NoError(err, "trait %q", trait.NameWithReplacements())
+		c.Equal(want, v.ToFloat(), "trait %q", trait.NameWithReplacements())
+	}
+
+	// Sanity checks on the expected values so the test is meaningful even if AdjustedPoints changes.
+	c.Equal(fxp.FromInteger(10), simple.AdjustedPoints())
+	c.Equal(fxp.FromInteger(15), leveled.AdjustedPoints())
+	// 20 (the most expensive) + round(20% of 10) = 20 + 2 = 22.
+	c.Equal(fxp.FromInteger(22), altAbilities.AdjustedPoints())
 }
 
 // TestScriptResolutionConcurrency hammers the package-global script state (the compiled-program cache, the entity-less
