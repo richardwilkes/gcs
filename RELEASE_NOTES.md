@@ -28,8 +28,6 @@
 - Fixed crashes on some configurations (primarily Linux) when the primary display cannot be determined.
 - Fixed newly opened character sheets, lists, PDFs and other views sometimes not receiving the keyboard focus, or
   losing it immediately, so you can now interact with them via the keyboard right after opening.
-- Windows only: Fixed the packaged executable showing a generic icon and missing its version details in the Properties
-  dialog, caused by the icon and version resources not being embedded during the release build.
 - Fixed a leveled trait's level-adjusting bonus not being applied when the trait's name uses a substitution (such as a
   Talent with a fill-in-the-blank name).
 - Fixed a spell's college not having its substitutions applied when accessed from a script.
@@ -45,6 +43,10 @@
   hand) being left at that invalid value; such traits are now corrected to a level of 0.
 - Fixed a crash when adding or configuring a library with invalid settings; GCS now reports the problem instead of
   quitting.
+- Fixed multi-line tooltips, such as the one showing the individual bonuses that make up a conditional modifier's total,
+  collapsing all of their content onto a single line instead of showing one entry per line.
+- Windows only: Fixed the packaged executable showing a generic icon and missing its version details in the Properties
+  dialog, caused by the icon and version resources not being embedded during the release build.
 - Command-line only: Combining the `--text` export option with `--convert` or `--sync` is now reported as an error
   rather than being silently ignored, and requesting a `--text` export with no exportable files is now reported as an
   error instead of doing nothing.

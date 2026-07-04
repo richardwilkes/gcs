@@ -13,6 +13,7 @@ require (
 	github.com/richardwilkes/unison v0.93.1-0.20260703151456-d66a95fba2f3
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
+	github.com/yuin/goldmark v1.8.2
 	github.com/zeebo/xxh3 v1.1.0
 	golang.org/x/image v0.43.0
 	golang.org/x/sys v0.46.0
@@ -37,7 +38,6 @@ require (
 	github.com/miekg/dns v1.1.72 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
-	github.com/yuin/goldmark v1.8.2 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/mod v0.37.0 // indirect
 	golang.org/x/net v0.56.0 // indirect

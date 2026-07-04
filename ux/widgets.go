@@ -246,9 +246,17 @@ func newMarkdownTooltip(text, workingDir string) *unison.Panel {
 	}
 	adjustMarkdownThemeForPage(m, unison.DefaultTooltipTheme.Label.Font)
 	m.OnBackgroundInk = unison.ThemeOnTooltip
-	m.SetContent(text, 500)
+	m.SetContent(markdownHardLineBreaks(text), 500)
 	tip.AddChild(m)
 	return tip
+}
+
+// markdownHardLineBreaks converts the single newlines in the given text into Markdown hard line breaks so that
+// multi-line tooltip content renders one line per newline. Without this, the Markdown renderer treats a single newline
+// as a soft break, collapsing it into a space and putting everything on one line. Blank lines (paragraph breaks) and
+// other block constructs are preserved, since a trailing hard break before a blank line is ignored by the renderer.
+func markdownHardLineBreaks(text string) string {
+	return strings.ReplaceAll(text, "\n", "  \n")
 }
 
 func newWrappedTooltip(tooltip string) *unison.Panel {
