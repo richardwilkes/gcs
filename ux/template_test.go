@@ -38,6 +38,24 @@ func newTestSpell(name string, points fxp.Int, techLevel *string) *gurps.Spell {
 
 func ptr(s string) *string { return &s }
 
+func newTestTrait(name string, levels fxp.Int, canLevel bool) *gurps.Trait {
+	t := gurps.NewTrait(nil, nil, false)
+	t.Name = name
+	t.CanLevel = canLevel
+	if canLevel {
+		t.PointsPerLevel = fxp.FromInteger(5)
+		t.Levels = levels
+	}
+	return t
+}
+
+func newTestTraitModifier(name string, disabled bool) *gurps.TraitModifier {
+	m := gurps.NewTraitModifier(nil, nil, false)
+	m.Name = name
+	m.Disabled = disabled
+	return m
+}
+
 // TestMergeSkillPoints verifies that applying a template's skills onto an existing set folds the points of identical
 // skills together, correctly distinguishing skills that differ only by tech level.
 func TestMergeSkillPoints(t *testing.T) {
@@ -232,9 +250,9 @@ func newSkillTable(skills ...*gurps.Skill) (*unison.Table[*Node[*gurps.Skill]], 
 	return table, nodes
 }
 
-// TestMergeAddedSkillsAndSpells verifies that adding a skill to a sheet (as when dragging or copying one in, where the
+// TestMergeAddedRows verifies that adding a skill to a sheet (as when dragging or copying one in, where the
 // added rows are the selection) folds its points into an identical existing row and removes the redundant new row.
-func TestMergeAddedSkillsAndSpells(t *testing.T) {
+func TestMergeAddedRows(t *testing.T) {
 	c := check.New(t)
 
 	t.Run("adding an identical skill merges into the existing one", func(_ *testing.T) {
@@ -242,7 +260,7 @@ func TestMergeAddedSkillsAndSpells(t *testing.T) {
 		added := newTestSkill("Brawling", fxp.FromInteger(2), nil)
 		table, nodes := newSkillTable(existing, added)
 		table.SetSelectionMap(map[tid.TID]bool{nodes[1].ID(): true})
-		MergeAddedSkillsAndSpells(table)
+		MergeAddedRows(table)
 		roots := table.RootRows()
 		c.Equal(1, len(roots))
 		c.Equal(existing, roots[0].Data())
@@ -254,7 +272,7 @@ func TestMergeAddedSkillsAndSpells(t *testing.T) {
 		added := newTestSkill("Climbing", fxp.FromInteger(2), nil)
 		table, nodes := newSkillTable(existing, added)
 		table.SetSelectionMap(map[tid.TID]bool{nodes[1].ID(): true})
-		MergeAddedSkillsAndSpells(table)
+		MergeAddedRows(table)
 		c.Equal(2, len(table.RootRows()))
 		c.Equal(fxp.FromInteger(4), existing.Points)
 	})
@@ -267,9 +285,76 @@ func TestMergeAddedSkillsAndSpells(t *testing.T) {
 		added := newTestSkill("Guns", fxp.FromInteger(2), ptr("9"))
 		table, nodes := newSkillTable(existingTL8, existingTL9, added)
 		table.SetSelectionMap(map[tid.TID]bool{nodes[2].ID(): true})
-		MergeAddedSkillsAndSpells(table)
+		MergeAddedRows(table)
 		c.Equal(2, len(table.RootRows()))
 		c.Equal(fxp.FromInteger(4), existingTL8.Points)
 		c.Equal(fxp.FromInteger(3), existingTL9.Points)
+	})
+}
+
+// TestMergeTraitLevels verifies that only leveled traits merge, that their levels are combined, and that differing
+// modifiers keep them separate.
+func TestMergeTraitLevels(t *testing.T) {
+	c := check.New(t)
+
+	t.Run("identical leveled traits merge their levels", func(_ *testing.T) {
+		existing := []*gurps.Trait{newTestTrait("Damage Resistance", fxp.FromInteger(2), true)}
+		incoming := []*gurps.Trait{newTestTrait("Damage Resistance", fxp.FromInteger(3), true)}
+		selMap := make(map[tid.TID]bool)
+		remaining := mergeTraitLevels(existing, incoming, selMap)
+		c.Equal(0, len(remaining))
+		c.Equal(fxp.FromInteger(5), existing[0].Levels)
+		c.Equal(true, selMap[existing[0].ID()])
+	})
+
+	t.Run("non-leveled traits are never merged", func(_ *testing.T) {
+		existing := []*gurps.Trait{newTestTrait("Combat Reflexes", fxp.FromInteger(0), false)}
+		incoming := []*gurps.Trait{newTestTrait("Combat Reflexes", fxp.FromInteger(0), false)}
+		selMap := make(map[tid.TID]bool)
+		remaining := mergeTraitLevels(existing, incoming, selMap)
+		c.Equal(1, len(remaining))
+	})
+
+	t.Run("leveled traits with matching modifiers merge", func(_ *testing.T) {
+		existing := newTestTrait("Damage Resistance", fxp.FromInteger(2), true)
+		existing.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", false)}
+		incoming := newTestTrait("Damage Resistance", fxp.FromInteger(1), true)
+		incoming.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", false)}
+		selMap := make(map[tid.TID]bool)
+		remaining := mergeTraitLevels([]*gurps.Trait{existing}, []*gurps.Trait{incoming}, selMap)
+		c.Equal(0, len(remaining))
+		c.Equal(fxp.FromInteger(3), existing.Levels)
+	})
+
+	t.Run("leveled traits with differing modifiers stay separate", func(_ *testing.T) {
+		existing := newTestTrait("Damage Resistance", fxp.FromInteger(2), true)
+		existing.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", false)}
+		incoming := newTestTrait("Damage Resistance", fxp.FromInteger(1), true)
+		incoming.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Tough Skin", false)}
+		selMap := make(map[tid.TID]bool)
+		remaining := mergeTraitLevels([]*gurps.Trait{existing}, []*gurps.Trait{incoming}, selMap)
+		c.Equal(1, len(remaining))
+		c.Equal(fxp.FromInteger(2), existing.Levels)
+	})
+
+	// The same modifier enabled on one trait but disabled on the other means the traits are not identical.
+	t.Run("a disabled modifier prevents merging", func(_ *testing.T) {
+		existing := newTestTrait("Damage Resistance", fxp.FromInteger(2), true)
+		existing.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", false)}
+		incoming := newTestTrait("Damage Resistance", fxp.FromInteger(1), true)
+		incoming.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", true)}
+		selMap := make(map[tid.TID]bool)
+		remaining := mergeTraitLevels([]*gurps.Trait{existing}, []*gurps.Trait{incoming}, selMap)
+		c.Equal(1, len(remaining))
+	})
+
+	t.Run("identical incoming leveled traits merge with each other", func(_ *testing.T) {
+		first := newTestTrait("Damage Resistance", fxp.FromInteger(1), true)
+		second := newTestTrait("Damage Resistance", fxp.FromInteger(2), true)
+		selMap := make(map[tid.TID]bool)
+		remaining := mergeTraitLevels(nil, []*gurps.Trait{first, second}, selMap)
+		c.Equal(1, len(remaining))
+		c.Equal(first, remaining[0])
+		c.Equal(fxp.FromInteger(3), first.Levels)
 	})
 }

@@ -32,6 +32,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/zeebo/xxh3"
 )
 
 var (
@@ -654,6 +655,20 @@ func (t *TraitModifier) Hash(h hash.Hash) {
 	} else {
 		t.TraitModifierNonContainerSyncData.hash(h)
 	}
+}
+
+// HashTraitModifiersForMerge returns a hash over the provided modifiers that also includes their enabled state and
+// levels, which the normal modifier hash omits. Two leveled traits are only merged when this hash matches, ensuring
+// that their modifiers - including which ones are turned on and any modifier levels - are identical.
+func HashTraitModifiersForMerge(modifiers []*TraitModifier) uint64 {
+	h := xxh3.New()
+	Traverse(func(m *TraitModifier) bool {
+		m.Hash(h)
+		xhash.Bool(h, m.Disabled)
+		xhash.Num64(h, m.Levels)
+		return false
+	}, false, false, modifiers...)
+	return h.Sum64()
 }
 
 func (t *TraitModifierSyncData) hash(h hash.Hash) {

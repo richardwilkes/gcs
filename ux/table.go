@@ -344,7 +344,7 @@ func copySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 							}
 							// The copy always adds rows to a different sheet, so always merge points into identical
 							// existing rows, including when copying from another sheet.
-							MergeAddedSkillsAndSpells(targetTable)
+							MergeAddedRows(targetTable)
 						}
 					}, true)
 				}

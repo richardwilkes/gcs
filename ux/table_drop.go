@@ -152,7 +152,7 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 		// Merge points into identical existing rows whenever rows are actually being added (from a different table),
 		// including a drag from another sheet. A drag within the same table is only a reorder, so it is left alone.
 		if from != to {
-			MergeAddedSkillsAndSpells(to)
+			MergeAddedRows(to)
 		}
 	}
 	finishDidDrop(undo, from, to, move)

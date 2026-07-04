@@ -406,10 +406,14 @@ Disable your character's existing Ancestry (%s)?`),
 	if spells, abort = processPickerRows(spells); abort {
 		return false
 	}
-	// Skills and spells merge points with identical existing rows during appendRows, and the merge match includes the
-	// nameable replacements. Since skills and spells have no modifiers to toggle, resolve their nameables up front so
-	// that the merge compares against the final replacements; otherwise re-applying a template would compare empty
-	// replacements against the already-resolved existing rows and add duplicates instead of merging.
+	// Traits, skills, and spells merge with identical existing rows during appendRows, and the merge match includes the
+	// nameable replacements (and, for traits, the modifiers). Resolve those up front so the merge compares against the
+	// final values; otherwise re-applying a template would compare unresolved incoming rows against the
+	// already-resolved existing rows and add duplicates instead of merging. Modifiers are resolved before nameables so
+	// that nameables belonging to disabled modifiers are not prompted for.
+	traitData := ExtractNodeDataFromList(traits)
+	ProcessModifiers(sheet.Traits.Table, traitData)
+	ProcessNameables(sheet.Traits.Table, traitData)
 	ProcessNameables(sheet.Skills.Table, ExtractNodeDataFromList(skills))
 	ProcessNameables(sheet.Spells.Table, ExtractNodeDataFromList(spells))
 	appendRows(sheet.Traits.Table, traits)
@@ -418,9 +422,7 @@ Disable your character's existing Ancestry (%s)?`),
 	appendRows(sheet.CarriedEquipment.Table, equipment)
 	appendRows(sheet.Notes.Table, notes)
 	sheet.Rebuild(true)
-	ProcessModifiersForSelection(sheet.Traits.Table)
 	ProcessModifiersForSelection(sheet.CarriedEquipment.Table)
-	ProcessNameablesForSelection(sheet.Traits.Table)
 	ProcessNameablesForSelection(sheet.CarriedEquipment.Table)
 	ProcessNameablesForSelection(sheet.Notes.Table)
 	if len(templateAncestries) != 0 && gurps.GlobalSettings().General.AutoFillProfile {
@@ -506,6 +508,14 @@ func appendRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 	selMap := make(map[tid.TID]bool)
 	orig := slices.Clone(table.RootRows())
 	switch t := any(table).(type) {
+	case *unison.Table[*Node[*gurps.Trait]]:
+		if traitNodes, ok2 := any(orig).([]*Node[*gurps.Trait]); ok2 {
+			if rowNodes, ok3 := any(rows).([]*Node[*gurps.Trait]); ok3 {
+				if newRows, ok4 := any(mergeTraitRows(t, traitNodes, rowNodes, selMap)).([]*Node[T]); ok4 {
+					rows = newRows
+				}
+			}
+		}
 	case *unison.Table[*Node[*gurps.Skill]]:
 		if skillNodes, ok2 := any(orig).([]*Node[*gurps.Skill]); ok2 {
 			if rowNodes, ok3 := any(rows).([]*Node[*gurps.Skill]); ok3 {
@@ -555,6 +565,72 @@ func sameTechLevel(a, b *string) bool {
 		return a == nil && b == nil
 	}
 	return *a == *b
+}
+
+func mergeTraitRows(traitTable *unison.Table[*Node[*gurps.Trait]], traitNodes, rows []*Node[*gurps.Trait], selMap map[tid.TID]bool) []*Node[*gurps.Trait] {
+	rowTraits := mergeTraitLevels(ExtractNodeDataFromList(traitNodes), ExtractNodeDataFromList(rows), selMap)
+	replacements := make([]*Node[*gurps.Trait], 0, len(rowTraits))
+	for _, trait := range rowTraits {
+		replacements = append(replacements, NewNode(traitTable, nil, trait, true))
+	}
+	return replacements
+}
+
+// mergeTraitLevels folds the levels of each incoming trait into a matching trait, returning the incoming traits that
+// had no match (and should therefore be added as new rows). Only leveled, non-container traits are ever merged; every
+// other trait always survives untouched. A match requires an identical hash, the same nameable replacements, and the
+// same modifiers (including which are enabled and any modifier levels, which the trait hash omits). Several traits can
+// share a hash, so all candidates are considered rather than just one, and an incoming trait can match either an
+// existing trait or an earlier incoming trait, so a template containing two identical entries collapses them into one
+// just as it merges into what is already on the sheet.
+func mergeTraitLevels(existing, incoming []*gurps.Trait, selMap map[tid.TID]bool) []*gurps.Trait {
+	mergeable := func(trait *gurps.Trait) bool { return trait.CanLevel && !trait.Container() }
+	traitMap := make(map[uint64][]*gurps.Trait)
+	gurps.Traverse(func(trait *gurps.Trait) bool {
+		if mergeable(trait) {
+			hash := gurps.Hash64(trait)
+			traitMap[hash] = append(traitMap[hash], trait)
+		}
+		return false
+	}, true, true, existing...)
+	pruneMap := make(map[*gurps.Trait]bool)
+	gurps.Traverse(func(trait *gurps.Trait) bool {
+		if !mergeable(trait) {
+			return false
+		}
+		hash := gurps.Hash64(trait)
+		modifiersHash := gurps.HashTraitModifiersForMerge(trait.Modifiers)
+		matched := false
+		for _, t := range traitMap[hash] {
+			if !maps.Equal(t.Replacements, trait.Replacements) ||
+				gurps.HashTraitModifiersForMerge(t.Modifiers) != modifiersHash {
+				continue
+			}
+			pruneMap[trait] = true
+			t.Levels += trait.Levels
+			selMap[t.ID()] = true
+			matched = true
+			break
+		}
+		if !matched {
+			// Register this surviving incoming trait so that any later identical incoming trait merges into it.
+			traitMap[hash] = append(traitMap[hash], trait)
+		}
+		return false
+	}, true, true, incoming...)
+	for trait := range pruneMap {
+		parent := trait.Parent()
+		if parent == nil {
+			incoming = slices.DeleteFunc(incoming, func(t *gurps.Trait) bool {
+				return t == trait
+			})
+		} else {
+			parent.Children = slices.DeleteFunc(parent.Children, func(t *gurps.Trait) bool {
+				return t == trait
+			})
+		}
+	}
+	return incoming
 }
 
 func mergeSkillRows(skillTable *unison.Table[*Node[*gurps.Skill]], skillNodes, rows []*Node[*gurps.Skill], selMap map[tid.TID]bool) []*Node[*gurps.Skill] {
@@ -689,13 +765,18 @@ func mergeSpellPoints(existing, incoming []*gurps.Spell, defaultTechLevel string
 	return incoming
 }
 
-// MergeAddedSkillsAndSpells folds the points of the newly-added, currently-selected top-level skill or spell rows into
-// identical rows already present in the sheet, removing the now-redundant new rows. It applies the same merge used when
-// a template is applied, so that dragging or copying a skill or spell that already exists on the sheet adds to its
-// points rather than creating a duplicate. It must be called only after tech levels and nameables have been resolved on
-// the new rows, since the match includes both. Only skills and spells are affected; other row types are left untouched.
-func MergeAddedSkillsAndSpells[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+// MergeAddedRows folds the newly-added, currently-selected top-level rows into identical rows already present in the
+// sheet, removing the now-redundant new rows. It applies the same merge used when a template is applied, so that
+// dragging or copying an entry that already exists on the sheet adds to it rather than creating a duplicate: skills and
+// spells combine their points, and leveled traits combine their levels. It must be called only after tech levels,
+// modifiers, and nameables have been resolved on the new rows, since the match includes them. Only skills, spells, and
+// leveled traits are affected; other row types are left untouched.
+func MergeAddedRows[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 	switch t := any(table).(type) {
+	case *unison.Table[*Node[*gurps.Trait]]:
+		mergeNewlySelectedRows(t, func(existing, incoming []*gurps.Trait, _ string, selMap map[tid.TID]bool) []*gurps.Trait {
+			return mergeTraitLevels(existing, incoming, selMap)
+		})
 	case *unison.Table[*Node[*gurps.Skill]]:
 		mergeNewlySelectedRows(t, mergeSkillPoints)
 	case *unison.Table[*Node[*gurps.Spell]]:
