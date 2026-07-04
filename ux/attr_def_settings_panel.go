@@ -154,12 +154,8 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		attribute.Types...))
 
 	if (p.def.Type != attribute.Pool && p.def.Type != attribute.PoolRef) && !p.def.IsSeparator() {
-		text = i18n.Text("Placement")
-		content.AddChild(NewFieldLeadingLabel(text, false))
-		content.AddChild(NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement", text,
-			func() attribute.Placement { return p.def.Placement },
-			func(placement attribute.Placement) { p.def.Placement = placement },
-			attribute.Placements...))
+		content.AddChild(NewFieldLeadingLabel(i18n.Text("Placement"), false))
+		content.AddChild(p.createPlacementPanel())
 	}
 
 	const nameKey = "name"
@@ -220,6 +216,52 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		p.poolPanel = nil
 	}
 	return content
+}
+
+// createPlacementPanel builds the content that follows the "Placement" label. When the placement is Hidden, it expands
+// to read "[Hidden] unless trait [trait name] is present, then [placement]", allowing an attribute to be revealed with
+// an alternate placement whenever the character has the named trait. Leaving the trait name empty keeps the attribute
+// hidden, matching the original behavior.
+func (p *attrDefSettingsPanel) createPlacementPanel() *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+
+	panel.AddChild(NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement", i18n.Text("Placement"),
+		func() attribute.Placement { return p.def.Placement },
+		func(placement attribute.Placement) {
+			p.def.Placement = placement
+			p.dockable.sync()
+		},
+		attribute.Placements...))
+
+	columns := 1
+	if p.def.Placement == attribute.Hidden {
+		panel.AddChild(NewFieldTrailingLabel(i18n.Text("unless trait"), false))
+
+		text := i18n.Text("Trait Name")
+		field := NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"placement_trait", text,
+			func() string { return p.def.PlacementTrait },
+			func(s string) { p.def.PlacementTrait = s })
+		field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+		field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
+		field.Tooltip = newWrappedTooltip(i18n.Text("The name of a trait that, when present on the character, changes this attribute's placement to the value on the right. Leave empty to always keep the attribute hidden."))
+		panel.AddChild(field)
+
+		panel.AddChild(NewFieldTrailingLabel(i18n.Text("is present, then"), false))
+
+		panel.AddChild(NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement_when_present",
+			i18n.Text("Placement When Present"),
+			func() attribute.Placement { return p.def.PlacementWhenPresent },
+			func(placement attribute.Placement) { p.def.PlacementWhenPresent = placement },
+			attribute.Automatic, attribute.Primary, attribute.Secondary))
+		columns = 5
+	}
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  columns,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	return panel
 }
 
 func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {

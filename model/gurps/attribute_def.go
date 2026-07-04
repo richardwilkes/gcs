@@ -43,15 +43,17 @@ type AttributeDef struct {
 
 // AttributeDefData holds the data that will be serialized for the AttributeDef.
 type AttributeDefData struct {
-	DefID               string              `json:"id"`
-	Type                attribute.Type      `json:"type"`
-	Placement           attribute.Placement `json:"placement,omitzero"`
-	Name                string              `json:"name"`
-	FullName            string              `json:"full_name,omitzero"`
-	Base                string              `json:"base,omitzero"`
-	CostPerPoint        fxp.Int             `json:"cost_per_point,omitzero"`
-	CostAdjPercentPerSM fxp.Int             `json:"cost_adj_percent_per_sm,omitzero"`
-	Thresholds          []*PoolThreshold    `json:"thresholds,omitzero"`
+	DefID                string              `json:"id"`
+	Type                 attribute.Type      `json:"type"`
+	Placement            attribute.Placement `json:"placement,omitzero"`
+	PlacementWhenPresent attribute.Placement `json:"placement_when_present,omitzero"`
+	PlacementTrait       string              `json:"placement_trait,omitzero"`
+	Name                 string              `json:"name"`
+	FullName             string              `json:"full_name,omitzero"`
+	Base                 string              `json:"base,omitzero"`
+	CostPerPoint         fxp.Int             `json:"cost_per_point,omitzero"`
+	CostAdjPercentPerSM  fxp.Int             `json:"cost_adj_percent_per_sm,omitzero"`
+	Thresholds           []*PoolThreshold    `json:"thresholds,omitzero"`
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
@@ -130,52 +132,65 @@ func (a *AttributeDef) IsSeparator() bool {
 	return a.Type == attribute.PrimarySeparator || a.Type == attribute.SecondarySeparator || a.Type == attribute.PoolSeparator
 }
 
-// Kind returns the kind of attribute this is.
-func (a *AttributeDef) Kind() int {
+// EffectivePlacement returns the placement to use for this attribute, taking into account any trait-based override.
+// When the Placement is Hidden and a PlacementTrait has been specified and the given entity has an enabled trait whose
+// name matches it, the PlacementWhenPresent value is returned instead. Passing a nil entity, or leaving the
+// PlacementTrait empty, yields the unmodified Placement (i.e. the attribute remains Hidden).
+func (a *AttributeDef) EffectivePlacement(entity *Entity) attribute.Placement {
+	if a.Placement == attribute.Hidden && a.PlacementTrait != "" && entity.HasTraitNamed(a.PlacementTrait) {
+		return a.PlacementWhenPresent
+	}
+	return a.Placement
+}
+
+// Kind returns the kind of attribute this is, resolved against the given entity.
+func (a *AttributeDef) Kind(entity *Entity) int {
 	switch {
 	case a.Pool():
 		return PoolAttrKind
-	case a.Primary():
+	case a.Primary(entity):
 		return PrimaryAttrKind
-	case a.Secondary():
+	case a.Secondary(entity):
 		return SecondaryAttrKind
 	default:
 		return -1
 	}
 }
 
-// Relevant returns true if the attribute is relevant to the given kind.
-func (a *AttributeDef) Relevant(kind int) bool {
-	if a.Placement == attribute.Hidden {
+// Relevant returns true if the attribute is relevant to the given kind, resolved against the given entity.
+func (a *AttributeDef) Relevant(entity *Entity, kind int) bool {
+	if a.EffectivePlacement(entity) == attribute.Hidden {
 		return false
 	}
-	return a.Kind() == kind
+	return a.Kind(entity) == kind
 }
 
-// Primary returns true if the base value is a non-derived value.
-func (a *AttributeDef) Primary() bool {
+// Primary returns true if the base value is a non-derived value, resolved against the given entity.
+func (a *AttributeDef) Primary(entity *Entity) bool {
 	if a.Type == attribute.PrimarySeparator {
 		return true
 	}
-	if a.Type == attribute.Pool || a.Type == attribute.PoolRef || a.Placement == attribute.Secondary || a.IsSeparator() {
+	placement := a.EffectivePlacement(entity)
+	if a.Type == attribute.Pool || a.Type == attribute.PoolRef || placement == attribute.Secondary || a.IsSeparator() {
 		return false
 	}
-	if a.Placement == attribute.Primary {
+	if placement == attribute.Primary {
 		return true
 	}
 	_, err := fxp.FromString(strings.TrimSpace(a.Base))
 	return err == nil
 }
 
-// Secondary returns true if the base value is a derived value.
-func (a *AttributeDef) Secondary() bool {
+// Secondary returns true if the base value is a derived value, resolved against the given entity.
+func (a *AttributeDef) Secondary(entity *Entity) bool {
 	if a.Type == attribute.SecondarySeparator {
 		return true
 	}
-	if a.Type == attribute.Pool || a.Type == attribute.PoolRef || a.Placement == attribute.Primary || a.IsSeparator() {
+	placement := a.EffectivePlacement(entity)
+	if a.Type == attribute.Pool || a.Type == attribute.PoolRef || placement == attribute.Primary || a.IsSeparator() {
 		return false
 	}
-	if a.Placement == attribute.Secondary {
+	if placement == attribute.Secondary {
 		return true
 	}
 	_, err := fxp.FromString(strings.TrimSpace(a.Base))
@@ -224,6 +239,8 @@ func (a *AttributeDef) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, a.DefID)
 	xhash.Num8(h, a.Type)
 	xhash.Num8(h, a.Placement)
+	xhash.StringWithLen(h, a.PlacementTrait)
+	xhash.Num8(h, a.PlacementWhenPresent)
 	xhash.StringWithLen(h, a.Name)
 	xhash.StringWithLen(h, a.FullName)
 	xhash.StringWithLen(h, a.Base)
@@ -237,13 +254,13 @@ func (a *AttributeDef) Hash(h hash.Hash) {
 
 // IsOpen returns true if this attribute is a separator and it is open.
 func (a *AttributeDef) IsOpen(entity *Entity, sepCount int) bool {
-	return a.IsSeparator() && !IsClosed(a.openKey(entity, a.Kind(), sepCount))
+	return a.IsSeparator() && !IsClosed(a.openKey(entity, a.Kind(entity), sepCount))
 }
 
 // SetOpen sets the open state of this attribute. Does nothing if this attribute is not a separator.
 func (a *AttributeDef) SetOpen(entity *Entity, sepCount int, open bool) {
 	if a.IsSeparator() {
-		SetClosedState(a.openKey(entity, a.Kind(), sepCount), !open)
+		SetClosedState(a.openKey(entity, a.Kind(entity), sepCount), !open)
 	}
 }
 

@@ -31,7 +31,7 @@ func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 	m["id"] = func() goja.Value { return r.ToValue(attr.AttrID) }
 	m["kind"] = func() goja.Value {
 		if def := attr.AttributeDef(); def != nil {
-			switch def.Kind() {
+			switch def.Kind(attr.Entity) {
 			case PrimaryAttrKind:
 				return r.ToValue("primary")
 			case SecondaryAttrKind:

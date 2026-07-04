@@ -487,11 +487,11 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	for _, def := range entity.SheetSettings.Attributes.List(true) {
 		if attr, ok := entity.Attributes.Set[def.DefID]; ok {
 			switch {
-			case def.Primary():
+			case def.Primary(entity):
 				a := newExportedAttribute(def, attr)
 				data.Attributes.Primary = append(data.Attributes.Primary, a)
 				data.Attributes.PrimaryByID[def.DefID] = a
-			case def.Secondary():
+			case def.Secondary(entity):
 				a := newExportedAttribute(def, attr)
 				data.Attributes.Secondary = append(data.Attributes.Secondary, a)
 				data.Attributes.SecondaryByID[def.DefID] = a

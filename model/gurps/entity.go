@@ -1532,6 +1532,28 @@ func (e *Entity) TraitList() []*Trait {
 	return e.Traits
 }
 
+// HasTraitNamed returns true if the entity has an enabled trait whose name matches the given name, ignoring case and
+// surrounding whitespace. Returns false if the entity is nil or the name is empty.
+func (e *Entity) HasTraitNamed(name string) bool {
+	if e == nil {
+		return false
+	}
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return false
+	}
+	found := false
+	// Pass onlyEnabled=true so that disabled traits (and traits nested under a disabled container) are not considered.
+	Traverse(func(t *Trait) bool {
+		if strings.EqualFold(strings.TrimSpace(t.NameWithReplacements()), name) {
+			found = true
+			return true
+		}
+		return false
+	}, true, false, e.Traits...)
+	return found
+}
+
 // SetTraitList implements ListProvider
 func (e *Entity) SetTraitList(list []*Trait) {
 	for _, one := range list {

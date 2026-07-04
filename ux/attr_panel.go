@@ -21,10 +21,12 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/zeebo/xxh3"
 )
 
 var dimmedPointsColor = unison.ThemeOnSurface.Derive(func(basedOn unison.ThemeColor) unison.ThemeColor {
@@ -100,9 +102,21 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 		unison.NewEmptyBorder(geom.NewSymmetricInsets(2, 1))))
 	a.DrawCallback = a.drawSelf
 	attrs := gurps.SheetSettingsFor(a.entity).Attributes
-	a.hash = gurps.Hash64(attrs)
+	a.hash = a.computeHash(attrs)
 	a.rebuild(attrs)
 	return a
+}
+
+// computeHash returns a hash of the attribute definitions combined with their trait-driven effective placements, so
+// that the panel is rebuilt not only when the definitions themselves change, but also when a trait is added, removed,
+// enabled, or disabled in a way that reveals or hides an attribute.
+func (a *AttrPanel) computeHash(attrs *gurps.AttributeDefs) uint64 {
+	h := xxh3.New()
+	xhash.Num64(h, gurps.Hash64(attrs))
+	for _, def := range attrs.List(false) {
+		xhash.Num8(h, def.EffectivePlacement(a.entity))
+	}
+	return h.Sum64()
 }
 
 func (a *AttrPanel) drawSelf(gc *unison.Canvas, rect geom.Rect) {
@@ -164,7 +178,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	sepCount := 0
 	open := true
 	for _, def := range attrs.List(false) {
-		if def.Relevant(a.kind) {
+		if def.Relevant(a.entity, a.kind) {
 			if def.IsSeparator() {
 				a.rowStarts = append(a.rowStarts, len(a.Children()))
 				panel := unison.NewPanel()
@@ -340,7 +354,7 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 // Sync the panel to the current data.
 func (a *AttrPanel) Sync() {
 	attrs := gurps.SheetSettingsFor(a.entity).Attributes
-	if hash := gurps.Hash64(attrs); hash != a.hash {
+	if hash := a.computeHash(attrs); hash != a.hash {
 		a.hash = hash
 		a.rebuild(attrs)
 	} else if a.kind == gurps.PoolAttrKind {
@@ -386,7 +400,7 @@ func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) 
 
 func (a *AttrPanel) forceSync() {
 	attrs := gurps.SheetSettingsFor(a.entity).Attributes
-	a.hash = gurps.Hash64(attrs)
+	a.hash = a.computeHash(attrs)
 	a.rebuild(attrs)
 	MarkForLayoutWithinDockable(a)
 }

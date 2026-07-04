@@ -158,7 +158,7 @@ func (a *Attributes) SetDisclosureState(entity *Entity, open bool) {
 	for _, one := range a.List() {
 		def := one.AttributeDef()
 		if def != nil && def.IsSeparator() {
-			kind := def.Kind()
+			kind := def.Kind(entity)
 			sepCount := m[kind]
 			m[kind] = sepCount + 1
 			def.SetOpen(entity, sepCount, open)

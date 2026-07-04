@@ -2,6 +2,9 @@
 
 ## New & Improved
 
+- Added the ability for a hidden attribute to be revealed with a chosen placement (Automatic, Primary, or Secondary)
+  whenever the character has a named trait. The attribute settings now show "Placement [Hidden] unless trait [name] is
+  present, then [placement]". (#845)
 
 ## Bug Fixes
 
