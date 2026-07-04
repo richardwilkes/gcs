@@ -56,3 +56,35 @@ func TestEntityAttributeBonus(t *testing.T) {
 	c.Equal(fxp.Ten, e.Attributes.Current("st"), "ST; leveled +1 bonus, with 3 levels, for throwing only")
 	c.Equal(fxp.Three, e.ThrowingStrengthBonus, "Throwing ST Bonus; leveled +1 bonus, with 3 levels, for throwing only")
 }
+
+func TestEntityHideZeroValueConditionalModifiers(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	// A situation whose contributing bonuses cancel out to a total of zero.
+	addConditionalModifier(e, "cancels out", fxp.One)
+	addConditionalModifier(e, "cancels out", fxp.NegOne)
+	// A situation with a non-zero total.
+	addConditionalModifier(e, "still applies", fxp.Two)
+
+	e.SheetSettings.HideZeroValueConditionalMods = false
+	mods := e.ConditionalModifiers()
+	c.Equal(2, len(mods), "both situations listed when zero-value modifiers are shown")
+
+	e.SheetSettings.HideZeroValueConditionalMods = true
+	mods = e.ConditionalModifiers()
+	c.Equal(1, len(mods), "zero-total situation omitted when hidden")
+	if len(mods) == 1 {
+		c.Equal("still applies", mods[0].From, "the remaining modifier is the non-zero one")
+		c.Equal(fxp.Two, mods[0].Total(), "the remaining modifier retains its total")
+	}
+}
+
+func addConditionalModifier(e *Entity, situation string, amt fxp.Int) {
+	bonus := NewConditionalModifierBonus()
+	bonus.Situation = situation
+	bonus.Amount = amt
+	trait := NewTrait(e, nil, false)
+	trait.Features = append(trait.Features, bonus)
+	e.Traits = append(e.Traits, trait)
+}

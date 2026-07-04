@@ -1500,9 +1500,14 @@ func (e *Entity) reactionsFromFeatureList(source string, features Features, m ma
 	}
 }
 
-// ConditionalModifiers returns the current set of conditional modifiers.
+// ConditionalModifiers returns the current set of conditional modifiers. If the sheet settings have
+// HideZeroValueConditionalMods enabled, modifiers whose amounts total to zero are omitted.
 func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
-	return e.gatherConditionalModifiers(e.conditionalModifiersFromFeatureList, nil)
+	list := e.gatherConditionalModifiers(e.conditionalModifiersFromFeatureList, nil)
+	if SheetSettingsFor(e).HideZeroValueConditionalMods {
+		list = slices.DeleteFunc(list, func(c *ConditionalModifier) bool { return c.Total() == 0 })
+	}
+	return list
 }
 
 func (e *Entity) conditionalModifiersFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {

@@ -55,6 +55,7 @@ type sheetSettingsDockable struct {
 	useHalfStatDefaults                *unison.CheckBox
 	showLiftingSTDamage                *unison.CheckBox
 	showIQBasedDamage                  *unison.CheckBox
+	hideZeroValueConditionalMods       *unison.CheckBox
 	lengthUnitsPopup                   *unison.PopupMenu[fxp.LengthUnit]
 	weightUnitsPopup                   *unison.PopupMenu[fxp.WeightUnit]
 	userDescDisplayPopup               *unison.PopupMenu[display.Option]
@@ -238,6 +239,11 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 		s.ShowIQBasedDamage, func() {
 			d.settings().ShowIQBasedDamage = d.showIQBasedDamage.State == check.On
 			d.syncSheet(false)
+		})
+	d.hideZeroValueConditionalMods = d.addCheckBox(panel,
+		i18n.Text("Hide conditional modifiers whose total is zero"), s.HideZeroValueConditionalMods, func() {
+			d.settings().HideZeroValueConditionalMods = d.hideZeroValueConditionalMods.State == check.On
+			d.syncSheet(true)
 		})
 	content.AddChild(panel)
 }
@@ -502,6 +508,7 @@ func (d *sheetSettingsDockable) sync() {
 	d.showTitleInsteadOfNameInPageFooter.State = check.FromBool(s.UseTitleInFooter)
 	d.showLiftingSTDamage.State = check.FromBool(s.ShowLiftingSTDamage)
 	d.showIQBasedDamage.State = check.FromBool(s.ShowIQBasedDamage)
+	d.hideZeroValueConditionalMods.State = check.FromBool(s.HideZeroValueConditionalMods)
 	d.useMultiplicativeModifiers.State = check.FromBool(s.UseMultiplicativeModifiers)
 	d.useHalfStatDefaults.State = check.FromBool(s.UseHalfStatDefaults)
 	d.useModifyDicePlusAdds.State = check.FromBool(s.UseModifyingDicePlusAdds)

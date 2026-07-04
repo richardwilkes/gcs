@@ -57,6 +57,7 @@ type SheetSettingsData struct {
 	ExcludeUnspentPointsFromTotal bool               `json:"exclude_unspent_points_from_total,omitzero"`
 	ShowLiftingSTDamage           bool               `json:"show_lifting_st_damage,omitzero"`
 	ShowIQBasedDamage             bool               `json:"show_iq_based_damage,omitzero"`
+	HideZeroValueConditionalMods  bool               `json:"hide_zero_value_conditional_modifiers,omitzero"`
 }
 
 // SheetSettings holds sheet settings.
