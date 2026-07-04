@@ -77,13 +77,19 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		replacements = na.NameableReplacements()
 	}
 	var techLevel *string
-	if sp, ok := exclude.(*Spell); ok {
-		techLevel = sp.TechLevel
+	excludeSpell, isSpell := exclude.(*Spell)
+	if isSpell {
+		techLevel = excludeSpell.TechLevel
 	}
 	count := 0
 	colleges := make(map[string]bool)
 	Traverse(func(sp *Spell) bool {
 		if exclude == sp || sp.AdjustedPoints(nil) == 0 {
+			return false
+		}
+		// Don't count a spell that, in turn, directly requires the spell being checked, since doing so would create a
+		// circular prerequisite relationship (see GitHub issue #737).
+		if excludeSpell != nil && spellDirectlyRequires(sp, excludeSpell) {
 			return false
 		}
 		if techLevel != nil && sp.TechLevel != nil && *techLevel != *sp.TechLevel {
@@ -152,6 +158,37 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		}
 	}
 	return satisfied
+}
+
+// spellDirectlyRequires returns true if the candidate spell directly lists a spell-by-name prerequisite that matches
+// the target spell. This is used to prevent a spell from being counted as a prerequisite for a spell that it, in turn,
+// requires, which would otherwise create a circular prerequisite relationship.
+func spellDirectlyRequires(candidate, target *Spell) bool {
+	if candidate == nil || target == nil || candidate.Prereq == nil {
+		return false
+	}
+	return prereqListRequiresSpellNamed(candidate.Prereq, candidate.NameableReplacements(), target.NameWithReplacements())
+}
+
+// prereqListRequiresSpellNamed returns true if the given prereq list contains a spell-by-name prerequisite (at any
+// nesting depth) that both is required (Has) and matches the supplied name.
+func prereqListRequiresSpellNamed(list *PrereqList, replacements map[string]string, name string) bool {
+	if list == nil {
+		return false
+	}
+	for _, one := range list.Prereqs {
+		switch p := one.(type) {
+		case *PrereqList:
+			if prereqListRequiresSpellNamed(p, replacements, name) {
+				return true
+			}
+		case *SpellPrereq:
+			if p.Has && p.SubType == spellcmp.Name && p.QualifierCriteria.Matches(replacements, name) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // Hash writes this object's contents into the hasher.
