@@ -51,7 +51,7 @@ for arg in "$@"; do
 	--dist | -d)
 		EXTRA_LD_FLAGS="-s -w"
 		EXTRA_BUILD_FLAGS="-a -trimpath"
-		RELEASE="${GCS_RELEASE:-5.42.0}"
+		RELEASE="${GCS_RELEASE:-5.44.0}"
 		PACKAGER=1
 		DIST=--dist
 		BUILD_GO=1
