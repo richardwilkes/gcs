@@ -142,11 +142,18 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 			}
 		}
 	}
-	// Only process modifiers and nameables if this is a drop into a character or loot sheet from something
-	// besides a character or loot sheet.
-	if isForCharacterOrLootSheet(to) && !isForCharacterOrLootSheet(from) {
-		ProcessModifiersForSelection(to)
-		ProcessNameablesForSelection(to)
+	if isForCharacterOrLootSheet(to) {
+		// Only process modifiers and nameables when the drop comes from something besides a character or loot sheet;
+		// rows already on a sheet have had these resolved.
+		if !isForCharacterOrLootSheet(from) {
+			ProcessModifiersForSelection(to)
+			ProcessNameablesForSelection(to)
+		}
+		// Merge points into identical existing rows whenever rows are actually being added (from a different table),
+		// including a drag from another sheet. A drag within the same table is only a reorder, so it is left alone.
+		if from != to {
+			MergeAddedSkillsAndSpells(to)
+		}
 	}
 	finishDidDrop(undo, from, to, move)
 }

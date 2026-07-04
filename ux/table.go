@@ -309,44 +309,44 @@ func copySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 			sel := table.SelectedRows(true)
 			for _, s := range sheets {
 				var targetTable *unison.Table[*Node[T]]
-				var postProcessor func(rows []*Node[T])
+				var processDropData func()
 				switch any(sel[0].Data()).(type) {
 				case *gurps.Trait:
 					targetTable = convertTable[T](s.Traits.Table)
-					postProcessor = func(_ []*Node[T]) {
-						s.Traits.provider.ProcessDropData(nil, s.Traits.Table)
-					}
+					processDropData = func() { s.Traits.provider.ProcessDropData(nil, s.Traits.Table) }
 				case *gurps.Skill:
 					targetTable = convertTable[T](s.Skills.Table)
-					postProcessor = func(_ []*Node[T]) {
-						s.Skills.provider.ProcessDropData(nil, s.Skills.Table)
-					}
+					processDropData = func() { s.Skills.provider.ProcessDropData(nil, s.Skills.Table) }
 				case *gurps.Spell:
 					targetTable = convertTable[T](s.Spells.Table)
-					postProcessor = func(_ []*Node[T]) {
-						s.Spells.provider.ProcessDropData(nil, s.Spells.Table)
-					}
+					processDropData = func() { s.Spells.provider.ProcessDropData(nil, s.Spells.Table) }
 				case *gurps.Equipment:
 					targetTable = convertTable[T](s.CarriedEquipment.Table)
-					postProcessor = func(_ []*Node[T]) {
-						s.CarriedEquipment.provider.ProcessDropData(nil, s.CarriedEquipment.Table)
-					}
+					processDropData = func() { s.CarriedEquipment.provider.ProcessDropData(nil, s.CarriedEquipment.Table) }
 				case *gurps.Note:
 					targetTable = convertTable[T](s.Notes.Table)
-					postProcessor = func(_ []*Node[T]) {
-						s.Notes.provider.ProcessDropData(nil, s.Notes.Table)
-					}
+					processDropData = func() { s.Notes.provider.ProcessDropData(nil, s.Notes.Table) }
 				default:
 					continue
 				}
 				if targetTable != nil {
-					CopyRowsTo(targetTable, sel, postProcessor, true)
-					// Only process modifiers and nameables if this is copying into a character or loot sheet from
-					// something besides a character or loot sheet.
-					if isForCharacterOrLootSheet(targetTable) && !isForCharacterOrLootSheet(table) {
-						ProcessModifiersForSelection(targetTable)
-						ProcessNameablesForSelection(targetTable)
-					}
+					// All processing must happen inside the postProcessor so it is captured by the undo edit's
+					// after-state (CopyRowsTo records that after the postProcessor runs); otherwise redo would not
+					// restore the resolved tech levels, nameables, or the merged points.
+					CopyRowsTo(targetTable, sel, func(_ []*Node[T]) {
+						processDropData()
+						if isForCharacterOrLootSheet(targetTable) {
+							// Only process modifiers and nameables when copying from something besides a character or
+							// loot sheet; rows already on a sheet have had these resolved.
+							if !isForCharacterOrLootSheet(table) {
+								ProcessModifiersForSelection(targetTable)
+								ProcessNameablesForSelection(targetTable)
+							}
+							// The copy always adds rows to a different sheet, so always merge points into identical
+							// existing rows, including when copying from another sheet.
+							MergeAddedSkillsAndSpells(targetTable)
+						}
+					}, true)
 				}
 			}
 		}

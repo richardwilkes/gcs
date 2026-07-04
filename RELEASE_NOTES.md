@@ -11,9 +11,13 @@
 
 ## Bug Fixes
 
+- Fixed the merging of points for identical skills and spells added to a character sheet, so a matching entry now adds
+  its points to the existing one rather than creating a duplicate row. This now works in the cases that previously
+  failed: entries with a tech level, entries whose nameable substitutions are resolved as they are added, duplicate
+  entries within a single template, and skills or spells dragged or copied from another character sheet.
+- Fixed spell prerequisite counting so that a spell which itself requires the spell being checked is no longer counted
+  toward that spell's own prerequisites, avoiding a circular prerequisite relationship. (#737)
 - Fixed markdown page references whose path is URL-encoded (e.g. `md:User%20Guide/Scripting%20Guide`) so they resolve to
   the correct file, just like their non-encoded equivalents.
 - Fixed the Linux desktop integration so the application window is correctly associated with its launcher icon (added
   the missing `StartupWMClass` and the matching window `WM_CLASS`). (#1059)
-- Fixed spell prerequisite counting so that a spell which itself requires the spell being checked is no longer counted
-  toward that spell's own prerequisites, avoiding a circular prerequisite relationship. (#737)
