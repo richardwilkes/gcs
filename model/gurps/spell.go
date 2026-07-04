@@ -621,7 +621,7 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 	if s.Container() {
 		return fxp.Min
 	}
-	if EntityFromNode(s) != nil && s.CalculateLevel().Level > 0 {
+	if EntityFromNode(s) != nil && s.LevelData.Level > 0 {
 		return s.LevelData.RelativeLevel
 	}
 	return fxp.Min
