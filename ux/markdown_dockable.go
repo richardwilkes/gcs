@@ -217,6 +217,13 @@ func (d *MarkdownDockable) DockKey() string {
 	return filePrefix + d.path
 }
 
+// ScrollToAnchor scrolls the heading associated with the given anchor into view. Has no effect if the markdown is
+// currently being edited rather than displayed, or if no matching anchor exists.
+func (d *MarkdownDockable) ScrollToAnchor(anchor string) {
+	d.ValidateLayout()
+	d.markdown.ScrollToAnchor(anchor)
+}
+
 func (d *MarkdownDockable) updateCursor(_ geom.Point) *unison.Cursor {
 	if d.inDrag {
 		return unison.MoveCursor()

@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"net/url"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -64,29 +65,54 @@ func OpenPageReference(ref, highlight string, promptContext map[string]bool) boo
 }
 
 func openMarkdownPageReference(ref string) {
-	ref = ref[3:]
-	if ref != "" {
-		if !strings.HasSuffix(strings.ToLower(ref), uti.Markdown.Extensions[0]) {
-			ref += uti.Markdown.Extensions[0]
-		}
+	path, anchor := splitMarkdownPageRef(ref[3:])
+	if path != "" {
 		// First check in the Markdown directory of each library.
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
-			filePath := filepath.Join(lib.Path(), "Markdown", ref)
+			filePath := filepath.Join(lib.Path(), "Markdown", path)
 			if xos.FileIsReadable(filePath) {
-				OpenFile(filePath, 0)
+				openMarkdownFileAtAnchor(filePath, anchor)
 				return
 			}
 		}
 		// Then check in the root of each library.
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
-			filePath := filepath.Join(lib.Path(), ref)
+			filePath := filepath.Join(lib.Path(), path)
 			if xos.FileIsReadable(filePath) {
-				OpenFile(filePath, 0)
+				openMarkdownFileAtAnchor(filePath, anchor)
 				return
 			}
 		}
 	}
-	unison.ErrorDialogWithMessage(i18n.Text("Unable to open markdown"), ref+"\n"+i18n.Text("does not exist in the Markdown directory in any library."))
+	unison.ErrorDialogWithMessage(i18n.Text("Unable to open markdown"), path+"\n"+i18n.Text("does not exist in the Markdown directory in any library."))
+}
+
+// splitMarkdownPageRef splits a markdown page reference (with the "md:" prefix already removed) into the file path and
+// an optional anchor (the portion following a '#'). Any URL-encoding in the path (e.g. "%20" for spaces) is decoded so
+// that both encoded and non-encoded references resolve to the same file. The ".md" extension is appended to the path if
+// it isn't already present. Splitting the anchor off before appending the extension ensures a reference such as
+// "File#Section" resolves to "File.md" rather than the non-existent "File#Section.md". The anchor is returned as-is;
+// its own decoding is handled downstream by unison when scrolling to it.
+func splitMarkdownPageRef(ref string) (path, anchor string) {
+	path, anchor, _ = strings.Cut(ref, "#")
+	if unescaped, err := url.PathUnescape(path); err == nil {
+		path = unescaped
+	}
+	if path != "" && !strings.HasSuffix(strings.ToLower(path), uti.Markdown.Extensions[0]) {
+		path += uti.Markdown.Extensions[0]
+	}
+	return path, anchor
+}
+
+func openMarkdownFileAtAnchor(filePath, anchor string) {
+	dockable, _ := OpenFile(filePath, 0)
+	if anchor == "" {
+		return
+	}
+	if md, ok := dockable.(*MarkdownDockable); ok {
+		// Defer until the freshly-displayed dockable has had a chance to lay out, so the heading positions are known.
+		unison.InvokeTask(func() { md.ScrollToAnchor(anchor) })
+	}
 }
 
 func openPDFPageReference(ref, highlight string, promptContext map[string]bool) bool {
