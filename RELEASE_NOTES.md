@@ -8,6 +8,10 @@
 - Added support for internal anchor links in Markdown. Headings are now automatically assigned anchors, and links to
   them (e.g. `[Scripting](#scripting)`, or page references such as `md:User Guide/Scripting Guide#code`) scroll the
   target heading to the top of the view, revealing the section it introduces. (#651)
+- Added support for a comma-separated list of tags in a feature's tag qualifier, so a single feature can grant its
+  bonus to anything matching any one of the listed tags without stacking (e.g. `Sword, Axe, Polearm`). This applies to
+  every tag-based criteria, including skill, spell, and their point bonuses, weapon bonuses, and equipment
+  prerequisites. (#1008)
 
 ## Bug Fixes
 

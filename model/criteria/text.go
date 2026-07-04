@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -46,26 +47,49 @@ func (t Text) Matches(replacements map[string]string, value string) bool {
 	return t.Compare.Matches(nameable.Apply(t.Qualifier, replacements), value)
 }
 
-// MatchesList performs a comparison and returns true if the data matches.
+// MatchesList performs a comparison and returns true if the data matches. The qualifier may hold a comma-separated
+// list of qualifiers; for the positive comparison types (e.g. "is", "contains") a match against any one of them is
+// sufficient, while for the negative comparison types (e.g. "is not", "does not contain") every value must fail to
+// match all of them.
 func (t Text) MatchesList(replacements map[string]string, value ...string) bool {
-	qualifier := nameable.Apply(t.Qualifier, replacements)
+	qualifiers := splitQualifiers(nameable.Apply(t.Qualifier, replacements))
 	if len(value) == 0 {
-		return t.Compare.Matches(qualifier, "")
+		value = []string{""}
 	}
-	matches := 0
+	if t.Compare.IsNotType() {
+		for _, one := range value {
+			for _, qualifier := range qualifiers {
+				if !t.Compare.Matches(qualifier, one) {
+					return false
+				}
+			}
+		}
+		return true
+	}
 	for _, one := range value {
-		if t.Compare.Matches(qualifier, one) {
-			matches++
+		for _, qualifier := range qualifiers {
+			if t.Compare.Matches(qualifier, one) {
+				return true
+			}
 		}
 	}
-	switch t.Compare {
-	case AnyText, IsText, ContainsText, StartsWithText, EndsWithText:
-		return matches > 0
-	case IsNotText, DoesNotContainText, DoesNotStartWithText, DoesNotEndWithText:
-		return matches == len(value)
-	default:
-		return matches > 0
+	return false
+}
+
+// splitQualifiers splits a qualifier on commas, trimming surrounding whitespace and dropping empty entries. If nothing
+// remains, a single empty qualifier is returned so that comparisons still function.
+func splitQualifiers(qualifier string) []string {
+	parts := strings.Split(qualifier, ",")
+	list := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if part = strings.TrimSpace(part); part != "" {
+			list = append(list, part)
+		}
 	}
+	if len(list) == 0 {
+		return []string{""}
+	}
+	return list
 }
 
 func (t Text) String(replacements map[string]string) string {

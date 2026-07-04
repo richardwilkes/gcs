@@ -505,8 +505,10 @@ func addUsageCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSp
 }
 
 func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	return addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"),
+	popup, field := addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"),
 		i18n.Text("Tag Qualifier"), strCriteria, hSpan, includeEmptyFiller)
+	field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
+	return popup, field
 }
 
 func addNotesCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
