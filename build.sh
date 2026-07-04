@@ -49,9 +49,13 @@ for arg in "$@"; do
 		SOMETHING=1
 		;;
 	--dist | -d)
+		if [ -z "$GCS_RELEASE" ]; then
+			echo "GCS_RELEASE must be set" >&2
+			exit 1
+		fi
 		EXTRA_LD_FLAGS="-s -w"
 		EXTRA_BUILD_FLAGS="-a -trimpath"
-		RELEASE="${GCS_RELEASE:-5.44.0}"
+		RELEASE="$GCS_RELEASE"
 		PACKAGER=1
 		DIST=--dist
 		BUILD_GO=1
