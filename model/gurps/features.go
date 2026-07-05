@@ -96,6 +96,8 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			feature.WeaponShotDurationBonus,
 			feature.WeaponReloadTimeBonus:
 			feat = &WeaponBonus{}
+		case feature.SelectorOverride:
+			feat = &SelectorOverride{}
 		default:
 			return errs.Newf(i18n.Text("Unknown feature type: %s"), justTypeData.Type)
 		}

@@ -14,11 +14,13 @@ import (
 	"maps"
 	"reflect"
 	"slices"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
@@ -36,8 +38,9 @@ import (
 )
 
 var (
-	lastFeatureTypeUsed = feature.AttributeBonus
-	lastAttributeIDUsed = gurps.StrengthID
+	lastFeatureTypeUsed   = feature.AttributeBonus
+	lastAttributeIDUsed   = gurps.StrengthID
+	lastSelectorFieldUsed = selector.WeaponDamageType
 )
 
 type featuresPanel struct {
@@ -72,7 +75,8 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 			Title: i18n.Text("Features"),
 			Font:  unison.LabelFont,
 		},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2))))
+		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
+	))
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
@@ -119,6 +123,8 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 		panel, focus = p.createTraitBonusPanel(one)
 	case *gurps.WeaponBonus:
 		panel, focus = p.createWeaponBonusPanel(one)
+	case *gurps.SelectorOverride:
+		panel, focus = p.createSelectorOverridePanel(one)
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", reflect.TypeOf(f).String())
 		return
@@ -691,6 +697,99 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 	return panel, focus
 }
 
+func (p *featuresPanel) createSelectorOverridePanel(f *gurps.SelectorOverride) (main *unison.Panel, focus unison.Paneler) {
+	panel := p.createBasePanel(f)
+	p.addTypeSwitcher(panel, f)
+	panel.AddChild(unison.NewPanel())
+	focus = p.addSelectorOverrideLine(panel, f)
+	prefix := i18n.Text("to weapons whose name")
+	addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name Qualifier"), &f.NameCriteria, 1, true)
+	addUsageCriteriaPanel(panel, &f.UsageCriteria, 1, true)
+	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
+	return panel, focus
+}
+
+// addSelectorOverrideLine builds the line "[field] to [value] priority [n]". Changing the field rebuilds the row, since
+// a different field may have a different set of valid values (and thus a different value editor).
+func (p *featuresPanel) addSelectorOverrideLine(parent *unison.Panel, f *gurps.SelectorOverride) unison.Paneler {
+	panel := unison.NewPanel()
+	fieldPopup := addPopup(panel, selector.Fields, &f.Field)
+	fieldPopup.ChoiceMadeCallback = func(pop *unison.PopupMenu[selector.Field], index int, item selector.Field) {
+		pop.SelectIndex(index)
+		f.Field = item
+		lastSelectorFieldUsed = item
+		if d := gurps.SelectorFieldDescriptorFor(item); len(d.SuggestedStates) != 0 {
+			f.Value = d.SuggestedStates[0]
+		} else {
+			f.Value = ""
+		}
+		p.rebuildFeaturePanel(f)
+	}
+	panel.AddChild(NewFieldLeadingLabel(i18n.Text("to"), false))
+	focus := p.addSelectorValueEditor(panel, f)
+	panel.AddChild(NewFieldLeadingLabel(i18n.Text("with priority"), false))
+	panel.AddChild(NewIntegerField(nil, "", i18n.Text("Priority"),
+		func() int { return f.Priority },
+		func(value int) {
+			f.Priority = value
+			MarkModified(panel)
+		}, -99, 99, false, false))
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  len(panel.Children()),
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	parent.AddChild(panel)
+	return focus
+}
+
+// addSelectorValueEditor adds the value editor appropriate to the field: a popup when the field is constrained to a
+// known set of states, or a free-form string field (with the suggested states offered in a tooltip) otherwise.
+func (p *featuresPanel) addSelectorValueEditor(parent *unison.Panel, f *gurps.SelectorOverride) unison.Paneler {
+	d := gurps.SelectorFieldDescriptorFor(f.Field)
+	if len(d.SuggestedStates) != 0 && !d.FreeForm {
+		if !slices.Contains(d.SuggestedStates, f.Value) {
+			f.Value = d.SuggestedStates[0]
+		}
+		return addPopup(parent, d.SuggestedStates, &f.Value)
+	}
+	field := NewStringField(nil, "", i18n.Text("Value"),
+		func() string { return f.Value },
+		func(value string) {
+			f.Value = value
+			MarkModified(parent)
+		})
+	// Give the field a minimum width so it can't collapse to nothing as the panel narrows, and let it grab the slack so
+	// it is the widget that flexes rather than being crushed by its neighbors.
+	field.SetMinimumTextWidthUsing("impaling")
+	field.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	if len(d.SuggestedStates) != 0 {
+		field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Suggested values: %s"), strings.Join(d.SuggestedStates, ", ")))
+	}
+	parent.AddChild(field)
+	return field
+}
+
+// rebuildFeaturePanel replaces the on-screen panel for the given feature in place, keeping the same feature object. It
+// is used when an edit (such as changing a selector's field) changes which sub-widgets the row needs.
+func (p *featuresPanel) rebuildFeaturePanel(f gurps.Feature) {
+	i := slices.IndexFunc(*p.features, func(one gurps.Feature) bool { return one == f })
+	if i < 0 {
+		return
+	}
+	p.RemoveChildAtIndex(i + 1) // child 0 is the add button; feature at list index i is at child index i+1
+	p.insertFeaturePanel(i+1, f)
+	MarkRootAncestorForLayoutRecursively(p)
+	MarkModified(p)
+}
+
 func (p *featuresPanel) featureTypesList() []feature.Type {
 	if e, ok := p.owner.(*gurps.Equipment); ok && e.Container() {
 		return feature.Types
@@ -790,6 +889,10 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		bonus = gurps.NewWeaponReloadTimeBonus()
 	case feature.WeaponSwitch:
 		bonus = gurps.NewWeaponSwitchBonus()
+	case feature.SelectorOverride:
+		override := gurps.NewSelectorOverride(lastSelectorFieldUsed)
+		override.SetOwner(p.owner)
+		return override
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", featureType.Key())
 		return nil

@@ -52,6 +52,7 @@ const (
 	WeaponShotDurationBonus
 	WeaponReloadTimeBonus
 	WeaponSwitch
+	SelectorOverride
 	CostReduction
 	ContainedWeightReduction
 )
@@ -94,6 +95,7 @@ var Types = []Type{
 	WeaponShotDurationBonus,
 	WeaponReloadTimeBonus,
 	WeaponSwitch,
+	SelectorOverride,
 	CostReduction,
 	ContainedWeightReduction,
 }
@@ -178,6 +180,8 @@ func (enum Type) Key() string {
 		return "weapon_reload_time_bonus"
 	case WeaponSwitch:
 		return "weapon_switch"
+	case SelectorOverride:
+		return "selector_override"
 	case CostReduction:
 		return "cost_reduction"
 	case ContainedWeightReduction:
@@ -256,6 +260,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Gives a weapon reload time modifier of`)
 	case WeaponSwitch:
 		return i18n.Text(`Set the weapon flag`)
+	case SelectorOverride:
+		return i18n.Text(`Sets the value of`)
 	case CostReduction:
 		return i18n.Text(`Reduces the attribute cost of`)
 	case ContainedWeightReduction:

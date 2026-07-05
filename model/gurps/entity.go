@@ -97,6 +97,8 @@ type features struct {
 	spellPointBonuses []*SpellPointBonus
 	traitBonuses      []*TraitBonus
 	weaponBonuses     []*WeaponBonus
+
+	selectorOverrides []*SelectorOverride
 }
 
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
@@ -410,6 +412,10 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		bonus.SetSubOwner(subOwner)
 		bonus.SetLeveledOwner(leveledOwner)
 	}
+	if override, ok := f.(Override); ok {
+		override.SetOwner(owner)
+		override.SetSubOwner(subOwner)
+	}
 	switch actual := f.(type) {
 	case *AttributeBonus:
 		e.features.attributeBonuses = append(e.features.attributeBonuses, actual)
@@ -433,6 +439,8 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		e.features.traitBonuses = append(e.features.traitBonuses, actual)
 	case *WeaponBonus:
 		e.features.weaponBonuses = append(e.features.weaponBonuses, actual)
+	case *SelectorOverride:
+		e.features.selectorOverrides = append(e.features.selectorOverrides, actual)
 	case *ConditionalModifierBonus, *ContainedWeightReduction, *ReactionBonus:
 		// Not collected at this stage
 	default:

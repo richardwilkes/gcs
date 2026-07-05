@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
@@ -624,6 +625,24 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 		return false
 	}
 	return initial
+}
+
+// ResolveSelector resolves a weapon-scoped multi-state field, applying any SelectorOverride features that target the
+// given field and match this weapon. base is the field's intrinsic value. When more than one override matches, the
+// winner is chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full
+// contest is reported.
+func (w *Weapon) ResolveSelector(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
+	entity := w.Entity()
+	if entity == nil {
+		return base
+	}
+	var candidates []OverrideCandidate[string]
+	for _, override := range entity.features.selectorOverrides {
+		if override.Field == field && override.MatchesWeapon(w) {
+			candidates = append(candidates, OverrideCandidate[string]{Value: override.Value, Override: override})
+		}
+	}
+	return ResolveOverride(base, candidates, func(s string) string { return s }, tooltip)
 }
 
 func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {

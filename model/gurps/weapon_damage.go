@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -342,7 +343,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		buffer.WriteString(armorDivisor.String())
 		buffer.WriteByte(')')
 	}
-	t := strings.TrimSpace(w.Type)
+	t := strings.TrimSpace(w.Owner.ResolveSelector(selector.WeaponDamageType, w.Type, tooltip))
 	if t != "" {
 		if buffer.Len() != 0 {
 			buffer.WriteByte(' ')

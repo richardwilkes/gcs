@@ -748,6 +748,11 @@ var allEnums = []*enumInfo{
 				String: "Set the weapon flag",
 			},
 			{
+				Name:   "SelectorOverride",
+				Key:    "selector_override",
+				String: "Sets the value of",
+			},
+			{
 				Key:    "cost_reduction",
 				String: "Reduces the attribute cost of",
 			},
@@ -1229,6 +1234,18 @@ var allEnums = []*enumInfo{
 				Name:   "WithName",
 				Key:    "weapons_with_name",
 				String: "to weapons whose name",
+			},
+		},
+	},
+	{
+		Pkg:  "model/gurps/enums/selector",
+		Name: "field",
+		Desc: "identifies a multi-state field that a SelectorOverride can replace",
+		Values: []*enumValue{
+			{
+				Name:   "WeaponDamageType",
+				Key:    "weapon_damage_type",
+				String: "weapon damage type",
 			},
 		},
 	},
