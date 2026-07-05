@@ -85,13 +85,14 @@ func ResolveOverride[T comparable](base T, candidates []OverrideCandidate[T], re
 
 func addOverrideContestToTooltip[T comparable](winner OverrideCandidate[T], candidates []OverrideCandidate[T], render func(T) string, conflict bool, tooltip *xbytes.InsertBuffer) {
 	tooltip.WriteByte('\n')
-	fmt.Fprintf(tooltip, i18n.Text("Set to %q by %s"), render(winner.Value), overrideSourceName(winner.Override))
+	fmt.Fprintf(tooltip, i18n.Text("Set to **%q** by **%s**"), render(winner.Value),
+		overrideSourceName(winner.Override))
 	if conflict {
 		tooltip.WriteString(i18n.Text(" (conflict — resolved by name)"))
 	}
 	for _, c := range candidates[1:] {
 		tooltip.WriteByte('\n')
-		fmt.Fprintf(tooltip, i18n.Text("  overriding %q from %s (priority %d)"), render(c.Value),
+		fmt.Fprintf(tooltip, i18n.Text("  overriding **%q** from **%s** (priority **%d**)"), render(c.Value),
 			overrideSourceName(c.Override), c.Override.OverridePriority())
 	}
 }
