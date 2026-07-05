@@ -523,13 +523,15 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		})
 	}
 	Traverse(func(t *Trait) bool {
+		resolvedSelfControl := t.ResolvedSelfControl(nil)
+		resolvedFrequency := t.ResolvedFrequency(nil)
 		trait := &exportedTrait{
 			ID:                   t.TID,
 			Points:               t.AdjustedPoints(),
 			Description:          t.String(),
 			UserDescription:      t.UserDescWithReplacements(),
-			CR:                   t.SelfControl.Number(),
-			FR:                   t.Frequency.Number(),
+			CR:                   resolvedSelfControl.Number(),
+			FR:                   resolvedFrequency.Number(),
 			ModifierNotes:        t.ModifierNotes(),
 			ModifierNotesNoCR:    t.modifierNotes(false, true),
 			ModifierNotesNoFR:    t.modifierNotes(true, false),
@@ -545,11 +547,11 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		} else {
 			trait.Level = fxp.NegOne
 		}
-		if t.SelfControl != selfctrl.None {
-			trait.CRFull = t.SelfControl.String()
+		if resolvedSelfControl != selfctrl.None {
+			trait.CRFull = resolvedSelfControl.String()
 		}
-		if t.Frequency != frequency.None {
-			trait.FRFull = t.Frequency.String()
+		if resolvedFrequency != frequency.None {
+			trait.FRFull = resolvedFrequency.String()
 		}
 		if parent := t.Parent(); parent != nil {
 			trait.ParentID = parent.TID

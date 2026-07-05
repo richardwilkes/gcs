@@ -13,14 +13,27 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+)
+
+// SelectorScope identifies the kind of node a selector field lives on, which determines how a SelectorOverride matches
+// and which criteria the authoring panel offers.
+type SelectorScope byte
+
+// Possible SelectorScope values. The zero value is the weapon scope, so existing weapon descriptors need no change.
+const (
+	SelectorScopeWeapon SelectorScope = iota
+	SelectorScopeTrait
 )
 
 var _ Override = &SelectorOverride{}
@@ -106,6 +119,14 @@ func (o *SelectorOverride) MatchesWeapon(w *Weapon) bool {
 		o.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...)
 }
 
+// MatchesTrait returns true if this override targets a trait-scoped field and applies to the given trait. Traits have
+// no usage, so only the name and tag criteria participate.
+func (o *SelectorOverride) MatchesTrait(t *Trait) bool {
+	replacements := t.NameableReplacements()
+	return o.NameCriteria.Matches(replacements, t.NameWithReplacements()) &&
+		o.TagsCriteria.MatchesList(replacements, t.Tags...)
+}
+
 // Hash writes this object's contents into the hasher.
 func (o *SelectorOverride) Hash(h hash.Hash) {
 	if o == nil {
@@ -139,6 +160,7 @@ type SelectorFieldDescriptor struct {
 	StateTitle      func(state string) string // optional human label in the picker; nil means the state itself
 	Validate        func(value string) bool   // optional; nil means any value is accepted
 	Field           selector.Field
+	Scope           SelectorScope
 	FreeForm        bool
 }
 
@@ -151,6 +173,57 @@ func validFixedPoint(value string) bool {
 	_, err := fxp.FromString(value)
 	return err == nil
 }
+
+// frequencyStateKey and frequencyFromStateKey convert a frequency roll to and from the canonical string stored in a
+// frequency override. The roll's own byte value is used as the key, since frequency.Roll has no string key of its own.
+func frequencyStateKey(r frequency.Roll) string { return strconv.Itoa(int(r)) }
+
+func frequencyFromStateKey(state string) frequency.Roll {
+	n, err := strconv.Atoi(state)
+	if err != nil {
+		return frequency.None
+	}
+	return frequency.Roll(n).EnsureValid()
+}
+
+// traitFrequencyStates lists every frequency roll as a stored key, in the order the frequency enum defines them.
+var traitFrequencyStates = func() []string {
+	states := make([]string, len(frequency.Rolls))
+	for i, r := range frequency.Rolls {
+		states[i] = frequencyStateKey(r)
+	}
+	return states
+}()
+
+// selfControlRollStateKey and selfControlRollFromStateKey convert a self-control roll to and from its stored key. Like
+// frequency, selfctrl.Roll has no string key of its own, so its byte value is used.
+func selfControlRollStateKey(r selfctrl.Roll) string { return strconv.Itoa(int(r)) }
+
+func selfControlRollFromStateKey(state string) selfctrl.Roll {
+	n, err := strconv.Atoi(state)
+	if err != nil {
+		return selfctrl.None
+	}
+	return selfctrl.Roll(n).EnsureValid()
+}
+
+// traitSelfControlRollStates lists every self-control roll as a stored key, in enum order.
+var traitSelfControlRollStates = func() []string {
+	states := make([]string, len(selfctrl.Rolls))
+	for i, r := range selfctrl.Rolls {
+		states[i] = selfControlRollStateKey(r)
+	}
+	return states
+}()
+
+// traitSelfControlAdjustmentStates lists every self-control adjustment by its enum key, in enum order.
+var traitSelfControlAdjustmentStates = func() []string {
+	states := make([]string, len(selfctrl.Adjustments))
+	for i, a := range selfctrl.Adjustments {
+		states[i] = a.Key()
+	}
+	return states
+}()
 
 // selectorFieldDescriptors holds the descriptor for every selector.Field.
 var selectorFieldDescriptors = map[selector.Field]SelectorFieldDescriptor{
@@ -183,6 +256,27 @@ var selectorFieldDescriptors = map[selector.Field]SelectorFieldDescriptor{
 	selector.WeaponFragmentationArmorDivisor: {Field: selector.WeaponFragmentationArmorDivisor, FreeForm: true, Validate: validFixedPoint},
 	selector.WeaponDamageStrengthMultiplier:  {Field: selector.WeaponDamageStrengthMultiplier, FreeForm: true, Validate: validFixedPoint},
 	selector.WeaponDamagePerDieModifier:      {Field: selector.WeaponDamagePerDieModifier, FreeForm: true, Validate: validFixedPoint},
+	selector.TraitSelfControlRoll: {
+		Field:           selector.TraitSelfControlRoll,
+		SuggestedStates: traitSelfControlRollStates,
+		StateTitle:      func(state string) string { return selfControlRollFromStateKey(state).String() },
+		Scope:           SelectorScopeTrait,
+		FreeForm:        false,
+	},
+	selector.TraitSelfControlAdjustment: {
+		Field:           selector.TraitSelfControlAdjustment,
+		SuggestedStates: traitSelfControlAdjustmentStates,
+		StateTitle:      func(state string) string { return selfctrl.ExtractAdjustment(state).String() },
+		Scope:           SelectorScopeTrait,
+		FreeForm:        false,
+	},
+	selector.TraitFrequency: {
+		Field:           selector.TraitFrequency,
+		SuggestedStates: traitFrequencyStates,
+		StateTitle:      func(state string) string { return frequencyFromStateKey(state).String() },
+		Scope:           SelectorScopeTrait,
+		FreeForm:        false,
+	},
 }
 
 // SelectorFieldDescriptorFor returns the descriptor for the given field, or a zero-value free-form descriptor if the

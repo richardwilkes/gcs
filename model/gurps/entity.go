@@ -339,15 +339,17 @@ func (e *Entity) ensureAttachments() {
 
 func (e *Entity) processFeatures() {
 	e.features = features{}
+	var selfControlTraits []*Trait
 	Traverse(func(t *Trait) bool {
 		if !t.Container() {
 			for _, f := range t.Features {
 				e.processFeature(t, nil, f, t)
 			}
 		}
-		for _, f := range FeaturesForSelfControlRoll(t.SelfControl, t.SelfControlAdj) {
-			e.processFeature(t, nil, f, t)
-		}
+		// Self-control-derived features are generated after the full traversal, since resolving the trait's
+		// self-control roll and adjustment through a selector override requires every override to have been collected
+		// first.
+		selfControlTraits = append(selfControlTraits, t)
 		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
 				e.processFeature(t, nil, f, mod)
@@ -377,6 +379,11 @@ func (e *Entity) processFeatures() {
 		}, true, true, eqp.Modifiers...)
 		return false
 	}, false, false, e.CarriedEquipment...)
+	for _, t := range selfControlTraits {
+		for _, f := range FeaturesForSelfControlRoll(t.ResolvedSelfControl(nil), t.ResolvedSelfControlAdjustment(nil)) {
+			e.processFeature(t, nil, f, t)
+		}
+	}
 	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.LiftingOnly, nil).Floor()
 	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.StrikingOnly, nil).Floor()
 	e.ThrowingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.ThrowingOnly, nil).Floor()

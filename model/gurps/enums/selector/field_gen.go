@@ -29,10 +29,13 @@ const (
 	WeaponFragmentationDice
 	WeaponFragmentationArmorDivisor
 	WeaponFragmentationType
+	TraitSelfControlRoll
+	TraitSelfControlAdjustment
+	TraitFrequency
 )
 
 // LastField is the last valid value.
-const LastField Field = WeaponFragmentationType
+const LastField Field = TraitFrequency
 
 // Fields holds all possible values.
 var Fields = []Field{
@@ -46,6 +49,9 @@ var Fields = []Field{
 	WeaponFragmentationDice,
 	WeaponFragmentationArmorDivisor,
 	WeaponFragmentationType,
+	TraitSelfControlRoll,
+	TraitSelfControlAdjustment,
+	TraitFrequency,
 }
 
 // Field identifies a multi-state field that a SelectorOverride can replace.
@@ -53,7 +59,7 @@ type Field byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Field) EnsureValid() Field {
-	if enum <= WeaponFragmentationType {
+	if enum <= TraitFrequency {
 		return enum
 	}
 	return 0
@@ -82,6 +88,12 @@ func (enum Field) Key() string {
 		return "weapon_fragmentation_armor_divisor"
 	case WeaponFragmentationType:
 		return "weapon_fragmentation_type"
+	case TraitSelfControlRoll:
+		return "trait_self_control_roll"
+	case TraitSelfControlAdjustment:
+		return "trait_self_control_adjustment"
+	case TraitFrequency:
+		return "trait_frequency"
 	default:
 		return Field(0).Key()
 	}
@@ -110,6 +122,12 @@ func (enum Field) String() string {
 		return i18n.Text(`weapon fragmentation armor divisor`)
 	case WeaponFragmentationType:
 		return i18n.Text(`weapon fragmentation damage type`)
+	case TraitSelfControlRoll:
+		return i18n.Text(`trait self-control roll`)
+	case TraitSelfControlAdjustment:
+		return i18n.Text(`trait self-control adjustment`)
+	case TraitFrequency:
+		return i18n.Text(`trait frequency of appearance`)
 	default:
 		return Field(0).String()
 	}

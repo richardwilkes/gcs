@@ -1294,6 +1294,21 @@ var allEnums = []*enumInfo{
 				Key:    "weapon_fragmentation_type",
 				String: "weapon fragmentation damage type",
 			},
+			{
+				Name:   "TraitSelfControlRoll",
+				Key:    "trait_self_control_roll",
+				String: "trait self-control roll",
+			},
+			{
+				Name:   "TraitSelfControlAdjustment",
+				Key:    "trait_self_control_adjustment",
+				String: "trait self-control adjustment",
+			},
+			{
+				Name:   "TraitFrequency",
+				Key:    "trait_frequency",
+				String: "trait frequency of appearance",
+			},
 		},
 	},
 	{

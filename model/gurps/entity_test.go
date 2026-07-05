@@ -10,12 +10,40 @@
 package gurps
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
+
+// TestEntitySelfControlOverride verifies that overriding a trait's self-control roll changes the Merchant penalty that
+// the self-control machinery generates during processFeatures — not just the displayed roll. This exercises the
+// deferred generation that waits for every selector override to be collected first.
+func TestEntitySelfControlOverride(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait := NewTrait(e, nil, false)
+	trait.Name = "Greed"
+	trait.SelfControl = selfctrl.CR12
+	trait.SelfControlAdj = selfctrl.MajorCostOfLivingIncrease
+	e.Traits = append(e.Traits, trait)
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(selfctrl.CR12.Penalty()), e.SkillBonusFor("Merchant", "", "", nil, nil),
+		"Merchant penalty derives from CR12")
+
+	// Override Greed's self-control roll to CR6; the generated penalty must track the overridden roll.
+	override := NewSelectorOverride(selector.TraitSelfControlRoll)
+	override.Value = strconv.Itoa(int(selfctrl.CR6))
+	override.NameCriteria.Qualifier = "Greed"
+	trait.Features = append(trait.Features, override)
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(selfctrl.CR6.Penalty()), e.SkillBonusFor("Merchant", "", "", nil, nil),
+		"Merchant penalty tracks the overridden CR6 roll")
+}
 
 func TestEntityAttributeBonus(t *testing.T) {
 	c := check.New(t)

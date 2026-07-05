@@ -10,12 +10,15 @@
 package gurps_test
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -120,5 +123,41 @@ func TestSelectorFieldDescriptors(t *testing.T) {
 		selector.WeaponBaseDamageDice, selector.WeaponBaseDamageDicePerLevel, selector.WeaponFragmentationDice,
 	} {
 		c.True(gurps.SelectorFieldDescriptorFor(field).Validate == nil, "%v is free-form (no validator)", field)
+	}
+
+	// Scope: weapon fields default to the weapon scope; the trait frequency field is trait-scoped.
+	c.Equal(gurps.SelectorScopeWeapon, gurps.SelectorFieldDescriptorFor(selector.WeaponDamageType).Scope, "damage type is weapon-scoped")
+	freq := gurps.SelectorFieldDescriptorFor(selector.TraitFrequency)
+	c.Equal(gurps.SelectorScopeTrait, freq.Scope, "trait frequency is trait-scoped")
+
+	// Every frequency state must be a valid roll whose label round-trips (a bad key would mislabel or drop a choice).
+	c.Equal(len(frequency.Rolls), len(freq.SuggestedStates), "one state per frequency roll")
+	for _, state := range freq.SuggestedStates {
+		n, err := strconv.Atoi(state)
+		c.True(err == nil, "state %q is numeric", state)
+		roll := frequency.Roll(n)
+		c.Equal(roll, roll.EnsureValid(), "state %q is a valid frequency roll", state)
+		c.Equal(roll.String(), freq.StateTitle(state), "state %q label matches the roll", state)
+	}
+
+	// The self-control fields are trait-scoped constrained enums whose states round-trip through their enums.
+	for _, field := range []selector.Field{selector.TraitSelfControlRoll, selector.TraitSelfControlAdjustment} {
+		c.Equal(gurps.SelectorScopeTrait, gurps.SelectorFieldDescriptorFor(field).Scope, "%v is trait-scoped", field)
+	}
+	cr := gurps.SelectorFieldDescriptorFor(selector.TraitSelfControlRoll)
+	c.Equal(len(selfctrl.Rolls), len(cr.SuggestedStates), "one state per self-control roll")
+	for _, state := range cr.SuggestedStates {
+		n, err := strconv.Atoi(state)
+		c.True(err == nil, "state %q is numeric", state)
+		roll := selfctrl.Roll(n)
+		c.Equal(roll, roll.EnsureValid(), "state %q is a valid self-control roll", state)
+		c.Equal(roll.String(), cr.StateTitle(state), "state %q label matches the roll", state)
+	}
+	adj := gurps.SelectorFieldDescriptorFor(selector.TraitSelfControlAdjustment)
+	c.Equal(len(selfctrl.Adjustments), len(adj.SuggestedStates), "one state per adjustment")
+	for _, state := range adj.SuggestedStates {
+		option := selfctrl.ExtractAdjustment(state)
+		c.Equal(state, option.Key(), "state %q round-trips through the adjustment key", state)
+		c.Equal(option.String(), adj.StateTitle(state), "state %q label matches the adjustment", state)
 	}
 }

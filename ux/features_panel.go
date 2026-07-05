@@ -68,7 +68,6 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,
-		HGrab:  true,
 	})
 	p.SetBorder(unison.NewCompoundBorder(
 		&TitledBorder{
@@ -130,9 +129,10 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 		return
 	}
 	if panel != nil {
+		_, isSelectorOverride := f.(*gurps.SelectorOverride)
 		panel.AsPanel().SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.Fill,
-			HGrab:  true,
+			HGrab:  !isSelectorOverride,
 		})
 		p.AddChildAtIndex(panel, index)
 		focus.AsPanel().RequestFocus()
@@ -702,10 +702,16 @@ func (p *featuresPanel) createSelectorOverridePanel(f *gurps.SelectorOverride) (
 	p.addTypeSwitcher(panel, f)
 	panel.AddChild(unison.NewPanel())
 	focus = p.addSelectorOverrideLine(panel, f)
-	prefix := i18n.Text("to weapons whose name")
-	addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name Qualifier"), &f.NameCriteria, 1, true)
-	addUsageCriteriaPanel(panel, &f.UsageCriteria, 1, true)
-	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
+	if gurps.SelectorFieldDescriptorFor(f.Field).Scope == gurps.SelectorScopeTrait {
+		prefix := i18n.Text("to traits whose name")
+		addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name Qualifier"), &f.NameCriteria, 1, true)
+		addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
+	} else {
+		prefix := i18n.Text("to weapons whose name")
+		addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name Qualifier"), &f.NameCriteria, 1, true)
+		addUsageCriteriaPanel(panel, &f.UsageCriteria, 1, true)
+		addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
+	}
 	return panel, focus
 }
 
@@ -741,7 +747,6 @@ func (p *featuresPanel) addSelectorOverrideLine(parent *unison.Panel, f *gurps.S
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
-		HGrab:  true,
 	})
 	parent.AddChild(panel)
 	return focus

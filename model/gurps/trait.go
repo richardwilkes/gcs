@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
@@ -380,17 +381,17 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case TraitDescriptionColumn:
 		data.Type = cell.Text
-		var tooltip xbytes.InsertBuffer
+		var tooltip, overrideTooltip xbytes.InsertBuffer
 		data.Primary = t.NameAndLevel(&tooltip)
 		var buffer strings.Builder
-		if t.SelfControl > selfctrl.Always {
-			buffer.WriteString(t.SelfControl.ShortString())
+		if resolvedSelfControl := t.ResolvedSelfControl(&overrideTooltip); resolvedSelfControl > selfctrl.Always {
+			buffer.WriteString(resolvedSelfControl.ShortString())
 		}
-		if t.Frequency > frequency.None {
+		if resolvedFrequency := t.ResolvedFrequency(&overrideTooltip); resolvedFrequency > frequency.None {
 			if buffer.Len() > 0 {
 				buffer.WriteString(", ")
 			}
-			buffer.WriteString(t.Frequency.ShortString())
+			buffer.WriteString(resolvedFrequency.ShortString())
 		}
 		if buffer.Len() > 0 {
 			data.Primary += " (" + buffer.String() + ")"
@@ -401,6 +402,14 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		if tooltip.Len() != 0 {
 			t := i18n.Text("Trait level adjustments:\n") + strings.ReplaceAll(tooltip.String(), "\n", "\n- ")
+			if data.Tooltip == "" {
+				data.Tooltip = t
+			} else {
+				data.Tooltip = t + "\n---\n" + data.Tooltip
+			}
+		}
+		if overrideTooltip.Len() != 0 {
+			t := i18n.Text("Overrides:\n") + strings.ReplaceAll(overrideTooltip.String(), "\n", "\n- ")
 			if data.Tooltip == "" {
 				data.Tooltip = t
 			} else {
@@ -575,6 +584,42 @@ func (t *Trait) NameWithReplacements() string {
 	return nameable.Apply(t.Name, t.Replacements)
 }
 
+// ResolveSelector resolves a trait-scoped multi-state field, applying any SelectorOverride features that target the
+// given field and match this trait. base is the field's intrinsic value. When more than one override matches, the
+// winner is chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full
+// contest is reported.
+func (t *Trait) ResolveSelector(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
+	entity := EntityFromNode(t)
+	if entity == nil {
+		return base
+	}
+	var candidates []OverrideCandidate[string]
+	for _, override := range entity.features.selectorOverrides {
+		if override.Field == field && override.MatchesTrait(t) {
+			candidates = append(candidates, OverrideCandidate[string]{Value: override.Value, Override: override})
+		}
+	}
+	return ResolveOverride(base, candidates, func(s string) string { return s }, tooltip)
+}
+
+// ResolvedFrequency returns the trait's frequency of appearance after applying any matching selector override.
+func (t *Trait) ResolvedFrequency(tooltip *xbytes.InsertBuffer) frequency.Roll {
+	return frequencyFromStateKey(t.ResolveSelector(selector.TraitFrequency, frequencyStateKey(t.Frequency), tooltip))
+}
+
+// ResolvedSelfControl returns the trait's self-control roll after applying any matching selector override.
+func (t *Trait) ResolvedSelfControl(tooltip *xbytes.InsertBuffer) selfctrl.Roll {
+	return selfControlRollFromStateKey(t.ResolveSelector(selector.TraitSelfControlRoll,
+		selfControlRollStateKey(t.SelfControl), tooltip))
+}
+
+// ResolvedSelfControlAdjustment returns the trait's self-control adjustment after applying any matching selector
+// override.
+func (t *Trait) ResolvedSelfControlAdjustment(tooltip *xbytes.InsertBuffer) selfctrl.Adjustment {
+	return selfctrl.ExtractAdjustment(t.ResolveSelector(selector.TraitSelfControlAdjustment,
+		t.SelfControlAdj.Key(), tooltip))
+}
+
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (t *Trait) LocalNotesWithReplacements() string {
 	return nameable.Apply(t.LocalNotes, t.Replacements)
@@ -687,18 +732,19 @@ func (t *Trait) ModifierNotes() string {
 // Trait.Frequency.
 func (t *Trait) modifierNotes(includeSelfControl, includeFrequency bool) string {
 	var lines []string
-	if includeSelfControl && t.SelfControl != selfctrl.None {
+	if resolvedSelfControl := t.ResolvedSelfControl(nil); includeSelfControl && resolvedSelfControl != selfctrl.None {
+		resolvedAdjustment := t.ResolvedSelfControlAdjustment(nil)
 		var buffer strings.Builder
 		buffer.WriteString(i18n.Text("Self-Control Roll (CR): "))
-		buffer.WriteString(t.SelfControl.String())
-		if t.SelfControlAdj != selfctrl.NoAdjustment {
+		buffer.WriteString(resolvedSelfControl.String())
+		if resolvedAdjustment != selfctrl.NoAdjustment {
 			buffer.WriteString(", ")
-			buffer.WriteString(t.SelfControlAdj.Description(t.SelfControl))
+			buffer.WriteString(resolvedAdjustment.Description(resolvedSelfControl))
 		}
 		lines = append(lines, buffer.String())
 	}
-	if includeFrequency && t.Frequency != frequency.None {
-		lines = append(lines, fmt.Sprintf(i18n.Text("Frequency Roll (FR): %s"), t.Frequency))
+	if resolvedFrequency := t.ResolvedFrequency(nil); includeFrequency && resolvedFrequency != frequency.None {
+		lines = append(lines, fmt.Sprintf(i18n.Text("Frequency Roll (FR): %s"), resolvedFrequency))
 	}
 	var buffer strings.Builder
 	Traverse(func(mod *TraitModifier) bool {
