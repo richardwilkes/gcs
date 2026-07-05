@@ -307,7 +307,7 @@ func (w *WeaponBonus) addToTooltip(adjustedAmount fxp.Int, buffer *xbytes.Insert
 			case feature.WeaponScopeAccBonus:
 				buf.WriteString(i18n.Text("scope accuracy"))
 			case feature.WeaponDRDivisorBonus:
-				buf.WriteString(i18n.Text("DR divisor"))
+				buf.WriteString(i18n.Text("armor divisor"))
 			case feature.WeaponEffectiveSTBonus:
 				buf.WriteString(i18n.Text("effective ST"))
 			case feature.WeaponMinSTBonus:

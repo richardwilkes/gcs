@@ -15,8 +15,10 @@ import (
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -129,22 +131,58 @@ func (o *SelectorOverride) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return json.UnmarshalDecode(dec, &o.SelectorOverrideData)
 }
 
-// SelectorFieldDescriptor describes a selector field: the values worth suggesting in the authoring UI and whether
-// values outside that set are permitted. This is the domain knowledge that turns a bare enum into an editable field.
+// SelectorFieldDescriptor describes a selector field: the values worth suggesting in the authoring UI, an optional
+// human label for each of those values, an optional validator, and whether values outside the suggested set are
+// permitted. This is the domain knowledge that turns a bare enum into an editable field.
 type SelectorFieldDescriptor struct {
 	SuggestedStates []string
+	StateTitle      func(state string) string // optional human label in the picker; nil means the state itself
+	Validate        func(value string) bool   // optional; nil means any value is accepted
 	Field           selector.Field
 	FreeForm        bool
 }
 
-// selectorFieldDescriptors holds the descriptor for every selector.Field. GURPS damage types are a free-form string in
-// this model, so WeaponDamageType offers the common abbreviations as suggestions but still accepts anything.
+// damageTypeStates are the common GURPS damage type abbreviations, shared by the damage type and fragmentation type
+// fields. Both are free-form strings in this model, so these are offered as suggestions but anything is accepted.
+var damageTypeStates = []string{"cr", "cut", "imp", "pi-", "pi", "pi+", "pi++", "burn", "cor", "fat", "tox"}
+
+// validFixedPoint reports whether value parses as a fixed-point number, used to validate the numeric damage fields.
+func validFixedPoint(value string) bool {
+	_, err := fxp.FromString(value)
+	return err == nil
+}
+
+// selectorFieldDescriptors holds the descriptor for every selector.Field.
 var selectorFieldDescriptors = map[selector.Field]SelectorFieldDescriptor{
 	selector.WeaponDamageType: {
 		Field:           selector.WeaponDamageType,
-		SuggestedStates: []string{"cr", "cut", "imp", "pi-", "pi", "pi+", "pi++", "burn", "cor", "fat", "tox"},
+		SuggestedStates: damageTypeStates,
 		FreeForm:        true,
 	},
+	selector.WeaponFragmentationType: {
+		Field:           selector.WeaponFragmentationType,
+		SuggestedStates: damageTypeStates,
+		FreeForm:        true,
+	},
+	selector.WeaponDamageStrengthBasis: {
+		Field: selector.WeaponDamageStrengthBasis,
+		SuggestedStates: []string{
+			stdmg.None.Key(), stdmg.Thrust.Key(), stdmg.LiftingThrust.Key(), stdmg.TelekineticThrust.Key(),
+			stdmg.IQThrust.Key(), stdmg.Swing.Key(), stdmg.LiftingSwing.Key(), stdmg.TelekineticSwing.Key(),
+			stdmg.IQSwing.Key(),
+		},
+		StateTitle: func(state string) string { return stdmg.ExtractOption(state).String() },
+		FreeForm:   false,
+	},
+	// Dice-spec fields are free-form strings (they may even hold a script), so no validator is applied.
+	selector.WeaponBaseDamageDice:         {Field: selector.WeaponBaseDamageDice, FreeForm: true},
+	selector.WeaponBaseDamageDicePerLevel: {Field: selector.WeaponBaseDamageDicePerLevel, FreeForm: true},
+	selector.WeaponFragmentationDice:      {Field: selector.WeaponFragmentationDice, FreeForm: true},
+	// Numeric fields accept any fixed-point value.
+	selector.WeaponArmorDivisor:              {Field: selector.WeaponArmorDivisor, FreeForm: true, Validate: validFixedPoint},
+	selector.WeaponFragmentationArmorDivisor: {Field: selector.WeaponFragmentationArmorDivisor, FreeForm: true, Validate: validFixedPoint},
+	selector.WeaponDamageStrengthMultiplier:  {Field: selector.WeaponDamageStrengthMultiplier, FreeForm: true, Validate: validFixedPoint},
+	selector.WeaponDamagePerDieModifier:      {Field: selector.WeaponDamagePerDieModifier, FreeForm: true, Validate: validFixedPoint},
 }
 
 // SelectorFieldDescriptorFor returns the descriptor for the given field, or a zero-value free-form descriptor if the

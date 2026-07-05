@@ -663,7 +663,7 @@ var allEnums = []*enumInfo{
 			{
 				Name:   "WeaponDRDivisorBonus",
 				Key:    "weapon_dr_divisor_bonus",
-				String: "Gives a weapon DR divisor modifier of",
+				String: "Gives a weapon armor divisor modifier of",
 			},
 			{
 				Name:   "WeaponEffectiveSTBonus",
@@ -1241,11 +1241,58 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/selector",
 		Name: "field",
 		Desc: "identifies a multi-state field that a SelectorOverride can replace",
+		// The order here matches the order the fields are presented in the weapon editor's damage block, so the field
+		// picker reads top-to-bottom the same way the editor does.
 		Values: []*enumValue{
+			{
+				Name:   "WeaponDamageStrengthBasis",
+				Key:    "weapon_damage_strength_basis",
+				String: "weapon damage strength basis",
+			},
+			{
+				Name:   "WeaponDamageStrengthMultiplier",
+				Key:    "weapon_damage_strength_multiplier",
+				String: "weapon damage strength multiplier",
+			},
+			{
+				Name:   "WeaponBaseDamageDice",
+				Key:    "weapon_base_damage_dice",
+				String: "weapon base damage dice",
+			},
+			{
+				Name:   "WeaponBaseDamageDicePerLevel",
+				Key:    "weapon_base_damage_dice_per_level",
+				String: "weapon base damage dice per level",
+			},
+			{
+				Name:   "WeaponDamagePerDieModifier",
+				Key:    "weapon_damage_per_die_modifier",
+				String: "weapon damage per-die modifier",
+			},
+			{
+				Name:   "WeaponArmorDivisor",
+				Key:    "weapon_armor_divisor",
+				String: "weapon armor divisor",
+			},
 			{
 				Name:   "WeaponDamageType",
 				Key:    "weapon_damage_type",
 				String: "weapon damage type",
+			},
+			{
+				Name:   "WeaponFragmentationDice",
+				Key:    "weapon_fragmentation_dice",
+				String: "weapon fragmentation dice",
+			},
+			{
+				Name:   "WeaponFragmentationArmorDivisor",
+				Key:    "weapon_fragmentation_armor_divisor",
+				String: "weapon fragmentation armor divisor",
+			},
+			{
+				Name:   "WeaponFragmentationType",
+				Key:    "weapon_fragmentation_type",
+				String: "weapon fragmentation damage type",
 			},
 		},
 	},

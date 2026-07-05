@@ -755,7 +755,24 @@ func (p *featuresPanel) addSelectorValueEditor(parent *unison.Panel, f *gurps.Se
 		if !slices.Contains(d.SuggestedStates, f.Value) {
 			f.Value = d.SuggestedStates[0]
 		}
-		return addPopup(parent, d.SuggestedStates, &f.Value)
+		// A constrained field shows a popup of human labels while storing the canonical value behind each one.
+		popup := unison.NewPopupMenu[string]()
+		for _, state := range d.SuggestedStates {
+			if d.StateTitle != nil {
+				popup.AddItem(d.StateTitle(state))
+			} else {
+				popup.AddItem(state)
+			}
+		}
+		popup.SelectIndex(slices.Index(d.SuggestedStates, f.Value))
+		popup.SelectionChangedCallback = func(pm *unison.PopupMenu[string]) {
+			if i := pm.SelectedIndex(); i >= 0 && i < len(d.SuggestedStates) {
+				f.Value = d.SuggestedStates[i]
+				MarkModified(parent)
+			}
+		}
+		parent.AddChild(popup)
+		return popup
 	}
 	field := NewStringField(nil, "", i18n.Text("Value"),
 		func() string { return f.Value },
@@ -772,6 +789,9 @@ func (p *featuresPanel) addSelectorValueEditor(parent *unison.Panel, f *gurps.Se
 	})
 	if len(d.SuggestedStates) != 0 {
 		field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Suggested values: %s"), strings.Join(d.SuggestedStates, ", ")))
+	}
+	if d.Validate != nil {
+		field.ValidateCallback = func() bool { return d.Validate(field.Text()) }
 	}
 	parent.AddChild(field)
 	return field

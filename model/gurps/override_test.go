@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -73,4 +74,51 @@ func TestResolveOverride(t *testing.T) {
 	}, identity, &tooltip)
 	c.Equal("burn", got, "conflict resolves deterministically")
 	c.True(strings.Contains(tooltip.String(), "conflict"), "conflict is flagged in tooltip")
+}
+
+// TestSelectorFieldDescriptors guards the field wiring: every selector.Field must have a descriptor, and a constrained
+// field's suggested states must all be valid stored values with a non-empty picker label. This catches enum-key typos
+// in the descriptor table.
+func TestSelectorFieldDescriptors(t *testing.T) {
+	c := check.New(t)
+	for _, field := range selector.Fields {
+		d := gurps.SelectorFieldDescriptorFor(field)
+		c.Equal(field, d.Field, "descriptor is registered for %v", field)
+		if d.FreeForm || d.StateTitle == nil {
+			continue
+		}
+		for _, state := range d.SuggestedStates {
+			// A constrained state must produce a non-empty picker label.
+			c.True(d.StateTitle(state) != "", "state %q of %v has a label", state, field)
+		}
+	}
+
+	// The strength-basis states must map to distinct, valid stdmg options (a duplicated or misspelled key would collapse
+	// two picker entries onto the same option).
+	d := gurps.SelectorFieldDescriptorFor(selector.WeaponDamageStrengthBasis)
+	seen := make(map[stdmg.Option]bool)
+	for _, state := range d.SuggestedStates {
+		opt := stdmg.ExtractOption(state)
+		c.Equal(state, opt.Key(), "state %q round-trips through stdmg", state)
+		c.False(seen[opt], "state %q is not a duplicate", state)
+		seen[opt] = true
+	}
+
+	// The numeric damage fields validate fixed-point input; the dice-spec fields are free-form with no validator.
+	for _, field := range []selector.Field{
+		selector.WeaponArmorDivisor, selector.WeaponFragmentationArmorDivisor,
+		selector.WeaponDamageStrengthMultiplier, selector.WeaponDamagePerDieModifier,
+	} {
+		nd := gurps.SelectorFieldDescriptorFor(field)
+		c.True(nd.Validate != nil, "%v has a validator", field)
+		if nd.Validate != nil {
+			c.True(nd.Validate("2"), "%v accepts a number", field)
+			c.False(nd.Validate("abc"), "%v rejects a non-number", field)
+		}
+	}
+	for _, field := range []selector.Field{
+		selector.WeaponBaseDamageDice, selector.WeaponBaseDamageDicePerLevel, selector.WeaponFragmentationDice,
+	} {
+		c.True(gurps.SelectorFieldDescriptorFor(field).Validate == nil, "%v is free-form (no validator)", field)
+	}
 }

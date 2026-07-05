@@ -219,7 +219,7 @@ func (enum Type) String() string {
 	case WeaponScopeAccBonus:
 		return i18n.Text(`Gives a weapon scope accuracy modifier of`)
 	case WeaponDRDivisorBonus:
-		return i18n.Text(`Gives a weapon DR divisor modifier of`)
+		return i18n.Text(`Gives a weapon armor divisor modifier of`)
 	case WeaponEffectiveSTBonus:
 		return i18n.Text(`Gives a weapon effective ST modifier of`)
 	case WeaponMinSTBonus:

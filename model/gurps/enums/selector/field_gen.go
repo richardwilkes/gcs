@@ -19,15 +19,33 @@ import (
 
 // Possible values.
 const (
-	WeaponDamageType Field = iota
+	WeaponDamageStrengthBasis Field = iota
+	WeaponDamageStrengthMultiplier
+	WeaponBaseDamageDice
+	WeaponBaseDamageDicePerLevel
+	WeaponDamagePerDieModifier
+	WeaponArmorDivisor
+	WeaponDamageType
+	WeaponFragmentationDice
+	WeaponFragmentationArmorDivisor
+	WeaponFragmentationType
 )
 
 // LastField is the last valid value.
-const LastField Field = WeaponDamageType
+const LastField Field = WeaponFragmentationType
 
 // Fields holds all possible values.
 var Fields = []Field{
+	WeaponDamageStrengthBasis,
+	WeaponDamageStrengthMultiplier,
+	WeaponBaseDamageDice,
+	WeaponBaseDamageDicePerLevel,
+	WeaponDamagePerDieModifier,
+	WeaponArmorDivisor,
 	WeaponDamageType,
+	WeaponFragmentationDice,
+	WeaponFragmentationArmorDivisor,
+	WeaponFragmentationType,
 }
 
 // Field identifies a multi-state field that a SelectorOverride can replace.
@@ -35,7 +53,7 @@ type Field byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Field) EnsureValid() Field {
-	if enum <= WeaponDamageType {
+	if enum <= WeaponFragmentationType {
 		return enum
 	}
 	return 0
@@ -44,8 +62,26 @@ func (enum Field) EnsureValid() Field {
 // Key returns the key used in serialization.
 func (enum Field) Key() string {
 	switch enum {
+	case WeaponDamageStrengthBasis:
+		return "weapon_damage_strength_basis"
+	case WeaponDamageStrengthMultiplier:
+		return "weapon_damage_strength_multiplier"
+	case WeaponBaseDamageDice:
+		return "weapon_base_damage_dice"
+	case WeaponBaseDamageDicePerLevel:
+		return "weapon_base_damage_dice_per_level"
+	case WeaponDamagePerDieModifier:
+		return "weapon_damage_per_die_modifier"
+	case WeaponArmorDivisor:
+		return "weapon_armor_divisor"
 	case WeaponDamageType:
 		return "weapon_damage_type"
+	case WeaponFragmentationDice:
+		return "weapon_fragmentation_dice"
+	case WeaponFragmentationArmorDivisor:
+		return "weapon_fragmentation_armor_divisor"
+	case WeaponFragmentationType:
+		return "weapon_fragmentation_type"
 	default:
 		return Field(0).Key()
 	}
@@ -54,8 +90,26 @@ func (enum Field) Key() string {
 // String implements fmt.Stringer.
 func (enum Field) String() string {
 	switch enum {
+	case WeaponDamageStrengthBasis:
+		return i18n.Text(`weapon damage strength basis`)
+	case WeaponDamageStrengthMultiplier:
+		return i18n.Text(`weapon damage strength multiplier`)
+	case WeaponBaseDamageDice:
+		return i18n.Text(`weapon base damage dice`)
+	case WeaponBaseDamageDicePerLevel:
+		return i18n.Text(`weapon base damage dice per level`)
+	case WeaponDamagePerDieModifier:
+		return i18n.Text(`weapon damage per-die modifier`)
+	case WeaponArmorDivisor:
+		return i18n.Text(`weapon armor divisor`)
 	case WeaponDamageType:
 		return i18n.Text(`weapon damage type`)
+	case WeaponFragmentationDice:
+		return i18n.Text(`weapon fragmentation dice`)
+	case WeaponFragmentationArmorDivisor:
+		return i18n.Text(`weapon fragmentation armor divisor`)
+	case WeaponFragmentationType:
+		return i18n.Text(`weapon fragmentation damage type`)
 	default:
 		return Field(0).String()
 	}

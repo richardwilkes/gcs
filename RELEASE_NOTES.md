@@ -12,11 +12,13 @@
   bonus to anything matching any one of the listed tags without stacking (e.g. `Sword, Axe, Polearm`). This applies to
   every tag-based criteria, including skill, spell, and their point bonuses, weapon bonuses, and equipment
   prerequisites. (#1008)
-- Added a new "Sets the value of" feature for replacing a multi-state field with a chosen value, rather than adjusting
-  it by a number or toggling a flag. The first supported field is a weapon's damage type. Because such a field can hold
-  only one value, these are resolved absolutely instead of stacking: when more than one applies to the same field, the
-  one with the highest priority wins, ties are broken in favor of the more specific match, and the winning value along
-  with the ones it overrode is shown in the tooltip.
+- Added a new "Sets the value of" feature for replacing a field with a chosen value, rather than adjusting it by a
+  number or toggling a flag. The supported fields cover a weapon's damage: type, strength basis (thrust, swing, and
+  their lifting/telekinetic/IQ variants), base dice, base dice per level, armor divisor, strength multiplier, per-die
+  modifier, and the fragmentation dice, armor divisor, and damage type. Because such a field can hold only one value,
+  these are resolved absolutely instead of stacking: when more than one applies to the same field, the one with the
+  highest priority wins, ties are broken in favor of the more specific match, and the winning value along with the ones
+  it overrode is shown in the tooltip.
 
 ## Bug Fixes
 

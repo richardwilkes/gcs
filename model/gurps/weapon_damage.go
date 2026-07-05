@@ -189,6 +189,45 @@ func (w *WeaponDamage) DamageTooltip() string {
 	return IncludesModifiersFrom() + tooltip.String()
 }
 
+// resolvedStrengthType returns the strength basis after applying any matching selector override. Passing a tooltip
+// records the contest; BaseDamageDice resolves with a nil tooltip for the computed dice, so the entry is written once.
+func (w *WeaponDamage) resolvedStrengthType(tooltip *xbytes.InsertBuffer) stdmg.Option {
+	if w.Owner == nil {
+		return w.StrengthType
+	}
+	return stdmg.ExtractOption(w.Owner.ResolveSelector(selector.WeaponDamageStrengthBasis, w.StrengthType.Key(),
+		tooltip))
+}
+
+// resolvedDamageString returns a string-valued damage field after applying any matching selector override.
+func (w *WeaponDamage) resolvedDamageString(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
+	if w.Owner == nil {
+		return base
+	}
+	return w.Owner.ResolveSelector(field, base, tooltip)
+}
+
+// resolvedDamageNumeric returns a numeric damage field after applying any matching selector override. The override
+// value is carried as a string; an unparsable winner falls back to the base value.
+func (w *WeaponDamage) resolvedDamageNumeric(field selector.Field, base fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
+	if w.Owner == nil {
+		return base
+	}
+	if v, err := fxp.FromString(w.Owner.ResolveSelector(field, base.String(), tooltip)); err == nil {
+		return v
+	}
+	return base
+}
+
+// surfaceBaseDamageOverrides records, in the tooltip, the contest for every override that BaseDamageDice consumes with a
+// nil tooltip (so those entries are written exactly once, here, rather than on every internal call).
+func (w *WeaponDamage) surfaceBaseDamageOverrides(tooltip *xbytes.InsertBuffer) {
+	w.resolvedStrengthType(tooltip)
+	w.resolvedDamageString(selector.WeaponBaseDamageDice, w.Base, tooltip)
+	w.resolvedDamageString(selector.WeaponBaseDamageDicePerLevel, w.BaseLeveled, tooltip)
+	w.resolvedDamageNumeric(selector.WeaponDamageStrengthMultiplier, w.StrengthMultiplier, tooltip)
+}
+
 // BaseDamageDice returns the base damage dice for this weapon (i.e. the dice before any bonuses are applied).
 func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	if w.Owner == nil {
@@ -203,8 +242,9 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	if w.Owner.Owner != nil {
 		st = w.Owner.Owner.RatedStrength()
 	}
+	strengthType := w.resolvedStrengthType(nil)
 	if st == 0 {
-		switch w.StrengthType {
+		switch strengthType {
 		case stdmg.Thrust, stdmg.Swing:
 			st = entity.StrikingStrength()
 		case stdmg.LiftingThrust, stdmg.LiftingSwing:
@@ -233,16 +273,16 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	if maxST > 0 && maxST < st {
 		st = maxST
 	}
-	if w.StrengthMultiplier > 0 { // Just in case it somehow got set to 0
-		st = st.Mul(w.StrengthMultiplier)
+	if strengthMultiplier := w.resolvedDamageNumeric(selector.WeaponDamageStrengthMultiplier, w.StrengthMultiplier, nil); strengthMultiplier > 0 { // Just in case it somehow got set to 0
+		st = st.Mul(strengthMultiplier)
 	}
 	base := dice.Dice{
 		Sides:      6,
 		Multiplier: 1,
 	}
 	baseSub := false
-	if w.Base != "" {
-		base, baseSub = w.resolveDiceSpec(w.Base)
+	if baseSpec := w.resolvedDamageString(selector.WeaponBaseDamageDice, w.Base, nil); baseSpec != "" {
+		base, baseSub = w.resolveDiceSpec(baseSpec)
 	}
 	levels := 0
 	switch t := w.Owner.Owner.(type) {
@@ -255,14 +295,14 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 			levels = fxp.AsInteger[int](t.Level)
 		}
 	}
-	if levels > 0 && w.BaseLeveled != "" {
-		leveled, leveledSub := w.resolveDiceSpec(w.BaseLeveled)
+	if baseLeveledSpec := w.resolvedDamageString(selector.WeaponBaseDamageDicePerLevel, w.BaseLeveled, nil); levels > 0 && baseLeveledSpec != "" {
+		leveled, leveledSub := w.resolveDiceSpec(baseLeveledSpec)
 		leveled = multiplyDice(levels, leveled)
 		base, baseSub = addDice(base, leveled, baseSub, leveledSub)
 	}
 	intST := fxp.AsInteger[int](st)
 	var stDamage dice.Dice
-	switch w.StrengthType {
+	switch strengthType {
 	case stdmg.Thrust, stdmg.LiftingThrust, stdmg.TelekineticThrust, stdmg.IQThrust:
 		stDamage = entity.ThrustFor(intST)
 	case stdmg.Swing, stdmg.LiftingSwing, stdmg.TelekineticSwing, stdmg.IQSwing:
@@ -291,9 +331,11 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		return w.String()
 	}
 	base := w.BaseDamageDice()
+	// Record the overrides BaseDamageDice consumed with a nil tooltip, so the contest is written exactly once, here.
+	w.surfaceBaseDamageOverrides(tooltip)
 	adjustForPhoenixFlame := entity.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
-	armorDivisor := w.ArmorDivisor
+	armorDivisor := w.resolvedDamageNumeric(selector.WeaponArmorDivisor, w.ArmorDivisor, tooltip)
 	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
@@ -321,8 +363,8 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		default:
 		}
 	}
-	if w.ModifierPerDie != 0 {
-		amt := w.ModifierPerDie.Mul(fxp.FromInteger(base.Count))
+	if modifierPerDie := w.resolvedDamageNumeric(selector.WeaponDamagePerDieModifier, w.ModifierPerDie, tooltip); modifierPerDie != 0 {
+		amt := modifierPerDie.Mul(fxp.FromInteger(base.Count))
 		if adjustForPhoenixFlame {
 			amt = amt.Div(fxp.Two)
 		}
@@ -350,8 +392,8 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		}
 		buffer.WriteString(t)
 	}
-	if w.Fragmentation != "" {
-		d, sub := w.resolveDiceSpec(w.Fragmentation)
+	if fragSpec := w.resolvedDamageString(selector.WeaponFragmentationDice, w.Fragmentation, tooltip); fragSpec != "" {
+		d, sub := w.resolveDiceSpec(fragSpec)
 		if sub {
 			// Negative fragmentation doesn't make sense, so ignore it.
 			d = dice.Dice{Sides: 6, Multiplier: 1}
@@ -362,12 +404,12 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 			}
 			buffer.WriteByte('[')
 			buffer.WriteString(frag)
-			if w.FragmentationArmorDivisor != fxp.One {
+			if fragArmorDivisor := w.resolvedDamageNumeric(selector.WeaponFragmentationArmorDivisor, w.FragmentationArmorDivisor, tooltip); fragArmorDivisor != fxp.One {
 				buffer.WriteByte('(')
-				buffer.WriteString(w.FragmentationArmorDivisor.String())
+				buffer.WriteString(fragArmorDivisor.String())
 				buffer.WriteByte(')')
 			}
-			t = strings.TrimSpace(w.FragmentationType)
+			t = strings.TrimSpace(w.Owner.ResolveSelector(selector.WeaponFragmentationType, w.FragmentationType, tooltip))
 			if t != "" {
 				buffer.WriteByte(' ')
 				buffer.WriteString(t)
