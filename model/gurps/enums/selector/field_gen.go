@@ -19,7 +19,10 @@ import (
 
 // Possible values.
 const (
-	WeaponDamageStrengthBasis Field = iota
+	TraitSelfControlRoll Field = iota
+	TraitSelfControlAdjustment
+	TraitFrequency
+	WeaponDamageStrengthBasis
 	WeaponDamageStrengthMultiplier
 	WeaponBaseDamageDice
 	WeaponBaseDamageDicePerLevel
@@ -29,16 +32,16 @@ const (
 	WeaponFragmentationDice
 	WeaponFragmentationArmorDivisor
 	WeaponFragmentationType
-	TraitSelfControlRoll
-	TraitSelfControlAdjustment
-	TraitFrequency
 )
 
 // LastField is the last valid value.
-const LastField Field = TraitFrequency
+const LastField Field = WeaponFragmentationType
 
 // Fields holds all possible values.
 var Fields = []Field{
+	TraitSelfControlRoll,
+	TraitSelfControlAdjustment,
+	TraitFrequency,
 	WeaponDamageStrengthBasis,
 	WeaponDamageStrengthMultiplier,
 	WeaponBaseDamageDice,
@@ -49,9 +52,6 @@ var Fields = []Field{
 	WeaponFragmentationDice,
 	WeaponFragmentationArmorDivisor,
 	WeaponFragmentationType,
-	TraitSelfControlRoll,
-	TraitSelfControlAdjustment,
-	TraitFrequency,
 }
 
 // Field identifies a multi-state field that a SelectorOverride can replace.
@@ -59,7 +59,7 @@ type Field byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Field) EnsureValid() Field {
-	if enum <= TraitFrequency {
+	if enum <= WeaponFragmentationType {
 		return enum
 	}
 	return 0
@@ -68,6 +68,12 @@ func (enum Field) EnsureValid() Field {
 // Key returns the key used in serialization.
 func (enum Field) Key() string {
 	switch enum {
+	case TraitSelfControlRoll:
+		return "trait_self_control_roll"
+	case TraitSelfControlAdjustment:
+		return "trait_self_control_adjustment"
+	case TraitFrequency:
+		return "trait_frequency"
 	case WeaponDamageStrengthBasis:
 		return "weapon_damage_strength_basis"
 	case WeaponDamageStrengthMultiplier:
@@ -88,12 +94,6 @@ func (enum Field) Key() string {
 		return "weapon_fragmentation_armor_divisor"
 	case WeaponFragmentationType:
 		return "weapon_fragmentation_type"
-	case TraitSelfControlRoll:
-		return "trait_self_control_roll"
-	case TraitSelfControlAdjustment:
-		return "trait_self_control_adjustment"
-	case TraitFrequency:
-		return "trait_frequency"
 	default:
 		return Field(0).Key()
 	}
@@ -102,6 +102,12 @@ func (enum Field) Key() string {
 // String implements fmt.Stringer.
 func (enum Field) String() string {
 	switch enum {
+	case TraitSelfControlRoll:
+		return i18n.Text(`trait self-control roll`)
+	case TraitSelfControlAdjustment:
+		return i18n.Text(`trait self-control adjustment`)
+	case TraitFrequency:
+		return i18n.Text(`trait frequency of appearance`)
 	case WeaponDamageStrengthBasis:
 		return i18n.Text(`weapon damage strength basis`)
 	case WeaponDamageStrengthMultiplier:
@@ -122,12 +128,6 @@ func (enum Field) String() string {
 		return i18n.Text(`weapon fragmentation armor divisor`)
 	case WeaponFragmentationType:
 		return i18n.Text(`weapon fragmentation damage type`)
-	case TraitSelfControlRoll:
-		return i18n.Text(`trait self-control roll`)
-	case TraitSelfControlAdjustment:
-		return i18n.Text(`trait self-control adjustment`)
-	case TraitFrequency:
-		return i18n.Text(`trait frequency of appearance`)
 	default:
 		return Field(0).String()
 	}

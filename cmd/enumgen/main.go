@@ -1241,9 +1241,25 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/selector",
 		Name: "field",
 		Desc: "identifies a multi-state field that a SelectorOverride can replace",
-		// The order here matches the order the fields are presented in the weapon editor's damage block, so the field
-		// picker reads top-to-bottom the same way the editor does.
+		// The fields are first grouped by the type of data they are used for, then the order within each type matches
+		// the order the fields are presented in the detail editor's block, so the field picker reads top-to-bottom the
+		// same way the editor does.
 		Values: []*enumValue{
+			{
+				Name:   "TraitSelfControlRoll",
+				Key:    "trait_self_control_roll",
+				String: "trait self-control roll",
+			},
+			{
+				Name:   "TraitSelfControlAdjustment",
+				Key:    "trait_self_control_adjustment",
+				String: "trait self-control adjustment",
+			},
+			{
+				Name:   "TraitFrequency",
+				Key:    "trait_frequency",
+				String: "trait frequency of appearance",
+			},
 			{
 				Name:   "WeaponDamageStrengthBasis",
 				Key:    "weapon_damage_strength_basis",
@@ -1293,21 +1309,6 @@ var allEnums = []*enumInfo{
 				Name:   "WeaponFragmentationType",
 				Key:    "weapon_fragmentation_type",
 				String: "weapon fragmentation damage type",
-			},
-			{
-				Name:   "TraitSelfControlRoll",
-				Key:    "trait_self_control_roll",
-				String: "trait self-control roll",
-			},
-			{
-				Name:   "TraitSelfControlAdjustment",
-				Key:    "trait_self_control_adjustment",
-				String: "trait self-control adjustment",
-			},
-			{
-				Name:   "TraitFrequency",
-				Key:    "trait_frequency",
-				String: "trait frequency of appearance",
 			},
 		},
 	},
