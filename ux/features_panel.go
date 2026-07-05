@@ -828,10 +828,16 @@ func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) *
 	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[feature.Type], index int, item feature.Type) {
 		pop.SelectIndex(index)
 		if newFeature := p.createFeatureForType(item); newFeature != nil {
-			lastFeatureTypeUsed = item
-			parent.Parent().RemoveFromParent()
 			list := *p.features
 			i := slices.IndexFunc(list, func(one gurps.Feature) bool { return one == f })
+			if i < 0 {
+				return
+			}
+			lastFeatureTypeUsed = item
+			// Remove the old row by its list position rather than via parent.Parent(): the type switcher isn't nested
+			// at a fixed depth for every feature type (the SelectorOverride row hosts it directly on the base panel),
+			// so walking up from the switcher could reach the whole features panel and delete the entire section.
+			p.RemoveChildAtIndex(i + 1) // child 0 is the add button; feature at list index i is at child index i+1
 			list[i] = newFeature
 			p.insertFeaturePanel(i+1, newFeature)
 			MarkRootAncestorForLayoutRecursively(p)
