@@ -369,6 +369,66 @@ func TestTechniqueDefaultUsesHighestLevelSkill(t *testing.T) {
 	c.Equal(high.LevelData.Level, result.Level, "the default must resolve to the highest-level matching skill")
 }
 
+// TestTechniqueDefaultAnySpecializationIgnoresQualifier reproduces issue #1061: a technique whose skill default was set
+// to a specific specialization ("is Demolition") and then switched to "whose specialization is anything" must resolve
+// against any matching specialization rather than staying locked on the leftover qualifier text.
+func TestTechniqueDefaultAnySpecializationIgnoresQualifier(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	const explosives = "Explosives"
+	demolition := addTestSkill(e, explosives, "Demolition", "", fxp.Four)
+	underwater := addTestSkill(e, explosives, "Underwater Demolition", "", fxp.FromInteger(20))
+	e.Recalculate()
+	c.True(underwater.LevelData.Level > demolition.LevelData.Level,
+		"precondition: Underwater Demolition must be the higher-level skill")
+
+	// Restricted to "is Demolition", the default resolves only to the lower-level Demolition skill.
+	isDef := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.IsText, explosives),
+		Specialization: textCriteria(criteria.IsText, "Demolition"),
+	}
+	isResult := CalculateTechniqueLevel(e, nil, "Technique", "", nil, isDef, difficulty.Average, fxp.One, false, nil, nil)
+
+	// The same default still carrying the "Demolition" qualifier but with the comparison changed to "anything" must
+	// match any specialization, so the higher-level Underwater Demolition wins.
+	anyDef := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.IsText, explosives),
+		Specialization: textCriteria(criteria.AnyText, "Demolition"),
+	}
+	anyResult := CalculateTechniqueLevel(e, nil, "Technique", "", nil, anyDef, difficulty.Average, fxp.One, false, nil, nil)
+
+	c.True(anyResult.Level > isResult.Level, "an 'anything' specialization must resolve to the higher-level "+
+		"Underwater Demolition, not stay locked on the Demolition qualifier")
+}
+
+// TestTechniqueDefaultAnySpecializationResolvesSkill exercises the full technique node path for issue #1061: the
+// resolved default skill, the technique's level, and the satisfied check must all honor the "anything" specialization
+// rather than the leftover qualifier text.
+func TestTechniqueDefaultAnySpecializationResolvesSkill(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	const explosives = "Explosives"
+	addTestSkill(e, explosives, "Demolition", "", fxp.Four)
+	underwater := addTestSkill(e, explosives, "Underwater Demolition", "", fxp.FromInteger(20))
+
+	tech := NewTechnique(e, nil, explosives)
+	// Leftover qualifier from a prior "is Demolition" selection, now switched to "anything".
+	tech.TechniqueDefault.Specialization = textCriteria(criteria.AnyText, "Demolition")
+	tech.TechniqueDefault.Modifier = -fxp.Two
+	e.Skills = append(e.Skills, tech)
+	e.Recalculate()
+
+	def := tech.DefaultSkill()
+	c.NotNil(def, "the technique must resolve a default skill")
+	c.True(def == underwater, "the technique must default to the higher-level Underwater Demolition, not Demolition")
+	c.True(tech.TechniqueSatisfied(nil, ""), "the technique must be satisfied by any matching specialization")
+	// The "Default:" note must name the skill actually matched, not the stale qualifier text.
+	c.Equal("Default: "+explosives+" (Underwater Demolition)-2", tech.ModifierNotes(),
+		"the default note must show the resolved skill, not the leftover Demolition qualifier")
+}
+
 // TestSyntheticOptionalSpecDefaultSameRequiredSpec verifies the automatic optional-specialty default only relates
 // skills that share the same required specialization. A fully-unspecialized skill must not pick up a default to a
 // sibling that has a different required specialization, even if that sibling also carries an optional specialization.

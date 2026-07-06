@@ -47,3 +47,6 @@
   set of parentheses `()` after the skill name.
 - Fixed the Linux desktop integration so the application window is correctly associated with its launcher icon (added
   the missing `StartupWMClass` and the matching window `WM_CLASS`). (#1059)
+- Fixed a technique's skill default so that switching its specialization comparison to "whose specialization is anything"
+  now matches any specialization, rather than staying locked on the specialization text left over from a prior "is"
+  selection. (#1061)

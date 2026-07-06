@@ -839,20 +839,13 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 	level := fxp.Min
 	if e != nil && def != nil {
 		if def.DefaultType == SkillID {
-			defName := def.NameWithReplacements(replacements)
-			defSpec := def.SpecializationWithReplacements(replacements)
-			if list := e.SkillNamed(defName, defSpec, requirePoints, excludes); len(list) > 0 {
-				var buf strings.Builder
-				buf.WriteString(defName)
-				if defSpec != "" {
-					buf.WriteString(" (")
-					buf.WriteString(defSpec)
-					buf.WriteByte(')')
-				}
+			// Match against the full name and specialization criteria (not just the qualifier strings) so that, e.g.,
+			// a "whose specialization is anything" default resolves to any matching specialization rather than staying
+			// locked on the qualifier text that may linger from a prior "is" selection. See issue #1061.
+			if list := e.SkillMatching(def.Name, def.Specialization, replacements, requirePoints, excludes); len(list) > 0 {
 				if excludes == nil {
 					excludes = make(map[string]bool)
 				}
-				excludes[buf.String()] = true
 				// Use the highest-level matching skill that isn't (circularly) defaulting back to this technique,
 				// rather than whichever happens to be encountered first.
 				for _, sk := range list {
@@ -867,8 +860,16 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 							sk.DefaultedFrom.SpecializationWithReplacements(replacements) != specialization
 					}
 					if usable {
+						// Exclude this skill while computing its own level so it cannot circularly default back to
+						// itself, then restore the prior state so it remains available to the other candidates.
+						skStr := sk.String()
+						had := excludes[skStr]
+						excludes[skStr] = true
 						if candidate := sk.CalculateLevel(excludes).Level; level < candidate {
 							level = candidate
+						}
+						if !had {
+							delete(excludes, skStr)
 						}
 					}
 				}
@@ -1145,8 +1146,7 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 		return true
 	}
 	e := EntityFromNode(s)
-	sk := e.BestSkillNamed(s.TechniqueDefault.NameWithReplacements(s.Replacements),
-		s.TechniqueDefault.SpecializationWithReplacements(s.Replacements), false, nil)
+	sk := e.BestSkillMatching(s.TechniqueDefault.Name, s.TechniqueDefault.Specialization, s.Replacements, false, nil)
 	satisfied := sk != nil && (sk.IsTechnique() || sk.Points > 0)
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
@@ -1213,8 +1213,25 @@ func (s *Skill) Notes() string {
 // ModifierNotes returns the notes due to modifiers.
 func (s *Skill) ModifierNotes() string {
 	if s.IsTechnique() {
-		return i18n.Text("Default: ") + s.TechniqueDefault.FullName(EntityFromNode(s), s.Replacements) +
-			s.TechniqueDefault.ModifierAsString()
+		def := s.TechniqueDefault
+		text := def.FullName(EntityFromNode(s), s.Replacements)
+		// Show the skill that actually matched rather than the default's own qualifier text, which may be stale (e.g.
+		// when the specialization comparison is "anything" but a specialization was previously entered). See issue
+		// #1061.
+		if def.SkillBased() {
+			if defSkill := s.DefaultSkill(); defSkill != nil {
+				var buffer strings.Builder
+				buffer.WriteString(defSkill.String())
+				switch {
+				case strings.EqualFold(ParryID, def.DefaultType):
+					buffer.WriteString(i18n.Text(" Parry"))
+				case strings.EqualFold(BlockID, def.DefaultType):
+					buffer.WriteString(i18n.Text(" Block"))
+				}
+				text = buffer.String()
+			}
+		}
+		return i18n.Text("Default: ") + text + def.ModifierAsString()
 	}
 	if s.AdjustedDifficulty().Difficulty != difficulty.Wildcard {
 		defSkill := s.DefaultSkill()
