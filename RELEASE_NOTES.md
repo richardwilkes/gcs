@@ -20,16 +20,17 @@
 
 ## Bug Fixes
 
-- Fixed another case of the key handling not properly masking out sticky modifier keys, this time affecting use of the
-  Tab key to move focus between fields.
+- Fixed another case of the key handling not properly masking out sticky modifier keys (CapsLock & NumLock), this time
+  affecting use of the Tab key to move focus between fields.
 - Fixed and extended the merging of identical entries added to a character sheet, so a matching entry now adds to the
   existing one rather than creating a duplicate row: skills and spells combine their points, and leveled traits combine
   their levels (only when their modifiers, including which are enabled, are identical). This works whether the entry
   comes from applying a template, dragging, or copying, and in the cases that previously failed: entries with a tech
   level, entries whose modifiers or nameable substitutions are resolved as they are added, duplicate entries within a
   single template, and entries dragged or copied from another character sheet.
-- Fixed spell prerequisite counting so that a spell which itself requires the spell being checked is no longer counted
-  toward that spell's own prerequisites, avoiding a circular prerequisite relationship. (#737)
+- Fixed spell prerequisite counting (for things like "6 spells from the Air college") so that a spell which itself
+  requires the spell being checked is no longer counted toward that spell's own prerequisites, avoiding a circular
+  prerequisite relationship. (#737)
 - Fixed markdown page references whose path is URL-encoded (e.g. `md:User%20Guide/Scripting%20Guide`) so they resolve to
   the correct file, just like their non-encoded equivalents.
 - Fixed the display of a skill whose optional specialization resolves to an empty string, so it no longer shows an empty
