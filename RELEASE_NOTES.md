@@ -17,6 +17,16 @@
   instead of stacking: when more than one applies to the same field, the one with the highest priority wins, ties are
   broken in favor of the more specific match, and the winning value along with the ones it overrode is shown in the
   tooltip.
+- Added a new "Adjusts the maximum uses" feature for raising or lowering a piece of equipment's maximum uses. As with
+  equipment modifier costs, the operation is taken from what you enter: a plain number adds (e.g. `1` or `-1`), a value
+  ending in `%` adjusts by a percentage (e.g. `-10%`), and a value with an `x` multiplies (e.g. `x2`). It can optionally
+  scale per level, and can apply to the equipment it is attached to ("to this equipment") or to other equipment matched
+  by name and tags ("to equipment whose name"). The resolved maximum is always kept within the range 0 to 9,999,999.
+- Added a "Reset Uses to Maximum" command alongside the existing "Increase Uses" and "Decrease Uses" commands, available
+  from the menus, the equipment context menu, and as an assignable key binding.
+- When a feature lowers a piece of equipment's maximum uses below its current remaining uses, the remaining uses shown
+  (and adjusted by the uses commands) are now capped at the new maximum. The stored value is left untouched until you
+  change it or save the file, at which point it is brought into range.
 
 ## Bug Fixes
 

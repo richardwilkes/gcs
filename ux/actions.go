@@ -111,6 +111,7 @@ var (
 	perSheetSettingsAction              *unison.Action
 	printAction                         *unison.Action
 	redoAction                          *unison.Action
+	resetUsesToMaxAction                *unison.Action
 	saveAction                          *unison.Action
 	saveAsAction                        *unison.Action
 	scale100Action                      *unison.Action
@@ -393,6 +394,12 @@ func registerActions() {
 		ID:              IncrementUsesItemID,
 		Title:           i18n.Text("Increase Uses"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyUp, Modifiers: mod.OSMenuCommand()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	resetUsesToMaxAction = registerKeyBindableAction("reset.uses.to.max", &unison.Action{
+		ID:              ResetUsesToMaxItemID,
+		Title:           i18n.Text("Reset Uses to Maximum"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})

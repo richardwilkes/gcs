@@ -69,6 +69,7 @@ func NewLoot() *Loot {
 
 // Save the Loot to a file as JSON.
 func (l *Loot) Save(filePath string) error {
+	AdjustEquipmentUsesForSave(l.Equipment)
 	return jio.SaveToFile(filePath, l)
 }
 

@@ -22,6 +22,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
@@ -59,6 +61,9 @@ const (
 	EquipmentReferenceColumn
 	EquipmentLibSrcColumn
 )
+
+// MaxEquipmentMaxUses is the largest permitted resolved value for an Equipment's maximum uses.
+const MaxEquipmentMaxUses = 9999999
 
 // Equipment holds a piece of equipment.
 type Equipment struct {
@@ -130,6 +135,7 @@ func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, erro
 
 // SaveEquipment writes the Equipment list to the file as JSON.
 func SaveEquipment(equipment []*Equipment, filePath string) error {
+	AdjustEquipmentUsesForSave(equipment)
 	return jio.SaveToFile(filePath, &equipmentListData{
 		Version: jio.CurrentDataVersion,
 		Rows:    equipment,
@@ -535,12 +541,12 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 		if e.RatedST != 0 {
 			fmt.Fprintf(&localBuffer, i18n.Text("Rated ST %s"), e.RatedST.Comma())
 		}
-		if e.MaxUses > 0 {
+		if maxUses := e.ResolvedMaxUses(); maxUses > 0 {
 			if localBuffer.Len() != 0 {
 				localBuffer.WriteString("; ")
 			}
-			fmt.Fprintf(&localBuffer, i18n.Text("%s of %s uses left"), xstrings.CommaInt(e.Uses),
-				xstrings.CommaInt(e.MaxUses))
+			fmt.Fprintf(&localBuffer, i18n.Text("%s of %s uses left"), xstrings.CommaInt(min(e.Uses, maxUses)),
+				xstrings.CommaInt(maxUses))
 		}
 		if localNotes := e.ResolveLocalNotes(); localNotes != "" {
 			if localBuffer.Len() != 0 {
@@ -704,6 +710,86 @@ func ExtendedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weigh
 		base += (contained - reduction).Max(0)
 	}
 	return fxp.Weight(base.Mul(qty))
+}
+
+// ResolvedMaxUses returns the MaxUses adjusted by any applicable EquipmentMaxUsesBonus features, clamped to the range
+// [0, MaxEquipmentMaxUses]. "This equipment" bonuses attached to this item or its enabled modifiers are always applied;
+// "equipment whose name" bonuses are gathered from the owning entity, if there is one.
+func (e *Equipment) ResolvedMaxUses() int {
+	addition := fxp.Int(0)
+	percentage := fxp.Int(0)
+	multiplier := fxp.One
+	have := false
+	apply := func(bonus *EquipmentMaxUsesBonus) {
+		have = true
+		amount := bonus.AdjustedAmount()
+		switch bonus.Operation() {
+		case maxusesmod.Percentage:
+			percentage += amount
+		case maxusesmod.Multiplier:
+			if amount <= 0 {
+				amount = fxp.One
+			}
+			multiplier = multiplier.Mul(amount)
+		default: // maxusesmod.Addition
+			addition += amount
+		}
+	}
+	applyThisEquipment := func(features Features) {
+		for _, f := range features {
+			if bonus, ok := f.(*EquipmentMaxUsesBonus); ok && bonus.SelectionType == equipmentsel.ThisEquipment {
+				// The level driving a per-level bonus comes from the item the bonus is attached to, matching how
+				// Entity.processFeatures assigns the leveled owner for equipment features.
+				bonus.SetLeveledOwner(e)
+				apply(bonus)
+			}
+		}
+	}
+	applyThisEquipment(e.Features)
+	Traverse(func(mod *EquipmentModifier) bool {
+		applyThisEquipment(mod.Features)
+		return false
+	}, true, true, e.Modifiers...)
+	if entity := EntityFromNode(e); entity != nil {
+		for _, bonus := range entity.EquipmentMaxUsesBonusesFor(e.NameWithReplacements(), e.TagList(), nil) {
+			apply(bonus)
+		}
+	}
+	if !have {
+		return e.MaxUses
+	}
+	result := fxp.FromInteger(e.MaxUses) + addition
+	result += result.Mul(percentage).Div(fxp.Hundred)
+	result = result.Mul(multiplier)
+	return fxp.AsInteger[int](result.Max(0).Min(fxp.FromInteger(MaxEquipmentMaxUses)))
+}
+
+// ResolvedUses returns the current Uses capped at ResolvedMaxUses. This is the value that should be displayed; the
+// stored Uses value itself is intentionally left unchanged (a feature that lowers the maximum below the stored Uses
+// only affects what is shown) until the user edits it or the data is saved.
+func (e *Equipment) ResolvedUses() int {
+	if maxUses := e.ResolvedMaxUses(); e.Uses > maxUses {
+		return maxUses
+	}
+	return e.Uses
+}
+
+// AdjustUsesToResolvedMax caps the stored Uses at the ResolvedMaxUses value, bringing a Uses value that a feature has
+// pushed above the maximum back into range. This mutates the stored value and is intended to be called just before
+// saving.
+func (e *Equipment) AdjustUsesToResolvedMax() {
+	if maxUses := e.ResolvedMaxUses(); e.Uses > maxUses {
+		e.Uses = maxUses
+	}
+}
+
+// AdjustEquipmentUsesForSave caps the stored Uses of every piece of equipment in the list (including its children) at
+// its ResolvedMaxUses. Call this on a data object's equipment just before saving it to disk.
+func AdjustEquipmentUsesForSave(list []*Equipment) {
+	Traverse(func(e *Equipment) bool {
+		e.AdjustUsesToResolvedMax()
+		return false
+	}, false, false, list...)
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.

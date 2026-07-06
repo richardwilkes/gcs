@@ -1074,9 +1074,9 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 						ex.writeEncodedText(parent.NameWithReplacements())
 					}
 				case "USES":
-					ex.writeEncodedText(strconv.Itoa(eqp.Uses))
+					ex.writeEncodedText(strconv.Itoa(eqp.ResolvedUses()))
 				case "MAX_USES":
-					ex.writeEncodedText(strconv.Itoa(eqp.MaxUses))
+					ex.writeEncodedText(strconv.Itoa(eqp.ResolvedMaxUses()))
 				default:
 					switch {
 					case strings.HasPrefix(key, "DESCRIPTION_MODIFIER_NOTES"):

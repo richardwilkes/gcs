@@ -91,19 +91,26 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			}))
 			content.AddChild(unison.NewPanel())
 			addCheckBox(content, i18n.Text("Ignore weight for skills"), &e.editorData.WeightIgnoredForSkills)
+			resolvedMaxUses := func() int { return cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedMaxUses() }
 			usesLabel := i18n.Text("Uses Left")
-			wrapper := addFlowWrapper(content, usesLabel, 3)
-			usesField := addIntegerField(wrapper, nil, "", usesLabel, "", &e.editorData.Uses, 0, 9999999)
+			wrapper := addFlowWrapper(content, usesLabel, 5)
+			usesField := addIntegerField(wrapper, nil, "", usesLabel, "", &e.editorData.Uses, 0,
+				gurps.MaxEquipmentMaxUses)
 			maxUsesLabel := i18n.Text("Maximum Uses")
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(maxUsesLabel, false))
-			addIntegerField(wrapper, nil, "", maxUsesLabel, "", &e.editorData.MaxUses, 0, 9999999)
+			addIntegerField(wrapper, nil, "", maxUsesLabel, "", &e.editorData.MaxUses, 0, gurps.MaxEquipmentMaxUses)
+			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Adjusted Maximum Uses"), false))
+			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
+				field.SetTitle(strconv.Itoa(resolvedMaxUses()))
+				field.MarkForLayoutAndRedraw()
+			}))
 			addLabelAndDecimalField(content, nil, "", i18n.Text("Rated ST"), i18n.Text("Equipment with a rated ST use this value instead of the user's ST"), &e.editorData.RatedST, 0, fxp.Max)
 			addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), i18n.Text("Level can be used with features and modifiers that have per-level effects"), &e.editorData.Level, 0, fxp.Max)
 			addTagsLabelAndField(content, &e.editorData.Tags)
 			addPageRefLabelAndField(content, &e.editorData.PageRef)
 			addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 			addSourceFields(content, &e.target.SourcedID)
-			adjustFieldBlank(usesField, e.editorData.MaxUses <= 0)
+			adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
 			content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment))
 			content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 			modifiersPanel := newEquipmentModifiersPanel(entity, &e.editorData.Modifiers)
@@ -117,10 +124,11 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			e.InstallCmdHandlers(NewEquipmentContainerModifierItemID, unison.AlwaysEnabled,
 				func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, ContainerItemVariant) })
 			return func() {
-				if e.editorData.Uses > e.editorData.MaxUses {
-					usesField.SetText(strconv.Itoa(e.editorData.MaxUses))
+				maxUses := resolvedMaxUses()
+				if e.editorData.Uses > maxUses {
+					usesField.SetText(strconv.Itoa(maxUses))
 				}
-				adjustFieldBlank(usesField, e.editorData.MaxUses <= 0)
+				adjustFieldBlank(usesField, maxUses <= 0)
 			}
 		}, nil)
 }

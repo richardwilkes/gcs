@@ -57,6 +57,8 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			feat = &ContainedWeightReduction{}
 		case feature.CostReduction:
 			feat = &CostReduction{}
+		case feature.EquipmentMaxUsesBonus:
+			feat = &EquipmentMaxUsesBonus{}
 		case feature.DRBonus:
 			feat = &DRBonus{}
 		case feature.ReactionBonus:

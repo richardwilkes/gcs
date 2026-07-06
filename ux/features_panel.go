@@ -19,7 +19,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
@@ -106,6 +108,8 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 		panel, focus = p.createContainedWeightReductionPanel(one)
 	case *gurps.CostReduction:
 		panel, focus = p.createCostReductionPanel(one)
+	case *gurps.EquipmentMaxUsesBonus:
+		panel, focus = p.createEquipmentMaxUsesBonusPanel(one)
 	case *gurps.DRBonus:
 		panel, focus = p.createDRBonusPanel(one)
 	case *gurps.ReactionBonus:
@@ -427,6 +431,70 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	}
 	index = p.addWrapperAtIndex(parent, wrapper, index, false)
 	if f.SelectionType != skillsel.ThisWeapon {
+		wrapper, index = p.prepareNewWrapper(parent, index)
+		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
+		p.addWrapperAtIndex(parent, wrapper, index, false)
+	}
+}
+
+func (p *featuresPanel) createEquipmentMaxUsesBonusPanel(f *gurps.EquipmentMaxUsesBonus) (main *unison.Panel, focus unison.Paneler) {
+	panel := p.createBasePanel(f)
+	focus = p.addEquipmentMaxUsesModifierLine(panel, f)
+	panel.AddChild(unison.NewPanel())
+	wrapper := unison.NewPanel()
+	var criteriaPopup *unison.PopupMenu[string]
+	var criteriaField *StringField
+	popup := addPopup(wrapper, equipmentsel.Types, &f.SelectionType)
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[equipmentsel.Type], index int, item equipmentsel.Type) {
+		pop.SelectIndex(index)
+		f.SelectionType = item
+		adjustPopupBlank(criteriaPopup, f.SelectionType == equipmentsel.ThisEquipment)
+		adjustFieldBlank(criteriaField, f.SelectionType == equipmentsel.ThisEquipment)
+		i := panel.IndexOfChild(wrapper) + 1
+		for j := len(panel.Children()) - 1; j >= i; j-- {
+			panel.RemoveChildAtIndex(j)
+		}
+		p.createSecondaryEquipmentMaxUsesPanels(panel, i, f)
+		MarkRootAncestorForLayoutRecursively(p)
+		MarkModified(p)
+	}
+	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
+	adjustPopupBlank(criteriaPopup, f.SelectionType == equipmentsel.ThisEquipment)
+	adjustFieldBlank(criteriaField, f.SelectionType == equipmentsel.ThisEquipment)
+	p.createSecondaryEquipmentMaxUsesPanels(panel, len(panel.Children()), f)
+	return panel, focus
+}
+
+func (p *featuresPanel) addEquipmentMaxUsesModifierLine(parent *unison.Panel, f *gurps.EquipmentMaxUsesBonus) *StringField {
+	panel := unison.NewPanel()
+	p.addTypeSwitcher(panel, f)
+	field := NewStringField(nil, "", i18n.Text("Maximum Uses Adjustment"),
+		func() string { return f.Amount },
+		func(value string) {
+			f.Amount = maxusesmod.Normalize(value)
+			MarkModified(panel)
+		})
+	field.SetMinimumTextWidthUsing("-1,000,000")
+	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number, percentage or multiplier, e.g. "-1", "10%" or "x2"`))
+	panel.AddChild(field)
+	addCheckBox(panel, i18n.Text("per level"), &f.PerLevel)
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  len(panel.Children()),
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	parent.AddChild(panel)
+	return field
+}
+
+func (p *featuresPanel) createSecondaryEquipmentMaxUsesPanels(parent *unison.Panel, index int, f *gurps.EquipmentMaxUsesBonus) {
+	if f.SelectionType == equipmentsel.EquipmentWithName {
+		var wrapper *unison.Panel
 		wrapper, index = p.prepareNewWrapper(parent, index)
 		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
 		p.addWrapperAtIndex(parent, wrapper, index, false)
@@ -858,6 +926,8 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		return gurps.NewContainedWeightReduction()
 	case feature.CostReduction:
 		return gurps.NewCostReduction(lastAttributeIDUsed)
+	case feature.EquipmentMaxUsesBonus:
+		bonus = gurps.NewEquipmentMaxUsesBonus()
 	case feature.DRBonus:
 		bonus = gurps.NewDRBonus()
 	case feature.ReactionBonus:

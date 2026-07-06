@@ -55,10 +55,11 @@ const (
 	SelectorOverride
 	CostReduction
 	ContainedWeightReduction
+	EquipmentMaxUsesBonus
 )
 
 // LastType is the last valid value.
-const LastType Type = ContainedWeightReduction
+const LastType Type = EquipmentMaxUsesBonus
 
 // Types holds all possible values.
 var Types = []Type{
@@ -98,6 +99,7 @@ var Types = []Type{
 	SelectorOverride,
 	CostReduction,
 	ContainedWeightReduction,
+	EquipmentMaxUsesBonus,
 }
 
 // Type holds the type of a Feature.
@@ -105,7 +107,7 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= ContainedWeightReduction {
+	if enum <= EquipmentMaxUsesBonus {
 		return enum
 	}
 	return 0
@@ -186,6 +188,8 @@ func (enum Type) Key() string {
 		return "cost_reduction"
 	case ContainedWeightReduction:
 		return "contained_weight_reduction"
+	case EquipmentMaxUsesBonus:
+		return "equipment_max_uses_bonus"
 	default:
 		return Type(0).Key()
 	}
@@ -266,6 +270,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Reduces the attribute cost of`)
 	case ContainedWeightReduction:
 		return i18n.Text(`Reduces the contained weight by`)
+	case EquipmentMaxUsesBonus:
+		return i18n.Text(`Adjusts the maximum uses by`)
 	default:
 		return Type(0).String()
 	}

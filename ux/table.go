@@ -187,6 +187,9 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		t.InstallCmdHandlers(DecrementUsesItemID,
 			func(_ any) bool { return canAdjustUses(t, -1) },
 			func(_ any) { adjustUses(unison.AncestorOrSelf[Rebuildable](t), t, -1) })
+		t.InstallCmdHandlers(ResetUsesToMaxItemID,
+			func(_ any) bool { return canResetUsesToMax(t) },
+			func(_ any) { resetUsesToMax(unison.AncestorOrSelf[Rebuildable](t), t) })
 	}
 
 	return header, table

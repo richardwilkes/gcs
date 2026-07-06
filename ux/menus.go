@@ -67,6 +67,7 @@ const (
 	DecrementItemID
 	IncrementUsesItemID
 	DecrementUsesItemID
+	ResetUsesToMaxItemID
 	IncrementSkillLevelItemID
 	DecrementSkillLevelItemID
 	IncrementTechLevelItemID
@@ -260,6 +261,7 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, decrementAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, increaseUsesAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, decreaseUsesAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, resetUsesToMaxAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, increaseSkillLevelAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, decreaseSkillLevelAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, increaseTechLevelAction.NewMenuItem(f))
@@ -515,6 +517,7 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		ContextMenuItem{decrementAction.Title, DecrementItemID},
 		ContextMenuItem{increaseUsesAction.Title, IncrementUsesItemID},
 		ContextMenuItem{decreaseUsesAction.Title, DecrementUsesItemID},
+		ContextMenuItem{resetUsesToMaxAction.Title, ResetUsesToMaxItemID},
 		ContextMenuItem{increaseSkillLevelAction.Title, IncrementSkillLevelItemID},
 		ContextMenuItem{decreaseSkillLevelAction.Title, DecrementSkillLevelItemID},
 		ContextMenuItem{increaseTechLevelAction.Title, IncrementTechLevelItemID},

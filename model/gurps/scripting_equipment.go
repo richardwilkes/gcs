@@ -48,8 +48,8 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	m["legalityClass"] = func() goja.Value { return r.ToValue(item.LegalityClass) }
 	m["quantity"] = func() goja.Value { return r.ToValue(fxp.AsFloat[float64](item.Quantity)) }
 	m["level"] = func() goja.Value { return r.ToValue(fxp.AsFloat[float64](item.Level)) }
-	m["uses"] = func() goja.Value { return r.ToValue(item.Uses) }
-	m["maxUses"] = func() goja.Value { return r.ToValue(item.MaxUses) }
+	m["uses"] = func() goja.Value { return r.ToValue(item.ResolvedUses()) }
+	m["maxUses"] = func() goja.Value { return r.ToValue(item.ResolvedMaxUses()) }
 	m["value"] = func() goja.Value {
 		return r.ToValue(fxp.AsFloat[float64](item.AdjustedValue()))
 	}

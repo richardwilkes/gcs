@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
@@ -91,6 +92,7 @@ type features struct {
 	attributeBonuses  []*AttributeBonus
 	costReductions    []*CostReduction
 	drBonuses         []*DRBonus
+	maxUsesBonuses    []*EquipmentMaxUsesBonus
 	skillBonuses      []*SkillBonus
 	skillPointBonuses []*SkillPointBonus
 	spellBonuses      []*SpellBonus
@@ -188,6 +190,9 @@ func (e *Entity) Entity() *Entity {
 
 // Save the Entity to a file as JSON.
 func (e *Entity) Save(filePath string) error {
+	e.Recalculate()
+	AdjustEquipmentUsesForSave(e.CarriedEquipment)
+	AdjustEquipmentUsesForSave(e.OtherEquipment)
 	return jio.SaveToFile(filePath, e)
 }
 
@@ -428,6 +433,8 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		e.features.attributeBonuses = append(e.features.attributeBonuses, actual)
 	case *CostReduction:
 		e.features.costReductions = append(e.features.costReductions, actual)
+	case *EquipmentMaxUsesBonus:
+		e.features.maxUsesBonuses = append(e.features.maxUsesBonuses, actual)
 	case *DRBonus:
 		if len(actual.Locations) == 0 { // "this armor"
 			e.expandThisArmorDRBonus(owner, subOwner, leveledOwner, actual)
@@ -823,6 +830,21 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 		total = fxp.Eighty
 	}
 	return total.Max(0)
+}
+
+// EquipmentMaxUsesBonusesFor returns the "equipment whose name" max-uses bonuses that match the given name and tags.
+func (e *Entity) EquipmentMaxUsesBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*EquipmentMaxUsesBonus {
+	var result []*EquipmentMaxUsesBonus
+	for _, bonus := range e.features.maxUsesBonuses {
+		if bonus.SelectionType == equipmentsel.EquipmentWithName {
+			replacements := bonusReplacements(bonus)
+			if bonus.NameCriteria.Matches(replacements, name) && bonus.TagsCriteria.MatchesList(replacements, tags...) {
+				result = append(result, bonus)
+				bonus.AddToTooltip(tooltip)
+			}
+		}
+	}
+	return result
 }
 
 // AddDRBonusesFor locates any active DR bonuses and adds them to the map. If 'drMap' is nil, it will be created. The

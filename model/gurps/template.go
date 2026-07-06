@@ -139,6 +139,7 @@ func (t *Template) SourceMatcher() *SrcMatcher {
 
 // Save the Template to a file as JSON.
 func (t *Template) Save(filePath string) error {
+	AdjustEquipmentUsesForSave(t.Equipment)
 	return jio.SaveToFile(filePath, t)
 }
 

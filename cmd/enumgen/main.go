@@ -760,6 +760,45 @@ var allEnums = []*enumInfo{
 				Key:    "contained_weight_reduction",
 				String: "Reduces the contained weight by",
 			},
+			{
+				Key:    "equipment_max_uses_bonus",
+				String: "Adjusts the maximum uses by",
+			},
+		},
+	},
+	{
+		Pkg:  "model/gurps/enums/equipmentsel",
+		Name: "type",
+		Desc: "holds the type of an equipment selection",
+		Values: []*enumValue{
+			{
+				Key:    "this_equipment",
+				String: "to this equipment",
+			},
+			{
+				Key:    "equipment_with_name",
+				String: "to equipment whose name",
+			},
+		},
+	},
+	{
+		Pkg:  "model/gurps/enums/maxusesmod",
+		Name: "type",
+		Desc: "describes how a maximum uses adjustment is applied",
+		Values: []*enumValue{
+			{
+				Name: "Addition",
+				Key:  "+",
+			},
+			{
+				Name: "Percentage",
+				Key:  "%",
+			},
+			{
+				Name:   "Multiplier",
+				Key:    "x",
+				String: "x",
+			},
 		},
 	},
 	{
