@@ -158,6 +158,60 @@ func TestScriptTraitPoints(t *testing.T) {
 	c.Equal(fxp.FromInteger(22), altAbilities.AdjustedPoints())
 }
 
+// TestScriptSkillOptionalSpecializationMatch verifies that the script skill-lookup bindings match a skill by its
+// optional specialization as well as its required specialization. This addresses GitHub issue #1062, where
+// entity.findSkills(name, specialization), entity.skillLevel(name, specialization), and a skill container's
+// find(name, specialization) only checked the required specialization.
+func TestScriptSkillOptionalSpecializationMatch(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	// A top-level skill with both a required and an optional specialization.
+	sk := NewSkill(e, nil, false)
+	sk.Name = "Guns"
+	sk.Specialization = "Pistol"
+	sk.OptionalSpecialization = "Glock"
+	sk.Points = fxp.One
+
+	// A container holding a child skill that likewise carries an optional specialization.
+	group := NewSkill(e, nil, true)
+	group.Name = "Group"
+	child := NewSkill(e, group, false)
+	child.Name = "Longbow"
+	child.Specialization = "Musket"
+	child.OptionalSpecialization = "Brown Bess"
+	child.Points = fxp.One
+	group.Children = []*Skill{child}
+
+	e.Skills = []*Skill{sk, group}
+	e.Recalculate()
+
+	entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, e) }}
+	for _, tc := range []struct {
+		name   string
+		script string
+		want   int64
+	}{
+		// findSkills matches by required, optional, or (empty) any specialization.
+		{name: "findSkills required", script: `entity.findSkills("Guns", "Pistol", "").length`, want: 1},
+		{name: "findSkills optional", script: `entity.findSkills("Guns", "Glock", "").length`, want: 1},
+		{name: "findSkills mismatch", script: `entity.findSkills("Guns", "Revolver", "").length`, want: 0},
+		{name: "findSkills any", script: `entity.findSkills("Guns", "", "").length`, want: 1},
+		// skillLevel resolves a level when matched by either specialization, and 0 when unmatched.
+		{name: "skillLevel required", script: `entity.skillLevel("Guns", "Pistol", false) > 0 ? 1 : 0`, want: 1},
+		{name: "skillLevel optional", script: `entity.skillLevel("Guns", "Glock", false) > 0 ? 1 : 0`, want: 1},
+		{name: "skillLevel mismatch", script: `entity.skillLevel("Guns", "Revolver", false)`, want: 0},
+		// A container's find() matches its children by required or optional specialization.
+		{name: "container find required", script: `entity.findSkills("Group", "", "")[0].find("Longbow", "Musket", "").length`, want: 1},
+		{name: "container find optional", script: `entity.findSkills("Group", "", "")[0].find("Longbow", "Brown Bess", "").length`, want: 1},
+		{name: "container find mismatch", script: `entity.findSkills("Group", "", "")[0].find("Longbow", "Flintlock", "").length`, want: 0},
+	} {
+		v, err := runScript(0, tc.script, entityArg)
+		c.NoError(err, "case %q", tc.name)
+		c.Equal(tc.want, v.ToInteger(), "case %q", tc.name)
+	}
+}
+
 // TestScriptResolutionConcurrency hammers the package-global script state (the compiled-program cache, the entity-less
 // resolve cache and its discard path, and the entity-less recursion-depth counter) from several goroutines at once. Run
 // under the race detector (go test -race) it guards against reintroducing unsynchronized access to that shared state.

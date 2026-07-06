@@ -194,7 +194,9 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 				var level int
 				Traverse(func(s *Skill) bool {
 					if strings.EqualFold(s.NameWithReplacements(), name) &&
-						strings.EqualFold(s.SpecializationWithReplacements(), specialization) &&
+						(strings.EqualFold(s.SpecializationWithReplacements(), specialization) ||
+							(specialization != "" &&
+								strings.EqualFold(s.OptionalSpecializationWithReplacements(), specialization))) &&
 						(optionalSpecialization == "" ||
 							strings.EqualFold(s.OptionalSpecializationWithReplacements(), optionalSpecialization)) {
 						s.UpdateLevel()

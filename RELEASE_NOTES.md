@@ -50,3 +50,6 @@
 - Fixed a technique's skill default so that switching its specialization comparison to "whose specialization is anything"
   now matches any specialization, rather than staying locked on the specialization text left over from a prior "is"
   selection. (#1061)
+- Fixed the scripting skill lookups (`entity.findSkills`, `entity.skillLevel`, and a skill container's `find`) so a
+  specialization argument now matches a skill by its optional specialization as well as its required specialization.
+  (#1062)

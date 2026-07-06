@@ -140,7 +140,8 @@ func findScriptSkills(r *goja.Runtime, name, specialization, tag string, topLeve
 	var skills []*goja.Object
 	Traverse(func(skill *Skill) bool {
 		if (name == "" || strings.EqualFold(skill.NameWithReplacements(), name)) &&
-			(specialization == "" || strings.EqualFold(skill.SpecializationWithReplacements(), specialization)) &&
+			(specialization == "" || strings.EqualFold(skill.SpecializationWithReplacements(), specialization) ||
+				strings.EqualFold(skill.OptionalSpecializationWithReplacements(), specialization)) &&
 			matchTag(tag, skill.Tags) {
 			skills = append(skills, newScriptSkill(r, skill))
 		}
