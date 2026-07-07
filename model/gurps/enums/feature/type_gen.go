@@ -22,12 +22,14 @@ const (
 	AttributeBonus Type = iota
 	ConditionalModifier
 	DRBonus
+	EquipmentMaxUsesBonus
 	ReactionBonus
 	SkillBonus
 	SkillPointBonus
 	SpellBonus
 	SpellPointBonus
 	TraitBonus
+	TraitMaxLevelBonus
 	WeaponBonus
 	WeaponAccBonus
 	WeaponScopeAccBonus
@@ -55,23 +57,24 @@ const (
 	SelectorOverride
 	CostReduction
 	ContainedWeightReduction
-	EquipmentMaxUsesBonus
 )
 
 // LastType is the last valid value.
-const LastType Type = EquipmentMaxUsesBonus
+const LastType Type = ContainedWeightReduction
 
 // Types holds all possible values.
 var Types = []Type{
 	AttributeBonus,
 	ConditionalModifier,
 	DRBonus,
+	EquipmentMaxUsesBonus,
 	ReactionBonus,
 	SkillBonus,
 	SkillPointBonus,
 	SpellBonus,
 	SpellPointBonus,
 	TraitBonus,
+	TraitMaxLevelBonus,
 	WeaponBonus,
 	WeaponAccBonus,
 	WeaponScopeAccBonus,
@@ -99,7 +102,6 @@ var Types = []Type{
 	SelectorOverride,
 	CostReduction,
 	ContainedWeightReduction,
-	EquipmentMaxUsesBonus,
 }
 
 // Type holds the type of a Feature.
@@ -107,7 +109,7 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= EquipmentMaxUsesBonus {
+	if enum <= ContainedWeightReduction {
 		return enum
 	}
 	return 0
@@ -122,6 +124,8 @@ func (enum Type) Key() string {
 		return "conditional_modifier"
 	case DRBonus:
 		return "dr_bonus"
+	case EquipmentMaxUsesBonus:
+		return "equipment_max_uses_bonus"
 	case ReactionBonus:
 		return "reaction_bonus"
 	case SkillBonus:
@@ -134,6 +138,8 @@ func (enum Type) Key() string {
 		return "spell_point_bonus"
 	case TraitBonus:
 		return "trait_bonus"
+	case TraitMaxLevelBonus:
+		return "trait_max_level_bonus"
 	case WeaponBonus:
 		return "weapon_bonus"
 	case WeaponAccBonus:
@@ -188,8 +194,6 @@ func (enum Type) Key() string {
 		return "cost_reduction"
 	case ContainedWeightReduction:
 		return "contained_weight_reduction"
-	case EquipmentMaxUsesBonus:
-		return "equipment_max_uses_bonus"
 	default:
 		return Type(0).Key()
 	}
@@ -204,6 +208,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Gives a conditional modifier of`)
 	case DRBonus:
 		return i18n.Text(`Gives a DR bonus of`)
+	case EquipmentMaxUsesBonus:
+		return i18n.Text(`Gives equipment a maximum uses modifier of`)
 	case ReactionBonus:
 		return i18n.Text(`Gives a reaction modifier of`)
 	case SkillBonus:
@@ -216,6 +222,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Gives a spell point modifier of`)
 	case TraitBonus:
 		return i18n.Text(`Gives a trait level modifier of`)
+	case TraitMaxLevelBonus:
+		return i18n.Text(`Gives a trait maximum level modifier of`)
 	case WeaponBonus:
 		return i18n.Text(`Gives a weapon damage modifier of`)
 	case WeaponAccBonus:
@@ -270,8 +278,6 @@ func (enum Type) String() string {
 		return i18n.Text(`Reduces the attribute cost of`)
 	case ContainedWeightReduction:
 		return i18n.Text(`Reduces the contained weight by`)
-	case EquipmentMaxUsesBonus:
-		return i18n.Text(`Adjusts the maximum uses by`)
 	default:
 		return Type(0).String()
 	}

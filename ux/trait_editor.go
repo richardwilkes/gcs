@@ -37,6 +37,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	content.AddChild(unison.NewPanel())
 	addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
 	var perLevelField, levelField *DecimalField
+	var maxLevelField *StringField
 	entity := gurps.EntityFromNode(e.target)
 	if !e.target.Container() {
 		wrapper := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
@@ -61,6 +62,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			HAlign: align.End,
 			VAlign: align.Middle,
 		})
+		resolvedMaxLevels := func() fxp.Int { return cloneTraitWithOverlay(e.target, e.editorData).ResolvedMaxLevels() }
 		wrapper = unison.NewPanel()
 		wrapper.SetLayout(&unison.FlexLayout{
 			Columns:  3,
@@ -73,8 +75,32 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			fxp.MaxBasePoints)
 		perLevelField = addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Cost Per Level"), "",
 			&e.editorData.PointsPerLevel, -fxp.MaxBasePoints, fxp.MaxBasePoints)
+		maxLevelLabel := i18n.Text("Maximum Level")
+		content.AddChild(NewFieldLeadingLabel(maxLevelLabel, false))
+		maxLevelField = addScriptField(content, nil, "", maxLevelLabel,
+			i18n.Text("The maximum level allowed for this trait. May be a number or a script expression. Leave blank for no maximum."),
+			func() string { return e.editorData.MaxLevels },
+			func(value string) {
+				e.editorData.MaxLevels = value
+				MarkModified(content)
+			}, false)
+		content.AddChild(NewFieldLeadingLabel(i18n.Text("Adjusted Maximum Level"), false))
+		adjustedMaxLevelField := NewNonEditableField(func(field *NonEditableField) {
+			if maximum := resolvedMaxLevels(); maximum > 0 {
+				field.SetTitle(maximum.String())
+			} else {
+				field.SetTitle("")
+			}
+			field.MarkForLayoutAndRedraw()
+		})
+		adjInsets := adjustedMaxLevelField.Border().Insets()
+		adjustedMaxLevelField.SetLayoutData(&unison.FlexLayoutData{
+			MinSize: geom.NewSize(adjustedMaxLevelField.Font.SimpleWidth("9,999,999")+adjInsets.Left+adjInsets.Right, 0),
+		})
+		content.AddChild(adjustedMaxLevelField)
 		adjustFieldBlank(perLevelField, !e.editorData.CanLevel)
 		adjustFieldBlank(levelField, !e.editorData.CanLevel)
+		adjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
 	}
 	addLabelAndPopup(content, i18n.Text("Self-Control"), "", selfctrl.Rolls, &e.editorData.SelfControl)
 	adjustment := i18n.Text("Self-Control Adjustment")
@@ -124,6 +150,9 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		if levelField != nil {
 			adjustFieldBlank(levelField, !e.editorData.CanLevel)
 		}
+		if maxLevelField != nil {
+			adjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
+		}
 		if e.editorData.SelfControl == selfctrl.None {
 			crAdjPopup.SetEnabled(false)
 			crAdjPopup.Select(selfctrl.NoAdjustment)
@@ -144,4 +173,10 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			}
 		}
 	}
+}
+
+func cloneTraitWithOverlay(t *gurps.Trait, overlay *gurps.TraitEditData) *gurps.Trait {
+	clone := t.Clone(t.Source.LibraryFile, t.DataOwner(), t.Parent(), true)
+	clone.TraitEditData = *overlay
+	return clone
 }

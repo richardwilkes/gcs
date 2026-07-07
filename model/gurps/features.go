@@ -73,6 +73,8 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			feat = &SpellPointBonus{}
 		case feature.TraitBonus:
 			feat = &TraitBonus{}
+		case feature.TraitMaxLevelBonus:
+			feat = &TraitMaxLevelBonus{}
 		case feature.WeaponBonus,
 			feature.WeaponAccBonus,
 			feature.WeaponScopeAccBonus,

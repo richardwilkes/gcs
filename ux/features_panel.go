@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -124,6 +125,8 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 		panel, focus = p.createSpellPointBonusPanel(one)
 	case *gurps.TraitBonus:
 		panel, focus = p.createTraitBonusPanel(one)
+	case *gurps.TraitMaxLevelBonus:
+		panel, focus = p.createTraitMaxLevelBonusPanel(one)
 	case *gurps.WeaponBonus:
 		panel, focus = p.createWeaponBonusPanel(one)
 	case *gurps.SelectorOverride:
@@ -494,6 +497,70 @@ func (p *featuresPanel) addEquipmentMaxUsesModifierLine(parent *unison.Panel, f 
 
 func (p *featuresPanel) createSecondaryEquipmentMaxUsesPanels(parent *unison.Panel, index int, f *gurps.EquipmentMaxUsesBonus) {
 	if f.SelectionType == equipmentsel.EquipmentWithName {
+		var wrapper *unison.Panel
+		wrapper, index = p.prepareNewWrapper(parent, index)
+		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
+		p.addWrapperAtIndex(parent, wrapper, index, false)
+	}
+}
+
+func (p *featuresPanel) createTraitMaxLevelBonusPanel(f *gurps.TraitMaxLevelBonus) (main *unison.Panel, focus unison.Paneler) {
+	panel := p.createBasePanel(f)
+	focus = p.addTraitMaxLevelModifierLine(panel, f)
+	panel.AddChild(unison.NewPanel())
+	wrapper := unison.NewPanel()
+	var criteriaPopup *unison.PopupMenu[string]
+	var criteriaField *StringField
+	popup := addPopup(wrapper, traitsel.Types, &f.SelectionType)
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[traitsel.Type], index int, item traitsel.Type) {
+		pop.SelectIndex(index)
+		f.SelectionType = item
+		adjustPopupBlank(criteriaPopup, f.SelectionType == traitsel.ThisTrait)
+		adjustFieldBlank(criteriaField, f.SelectionType == traitsel.ThisTrait)
+		i := panel.IndexOfChild(wrapper) + 1
+		for j := len(panel.Children()) - 1; j >= i; j-- {
+			panel.RemoveChildAtIndex(j)
+		}
+		p.createSecondaryTraitMaxLevelPanels(panel, i, f)
+		MarkRootAncestorForLayoutRecursively(p)
+		MarkModified(p)
+	}
+	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
+	adjustPopupBlank(criteriaPopup, f.SelectionType == traitsel.ThisTrait)
+	adjustFieldBlank(criteriaField, f.SelectionType == traitsel.ThisTrait)
+	p.createSecondaryTraitMaxLevelPanels(panel, len(panel.Children()), f)
+	return panel, focus
+}
+
+func (p *featuresPanel) addTraitMaxLevelModifierLine(parent *unison.Panel, f *gurps.TraitMaxLevelBonus) *StringField {
+	panel := unison.NewPanel()
+	p.addTypeSwitcher(panel, f)
+	field := NewStringField(nil, "", i18n.Text("Maximum Level Adjustment"),
+		func() string { return f.Amount },
+		func(value string) {
+			f.Amount = maxusesmod.Normalize(value)
+			MarkModified(panel)
+		})
+	field.SetMinimumTextWidthUsing("-1,000,000")
+	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number, percentage or multiplier, e.g. "-1", "10%" or "x2"`))
+	panel.AddChild(field)
+	addCheckBox(panel, i18n.Text("per level"), &f.PerLevel)
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  len(panel.Children()),
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	parent.AddChild(panel)
+	return field
+}
+
+func (p *featuresPanel) createSecondaryTraitMaxLevelPanels(parent *unison.Panel, index int, f *gurps.TraitMaxLevelBonus) {
+	if f.SelectionType == traitsel.TraitWithName {
 		var wrapper *unison.Panel
 		wrapper, index = p.prepareNewWrapper(parent, index)
 		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
@@ -942,6 +1009,8 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		bonus = gurps.NewSpellPointBonus()
 	case feature.TraitBonus:
 		bonus = gurps.NewTraitBonus()
+	case feature.TraitMaxLevelBonus:
+		bonus = gurps.NewTraitMaxLevelBonus()
 	case feature.WeaponBonus:
 		bonus = gurps.NewWeaponDamageBonus()
 	case feature.WeaponAccBonus:

@@ -34,6 +34,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
@@ -89,16 +90,17 @@ type EntityData struct {
 }
 
 type features struct {
-	attributeBonuses  []*AttributeBonus
-	costReductions    []*CostReduction
-	drBonuses         []*DRBonus
-	maxUsesBonuses    []*EquipmentMaxUsesBonus
-	skillBonuses      []*SkillBonus
-	skillPointBonuses []*SkillPointBonus
-	spellBonuses      []*SpellBonus
-	spellPointBonuses []*SpellPointBonus
-	traitBonuses      []*TraitBonus
-	weaponBonuses     []*WeaponBonus
+	attributeBonuses     []*AttributeBonus
+	costReductions       []*CostReduction
+	drBonuses            []*DRBonus
+	maxUsesBonuses       []*EquipmentMaxUsesBonus
+	skillBonuses         []*SkillBonus
+	skillPointBonuses    []*SkillPointBonus
+	spellBonuses         []*SpellBonus
+	spellPointBonuses    []*SpellPointBonus
+	traitBonuses         []*TraitBonus
+	traitMaxLevelBonuses []*TraitMaxLevelBonus
+	weaponBonuses        []*WeaponBonus
 
 	selectorOverrides []*SelectorOverride
 }
@@ -451,6 +453,8 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		e.features.spellPointBonuses = append(e.features.spellPointBonuses, actual)
 	case *TraitBonus:
 		e.features.traitBonuses = append(e.features.traitBonuses, actual)
+	case *TraitMaxLevelBonus:
+		e.features.traitMaxLevelBonuses = append(e.features.traitMaxLevelBonuses, actual)
 	case *WeaponBonus:
 		e.features.weaponBonuses = append(e.features.weaponBonuses, actual)
 	case *SelectorOverride:
@@ -521,6 +525,14 @@ func (e *Entity) processPrereqs() {
 			var eqpPenalty bool
 			if !t.Prereq.Satisfied(e, t, &tooltip, prefix, &eqpPenalty) {
 				t.UnsatisfiedReason = notMetPrefix + tooltip.String()
+			}
+		}
+		if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
+			reason := i18n.Text("Level exceeds the maximum of ") + maximum.String()
+			if t.UnsatisfiedReason == "" {
+				t.UnsatisfiedReason = reason
+			} else {
+				t.UnsatisfiedReason += prefix + reason
 			}
 		}
 		return false
@@ -830,6 +842,21 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 		total = fxp.Eighty
 	}
 	return total.Max(0)
+}
+
+// TraitMaxLevelBonusesFor returns the "traits whose name" max-level bonuses that match the given name and tags.
+func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*TraitMaxLevelBonus {
+	var result []*TraitMaxLevelBonus
+	for _, bonus := range e.features.traitMaxLevelBonuses {
+		if bonus.SelectionType == traitsel.TraitWithName {
+			replacements := bonusReplacements(bonus)
+			if bonus.NameCriteria.Matches(replacements, name) && bonus.TagsCriteria.MatchesList(replacements, tags...) {
+				result = append(result, bonus)
+				bonus.AddToTooltip(tooltip)
+			}
+		}
+	}
+	return result
 }
 
 // EquipmentMaxUsesBonusesFor returns the "equipment whose name" max-uses bonuses that match the given name and tags.

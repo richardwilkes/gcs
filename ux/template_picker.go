@@ -310,6 +310,12 @@ func updatePickerCheckBoxTitle[T gurps.NodeTypes](checkBox *unison.CheckBox, row
 
 func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, callback func()) {
 	levels := trait.Levels
+	maximum := trait.ResolvedMaxLevels()
+	fieldMax := fxp.MaxBasePoints
+	if maximum > 0 {
+		fieldMax = maximum
+		levels = min(levels, maximum)
+	}
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -317,10 +323,14 @@ func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, callbac
 		VAlign:   align.Middle,
 	})
 	label := unison.NewLabel()
-	label.SetTitle(fmt.Sprintf(i18n.Text("%s Level"), trait.Kind()))
+	if maximum > 0 {
+		label.SetTitle(fmt.Sprintf(i18n.Text("%s Level (max %s)"), trait.Kind(), maximum.String()))
+	} else {
+		label.SetTitle(fmt.Sprintf(i18n.Text("%s Level"), trait.Kind()))
+	}
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return levels },
-		func(value fxp.Int) { levels = value }, 0, fxp.MaxBasePoints, false, false))
+		func(value fxp.Int) { levels = value }, 0, fieldMax, false, false))
 	dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
 		unison.DefaultDialogTheme.QuestionIconInk, panel,
 		[]*unison.DialogButtonInfo{

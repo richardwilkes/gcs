@@ -625,6 +625,10 @@ var allEnums = []*enumInfo{
 				String: "Gives a DR bonus of",
 			},
 			{
+				Key:    "equipment_max_uses_bonus",
+				String: "Gives equipment a maximum uses modifier of",
+			},
+			{
 				Key:    "reaction_bonus",
 				String: "Gives a reaction modifier of",
 			},
@@ -647,6 +651,10 @@ var allEnums = []*enumInfo{
 			{
 				Key:    "trait_bonus",
 				String: "Gives a trait level modifier of",
+			},
+			{
+				Key:    "trait_max_level_bonus",
+				String: "Gives a trait maximum level modifier of",
 			},
 			{
 				Key:    "weapon_bonus",
@@ -760,10 +768,6 @@ var allEnums = []*enumInfo{
 				Key:    "contained_weight_reduction",
 				String: "Reduces the contained weight by",
 			},
-			{
-				Key:    "equipment_max_uses_bonus",
-				String: "Adjusts the maximum uses by",
-			},
 		},
 	},
 	{
@@ -778,6 +782,21 @@ var allEnums = []*enumInfo{
 			{
 				Key:    "equipment_with_name",
 				String: "to equipment whose name",
+			},
+		},
+	},
+	{
+		Pkg:  "model/gurps/enums/traitsel",
+		Name: "type",
+		Desc: "holds the type of a trait selection",
+		Values: []*enumValue{
+			{
+				Key:    "this_trait",
+				String: "to this trait",
+			},
+			{
+				Key:    "trait_with_name",
+				String: "to traits whose name",
 			},
 		},
 	},

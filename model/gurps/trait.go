@@ -26,10 +26,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -112,6 +114,7 @@ type TraitSyncData struct {
 type TraitNonContainerSyncData struct {
 	BasePoints     fxp.Int   `json:"base_points,omitzero"`
 	PointsPerLevel fxp.Int   `json:"points_per_level,omitzero"`
+	MaxLevels      string    `json:"max_levels,omitzero"`
 	Weapons        []*Weapon `json:"weapons,omitzero"`
 	Features       Features  `json:"features,omitzero"`
 	RoundCostDown  bool      `json:"round_down,omitzero"`
@@ -515,6 +518,64 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 		return (t.Levels + levelAdjustment).Max(0)
 	}
 	return 0
+}
+
+// ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
+// embedded script) and applying any matching TraitMaxLevelBonus features. A return value of zero means the trait has no
+// maximum level. "This trait" bonuses attached to this trait or its enabled modifiers are always applied; "traits whose
+// name" bonuses are gathered from the owning entity, if there is one.
+func (t *Trait) ResolvedMaxLevels() fxp.Int {
+	if !t.IsLeveled() {
+		return 0
+	}
+	base := fxp.Int(0)
+	if strings.TrimSpace(t.MaxLevels) != "" {
+		base = ResolveToNumber(EntityFromNode(t), deferredNewScriptTrait(t), t.MaxLevels)
+	}
+	addition := fxp.Int(0)
+	percentage := fxp.Int(0)
+	multiplier := fxp.One
+	have := false
+	apply := func(bonus *TraitMaxLevelBonus) {
+		have = true
+		amount := bonus.AdjustedAmount()
+		switch bonus.Operation() {
+		case maxusesmod.Percentage:
+			percentage += amount
+		case maxusesmod.Multiplier:
+			if amount <= 0 {
+				amount = fxp.One
+			}
+			multiplier = multiplier.Mul(amount)
+		default: // maxusesmod.Addition
+			addition += amount
+		}
+	}
+	applyThisTrait := func(features Features) {
+		for _, f := range features {
+			if bonus, ok := f.(*TraitMaxLevelBonus); ok && bonus.SelectionType == traitsel.ThisTrait {
+				bonus.SetLeveledOwner(t)
+				apply(bonus)
+			}
+		}
+	}
+	applyThisTrait(t.Features)
+	Traverse(func(mod *TraitModifier) bool {
+		applyThisTrait(mod.Features)
+		return false
+	}, true, true, t.Modifiers...)
+	if entity := EntityFromNode(t); entity != nil {
+		for _, bonus := range entity.TraitMaxLevelBonusesFor(t.NameWithReplacements(), t.Tags, nil) {
+			apply(bonus)
+		}
+	}
+	if !have {
+		return base.Max(0)
+	}
+	result := base + addition
+	result += result.Mul(percentage).Div(fxp.Hundred)
+	result = result.Mul(multiplier)
+	return result.Max(0)
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account.
@@ -941,6 +1002,7 @@ func (t *Trait) ClearUnusedFieldsForType() {
 		if !t.CanLevel {
 			t.Levels = 0
 			t.PointsPerLevel = 0
+			t.MaxLevels = ""
 		}
 	}
 }
@@ -1003,6 +1065,7 @@ func (t *TraitSyncData) hash(h hash.Hash) {
 func (t *TraitNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Num64(h, t.BasePoints)
 	xhash.Num64(h, t.PointsPerLevel)
+	xhash.StringWithLen(h, t.MaxLevels)
 	xhash.Num64(h, len(t.Weapons))
 	for _, one := range t.Weapons {
 		one.Hash(h)
