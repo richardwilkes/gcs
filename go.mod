@@ -10,14 +10,14 @@ require (
 	github.com/richardwilkes/pdf v1.27.3
 	github.com/richardwilkes/rpgtools v1.13.0
 	github.com/richardwilkes/toolbox/v2 v2.15.0
-	github.com/richardwilkes/unison v0.94.1-0.20260707182559-bb3afa335abf
+	github.com/richardwilkes/unison v0.95.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.2
 	github.com/zeebo/xxh3 v1.1.0
 	golang.org/x/image v0.43.0
 	golang.org/x/sys v0.46.0
-	golang.org/x/text v0.38.0
+	golang.org/x/text v0.39.0
 )
 
 require (

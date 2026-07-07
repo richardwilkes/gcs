@@ -63,3 +63,7 @@
 - Fixed the scripting skill lookups (`entity.findSkills`, `entity.skillLevel`, and a skill container's `find`) so a
   specialization argument now matches a skill by its optional specialization as well as its required specialization.
   (#1062)
+- Fixed a rare crash that could occur while scrolling when blank space at the edge of the content was collapsed. Scrolled
+  views (tables, lists, and other scrollable panels) now settle correctly instead of getting caught in a loop.
+- Fixed a startup failure on Linux where the application window could fail to be created (a `BadMatch` error) on some
+  graphics drivers, most notably NVIDIA.
