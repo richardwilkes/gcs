@@ -95,6 +95,27 @@ func DiscardGlobalResolveCache() {
 	clear(globalResolveCache)
 }
 
+// scriptResolveErrorSuppression tracks nested requests to suppress the error logging that normally occurs when a script
+// fails to resolve to an expected result (e.g. a number or weight). The item editors resolve partially-typed—and thus
+// frequently invalid—scripts to build live previews as the user types; logging every intermediate failure would flood
+// the log with noise. It is an atomic counter so suppression can be nested and remains correct even if resolution ever
+// spans goroutines.
+var scriptResolveErrorSuppression atomic.Int32
+
+// SuppressScriptResolveErrorLogging runs f with the error logging that normally accompanies a failed script resolution
+// suppressed. Failures that occur outside the dynamic scope of f continue to be logged normally. This is intended for
+// contexts such as the item editors, which repeatedly resolve incomplete scripts to produce live previews.
+func SuppressScriptResolveErrorLogging(f func()) {
+	scriptResolveErrorSuppression.Add(1)
+	defer scriptResolveErrorSuppression.Add(-1)
+	f()
+}
+
+// scriptResolveErrorLoggingSuppressed reports whether failed-resolution error logging is currently suppressed.
+func scriptResolveErrorLoggingSuppressed() bool {
+	return scriptResolveErrorSuppression.Load() > 0
+}
+
 func mustSet(vm *goja.Runtime, name string, value any) {
 	if err := vm.Set(name, value); err != nil {
 		panic(errs.Newf("failed to set %s: %s", name, err.Error()))
@@ -130,7 +151,9 @@ func ResolveToNumber(entity *Entity, selfProvider ScriptSelfProvider, text strin
 	result := ResolveScript(entity, selfProvider, text)
 	value, err := fxp.FromString(result)
 	if err != nil {
-		slog.Error("unable to resolve script result to a number", "result", result, "script", text)
+		if !scriptResolveErrorLoggingSuppressed() {
+			slog.Error("unable to resolve script result to a number", "result", result, "script", text)
+		}
 		return 0
 	}
 	return value
@@ -150,7 +173,9 @@ func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text strin
 	result := ResolveScript(entity, selfProvider, text)
 	w, err := fxp.WeightFromString(result, defUnits)
 	if err != nil {
-		slog.Error("unable to resolve script result to a weight", "result", result, "script", text)
+		if !scriptResolveErrorLoggingSuppressed() {
+			slog.Error("unable to resolve script result to a weight", "result", result, "script", text)
+		}
 		return 0
 	}
 	return w

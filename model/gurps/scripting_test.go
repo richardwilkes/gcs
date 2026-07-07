@@ -10,8 +10,11 @@
 package gurps
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/dop251/goja"
@@ -239,4 +242,74 @@ func TestScriptResolutionConcurrency(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+}
+
+// errorCountingHandler is a slog.Handler that counts the error-level records it is asked to handle. It lets a test
+// observe whether a failed script resolution logged an error without depending on the log's textual format.
+type errorCountingHandler struct {
+	count *atomic.Int32
+}
+
+func (h errorCountingHandler) Enabled(_ context.Context, level slog.Level) bool {
+	return level >= slog.LevelError
+}
+
+// Handle takes the record by value because the slog.Handler interface requires that signature.
+func (h errorCountingHandler) Handle(_ context.Context, record slog.Record) error { //nolint:gocritic // interface-mandated signature
+	if record.Level >= slog.LevelError {
+		h.count.Add(1)
+	}
+	return nil
+}
+
+func (h errorCountingHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
+
+func (h errorCountingHandler) WithGroup(_ string) slog.Handler { return h }
+
+// TestSuppressScriptResolveErrorLogging verifies that SuppressScriptResolveErrorLogging silences the error logging that
+// a failed script resolution would otherwise produce, that the suppression only applies within the dynamic scope of the
+// supplied function (so failures elsewhere still log), and that nested suppression is handled correctly.
+func TestSuppressScriptResolveErrorLogging(t *testing.T) {
+	c := check.New(t)
+	var count atomic.Int32
+	prev := slog.Default()
+	slog.SetDefault(slog.New(errorCountingHandler{count: &count}))
+	defer slog.SetDefault(prev)
+
+	// A script whose result is a non-numeric string, so ResolveToNumber fails to parse it and would log an error.
+	const badNumberScript = "'not a number'"
+
+	resolve := func() {
+		count.Store(0)
+		DiscardGlobalResolveCache()
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, badNumberScript))
+	}
+
+	// Baseline: without suppression, the failed resolution logs exactly one error.
+	resolve()
+	c.Equal(int32(1), count.Load(), "an error should be logged when not suppressed")
+
+	// Within SuppressScriptResolveErrorLogging, the identical failure logs nothing.
+	count.Store(0)
+	DiscardGlobalResolveCache()
+	SuppressScriptResolveErrorLogging(func() {
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, badNumberScript))
+	})
+	c.Equal(int32(0), count.Load(), "no error should be logged while suppressed")
+
+	// Nested suppression stays suppressed until the outermost scope exits.
+	count.Store(0)
+	DiscardGlobalResolveCache()
+	SuppressScriptResolveErrorLogging(func() {
+		SuppressScriptResolveErrorLogging(func() {
+			c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, badNumberScript))
+		})
+		// Still within the outer scope, so logging remains suppressed.
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, badNumberScript))
+	})
+	c.Equal(int32(0), count.Load(), "no error should be logged within nested suppression")
+
+	// Scope ends: once suppression returns, logging resumes for failures produced anywhere else.
+	resolve()
+	c.Equal(int32(1), count.Load(), "error logging should resume after suppression returns")
 }

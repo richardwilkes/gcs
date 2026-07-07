@@ -66,7 +66,9 @@ func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 			s := attr.Entity.ResolveVariable(id)
 			v, err := fxp.FromString(s)
 			if err != nil {
-				slog.Error("failed to resolve attribute to number", "attr", id, "value", s)
+				if !scriptResolveErrorLoggingSuppressed() {
+					slog.Error("failed to resolve attribute to number", "attr", id, "value", s)
+				}
 				return goja.Undefined()
 			}
 			return r.ToValue(fxp.AsFloat[float64](v))
@@ -92,7 +94,9 @@ func maximumValueOfAttribute(r *goja.Runtime, attr *Attribute) goja.Value {
 		s := attr.Entity.ResolveVariable(attr.AttrID)
 		v, err := fxp.FromString(s)
 		if err != nil {
-			slog.Error("failed to resolve attribute to number", "attr", attr.AttrID, "value", s)
+			if !scriptResolveErrorLoggingSuppressed() {
+				slog.Error("failed to resolve attribute to number", "attr", attr.AttrID, "value", s)
+			}
 			return goja.Undefined()
 		}
 		return r.ToValue(fxp.AsFloat[float64](v))

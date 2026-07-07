@@ -327,11 +327,16 @@ func (e *editor[N, D]) hasNameableKeys() bool {
 }
 
 func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
-	UpdateTitleForDockable(e)
-	DeepSync(e)
-	if e.modificationCallback != nil {
-		e.modificationCallback()
-	}
+	// Editing a field re-syncs the editor's live previews (extended value/weight, markdown, etc.), which resolve the
+	// in-progress, often incomplete script expressions the user is still typing. Suppress the error logging those
+	// failed resolutions would otherwise produce; resolutions performed anywhere else continue to log normally.
+	gurps.SuppressScriptResolveErrorLogging(func() {
+		UpdateTitleForDockable(e)
+		DeepSync(e)
+		if e.modificationCallback != nil {
+			e.modificationCallback()
+		}
+	})
 }
 
 func (e *editor[N, D]) Rebuild(_ bool) {

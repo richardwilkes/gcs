@@ -82,7 +82,12 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 		func() string { return e.editorData.MarkDown },
 		func(value string) {
 			e.editorData.MarkDown = value
-			markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), gurps.ScriptSelfProvider{}, value), 0)
+			// The preview resolves the markdown—including any embedded scripts—on every keystroke, so the script is
+			// frequently incomplete. Suppress the error logging that resolving such partial scripts would produce.
+			gurps.SuppressScriptResolveErrorLogging(func() {
+				markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), gurps.ScriptSelfProvider{}, value),
+					0)
+			})
 			content.MarkForLayoutAndRedraw()
 			MarkModified(content)
 		}, true)
