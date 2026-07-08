@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/pdf v1.27.3
 	github.com/richardwilkes/rpgtools v1.13.0
-	github.com/richardwilkes/toolbox/v2 v2.15.0
+	github.com/richardwilkes/toolbox/v2 v2.15.1
 	github.com/richardwilkes/unison v0.95.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0

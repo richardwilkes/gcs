@@ -67,3 +67,6 @@
   views (tables, lists, and other scrollable panels) now settle correctly instead of getting caught in a loop.
 - Fixed a startup failure on Linux where the application window could fail to be created (a `BadMatch` error) on some
   graphics drivers, most notably NVIDIA.
+- Fixed saving and copying files failing on network drives (such as certain SMB/CIFS mounts) that don't allow changing
+  file permissions. Preserving the original file permissions is now best-effort, so an otherwise-valid save or copy no
+  longer aborts when the drive rejects the permission change.
