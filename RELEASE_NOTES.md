@@ -72,3 +72,6 @@
   longer aborts when the drive rejects the permission change.
 - Fixed the missing row highlight when dragging a modifier over a trait or piece of equipment, so the row that will
   receive the drop is highlighted again on character sheets, loot sheets, templates, and in the list editors. (#1065)
+- Linux only: Fixed dialog windows losing proper focus and trapping the mouse cursor at the corner of the screen when
+  running under XWayland. (#1064)
+- Linux only: Fixed modifier keys (Shift, Control, etc.) sometimes not being detected as pressed. (#1069)

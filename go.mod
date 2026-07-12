@@ -10,7 +10,7 @@ require (
 	github.com/richardwilkes/pdf v1.27.3
 	github.com/richardwilkes/rpgtools v1.13.0
 	github.com/richardwilkes/toolbox/v2 v2.15.1
-	github.com/richardwilkes/unison v0.95.1-0.20260708181142-e387daa143f4
+	github.com/richardwilkes/unison v0.95.1-0.20260712205743-a4909b8be3be
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.2
