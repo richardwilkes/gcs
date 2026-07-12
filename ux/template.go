@@ -765,8 +765,9 @@ func mergeSpellPoints(existing, incoming []*gurps.Spell, defaultTechLevel string
 	return incoming
 }
 
-// MergeAddedRows folds the newly-added, currently-selected top-level rows into identical rows already present in the
-// sheet, removing the now-redundant new rows. It applies the same merge used when a template is applied, so that
+// MergeAddedRows folds the newly-added, currently-selected top-level rows (and any rows nested within them, such as
+// the contents of an added container) into identical rows already present in the sheet, removing the now-redundant
+// new rows. It applies the same merge used when a template is applied, so that
 // dragging or copying an entry that already exists on the sheet adds to it rather than creating a duplicate: skills and
 // spells combine their points, and leveled traits combine their levels. It must be called only after tech levels,
 // modifiers, and nameables have been resolved on the new rows, since the match includes them. Only skills, spells, and
@@ -804,9 +805,12 @@ func mergeNewlySelectedRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], me
 	}
 	newSel := make(map[tid.TID]bool)
 	surviving := merge(existing, incoming, entityTechLevel(table), newSel)
-	if len(surviving) == len(incoming) {
+	if len(newSel) == 0 {
 		return // Nothing merged, so leave the table untouched.
 	}
+	// Note that comparing len(surviving) to len(incoming) is not a valid way to detect that nothing merged: a merged
+	// row nested inside an added container is pruned from the container's data without changing the top-level count,
+	// and the view must still be refreshed or the pruned row remains visible until the next rebuild.
 	survivingSet := make(map[T]bool, len(surviving))
 	for _, data := range surviving {
 		survivingSet[data] = true
@@ -818,6 +822,9 @@ func mergeNewlySelectedRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], me
 				continue // This newly-added row was merged into an existing one, so drop it.
 			}
 			newSel[node.ID()] = true // Keep the surviving new rows selected alongside the rows they merged into.
+			// Rows nested inside this row may have been pruned by the merge, so discard any cached child nodes to
+			// force them to be rebuilt from the updated data.
+			node.RefreshChildren()
 		}
 		newRoots = append(newRoots, node)
 	}

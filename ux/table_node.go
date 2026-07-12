@@ -133,6 +133,13 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 	}
 }
 
+// RefreshChildren discards any cached child nodes so that the next access to Children() rebuilds them from the
+// underlying data. Call this when the data's children have been altered directly, since the cached nodes would
+// otherwise continue to reflect the old state.
+func (n *Node[T]) RefreshChildren() {
+	n.children = nil
+}
+
 // CellDataForSort implements unison.TableRowData.
 func (n *Node[T]) CellDataForSort(index int) string {
 	var data gurps.CellData

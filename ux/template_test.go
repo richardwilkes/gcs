@@ -290,6 +290,65 @@ func TestMergeAddedRows(t *testing.T) {
 		c.Equal(fxp.FromInteger(4), existingTL8.Points)
 		c.Equal(fxp.FromInteger(3), existingTL9.Points)
 	})
+
+	// Regression test for #1066: a leveled trait nested inside an added container (as when a template is added to the
+	// sheet by dragging it in) merges into an identical existing trait, and the now-redundant nested row must leave the
+	// table's view immediately. It used to be pruned from the data only, remaining visible until something else caused
+	// the table to reload, because the merge bailed out early when the top-level row count was unchanged.
+	t.Run("a trait inside an added container merges and its row leaves the view", func(_ *testing.T) {
+		existing := newTestTrait("Increased Dexterity", fxp.FromInteger(1), true)
+		container := gurps.NewTrait(nil, nil, true)
+		container.Name = "Infernal"
+		child := newTestTrait("Increased Dexterity", fxp.FromInteger(2), true)
+		child.SetParent(container)
+		container.Children = []*gurps.Trait{child}
+		table := unison.NewTable[*Node[*gurps.Trait]](&unison.SimpleTableModel[*Node[*gurps.Trait]]{})
+		existingNode := NewNode(table, nil, existing, false)
+		containerNode := NewNode(table, nil, container, false)
+		table.SetRootRows([]*Node[*gurps.Trait]{existingNode, containerNode})
+		c.Equal(3, table.LastRowIndex()+1, "the open container's child must be showing before the merge")
+		table.SetSelectionMap(map[tid.TID]bool{containerNode.ID(): true})
+		MergeAddedRows(table)
+		c.Equal(fxp.FromInteger(3), existing.Levels, "the existing trait must absorb the nested trait's levels")
+		c.Equal(0, len(container.Children), "the merged child must be pruned from the container's data")
+		roots := table.RootRows()
+		c.Equal(2, len(roots), "the existing trait and the container must both remain")
+		c.Equal(0, len(roots[1].Children()), "the merged child must no longer be in the view")
+		c.Equal(2, table.LastRowIndex()+1, "the merged child's row must be gone from the table")
+		sel := table.CopySelectionMap()
+		c.Equal(true, sel[existing.ID()], "the merged-into trait must be selected")
+		c.Equal(true, sel[container.ID()], "the surviving container must remain selected")
+	})
+
+	// Same as above, but with the merged trait nested two container levels deep, to ensure both the merge traversal and
+	// the view refresh handle arbitrary nesting rather than just direct children of an added container.
+	t.Run("a trait nested two levels deep in an added container merges and its row leaves the view", func(_ *testing.T) {
+		existing := newTestTrait("Increased Dexterity", fxp.FromInteger(1), true)
+		container := gurps.NewTrait(nil, nil, true)
+		container.Name = "Infernal"
+		subContainer := gurps.NewTrait(nil, container, true)
+		subContainer.Name = "Attributes"
+		container.Children = []*gurps.Trait{subContainer}
+		child := newTestTrait("Increased Dexterity", fxp.FromInteger(2), true)
+		child.SetParent(subContainer)
+		subContainer.Children = []*gurps.Trait{child}
+		table := unison.NewTable[*Node[*gurps.Trait]](&unison.SimpleTableModel[*Node[*gurps.Trait]]{})
+		existingNode := NewNode(table, nil, existing, false)
+		containerNode := NewNode(table, nil, container, false)
+		table.SetRootRows([]*Node[*gurps.Trait]{existingNode, containerNode})
+		c.Equal(4, table.LastRowIndex()+1, "all nested rows must be showing before the merge")
+		table.SetSelectionMap(map[tid.TID]bool{containerNode.ID(): true})
+		MergeAddedRows(table)
+		c.Equal(fxp.FromInteger(3), existing.Levels, "the existing trait must absorb the deeply nested trait's levels")
+		c.Equal(0, len(subContainer.Children), "the merged child must be pruned from the sub-container's data")
+		c.Equal(1, len(container.Children), "the sub-container itself must remain in the added container")
+		c.Equal(3, table.LastRowIndex()+1, "the merged child's row must be gone from the table")
+		roots := table.RootRows()
+		c.Equal(2, len(roots), "the existing trait and the container must both remain")
+		containerChildren := roots[1].Children()
+		c.Equal(1, len(containerChildren), "the sub-container's row must remain in the view")
+		c.Equal(0, len(containerChildren[0].Children()), "the merged child must no longer be in the view")
+	})
 }
 
 // TestMergeTraitLevels verifies that only leveled traits merge, that their levels are combined, and that differing
