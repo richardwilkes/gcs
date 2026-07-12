@@ -38,24 +38,6 @@ func newTestSpell(name string, points fxp.Int, techLevel *string) *gurps.Spell {
 
 func ptr(s string) *string { return &s }
 
-func newTestTrait(name string, levels fxp.Int, canLevel bool) *gurps.Trait {
-	t := gurps.NewTrait(nil, nil, false)
-	t.Name = name
-	t.CanLevel = canLevel
-	if canLevel {
-		t.PointsPerLevel = fxp.FromInteger(5)
-		t.Levels = levels
-	}
-	return t
-}
-
-func newTestTraitModifier(name string, disabled bool) *gurps.TraitModifier {
-	m := gurps.NewTraitModifier(nil, nil, false)
-	m.Name = name
-	m.Disabled = disabled
-	return m
-}
-
 // TestMergeSkillPoints verifies that applying a template's skills onto an existing set folds the points of identical
 // skills together, correctly distinguishing skills that differ only by tech level.
 func TestMergeSkillPoints(t *testing.T) {
@@ -291,129 +273,62 @@ func TestMergeAddedRows(t *testing.T) {
 		c.Equal(fxp.FromInteger(3), existingTL9.Points)
 	})
 
-	// Regression test for #1066: a leveled trait nested inside an added container (as when a template is added to the
-	// sheet by dragging it in) merges into an identical existing trait, and the now-redundant nested row must leave the
-	// table's view immediately. It used to be pruned from the data only, remaining visible until something else caused
-	// the table to reload, because the merge bailed out early when the top-level row count was unchanged.
-	t.Run("a trait inside an added container merges and its row leaves the view", func(_ *testing.T) {
-		existing := newTestTrait("Increased Dexterity", fxp.FromInteger(1), true)
-		container := gurps.NewTrait(nil, nil, true)
-		container.Name = "Infernal"
-		child := newTestTrait("Increased Dexterity", fxp.FromInteger(2), true)
+	// Regression test for #1066: a row nested inside an added container (as when a template is added to the sheet by
+	// dragging it in) merges into an identical existing row, and the now-redundant nested row must leave the table's
+	// view immediately. It used to be pruned from the data only, remaining visible until something else caused the
+	// table to reload, because the merge bailed out early when the top-level row count was unchanged.
+	t.Run("a skill inside an added container merges and its row leaves the view", func(_ *testing.T) {
+		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
+		container := gurps.NewSkill(nil, nil, true)
+		container.Name = "Combat Skills"
+		child := newTestSkill("Brawling", fxp.FromInteger(2), nil)
 		child.SetParent(container)
-		container.Children = []*gurps.Trait{child}
-		table := unison.NewTable[*Node[*gurps.Trait]](&unison.SimpleTableModel[*Node[*gurps.Trait]]{})
+		container.Children = []*gurps.Skill{child}
+		table := unison.NewTable[*Node[*gurps.Skill]](&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
 		existingNode := NewNode(table, nil, existing, false)
 		containerNode := NewNode(table, nil, container, false)
-		table.SetRootRows([]*Node[*gurps.Trait]{existingNode, containerNode})
+		table.SetRootRows([]*Node[*gurps.Skill]{existingNode, containerNode})
 		c.Equal(3, table.LastRowIndex()+1, "the open container's child must be showing before the merge")
 		table.SetSelectionMap(map[tid.TID]bool{containerNode.ID(): true})
 		MergeAddedRows(table)
-		c.Equal(fxp.FromInteger(3), existing.Levels, "the existing trait must absorb the nested trait's levels")
+		c.Equal(fxp.FromInteger(6), existing.Points, "the existing skill must absorb the nested skill's points")
 		c.Equal(0, len(container.Children), "the merged child must be pruned from the container's data")
 		roots := table.RootRows()
-		c.Equal(2, len(roots), "the existing trait and the container must both remain")
+		c.Equal(2, len(roots), "the existing skill and the container must both remain")
 		c.Equal(0, len(roots[1].Children()), "the merged child must no longer be in the view")
 		c.Equal(2, table.LastRowIndex()+1, "the merged child's row must be gone from the table")
 		sel := table.CopySelectionMap()
-		c.Equal(true, sel[existing.ID()], "the merged-into trait must be selected")
+		c.Equal(true, sel[existing.ID()], "the merged-into skill must be selected")
 		c.Equal(true, sel[container.ID()], "the surviving container must remain selected")
 	})
 
-	// Same as above, but with the merged trait nested two container levels deep, to ensure both the merge traversal and
+	// Same as above, but with the merged skill nested two container levels deep, to ensure both the merge traversal and
 	// the view refresh handle arbitrary nesting rather than just direct children of an added container.
-	t.Run("a trait nested two levels deep in an added container merges and its row leaves the view", func(_ *testing.T) {
-		existing := newTestTrait("Increased Dexterity", fxp.FromInteger(1), true)
-		container := gurps.NewTrait(nil, nil, true)
-		container.Name = "Infernal"
-		subContainer := gurps.NewTrait(nil, container, true)
-		subContainer.Name = "Attributes"
-		container.Children = []*gurps.Trait{subContainer}
-		child := newTestTrait("Increased Dexterity", fxp.FromInteger(2), true)
+	t.Run("a skill nested two levels deep in an added container merges and its row leaves the view", func(_ *testing.T) {
+		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
+		container := gurps.NewSkill(nil, nil, true)
+		container.Name = "Combat Skills"
+		subContainer := gurps.NewSkill(nil, container, true)
+		subContainer.Name = "Unarmed"
+		container.Children = []*gurps.Skill{subContainer}
+		child := newTestSkill("Brawling", fxp.FromInteger(2), nil)
 		child.SetParent(subContainer)
-		subContainer.Children = []*gurps.Trait{child}
-		table := unison.NewTable[*Node[*gurps.Trait]](&unison.SimpleTableModel[*Node[*gurps.Trait]]{})
+		subContainer.Children = []*gurps.Skill{child}
+		table := unison.NewTable[*Node[*gurps.Skill]](&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
 		existingNode := NewNode(table, nil, existing, false)
 		containerNode := NewNode(table, nil, container, false)
-		table.SetRootRows([]*Node[*gurps.Trait]{existingNode, containerNode})
+		table.SetRootRows([]*Node[*gurps.Skill]{existingNode, containerNode})
 		c.Equal(4, table.LastRowIndex()+1, "all nested rows must be showing before the merge")
 		table.SetSelectionMap(map[tid.TID]bool{containerNode.ID(): true})
 		MergeAddedRows(table)
-		c.Equal(fxp.FromInteger(3), existing.Levels, "the existing trait must absorb the deeply nested trait's levels")
+		c.Equal(fxp.FromInteger(6), existing.Points, "the existing skill must absorb the deeply nested skill's points")
 		c.Equal(0, len(subContainer.Children), "the merged child must be pruned from the sub-container's data")
 		c.Equal(1, len(container.Children), "the sub-container itself must remain in the added container")
 		c.Equal(3, table.LastRowIndex()+1, "the merged child's row must be gone from the table")
 		roots := table.RootRows()
-		c.Equal(2, len(roots), "the existing trait and the container must both remain")
+		c.Equal(2, len(roots), "the existing skill and the container must both remain")
 		containerChildren := roots[1].Children()
 		c.Equal(1, len(containerChildren), "the sub-container's row must remain in the view")
 		c.Equal(0, len(containerChildren[0].Children()), "the merged child must no longer be in the view")
-	})
-}
-
-// TestMergeTraitLevels verifies that only leveled traits merge, that their levels are combined, and that differing
-// modifiers keep them separate.
-func TestMergeTraitLevels(t *testing.T) {
-	c := check.New(t)
-
-	t.Run("identical leveled traits merge their levels", func(_ *testing.T) {
-		existing := []*gurps.Trait{newTestTrait("Damage Resistance", fxp.FromInteger(2), true)}
-		incoming := []*gurps.Trait{newTestTrait("Damage Resistance", fxp.FromInteger(3), true)}
-		selMap := make(map[tid.TID]bool)
-		remaining := mergeTraitLevels(existing, incoming, selMap)
-		c.Equal(0, len(remaining))
-		c.Equal(fxp.FromInteger(5), existing[0].Levels)
-		c.Equal(true, selMap[existing[0].ID()])
-	})
-
-	t.Run("non-leveled traits are never merged", func(_ *testing.T) {
-		existing := []*gurps.Trait{newTestTrait("Combat Reflexes", fxp.FromInteger(0), false)}
-		incoming := []*gurps.Trait{newTestTrait("Combat Reflexes", fxp.FromInteger(0), false)}
-		selMap := make(map[tid.TID]bool)
-		remaining := mergeTraitLevels(existing, incoming, selMap)
-		c.Equal(1, len(remaining))
-	})
-
-	t.Run("leveled traits with matching modifiers merge", func(_ *testing.T) {
-		existing := newTestTrait("Damage Resistance", fxp.FromInteger(2), true)
-		existing.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", false)}
-		incoming := newTestTrait("Damage Resistance", fxp.FromInteger(1), true)
-		incoming.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", false)}
-		selMap := make(map[tid.TID]bool)
-		remaining := mergeTraitLevels([]*gurps.Trait{existing}, []*gurps.Trait{incoming}, selMap)
-		c.Equal(0, len(remaining))
-		c.Equal(fxp.FromInteger(3), existing.Levels)
-	})
-
-	t.Run("leveled traits with differing modifiers stay separate", func(_ *testing.T) {
-		existing := newTestTrait("Damage Resistance", fxp.FromInteger(2), true)
-		existing.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", false)}
-		incoming := newTestTrait("Damage Resistance", fxp.FromInteger(1), true)
-		incoming.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Tough Skin", false)}
-		selMap := make(map[tid.TID]bool)
-		remaining := mergeTraitLevels([]*gurps.Trait{existing}, []*gurps.Trait{incoming}, selMap)
-		c.Equal(1, len(remaining))
-		c.Equal(fxp.FromInteger(2), existing.Levels)
-	})
-
-	// The same modifier enabled on one trait but disabled on the other means the traits are not identical.
-	t.Run("a disabled modifier prevents merging", func(_ *testing.T) {
-		existing := newTestTrait("Damage Resistance", fxp.FromInteger(2), true)
-		existing.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", false)}
-		incoming := newTestTrait("Damage Resistance", fxp.FromInteger(1), true)
-		incoming.Modifiers = []*gurps.TraitModifier{newTestTraitModifier("Hardened", true)}
-		selMap := make(map[tid.TID]bool)
-		remaining := mergeTraitLevels([]*gurps.Trait{existing}, []*gurps.Trait{incoming}, selMap)
-		c.Equal(1, len(remaining))
-	})
-
-	t.Run("identical incoming leveled traits merge with each other", func(_ *testing.T) {
-		first := newTestTrait("Damage Resistance", fxp.FromInteger(1), true)
-		second := newTestTrait("Damage Resistance", fxp.FromInteger(2), true)
-		selMap := make(map[tid.TID]bool)
-		remaining := mergeTraitLevels(nil, []*gurps.Trait{first, second}, selMap)
-		c.Equal(1, len(remaining))
-		c.Equal(first, remaining[0])
-		c.Equal(fxp.FromInteger(3), first.Levels)
 	})
 }
