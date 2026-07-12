@@ -81,6 +81,14 @@ func registerWindowDragTypes(wnd *unison.Window) {
 	wnd.RegisterForDragTypes(types...)
 }
 
+// flushDragFeedback marks the panel for redraw and immediately flushes the drawing. A native drag has no continuous
+// redraw loop, so any drop feedback drawn in response to drag events must be flushed explicitly or it never appears.
+// It is a variable so that headless tests, which have no window to observe drawing through, can intercept it.
+var flushDragFeedback = func(panel *unison.Panel) {
+	panel.MarkForRedraw()
+	panel.FlushDrawing()
+}
+
 // installPanelDragDrop wires the supplied panel-based drag handlers to a panel using the current unison drag callbacks.
 // The over and drop handlers receive the in-progress panel drag data, keyed by drag data type.
 func installPanelDragDrop(panel *unison.Panel, dataType *uti.DataType,
@@ -92,9 +100,7 @@ func installPanelDragDrop(panel *unison.Panel, dataType *uti.DataType,
 	update := func(di drag.Info, where geom.Point, _ mod.Modifiers) drag.Op {
 		if di.HasDataType(dataType.UTI) {
 			over(where, panelDragData)
-			// A native drag has no continuous redraw loop, so any drawing marked dirty by the over handler must be
-			// flushed explicitly or the drop feedback never appears.
-			panel.FlushDrawing()
+			flushDragFeedback(panel)
 			return drag.Move
 		}
 		return drag.None
@@ -103,7 +109,7 @@ func installPanelDragDrop(panel *unison.Panel, dataType *uti.DataType,
 	panel.DragUpdatedCallback = update
 	panel.DragExitedCallback = func() {
 		exit()
-		panel.FlushDrawing()
+		flushDragFeedback(panel)
 	}
 	panel.DropCallback = func(di drag.Info, where geom.Point, _ mod.Modifiers) bool {
 		if di.HasDataType(dataType.UTI) {

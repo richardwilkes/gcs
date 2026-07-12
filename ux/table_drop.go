@@ -58,12 +58,14 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 		}
 		dragEnterOrUpdate := func(di drag.Info, where geom.Point) (drag.Op, bool) {
 			if di.HasDataType(altDataType.UTI) {
-				altDropRowIndex = table.OverRow(where.Y)
-				if altDropRowIndex != -1 {
-					table.MarkForRedraw()
-					return drag.Copy, true
+				op := drag.None
+				if altDropRowIndex = table.OverRow(where.Y); altDropRowIndex != -1 {
+					op = drag.Copy
 				}
-				return drag.None, true
+				// Redraw and flush whether over a row or not, so the highlight appears while a row is targeted and is
+				// erased as soon as the drag moves off of the rows.
+				flushDragFeedback(table.AsPanel())
+				return op, true
 			}
 			return drag.None, false
 		}
@@ -80,7 +82,10 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 			return originalDragCallbacks.DragUpdatedCallback(di, where, mods)
 		}
 		table.DragExitedCallback = func() {
-			altDropRowIndex = -1
+			if altDropRowIndex != -1 {
+				altDropRowIndex = -1
+				flushDragFeedback(table.AsPanel())
+			}
 			originalDragCallbacks.DragExitedCallback()
 		}
 		table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
@@ -91,7 +96,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 					altDropSupport.Drop(altDropRowIndex, draggedTableData)
 					finishDidDrop(undo, nil, table, false)
 					altDropRowIndex = -1
-					table.MarkForRedraw()
+					flushDragFeedback(table.AsPanel())
 					handled = true
 				}
 				return handled
