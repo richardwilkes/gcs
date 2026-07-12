@@ -71,4 +71,4 @@
   file permissions. Preserving the original file permissions is now best-effort, so an otherwise-valid save or copy no
   longer aborts when the drive rejects the permission change.
 - Fixed the missing row highlight when dragging a modifier over a trait or piece of equipment, so the row that will
-  receive the drop is highlighted again on character sheets, loot sheets, templates, and in the list editors.
+  receive the drop is highlighted again on character sheets, loot sheets, templates, and in the list editors. (#1065)
