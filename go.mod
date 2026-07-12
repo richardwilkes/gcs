@@ -21,18 +21,15 @@ require (
 )
 
 require (
-	github.com/HugoSmits86/nativewebp v1.3.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/OpenPrinting/goipp v1.2.0 // indirect
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cloudflare/circl v1.6.4 // indirect
 	github.com/dlclark/regexp2/v2 v2.2.2 // indirect
-	github.com/ebitengine/purego v0.11.0-alpha.6 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
-	github.com/go-text/typesetting v0.3.4 // indirect
 	github.com/google/pprof v0.0.0-20260604005048-7023385849c0 // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
@@ -40,7 +37,6 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/miekg/dns v1.1.72 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
-	github.com/richardwilkes/canvas v0.0.0-20260710162742-558e56cdc5e8 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/mod v0.37.0 // indirect
@@ -50,5 +46,3 @@ require (
 	golang.org/x/tools v0.47.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/richardwilkes/unison => /home/rich/code/unison
