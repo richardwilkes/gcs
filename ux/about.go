@@ -78,15 +78,12 @@ This product includes copyrighted material from the **GURPS** game, which is use
 		content.AddChild(md)
 
 		aboutWnd.Pack()
+		frame := windowPlacementFrame()
 		r := aboutWnd.FrameRect()
-		usable := primaryDisplayUsableRect()
-		r.X = usable.X + (usable.Width-r.Width)/2
-		r.Y = usable.Y + (usable.Height-r.Height)/3
+		r.X = frame.X + (frame.Width-r.Width)/2
+		r.Y = frame.Y + (frame.Height-r.Height)/3
 		r = r.Align()
-		if primary := unison.PrimaryDisplay(); primary != nil {
-			r = primary.FitRectOnto(r)
-		}
-		aboutWnd.SetFrameRect(r)
+		aboutWnd.SetFrameRect(unison.BestDisplayForRect(r).FitRectOnto(r))
 	}
 	aboutWnd.ToFront()
 }

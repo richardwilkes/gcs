@@ -37,10 +37,15 @@ func primaryDisplayUsableRect() geom.Rect {
 }
 
 // windowPlacementFrame returns a rectangle within which to center a transient window: the active window's frame when
-// there is one, otherwise the primary display's usable area (with a safe fallback when no display is available).
+// there is one, or failing that, the frontmost window's frame, so that transient windows open on the same display the
+// user is working on. Only when no window is available does it fall back to the primary display's usable area (with a
+// safe fallback when no display is available).
 func windowPlacementFrame() geom.Rect {
 	if focused := unison.ActiveWindow(); focused != nil {
 		return focused.FrameRect()
+	}
+	if frontmost := unison.FrontmostWindow(); frontmost != nil {
+		return frontmost.FrameRect()
 	}
 	return primaryDisplayUsableRect()
 }

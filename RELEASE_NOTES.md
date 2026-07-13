@@ -73,3 +73,6 @@
 - Linux only: Fixed dialog windows losing proper focus and trapping the mouse cursor at the corner of the screen when
   running under XWayland. (#1064)
 - Linux only: Fixed modifier keys (Shift, Control, etc.) sometimes not being detected as pressed. (#1069)
+- Fixed dialogs and newly opened windows sometimes appearing on the primary display instead of the display being worked
+  on, which was most noticeable on Linux and Windows when opened from a menu. New windows and dialogs are now placed
+  relative to the frontmost window, falling back to the primary display only when no window is available.
