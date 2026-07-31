@@ -7,6 +7,7 @@ require (
 	github.com/go-git/go-billy/v6 v6.0.0-alpha.2
 	github.com/go-git/go-git/v6 v6.0.0-alpha.5
 	github.com/google/uuid v1.6.0
+	github.com/richardwilkes/canvas v0.2.0
 	github.com/richardwilkes/pdfview v0.2.0
 	github.com/richardwilkes/rpgtools v1.13.0
 	github.com/richardwilkes/toolbox/v2 v2.15.2
@@ -40,7 +41,6 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/miekg/dns v1.1.72 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
-	github.com/richardwilkes/canvas v0.2.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	golang.org/x/crypto v0.54.0 // indirect
 	golang.org/x/mod v0.38.0 // indirect
