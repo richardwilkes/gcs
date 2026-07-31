@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/richardwilkes/canvas/pdf"
+	"github.com/richardwilkes/canvas/stream"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -322,31 +324,36 @@ func addRowPanel[T gurps.NodeTypes](rowPanel *unison.Panel, list *PageList[T], k
 }
 
 func (p *pageExporter) exportAsPDFBytes() ([]byte, error) {
-	stream := unison.NewMemoryStream()
-	defer stream.Close()
-	if err := p.exportAsPDF(stream); err != nil {
+	s := stream.NewMemoryWStream()
+	if err := p.exportAsPDF(s); err != nil {
 		return nil, err
 	}
-	return stream.Bytes(), nil
+	return s.Bytes(), nil
 }
 
-func (p *pageExporter) exportAsPDFFile(filePath string) error {
-	if err := os.Remove(filePath); err != nil && !errors.Is(err, fs.ErrNotExist) {
+func (p *pageExporter) exportAsPDFFile(filePath string) (err error) {
+	if err = os.Remove(filePath); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return errs.Wrap(err)
 	}
-	stream, err := unison.NewFileStream(filePath)
-	if err != nil {
-		return err
+	s, ok := stream.NewFileWStream(filePath)
+	if !ok {
+		return errs.Newf("could not create %q", filePath)
 	}
-	defer stream.Close()
-	return p.exportAsPDF(stream)
+	defer func() {
+		s.Close()
+		if err == nil && s.Failed() {
+			err = errs.Newf("unable to write %q", filePath)
+		}
+	}()
+	err = p.exportAsPDF(s)
+	return err
 }
 
-func (p *pageExporter) exportAsPDF(stream unison.Stream) error {
+func (p *pageExporter) exportAsPDF(s stream.WStream) error {
 	savedColorMode := p.saveTheme()
 	defer p.restoreTheme(savedColorMode)
 	title := p.provider.PageTitle()
-	return unison.CreatePDF(stream, &unison.PDFMetaData{
+	return unison.CreatePDF(s, &pdf.Metadata{
 		Title:           title,
 		Author:          xos.CurrentUserName(),
 		Subject:         title,

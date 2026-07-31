@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/pdf"
+	"github.com/richardwilkes/pdfview"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -58,7 +58,7 @@ type pdfParams struct {
 type PDFRenderer struct {
 	ppi                  float32
 	scaleAdjust          geom.Point
-	doc                  *pdf.Document
+	doc                  *pdfview.Document
 	pageCount            int
 	pageLoadedCallback   func()
 	lock                 sync.RWMutex
@@ -75,8 +75,8 @@ func NewPDFRenderer(filePath string, pageLoadedCallback func()) (*PDFRenderer, e
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}
-	var doc *pdf.Document
-	if doc, err = pdf.New(data, 0); err != nil {
+	var doc *pdfview.Document
+	if doc, err = pdfview.New(data, 0); err != nil {
 		return nil, errs.Wrap(err)
 	}
 	return &PDFRenderer{
@@ -230,7 +230,7 @@ func (p *PDFRenderer) errorDuringRender(state *pdfParams, err error) {
 	p.pageLoadedCallback()
 }
 
-func (p *PDFRenderer) convertTOCEntries(entries []*pdf.TOCEntry) []*PDFTableOfContents {
+func (p *PDFRenderer) convertTOCEntries(entries []*pdfview.TOCEntry) []*PDFTableOfContents {
 	if len(entries) == 0 {
 		return nil
 	}
@@ -246,7 +246,7 @@ func (p *PDFRenderer) convertTOCEntries(entries []*pdf.TOCEntry) []*PDFTableOfCo
 	return toc
 }
 
-func (p *PDFRenderer) convertLinks(pageLinks []*pdf.PageLink) []*PDFLink {
+func (p *PDFRenderer) convertLinks(pageLinks []*pdfview.PageLink) []*PDFLink {
 	if len(pageLinks) == 0 {
 		return nil
 	}
