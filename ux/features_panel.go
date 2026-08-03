@@ -131,6 +131,8 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 		panel, focus = p.createWeaponBonusPanel(one)
 	case *gurps.SelectorOverride:
 		panel, focus = p.createSelectorOverridePanel(one)
+	case *gurps.UnknownFeature:
+		panel, focus = p.createUnknownFeaturePanel(one)
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", reflect.TypeOf(f).String())
 		return
@@ -937,6 +939,23 @@ func (p *featuresPanel) addSelectorValueEditor(parent *unison.Panel, f *gurps.Se
 	return field
 }
 
+// createUnknownFeaturePanel creates the panel for a feature this version of GCS doesn't understand. No editing is
+// offered, since we have no idea what the data means, but the row is shown so that the presence of the feature is
+// visible and it can be deleted deliberately. Note that no type switcher is present, as switching the type would throw
+// away the original data.
+func (p *featuresPanel) createUnknownFeaturePanel(f *gurps.UnknownFeature) (main *unison.Panel, focus unison.Paneler) {
+	panel := p.createBasePanel(f)
+	label := NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Unknown feature type %q; it will be preserved, but ignored"),
+		f.Kind), false)
+	label.Tooltip = newWrappedTooltip(i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved."))
+	label.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	panel.AddChild(label)
+	return panel, panel
+}
+
 // rebuildFeaturePanel replaces the on-screen panel for the given feature in place, keeping the same feature object. It
 // is used when an edit (such as changing a selector's field) changes which sub-widgets the row needs.
 func (p *featuresPanel) rebuildFeaturePanel(f gurps.Feature) {
@@ -952,9 +971,9 @@ func (p *featuresPanel) rebuildFeaturePanel(f gurps.Feature) {
 
 func (p *featuresPanel) featureTypesList() []feature.Type {
 	if e, ok := p.owner.(*gurps.Equipment); ok && e.Container() {
-		return feature.Types
+		return feature.SelectableTypes
 	}
-	return feature.TypesWithoutContainedWeightReduction
+	return feature.SelectableTypesWithoutContainedWeightReduction
 }
 
 func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) *unison.PopupMenu[feature.Type] {

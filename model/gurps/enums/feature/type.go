@@ -9,14 +9,38 @@
 
 package feature
 
-// TypesWithoutContainedWeightReduction holds the possible Type values, minus the ContainedWeightReduction.
-var TypesWithoutContainedWeightReduction []Type
+import "strings"
+
+// SelectableTypes holds the possible Type values that may be chosen by the user. Unknown is excluded, since it exists
+// only to hold onto feature data this version of GCS doesn't understand.
+var SelectableTypes []Type
+
+// SelectableTypesWithoutContainedWeightReduction holds the same values as SelectableTypes, minus the
+// ContainedWeightReduction.
+var SelectableTypesWithoutContainedWeightReduction []Type
 
 func init() {
-	TypesWithoutContainedWeightReduction = make([]Type, 0, len(Types)-1)
+	SelectableTypes = make([]Type, 0, len(Types)-1)
+	SelectableTypesWithoutContainedWeightReduction = make([]Type, 0, len(Types)-2)
 	for _, one := range Types {
+		if one == Unknown {
+			continue
+		}
+		SelectableTypes = append(SelectableTypes, one)
 		if one != ContainedWeightReduction {
-			TypesWithoutContainedWeightReduction = append(TypesWithoutContainedWeightReduction, one)
+			SelectableTypesWithoutContainedWeightReduction = append(SelectableTypesWithoutContainedWeightReduction, one)
 		}
 	}
+}
+
+// ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized. Unlike
+// ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that is
+// dispatching on the type to detect data it has no knowledge of.
+func ExtractKnownType(str string) (value Type, known bool) {
+	for _, enum := range Types {
+		if enum != Unknown && strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return Unknown, false
 }

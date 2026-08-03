@@ -15,7 +15,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
 // Features holds a list of features.
@@ -42,13 +41,21 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	*f = make([]Feature, len(v))
 	for i, one := range v {
 		var justTypeData struct {
-			Type feature.Type `json:"type"`
+			Type string `json:"type"`
 		}
 		if err := json.Unmarshal(one, &justTypeData); err != nil {
 			return errs.Wrap(err)
 		}
+		// Note that the type is extracted as a string and resolved with ExtractKnownType rather than being unmarshaled
+		// directly into a feature.Type: the enum's UnmarshalText maps anything it doesn't recognize onto the first
+		// value, which would turn a feature written by a newer version of GCS into a bogus AttributeBonus.
+		featureType, known := feature.ExtractKnownType(justTypeData.Type)
+		if !known {
+			(*f)[i] = NewUnknownFeature(justTypeData.Type, one)
+			continue
+		}
 		var feat Feature
-		switch justTypeData.Type {
+		switch featureType {
 		case feature.AttributeBonus:
 			feat = &AttributeBonus{}
 		case feature.ConditionalModifier:
@@ -103,7 +110,9 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		case feature.SelectorOverride:
 			feat = &SelectorOverride{}
 		default:
-			return errs.Newf(i18n.Text("Unknown feature type: %s"), justTypeData.Type)
+			// A known type that has no case above, or the Unknown type itself. Preserve rather than discard.
+			(*f)[i] = NewUnknownFeature(justTypeData.Type, one)
+			continue
 		}
 		if err := json.Unmarshal(one, &feat); err != nil {
 			return errs.Wrap(err)

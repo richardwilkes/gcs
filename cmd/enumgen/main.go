@@ -768,6 +768,10 @@ var allEnums = []*enumInfo{
 				Key:    "contained_weight_reduction",
 				String: "Reduces the contained weight by",
 			},
+			{
+				Key:    "unknown",
+				String: "Is an unknown feature type",
+			},
 		},
 	},
 	{
@@ -905,6 +909,11 @@ var allEnums = []*enumInfo{
 				Name:   "Script",
 				Key:    "script_prereq",
 				String: "has script",
+			},
+			{
+				Name:   "Unknown",
+				Key:    "unknown_prereq",
+				String: "an unknown prerequisite type",
 			},
 		},
 	},

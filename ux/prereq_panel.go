@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"reflect"
 	"slices"
 
@@ -122,6 +123,8 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 		panel, focus = p.createSpellPrereqPanel(depth, one)
 	case *gurps.ScriptPrereq:
 		panel, focus = p.createScriptPrereqPanel(depth, one)
+	case *gurps.UnknownPrereq:
+		panel, focus = p.createUnknownPrereqPanel(depth, one)
 	default:
 		errs.Log(errs.New("unknown prerequisite type"), "type", reflect.TypeOf(child).String())
 	}
@@ -142,6 +145,32 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 		}
 		focus.AsPanel().RequestFocus()
 	}
+}
+
+// createUnknownPrereqPanel creates the panel for a prerequisite this version of GCS doesn't understand. No editing is
+// offered, since we have no idea what the data means, but the row is shown so that the presence of the prerequisite is
+// visible and it can be deleted deliberately. Note that no type switcher is present, as switching the type would throw
+// away the original data.
+func (p *prereqPanel) createUnknownPrereqPanel(depth int, pr *gurps.UnknownPrereq) (main, focus unison.Paneler) {
+	panel := unison.NewPanel()
+	p.createButtonsPanel(panel, depth, pr)
+	inFront := andOrText(pr) != noAndOr
+	if inFront {
+		p.addAndOr(panel, pr)
+	}
+	label := NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Unknown prerequisite type %q; it will be preserved, but is never satisfied"),
+		pr.Kind), false)
+	label.Tooltip = newWrappedTooltip(i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved."))
+	panel.AddChild(label)
+	if !inFront {
+		p.addAndOr(panel, pr)
+	}
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  len(panel.Children()),
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	return panel, panel
 }
 
 func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data gurps.Prereq) {

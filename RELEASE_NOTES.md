@@ -44,6 +44,13 @@
 
 ## Bug Fixes
 
+- Fixed the handling of data files containing a feature or prerequisite type this version of GCS doesn't recognize, such
+  as one written by a newer release. Previously, an unrecognized feature was silently loaded as an empty attribute bonus
+  and an unrecognized prerequisite as an empty, always-satisfied prerequisite list, and saving the file then wrote those
+  replacements back out, permanently destroying the original data. Such entries are now kept exactly as they were read
+  and written back out unchanged. They are shown in the editors so you can see they're present (and delete them if you
+  want to), an unrecognized feature has no effect, and an unrecognized prerequisite is reported as unsatisfied rather
+  than being quietly treated as met.
 - Fixed double-counting of +3 and defense bonus for parry/block weapon defaults.
 - Fixed another case of the key handling not properly masking out sticky modifier keys (CapsLock & NumLock), this time
   affecting use of the Tab key to move focus between fields.
@@ -56,14 +63,14 @@
   set of parentheses `()` after the skill name.
 - Fixed the Linux desktop integration so the application window is correctly associated with its launcher icon (added
   the missing `StartupWMClass` and the matching window `WM_CLASS`). (#1059)
-- Fixed a technique's skill default so that switching its specialization comparison to "whose specialization is anything"
-  now matches any specialization, rather than staying locked on the specialization text left over from a prior "is"
-  selection. (#1061)
+- Fixed a technique's skill default so that switching its specialization comparison to "whose specialization is
+  anything" now matches any specialization, rather than staying locked on the specialization text left over from a prior
+  "is" selection. (#1061)
 - Fixed the scripting skill lookups (`entity.findSkills`, `entity.skillLevel`, and a skill container's `find`) so a
   specialization argument now matches a skill by its optional specialization as well as its required specialization.
   (#1062)
-- Fixed a rare crash that could occur while scrolling when blank space at the edge of the content was collapsed. Scrolled
-  views (tables, lists, and other scrollable panels) now settle correctly instead of getting caught in a loop.
+- Fixed a rare crash that could occur while scrolling when blank space at the edge of the content was collapsed.
+  Scrolled views (tables, lists, and other scrollable panels) now settle correctly instead of getting caught in a loop.
 - Fixed a startup failure on Linux where the application window could fail to be created (a `BadMatch` error) on some
   graphics drivers, most notably NVIDIA.
 - Fixed saving and copying files failing on network drives (such as certain SMB/CIFS mounts) that don't allow changing

@@ -15,7 +15,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
 // Prereqs holds a list of prerequisites.
@@ -30,13 +29,22 @@ func (p *Prereqs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	*p = make([]Prereq, len(v))
 	for i, one := range v {
 		var typeData struct {
-			Type prereq.Type `json:"type"`
+			Type string `json:"type"`
 		}
 		if err := json.Unmarshal(one, &typeData); err != nil {
 			return errs.Wrap(err)
 		}
+		// Note that the type is extracted as a string and resolved with ExtractKnownType rather than being unmarshaled
+		// directly into a prereq.Type: the enum's UnmarshalText maps anything it doesn't recognize onto the first
+		// value, which would turn a prerequisite written by a newer version of GCS into an empty, always-satisfied
+		// PrereqList.
+		prereqType, known := prereq.ExtractKnownType(typeData.Type)
+		if !known {
+			(*p)[i] = NewUnknownPrereq(typeData.Type, one)
+			continue
+		}
 		var pr Prereq
-		switch typeData.Type {
+		switch prereqType {
 		case prereq.List:
 			pr = &PrereqList{}
 		case prereq.Trait:
@@ -56,7 +64,9 @@ func (p *Prereqs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		case prereq.Script:
 			pr = &ScriptPrereq{}
 		default:
-			return errs.Newf(i18n.Text("Unknown prerequisite type: %s"), typeData.Type)
+			// A known type that has no case above, or the Unknown type itself. Preserve rather than discard.
+			(*p)[i] = NewUnknownPrereq(typeData.Type, one)
+			continue
 		}
 		if err := json.Unmarshal(one, &pr); err != nil {
 			return errs.Wrap(err)

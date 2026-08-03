@@ -461,6 +461,8 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		e.features.selectorOverrides = append(e.features.selectorOverrides, actual)
 	case *ConditionalModifierBonus, *ContainedWeightReduction, *ReactionBonus:
 		// Not collected at this stage
+	case *UnknownFeature:
+		// A feature this version of GCS doesn't understand. It is preserved on save, but has no effect.
 	default:
 		errs.Log(errs.New("unhandled feature"), "type", f.FeatureType())
 	}

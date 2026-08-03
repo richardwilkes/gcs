@@ -29,10 +29,11 @@ const (
 	Skill
 	Spell
 	Script
+	Unknown
 )
 
 // LastType is the last valid value.
-const LastType Type = Script
+const LastType Type = Unknown
 
 // Types holds all possible values.
 var Types = []Type{
@@ -45,6 +46,7 @@ var Types = []Type{
 	Skill,
 	Spell,
 	Script,
+	Unknown,
 }
 
 // Type holds the type of a Prereq.
@@ -52,7 +54,7 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= Script {
+	if enum <= Unknown {
 		return enum
 	}
 	return 0
@@ -79,6 +81,8 @@ func (enum Type) Key() string {
 		return "spell_prereq"
 	case Script:
 		return "script_prereq"
+	case Unknown:
+		return "unknown_prereq"
 	default:
 		return Type(0).Key()
 	}
@@ -103,6 +107,8 @@ func (enum Type) oldKeys() []string {
 	case Spell:
 		return nil
 	case Script:
+		return nil
+	case Unknown:
 		return nil
 	default:
 		return Type(0).oldKeys()
@@ -130,6 +136,8 @@ func (enum Type) String() string {
 		return i18n.Text(`spell(s)`)
 	case Script:
 		return i18n.Text(`has script`)
+	case Unknown:
+		return i18n.Text(`an unknown prerequisite type`)
 	default:
 		return Type(0).String()
 	}
