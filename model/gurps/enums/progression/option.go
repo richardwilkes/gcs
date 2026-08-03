@@ -107,14 +107,16 @@ func (enum Option) Thrust(strength int) dice.Dice {
 	case Tbone1:
 		if strength < 10 {
 			return dice.Dice{
-				Count:    1,
-				Sides:    6,
-				Modifier: -(6 - (strength+2)/2),
+				Count:      1,
+				Sides:      6,
+				Modifier:   -(6 - (strength+2)/2),
+				Multiplier: 1,
 			}
 		}
 		d := dice.Dice{
-			Count: strength / 10,
-			Sides: 6,
+			Count:      strength / 10,
+			Sides:      6,
+			Multiplier: 1,
 		}
 		switch strength - (strength/10)*10 {
 		case 0, 1:
@@ -137,8 +139,9 @@ func (enum Option) Thrust(strength int) dice.Dice {
 			return Tbone1.Thrust(strength)
 		}
 		d := dice.Dice{
-			Count: strength / 10,
-			Sides: 6,
+			Count:      strength / 10,
+			Sides:      6,
+			Multiplier: 1,
 		}
 		switch strength - (strength/10)*10 {
 		case 0, 1:

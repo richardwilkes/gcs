@@ -15,6 +15,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
+const (
+	// multiplicationSign is the Unicode multiplication sign, which users may type in place of the ASCII "x".
+	multiplicationSign = "×"
+	// multiplierLeaders holds every rune that may lead a multiplier value. FromString lowercases before classifying
+	// and also accepts the Unicode multiplication sign, so extraction must strip all of these forms.
+	multiplierLeaders = "xX" + multiplicationSign
+)
+
 // Format returns a formatted version of the value.
 func (enum Value) Format(value fxp.Int) string {
 	switch enum {
@@ -36,7 +44,7 @@ func (enum Value) Format(value fxp.Int) string {
 
 // ExtractValue from the string.
 func (enum Value) ExtractValue(s string) fxp.Int {
-	v, _ := fxp.Extract(strings.TrimLeft(strings.TrimSpace(s), Multiplier.Key()))
+	v, _ := fxp.Extract(strings.TrimLeft(strings.TrimSpace(s), multiplierLeaders))
 	if enum.EnsureValid() == Multiplier && v <= 0 {
 		v = fxp.One
 	}
@@ -51,7 +59,8 @@ func (enum Value) FromString(s string) Value {
 		return CostFactor
 	case strings.HasSuffix(s, Percentage.Key()):
 		return Percentage
-	case strings.HasPrefix(s, Multiplier.Key()) || strings.HasSuffix(s, Multiplier.Key()):
+	case strings.HasPrefix(s, Multiplier.Key()) || strings.HasSuffix(s, Multiplier.Key()) ||
+		strings.HasPrefix(s, multiplicationSign) || strings.HasSuffix(s, multiplicationSign):
 		return Multiplier
 	default:
 		return Addition

@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -188,5 +189,35 @@ func newDefenseTestDefault(defaultType string) *gurps.SkillDefault {
 		Name: criteria.Text{
 			TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: defenseTestSkillName},
 		},
+	}
+}
+
+// TestTboneProgressionSTDamageContribution verifies that a Tbone damage progression still contributes its ST-based
+// damage when combined with a base damage that uses dice with a different number of sides. addDice weights each
+// operand's average by its dice Multiplier, so a progression that left Multiplier at 0 silently erased the entire ST
+// contribution.
+func TestTboneProgressionSTDamageContribution(t *testing.T) {
+	const twoD3 = "2d3 cr"
+	c := check.New(t)
+	for i, one := range []struct {
+		prog     progression.Option
+		expected string
+	}{
+		{progression.BasicSet, twoD3},
+		{progression.Tbone1, "2d3+2 cr"},
+		{progression.Tbone1Clean, "2d3+2 cr"},
+		{progression.Tbone2, twoD3},
+		{progression.Tbone2Clean, twoD3},
+	} {
+		e := gurps.NewEntity()
+		e.SheetSettings.DamageProgression = one.prog
+		trait := gurps.NewTrait(e, nil, false)
+		trait.Name = "Claws"
+		w := gurps.NewWeapon(trait, true)
+		w.Damage.Base = "1d3"
+		trait.Weapons = append(trait.Weapons, w)
+		e.Traits = append(e.Traits, trait)
+		e.Recalculate()
+		c.Equal(one.expected, w.Damage.ResolvedDamage(nil), "test %d: %s", i, one.prog.Key())
 	}
 }

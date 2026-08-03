@@ -15,6 +15,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
+const (
+	// multiplicationSign is the Unicode multiplication sign, which users may type in place of the ASCII "x".
+	multiplicationSign = "×"
+	// multiplierLeaders holds every rune that may lead a multiplier value. ValueFromString lowercases before
+	// classifying and also accepts the Unicode multiplication sign, so extraction must strip all of these forms.
+	multiplierLeaders = "xX" + multiplicationSign
+)
+
 // Format returns a formatted version of the value.
 func (enum Value) Format(fraction fxp.Fraction) string {
 	switch enum {
@@ -41,7 +49,7 @@ func (enum Value) Format(fraction fxp.Fraction) string {
 
 // ExtractFraction from the string.
 func (enum Value) ExtractFraction(s string) fxp.Fraction {
-	s = strings.TrimLeft(strings.TrimSpace(s), Multiplier.Key())
+	s = strings.TrimLeft(strings.TrimSpace(s), multiplierLeaders)
 	for s != "" && (s[len(s)-1] < '0' || s[len(s)-1] > '9') {
 		s = s[:len(s)-1]
 	}
@@ -67,13 +75,13 @@ func (enum Value) ExtractFraction(s string) fxp.Fraction {
 func ValueFromString(s string) Value {
 	s = strings.ToLower(strings.TrimSpace(s))
 	switch {
-	case strings.HasSuffix(s, "%"):
-		if strings.HasPrefix(s, "x") || strings.HasPrefix(s, "×") {
+	case strings.HasSuffix(s, PercentageAdder.Key()):
+		if strings.HasPrefix(s, Multiplier.Key()) || strings.HasPrefix(s, multiplicationSign) {
 			return PercentageMultiplier
 		}
 		return PercentageAdder
-	case strings.HasPrefix(s, "x") || strings.HasPrefix(s, "×") ||
-		strings.HasSuffix(s, "x") || strings.HasSuffix(s, "×"):
+	case strings.HasPrefix(s, Multiplier.Key()) || strings.HasPrefix(s, multiplicationSign) ||
+		strings.HasSuffix(s, Multiplier.Key()) || strings.HasSuffix(s, multiplicationSign):
 		return Multiplier
 	default:
 		return Addition
