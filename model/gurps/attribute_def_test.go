@@ -16,8 +16,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-const testMageryTrait = "Magery"
-
 func newTraitNamed(e *Entity, name string) *Trait {
 	t := NewTrait(e, nil, false)
 	t.Name = name
@@ -27,13 +25,13 @@ func newTraitNamed(e *Entity, name string) *Trait {
 func TestEntityHasTraitNamed(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	e.Traits = append(e.Traits, newTraitNamed(e, testMageryTrait))
+	e.Traits = append(e.Traits, newTraitNamed(e, "Magery"))
 
-	c.True(e.HasTraitNamed(testMageryTrait), "exact match")
+	c.True(e.HasTraitNamed("Magery"), "exact match")
 	c.True(e.HasTraitNamed(" magery "), "case-insensitive and trimmed match")
 	c.False(e.HasTraitNamed("Combat Reflexes"), "absent trait")
 	c.False(e.HasTraitNamed(""), "empty name never matches")
-	c.False((*Entity)(nil).HasTraitNamed(testMageryTrait), "nil entity never matches")
+	c.False((*Entity)(nil).HasTraitNamed("Magery"), "nil entity never matches")
 
 	disabled := newTraitNamed(e, "Sense of Duty")
 	disabled.Disabled = true
@@ -54,7 +52,7 @@ func TestEntityHasTraitNamed(t *testing.T) {
 func TestAttributeDefEffectivePlacement(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	e.Traits = append(e.Traits, newTraitNamed(e, testMageryTrait))
+	e.Traits = append(e.Traits, newTraitNamed(e, "Magery"))
 
 	def := &AttributeDef{AttributeDefData: AttributeDefData{
 		DefID: "sm",
@@ -68,7 +66,7 @@ func TestAttributeDefEffectivePlacement(t *testing.T) {
 	c.Equal(attribute.Hidden, def.EffectivePlacement(nil), "hidden with nil entity")
 
 	// With a trait override that matches, the alternate placement is used.
-	def.PlacementTrait = testMageryTrait
+	def.PlacementTrait = "Magery"
 	def.PlacementWhenPresent = attribute.Secondary
 	c.Equal(attribute.Secondary, def.EffectivePlacement(e), "override applies when trait present")
 	c.Equal(attribute.Hidden, def.EffectivePlacement(nil), "override needs an entity")
@@ -83,7 +81,7 @@ func TestAttributeDefEffectivePlacement(t *testing.T) {
 
 	// A non-hidden placement never consults the trait override.
 	def.Placement = attribute.Primary
-	def.PlacementTrait = testMageryTrait
+	def.PlacementTrait = "Magery"
 	c.Equal(attribute.Primary, def.EffectivePlacement(e), "non-hidden placement ignores override")
 }
 
@@ -96,7 +94,7 @@ func TestAttributeDefPlacementResolution(t *testing.T) {
 		Type:                 attribute.Integer,
 		Base:                 "10",
 		Placement:            attribute.Hidden,
-		PlacementTrait:       testMageryTrait,
+		PlacementTrait:       "Magery",
 		PlacementWhenPresent: attribute.Primary,
 	}}
 
@@ -106,7 +104,7 @@ func TestAttributeDefPlacementResolution(t *testing.T) {
 	c.False(def.Relevant(e, SecondaryAttrKind), "hidden: not relevant as secondary")
 
 	// Adding the trait reveals it with the requested placement.
-	e.Traits = append(e.Traits, newTraitNamed(e, testMageryTrait))
+	e.Traits = append(e.Traits, newTraitNamed(e, "Magery"))
 	c.True(def.Relevant(e, PrimaryAttrKind), "revealed: relevant as primary")
 	c.False(def.Relevant(e, SecondaryAttrKind), "revealed: not relevant as secondary")
 	c.True(def.Primary(e), "revealed: primary")

@@ -16,12 +16,6 @@ import (
 )
 
 func TestExclusiveModeMsg(t *testing.T) {
-	const (
-		convertFlag = "--convert"
-		syncFlag    = "--sync"
-		textFlag    = "--text"
-		tmpl        = "tmpl"
-	)
 	c := check.New(t)
 	for _, tc := range []struct {
 		name         string
@@ -34,11 +28,11 @@ func TestExclusiveModeMsg(t *testing.T) {
 		{name: "none specified"},
 		{name: "convert only", convert: true},
 		{name: "sync only", sync: true},
-		{name: "text only", textTmplPath: tmpl},
-		{name: "convert and sync", convert: true, sync: true, wantErr: true, wantContains: []string{convertFlag, syncFlag}},
-		{name: "convert and text", convert: true, textTmplPath: tmpl, wantErr: true, wantContains: []string{convertFlag, textFlag}},
-		{name: "sync and text", sync: true, textTmplPath: tmpl, wantErr: true, wantContains: []string{syncFlag, textFlag}},
-		{name: "all three", convert: true, sync: true, textTmplPath: tmpl, wantErr: true, wantContains: []string{convertFlag, syncFlag, textFlag}},
+		{name: "text only", textTmplPath: "tmpl"},
+		{name: "convert and sync", convert: true, sync: true, wantErr: true, wantContains: []string{"--convert", "--sync"}},
+		{name: "convert and text", convert: true, textTmplPath: "tmpl", wantErr: true, wantContains: []string{"--convert", "--text"}},
+		{name: "sync and text", sync: true, textTmplPath: "tmpl", wantErr: true, wantContains: []string{"--sync", "--text"}},
+		{name: "all three", convert: true, sync: true, textTmplPath: "tmpl", wantErr: true, wantContains: []string{"--convert", "--sync", "--text"}},
 	} {
 		msg := exclusiveModeMsg(tc.convert, tc.sync, tc.textTmplPath)
 		if tc.wantErr {

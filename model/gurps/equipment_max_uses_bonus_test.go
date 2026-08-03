@@ -19,11 +19,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-const (
-	potionName    = "Potion"
-	consumableTag = "Consumable"
-)
-
 func newMaxUsesBonus(sel equipmentsel.Type, amount string) *EquipmentMaxUsesBonus {
 	b := NewEquipmentMaxUsesBonus()
 	b.SelectionType = sel
@@ -149,8 +144,8 @@ func TestEquipmentMaxUsesBonusEquipmentWithName(t *testing.T) {
 	e := NewEntity()
 
 	potion := NewEquipment(e, nil, false)
-	potion.Name = potionName
-	potion.Tags = []string{consumableTag}
+	potion.Name = "Potion"
+	potion.Tags = []string{"Consumable"}
 	potion.MaxUses = 5
 	e.CarriedEquipment = append(e.CarriedEquipment, potion)
 
@@ -163,9 +158,9 @@ func TestEquipmentMaxUsesBonusEquipmentWithName(t *testing.T) {
 	// A trait grants +2 max uses to consumables named "Potion".
 	bonus := newMaxUsesBonus(equipmentsel.EquipmentWithName, "+2")
 	bonus.NameCriteria.Compare = criteria.IsText
-	bonus.NameCriteria.Qualifier = potionName
+	bonus.NameCriteria.Qualifier = "Potion"
 	bonus.TagsCriteria.Compare = criteria.IsText
-	bonus.TagsCriteria.Qualifier = consumableTag
+	bonus.TagsCriteria.Qualifier = "Consumable"
 	trait := NewTrait(e, nil, false)
 	trait.Features = append(trait.Features, bonus)
 	e.Traits = append(e.Traits, trait)
@@ -217,9 +212,9 @@ func TestEquipmentMaxUsesBonusRoundTrip(t *testing.T) {
 	byName := newMaxUsesBonus(equipmentsel.EquipmentWithName, "+50%")
 	byName.PerLevel = true
 	byName.NameCriteria.Compare = criteria.IsText
-	byName.NameCriteria.Qualifier = potionName
+	byName.NameCriteria.Qualifier = "Potion"
 	byName.TagsCriteria.Compare = criteria.IsText
-	byName.TagsCriteria.Qualifier = consumableTag
+	byName.TagsCriteria.Qualifier = "Consumable"
 	original := Features{this, byName}
 
 	data, err := json.Marshal(original)

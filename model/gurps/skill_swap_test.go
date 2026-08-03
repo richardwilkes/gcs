@@ -18,20 +18,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-const (
-	broadswordSkill  = "Broadsword"
-	rapierSkill      = "Rapier"
-	ritualMagicSkill = "Ritual Magic"
-	airSpec          = "Air"
-	earthSpec        = "Earth"
-	fireSpec         = "Fire"
-	waterSpec        = "Water"
-	darkSpec         = "Dark"
-	lightSpec        = "Light"
-	baseDef          = "base"
-	anyDef           = "any"
-)
-
 // newSkillDefaultTo builds a skill-based default. When anySpecialization is true, the default carries no specialization
 // criteria (matching any specialization); otherwise it requires an exact ("is") match of the given specialization,
 // including the empty string for an unspecialized skill.
@@ -55,12 +41,12 @@ func textCriteria(compare criteria.StringComparison, qualifier string) criteria.
 // it also installs a default: "base" defaults to the unspecialized Ritual Magic (an exact, empty-specialization match);
 // "any" defaults to any Ritual Magic skill.
 func addRitualMagic(e *Entity, specialization string, points fxp.Int, defaultMode string) *Skill {
-	sk := addTestSkill(e, ritualMagicSkill, specialization, "", points)
+	sk := addTestSkill(e, "Ritual Magic", specialization, "", points)
 	switch defaultMode {
-	case baseDef:
-		sk.Defaults = []*SkillDefault{newSkillDefaultTo(ritualMagicSkill, "", false, -fxp.Six)}
-	case anyDef:
-		sk.Defaults = []*SkillDefault{newSkillDefaultTo(ritualMagicSkill, "", true, -fxp.Six)}
+	case "base":
+		sk.Defaults = []*SkillDefault{newSkillDefaultTo("Ritual Magic", "", false, -fxp.Six)}
+	case "any":
+		sk.Defaults = []*SkillDefault{newSkillDefaultTo("Ritual Magic", "", true, -fxp.Six)}
 	}
 	return sk
 }
@@ -72,11 +58,11 @@ func TestSkillMatchingEmptySpecialization(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "")
-	addRitualMagic(e, fireSpec, fxp.Four, "")
-	addRitualMagic(e, waterSpec, fxp.Four, "")
+	addRitualMagic(e, "Fire", fxp.Four, "")
+	addRitualMagic(e, "Water", fxp.Four, "")
 	e.Recalculate()
 
-	nameIs := textCriteria(criteria.IsText, ritualMagicSkill)
+	nameIs := textCriteria(criteria.IsText, "Ritual Magic")
 
 	matches := e.SkillMatching(nameIs, textCriteria(criteria.IsText, ""), nil, false, nil)
 	c.Equal(1, len(matches), "an empty 'is' specialization must match only the unspecialized skill")
@@ -84,11 +70,10 @@ func TestSkillMatchingEmptySpecialization(t *testing.T) {
 		c.Equal("", matches[0].SpecializationWithReplacements(), "the single match must be the unspecialized skill")
 	}
 
-	matches = e.SkillMatching(nameIs, textCriteria(criteria.IsText, fireSpec), nil, false, nil)
-	c.Equal(1, len(matches), "an 'is "+fireSpec+"' specialization must match only the "+fireSpec+" skill")
+	matches = e.SkillMatching(nameIs, textCriteria(criteria.IsText, "Fire"), nil, false, nil)
+	c.Equal(1, len(matches), "an 'is Fire' specialization must match only the Fire skill")
 	if len(matches) == 1 {
-		c.Equal(fireSpec, matches[0].SpecializationWithReplacements(),
-			"the single match must be the "+fireSpec+" skill")
+		c.Equal("Fire", matches[0].SpecializationWithReplacements(), "the single match must be the Fire skill")
 	}
 
 	matches = e.SkillMatching(nameIs, criteria.Text{}, nil, false, nil)
@@ -102,12 +87,12 @@ func TestSkillMatchingOptionalSpecialization(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "") // truly unspecialized
-	earth := addRitualMagic(e, earthSpec, fxp.Four, "")
+	earth := addRitualMagic(e, "Earth", fxp.Four, "")
 	earth.Specialization = ""
-	earth.OptionalSpecialization = earthSpec
+	earth.OptionalSpecialization = "Earth"
 	e.Recalculate()
 
-	nameIs := textCriteria(criteria.IsText, ritualMagicSkill)
+	nameIs := textCriteria(criteria.IsText, "Ritual Magic")
 
 	matches := e.SkillMatching(nameIs, textCriteria(criteria.IsText, ""), nil, false, nil)
 	c.Equal(1, len(matches), "an empty specialization must not match a skill carrying an optional specialization")
@@ -116,11 +101,10 @@ func TestSkillMatchingOptionalSpecialization(t *testing.T) {
 			"the match must be the truly unspecialized skill")
 	}
 
-	matches = e.SkillMatching(nameIs, textCriteria(criteria.IsText, earthSpec), nil, false, nil)
-	c.Equal(1, len(matches), "an 'is "+earthSpec+"' specialization must match the optionally-specialized skill")
+	matches = e.SkillMatching(nameIs, textCriteria(criteria.IsText, "Earth"), nil, false, nil)
+	c.Equal(1, len(matches), "an 'is Earth' specialization must match the optionally-specialized skill")
 	if len(matches) == 1 {
-		c.Equal(earthSpec, matches[0].OptionalSpecializationWithReplacements(),
-			"the match must be the optional-"+earthSpec+" skill")
+		c.Equal("Earth", matches[0].OptionalSpecializationWithReplacements(), "the match must be the optional-Earth skill")
 	}
 }
 
@@ -130,14 +114,14 @@ func TestSkillMatchingBothSpecializations(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "") // truly unspecialized
-	light := addTestSkill(e, ritualMagicSkill, lightSpec, "", fxp.Four)
-	light.OptionalSpecialization = darkSpec
+	light := addTestSkill(e, "Ritual Magic", "Light", "", fxp.Four)
+	light.OptionalSpecialization = "Dark"
 	e.Recalculate()
 
-	name := textCriteria(criteria.IsText, ritualMagicSkill)
-	c.Equal(1, len(e.SkillMatching(name, textCriteria(criteria.IsText, lightSpec), nil, false, nil)),
+	name := textCriteria(criteria.IsText, "Ritual Magic")
+	c.Equal(1, len(e.SkillMatching(name, textCriteria(criteria.IsText, "Light"), nil, false, nil)),
 		"the required specialization should match")
-	c.Equal(1, len(e.SkillMatching(name, textCriteria(criteria.IsText, darkSpec), nil, false, nil)),
+	c.Equal(1, len(e.SkillMatching(name, textCriteria(criteria.IsText, "Dark"), nil, false, nil)),
 		"the optional specialization should match")
 	matches := e.SkillMatching(name, textCriteria(criteria.IsText, ""), nil, false, nil)
 	c.Equal(1, len(matches), "an empty specialization should match only the truly unspecialized skill")
@@ -155,13 +139,13 @@ func TestHasDefaultToOptionalSpecialization(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	base := addRitualMagic(e, "", fxp.Eight, "")
-	fire := addRitualMagic(e, fireSpec, fxp.Four, baseDef) // defaults to the unspecialized skill
-	earth := addRitualMagic(e, earthSpec, fxp.Four, "")
+	fire := addRitualMagic(e, "Fire", fxp.Four, "base") // defaults to the unspecialized skill
+	earth := addRitualMagic(e, "Earth", fxp.Four, "")
 	earth.Specialization = ""
-	earth.OptionalSpecialization = earthSpec
+	earth.OptionalSpecialization = "Earth"
 	e.Recalculate()
 
-	c.True(fire.HasDefaultTo(base), fireSpec+"'s empty-specialization default targets the unspecialized skill")
+	c.True(fire.HasDefaultTo(base), "Fire's empty-specialization default targets the unspecialized skill")
 	c.False(fire.HasDefaultTo(earth),
 		"an empty-specialization default must not be treated as a default to an optionally-specialized sibling")
 }
@@ -173,11 +157,11 @@ func TestSwapNotStuckWithOptionalSpecializationSibling(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	base := addRitualMagic(e, "", fxp.Eight, "") // no declared defaults; only the synthetic optional-spec default
-	addRitualMagic(e, airSpec, fxp.Four, anyDef)
-	addRitualMagic(e, fireSpec, fxp.Four, anyDef)
-	earth := addRitualMagic(e, earthSpec, fxp.Four, anyDef)
+	addRitualMagic(e, "Air", fxp.Four, "any")
+	addRitualMagic(e, "Fire", fxp.Four, "any")
+	earth := addRitualMagic(e, "Earth", fxp.Four, "any")
 	earth.Specialization = ""
-	earth.OptionalSpecialization = earthSpec
+	earth.OptionalSpecialization = "Earth"
 	e.Recalculate()
 
 	// Earth must be able to cycle through its possible defaults rather than being stuck.
@@ -194,8 +178,8 @@ func TestSwapNotStuckWithOptionalSpecializationSibling(t *testing.T) {
 			targets["<none>"] = true
 		}
 	}
-	c.True(len(targets) > 1, "swapping "+earthSpec+" must actually cycle its default, not stay stuck on one choice")
-	c.True(visitedBase, earthSpec+" must be able to default to the unspecialized base skill")
+	c.True(len(targets) > 1, "swapping Earth must actually cycle its default, not stay stuck on one choice")
+	c.True(visitedBase, "Earth must be able to default to the unspecialized base skill")
 }
 
 // TestSpecializedDefaultsToUnspecialized verifies that specialized skills which default to the unspecialized skill
@@ -203,17 +187,16 @@ func TestSwapNotStuckWithOptionalSpecializationSibling(t *testing.T) {
 func TestSpecializedDefaultsToUnspecialized(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	addRitualMagic(e, "", fxp.Eight, "")                     // unspecialized base
-	fire := addRitualMagic(e, fireSpec, fxp.Twelve, baseDef) // higher level than the base
-	water := addRitualMagic(e, waterSpec, fxp.One, baseDef)
+	addRitualMagic(e, "", fxp.Eight, "")                  // unspecialized base
+	fire := addRitualMagic(e, "Fire", fxp.Twelve, "base") // higher level than the base
+	water := addRitualMagic(e, "Water", fxp.One, "base")
 	e.Recalculate()
 
-	c.NotNil(fire.DefaultedFrom, fireSpec+" should have a resolved default")
-	c.Equal("", fire.DefaultedFrom.SpecializationWithReplacements(nil),
-		fireSpec+" must default to the unspecialized skill")
-	c.NotNil(water.DefaultedFrom, waterSpec+" should have a resolved default")
+	c.NotNil(fire.DefaultedFrom, "Fire should have a resolved default")
+	c.Equal("", fire.DefaultedFrom.SpecializationWithReplacements(nil), "Fire must default to the unspecialized skill")
+	c.NotNil(water.DefaultedFrom, "Water should have a resolved default")
 	c.Equal("", water.DefaultedFrom.SpecializationWithReplacements(nil),
-		waterSpec+" must default to the unspecialized skill, not the higher-level "+fireSpec+" specialization")
+		"Water must default to the unspecialized skill, not the higher-level Fire specialization")
 }
 
 // TestHasDefaultToExactMatch verifies the default-relationship test used by the swap feature: a skill never has a
@@ -223,12 +206,12 @@ func TestHasDefaultToExactMatch(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	base := addRitualMagic(e, "", fxp.Eight, "")
-	fire := addRitualMagic(e, fireSpec, fxp.Four, baseDef)
-	water := addRitualMagic(e, waterSpec, fxp.Four, baseDef)
+	fire := addRitualMagic(e, "Fire", fxp.Four, "base")
+	water := addRitualMagic(e, "Water", fxp.Four, "base")
 	e.Recalculate()
 
-	c.True(fire.HasDefaultTo(base), fireSpec+" defaults to the unspecialized "+ritualMagicSkill)
-	c.True(water.HasDefaultTo(base), waterSpec+" defaults to the unspecialized "+ritualMagicSkill)
+	c.True(fire.HasDefaultTo(base), "Fire defaults to the unspecialized Ritual Magic")
+	c.True(water.HasDefaultTo(base), "Water defaults to the unspecialized Ritual Magic")
 	c.False(water.HasDefaultTo(water), "a skill must never default to itself")
 	c.False(fire.HasDefaultTo(water), "a specialized skill must not register a default to a sibling specialization")
 	c.False(water.HasDefaultTo(fire), "a specialized skill must not register a default to a sibling specialization")
@@ -240,21 +223,19 @@ func TestDefaultSkillDoesNotFlipToHigherSpecialized(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	base := addRitualMagic(e, "", fxp.Eight, "")
-	fire := addRitualMagic(e, fireSpec, fxp.One, baseDef)
-	water := addRitualMagic(e, waterSpec, fxp.FromInteger(20), baseDef) // level climbs above the base
+	fire := addRitualMagic(e, "Fire", fxp.One, "base")
+	water := addRitualMagic(e, "Water", fxp.FromInteger(20), "base") // level climbs above the base
 	e.Recalculate()
 
-	c.True(water.LevelData.Level > base.LevelData.Level,
-		"the test requires "+waterSpec+"'s level to exceed the base skill's")
+	c.True(water.LevelData.Level > base.LevelData.Level, "the test requires Water's level to exceed the base skill's")
 
 	fireDefault := fire.DefaultSkill()
-	c.NotNil(fireDefault, fireSpec+" should resolve a default skill")
-	c.True(fireDefault == base, fireSpec+" must resolve to the unspecialized base skill")
+	c.NotNil(fireDefault, "Fire should resolve a default skill")
+	c.True(fireDefault == base, "Fire must resolve to the unspecialized base skill")
 
 	waterDefault := water.DefaultSkill()
-	c.NotNil(waterDefault, waterSpec+" should resolve a default skill")
-	c.True(waterDefault == base,
-		waterSpec+" must resolve to the unspecialized base skill, not the higher-level "+waterSpec+" itself")
+	c.NotNil(waterDefault, "Water should resolve a default skill")
+	c.True(waterDefault == base, "Water must resolve to the unspecialized base skill, not the higher-level Water itself")
 }
 
 // TestDefaultPersistsAfterCreation verifies that a skill which defaults to any sibling picks the highest-level default
@@ -263,20 +244,20 @@ func TestDefaultPersistsAfterCreation(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "")
-	addRitualMagic(e, fireSpec, fxp.Twelve, "") // highest at creation
-	water := addRitualMagic(e, waterSpec, fxp.One, "")
-	air := addRitualMagic(e, airSpec, fxp.One, anyDef)
+	addRitualMagic(e, "Fire", fxp.Twelve, "") // highest at creation
+	water := addRitualMagic(e, "Water", fxp.One, "")
+	air := addRitualMagic(e, "Air", fxp.One, "any")
 	e.Recalculate()
 
-	c.NotNil(air.DefaultSkill(), airSpec+" should resolve a default")
-	c.Equal(fireSpec, air.DefaultSkill().SpecializationWithReplacements(),
-		airSpec+" should initially default to the highest-level sibling")
+	c.NotNil(air.DefaultSkill(), "Air should resolve a default")
+	c.Equal("Fire", air.DefaultSkill().SpecializationWithReplacements(),
+		"Air should initially default to the highest-level sibling")
 
 	// Raise Water far above Fire; Air must keep its existing choice instead of jumping to the new highest.
 	water.SetRawPoints(fxp.FromInteger(40))
 	e.Recalculate()
-	c.Equal(fireSpec, air.DefaultSkill().SpecializationWithReplacements(),
-		airSpec+" must keep its chosen default after creation, not auto-jump to the new highest sibling")
+	c.Equal("Fire", air.DefaultSkill().SpecializationWithReplacements(),
+		"Air must keep its chosen default after creation, not auto-jump to the new highest sibling")
 }
 
 // TestAlternateDefaultsAvailable verifies that only a skill with more than one resolvable default reports that
@@ -285,14 +266,13 @@ func TestAlternateDefaultsAvailable(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "")
-	fire := addRitualMagic(e, fireSpec, fxp.Twelve, baseDef) // single resolvable default
-	addRitualMagic(e, waterSpec, fxp.One, "")
-	air := addRitualMagic(e, airSpec, fxp.One, anyDef) // three resolvable defaults
+	fire := addRitualMagic(e, "Fire", fxp.Twelve, "base") // single resolvable default
+	addRitualMagic(e, "Water", fxp.One, "")
+	air := addRitualMagic(e, "Air", fxp.One, "any") // three resolvable defaults
 	e.Recalculate()
 
-	c.True(air.AlternateDefaultsAvailable(), airSpec+" defaults to any sibling, so it has multiple choices")
-	c.False(fire.AlternateDefaultsAvailable(),
-		fireSpec+" has a single resolvable default, so there is nothing to swap among")
+	c.True(air.AlternateDefaultsAvailable(), "Air defaults to any sibling, so it has multiple choices")
+	c.False(fire.AlternateDefaultsAvailable(), "Fire has a single resolvable default, so there is nothing to swap among")
 }
 
 // TestSwapToNextDefaultCycles verifies that swapping cycles through every resolvable default and wraps back around,
@@ -301,9 +281,9 @@ func TestSwapToNextDefaultCycles(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "")
-	addRitualMagic(e, fireSpec, fxp.Twelve, "")
-	addRitualMagic(e, waterSpec, fxp.One, "")
-	air := addRitualMagic(e, airSpec, fxp.One, anyDef)
+	addRitualMagic(e, "Fire", fxp.Twelve, "")
+	addRitualMagic(e, "Water", fxp.One, "")
+	air := addRitualMagic(e, "Air", fxp.One, "any")
 	e.Recalculate()
 
 	start := air.DefaultSkill().SpecializationWithReplacements()
@@ -313,7 +293,7 @@ func TestSwapToNextDefaultCycles(t *testing.T) {
 		e.Recalculate()
 		seen[air.DefaultSkill().SpecializationWithReplacements()] = true
 	}
-	c.Equal(3, len(seen), "swapping should visit all three siblings (unspecialized, "+fireSpec+", "+waterSpec+")")
+	c.Equal(3, len(seen), "swapping should visit all three siblings (unspecialized, Fire, Water)")
 
 	air.SwapToNextDefault()
 	e.Recalculate()
@@ -328,13 +308,13 @@ func TestSyntheticOptionalSpecDefaultTracksBest(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	base := addRitualMagic(e, "", fxp.Eight, "") // no declared defaults of its own
-	earth := addRitualMagic(e, earthSpec, fxp.Four, "")
-	fire := addRitualMagic(e, fireSpec, fxp.Four, "")
+	earth := addRitualMagic(e, "Earth", fxp.Four, "")
+	fire := addRitualMagic(e, "Fire", fxp.Four, "")
 	// Make both Earth and Fire use an optional specialization, so the base skill gains synthetic -2 defaults to them.
 	earth.Specialization = ""
-	earth.OptionalSpecialization = earthSpec
+	earth.OptionalSpecialization = "Earth"
 	fire.Specialization = ""
-	fire.OptionalSpecialization = fireSpec
+	fire.OptionalSpecialization = "Fire"
 	e.Recalculate()
 
 	c.NotNil(base.DefaultedFrom, "base should pick up a synthetic default to an optionally-specialized sibling")
@@ -344,9 +324,8 @@ func TestSyntheticOptionalSpecDefaultTracksBest(t *testing.T) {
 	// Raise Fire well above Earth; the synthetic default must follow the best sibling instead of staying on Earth.
 	fire.SetRawPoints(fxp.FromInteger(40))
 	e.Recalculate()
-	c.Equal(fireSpec, base.DefaultedFrom.SpecializationWithReplacements(nil),
-		"base's synthetic optional-spec default must track the best sibling ("+fireSpec+
-			"), not stay locked on "+earthSpec+"")
+	c.Equal("Fire", base.DefaultedFrom.SpecializationWithReplacements(nil),
+		"base's synthetic optional-spec default must track the best sibling (Fire), not stay locked on Earth")
 }
 
 // TestTechniqueDefaultUsesHighestLevelSkill verifies that when a skill-based default matches more than one skill (e.g.
@@ -355,14 +334,14 @@ func TestSyntheticOptionalSpecDefaultTracksBest(t *testing.T) {
 func TestTechniqueDefaultUsesHighestLevelSkill(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	low := addTestSkill(e, ritualMagicSkill, "", "", fxp.Four)             // inserted first, lower level
-	high := addTestSkill(e, ritualMagicSkill, "", "", fxp.FromInteger(20)) // higher level
+	low := addTestSkill(e, "Ritual Magic", "", "", fxp.Four)             // inserted first, lower level
+	high := addTestSkill(e, "Ritual Magic", "", "", fxp.FromInteger(20)) // higher level
 	e.Recalculate()
 	c.True(high.LevelData.Level > low.LevelData.Level, "precondition: the second skill must be higher level")
 
 	def := &SkillDefault{
 		DefaultType: SkillID,
-		Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: ritualMagicSkill}},
+		Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Ritual Magic"}},
 	}
 	var limit fxp.Int
 	result := CalculateTechniqueLevel(e, nil, "Imbue", "", nil, def, difficulty.Hard, 0, false, &limit, nil)
@@ -437,19 +416,19 @@ func TestSyntheticOptionalSpecDefaultSameRequiredSpec(t *testing.T) {
 	e := NewEntity()
 	base := addRitualMagic(e, "", fxp.Eight, "") // truly unspecialized
 	// Different required specialization (different college) that also carries an optional specialization.
-	fire := addTestSkill(e, ritualMagicSkill, fireSpec, "", fxp.Twelve)
+	fire := addTestSkill(e, "Ritual Magic", "Fire", "", fxp.Twelve)
 	fire.OptionalSpecialization = "Flame"
 	// Same (empty) required specialization, with an optional specialization - the legitimate optional-specialty case.
-	earth := addTestSkill(e, ritualMagicSkill, "", "", fxp.Four)
-	earth.OptionalSpecialization = earthSpec
+	earth := addTestSkill(e, "Ritual Magic", "", "", fxp.Four)
+	earth.OptionalSpecialization = "Earth"
 	e.Recalculate()
 
 	specs := map[string]bool{}
 	for _, d := range base.resolveToSpecificDefaults() {
 		specs[d.Specialization.Qualifier] = true
 	}
-	c.True(specs[earthSpec], "base should default to the same-required-spec optional-"+earthSpec+" sibling")
-	c.False(specs[fireSpec], "base must not default to a sibling with a different required specialization")
+	c.True(specs["Earth"], "base should default to the same-required-spec optional-Earth sibling")
+	c.False(specs["Fire"], "base must not default to a sibling with a different required specialization")
 	c.False(specs["Flame"], "base must not default to a sibling with a different required specialization")
 }
 
@@ -460,39 +439,37 @@ func TestSwapToSiblingReassignsOrphan(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "") // base (best non-cyclic default)
-	addRitualMagic(e, fireSpec, fxp.Four, baseDef)
-	addRitualMagic(e, waterSpec, fxp.Four, baseDef)
-	air := addRitualMagic(e, airSpec, fxp.Four, anyDef)
-	earth := addRitualMagic(e, earthSpec, fxp.Four, anyDef)
+	addRitualMagic(e, "Fire", fxp.Four, "base")
+	addRitualMagic(e, "Water", fxp.Four, "base")
+	air := addRitualMagic(e, "Air", fxp.Four, "any")
+	earth := addRitualMagic(e, "Earth", fxp.Four, "any")
 	e.Recalculate()
 
 	// Establish Air -> Earth.
-	air.DefaultedFrom = newSkillDefaultTo(ritualMagicSkill, earthSpec, false, -fxp.Six)
+	air.DefaultedFrom = newSkillDefaultTo("Ritual Magic", "Earth", false, -fxp.Six)
 	e.Recalculate()
-	c.Equal(earthSpec, air.DefaultSkill().SpecializationWithReplacements(),
-		"precondition: "+airSpec+" defaults to "+earthSpec)
+	c.Equal("Earth", air.DefaultSkill().SpecializationWithReplacements(), "precondition: Air defaults to Earth")
 
 	// Cycle Earth's defaults until it selects Air (Air is one of Earth's valid choices).
 	reached := false
 	for range 8 {
 		earth.SwapToNextDefault()
-		if ds := earth.DefaultSkill(); ds != nil && ds.SpecializationWithReplacements() == airSpec {
+		if ds := earth.DefaultSkill(); ds != nil && ds.SpecializationWithReplacements() == "Air" {
 			reached = true
 			break
 		}
 	}
-	c.True(reached, "cycling "+earthSpec+"'s defaults should be able to select Air")
+	c.True(reached, "cycling Earth's defaults should be able to select Air")
 
 	// Air must not be orphaned: it keeps a default, resolving to the best remaining choice (the base skill).
-	c.NotNil(air.DefaultedFrom, airSpec+" must keep a default when other choices remain")
-	c.NotNil(air.DefaultSkill(), airSpec+" must resolve to a real skill")
+	c.NotNil(air.DefaultedFrom, "Air must keep a default when other choices remain")
+	c.NotNil(air.DefaultSkill(), "Air must resolve to a real skill")
 	c.Equal("", air.DefaultSkill().SpecializationWithReplacements(),
-		airSpec+" should fall back to the best remaining default (the base skill)")
+		"Air should fall back to the best remaining default (the base skill)")
 
 	// The two must not default to each other.
-	c.True(air.DefaultSkill() != earth, airSpec+" must not default back to "+earthSpec)
-	c.Equal(airSpec, earth.DefaultSkill().SpecializationWithReplacements(),
-		earthSpec+" should keep its chosen default of "+airSpec)
+	c.True(air.DefaultSkill() != earth, "Air must not default back to Earth")
+	c.Equal("Air", earth.DefaultSkill().SpecializationWithReplacements(), "Earth should keep its chosen default of Air")
 }
 
 // TestSwapNeverCreatesMutualCycle verifies that no sequence of swaps (nor a hand-forced cycle) can leave two skills
@@ -501,8 +478,8 @@ func TestSwapNeverCreatesMutualCycle(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "") // base, no default
-	air := addRitualMagic(e, airSpec, fxp.Four, anyDef)
-	earth := addRitualMagic(e, earthSpec, fxp.Four, anyDef)
+	air := addRitualMagic(e, "Air", fxp.Four, "any")
+	earth := addRitualMagic(e, "Earth", fxp.Four, "any")
 	e.Recalculate()
 
 	hasCycle := func() bool {
@@ -524,8 +501,8 @@ func TestSwapNeverCreatesMutualCycle(t *testing.T) {
 	}
 
 	// A directly-forced cycle must be broken on the next recalculation.
-	air.DefaultedFrom = newSkillDefaultTo(ritualMagicSkill, earthSpec, false, -fxp.Six)
-	earth.DefaultedFrom = newSkillDefaultTo(ritualMagicSkill, airSpec, false, -fxp.Six)
+	air.DefaultedFrom = newSkillDefaultTo("Ritual Magic", "Earth", false, -fxp.Six)
+	earth.DefaultedFrom = newSkillDefaultTo("Ritual Magic", "Air", false, -fxp.Six)
 	e.Recalculate()
 	c.False(hasCycle(), "a forced mutual cycle must be broken on recalculation")
 }
@@ -535,21 +512,21 @@ func TestSwapNeverCreatesMutualCycle(t *testing.T) {
 func TestMutualSwapDefaults(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	broadsword := addTestSkill(e, broadswordSkill, "", "", fxp.Four)
-	broadsword.Defaults = []*SkillDefault{newSkillDefaultTo(rapierSkill, "", true, -fxp.Four)}
-	rapier := addTestSkill(e, rapierSkill, "", "", fxp.Eight) // more points, so it is the primary skill
-	rapier.Defaults = []*SkillDefault{newSkillDefaultTo(broadswordSkill, "", true, -fxp.Four)}
+	broadsword := addTestSkill(e, "Broadsword", "", "", fxp.Four)
+	broadsword.Defaults = []*SkillDefault{newSkillDefaultTo("Rapier", "", true, -fxp.Four)}
+	rapier := addTestSkill(e, "Rapier", "", "", fxp.Eight) // more points, so it is the primary skill
+	rapier.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Four)}
 	e.Recalculate()
 
-	c.NotNil(broadsword.DefaultedFrom, broadswordSkill+" should default to "+rapierSkill+" initially")
-	c.Nil(rapier.DefaultedFrom, rapierSkill+" should stand on its own initially")
+	c.NotNil(broadsword.DefaultedFrom, "Broadsword should default to Rapier initially")
+	c.Nil(rapier.DefaultedFrom, "Rapier should stand on its own initially")
 
 	// Drive the swap through the same decision the sheet uses.
 	swapViaUI(broadsword)
 	e.Recalculate()
 
-	c.Nil(broadsword.DefaultedFrom, "after the swap, "+broadswordSkill+" should stand on its own")
-	c.NotNil(rapier.DefaultedFrom, "after the swap, "+rapierSkill+" should default to "+broadswordSkill)
+	c.Nil(broadsword.DefaultedFrom, "after the swap, Broadsword should stand on its own")
+	c.NotNil(rapier.DefaultedFrom, "after the swap, Rapier should default to Broadsword")
 
 	// The relationship must remain stable across further recalculations.
 	for range 3 {

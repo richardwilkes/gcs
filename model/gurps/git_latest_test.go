@@ -31,23 +31,21 @@ import (
 func TestDownloadLatestCommitReservedName(t *testing.T) {
 	c := check.New(t)
 
-	const reservedPath = "Library/Space/Con Man.gct"
-	const content = "hello con man\n"
 	srcDir := t.TempDir()
-	wantHash := buildBareLibraryRepo(t, srcDir, reservedPath, content)
+	wantHash := buildBareLibraryRepo(t, srcDir, "Library/Space/Con Man.gct", "hello con man\n")
 
 	fs := memfs.New()
 	hash, err := downloadLatestCommit(context.Background(), srcDir, "", fs)
 	c.NoError(err, "downloadLatestCommit should tolerate Windows reserved device names")
 	c.Equal(wantHash.String(), hash, "returned hash should match the source commit")
 
-	f, err := fs.Open(reservedPath)
+	f, err := fs.Open("Library/Space/Con Man.gct")
 	c.NoError(err, "the reserved-name file should be checked out")
 	if err == nil {
 		data, readErr := io.ReadAll(f)
 		c.NoError(readErr, "should be able to read the checked-out file")
 		c.NoError(f.Close(), "should be able to close the checked-out file")
-		c.Equal(content, string(data), "the checked-out file should have the expected content")
+		c.Equal("hello con man\n", string(data), "the checked-out file should have the expected content")
 	}
 }
 

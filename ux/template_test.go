@@ -123,12 +123,11 @@ func TestMergeSkillPoints(t *testing.T) {
 	})
 
 	// The merge match includes the nameable replacements; this is why they must be resolved before the merge runs.
-	const rifle = "Rifle"
 	t.Run("skills with matching replacements merge", func(_ *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), nil)}
-		existing[0].Replacements = map[string]string{"1": rifle}
+		existing[0].Replacements = map[string]string{"1": "Rifle"}
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), nil)}
-		incoming[0].Replacements = map[string]string{"1": rifle}
+		incoming[0].Replacements = map[string]string{"1": "Rifle"}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
@@ -137,7 +136,7 @@ func TestMergeSkillPoints(t *testing.T) {
 
 	t.Run("skills with differing replacements are not merged", func(_ *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), nil)}
-		existing[0].Replacements = map[string]string{"1": rifle}
+		existing[0].Replacements = map[string]string{"1": "Rifle"}
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), nil)}
 		incoming[0].Replacements = map[string]string{"1": "Pistol"}
 		selMap := make(map[tid.TID]bool)
@@ -148,15 +147,11 @@ func TestMergeSkillPoints(t *testing.T) {
 
 	// Two identical entries within the incoming set (e.g. a template containing the same skill twice) collapse into one
 	// even when there is nothing on the sheet to merge into.
-	const (
-		what   = "what"
-		empire = "Empire"
-	)
 	t.Run("identical incoming skills merge with each other", func(_ *testing.T) {
 		first := newTestSkill("Administration", fxp.FromInteger(1), nil)
-		first.Replacements = map[string]string{what: empire}
+		first.Replacements = map[string]string{"what": "Empire"}
 		second := newTestSkill("Administration", fxp.FromInteger(1), nil)
-		second.Replacements = map[string]string{what: empire}
+		second.Replacements = map[string]string{"what": "Empire"}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(nil, []*gurps.Skill{first, second}, "3", selMap)
 		c.Equal(1, len(remaining))
@@ -166,9 +161,9 @@ func TestMergeSkillPoints(t *testing.T) {
 
 	t.Run("incoming skills with differing replacements stay separate", func(_ *testing.T) {
 		first := newTestSkill("Administration", fxp.FromInteger(1), nil)
-		first.Replacements = map[string]string{what: empire}
+		first.Replacements = map[string]string{"what": "Empire"}
 		second := newTestSkill("Administration", fxp.FromInteger(1), nil)
-		second.Replacements = map[string]string{what: "Guild"}
+		second.Replacements = map[string]string{"what": "Guild"}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(nil, []*gurps.Skill{first, second}, "3", selMap)
 		c.Equal(2, len(remaining))

@@ -23,17 +23,13 @@ import (
 
 func TestWeaponParryAndBlockStorage(t *testing.T) {
 	c := check.New(t)
-	const (
-		parryKey = "parry"
-		blockKey = "block"
-	)
 
 	w := gurps.NewWeapon(nil, true)
 	data, err := json.Marshal(w)
 	c.NoError(err)
 	s := string(data)
-	c.NotContains(s, parryKey)
-	c.NotContains(s, blockKey)
+	c.NotContains(s, "parry")
+	c.NotContains(s, "block")
 
 	var loadedWeapon gurps.Weapon
 	c.NoError(json.Unmarshal(data, &loadedWeapon))
@@ -45,15 +41,15 @@ func TestWeaponParryAndBlockStorage(t *testing.T) {
 	data, err = json.Marshal(&w)
 	c.NoError(err)
 	s = string(data)
-	c.Contains(s, parryKey)
-	c.Contains(s, blockKey)
+	c.Contains(s, "parry")
+	c.Contains(s, "block")
 
 	w = gurps.NewWeapon(nil, false)
 	data, err = json.Marshal(w)
 	c.NoError(err)
 	s = string(data)
-	c.NotContains(s, parryKey)
-	c.NotContains(s, blockKey)
+	c.NotContains(s, "parry")
+	c.NotContains(s, "block")
 
 	loadedWeapon = gurps.Weapon{}
 	c.NoError(json.Unmarshal(data, &loadedWeapon))
@@ -141,9 +137,6 @@ func TestWeaponDamageWithNilOwner(t *testing.T) {
 	})
 }
 
-// defenseTestSkillName is the name of the skill the defense test weapon and its defaults are built around.
-const defenseTestSkillName = "Cloak"
-
 // newDefenseTestWeapon builds an entity holding a "Cloak" skill at level 14 and a +1 bonus to both parry and block,
 // along with a trait carrying a melee weapon that can both parry and block. The weapon has no defaults; the caller
 // supplies whichever ones the test needs.
@@ -151,7 +144,7 @@ func newDefenseTestWeapon(c check.Checker) *gurps.Weapon {
 	e := gurps.NewEntity()
 
 	sk := gurps.NewSkill(e, nil, false)
-	sk.Name = defenseTestSkillName
+	sk.Name = "Cloak"
 	sk.Difficulty.Attribute = gurps.DexterityID
 	sk.Difficulty.Difficulty = difficulty.Average
 	sk.Points = fxp.FromInteger(16) // DX+4, i.e. level 14 with the default DX of 10
@@ -167,7 +160,7 @@ func newDefenseTestWeapon(c check.Checker) *gurps.Weapon {
 	e.Traits = append(e.Traits, bonuses)
 
 	owner := gurps.NewTrait(e, nil, false)
-	owner.Name = defenseTestSkillName
+	owner.Name = "Cloak"
 	w := gurps.NewWeapon(owner, true)
 	w.Parry = gurps.WeaponParry{CanParry: true}
 	w.Block = gurps.WeaponBlock{CanBlock: true}
@@ -187,7 +180,7 @@ func newDefenseTestDefault(defaultType string) *gurps.SkillDefault {
 	return &gurps.SkillDefault{
 		DefaultType: defaultType,
 		Name: criteria.Text{
-			TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: defenseTestSkillName},
+			TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Cloak"},
 		},
 	}
 }
@@ -197,17 +190,16 @@ func newDefenseTestDefault(defaultType string) *gurps.SkillDefault {
 // operand's average by its dice Multiplier, so a progression that left Multiplier at 0 silently erased the entire ST
 // contribution.
 func TestTboneProgressionSTDamageContribution(t *testing.T) {
-	const twoD3 = "2d3 cr"
 	c := check.New(t)
 	for i, one := range []struct {
 		prog     progression.Option
 		expected string
 	}{
-		{progression.BasicSet, twoD3},
+		{progression.BasicSet, "2d3 cr"},
 		{progression.Tbone1, "2d3+2 cr"},
 		{progression.Tbone1Clean, "2d3+2 cr"},
-		{progression.Tbone2, twoD3},
-		{progression.Tbone2Clean, twoD3},
+		{progression.Tbone2, "2d3 cr"},
+		{progression.Tbone2Clean, "2d3 cr"},
 	} {
 		e := gurps.NewEntity()
 		e.SheetSettings.DamageProgression = one.prog

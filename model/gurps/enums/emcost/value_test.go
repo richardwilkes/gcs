@@ -16,8 +16,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-const costFactorExample = "+2 CF"
-
 // TestValueExtractionMatchesClassification verifies that every spelling of a multiplier that FromString classifies as
 // one is also understood by ExtractValue. FromString lowercases before classifying and accepts the Unicode
 // multiplication sign, so "X2" and "×2" must extract 2, not fall through to the non-positive-multiplier coercion that
@@ -43,8 +41,8 @@ func TestValueExtractionMatchesClassification(t *testing.T) {
 		{"", emcost.Addition, "+0"},
 		{"+10%", emcost.Percentage, "+10%"},
 		{"-10%", emcost.Percentage, "-10%"},
-		{costFactorExample, emcost.CostFactor, costFactorExample},
-		{"+2 cf", emcost.CostFactor, costFactorExample},
+		{"+2 CF", emcost.CostFactor, "+2 CF"},
+		{"+2 cf", emcost.CostFactor, "+2 CF"},
 	} {
 		v := emcost.Addition.FromString(one.input)
 		c.Equal(one.expected, v, "test %d: %q", i, one.input)

@@ -276,13 +276,12 @@ func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 	slog.SetDefault(slog.New(errorCountingHandler{count: &count}))
 	defer slog.SetDefault(prev)
 
-	// A script whose result is a non-numeric string, so ResolveToNumber fails to parse it and would log an error.
-	const badNumberScript = "'not a number'"
-
+	// The script resolved below produces a non-numeric string, so ResolveToNumber fails to parse it and would log an
+	// error.
 	resolve := func() {
 		count.Store(0)
 		DiscardGlobalResolveCache()
-		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, badNumberScript))
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'"))
 	}
 
 	// Baseline: without suppression, the failed resolution logs exactly one error.
@@ -293,7 +292,7 @@ func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 	count.Store(0)
 	DiscardGlobalResolveCache()
 	SuppressScriptResolveErrorLogging(func() {
-		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, badNumberScript))
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'"))
 	})
 	c.Equal(int32(0), count.Load(), "no error should be logged while suppressed")
 
@@ -302,10 +301,10 @@ func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 	DiscardGlobalResolveCache()
 	SuppressScriptResolveErrorLogging(func() {
 		SuppressScriptResolveErrorLogging(func() {
-			c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, badNumberScript))
+			c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'"))
 		})
 		// Still within the outer scope, so logging remains suppressed.
-		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, badNumberScript))
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'"))
 	})
 	c.Equal(int32(0), count.Load(), "no error should be logged within nested suppression")
 

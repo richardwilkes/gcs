@@ -45,11 +45,6 @@ func TestEntitySelfControlOverride(t *testing.T) {
 		"Merchant penalty tracks the overridden CR6 roll")
 }
 
-const (
-	eqpPenaltySkillName = "Guns"
-	eqpPenaltySkillSpec = "Longarm"
-)
-
 // TestEntityEquipmentPrereqPenaltyOptionalSpecialization verifies that the penalty generated for a skill whose
 // equipment prerequisite is unmet is scoped to that skill and doesn't bleed onto sibling skills that differ only in
 // their optional specialization.
@@ -58,29 +53,29 @@ func TestEntityEquipmentPrereqPenaltyOptionalSpecialization(t *testing.T) {
 	e := NewEntity()
 	e.Skills = append(e.Skills, newSkillNeedingEquipment(e, "AK-47", ""))
 	e.Recalculate()
-	c.Equal(-fxp.Five, e.SkillBonusFor(eqpPenaltySkillName, eqpPenaltySkillSpec, "AK-47", nil, nil),
+	c.Equal(-fxp.Five, e.SkillBonusFor("Guns", "Longarm", "AK-47", nil, nil),
 		"the skill carrying the unmet equipment prereq is penalized")
-	c.Equal(fxp.Int(0), e.SkillBonusFor(eqpPenaltySkillName, eqpPenaltySkillSpec, "M16", nil, nil),
+	c.Equal(fxp.Int(0), e.SkillBonusFor("Guns", "Longarm", "M16", nil, nil),
 		"a sibling differing only in optional specialization is not penalized")
-	c.Equal(fxp.Int(0), e.SkillBonusFor(eqpPenaltySkillName, eqpPenaltySkillSpec, "", nil, nil),
+	c.Equal(fxp.Int(0), e.SkillBonusFor("Guns", "Longarm", "", nil, nil),
 		"a sibling without an optional specialization is not penalized")
 
 	// A skill with no optional specialization must still be penalized, and must not penalize one that has it.
 	e = NewEntity()
 	e.Skills = append(e.Skills, newSkillNeedingEquipment(e, "", ""))
 	e.Recalculate()
-	c.Equal(-fxp.Five, e.SkillBonusFor(eqpPenaltySkillName, eqpPenaltySkillSpec, "", nil, nil),
+	c.Equal(-fxp.Five, e.SkillBonusFor("Guns", "Longarm", "", nil, nil),
 		"the skill carrying the unmet equipment prereq is penalized")
-	c.Equal(fxp.Int(0), e.SkillBonusFor(eqpPenaltySkillName, eqpPenaltySkillSpec, "AK-47", nil, nil),
+	c.Equal(fxp.Int(0), e.SkillBonusFor("Guns", "Longarm", "AK-47", nil, nil),
 		"a sibling adding an optional specialization is not penalized")
 
 	// The tech-level variant of the penalty is scoped the same way.
 	e = NewEntity()
 	e.Skills = append(e.Skills, newSkillNeedingEquipment(e, "AK-47", "8"))
 	e.Recalculate()
-	c.Equal(-fxp.Ten, e.SkillBonusFor(eqpPenaltySkillName, eqpPenaltySkillSpec, "AK-47", nil, nil),
+	c.Equal(-fxp.Ten, e.SkillBonusFor("Guns", "Longarm", "AK-47", nil, nil),
 		"the TL'd skill carrying the unmet equipment prereq is penalized")
-	c.Equal(fxp.Int(0), e.SkillBonusFor(eqpPenaltySkillName, eqpPenaltySkillSpec, "M16", nil, nil),
+	c.Equal(fxp.Int(0), e.SkillBonusFor("Guns", "Longarm", "M16", nil, nil),
 		"a sibling differing only in optional specialization is not penalized")
 }
 
@@ -88,8 +83,8 @@ func TestEntityEquipmentPrereqPenaltyOptionalSpecialization(t *testing.T) {
 // that processPrereqs generates the equipment penalty for it.
 func newSkillNeedingEquipment(e *Entity, optionalSpecialization, techLevel string) *Skill {
 	s := NewSkill(e, nil, false)
-	s.Name = eqpPenaltySkillName
-	s.Specialization = eqpPenaltySkillSpec
+	s.Name = "Guns"
+	s.Specialization = "Longarm"
 	s.OptionalSpecialization = optionalSpecialization
 	if techLevel != "" {
 		s.TechLevel = &techLevel
@@ -97,7 +92,7 @@ func newSkillNeedingEquipment(e *Entity, optionalSpecialization, techLevel strin
 	list := NewPrereqList()
 	p := NewEquippedEquipmentPrereq()
 	p.Parent = list
-	p.NameCriteria.Qualifier = eqpPenaltySkillSpec
+	p.NameCriteria.Qualifier = "Longarm"
 	list.Prereqs = append(list.Prereqs, p)
 	s.Prereq = list
 	return s

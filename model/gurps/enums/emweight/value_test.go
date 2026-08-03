@@ -17,11 +17,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-const (
-	halfMultiplier    = "x1/2"
-	percentMultiplier = "x50%"
-)
-
 // TestFractionExtractionMatchesClassification verifies that every spelling of a multiplier that ValueFromString
 // classifies as one is also understood by ExtractFraction. ValueFromString explicitly accepts an uppercase "X" (via
 // ToLower) and the Unicode multiplication sign, so those leading characters must be stripped before the fraction is
@@ -39,12 +34,12 @@ func TestFractionExtractionMatchesClassification(t *testing.T) {
 		{"  X2  ", emweight.Multiplier, "x2"},
 		{"2x", emweight.Multiplier, "x2"},
 		{"2×", emweight.Multiplier, "x2"},
-		{halfMultiplier, emweight.Multiplier, halfMultiplier},
-		{"X1/2", emweight.Multiplier, halfMultiplier},
-		{"×1/2", emweight.Multiplier, halfMultiplier},
-		{percentMultiplier, emweight.PercentageMultiplier, percentMultiplier},
-		{"X50%", emweight.PercentageMultiplier, percentMultiplier},
-		{"×50%", emweight.PercentageMultiplier, percentMultiplier},
+		{"x1/2", emweight.Multiplier, "x1/2"},
+		{"X1/2", emweight.Multiplier, "x1/2"},
+		{"×1/2", emweight.Multiplier, "x1/2"},
+		{"x50%", emweight.PercentageMultiplier, "x50%"},
+		{"X50%", emweight.PercentageMultiplier, "x50%"},
+		{"×50%", emweight.PercentageMultiplier, "x50%"},
 		{"+10%", emweight.PercentageAdder, "+10%"},
 		{"-10%", emweight.PercentageAdder, "-10%"},
 		{"+5", emweight.Addition, "+5"},
@@ -63,7 +58,7 @@ func TestMultiplierFractionValue(t *testing.T) {
 	for i, s := range []string{"x2", "X2", "×2", "2x", "2×"} {
 		c.Equal(fxp.Two, emweight.Multiplier.ExtractFraction(s).Value(), "test %d: %q", i, s)
 	}
-	for i, s := range []string{percentMultiplier, "X50%", "×50%"} {
+	for i, s := range []string{"x50%", "X50%", "×50%"} {
 		c.Equal(fxp.Fifty, emweight.PercentageMultiplier.ExtractFraction(s).Value(), "test %d: %q", i, s)
 	}
 }

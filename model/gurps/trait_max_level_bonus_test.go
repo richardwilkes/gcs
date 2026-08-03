@@ -19,11 +19,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-const (
-	strengthName = "Strength"
-	attributeTag = "Attribute"
-)
-
 func newMaxLevelBonus(sel traitsel.Type, amount string) *TraitMaxLevelBonus {
 	b := NewTraitMaxLevelBonus()
 	b.SelectionType = sel
@@ -98,19 +93,19 @@ func TestTraitMaxLevelBonusTraitWithName(t *testing.T) {
 	e := NewEntity()
 
 	strength := newLeveledTrait(e, "20")
-	strength.Name = strengthName
-	strength.Tags = []string{attributeTag}
+	strength.Name = "Strength"
+	strength.Tags = []string{"Attribute"}
 	e.Traits = append(e.Traits, strength)
 
 	other := newLeveledTrait(e, "20")
 	other.Name = "Fatigue"
-	other.Tags = []string{attributeTag}
+	other.Tags = []string{"Attribute"}
 	e.Traits = append(e.Traits, other)
 
-	// A trait grants +5 maximum level to a trait named strengthName.
+	// A trait grants +5 maximum level to a trait named "Strength".
 	bonus := newMaxLevelBonus(traitsel.TraitWithName, "+5")
 	bonus.NameCriteria.Compare = criteria.IsText
-	bonus.NameCriteria.Qualifier = strengthName
+	bonus.NameCriteria.Qualifier = "Strength"
 	granter := NewTrait(e, nil, false)
 	granter.Features = append(granter.Features, bonus)
 	e.Traits = append(e.Traits, granter)
@@ -134,7 +129,7 @@ func TestTraitMaxLevelFlagging(t *testing.T) {
 	e := NewEntity()
 
 	trait := newLeveledTrait(e, "5")
-	trait.Name = strengthName
+	trait.Name = "Strength"
 	trait.Levels = fxp.FromInteger(8)
 	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
@@ -158,9 +153,9 @@ func TestTraitMaxLevelBonusRoundTrip(t *testing.T) {
 	byName := newMaxLevelBonus(traitsel.TraitWithName, "+50%")
 	byName.PerLevel = true
 	byName.NameCriteria.Compare = criteria.IsText
-	byName.NameCriteria.Qualifier = strengthName
+	byName.NameCriteria.Qualifier = "Strength"
 	byName.TagsCriteria.Compare = criteria.IsText
-	byName.TagsCriteria.Qualifier = attributeTag
+	byName.TagsCriteria.Qualifier = "Attribute"
 	original := Features{this, byName}
 
 	data, err := json.Marshal(original)

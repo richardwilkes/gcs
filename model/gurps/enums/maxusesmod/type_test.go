@@ -16,8 +16,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-const percentAddition = "+10%"
-
 // TestNormalize verifies that extraction understands every spelling of a multiplier that FromString classifies as one.
 // FromString lowercases before matching, so "X2" must normalize to "x2" rather than losing the typed value to the
 // non-positive-multiplier coercion and becoming "x1".
@@ -40,7 +38,7 @@ func TestNormalize(t *testing.T) {
 		{"+3", "+3"},
 		{"-3", "-3"},
 		{"", "+0"},
-		{percentAddition, percentAddition},
+		{"+10%", "+10%"},
 		{"-10%", "-10%"},
 	} {
 		c.Equal(one.expected, maxusesmod.Normalize(one.input), "test %d: %q", i, one.input)
@@ -60,7 +58,7 @@ func TestFromString(t *testing.T) {
 		{"2x", maxusesmod.Multiplier},
 		{"2×", maxusesmod.Multiplier},
 		{"+3", maxusesmod.Addition},
-		{percentAddition, maxusesmod.Percentage},
+		{"+10%", maxusesmod.Percentage},
 	} {
 		c.Equal(one.expected, maxusesmod.FromString(one.input), "test %d: %q", i, one.input)
 	}
