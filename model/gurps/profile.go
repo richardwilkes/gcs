@@ -38,15 +38,16 @@ type ProfileRandom struct {
 // Profile holds the profile information for an NPC.
 type Profile struct {
 	ProfileRandom
-	PlayerName        string        `json:"player_name,omitzero"`
-	Title             string        `json:"title,omitzero"`
-	Organization      string        `json:"organization,omitzero"`
-	Religion          string        `json:"religion,omitzero"`
-	TechLevel         string        `json:"tech_level,omitzero"`
-	PortraitData      []byte        `json:"portrait,omitzero"`
-	PortraitImage     *unison.Image `json:"-"`
-	SizeModifier      int           `json:"SM,omitzero"`
-	SizeModifierBonus fxp.Int       `json:"-"`
+	PlayerName          string        `json:"player_name,omitzero"`
+	Title               string        `json:"title,omitzero"`
+	Organization        string        `json:"organization,omitzero"`
+	Religion            string        `json:"religion,omitzero"`
+	TechLevel           string        `json:"tech_level,omitzero"`
+	PortraitData        []byte        `json:"portrait,omitzero"`
+	PortraitImage       *unison.Image `json:"-"`
+	SizeModifier        int           `json:"SM,omitzero"`
+	SizeModifierBonus   fxp.Int       `json:"-"`
+	portraitUndecodable bool
 }
 
 // Update any derived values.
@@ -56,16 +57,25 @@ func (p *Profile) Update(entity *Entity) {
 
 // Portrait returns the portrait image, if there is one.
 func (p *Profile) Portrait() *unison.Image {
-	if p.PortraitImage == nil && len(p.PortraitData) != 0 {
-		var err error
-		if p.PortraitImage, err = unison.NewImageFromBytes(p.PortraitData, geom.NewPoint(0.5, 0.5)); err != nil {
+	if p.PortraitImage == nil && len(p.PortraitData) != 0 && !p.portraitUndecodable {
+		img, err := unison.NewImageFromBytes(p.PortraitData, geom.NewPoint(0.5, 0.5))
+		if err != nil {
 			errs.Log(errs.NewWithCause("unable to load portrait data", err))
-			p.PortraitImage = nil
-			p.PortraitData = nil
+			// Retain the data so that it isn't lost on the next save, since another build may be able to decode
+			// it, but don't attempt to decode it again, since it would just fail and log repeatedly.
+			p.portraitUndecodable = true
 			return nil
 		}
+		p.PortraitImage = img
 	}
 	return p.PortraitImage
+}
+
+// SetPortraitData sets the portrait data, discarding any previously decoded image.
+func (p *Profile) SetPortraitData(data []byte) {
+	p.PortraitData = data
+	p.PortraitImage = nil
+	p.portraitUndecodable = false
 }
 
 // CanExportPortrait returns true if the portrait can be exported.

@@ -431,8 +431,7 @@ func (s *Sheet) clearPortrait(_ any) {
 }
 
 func (s *Sheet) updatePortrait(data []byte) {
-	s.entity.Profile.PortraitData = data
-	s.entity.Profile.PortraitImage = nil
+	s.entity.Profile.SetPortraitData(data)
 	s.MarkForRedraw()
 	s.MarkModified(s)
 }
