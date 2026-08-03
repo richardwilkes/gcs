@@ -576,6 +576,9 @@ func (l *Library) downloadRelease(ctx context.Context, client *http.Client, rele
 		return nil, errs.NewWithCause("unable to connect to "+release.ZipFileURL, err)
 	}
 	defer xio.DiscardAndCloseIgnoringErrors(rsp.Body)
+	if rsp.StatusCode < 200 || rsp.StatusCode > 299 {
+		return nil, errs.New("unexpected response code from " + release.ZipFileURL + " -> " + rsp.Status)
+	}
 	var data []byte
 	if data, err = io.ReadAll(rsp.Body); err != nil {
 		return nil, errs.NewWithCause("unable to download "+release.ZipFileURL, err)

@@ -13,9 +13,12 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"maps"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -217,6 +220,36 @@ func TestLibraryJSONRoundTrip(t *testing.T) {
 	c.NotNil(restored)
 	c.Equal(lib.Data(), restored.Data())
 	c.Equal(lib.Favorites(), restored.Favorites())
+}
+
+// TestLibraryDownloadReleaseChecksStatusCode verifies that an HTTP error response is reported as an HTTP failure rather
+// than being handed to the zip reader as if it were archive content, which yielded a misleading "unable to open
+// archive" error.
+func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
+	c := check.New(t)
+	status := http.StatusOK
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(status)
+		fmt.Fprint(w, "not a zip file")
+	}))
+	defer srv.Close()
+	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
+	release := Release{Version: "1.0.0", ZipFileURL: srv.URL}
+
+	for _, code := range []int{http.StatusNotFound, http.StatusForbidden, http.StatusTooManyRequests} {
+		status = code
+		data, err := lib.downloadRelease(t.Context(), srv.Client(), release)
+		c.HasError(err, "status %d", code)
+		c.Nil(data, "status %d", code)
+		c.Contains(err.Error(), strconv.Itoa(code), "status %d", code)
+		c.Contains(err.Error(), srv.URL, "status %d", code)
+	}
+
+	// A successful response must still hand back the body unchanged.
+	status = http.StatusOK
+	data, err := lib.downloadRelease(t.Context(), srv.Client(), release)
+	c.NoError(err)
+	c.Equal([]byte("not a zip file"), data)
 }
 
 // waitForMonitorQueue blocks until everything already queued on the library's monitor has been processed. The queue
