@@ -550,6 +550,7 @@ func (e *Entity) processPrereqs() {
 					penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 					penalty.SpecializationCriteria.Compare = criteria.IsText
 					penalty.SpecializationCriteria.Qualifier = s.SpecializationWithReplacements()
+					penalty.OptionalSpecializationCriteria.Compare = criteria.IsText
 					penalty.OptionalSpecializationCriteria.Qualifier = s.OptionalSpecializationWithReplacements()
 					if s.TechLevel != nil && *s.TechLevel != "" {
 						penalty.Amount = -fxp.Ten
