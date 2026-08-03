@@ -143,6 +143,46 @@ func TestEntityAttributeBonus(t *testing.T) {
 	c.Equal(fxp.Three, e.ThrowingStrengthBonus, "Throwing ST Bonus; leveled +1 bonus, with 3 levels, for throwing only")
 }
 
+// TestEntityThisArmorDRBonus verifies that a "this armor" DR bonus (one that names no locations) is applied exactly
+// once to each location the owning equipment already grants DR to, even when more than one of that equipment's other
+// DR bonuses names the same location.
+func TestEntityThisArmorDRBonus(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	eqp := NewEquipment(e, nil, false)
+	eqp.Name = "Mail Hauberk"
+	eqp.Features = Features{
+		newTestDRBonus(fxp.Four, AllID, TorsoID, "vitals"),
+		newTestDRBonus(fxp.Two, AllID, "vitals"),  // repeats a location the bonus above already covers
+		newTestDRBonus(fxp.Three, AllID, "Torso"), // repeats a location, but with a different case
+		newTestDRBonus(fxp.Five, "piercing", "arm"),
+		newTestDRBonus(fxp.One, AllID), // no locations, i.e. "this armor"
+	}
+	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	e.Recalculate()
+
+	drMap := e.AddDRBonusesFor(TorsoID, nil, nil)
+	c.Equal(8, drMap[AllID], "torso: 4 + 3 base DR, plus the 'this armor' bonus applied once")
+
+	drMap = e.AddDRBonusesFor("vitals", nil, nil)
+	c.Equal(7, drMap[AllID], "vitals: 4 + 2 base DR, plus the 'this armor' bonus applied once")
+
+	drMap = e.AddDRBonusesFor("arm", nil, nil)
+	c.Equal(5, drMap["piercing"], "arm: the base DR retains its own specialization")
+	c.Equal(1, drMap[AllID], "arm: covered by a differently specialized bonus, so still gets the 'this armor' bonus")
+
+	drMap = e.AddDRBonusesFor("leg", nil, nil)
+	c.Equal(0, drMap[AllID], "leg: not covered by the equipment, so gets nothing")
+}
+
+func newTestDRBonus(amount fxp.Int, specialization string, locations ...string) *DRBonus {
+	bonus := NewDRBonus()
+	bonus.Locations = locations
+	bonus.Specialization = specialization
+	bonus.Amount = amount
+	return bonus
+}
+
 func TestEntityHideZeroValueConditionalModifiers(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

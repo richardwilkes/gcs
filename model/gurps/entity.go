@@ -468,51 +468,45 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 
 // expandThisArmorDRBonus handles a DR bonus that specifies no locations (a "this armor" bonus). Such a bonus applies to
 // whatever locations the owning piece of equipment already grants DR to, so we resolve those locations by scanning the
-// equipment's other DR bonuses: locations covered by a bonus with a matching specialization receive a copy carrying
-// that same specialization, and any remaining covered locations receive a single combined copy. If the owner isn't a
-// piece of equipment, the bonus is dropped, since there is nothing for it to attach to.
+// equipment's other DR bonuses and emitting a single copy of the bonus, carrying the original's specialization, that
+// covers the union of the locations they name. Emitting exactly one copy matters: a location named by more than one of
+// the equipment's DR bonuses must still receive the "this armor" amount just once. If the owner isn't a piece of
+// equipment, the bonus is dropped, since there is nothing for it to attach to.
 func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwner LeveledOwner, src *DRBonus) {
 	eqp, ok := owner.(*Equipment)
 	if !ok {
 		return
 	}
-	add := func(locations []string) {
-		bonus := &DRBonus{
-			DRBonusData: DRBonusData{
-				Type:           feature.DRBonus,
-				Locations:      locations,
-				Specialization: src.Specialization,
-				LeveledAmount:  src.LeveledAmount,
-			},
-		}
-		bonus.SetOwner(owner)
-		bonus.SetSubOwner(subOwner)
-		bonus.SetLeveledOwner(leveledOwner)
-		e.features.drBonuses = append(e.features.drBonuses, bonus)
-	}
-	allLocations := make(map[string]struct{})
-	locationsMatched := make(map[string]struct{})
+	// Keyed by the lowercased location, since location matching is case-insensitive, with the first spelling
+	// encountered as the value.
+	locations := make(map[string]string)
 	for _, f := range eqp.FeatureList() {
 		drBonus, ok2 := f.(*DRBonus)
 		if !ok2 || len(drBonus.Locations) == 0 {
 			continue
 		}
 		for _, loc := range drBonus.Locations {
-			allLocations[loc] = struct{}{}
-		}
-		if drBonus.Specialization == src.Specialization {
-			for _, loc := range drBonus.Locations {
-				locationsMatched[loc] = struct{}{}
+			key := strings.ToLower(loc)
+			if _, exists := locations[key]; !exists {
+				locations[key] = loc
 			}
-			add(slices.Clone(drBonus.Locations))
 		}
 	}
-	for k := range locationsMatched {
-		delete(allLocations, k)
+	if len(locations) == 0 {
+		return
 	}
-	if len(allLocations) != 0 {
-		add(slices.Sorted(maps.Keys(allLocations)))
+	bonus := &DRBonus{
+		DRBonusData: DRBonusData{
+			Type:           feature.DRBonus,
+			Locations:      slices.Sorted(maps.Values(locations)),
+			Specialization: src.Specialization,
+			LeveledAmount:  src.LeveledAmount,
+		},
 	}
+	bonus.SetOwner(owner)
+	bonus.SetSubOwner(subOwner)
+	bonus.SetLeveledOwner(leveledOwner)
+	e.features.drBonuses = append(e.features.drBonuses, bonus)
 }
 
 func (e *Entity) processPrereqs() {
