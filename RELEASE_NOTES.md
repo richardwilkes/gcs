@@ -77,3 +77,4 @@
   on, which was most noticeable on Linux and Windows when opened from a menu. New windows and dialogs are now placed
   relative to the frontmost window, falling back to the primary display only when no window is available.
 - Fix unary operator handling and panics in legacy expression conversion.
+- Fixed various issues in the legacy text export templates.

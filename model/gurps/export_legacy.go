@@ -48,6 +48,19 @@ const (
 	fpAttrID                    = "fp"
 )
 
+// attributeKeySuffixes maps the recognized attribute key suffixes to the value they emit. The order is significant:
+// longer suffixes that end with a shorter one must come first.
+var attributeKeySuffixes = []struct {
+	suffix string
+	value  func(attr *Attribute, def *AttributeDef) string
+}{
+	{suffix: "_full_name", value: func(_ *Attribute, def *AttributeDef) string { return def.ResolveFullName() }},
+	{suffix: "_combined_name", value: func(_ *Attribute, def *AttributeDef) string { return def.CombinedName() }},
+	{suffix: "_name", value: func(_ *Attribute, def *AttributeDef) string { return def.Name }},
+	{suffix: "_points", value: func(attr *Attribute, _ *AttributeDef) string { return attr.PointCost().String() }},
+	{suffix: "_current", value: func(attr *Attribute, _ *AttributeDef) string { return attr.Current().String() }},
+}
+
 type legacyExporter struct {
 	entity             *Entity
 	points             *PointsBreakdown
@@ -178,7 +191,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HT_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost("ht").String())
 	case "PERCEPTION_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost("perception").String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost("per").String())
 	case "WILL_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost("will").String())
 	case "FP_POINTS":
@@ -337,7 +350,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		needBlanks := false
 		Traverse(func(n *Note) bool {
 			if needBlanks {
-				ex.out.WriteString("\n\n")
+				ex.writeEncodedText("\n\n")
 			} else {
 				needBlanks = true
 			}
@@ -397,7 +410,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		Traverse(func(_ *Skill) bool {
 			count++
 			return false
-		}, false, true, ex.entity.Skills...)
+		}, false, false, ex.entity.Skills...)
 		ex.writeEncodedText(strconv.Itoa(count))
 	case "SKILLS_LOOP_START":
 		ex.processSkillsLoop(ex.extractUpToMarker("SKILLS_LOOP_END"))
@@ -443,7 +456,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		}, false, false, ex.entity.OtherEquipment...)
 		ex.writeEncodedText(strconv.Itoa(count))
 	case "OTHER_EQUIPMENT_LOOP_START":
-		ex.processEquipmentLoop(ex.extractUpToMarker("EQUIPMENT_LOOP_END"), false)
+		ex.processEquipmentLoop(ex.extractUpToMarker("OTHER_EQUIPMENT_LOOP_END"), false)
 	case "NOTES_LOOP_COUNT":
 		count := 0
 		Traverse(func(_ *Note) bool {
@@ -519,39 +532,17 @@ func (ex *legacyExporter) emitKey(key string) error {
 					return nil
 				}
 			}
-			switch {
-			case strings.HasSuffix(attrKey, "_name"):
-				if attr, ok := ex.entity.Attributes.Set[attrKey[:len(attrKey)-len("_name")]]; ok {
-					if def := attr.AttributeDef(); def != nil {
-						ex.writeEncodedText(def.Name)
-						return nil
-					}
+			// The suffixes must be checked from most-specific to least-specific, since "_full_name" and
+			// "_combined_name" both end with "_name". A suffix that matches but whose remaining text isn't an
+			// attribute ID falls through to the next candidate, so an attribute whose ID itself ends with one of
+			// these suffixes still resolves.
+			for _, one := range attributeKeySuffixes {
+				if !strings.HasSuffix(attrKey, one.suffix) {
+					continue
 				}
-			case strings.HasSuffix(attrKey, "_full_name"):
-				if attr, ok := ex.entity.Attributes.Set[attrKey[:len(attrKey)-len("_full_name")]]; ok {
+				if attr, ok := ex.entity.Attributes.Set[attrKey[:len(attrKey)-len(one.suffix)]]; ok {
 					if def := attr.AttributeDef(); def != nil {
-						ex.writeEncodedText(def.ResolveFullName())
-						return nil
-					}
-				}
-			case strings.HasSuffix(attrKey, "_combined_name"):
-				if attr, ok := ex.entity.Attributes.Set[attrKey[:len(attrKey)-len("_combined_name")]]; ok {
-					if def := attr.AttributeDef(); def != nil {
-						ex.writeEncodedText(def.CombinedName())
-						return nil
-					}
-				}
-			case strings.HasSuffix(attrKey, "_points"):
-				if attr, ok := ex.entity.Attributes.Set[attrKey[:len(attrKey)-len("_points")]]; ok {
-					if def := attr.AttributeDef(); def != nil {
-						ex.writeEncodedText(attr.PointCost().String())
-						return nil
-					}
-				}
-			case strings.HasSuffix(attrKey, "_current"):
-				if attr, ok := ex.entity.Attributes.Set[attrKey[:len(attrKey)-len("_current")]]; ok {
-					if def := attr.AttributeDef(); def != nil {
-						ex.writeEncodedText(attr.Current().String())
+						ex.writeEncodedText(one.value(attr, def))
 						return nil
 					}
 				}
@@ -1472,7 +1463,7 @@ func (ex *legacyExporter) writeWithOptionalParens(key, text string) {
 			post = "}"
 		}
 		ex.out.WriteString(pre)
-		ex.out.WriteString(text)
+		ex.writeEncodedText(text)
 		ex.out.WriteString(post)
 	}
 }
@@ -1487,8 +1478,8 @@ func (ex *legacyExporter) processBuffer(buffer []byte, f func(key string, buf []
 		switch {
 		case lookForKeyMarker:
 			var next byte
-			if ex.pos < len(ex.template) {
-				next = ex.template[ex.pos]
+			if i < len(buffer) {
+				next = buffer[i]
 			}
 			if ch == '@' && (next < '0' || next > '9') {
 				lookForKeyMarker = false
