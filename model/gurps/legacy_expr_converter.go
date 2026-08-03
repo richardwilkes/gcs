@@ -129,7 +129,8 @@ func ExprToScript(expr string) string {
 			"ssrt":          "measure.modifier",
 		},
 	}
-	if parts, err := e.processExpression(nil, expr); err == nil {
+	// If the expression can't be fully converted, leave the original text alone.
+	if parts, err := e.processExpression(nil, expr); err == nil && len(parts) != 0 {
 		expr = strings.Join(parts, " ")
 	}
 	return expr
@@ -146,7 +147,10 @@ func (e *exprToScript) processExpression(parts []string, expression string) ([]s
 		return parts, nil
 	}
 	for _, op := range e.operandStack {
-		parts = e.process(parts, op)
+		var err error
+		if parts, err = e.process(parts, op); err != nil {
+			return parts, err
+		}
 	}
 	return parts, nil
 }
@@ -173,21 +177,25 @@ func (e *exprToScript) parse(expression string) error {
 			unaryOp = nil
 		}
 		if opIndex == i {
-			if op != nil && op.unary && i == 0 {
+			if op != nil && op.unary && !haveOperand {
 				i = opIndex + len(op.symbol)
 				if unaryOp != nil {
 					return errs.Newf("consecutive unary operators are not allowed at index %d", i)
 				}
 				unaryOp = op
 			} else {
+				// processOperator may consume more than the operator it was handed (a function call and the operator
+				// that follows it), so the operator it reports back is the one that determines whether an operand is
+				// now available.
 				var err error
-				if i, err = e.processOperator(expression, opIndex, op, haveOperand, unaryOp); err != nil {
+				var last *operator
+				if i, last, err = e.processOperator(expression, opIndex, op, haveOperand, unaryOp); err != nil {
 					return err
 				}
 				unaryOp = nil
-			}
-			if op == nil || op.symbol != ")" {
-				haveOperand = false
+				if last == nil || last.symbol != ")" {
+					haveOperand = false
+				}
 			}
 		}
 	}
@@ -234,20 +242,23 @@ func (e *exprToScript) processOperand(expression string, start, opIndex int, una
 	return opIndex, nil
 }
 
-func (e *exprToScript) processOperator(expression string, index int, op *operator, haveOperand bool, unaryOp *operator) (int, error) {
+// processOperator processes the operator at the given index, returning the index just past what was consumed along with
+// the last operator that was actually processed, which is not necessarily the one that was passed in.
+func (e *exprToScript) processOperator(expression string, index int, op *operator, haveOperand bool, unaryOp *operator) (int, *operator, error) {
 	if haveOperand && op != nil && op.symbol == "(" {
 		var err error
-		index, op, err = e.processFunction(expression, index)
+		var closeOp *operator
+		index, closeOp, err = e.processFunction(expression, index)
 		if err != nil {
-			return -1, err
+			return -1, nil, err
 		}
-		index += len(op.symbol)
-		var tmp int
-		tmp, op = e.nextOperator(expression, index, nil)
-		if op == nil {
-			return index, nil
+		index += len(closeOp.symbol)
+		next, nextOp := e.nextOperator(expression, index, nil)
+		if nextOp == nil {
+			return index, closeOp, nil
 		}
-		index = tmp
+		op = nextOp
+		index = next
 	}
 	switch op.symbol {
 	case "(":
@@ -269,14 +280,17 @@ func (e *exprToScript) processOperator(expression string, index int, op *operato
 			}
 		}
 		if len(e.operatorStack) == 0 {
-			return -1, errs.Newf("invalid expression at index %d", index)
+			return -1, nil, errs.Newf("invalid expression at index %d", index)
 		}
 		stackOp = e.operatorStack[len(e.operatorStack)-1]
 		if stackOp.op.symbol != "(" {
-			return -1, errs.Newf("invalid expression at index %d", index)
+			return -1, nil, errs.Newf("invalid expression at index %d", index)
 		}
 		e.operatorStack = e.operatorStack[:len(e.operatorStack)-1]
 		if stackOp.unaryOp != nil {
+			if len(e.operandStack) == 0 {
+				return -1, nil, errs.Newf("invalid expression at index %d", index)
+			}
 			left := e.operandStack[len(e.operandStack)-1]
 			e.operandStack = e.operandStack[:len(e.operandStack)-1]
 			e.operandStack = append(e.operandStack, &expressionTree{
@@ -301,7 +315,7 @@ func (e *exprToScript) processOperator(expression string, index int, op *operato
 			unaryOp: unaryOp,
 		})
 	}
-	return index + len(op.symbol), nil
+	return index + len(op.symbol), op, nil
 }
 
 func (e *exprToScript) processFunction(expression string, opIndex int) (int, *operator, error) {
@@ -361,28 +375,49 @@ func (e *exprToScript) processTree() {
 	})
 }
 
-func (e *exprToScript) process(parts []string, op any) []string {
+func (e *exprToScript) process(parts []string, op any) ([]string, error) {
 	switch v := op.(type) {
 	case *expressionTree:
-		leftIndex := len(parts)
-		if v.left != nil {
-			parts = e.process(parts, v.left)
-		}
+		start := len(parts)
+		var err error
 		if v.left != nil && v.right != nil {
+			if parts, err = e.process(parts, v.left); err != nil {
+				return parts, err
+			}
 			if v.op != nil {
 				parts = append(parts, v.op.String())
 			}
-		} else if v.unaryOp != nil {
-			parts = append(parts, v.unaryOp.String())
-		}
-		if v.right != nil {
-			parts = e.process(parts, v.right)
+			if parts, err = e.process(parts, v.right); err != nil {
+				return parts, err
+			}
+		} else {
+			unaryOp := v.unaryOp
+			if unaryOp == nil && v.op != nil && v.op.unary {
+				unaryOp = v.op
+			}
+			operand := v.left
+			if operand == nil {
+				operand = v.right
+			}
+			if unaryOp == nil || operand == nil {
+				return parts, errs.New("expression is invalid")
+			}
+			if parts, err = e.process(parts, operand); err != nil {
+				return parts, err
+			}
+			if len(parts) == start {
+				return parts, errs.New("expression is invalid")
+			}
+			parts[start] = unaryOp.String() + parts[start]
 		}
 		if v.hasParens {
-			parts[leftIndex] = "(" + parts[leftIndex]
+			if len(parts) == start {
+				return parts, errs.New("expression is invalid")
+			}
+			parts[start] = "(" + parts[start]
 			parts[len(parts)-1] = parts[len(parts)-1] + ")"
 		}
-		return parts
+		return parts, nil
 	case *expressionOperand:
 		value := v.value
 		if value != "true" && value != "false" {
@@ -395,7 +430,7 @@ func (e *exprToScript) process(parts []string, op any) []string {
 		if v.unaryOp != nil {
 			value = v.unaryOp.String() + value
 		}
-		return append(parts, value)
+		return append(parts, value), nil
 	case *parsedFunction:
 		var funcParts []string
 		i := 0
@@ -416,23 +451,30 @@ func (e *exprToScript) process(parts []string, op any) []string {
 			if skip {
 				skip = false
 			} else {
+				mark := len(funcParts)
 				var err error
-				funcParts, err = e.processExpression(funcParts, next)
-				if err != nil {
-					funcParts = append(funcParts, "<error>")
+				if funcParts, err = e.processExpression(funcParts, next); err != nil {
+					return parts, err
+				}
+				if len(funcParts) == mark {
+					return parts, errs.Newf("argument is invalid: %s", next)
 				}
 			}
 			next, remaining = extractNextEvalArg(remaining)
-			if next != "" {
+			if next != "" && len(funcParts) != 0 {
 				funcParts[len(funcParts)-1] = funcParts[len(funcParts)-1] + ","
 			}
 		}
-		return append(parts, v.function+"("+strings.Join(funcParts, " ")+")")
+		call := v.function + "(" + strings.Join(funcParts, " ") + ")"
+		if v.unaryOp != nil {
+			call = v.unaryOp.String() + call
+		}
+		return append(parts, call), nil
 	default:
 		if op != nil {
-			return append(parts, "<unknown>")
+			return append(parts, "<unknown>"), nil
 		}
-		return parts
+		return parts, nil
 	}
 }
 
