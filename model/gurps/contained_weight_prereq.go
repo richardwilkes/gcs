@@ -66,9 +66,7 @@ func (p *ContainedWeightPrereq) Satisfied(entity *Entity, exclude any, tooltip *
 	satisfied := false
 	if eqp, ok := exclude.(*Equipment); ok {
 		if satisfied = !eqp.Container(); !satisfied {
-			units := SheetSettingsFor(entity).DefaultWeightUnits
-			weight := eqp.ExtendedWeight(false, units) - eqp.AdjustedWeight(false, units)
-			satisfied = p.WeightCriteria.Matches(weight)
+			satisfied = p.WeightCriteria.Matches(eqp.ContainedWeight(false, SheetSettingsFor(entity).DefaultWeightUnits))
 		}
 	}
 	if !p.Has {

@@ -674,14 +674,42 @@ func ExtendedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weigh
 	if !forSkills || !weightIgnoredForSkills {
 		base = fxp.Int(WeightAdjustedForModifiers(equipment, baseWeight, modifiers, defUnits))
 	}
-	if len(children) != 0 {
-		var contained fxp.Int
-		for _, one := range children {
-			contained += fxp.Int(one.ExtendedWeight(forSkills, defUnits))
+	base += fxp.Int(ContainedWeightAdjustedForModifiers(equipment, defUnits, modifiers, features, children, forSkills))
+	return fxp.Weight(base.Mul(qty))
+}
+
+// ContainedWeight returns the weight of the contents of this equipment, after any contained weight reductions have been
+// applied. This is the weight held by a single instance of this equipment, so it is unaffected by the quantity, and
+// does not include the weight of the equipment itself.
+func (e *Equipment) ContainedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
+	return ContainedWeightAdjustedForModifiers(e, defUnits, e.Modifiers, e.Features, e.Children, forSkills)
+}
+
+// ContainedWeightAdjustedForModifiers calculates the weight of the contents of a container, after applying any
+// contained weight reductions supplied by the features and modifiers. This is the weight held by a single instance of
+// the container and does not include the weight of the container itself.
+func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.WeightUnit, modifiers []*EquipmentModifier, features Features, children []*Equipment, forSkills bool) fxp.Weight {
+	if len(children) == 0 {
+		return 0
+	}
+	var contained fxp.Int
+	for _, one := range children {
+		contained += fxp.Int(one.ExtendedWeight(forSkills, defUnits))
+	}
+	var percentage, reduction fxp.Int
+	for _, one := range features {
+		if cwr, ok := one.(*ContainedWeightReduction); ok {
+			if cwr.IsPercentageReduction() {
+				percentage += cwr.PercentageReduction()
+			} else {
+				reduction += fxp.Int(cwr.FixedReduction(defUnits))
+			}
 		}
-		var percentage, reduction fxp.Int
-		for _, one := range features {
-			if cwr, ok := one.(*ContainedWeightReduction); ok {
+	}
+	Traverse(func(mod *EquipmentModifier) bool {
+		mod.setEquipment(equipment)
+		for _, f := range mod.Features {
+			if cwr, ok := f.(*ContainedWeightReduction); ok {
 				if cwr.IsPercentageReduction() {
 					percentage += cwr.PercentageReduction()
 				} else {
@@ -689,27 +717,14 @@ func ExtendedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weigh
 				}
 			}
 		}
-		Traverse(func(mod *EquipmentModifier) bool {
-			mod.setEquipment(equipment)
-			for _, f := range mod.Features {
-				if cwr, ok := f.(*ContainedWeightReduction); ok {
-					if cwr.IsPercentageReduction() {
-						percentage += cwr.PercentageReduction()
-					} else {
-						reduction += fxp.Int(cwr.FixedReduction(defUnits))
-					}
-				}
-			}
-			return false
-		}, true, true, modifiers...)
-		if percentage >= fxp.Hundred {
-			contained = 0
-		} else if percentage > 0 {
-			contained -= contained.Mul(percentage).Div(fxp.Hundred)
-		}
-		base += (contained - reduction).Max(0)
+		return false
+	}, true, true, modifiers...)
+	if percentage >= fxp.Hundred {
+		contained = 0
+	} else if percentage > 0 {
+		contained -= contained.Mul(percentage).Div(fxp.Hundred)
 	}
-	return fxp.Weight(base.Mul(qty))
+	return fxp.Weight((contained - reduction).Max(0))
 }
 
 // ResolvedMaxUses returns the MaxUses adjusted by any applicable EquipmentMaxUsesBonus features, clamped to the range
