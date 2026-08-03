@@ -99,7 +99,10 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 				}
 				level += preAdj
 				if def.Type() != ParryID {
-					level = level.Div(fxp.Two).Floor()
+					// Convert the skill level into a parry level. A parry-type default has already had this
+					// conversion applied to it by SkillLevelFast(), so applying it again would double-count both
+					// the +3 and the entity's parry bonus.
+					level = level.Div(fxp.Two).Floor() + fxp.Three + entity.ParryBonus
 				}
 				level += postAdj
 				if best < level {
@@ -108,7 +111,7 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 			}
 			if best != fxp.Min {
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
-				result.Modifier += fxp.Three + best + entity.ParryBonus
+				result.Modifier += best
 				AppendStringOntoNewLine(modifiersTooltip, entity.ParryBonusTooltip)
 				var percentModifier fxp.Int
 				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponParryBonus) {

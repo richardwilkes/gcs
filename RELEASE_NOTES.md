@@ -44,6 +44,7 @@
 
 ## Bug Fixes
 
+- Fixed double-counting of +3 and defense bonus for parry/block weapon defaults.
 - Fixed another case of the key handling not properly masking out sticky modifier keys (CapsLock & NumLock), this time
   affecting use of the Tab key to move focus between fields.
 - Fixed spell prerequisite counting (for things like "6 spells from the Air college") so that a spell which itself

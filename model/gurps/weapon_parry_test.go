@@ -12,6 +12,7 @@ package gurps_test
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -52,4 +53,33 @@ func TestWeaponParry(t *testing.T) {
 	for i, one := range cases {
 		c.Equal(one.expected, gurps.ParseWeaponParry(one.input).String(), "test %d", i)
 	}
+}
+
+// TestWeaponParryResolveParryTypeDefault verifies that a parry-type weapon default does not have the +3 and the
+// entity's parry bonus applied to it twice. SkillLevelFast() already turns a parry-type default into a parry level, so
+// a weapon defaulting to "Cloak Parry" must resolve to the same value as one defaulting to the "Cloak" skill itself.
+func TestWeaponParryResolveParryTypeDefault(t *testing.T) {
+	c := check.New(t)
+	w := newDefenseTestWeapon(c)
+
+	// A skill-type default halves the skill level, then adds the +3 and the entity's parry bonus: 14/2 + 3 + 1.
+	w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(gurps.SkillID)}
+	c.Equal("11", w.Parry.Resolve(w, nil).String(), "skill-type default")
+
+	// A parry-type default has already been through that conversion, so it must yield the same parry, not 15.
+	w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(gurps.ParryID)}
+	c.Equal("11", w.Parry.Resolve(w, nil).String(), "parry-type default")
+
+	// Both kinds of default together still resolve to the same parry.
+	w.Defaults = []*gurps.SkillDefault{
+		newDefenseTestDefault(gurps.SkillID),
+		newDefenseTestDefault(gurps.ParryID),
+	}
+	c.Equal("11", w.Parry.Resolve(w, nil).String(), "both defaults")
+
+	// The weapon's own parry modifier and the default's modifier still apply on top.
+	w.Parry.Modifier = fxp.Two
+	w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(gurps.ParryID)}
+	w.Defaults[0].Modifier = -fxp.One
+	c.Equal("12", w.Parry.Resolve(w, nil).String(), "parry-type default with modifiers")
 }
