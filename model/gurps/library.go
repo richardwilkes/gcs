@@ -13,6 +13,8 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"io"
 	"io/fs"
@@ -41,66 +43,170 @@ const releaseFile = "release.txt"
 // NotifyOfLibraryChangeFunc will be called to notify of library changes.
 var NotifyOfLibraryChangeFunc func()
 
-// Library holds information about a library of data files.
+// libraryPersistentData holds the data that will be serialized for a Library. It is deliberately not part of the
+// public API, so that the on-disk format can evolve without dragging the accessors along with it. Note that the GitHub
+// account name and repository name are absent: they are carried by the key the library is filed under within a
+// Libraries set, and are restored from it by ConfigureForKey().
+type libraryPersistentData struct {
+	ID          tid.TID  `json:"id"`
+	Title       string   `json:"title,omitzero"`
+	AccessToken string   `json:"access_token,omitzero"`
+	PathOnDisk  string   `json:"path,omitzero"`
+	Favorites   []string `json:"favorites,omitzero"`
+	UseLatest   bool     `json:"use_latest,omitzero"`
+}
+
+// LibraryConfig holds the Library fields the user is permitted to edit. The ID, the path on disk and the favorites are
+// deliberately absent: an ID never changes once assigned, the path must go through SetPath() so that the filesystem
+// watches can be restarted, and the favorites have their own methods.
+type LibraryConfig struct {
+	Title             string
+	GitHubAccountName string
+	AccessToken       string
+	RepoName          string
+	UseLatest         bool
+}
+
+// LibraryData is a snapshot of a Library's state, as returned by Data(). The favorites are not included, since they are
+// a list that is manipulated independently; use Favorites() for those.
+type LibraryData struct {
+	LibraryConfig
+	ID         tid.TID
+	PathOnDisk string
+}
+
+// Library holds information about a library of data files. Every field is private and reachable only through the
+// accessors, since a library is read by background goroutines (update checks) while the UI thread may be modifying it.
 type Library struct {
-	ID                tid.TID  `json:"id"`
-	Title             string   `json:"title,omitzero"`
-	GitHubAccountName string   `json:"-"`
-	AccessToken       string   `json:"access_token,omitzero"`
-	RepoName          string   `json:"-"`
-	PathOnDisk        string   `json:"path,omitzero"`
-	Favorites         []string `json:"favorites,omitzero"`
-	UseLatest         bool     `json:"use_latest,omitzero"`
 	monitor           *monitor
-	lock              sync.RWMutex
+	data              libraryPersistentData
+	gitHubAccountName string
+	repoName          string
 	releases          []Release
 	current           string
+	lock              sync.RWMutex
 }
 
 // NewLibrary creates a new library.
 func NewLibrary(title, githubAccountName, accessToken, repoName, pathOnDisk string) *Library {
 	lib := &Library{
-		ID:                tid.MustNewTID(kinds.NavigatorLibrary),
-		Title:             title,
-		GitHubAccountName: githubAccountName,
-		AccessToken:       accessToken,
-		RepoName:          repoName,
-		PathOnDisk:        pathOnDisk,
+		data: libraryPersistentData{
+			ID:          tid.MustNewTID(kinds.NavigatorLibrary),
+			Title:       title,
+			AccessToken: accessToken,
+			PathOnDisk:  pathOnDisk,
+		},
+		gitHubAccountName: githubAccountName,
+		repoName:          repoName,
 	}
-	lib.current = lib.VersionOnDisk()
-	lib.monitor = newMonitor(lib)
+	lib.refreshVersionOnDisk()
 	return lib
+}
+
+// MarshalJSONTo implements json.MarshalerTo.
+func (l *Library) MarshalJSONTo(enc *jsontext.Encoder) error {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return json.MarshalEncode(enc, &l.data)
+}
+
+// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+func (l *Library) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	l.data = libraryPersistentData{}
+	return json.UnmarshalDecode(dec, &l.data)
+}
+
+// Data returns a snapshot of this library's state. The returned value is a copy, so modifying it has no effect on the
+// library; use Configure(), SetID() or SetPath() to make changes.
+func (l *Library) Data() LibraryData {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return LibraryData{
+		LibraryConfig: l.config(),
+		ID:            l.data.ID,
+		PathOnDisk:    l.data.PathOnDisk,
+	}
+}
+
+// Config returns the portion of this library's state that the user is permitted to edit.
+func (l *Library) Config() LibraryConfig {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return l.config()
+}
+
+// config extracts the user-editable portion of this library's state. The library lock must be held when calling this.
+func (l *Library) config() LibraryConfig {
+	return LibraryConfig{
+		Title:             l.data.Title,
+		GitHubAccountName: l.gitHubAccountName,
+		AccessToken:       l.data.AccessToken,
+		RepoName:          l.repoName,
+		UseLatest:         l.data.UseLatest,
+	}
+}
+
+// Configure applies the given configuration as a single atomic operation. Note that this may change the value returned
+// by Key().
+func (l *Library) Configure(config LibraryConfig) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	l.data.Title = config.Title
+	l.data.AccessToken = config.AccessToken
+	l.data.UseLatest = config.UseLatest
+	l.gitHubAccountName = config.GitHubAccountName
+	l.repoName = config.RepoName
+}
+
+// SetID sets the unique ID of this library. Should only be used for a library that doesn't yet have one.
+func (l *Library) SetID(id tid.TID) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	l.data.ID = id
 }
 
 // Valid returns true if the library has a path on disk and a title.
 func (l *Library) Valid() bool {
-	return strings.TrimSpace(l.PathOnDisk) != "" && strings.TrimSpace(l.Title) != ""
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return strings.TrimSpace(l.data.PathOnDisk) != "" && strings.TrimSpace(l.data.Title) != ""
 }
 
-// ConfigureForKey configures the GitHubAccountName and RepoName from the given key.
+// ConfigureForKey configures the GitHub account name and repository name from the given key.
 func (l *Library) ConfigureForKey(key string) error {
 	parts := strings.SplitN(key, "/", 2)
 	if len(parts) != 2 {
 		return errs.Newf("invalid library key: %s", key)
 	}
-	l.GitHubAccountName = strings.TrimSpace(parts[0])
-	if l.RepoName = strings.TrimSpace(parts[1]); l.RepoName == "" {
+	repoName := strings.TrimSpace(parts[1])
+	if repoName == "" {
 		return errs.Newf("invalid library key: %s", key)
 	}
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	l.gitHubAccountName = strings.TrimSpace(parts[0])
+	l.repoName = repoName
 	return nil
 }
 
 // Key returns a key representing this Library.
 func (l *Library) Key() string {
-	return l.GitHubAccountName + "/" + l.RepoName
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return l.gitHubAccountName + "/" + l.repoName
 }
 
 // Path returns the path on disk to this Library, creating any necessary directories.
 func (l *Library) Path() string {
-	if err := os.MkdirAll(l.PathOnDisk, 0o750); err != nil {
-		errs.Log(err, "path", l.PathOnDisk)
+	l.lock.RLock()
+	p := l.data.PathOnDisk
+	l.lock.RUnlock()
+	if err := os.MkdirAll(p, 0o750); err != nil {
+		errs.Log(err, "path", p)
 	}
-	return l.PathOnDisk
+	return p
 }
 
 // SetPath updates the path to the Library as well as the version.
@@ -109,75 +215,132 @@ func (l *Library) SetPath(newPath string) error {
 	if err != nil {
 		return errs.NewWithCause("unable to update library path to "+newPath, err)
 	}
-	if l.PathOnDisk != p {
-		if l.monitor == nil {
-			l.PathOnDisk = p
-			l.monitor = newMonitor(l)
-			l.lock.Lock()
-			l.current = l.VersionOnDisk()
-			l.lock.Unlock()
-		} else {
-			tokens := l.monitor.stop()
-			l.PathOnDisk = p
-			l.lock.Lock()
-			l.current = l.VersionOnDisk()
-			l.lock.Unlock()
-			for _, token := range tokens {
-				l.monitor.startWatch(token, true)
-			}
-		}
+	l.lock.RLock()
+	unchanged := l.data.PathOnDisk == p
+	l.lock.RUnlock()
+	if unchanged {
+		return nil
+	}
+	// The monitor must not be touched while the library lock is held, since establishing a watch calls back into
+	// Path(), which needs the library lock itself.
+	m := l.obtainMonitor()
+	tokens := m.stop()
+	l.lock.Lock()
+	l.data.PathOnDisk = p
+	l.lock.Unlock()
+	l.refreshVersionOnDisk()
+	for _, token := range tokens {
+		m.startWatch(token, true)
 	}
 	return nil
 }
 
+// Favorites returns the paths, relative to the library's path on disk, that have been marked as favorites.
+func (l *Library) Favorites() []string {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return slices.Clone(l.data.Favorites)
+}
+
+// ToggleFavorite marks the given path, relative to the library's path on disk, as a favorite if it isn't already one,
+// or removes it from the favorites if it is.
+func (l *Library) ToggleFavorite(relativePath string) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	if i := slices.Index(l.data.Favorites, relativePath); i != -1 {
+		l.data.Favorites = slices.Delete(l.data.Favorites, i, i+1)
+	} else {
+		l.data.Favorites = append(l.data.Favorites, relativePath)
+	}
+}
+
+// RenameFavorite replaces the favorite with the old path with one using the new path. Does nothing if the old path
+// isn't a favorite. Both paths are relative to the library's path on disk.
+func (l *Library) RenameFavorite(oldRelativePath, newRelativePath string) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	if i := slices.Index(l.data.Favorites, oldRelativePath); i != -1 {
+		l.data.Favorites = slices.Delete(l.data.Favorites, i, i+1)
+		l.data.Favorites = append(l.data.Favorites, newRelativePath)
+	}
+}
+
 // CleanupFavorites prunes out any favorites that can no longer be read.
 func (l *Library) CleanupFavorites() {
+	l.lock.Lock()
+	defer l.lock.Unlock()
 	var favs []string
-	for _, one := range l.Favorites {
-		path := filepath.Join(l.PathOnDisk, one)
-		if fi, err := os.Stat(path); err == nil {
+	for _, one := range l.data.Favorites {
+		p := filepath.Join(l.data.PathOnDisk, one)
+		if fi, err := os.Stat(p); err == nil {
 			if mode := fi.Mode(); (mode.IsDir() || mode.IsRegular()) && mode.Perm()&0o400 != 0 {
 				favs = append(favs, one)
 			}
 		}
 	}
 	slices.Sort(favs)
-	l.Favorites = favs
+	l.data.Favorites = favs
 }
 
 // Watch for changes in the directory tree of this library.
 func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
-	return l.monitor.newWatch(callback, callbackOnUIThread)
+	return l.obtainMonitor().newWatch(callback, callbackOnUIThread)
 }
 
 // StopAllWatches that were previously established.
 func (l *Library) StopAllWatches() {
-	l.monitor.stop()
+	l.obtainMonitor().stop()
+}
+
+// obtainMonitor returns the monitor for this library, creating it if needed. The library lock must not be held when
+// calling this, nor may it be held while calling into the returned monitor.
+func (l *Library) obtainMonitor() *monitor {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	if l.monitor == nil {
+		l.monitor = newMonitor(l)
+	}
+	return l.monitor
+}
+
+// IsMasterLibraryKey returns true if the given GitHub account name and repository name identify the Master Library.
+func IsMasterLibraryKey(githubAccountName, repoName string) bool {
+	return githubAccountName == masterGitHubAccountName && repoName == masterRepoName
+}
+
+// IsUserLibraryKey returns true if the given GitHub account name and repository name identify the User Library.
+func IsUserLibraryKey(githubAccountName, repoName string) bool {
+	return githubAccountName == "" && repoName == userRepoName
 }
 
 // IsMaster returns true if this is the Master Library.
 func (l *Library) IsMaster() bool {
-	return l.GitHubAccountName == masterGitHubAccountName && l.RepoName == masterRepoName
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return IsMasterLibraryKey(l.gitHubAccountName, l.repoName)
 }
 
 // IsUser returns true if this is the User Library.
 func (l *Library) IsUser() bool {
-	return l.GitHubAccountName == "" && l.RepoName == userRepoName
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return IsUserLibraryKey(l.gitHubAccountName, l.repoName)
 }
 
 // CheckForAvailableUpgrade returns releases that can be upgraded to.
 func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Client) {
+	data := l.Data()
 	incompatibleFutureLibraryVersion := strconv.Itoa(jio.CurrentDataVersion + 1)
 	minimumLibraryVersion := strconv.Itoa(jio.MinimumLibraryVersion)
-	releases, err := LoadReleases(ctx, client, l.GitHubAccountName, l.AccessToken, l.RepoName, "",
+	releases, err := LoadReleases(ctx, client, data.GitHubAccountName, data.AccessToken, data.RepoName, "",
 		func(version, _ string) bool {
 			return incompatibleFutureLibraryVersion == version ||
 				xstrings.NaturalLess(version, minimumLibraryVersion, true) ||
 				xstrings.NaturalLess(incompatibleFutureLibraryVersion, version, true)
-		}, l.UseLatest)
+		}, data.UseLatest)
 	if err != nil {
-		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", l.Title, "repo",
-			l.RepoName, "account", l.GitHubAccountName)
+		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", data.Title, "repo",
+			data.RepoName, "account", data.GitHubAccountName)
 		return
 	}
 	current := l.VersionOnDisk()
@@ -221,10 +384,12 @@ func (l *Library) Compare(other *Library) int {
 	if other.IsMaster() {
 		return 1
 	}
-	result := xstrings.NaturalCmp(l.Title, other.Title, true)
+	data := l.Data()
+	otherData := other.Data()
+	result := xstrings.NaturalCmp(data.Title, otherData.Title, true)
 	if result == 0 {
-		if result = xstrings.NaturalCmp(l.GitHubAccountName, other.GitHubAccountName, true); result == 0 {
-			result = xstrings.NaturalCmp(l.RepoName, other.RepoName, true)
+		if result = xstrings.NaturalCmp(data.GitHubAccountName, otherData.GitHubAccountName, true); result == 0 {
+			result = xstrings.NaturalCmp(data.RepoName, otherData.RepoName, true)
 		}
 	}
 	return result
@@ -232,10 +397,14 @@ func (l *Library) Compare(other *Library) int {
 
 // VersionOnDisk returns the version of the data on disk, if it can be determined.
 func (l *Library) VersionOnDisk() string {
-	if l.IsUser() {
+	l.lock.RLock()
+	isUser := IsUserLibraryKey(l.gitHubAccountName, l.repoName)
+	pathOnDisk := l.data.PathOnDisk
+	l.lock.RUnlock()
+	if isUser {
 		return ""
 	}
-	filePath := filepath.Join(l.PathOnDisk, releaseFile)
+	filePath := filepath.Join(pathOnDisk, releaseFile)
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
@@ -246,8 +415,18 @@ func (l *Library) VersionOnDisk() string {
 	return strings.TrimSpace(string(bytes.SplitN(data, []byte{'\n'}, 2)[0]))
 }
 
+// refreshVersionOnDisk updates the cached "current" version from what is present on disk. The library lock must not be
+// held when calling this.
+func (l *Library) refreshVersionOnDisk() {
+	current := l.VersionOnDisk()
+	l.lock.Lock()
+	l.current = current
+	l.lock.Unlock()
+}
+
 // Download the release onto the local disk.
 func (l *Library) Download(ctx context.Context, client *http.Client, release Release) error {
+	libData := l.Data() // Not named "data", since the byte buffers below already use that name
 	p := l.Path()
 	tmpDir, err := os.MkdirTemp(filepath.Dir(p), filepath.Base(p)+"_*")
 	if err != nil {
@@ -282,11 +461,12 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 	if !strings.HasSuffix(rootWithTrailingSep, string(filepath.Separator)) {
 		rootWithTrailingSep += string(filepath.Separator)
 	}
-	if l.UseLatest {
+	if libData.UseLatest {
 		mfs := memfs.New()
 		var hash string
-		if hash, err = downloadLatestCommit(ctx, "https://github.com/"+l.GitHubAccountName+"/"+l.RepoName+".git",
-			l.AccessToken, mfs); err != nil {
+		if hash, err = downloadLatestCommit(ctx,
+			"https://github.com/"+libData.GitHubAccountName+"/"+libData.RepoName+".git",
+			libData.AccessToken, mfs); err != nil {
 			return err
 		}
 		// use hash that was actually downloaded, in case a commit occurred between our original check and the download
@@ -359,10 +539,7 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 	if err = os.WriteFile(f, []byte(release.Version+"\n"), 0o640); err != nil {
 		return errs.NewWithCause("unable to write version file "+f, err)
 	}
-	current := l.VersionOnDisk()
-	l.lock.Lock()
-	l.current = current
-	l.lock.Unlock()
+	l.refreshVersionOnDisk()
 	success = true
 	return nil
 }
@@ -391,8 +568,8 @@ func (l *Library) downloadRelease(ctx context.Context, client *http.Client, rele
 	if err != nil {
 		return nil, errs.NewWithCause("unable to create request for "+release.ZipFileURL, err)
 	}
-	if l.AccessToken != "" {
-		req.Header.Set("Authorization", "Bearer "+l.AccessToken)
+	if accessToken := l.Data().AccessToken; accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
 	var rsp *http.Response
 	if rsp, err = client.Do(req); err != nil {

@@ -63,10 +63,10 @@ func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
 	case lib.IsUser():
 		id = "10000000000000001"
 	default:
-		if lib.ID == "" {
-			lib.ID = gurps.IDForNavNode(lib.Path(), kinds.NavigatorLibrary)
+		if id = lib.Data().ID; id == "" {
+			id = gurps.IDForNavNode(lib.Path(), kinds.NavigatorLibrary)
+			lib.SetID(id)
 		}
-		id = lib.ID
 	}
 	n := &NavigatorNode{
 		id:      id,
@@ -202,17 +202,18 @@ func (n *NavigatorNode) primaryColumnText() string {
 	case n.IsFavorites():
 		return i18n.Text("Favorites")
 	case n.IsLibrary():
+		data := n.library.Data()
 		if n.library.IsUser() {
-			return n.library.Title
+			return data.Title
 		}
 		current, _ := n.library.AvailableReleases()
 		if current == "" || current == "0" {
-			return n.library.Title
+			return data.Title
 		}
-		if n.library.UseLatest {
-			return n.library.Title + " (" + filterVersion(current) + ")"
+		if data.UseLatest {
+			return data.Title + " (" + filterVersion(current) + ")"
 		}
-		return n.library.Title + " " + filterVersion(current)
+		return data.Title + " " + filterVersion(current)
 	default:
 		return xfilepath.TrimExtension(path.Base(n.path))
 	}
@@ -307,8 +308,8 @@ func (n *NavigatorNode) Refresh() {
 		var favs []*fav
 		for _, lib := range gurps.GlobalSettings().LibrarySet {
 			lib.CleanupFavorites()
-			if len(lib.Favorites) != 0 {
-				for _, one := range lib.Favorites {
+			if favorites := lib.Favorites(); len(favorites) != 0 {
+				for _, one := range favorites {
 					favs = append(favs, &fav{
 						path:    one,
 						library: lib,

@@ -50,7 +50,6 @@ func (m *monitor) newWatch(callback func(lib *Library, fullPath string, what not
 
 func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 	m.lock.Lock()
-	defer m.lock.Unlock()
 	token.root = m.library.Path()
 	token.subPaths = make(map[string]bool)
 	m.tokensLock.Lock()
@@ -70,8 +69,13 @@ func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 			go m.listenForEvents()
 		}
 	}
+	queue := m.queue
+	root := token.root
+	m.lock.Unlock()
 	if sendSync {
-		m.send(token.root, EventRootSync)
+		// Only this token is being (re)started, so only it is told to sync. Using send() here would deliver the sync to
+		// every registered token, resulting in N² notifications when a monitor with N tokens is restarted.
+		m.sendTo(queue, token, root, EventRootSync)
 	}
 }
 
@@ -81,8 +85,7 @@ func (m *monitor) stop() []*MonitorToken {
 	var tokens []*MonitorToken
 	if m.events != nil {
 		m.tokensLock.RLock()
-		tokens = make([]*MonitorToken, len(m.tokens))
-		copy(tokens, m.tokens)
+		tokens = slices.Clone(m.tokens)
 		m.tokensLock.RUnlock()
 		notify.Stop(m.events)
 		close(m.events)
@@ -105,20 +108,35 @@ func (m *monitor) listenForEvents() {
 	m.done <- true
 }
 
+// send an event to every registered token. Only called from listenForEvents, which cannot be running unless the queue
+// exists.
 func (m *monitor) send(fullPath string, what notify.Event) {
 	m.queue.Submit(func() {
 		m.tokensLock.RLock()
-		tokens := make([]*MonitorToken, len(m.tokens))
-		copy(tokens, m.tokens)
+		tokens := slices.Clone(m.tokens)
 		m.tokensLock.RUnlock()
 		for _, token := range tokens {
-			if token.onUIThread {
-				unison.InvokeTask(func() { token.callback(m.library, fullPath, what) })
-			} else {
-				token.callback(m.library, fullPath, what)
-			}
+			m.deliver(token, fullPath, what)
 		}
 	})
+}
+
+// sendTo sends an event to just the given token. The queue will be nil if the filesystem watch could not be
+// established, in which case the event is delivered directly, since there is no worker to hand it off to.
+func (m *monitor) sendTo(queue *xos.TaskQueue, token *MonitorToken, fullPath string, what notify.Event) {
+	if queue == nil {
+		m.deliver(token, fullPath, what)
+		return
+	}
+	queue.Submit(func() { m.deliver(token, fullPath, what) })
+}
+
+func (m *monitor) deliver(token *MonitorToken, fullPath string, what notify.Event) {
+	if token.onUIThread {
+		unison.InvokeTask(func() { token.callback(m.library, fullPath, what) })
+	} else {
+		token.callback(m.library, fullPath, what)
+	}
 }
 
 // MonitorToken holds a token that can be used to stop a library watch.

@@ -437,7 +437,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 			}
 		}
 		if len(list) > 0 || lib.IsMaster() {
-			s.appendDisabledMenuItem(menu, lib.Title)
+			s.appendDisabledMenuItem(menu, lib.Data().Title)
 			xstrings.SortStringsNaturalAscending(list)
 			for _, one := range list {
 				menu.InsertItem(-1, s.createExportToTextAction(index, one).NewMenuItem(factory))

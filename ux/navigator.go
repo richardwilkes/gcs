@@ -299,11 +299,7 @@ func (n *Navigator) favoriteSelection() {
 			}
 			changed = true
 			seen[row.path] = true
-			if i := slices.Index(row.library.Favorites, row.path); i != -1 {
-				row.library.Favorites = slices.Delete(row.library.Favorites, i, i+1)
-			} else {
-				row.library.Favorites = append(row.library.Favorites, row.path)
-			}
+			row.library.ToggleFavorite(row.path)
 		}
 		if changed {
 			n.Reload()
@@ -323,7 +319,7 @@ func (n *Navigator) deleteSelection() {
 					return
 				}
 				if title == "" {
-					title = row.library.Title
+					title = row.library.Data().Title
 				} else {
 					title = i18n.Text("these libraries")
 				}
@@ -493,12 +489,8 @@ func (n *Navigator) renameSelection() {
 
 func (n *Navigator) fixupFavoritePath(row *NavigatorNode, oldPath, newPath string) {
 	if row.IsFile() || row.IsDirectory() {
-		prefix := row.library.PathOnDisk + string([]rune{filepath.Separator})
-		oldPath = strings.TrimPrefix(oldPath, prefix)
-		if i := slices.Index(row.library.Favorites, oldPath); i != -1 {
-			row.library.Favorites = slices.Delete(row.library.Favorites, i, i+1)
-			row.library.Favorites = append(row.library.Favorites, strings.TrimPrefix(newPath, prefix))
-		}
+		prefix := row.library.Data().PathOnDisk + string([]rune{filepath.Separator})
+		row.library.RenameFavorite(strings.TrimPrefix(oldPath, prefix), strings.TrimPrefix(newPath, prefix))
 	}
 }
 
@@ -557,7 +549,7 @@ func (n *Navigator) showSelectionReleaseNotes() {
 			}
 			content.WriteString(release.Notes)
 		}
-		ShowReadOnlyMarkdown(fmt.Sprintf(i18n.Text("%s Release Notes"), row.library.Title), content.String())
+		ShowReadOnlyMarkdown(fmt.Sprintf(i18n.Text("%s Release Notes"), row.library.Data().Title), content.String())
 	}
 }
 

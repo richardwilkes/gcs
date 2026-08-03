@@ -39,12 +39,8 @@ type librarySettingsDockable struct {
 	tokenField    *StringField
 	repoField     *StringField
 	pathField     *StringField
-	name          string
-	github        string
-	token         string
-	repo          string
+	config        gurps.LibraryConfig
 	path          string
-	useLatest     bool
 	special       bool
 	isUser        bool
 	promptForSave bool
@@ -62,18 +58,14 @@ func ShowLibrarySettings(lib *gurps.Library) {
 	}
 	isUser := lib.IsUser()
 	d := &librarySettingsDockable{
-		library:   lib,
-		name:      lib.Title,
-		github:    lib.GitHubAccountName,
-		token:     lib.AccessToken,
-		repo:      lib.RepoName,
-		path:      lib.PathOnDisk,
-		useLatest: lib.UseLatest,
-		special:   isUser || lib.IsMaster(),
-		isUser:    isUser,
+		library: lib,
+		config:  lib.Config(),
+		path:    lib.Data().PathOnDisk,
+		special: isUser || lib.IsMaster(),
+		isUser:  isUser,
 	}
 	d.Self = d
-	d.TabTitle = fmt.Sprintf(i18n.Text("Library Settings: %s"), lib.Title)
+	d.TabTitle = fmt.Sprintf(i18n.Text("Library Settings: %s"), d.config.Title)
 	d.TabIcon = svg.Settings
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
 	d.updateToolbar()
@@ -112,23 +104,23 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	title := i18n.Text("Name")
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.nameField = NewStringField(nil, "", title,
-		func() string { return d.name },
+		func() string { return d.config.Title },
 		func(s string) {
-			d.name = strings.TrimSpace(s)
+			d.config.Title = strings.TrimSpace(s)
 			d.updateToolbar()
 		})
 	d.nameField.SetEnabled(!d.special)
 	if !d.special {
-		d.nameField.ValidateCallback = func() bool { return d.name != "" }
+		d.nameField.ValidateCallback = func() bool { return d.config.Title != "" }
 	}
 	content.AddChild(d.nameField)
 
 	title = i18n.Text("GitHub Account")
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.githubField = NewStringField(nil, "", title,
-		func() string { return d.github },
+		func() string { return d.config.GitHubAccountName },
 		func(s string) {
-			d.github = s
+			d.config.GitHubAccountName = s
 			d.updateToolbar()
 		})
 	d.githubField.SetEnabled(!d.special)
@@ -142,9 +134,9 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	title = i18n.Text("GitHub Access Token")
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.tokenField = NewStringField(nil, "", title,
-		func() string { return d.token },
+		func() string { return d.config.AccessToken },
 		func(s string) {
-			d.token = s
+			d.config.AccessToken = s
 			d.updateToolbar()
 		})
 	d.tokenField.SetEnabled(!d.special)
@@ -155,24 +147,24 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	title = i18n.Text("Repository")
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.repoField = NewStringField(nil, "", title,
-		func() string { return d.repo },
+		func() string { return d.config.RepoName },
 		func(s string) {
-			d.repo = s
+			d.config.RepoName = s
 			d.updateToolbar()
 		})
 	d.repoField.SetEnabled(!d.special)
 	if !d.special {
-		d.repoField.ValidateCallback = func() bool { return d.repo != "" && !d.checkForSpecial() }
+		d.repoField.ValidateCallback = func() bool { return d.config.RepoName != "" && !d.checkForSpecial() }
 	}
 	content.AddChild(d.repoField)
 
 	content.AddChild(unison.NewPanel())
 	checkbox := unison.NewCheckBox()
 	checkbox.SetTitle(i18n.Text("Use the most recent commit (possibly unreleased) of this repository"))
-	checkbox.State = check.FromBool(d.useLatest)
+	checkbox.State = check.FromBool(d.config.UseLatest)
 	checkbox.ClickCallback = func() {
-		d.useLatest = !d.useLatest
-		checkbox.State = check.FromBool(d.useLatest)
+		d.config.UseLatest = !d.config.UseLatest
+		checkbox.State = check.FromBool(d.config.UseLatest)
 		checkbox.MarkForRedraw()
 		d.updateToolbar()
 	}
@@ -187,7 +179,9 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 			d.path = s
 			d.updateToolbar()
 		})
-	d.pathField.ValidateCallback = func() bool { return len(d.path) > 1 && filepath.IsAbs(d.path) }
+	d.pathField.ValidateCallback = func() bool {
+		return len(d.path) > 1 && filepath.IsAbs(d.path)
+	}
 
 	locateButton := unison.NewSVGButton(svg.ClosedFolder)
 	locateButton.ClickCallback = d.choosePath
@@ -227,11 +221,8 @@ func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {
 }
 
 func (d *librarySettingsDockable) checkForSpecial() bool {
-	lib := &gurps.Library{
-		GitHubAccountName: d.github,
-		RepoName:          d.repo,
-	}
-	return lib.IsMaster() || lib.IsUser()
+	return gurps.IsMasterLibraryKey(d.config.GitHubAccountName, d.config.RepoName) ||
+		gurps.IsUserLibraryKey(d.config.GitHubAccountName, d.config.RepoName)
 }
 
 func (d *librarySettingsDockable) choosePath() {
@@ -267,9 +258,7 @@ func (d *librarySettingsDockable) updateToolbar() {
 	d.githubField.Validate()
 	d.repoField.Validate()
 	d.pathField.Validate()
-	modified := d.library.Title != d.name || d.library.GitHubAccountName != d.github ||
-		d.library.AccessToken != d.token || d.library.RepoName != d.repo || d.library.PathOnDisk != d.path ||
-		d.library.UseLatest != d.useLatest
+	modified := d.library.Config() != d.config || d.library.Data().PathOnDisk != d.path
 	d.applyButton.SetEnabled(modified && !d.nameField.Invalid() && !d.githubField.Invalid() &&
 		!d.repoField.Invalid() && !d.pathField.Invalid())
 	d.cancelButton.SetEnabled(modified)
@@ -280,11 +269,7 @@ func (d *librarySettingsDockable) apply() {
 	wnd.FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
 	libs := gurps.GlobalSettings().LibrarySet
 	delete(libs, d.library.Key())
-	d.library.Title = d.name
-	d.library.GitHubAccountName = d.github
-	d.library.AccessToken = d.token
-	d.library.RepoName = d.repo
-	d.library.UseLatest = d.useLatest
+	d.library.Configure(d.config)
 	libs[d.library.Key()] = d.library
 	if err := d.library.SetPath(d.path); err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to update library location"), err)

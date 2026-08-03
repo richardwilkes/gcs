@@ -56,7 +56,6 @@ func (l *Libraries) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 				errs.Log(err, "key", k)
 				continue
 			}
-			lib.monitor = newMonitor(lib)
 			libs[lib.Key()] = lib
 		}
 	}
