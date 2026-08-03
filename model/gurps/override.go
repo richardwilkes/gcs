@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
 // Override is a Feature that *replaces* a field's value rather than adjusting it additively. Unlike a Bonus, overrides
@@ -73,10 +74,20 @@ func ResolveOverride[T comparable](base T, candidates []OverrideCandidate[T], re
 		return render(a.Value) < render(b.Value)
 	})
 	winner := candidates[0]
-	conflict := len(candidates) > 1 &&
-		candidates[1].Override.OverridePriority() == winner.Override.OverridePriority() &&
-		candidates[1].Override.OverrideSpecificity() == winner.Override.OverrideSpecificity() &&
-		candidates[1].Value != winner.Value
+	// The sort groups everything tied on (priority, specificity) at the front, so scan that whole group -- not just the
+	// runner-up -- for a differing value. Equal-valued candidates can otherwise separate the winner from a genuine
+	// dissenter, since the final sort key is the rendered value.
+	conflict := false
+	for _, c := range candidates[1:] {
+		if c.Override.OverridePriority() != winner.Override.OverridePriority() ||
+			c.Override.OverrideSpecificity() != winner.Override.OverrideSpecificity() {
+			break
+		}
+		if c.Value != winner.Value {
+			conflict = true
+			break
+		}
+	}
 	if tooltip != nil {
 		addOverrideContestToTooltip(winner, candidates, render, conflict, tooltip)
 	}
@@ -101,7 +112,7 @@ func overrideSourceName(o Override) string {
 	if bo, ok := o.(interface{ parentName() string }); ok {
 		return bo.parentName()
 	}
-	if owner := o.Owner(); owner != nil {
+	if owner := o.Owner(); !xreflect.IsNil(owner) {
 		return owner.String()
 	}
 	return i18n.Text("Unknown")

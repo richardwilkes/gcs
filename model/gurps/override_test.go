@@ -10,12 +10,15 @@
 package gurps_test
 
 import (
+	"fmt"
+	"hash"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
@@ -77,6 +80,81 @@ func TestResolveOverride(t *testing.T) {
 	}, identity, &tooltip)
 	c.Equal("burn", got, "conflict resolves deterministically")
 	c.True(strings.Contains(tooltip.String(), "conflict"), "conflict is flagged in tooltip")
+
+	// Equal priority and specificity with all the same value is not a conflict: nothing was decided by name order.
+	tooltip.Reset()
+	got = gurps.ResolveOverride("cr", []gurps.OverrideCandidate[string]{
+		candidate(makeOverride("burn", 5, 2)),
+		candidate(makeOverride("burn", 5, 2)),
+	}, identity, &tooltip)
+	c.Equal("burn", got, "agreeing candidates resolve to their shared value")
+	c.False(strings.Contains(tooltip.String(), "conflict"), "agreement is not flagged as a conflict")
+
+	// Three tied candidates valued {burn, burn, imp}: the winner's immediate runner-up agrees with it, but "imp" still
+	// lost purely to name order, so this is a genuine conflict. The whole tied group must be scanned, not just index 1.
+	tooltip.Reset()
+	got = gurps.ResolveOverride("cr", []gurps.OverrideCandidate[string]{
+		candidate(makeOverride("imp", 5, 2)),
+		candidate(makeOverride("burn", 5, 2)),
+		candidate(makeOverride("burn", 5, 2)),
+	}, identity, &tooltip)
+	c.Equal("burn", got, "conflict past the runner-up still resolves deterministically")
+	c.True(strings.Contains(tooltip.String(), "conflict"), "conflict beyond the runner-up is flagged in tooltip")
+
+	// A differing value that lost on priority or specificity is not a conflict -- the ladder decided it, not name order.
+	tooltip.Reset()
+	got = gurps.ResolveOverride("cr", []gurps.OverrideCandidate[string]{
+		candidate(makeOverride("burn", 5, 2)),
+		candidate(makeOverride("burn", 5, 2)),
+		candidate(makeOverride("imp", 5, 1)),
+	}, identity, &tooltip)
+	c.Equal("burn", got, "less specific candidate loses")
+	c.False(strings.Contains(tooltip.String(), "conflict"), "a ladder-decided loss is not a conflict")
+}
+
+// nilOwnerOverride is an Override that does *not* embed BonusOwner, so overrideSourceName falls through to the
+// Owner()/String() path. Its owner is a typed nil, which passes a plain `!= nil` interface check yet panics if String()
+// is called on it.
+type nilOwnerOverride struct {
+	owner    fmt.Stringer
+	subOwner fmt.Stringer
+}
+
+type nilStringer struct{ name string }
+
+// String dereferences the receiver, so calling it on a nil *nilStringer panics.
+func (n *nilStringer) String() string { return n.name }
+
+func (n *nilOwnerOverride) FillWithNameableKeys(_, _ map[string]string) {}
+func (n *nilOwnerOverride) FeatureType() feature.Type                   { return feature.SelectorOverride }
+func (n *nilOwnerOverride) Hash(_ hash.Hash)                            {}
+func (n *nilOwnerOverride) Owner() fmt.Stringer                         { return n.owner }
+func (n *nilOwnerOverride) SetOwner(owner fmt.Stringer)                 { n.owner = owner }
+func (n *nilOwnerOverride) SubOwner() fmt.Stringer                      { return n.subOwner }
+func (n *nilOwnerOverride) SetSubOwner(owner fmt.Stringer)              { n.subOwner = owner }
+func (n *nilOwnerOverride) OverridePriority() int                       { return 0 }
+func (n *nilOwnerOverride) OverrideSpecificity() int                    { return 0 }
+
+func (n *nilOwnerOverride) Clone() gurps.Feature {
+	return &nilOwnerOverride{owner: n.owner, subOwner: n.subOwner}
+}
+
+// TestResolveOverrideTooltipTypedNilOwner guards against the typed-nil pitfall: an Override whose owner is a nil
+// *pointer* stored in a fmt.Stringer interface must render as "Unknown" rather than panicking inside String().
+func TestResolveOverrideTooltipTypedNilOwner(t *testing.T) {
+	c := check.New(t)
+	identity := func(s string) string { return s }
+	o := &nilOwnerOverride{}
+	var typedNil *nilStringer
+	o.SetOwner(typedNil) // Non-nil interface holding a nil pointer.
+	c.True(o.Owner() != nil, "a typed nil passes a plain interface nil check")
+	var tooltip xbytes.InsertBuffer
+	c.NotPanics(func() {
+		c.Equal("burn", gurps.ResolveOverride("cr",
+			[]gurps.OverrideCandidate[string]{{Value: "burn", Override: o}}, identity, &tooltip),
+			"the override still wins")
+	}, "a typed-nil owner does not panic while building the tooltip")
+	c.True(strings.Contains(tooltip.String(), "Unknown"), "a typed-nil owner renders as Unknown")
 }
 
 // TestSelectorFieldDescriptors guards the field wiring: every selector.Field must have a descriptor, and a constrained
