@@ -33,20 +33,152 @@ var (
 	scriptStart         = "<script>"
 	scriptEnd           = "</script>"
 	embeddedScriptRegex = regexp.MustCompile(`(?s)` + scriptStart + `.*?` + scriptEnd)
-	vmPool              = sync.Pool{New: func() any {
-		vm := goja.New()
-		vm.SetFieldNameMapper(scriptNameMapper{})
-		vm.SetParserOptions(parser.WithDisableSourceMaps)
-		mustSet(vm, "console", scriptConsole{})
-		mustSet(vm, "dice", scriptDice{})
-		mustSet(vm, "iff", scriptIff)
-		mustSet(vm, "measure", scriptMeasurement{})
-		mustSetMember(vm.GlobalObject().Get("Math").ToObject(vm), "exp2", math.Exp2)
-		mustSet(vm, "signedValue", scriptSigned)
-		mustSet(vm, "formatNum", scriptFormatNum)
-		return vm
-	}}
+	vmPool              = sync.Pool{New: func() any { return newScriptVM() }}
 )
+
+// freezeBuiltInsProgram freezes the built-ins: every object reachable as a global, together with their prototype
+// chains and the prototypes they hand to the instances they create. Runtimes are pooled and reused by unrelated
+// scripts, and strict mode does nothing to stop a script from mutating the shared state it can reach
+// (`Math.exp2 = null`, `Object.prototype.toString = ...`, `Array.prototype.foo = 1`, ...), so without this a single
+// script could silently alter the behavior of every script that later ran on the same runtime, including those
+// belonging to other documents. What is left writable — a property added to a built-in method's function object, say —
+// cannot alter what any built-in does. The global object itself is deliberately left extensible, since each run
+// defines its arguments on it; those, and anything else a script leaves there, are removed again by
+// scriptVM.restoreGlobals. Host objects (the Go-backed bindings) cannot be frozen, but goja already rejects adding to
+// or replacing their fields.
+var freezeBuiltInsProgram = goja.MustCompile("", `(function() {
+	'use strict';
+	var seen = new Set();
+	var freeze = function(obj) {
+		while (obj !== null && (typeof obj === 'object' || typeof obj === 'function') && obj !== globalThis &&
+			!seen.has(obj)) {
+			seen.add(obj);
+			try {
+				Object.freeze(obj);
+			} catch (err) {
+				// Host objects cannot be frozen, but they reject mutation on their own.
+			}
+			if (obj.prototype !== obj) {
+				freeze(obj.prototype);
+			}
+			obj = Object.getPrototypeOf(obj);
+		}
+	};
+	var names = Object.getOwnPropertyNames(globalThis);
+	for (var i = 0; i < names.length; i++) {
+		var desc = Object.getOwnPropertyDescriptor(globalThis, names[i]);
+		// Only data properties are considered; reading an accessor would run arbitrary code.
+		if (desc && 'value' in desc) {
+			freeze(desc.value);
+		}
+	}
+	freeze(Object.getPrototypeOf(globalThis));
+})();`, true)
+
+// scriptVM pairs a goja runtime with the global state it was created with. Runtimes are pooled and reused, so
+// scriptVM.restoreGlobals uses the recorded baseline to strip anything a script left behind before the runtime is made
+// available to the next script.
+type scriptVM struct {
+	runtime         *goja.Runtime
+	baselineNames   map[string]bool
+	baselineSymbols map[*goja.Symbol]bool
+}
+
+func newScriptVM() *scriptVM {
+	vm := goja.New()
+	vm.SetFieldNameMapper(scriptNameMapper{})
+	vm.SetParserOptions(parser.WithDisableSourceMaps)
+	globals := vm.GlobalObject()
+	mustSetMember(globals.Get("Math").ToObject(vm), "exp2", math.Exp2)
+	mustDefineGlobal(vm, "console", scriptConsole{})
+	mustDefineGlobal(vm, "dice", scriptDice{})
+	mustDefineGlobal(vm, "iff", scriptIff)
+	mustDefineGlobal(vm, "measure", scriptMeasurement{})
+	mustDefineGlobal(vm, "signedValue", scriptSigned)
+	mustDefineGlobal(vm, "formatNum", scriptFormatNum)
+	if _, err := vm.RunProgram(freezeBuiltInsProgram); err != nil {
+		panic(errs.NewWithCause("failed to freeze script built-ins", err))
+	}
+	s := &scriptVM{
+		runtime:         vm,
+		baselineNames:   make(map[string]bool),
+		baselineSymbols: make(map[*goja.Symbol]bool),
+	}
+	for _, name := range globals.GetOwnPropertyNames() {
+		s.baselineNames[name] = true
+	}
+	for _, sym := range globals.Symbols() {
+		s.baselineSymbols[sym] = true
+	}
+	return s
+}
+
+// restoreGlobals removes everything the run that just finished left on the global object: the arguments that were
+// defined for it, plus any globals the script created itself, which strict mode does not prevent (`globalThis.foo = 1`
+// and `Object.defineProperty(globalThis, ...)` both succeed). It reports whether the runtime was fully restored; if it
+// was not, the caller must discard the runtime rather than return it to the pool, since the residue would silently
+// alter unrelated scripts run later.
+func (s *scriptVM) restoreGlobals() bool {
+	globals := s.runtime.GlobalObject()
+	restored := true
+	for _, name := range globals.GetOwnPropertyNames() {
+		if s.baselineNames[name] {
+			continue
+		}
+		if err := globals.Delete(name); err != nil {
+			errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, err, "name", name)
+			restored = false
+		}
+	}
+	for _, sym := range globals.Symbols() {
+		if s.baselineSymbols[sym] {
+			continue
+		}
+		if err := globals.DeleteSymbol(sym); err != nil {
+			errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, err, "symbol", sym.String())
+			restored = false
+		}
+	}
+	return restored
+}
+
+// scriptTimeout arms the interrupt that aborts a script which runs longer than it is permitted to. time.Timer.Stop
+// does not wait for an AfterFunc that has already begun running, so stopping the timer is not enough on its own: a
+// timeout that fires just as its run ends could otherwise land on the runtime after another script has picked it up,
+// aborting that unrelated script with a bogus timeout. release closes that window.
+type scriptTimeout struct {
+	vm       *goja.Runtime
+	timer    *time.Timer
+	lock     sync.Mutex
+	finished bool
+}
+
+// newScriptTimeout returns a scriptTimeout that will interrupt the given runtime once the timeout elapses. The caller
+// must call release before the runtime is used for anything else.
+func newScriptTimeout(vm *goja.Runtime, timeout time.Duration) *scriptTimeout {
+	t := &scriptTimeout{vm: vm}
+	t.timer = time.AfterFunc(timeout, t.interrupt)
+	return t
+}
+
+// interrupt aborts the run this timeout was created for, unless that run has already been released.
+func (t *scriptTimeout) interrupt() {
+	t.lock.Lock()
+	defer t.lock.Unlock()
+	if !t.finished {
+		t.vm.Interrupt("timeout")
+	}
+}
+
+// release disarms the timeout. Once it returns, no interrupt from this timeout can reach the runtime; one that was
+// delivered after the run finished, but before the timeout could be marked as done, is cleared here.
+func (t *scriptTimeout) release() {
+	t.timer.Stop()
+	t.lock.Lock()
+	defer t.lock.Unlock()
+	t.finished = true
+	t.vm.ClearInterrupt()
+}
 
 // ScriptSelfProvider is a provider for the "self" variable in scripts.
 type ScriptSelfProvider struct {
@@ -116,8 +248,12 @@ func scriptResolveErrorLoggingSuppressed() bool {
 	return scriptResolveErrorSuppression.Load() > 0
 }
 
-func mustSet(vm *goja.Runtime, name string, value any) {
-	if err := vm.Set(name, value); err != nil {
+// mustDefineGlobal defines a global binding that scripts may read but not replace. A plain Runtime.Set would create a
+// writable global, which a script could then overwrite (`dice = null`) for every script that later reused the pooled
+// runtime.
+func mustDefineGlobal(vm *goja.Runtime, name string, value any) {
+	if err := vm.GlobalObject().DefineDataProperty(name, vm.ToValue(value), goja.FLAG_FALSE, goja.FLAG_FALSE,
+		goja.FLAG_TRUE); err != nil {
 		panic(errs.Newf("failed to set %s: %s", name, err.Error()))
 	}
 }
@@ -241,19 +377,16 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 			}
 		}
 	}
-	var v goja.Value
 	var err error
-	xos.SafeCall(func() { v, err = runScript(fxp.SecondsToDuration(maxTime), text, args...) },
+	xos.SafeCall(func() { result, err = runScript(fxp.SecondsToDuration(maxTime), text, args...) },
 		func(panicErr error) { err = panicErr })
 	if err != nil {
-		var interruptedErr *goja.InterruptedError
-		if errors.As(err, &interruptedErr) {
+		//nolint:errcheck // we don't care about the error value here, just the type
+		if _, ok := errors.AsType[*goja.InterruptedError](err); ok {
 			result = fmt.Sprintf("script execution timed out (limited to %v seconds)", maxTime)
 		} else {
 			result = err.Error()
 		}
-	} else {
-		xos.SafeCall(func() { result = v.String() }, func(panicErr error) { result = panicErr.Error() })
 	}
 	storeResolvedScript(entity, key, result)
 	return result
@@ -285,7 +418,11 @@ func storeResolvedScript(entity *Entity, key scriptResolveKey, result string) {
 }
 
 // compiledProgram returns the compiled program for the given script text, compiling and caching it on first use. The
-// text is wrapped in an anonymous strict-mode function so it cannot pollute the global scope.
+// text is evaluated by an eval call inside an anonymous strict-mode function, so the script's value is that of its last
+// expression and any variables it declares are confined to that function. Note that this does not sandbox the script:
+// strict mode only rejects assignment to undeclared names, so a script can still reach shared state via globalThis and
+// the built-ins. Keeping the pooled runtimes clean is handled instead by freezeBuiltInsProgram and
+// scriptVM.restoreGlobals.
 func compiledProgram(text string) (*goja.Program, error) {
 	scriptCacheMutex.RLock()
 	program, exists := scriptCache[text]
@@ -311,38 +448,32 @@ func compiledProgram(text string) (*goja.Program, error) {
 	return program, nil
 }
 
-// runScript compiles and runs a script with the provided arguments. A timeout of 0 or less means no timeout.
-// The script should be a valid JavaScript function body, and it will be wrapped in an anonymous function to avoid
-// polluting the global scope. The arguments will be set as global variables in the script's context. The return value
-// is the result of the script execution, or an error if it fails.
-func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Value, error) {
+// runScript compiles and runs a script with the provided arguments, returning the string form of its result. A timeout
+// of 0 or less means no timeout. The script text is evaluated as a JavaScript expression or sequence of statements (see
+// compiledProgram), so its value is that of its last expression; a top-level `return` is not permitted. The arguments
+// are exposed as globals for the duration of the run and removed again afterwards. The result is converted to a string
+// here, rather than by the caller, because that conversion can itself run script code — an object's `toString` or
+// `valueOf` — which must happen while this runtime is still checked out of the pool and still covered by the timeout.
+func runScript(timeout time.Duration, text string, args ...ScriptArg) (string, error) {
 	program, err := compiledProgram(text)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	vm, ok := vmPool.Get().(*goja.Runtime)
+	s, ok := vmPool.Get().(*scriptVM)
 	if !ok {
-		return nil, errors.New("failed to get VM from pool")
+		return "", errors.New("failed to get VM from pool")
 	}
-	// Clear any interrupt that might still be set from a prior, timed-out execution before running. time.Timer.Stop
-	// does not wait for an AfterFunc that has already begun firing, so a timeout interrupt can land on the VM after it
-	// was returned to the pool. Clearing it here, on the next use, guarantees it cannot spuriously interrupt this run.
-	vm.ClearInterrupt()
+	vm := s.runtime
 	globals := vm.GlobalObject()
 	reusable := false
 	defer func() {
-		// Only return the VM to the pool if the run completed without panicking. A panic (e.g. from a Go function
-		// invoked by the script) can leave the VM in an inconsistent state, so in that case we discard it and let the
-		// pool create a fresh one rather than risk reusing a corrupt VM.
-		if !reusable {
-			return
+		// Only return the VM to the pool if the run completed without panicking and every global it touched could be
+		// restored. A panic (e.g. from a Go function invoked by the script) can leave the VM in an inconsistent state,
+		// and a global that could not be removed would alter later scripts, so in either case we discard the VM and let
+		// the pool create a fresh one rather than risk reusing a corrupt or polluted one.
+		if reusable && s.restoreGlobals() {
+			vmPool.Put(s)
 		}
-		for _, arg := range args {
-			if localErr := globals.Delete(arg.Name); localErr != nil {
-				errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, localErr, "name", arg.Name)
-			}
-		}
-		vmPool.Put(vm)
 	}()
 	for _, arg := range args {
 		if valueProvider, ok2 := arg.Value.(func(r *goja.Runtime) any); ok2 {
@@ -353,22 +484,29 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (goja.Valu
 				}
 				return cachedResult
 			}), nil, goja.FLAG_TRUE, goja.FLAG_TRUE); err != nil {
-				return nil, fmt.Errorf("failed to define accessor for argument %q: %w", arg.Name, err)
+				return "", fmt.Errorf("failed to define accessor for argument %q: %w", arg.Name, err)
 			}
 			continue
 		}
 		if err = vm.Set(arg.Name, arg.Value); err != nil {
-			return nil, fmt.Errorf("failed to set argument %q: %w", arg.Name, err)
+			return "", fmt.Errorf("failed to set argument %q: %w", arg.Name, err)
 		}
 	}
 	if timeout > 0 {
-		defer time.AfterFunc(timeout, func() { vm.Interrupt("timeout") }).Stop()
+		defer newScriptTimeout(vm, timeout).release()
 	}
 	value, err := vm.RunProgram(program)
-	// A returned error (including a timeout interrupt or a script exception) leaves the VM reusable; only a panic,
-	// which would prevent reaching this line, marks it as corrupt.
+	if err != nil {
+		// A returned error (a timeout interrupt or a script exception) leaves the VM reusable; only a panic, which
+		// would prevent reaching this line, marks it as corrupt.
+		reusable = true
+		return "", err
+	}
+	// This may panic if the value's conversion throws or is interrupted; the VM is then left out of the pool, since a
+	// partially unwound conversion may have left it inconsistent.
+	result := value.String()
 	reusable = true
-	return value, err
+	return result, nil
 }
 
 func callArgAsTrimmedString(call goja.FunctionCall, index int) string {
