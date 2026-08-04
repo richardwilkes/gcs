@@ -106,12 +106,10 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		if p.SpecializationCriteria.Compare != criteria.AnyText {
 			tooltip.WriteString(i18n.Text(", specialization "))
 			tooltip.WriteString(p.SpecializationCriteria.String(replacements))
-			tooltip.WriteByte(',')
 		}
 		if p.OptionalSpecializationCriteria.Compare != criteria.AnyText {
 			tooltip.WriteString(i18n.Text(", optional specialization "))
 			tooltip.WriteString(p.OptionalSpecializationCriteria.String(replacements))
-			tooltip.WriteByte(',')
 		}
 		if techLevel == nil {
 			tooltip.WriteString(i18n.Text(" and level "))

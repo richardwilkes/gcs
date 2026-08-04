@@ -47,6 +47,11 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	} else {
 		if e.target.IsTechnique() {
+			if e.editorData.TechniqueDefault == nil {
+				// Data loaded from JSON without a "default" field leaves this nil, so give the editor something to
+				// work with rather than crashing.
+				e.editorData.TechniqueDefault = &gurps.SkillDefault{DefaultType: gurps.SkillID}
+			}
 			wrapper := addFlowWrapper(content, i18n.Text("Defaults To"), 4)
 			wrapper.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: align.Fill,

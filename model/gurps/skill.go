@@ -263,7 +263,11 @@ func (s *Skill) IsTechnique() bool {
 func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
 	if s.IsTechnique() {
-		other = NewTechnique(owner, parent, s.TechniqueDefault.Name.Qualifier)
+		var skillName string
+		if s.TechniqueDefault != nil {
+			skillName = s.TechniqueDefault.Name.Qualifier
+		}
+		other = NewTechnique(owner, parent, skillName)
 	} else {
 		other = NewSkill(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
@@ -663,7 +667,7 @@ func (s *Skill) AdjustedRelativeLevel() fxp.Int {
 		return fxp.Min
 	}
 	if EntityFromNode(s) != nil && s.LevelData.Level > 0 {
-		if s.IsTechnique() {
+		if s.IsTechnique() && s.TechniqueDefault != nil {
 			return s.LevelData.RelativeLevel + s.TechniqueDefault.Modifier
 		}
 		return s.LevelData.RelativeLevel
@@ -1142,7 +1146,7 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 
 // TechniqueSatisfied returns true if the Technique is satisfied.
 func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) bool {
-	if !s.IsTechnique() || !s.TechniqueDefault.SkillBased() {
+	if !s.IsTechnique() || s.TechniqueDefault == nil || !s.TechniqueDefault.SkillBased() {
 		return true
 	}
 	e := EntityFromNode(s)
@@ -1212,7 +1216,7 @@ func (s *Skill) Notes() string {
 
 // ModifierNotes returns the notes due to modifiers.
 func (s *Skill) ModifierNotes() string {
-	if s.IsTechnique() {
+	if s.IsTechnique() && s.TechniqueDefault != nil {
 		def := s.TechniqueDefault
 		text := def.FullName(EntityFromNode(s), s.Replacements)
 		// Show the skill that actually matched rather than the default's own qualifier text, which may be stale (e.g.
@@ -1439,6 +1443,7 @@ func (s *SkillContainerOnlySyncData) hash(h hash.Hash) {
 
 func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.Specialization)
+	xhash.StringWithLen(h, s.OptionalSpecialization)
 	s.Difficulty.Hash(h)
 	xhash.Num64(h, s.EncumbrancePenaltyMultiplier)
 	xhash.Num64(h, len(s.Defaults))
