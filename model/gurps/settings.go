@@ -10,6 +10,10 @@
 package gurps
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
+	"log/slog"
 	"maps"
 	"os"
 	"os/user"
@@ -26,6 +30,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -113,14 +118,7 @@ type Openable interface {
 func GlobalSettings() *Settings {
 	globalOnce.Do(func() {
 		xos.ExitIfErr(InitRollers())
-		if err := jio.Load(nil, SettingsPath, &globalSettings); err != nil {
-			globalSettings = Settings{
-				LastSeenGCSVersion: xos.AppVersion,
-				General:            NewGeneralSettings(),
-				LibrarySet:         NewLibraries(),
-				Sheet:              FactorySheetSettings(),
-			}
-		}
+		globalSettings = loadSettingsOrDefaults(SettingsPath)
 		globalSettings.EnsureValidity()
 		unison.SetThemeMode(globalSettings.ThemeMode)
 		globalSettings.Colors.MakeCurrent()
@@ -133,6 +131,55 @@ func GlobalSettings() *Settings {
 		}
 	})
 	return &globalSettings
+}
+
+// loadSettingsOrDefaults loads the settings from the given path. A missing file is the normal first-run case, so
+// factory defaults are returned silently for it. Any other failure -- most notably a corrupt or unreadable settings
+// file -- is logged and the offending file is set aside with a ".bad" suffix, since the next Save would otherwise
+// overwrite the user's settings without a trace.
+func loadSettingsOrDefaults(filePath string) Settings {
+	var settings Settings
+	if err := jio.Load(nil, filePath, &settings); err != nil {
+		if !errors.Is(err, fs.ErrNotExist) {
+			errs.Log(errs.NewWithCause("unable to load settings; reverting to factory defaults", err), "path", filePath)
+			setAsideDamagedSettings(filePath)
+		}
+		return factorySettings()
+	}
+	return settings
+}
+
+// factorySettings returns the settings used when no usable settings file is available.
+func factorySettings() Settings {
+	return Settings{
+		LastSeenGCSVersion: xos.AppVersion,
+		General:            NewGeneralSettings(),
+		LibrarySet:         NewLibraries(),
+		Sheet:              FactorySheetSettings(),
+	}
+}
+
+// setAsideDamagedSettings renames the settings file at the given path so that it survives the next save, allowing the
+// user a chance to recover data from it. A ".bad" suffix is appended to the name; if a file with that name is already
+// present from an earlier failure, a timestamp is inserted as well so that the older copy isn't lost.
+func setAsideDamagedSettings(filePath string) {
+	if !xos.FileExists(filePath) {
+		return // Nothing to preserve; the load failure wasn't caused by the file's content.
+	}
+	backup := filePath + ".bad"
+	if xos.FileExists(backup) {
+		stamp := time.Now().Format("20060102-150405")
+		backup = fmt.Sprintf("%s.%s.bad", filePath, stamp)
+		for i := 2; xos.FileExists(backup); i++ {
+			backup = fmt.Sprintf("%s.%s-%d.bad", filePath, stamp, i)
+		}
+	}
+	if err := os.Rename(filePath, backup); err != nil {
+		errs.Log(errs.NewWithCause("unable to preserve the damaged settings file", err), "path", filePath, "backup",
+			backup)
+		return
+	}
+	slog.Warn("preserved the damaged settings file", "path", backup)
 }
 
 // Save to the standard path.

@@ -137,7 +137,8 @@ func EnsurePageSizeIsValid(in string) string {
 	return ToPageSize(w, h)
 }
 
-// MustParsePageSize parses a page size string and returns the width and height in inches.
+// MustParsePageSize parses a page size string and returns the width and height, expressed in the units the size itself
+// specifies (e.g. millimeters for "a4"). If the size can't be parsed, the first standard paper size is returned.
 func MustParsePageSize(size string) (width, height paper.Length) {
 	var valid bool
 	if width, height, valid = ParsePageSize(size); valid {
@@ -146,7 +147,8 @@ func MustParsePageSize(size string) (width, height paper.Length) {
 	return StdPaperSizes[0].Width, StdPaperSizes[0].Height
 }
 
-// ParsePageSize parses a page size string and returns the width and height in inches.
+// ParsePageSize parses a page size string and returns the width and height, expressed in the units the size itself
+// specifies (e.g. millimeters for "a4"), along with whether the size could be parsed.
 func ParsePageSize(size string) (width, height paper.Length, valid bool) {
 	size = strings.TrimPrefix(strings.TrimPrefix(strings.ToLower(strings.TrimSpace(size)), "na-"), "iso-")
 	for _, one := range StdPaperSizes {

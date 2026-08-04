@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 // SheetSettingsResponder defines the method required to be notified of updates to the SheetSettings.
@@ -97,19 +98,25 @@ func FactorySheetSettings() *SheetSettings {
 
 // NewSheetSettingsFromFile loads new settings from a file.
 func NewSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*SheetSettings, error) {
-	var data struct {
-		SheetSettings
-		OldLocation *SheetSettings `json:"sheet_settings"`
-	}
-	if err := jio.Load(fileSystem, filePath, &data); err != nil {
+	// The raw document is captured first because SheetSettings has a custom unmarshaler. Embedding SheetSettings in a
+	// wrapper struct would promote that unmarshaler onto the wrapper, causing it to consume the entire document and
+	// leaving the legacy "sheet_settings" field permanently unpopulated.
+	var raw jsontext.Value
+	if err := jio.Load(fileSystem, filePath, &raw); err != nil {
 		return nil, err
 	}
-	var s *SheetSettings
-	if data.OldLocation != nil {
-		s = data.OldLocation
-	} else {
-		ss := data.SheetSettings
-		s = &ss
+	var data struct {
+		OldLocation *SheetSettings `json:"sheet_settings"`
+	}
+	if err := json.Unmarshal(raw, &data); err != nil {
+		return nil, errs.Wrap(err)
+	}
+	s := data.OldLocation
+	if s == nil {
+		s = &SheetSettings{}
+		if err := json.Unmarshal(raw, s); err != nil {
+			return nil, errs.Wrap(err)
+		}
 	}
 	s.EnsureValidity()
 	return s, nil
