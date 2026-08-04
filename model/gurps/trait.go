@@ -66,6 +66,7 @@ type Trait struct {
 	TraitData
 	owner             DataOwner
 	UnsatisfiedReason string
+	resolvingLevel    bool
 }
 
 // TraitData holds the Trait data that is written to disk.
@@ -387,7 +388,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		var tooltip, overrideTooltip xbytes.InsertBuffer
 		data.Primary = t.NameAndLevel(&tooltip)
 		var buffer strings.Builder
-		if resolvedSelfControl := t.ResolvedSelfControl(&overrideTooltip); resolvedSelfControl > selfctrl.Always {
+		if resolvedSelfControl := t.ResolvedSelfControl(&overrideTooltip); resolvedSelfControl > selfctrl.None {
 			buffer.WriteString(resolvedSelfControl.ShortString())
 		}
 		if resolvedFrequency := t.ResolvedFrequency(&overrideTooltip); resolvedFrequency > frequency.None {
@@ -510,14 +511,23 @@ func (t *Trait) CurrentLevel() fxp.Int {
 }
 
 func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
-	if t.IsLeveled() {
-		var levelAdjustment fxp.Int
-		if entity := EntityFromNode(t); entity != nil {
-			levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
-		}
-		return (t.Levels + levelAdjustment).Max(0)
+	if !t.IsLeveled() {
+		return 0
 	}
-	return 0
+	if t.resolvingLevel {
+		// A per-level trait bonus whose leveled owner is this trait -- either because the bonus it carries matches its
+		// own name, or because two traits adjust each other's level -- would re-enter here while resolving the
+		// adjustment. Fall back to the unadjusted level to break the cycle rather than recursing until the stack
+		// overflows.
+		return t.Levels.Max(0)
+	}
+	t.resolvingLevel = true
+	defer func() { t.resolvingLevel = false }()
+	var levelAdjustment fxp.Int
+	if entity := EntityFromNode(t); entity != nil {
+		levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
+	}
+	return (t.Levels + levelAdjustment).Max(0)
 }
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
@@ -551,17 +561,19 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 			addition += amount
 		}
 	}
-	applyThisTrait := func(features Features) {
+	applyThisTrait := func(features Features, leveledOwner LeveledOwner) {
 		for _, f := range features {
 			if bonus, ok := f.(*TraitMaxLevelBonus); ok && bonus.SelectionType == traitsel.ThisTrait {
-				bonus.SetLeveledOwner(t)
+				// The level driving a per-level bonus comes from the node the bonus is attached to, matching how
+				// Entity.processFeatures assigns the leveled owner for trait and trait modifier features.
+				bonus.SetLeveledOwner(leveledOwner)
 				apply(bonus)
 			}
 		}
 	}
-	applyThisTrait(t.Features)
+	applyThisTrait(t.Features, t)
 	Traverse(func(mod *TraitModifier) bool {
-		applyThisTrait(mod.Features)
+		applyThisTrait(mod.Features, mod)
 		return false
 	}, true, true, t.Modifiers...)
 	if entity := EntityFromNode(t); entity != nil {
@@ -592,9 +604,13 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 		values := make([]fxp.Int, len(t.Children))
 		for i, one := range t.Children {
 			values[i] = one.AdjustedPoints()
-			if values[i] > points {
-				points = values[i]
-			}
+		}
+		if len(values) != 0 {
+			// The most expensive child is billed at full cost and the rest at 20%, so the running total starts at the
+			// largest child's cost. It must come from the values themselves rather than from zero, since a set of
+			// children that all cost negative points has no member matching a zero maximum, which would leave every
+			// one of them billed at 20%.
+			points = slices.Max(values)
 		}
 		maximum := points
 		found := false
@@ -873,8 +889,9 @@ func ExtractTags(tags string) []string {
 	return list
 }
 
-// AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' and 'dataOwner' may be
-// nil.
+// AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' and 'trait' may be nil.
+// 'trait' is only used to resolve the level of "use level from trait" modifiers; the modifiers themselves are left
+// untouched, since the list may contain modifiers inherited from parent containers, which belong to those parents.
 func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, fr frequency.Roll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
 	if !canLevel {
 		levels = 0
@@ -889,8 +906,7 @@ func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, lev
 		Denominator: fxp.One,
 	}
 	Traverse(func(mod *TraitModifier) bool {
-		mod.setTrait(trait)
-		modifier := mod.CostModifier()
+		modifier := mod.costModifierForTrait(trait)
 		switch mod.CostModifierType() {
 		case emweight.Addition:
 			if mod.Affects == affects.LevelsOnly {
@@ -1086,7 +1102,7 @@ func (t *TraitContainerSyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (t *TraitEditData) CopyFrom(other *Trait) {
-	t.copyFrom(other.owner, &other.TraitEditData, false)
+	t.copyFrom(other, &other.TraitEditData, false)
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1096,10 +1112,10 @@ func (t *TraitEditData) SetNameableReplacements(replacements map[string]string) 
 
 // ApplyTo implements node.EditorData.
 func (t *TraitEditData) ApplyTo(other *Trait) {
-	other.copyFrom(other.owner, t, true)
+	other.copyFrom(other, t, true)
 }
 
-func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isApply bool) {
+func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply bool) {
 	*t = *other
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
@@ -1107,7 +1123,12 @@ func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isApply 
 	if len(other.Modifiers) != 0 {
 		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			t.Modifiers = append(t.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, isApply))
+			cloned := one.Clone(one.Source.LibraryFile, trait.owner, nil, isApply)
+			// Point the copy at the trait it belongs to, so that a "use level from owner" modifier can resolve its
+			// level. Prior to this, the copies held in an editor only acquired their trait as a side effect of a point
+			// cost computation.
+			cloned.setTrait(trait)
+			t.Modifiers = append(t.Modifiers, cloned)
 		}
 	}
 	t.Prereq = t.Prereq.CloneResolvingEmpty(false, isApply)

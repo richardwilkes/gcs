@@ -421,22 +421,35 @@ func (t *TraitModifier) CostModifierType() emweight.Value {
 
 // CostModifier returns the total cost modifier.
 func (t *TraitModifier) CostModifier() fxp.Fraction {
+	return t.costModifierForTrait(t.trait)
+}
+
+// costModifierForTrait returns the total cost modifier as applied to the given trait, which is used in place of the
+// modifier's own owning trait when resolving a "use level from trait" modifier. This allows a modifier inherited from a
+// parent container (or one held only by an editor's working copy) to be costed against the trait it is being applied
+// to without re-pointing the modifier at that trait.
+func (t *TraitModifier) costModifierForTrait(trait *Trait) fxp.Fraction {
 	f := t.CostModifierType().ExtractFraction(t.CostAdj)
-	f.Numerator = f.Numerator.Mul(t.CostMultiplier())
+	multiplier := fxp.One
+	if t.isLeveledForTrait(trait) {
+		multiplier = CostMultiplierForTraitModifier(t.Levels, trait, t.UseLevelFromTrait)
+	}
+	f.Numerator = f.Numerator.Mul(multiplier)
 	f.Normalize()
 	return f
 }
 
 // IsLeveled returns true if this TraitModifier is leveled.
 func (t *TraitModifier) IsLeveled() bool {
+	return t.isLeveledForTrait(t.trait)
+}
+
+func (t *TraitModifier) isLeveledForTrait(trait *Trait) bool {
 	if t.Container() {
 		return false
 	}
 	if t.UseLevelFromTrait {
-		if t.trait == nil {
-			return false
-		}
-		return t.trait.IsLeveled()
+		return trait != nil && trait.IsLeveled()
 	}
 	return t.Levels > 0
 }
