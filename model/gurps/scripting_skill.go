@@ -92,30 +92,16 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			if entity == nil {
 				return r.ToValue(0)
 			}
-			name := skill.NameWithReplacements()
-			specialization := skill.SpecializationWithReplacements()
-			optionalSpecialization := skill.OptionalSpecializationWithReplacements()
-			if !entity.isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization) {
-				entity.registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
-				skill.UpdateLevel()
-				entity.unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
-			}
-			return r.ToValue(fxp.AsInteger[int](skill.LevelData.Level))
+			updateSkillLevelForScript(entity, skill)
+			return r.ToValue(scriptLevel(skill.LevelData))
 		}
 		m["relativeLevel"] = func() goja.Value {
 			entity := EntityFromNode(skill)
 			if entity == nil {
 				return r.ToValue(0)
 			}
-			name := skill.NameWithReplacements()
-			specialization := skill.SpecializationWithReplacements()
-			optionalSpecialization := skill.OptionalSpecializationWithReplacements()
-			if !entity.isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization) {
-				entity.registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
-				skill.UpdateLevel()
-				entity.unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
-			}
-			return r.ToValue(fxp.AsInteger[int](skill.LevelData.RelativeLevel))
+			updateSkillLevelForScript(entity, skill)
+			return r.ToValue(scriptRelativeLevel(skill.LevelData))
 		}
 		m["weapons"] = func() goja.Value {
 			weapons := make([]*goja.Object, 0, len(skill.Weapons))
@@ -134,6 +120,21 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 		}
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
+}
+
+// updateSkillLevelForScript recalculates the skill's level, guarding against a script that resolves a skill's level via
+// itself. The guard is removed with a defer so that a panic inside UpdateLevel (recovered further up by xos.SafeCall)
+// can't leave the exclusion registered on the entity, which would permanently freeze that skill's script-visible level.
+func updateSkillLevelForScript(entity *Entity, skill *Skill) {
+	name := skill.NameWithReplacements()
+	specialization := skill.SpecializationWithReplacements()
+	optionalSpecialization := skill.OptionalSpecializationWithReplacements()
+	if entity.isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization) {
+		return
+	}
+	entity.registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
+	defer entity.unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
+	skill.UpdateLevel()
 }
 
 func findScriptSkills(r *goja.Runtime, name, specialization, tag string, topLevelSkills ...*Skill) goja.Value {

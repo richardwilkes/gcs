@@ -509,6 +509,22 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (string, e
 	return result, nil
 }
 
+// scriptLevel converts a computed level for consumption by a script. An uncomputable level is stored as the fxp.Min
+// sentinel, which would otherwise be handed to scripts as a nonsensical -922337203685477, so clamp it to 0, matching
+// what the weapon wrapper does.
+func scriptLevel(level Level) int {
+	return fxp.AsInteger[int](level.Level.Max(0))
+}
+
+// scriptRelativeLevel converts a computed relative level for consumption by a script. The relative level is meaningless
+// when the level itself couldn't be computed, so report 0 rather than leaking a sentinel value.
+func scriptRelativeLevel(level Level) int {
+	if level.Level == fxp.Min || level.RelativeLevel == fxp.Min {
+		return 0
+	}
+	return fxp.AsInteger[int](level.RelativeLevel)
+}
+
 func callArgAsTrimmedString(call goja.FunctionCall, index int) string {
 	return strings.TrimSpace(callArgAsString(call, index))
 }

@@ -69,7 +69,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 			if spell.TechLevel != nil {
 				return r.ToValue(*spell.TechLevel)
 			}
-			return goja.Undefined()
+			return r.ToValue("")
 		}
 		m["kind"] = func() goja.Value {
 			if spell.IsRitualMagic() {
@@ -78,7 +78,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 			return r.ToValue("spell")
 		}
 		m["attribute"] = func() goja.Value { return r.ToValue(spell.Difficulty.Attribute) }
-		m["difficulty"] = func() goja.Value { return r.ToValue(spell.Difficulty.Difficulty.String()) }
+		m["difficulty"] = func() goja.Value { return r.ToValue(spell.Difficulty.Difficulty.Key()) }
 		m["points"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](spell.AdjustedPoints(nil))) }
 		m["college"] = func() goja.Value { return r.ToValue(spell.CollegeWithReplacements()) }
 		m["powerSource"] = func() goja.Value { return r.ToValue(spell.PowerSourceWithReplacements()) }
@@ -93,11 +93,11 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 		m["prereqCount"] = func() goja.Value { return r.ToValue(spell.PrereqCount) }
 		m["level"] = func() goja.Value {
 			spell.UpdateLevel()
-			return r.ToValue(fxp.AsInteger[int](spell.LevelData.Level))
+			return r.ToValue(scriptLevel(spell.LevelData))
 		}
 		m["relativeLevel"] = func() goja.Value {
 			spell.UpdateLevel()
-			return r.ToValue(fxp.AsInteger[int](spell.LevelData.RelativeLevel))
+			return r.ToValue(scriptRelativeLevel(spell.LevelData))
 		}
 		m["weapons"] = func() goja.Value {
 			weapons := make([]*goja.Object, 0, len(spell.Weapons))

@@ -201,9 +201,9 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 							strings.EqualFold(s.OptionalSpecializationWithReplacements(), optionalSpecialization)) {
 						s.UpdateLevel()
 						if relative {
-							level = fxp.AsInteger[int](s.LevelData.RelativeLevel)
+							level = scriptRelativeLevel(s.LevelData)
 						} else {
-							level = fxp.AsInteger[int](s.LevelData.Level)
+							level = scriptLevel(s.LevelData)
 						}
 						return true
 					}
