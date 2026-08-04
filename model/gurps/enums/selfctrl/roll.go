@@ -95,7 +95,7 @@ func (r Roll) Number() int {
 	return 0
 }
 
-// ShortString returns a short description of the frequency.
+// ShortString returns a short description of the self-control roll.
 func (r Roll) ShortString() string {
 	switch {
 	case r == Always:

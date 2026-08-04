@@ -590,7 +590,7 @@ func (e *Equipment) TagList() []string {
 	return e.Tags
 }
 
-// RatedStrength always return 0 for traits.
+// RatedStrength returns the rated ST for this equipment, or 0 if it has none.
 func (e *Equipment) RatedStrength() fxp.Int {
 	return e.RatedST
 }

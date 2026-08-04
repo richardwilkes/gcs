@@ -89,7 +89,10 @@ func (a *Ancestry) RandomGender(not string) string {
 	}); choice != nil {
 		return choice.Name
 	}
-	return ""
+	if choice := ChooseWeightedAncestryOptions(a.GenderOptions, nil); choice != nil {
+		return choice.Name
+	}
+	return not
 }
 
 // GenderedOptions returns the options for the specified gender, or nil.

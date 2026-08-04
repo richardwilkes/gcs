@@ -127,19 +127,7 @@ func (h *HitLocation) OwningTable() *Body {
 // DR computes the DR coverage for this HitLocation. If 'tooltip' isn't nil, the buffer will be updated with details on
 // how the DR was calculated. If 'drMap' isn't nil, it will be returned.
 func (h *HitLocation) DR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map[string]int) map[string]int {
-	if drMap == nil {
-		drMap = make(map[string]int)
-	}
-	if h.DRBonus != 0 {
-		drMap[AllID] += h.DRBonus
-		if tooltip != nil {
-			fmt.Fprintf(tooltip, i18n.Text("\n- %s [%+d against %s attacks]"), h.ChoiceName, h.DRBonus, AllID)
-		}
-	}
-	drMap = entity.AddDRBonusesFor(h.LocID, tooltip, drMap)
-	if h.owningTable != nil && h.owningTable.owningLocation != nil {
-		drMap = h.owningTable.owningLocation.DR(entity, tooltip, drMap)
-	}
+	drMap = h.accumulateDR(entity, tooltip, drMap)
 	if tooltip != nil && len(drMap) != 0 {
 		keys := make([]string, 0, len(drMap))
 		for k := range drMap {
@@ -158,6 +146,25 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map
 		}
 		buffer.WriteString("\n---\n")
 		_ = tooltip.Insert(0, buffer.Bytes())
+	}
+	return drMap
+}
+
+// accumulateDR gathers the DR contributed by this location and, recursively, by the locations that own it. Only the DR
+// details are added to the tooltip here; the summary block is inserted once by DR, rather than once per nesting level.
+func (h *HitLocation) accumulateDR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map[string]int) map[string]int {
+	if drMap == nil {
+		drMap = make(map[string]int)
+	}
+	if h.DRBonus != 0 {
+		drMap[AllID] += h.DRBonus
+		if tooltip != nil {
+			fmt.Fprintf(tooltip, i18n.Text("\n- %s [%+d against %s attacks]"), h.ChoiceName, h.DRBonus, AllID)
+		}
+	}
+	drMap = entity.AddDRBonusesFor(h.LocID, tooltip, drMap)
+	if h.owningTable != nil && h.owningTable.owningLocation != nil {
+		drMap = h.owningTable.owningLocation.accumulateDR(entity, tooltip, drMap)
 	}
 	return drMap
 }

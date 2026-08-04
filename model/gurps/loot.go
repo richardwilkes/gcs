@@ -126,7 +126,7 @@ func (l *Loot) EnsureAttachments() {
 	}
 }
 
-// SyncWithLibrarySources syncs the template with the library sources.
+// SyncWithLibrarySources syncs the loot sheet with the library sources.
 func (l *Loot) SyncWithLibrarySources() {
 	Traverse(func(item *Equipment) bool {
 		item.SyncWithSource()

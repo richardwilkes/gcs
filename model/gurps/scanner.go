@@ -78,7 +78,7 @@ func scanForNamedFileSets(fileSystem fs.FS, dirPath string, extensions []string,
 			}
 			return nil
 		}
-		if !d.IsDir() && extMap[path.Ext(name)] {
+		if !d.IsDir() && extMap[strings.ToLower(path.Ext(name))] {
 			shortName := xfilepath.TrimExtension(name)
 			if shortLowerName := strings.ToLower(shortName); !omitDuplicateNames || !set[shortLowerName] {
 				set[shortLowerName] = true

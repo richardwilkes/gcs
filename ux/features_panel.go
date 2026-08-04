@@ -861,10 +861,16 @@ func (p *featuresPanel) addSelectorOverrideLine(parent *unison.Panel, f *gurps.S
 		pop.SelectIndex(index)
 		f.Field = item
 		lastSelectorFieldUsed = item
-		if d := gurps.SelectorFieldDescriptorFor(item); len(d.SuggestedStates) != 0 {
+		d := gurps.SelectorFieldDescriptorFor(item)
+		if len(d.SuggestedStates) != 0 {
 			f.Value = d.SuggestedStates[0]
 		} else {
 			f.Value = ""
+		}
+		if d.Scope == gurps.SelectorScopeTrait {
+			// The usage row is hidden for trait-scoped fields, so clear any criterion the user set while the field was
+			// weapon-scoped rather than leaving an invisible one behind in the data.
+			f.UsageCriteria = criteria.Text{TextData: criteria.TextData{Compare: criteria.AnyText}}
 		}
 		p.rebuildFeaturePanel(f)
 	}

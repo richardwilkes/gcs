@@ -44,3 +44,16 @@ func TestMonitorPPIUsesSettingOverride(t *testing.T) {
 	s := &GeneralSettings{MonitorResolution: 150}
 	check.New(t).Equal(150, s.MonitorPPI())
 }
+
+// TestPermittedPerScriptExecTimeTestOverrideIsValid verifies that the raised per-script execution time limit TestMain
+// installs survives EnsureValidity. A value outside the permitted range is silently reset to the small production
+// default, which would quietly reintroduce the CI timeout flakiness the override exists to prevent.
+func TestPermittedPerScriptExecTimeTestOverrideIsValid(t *testing.T) {
+	c := check.New(t)
+	general := *GlobalSettings().General
+	c.Equal(PermittedScriptExecTimeMax, general.PermittedPerScriptExecTime,
+		"TestMain raises the limit to the largest permitted value")
+	general.EnsureValidity()
+	c.Equal(PermittedScriptExecTimeMax, general.PermittedPerScriptExecTime,
+		"validation must not reset the limit the tests run with")
+}

@@ -100,10 +100,16 @@ func (o *SelectorOverride) OverridePriority() int {
 }
 
 // OverrideSpecificity implements Override. Each criterion that actually constrains something (isn't "any") makes the
-// match one notch more specific, so a rule that pins name+usage out-ranks one that only pins name.
+// match one notch more specific, so a rule that pins name+usage out-ranks one that only pins name. Only the criteria
+// the field's scope actually matches on are counted -- a trait-scoped override never consults the usage criterion (see
+// MatchesTrait), so a leftover usage criterion must not win a tie-break it doesn't constrain.
 func (o *SelectorOverride) OverrideSpecificity() int {
+	list := []criteria.Text{o.NameCriteria, o.TagsCriteria}
+	if SelectorFieldDescriptorFor(o.Field).Scope != SelectorScopeTrait {
+		list = append(list, o.UsageCriteria)
+	}
 	specificity := 0
-	for _, c := range []criteria.Text{o.NameCriteria, o.UsageCriteria, o.TagsCriteria} {
+	for _, c := range list {
 		if !c.IsZero() {
 			specificity++
 		}
@@ -282,7 +288,10 @@ var selectorFieldDescriptors = map[selector.Field]SelectorFieldDescriptor{
 // SelectorFieldDescriptorFor returns the descriptor for the given field, or a zero-value free-form descriptor if the
 // field is unknown.
 func SelectorFieldDescriptorFor(field selector.Field) SelectorFieldDescriptor {
-	if d, ok := selectorFieldDescriptors[field.EnsureValid()]; ok {
+	// Note: the lookup is deliberately made with the field as-is rather than with field.EnsureValid(), since that would
+	// map every unknown field onto the first enum value and hand back that field's descriptor instead of the safe
+	// free-form one.
+	if d, ok := selectorFieldDescriptors[field]; ok {
 		return d
 	}
 	return SelectorFieldDescriptor{Field: field, FreeForm: true}

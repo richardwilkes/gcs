@@ -239,3 +239,49 @@ func TestSelectorFieldDescriptors(t *testing.T) {
 		c.Equal(option.String(), adj.StateTitle(state), "state %q label matches the adjustment", state)
 	}
 }
+
+// TestSelectorOverrideSpecificityScope verifies that only the criteria the field's scope actually matches on count
+// toward specificity. A trait-scoped override never consults the usage criterion (traits have no usage), so a leftover
+// usage criterion -- which the editor hides once the field switches to a trait-scoped one -- must not silently win a
+// specificity tie-break it does nothing to constrain.
+func TestSelectorOverrideSpecificityScope(t *testing.T) {
+	c := check.New(t)
+
+	trait := gurps.NewSelectorOverride(selector.TraitSelfControlRoll)
+	c.Equal(1, trait.OverrideSpecificity(), "only the name criterion constrains a trait-scoped override")
+	trait.UsageCriteria.Compare = criteria.IsText
+	trait.UsageCriteria.Qualifier = "Swung"
+	c.Equal(1, trait.OverrideSpecificity(), "a usage criterion a trait can't match adds no specificity")
+	trait.TagsCriteria.Compare = criteria.ContainsText
+	trait.TagsCriteria.Qualifier = "Mental"
+	c.Equal(2, trait.OverrideSpecificity(), "the tag criterion does constrain a trait-scoped override")
+
+	weapon := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	c.Equal(1, weapon.OverrideSpecificity(), "only the name criterion is set initially")
+	weapon.UsageCriteria.Compare = criteria.IsText
+	weapon.UsageCriteria.Qualifier = "Swung"
+	c.Equal(2, weapon.OverrideSpecificity(), "usage still counts for a weapon-scoped override")
+}
+
+// TestSelectorFieldDescriptorForUnknownField verifies that an unrecognized field falls back to the documented
+// zero-value free-form descriptor. Normalizing the field first mapped every out-of-range value onto the first enum
+// value, so an unknown field quietly received the trait self-control roll descriptor -- wrong scope, wrong suggested
+// states, and a self-control key seeded into the value of any new override built from it.
+func TestSelectorFieldDescriptorForUnknownField(t *testing.T) {
+	c := check.New(t)
+
+	unknown := selector.LastField + 1
+	d := gurps.SelectorFieldDescriptorFor(unknown)
+	c.Equal(unknown, d.Field, "the unknown field is echoed back")
+	c.True(d.FreeForm, "an unknown field is free-form")
+	c.Equal(0, len(d.SuggestedStates), "an unknown field suggests no states")
+	c.True(d.StateTitle == nil, "an unknown field has no state labeler")
+	c.True(d.Validate == nil, "an unknown field has no validator")
+	c.Equal(gurps.SelectorScopeWeapon, d.Scope, "an unknown field uses the zero-value scope")
+	c.Equal("", gurps.NewSelectorOverride(unknown).Value, "no state is seeded for an unknown field")
+
+	// Every known field still resolves to its own descriptor.
+	for _, field := range selector.Fields {
+		c.Equal(field, gurps.SelectorFieldDescriptorFor(field).Field, "%v resolves to its own descriptor", field)
+	}
+}

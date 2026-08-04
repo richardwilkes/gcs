@@ -31,3 +31,20 @@ func TestRollNumber(t *testing.T) {
 		c.Equal(data.want, data.roll.Number(), "Number() for %v", data.roll)
 	}
 }
+
+// TestRollShortString verifies that the short form describes the self-control roll (CR), not a frequency of appearance.
+func TestRollShortString(t *testing.T) {
+	c := check.New(t)
+	for _, data := range []struct {
+		roll selfctrl.Roll
+		want string
+	}{
+		{roll: selfctrl.None, want: ""},
+		{roll: selfctrl.Always, want: "No CR"},
+		{roll: selfctrl.CR6, want: "CR6"},
+		{roll: selfctrl.CR12, want: "CR12"},
+		{roll: selfctrl.CR15, want: "CR15"},
+	} {
+		c.Equal(data.want, data.roll.ShortString(), "ShortString() for %v", data.roll)
+	}
+}

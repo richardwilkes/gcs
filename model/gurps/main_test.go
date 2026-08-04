@@ -12,15 +12,14 @@ package gurps
 import (
 	"os"
 	"testing"
-
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
 // TestMain raises the per-script execution time limit for the duration of the tests. The production default
 // (PermittedScriptExecTimeDef) is intentionally small, but some CI machines are slow enough that legitimate scripts can
-// exceed it, resulting in intermittent timeout failures. The tests are not exercising the timeout behavior, so use a
-// generous limit here instead.
+// exceed it, resulting in intermittent timeout failures. The tests are not exercising the timeout behavior, so use the
+// largest permitted limit here instead. It must stay within the permitted range, since anything outside of it would be
+// silently reset to the default by GeneralSettings.EnsureValidity, reintroducing the flakiness this guards against.
 func TestMain(m *testing.M) {
-	GlobalSettings().General.PermittedPerScriptExecTime = fxp.Five
+	GlobalSettings().General.PermittedPerScriptExecTime = PermittedScriptExecTimeMax
 	os.Exit(m.Run())
 }

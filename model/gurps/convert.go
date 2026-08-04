@@ -224,6 +224,9 @@ func convertWalker(pathSet, extSet map[string]struct{}) func(path string, d iofs
 	var f func(path string, d iofs.DirEntry, err error) error
 	visited := make(map[string]struct{})
 	f = func(path string, d iofs.DirEntry, err error) error {
+		if err != nil {
+			return nil //nolint:nilerr // Continue on even if there was an error
+		}
 		name := d.Name()
 		if strings.HasPrefix(name, ".") {
 			if d.IsDir() {
@@ -231,21 +234,19 @@ func convertWalker(pathSet, extSet map[string]struct{}) func(path string, d iofs
 			}
 			return nil
 		}
-		if err == nil {
-			if d.IsDir() {
-				visited[path] = struct{}{}
-			} else {
-				if d.Type() == iofs.ModeSymlink {
-					if path, err = filepath.EvalSymlinks(path); err == nil {
-						if _, exists := visited[path]; !exists {
-							_ = filepath.WalkDir(path, f) //nolint:errcheck // Continue on even if there was an error
-						}
+		if d.IsDir() {
+			visited[path] = struct{}{}
+		} else {
+			if d.Type() == iofs.ModeSymlink {
+				if path, err = filepath.EvalSymlinks(path); err == nil {
+					if _, exists := visited[path]; !exists {
+						_ = filepath.WalkDir(path, f) //nolint:errcheck // Continue on even if there was an error
 					}
-				} else {
-					if _, exists := extSet[filepath.Ext(name)]; exists {
-						if path, err = realpath.Realpath(path); err == nil {
-							pathSet[path] = struct{}{}
-						}
+				}
+			} else {
+				if _, exists := extSet[filepath.Ext(name)]; exists {
+					if path, err = realpath.Realpath(path); err == nil {
+						pathSet[path] = struct{}{}
 					}
 				}
 			}
