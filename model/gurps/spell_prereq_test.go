@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // addTestCollegeSpell creates a non-container spell owned by the entity with the given name and college, one point, then
@@ -105,4 +106,27 @@ func TestSpellPrereqNestedCircularNotCounted(t *testing.T) {
 	inner.Parent = boost.Prereq
 
 	c.True(spellDirectlyRequires(boost, wisdom), "nested spell-name prerequisite must be detected")
+}
+
+// TestSpellPrereqNilEntity verifies that a nil entity is treated as satisfied rather than panicking, matching every
+// other prereq implementation.
+func TestSpellPrereqNilEntity(t *testing.T) {
+	c := check.New(t)
+	for _, subType := range []spellcmp.Type{
+		spellcmp.Name,
+		spellcmp.Tag,
+		spellcmp.College,
+		spellcmp.CollegeCount,
+		spellcmp.Any,
+	} {
+		p := NewSpellPrereq()
+		p.SubType = subType
+		p.QualifierCriteria.Compare = criteria.IsText
+		p.QualifierCriteria.Qualifier = "Wisdom"
+		var tooltip xbytes.InsertBuffer
+		c.NotPanics(func() {
+			c.True(p.Satisfied(nil, nil, &tooltip, "", nil), "%v: a nil entity must be treated as satisfied", subType)
+		}, "%v: a nil entity must not panic", subType)
+		c.Equal("", tooltip.String(), "%v: no tooltip should be written for a nil entity", subType)
+	}
 }

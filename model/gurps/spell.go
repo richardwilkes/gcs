@@ -196,9 +196,10 @@ func NewRitualMagicSpell(owner DataOwner, parent *Spell, _ bool) *Spell {
 	s.CastingCost = "1"
 	s.CastingTime = "1 second"
 	s.Duration = "Instant"
-	s.Points = fxp.One
 	s.RitualSkillName = "Ritual Magic"
 	s.Name = s.Kind()
+	// Unlike a normal spell, a new ritual magic spell starts with no points, since it can still be used at its default
+	// level from the ritual magic skill. This also updates the level.
 	s.SetRawPoints(0)
 	return &s
 }
@@ -285,31 +286,31 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserve
 // MarshalJSONTo implements json.MarshalerTo.
 func (s *Spell) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
-	type calcLeast struct {
-		ResolvedNotes string `json:"resolved_notes,omitzero"`
+	type calcNoLevel struct {
+		ResolvedNotes     string `json:"resolved_notes,omitzero"`
+		UnsatisfiedReason string `json:"unsatisfied_reason,omitzero"`
 	}
-	var cl calcLeast
+	cnl := calcNoLevel{UnsatisfiedReason: s.UnsatisfiedReason}
 	notes := s.ResolveLocalNotes()
 	if notes != s.LocalNotes {
-		cl.ResolvedNotes = notes
+		cnl.ResolvedNotes = notes
 	}
 	if s.Container() || s.LevelData.Level <= 0 {
 		value := &struct {
 			SpellData
-			Calc *calcLeast `json:"calc,omitzero"`
+			Calc *calcNoLevel `json:"calc,omitzero"`
 		}{
 			SpellData: s.SpellData,
 		}
-		if cl != (calcLeast{}) {
-			value.Calc = &cl
+		if cnl != (calcNoLevel{}) {
+			value.Calc = &cnl
 		}
 		return json.MarshalEncode(enc, value)
 	}
 	type calc struct {
 		Level              fxp.Int `json:"level"`
 		RelativeSkillLevel string  `json:"rsl"`
-		UnsatisfiedReason  string  `json:"unsatisfied_reason,omitzero"`
-		calcLeast
+		calcNoLevel
 	}
 	data := struct {
 		SpellData
@@ -319,8 +320,7 @@ func (s *Spell) MarshalJSONTo(enc *jsontext.Encoder) error {
 		Calc: calc{
 			Level:              s.LevelData.Level,
 			RelativeSkillLevel: s.RelativeLevel(),
-			UnsatisfiedReason:  s.UnsatisfiedReason,
-			calcLeast:          cl,
+			calcNoLevel:        cnl,
 		},
 	}
 	return json.MarshalEncode(enc, &data)
@@ -741,7 +741,9 @@ func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []s
 
 // CalculateRitualMagicSpellLevel returns the calculated spell level.
 func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillName string, prereqCount int, colleges, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
-	var skillLevel Level
+	// Start at fxp.Min rather than the zero value, since a zero value would be a phantom level 0 that beats every
+	// negative or unresolvable (fxp.Min) college level.
+	skillLevel := Level{Level: fxp.Min}
 	if len(colleges) == 0 {
 		skillLevel = determineRitualMagicSkillLevelForCollege(e, name, "", ritualSkillName, prereqCount,
 			tags, diff, points)
@@ -754,7 +756,9 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 			}
 		}
 	}
-	if e != nil {
+	// As with CalculateSkillLevel() and CalculateTechniqueLevel(), don't apply bonuses to an unresolvable level, since
+	// fxp.Min is a sentinel, not a number that can be adjusted.
+	if e != nil && skillLevel.Level != fxp.Min {
 		tooltip := &xbytes.InsertBuffer{}
 		tooltip.WriteString(skillLevel.Tooltip)
 		levels := e.SpellBonusFor(name, powerSource, colleges, tags, tooltip).Floor()
