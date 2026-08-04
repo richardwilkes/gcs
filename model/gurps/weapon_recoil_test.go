@@ -12,6 +12,7 @@ package gurps_test
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -51,4 +52,22 @@ func TestWeaponRecoil(t *testing.T) {
 	for i, one := range cases {
 		c.Equal(one.expected, gurps.ParseWeaponRecoil(one.input).String(), "test %d", i)
 	}
+}
+
+// TestWeaponPercentBonusFloorsIncrement pins the documented rounding of weapon percentage bonuses: the increment is
+// floored, i.e. rounded toward negative infinity, not toward zero. A -50% bonus on a recoil of 5 yields an increment
+// of -2.5, which floors to -3, for a result of 2.
+func TestWeaponPercentBonusFloorsIncrement(t *testing.T) {
+	c := check.New(t)
+
+	bonus := gurps.NewWeaponRecoilBonus()
+	bonus.Percent = true
+	bonus.Amount = fxp.FromInteger(-50)
+	w := newWeaponWithBonuses(false, bonus)
+
+	w.Recoil = gurps.ParseWeaponRecoil("5")
+	c.Equal("2", w.Recoil.Resolve(w, nil).String())
+
+	w.Recoil = gurps.ParseWeaponRecoil("5/7")
+	c.Equal("2/3", w.Recoil.Resolve(w, nil).String())
 }

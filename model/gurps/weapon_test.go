@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -135,6 +136,60 @@ func TestWeaponDamageWithNilOwner(t *testing.T) {
 		_, err := json.Marshal(w)
 		c.NoError(err)
 	})
+}
+
+// TestWeaponHashDisplayedStateIncludesHide verifies that the hidden state participates in the displayed-state hash.
+// Without it, a hidden weapon and an otherwise display-identical visible one collapse into a single entry in the
+// weapon maps built by Entity.Weapons, making one of them unreachable in the views where the Hide toggle is shown.
+func TestWeaponHashDisplayedStateIncludesHide(t *testing.T) {
+	c := check.New(t)
+
+	trait := gurps.NewTrait(gurps.NewEntity(), nil, false)
+	trait.Name = "Claws"
+	w1 := gurps.NewWeapon(trait, true)
+	w2 := gurps.NewWeapon(trait, true)
+	c.Equal(w1.HashDisplayedState(), w2.HashDisplayedState(),
+		"identically displayed weapons should hash the same")
+
+	w2.Hide = true
+	c.NotEqual(w1.HashDisplayedState(), w2.HashDisplayedState(),
+		"weapons differing only in their hidden state should hash differently")
+}
+
+// TestWeaponHideIsNotSourceData verifies that the hidden state stays out of the source-data hash used by library
+// syncing. Hide is a local display choice, so toggling it must not make a node report as out of sync with its library
+// source, nor may a sync overwrite it.
+func TestWeaponHideIsNotSourceData(t *testing.T) {
+	c := check.New(t)
+
+	trait := gurps.NewTrait(gurps.NewEntity(), nil, false)
+	trait.Name = "Claws"
+	w := gurps.NewWeapon(trait, true)
+	trait.Weapons = []*gurps.Weapon{w}
+
+	weaponHash := gurps.Hash64(&w.WeaponData)
+	traitHash := gurps.Hash64(trait)
+
+	w.Hide = true
+	c.Equal(weaponHash, gurps.Hash64(&w.WeaponData), "hiding a weapon should not alter its source-data hash")
+	c.Equal(traitHash, gurps.Hash64(trait), "hiding a weapon should not alter its owner's source-data hash")
+}
+
+// newWeaponWithBonuses builds an entity with a trait that owns a single weapon of the requested type and carries the
+// given weapon bonuses, each scoped to that weapon.
+func newWeaponWithBonuses(melee bool, bonuses ...*gurps.WeaponBonus) *gurps.Weapon {
+	e := gurps.NewEntity()
+	owner := gurps.NewTrait(e, nil, false)
+	owner.Name = "Gadget"
+	w := gurps.NewWeapon(owner, melee)
+	owner.Weapons = []*gurps.Weapon{w}
+	for _, bonus := range bonuses {
+		bonus.SelectionType = wsel.ThisWeapon
+		owner.Features = append(owner.Features, bonus)
+	}
+	e.Traits = append(e.Traits, owner)
+	e.Recalculate()
+	return w
 }
 
 // newDefenseTestWeapon builds an entity holding a "Cloak" skill at level 14 and a +1 bonus to both parry and block,

@@ -12,6 +12,7 @@ package gurps_test
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -33,6 +34,9 @@ func TestWeaponShots(t *testing.T) {
 		"1x1s",
 		"2+1(2i)",
 		"3x3s",
+		"3x3s(2)",
+		"T(1)",
+		"T(2i)",
 	} {
 		c.Equal(s, gurps.ParseWeaponShots(s).String(), "test %d", i)
 	}
@@ -54,11 +58,35 @@ func TestWeaponShots(t *testing.T) {
 		{"3/day", ""},
 		{"30+1 (3)", "30+1(3)"},
 		{"500-1,000", "500"},
-		{"T(1)", "T"},
+		{"T (2)", "T(2)"},
+		{"T(-)", "T"},
 		{"T(spec)", "T"},
 		{"n/a", ""},
 	}
 	for i, one := range cases {
 		c.Equal(one.expected, gurps.ParseWeaponShots(one.input).String(), "test %d", i)
 	}
+}
+
+// TestWeaponShotsReloadTimeParsing verifies that the reload time is recovered even when something separates it from
+// the shot count, i.e. the thrown marker or the duration's trailing "s". Both are emitted by String(), so failing to
+// parse them back loses the reload time on every save/load round trip.
+func TestWeaponShotsReloadTimeParsing(t *testing.T) {
+	c := check.New(t)
+
+	ws := gurps.ParseWeaponShots("T(2)")
+	c.True(ws.Thrown)
+	c.Equal(fxp.Two, ws.ReloadTime)
+	c.False(ws.ReloadTimeIsPerShot)
+
+	ws = gurps.ParseWeaponShots("T(2i)")
+	c.True(ws.Thrown)
+	c.Equal(fxp.Two, ws.ReloadTime)
+	c.True(ws.ReloadTimeIsPerShot)
+
+	ws = gurps.ParseWeaponShots("3x3s(2)")
+	c.False(ws.Thrown)
+	c.Equal(fxp.Three, ws.Count)
+	c.Equal(fxp.Three, ws.Duration)
+	c.Equal(fxp.Two, ws.ReloadTime)
 }

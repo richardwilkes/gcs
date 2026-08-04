@@ -29,8 +29,9 @@ import (
 
 var _ Bonus = &WeaponBonus{}
 
-// addWeaponPercentBonus returns value increased by the given percentage of itself, with the increment floored toward
-// zero. A percent of 0 returns value unchanged. This is the standard way weapon stat percentage bonuses are applied.
+// addWeaponPercentBonus returns value increased by the given percentage of itself, with the increment floored (i.e.
+// rounded toward negative infinity, so a -1.5 increment becomes -2). A percent of 0 returns value unchanged. This is
+// the standard way weapon stat percentage bonuses are applied.
 func addWeaponPercentBonus(value, percent fxp.Int) fxp.Int {
 	if percent == 0 {
 		return value
@@ -280,7 +281,7 @@ func (w *WeaponBonus) addToTooltip(adjustedAmount fxp.Int, buffer *xbytes.Insert
 		buf.WriteString(w.parentName())
 		buf.WriteString(" [")
 		if w.Type == feature.WeaponSwitch {
-			fmt.Fprintf(&buf, "%v set to %v", w.SwitchType, w.SwitchTypeValue)
+			fmt.Fprintf(&buf, i18n.Text("%v set to %v"), w.SwitchType, w.SwitchTypeValue)
 		} else {
 			amt := w.Amount.StringWithSign()
 			adjustedAmt := adjustedAmount.StringWithSign()

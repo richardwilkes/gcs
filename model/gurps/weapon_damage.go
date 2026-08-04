@@ -374,7 +374,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		base = adjustDiceForPercentBonus(base, percentDamageBonus)
 	}
 	if percentDRDivisorBonus != 0 {
-		armorDivisor = armorDivisor.Mul(percentDRDivisorBonus).Div(fxp.Hundred)
+		armorDivisor += armorDivisor.Mul(percentDRDivisorBonus).Div(fxp.Hundred)
 	}
 	var buffer strings.Builder
 	if base.Count != 0 || base.Modifier != 0 {

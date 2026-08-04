@@ -221,6 +221,7 @@ func (w *Weapon) Compare(other *Weapon) int {
 func (w *Weapon) HashDisplayedState() uint64 {
 	h := xxh3.New()
 	w.Hash(h)
+	xhash.Bool(h, w.Hide)
 	xhash.StringWithLen(h, w.String())
 	xhash.StringWithLen(h, w.Notes())
 	xhash.StringWithLen(h, w.UsageWithReplacements())

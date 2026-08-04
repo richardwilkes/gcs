@@ -51,8 +51,11 @@ func ParseWeaponShots(s string) WeaponShots {
 			if strings.HasPrefix(s, "x") {
 				ws.Duration, s = fxp.Extract(s[1:])
 			}
-			if strings.HasPrefix(s, "(") {
-				ws.ReloadTime, _ = fxp.Extract(s[1:])
+			// Locate the reload time rather than requiring it to be next, since the thrown marker or the duration's
+			// trailing "s" may precede it.
+			if i := strings.IndexByte(s, '('); i >= 0 {
+				s = s[i+1:]
+				ws.ReloadTime, _ = fxp.Extract(s)
 				ws.ReloadTimeIsPerShot = strings.Contains(s, "i")
 			}
 		}

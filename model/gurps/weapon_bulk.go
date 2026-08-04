@@ -87,7 +87,12 @@ func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) W
 		}
 	}
 	result.Normal = addWeaponPercentBonus(result.Normal, percent)
-	result.Giant = addWeaponPercentBonus(result.Giant, percent)
+	if wb.Giant == 0 {
+		// 0 means there is no separate giant bulk, so don't let the bonuses materialize one.
+		result.Giant = 0
+	} else {
+		result.Giant = addWeaponPercentBonus(result.Giant, percent)
+	}
 	result.Validate()
 	return result
 }
