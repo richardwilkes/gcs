@@ -34,14 +34,15 @@ func newTOC(owner *PDFDockable, parent *tocNode, toc []*PDFTableOfContents) []*t
 	}
 	nodes := make([]*tocNode, len(toc))
 	for i, one := range toc {
-		nodes[i] = &tocNode{
+		node := &tocNode{
 			id:         gurps.IDForPDFTOC(owner.path, one.Title, one.PageNumber),
 			owner:      owner,
 			parent:     parent,
 			title:      one.Title,
 			pageNumber: one.PageNumber,
-			children:   newTOC(owner, parent, one.Children),
 		}
+		node.children = newTOC(owner, node, one.Children)
+		nodes[i] = node
 	}
 	return nodes
 }

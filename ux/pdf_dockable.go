@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -36,6 +37,7 @@ const (
 	minPDFDockableScale                = 50
 	maxPDFDockableScale                = 200
 	scaleAdj                           = float32(100) / maxPDFDockableScale
+	pdfPageGap                         = float32(8)
 	maxElapsedRenderTimeWithoutOverlay = time.Second / 2
 	renderTimeSlop                     = time.Millisecond * 10
 )
@@ -69,38 +71,44 @@ type PDFDockable struct {
 	previousPageButton     *unison.Button
 	nextPageButton         *unison.Button
 	lastPageButton         *unison.Button
-	page                   *PDFPage
 	link                   *PDFLink
-	rolloverRect           geom.Rect
+	pageRects              []geom.Rect
+	history                []int
+	currentPage            int
+	pendingScrollPage      int
+	linkPage               int
 	scale                  int
 	historyPos             int
-	history                []int
+	docSize                geom.Size
+	rolloverRect           geom.Rect
 	dragStart              geom.Point
 	dragOrigin             geom.Point
 	autoScaling            autoscale.Option
 	inDrag                 bool
 	noUpdate               bool
 	adjustTableSizePending bool
-	needDockableResize     bool
+	viewSyncPending        bool
 }
 
 // NewPDFDockable creates a new unison.Dockable for PDFRenderer files.
 func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 	generalSettings := gurps.GlobalSettings().General
 	d := &PDFDockable{
-		path:               filePath,
-		scale:              generalSettings.InitialPDFUIScale,
-		autoScaling:        generalSettings.PDFAutoScaling,
-		noUpdate:           true,
-		needDockableResize: true,
+		path:              filePath,
+		scale:             generalSettings.InitialPDFUIScale,
+		autoScaling:       generalSettings.PDFAutoScaling,
+		noUpdate:          true,
+		pendingScrollPage: -1,
+		linkPage:          -1,
 	}
 	d.Self = d
 	var err error
-	if d.pdf, err = NewPDFRenderer(filePath, func() {
-		unison.InvokeTask(d.pageLoaded)
+	if d.pdf, err = NewPDFRenderer(filePath, func(_ int) {
+		unison.InvokeTask(d.pageRendered)
 	}); err != nil {
 		return nil, err
 	}
+	d.buildPageLayout()
 	d.KeyDownCallback = d.keyDown
 	d.FocusChangeInHierarchyCallback = d.focusChangeInHierarchy
 	d.GainedFocusCallback = d.pdf.RequestRenderPriority
@@ -114,10 +122,31 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 	d.content.AddChild(d.docScroll)
 
 	d.noUpdate = false
-	d.scaleField.SetEnabled(d.autoScaling != autoscale.No)
+	d.scaleField.SetEnabled(d.autoScaling == autoscale.No)
 	d.LoadPage(initialPage)
 
 	return d, nil
+}
+
+// buildPageLayout computes the area each page occupies within the document panel. Pages are stacked vertically,
+// separated and surrounded by pdfPageGap, with each page horizontally centered within the width of the widest page.
+// The sizes come from the renderer's precomputed logical sizes, so this can be done without rendering anything and a
+// page's image lands exactly within the slot reserved for it.
+func (d *PDFDockable) buildPageLayout() {
+	count := d.pdf.PageCount()
+	d.pageRects = make([]geom.Rect, count)
+	var widest float32
+	for i := range count {
+		widest = max(widest, d.pdf.PageLogicalSize(i).Width*scaleAdj)
+	}
+	docWidth := widest + 2*pdfPageGap
+	y := pdfPageGap
+	for i := range count {
+		size := d.pdf.PageLogicalSize(i).Mul(scaleAdj)
+		d.pageRects[i] = geom.NewRect(pdfPageGap+(docWidth-2*pdfPageGap-size.Width)/2, y, size.Width, size.Height)
+		y += size.Height + pdfPageGap
+	}
+	d.docSize = geom.NewSize(docWidth, y)
 }
 
 // DockKey implements KeyedDockable.
@@ -157,8 +186,11 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 		func() int { return gurps.GlobalSettings().General.InitialPDFUIScale },
 		func() int { return d.scale },
 		func(scale int) { d.scale = scale },
-		d.MarkForRedraw,
-		false,
+		func() {
+			d.MarkForRedraw()
+			d.scheduleViewSync()
+		},
+		true,
 		false,
 		d.docScroll,
 	)
@@ -175,6 +207,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 			d.autoScaling = mode
 			d.scaleField.SetEnabled(d.autoScaling == autoscale.No)
 			d.docScroll.MarkForRedraw()
+			d.scheduleViewSync()
 		}
 	}
 	first.AddChild(d.autoScalingPopup)
@@ -191,7 +224,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 			return
 		}
 		if pageNum, e := strconv.Atoi(after.Text); e == nil && pageNum > 0 && pageNum <= d.pdf.PageCount() {
-			d.LoadPage(pageNum - 1)
+			d.ScrollToPage(pageNum-1, true)
 		}
 	}
 	d.pageNumberField.ValidateCallback = func() bool {
@@ -224,22 +257,22 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 
 	d.firstPageButton = unison.NewSVGButton(svg.First)
 	d.firstPageButton.Tooltip = newWrappedTooltip(i18n.Text("First Page"))
-	d.firstPageButton.ClickCallback = func() { d.LoadPage(0) }
+	d.firstPageButton.ClickCallback = func() { d.ScrollToPage(0, true) }
 	first.AddChild(d.firstPageButton)
 
 	d.previousPageButton = unison.NewSVGButton(svg.Previous)
 	d.previousPageButton.Tooltip = newWrappedTooltip(i18n.Text("Previous Page"))
-	d.previousPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() - 1) }
+	d.previousPageButton.ClickCallback = func() { d.ScrollToPage(d.currentPage-1, true) }
 	first.AddChild(d.previousPageButton)
 
 	d.nextPageButton = unison.NewSVGButton(svg.Next)
 	d.nextPageButton.Tooltip = newWrappedTooltip(i18n.Text("Next Page"))
-	d.nextPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() + 1) }
+	d.nextPageButton.ClickCallback = func() { d.ScrollToPage(d.currentPage+1, true) }
 	first.AddChild(d.nextPageButton)
 
 	d.lastPageButton = unison.NewSVGButton(svg.Last)
 	d.lastPageButton.Tooltip = newWrappedTooltip(i18n.Text("Last Page"))
-	d.lastPageButton.ClickCallback = func() { d.LoadPage(d.pdf.PageCount() - 1) }
+	d.lastPageButton.ClickCallback = func() { d.ScrollToPage(d.pdf.PageCount()-1, true) }
 	first.AddChild(d.lastPageButton)
 
 	first.SetLayout(&unison.FlexLayout{
@@ -264,7 +297,8 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 		if d.noUpdate {
 			return
 		}
-		d.LoadPage(d.pdf.MostRecentPageNumber())
+		d.MarkForRedraw()
+		d.scheduleViewSync()
 	})
 	second.AddChild(d.searchField)
 
@@ -358,6 +392,21 @@ func (d *PDFDockable) createContent() {
 	d.docScroll.SetContent(d.docPanel, behavior.Fill, behavior.Fill)
 	d.docScroll.ContentView().DrawOverCallback = d.drawOverlay
 
+	// The viewport's frame changes both when it is first laid out and whenever it is resized, either of which alters
+	// which pages are visible.
+	d.docScroll.ContentView().FrameChangeCallback = d.scheduleViewSync
+
+	// There is no scroll-changed notification, so chain the vertical scroll bar's callback, which unison has already
+	// pointed at the scroll panel's Sync. That has to keep running, so call it first.
+	verticalBar := d.docScroll.Bar(false)
+	syncScrollPanel := verticalBar.ChangedCallback
+	verticalBar.ChangedCallback = func() {
+		if syncScrollPanel != nil {
+			syncScrollPanel()
+		}
+		d.scheduleViewSync()
+	}
+
 	d.content = unison.NewPanel()
 	d.content.SetLayout(&unison.FlexLayout{
 		Columns: 1,
@@ -404,7 +453,7 @@ func (d *PDFDockable) toggleSideBar() {
 func (d *PDFDockable) Back() {
 	if d.historyPos > 0 {
 		d.historyPos--
-		d.LoadPage(d.history[d.historyPos])
+		d.ScrollToPage(d.history[d.historyPos], false)
 	}
 }
 
@@ -412,56 +461,56 @@ func (d *PDFDockable) Back() {
 func (d *PDFDockable) Forward() {
 	if d.historyPos < len(d.history)-1 {
 		d.historyPos++
-		d.LoadPage(d.history[d.historyPos])
+		d.ScrollToPage(d.history[d.historyPos], false)
 	}
 }
 
-// LoadPage loads the specified page.
+// LoadPage scrolls to the specified page, recording the jump in the history.
 func (d *PDFDockable) LoadPage(pageNumber int) {
-	d.pdf.LoadPage(pageNumber, d.searchField.Text())
-	d.MarkForRedraw()
+	d.ScrollToPage(pageNumber, true)
 }
 
-func (d *PDFDockable) pageLoaded() {
-	d.noUpdate = true
-	d.scaleField.SetEnabled(false)
-	defer func() {
-		d.noUpdate = false
-		d.scaleField.SetEnabled(d.autoScaling == autoscale.No)
-	}()
-
-	d.page = d.pdf.CurrentPage()
-
-	if d.tocPanel.RootRowCount() == 0 {
-		if toc := d.pdf.CurrentPage().TOC; len(toc) != 0 {
-			d.tocPanel.SetRootRows(newTOC(d, nil, toc))
-			d.tocPanel.SizeColumnsToFit(true)
-			d.tocScrollLayoutData.SizeHint.Width = max(min(d.tocPanel.Columns[0].Current, 300), d.tocScrollLayoutData.SizeHint.Width)
-			d.sideBarButton.SetEnabled(true)
-		}
+// ScrollToPage scrolls the view so that the top of the given 0-based page is at the top of the view. If recordHistory
+// is true, the jump is added to the navigation history, which is what distinguishes an explicit jump from ordinary
+// scrolling.
+func (d *PDFDockable) ScrollToPage(pageNumber int, recordHistory bool) {
+	if len(d.pageRects) == 0 {
+		return
 	}
+	pageNumber = min(max(pageNumber, 0), len(d.pageRects)-1)
+	if recordHistory {
+		d.recordHistory(pageNumber)
+	}
+	d.pendingScrollPage = pageNumber
+	d.flushPendingScroll()
+	d.scheduleViewSync()
+}
 
-	pageText := ""
-	if d.page.PageNumber >= 0 {
-		pageText = strconv.Itoa(d.page.PageNumber + 1)
+// flushPendingScroll applies a pending scroll request, returning true if it was applied. Setting the scroll position
+// before the scroll panel has been laid out silently clamps it to zero, since the scroll bar's extent and maximum are
+// only established during layout, so the request is held until a layout has occurred.
+func (d *PDFDockable) flushPendingScroll() bool {
+	if d.pendingScrollPage < 0 {
+		return true
 	}
-	if pageText != d.pageNumberField.Text() {
-		d.pageNumberField.SetText(pageText)
-		d.pageNumberField.Parent().MarkForLayoutAndRedraw()
+	if d.Window() == nil {
+		return false
 	}
+	d.docScroll.MarkForLayoutRecursively()
+	d.docScroll.ValidateLayout()
+	if d.docScroll.ContentView().ContentRect(false).Height <= 0 {
+		return false
+	}
+	pageNumber := d.pendingScrollPage
+	d.pendingScrollPage = -1
+	h, _ := d.docScroll.Position()
+	d.docScroll.SetPosition(h, (d.pageRects[pageNumber].Y-pdfPageGap)*d.panelScale())
+	return true
+}
 
-	matchText := "-"
-	if d.searchField.Text() != "" {
-		matchText = strconv.Itoa(len(d.page.Matches))
-	}
-	if matchText != d.matchesLabel.Text.String() {
-		d.matchesLabel.SetTitle(matchText)
-		d.matchesLabel.Parent().MarkForLayoutAndRedraw()
-	}
-
-	pageNumber := d.page.PageNumber
+func (d *PDFDockable) recordHistory(pageNumber int) {
 	if d.history == nil {
-		d.history = append(d.history, pageNumber)
+		d.history = []int{pageNumber}
 		d.historyPos = 0
 	} else if d.history[d.historyPos] != pageNumber {
 		d.historyPos++
@@ -474,47 +523,192 @@ func (d *PDFDockable) pageLoaded() {
 			d.history = append(d.history, pageNumber)
 		}
 	}
-	lastPageNumber := d.pdf.PageCount() - 1
 	d.backButton.SetEnabled(d.historyPos > 0)
 	d.forwardButton.SetEnabled(d.historyPos < len(d.history)-1)
-	d.firstPageButton.SetEnabled(pageNumber != 0)
-	d.previousPageButton.SetEnabled(pageNumber > 0)
-	d.nextPageButton.SetEnabled(pageNumber < lastPageNumber)
-	d.lastPageButton.SetEnabled(pageNumber != lastPageNumber)
+}
 
-	d.docPanel.MarkForLayoutAndRedraw()
-	d.docScroll.MarkForLayoutAndRedraw()
-	d.link = nil
-
-	if d.needDockableResize {
-		d.needDockableResize = false
-		if !IsDockableInWorkspace(d) {
-			wnd := d.Window()
-			wnd.Pack()
-			frame := wnd.FrameRect()
-			wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
-			d.searchField.SetScrollOffset(geom.Point{})
-		}
+// scheduleViewSync requests a state sync with the current view. Multiple requests made before the sync runs collapse
+// into a single one.
+func (d *PDFDockable) scheduleViewSync() {
+	if !d.viewSyncPending {
+		d.viewSyncPending = true
+		unison.InvokeTask(d.syncViewState)
 	}
 }
 
-func (d *PDFDockable) overLink(where geom.Point) (rect geom.Rect, link *PDFLink) {
-	if d.page != nil && d.page.Links != nil {
-		where = where.Div(scaleAdj)
-		for _, link = range d.page.Links {
-			if where.In(link.Bounds) {
-				return link.Bounds, link
+// syncViewState brings everything that depends on which pages are visible back into agreement with the view. This is
+// the only place that state is updated in response to scrolling, resizing and rendering.
+func (d *PDFDockable) syncViewState() {
+	d.viewSyncPending = false
+	if len(d.pageRects) == 0 {
+		return
+	}
+	if !d.flushPendingScroll() {
+		// The scroll panel hasn't been laid out yet, so the target page can't be scrolled to. Get it rendering in the
+		// meantime; the layout that eventually occurs will trigger another sync.
+		d.pdf.SetWantedPages([]int{d.pendingScrollPage}, d.searchField.Text())
+		return
+	}
+
+	first, limit := d.visiblePages()
+	d.currentPage = first
+	if d.history == nil {
+		// Establish the history root, so that a later jump elsewhere can navigate back to where the user was.
+		d.history = []int{d.currentPage}
+		d.historyPos = 0
+	}
+
+	noUpdate := d.noUpdate
+	d.noUpdate = true
+	defer func() { d.noUpdate = noUpdate }()
+
+	pageText := strconv.Itoa(d.currentPage + 1)
+	if pageText != d.pageNumberField.Text() {
+		d.pageNumberField.SetText(pageText)
+		d.pageNumberField.Parent().MarkForLayoutAndRedraw()
+	}
+
+	matchText := "-"
+	if d.searchField.Text() != "" {
+		// A page that is still pending may nonetheless have something in the cache: the placeholder rendered under the
+		// previous search text, whose matches have nothing to do with what is in the search field now. Show nothing
+		// for the count until the re-render for the current search has landed.
+		if _, pending := d.pdf.PendingSince(d.currentPage); !pending {
+			if page := d.pdf.CachedPage(d.currentPage); page != nil {
+				matchText = strconv.Itoa(len(page.Matches))
 			}
 		}
 	}
-	return rect, nil
+	if matchText != d.matchesLabel.Text.String() {
+		d.matchesLabel.SetTitle(matchText)
+		d.matchesLabel.Parent().MarkForLayoutAndRedraw()
+	}
+
+	lastPageNumber := len(d.pageRects) - 1
+	d.backButton.SetEnabled(d.historyPos > 0)
+	d.forwardButton.SetEnabled(d.historyPos < len(d.history)-1)
+	d.firstPageButton.SetEnabled(d.currentPage != 0)
+	d.previousPageButton.SetEnabled(d.currentPage > 0)
+	d.nextPageButton.SetEnabled(d.currentPage < lastPageNumber)
+	d.lastPageButton.SetEnabled(d.currentPage != lastPageNumber)
+
+	d.applyAutoScaling()
+
+	want := make([]int, 0, (limit-first)+2)
+	for i := first; i < limit; i++ {
+		want = append(want, i)
+	}
+	if limit <= lastPageNumber {
+		want = append(want, limit)
+	}
+	if first > 0 {
+		want = append(want, first-1)
+	}
+	d.pdf.SetWantedPages(want, d.searchField.Text())
+}
+
+// applyAutoScaling adjusts the scale to fit the current page, if auto-scaling is on. The scale is only altered when it
+// actually differs from what is wanted, which is what stops the resize-triggers-rescale-triggers-resize loop.
+func (d *PDFDockable) applyAutoScaling() {
+	var desiredScale float32
+	slotSize := d.pdf.PageLogicalSize(d.currentPage).Mul(scaleAdj)
+	viewSize := d.docScroll.ContentView().ContentRect(false).Size
+	switch d.autoScaling {
+	case autoscale.FitWidth:
+		desiredScale = xmath.Floor(100 * viewSize.Width / (slotSize.Width + 2*pdfPageGap))
+	case autoscale.FitPage:
+		desiredScale = xmath.Floor(100 * min(viewSize.Width/(slotSize.Width+2*pdfPageGap),
+			viewSize.Height/(slotSize.Height+2*pdfPageGap)))
+	default:
+		return
+	}
+	desiredScaleInt := int(min(max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
+	if d.scaleField.CurrentValue() != desiredScaleInt {
+		d.scaleField.SetEnabled(true)
+		d.scaleField.SetText(d.scaleField.Format(desiredScaleInt))
+		d.scaleField.SetEnabled(false)
+	}
+}
+
+func (d *PDFDockable) pageRendered() {
+	if d.tocPanel.RootRowCount() == 0 {
+		if toc := d.pdf.TOC(); len(toc) != 0 {
+			d.tocPanel.SetRootRows(newTOC(d, nil, toc))
+			d.tocPanel.SizeColumnsToFit(true)
+			d.tocScrollLayoutData.SizeHint.Width = max(min(d.tocPanel.Columns[0].Current, 300), d.tocScrollLayoutData.SizeHint.Width)
+			d.sideBarButton.SetEnabled(true)
+		}
+	}
+	d.MarkForRedraw()
+	d.scheduleViewSync()
+}
+
+// panelScale returns the scale that has been applied to the document panel.
+func (d *PDFDockable) panelScale() float32 {
+	return float32(d.scale) / 100
+}
+
+// horizontalOffset returns the amount the pages have to be shifted right to stay centered when the document panel has
+// been made wider than the document itself. unison stores a panel's frame size in local, unscaled units -- SetFrameRect
+// divides the size by the panel's scale and FrameRect multiplies it back -- so ContentRect is already in the same
+// coordinate space as the page layout and must not be adjusted by the zoom scale.
+func (d *PDFDockable) horizontalOffset() float32 {
+	return max((d.docPanel.ContentRect(false).Width-d.docSize.Width)/2, 0)
+}
+
+// visiblePages returns the half-open range of pages currently visible in the viewport. The first of them is the page
+// considered to be the current one. At least one page is always returned.
+func (d *PDFDockable) visiblePages() (first, limit int) {
+	panelScale := d.panelScale()
+	top := d.docScroll.Bar(false).Value() / panelScale
+	bottom := top + d.docScroll.ContentView().ContentRect(false).Height/panelScale
+	// A page whose bottom edge is only just below the top of the viewport isn't meaningfully visible, so bias past it.
+	return d.pageRange(top+1, bottom)
+}
+
+// pageRange returns the half-open range of pages that intersect the given vertical span, which is expressed in
+// document panel coordinates. At least one page is always returned.
+func (d *PDFDockable) pageRange(top, bottom float32) (first, limit int) {
+	count := len(d.pageRects)
+	first = min(sort.Search(count, func(i int) bool { return d.pageRects[i].Bottom() > top }), count-1)
+	limit = max(sort.Search(count, func(i int) bool { return d.pageRects[i].Y >= bottom }), first+1)
+	return first, limit
+}
+
+// pageAt returns the index of the page whose vertical band contains the given document panel-local y coordinate, or -1
+// if it is below the last page. The gap above a page counts as part of that page.
+func (d *PDFDockable) pageAt(y float32) int {
+	i := sort.Search(len(d.pageRects), func(i int) bool { return d.pageRects[i].Bottom() > y })
+	if i >= len(d.pageRects) {
+		return -1
+	}
+	return i
+}
+
+func (d *PDFDockable) overLink(where geom.Point) (rect geom.Rect, link *PDFLink, pageNumber int) {
+	pageNumber = d.pageAt(where.Y)
+	if pageNumber < 0 {
+		return rect, nil, -1
+	}
+	page := d.pdf.CachedPage(pageNumber)
+	if page == nil {
+		return rect, nil, -1
+	}
+	pt := where.Sub(d.pageRects[pageNumber].Point).Sub(geom.NewPoint(d.horizontalOffset(), 0)).Div(scaleAdj)
+	for _, one := range page.Links {
+		if pt.In(one.Bounds) {
+			return one.Bounds, one, pageNumber
+		}
+	}
+	return rect, nil, -1
 }
 
 func (d *PDFDockable) checkForLinkAt(where geom.Point) bool {
-	r, link := d.overLink(where)
-	if r != d.rolloverRect || link != d.link {
+	r, link, pageNumber := d.overLink(where)
+	if r != d.rolloverRect || link != d.link || pageNumber != d.linkPage {
 		d.rolloverRect = r
 		d.link = link
+		d.linkPage = pageNumber
 		d.MarkForRedraw()
 	}
 	return link != nil
@@ -524,7 +718,7 @@ func (d *PDFDockable) updateCursor(pt geom.Point) *unison.Cursor {
 	if d.inDrag {
 		return unison.MoveCursor()
 	}
-	if _, link := d.overLink(pt); link != nil {
+	if _, link, _ := d.overLink(pt); link != nil {
 		return unison.PointingCursor()
 	}
 	return unison.ArrowCursor()
@@ -562,7 +756,7 @@ func (d *PDFDockable) mouseUp(where geom.Point, button int, _ mod.Modifiers) boo
 		d.checkForLinkAt(where)
 		if button == unison.ButtonLeft && d.link != nil {
 			if d.link.PageNumber >= 0 {
-				d.LoadPage(d.link.PageNumber)
+				d.ScrollToPage(d.link.PageNumber, true)
 			} else if err := xos.OpenBrowser(d.link.URI); err != nil {
 				Workspace.ErrorHandler(i18n.Text("Unable to open link"), err)
 			}
@@ -578,13 +772,13 @@ func (d *PDFDockable) focusChangeInHierarchy(_, _ *unison.Panel) {
 func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ mod.Modifiers, _ bool) bool {
 	switch keyCode {
 	case unison.KeyHome:
-		d.LoadPage(0)
+		d.ScrollToPage(0, true)
 	case unison.KeyEnd:
-		d.LoadPage(d.pdf.PageCount() - 1)
+		d.ScrollToPage(d.pdf.PageCount()-1, true)
 	case unison.KeyLeft, unison.KeyUp:
-		d.LoadPage(d.pdf.MostRecentPageNumber() - 1)
+		d.ScrollToPage(d.currentPage-1, true)
 	case unison.KeyRight, unison.KeyDown:
-		d.LoadPage(d.pdf.MostRecentPageNumber() + 1)
+		d.ScrollToPage(d.currentPage+1, true)
 	default:
 		return false
 	}
@@ -592,61 +786,42 @@ func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ mod.Modifiers, _ bool) b
 }
 
 func (d *PDFDockable) docSizer(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
-	if d.page == nil || d.page.Error != nil {
-		prefSize.Width = 400
-		prefSize.Height = 300
-	} else {
-		prefSize = d.page.Image.LogicalSize().Mul(scaleAdj)
-	}
+	prefSize = d.docSize
 	return geom.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
 }
 
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 	gc.DrawRect(dirty, unison.ThemeSurface.Paint(gc, dirty, paintstyle.Fill))
-	if d.page != nil && d.page.Image != nil {
-		switch d.autoScaling {
-		case autoscale.FitWidth:
-			size := d.page.Image.LogicalSize()
-			cSize := d.docScroll.ContentView().ContentRect(false).Size
-			desiredScale := xmath.Floor((cSize.Width / size.Width / scaleAdj) * 100)
-			desiredScaleInt := int(min(max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
-			if d.scaleField.CurrentValue() != desiredScaleInt {
-				d.scaleField.SetEnabled(true)
-				d.scaleField.SetText(d.scaleField.Format(desiredScaleInt))
-				d.scaleField.SetEnabled(false)
-			}
-		case autoscale.FitPage:
-			size := d.page.Image.LogicalSize()
-			cSize := d.docScroll.ContentView().ContentRect(false).Size
-			desiredScale := xmath.Floor((min(cSize.Width/size.Width, cSize.Height/size.Height) / scaleAdj) * 100)
-			desiredScaleInt := int(min(max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
-			if d.scaleField.CurrentValue() != desiredScaleInt {
-				d.scaleField.SetEnabled(true)
-				d.scaleField.SetText(d.scaleField.Format(desiredScaleInt))
-				d.scaleField.SetEnabled(false)
-			}
-		default:
-		}
+	if len(d.pageRects) == 0 {
+		return
+	}
+	xOff := d.horizontalOffset()
+	first, limit := d.pageRange(dirty.Y, dirty.Bottom())
+	for i := first; i < limit; i++ {
+		rect := d.pageRects[i]
 		gc.Save()
+		gc.Translate(geom.NewPoint(rect.X+xOff, rect.Y))
 		gc.Scale(geom.NewPoint(scaleAdj, scaleAdj))
-		r := geom.Rect{Size: d.page.Image.LogicalSize()}
+		r := geom.Rect{Size: d.pdf.PageLogicalSize(i)}
 		gc.DrawRect(r, unison.White.Paint(gc, r, paintstyle.Fill))
-		gc.DrawImageInRect(d.page.Image, r, &unison.SamplingOptions{
-			UseCubic:       true,
-			CubicResampler: unison.MitchellResampler(),
-			FilterMode:     filtermode.Linear,
-			MipMapMode:     mipmapmode.Linear,
-		}, nil)
-		if len(d.page.Matches) != 0 {
-			p := unison.NewPaint()
-			p.SetStyle(paintstyle.Fill)
-			p.SetBlendMode(blendmode.Modulate)
-			p.SetColor(adjustForModulate(unison.ThemeFocus.GetColor()))
-			for _, match := range d.page.Matches {
-				gc.DrawRect(match, p)
+		if page := d.pdf.CachedPage(i); page != nil && page.Image != nil {
+			gc.DrawImageInRect(page.Image, r, &unison.SamplingOptions{
+				UseCubic:       true,
+				CubicResampler: unison.MitchellResampler(),
+				FilterMode:     filtermode.Linear,
+				MipMapMode:     mipmapmode.Linear,
+			}, nil)
+			if len(page.Matches) != 0 {
+				p := unison.NewPaint()
+				p.SetStyle(paintstyle.Fill)
+				p.SetBlendMode(blendmode.Modulate)
+				p.SetColor(adjustForModulate(unison.ThemeFocus.GetColor()))
+				for _, match := range page.Matches {
+					gc.DrawRect(match, p)
+				}
 			}
 		}
-		if d.link != nil {
+		if d.link != nil && d.linkPage == i {
 			p := unison.NewPaint()
 			p.SetStyle(paintstyle.Fill)
 			p.SetBlendMode(blendmode.Modulate)
@@ -670,15 +845,31 @@ func adjustForModulate(c unison.Color) unison.Color {
 }
 
 func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty geom.Rect) {
-	if d.page != nil && d.page.Error != nil {
-		d.drawOverlayMsg(gc, dirty, fmt.Sprintf("%s", d.page.Error), true) //nolint:gocritic // I want the extra processing %s does in this case
+	if len(d.pageRects) == 0 {
+		return
 	}
-	if finished, pageNumber, requested := d.pdf.RenderingFinished(); !finished {
-		if waitFor := maxElapsedRenderTimeWithoutOverlay - time.Since(requested); waitFor > renderTimeSlop {
-			unison.InvokeTaskAfter(d.MarkForRedraw, waitFor)
-		} else {
-			d.drawOverlayMsg(gc, dirty, fmt.Sprintf(i18n.Text("Rendering page %d…"), pageNumber+1), false)
+	if page := d.pdf.CachedPage(d.currentPage); page != nil && page.Error != nil {
+		d.drawOverlayMsg(gc, dirty, fmt.Sprintf("%s", page.Error), true) //nolint:gocritic // I want the extra processing %s does in this case
+		return
+	}
+	// Report on the visible page that has been waiting the longest, since it is the one most likely to have crossed
+	// the threshold where an overlay is worthwhile.
+	pageNumber := -1
+	var requested time.Time
+	first, limit := d.visiblePages()
+	for i := first; i < limit; i++ {
+		if when, pending := d.pdf.PendingSince(i); pending && (pageNumber == -1 || when.Before(requested)) {
+			pageNumber = i
+			requested = when
 		}
+	}
+	if pageNumber == -1 {
+		return
+	}
+	if waitFor := maxElapsedRenderTimeWithoutOverlay - time.Since(requested); waitFor > renderTimeSlop {
+		unison.InvokeTaskAfter(d.MarkForRedraw, waitFor)
+	} else {
+		d.drawOverlayMsg(gc, dirty, fmt.Sprintf(i18n.Text("Rendering page %d…"), pageNumber+1), false)
 	}
 }
 
@@ -776,7 +967,11 @@ func (d *PDFDockable) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (d *PDFDockable) AttemptClose() bool {
-	return AttemptCloseForDockable(d)
+	if !AttemptCloseForDockable(d) {
+		return false
+	}
+	d.pdf.Close()
+	return true
 }
 
 func (d *PDFDockable) tocDoubleClick() {
@@ -794,7 +989,7 @@ func (d *PDFDockable) tocDoubleClick() {
 
 func (d *PDFDockable) tocSelectionChanged() {
 	if d.tocPanel.HasSelection() {
-		d.LoadPage(d.tocPanel.SelectedRows(true)[0].pageNumber)
+		d.ScrollToPage(d.tocPanel.SelectedRows(true)[0].pageNumber, true)
 	}
 }
 

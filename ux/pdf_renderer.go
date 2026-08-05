@@ -12,6 +12,7 @@ package ux
 import (
 	"image"
 	"os"
+	"slices"
 	"sync"
 	"time"
 
@@ -22,12 +23,18 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// maxPDFPageCacheBytes is a soft cap on the number of pixel bytes retained for rendered pages. Pages are always
+// rendered at the maximum zoom, since zooming is done by scaling the already-rendered image rather than by re-
+// rendering, so a US Letter page costs roughly 71MB on a Retina display. That works out to about 7 pages within the
+// cap there and about 28 on a 1x display. Pages that are currently wanted are never evicted, so the cap may be
+// exceeded when a great many pages are visible at once.
+const maxPDFPageCacheBytes = uint64(512 << 20)
+
 // PDFTableOfContents holds a table of contents entry.
 type PDFTableOfContents struct {
-	Title        string
-	PageNumber   int
-	PageLocation geom.Point
-	Children     []*PDFTableOfContents
+	Title      string
+	PageNumber int
+	Children   []*PDFTableOfContents
 }
 
 // PDFPage holds a rendered PDFRenderer page.
@@ -35,7 +42,6 @@ type PDFPage struct {
 	Error      error
 	PageNumber int
 	Image      *unison.Image
-	TOC        []*PDFTableOfContents
 	Links      []*PDFLink
 	Matches    []geom.Rect
 }
@@ -48,29 +54,50 @@ type PDFLink struct {
 	URI        string
 }
 
-type pdfParams struct {
-	sequence   int
-	pageNumber int
-	search     string
+// pdfCacheEntry holds a rendered page along with the information needed to manage its residency in the cache. An entry
+// whose generation differs from the renderer's current generation is stale: it was rendered against an older search
+// text, so its highlights are out of date, but it remains perfectly drawable and is kept on screen as a placeholder
+// until the re-render for the current search arrives and replaces it.
+type pdfCacheEntry struct {
+	page       *PDFPage // Image is nil when Error is not nil
+	bytes      uint64   // The number of pixel bytes the image holds; 0 for an error entry
+	lastUsed   uint64   // The value of the renderer's monotonic use tick when this entry was last asked for
+	generation int      // The renderer generation this page was rendered under
 }
 
 // PDFRenderer holds a PDFRenderer page renderer.
 type PDFRenderer struct {
-	ppi                  float32
+	// The fields from here through pageRenderedCallback are set during construction and are immutable afterwards, so
+	// they may be read without holding the lock.
 	scaleAdjust          geom.Point
 	doc                  *pdfview.Document
 	pageCount            int
-	pageLoadedCallback   func()
-	lock                 sync.RWMutex
-	page                 *PDFPage
-	lastRequest          *pdfParams
-	sequence             int
-	lastRenderedSequence int
-	lastRenderRequest    time.Time
+	dpi                  int
+	pageSizes            []geom.Size
+	pageRenderedCallback func(pageNumber int)
+
+	// The fields below are mutable and must only be accessed while holding the lock.
+	lock       sync.Mutex
+	search     string
+	generation int          // Bumped when search text changes: in-flight renders are discarded, cache entries go stale
+	want       []int        // The pages that should be rendered, in priority order
+	wantSet    map[int]bool // The same pages as want, for quick membership tests
+	cache      map[int]*pdfCacheEntry
+	cacheBytes uint64
+	useTick    uint64
+	pending    map[int]time.Time // Wanted, but not yet rendered: the time first asked for, which drives the overlay
+	toc        []*PDFTableOfContents
+	tocLoaded  bool
+	closed     bool
+
+	// ppi is immutable, like the fields at the top of the struct, but is placed here because it fits within the
+	// padding the flags above would otherwise leave behind.
+	ppi float32
 }
 
-// NewPDFRenderer creates a new PDFRenderer page renderer.
-func NewPDFRenderer(filePath string, pageLoadedCallback func()) (*PDFRenderer, error) {
+// NewPDFRenderer creates a new PDFRenderer page renderer. The callback is invoked on the rendering goroutine each time
+// a page becomes available, so it must not touch the UI directly.
+func NewPDFRenderer(filePath string, pageRenderedCallback func(pageNumber int)) (*PDFRenderer, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, errs.Wrap(err)
@@ -79,13 +106,35 @@ func NewPDFRenderer(filePath string, pageLoadedCallback func()) (*PDFRenderer, e
 	if doc, err = pdfview.New(data, 0); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	return &PDFRenderer{
-		ppi:                float32(gurps.GlobalSettings().General.MonitorPPI()),
-		scaleAdjust:        geom.NewPoint(1, 1).DivPt(primaryDisplayScale()),
-		doc:                doc,
-		pageCount:          doc.PageCount(),
-		pageLoadedCallback: pageLoadedCallback,
-	}, nil
+	p := &PDFRenderer{
+		ppi:                  float32(gurps.GlobalSettings().General.MonitorPPI()),
+		scaleAdjust:          geom.NewPoint(1, 1).DivPt(primaryDisplayScale()),
+		doc:                  doc,
+		pageCount:            doc.PageCount(),
+		pageRenderedCallback: pageRenderedCallback,
+		wantSet:              make(map[int]bool),
+		cache:                make(map[int]*pdfCacheEntry),
+		pending:              make(map[int]time.Time),
+	}
+
+	// We always render the PDF at the largest scale
+	p.dpi = int(((maxPDFDockableScale * p.ppi) / 100) / min(p.scaleAdjust.X, p.scaleAdjust.Y))
+
+	// Precompute the logical size of every page. PageRenderSize reports the exact pixel dimensions RenderPage will
+	// produce at our dpi, so multiplying by scaleAdjust (the scale the images are created with) yields precisely what
+	// the eventual Image.LogicalSize() will be, without having to render anything.
+	p.pageSizes = make([]geom.Size, p.pageCount)
+	for i := range p.pageSizes {
+		var w, h int
+		if w, h, err = doc.PageRenderSize(i, p.dpi); err != nil {
+			// The page can't be loaded, which means RenderPage will fail at the same point later on and the slot will
+			// only ever show an error, so just reserve a US Letter-sized slot for it.
+			p.pageSizes[i] = geom.NewSize(8.5*float32(p.dpi)*p.scaleAdjust.X, 11*float32(p.dpi)*p.scaleAdjust.Y)
+			continue
+		}
+		p.pageSizes[i] = geom.NewSize(float32(w)*p.scaleAdjust.X, float32(h)*p.scaleAdjust.Y)
+	}
+	return p, nil
 }
 
 // PageCount returns the total page count.
@@ -93,141 +142,297 @@ func (p *PDFRenderer) PageCount() int {
 	return p.pageCount
 }
 
-// CurrentPage returns the currently rendered page.
-func (p *PDFRenderer) CurrentPage() *PDFPage {
-	p.lock.RLock()
-	defer p.lock.RUnlock()
-	return p.page
+// PageLogicalSize returns the logical size of the given 0-based page. This matches the rendered page's
+// Image.LogicalSize() exactly and is available before any rendering has been done, so it may be used to lay out the
+// space a page will occupy while it is still unrendered.
+func (p *PDFRenderer) PageLogicalSize(pageNumber int) geom.Size {
+	return p.pageSizes[pageNumber]
 }
 
-// MostRecentPageNumber returns the most recent page number that has been asked to be rendered.
-func (p *PDFRenderer) MostRecentPageNumber() int {
-	p.lock.RLock()
-	defer p.lock.RUnlock()
-	if p.lastRequest != nil {
-		return p.lastRequest.pageNumber
-	}
-	if p.page != nil {
-		return p.page.PageNumber
-	}
-	return 0
-}
-
-// LoadPage requests the given page to be loaded and rendered.
-func (p *PDFRenderer) LoadPage(pageNumber int, search string) {
-	if pageNumber < 0 || pageNumber >= p.pageCount {
-		return
-	}
+// TOC returns the table of contents, or nil if it hasn't been loaded yet.
+func (p *PDFRenderer) TOC() []*PDFTableOfContents {
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	if p.lastRequest != nil && p.lastRequest.pageNumber == pageNumber && p.lastRequest.search == search {
+	return p.toc
+}
+
+// SetWantedPages sets the pages that should be rendered, in priority order, along with the text to search for within
+// them. Pages that have already been rendered with the current search text are left as-is, while the others are queued
+// up for rendering. Changing the search text doesn't throw away what has already been rendered, even though the search
+// hits are drawn into the pages: the existing images stay in the cache and remain on screen as placeholders, still
+// showing the previous search's highlights, and each is swapped out in place as its re-render arrives.
+func (p *PDFRenderer) SetWantedPages(pages []int, search string) {
+	p.lock.Lock()
+	if p.closed || (search == p.search && slices.Equal(pages, p.want)) {
+		p.lock.Unlock()
 		return
 	}
-	if p.lastRequest == nil || p.lastRenderedSequence == p.lastRequest.sequence {
-		p.lastRenderRequest = time.Now()
+	searchChanged := search != p.search
+	if searchChanged {
+		p.search = search
+		p.generation++
 	}
-	p.sequence++
-	p.lastRequest = &pdfParams{
-		sequence:   p.sequence,
-		pageNumber: pageNumber,
-		search:     search,
+	p.want = slices.Clone(pages)
+	p.wantSet = make(map[int]bool, len(pages))
+	for _, pageNumber := range pages {
+		p.wantSet[pageNumber] = true
 	}
-	submitPDF(p, false)
+	// Pages that are no longer wanted lose their pending stamp, so that coming back to one later starts its overlay
+	// timer over rather than showing the overlay immediately.
+	for pageNumber := range p.pending {
+		if !p.wantSet[pageNumber] {
+			delete(p.pending, pageNumber)
+		}
+	}
+	now := time.Now()
+	needsRender := false
+	for _, pageNumber := range pages {
+		if entry, exists := p.cache[pageNumber]; exists && entry.generation == p.generation {
+			continue
+		}
+		needsRender = true
+		// A page that is only pending because the search text changed is re-stamped on each change, rather than
+		// keeping the stamp it already had. That restarts the overlay's timer with every keystroke, so the "Rendering
+		// page N…" overlay doesn't flicker into view on top of the placeholder images that are still on screen while
+		// the user is typing.
+		if _, alreadyPending := p.pending[pageNumber]; searchChanged || !alreadyPending {
+			p.pending[pageNumber] = now
+		}
+	}
+	p.lock.Unlock()
+	if needsRender {
+		submitPDF(p, false)
+	}
+}
+
+// CachedPage returns the rendered page for the given 0-based page number, or nil if it hasn't been rendered yet. The
+// returned page must not be retained across UI events, since the image it holds may be disposed of once the page has
+// been evicted from the cache.
+func (p *PDFRenderer) CachedPage(pageNumber int) *PDFPage {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	entry, exists := p.cache[pageNumber]
+	if !exists {
+		return nil
+	}
+	p.useTick++
+	entry.lastUsed = p.useTick
+	return entry.page
+}
+
+// PendingSince returns the time at which the given 0-based page was first asked for, along with true, if the page is
+// wanted but hasn't been rendered for the current search text yet. A page that has a stale placeholder in the cache is
+// therefore pending, too, since what is on screen for it doesn't reflect the current search.
+func (p *PDFRenderer) PendingSince(pageNumber int) (requested time.Time, pending bool) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	requested, pending = p.pending[pageNumber]
+	return requested, pending
 }
 
 // RequestRenderPriority attempts to bump this PDFRenderer's rendering to the head of the queue.
 func (p *PDFRenderer) RequestRenderPriority() {
 	p.lock.Lock()
-	defer p.lock.Unlock()
-	if p.lastRequest != nil {
+	needsRender := false
+	if !p.closed {
+		_, needsRender = p.nextWantedPage()
+	}
+	p.lock.Unlock()
+	if needsRender {
 		submitPDF(p, true)
 	}
 }
 
-func (p *PDFRenderer) render(state *pdfParams) {
-	if p.shouldAbortRender(state) {
+// Close releases the underlying document along with everything that has been rendered from it. It must be called on
+// the UI thread and the PDFRenderer must not be used afterwards.
+func (p *PDFRenderer) Close() {
+	p.lock.Lock()
+	p.closed = true
+	p.want = nil
+	clear(p.wantSet)
+	p.discardCachedPages()
+	p.lock.Unlock()
+	p.doc.Release()
+}
+
+// renderNext renders the highest priority page that has been asked for but isn't in the cache yet. It is called on the
+// PDF queue's worker goroutine. Neither the document, the image creation, nor the queue submission may be touched
+// while the lock is held.
+func (p *PDFRenderer) renderNext() {
+	p.lock.Lock()
+	if p.closed {
+		p.lock.Unlock()
 		return
 	}
-
-	// We always render the PDF at the largest scale
-	dpi := int(((maxPDFDockableScale * p.ppi) / 100) / min(p.scaleAdjust.X, p.scaleAdjust.Y))
-	toc := p.doc.TableOfContents(dpi)
-	if p.shouldAbortRender(state) {
+	pageNumber, ok := p.nextWantedPage()
+	if !ok {
+		p.lock.Unlock()
 		return
 	}
+	generation := p.generation
+	search := p.search
+	p.lock.Unlock()
 
-	page, err := p.doc.RenderPage(state.pageNumber, dpi, 100, state.search)
+	p.loadTOC()
+
+	rendered, err := p.doc.RenderPage(pageNumber, p.dpi, 100, search)
 	if err != nil {
-		p.errorDuringRender(state, err)
+		// Cache the failure so that a page which can't be rendered doesn't get retried in a tight loop.
+		p.recordPage(&PDFPage{Error: err, PageNumber: pageNumber}, 0, generation)
 		return
 	}
-	if p.shouldAbortRender(state) {
+	links := p.convertLinks(rendered.Links)
+	matches := p.convertMatches(rendered.SearchHits)
+	width := rendered.Image.Rect.Dx()
+	height := rendered.Image.Rect.Dy()
+
+	// Creating the image copies a large chunk of memory, so don't bother if the result is already unwanted.
+	p.lock.Lock()
+	stale := p.isStale(pageNumber, generation)
+	p.lock.Unlock()
+	if stale {
 		return
 	}
 
 	var img *unison.Image
-	img, err = unison.NewImageFromPixels(page.Image.Rect.Dx(), page.Image.Rect.Dy(), page.Image.Pix, p.scaleAdjust)
-	if err != nil {
-		p.errorDuringRender(state, err)
+	if img, err = retainPDFImageFromPixels(width, height, rendered.Image.Pix, p.scaleAdjust); err != nil {
+		p.recordPage(&PDFPage{Error: err, PageNumber: pageNumber}, 0, generation)
 		return
 	}
-	if p.shouldAbortRender(state) {
-		return
-	}
-	pg := &PDFPage{
-		PageNumber: state.pageNumber,
+	if !p.recordPage(&PDFPage{
+		PageNumber: pageNumber,
 		Image:      img,
-		TOC:        p.convertTOCEntries(toc),
-		Links:      p.convertLinks(page.Links),
-		Matches:    p.convertMatches(page.SearchHits),
+		Links:      links,
+		Matches:    matches,
+	}, uint64(width)*uint64(height)*4, generation) {
+		releasePDFImage(img)
 	}
-	p.lock.Lock()
-	if state.sequence != p.lastRequest.sequence {
-		p.lock.Unlock()
-		return
-	}
-	p.page = pg
-	p.lastRenderedSequence = state.sequence
-	p.lock.Unlock()
-	p.pageLoadedCallback()
 }
 
-// RenderingFinished returns true if there is no rendering being done for this PDFRenderer at the moment.
-func (p *PDFRenderer) RenderingFinished() (finished bool, pageNumber int, requested time.Time) {
-	p.lock.RLock()
-	defer p.lock.RUnlock()
-	if p.lastRequest != nil {
-		finished = p.lastRenderedSequence == p.lastRequest.sequence
-		pageNumber = p.lastRequest.pageNumber
-		requested = p.lastRenderRequest
-	} else {
-		finished = true
-		if p.page != nil {
-			pageNumber = p.page.PageNumber
+// recordPage adds a rendered page to the cache, unless it is no longer relevant, in which case false is returned and
+// the caller is responsible for releasing any image the page holds. An entry that is already present for the page is
+// replaced, which is the normal path when the search text has changed and the placeholder rendered under the previous
+// search is being superseded. On success, the page rendered callback is fired and another render is queued up if any
+// wanted page still hasn't been rendered.
+func (p *PDFRenderer) recordPage(page *PDFPage, bytes uint64, generation int) bool {
+	p.lock.Lock()
+	if p.isStale(page.PageNumber, generation) {
+		p.lock.Unlock()
+		return false
+	}
+	if old, exists := p.cache[page.PageNumber]; exists {
+		// An entry is being replaced, which is what happens when a placeholder left over from an earlier search is
+		// superseded. The cache's reference to the old image is dropped before the new entry goes in, so a page never
+		// holds onto more than one image's worth of pixels. The disposal that reference drop may trigger is deferred to
+		// the UI thread, and drawing asks the cache for the page it is about to draw, so no draw can be left holding an
+		// image that has gone away.
+		p.cacheBytes -= old.bytes
+		if old.page != nil {
+			releasePDFImage(old.page.Image)
 		}
-		requested = time.Now()
 	}
-	return finished, pageNumber, requested
-}
+	p.useTick++
+	p.cache[page.PageNumber] = &pdfCacheEntry{
+		page:       page,
+		bytes:      bytes,
+		lastUsed:   p.useTick,
+		generation: generation,
+	}
+	p.cacheBytes += bytes
+	delete(p.pending, page.PageNumber)
+	p.evictCachedPages()
+	p.lock.Unlock()
 
-func (p *PDFRenderer) shouldAbortRender(state *pdfParams) bool {
-	p.lock.RLock()
-	defer p.lock.RUnlock()
-	return state.sequence != p.lastRequest.sequence
-}
+	p.pageRenderedCallback(page.PageNumber)
 
-func (p *PDFRenderer) errorDuringRender(state *pdfParams, err error) {
 	p.lock.Lock()
-	if state.sequence != p.lastRequest.sequence {
-		p.lock.Unlock()
-		return
-	}
-	p.page = &PDFPage{
-		Error:      err,
-		PageNumber: state.pageNumber,
+	more := false
+	if !p.closed {
+		_, more = p.nextWantedPage()
 	}
 	p.lock.Unlock()
-	p.pageLoadedCallback()
+	if more {
+		submitPDF(p, false)
+	}
+	return true
+}
+
+// isStale returns true if a render of the given page from the given generation is no longer of any use. The lock must
+// be held when calling this.
+func (p *PDFRenderer) isStale(pageNumber, generation int) bool {
+	return p.closed || generation != p.generation || !p.wantSet[pageNumber]
+}
+
+// nextWantedPage returns the highest priority page that hasn't been rendered for the current generation yet, which is
+// either one that has nothing in the cache at all or one whose cached entry is a stale placeholder from an earlier
+// search. The lock must be held when calling this.
+func (p *PDFRenderer) nextWantedPage() (pageNumber int, exists bool) {
+	for _, one := range p.want {
+		if entry, cached := p.cache[one]; !cached || entry.generation != p.generation {
+			return one, true
+		}
+	}
+	return 0, false
+}
+
+// discardCachedPages releases every rendered page and clears the pending state. This is only done when the renderer is
+// closed; a search change keeps what has been rendered around as placeholders. The lock must be held when calling this.
+func (p *PDFRenderer) discardCachedPages() {
+	for _, entry := range p.cache {
+		if entry.page != nil {
+			releasePDFImage(entry.page.Image)
+		}
+	}
+	clear(p.cache)
+	clear(p.pending)
+	p.cacheBytes = 0
+}
+
+// evictCachedPages drops the least recently used pages that aren't currently wanted until the cache is back under the
+// byte cap. The lock must be held when calling this.
+func (p *PDFRenderer) evictCachedPages() {
+	for p.cacheBytes > maxPDFPageCacheBytes {
+		victim := -1
+		var oldest uint64
+		for pageNumber, entry := range p.cache {
+			if p.wantSet[pageNumber] {
+				continue
+			}
+			if victim == -1 || entry.lastUsed < oldest {
+				victim = pageNumber
+				oldest = entry.lastUsed
+			}
+		}
+		if victim == -1 {
+			// Everything left is wanted, so the cap has to be exceeded for the moment.
+			return
+		}
+		entry := p.cache[victim]
+		delete(p.cache, victim)
+		p.cacheBytes -= entry.bytes
+		if entry.page != nil {
+			releasePDFImage(entry.page.Image)
+		}
+	}
+}
+
+// loadTOC returns the table of contents, extracting it from the document if that hasn't already been done. Extracting
+// it walks the entire outline tree, so it is done only once per document.
+func (p *PDFRenderer) loadTOC() []*PDFTableOfContents {
+	p.lock.Lock()
+	if p.tocLoaded {
+		defer p.lock.Unlock()
+		return p.toc
+	}
+	p.lock.Unlock()
+	toc := p.convertTOCEntries(p.doc.TableOfContents(p.dpi))
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	if !p.tocLoaded {
+		p.toc = toc
+		p.tocLoaded = true
+	}
+	return p.toc
 }
 
 func (p *PDFRenderer) convertTOCEntries(entries []*pdfview.TOCEntry) []*PDFTableOfContents {
@@ -237,10 +442,9 @@ func (p *PDFRenderer) convertTOCEntries(entries []*pdfview.TOCEntry) []*PDFTable
 	toc := make([]*PDFTableOfContents, len(entries))
 	for i, entry := range entries {
 		toc[i] = &PDFTableOfContents{
-			Title:        entry.Title,
-			PageNumber:   entry.PageNumber,
-			PageLocation: p.pointFromPagePoint(entry.PageX, entry.PageY),
-			Children:     p.convertTOCEntries(entry.Children),
+			Title:      entry.Title,
+			PageNumber: entry.PageNumber,
+			Children:   p.convertTOCEntries(entry.Children),
 		}
 	}
 	return toc
@@ -272,11 +476,60 @@ func (p *PDFRenderer) convertMatches(hits []image.Rectangle) []geom.Rect {
 	return matches
 }
 
-func (p *PDFRenderer) pointFromPagePoint(x, y int) geom.Point {
-	return geom.NewPoint(float32(x), float32(y)).MulPt(p.scaleAdjust)
-}
-
 func (p *PDFRenderer) rectFromPageRect(r image.Rectangle) geom.Rect {
 	return geom.NewRect(float32(r.Min.X)*p.scaleAdjust.X, float32(r.Min.Y)*p.scaleAdjust.Y,
 		float32(r.Dx())*p.scaleAdjust.X, float32(r.Dy())*p.scaleAdjust.Y)
+}
+
+// unison hands back a single, shared *unison.Image for any two sets of pixels with the same content hash, so pages
+// whose rendered pixels are identical -- two blank pages, even ones from different documents -- end up sharing one
+// image. Disposing such an image while another holder still draws it panics, so references to the images we create for
+// PDF pages are counted here and only the last holder disposes the image.
+var (
+	pdfImageRefsLock sync.Mutex
+	pdfImageRefs     = make(map[*unison.Image]int)
+)
+
+// retainPDFImageFromPixels creates an image from the given pixels and takes a reference to it. Pass the result to
+// releasePDFImage when done with it. The lock is held across the creation because unison's content-hash dedup may
+// return an image that another renderer is concurrently releasing; serializing creation against the disposal in
+// releasePDFImage is what closes that race.
+func retainPDFImageFromPixels(width, height int, pixels []byte, scale geom.Point) (*unison.Image, error) {
+	pdfImageRefsLock.Lock()
+	defer pdfImageRefsLock.Unlock()
+	img, err := unison.NewImageFromPixels(width, height, pixels, scale)
+	if err != nil {
+		return nil, err
+	}
+	pdfImageRefs[img]++
+	return img, nil
+}
+
+// releasePDFImage drops a reference taken by retainPDFImageFromPixels, disposing the image once the last reference goes
+// away. Disposal is deferred to the UI thread because drawing only happens there, which guarantees the disposal can't
+// interleave with a draw that is still using the image. A retain may have resurrected the image by the time the task
+// runs, so the count is rechecked before disposing.
+func releasePDFImage(img *unison.Image) {
+	if img == nil {
+		return
+	}
+	pdfImageRefsLock.Lock()
+	defer pdfImageRefsLock.Unlock()
+	count, exists := pdfImageRefs[img]
+	if !exists {
+		return
+	}
+	count--
+	pdfImageRefs[img] = count
+	if count > 0 {
+		return
+	}
+	unison.InvokeTask(func() {
+		pdfImageRefsLock.Lock()
+		defer pdfImageRefsLock.Unlock()
+		if c, ok := pdfImageRefs[img]; ok && c == 0 {
+			delete(pdfImageRefs, img)
+			img.Dispose()
+		}
+	})
 }

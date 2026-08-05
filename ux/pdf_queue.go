@@ -15,7 +15,6 @@ import (
 
 type pdfQueueParams struct {
 	pdf             *PDFRenderer
-	params          pdfParams
 	onlyIfInBacklog bool
 }
 
@@ -25,7 +24,13 @@ type pdfQueueData struct {
 	backlog []*pdfQueueParams
 }
 
-var pdfQueue = newPDFQueue()
+var pdfQueue *pdfQueueData
+
+// The queue is created here rather than in the variable's initializer because the renderer resubmits itself as it
+// finishes each page, which makes the queue's initialization appear to be cyclic to the compiler.
+func init() {
+	pdfQueue = newPDFQueue()
+}
 
 func newPDFQueue() *pdfQueueData {
 	q := &pdfQueueData{
@@ -38,13 +43,15 @@ func newPDFQueue() *pdfQueueData {
 }
 
 // submitPDF a pdf for rendering. This intentionally prioritizes the most recent submission over older ones, on the
-// theory that the newest is the one attempting to be viewed right this moment. Note that we also only ever render one
-// page at a time. This is a limitation of the underlying C library. In theory, rendering pages from different PDFs at
-// the same time should be possible, but I get sporadic crashes if I do that.
+// theory that the newest is the one attempting to be viewed right this moment. No page number is passed along, since
+// the renderer picks the highest priority page that still needs to be rendered at the moment the work is actually
+// started, which means the newest visibility information always wins. Note that we also only ever render one page at a
+// time. pdfview is pure Go and serializes rendering within a single document internally, so this isn't needed for
+// correctness -- the single worker is kept for simplicity and to bound the memory churn that rendering many large
+// pages at once would cause.
 func submitPDF(pdf *PDFRenderer, onlyIfInBacklog bool) {
 	pdfQueue.in <- &pdfQueueParams{
 		pdf:             pdf,
-		params:          *pdf.lastRequest,
 		onlyIfInBacklog: onlyIfInBacklog,
 	}
 }
@@ -85,6 +92,6 @@ func (q *pdfQueueData) addToBacklog(p *pdfQueueParams) {
 
 func (q *pdfQueueData) worker() {
 	for p := range q.work {
-		p.pdf.render(&p.params)
+		p.pdf.renderNext()
 	}
 }

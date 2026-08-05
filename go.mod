@@ -8,7 +8,7 @@ require (
 	github.com/go-git/go-git/v6 v6.0.0-alpha.5
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/canvas v0.2.4
-	github.com/richardwilkes/pdfview v0.3.1
+	github.com/richardwilkes/pdfview v0.4.0
 	github.com/richardwilkes/rpgtools v1.13.0
 	github.com/richardwilkes/toolbox/v2 v2.15.2
 	github.com/richardwilkes/unison v0.96.0
