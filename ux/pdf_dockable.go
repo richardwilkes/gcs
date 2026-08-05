@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
@@ -43,8 +44,9 @@ const (
 )
 
 var (
-	_ FileBackedDockable = &PDFDockable{}
-	_ unison.TabCloser   = &PDFDockable{}
+	_ FileBackedDockable     = &PDFDockable{}
+	_ unison.TabCloser       = &PDFDockable{}
+	_ boundsDeferredDockable = &PDFDockable{}
 )
 
 // PDFDockable holds the view for a PDFRenderer file.
@@ -64,6 +66,7 @@ type PDFDockable struct {
 	autoScalingPopup       *unison.PopupMenu[autoscale.Option]
 	searchField            *unison.Field
 	matchesLabel           *unison.Label
+	pageCountLabel         *unison.Label
 	sideBarButton          *unison.Button
 	backButton             *unison.Button
 	forwardButton          *unison.Button
@@ -72,14 +75,19 @@ type PDFDockable struct {
 	nextPageButton         *unison.Button
 	lastPageButton         *unison.Button
 	link                   *PDFLink
+	loadErr                error
 	pageRects              []geom.Rect
 	history                []int
+	boundsKnownCallbacks   []func()
 	currentPage            int
+	initialPage            int
 	pendingScrollPage      int
 	linkPage               int
 	scale                  int
 	historyPos             int
+	loadStarted            time.Time
 	docSize                geom.Size
+	provisionalDocSize     geom.Size
 	rolloverRect           geom.Rect
 	dragStart              geom.Point
 	dragOrigin             geom.Point
@@ -88,9 +96,15 @@ type PDFDockable struct {
 	noUpdate               bool
 	adjustTableSizePending bool
 	viewSyncPending        bool
+	closed                 bool
 }
 
-// NewPDFDockable creates a new unison.Dockable for PDFRenderer files.
+// NewPDFDockable creates a new unison.Dockable for PDFRenderer files. The document itself is not loaded here: opening
+// it can take anywhere from a moment to several minutes -- the worst case being a large file that the OS has to fetch
+// back from cloud storage before it can be read -- and doing that on the UI thread makes the whole application
+// unresponsive before its window has even appeared. Instead, a fully-formed dockable in a loading state is returned
+// immediately and the document is prepared on a background goroutine. As a result, this never fails; a document that
+// can't be loaded reports the failure within the dockable rather than by returning an error.
 func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 	generalSettings := gurps.GlobalSettings().General
 	d := &PDFDockable{
@@ -98,20 +112,19 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 		scale:             generalSettings.InitialPDFUIScale,
 		autoScaling:       generalSettings.PDFAutoScaling,
 		noUpdate:          true,
+		initialPage:       initialPage,
 		pendingScrollPage: -1,
 		linkPage:          -1,
+		loadStarted:       time.Now(),
 	}
 	d.Self = d
-	var err error
-	if d.pdf, err = NewPDFRenderer(filePath, func(_ int) {
-		unison.InvokeTask(d.pageRendered)
-	}); err != nil {
-		return nil, err
-	}
-	d.buildPageLayout()
 	d.KeyDownCallback = d.keyDown
+	// Both of these ask the renderer to claim the render queue's priority, but d.pdf is nil until the load completes,
+	// so they have to go through a nil-checked helper. In particular, GainedFocusCallback can't be the method value
+	// d.pdf.RequestRenderPriority any longer: a method value binds its receiver where it is taken, which would capture
+	// the nil renderer here and then dereference it the first time the view was focused.
 	d.FocusChangeInHierarchyCallback = d.focusChangeInHierarchy
-	d.GainedFocusCallback = d.pdf.RequestRenderPriority
+	d.GainedFocusCallback = d.requestRenderPriority
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.createTOC()
@@ -123,9 +136,121 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 
 	d.noUpdate = false
 	d.scaleField.SetEnabled(d.autoScaling == autoscale.No)
-	d.LoadPage(initialPage)
+
+	// Both of these ultimately call unison.PrimaryDisplay(), which is only safe on the UI thread, so they are resolved
+	// here and handed to the renderer rather than being looked up by the goroutine below.
+	ppi := float32(generalSettings.MonitorPPI())
+	scaleAdjust := geom.NewPoint(1, 1).DivPt(primaryDisplayScale())
+	d.provisionalDocSize = provisionalPDFDocSize(ppi, scaleAdjust)
+	go d.load(filePath, ppi, scaleAdjust)
 
 	return d, nil
+}
+
+// load prepares the document on a background goroutine and then hands the result back to the UI thread. Nothing in
+// here may touch the dockable's fields or any other UI object: the file path and the display-derived values are passed
+// in as parameters for that reason, and everything that has to be done with the result happens in loadCompleted.
+func (d *PDFDockable) load(filePath string, ppi float32, scaleAdjust geom.Point) {
+	pdf, err := NewPDFRenderer(filePath, ppi, scaleAdjust, func(_ int) {
+		unison.InvokeTask(d.pageRendered)
+	})
+	unison.InvokeTask(func() { d.loadCompleted(pdf, err) })
+}
+
+// loadCompleted installs the freshly prepared renderer, or records the failure that prevented one from being made. It
+// runs on the UI thread, since it touches the dockable's fields and the widgets that were built against a page count
+// that wasn't known yet.
+func (d *PDFDockable) loadCompleted(pdf *PDFRenderer, err error) {
+	if d.closed {
+		if pdf != nil {
+			pdf.Close()
+		}
+		d.boundsKnownCallbacks = nil
+		return
+	}
+	if err != nil {
+		errs.Log(err, "path", d.path)
+		d.loadErr = err
+		d.MarkForRedraw()
+		d.notifyBoundsKnown()
+		return
+	}
+	d.pdf = pdf
+	d.buildPageLayout()
+	d.syncPageCountDependents()
+	d.MarkForLayoutAndRedraw()
+	// This has to come before the scroll below: the callbacks are what create the window for a dockable whose placement
+	// was deferred until its size was known, and a scroll can only be applied once there is a window to apply it
+	// within. In this order the initially requested page is scrolled to right now, rather than having to wait for a
+	// later layout pass to notice the pending request.
+	d.notifyBoundsKnown()
+	// The scroll to the initially requested page couldn't be honored at construction time, since there were no pages to
+	// scroll to yet, so it is issued now.
+	d.LoadPage(d.initialPage)
+	if d.HasInSelfOrDescendants(func(p *unison.Panel) bool { return p.Focused() }) {
+		// The focus arrived while the document was still loading, so the claim the focus callbacks would have made was
+		// dropped on the floor. Make it now, so a document that was opened and focused normally renders ahead of the
+		// ones merely catching up in the background.
+		d.pdf.RequestRenderPriority()
+	}
+}
+
+// BoundsKnown implements boundsDeferredDockable. The size of the document isn't known until it has been loaded, at
+// which point the provisional size docSizer reports gives way to the real one. A document that failed to load never
+// gets a real size, but it is never going to get one, either, so it counts as known.
+func (d *PDFDockable) BoundsKnown() bool {
+	return d.pdf != nil || d.loadErr != nil
+}
+
+// WhenBoundsKnown implements boundsDeferredDockable. If the bounds are already known, the callback is invoked before
+// returning.
+func (d *PDFDockable) WhenBoundsKnown(callback func()) {
+	if d.BoundsKnown() {
+		callback()
+		return
+	}
+	d.boundsKnownCallbacks = append(d.boundsKnownCallbacks, callback)
+	if len(d.boundsKnownCallbacks) == 1 {
+		// Waiting on a document that turns out to be slow can't be allowed to go on indefinitely, so the wait is capped
+		// at the same threshold the loading overlay uses, measured from the same moment. Whatever is waiting therefore
+		// proceeds precisely when the overlay would appear: a window created at that point is sized to the provisional
+		// page docSizer reports and shows the user that the document is on its way, rather than nothing at all having
+		// happened. The load isn't abandoned; it simply stops being waited on. Only the first registration arms this,
+		// since the cap is on how long the document may take, not on how long any one caller has been waiting.
+		unison.InvokeTaskAfter(d.notifyBoundsKnown,
+			max(maxElapsedRenderTimeWithoutOverlay-time.Since(d.loadStarted), 0))
+	}
+}
+
+// notifyBoundsKnown invokes the callbacks registered through WhenBoundsKnown and discards them. The list is emptied
+// before anything is invoked, so each callback runs exactly once no matter how the load completion and the cap on the
+// wait interleave. Nothing is invoked once the dockable has been closed: there is no longer a view for a callback to
+// act upon, so the registrations are simply dropped.
+func (d *PDFDockable) notifyBoundsKnown() {
+	callbacks := d.boundsKnownCallbacks
+	d.boundsKnownCallbacks = nil
+	if d.closed {
+		return
+	}
+	for _, callback := range callbacks {
+		callback()
+	}
+}
+
+// requestRenderPriority claims the render queue's priority for this document, if it has finished loading.
+func (d *PDFDockable) requestRenderPriority() {
+	if d.pdf != nil {
+		d.pdf.RequestRenderPriority()
+	}
+}
+
+// pageCount returns the number of pages in the document, which is zero until it has finished loading and stays zero if
+// it failed to load.
+func (d *PDFDockable) pageCount() int {
+	if d.pdf == nil {
+		return 0
+	}
+	return d.pdf.PageCount()
 }
 
 // buildPageLayout computes the area each page occupies within the document panel. Pages are stacked vertically,
@@ -217,40 +342,48 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	pageLabel.SetTitle(i18n.Text("Page"))
 	first.AddChild(pageLabel)
 
+	// The toolbar is built before the document has been loaded, so everything that depends on the page count starts out
+	// reflecting a count of zero and is brought up to date by syncPageCountDependents once the load completes. The
+	// navigation widgets are created disabled for the same reason: there is nowhere to navigate to yet, and a document
+	// that fails to load leaves them that way. syncViewState gives them their real state on the first sync after the
+	// document has been laid out.
 	d.pageNumberField = unison.NewField()
-	d.pageNumberField.SetMinimumTextWidthUsing(strconv.Itoa(d.pdf.PageCount() * 10))
+	d.pageNumberField.SetEnabled(false)
+	d.pageNumberField.SetMinimumTextWidthUsing(strconv.Itoa(d.pageCount() * 10))
 	d.pageNumberField.ModifiedCallback = func(_, after *unison.FieldState) {
 		if d.noUpdate {
 			return
 		}
-		if pageNum, e := strconv.Atoi(after.Text); e == nil && pageNum > 0 && pageNum <= d.pdf.PageCount() {
+		if pageNum, e := strconv.Atoi(after.Text); e == nil && pageNum > 0 && pageNum <= d.pageCount() {
 			d.ScrollToPage(pageNum-1, true)
 		}
 	}
 	d.pageNumberField.ValidateCallback = func() bool {
 		pageNum, e := strconv.Atoi(d.pageNumberField.Text())
-		if e != nil || pageNum < 1 || pageNum > d.pdf.PageCount() {
+		if e != nil || pageNum < 1 || pageNum > d.pageCount() {
 			return false
 		}
 		return true
 	}
 	first.AddChild(d.pageNumberField)
 
-	ofLabel := unison.NewLabel()
-	ofLabel.Font = unison.DefaultFieldTheme.Font
-	ofLabel.SetTitle(fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount()))
-	first.AddChild(ofLabel)
+	d.pageCountLabel = unison.NewLabel()
+	d.pageCountLabel.Font = unison.DefaultFieldTheme.Font
+	d.pageCountLabel.SetTitle(fmt.Sprintf(i18n.Text("of %d"), d.pageCount()))
+	first.AddChild(d.pageCountLabel)
 
 	first.AddChild(NewToolbarSeparator())
 
 	d.backButton = unison.NewSVGButton(svg.Back)
 	d.backButton.Tooltip = newWrappedTooltip(i18n.Text("Back"))
 	d.backButton.ClickCallback = d.Back
+	d.backButton.SetEnabled(false)
 	first.AddChild(d.backButton)
 
 	d.forwardButton = unison.NewSVGButton(svg.Forward)
 	d.forwardButton.Tooltip = newWrappedTooltip(i18n.Text("Forward"))
 	d.forwardButton.ClickCallback = d.Forward
+	d.forwardButton.SetEnabled(false)
 	first.AddChild(d.forwardButton)
 
 	first.AddChild(NewToolbarSeparator())
@@ -258,21 +391,25 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	d.firstPageButton = unison.NewSVGButton(svg.First)
 	d.firstPageButton.Tooltip = newWrappedTooltip(i18n.Text("First Page"))
 	d.firstPageButton.ClickCallback = func() { d.ScrollToPage(0, true) }
+	d.firstPageButton.SetEnabled(false)
 	first.AddChild(d.firstPageButton)
 
 	d.previousPageButton = unison.NewSVGButton(svg.Previous)
 	d.previousPageButton.Tooltip = newWrappedTooltip(i18n.Text("Previous Page"))
 	d.previousPageButton.ClickCallback = func() { d.ScrollToPage(d.currentPage-1, true) }
+	d.previousPageButton.SetEnabled(false)
 	first.AddChild(d.previousPageButton)
 
 	d.nextPageButton = unison.NewSVGButton(svg.Next)
 	d.nextPageButton.Tooltip = newWrappedTooltip(i18n.Text("Next Page"))
 	d.nextPageButton.ClickCallback = func() { d.ScrollToPage(d.currentPage+1, true) }
+	d.nextPageButton.SetEnabled(false)
 	first.AddChild(d.nextPageButton)
 
 	d.lastPageButton = unison.NewSVGButton(svg.Last)
 	d.lastPageButton.Tooltip = newWrappedTooltip(i18n.Text("Last Page"))
-	d.lastPageButton.ClickCallback = func() { d.ScrollToPage(d.pdf.PageCount()-1, true) }
+	d.lastPageButton.ClickCallback = func() { d.ScrollToPage(d.pageCount()-1, true) }
+	d.lastPageButton.SetEnabled(false)
 	first.AddChild(d.lastPageButton)
 
 	first.SetLayout(&unison.FlexLayout{
@@ -319,6 +456,16 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 		VSpacing: unison.StdVSpacing,
 	})
 	return outer
+}
+
+// syncPageCountDependents brings the toolbar widgets whose appearance depends on the page count into agreement with
+// it. They are created while the document is still loading, so the page count they were built against was zero.
+func (d *PDFDockable) syncPageCountDependents() {
+	count := d.pageCount()
+	d.pageNumberField.SetEnabled(true)
+	d.pageNumberField.SetMinimumTextWidthUsing(strconv.Itoa(count * 10))
+	d.pageCountLabel.SetTitle(fmt.Sprintf(i18n.Text("of %d"), count))
+	d.pageCountLabel.Parent().MarkForLayoutAndRedraw()
 }
 
 func (d *PDFDockable) createTOC() {
@@ -390,6 +537,9 @@ func (d *PDFDockable) createContent() {
 		VGrab:  true,
 	})
 	d.docScroll.SetContent(d.docPanel, behavior.Fill, behavior.Fill)
+	// A panel's layout takes precedence over its sizer, and a ScrollPanel is its own layout, so the one-page preferred
+	// size has to be provided by wrapping that layout rather than by setting a sizer.
+	d.docScroll.SetLayout(&pdfScrollLayout{d: d})
 	d.docScroll.ContentView().DrawOverCallback = d.drawOverlay
 
 	// The viewport's frame changes both when it is first laid out and whenever it is resized, either of which alters
@@ -467,6 +617,14 @@ func (d *PDFDockable) Forward() {
 
 // LoadPage scrolls to the specified page, recording the jump in the history.
 func (d *PDFDockable) LoadPage(pageNumber int) {
+	if d.pdf == nil {
+		// The document hasn't finished loading, so there is nothing to scroll to yet. Hold onto the request and let the
+		// load completion issue it, which is the same path the page the dockable was created for takes. This matters
+		// for a page reference that targets a document which is already open but still loading: the jump it asks for
+		// must supersede the one the dockable was opened with rather than being dropped.
+		d.initialPage = pageNumber
+		return
+	}
 	d.ScrollToPage(pageNumber, true)
 }
 
@@ -631,6 +789,11 @@ func (d *PDFDockable) applyAutoScaling() {
 }
 
 func (d *PDFDockable) pageRendered() {
+	if d.pdf == nil {
+		// Nothing can have been rendered before the renderer is installed, so this can't happen today, but the callback
+		// this arrives through is handed to the renderer while it is still being constructed, so guard anyway.
+		return
+	}
 	if d.tocPanel.RootRowCount() == 0 {
 		if toc := d.pdf.TOC(); len(toc) != 0 {
 			d.tocPanel.SetRootRows(newTOC(d, nil, toc))
@@ -766,15 +929,20 @@ func (d *PDFDockable) mouseUp(where geom.Point, button int, _ mod.Modifiers) boo
 }
 
 func (d *PDFDockable) focusChangeInHierarchy(_, _ *unison.Panel) {
-	d.pdf.RequestRenderPriority()
+	d.requestRenderPriority()
 }
 
 func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ mod.Modifiers, _ bool) bool {
+	if len(d.pageRects) == 0 {
+		// There is nothing to navigate within while the document is loading or after it has failed to load, so let the
+		// keys go on to whatever else might want them.
+		return false
+	}
 	switch keyCode {
 	case unison.KeyHome:
 		d.ScrollToPage(0, true)
 	case unison.KeyEnd:
-		d.ScrollToPage(d.pdf.PageCount()-1, true)
+		d.ScrollToPage(len(d.pageRects)-1, true)
 	case unison.KeyLeft, unison.KeyUp:
 		d.ScrollToPage(d.currentPage-1, true)
 	case unison.KeyRight, unison.KeyDown:
@@ -785,9 +953,54 @@ func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ mod.Modifiers, _ bool) b
 	return true
 }
 
+// docSizer reports the size of the document panel, which is the size of the document laid out by buildPageLayout. Until
+// the document has been loaded there is no layout to report, so a provisional single-page size stands in for it, so
+// that anything sizing itself to fit the dockable -- a window opened for it, in particular -- has something
+// page-shaped to work with rather than nothing at all. A document that failed to load keeps the provisional size,
+// since no real one will ever be known for it.
 func (d *PDFDockable) docSizer(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	prefSize = d.docSize
+	if d.pdf == nil {
+		prefSize = d.provisionalDocSize
+	}
 	return geom.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
+}
+
+// pdfScrollLayout wraps the document ScrollPanel's own layout to change only what the scroll area reports as its
+// preferred size: enough to show a single page at the current zoom, rather than its content's preference, which is the
+// entire document stacked end to end. A window is packed around the preferred size, and for a many-page document the
+// content's preference is tens of thousands of points tall, so such a window is clamped to the display and the title
+// bar and toolbar then eat into what remains, cutting the bottom off the page. Preferring one page plus its
+// surrounding margins instead makes a packed window come out at exactly a full page plus the toolbar whenever the
+// display is tall enough. Only what is asked of the layouts above changes: laying out the scroll panel's children is
+// delegated to the ScrollPanel itself, so scrolling still covers the whole document, and the maximum is unbounded, so
+// the dock and the user remain free to make the view any size they like. Before the document has been loaded -- and in
+// its place if the load fails -- the same US Letter stand-in the document panel reports is used.
+type pdfScrollLayout struct {
+	d *PDFDockable
+}
+
+func (l *pdfScrollLayout) LayoutSizes(_ *unison.Panel, _ geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	d := l.d
+	if len(d.pageRects) == 0 {
+		prefSize = d.provisionalDocSize
+	} else {
+		prefSize = geom.NewSize(d.docSize.Width, d.pageRects[0].Height+2*pdfPageGap)
+	}
+	return geom.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
+}
+
+func (l *pdfScrollLayout) PerformLayout(p *unison.Panel) {
+	l.d.docScroll.PerformLayout(p)
+}
+
+// provisionalPDFDocSize returns the document size to report while the real one is unknown: a single US Letter page,
+// sized as the renderer would size one for this display and surrounded by the same margins buildPageLayout puts around
+// a real page. A window packed around that has the proportions of a page rather than those of an empty panel, and no
+// resize is needed once the document does arrive: the view simply scrolls within the frame the user already has.
+func provisionalPDFDocSize(ppi float32, scaleAdjust geom.Point) geom.Size {
+	size := pdfUSLetterLogicalSize(ppi, scaleAdjust).Mul(scaleAdj)
+	return geom.NewSize(size.Width+2*pdfPageGap, size.Height+2*pdfPageGap)
 }
 
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
@@ -845,6 +1058,22 @@ func adjustForModulate(c unison.Color) unison.Color {
 }
 
 func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty geom.Rect) {
+	if d.loadErr != nil {
+		d.drawOverlayMsg(gc, dirty, fmt.Sprintf("%s", d.loadErr), true) //nolint:gocritic // I want the extra processing %s does in this case
+		return
+	}
+	if d.pdf == nil {
+		// The document is still being loaded. Hold the message back for the same interval a slow page render does, so
+		// that opening a document which comes up promptly doesn't flash an overlay on screen and straight back off
+		// again. There is nothing to redraw for on its own, so a redraw is scheduled for the moment the threshold is
+		// crossed.
+		if waitFor := maxElapsedRenderTimeWithoutOverlay - time.Since(d.loadStarted); waitFor > renderTimeSlop {
+			unison.InvokeTaskAfter(d.MarkForRedraw, waitFor)
+		} else {
+			d.drawOverlayMsg(gc, dirty, fmt.Sprintf(i18n.Text("Loading %s…"), d.Title()), false)
+		}
+		return
+	}
 	if len(d.pageRects) == 0 {
 		return
 	}
@@ -970,7 +1199,14 @@ func (d *PDFDockable) AttemptClose() bool {
 	if !AttemptCloseForDockable(d) {
 		return false
 	}
-	d.pdf.Close()
+	// This flag needs no synchronization, even though the load runs on a background goroutine: it is only ever written
+	// here and only ever read by the load completion task, and both of those run on the UI thread, so they can't
+	// interleave. If the load hasn't finished yet, its completion task will see this and dispose of the renderer it
+	// produced rather than installing it into a dockable that is already gone.
+	d.closed = true
+	if d.pdf != nil {
+		d.pdf.Close()
+	}
 	return true
 }
 

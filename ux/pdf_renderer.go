@@ -16,7 +16,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/pdfview"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -95,9 +94,20 @@ type PDFRenderer struct {
 	ppi float32
 }
 
-// NewPDFRenderer creates a new PDFRenderer page renderer. The callback is invoked on the rendering goroutine each time
-// a page becomes available, so it must not touch the UI directly.
-func NewPDFRenderer(filePath string, pageRenderedCallback func(pageNumber int)) (*PDFRenderer, error) {
+// NewPDFRenderer creates a new PDFRenderer page renderer. Everything it does is potentially slow: reading the whole
+// file into memory, parsing it, and then asking every page for the size it will render at. A file that the OS has to
+// fetch back from cloud storage first can make the read alone take minutes, so this is meant to be called from a
+// background goroutine rather than from the UI thread.
+//
+// That is precisely why ppi and scaleAdjust are parameters rather than being looked up in here. They derive from
+// gurps.GlobalSettings().General.MonitorPPI() and primaryDisplayScale(), both of which end up calling
+// unison.PrimaryDisplay(), which is only safe to touch from the main/UI thread on some platforms. The caller must
+// capture both values on the UI thread and hand them in. Do not "simplify" this by moving those lookups back inside
+// this function.
+//
+// The callback is invoked on the rendering goroutine each time a page becomes available, so it must not touch the UI
+// directly.
+func NewPDFRenderer(filePath string, ppi float32, scaleAdjust geom.Point, pageRenderedCallback func(pageNumber int)) (*PDFRenderer, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, errs.Wrap(err)
@@ -107,8 +117,8 @@ func NewPDFRenderer(filePath string, pageRenderedCallback func(pageNumber int)) 
 		return nil, errs.Wrap(err)
 	}
 	p := &PDFRenderer{
-		ppi:                  float32(gurps.GlobalSettings().General.MonitorPPI()),
-		scaleAdjust:          geom.NewPoint(1, 1).DivPt(primaryDisplayScale()),
+		ppi:                  ppi,
+		scaleAdjust:          scaleAdjust,
 		doc:                  doc,
 		pageCount:            doc.PageCount(),
 		pageRenderedCallback: pageRenderedCallback,
@@ -118,7 +128,7 @@ func NewPDFRenderer(filePath string, pageRenderedCallback func(pageNumber int)) 
 	}
 
 	// We always render the PDF at the largest scale
-	p.dpi = int(((maxPDFDockableScale * p.ppi) / 100) / min(p.scaleAdjust.X, p.scaleAdjust.Y))
+	p.dpi = pdfRenderDPI(p.ppi, p.scaleAdjust)
 
 	// Precompute the logical size of every page. PageRenderSize reports the exact pixel dimensions RenderPage will
 	// produce at our dpi, so multiplying by scaleAdjust (the scale the images are created with) yields precisely what
@@ -129,12 +139,28 @@ func NewPDFRenderer(filePath string, pageRenderedCallback func(pageNumber int)) 
 		if w, h, err = doc.PageRenderSize(i, p.dpi); err != nil {
 			// The page can't be loaded, which means RenderPage will fail at the same point later on and the slot will
 			// only ever show an error, so just reserve a US Letter-sized slot for it.
-			p.pageSizes[i] = geom.NewSize(8.5*float32(p.dpi)*p.scaleAdjust.X, 11*float32(p.dpi)*p.scaleAdjust.Y)
+			p.pageSizes[i] = pdfUSLetterLogicalSize(p.ppi, p.scaleAdjust)
 			continue
 		}
 		p.pageSizes[i] = geom.NewSize(float32(w)*p.scaleAdjust.X, float32(h)*p.scaleAdjust.Y)
 	}
 	return p, nil
+}
+
+// pdfRenderDPI returns the resolution pages are rendered at on a display with the given pixels-per-inch and image
+// scale adjustment. Pages are always rendered at the maximum zoom, since zooming scales the already-rendered image
+// rather than re-rendering it, and the adjustment compensates for the extra pixels a high-density display's images
+// carry, so that the result is the same physical size everywhere.
+func pdfRenderDPI(ppi float32, scaleAdjust geom.Point) int {
+	return int(((maxPDFDockableScale * ppi) / 100) / min(scaleAdjust.X, scaleAdjust.Y))
+}
+
+// pdfUSLetterLogicalSize returns the logical size a US Letter page has once rendered at pdfRenderDPI, which is what
+// PageLogicalSize would report for such a page. It stands in wherever a real page size isn't available: for a page
+// that can't be loaded, and for a document that hasn't been loaded yet.
+func pdfUSLetterLogicalSize(ppi float32, scaleAdjust geom.Point) geom.Size {
+	dpi := float32(pdfRenderDPI(ppi, scaleAdjust))
+	return geom.NewSize(8.5*dpi*scaleAdjust.X, 11*dpi*scaleAdjust.Y)
 }
 
 // PageCount returns the total page count.
@@ -201,7 +227,9 @@ func (p *PDFRenderer) SetWantedPages(pages []int, search string) {
 	}
 	p.lock.Unlock()
 	if needsRender {
-		submitPDF(p, false)
+		// This is a user signal -- the document was just opened, scrolled, resized or searched -- so it jumps ahead of
+		// the documents that are merely working their way through what they still owe.
+		pdfQueue.submitUserSignal(p)
 	}
 }
 
@@ -230,16 +258,20 @@ func (p *PDFRenderer) PendingSince(pageNumber int) (requested time.Time, pending
 	return requested, pending
 }
 
-// RequestRenderPriority attempts to bump this PDFRenderer's rendering to the head of the queue.
+// RequestRenderPriority makes this PDFRenderer the render queue's priority document, which is done when its view gains
+// the focus. It keeps that status until another document claims it, so everything this one wants is rendered before the
+// queue returns to the documents in the background. The claim is made even when nothing needs rendering at the moment,
+// so that scrolling or searching within the focused document is served immediately.
 func (p *PDFRenderer) RequestRenderPriority() {
 	p.lock.Lock()
+	closed := p.closed
 	needsRender := false
-	if !p.closed {
+	if !closed {
 		_, needsRender = p.nextWantedPage()
 	}
 	p.lock.Unlock()
-	if needsRender {
-		submitPDF(p, true)
+	if !closed {
+		pdfQueue.submitPriority(p, needsRender)
 	}
 }
 
@@ -252,6 +284,10 @@ func (p *PDFRenderer) Close() {
 	clear(p.wantSet)
 	p.discardCachedPages()
 	p.lock.Unlock()
+	// Anything the queue is still holding for this renderer is dropped, so that neither a backlog entry nor the
+	// priority keeps the renderer -- and the document buffer it holds onto -- alive. See submitRemoval for why sending
+	// this from the UI thread while the worker may be in the middle of a render can't deadlock.
+	pdfQueue.submitRemoval(p)
 	p.doc.Release()
 }
 
@@ -352,7 +388,9 @@ func (p *PDFRenderer) recordPage(page *PDFPage, bytes uint64, generation int) bo
 	}
 	p.lock.Unlock()
 	if more {
-		submitPDF(p, false)
+		// A continuation, rather than a user signal: this renderer is simply asking for its next page, so it goes to
+		// the back of the line and lets the other documents that are catching up have a turn.
+		pdfQueue.submitContinuation(p)
 	}
 	return true
 }

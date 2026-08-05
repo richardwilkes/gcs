@@ -60,6 +60,21 @@ type GroupedCloser interface {
 	CloseWithGroup(other unison.Paneler) bool
 }
 
+// boundsDeferredDockable is implemented by a Dockable that can't report a meaningful size when it is created, because
+// what it will display is still being prepared on a background goroutine. A window is sized to fit its content, so
+// giving such a Dockable a window immediately would pack that window around a placeholder and leave the user with a
+// uselessly small frame that nothing would ever correct. Window creation waits on the bounds instead; see
+// placeInWindow.
+type boundsDeferredDockable interface {
+	// BoundsKnown returns true when the Dockable's preferred size reflects what it will actually display.
+	BoundsKnown() bool
+	// WhenBoundsKnown registers a callback to be invoked on the UI thread once the bounds become known, or once the
+	// Dockable has been waiting long enough that continuing to wait would be worse for the user than proceeding
+	// without them, whichever comes first. Each callback is invoked exactly once, or not at all if the Dockable is
+	// closed before either of those occurs.
+	WhenBoundsKnown(callback func())
+}
+
 // InitWorkspace initializes the Workspace singleton.
 func InitWorkspace(wnd *unison.Window) {
 	Workspace.ErrorHandler = func(msg string, err error) { errs.Log(errs.NewWithCause(msg, err)) }
@@ -368,11 +383,12 @@ func LocateDockContainerForExtension(ext ...string) *unison.DockContainer {
 }
 
 // PlaceInDock places the Dockable into the workspace document dock, grouped with the provided group, if that group is
-// present.
+// present. If the group is one that is configured to open in its own window instead, and forceIntoDock is false, the
+// Dockable is given a window of its own, the creation of which may be deferred; see placeInWindow.
 func PlaceInDock(dockable unison.Dockable, group dgroup.Group, forceIntoDock bool) {
 	InstallDockUndockCmd(dockable)
 	if !forceIntoDock && slices.Contains(gurps.GlobalSettings().OpenInWindow, group) {
-		if _, err := NewWindowForDockable(dockable, group); err != nil {
+		if _, err := placeInWindow(dockable, group); err != nil {
 			errs.Log(err)
 		}
 		return
@@ -419,7 +435,8 @@ func MoveDockableToWorkspace(dockable unison.Dockable) {
 }
 
 // MoveDockableToWindow closes the tab a dockable is in within the workspace and opens a windows for it instead. If
-// already in its own window, does nothing.
+// already in its own window, does nothing. The returned window is nil if the creation of the window had to be deferred
+// until the dockable's bounds are known; see placeInWindow.
 func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
 	panel := dockable.AsPanel()
 	wnd := panel.Window()
@@ -435,6 +452,34 @@ func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
 	group, ok := panel.ClientData()[dockGroupClientDataKey].(dgroup.Group)
 	if !ok {
 		group = dgroup.Editors // Arbitrary
+	}
+	return placeInWindow(dockable, group)
+}
+
+// placeInWindow gives the Dockable a window of its own. A Dockable whose bounds aren't known yet has that window
+// created later, once they are, since packing a window around content that can't yet say how big it is would produce a
+// frame the user would have to fix by hand. Nothing is shown for the Dockable in the meantime, which is why the wait a
+// boundsDeferredDockable permits is a short one. A nil window is returned when the creation was deferred, since there
+// is no window to return yet.
+func placeInWindow(dockable unison.Dockable, group dgroup.Group) (*unison.Window, error) {
+	if deferred, ok := dockable.(boundsDeferredDockable); ok && !deferred.BoundsKnown() {
+		deferred.WhenBoundsKnown(func() {
+			if dockable.AsPanel().Window() != nil {
+				// It was given a window by some other means while the wait was on, so there is nothing left to do.
+				return
+			}
+			if _, err := NewWindowForDockable(dockable, group); err != nil {
+				errs.Log(err)
+				return
+			}
+			// There was no window at the point the Dockable was placed, so any request to focus its content made then
+			// went nowhere. Make it now, so that a deferred window ends up with the focus where an immediate one would
+			// have had it.
+			if children := dockable.AsPanel().Children(); len(children) > 1 {
+				FocusFirstContent(children[0], children[1])
+			}
+		})
+		return nil, nil
 	}
 	return NewWindowForDockable(dockable, group)
 }
@@ -500,7 +545,12 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	}
 	panel.ClientData()[dockGroupClientDataKey] = group
 	InstallDockUndockCmd(dockable)
-	wnd.Pack()
+	// The window is packed at the location it is going to occupy, not where it happens to have been created: packing
+	// clamps the window to the display it is on at the time, and a freshly created window may be sitting on a smaller
+	// display than the one it is about to be moved to. Packing first and moving after would carry that smaller
+	// display's clamp along, leaving the window shorter than its content asked for even though its eventual display
+	// had the room.
+	wnd.PackWithLocation(frame.Point)
 	wndFrame := wnd.FrameRect()
 	frame.Y += (frame.Height - wndFrame.Height) / 3
 	frame.Height = wndFrame.Height

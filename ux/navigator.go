@@ -1212,7 +1212,9 @@ func DisplayNewDockable(dockable unison.Dockable) {
 		}
 		if group != nil {
 			if slices.Contains(gurps.GlobalSettings().OpenInWindow, *group) {
-				if _, err := NewWindowForDockable(dockable, *group); err != nil {
+				// The window may not come into existence until later, in which case the focus the deferred call above
+				// asks for goes nowhere and is made again once the window has been created.
+				if _, err := placeInWindow(dockable, *group); err != nil {
 					errs.Log(err)
 				}
 				return
