@@ -42,7 +42,36 @@
   percentage, and a value with an `x` multiplies; it can optionally scale per level, and can apply to the trait it is
   attached to ("to this trait") or to other traits matched by name and tags ("to traits whose name"). (#1060)
 - Added a "Cursor Size" setting to the General Settings, allowing the size of the mouse cursor to be adjusted. Also
-  added two new theme colors to control the foreground and background colors of the cursors.
+  added two new theme colors to control the foreground and background colors of the cursors. In addition, cursors are
+  now drawn from their vector artwork at each display's exact resolution rather than being scaled from a single
+  fixed-size image, making them noticeably sharper on Windows systems using a fractional display scale and on
+  non-Retina Mac displays.
+- GCS is now built entirely from Go. The window management, drawing, text layout, and PDF generation previously done by
+  a bundled native graphics library, and the PDF display previously done by a bundled native PDF library, are now done
+  by pure Go replacements, so GCS no longer contains any platform-specific native code. On Linux, only the standard X11
+  and OpenGL client libraries (libX11.so.6 and libGL.so.1) are needed at runtime; fontconfig and freetype are no longer
+  used. The list of available fonts is now built by scanning the fonts installed on the system directly, so the first
+  launch after upgrading may take a moment longer while the font index is built; it is cached for later launches.
+- The PDF viewer used for page references was rebuilt on the new pure-Go engine. Page display, text search, links, the
+  table of contents, and password-protected documents all work as before, and the new engine was developed and tested
+  against the old one to keep page layout, search hit positions, and link locations identical. Text is drawn with a
+  slightly heavier weight, tuned to match the way macOS Preview renders text, and documents that don't embed their
+  fonts now substitute from a font set bundled with GCS rather than using system fonts, so some PDFs may look a little
+  different than they did before. Exporting a sheet to PDF goes through the same new machinery, and a failure while
+  writing the exported file is now reported instead of silently leaving a truncated file behind.
+- PDFs are now displayed with continuous scrolling: pages are stacked one after another and you scroll straight through
+  the document instead of viewing a single page at a time. The page number field, the navigation buttons, and the
+  Back/Forward history follow the page currently at the top of the view, pages just outside the view are rendered ahead
+  of time so scrolling stays smooth, and search highlights and links work on every visible page rather than only the
+  current one.
+- Opening a PDF no longer freezes GCS while the file is read. A large PDF — especially one the operating system has to
+  retrieve from cloud storage first — could previously lock up the application for a long time before the view
+  appeared. The view now opens immediately and fills in once the document is ready, showing a "Loading…" message if
+  that takes more than a moment, and a PDF that can't be opened now reports the failure in the view instead of failing
+  silently. A PDF opened in a window of its own also now gets a window sized to show a full page.
+- When a working hardware-accelerated (OpenGL) display isn't available — in a virtual machine, over a remote desktop
+  session, or with missing or broken graphics drivers — GCS now falls back to drawing with the processor instead of
+  failing to open a window. Drawing is slower this way, but the application runs.
 
 ## Bug Fixes
 
@@ -85,7 +114,8 @@
 - Linux only: Fixed modifier keys (Shift, Control, etc.) sometimes not being detected as pressed. (#1069)
 - Fixed dialogs and newly opened windows sometimes appearing on the primary display instead of the display being worked
   on, which was most noticeable on Linux and Windows when opened from a menu. New windows and dialogs are now placed
-  relative to the frontmost window, falling back to the primary display only when no window is available.
+  relative to the frontmost window, falling back to the primary display only when no window is available. This also
+  covers the system Open and Save dialogs on Windows.
 - Fix unary operator handling and panics in legacy expression conversion.
 - Fixed various issues in the legacy text export templates.
 - Fixed the Page Reference Mappings view not showing the newly chosen PDF for a mapping until the view was closed and
@@ -93,3 +123,161 @@
   to open in its own window.
 - Fixed the Attributes, Body Type, and Sheet Settings views for a character sheet or template being left open when the
   sheet or template they belong to was closed. As above, this affected them when they were in windows of their own.
+- Fixed the cost shown for a leveled trait modifier so it reflects the modifier's current level. A modifier costing
+  +10% per level and set to 3 levels displayed +10% in the modifier list, even though the points charged were correct;
+  it now displays the total (+30%). Also fixed a modifier set to take its level from the trait it is attached to
+  showing no level or level-scaled cost in the trait editor's modifier list until something else forced a
+  recalculation. (#1079)
+- Fixed a trait whose self-control roll is set to "Never resist" not showing its "No CR" notation after the trait's
+  name.
+- Fixed a crash when a trait has a per-level bonus that adjusts its own level, or two traits each adjust the other's
+  level. The adjustment is now resolved from the trait's own unadjusted level, breaking the cycle.
+- Fixed the point cost of an Alternative Abilities container whose children all have negative point costs. Every child
+  was billed at 20% of its cost because no "most expensive" child was ever found; the most expensive child is now
+  charged in full and the rest at 20%, as already happened when the children have positive costs.
+- Fixed a trait container's modifiers being temporarily taken over by whichever child was having its points computed.
+  This could make a modifier on the container display its nameable substitutions using the wording of the last child
+  costed, and let the container's substitutions leak into a child. The container's modifiers now stay with the
+  container while still being costed against each child that inherits them.
+- Fixed a hidden weapon usage disappearing when another usage on the same character was identical to it apart from
+  being hidden. Only one of the two was listed, making it impossible to reveal the hidden one again; both now appear in
+  the places where the Hide checkbox is shown.
+- Fixed a weapon bulk bonus inventing a "giant" bulk value for a weapon that doesn't have one: a weapon with a bulk of
+  -3 given a -1 bonus showed -4/-1 instead of -4. A weapon that actually has a separate giant bulk still has both
+  values adjusted.
+- Fixed a percentage armor divisor bonus replacing a weapon's armor divisor with the percentage of it instead of
+  adjusting it by that percentage: a +10% bonus on a (2) divisor produced (0.2) rather than (2.2).
+- Fixed the reload time being dropped from a weapon's Shots value whenever something separates it from the shot count,
+  such as a thrown weapon's "T(1)" or a duration like "3x3s(2)". The reload time was silently lost each time the file
+  was saved and reloaded; it is now kept.
+- Fixed the Tbone damage progressions losing the strength-based part of a weapon's damage when the weapon's base damage
+  uses dice with a different number of sides — a 1d3 weapon showed 2d3 instead of 2d3+2, for example. The Basic Set
+  progression was unaffected.
+- Fixed multipliers entered with a capital "X" (e.g. "X2") or the multiplication sign "×" (e.g. "×2") in equipment
+  modifier cost and weight fields and trait modifier cost fields. They were recognized as multipliers, but the number
+  was not read, silently turning a cost into x1 and a weight or trait modifier cost into x0. All three spellings now
+  work, whether the marker comes before or after the number.
+- Fixed a "to this armor" DR bonus being applied once per matching DR entry, rather than once in total, when a single
+  piece of equipment provides several DR entries covering the same hit location. Hit locations that differ only in
+  capitalization are now also treated as the same location.
+- Fixed the skill penalty applied when a skill's required equipment is missing (-5, or -10 for a tech-level skill) also
+  being applied to other copies of that skill that differ only in their optional specialization. The penalty now
+  applies solely to the skill whose prerequisite is unmet.
+- Fixed the "contained weight" prerequisite for a container whose quantity is greater than one. The weight tested
+  included the container's own weight multiplied by its quantity rather than just the contents of a single container,
+  so the prerequisite could be reported as unmet when it was satisfied.
+- Fixed the level shown for a ritual magic spell when the character doesn't have the ritual magic skill it is based on.
+  The unresolvable level was treated as 0, so spell bonuses such as Magery could raise it to a level the character
+  hadn't earned, and a negative net bonus could produce an absurdly large level; such a spell now shows "-" as its
+  level.
+- Fixed a skill whose optional specialization differs from its library source being reported as matching that source.
+  It is now flagged as modified and brought back into line by "Sync with Library Sources".
+- Fixed stray commas appearing in the unmet prerequisites tooltip for a skill prerequisite that names a specialization
+  or an optional specialization.
+- Fixed a crash when displaying, editing, or copying a technique whose data file is missing its "Defaults To"
+  information, as can happen with hand-edited files. Such a technique now loads with an empty default that can be filled
+  in.
+- Fixed the gender randomizer on a character sheet clearing the Gender field when the character's ancestry defines only
+  one gender. The current value was always excluded from the choices, leaving nothing to pick; the single available
+  gender is now kept, and an ancestry with no gender options leaves the field untouched.
+- Fixed the DR tooltip for a hit location nested inside another location repeating its summary once for every level of
+  nesting.
+- Fixed data files with upper- or mixed-case file extensions (e.g. ".ANCESTRY") being silently skipped when scanning a
+  library's Settings folder, which affected ancestries, calendars, attribute and body type settings, and name
+  generators.
+- Fixed a character's portrait being permanently discarded when the image couldn't be decoded. The data was cleared as
+  soon as the sheet was displayed and lost for good at the next save; it is now kept intact, since a different build of
+  GCS may be able to read it.
+- Fixed a damaged or unreadable settings file being silently replaced with factory defaults and then overwritten at the
+  next save, destroying it. The problem is now logged and the offending file is renamed with a ".bad" suffix so its
+  contents can be recovered.
+- Fixed loading a sheet settings file written in the older format that nests its content under a "sheet_settings"
+  entry. Such a file appeared to contain nothing and factory defaults were used instead; it now loads correctly.
+- Fixed downloading a library update treating an HTTP error response — a rate limit message, an expired link, a server
+  error — as if it were the library archive itself. The download now stops with a clear message naming the address and
+  the status returned, instead of failing later with a confusing error.
+- Fixed changing a library's location in the Library Settings triggering a flurry of redundant re-scans of the library
+  navigator, and a possible crash when the new location couldn't be monitored for changes.
+- Fixed the scripting API reporting a huge nonsensical number for the level or relative level of a skill or spell whose
+  level cannot be computed; `skill.level`, `skill.relativeLevel`, `spell.level`, `spell.relativeLevel`, and
+  `entity.skillLevel` now report 0 in that case. In addition, `spell.techLevel` now returns an empty string rather than
+  `undefined` for a spell with no tech level, and `spell.difficulty` now returns the difficulty's key (e.g. "h") rather
+  than its display name (e.g. "Hard"), matching what `skill.difficulty` has always returned — a script that relied on
+  the old `spell.difficulty` value will need updating.
+- Fixed a script occasionally failing with "script execution timed out" when it hadn't actually timed out: a timeout
+  belonging to a script that had just finished could land on the next script to reuse the same interpreter.
+- Fixed scripts being able to alter the JavaScript environment that later scripts run in. A script that replaced a
+  built-in or left variables behind on the global object could silently change the behavior of every script run
+  afterwards, including those of other open documents. The built-ins are now protected and anything a script leaves
+  behind is cleared away before the interpreter is reused.
+- Stopped the log from filling with script resolution errors while a script expression is being typed into an item
+  editor. The editors re-evaluate the text on every keystroke to build their live previews, so the half-finished
+  expression naturally fails until it is complete; those intermediate failures are no longer logged, while failures
+  anywhere else still are.
+- Fixed a crash in the command-line file converter (the "-c" option) when one of the supplied paths could not be read;
+  it is now skipped and the remaining paths are still converted.
+- Fixed keyboard and mouse handling while a modal dialog is open. Typing now always goes to the dialog, even when the
+  operating system still considers the window behind it focused, clicks on the blocked window are ignored rather than
+  acted upon, scrolling the window behind the dialog still works, and a mouse button that was held down when the dialog
+  appeared no longer leaves GCS convinced the button is still down afterward.
+- Fixed Tab and Shift-Tab moving focus into hidden fields, which made the focus appear to vanish.
+- Fixed pop-up and context menus opened in windows that have no menu bar of their own — dialogs and the separate
+  settings windows — not closing when clicking elsewhere, moving the window, or switching to another application, and
+  keystrokes leaking through to the window behind them while they were open.
+- Fixed dragging a container row onto one of its own children: instead of refusing the drop, GCS moved the container
+  out to the top level of the list. The drop is now correctly rejected.
+- Fixed two drop-position errors when moving rows by dragging: dropping a row back at the position it already occupies
+  no longer nudges it up one row, and dragging equipment from one equipment list to another now inserts it where it was
+  dropped rather than at a shifted position.
+- Fixed a row's disclosure triangle opening or closing when a click or drag that began somewhere else happened to end
+  on top of it.
+- Fixed a crash that could occur when the contents of a list changed while a row was being clicked or dragged.
+- Fixed the insertion marker shown while dragging a document tab pointing at the wrong place when more tabs were open
+  than fit across the window.
+- Fixed scroll bar thumbs running past the end of their track and jumping under the pointer while being dragged, which
+  was most noticeable in long documents where the thumb is at its smallest.
+- Fixed the color swatches in the Colors settings accepting an image file dropped onto them, which replaced the color
+  with a picture.
+- Fixed the animated progress bar shown while updating libraries: its moving indicator was drawn slightly out of
+  position, and each redraw of the window started an extra animation loop, making a long-running update progressively
+  heavier on the processor.
+- Fixed the Print dialog freezing while it queried the selected printer, which could last many seconds for a printer
+  that was slow to answer or no longer on the network. The dialog now stays responsive and disables its options until
+  the printer's capabilities arrive.
+- Fixed custom key bindings that use two or more modifier keys (for example, Shift and Control together) being
+  discarded when GCS was restarted, leaving the command with no shortcut at all.
+- Fixed the height and vertical alignment of a line of text that mixes fonts of different sizes, such as inline code
+  within a markdown paragraph. Such lines were measured using only the first font on the line and could be clipped;
+  they now get the room they need and share a common baseline.
+- Fixed markdown headings that contain bold, italic, or code formatting: their full text is now used, so the anchors
+  automatically generated for them and the links pointing at them resolve correctly.
+- Fixed an image in a markdown document that failed to load on the first attempt never being retried, leaving it
+  missing for as long as the document was open.
+- Fixed a number of errors in how SVG artwork is interpreted, including the order in which multiple transforms are
+  applied, compact elliptical arc coordinates, shapes reused from elsewhere in the file, gradients referenced before
+  they are defined, and shapes hidden by masks. Also fixed SVG artwork being drawn out of position when stretched to
+  fill an area whose proportions don't match the artwork's own.
+- Fixed pasting text copied from some other applications, where the copied data was offered under a more specific
+  description than GCS was looking for and was therefore ignored.
+- Fixed several slow memory leaks: closed windows, discarded images, and system objects created while drawing were
+  being held onto for the life of the session. Long sessions now use noticeably less memory.
+- Fixed GCS shutting down uncleanly when the system asks it to quit, such as when logging out or shutting down, or when
+  Control-C is pressed in a terminal that launched it. This is now handled the same way as choosing Quit from the menu,
+  so open files get their normal chance to be saved.
+- Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
+  releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
+  down and every later mouse movement being treated as a drag.
+- Windows only: Fixed the Shift and Windows keys occasionally remaining "stuck" as if still held down after switching
+  away from GCS and back.
+- Windows only: Fixed modal dialogs being centered incorrectly on monitors with a display scale other than 100%.
+- Linux only: Fixed character entry on international keyboard layouts: characters that require the AltGr key (such as
+  @, €, \ and | on many European layouts) now type correctly, and letters typed with Caps Lock engaged are now
+  uppercase.
+- Linux only: Fixed window and dialog placement on systems using display scaling (an Xft.dpi other than 96), which
+  could put a window on the wrong monitor or well outside the intended area.
+- Linux only: Fixed GCS spinning at full processor usage when its connection to the display server was lost, such as
+  when a remote session is dropped; it now exits cleanly.
+- Linux only: Fixed a tiny stray window briefly appearing on Wayland desktops whenever a file open or save dialog was
+  used.
+- macOS only: Fixed quitting from the Dock or logging out forcing GCS to exit even when the prompt about unsaved
+  changes was canceled. Canceling now aborts the quit, just as it does when using the Quit menu item.
