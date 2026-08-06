@@ -550,8 +550,7 @@ func (t *TraitModifier) CostDescription() string {
 	if t.Container() {
 		return ""
 	}
-	v := t.CostModifierType()
-	base := v.Format(v.ExtractFraction(t.CostAdj))
+	base := t.CostModifierType().Format(t.CostModifier())
 	if desc := t.Affects.AltString(); desc != "" {
 		base += " " + desc
 	}
