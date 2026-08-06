@@ -97,6 +97,6 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         env:
           GOOS: ${{ matrix.goos }}
-          GOEXPERIMENT: jsonv2,nodwarf5
+          GOEXPERIMENT: jsonv2
         with:
           version: latest

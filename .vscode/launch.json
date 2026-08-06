@@ -10,11 +10,6 @@
 			"request": "launch",
 			"mode": "auto",
 			"program": "${workspaceFolder}",
-			"windows": {
-				"mode": "exec",
-				"preLaunchTask": "build GCS",
-				"program": "${workspaceFolder}/gcs.exe"
-			},
 			"args": [
 				"-console"
 			]
