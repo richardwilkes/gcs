@@ -20,8 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Same target set as the regular build; everything is built natively per platform/arch because both Unison
-        # (Skia/GL) and the MuPDF-backed pdf dependency are cgo with per-arch static libraries.
+        # Same target set as the regular build. GCS is pure Go, so these could be cross-compiled from a single runner,
+        # but each target is still built natively: macOS has to sign and notarize on a macOS runner, and Windows
+        # embeds its icon/version resources during its own build.
         os: [ubuntu-22.04, ubuntu-22.04-arm, macos-26-intel, macos-26, windows-2022, windows-11-arm]
     defaults:
       run:
@@ -31,35 +32,14 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
 
-      - name: Install Linux dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            pkg-config \
-            libx11-dev \
-            libgl1-mesa-dev \
-            libfontconfig1-dev \
-            libfreetype-dev
-
-      - name: Install Windows ARM64 toolchain
-        if: runner.os == 'Windows' && runner.arch == 'ARM64'
-        env:
-          LLVM_MINGW_VERSION: "20260616"
-        run: |
-          # The default mingw gcc on the Windows/ARM64 runner is an x86_64 build that emits x86 code and can't link the
-          # native arm64 static libraries, so install a native aarch64 llvm-mingw toolchain instead.
-          name="llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-aarch64"
-          curl -fsSL -o "$RUNNER_TEMP/$name.zip" \
-            "https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/$name.zip"
-          7z x "$RUNNER_TEMP/$name.zip" -o"$RUNNER_TEMP" >/dev/null
-          echo "$RUNNER_TEMP/$name/bin" >> "$GITHUB_PATH"
-          echo "CC=aarch64-w64-mingw32-gcc" >> "$GITHUB_ENV"
+      # No Linux system packages are needed here. Nothing links against X11/GL at build time, Linux packaging is pure
+      # Go (a gzipped tar), and this workflow runs no tests, so Unison never reaches the display code that would
+      # dlopen libX11/libGL. Windows likewise compiles no cgo at all and needs no mingw toolchain.
 
       - name: Install create-dmg
         if: runner.os == 'macOS'
@@ -165,7 +145,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -195,7 +175,7 @@ jobs:
       contents: write
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: dist
           pattern: gcs-*
