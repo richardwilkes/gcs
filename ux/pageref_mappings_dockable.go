@@ -239,10 +239,19 @@ func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
 	return pageRef
 }
 
+// asPageRefMappingsDockable returns the Page Reference Mappings view for the given Dockable, or nil if it isn't one.
+// The Dockable is resolved through its panel's Self, since the value a caller has in hand may be an inner layer rather
+// than the view itself -- SettingsDockable.Setup, for example, hands its own embedded SettingsDockable to the placement
+// code -- and a direct type assertion would not see the view in that case.
+func asPageRefMappingsDockable(d unison.Dockable) *pageRefMappingsDockable {
+	m, _ := d.AsPanel().Self.(*pageRefMappingsDockable)
+	return m
+}
+
 // RefreshPageRefMappingsView causes the Page References Mappings view to be refreshed if it is open.
 func RefreshPageRefMappingsView() {
 	for _, one := range AllDockables() {
-		if d, ok := one.(*pageRefMappingsDockable); ok {
+		if d := asPageRefMappingsDockable(one); d != nil {
 			d.sync()
 			break
 		}
@@ -251,10 +260,7 @@ func RefreshPageRefMappingsView() {
 
 // ShowPageRefMappings shows the Page Reference Mappings.
 func ShowPageRefMappings() {
-	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.AsPanel().Self.(*pageRefMappingsDockable)
-		return ok
-	}) {
+	if Activate(func(d unison.Dockable) bool { return asPageRefMappingsDockable(d) != nil }) {
 		return
 	}
 	d := &pageRefMappingsDockable{}

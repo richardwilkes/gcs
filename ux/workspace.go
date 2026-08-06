@@ -456,12 +456,30 @@ func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
 	return placeInWindow(dockable, group)
 }
 
+// resolveDockable returns the outermost implementation of the Dockable, i.e. its panel's Self. The code that places a
+// Dockable is frequently handed an inner layer rather than the Dockable itself -- SettingsDockable.Setup, for example,
+// passes its own embedded SettingsDockable rather than the settings view that contains it -- so the value has to be
+// resolved before it is retained or examined, which is exactly what unison's dock containers do when a Dockable is
+// docked. Without it, everything that type-asserts a Dockable to a concrete type or probes it for an optional interface
+// would see a different value depending on whether the Dockable ended up in the workspace or in a window of its own.
+// The Dockable is returned unchanged if its Self isn't a Dockable.
+func resolveDockable(dockable unison.Dockable) unison.Dockable {
+	if xreflect.IsNil(dockable) {
+		return dockable
+	}
+	if resolved, ok := dockable.AsPanel().Self.(unison.Dockable); ok {
+		return resolved
+	}
+	return dockable
+}
+
 // placeInWindow gives the Dockable a window of its own. A Dockable whose bounds aren't known yet has that window
 // created later, once they are, since packing a window around content that can't yet say how big it is would produce a
 // frame the user would have to fix by hand. Nothing is shown for the Dockable in the meantime, which is why the wait a
 // boundsDeferredDockable permits is a short one. A nil window is returned when the creation was deferred, since there
 // is no window to return yet.
 func placeInWindow(dockable unison.Dockable, group dgroup.Group) (*unison.Window, error) {
+	dockable = resolveDockable(dockable)
 	if deferred, ok := dockable.(boundsDeferredDockable); ok && !deferred.BoundsKnown() {
 		deferred.WhenBoundsKnown(func() {
 			if dockable.AsPanel().Window() != nil {
@@ -509,6 +527,10 @@ func InstallDockUndockCmd(dockable unison.Dockable) {
 
 // NewWindowForDockable creates a new window and places a Dockable inside it.
 func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison.Window, error) {
+	// Resolve before the Dockable is recorded on the window and before its closing behavior is hooked up, since both
+	// the value dockableFromWindow hands back and the TabCloser the window closes through must be the Dockable itself
+	// rather than one of its inner layers.
+	dockable = resolveDockable(dockable)
 	frame := windowPlacementFrame()
 	wnd, err := unison.NewWindow(dockable.Title())
 	if err != nil {

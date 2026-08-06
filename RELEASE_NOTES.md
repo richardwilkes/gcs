@@ -86,3 +86,8 @@
   relative to the frontmost window, falling back to the primary display only when no window is available.
 - Fix unary operator handling and panics in legacy expression conversion.
 - Fixed various issues in the legacy text export templates.
+- Fixed the Page Reference Mappings view not showing the newly chosen PDF for a mapping until the view was closed and
+  reopened. This affected the view when it was in a window of its own, which is the case when the Settings group is set
+  to open in its own window.
+- Fixed the Attributes, Body Type, and Sheet Settings views for a character sheet or template being left open when the
+  sheet or template they belong to was closed. As above, this affected them when they were in windows of their own.
