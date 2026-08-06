@@ -244,7 +244,7 @@ func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
 // than the view itself -- SettingsDockable.Setup, for example, hands its own embedded SettingsDockable to the placement
 // code -- and a direct type assertion would not see the view in that case.
 func asPageRefMappingsDockable(d unison.Dockable) *pageRefMappingsDockable {
-	m, _ := d.AsPanel().Self.(*pageRefMappingsDockable)
+	m, _ := d.AsPanel().Self.(*pageRefMappingsDockable) //nolint:errcheck // The nil case is handled by returning nil
 	return m
 }
 
