@@ -41,6 +41,8 @@
   source sync): as with the equipment uses adjustment, a plain number adds, a value ending in `%` adjusts by a
   percentage, and a value with an `x` multiplies; it can optionally scale per level, and can apply to the trait it is
   attached to ("to this trait") or to other traits matched by name and tags ("to traits whose name"). (#1060)
+- Added a "Cursor Size" setting to the General Settings, allowing the size of the mouse cursor to be adjusted. Also
+  added two new theme colors to control the foreground and background colors of the cursors.
 
 ## Bug Fixes
 

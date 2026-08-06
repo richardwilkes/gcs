@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 )
@@ -36,6 +37,7 @@ var (
 	PermittedScriptExecTimeDef = fxp.FromStringForced("0.05")
 	PermittedScriptExecTimeMin = fxp.FromStringForced("0.001")
 	PermittedScriptExecTimeMax = fxp.Half
+	CursorSizeDef              = int(unison.DefaultCursorSize().Width)
 )
 
 // Default, minimum & maximum values for the general numeric settings that can be constants
@@ -58,6 +60,8 @@ const (
 	AutoColWidthMin            = 50
 	AutoColWidthMax            = 9999
 	MaximumAutoColWidthDef     = 800
+	CursorSizeMin              = unison.MinCursorSize
+	CursorSizeMax              = unison.MaxCursorSize
 )
 
 const currentGeneralSettingsVersion = 2
@@ -84,6 +88,7 @@ type GeneralSettings struct {
 	MaximumAutoColWidth         int              `json:"maximum_auto_col_width"`
 	ImageResolution             int              `json:"image_resolution"`
 	MonitorResolution           int              `json:"monitor_resolution,omitzero"`
+	CursorSize                  int              `json:"cursor_size"`
 	PDFAutoScaling              autoscale.Option `json:"pdf_auto_scaling,omitzero"`
 	AutoFillProfile             bool             `json:"auto_fill_profile"`
 	AutoAddNaturalAttacks       bool             `json:"add_natural_attacks"`
@@ -113,6 +118,7 @@ func NewGeneralSettings() *GeneralSettings {
 		InitialImageUIScale:        InitialImageUIScaleDef,
 		MaximumAutoColWidth:        MaximumAutoColWidthDef,
 		ImageResolution:            ImageResolutionDef,
+		CursorSize:                 CursorSizeDef,
 		PDFAutoScaling:             InitialPDFAutoScaling,
 		AutoFillProfile:            true,
 		AutoAddNaturalAttacks:      true,
@@ -151,6 +157,11 @@ func (s *GeneralSettings) Save(filePath string) error {
 func (s *GeneralSettings) UpdateToolTipTiming() {
 	unison.DefaultTooltipTheme.Delay = fxp.SecondsToDuration(s.TooltipDelay)
 	unison.DefaultTooltipTheme.Dismissal = fxp.SecondsToDuration(s.TooltipDismissal)
+}
+
+// UpdateCursorSize updates the size unison builds cursors at to the value from this object.
+func (s *GeneralSettings) UpdateCursorSize() {
+	unison.SetCursorSize(geom.NewSize(float32(s.CursorSize), float32(s.CursorSize)))
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
@@ -226,6 +237,8 @@ func (s *GeneralSettings) EnsureValidity() {
 		InitialImageUIScaleDef)
 	s.MaximumAutoColWidth = fxp.ResetIfOutOfRange(s.MaximumAutoColWidth, AutoColWidthMin, AutoColWidthMax,
 		MaximumAutoColWidthDef)
+	s.CursorSize = fxp.ResetIfOutOfRange(s.CursorSize, CursorSizeMin, CursorSizeMax, CursorSizeDef)
 	s.PDFAutoScaling = s.PDFAutoScaling.EnsureValid()
 	s.UpdateToolTipTiming()
+	s.UpdateCursorSize()
 }

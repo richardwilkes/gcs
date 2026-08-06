@@ -45,6 +45,34 @@ func TestMonitorPPIUsesSettingOverride(t *testing.T) {
 	check.New(t).Equal(150, s.MonitorPPI())
 }
 
+// TestCursorSizeValidation verifies that the cursor size setting is kept within the range unison permits, that the
+// zero value found in settings files written before the setting existed is replaced with the default, and that
+// validation pushes the resulting size to unison.
+func TestCursorSizeValidation(t *testing.T) {
+	c := check.New(t)
+
+	savedSize := unison.CursorSize()
+	defer unison.SetCursorSize(savedSize)
+
+	c.Equal(int(unison.DefaultCursorSize().Width), CursorSizeDef, "the default tracks unison's default cursor size")
+
+	s := NewGeneralSettings()
+	c.Equal(CursorSizeDef, s.CursorSize, "new settings start at the default cursor size")
+
+	s.CursorSize = 0 // settings files from before the setting existed load as zero
+	s.EnsureValidity()
+	c.Equal(CursorSizeDef, s.CursorSize, "a missing cursor size is reset to the default")
+
+	s.CursorSize = CursorSizeMax + 1
+	s.EnsureValidity()
+	c.Equal(CursorSizeDef, s.CursorSize, "an out-of-range cursor size is reset to the default")
+
+	s.CursorSize = CursorSizeMin
+	s.EnsureValidity()
+	c.Equal(CursorSizeMin, s.CursorSize, "an in-range cursor size is preserved")
+	c.Equal(geom.NewSize(CursorSizeMin, CursorSizeMin), unison.CursorSize(), "validation applies the size to unison")
+}
+
 // TestPermittedPerScriptExecTimeTestOverrideIsValid verifies that the raised per-script execution time limit TestMain
 // installs survives EnsureValidity. A value outside the permitted range is silently reset to the small production
 // default, which would quietly reintroduce the CI timeout flakiness the override exists to prevent.

@@ -97,6 +97,8 @@ func initialize() {
 		{ID: "tooltip", Title: "Tooltip", Color: unison.ThemeTooltip},
 		{ID: "error", Title: "Error", Color: unison.ThemeError},
 		{ID: "warning", Title: "Warning", Color: unison.ThemeWarning},
+		{ID: "cursor_fg", Title: "Cursor Foreground", Color: unison.ThemeCursorForeground},
+		{ID: "cursor_bg", Title: "Cursor Background", Color: unison.ThemeCursorBackground},
 		{ID: "tint_portrait", Title: "Portrait", Color: TintPortrait},
 		{ID: "tint_identity", Title: "Identity", Color: TintIdentity},
 		{ID: "tint_misc", Title: "Miscellaneous", Color: TintMisc},

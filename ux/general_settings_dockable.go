@@ -70,6 +70,7 @@ type generalSettingsDockable struct {
 	tooltipDelayField               *DecimalField
 	tooltipDismissalField           *DecimalField
 	scrollWheelMultiplierField      *DecimalField
+	cursorSizeField                 *IntegerField
 	externalPDFCmdlineField         *StringField
 	localeField                     *StringField
 }
@@ -170,6 +171,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createCellAutoMaxWidthField(content)
 	d.createMonitorResolutionField(content)
 	d.createImageResolutionField(content)
+	d.createCursorSizeField(content)
 	d.createPermittedScriptExecTimeField(content)
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
@@ -399,6 +401,19 @@ func (d *generalSettingsDockable) createScrollWheelMultiplierField(content *unis
 	content.AddChild(d.scrollWheelMultiplierField)
 }
 
+func (d *generalSettingsDockable) createCursorSizeField(content *unison.Panel) {
+	title := i18n.Text("Cursor Size")
+	content.AddChild(NewFieldLeadingLabel(title, false))
+	d.cursorSizeField = NewIntegerField(nil, "", title,
+		func() int { return gurps.GlobalSettings().General.CursorSize },
+		func(v int) {
+			general := gurps.GlobalSettings().General
+			general.CursorSize = v
+			general.UpdateCursorSize()
+		}, gurps.CursorSizeMin, gurps.CursorSizeMax, false, false)
+	content.AddChild(WrapWithSpan(2, d.cursorSizeField, NewFieldTrailingLabel(i18n.Text("points"), false)))
+}
+
 func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, title, value string) {
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	content.AddChild(NewNonEditableField(func(field *NonEditableField) {
@@ -586,6 +601,7 @@ func (d *generalSettingsDockable) sync() {
 	d.tooltipDelayField.SetText(gs.TooltipDelay.String())
 	d.tooltipDismissalField.SetText(gs.TooltipDismissal.String())
 	d.scrollWheelMultiplierField.SetText(gs.ScrollWheelMultiplier.String())
+	d.cursorSizeField.SetText(strconv.Itoa(gs.CursorSize))
 	SetFieldValue(d.externalPDFCmdlineField.Field, gs.ExternalPDFCmdLine)
 	SetFieldValue(d.localeField.Field, languageSetting)
 	for _, box := range d.deepSearchableCheckbox {
