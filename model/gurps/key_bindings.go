@@ -136,7 +136,7 @@ func (b *KeyBindings) MakeCurrent() {
 						item.SetKeyBinding(a.KeyBinding)
 					}
 				}
-				if factory.BarIsPerWindow() {
+				if !factory.BarIsPerWindow() {
 					break
 				}
 			}
