@@ -42,10 +42,16 @@ var (
 // (`Math.exp2 = null`, `Object.prototype.toString = ...`, `Array.prototype.foo = 1`, ...), so without this a single
 // script could silently alter the behavior of every script that later ran on the same runtime, including those
 // belonging to other documents. What is left writable — a property added to a built-in method's function object, say —
-// cannot alter what any built-in does. The global object itself is deliberately left extensible, since each run
-// defines its arguments on it; those, and anything else a script leaves there, are removed again by
-// scriptVM.restoreGlobals. Host objects (the Go-backed bindings) cannot be frozen, but goja already rejects adding to
-// or replacing their fields.
+// cannot alter what any built-in does. Host objects (the Go-backed bindings) cannot be frozen, but goja already rejects
+// adding to or replacing their fields.
+//
+// Freezing the objects is not enough on its own, because the global bindings that name them are separate: goja creates
+// `Math`, `JSON`, `Date` and the rest as writable, configurable properties of the global object, so `Math = null` or
+// `delete globalThis.JSON` would leave a frozen-but-unreachable built-in behind. The second loop therefore pins every
+// global binding that exists at this point as non-writable and non-configurable, which turns both of those into a
+// TypeError under the strict mode every script runs in. The global object itself is deliberately left extensible, since
+// each run defines its arguments on it; those, and anything else a script leaves there, are removed again by
+// scriptVM.restoreGlobals.
 var freezeBuiltInsProgram = goja.MustCompile("", `(function() {
 	'use strict';
 	var seen = new Set();
@@ -73,6 +79,28 @@ var freezeBuiltInsProgram = goja.MustCompile("", `(function() {
 		}
 	}
 	freeze(Object.getPrototypeOf(globalThis));
+	var pin = function(obj, keys) {
+		for (var i = 0; i < keys.length; i++) {
+			var desc = Object.getOwnPropertyDescriptor(obj, keys[i]);
+			if (!desc) {
+				continue;
+			}
+			try {
+				if ('value' in desc) {
+					if (desc.writable || desc.configurable) {
+						Object.defineProperty(obj, keys[i], {writable: false, configurable: false});
+					}
+				} else if (desc.configurable) {
+					// An accessor has no value to pin, but making it non-configurable stops it being replaced.
+					Object.defineProperty(obj, keys[i], {configurable: false});
+				}
+			} catch (err) {
+				// A binding that refuses to be pinned is caught by scriptVM.restoreGlobals instead.
+			}
+		}
+	};
+	pin(globalThis, Object.getOwnPropertyNames(globalThis));
+	pin(globalThis, Object.getOwnPropertySymbols(globalThis));
 })();`, true)
 
 // scriptVM pairs a goja runtime with the global state it was created with. Runtimes are pooled and reused, so
@@ -80,7 +108,7 @@ var freezeBuiltInsProgram = goja.MustCompile("", `(function() {
 // available to the next script.
 type scriptVM struct {
 	runtime         *goja.Runtime
-	baselineNames   map[string]bool
+	baselineNames   map[string]goja.Value
 	baselineSymbols map[*goja.Symbol]bool
 }
 
@@ -101,11 +129,13 @@ func newScriptVM() *scriptVM {
 	}
 	s := &scriptVM{
 		runtime:         vm,
-		baselineNames:   make(map[string]bool),
+		baselineNames:   make(map[string]goja.Value),
 		baselineSymbols: make(map[*goja.Symbol]bool),
 	}
 	for _, name := range globals.GetOwnPropertyNames() {
-		s.baselineNames[name] = true
+		// The value is recorded, not just the name, so that restoreGlobals can tell a binding that still exists from
+		// one that still holds what it was created with. Reading it here is safe: nothing has run on this runtime yet.
+		s.baselineNames[name] = globals.Get(name)
 	}
 	for _, sym := range globals.Symbols() {
 		s.baselineSymbols[sym] = true
@@ -115,14 +145,24 @@ func newScriptVM() *scriptVM {
 
 // restoreGlobals removes everything the run that just finished left on the global object: the arguments that were
 // defined for it, plus any globals the script created itself, which strict mode does not prevent (`globalThis.foo = 1`
-// and `Object.defineProperty(globalThis, ...)` both succeed). It reports whether the runtime was fully restored; if it
-// was not, the caller must discard the runtime rather than return it to the pool, since the residue would silently
-// alter unrelated scripts run later.
+// and `Object.defineProperty(globalThis, ...)` both succeed). It also verifies that the baseline globals themselves
+// came through the run untouched, since removing what was added says nothing about what was replaced or deleted:
+// freezeBuiltInsProgram pins those bindings so neither should be possible, but a runtime whose `JSON` is missing or
+// whose `Math` is no longer the frozen built-in must never be handed to another script regardless of how it got that
+// way. It reports whether the runtime was fully restored; if it was not, the caller must discard the runtime rather
+// than return it to the pool, since the residue would silently alter unrelated scripts run later.
 func (s *scriptVM) restoreGlobals() bool {
 	globals := s.runtime.GlobalObject()
 	restored := true
+	surviving := 0
 	for _, name := range globals.GetOwnPropertyNames() {
-		if s.baselineNames[name] {
+		if baseline, isBaseline := s.baselineNames[name]; isBaseline {
+			surviving++
+			if !globals.Get(name).SameAs(baseline) {
+				errs.LogWithLevel(context.Background(), slog.LevelWarn, nil,
+					errs.New("script replaced a baseline global"), "name", name)
+				restored = false
+			}
 			continue
 		}
 		if err := globals.Delete(name); err != nil {
@@ -130,14 +170,27 @@ func (s *scriptVM) restoreGlobals() bool {
 			restored = false
 		}
 	}
+	if surviving != len(s.baselineNames) {
+		errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, errs.New("script deleted a baseline global"),
+			"expected", len(s.baselineNames), "surviving", surviving)
+		restored = false
+	}
+	survivingSymbols := 0
 	for _, sym := range globals.Symbols() {
 		if s.baselineSymbols[sym] {
+			survivingSymbols++
 			continue
 		}
 		if err := globals.DeleteSymbol(sym); err != nil {
 			errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, err, "symbol", sym.String())
 			restored = false
 		}
+	}
+	if survivingSymbols != len(s.baselineSymbols) {
+		errs.LogWithLevel(context.Background(), slog.LevelWarn, nil,
+			errs.New("script deleted a baseline symbol global"), "expected", len(s.baselineSymbols), "surviving",
+			survivingSymbols)
+		restored = false
 	}
 	return restored
 }

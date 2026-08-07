@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -419,6 +420,44 @@ func TestScriptGlobalPollutionDoesNotLeak(t *testing.T) {
 			want:    "object",
 		},
 		{
+			// Freezing the Math object doesn't protect the global binding that names it, which goja creates as a
+			// writable property of the global object. Note that `typeof` is useless as a probe here, since `typeof null`
+			// is also "object".
+			name:    "replaced built-in global",
+			script:  "Math = null; 'ok'",
+			rejects: true,
+			probe:   "String(Math.exp2(3))",
+			want:    "8",
+		},
+		{
+			name:    "replaced built-in global through globalThis",
+			script:  "globalThis.JSON = 42; 'ok'",
+			rejects: true,
+			probe:   "typeof JSON.stringify",
+			want:    "function",
+		},
+		{
+			name:    "redefined built-in global",
+			script:  "Object.defineProperty(globalThis, 'Date', {value: 42}); 'ok'",
+			rejects: true,
+			probe:   "typeof Date.now",
+			want:    "function",
+		},
+		{
+			name:    "deleted built-in global",
+			script:  "delete globalThis.JSON; 'ok'",
+			rejects: true,
+			probe:   "typeof JSON",
+			want:    "object",
+		},
+		{
+			name:    "deleted predefined global",
+			script:  "delete globalThis.measure; 'ok'",
+			rejects: true,
+			probe:   "typeof measure",
+			want:    "object",
+		},
+		{
 			name:    "replaced built-in member",
 			script:  "Math.exp2 = null; 'ok'",
 			rejects: true,
@@ -466,6 +505,85 @@ func TestScriptGlobalPollutionDoesNotLeak(t *testing.T) {
 		c.NoError(err)
 		c.Equal("undefined", v)
 	}
+}
+
+// TestScriptBaselineGlobalsArePinned verifies that the bindings naming the built-ins are locked down, not merely the
+// objects they name. goja creates Math, JSON, Date and the rest as writable, configurable properties of the global
+// object, so freezing the objects alone left the bindings open to being replaced or deleted outright.
+func TestScriptBaselineGlobalsArePinned(t *testing.T) {
+	c := check.New(t)
+	vm := newScriptVM()
+	c.True(len(vm.baselineNames) > 0, "the baseline should not be empty")
+	for name := range vm.baselineNames {
+		v, err := vm.runtime.RunString(
+			"(function() { var d = Object.getOwnPropertyDescriptor(globalThis, " + strconv.Quote(name) +
+				"); return ('value' in d ? d.writable : false) || d.configurable; })()",
+		)
+		c.NoError(err, "global %q", name)
+		c.False(v.ToBoolean(), "global %q must be neither writable nor configurable", name)
+	}
+}
+
+// TestScriptRestoreGlobalsDetectsBaselineDamage verifies that restoreGlobals reports a runtime whose baseline globals
+// were replaced or deleted as unrestorable, so that the caller discards it instead of returning it to the pool. Removing
+// what a script added says nothing about what it destroyed, and a runtime whose JSON is missing or whose Math is no
+// longer the built-in would silently break every later script in the process.
+//
+// The pinning applied by freezeBuiltInsProgram means a real script can no longer inflict this damage, so the runtimes
+// used here are built without it; otherwise the runtime would reject the attempt first and leave this detection
+// untested.
+func TestScriptRestoreGlobalsDetectsBaselineDamage(t *testing.T) {
+	c := check.New(t)
+
+	// restoreGlobals logs a warning for each problem it finds; this handler drops anything below error level.
+	var count atomic.Int32
+	prev := slog.Default()
+	slog.SetDefault(slog.New(errorCountingHandler{count: &count}))
+	defer slog.SetDefault(prev)
+
+	for _, tc := range []struct {
+		name   string
+		script string
+	}{
+		{name: "deleted global", script: "delete globalThis.JSON"},
+		{name: "replaced global", script: "Math = null"},
+		{name: "replaced global through globalThis", script: "globalThis.Date = 42"},
+		{name: "redefined global", script: "Object.defineProperty(globalThis, 'Array', {value: 42})"},
+	} {
+		s := newUnpinnedScriptVM()
+		_, err := s.runtime.RunString(tc.script)
+		c.NoError(err, "case %q", tc.name)
+		c.False(s.restoreGlobals(), "case %q must be reported as unrestorable", tc.name)
+	}
+
+	// An untouched runtime is restorable, and so is one that a script merely added a global to, which is removed.
+	s := newUnpinnedScriptVM()
+	c.True(s.restoreGlobals(), "an untouched runtime must be restorable")
+	_, err := s.runtime.RunString("globalThis.gcsAddedGlobal = 1")
+	c.NoError(err)
+	c.True(s.restoreGlobals(), "a runtime that only gained a global must be restorable")
+	v, err := s.runtime.RunString("typeof gcsAddedGlobal")
+	c.NoError(err)
+	c.Equal("undefined", v.String())
+}
+
+// newUnpinnedScriptVM builds a scriptVM the way newScriptVM records its baseline, but over a bare runtime that has not
+// had freezeBuiltInsProgram applied to it, so that a script can still damage that baseline.
+func newUnpinnedScriptVM() *scriptVM {
+	vm := goja.New()
+	globals := vm.GlobalObject()
+	s := &scriptVM{
+		runtime:         vm,
+		baselineNames:   make(map[string]goja.Value),
+		baselineSymbols: make(map[*goja.Symbol]bool),
+	}
+	for _, name := range globals.GetOwnPropertyNames() {
+		s.baselineNames[name] = globals.Get(name)
+	}
+	for _, sym := range globals.Symbols() {
+		s.baselineSymbols[sym] = true
+	}
+	return s
 }
 
 // TestScriptTimeoutDoesNotAffectNextRun verifies that a script's timeout cannot interrupt a later, unrelated script.
