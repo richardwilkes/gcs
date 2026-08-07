@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"os"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -26,4 +27,43 @@ func TestEquipmentRatedStrength(t *testing.T) {
 	c.Equal(fxp.Int(0), equipment.RatedStrength(), "equipment with no rated ST reports 0")
 	equipment.RatedST = fxp.FromInteger(12)
 	c.Equal(fxp.FromInteger(12), equipment.RatedStrength(), "equipment reports the rated ST it was given")
+}
+
+// TestNewEquipmentFromFileAttachesContainerData verifies that loading an equipment list attaches the owner to
+// container rows as well as to leaf rows, so that a container's own weapons get their sub-version fixups applied and
+// its modifiers can resolve nameable placeholders.
+func TestNewEquipmentFromFileAttachesContainerData(t *testing.T) {
+	c := check.New(t)
+	// container_with_own_data.eqp holds a leveled container that carries a weapon written before weapon
+	// sub-versioning existed (no "sv" key) and a modifier with a nameable placeholder, plus a child item with the
+	// same content.
+	rows, err := NewEquipmentFromFile(os.DirFS("testdata"), "container_with_own_data.eqp")
+	c.NoError(err)
+	c.Equal(1, len(rows), "the list has a single top-level row")
+	if len(rows) != 1 {
+		return
+	}
+	container := rows[0]
+	c.Equal(true, container.Container(), "the top-level row is a container")
+	c.Equal(1, len(container.Children), "the container has a child")
+	if len(container.Weapons) != 1 || len(container.Modifiers) != 1 || len(container.Children) != 1 {
+		return
+	}
+	child := container.Children[0]
+
+	// The container's own weapon must be attached and migrated exactly like the child's.
+	for _, one := range []*Equipment{container, child} {
+		w := one.Weapons[0]
+		c.Equal(WeaponOwner(one), w.Owner, one.Name+": the weapon's owner is set")
+		c.Equal(currentWeaponSubVersion, w.SubVersion, one.Name+": the weapon is stamped with the current sub-version")
+		c.Equal("", w.Damage.Base, one.Name+": the leveled-damage migration cleared the flat base damage")
+		c.Equal("1d", w.Damage.BaseLeveled, one.Name+": the leveled-damage migration moved the base damage")
+		c.Equal(w, w.Damage.Owner, one.Name+": the weapon's damage points back at the weapon")
+	}
+
+	// The container's own modifiers must be attached so nameable placeholders resolve.
+	c.Equal("Oak plating", container.Modifiers[0].NameWithReplacements(),
+		"the container's modifier resolves the container's replacements")
+	c.Equal("Iron plating", child.Modifiers[0].NameWithReplacements(),
+		"the child's modifier resolves the child's replacements")
 }

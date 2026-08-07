@@ -1,0 +1,61 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "EAAAAAAAAAAAAAAAA",
+			"description": "Modular Staff",
+			"quantity": 1,
+			"level": 2,
+			"equipped": true,
+			"replacements": {
+				"material": "Oak"
+			},
+			"modifiers": [
+				{
+					"id": "fAAAAAAAAAAAAAAAA",
+					"name": "@material@ plating"
+				}
+			],
+			"weapons": [
+				{
+					"id": "wAAAAAAAAAAAAAAAA",
+					"usage": "Swung",
+					"damage": {
+						"type": "cr",
+						"st": "sw",
+						"base": "1d"
+					}
+				}
+			],
+			"children": [
+				{
+					"id": "eAAAAAAAAAAAAAAAB",
+					"description": "Staff Head",
+					"quantity": 1,
+					"level": 2,
+					"equipped": true,
+					"replacements": {
+						"material": "Iron"
+					},
+					"modifiers": [
+						{
+							"id": "fAAAAAAAAAAAAAAAB",
+							"name": "@material@ plating"
+						}
+					],
+					"weapons": [
+						{
+							"id": "wAAAAAAAAAAAAAAAB",
+							"usage": "Thrust",
+							"damage": {
+								"type": "imp",
+								"st": "thr",
+								"base": "1d"
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

@@ -126,10 +126,11 @@ func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, erro
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
-	Traverse(func(item *Equipment) bool {
+	// SetDataOwner recurses into children on its own, so only the top-level rows need to be visited. Containers must
+	// not be skipped: they carry their own weapons and modifiers, which would otherwise never be attached.
+	for _, item := range data.Rows {
 		item.SetDataOwner(nil)
-		return false
-	}, false, true, data.Rows...)
+	}
 	return data.Rows, nil
 }
 
