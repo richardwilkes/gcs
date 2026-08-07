@@ -300,7 +300,7 @@ func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.
 		adjustMarkdownThemeForPage(m, font)
 	}
 	adjustMarkdownInk(m, foreground, background, selected, false)
-	m.SetContent(content, width)
+	m.SetContent(markdownHardLineBreaks(content), width)
 	return m
 }
 

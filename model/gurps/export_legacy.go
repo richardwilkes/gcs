@@ -423,14 +423,20 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText(strconv.Itoa(count))
 	case "SPELLS_LOOP_START":
 		ex.processSpellsLoop(ex.extractUpToMarker("SPELLS_LOOP_END"))
-	case "MELEE_LOOP_COUNT", "HIERARCHICAL_MELEE_LOOP_COUNT":
+	case "MELEE_LOOP_COUNT":
 		ex.writeEncodedText(strconv.Itoa(len(ex.entity.Weapons(true, ex.entity.SheetSettings.ShowAllWeapons, true))))
+	case "HIERARCHICAL_MELEE_LOOP_COUNT":
+		list, _ := ex.hierarchicalWeapons(true)
+		ex.writeEncodedText(strconv.Itoa(len(list)))
 	case "MELEE_LOOP_START":
 		ex.processMeleeLoop(ex.extractUpToMarker("MELEE_LOOP_END"))
 	case "HIERARCHICAL_MELEE_LOOP_START":
 		ex.processHierarchicalMeleeLoop(ex.extractUpToMarker("HIERARCHICAL_MELEE_LOOP_END"))
-	case "RANGED_LOOP_COUNT", "HIERARCHICAL_RANGED_LOOP_COUNT":
+	case "RANGED_LOOP_COUNT":
 		ex.writeEncodedText(strconv.Itoa(len(ex.entity.Weapons(false, ex.entity.SheetSettings.ShowAllWeapons, true))))
+	case "HIERARCHICAL_RANGED_LOOP_COUNT":
+		list, _ := ex.hierarchicalWeapons(false)
+		ex.writeEncodedText(strconv.Itoa(len(list)))
 	case "RANGED_LOOP_START":
 		ex.processRangedLoop(ex.extractUpToMarker("RANGED_LOOP_END"))
 	case "HIERARCHICAL_RANGED_LOOP_START":
@@ -1223,17 +1229,25 @@ func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
 	}
 }
 
-func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
-	m := make(map[string][]*Weapon)
-	for _, w := range ex.entity.Weapons(true, ex.entity.SheetSettings.ShowAllWeapons, true) {
+// hierarchicalWeapons returns the weapons of the requested type collapsed down to one entry per distinct weapon, along
+// with a map from each weapon's description to all of its attack modes. This is what the hierarchical loops iterate,
+// so the matching loop-count keys must report the length of this list rather than the total number of attack modes.
+func (ex *legacyExporter) hierarchicalWeapons(melee bool) (list []*Weapon, attackModes map[string][]*Weapon) {
+	attackModes = make(map[string][]*Weapon)
+	for _, w := range ex.entity.Weapons(melee, ex.entity.SheetSettings.ShowAllWeapons, true) {
 		key := w.String()
-		m[key] = append(m[key], w)
+		attackModes[key] = append(attackModes[key], w)
 	}
-	list := make([]*Weapon, 0, len(m))
-	for _, v := range m {
+	list = make([]*Weapon, 0, len(attackModes))
+	for _, v := range attackModes {
 		list = append(list, v[0])
 	}
 	slices.SortFunc(list, func(a, b *Weapon) int { return a.Compare(b) })
+	return list, attackModes
+}
+
+func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
+	list, m := ex.hierarchicalWeapons(true)
 	for i, w := range list {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processMeleeKeys(key, i, w, m[w.String()], buf, index)
@@ -1250,16 +1264,7 @@ func (ex *legacyExporter) processRangedLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
-	m := make(map[string][]*Weapon)
-	for _, w := range ex.entity.Weapons(false, ex.entity.SheetSettings.ShowAllWeapons, true) {
-		key := w.String()
-		m[key] = append(m[key], w)
-	}
-	list := make([]*Weapon, 0, len(m))
-	for _, v := range m {
-		list = append(list, v[0])
-	}
-	slices.SortFunc(list, func(a, b *Weapon) int { return a.Compare(b) })
+	list, m := ex.hierarchicalWeapons(false)
 	for i, w := range list {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processRangedKeys(key, i, w, m[w.String()], buf, index)

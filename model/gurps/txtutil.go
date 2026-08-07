@@ -20,23 +20,26 @@ type LineBuilder interface {
 }
 
 // AppendBufferOntoNewLine appends the contents of the 'from' buffer onto the 'to' buffer, starting on a new line.
+// The separator is a plain newline: these strings are plain text, and it is up to each consumer to turn that into
+// whatever a line break means for its output (the Markdown the UI renders, the <br> the legacy exporter emits, ...).
 func AppendBufferOntoNewLine(to, from LineBuilder) {
 	if xreflect.IsNil(to) || xreflect.IsNil(from) || from.Len() == 0 {
 		return
 	}
 	if to.Len() != 0 {
-		to.WriteString("<br>\n") //nolint:errcheck // Writing a string to a buffer can't fail.
+		to.WriteByte('\n') //nolint:errcheck // Writing to a buffer can't fail.
 	}
 	to.WriteString(from.String()) //nolint:errcheck // Writing a string to a buffer can't fail.
 }
 
-// AppendStringOntoNewLine appends the contents of the 'from' string onto the 'to' buffer, starting on a new line.
+// AppendStringOntoNewLine appends the contents of the 'from' string onto the 'to' buffer, starting on a new line. See
+// AppendBufferOntoNewLine for a note on the separator.
 func AppendStringOntoNewLine(to LineBuilder, from string) {
 	if xreflect.IsNil(to) || from == "" {
 		return
 	}
 	if to.Len() != 0 {
-		to.WriteString("<br>\n") //nolint:errcheck // Writing a string to a buffer can't fail.
+		to.WriteByte('\n') //nolint:errcheck // Writing to a buffer can't fail.
 	}
 	to.WriteString(from) //nolint:errcheck // Writing a string to a buffer can't fail.
 }

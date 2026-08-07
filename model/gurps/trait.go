@@ -837,7 +837,7 @@ func (t *Trait) modifierNotes(includeSelfControl, includeFrequency bool) string 
 	if len(lines) == 0 {
 		return ""
 	}
-	return strings.Join(lines, "<br>")
+	return strings.Join(lines, "\n")
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.

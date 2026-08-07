@@ -91,7 +91,7 @@ func TestExportTraitSelfControlAndFrequency(t *testing.T) {
 	cr := "Self-Control Roll (CR): 12 or less (Resist quite often)"
 	fr := "Frequency Roll (FR): 9 or less (Fairly often)"
 	c.Contains(out, "<<Rolls|12|12 or less (Resist quite often)|9|9 or less (Fairly often)|"+
-		cr+"<br>"+fr+"|"+fr+"|"+cr+"|>>")
+		cr+"\n"+fr+"|"+fr+"|"+cr+"|>>")
 }
 
 func TestExportSheetsNoExportableFiles(t *testing.T) {
@@ -116,4 +116,38 @@ func TestExportSheetsNoExportableFiles(t *testing.T) {
 
 	// An empty file list also exports nothing and must surface an error rather than a silent success.
 	c.HasError(ExportSheets(tmplPath, nil))
+}
+
+// TestExportModifierNotesLineBreaks verifies that a multi-line field such as a trait's modifier notes carries plain
+// newlines rather than embedded HTML, so an HTML template escapes only the text and the htmlLines function is what
+// turns the newlines into real line breaks.
+func TestExportModifierNotesLineBreaks(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	trait := NewTrait(entity, nil, false)
+	trait.Name = "Greed"
+	trait.SelfControl = selfctrl.CR12
+	mod := NewTraitModifier(entity, nil, false)
+	mod.Name = `Mitigator <"&">`
+	trait.Modifiers = append(trait.Modifiers, mod)
+	entity.Traits = append(entity.Traits, trait)
+
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.html")
+	const tmpl = "GCS HTML Template v1\n" +
+		"{{range .Traits}}|A|{{.ModifierNotes}}|B|{{htmlLines .ModifierNotes}}|C|{{end}}"
+	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
+	outPath := filepath.Join(dir, "out.html")
+	c.NoError(Export(entity, tmplPath, outPath))
+	data, err := os.ReadFile(outPath)
+	c.NoError(err)
+	out := string(data)
+
+	// The raw field must never emit an escaped <br>; the separator is a plain newline.
+	c.Equal(0, strings.Count(out, "&lt;br&gt;"), "no escaped line-break markup is emitted")
+	c.Contains(out, "|A|Self-Control Roll (CR): 12 or less (Resist quite often)\nMitigator")
+
+	// htmlLines turns that newline into a real line break, while still escaping the text around it.
+	c.Contains(out, "|B|Self-Control Roll (CR): 12 or less (Resist quite often)<br>\nMitigator")
+	c.Contains(out, "&lt;&#34;&amp;&#34;&gt;|C|")
 }

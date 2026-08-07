@@ -371,6 +371,7 @@ func createTemplateFuncs() texttmpl.FuncMap {
 		"contains":      strings.Contains,
 		"hasPrefix":     strings.HasPrefix,
 		"hasSuffix":     strings.HasSuffix,
+		"htmlLines":     htmlLines,
 		"indexStr":      strings.Index,
 		"join":          strings.Join,
 		"lastIndexStr":  strings.LastIndex,
@@ -387,6 +388,14 @@ func createTemplateFuncs() texttmpl.FuncMap {
 		"trimSuffix":    strings.TrimSuffix,
 		"upper":         strings.ToUpper,
 	}
+}
+
+// htmlLines turns a multi-line plain text value into HTML that renders one line per newline. The text is escaped
+// first, so only the line breaks this adds are treated as markup; the result is then marked safe so that an
+// "GCS HTML Template v1" template emits the <br> tags rather than escaping them again.
+func htmlLines(text string) htmltmpl.HTML {
+	//nolint:gosec // G203: the text is escaped above, so the only markup in the result is the line breaks added here.
+	return htmltmpl.HTML(strings.ReplaceAll(htmltmpl.HTMLEscapeString(text), "\n", "<br>\n"))
 }
 
 func numberFrom(value any) (fxp.Int, error) {

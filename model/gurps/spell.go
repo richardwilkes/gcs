@@ -551,14 +551,14 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 					if data.Secondary == "" {
 						data.Secondary = text
 					} else {
-						data.Secondary += "<br>\n" + text
+						data.Secondary += "\n" + text
 					}
 				}
 				if nd.Tooltip() {
 					if data.Tooltip == "" {
 						data.Tooltip = text
 					} else {
-						data.Tooltip += "<br>\n" + text
+						data.Tooltip += "\n" + text
 					}
 				}
 			}

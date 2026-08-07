@@ -12,10 +12,12 @@ package gurps
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -134,4 +136,56 @@ func TestLegacyExportAttributeNameSuffixes(t *testing.T) {
 	}
 	e.Attributes.Set["hit_full"] = NewAttribute(e, "hit_full", len(e.Attributes.Set))
 	c.Equal("Hit Full|3", runLegacyExport(t, c, e, "@HIT_FULL_NAME|@HIT_FULL_CURRENT"))
+}
+
+// TestLegacyExportModifierNotesLineBreaks verifies that a trait's modifier notes reach the legacy exporter as plain
+// newline-separated text, so writeEncodedText turns the separator into a real <br> rather than escaping markup that
+// the model had already embedded.
+func TestLegacyExportModifierNotesLineBreaks(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait := NewTrait(e, nil, false)
+	trait.Name = "Greed"
+	trait.SelfControl = selfctrl.CR12
+	mod := NewTraitModifier(e, nil, false)
+	mod.Name = "Mitigator"
+	trait.Modifiers = append(trait.Modifiers, mod)
+	e.Traits = append(e.Traits, trait)
+	out := runLegacyExport(t, c, e, "@ADVANTAGES_LOOP_START[@DESCRIPTION_MODIFIER_NOTES_BRACKET]@ADVANTAGES_LOOP_END")
+	c.Contains(out, "Self-Control Roll (CR): 12 or less (Resist quite often)<br>Mitigator")
+	c.Equal(0, strings.Count(out, "&lt;br&gt;"), "no escaped line-break markup is emitted")
+}
+
+// TestLegacyExportHierarchicalWeaponLoopCount verifies that the hierarchical loop-count keys report the number of rows
+// their loop actually produces -- one per distinct weapon -- rather than the total number of attack modes that the
+// flat loop-count keys report.
+func TestLegacyExportHierarchicalWeaponLoopCount(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	// "Karate" contributes two melee attack modes and two ranged ones; "Innate Attack" contributes one of each. The
+	// hierarchical loops collapse each trait's modes into a single row. A new entity already carries the three
+	// unarmed melee modes of "Natural Attacks", so melee has 6 modes across 3 weapons and ranged has 3 across 2.
+	karate := NewTrait(e, nil, false)
+	karate.Name = "Karate"
+	karate.Weapons = append(karate.Weapons, newTestWeapon(karate, true, "Punch"), newTestWeapon(karate, true, "Kick"),
+		newTestWeapon(karate, false, "Spit"), newTestWeapon(karate, false, "Sneeze"))
+	innate := NewTrait(e, nil, false)
+	innate.Name = "Innate Attack"
+	innate.Weapons = append(innate.Weapons, newTestWeapon(innate, true, "Slam"),
+		newTestWeapon(innate, false, "Bolt"))
+	e.Traits = append(e.Traits, karate, innate)
+
+	c.Equal("6|3|(Innate Attack:1)(Karate:2)(Natural Attacks:3)",
+		runLegacyExport(t, c, e, "@MELEE_LOOP_COUNT|@HIERARCHICAL_MELEE_LOOP_COUNT|"+
+			"@HIERARCHICAL_MELEE_LOOP_START(@DESCRIPTION_PRIMARY:@ATTACK_MODES_LOOP_COUNT)@HIERARCHICAL_MELEE_LOOP_END"))
+	c.Equal("3|2|(Innate Attack:1)(Karate:2)",
+		runLegacyExport(t, c, e, "@RANGED_LOOP_COUNT|@HIERARCHICAL_RANGED_LOOP_COUNT|"+
+			"@HIERARCHICAL_RANGED_LOOP_START(@DESCRIPTION_PRIMARY:@ATTACK_MODES_LOOP_COUNT)@HIERARCHICAL_RANGED_LOOP_END"))
+}
+
+func newTestWeapon(owner WeaponOwner, melee bool, usage string) *Weapon {
+	w := NewWeapon(owner, melee)
+	w.Usage = usage
+	return w
 }
