@@ -209,3 +209,70 @@ func addConditionalModifier(e *Entity, situation string, amt fxp.Int) {
 	trait.Features = append(trait.Features, bonus)
 	e.Traits = append(e.Traits, trait)
 }
+
+// TestEntityProcessPrereqsClearsUnsatisfiedReasonWhenDisabled verifies that disabling a trait (directly or by
+// disabling one of its containers) clears any unsatisfied prerequisite reason it had accumulated, rather than leaving
+// the stale reason behind until the sheet is reloaded.
+func TestEntityProcessPrereqsClearsUnsatisfiedReasonWhenDisabled(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait := newTraitNeedingMissingTrait(e, "Trained by a Master")
+	e.Traits = append(e.Traits, trait)
+
+	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "an enabled trait with an unmet prereq is flagged")
+
+	trait.Disabled = true
+	e.Recalculate()
+	c.Equal("", trait.UnsatisfiedReason, "disabling the trait clears the stale reason")
+
+	trait.Disabled = false
+	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "re-enabling the trait flags it again")
+
+	// The same must hold when the trait is only disabled by way of a container above it.
+	e = NewEntity()
+	container := NewTrait(e, nil, true)
+	container.Name = "Martial Arts"
+	nested := newTraitNeedingMissingTrait(e, "Weapon Master")
+	nested.SetParent(container)
+	container.Children = append(container.Children, nested)
+	e.Traits = append(e.Traits, container)
+
+	e.Recalculate()
+	c.NotEqual("", nested.UnsatisfiedReason, "a trait inside an enabled container is flagged")
+
+	container.Disabled = true
+	e.Recalculate()
+	c.Equal("", nested.UnsatisfiedReason, "disabling the container clears the nested trait's stale reason")
+
+	// A trait exceeding a maximum level is flagged the same way, and must also be cleared when disabled.
+	e = NewEntity()
+	trait = NewTrait(e, nil, false)
+	trait.Name = "Extra Arm"
+	trait.CanLevel = true
+	trait.Levels = fxp.Three
+	trait.MaxLevels = "2"
+	e.Traits = append(e.Traits, trait)
+
+	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "a trait above its maximum level is flagged")
+
+	trait.Disabled = true
+	e.Recalculate()
+	c.Equal("", trait.UnsatisfiedReason, "disabling the trait clears the maximum-level reason")
+}
+
+// newTraitNeedingMissingTrait creates a trait whose prerequisite requires another trait the entity doesn't have, so
+// that processPrereqs marks it unsatisfied.
+func newTraitNeedingMissingTrait(e *Entity, name string) *Trait {
+	t := NewTrait(e, nil, false)
+	t.Name = name
+	list := NewPrereqList()
+	p := NewTraitPrereq()
+	p.Parent = list
+	p.NameCriteria.Qualifier = "Combat Reflexes"
+	list.Prereqs = append(list.Prereqs, p)
+	t.Prereq = list
+	return t
+}

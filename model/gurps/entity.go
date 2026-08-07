@@ -515,8 +515,13 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 func (e *Entity) processPrereqs() {
 	const prefix = "\n- "
 	notMetPrefix := i18n.Text("Prerequisites have not been met:")
+	// Traverse all traits, not just the enabled ones, so that a trait that becomes disabled has any previously
+	// recorded unsatisfied reason cleared. Prerequisites are only evaluated for enabled traits.
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
+		if !t.Enabled() {
+			return false
+		}
 		if t.Prereq != nil {
 			var tooltip xbytes.InsertBuffer
 			var eqpPenalty bool
@@ -533,7 +538,7 @@ func (e *Entity) processPrereqs() {
 			}
 		}
 		return false
-	}, true, false, e.Traits...)
+	}, false, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
 		s.UnsatisfiedReason = ""
 		if !s.Container() {
