@@ -17,23 +17,24 @@ type WeightedAncestryOptions struct {
 	Value  *AncestryOptions `json:"value"`
 }
 
-// Valid returns true if this option has a valid weight.
+// Valid returns true if this option has a valid weight and value. A file may omit the value entirely, so this must be
+// checked before dereferencing Value.
 func (o *WeightedAncestryOptions) Valid() bool {
-	return o.Weight > 0
+	return o != nil && o.Weight > 0 && o.Value != nil
 }
 
 // ChooseWeightedAncestryOptions selects a string option from the available set.
 func ChooseWeightedAncestryOptions(options []*WeightedAncestryOptions, omitter func(*AncestryOptions) bool) *AncestryOptions {
 	total := 0
 	for _, one := range options {
-		if omitter == nil || !omitter(one.Value) {
+		if one.Valid() && (omitter == nil || !omitter(one.Value)) {
 			total += one.Weight
 		}
 	}
 	if total > 0 {
 		choice := 1 + xrand.New().Intn(total)
 		for _, one := range options {
-			if omitter == nil || !omitter(one.Value) {
+			if one.Valid() && (omitter == nil || !omitter(one.Value)) {
 				choice -= one.Weight
 				if choice < 1 {
 					return one.Value

@@ -99,7 +99,7 @@ func (a *Ancestry) RandomGender(not string) string {
 func (a *Ancestry) GenderedOptions(gender string) *AncestryOptions {
 	gender = strings.TrimSpace(gender)
 	for _, one := range a.GenderOptions {
-		if strings.EqualFold(one.Value.Name, gender) {
+		if one != nil && one.Value != nil && strings.EqualFold(one.Value.Name, gender) {
 			return one.Value
 		}
 	}

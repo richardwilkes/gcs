@@ -72,3 +72,48 @@ func TestRandomGender(t *testing.T) {
 	// An ancestry with no gender options at all preserves the incoming value.
 	c.Equal("Female", (&Ancestry{}).RandomGender("Female"), "no gender options preserves the current gender")
 }
+
+// TestAncestryWithValuelessGenderOption verifies that a gender option whose "value" object is missing from the file is
+// ignored rather than dereferenced. Randomizing an entity's description (or creating a sheet with auto-fill enabled)
+// reaches both RandomGender and GenderedOptions, which previously panicked on the nil Value.
+func TestAncestryWithValuelessGenderOption(t *testing.T) {
+	c := check.New(t)
+
+	const data = `{
+	"type": "ancestry",
+	"version": 5,
+	"name": "Human",
+	"gender_options": [
+		{ "weight": 1 },
+		{ "weight": 1, "value": { "name": "Female" } }
+	]
+}`
+	fileSystem := fstest.MapFS{"Human.ancestry": {Data: []byte(data)}}
+	a, err := NewAncestryFromFile(fileSystem, "Human.ancestry")
+	c.NoError(err, "ancestry file with a valueless gender option should load")
+	c.Equal(2, len(a.GenderOptions), "both gender options should be present")
+	c.Nil(a.GenderOptions[0].Value, "the first gender option should have no value")
+
+	// Only the option that actually has a value may be chosen, no matter what is excluded.
+	for range 20 {
+		c.Equal("Female", a.RandomGender(""), "the only valued gender option is chosen")
+		c.Equal("Female", a.RandomGender("Male"), "the valueless gender option is never chosen")
+	}
+	c.Equal("Female", a.RandomGender("Female"), "excluding the lone valued option keeps the current gender")
+
+	c.NotNil(a.GenderedOptions("Female"), "options for a valued gender are found")
+	c.Nil(a.GenderedOptions(""), "a valueless gender option is not matched by an empty gender")
+	c.Nil(a.GenderedOptions("Male"), "an unknown gender has no options")
+
+	// The randomizers that consult the gender options must fall back to their defaults rather than panicking.
+	c.Equal(defaultHair, a.RandomHair("", ""), "hair falls back to the default")
+	c.Equal(defaultEye, a.RandomEyes("", ""), "eyes fall back to the default")
+	c.Equal(defaultSkin, a.RandomSkin("", ""), "skin falls back to the default")
+	c.Equal(defaultHandedness, a.RandomHandedness("", ""), "handedness falls back to the default")
+	c.Equal(defaultAge, a.RandomAge(nil, "", 0), "age falls back to the default")
+
+	// A completely nil entry in the list (from a JSON null) must be tolerated as well.
+	a.GenderOptions = append(a.GenderOptions, nil)
+	c.Equal("Female", a.RandomGender(""), "a nil gender option is ignored")
+	c.Nil(a.GenderedOptions("Male"), "a nil gender option is not matched")
+}
