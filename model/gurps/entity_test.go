@@ -276,3 +276,60 @@ func newTraitNeedingMissingTrait(e *Entity, name string) *Trait {
 	t.Prereq = list
 	return t
 }
+
+// TestEntityReactionsUseResolvedSelfControl verifies that the reaction penalty derived from a trait's self-control
+// roll honors selector overrides on both the roll and the adjustment, matching what the sheet displays for the trait.
+func TestEntityReactionsUseResolvedSelfControl(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait := NewTrait(e, nil, false)
+	trait.Name = "Greed"
+	trait.SelfControl = selfctrl.CR12
+	trait.SelfControlAdj = selfctrl.ReactionPenalty
+	e.Traits = append(e.Traits, trait)
+	e.Recalculate()
+	reactions := e.Reactions()
+	c.Equal(1, len(reactions), "the trait's self-control roll produces a reaction")
+	if len(reactions) == 1 {
+		c.Equal(fxp.FromInteger(selfctrl.CR12.Penalty()), reactions[0].Total(), "the penalty derives from CR12")
+	}
+
+	// Override the roll to CR6; the reaction penalty must track the overridden roll.
+	trait.Features = append(trait.Features, newTraitSelectorOverride(selector.TraitSelfControlRoll, "Greed",
+		strconv.Itoa(int(selfctrl.CR6))))
+	e.Recalculate()
+	reactions = e.Reactions()
+	c.Equal(1, len(reactions), "the overridden roll still produces a reaction")
+	if len(reactions) == 1 {
+		c.Equal(fxp.FromInteger(selfctrl.CR6.Penalty()), reactions[0].Total(), "the penalty tracks the overridden CR6 roll")
+	}
+
+	// Override the adjustment away from a reaction penalty; the reaction must disappear.
+	trait.Features = append(trait.Features, newTraitSelectorOverride(selector.TraitSelfControlAdjustment, "Greed",
+		selfctrl.MajorCostOfLivingIncrease.Key()))
+	e.Recalculate()
+	c.Equal(0, len(e.Reactions()), "overriding the adjustment away from a reaction penalty removes the reaction")
+
+	// The converse: a trait with a non-reaction adjustment that is overridden into one must gain the reaction.
+	e = NewEntity()
+	trait = NewTrait(e, nil, false)
+	trait.Name = "Bad Temper"
+	trait.SelfControl = selfctrl.CR9
+	trait.SelfControlAdj = selfctrl.NoAdjustment
+	trait.Features = append(trait.Features, newTraitSelectorOverride(selector.TraitSelfControlAdjustment, "Bad Temper",
+		selfctrl.ReactionPenalty.Key()))
+	e.Traits = append(e.Traits, trait)
+	e.Recalculate()
+	reactions = e.Reactions()
+	c.Equal(1, len(reactions), "overriding the adjustment into a reaction penalty adds the reaction")
+	if len(reactions) == 1 {
+		c.Equal(fxp.FromInteger(selfctrl.CR9.Penalty()), reactions[0].Total(), "the added penalty derives from CR9")
+	}
+}
+
+func newTraitSelectorOverride(field selector.Field, traitName, value string) *SelectorOverride {
+	override := NewSelectorOverride(field)
+	override.Value = value
+	override.NameCriteria.Qualifier = traitName
+	return override
+}

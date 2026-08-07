@@ -1539,8 +1539,9 @@ func (e *Entity) gatherConditionalModifiers(
 func (e *Entity) Reactions() []*ConditionalModifier {
 	return e.gatherConditionalModifiers(e.reactionsFromFeatureList,
 		func(source string, t *Trait, m map[string]*ConditionalModifier) {
-			if t.SelfControl != selfctrl.None && t.SelfControlAdj == selfctrl.ReactionPenalty {
-				amt := fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(t.SelfControl))
+			resolvedSelfControl := t.ResolvedSelfControl(nil)
+			if resolvedSelfControl != selfctrl.None && t.ResolvedSelfControlAdjustment(nil) == selfctrl.ReactionPenalty {
+				amt := fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(resolvedSelfControl))
 				situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String())
 				if r, exists := m[situation]; exists {
 					r.Add(source, amt)
