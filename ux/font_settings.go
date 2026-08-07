@@ -146,5 +146,7 @@ func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 }
 
 func (d *fontSettingsDockable) save(filePath string) error {
-	return gurps.GlobalSettings().Fonts.Save(filePath)
+	g := gurps.GlobalSettings()
+	g.Fonts.CaptureCurrent() // The font panels edit the live fonts, so pull those edits in before exporting them.
+	return g.Fonts.Save(filePath)
 }

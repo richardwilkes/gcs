@@ -264,6 +264,10 @@
 - Fixed GCS shutting down uncleanly when the system asks it to quit, such as when logging out or shutting down, or when
   Control-C is pressed in a terminal that launched it. This is now handled the same way as choosing Quit from the menu,
   so open files get their normal chance to be saved.
+- Fixed `--convert` destroying the contents of theme color (`.colors`) and font (`.fonts`) settings files. Instead of
+  bringing such a file up to the current data format, GCS wrote whatever colors and fonts it happened to be running with
+  at the time, silently replacing the saved theme. These files now keep their own settings.
+- Fixed a crash when using Reset in the Font Settings on a fresh installation, before any settings had been saved.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.

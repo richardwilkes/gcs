@@ -126,21 +126,41 @@ func (f *Fonts) Save(filePath string) error {
 	})
 }
 
-// MarshalJSONTo implements json.MarshalerTo.
+// MarshalJSONTo implements json.MarshalerTo. This writes the receiver's own fonts, not the live theme. Callers that
+// hold the live theme -- the global settings and the font settings dockable, since the UI edits the live IndirectFonts
+// in place rather than this object -- must call CaptureCurrent first. The factory list drives the iteration so that the
+// keys are written in a stable, meaningful order; a font the receiver doesn't define falls back to the factory value,
+// matching what UnmarshalJSONFrom fills in for a missing key.
 func (f *Fonts) MarshalJSONTo(enc *jsontext.Encoder) error {
-	cf := CurrentFonts()
 	if err := enc.WriteToken(jsontext.BeginObject); err != nil {
 		return err
 	}
-	for _, one := range cf {
+	for _, one := range FactoryFonts() {
 		if err := enc.WriteToken(jsontext.String(one.ID)); err != nil {
 			return err
 		}
-		if err := json.MarshalEncode(enc, one.Font.Descriptor()); err != nil {
+		fd, ok := f.data[one.ID]
+		if !ok {
+			fd = one.Font.Descriptor()
+		}
+		if err := json.MarshalEncode(enc, fd); err != nil {
 			return err
 		}
 	}
 	return enc.WriteToken(jsontext.EndObject)
+}
+
+// CaptureCurrent copies the live theme into this object so that a subsequent save writes it. The settings UI mutates
+// the live IndirectFonts in place and never touches this object, so anything that represents the live theme has to call
+// this before saving or those edits are lost.
+func (f *Fonts) CaptureCurrent() {
+	cf := CurrentFonts()
+	if f.data == nil {
+		f.data = make(map[string]unison.FontDescriptor, len(cf))
+	}
+	for _, one := range cf {
+		f.data[one.ID] = one.Font.Descriptor()
+	}
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
@@ -180,15 +200,23 @@ func (f *Fonts) MakeCurrent() {
 
 // Reset to factory defaults.
 func (f *Fonts) Reset() {
-	for _, one := range FactoryFonts() {
+	ff := FactoryFonts()
+	if f.data == nil {
+		f.data = make(map[string]unison.FontDescriptor, len(ff))
+	}
+	for _, one := range ff {
 		f.data[one.ID] = one.Font.Descriptor()
 	}
 }
 
 // ResetOne resets one font by ID to factory defaults.
 func (f *Fonts) ResetOne(id string) {
-	for _, v := range FactoryFonts() {
+	ff := FactoryFonts()
+	for _, v := range ff {
 		if v.ID == id {
+			if f.data == nil {
+				f.data = make(map[string]unison.FontDescriptor, len(ff))
+			}
 			f.data[id] = v.Font.Descriptor()
 			break
 		}

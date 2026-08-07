@@ -211,6 +211,9 @@ func (s *Settings) Save() error {
 			delete(s.PDFs, k)
 		}
 	}
+	// The theme settings UI edits the live colors and fonts in place, so pull those edits in before writing.
+	s.Colors.CaptureCurrent()
+	s.Fonts.CaptureCurrent()
 	s.EnsureValidity()
 	return jio.SaveToFile(SettingsPath, s)
 }

@@ -197,7 +197,9 @@ func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 }
 
 func (d *colorSettingsDockable) save(filePath string) error {
-	return gurps.GlobalSettings().Colors.Save(filePath)
+	g := gurps.GlobalSettings()
+	g.Colors.CaptureCurrent() // The wells edit the live colors, so pull those edits in before exporting them.
+	return g.Colors.Save(filePath)
 }
 
 // InstallTintFunc installs a tint function for the given panel and theme color.

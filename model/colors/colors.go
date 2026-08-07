@@ -158,21 +158,46 @@ func (c *Colors) Save(filePath string) error {
 	})
 }
 
-// MarshalJSONTo implements json.MarshalerTo.
+// MarshalJSONTo implements json.MarshalerTo. This writes the receiver's own colors, not the live theme. Callers that
+// hold the live theme -- the global settings and the color settings dockable, since the UI edits the live ThemeColors
+// in place rather than this object -- must call CaptureCurrent first. The factory list drives the iteration so that the
+// keys are written in a stable, meaningful order; a color the receiver doesn't define falls back to the factory value,
+// matching what UnmarshalJSONFrom fills in for a missing key.
 func (c *Colors) MarshalJSONTo(enc *jsontext.Encoder) error {
-	cc := Current()
 	if err := enc.WriteToken(jsontext.BeginObject); err != nil {
 		return err
 	}
-	for _, one := range cc {
+	for _, one := range Factory() {
 		if err := enc.WriteToken(jsontext.String(one.ID)); err != nil {
 			return err
 		}
-		if err := json.MarshalEncode(enc, one.Color); err != nil {
+		clr, ok := c.data[one.ID]
+		if !ok {
+			clr = one.Color
+		}
+		if err := json.MarshalEncode(enc, clr); err != nil {
 			return err
 		}
 	}
 	return enc.WriteToken(jsontext.EndObject)
+}
+
+// CaptureCurrent copies the live theme into this object so that a subsequent save writes it. The settings UI mutates
+// the live ThemeColors in place and never touches this object, so anything that represents the live theme has to call
+// this before saving or those edits are lost.
+func (c *Colors) CaptureCurrent() {
+	cc := Current()
+	if c.data == nil {
+		c.data = make(map[string]*unison.ThemeColor, len(cc))
+	}
+	for _, one := range cc {
+		if v, ok := c.data[one.ID]; ok {
+			*v = *one.Color
+		} else {
+			clr := *one.Color
+			c.data[one.ID] = &clr
+		}
+	}
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
