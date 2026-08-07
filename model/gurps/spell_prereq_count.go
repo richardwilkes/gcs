@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
 // CountPrereqsForSpell returns the number of prerequisites for the specified spell.
@@ -28,6 +29,9 @@ func CountPrereqsForSpell(spell *Spell, allSpells []*Spell) int {
 }
 
 func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]int) {
+	if xreflect.IsNil(one) {
+		return
+	}
 	switch p := one.(type) {
 	case *PrereqList:
 		if p.All {
