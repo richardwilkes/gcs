@@ -134,6 +134,7 @@ func SeparateWeapons(excludeHidden bool, list []*Weapon) (melee, ranged []*Weapo
 func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
 	var w Weapon
 	w.TID = tid.MustNewTID(weaponKind(melee))
+	w.SubVersion = currentWeaponSubVersion
 	w.Damage = WeaponDamage{
 		WeaponDamageData: WeaponDamageData{
 			Type:                      "cr",

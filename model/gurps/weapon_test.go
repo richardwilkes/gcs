@@ -268,3 +268,49 @@ func TestTboneProgressionSTDamageContribution(t *testing.T) {
 		c.Equal(one.expected, w.Damage.ResolvedDamage(nil), "test %d: %s", i, one.prog.Key())
 	}
 }
+
+// TestNewWeaponIsCurrentSubVersion verifies that a freshly created weapon is stamped with the current data sub-version,
+// so that the data fix-ups applied to pre-sub-versioning data are not run against it. Without the stamp, the first
+// SetOwner call on a weapon owned by a leveled trait or piece of equipment moved the base damage into the per-level
+// slot, turning a new weapon's "1d" into "1d per level".
+func TestNewWeaponIsCurrentSubVersion(t *testing.T) {
+	c := check.New(t)
+
+	e := gurps.NewEntity()
+	trait := gurps.NewTrait(e, nil, false)
+	trait.Name = "Innate Attack"
+	trait.CanLevel = true
+	trait.Levels = fxp.Three
+	c.True(trait.IsLeveled())
+
+	w := gurps.NewWeapon(trait, false)
+	c.Equal("1d", w.Damage.Base)
+	trait.Weapons = []*gurps.Weapon{w}
+	e.Traits = append(e.Traits, trait)
+	e.Recalculate()
+
+	c.Equal("1d", w.Damage.Base, "a new weapon's base damage must not be migrated into the per-level slot")
+	c.Equal("", w.Damage.BaseLeveled, "a new weapon must not acquire per-level base damage")
+}
+
+// TestPreSubVersionWeaponDamageIsMigrated verifies that weapon data written before sub-versioning existed still has its
+// base damage moved into the per-level slot when its owner is leveled. This is the migration that
+// TestNewWeaponIsCurrentSubVersion must not trigger for new weapons.
+func TestPreSubVersionWeaponDamageIsMigrated(t *testing.T) {
+	c := check.New(t)
+
+	e := gurps.NewEntity()
+	trait := gurps.NewTrait(e, nil, false)
+	trait.Name = "Innate Attack"
+	trait.CanLevel = true
+	trait.Levels = fxp.Three
+
+	w := gurps.NewWeapon(trait, false)
+	w.SubVersion = 0 // Simulate data saved prior to sub-versioning.
+	trait.Weapons = []*gurps.Weapon{w}
+	e.Traits = append(e.Traits, trait)
+	e.Recalculate()
+
+	c.Equal("", w.Damage.Base)
+	c.Equal("1d", w.Damage.BaseLeveled, "pre-sub-versioning damage on a leveled owner must migrate to per-level")
+}
