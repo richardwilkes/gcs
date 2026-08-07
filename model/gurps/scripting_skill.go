@@ -30,12 +30,12 @@ func deferredNewScriptSkill(skill *Skill) ScriptSelfProvider {
 
 func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(skill.TID) }
+	m["id"] = func() goja.Value { return r.ToValue(string(skill.TID)) }
 	m["parentID"] = func() goja.Value {
 		if skill.parent == nil {
 			return goja.Undefined()
 		}
-		return r.ToValue(skill.parent.TID)
+		return r.ToValue(string(skill.parent.TID))
 	}
 	m["parent"] = func() goja.Value {
 		if skill.parent == nil {

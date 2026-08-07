@@ -28,7 +28,7 @@ func deferredNewScriptEquipmentModifier(mod *EquipmentModifier) ScriptSelfProvid
 
 func newScriptEquipmentModifier(r *goja.Runtime, mod *EquipmentModifier) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(mod.TID) }
+	m["id"] = func() goja.Value { return r.ToValue(string(mod.TID)) }
 	m["attachedTo"] = func() goja.Value {
 		if mod.equipment == nil {
 			return goja.Undefined()

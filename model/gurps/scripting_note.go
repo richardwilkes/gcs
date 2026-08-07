@@ -28,12 +28,12 @@ func deferredNewScriptNote(note *Note) ScriptSelfProvider {
 
 func newScriptNote(r *goja.Runtime, note *Note) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(note.TID) }
+	m["id"] = func() goja.Value { return r.ToValue(string(note.TID)) }
 	m["parentID"] = func() goja.Value {
 		if note.parent == nil {
 			return goja.Undefined()
 		}
-		return r.ToValue(note.parent.TID)
+		return r.ToValue(string(note.parent.TID))
 	}
 	m["parent"] = func() goja.Value {
 		if note.parent == nil {

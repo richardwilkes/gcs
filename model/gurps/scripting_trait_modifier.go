@@ -29,7 +29,7 @@ func deferredNewScriptTraitModifier(mod *TraitModifier) ScriptSelfProvider {
 
 func newScriptTraitModifier(r *goja.Runtime, mod *TraitModifier) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(mod.TID) }
+	m["id"] = func() goja.Value { return r.ToValue(string(mod.TID)) }
 	m["attachedTo"] = func() goja.Value {
 		if mod.trait == nil {
 			return goja.Undefined()

@@ -270,6 +270,9 @@
 - Fixed a crash when using Reset in the Font Settings on a fresh installation, before any settings had been saved.
 - Fixed the penalty applied when a spell's equipment prerequisite isn't met being applied to every spell on the sheet
   rather than just the spell that requires the missing equipment.
+- Fixed the `id` and `parentID` properties that scripts see on traits, trait modifiers, skills, spells, equipment,
+  equipment modifiers, notes, and weapons. They were handed to the script engine as objects rather than plain text, so
+  comparing one against a known ID (with `===`, `indexOf`, or `includes`) always failed, making the IDs unusable.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.

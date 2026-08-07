@@ -30,12 +30,12 @@ func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
 
 func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(trait.TID) }
+	m["id"] = func() goja.Value { return r.ToValue(string(trait.TID)) }
 	m["parentID"] = func() goja.Value {
 		if trait.parent == nil {
 			return goja.Undefined()
 		}
-		return r.ToValue(trait.parent.TID)
+		return r.ToValue(string(trait.parent.TID))
 	}
 	m["parent"] = func() goja.Value {
 		if trait.parent == nil {

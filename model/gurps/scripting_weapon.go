@@ -29,7 +29,7 @@ func deferredNewScriptWeapon(w *Weapon) ScriptSelfProvider {
 
 func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(w.TID) }
+	m["id"] = func() goja.Value { return r.ToValue(string(w.TID)) }
 	m["attachedTo"] = func() goja.Value {
 		if xreflect.IsNil(w.Owner) {
 			return goja.Undefined()

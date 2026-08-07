@@ -30,12 +30,12 @@ func deferredNewScriptSpell(spell *Spell) ScriptSelfProvider {
 
 func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(spell.TID) }
+	m["id"] = func() goja.Value { return r.ToValue(string(spell.TID)) }
 	m["parentID"] = func() goja.Value {
 		if spell.parent == nil {
 			return goja.Undefined()
 		}
-		return r.ToValue(spell.parent.TID)
+		return r.ToValue(string(spell.parent.TID))
 	}
 	m["parent"] = func() goja.Value {
 		if spell.parent == nil {

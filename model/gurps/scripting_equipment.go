@@ -30,12 +30,12 @@ func deferredNewScriptEquipment(item *Equipment) ScriptSelfProvider {
 
 func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(item.TID) }
+	m["id"] = func() goja.Value { return r.ToValue(string(item.TID)) }
 	m["parentID"] = func() goja.Value {
 		if item.parent == nil {
 			return goja.Undefined()
 		}
-		return r.ToValue(item.parent.TID)
+		return r.ToValue(string(item.parent.TID))
 	}
 	m["parent"] = func() goja.Value {
 		if item.parent == nil {
