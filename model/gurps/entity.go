@@ -32,6 +32,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
@@ -576,6 +577,7 @@ func (e *Entity) processPrereqs() {
 				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
 				if eqpPenalty {
 					penalty := NewSpellBonus()
+					penalty.SpellMatchType = spellmatch.Name
 					penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 					if s.TechLevel != nil && *s.TechLevel != "" {
 						penalty.Amount = -fxp.Ten

@@ -268,6 +268,8 @@
   bringing such a file up to the current data format, GCS wrote whatever colors and fonts it happened to be running with
   at the time, silently replacing the saved theme. These files now keep their own settings.
 - Fixed a crash when using Reset in the Font Settings on a fresh installation, before any settings had been saved.
+- Fixed the penalty applied when a spell's equipment prerequisite isn't met being applied to every spell on the sheet
+  rather than just the spell that requires the missing equipment.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.

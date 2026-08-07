@@ -179,3 +179,43 @@ func TestSpellMarshalUnsatisfiedReason(t *testing.T) {
 	c.True(strings.Contains(marshaled(leveled), `"unsatisfied_reason":"`+reason+`"`),
 		"an unsatisfied spell with a level must record the reason")
 }
+
+// TestSpellEquipmentPrereqPenaltyIsScopedToItsSpell verifies that the -5/-10 penalty generated when a spell's equipment
+// prerequisite is unmet applies only to that spell. The penalty is built from NewSpellBonus(), whose default match type
+// is spellmatch.AllColleges (which matches every spell), so it must explicitly be narrowed to spellmatch.Name.
+func TestSpellEquipmentPrereqPenaltyIsScopedToItsSpell(t *testing.T) {
+	c := check.New(t)
+
+	// A control entity with a single spell and no prerequisites, used to establish the unpenalized level.
+	control := NewEntity()
+	baseline := addTestSpell(control, "Ice Dagger", fxp.Four)
+	control.Recalculate()
+
+	e := NewEntity()
+	needsFocus := addTestSpell(e, "Fireball", fxp.Four)
+	eqpPrereq := NewEquippedEquipmentPrereq()
+	eqpPrereq.NameCriteria.Qualifier = "Wizard's Focus"
+	needsFocus.Prereq = NewPrereqList()
+	needsFocus.Prereq.Prereqs = append(needsFocus.Prereq.Prereqs, eqpPrereq)
+	eqpPrereq.Parent = needsFocus.Prereq
+	other := addTestSpell(e, "Ice Dagger", fxp.Four)
+	e.Recalculate()
+
+	// Precondition: the entity has no equipment, so the prerequisite is unmet and the penalty is generated.
+	c.NotEqual("", needsFocus.UnsatisfiedReason, "precondition: the equipment prerequisite must be unsatisfied")
+
+	// The penalty applies to the spell that owns the unmet prerequisite...
+	c.Equal(-fxp.Five, e.SpellBonusFor(needsFocus.NameWithReplacements(), "", nil, nil, nil),
+		"the spell with the unmet equipment prerequisite takes the -5 penalty")
+
+	// ...and to nothing else, no matter how it is queried.
+	c.Equal(fxp.Int(0), e.SpellBonusFor(other.NameWithReplacements(), "", nil, nil, nil),
+		"an unrelated spell must not take the penalty")
+	c.Equal(fxp.Int(0), e.SpellBonusFor("Ice Dagger", "Arcane", []string{"Water"}, []string{"Attack"}, nil),
+		"the penalty must not match via power source, college, or tags either")
+
+	// The unrelated spell's level must be unchanged from the control, while the owning spell's is 5 lower.
+	c.Equal(baseline.LevelData.Level, other.LevelData.Level, "an unrelated spell's level must not be reduced")
+	c.Equal(baseline.LevelData.Level-fxp.Five, needsFocus.LevelData.Level,
+		"the spell with the unmet equipment prerequisite must be 5 levels lower")
+}
