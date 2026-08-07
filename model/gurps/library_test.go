@@ -252,6 +252,137 @@ func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
 	c.Equal([]byte("not a zip file"), data)
 }
 
+// TestCheckForAvailableUpgradeNotifiesLateInstalledFunc verifies that an update check completing before the UI has
+// installed a notification function still delivers that notification once one is installed. The update checks are
+// started by Start() before the workspace (and therefore the navigator) exists, so a fast check would otherwise be
+// silently dropped, leaving no "update available" indicator until some unrelated reload happened to occur.
+func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
+	c := check.New(t)
+	resetLibraryChangeNotification()
+	defer resetLibraryChangeNotification()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, `[{"tag_name":"v5","body":"notes","zipball_url":"http://127.0.0.1/z.zip"}]`)
+	}))
+	defer srv.Close()
+	client := &http.Client{Transport: &redirectingTransport{host: srv.Listener.Addr().String()}}
+
+	// The library has no release.txt, so its version on disk is "0" while the newest release is "5": an upgrade is
+	// available and a notification is due.
+	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	current, releases := lib.AvailableReleases()
+	c.Equal("0", current)
+	c.Equal(1, len(releases))
+
+	// Installing the function afterwards must still deliver the notification...
+	var calls atomic.Int64
+	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	c.Equal(int64(1), calls.Load())
+
+	// ...but only once, so a later navigator doesn't get a stale notification.
+	var later atomic.Int64
+	SetNotifyOfLibraryChangeFunc(func() { later.Add(1) })
+	c.Equal(int64(0), later.Load())
+
+	// With a function installed, a check reporting an upgrade notifies directly.
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(1), later.Load())
+
+	// A check that finds nothing newer than what is on disk must not notify.
+	c.NoError(os.WriteFile(filepath.Join(lib.Data().PathOnDisk, releaseFile), []byte("5\n"), 0o600))
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(1), later.Load())
+}
+
+// TestNotifyOfLibraryChangeConcurrent verifies that the notification function may be installed by the UI thread while
+// background goroutines report library changes. It was previously a plain package variable written by the navigator
+// and read by the update-check goroutines, which the race detector flags.
+func TestNotifyOfLibraryChangeConcurrent(t *testing.T) {
+	c := check.New(t)
+	resetLibraryChangeNotification()
+	defer resetLibraryChangeNotification()
+
+	stop := make(chan struct{})
+	var wg sync.WaitGroup
+	for range 4 {
+		wg.Go(func() {
+			for {
+				select {
+				case <-stop:
+					return
+				default:
+				}
+				NotifyOfLibraryChange()
+			}
+		})
+	}
+	var calls atomic.Int64
+	wg.Go(func() {
+		defer close(stop)
+		for range 100 {
+			SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+			SetNotifyOfLibraryChangeFunc(nil)
+		}
+	})
+	wg.Wait()
+
+	// Whatever interleaving occurred, the notification state must still be usable afterwards.
+	resetLibraryChangeNotification()
+	var after atomic.Int64
+	SetNotifyOfLibraryChangeFunc(func() { after.Add(1) })
+	c.Equal(int64(0), after.Load())
+	NotifyOfLibraryChange()
+	c.Equal(int64(1), after.Load())
+}
+
+// TestNotifyOfLibraryChangePendingSurvivesRemoval verifies that removing the notification function doesn't discard a
+// notification that hasn't been delivered yet.
+func TestNotifyOfLibraryChangePendingSurvivesRemoval(t *testing.T) {
+	c := check.New(t)
+	resetLibraryChangeNotification()
+	defer resetLibraryChangeNotification()
+
+	NotifyOfLibraryChange()
+	SetNotifyOfLibraryChangeFunc(nil)
+	var calls atomic.Int64
+	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	c.Equal(int64(1), calls.Load())
+}
+
+// TestNotifyOfLibraryChangeSurvivesPanic verifies that a notification function that panics doesn't take the calling
+// background goroutine down with it.
+func TestNotifyOfLibraryChangeSurvivesPanic(t *testing.T) {
+	c := check.New(t)
+	resetLibraryChangeNotification()
+	defer resetLibraryChangeNotification()
+
+	SetNotifyOfLibraryChangeFunc(func() { panic("boom") })
+	c.NotPanics(NotifyOfLibraryChange)
+}
+
+// resetLibraryChangeNotification restores the package-level library change notification state, so that tests touching
+// it don't leak into one another.
+func resetLibraryChangeNotification() {
+	libraryChangeLock.Lock()
+	notifyOfLibraryChange = nil
+	pendingLibraryChange = false
+	libraryChangeLock.Unlock()
+}
+
+// redirectingTransport sends requests to a test server rather than to the GitHub API host baked into LoadReleases.
+type redirectingTransport struct {
+	host string
+}
+
+func (t *redirectingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	redirected := req.Clone(req.Context())
+	redirected.URL.Scheme = "http"
+	redirected.URL.Host = t.host
+	redirected.Host = ""
+	return http.DefaultTransport.RoundTrip(redirected)
+}
+
 // waitForMonitorQueue blocks until everything already queued on the library's monitor has been processed. The queue
 // runs a single worker, so a task submitted afterwards cannot run until all of the earlier ones have finished.
 func waitForMonitorQueue(lib *Library) {

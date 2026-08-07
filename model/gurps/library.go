@@ -40,8 +40,43 @@ import (
 
 const releaseFile = "release.txt"
 
-// NotifyOfLibraryChangeFunc will be called to notify of library changes.
-var NotifyOfLibraryChangeFunc func()
+var (
+	libraryChangeLock     sync.Mutex
+	notifyOfLibraryChange func()
+	pendingLibraryChange  bool
+)
+
+// SetNotifyOfLibraryChangeFunc sets the function that will be called to notify of library changes. Passing nil removes
+// the current function. If a change was reported before a function was installed, the newly installed function is
+// called immediately, so that changes detected during startup aren't lost. The function may be called from any
+// goroutine.
+func SetNotifyOfLibraryChangeFunc(f func()) {
+	libraryChangeLock.Lock()
+	notifyOfLibraryChange = f
+	deliver := f != nil && pendingLibraryChange
+	if deliver {
+		pendingLibraryChange = false
+	}
+	libraryChangeLock.Unlock()
+	if deliver {
+		xos.SafeCall(f, nil)
+	}
+}
+
+// NotifyOfLibraryChange notifies of a library change. If no notification function has been installed yet, the
+// notification is retained and delivered to the next function installed by SetNotifyOfLibraryChangeFunc. May be called
+// from any goroutine.
+func NotifyOfLibraryChange() {
+	libraryChangeLock.Lock()
+	f := notifyOfLibraryChange
+	if f == nil {
+		pendingLibraryChange = true
+	}
+	libraryChangeLock.Unlock()
+	if f != nil {
+		xos.SafeCall(f, nil)
+	}
+}
 
 // libraryPersistentData holds the data that will be serialized for a Library. It is deliberately not part of the
 // public API, so that the on-disk format can evolve without dragging the accessors along with it. Note that the GitHub
@@ -352,8 +387,8 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 	l.releases = releases
 	l.current = current
 	l.lock.Unlock()
-	if current != lastRelease && NotifyOfLibraryChangeFunc != nil {
-		xos.SafeCall(NotifyOfLibraryChangeFunc, nil)
+	if current != lastRelease {
+		NotifyOfLibraryChange()
 	}
 }
 

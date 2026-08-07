@@ -126,7 +126,7 @@ func newNavigator() *Navigator {
 	n.AddChild(n.scroll)
 
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
-	gurps.NotifyOfLibraryChangeFunc = n.EventuallyReload
+	gurps.SetNotifyOfLibraryChangeFunc(n.EventuallyReload)
 	n.table.MouseDownCallback = n.mouseDown
 	n.table.SelectionChangedCallback = n.selectionChanged
 	n.table.KeyDownCallback = n.tableKeyDown
@@ -713,12 +713,16 @@ func (n *Navigator) watchCallback(_ *gurps.Library, _ string, _ notify.Event) {
 	n.EventuallyReload()
 }
 
-// EventuallyReload calls Reload() after a small delay, collapsing intervening requests to do the same.
+// EventuallyReload calls Reload() after a small delay, collapsing intervening requests to do the same. May be called
+// from any goroutine: the library update checks and the filesystem watches both report from background goroutines, so
+// the needReload bookkeeping is pushed onto the UI thread rather than being touched directly.
 func (n *Navigator) EventuallyReload() {
-	if !n.needReload {
-		n.needReload = true
-		unison.InvokeTaskAfter(n.Reload, time.Millisecond*100)
-	}
+	unison.InvokeTask(func() {
+		if !n.needReload {
+			n.needReload = true
+			unison.InvokeTaskAfter(n.Reload, time.Millisecond*100)
+		}
+	})
 }
 
 // Reload the content of the navigator view.
