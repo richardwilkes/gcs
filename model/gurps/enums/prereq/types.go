@@ -9,7 +9,10 @@
 
 package prereq
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 // TypesForEquipment holds the types that can be used for equipment.
 var TypesForEquipment = []Type{
@@ -35,10 +38,15 @@ var TypesForNonEquipment = []Type{
 
 // ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized. Unlike
 // ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that is
-// dispatching on the type to detect data it has no knowledge of.
+// dispatching on the type to detect data it has no knowledge of. Keys retired by earlier versions of GCS are
+// recognized as well, so that older files continue to load.
 func ExtractKnownType(str string) (value Type, known bool) {
 	for _, enum := range Types {
-		if enum != Unknown && strings.EqualFold(enum.Key(), str) {
+		if enum == Unknown {
+			continue
+		}
+		if strings.EqualFold(enum.Key(), str) ||
+			slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
 			return enum, true
 		}
 	}
