@@ -85,28 +85,49 @@ documents from the library are open.`))
 	frame = frame.Align()
 	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
 	wnd.ToFront()
-	go performLibraryUpdate(wnd, lib, rel, &err)
+	resultChan := make(chan error, 1)
+	go runLibraryUpdate(resultChan, func() error { return performLibraryUpdate(lib, rel) },
+		func() { finishLibraryUpdate(wnd, lib) })
 	wnd.RunModal()
-	if err != nil {
+	if err = <-resultChan; err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to update"), err)
 		return false
 	}
 	return true
 }
 
-//nolint:gocritic // We need to return the error, but can't return it directly thanks to using a goroutine
-func performLibraryUpdate(wnd *unison.Window, lib *gurps.Library, rel gurps.Release, err *error) {
-	defer finishLibraryUpdate(wnd, lib)
+// runLibraryUpdate performs the download on a background goroutine while the UI thread waits inside RunModal(), hands
+// the result to that thread through resultChan and only then calls finish, which is what eventually stops the modal
+// loop. resultChan must be buffered so that the send can never block. The ordering is what makes the hand-off safe:
+// initiateLibraryUpdate receives from resultChan only after RunModal() has returned, so the send is guaranteed to have
+// completed first. Reading a plain variable instead would let a failed download be observed as a success.
+func runLibraryUpdate(resultChan chan<- error, download func() error, finish func()) {
+	var err error
+	defer func() {
+		resultChan <- err
+		finish()
+	}()
+	err = download()
+}
+
+func performLibraryUpdate(lib *gurps.Library, rel gurps.Release) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	lib.StopAllWatches()
-	*err = lib.Download(ctx, &http.Client{}, rel)
+	return lib.Download(ctx, &http.Client{}, rel)
 }
 
+// finishLibraryUpdate refreshes the library's list of available releases and then posts the teardown of the progress
+// window onto the UI thread. It runs on the background goroutine, so it must not touch the modal state itself:
+// StopModal() mutates the window's modal fields and unison's package-global modal stack without any locking, all while
+// the UI thread is spinning on them inside RunModal(). The release check is left here rather than being posted along
+// with the teardown because it makes network calls that would otherwise stall the UI thread for up to a minute.
 func finishLibraryUpdate(wnd *unison.Window, lib *gurps.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})
-	Workspace.Navigator.EventuallyReload()
-	wnd.StopModal(unison.ModalResponseOK)
+	unison.InvokeTask(func() {
+		Workspace.Navigator.EventuallyReload()
+		wnd.StopModal(unison.ModalResponseOK)
+	})
 }
