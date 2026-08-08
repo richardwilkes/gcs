@@ -1011,7 +1011,7 @@ func (e *EquipmentSyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (e *EquipmentEditData) CopyFrom(other *Equipment) {
-	e.copyFrom(other.owner, &other.EquipmentEditData, false)
+	e.copyFrom(other, &other.EquipmentEditData, false)
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1021,10 +1021,10 @@ func (e *EquipmentEditData) SetNameableReplacements(replacements map[string]stri
 
 // ApplyTo implements node.EditorData.
 func (e *EquipmentEditData) ApplyTo(other *Equipment) {
-	other.copyFrom(other.owner, e, true)
+	other.copyFrom(other, e, true)
 }
 
-func (e *EquipmentEditData) copyFrom(owner DataOwner, other *EquipmentEditData, isApply bool) {
+func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditData, isApply bool) {
 	*e = *other
 	e.Tags = slices.Clone(other.Tags)
 	e.Replacements = maps.Clone(other.Replacements)
@@ -1032,7 +1032,12 @@ func (e *EquipmentEditData) copyFrom(owner DataOwner, other *EquipmentEditData, 
 	if len(other.Modifiers) != 0 {
 		e.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			e.Modifiers = append(e.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, isApply))
+			cloned := one.Clone(one.Source.LibraryFile, equipment.owner, nil, isApply)
+			// Point the copy at the equipment it belongs to, so that its nameable placeholders can be resolved with
+			// that equipment's replacements. Without this, the copies held in an editor show their raw placeholders
+			// (e.g. "@Material@"), since the accessors fall back to the unsubstituted text when there is no equipment.
+			cloned.setEquipment(equipment)
+			e.Modifiers = append(e.Modifiers, cloned)
 		}
 	}
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)

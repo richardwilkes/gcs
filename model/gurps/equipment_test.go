@@ -67,3 +67,37 @@ func TestNewEquipmentFromFileAttachesContainerData(t *testing.T) {
 	c.Equal("Iron plating", child.Modifiers[0].NameWithReplacements(),
 		"the child's modifier resolves the child's replacements")
 }
+
+// TestEquipmentEditDataResolvesModifierNameables verifies that the modifier copies an equipment editor works with are
+// pointed at their equipment, so their nameable placeholders resolve. Without that, the accessors fall back to the raw
+// text and the editor's modifier rows read "@Material@" instead of the replacement the user chose.
+func TestEquipmentEditDataResolvesModifierNameables(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	eqp := NewEquipment(entity, nil, false)
+	eqp.Name = "Armor"
+	eqp.Replacements = map[string]string{"Material": "Steel"}
+	mod := NewEquipmentModifier(entity, nil, false)
+	mod.Name = "@Material@ plating"
+	mod.LocalNotes = "Forged from @Material@"
+	eqp.Modifiers = []*EquipmentModifier{mod}
+
+	// What the editor is handed when it opens.
+	var edit EquipmentEditData
+	edit.CopyFrom(eqp)
+	c.Equal(1, len(edit.Modifiers))
+	c.True(eqp == edit.Modifiers[0].OwningEquipment(), "the copy points at the equipment being edited")
+	c.Equal("Steel plating", edit.Modifiers[0].NameWithReplacements())
+	c.Equal("Forged from Steel", edit.Modifiers[0].LocalNotesWithReplacements())
+
+	// The copy must be a copy: editing it leaves the original alone.
+	edit.Modifiers[0].Name = "@Material@ mesh"
+	c.Equal("@Material@ plating", mod.Name, "the original modifier is untouched")
+
+	// What applying the editor's data back produces.
+	target := NewEquipment(entity, nil, false)
+	edit.ApplyTo(target)
+	c.Equal(1, len(target.Modifiers))
+	c.True(target == target.Modifiers[0].OwningEquipment(), "the applied copy points at the equipment it was applied to")
+	c.Equal("Steel mesh", target.Modifiers[0].NameWithReplacements())
+}
