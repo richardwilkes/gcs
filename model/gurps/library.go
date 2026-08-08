@@ -202,8 +202,12 @@ func (l *Library) SetID(id tid.TID) {
 	l.data.ID = id
 }
 
-// Valid returns true if the library has a path on disk and a title.
+// Valid returns true if the library has a path on disk and a title. A file may hold a null in place of a library, so
+// this must be checked before dereferencing one that came from a file.
 func (l *Library) Valid() bool {
+	if l == nil {
+		return false
+	}
 	l.lock.RLock()
 	defer l.lock.RUnlock()
 	return strings.TrimSpace(l.data.PathOnDisk) != "" && strings.TrimSpace(l.data.Title) != ""

@@ -85,6 +85,24 @@ func TestLoadSettingsOrDefaultsWithCorruptFile(t *testing.T) {
 	c.Equal(corrupt, string(data))
 }
 
+// TestLoadSettingsOrDefaultsWithNullLibraryEntry verifies that a settings file holding a null in place of a library is
+// survivable. Decoding one used to panic, which bypassed this function's recovery entirely and crashed GCS at startup
+// rather than leaving it with usable settings.
+func TestLoadSettingsOrDefaultsWithNullLibraryEntry(t *testing.T) {
+	c := check.New(t)
+	countErrorLogging(t)
+	p := filepath.Join(t.TempDir(), "settings.json")
+	c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3","libraries":{"a/b":null,`+
+		`"someone/repo":{"title":"Good","path":"/libs/good"}}}`), 0o600))
+	var settings Settings
+	c.NotPanics(func() { settings = loadSettingsOrDefaults(p) })
+	c.Equal("1.2.3", settings.LastSeenGCSVersion, "the rest of the settings file still loaded")
+	_, ok := settings.LibrarySet["someone/repo"]
+	c.True(ok, "the usable library entry survived")
+	_, ok = settings.LibrarySet["a/b"]
+	c.False(ok, "the null entry was skipped")
+}
+
 // TestSetAsideDamagedSettingsWithMissingFile verifies that setting aside a file that isn't there is a no-op rather than
 // an error log.
 func TestSetAsideDamagedSettingsWithMissingFile(t *testing.T) {

@@ -250,6 +250,30 @@ func TestLibraryJSONRoundTrip(t *testing.T) {
 	c.Equal(lib.Favorites(), restored.Favorites())
 }
 
+// TestLibrariesUnmarshalSkipsNullEntries verifies that a null in place of a library -- which a hand-edited or damaged
+// settings file may hold, and which decodes without error as a nil *Library -- is skipped rather than dereferenced. A
+// panic here would bypass the recovery loadSettingsOrDefaults provides and take GCS down at startup.
+func TestLibrariesUnmarshalSkipsNullEntries(t *testing.T) {
+	c := check.New(t)
+	var libs Libraries
+	c.NotPanics(func() { c.NoError(json.Unmarshal([]byte(`{"a/b":null}`), &libs)) })
+	c.Equal(0, len(libs))
+
+	// A null alongside a usable entry must cost only the null.
+	c.NotPanics(func() {
+		c.NoError(json.Unmarshal([]byte(`{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`), &libs))
+	})
+	c.Equal(1, len(libs))
+	lib, ok := libs["someone/repo"]
+	c.True(ok)
+	c.NotNil(lib)
+	c.Equal("Good", lib.Data().Title)
+
+	// The guard belongs to Valid() itself, so anything else holding a library that came from a file is covered too.
+	var missing *Library
+	c.NotPanics(func() { c.False(missing.Valid()) })
+}
+
 // TestLibraryDownloadReleaseChecksStatusCode verifies that an HTTP error response is reported as an HTTP failure rather
 // than being handed to the zip reader as if it were archive content, which yielded a misleading "unable to open
 // archive" error.
