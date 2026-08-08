@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // newTestEquipment creates a piece of equipment with the given base weight and quantity, attaching it to the parent, if
@@ -110,4 +111,27 @@ func TestContainedWeightPrereqIgnoresQuantity(t *testing.T) {
 		container.Quantity = qty
 		c.False(atMost5.Satisfied(nil, container, nil, "", nil), "at most 5 lb, quantity %v", qty)
 	}
+}
+
+// The tooltip for an unmet prereq must state the weight it requires with its units, in the units the sheet is set to,
+// just as the editor field for the same value does. Without them, "a contained weight which is at most 5" is
+// ambiguous, since that number is a different weight in every unit.
+func TestContainedWeightPrereqTooltipHasUnits(t *testing.T) {
+	c := check.New(t)
+	container := newTestEquipment(nil, true, "5 lb", fxp.One)
+	newTestEquipment(container, false, "10 lb", fxp.One)
+
+	entity := gurps.NewEntity()
+	p := gurps.NewContainedWeightPrereq(entity) // at most 5 in the sheet's default units
+	c.Equal(fxp.WeightFromInteger(5, fxp.Pound), p.WeightCriteria.Qualifier)
+
+	var tooltip xbytes.InsertBuffer
+	c.False(p.Satisfied(entity, container, &tooltip, "", nil), "10 lb of contents exceeds the 5 lb required")
+	c.Equal("Has a contained weight which is at most 5 lb", tooltip.String())
+
+	// Switching the sheet to metric restates the same requirement in the units the editor field now shows.
+	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
+	tooltip.Reset()
+	c.False(p.Satisfied(entity, container, &tooltip, "", nil))
+	c.Equal("Has a contained weight which is at most 2.5 kg", tooltip.String())
 }

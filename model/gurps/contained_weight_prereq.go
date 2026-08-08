@@ -76,7 +76,7 @@ func (p *ContainedWeightPrereq) Satisfied(entity *Entity, exclude any, tooltip *
 		tooltip.WriteString(prefix)
 		tooltip.WriteString(HasText(p.Has))
 		tooltip.WriteString(i18n.Text(" a contained weight which "))
-		tooltip.WriteString(p.WeightCriteria.String())
+		tooltip.WriteString(p.WeightCriteria.Describe(SheetSettingsFor(entity).DefaultWeightUnits))
 	}
 	return satisfied
 }

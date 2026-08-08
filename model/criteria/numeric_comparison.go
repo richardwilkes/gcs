@@ -85,11 +85,17 @@ func (n NumericComparison) String() string {
 
 // Describe returns a description of this NumericCompareType using a qualifier.
 func (n NumericComparison) Describe(qualifier fxp.Int) string {
+	return n.DescribeWith(qualifier.String())
+}
+
+// DescribeWith returns a description of this NumericCompareType using an already-formatted qualifier. Use this for a
+// qualifier that carries more than a bare number, such as a weight with its units.
+func (n NumericComparison) DescribeWith(qualifier string) string {
 	v := n.EnsureValid()
 	if v == AnyNumber {
 		return v.String()
 	}
-	return v.String() + " " + qualifier.String()
+	return v.String() + " " + qualifier
 }
 
 // AltDescribe returns an alternate description of this NumericCompareType using a qualifier.
