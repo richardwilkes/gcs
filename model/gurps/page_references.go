@@ -61,6 +61,10 @@ func (p *PageRefs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		return err
 	}
 	for k, v := range p.data {
+		if v == nil { // A file may hold a null in place of a page reference
+			delete(p.data, k)
+			continue
+		}
 		v.ID = k
 	}
 	return nil
