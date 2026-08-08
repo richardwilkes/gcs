@@ -415,3 +415,39 @@ func TestPreSubVersionWeaponDamageIsMigrated(t *testing.T) {
 	c.Equal("", w.Damage.Base)
 	c.Equal("1d", w.Damage.BaseLeveled, "pre-sub-versioning damage on a leveled owner must migrate to per-level")
 }
+
+// TestWeaponEditorPreservesID verifies that applying an editor's copy back onto the weapon it was taken from leaves the
+// weapon's identity alone. A Weapon acts as its own editor data, so the copy the editor holds carries a TID of its own,
+// but the weapon's TID is persisted as its "id" and table selections are keyed on it, so neither applying an edit nor
+// undoing or redoing one may change it.
+func TestWeaponEditorPreservesID(t *testing.T) {
+	c := check.New(t)
+
+	w := gurps.NewWeapon(nil, true)
+	w.Usage = "Swung"
+	w.ClonedFromTID = gurps.NewWeapon(nil, true).TID // Stand in for the weapon this one was cloned from.
+	originalTID := w.TID
+	originalClonedFromTID := w.ClonedFromTID
+
+	// The editor holds two copies: one to restore on undo and one the user edits.
+	var beforeData gurps.Weapon
+	beforeData.CopyFrom(w)
+	var editorData gurps.Weapon
+	editorData.CopyFrom(w)
+	editorData.Usage = "Thrust"
+
+	editorData.ApplyTo(w)
+	c.Equal("Thrust", w.Usage, "the edit was applied")
+	c.Equal(originalTID, w.TID, "applying an edit doesn't change the weapon's ID")
+	c.Equal(originalClonedFromTID, w.ClonedFromTID, "applying an edit doesn't change the weapon's lineage")
+
+	beforeData.ApplyTo(w)
+	c.Equal("Swung", w.Usage, "the edit was undone")
+	c.Equal(originalTID, w.TID, "undoing an edit doesn't change the weapon's ID")
+	c.Equal(originalClonedFromTID, w.ClonedFromTID, "undoing an edit doesn't change the weapon's lineage")
+
+	editorData.ApplyTo(w)
+	c.Equal("Thrust", w.Usage, "the edit was redone")
+	c.Equal(originalTID, w.TID, "redoing an edit doesn't change the weapon's ID")
+	c.Equal(originalClonedFromTID, w.ClonedFromTID, "redoing an edit doesn't change the weapon's lineage")
+}

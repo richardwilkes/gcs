@@ -1008,7 +1008,15 @@ func (w *Weapon) CopyFrom(t *Weapon) {
 
 // ApplyTo implements node.EditorData.
 func (w *Weapon) ApplyTo(t *Weapon) {
+	// Unlike the other EditorData implementations, a Weapon serves as its own editor data, so it carries the TID minted
+	// for it by CopyFrom. Applying an edit must not disturb the target's identity: the TID is persisted as the weapon's
+	// "id" and table selections are keyed on it, and the lineage recorded in ClonedFromTID is what ties a copy held by
+	// a trait, skill or spell editor back to the weapon it came from.
+	savedTID := t.TID
+	savedClonedFromTID := t.ClonedFromTID
 	*t = *w.Clone(LibraryFile{}, t.DataOwner(), nil, true)
+	t.TID = savedTID
+	t.ClonedFromTID = savedClonedFromTID
 }
 
 // Validate ensures the weapon data is valid.
