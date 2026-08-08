@@ -38,19 +38,25 @@ func ParseWeaponReach(s string) WeaponReach {
 	if s != "" {
 		s = strings.ToLower(s)
 		if !strings.Contains(s, "spec") {
-			s = strings.ReplaceAll(s, "-", ",")
 			wr.CloseCombat = strings.Contains(s, "c")
 			wr.ChangeRequiresReady = strings.Contains(s, "*")
-			s = strings.ReplaceAll(s, "*", "")
-			parts := strings.Split(s, ",")
-			wr.Min, _ = fxp.Extract(parts[0])
-			if len(parts) > 1 {
-				for _, one := range parts[1:] {
-					reach, _ := fxp.Extract(one)
-					if reach > wr.Max {
-						wr.Max = reach
-					}
+			// "C-5" is a range running from close combat out to 5, so its numbers supply only the maximum, leaving
+			// Validate to fill in a minimum of 1. Every other placement of the close combat marker ("C,1", "C,2-3")
+			// states it separately from the reach, so the first number is the minimum. The markers themselves are then
+			// removed, since a marker left in place would be taken as a component of the reach and read as 0.
+			closeCombatRange := strings.Contains(s, "c-")
+			s = strings.NewReplacer("*", "", "c", "").Replace(s)
+			takeMin := !closeCombatRange
+			for one := range strings.SplitSeq(strings.ReplaceAll(s, "-", ","), ",") {
+				reach, remainder := fxp.Extract(one)
+				if remainder == one {
+					continue // Holds no number, e.g. an empty component left behind by a separator.
 				}
+				if takeMin {
+					wr.Min = reach
+					takeMin = false
+				}
+				wr.Max = max(wr.Max, reach)
 			}
 			wr.Validate()
 		}

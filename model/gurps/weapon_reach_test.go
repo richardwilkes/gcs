@@ -11,8 +11,10 @@
 package gurps_test
 
 import (
+	"encoding/json/v2"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -29,6 +31,10 @@ func TestWeaponReach(t *testing.T) {
 		"C",
 		"C,1",
 		"C,1-2",
+		"C,2",
+		"C,2-3",
+		"C,2-3*",
+		"C,5",
 	} {
 		c.Equal(s, gurps.ParseWeaponReach(s).String(), "test %d", i)
 	}
@@ -47,10 +53,37 @@ func TestWeaponReach(t *testing.T) {
 		{"C, 1", "C,1"},
 		{"C,1,2", "C,1-2"},
 		{"C-5", "C,1-5"},
+		{"C, 2 - 3", "C,2-3"},
+		{"C,2,3", "C,2-3"},
+		{"c,2-3*", "C,2-3*"},
 		{"Special", ""},
 		{"  1 , 3 ", "1-3"},
 	}
 	for i, one := range cases {
 		c.Equal(one.expected, gurps.ParseWeaponReach(one.input).String(), "test %d", i)
+	}
+}
+
+// TestWeaponReachRoundTripsThroughJSON verifies that a reach set in the editor survives being saved and reloaded. A
+// close combat weapon serializes its marker into the first component of the string ("C,2-3"), where the marker was
+// read as the minimum reach and produced 0, which Validate then turned into 1: every save/load cycle silently rewrote
+// the weapon's minimum reach.
+func TestWeaponReachRoundTripsThroughJSON(t *testing.T) {
+	c := check.New(t)
+	for i, original := range []gurps.WeaponReach{
+		{},
+		{Min: fxp.One, Max: fxp.One},
+		{Min: fxp.One, Max: fxp.Two},
+		{CloseCombat: true},
+		{Min: fxp.One, Max: fxp.One, CloseCombat: true},
+		{Min: fxp.Two, Max: fxp.Three, CloseCombat: true},
+		{Min: fxp.Two, Max: fxp.Three, CloseCombat: true, ChangeRequiresReady: true},
+		{Min: fxp.Five, Max: fxp.Five, CloseCombat: true},
+	} {
+		data, err := json.Marshal(original)
+		c.NoError(err, "test %d", i)
+		var reloaded gurps.WeaponReach
+		c.NoError(json.Unmarshal(data, &reloaded), "test %d", i)
+		c.Equal(original, reloaded, "test %d (%s)", i, original.String())
 	}
 }

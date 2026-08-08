@@ -293,6 +293,10 @@
   without spaces, which is how arithmetic is normally written. A base damage of `2*self.level` was taken as the dice
   specification it happens to start with — a flat +2 — and the script was never run. These fields are now treated as
   dice only when the entire entry is a dice specification; anything else is evaluated as a script.
+- Fixed the minimum reach of a melee weapon that also has close combat being reset to 1 every time the file was saved
+  and reloaded. A weapon with a reach of "C,2-3" came back as "C,1-3", and one with "C,5" as "C,1-5", because the
+  close combat marker was read as the minimum. Note that "C-5" continues to mean a range running from close combat out
+  to 5, and so is still equivalent to "C,1-5".
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.
