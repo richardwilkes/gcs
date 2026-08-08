@@ -166,6 +166,34 @@ func TestLibrarySetPathWhenWatchFails(t *testing.T) {
 	c.Equal(int64(1), syncs.Load())
 }
 
+// TestLibraryWatchDeliversNothingUntilSomethingHappens verifies that establishing a watch delivers no event of its own,
+// root sync or otherwise. The caller has just scanned the library itself -- that is why it is now watching it -- so an
+// event at this point is at best redundant. For a callback that rescans whatever it is told about (the library
+// navigator does exactly that, and re-establishes its watches as part of the rescan), it would never settle: each
+// rescan would establish a watch that hands it another event.
+func TestLibraryWatchDeliversNothingUntilSomethingHappens(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	lib := NewLibrary("Test", "someone", "", "repo", filepath.Join(dir, "root"))
+	var events atomic.Int64
+	token := lib.Watch(func(_ *Library, _ string, _ notify.Event) { events.Add(1) }, false)
+	defer token.Stop()
+
+	waitForMonitorQueue(lib)
+	c.Equal(int64(0), events.Load(), "a newly established watch reports nothing")
+
+	// A second watch on the same library must not stir up the first one either.
+	other := lib.Watch(func(_ *Library, _ string, _ notify.Event) { events.Add(1) }, false)
+	defer other.Stop()
+	waitForMonitorQueue(lib)
+	c.Equal(int64(0), events.Load(), "adding another watch reports nothing")
+
+	// Moving the root is what a root sync is for, and now both watches get exactly one.
+	c.NoError(lib.SetPath(filepath.Join(dir, "moved")))
+	waitForMonitorQueue(lib)
+	c.Equal(int64(2), events.Load(), "each watch is told the root moved, once")
+}
+
 // TestLibrarySetPathSyncsEachWatcherOnce verifies that restarting the watches after a path change delivers exactly one
 // root sync to each watcher, rather than one per watcher to every watcher.
 func TestLibrarySetPathSyncsEachWatcherOnce(t *testing.T) {

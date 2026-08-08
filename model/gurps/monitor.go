@@ -20,8 +20,10 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
-// EventRootSync the event code used when the root path being monitored has been changed to a new path. Also occurs as
-// the first event received.
+// EventRootSync the event code used when the root path being monitored has been changed to a new path. Only the
+// watches that were carried over to the new root receive it; establishing a watch does not deliver one, since whoever
+// establishes it does its own initial scan. Sending one at that point would put a callback that rescans on every event
+// into an endless cycle, as each rescan re-establishes the watch and would be handed another sync in turn.
 const EventRootSync = 0xFFFFFFFF
 
 type monitor struct {
@@ -44,6 +46,7 @@ func (m *monitor) newWatch(callback func(lib *Library, fullPath string, what not
 		callback:   callback,
 		onUIThread: callbackOnUIThread,
 	}
+	// No root sync is sent here. See EventRootSync for why a new watch must not receive one.
 	m.startWatch(token, false)
 	return token
 }
