@@ -169,3 +169,55 @@ func TestSkillDefaultWhenTLChosenDefault(t *testing.T) {
 	c.False(armory.DefaultedFrom.SkillBased(), "Armory must not default to a skill whose TL fails the constraint")
 	c.Equal(IntelligenceID, armory.DefaultedFrom.DefaultType, "Armory must default to IQ")
 }
+
+// addTagMatchingSkillBonus installs a trait carrying a skill bonus that applies to any skill bearing the given tag.
+func addTagMatchingSkillBonus(e *Entity, tag string, amount fxp.Int) {
+	bonus := NewSkillBonus()
+	bonus.NameCriteria.Compare = criteria.AnyText
+	bonus.TagsCriteria = textCriteria(criteria.IsText, tag)
+	bonus.Amount = amount
+	trait := NewTrait(e, nil, false)
+	trait.Features = append(trait.Features, bonus)
+	e.Traits = append(e.Traits, trait)
+}
+
+// TestSkillDefaultRemovesBonusUsingOtherSkillsTags verifies that the skill bonus baked into a default's level is undone
+// using the *defaulted-to* skill's tags. calcSkillDefaultLevel passed the defaulting skill's tags instead, so a bonus
+// that only the other skill qualified for was never removed (and one that only the defaulting skill qualified for was
+// removed even though it had never been added). The wrong level is then persisted into DefaultedFrom.
+func TestSkillDefaultRemovesBonusUsingOtherSkillsTags(t *testing.T) {
+	c := check.New(t)
+
+	// The +2 applies to Broadsword only. Its level carries the bonus, but the level Shortsword defaults from must not:
+	// Broadsword IQ10-1+1pt = 9, +2 = 11; less the -2 default and the +2 bonus that doesn't apply to Shortsword = 7.
+	e := NewEntity()
+	broadsword := addTestSkill(e, "Broadsword", "", "", fxp.One)
+	broadsword.Tags = []string{"Combat"}
+	shortsword := addTestSkill(e, "Shortsword", "", "", 0)
+	shortsword.Tags = []string{"Weapon"}
+	shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Two)}
+	addTagMatchingSkillBonus(e, "Combat", fxp.Two)
+	e.Recalculate()
+
+	c.Equal(fxp.Eleven, broadsword.LevelData.Level, "Broadsword gets the Combat bonus")
+	c.NotNil(shortsword.DefaultedFrom, "Shortsword should have a resolved default")
+	c.Equal(fxp.Seven, shortsword.DefaultedFrom.Level, "the Combat bonus must be removed from the default's level")
+	c.Equal(fxp.Seven, shortsword.DefaultedFrom.AdjLevel, "the persisted adjusted level must match")
+	c.Equal(fxp.Seven, shortsword.LevelData.Level, "Shortsword must not inherit a bonus it doesn't qualify for")
+
+	// Swapping which skill carries the tag: nothing was baked into Broadsword's level, so nothing may be removed, and
+	// Shortsword still earns the bonus on its own. Broadsword = 9; less the -2 default = 7; plus Shortsword's own +2 = 9.
+	e = NewEntity()
+	broadsword = addTestSkill(e, "Broadsword", "", "", fxp.One)
+	broadsword.Tags = []string{"Weapon"}
+	shortsword = addTestSkill(e, "Shortsword", "", "", 0)
+	shortsword.Tags = []string{"Combat"}
+	shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Two)}
+	addTagMatchingSkillBonus(e, "Combat", fxp.Two)
+	e.Recalculate()
+
+	c.Equal(fxp.Nine, broadsword.LevelData.Level, "Broadsword doesn't qualify for the Combat bonus")
+	c.NotNil(shortsword.DefaultedFrom, "Shortsword should have a resolved default")
+	c.Equal(fxp.Seven, shortsword.DefaultedFrom.Level, "no bonus was baked in, so none may be removed")
+	c.Equal(fxp.Nine, shortsword.LevelData.Level, "Shortsword still earns the Combat bonus for itself")
+}

@@ -1060,8 +1060,10 @@ func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]boo
 	}
 	if def.SkillBased() {
 		if other := e.BestSkillMatching(def.Name, def.Specialization, s.Replacements, true, excludes); other != nil {
+			// The bonus being undone was added inside other.CalculateLevel(), which queries it with the other skill's
+			// own qualifiers and tags, so all of them must come from 'other' here, not from this skill.
 			level -= e.SkillBonusFor(other.NameWithReplacements(), other.SpecializationWithReplacements(),
-				other.OptionalSpecializationWithReplacements(), s.Tags, nil)
+				other.OptionalSpecializationWithReplacements(), other.Tags, nil)
 		}
 	}
 	return level
