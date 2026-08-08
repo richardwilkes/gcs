@@ -491,6 +491,7 @@ func (d *sheetSettingsDockable) reset() {
 		gurps.GlobalSettings().Sheet = gurps.FactorySheetSettings()
 	}
 	d.sync()
+	d.syncSheet(true)
 }
 
 func (d *sheetSettingsDockable) sync() {
@@ -554,6 +555,7 @@ func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 		gurps.GlobalSettings().Sheet = s
 	}
 	d.sync()
+	d.syncSheet(true)
 	return nil
 }
 
