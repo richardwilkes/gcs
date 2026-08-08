@@ -53,8 +53,7 @@ func NewPopup[T comparable](targetMgr *TargetMgr, targetKey, undoTitle string, g
 								self = field
 							}
 						}
-						self.set(data)
-						MarkModified(self)
+						self.setWithoutUndo(data)
 					}, p.get())
 					undo.AfterData, _ = p.Selected()
 					mgr.Add(undo)
@@ -68,6 +67,16 @@ func NewPopup[T comparable](targetMgr *TargetMgr, targetKey, undoTitle string, g
 		p.RefKey = targetKey
 	}
 	return p
+}
+
+func (p *Popup[T]) setWithoutUndo(item T) {
+	callback := p.SelectionChangedCallback
+	p.SelectionChangedCallback = nil
+	p.Select(item)
+	p.SelectionChangedCallback = callback
+	p.last = item
+	p.set(item)
+	MarkModified(p)
 }
 
 // Sync the popup to the current value.
