@@ -17,6 +17,7 @@ import (
 	"log/slog"
 	"math"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -108,6 +109,7 @@ var freezeBuiltInsProgram = goja.MustCompile("", `(function() {
 // available to the next script.
 type scriptVM struct {
 	runtime         *goja.Runtime
+	listSymbols     goja.Callable
 	baselineNames   map[string]goja.Value
 	baselineSymbols map[*goja.Symbol]bool
 }
@@ -127,8 +129,16 @@ func newScriptVM() *scriptVM {
 	if _, err := vm.RunProgram(freezeBuiltInsProgram); err != nil {
 		panic(errs.NewWithCause("failed to freeze script built-ins", err))
 	}
+	// Object.getOwnPropertySymbols is captured here, while the runtime still holds nothing but the built-ins, so that
+	// symbolGlobals cannot be handed a substitute by a script later on. See symbolGlobals for why goja's own
+	// Object.Symbols() is not enough.
+	listSymbols, ok := goja.AssertFunction(globals.Get("Object").ToObject(vm).Get("getOwnPropertySymbols"))
+	if !ok {
+		panic(errs.New("failed to obtain Object.getOwnPropertySymbols for script globals tracking"))
+	}
 	s := &scriptVM{
 		runtime:         vm,
+		listSymbols:     listSymbols,
 		baselineNames:   make(map[string]goja.Value),
 		baselineSymbols: make(map[*goja.Symbol]bool),
 	}
@@ -137,10 +147,35 @@ func newScriptVM() *scriptVM {
 		// one that still holds what it was created with. Reading it here is safe: nothing has run on this runtime yet.
 		s.baselineNames[name] = globals.Get(name)
 	}
-	for _, sym := range globals.Symbols() {
+	symbols, err := s.symbolGlobals()
+	if err != nil {
+		panic(errs.NewWithCause("failed to list the script symbol globals", err))
+	}
+	for _, sym := range symbols {
 		s.baselineSymbols[sym] = true
 	}
 	return s
+}
+
+// symbolGlobals returns every symbol-keyed property of the global object, including the non-enumerable ones. goja's
+// Object.Symbols() reports only the enumerable ones, so a symbol global hidden behind an Object.defineProperty with
+// `enumerable: false` would be invisible to restoreGlobals and survive into every later script that reused the
+// runtime. It would also make the standard, non-enumerable Symbol.toStringTag look like a global the script had
+// deleted.
+func (s *scriptVM) symbolGlobals() ([]*goja.Symbol, error) {
+	result, err := s.listSymbols(goja.Undefined(), s.runtime.GlobalObject())
+	if err != nil {
+		return nil, errs.Wrap(err)
+	}
+	list := result.ToObject(s.runtime)
+	count := list.Get("length").ToInteger()
+	symbols := make([]*goja.Symbol, 0, count)
+	for i := range count {
+		if sym, ok := list.Get(strconv.FormatInt(i, 10)).(*goja.Symbol); ok {
+			symbols = append(symbols, sym)
+		}
+	}
+	return symbols, nil
 }
 
 // restoreGlobals removes everything the run that just finished left on the global object: the arguments that were
@@ -152,6 +187,13 @@ func newScriptVM() *scriptVM {
 // way. It reports whether the runtime was fully restored; if it was not, the caller must discard the runtime rather
 // than return it to the pool, since the residue would silently alter unrelated scripts run later.
 func (s *scriptVM) restoreGlobals() bool {
+	symbols, symErr := s.symbolGlobals()
+	if symErr != nil {
+		// Without the symbol list there is no way to establish that the runtime is clean, and the caller discards a
+		// runtime that isn't, so there is nothing left to do here.
+		errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, symErr)
+		return false
+	}
 	globals := s.runtime.GlobalObject()
 	restored := true
 	surviving := 0
@@ -176,7 +218,7 @@ func (s *scriptVM) restoreGlobals() bool {
 		restored = false
 	}
 	survivingSymbols := 0
-	for _, sym := range globals.Symbols() {
+	for _, sym := range symbols {
 		if s.baselineSymbols[sym] {
 			survivingSymbols++
 			continue

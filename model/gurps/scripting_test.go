@@ -413,6 +413,22 @@ func TestScriptGlobalPollutionDoesNotLeak(t *testing.T) {
 			want:   "undefined",
 		},
 		{
+			// Object.defineProperty leaves the property non-enumerable unless told otherwise, and goja's
+			// Object.Symbols() reports only the enumerable symbols, so this is the shape of symbol global that a
+			// cleanup written in terms of it cannot see at all.
+			name:   "added hidden symbol-keyed global",
+			script: "Object.defineProperty(globalThis, Symbol.for('gcsHiddenSymbol'), {value: 1, configurable: true}); 'ok'",
+			probe:  "typeof globalThis[Symbol.for('gcsHiddenSymbol')]",
+			want:   "undefined",
+		},
+		{
+			// The same, but refusing to be deleted, so the runtime has to be discarded rather than cleaned.
+			name:   "added hidden non-configurable symbol-keyed global",
+			script: "Object.defineProperty(globalThis, Symbol.for('gcsPinnedSymbol'), {value: 1}); 'ok'",
+			probe:  "typeof globalThis[Symbol.for('gcsPinnedSymbol')]",
+			want:   "undefined",
+		},
+		{
 			name:    "replaced predefined global",
 			script:  "dice = null; 'ok'",
 			rejects: true,
@@ -524,6 +540,32 @@ func TestScriptBaselineGlobalsArePinned(t *testing.T) {
 	}
 }
 
+// TestScriptBaselineIncludesHiddenSymbolGlobals verifies that the recorded baseline covers the symbol globals that are
+// not enumerable, which is how the standard Symbol.toStringTag binding is defined. goja's Object.Symbols() reports only
+// the enumerable symbols, so a baseline built from it comes up empty here, and the cleanup that consults it would take
+// Symbol.toStringTag for something the script had added and delete it from every runtime that ran one.
+func TestScriptBaselineIncludesHiddenSymbolGlobals(t *testing.T) {
+	c := check.New(t)
+	vm := newScriptVM()
+	symbols, err := vm.symbolGlobals()
+	c.NoError(err)
+	c.Equal(len(symbols), len(vm.baselineSymbols), "every symbol global is part of the baseline")
+	c.True(len(vm.baselineSymbols) > 0, "the baseline should hold the non-enumerable Symbol.toStringTag")
+	v, err := vm.runtime.RunString("Object.getOwnPropertySymbols(globalThis).length === 0")
+	c.NoError(err)
+	c.False(v.ToBoolean(), "the runtime really does have a symbol global to account for")
+
+	// The binding must still be there for scripts run after one that had its globals restored.
+	_, err = runScript(0, "globalThis.gcsSomeGlobal = 1; 'ok'")
+	c.NoError(err)
+	for range 3 {
+		var s string
+		s, err = runScript(0, "String(globalThis[Symbol.toStringTag])")
+		c.NoError(err)
+		c.Equal("global", s)
+	}
+}
+
 // TestScriptRestoreGlobalsDetectsBaselineDamage verifies that restoreGlobals reports a runtime whose baseline globals
 // were replaced or deleted as unrestorable, so that the caller discards it instead of returning it to the pool. Removing
 // what a script added says nothing about what it destroyed, and a runtime whose JSON is missing or whose Math is no
@@ -572,15 +614,24 @@ func TestScriptRestoreGlobalsDetectsBaselineDamage(t *testing.T) {
 func newUnpinnedScriptVM() *scriptVM {
 	vm := goja.New()
 	globals := vm.GlobalObject()
+	listSymbols, ok := goja.AssertFunction(globals.Get("Object").ToObject(vm).Get("getOwnPropertySymbols"))
+	if !ok {
+		panic("failed to obtain Object.getOwnPropertySymbols")
+	}
 	s := &scriptVM{
 		runtime:         vm,
+		listSymbols:     listSymbols,
 		baselineNames:   make(map[string]goja.Value),
 		baselineSymbols: make(map[*goja.Symbol]bool),
 	}
 	for _, name := range globals.GetOwnPropertyNames() {
 		s.baselineNames[name] = globals.Get(name)
 	}
-	for _, sym := range globals.Symbols() {
+	symbols, err := s.symbolGlobals()
+	if err != nil {
+		panic(err)
+	}
+	for _, sym := range symbols {
 		s.baselineSymbols[sym] = true
 	}
 	return s
