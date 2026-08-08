@@ -422,12 +422,12 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	return buffer.String()
 }
 
+// multiplyDice returns the dice scaled by the given multiplier. Dice evaluate as ((sum of Count dice) + Modifier) *
+// Multiplier, so scaling just Count and Modifier scales the whole result; scaling Multiplier as well would apply the
+// multiplier a second time.
 func multiplyDice(multiplier int, d dice.Dice) dice.Dice {
 	d.Count *= multiplier
 	d.Modifier *= multiplier
-	if d.Multiplier != 1 {
-		d.Multiplier *= multiplier
-	}
 	return d
 }
 

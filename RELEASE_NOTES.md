@@ -164,6 +164,9 @@
 - Fixed the Tbone damage progressions losing the strength-based part of a weapon's damage when the weapon's base damage
   uses dice with a different number of sides — a 1d3 weapon showed 2d3 instead of 2d3+2, for example. The Basic Set
   progression was unaffected.
+- Fixed a weapon's per-level base damage being scaled by the level count twice when it includes a dice multiplier. A
+  trait whose weapon does "1dx2" per level showed 3dx6 at 3 levels instead of 3dx2, tripling the damage again on top of
+  the dice it had already tripled. Per-level damage without a multiplier was unaffected.
 - Fixed multipliers entered with a capital "X" (e.g. "X2") or the multiplication sign "×" (e.g. "×2") in equipment
   modifier cost and weight fields and trait modifier cost fields. They were recognized as multipliers, but the number
   was not read, silently turning a cost into x1 and a weight or trait modifier cost into x0. All three spellings now

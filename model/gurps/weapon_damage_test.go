@@ -45,6 +45,45 @@ func TestWeaponDRDivisorBonus(t *testing.T) {
 	}
 }
 
+// TestWeaponPerLevelBaseDamageWithDiceMultiplier verifies that a per-level base damage specification carrying a dice
+// multiplier is scaled by the level count exactly once. Dice evaluate as ((sum of Count dice) + Modifier) * Multiplier,
+// so scaling Count and Multiplier both would apply the level count twice, turning a 3-level "1dx2" into "3dx6".
+func TestWeaponPerLevelBaseDamageWithDiceMultiplier(t *testing.T) {
+	c := check.New(t)
+	for i, one := range []struct {
+		baseLeveled string
+		levels      int
+		expected    string
+	}{
+		{baseLeveled: "1dx2", levels: 1, expected: "1dx2 cr"},
+		{baseLeveled: "1dx2", levels: 3, expected: "3dx2 cr"},
+		{baseLeveled: "1dx3", levels: 2, expected: "2dx3 cr"},
+		{baseLeveled: "1d+1", levels: 3, expected: "3d+3 cr"},
+		{baseLeveled: "1d", levels: 4, expected: "4d cr"},
+		{baseLeveled: "2x2", levels: 3, expected: "6x2 cr"}, // 3 * (2 * 2) == 12 == 6 * 2
+	} {
+		w := newLeveledWeapon(one.levels)
+		w.Damage.BaseLeveled = one.baseLeveled
+		c.Equal(one.expected, w.Damage.ResolvedDamage(nil), "test %d (%s at %d levels)", i, one.baseLeveled, one.levels)
+	}
+}
+
+// newLeveledWeapon builds an entity with a leveled trait at the given level that owns a single ranged weapon, so that
+// the weapon's per-level base damage is the only thing contributing to its damage.
+func newLeveledWeapon(levels int) *gurps.Weapon {
+	e := gurps.NewEntity()
+	owner := gurps.NewTrait(e, nil, false)
+	owner.Name = "Gadget"
+	owner.CanLevel = true
+	owner.Levels = fxp.FromInteger(levels)
+	w := gurps.NewWeapon(owner, false)
+	w.Damage.Base = "" // Leave only the per-level portion contributing to the damage
+	owner.Weapons = []*gurps.Weapon{w}
+	e.Traits = append(e.Traits, owner)
+	e.Recalculate()
+	return w
+}
+
 // TestWeaponDamageSpecIsScriptOrCompleteDice verifies that a damage field is only treated as a plain dice
 // specification when the dice grammar consumes all of it. The dice parser stops at the first character it cannot use
 // and silently discards the remainder, so a script expression written without spaces (which is how anyone writing
