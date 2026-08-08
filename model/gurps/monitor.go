@@ -85,11 +85,14 @@ func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 func (m *monitor) stop() []*MonitorToken {
 	m.lock.Lock()
 	defer m.lock.Unlock()
-	var tokens []*MonitorToken
+	// The tokens are registered by startWatch regardless of whether the filesystem watch could be established, so they
+	// must be handed back and cleared here regardless as well. Otherwise a monitor whose watch failed would report no
+	// tokens, leaving the caller (Library.SetPath) with nothing to restart once the path becomes watchable again.
+	m.tokensLock.Lock()
+	tokens := slices.Clone(m.tokens)
+	m.tokens = nil
+	m.tokensLock.Unlock()
 	if m.events != nil {
-		m.tokensLock.RLock()
-		tokens = slices.Clone(m.tokens)
-		m.tokensLock.RUnlock()
 		notify.Stop(m.events)
 		close(m.events)
 		<-m.done
@@ -97,9 +100,6 @@ func (m *monitor) stop() []*MonitorToken {
 		m.queue = nil
 		m.events = nil
 		m.done = nil
-		m.tokensLock.Lock()
-		m.tokens = nil
-		m.tokensLock.Unlock()
 	}
 	return tokens
 }

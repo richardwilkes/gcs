@@ -22,6 +22,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/rjeczalik/notify"
@@ -164,6 +165,57 @@ func TestLibrarySetPathWhenWatchFails(t *testing.T) {
 
 	waitForMonitorQueue(lib)
 	c.Equal(int64(1), syncs.Load())
+}
+
+// TestLibrarySetPathAfterWatchFailsRestartsWatch verifies the mirror image of the case above: a library whose watch
+// could not be established at all still restarts its watchers when the path changes to a location that can be watched.
+// The tokens are registered whether or not the filesystem watch succeeded, so stop() must hand them back for the
+// restart even when there is no event channel to shut down. Without that, the library silently stops reporting changes
+// for the rest of the session even though it now sits somewhere perfectly watchable.
+func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+
+	// A regular file where a directory is needed means the initial path can neither be created nor watched.
+	blocker := filepath.Join(dir, "blocker")
+	c.NoError(os.WriteFile(blocker, []byte("not a directory"), 0o600))
+	lib := NewLibrary("Test", "someone", "", "repo", filepath.Join(blocker, "sub"))
+
+	var syncs atomic.Int64
+	events := make(chan string, 16)
+	token := lib.Watch(func(_ *Library, fullPath string, what notify.Event) {
+		if what == EventRootSync {
+			syncs.Add(1)
+			return
+		}
+		select {
+		case events <- fullPath:
+		default:
+		}
+	}, false)
+	defer token.Stop()
+
+	watchable := filepath.Join(dir, "watchable")
+	c.NoError(lib.SetPath(watchable))
+	waitForMonitorQueue(lib)
+	c.Equal(int64(1), syncs.Load(), "the watch is told the root moved")
+	c.Equal(watchable, token.root, "the watch is now rooted at the new path")
+
+	// The watch must actually be live at the new location, not merely re-registered.
+	created := filepath.Join(watchable, "new.gcs")
+	c.NoError(os.WriteFile(created, []byte("{}"), 0o600))
+	// The platform watchers may also report the creation of the new root itself, so look past anything else.
+	deadline := time.After(10 * time.Second)
+	for {
+		select {
+		case p := <-events:
+			if filepath.Base(p) == "new.gcs" {
+				return
+			}
+		case <-deadline:
+			t.Fatalf("no filesystem event was delivered for %s", created)
+		}
+	}
 }
 
 // TestLibraryWatchDeliversNothingUntilSomethingHappens verifies that establishing a watch delivers no event of its own,
