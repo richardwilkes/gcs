@@ -146,6 +146,63 @@ func TestTraitMaxLevelFlagging(t *testing.T) {
 	c.Equal("", trait.UnsatisfiedReason, "no maximum means no flag")
 }
 
+// TestTraitMaxLevelBonusCannotCreateMaximum verifies that a trait with no declared maximum stays unlimited even when a
+// bonus matches it. Bonuses used to be computed from a base of zero, so a broadly-scoped +2 turned "no maximum" into a
+// maximum of 2.
+func TestTraitMaxLevelBonusCannotCreateMaximum(t *testing.T) {
+	c := check.New(t)
+
+	// Each operation, applied to a trait that declares no maximum, must leave it unlimited.
+	for _, amount := range []string{"+2", "50%", "x2", "-2"} {
+		trait := newLeveledTrait(nil, "")
+		trait.Features = Features{newMaxLevelBonus(traitsel.ThisTrait, amount)}
+		c.Equal(fxp.Int(0), trait.ResolvedMaxLevels(), "a %q bonus must not create a maximum", amount)
+	}
+
+	// An expression that resolves to zero means "no maximum" just as an empty one does.
+	trait := newLeveledTrait(nil, "0")
+	trait.Features = Features{newMaxLevelBonus(traitsel.ThisTrait, "+2")}
+	c.Equal(fxp.Int(0), trait.ResolvedMaxLevels(), "a maximum expression of 0 stays unlimited")
+
+	// A modifier-carried bonus is subject to the same rule.
+	trait = newLeveledTrait(nil, "")
+	mod := NewTraitModifier(nil, nil, false)
+	mod.Features = Features{newMaxLevelBonus(traitsel.ThisTrait, "+3")}
+	trait.Modifiers = []*TraitModifier{mod}
+	c.Equal(fxp.Int(0), trait.ResolvedMaxLevels(), "a modifier bonus must not create a maximum")
+}
+
+// TestTraitMaxLevelBonusBroadScopeLeavesUncappedTraitsAlone verifies end-to-end that a broadly-scoped "traits whose
+// name" bonus raises the cap of traits that declare one without imposing a cap -- and an unsatisfied-reason flag -- on
+// the ones that don't.
+func TestTraitMaxLevelBonusBroadScopeLeavesUncappedTraitsAlone(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	capped := newLeveledTrait(e, "5")
+	capped.Name = "Capped"
+	capped.Levels = fxp.FromInteger(6)
+	e.Traits = append(e.Traits, capped)
+
+	uncapped := newLeveledTrait(e, "")
+	uncapped.Name = "Uncapped"
+	uncapped.Levels = fxp.FromInteger(6)
+	e.Traits = append(e.Traits, uncapped)
+
+	// A bonus that matches anything grants +2 maximum levels.
+	bonus := newMaxLevelBonus(traitsel.TraitWithName, "+2")
+	bonus.NameCriteria.Compare = criteria.AnyText
+	granter := NewTrait(e, nil, false)
+	granter.Features = append(granter.Features, bonus)
+	e.Traits = append(e.Traits, granter)
+	e.Recalculate()
+
+	c.Equal(fxp.FromInteger(7), capped.ResolvedMaxLevels(), "a declared maximum of 5 is raised to 7")
+	c.Equal("", capped.UnsatisfiedReason, "level 6 is within the raised maximum of 7")
+	c.Equal(fxp.Int(0), uncapped.ResolvedMaxLevels(), "a trait with no maximum stays unlimited")
+	c.Equal("", uncapped.UnsatisfiedReason, "an unlimited trait must not be flagged for exceeding a maximum")
+}
+
 // TestTraitMaxLevelBonusRoundTrip verifies that each selector/operation combination survives a JSON round-trip.
 func TestTraitMaxLevelBonusRoundTrip(t *testing.T) {
 	c := check.New(t)

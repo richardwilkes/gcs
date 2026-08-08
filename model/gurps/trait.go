@@ -533,7 +533,8 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
 // embedded script) and applying any matching TraitMaxLevelBonus features. A return value of zero means the trait has no
 // maximum level. "This trait" bonuses attached to this trait or its enabled modifiers are always applied; "traits whose
-// name" bonuses are gathered from the owning entity, if there is one.
+// name" bonuses are gathered from the owning entity, if there is one. Bonuses only adjust a maximum the trait already
+// declares -- a trait with no maximum stays unlimited no matter what matches it.
 func (t *Trait) ResolvedMaxLevels() fxp.Int {
 	if !t.IsLeveled() {
 		return 0
@@ -581,7 +582,10 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 			apply(bonus)
 		}
 	}
-	if !have {
+	if !have || base <= 0 {
+		// A trait with no declared maximum is unlimited. Bonuses adjust an existing cap, so one must never be allowed
+		// to manufacture a cap from a base of zero -- that would turn a bonus meant to raise a limit into one that
+		// imposes it.
 		return base.Max(0)
 	}
 	result := base + addition
