@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -76,6 +77,7 @@ func (wb WeaponBulk) Hash(h hash.Hash) {
 // Resolve any bonuses that apply.
 func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponBulk {
 	result := wb
+	result.RetractingStock = w.ResolveBoolFlag(wswitch.RetractingStock, result.RetractingStock)
 	var percent fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBulkBonus) {
 		amt := bonus.AdjustedAmountForWeapon(w)

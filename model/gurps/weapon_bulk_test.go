@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -61,6 +62,44 @@ func TestWeaponBulkBonusResolution(t *testing.T) {
 
 	w.Bulk = gurps.ParseWeaponBulk("-3/-5")
 	c.Equal("-4/-6", w.Bulk.Resolve(w, nil).String(), "an existing giant bulk should be adjusted")
+}
+
+// TestWeaponBulkRetractingStockSwitch verifies that the "retracting stock" weapon switch is actually resolved. It is
+// offered by the weapon-switch feature editor, but WeaponBulk.Resolve never consulted it, so the feature did nothing.
+func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
+	c := check.New(t)
+
+	sw := gurps.NewWeaponSwitchBonus()
+	sw.SwitchType = wswitch.RetractingStock
+	sw.SwitchTypeValue = true
+	w := newWeaponWithBonuses(false, sw)
+
+	// Switched on, the stock marker appears, and with it the tooltip explaining the folded-stock stats.
+	w.Bulk = gurps.ParseWeaponBulk("-3")
+	resolved := w.Bulk.Resolve(w, nil)
+	c.Equal("-3*", resolved.String(), "the switch adds a retracting stock")
+	c.NotEqual("", resolved.Tooltip(w), "the retracting stock tooltip appears with it")
+
+	w.Bulk = gurps.ParseWeaponBulk("-3*")
+	c.Equal("-3*", w.Bulk.Resolve(w, nil).String(), "a weapon that already has one is unchanged")
+
+	// Switched off, it is removed.
+	sw.SwitchTypeValue = false
+	w.Bulk = gurps.ParseWeaponBulk("-3*")
+	resolved = w.Bulk.Resolve(w, nil)
+	c.Equal("-3", resolved.String(), "the switch removes a retracting stock")
+	c.Equal("", resolved.Tooltip(w), "and the tooltip goes with it")
+
+	w.Bulk = gurps.ParseWeaponBulk("-3")
+	c.Equal("-3", w.Bulk.Resolve(w, nil).String(), "a weapon that has none is unchanged")
+
+	// A bulk bonus still applies alongside the switch.
+	bonus := gurps.NewWeaponBulkBonus()
+	bonus.Amount = fxp.NegOne
+	sw.SwitchTypeValue = true
+	w = newWeaponWithBonuses(false, sw, bonus)
+	w.Bulk = gurps.ParseWeaponBulk("-3")
+	c.Equal("-4*", w.Bulk.Resolve(w, nil).String(), "the bonus and the switch both apply")
 }
 
 // TestWeaponBulkPercentBonusResolution verifies that a percentage bulk bonus adjusts the existing values rather than

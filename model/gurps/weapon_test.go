@@ -11,6 +11,7 @@ package gurps_test
 
 import (
 	"encoding/json/v2"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -19,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -190,6 +192,65 @@ func newWeaponWithBonuses(melee bool, bonuses ...*gurps.WeaponBonus) *gurps.Weap
 	e.Traits = append(e.Traits, owner)
 	e.Recalculate()
 	return w
+}
+
+// newSwitchProbeWeapon builds a weapon of the requested kind carrying the given switch bonus, with every field a
+// weapon switch could act on populated so that flipping the switch has something visible to change.
+func newSwitchProbeWeapon(melee bool, sw *gurps.WeaponBonus) *gurps.Weapon {
+	w := newWeaponWithBonuses(melee, sw)
+	w.Strength = gurps.ParseWeaponStrength("10")
+	if melee {
+		w.Parry = gurps.ParseWeaponParry("0")
+		w.Block = gurps.ParseWeaponBlock("0")
+		w.Reach = gurps.ParseWeaponReach("1-2")
+	} else {
+		w.Accuracy = gurps.ParseWeaponAccuracy("3")
+		w.Range = gurps.ParseWeaponRange("100/1000")
+		w.RateOfFire = gurps.ParseWeaponRoF("3/2")
+		w.Shots = gurps.ParseWeaponShots("20(3)")
+		w.Bulk = gurps.ParseWeaponBulk("-4")
+	}
+	return w
+}
+
+// weaponSwitchProbe renders every resolved field a weapon switch could affect, so a test can tell whether flipping a
+// switch changed anything at all. Both weapon kinds are rendered; the fields belonging to the other kind are simply
+// empty.
+func weaponSwitchProbe(w *gurps.Weapon) string {
+	return strings.Join([]string{
+		w.Parry.Resolve(w, nil).String(),
+		w.Block.Resolve(w, nil).String(),
+		w.Reach.Resolve(w, nil).String(),
+		w.Accuracy.Resolve(w, nil).String(),
+		w.Range.Resolve(w, nil).String(false),
+		w.RateOfFire.Resolve(w, nil).String(),
+		w.Shots.Resolve(w, nil).String(),
+		w.Bulk.Resolve(w, nil).String(),
+		w.Strength.Resolve(w, nil).String(),
+	}, "|")
+}
+
+// TestEveryWeaponSwitchIsResolved verifies that each wswitch value the feature editor offers actually reaches a
+// ResolveBoolFlag() call. Every value is presented to the user (ux/features_panel.go offers wswitch.Types[1:]), so one
+// with no resolution path is a feature that silently does nothing -- which is what RetractingStock was. A switch is
+// considered wired if setting it changes some resolved field on either a melee or a ranged weapon.
+func TestEveryWeaponSwitchIsResolved(t *testing.T) {
+	c := check.New(t)
+	for _, switchType := range wswitch.Types[1:] {
+		wired := false
+		for _, melee := range []bool{true, false} {
+			sw := gurps.NewWeaponSwitchBonus()
+			sw.SwitchType = switchType
+			sw.SwitchTypeValue = true
+			w := newSwitchProbeWeapon(melee, sw)
+			on := weaponSwitchProbe(w)
+			sw.SwitchTypeValue = false
+			if on != weaponSwitchProbe(w) {
+				wired = true
+			}
+		}
+		c.True(wired, "weapon switch %q is offered by the editor but never resolved", switchType.Key())
+	}
 }
 
 // newDefenseTestWeapon builds an entity holding a "Cloak" skill at level 14 and a +1 bonus to both parry and block,

@@ -82,7 +82,10 @@
   and written back out unchanged. They are shown in the editors so you can see they're present (and delete them if you
   want to), an unrecognized feature has no effect, and an unrecognized prerequisite is reported as unsatisfied rather
   than being quietly treated as met.
-- Fixed double-counting of +3 and defense bonus for parry/block weapon defaults.
+- Fixed double-counting of +3 and defense bonus for parry/block weapon defaults. This now also covers the case where
+  the default is for the other defense: a parry-type default feeding a weapon's block (or a block-type default feeding
+  its parry) is resolved from the skill it names, so it is halved once and given the bonus belonging to the defense
+  being computed, rather than being halved a second time and carrying the wrong defense's bonus.
 - Fixed another case of the key handling not properly masking out sticky modifier keys (CapsLock & NumLock), this time
   affecting use of the Tab key to move focus between fields.
 - Fixed spell prerequisite counting (for things like "6 spells from the Air college") so that a spell which itself
@@ -273,6 +276,19 @@
 - Fixed the `id` and `parentID` properties that scripts see on traits, trait modifiers, skills, spells, equipment,
   equipment modifiers, notes, and weapons. They were handed to the script engine as objects rather than plain text, so
   comparing one against a known ID (with `===`, `indexOf`, or `includes`) always failed, making the IDs unusable.
+- Fixed a default to an attribute the character doesn't have being treated as usable when the "Use Half-Stat Defaults"
+  option is on. Such a default now stays unresolvable, instead of producing a nonsense level that was stored as the
+  skill's adjusted level and offered as a choice in Swap Defaults.
+- Fixed a "Gives a trait maximum level modifier of" feature imposing a maximum on a trait that doesn't have one. A
+  trait with an empty Maximum Level is unlimited, but a broadly-scoped bonus of +2 was computed from a base of zero and
+  capped the trait at level 2, flagging it on the sheet — turning a feature meant to raise a limit into one that
+  created it.
+- Fixed the cost of a "use level from owner" trait modifier, which was computed from the trait's current level rather
+  than the levels actually paid for. Levels granted to the trait by a feature are free, so they no longer add
+  enhancement or limitation percentages to its cost. The level the modifier displays, and that its own per-level
+  features use, still reflects the granted levels.
+- Fixed the "retracting stock" weapon switch, which could be chosen in the feature editor but had no effect. It now
+  adds or removes a weapon's retracting stock, along with the tooltip describing the folded-stock statistics.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.
