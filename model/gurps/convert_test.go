@@ -12,6 +12,8 @@ package gurps
 import (
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -37,4 +39,36 @@ func TestConvertWalkerUnreadableRoot(t *testing.T) {
 	c.NoError(os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("{}"), 0o600))
 	c.NoError(filepath.WalkDir(dir, convertWalker(pathSet, extSet)))
 	c.Equal(1, len(pathSet), "only the file with a matching extension is collected")
+}
+
+// TestConvertWalkerIgnoresExtensionCase verifies that the conversion walker collects data files whose extension is
+// upper- or mixed-case. The switch that dispatches the conversion lowercases the extension, so a file the walker
+// declines to collect here is silently skipped by both --convert and --sync, with nothing said about it.
+func TestConvertWalkerIgnoresExtensionCase(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	wanted := []string{
+		"lower" + SheetExt,
+		"upper" + strings.ToUpper(SheetExt),
+		"Mixed.GcS",
+		"template" + strings.ToUpper(TemplatesExt),
+	}
+	for _, name := range append(slices.Clone(wanted), "notes.TXT") {
+		c.NoError(os.WriteFile(filepath.Join(dir, name), []byte("{}"), 0o600))
+	}
+
+	pathSet := make(map[string]struct{})
+	extSet := map[string]struct{}{SheetExt: {}, TemplatesExt: {}}
+	c.NoError(filepath.WalkDir(dir, convertWalker(pathSet, extSet)))
+
+	// The collected paths have been resolved through any symlinks, so compare the names rather than the paths.
+	collected := make(map[string]struct{}, len(pathSet))
+	for p := range pathSet {
+		collected[filepath.Base(p)] = struct{}{}
+	}
+	for _, name := range wanted {
+		_, exists := collected[name]
+		c.True(exists, "%s is collected", name)
+	}
+	c.Equal(len(wanted), len(collected), "the file with an unrelated extension is not collected")
 }

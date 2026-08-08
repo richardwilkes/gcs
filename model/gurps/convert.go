@@ -244,7 +244,10 @@ func convertWalker(pathSet, extSet map[string]struct{}) func(path string, d iofs
 					}
 				}
 			} else {
-				if _, exists := extSet[filepath.Ext(name)]; exists {
+				// The extensions in the set are the lowercase constants, and the switch that dispatches the
+				// conversion lowercases as well, so match without regard to case. Otherwise a file named
+				// "Character.GCS" is skipped without a word about it.
+				if _, exists := extSet[strings.ToLower(filepath.Ext(name))]; exists {
 					if path, err = realpath.Realpath(path); err == nil {
 						pathSet[path] = struct{}{}
 					}
