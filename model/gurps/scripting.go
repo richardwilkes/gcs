@@ -300,12 +300,36 @@ type ScriptArg struct {
 	Value any
 }
 
-// scriptCache holds compiled programs keyed by their source text. It is shared by every entity and every goroutine that
+// maximumCachedScriptPrograms is how many compiled programs one generation of the script cache holds before it is
+// retired, so the cache as a whole never holds more than twice this many.
+const maximumCachedScriptPrograms = 1024
+
+// scriptCache holds compiled programs keyed by their source text, so that a script resolved over and over — which is
+// what recalculating a sheet does — is compiled only once. It is shared by every entity and every goroutine that
 // resolves scripts, so all access is guarded by scriptCacheMutex.
+//
+// The cache has to be bounded, because the set of keys it sees is not: the item editors re-resolve the text being typed
+// after every keystroke, so each syntactically valid intermediate the user passes through is a distinct key that an
+// unbounded map would hold a compiled program for until the process exited. The bound is applied generationally.
+// Entries go into the current generation; once it is full, it becomes oldScriptCache and a fresh generation takes its
+// place, dropping whatever the generation before it still held. A lookup that misses the current generation but hits
+// the old one promotes the entry, so anything still in use survives the turnover and only entries left untouched across
+// two full generations are discarded. That preserves the scripts a document actually recalculates with, lets the
+// transients from typing fall away, and costs only a map operation or two per access.
 var (
-	scriptCacheMutex sync.RWMutex
-	scriptCache      = make(map[string]*goja.Program)
+	scriptCacheMutex sync.Mutex
+	scriptCache      = make(map[string]*goja.Program, maximumCachedScriptPrograms)
+	oldScriptCache   map[string]*goja.Program
 )
+
+// discardScriptCache drops every compiled program the script cache holds. The cache bounds itself, so this exists for
+// tests that need a known starting point rather than for anything the application does.
+func discardScriptCache() {
+	scriptCacheMutex.Lock()
+	defer scriptCacheMutex.Unlock()
+	clear(scriptCache)
+	oldScriptCache = nil
+}
 
 // globalResolveCache holds resolved results for scripts that have no associated entity. Unlike an entity's own
 // scriptCache (which is only touched while recalculating that single entity), this is package-global state that may be
@@ -541,28 +565,60 @@ func storeResolvedScript(entity *Entity, key scriptResolveKey, result string) {
 // the built-ins. Keeping the pooled runtimes clean is handled instead by freezeBuiltInsProgram and
 // scriptVM.restoreGlobals.
 func compiledProgram(text string) (*goja.Program, error) {
-	scriptCacheMutex.RLock()
-	program, exists := scriptCache[text]
-	scriptCacheMutex.RUnlock()
-	if exists {
+	if program := lookupCompiledProgram(text); program != nil {
 		return program, nil
 	}
 	jsBytes, err := json.Marshal(text)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal script text: %w", err)
 	}
+	var program *goja.Program
 	if program, err = goja.Compile("", "(function() { 'use strict'; return eval("+string(jsBytes)+"); })();", true); err != nil {
 		return nil, fmt.Errorf("failed to compile script: %w", err)
 	}
+	return storeCompiledProgram(text, program), nil
+}
+
+// lookupCompiledProgram returns the cached program for the given text, or nil if there isn't one. A program found in
+// the retiring generation is promoted into the current one so that it survives the next turnover.
+func lookupCompiledProgram(text string) *goja.Program {
 	scriptCacheMutex.Lock()
 	defer scriptCacheMutex.Unlock()
-	// Re-check in case another goroutine compiled and stored the same text while we were compiling, so all callers
-	// share a single program instance.
+	if program, ok := scriptCache[text]; ok {
+		return program
+	}
+	if program, ok := oldScriptCache[text]; ok {
+		addToScriptCache(text, program)
+		return program
+	}
+	return nil
+}
+
+// storeCompiledProgram records the program compiled for the given text and returns the program the caller should use.
+// That is the program already cached for the same text if another goroutine compiled and stored it while this caller
+// was compiling, so that all callers share a single program instance.
+func storeCompiledProgram(text string, program *goja.Program) *goja.Program {
+	scriptCacheMutex.Lock()
+	defer scriptCacheMutex.Unlock()
 	if existing, ok := scriptCache[text]; ok {
-		return existing, nil
+		return existing
+	}
+	if existing, ok := oldScriptCache[text]; ok {
+		addToScriptCache(text, existing)
+		return existing
+	}
+	addToScriptCache(text, program)
+	return program
+}
+
+// addToScriptCache adds an entry to the current generation of the script cache, retiring that generation first if it is
+// already full. scriptCacheMutex must be held.
+func addToScriptCache(text string, program *goja.Program) {
+	if len(scriptCache) >= maximumCachedScriptPrograms {
+		oldScriptCache = scriptCache
+		scriptCache = make(map[string]*goja.Program, maximumCachedScriptPrograms)
 	}
 	scriptCache[text] = program
-	return program, nil
 }
 
 // runScript compiles and runs a script with the provided arguments, returning the string form of its result. A timeout

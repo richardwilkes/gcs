@@ -252,6 +252,54 @@ func TestScriptResolutionConcurrency(t *testing.T) {
 	wg.Wait()
 }
 
+// TestScriptCacheIsBounded verifies that the compiled-program cache cannot grow without bound while still keeping the
+// programs that are actually in use. The item editors re-resolve the script being typed after every keystroke, so every
+// syntactically valid intermediate text becomes a distinct cache key; an unbounded cache would hold a compiled program
+// for each of them until the process exited. A script that keeps being resolved, on the other hand, must survive the
+// turnover that discards those transients, or the cache would stop serving its purpose.
+func TestScriptCacheIsBounded(t *testing.T) {
+	c := check.New(t)
+	discardScriptCache()
+	defer discardScriptCache()
+
+	// "hot" stands in for a script a document really does recalculate with; "cold" is resolved once and abandoned, the
+	// way a half-typed script in an editor is.
+	const hot = "1 + 1"
+	const cold = "2 + 2"
+	hotProgram, err := compiledProgram(hot)
+	c.NoError(err)
+	c.NotNil(hotProgram)
+	coldProgram, err := compiledProgram(cold)
+	c.NoError(err)
+	c.NotNil(coldProgram)
+
+	// Push far more distinct scripts through the cache than it is permitted to hold, resolving the hot script alongside
+	// each of them and never touching the cold one again.
+	const distinct = maximumCachedScriptPrograms * 5
+	for i := range distinct {
+		_, err = compiledProgram(strconv.Itoa(i) + " + 0")
+		c.NoError(err, "iteration %d", i)
+		_, err = compiledProgram(hot)
+		c.NoError(err, "iteration %d", i)
+	}
+
+	scriptCacheMutex.Lock()
+	held := len(scriptCache) + len(oldScriptCache)
+	scriptCacheMutex.Unlock()
+	c.True(held <= 2*maximumCachedScriptPrograms, "the cache holds %d programs after %d distinct scripts; at most %d "+
+		"are allowed", held, distinct+2, 2*maximumCachedScriptPrograms)
+
+	// The hot script was never recompiled: the same program instance is still cached for it.
+	again, err := compiledProgram(hot)
+	c.NoError(err)
+	c.True(again == hotProgram, "the repeatedly resolved script must survive in the cache")
+
+	// The cold one was evicted, so resolving it again yields a freshly compiled program rather than the original.
+	again, err = compiledProgram(cold)
+	c.NoError(err)
+	c.False(again == coldProgram, "the abandoned script must have been evicted from the cache")
+}
+
 // errorCountingHandler is a slog.Handler that counts the error-level records it is asked to handle. It lets a test
 // observe whether a failed script resolution logged an error without depending on the log's textual format.
 type errorCountingHandler struct {
