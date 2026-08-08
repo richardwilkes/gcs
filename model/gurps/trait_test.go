@@ -19,6 +19,27 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
+// TestHasTag verifies that a tag matches either as a whole -- even when it contains colons -- or as one of the
+// colon-separated subsets within a stored tag, ignoring case and surrounding whitespace.
+func TestHasTag(t *testing.T) {
+	c := check.New(t)
+	tags := []string{"Advantage: Mental", "Physical"}
+
+	// The whole tag matches, including the colon-containing one.
+	c.True(HasTag("Advantage: Mental", tags), "an exact match on a colon-containing tag is found")
+	c.True(HasTag("  advantage: MENTAL  ", tags), "whole-tag matching ignores case and surrounding whitespace")
+	c.True(HasTag("Physical", tags), "an exact match on a tag without a colon is found")
+
+	// The colon-separated subsets still match.
+	c.True(HasTag("Advantage", tags), "the portion before the colon is found")
+	c.True(HasTag("Mental", tags), "the portion after the colon is found")
+
+	// Non-matches remain non-matches.
+	c.False(HasTag("Advantage: Physical", tags), "a colon-containing tag that isn't present isn't found")
+	c.False(HasTag("Social", tags), "a tag that isn't present isn't found")
+	c.False(HasTag("Advantage: Mental", nil), "nothing matches an empty set of tags")
+}
+
 // TestTraitLevelSelfReferentialBonus verifies that a per-level TraitBonus which matches the very trait carrying it
 // resolves to a finite level instead of recursing until the stack overflows. The bonus scales by the trait's own level,
 // which falls back to the unadjusted level while that level is being resolved.

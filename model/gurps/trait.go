@@ -863,12 +863,15 @@ func (t *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 	return buffer.String()
 }
 
-// HasTag returns true if 'tag' is present in 'tags'. This check both ignores case and can check for subsets that are
-// colon-separated.
+// HasTag returns true if 'tag' is present in 'tags'. This check ignores case and matches either a whole tag or one of
+// the colon-separated subsets within a tag.
 func HasTag(tag string, tags []string) bool {
 	tag = strings.TrimSpace(tag)
 	for _, one := range tags {
-		for _, part := range strings.Split(one, ":") {
+		if strings.EqualFold(tag, strings.TrimSpace(one)) {
+			return true
+		}
+		for part := range strings.SplitSeq(one, ":") {
 			if strings.EqualFold(tag, strings.TrimSpace(part)) {
 				return true
 			}
