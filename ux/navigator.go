@@ -955,18 +955,7 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 								one.TechLevel = nil
 							}
 							content = n.addToContentCache(p, strings.Join([]string{
-								data.Profile.Name,
-								data.Profile.Age,
-								data.Profile.Birthday,
-								data.Profile.Eyes,
-								data.Profile.Hair,
-								data.Profile.Skin,
-								data.Profile.Handedness,
-								data.Profile.Gender,
-								data.Profile.PlayerName,
-								data.Profile.Title,
-								data.Profile.Organization,
-								data.Profile.Religion,
+								prepareProfileForContentCache(&data.Profile),
 								prepareForContentCache(data.Traits),
 								prepareForContentCache(data.Skills),
 								prepareForContentCache(data.Spells),
@@ -1039,6 +1028,25 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 			n.search(text, row.Children())
 		}
 	}
+}
+
+// prepareProfileForContentCache returns the profile's text fields in the form the deep search content cache expects.
+// The search text is lowercased before comparison, so the content must be lowercased as well.
+func prepareProfileForContentCache(profile *gurps.Profile) string {
+	return strings.ToLower(strings.Join([]string{
+		profile.Name,
+		profile.Age,
+		profile.Birthday,
+		profile.Eyes,
+		profile.Hair,
+		profile.Skin,
+		profile.Handedness,
+		profile.Gender,
+		profile.PlayerName,
+		profile.Title,
+		profile.Organization,
+		profile.Religion,
+	}, "\n"))
 }
 
 func prepareForContentCache[T gurps.NodeTypes](data []T) string {
