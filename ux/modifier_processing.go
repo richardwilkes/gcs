@@ -50,7 +50,7 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	}
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
-			switch t := (any(row)).(type) {
+			switch t := any(row).(type) {
 			case *gurps.Trait:
 				if processModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
 					rebuild()

@@ -128,7 +128,8 @@ func (p *eqpModProvider) ColumnIDs() []int {
 	if p.forEditor {
 		columnIDs = append(columnIDs, gurps.EquipmentModifierEnabledColumn)
 	}
-	columnIDs = append(columnIDs,
+	columnIDs = append(
+		columnIDs,
 		gurps.EquipmentModifierDescriptionColumn,
 		gurps.EquipmentModifierTechLevelColumn,
 		gurps.EquipmentModifierCostColumn,

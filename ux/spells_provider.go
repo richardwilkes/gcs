@@ -142,21 +142,24 @@ func (p *spellsProvider) ColumnIDs() []int {
 	columnIDs := make([]int, 0, 11)
 	if p.forPage {
 		if _, ok := p.provider.(*gurps.Entity); ok {
-			columnIDs = append(columnIDs,
+			columnIDs = append(
+				columnIDs,
 				gurps.SpellDescriptionForPageColumn,
 				gurps.SpellLevelColumn,
 				gurps.SpellRelativeLevelColumn,
 				gurps.SpellPointsColumn,
 			)
 		} else {
-			columnIDs = append(columnIDs,
+			columnIDs = append(
+				columnIDs,
 				gurps.SpellDescriptionForPageColumn,
 				gurps.SpellDifficultyColumn,
 				gurps.SpellPointsColumn,
 			)
 		}
 	} else {
-		columnIDs = append(columnIDs,
+		columnIDs = append(
+			columnIDs,
 			gurps.SpellDescriptionColumn,
 			gurps.SpellCollegeColumn,
 			gurps.SpellResistColumn,

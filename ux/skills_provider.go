@@ -144,14 +144,16 @@ func (p *skillsProvider) ColumnIDs() []int {
 	columnIDs = append(columnIDs, gurps.SkillDescriptionColumn)
 	if p.forPage {
 		if _, ok := p.provider.(*gurps.Entity); ok {
-			columnIDs = append(columnIDs,
+			columnIDs = append(
+				columnIDs,
 				gurps.SkillLevelColumn,
 				gurps.SkillRelativeLevelColumn,
 			)
 		}
 		columnIDs = append(columnIDs, gurps.SkillPointsColumn)
 	} else {
-		columnIDs = append(columnIDs,
+		columnIDs = append(
+			columnIDs,
 			gurps.SkillDifficultyColumn,
 			gurps.SkillTagsColumn,
 		)

@@ -47,7 +47,8 @@ func TestWeaponRoFMultiMode(t *testing.T) {
 			}
 		}
 	}
-	cases = append(cases,
+	cases = append(
+		cases,
 		rofAdjustedCase{
 			input:    "1/",
 			expected: "1",

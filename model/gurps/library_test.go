@@ -17,6 +17,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"sync"
@@ -200,6 +201,18 @@ func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
 	waitForMonitorQueue(lib)
 	c.Equal(int64(1), syncs.Load(), "the watch is told the root moved")
 	c.Equal(watchable, token.root, "the watch is now rooted at the new path")
+
+	// Everything above this point is what the restart actually changed, and it holds on every platform. The live-event
+	// check below cannot run on Windows under -race: notify's readdcw backend reads an event's name by viewing its
+	// 4096-byte ReadDirectoryChangesW buffer through a *[syscall.MAX_LONG_PATH]uint16, i.e. a 64KB array type
+	// (watcher_readdcw.go:406, still present in v0.9.3, the newest release). The bytes it goes on to read stay inside
+	// the buffer -- the kernel bounds each record to the size handed to ReadDirectoryChangesW -- but the conversion
+	// itself nominally spans past the allocation, so checkptr, which -race turns on, aborts the process the first time
+	// an event is delivered. That takes the whole test binary with it rather than failing a single test. Release builds
+	// never enable -race, so no shipped binary carries the check.
+	if raceEnabled && runtime.GOOS == "windows" {
+		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
+	}
 
 	// The watch must actually be live at the new location, not merely re-registered.
 	created := filepath.Join(watchable, "new.gcs")

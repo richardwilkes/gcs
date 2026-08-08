@@ -12,6 +12,7 @@ for arg in "$@"; do
 	--all | -a)
 		BUILD_GO=1
 		BUILD_GEN=1
+		FMT=1
 		LINT=1
 		TEST=1
 		RACE=-race
@@ -29,6 +30,10 @@ for arg in "$@"; do
 		;;
 	--genpkg | -p)
 		RUN_GENPKG=1
+		SOMETHING=1
+		;;
+	--fmt | -f)
+		FMT=1
 		SOMETHING=1
 		;;
 	--lint | -l)
@@ -64,8 +69,9 @@ for arg in "$@"; do
 		;;
 	--help | -h)
 		echo "$0 [options]"
-		echo "  -a, --all    Equivalent to --gen --go --lint --race"
+		echo "  -a, --all    Equivalent to --gen --go --fmt --lint --race"
 		echo "  -d, --dist   Create distribution"
+		echo "  -f, --fmt    Verify the source formatting (gofumpt and goimports)"
 		echo "  -g, --go     Build the Go code"
 		echo "  -G, --gen    Generate the source"
 		echo "  -p, --genpkg Generate the icons and packaging.yml file"
@@ -139,8 +145,11 @@ if [ "$BUILD_GO"x == "1x" ]; then
 	go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
 fi
 
-# Lint the Go code
-if [ "$LINT"x == "1x" ]; then
+# Both the formatting check and the linters come out of golangci-lint, so whichever of them runs first installs it.
+ensure_golangci_lint() {
+	if [ -n "$GOLANGCI_LINT" ]; then
+		return
+	fi
 	GOLANGCI_LINT_VERSION=$(curl --head -s https://github.com/golangci/golangci-lint/releases/latest | grep -i location: | sed 's/^.*v//' | tr -d '\r\n')
 	TOOLS_DIR=$(go env GOPATH)/bin
 	if [ ! -e "$TOOLS_DIR/golangci-lint" ] || [ "$("$TOOLS_DIR/golangci-lint" version 2>&1 | awk '{ print $4 }' || true)x" != "${GOLANGCI_LINT_VERSION}x" ]; then
@@ -148,8 +157,28 @@ if [ "$LINT"x == "1x" ]; then
 		mkdir -p "$TOOLS_DIR"
 		curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$TOOLS_DIR" v$GOLANGCI_LINT_VERSION
 	fi
+	GOLANGCI_LINT="$TOOLS_DIR/golangci-lint"
+}
+
+# Verify formatting
+#
+# This needs its own pass because `golangci-lint run` ignores the `formatters` section of .golangci.yml entirely -- only
+# `golangci-lint fmt` consults it -- so without this the gofumpt and goimports settings declared there enforce nothing.
+if [ "$FMT"x == "1x" ]; then
+	ensure_golangci_lint
+	echo -e "\033[33mChecking the formatting of the Go code...\033[0m"
+	if ! "$GOLANGCI_LINT" fmt --diff; then
+		echo -e "\033[31mRun 'golangci-lint fmt' to apply the formatting shown above.\033[0m" >&2
+		exit 1
+	fi
+	echo "0 issues."
+fi
+
+# Lint the Go code
+if [ "$LINT"x == "1x" ]; then
+	ensure_golangci_lint
 	echo -e "\033[33mLinting the Go code...\033[0m"
-	"$TOOLS_DIR/golangci-lint" run
+	"$GOLANGCI_LINT" run
 fi
 
 # Run the tests

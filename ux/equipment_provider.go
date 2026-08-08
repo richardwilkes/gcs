@@ -184,7 +184,8 @@ func (p *equipmentProvider) ColumnIDs() []int {
 	if p.forPage && p.carried {
 		columnIDs = append(columnIDs, gurps.EquipmentEquippedColumn)
 	}
-	columnIDs = append(columnIDs,
+	columnIDs = append(
+		columnIDs,
 		gurps.EquipmentQuantityColumn,
 		gurps.EquipmentDescriptionColumn,
 	)
@@ -204,12 +205,14 @@ func (p *equipmentProvider) ColumnIDs() []int {
 			columnIDs = append(columnIDs, gurps.EquipmentLCColumn)
 		}
 	} else {
-		columnIDs = append(columnIDs,
+		columnIDs = append(
+			columnIDs,
 			gurps.EquipmentTLColumn,
 			gurps.EquipmentLCColumn,
 		)
 	}
-	columnIDs = append(columnIDs,
+	columnIDs = append(
+		columnIDs,
 		gurps.EquipmentCostColumn,
 		gurps.EquipmentWeightColumn,
 		gurps.EquipmentExtendedCostColumn,
@@ -289,12 +292,14 @@ func (p *equipmentProvider) Deserialize(data []byte) error {
 func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	if p.carried {
-		list = append(list,
+		list = append(
+			list,
 			ContextMenuItem{i18n.Text("New Carried Equipment"), NewCarriedEquipmentItemID},
 			ContextMenuItem{i18n.Text("New Carried Equipment Container"), NewCarriedEquipmentContainerItemID},
 		)
 	} else {
-		list = append(list,
+		list = append(
+			list,
 			ContextMenuItem{i18n.Text("New Other Equipment"), NewOtherEquipmentItemID},
 			ContextMenuItem{i18n.Text("New Other Equipment Container"), NewOtherEquipmentContainerItemID},
 		)

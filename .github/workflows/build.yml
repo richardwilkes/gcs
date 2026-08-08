@@ -71,6 +71,36 @@ jobs:
           path: dist/
           if-no-files-found: error
 
+  format:
+    name: Format
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Installed through the action rather than build.sh --fmt for the same reason the lint job does it that way: the
+      # upstream install.sh that build.sh drives fails its checksum verification for unauthenticated release downloads
+      # in CI. The action has no input for the fmt subcommand, so it only installs and the check runs as its own step.
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+          install-only: true
+
+      # `golangci-lint run` ignores the `formatters` section of .golangci.yml, so this pass is what actually enforces
+      # gofumpt and goimports. Formatting is neither OS- nor architecture-specific and the formatters do not evaluate
+      # build constraints, so this single runner covers every source file, including the per-platform ones.
+      - name: Check formatting
+        env:
+          GOEXPERIMENT: jsonv2
+        run: golangci-lint fmt --diff
+
   lint:
     name: Lint (${{ matrix.goos }})
     runs-on: ubuntu-22.04

@@ -128,7 +128,8 @@ func (p *traitModifiersProvider) ColumnIDs() []int {
 	if p.forEditor {
 		columnIDs = append(columnIDs, gurps.TraitModifierEnabledColumn)
 	}
-	columnIDs = append(columnIDs,
+	columnIDs = append(
+		columnIDs,
 		gurps.TraitModifierDescriptionColumn,
 		gurps.TraitModifierCostColumn,
 		gurps.TraitModifierTagsColumn,

@@ -130,7 +130,8 @@ func NotifyOfAppUpdate() {
 			[]*unison.DialogButtonInfo{
 				unison.NewCancelButtonInfo(),
 				unison.NewOKButtonInfoWithTitle(i18n.Text("Download")),
-			})
+			},
+		)
 		if err != nil {
 			errs.Log(err)
 			return

@@ -58,7 +58,8 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 			Title: i18n.Text("Prerequisites"),
 			Font:  unison.LabelFont,
 		},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2))))
+		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
+	))
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}

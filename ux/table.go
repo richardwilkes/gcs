@@ -174,7 +174,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		func(_ any) { copySelectionToSheet(table) })
 	table.InstallCmdHandlers(CopyToTemplateItemID, func(_ any) bool { return canCopySelectionToTemplate(table) },
 		func(_ any) { copySelectionToTemplate(table) })
-	if t, ok := (any(table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+	if t, ok := any(table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		t.InstallCmdHandlers(IncrementItemID,
 			func(_ any) bool { return canAdjustQuantity(t, true) },
 			func(_ any) { adjustQuantity(unison.AncestorOrSelf[Rebuildable](t), t, true) })

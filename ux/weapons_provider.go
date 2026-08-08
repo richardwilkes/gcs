@@ -161,19 +161,22 @@ func (p *weaponsProvider) ColumnIDs() []int {
 	} else {
 		columnIDs = append(columnIDs, gurps.WeaponHideColumn)
 	}
-	columnIDs = append(columnIDs,
+	columnIDs = append(
+		columnIDs,
 		gurps.WeaponUsageColumn,
 		gurps.WeaponSLColumn,
 	)
 	if p.melee {
-		columnIDs = append(columnIDs,
+		columnIDs = append(
+			columnIDs,
 			gurps.WeaponParryColumn,
 			gurps.WeaponBlockColumn,
 			gurps.WeaponDamageColumn,
 			gurps.WeaponReachColumn,
 		)
 	} else {
-		columnIDs = append(columnIDs,
+		columnIDs = append(
+			columnIDs,
 			gurps.WeaponAccColumn,
 			gurps.WeaponDamageColumn,
 			gurps.WeaponRangeColumn,

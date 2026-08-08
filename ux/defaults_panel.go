@@ -50,7 +50,8 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 			Title: i18n.Text("Defaults"),
 			Font:  unison.LabelFont,
 		},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2))))
+		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
+	))
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}

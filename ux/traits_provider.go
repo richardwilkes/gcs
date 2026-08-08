@@ -147,7 +147,8 @@ func (p *traitsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Tr
 }
 
 func (p *traitsProvider) ColumnIDs() []int {
-	columnIDs := append(make([]int, 0, 4),
+	columnIDs := append(
+		make([]int, 0, 4),
 		gurps.TraitDescriptionColumn,
 		gurps.TraitPointsColumn,
 	)

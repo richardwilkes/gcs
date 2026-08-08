@@ -193,7 +193,7 @@ func (p *PageList[T]) needReconstruction() bool {
 func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		var t *unison.Table[*Node[*gurps.Equipment]]
-		if t, ok = (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 			p.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
 				func(_ any) bool { return t.HasSelection() },
 				func(_ any) { moveSelectedEquipment(t, sheet.CarriedEquipment.Table) })
@@ -204,7 +204,7 @@ func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
 func (p *PageList[T]) installMoveToOtherEquipmentHandler(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		var t *unison.Table[*Node[*gurps.Equipment]]
-		if t, ok = (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 			p.InstallCmdHandlers(MoveToOtherEquipmentItemID,
 				func(_ any) bool { return t.HasSelection() },
 				func(_ any) { moveSelectedEquipment(t, sheet.OtherEquipment.Table) })
@@ -243,7 +243,7 @@ func (p *PageList[T]) installOpenPageReferenceHandlers() {
 }
 
 func (p *PageList[T]) installToggleDisabledHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Trait]]); ok {
+	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Trait]]); ok {
 		p.InstallCmdHandlers(ToggleStateItemID,
 			func(_ any) bool { return canToggleDisabled(t) },
 			func(_ any) { toggleDisabled(owner, t) })
@@ -251,7 +251,7 @@ func (p *PageList[T]) installToggleDisabledHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installToggleEquippedHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		p.InstallCmdHandlers(ToggleStateItemID,
 			func(_ any) bool { return canToggleEquipped(t) },
 			func(_ any) { toggleEquipped(owner, t) })
@@ -271,7 +271,7 @@ func (p *PageList[T]) installDecrementPointsHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installIncrementLevelHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Trait]]); ok {
+	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Trait]]); ok {
 		p.InstallCmdHandlers(IncrementItemID,
 			func(_ any) bool { return canAdjustTraitLevel(t, true) },
 			func(_ any) { adjustTraitLevel(owner, t, true) })
@@ -279,7 +279,7 @@ func (p *PageList[T]) installIncrementLevelHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installDecrementLevelHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Trait]]); ok {
+	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Trait]]); ok {
 		p.InstallCmdHandlers(DecrementItemID,
 			func(_ any) bool { return canAdjustTraitLevel(t, false) },
 			func(_ any) { adjustTraitLevel(owner, t, false) })
@@ -320,11 +320,11 @@ func installEquipmentLevelHandlers(p *PageList[*gurps.Equipment], owner Rebuilda
 }
 
 func (p *PageList[T]) installContainerConversionHandlers(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		InstallContainerConversionHandlers(p, owner, t)
 		return
 	}
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Note]]); ok {
+	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Note]]); ok {
 		InstallContainerConversionHandlers(p, owner, t)
 	}
 }

@@ -498,7 +498,8 @@ func (s menuBarScope) appendDisabledMenuItem(menu unison.Menu, title string) {
 
 // AppendDefaultContextMenuItems appends the default set of context menu items for lists.
 func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
-	return append(list,
+	return append(
+		list,
 		ContextMenuItem{"", -1},
 		ContextMenuItem{openEditorAction.Title, OpenEditorItemID},
 		ContextMenuItem{"", -1},

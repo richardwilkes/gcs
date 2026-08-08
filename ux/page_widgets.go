@@ -133,7 +133,8 @@ func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 
 func installPageFieldFontAndFocusBorders(field *unison.Field) {
 	field.Font = fonts.PageFieldPrimary
-	unison.InstallFocusBorders(field, field,
+	unison.InstallFocusBorders(
+		field, field,
 		unison.NewLineBorder(unison.ThemeFocus, geom.Size{}, geom.Insets{Bottom: 1}, false),
 		unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.Insets{Bottom: 1}, false),
 	)
