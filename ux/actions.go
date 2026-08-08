@@ -493,7 +493,7 @@ func registerActions() {
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
-	newEquipmentModifiersLibraryAction = registerKeyBindableAction("new.eqp.lib", &unison.Action{
+	newEquipmentModifiersLibraryAction = registerKeyBindableAction("new.eqm.lib", &unison.Action{
 		ID:    NewEquipmentModifiersLibraryItemID,
 		Title: i18n.Text("New Equipment Modifiers Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {

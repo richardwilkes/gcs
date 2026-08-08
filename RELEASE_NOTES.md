@@ -317,6 +317,8 @@
   and reloaded. A weapon with a reach of "C,2-3" came back as "C,1-3", and one with "C,5" as "C,1-5", because the
   close combat marker was read as the minimum. Note that "C-5" continues to mean a range running from close combat out
   to 5, and so is still equivalent to "C,1-5".
+- Fixed the "New Equipment Modifiers Library" command not appearing in the Menu Keys settings, where it shared an
+  internal identifier with "New Equipment Library". It now has its own entry and can be assigned a key binding.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.
