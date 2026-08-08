@@ -156,14 +156,7 @@ func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 	b.Tooltip = newWrappedTooltip("Reset this key binding")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset '%s'?"), binding.Action.Title), "") == unison.ModalResponseOK {
-			g := gurps.GlobalSettings()
-			g.KeyBindings.ResetOne(binding.ID)
-			g.KeyBindings.MakeCurrent()
-			binding.KeyBinding = g.KeyBindings.Current(binding.ID)
-			parent := b.Parent()
-			if other, ok := parent.Children()[parent.IndexOfChild(b)-1].Self.(*unison.Button); ok {
-				other.SetTitle(binding.KeyBinding.String())
-			}
+			d.resetBinding(binding, b)
 		}
 	}
 	b.SetLayoutData(&unison.FlexLayoutData{
@@ -171,6 +164,37 @@ func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 		VAlign: align.Middle,
 	})
 	d.content.AddChild(b)
+}
+
+// resetBinding restores the given binding to its factory default and updates the button that displays it.
+func (d *menuKeySettingsDockable) resetBinding(binding *gurps.Binding, resetButton *unison.Button) {
+	g := gurps.GlobalSettings()
+	g.KeyBindings.ResetOne(binding.ID)
+	g.KeyBindings.MakeCurrent()
+	binding.KeyBinding = g.KeyBindings.Current(binding.ID)
+	if other := bindingButtonForResetButton(resetButton); other != nil {
+		other.SetTitle(binding.KeyBinding.String())
+		other.MarkForRedraw()
+	}
+}
+
+// bindingButtonForResetButton returns the button that displays the key binding for the row the given reset button
+// belongs to, or nil if it can't be located. fill() adds three children per binding, in the order [key button, title
+// label, reset button], so the key button sits two positions before its reset button.
+func bindingButtonForResetButton(resetButton *unison.Button) *unison.Button {
+	parent := resetButton.Parent()
+	if parent == nil {
+		return nil
+	}
+	i := parent.IndexOfChild(resetButton) - 2
+	if i < 0 {
+		return nil
+	}
+	other, ok := parent.Children()[i].Self.(*unison.Button)
+	if !ok {
+		return nil
+	}
+	return other
 }
 
 func (d *menuKeySettingsDockable) load(fileSystem fs.FS, filePath string) error {

@@ -319,6 +319,9 @@
   to 5, and so is still equivalent to "C,1-5".
 - Fixed the "New Equipment Modifiers Library" command not appearing in the Menu Keys settings, where it shared an
   internal identifier with "New Equipment Library". It now has its own entry and can be assigned a key binding.
+- Fixed the reset button beside an individual command in the Menu Keys settings appearing to do nothing. The binding
+  was restored to its default, but the key shown next to the command still displayed the old one until the settings
+  were closed and reopened.
 - Fixed typing in the notes field of a hit location that shares its ID with another, as the Right and Left Leg (and
   Arm) of the standard humanoid body do. The first keystroke sent the focus to the other location's field, so the rest
   of what you typed was recorded against the wrong location, and undoing the edit restored the text into the wrong
