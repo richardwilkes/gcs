@@ -326,6 +326,11 @@
 - Fixed edits to the second and later attributes added with the "Add Attribute" button in the Attribute Settings being
   applied to the first one added instead. Undoing a change to such an attribute wrote the restored text into the
   earlier addition's matching field, and the focus could afterward land on the wrong attribute's field.
+- Fixed the Extended Value and Extended Weight shown in the equipment editor ignoring your unapplied edits whenever a
+  modifier scales with the equipment itself. Changing the Level no longer left a "per level" cost or weight modifier
+  stuck on the level the editor was opened with, and changing the weight (or turning a modifier on or off) no longer
+  left a "per pound" cost modifier stuck on the original weight. These previews now match what the character sheet
+  shows once you apply the changes, instead of jumping to a different number afterward.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.

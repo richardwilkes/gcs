@@ -53,18 +53,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			extendedValueLabel := i18n.Text("Extended Value")
 			content.AddChild(NewFieldLeadingLabel(extendedValueLabel, false))
 			content.AddChild(NewNonEditableField(func(field *NonEditableField) {
-				var value fxp.Int
-				if e.editorData.Quantity > 0 {
-					value = gurps.ValueAdjustedForModifiers(e.target,
-						cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedBaseValue(), e.editorData.Modifiers)
-					if e.target.Container() {
-						for _, one := range e.target.Children {
-							value += one.ExtendedValue()
-						}
-					}
-					value = value.Mul(e.editorData.Quantity)
-				}
-				field.SetTitle(value.Comma())
+				field.SetTitle(extendedValueForEditor(e.target, e.editorData).Comma())
 				field.MarkForLayoutAndRedraw()
 			}))
 			weightLabel := i18n.Text("Weight")
@@ -79,14 +68,8 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			extendedWeightLabel := i18n.Text("Extended Weight")
 			content.AddChild(NewFieldLeadingLabel(extendedWeightLabel, false))
 			content.AddChild(NewNonEditableField(func(field *NonEditableField) {
-				var weight fxp.Weight
 				defUnits := gurps.SheetSettingsFor(entity).DefaultWeightUnits
-				if e.editorData.Quantity > 0 {
-					weight = gurps.ExtendedWeightAdjustedForModifiers(e.target, defUnits, e.editorData.Quantity,
-						cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedBaseWeight(), e.editorData.Modifiers, e.editorData.Features, e.target.Children, false,
-						false)
-				}
-				field.SetTitle(defUnits.Format(weight))
+				field.SetTitle(defUnits.Format(extendedWeightForEditor(e.target, e.editorData, defUnits)))
 				field.MarkForLayoutAndRedraw()
 			}))
 			content.AddChild(unison.NewPanel())
@@ -131,6 +114,35 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 				adjustFieldBlank(usesField, maxUses <= 0)
 			}
 		}, nil)
+}
+
+// extendedValueForEditor computes the Extended Value preview for the equipment editor. The overlaid clone is used as
+// the modifier context, not the unedited target, so that cost modifiers whose multiplier depends on the equipment
+// itself (per level, per pound) see the editor's pending values.
+func extendedValueForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData) fxp.Int {
+	if overlay.Quantity <= 0 {
+		return 0
+	}
+	clone := cloneEquipmentWithOverlay(target, overlay)
+	value := gurps.ValueAdjustedForModifiers(clone, clone.ResolvedBaseValue(), overlay.Modifiers)
+	if target.Container() {
+		for _, one := range target.Children {
+			value += one.ExtendedValue()
+		}
+	}
+	return value.Mul(overlay.Quantity)
+}
+
+// extendedWeightForEditor computes the Extended Weight preview for the equipment editor. As with
+// extendedValueForEditor, the overlaid clone is the modifier context so that per-level weight modifiers see the
+// editor's pending values.
+func extendedWeightForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData, defUnits fxp.WeightUnit) fxp.Weight {
+	if overlay.Quantity <= 0 {
+		return 0
+	}
+	clone := cloneEquipmentWithOverlay(target, overlay)
+	return gurps.ExtendedWeightAdjustedForModifiers(clone, defUnits, overlay.Quantity, clone.ResolvedBaseWeight(),
+		overlay.Modifiers, overlay.Features, target.Children, false, false)
 }
 
 func cloneEquipmentWithOverlay(e *gurps.Equipment, overlay *gurps.EquipmentEditData) *gurps.Equipment {
