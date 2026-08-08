@@ -121,6 +121,9 @@
   covers the system Open and Save dialogs on Windows.
 - Fix unary operator handling and panics in legacy expression conversion.
 - Fixed various issues in the legacy text export templates.
+- Fixed the tag include and exclude filters in the legacy text export templates never matching a tag that contains a
+  colon. Only the individual colon-separated portions of a tag were compared, so naming a full tag such as
+  "Advantage: Mental" matched nothing; the whole tag is now matched as well.
 - Fixed the Page Reference Mappings view not showing the newly chosen PDF for a mapping until the view was closed and
   reopened. This affected the view when it was in a window of its own, which is the case when the Settings group is set
   to open in its own window.
@@ -293,6 +296,13 @@
   without spaces, which is how arithmetic is normally written. A base damage of `2*self.level` was taken as the dice
   specification it happens to start with — a flat +2 — and the script was never run. These fields are now treated as
   dice only when the entire entry is a dice specification; anything else is evaluated as a script.
+- Fixed a weapon being given a brand new internal ID every time it was edited, which also happened again with each undo
+  and redo. The change was written into the file at the next save, and it caused the weapon's row to lose its selection
+  after an edit.
+- Fixed the tooltip for a "per die" weapon bonus reporting the amount for a single die rather than the amount actually
+  applied. A +1 per die accuracy bonus on a 3d weapon correctly raised its accuracy by 3, but the tooltip read "+1 (+1
+  per die) to weapon accuracy". This affected every weapon statistic other than damage. Minimum ST and effective ST
+  bonuses continue to count as a single die, since the weapon's damage dice depend on them.
 - Fixed the minimum reach of a melee weapon that also has close combat being reset to 1 every time the file was saved
   and reloaded. A weapon with a reach of "C,2-3" came back as "C,1-3", and one with "C,5" as "C,1-5", because the
   close combat marker was read as the minimum. Note that "C-5" continues to mean a range running from close combat out

@@ -77,7 +77,7 @@ func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer
 		result.HighCyclicControlledBursts = w.ResolveBoolFlag(wswitch.ControlledBursts2, wr.HighCyclicControlledBursts)
 	}
 	var percentSPA, percentSP fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, shotsFeature, secondaryFeature) {
+	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, shotsFeature, secondaryFeature) {
 		amt := bonus.AdjustedAmountForWeapon(w)
 		switch bonus.Type {
 		case shotsFeature:

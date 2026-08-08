@@ -82,7 +82,8 @@ func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffe
 	if !result.Jet {
 		if entity := w.Entity(); entity != nil {
 			var percentBase, percentScope fxp.Int
-			for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponAccBonus, feature.WeaponScopeAccBonus) {
+			for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponAccBonus,
+				feature.WeaponScopeAccBonus) {
 				amt := bonus.AdjustedAmountForWeapon(w)
 				switch bonus.Type {
 				case feature.WeaponAccBonus:

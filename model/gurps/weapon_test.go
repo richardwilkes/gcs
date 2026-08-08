@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 func TestWeaponParryAndBlockStorage(t *testing.T) {
@@ -450,4 +451,46 @@ func TestWeaponEditorPreservesID(t *testing.T) {
 	c.Equal("Thrust", w.Usage, "the edit was redone")
 	c.Equal(originalTID, w.TID, "redoing an edit doesn't change the weapon's ID")
 	c.Equal(originalClonedFromTID, w.ClonedFromTID, "redoing an edit doesn't change the weapon's lineage")
+}
+
+// TestWeaponPerDieBonusTooltip verifies that the tooltip written for a per-die weapon bonus reports the amount that is
+// actually applied, which scales by the weapon's base damage dice, rather than always reporting the single-die amount.
+func TestWeaponPerDieBonusTooltip(t *testing.T) {
+	c := check.New(t)
+
+	acc := gurps.NewWeaponAccBonus()
+	acc.PerDie = true
+	bulk := gurps.NewWeaponBulkBonus()
+	bulk.PerDie = true
+	bulk.Amount = fxp.NegOne
+	w := newWeaponWithBonuses(false, acc, bulk)
+	w.Damage.Base = "3d"
+	w.Accuracy = gurps.ParseWeaponAccuracy("3")
+	w.Bulk = gurps.ParseWeaponBulk("-4")
+
+	var accTooltip xbytes.InsertBuffer
+	c.Equal("6", w.Accuracy.Resolve(w, &accTooltip).String(), "+1 per die on a 3d weapon raises Acc 3 to 6")
+	c.Contains(accTooltip.String(), "+3 (+1 per die) to weapon accuracy", "the tooltip reports the amount applied")
+
+	// The same holds for the other stats, which share the collection that writes these tooltips.
+	var bulkTooltip xbytes.InsertBuffer
+	c.Equal("-7", w.Bulk.Resolve(w, &bulkTooltip).String(), "-1 per die on a 3d weapon takes Bulk -4 to -7")
+	c.Contains(bulkTooltip.String(), "-3 (-1 per die) to bulk", "the tooltip reports the amount applied")
+}
+
+// TestWeaponPerDieSTBonusTooltip verifies that a per-die minimum ST bonus is both applied and reported for a single
+// die. Resolving the weapon's base damage dice requires the minimum ST, so those dice can't be consulted here, and
+// AdjustedAmountForWeapon deliberately pins the bonus to one die; the tooltip must say the same thing.
+func TestWeaponPerDieSTBonusTooltip(t *testing.T) {
+	c := check.New(t)
+
+	minST := gurps.NewWeaponMinSTBonus()
+	minST.PerDie = true
+	w := newWeaponWithBonuses(false, minST)
+	w.Damage.Base = "3d"
+	w.Strength = gurps.ParseWeaponStrength("10")
+
+	var tooltip xbytes.InsertBuffer
+	c.Equal("11", w.Strength.Resolve(w, &tooltip).String(), "a per-die minimum ST bonus counts as a single die")
+	c.Contains(tooltip.String(), "+1 (+1 per die) to minimum ST", "the tooltip reports the amount applied")
 }

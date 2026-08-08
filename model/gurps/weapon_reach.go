@@ -99,7 +99,8 @@ func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 	result.CloseCombat = w.ResolveBoolFlag(wswitch.CloseCombat, result.CloseCombat)
 	result.ChangeRequiresReady = w.ResolveBoolFlag(wswitch.ReachChangeRequiresReady, result.ChangeRequiresReady)
 	var percentMin, percentMax fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponMinReachBonus, feature.WeaponMaxReachBonus) {
+	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponMinReachBonus,
+		feature.WeaponMaxReachBonus) {
 		amt := bonus.AdjustedAmountForWeapon(w)
 		switch bonus.Type {
 		case feature.WeaponMinReachBonus:

@@ -100,7 +100,8 @@ func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 	result.ReloadTimeIsPerShot = w.ResolveBoolFlag(wswitch.ReloadTimeIsPerShot, result.ReloadTimeIsPerShot)
 	result.Thrown = w.ResolveBoolFlag(wswitch.Thrown, result.Thrown)
 	var percentCount, percentInChamber, percentDuration, percentReloadTime fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponNonChamberShotsBonus, feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus) {
+	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponNonChamberShotsBonus,
+		feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus) {
 		amt := bonus.AdjustedAmountForWeapon(w)
 		switch bonus.Type {
 		case feature.WeaponNonChamberShotsBonus:

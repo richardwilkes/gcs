@@ -116,7 +116,7 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 				result.Modifier += best
 				AppendStringOntoNewLine(modifiersTooltip, entity.ParryBonusTooltip)
 				var percentModifier fxp.Int
-				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponParryBonus) {
+				for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponParryBonus) {
 					amt := bonus.AdjustedAmountForWeapon(w)
 					if bonus.Percent {
 						percentModifier += amt

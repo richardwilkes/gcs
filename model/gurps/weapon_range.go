@@ -130,7 +130,7 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 			}
 		}
 		var percentMin fxp.Int
-		for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponEffectiveSTBonus) {
+		for _, bonus := range w.collectWeaponBonuses(oneDieCount, modifiersTooltip, feature.WeaponEffectiveSTBonus) {
 			amt := bonus.AdjustedAmountForWeapon(w)
 			if bonus.Percent {
 				percentMin += amt
@@ -152,7 +152,8 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 		}
 	}
 	var percentHalfDamage, percentMin, percentMax fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponHalfDamageRangeBonus, feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus) {
+	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponHalfDamageRangeBonus,
+		feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus) {
 		amt := bonus.AdjustedAmountForWeapon(w)
 		switch bonus.Type {
 		case feature.WeaponHalfDamageRangeBonus:

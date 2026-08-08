@@ -73,7 +73,7 @@ func (wr WeaponRecoil) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer)
 	// 0 means recoil isn't used; 1+ means it is.
 	if wr.Shot > 0 || wr.Slug > 0 {
 		var percent fxp.Int
-		for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponRecoilBonus) {
+		for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponRecoilBonus) {
 			amt := bonus.AdjustedAmountForWeapon(w)
 			if bonus.Percent {
 				percent += amt

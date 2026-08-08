@@ -79,7 +79,7 @@ func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) W
 	result := wb
 	result.RetractingStock = w.ResolveBoolFlag(wswitch.RetractingStock, result.RetractingStock)
 	var percent fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBulkBonus) {
+	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponBulkBonus) {
 		amt := bonus.AdjustedAmountForWeapon(w)
 		if bonus.Percent {
 			percent += amt

@@ -227,6 +227,15 @@ func (w *WeaponBonus) AdjustedAmount() fxp.Int {
 	return w.adjustedAmount(w.DieCount, w.LeveledOwner)
 }
 
+// resolveDieCount returns the die count to use for this bonus, only asking the supplier for it when the bonus actually
+// scales per die, since resolving it means computing the weapon's base damage dice.
+func (w *WeaponBonus) resolveDieCount(dieCount dieCountFunc) fxp.Int {
+	if !w.PerDie {
+		return fxp.One
+	}
+	return dieCount()
+}
+
 // adjustedAmount returns the amount adjusted for the given die count and leveled owner. Taking these as parameters
 // rather than reading the DieCount/LeveledOwner scratch fields lets callers compute an amount without mutating the
 // shared bonus, which is not safe when the bonus may be read concurrently.

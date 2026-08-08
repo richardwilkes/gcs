@@ -258,7 +258,7 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 		}
 	}
 	var percentMin fxp.Int
-	for _, bonus := range w.Owner.collectWeaponBonuses(1, nil, feature.WeaponEffectiveSTBonus) {
+	for _, bonus := range w.Owner.collectWeaponBonuses(oneDieCount, nil, feature.WeaponEffectiveSTBonus) {
 		amt := bonus.AdjustedAmountForWeapon(w.Owner)
 		if bonus.Percent {
 			percentMin += amt
@@ -336,7 +336,9 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	adjustForPhoenixFlame := entity.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.resolvedDamageNumeric(selector.WeaponArmorDivisor, w.ArmorDivisor, tooltip)
-	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
+	dieCount := fxp.FromInteger(base.Count) // Already resolved here, so hand it over rather than resolving it again
+	for _, bonus := range w.Owner.collectWeaponBonuses(func() fxp.Int { return dieCount }, tooltip, feature.WeaponBonus,
+		feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
 			amt := bonus.AdjustedAmountForWeapon(w.Owner)

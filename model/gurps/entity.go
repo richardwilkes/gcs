@@ -981,7 +981,7 @@ func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.Inser
 
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
 // created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -1009,7 +1009,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 
 // AddNamedWeaponBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
 // be created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -1027,11 +1027,13 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 	return m
 }
 
-func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool) {
+func addWeaponBonusToMap(bonus *WeaponBonus, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool) {
 	if m[bonus] {
 		return
 	}
-	bonus.addToTooltip(bonus.adjustedAmount(fxp.FromInteger(dieCount), bonus.DerivedLeveledOwner()), tooltip)
+	if tooltip != nil {
+		bonus.addToTooltip(bonus.adjustedAmount(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner()), tooltip)
+	}
 	m[bonus] = true
 }
 

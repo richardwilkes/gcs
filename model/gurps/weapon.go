@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"hash"
 	"strings"
+	"sync"
 	"unsafe"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -616,7 +617,7 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 	}
 	t := 0
 	f := 0
-	for _, bonus := range w.collectWeaponBonuses(1, nil, feature.WeaponSwitch) {
+	for _, bonus := range w.collectWeaponBonuses(oneDieCount, nil, feature.WeaponSwitch) {
 		if bonus.SwitchType == switchType {
 			if bonus.SwitchTypeValue {
 				t++
@@ -652,11 +653,32 @@ func (w *Weapon) ResolveSelector(field selector.Field, base string, tooltip *xby
 	return ResolveOverride(base, candidates, func(s string) string { return s }, tooltip)
 }
 
-func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
+// dieCountFunc supplies the number of dice that a per-die weapon bonus is multiplied by when reporting what it
+// contributes. It is a function rather than a value because resolving the weapon's base damage dice is expensive and is
+// only needed when a per-die bonus actually matches the weapon.
+type dieCountFunc func() fxp.Int
+
+// oneDieCount reports a single die. Used for the bonuses that participate in resolving the weapon's base damage dice --
+// minimum ST, effective ST and the weapon switches -- since consulting those dice here would recurse. This matches what
+// AdjustedAmountForWeapon applies for the ST bonuses, so the reported and applied amounts agree.
+func oneDieCount() fxp.Int {
+	return fxp.One
+}
+
+// baseDamageDieCount returns the number of dice in the weapon's base damage. This is the multiplier
+// AdjustedAmountForWeapon applies to a per-die bonus, so reporting the same count keeps a tooltip in step with the
+// amount actually applied. Must not be used for the bonuses that resolving the base damage dice itself depends upon;
+// see oneDieCount.
+func (w *Weapon) baseDamageDieCount() fxp.Int {
+	return fxp.FromInteger(w.Damage.BaseDamageDice().Count)
+}
+
+func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
 	entity := w.Entity()
 	if entity == nil {
 		return nil
 	}
+	dieCount = sync.OnceValue(dieCount) // At most one resolution per collection, no matter how many bonuses match
 	allowed := make(map[feature.Type]bool, len(allowedFeatureTypes))
 	for _, one := range allowedFeatureTypes {
 		allowed[one] = true
@@ -704,7 +726,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer
 	nameQualifier := w.String()
 	entity.AddNamedWeaponBonusesFor(nameQualifier, usage, tags, dieCount, tooltip, bonusSet, allowed)
 	for _, f := range w.Owner.FeatureList() {
-		w.extractWeaponBonus(f, bonusSet, allowed, fxp.FromInteger(dieCount), tooltip)
+		w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
 	}
 	if t, ok := w.Owner.(*Trait); ok {
 		Traverse(func(mod *TraitModifier) bool {
@@ -713,7 +735,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer
 				if bonus, ok = f.(Bonus); ok {
 					bonus.SetSubOwner(mod)
 				}
-				w.extractWeaponBonus(f, bonusSet, allowed, fxp.FromInteger(dieCount), tooltip)
+				w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
 			}
 			return false
 		}, true, true, t.Modifiers...)
@@ -725,7 +747,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer
 				if bonus, ok = f.(Bonus); ok {
 					bonus.SetSubOwner(mod)
 				}
-				w.extractWeaponBonus(f, bonusSet, allowed, fxp.FromInteger(dieCount), tooltip)
+				w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
 			}
 			return false
 		}, true, true, eqp.Modifiers...)
@@ -740,12 +762,15 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer
 	return result
 }
 
-func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount fxp.Int, tooltip *xbytes.InsertBuffer) {
+func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer) {
 	if allowedFeatureTypes[f.FeatureType()] {
 		if bonus, ok := f.(*WeaponBonus); ok {
 			replacements := w.NameableReplacements()
 			addTooltip := func() {
-				bonus.addToTooltip(bonus.adjustedAmount(dieCount, bonus.DerivedLeveledOwner()), tooltip)
+				if tooltip != nil {
+					bonus.addToTooltip(bonus.adjustedAmount(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner()),
+						tooltip)
+				}
 			}
 			switch bonus.SelectionType {
 			case wsel.WithRequiredSkill:
