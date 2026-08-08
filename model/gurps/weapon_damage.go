@@ -517,20 +517,47 @@ func (w *WeaponDamage) resolveDiceSpec(s string) (d dice.Dice, sub bool) {
 
 func parsePotentialDiceSpec(s string) (d dice.Dice, sub, ok bool) {
 	spec := strings.TrimLeft(strings.TrimSpace(s), "+")
-	if !strings.Contains(spec, " ") {
-		if sub = isDiceSubtraction(spec); sub {
-			spec = spec[1:]
-		}
-		d = Roller.Parse(spec)
-		if spec == "0" || spec == "-0" {
-			return d, false, true
-		}
-		empty := Roller.Normalize(dice.Dice{})
-		if d != empty {
-			return d, sub, true
-		}
+	if sub = isDiceSubtraction(spec); sub {
+		spec = spec[1:]
+	}
+	if !isCompleteDiceSpec(spec) {
+		return dice.Dice{}, false, false
+	}
+	d = Roller.Parse(spec)
+	if spec == "0" || spec == "-0" {
+		return d, false, true
+	}
+	empty := Roller.Normalize(dice.Dice{})
+	if d != empty {
+		return d, sub, true
 	}
 	return dice.Dice{}, false, false
+}
+
+// isCompleteDiceSpec reports whether the entire string is consumed by the dice grammar, i.e. an optional count,
+// followed by an optional die marker and number of sides, followed by an optional signed modifier, followed by an
+// optional multiplier. The dice parser stops at the first character it can't use and silently discards the remainder,
+// so anything with leftover text has to be treated as a script expression instead: without this check, "2*self.level"
+// would become a flat +2 and "1d+self.level" would become 1d, with the script never evaluated.
+func isCompleteDiceSpec(s string) bool {
+	i := skipDiceDigits(s, 0)
+	if i < len(s) && (s[i] == 'd' || s[i] == 'D') {
+		i = skipDiceDigits(s, i+1)
+	}
+	if i < len(s) && (s[i] == '+' || s[i] == '-') {
+		i = skipDiceDigits(s, i+1)
+	}
+	if i < len(s) && (s[i] == 'x' || s[i] == 'X') {
+		i = skipDiceDigits(s, i+1)
+	}
+	return i == len(s)
+}
+
+func skipDiceDigits(s string, i int) int {
+	for i < len(s) && s[i] >= '0' && s[i] <= '9' {
+		i++
+	}
+	return i
 }
 
 func isDiceSubtraction(s string) bool {

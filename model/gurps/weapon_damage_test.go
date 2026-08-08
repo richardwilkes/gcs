@@ -44,3 +44,38 @@ func TestWeaponDRDivisorBonus(t *testing.T) {
 		c.Equal(one.expected, w.Damage.ResolvedDamage(nil), "test %d", i)
 	}
 }
+
+// TestWeaponDamageSpecIsScriptOrCompleteDice verifies that a damage field is only treated as a plain dice
+// specification when the dice grammar consumes all of it. The dice parser stops at the first character it cannot use
+// and silently discards the remainder, so a script expression written without spaces (which is how anyone writing
+// arithmetic naturally writes it) must not be truncated to the dice specification it happens to start with.
+func TestWeaponDamageSpecIsScriptOrCompleteDice(t *testing.T) {
+	c := check.New(t)
+	for i, one := range []struct {
+		base     string
+		expected string
+	}{
+		// Script expressions that start with something the dice parser would happily consume. Truncating instead of
+		// evaluating these would yield "2 cr", "9 cr", "4 cr" and "3 cr", respectively.
+		{base: "2*3", expected: "6 cr"},
+		{base: "10-1-1", expected: "8 cr"},
+		{base: "4/2", expected: "2 cr"},
+		{base: "1+2*3", expected: "7 cr"},
+		// Complete dice specifications must still be taken as dice rather than handed to the script engine, which
+		// would fail to parse them.
+		{base: "1d", expected: "1d cr"},
+		{base: "1d6", expected: "1d cr"},
+		{base: "2d6+1", expected: "2d+1 cr"},
+		{base: "1d4-1", expected: "1d4-1 cr"},
+		{base: "2x3", expected: "2x3 cr"},
+		{base: "1d+", expected: "1d cr"}, // A dangling sign is an empty modifier to the dice parser
+		{base: "+1d6", expected: "1d cr"},
+		{base: "3", expected: "3 cr"},
+		{base: "-2", expected: "-2 cr"},
+		{base: "0", expected: "cr"},
+	} {
+		w := newWeaponWithBonuses(false)
+		w.Damage.Base = one.base
+		c.Equal(one.expected, w.Damage.ResolvedDamage(nil), "test %d (%s)", i, one.base)
+	}
+}

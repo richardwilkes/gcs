@@ -289,6 +289,10 @@
   features use, still reflects the granted levels.
 - Fixed the "retracting stock" weapon switch, which could be chosen in the feature editor but had no effect. It now
   adds or removes a weapon's retracting stock, along with the tooltip describing the folded-stock statistics.
+- Fixed a script expression entered in one of a weapon's damage fields being silently cut short when it was written
+  without spaces, which is how arithmetic is normally written. A base damage of `2*self.level` was taken as the dice
+  specification it happens to start with — a flat +2 — and the script was never run. These fields are now treated as
+  dice only when the entire entry is a dice specification; anything else is evaluated as a script.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.
