@@ -511,15 +511,10 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellRelativeLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			rsl := s.AdjustedRelativeLevel()
-			if rsl == fxp.Min {
-				data.Primary = "-"
-			} else {
-				data.Primary = ResolveAttributeName(EntityFromNode(s), s.Difficulty.Attribute)
-				if rsl != 0 {
-					data.Primary += rsl.StringWithSign()
-				}
-			}
+			// A ritual magic spell's relative level is measured against its ritual magic skill rather than against an
+			// attribute, so it is shown as a bare signed number, just as RelativeLevel() and the spell editor do.
+			data.Primary = FormatRelativeSkill(EntityFromNode(s), s.IsRitualMagic(), s.Difficulty,
+				s.AdjustedRelativeLevel())
 			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
 				data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
 			}

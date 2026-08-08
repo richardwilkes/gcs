@@ -149,6 +149,61 @@ func TestRitualMagicSpellLevelWithRitualSkill(t *testing.T) {
 	c.Equal(base+fxp.Three, spell.LevelData.Level, "a spell bonus still applies to a resolvable level")
 }
 
+// TestSpellRelativeLevelColumn verifies that the RSL column agrees with the exported "rsl" value produced by
+// RelativeLevel(): a ritual magic spell's relative level is measured against its ritual magic skill, so it must be
+// displayed as a bare signed number rather than being prefixed with the difficulty's attribute name, while a regular
+// spell keeps the attribute prefix.
+func TestSpellRelativeLevelColumn(t *testing.T) {
+	c := check.New(t)
+
+	primary := func(s *Spell) string {
+		var data CellData
+		s.CellData(SpellRelativeLevelColumn, &data)
+		return data.Primary
+	}
+
+	e := NewEntity()
+	ritualSkill := NewSkill(e, nil, false)
+	ritualSkill.Name = "Ritual Magic"
+	ritualSkill.Specialization = "Fire"
+	ritualSkill.Difficulty.Attribute = IntelligenceID
+	ritualSkill.Difficulty.Difficulty = difficulty.Hard
+	ritualSkill.Points = fxp.Four
+	e.Skills = append(e.Skills, ritualSkill)
+
+	// The prereq count and the point total are chosen so that neither spell's relative level lands on zero, where the
+	// attribute prefix would stand alone and the difference would be invisible.
+	ritual := addTestRitualMagicSpell(e, "Fireball", "Fire")
+	ritual.PrereqCount = 2
+	regular := addTestSpell(e, "Ice Dagger", fxp.Eight)
+	e.Recalculate()
+
+	// Preconditions: both spells must resolve, and the ritual magic spell must have a non-zero relative level, so the
+	// attribute prefix would be visible if it were being emitted.
+	c.True(ritual.LevelData.Level > 0, "precondition: the ritual magic spell must have a positive level")
+	c.True(regular.LevelData.Level > 0, "precondition: the regular spell must have a positive level")
+	c.NotEqual(fxp.Int(0), ritual.AdjustedRelativeLevel(),
+		"precondition: the ritual magic spell must have a non-zero relative level")
+	c.NotEqual(fxp.Int(0), regular.AdjustedRelativeLevel(),
+		"precondition: the regular spell must have a non-zero relative level")
+
+	c.Equal(ritual.AdjustedRelativeLevel().StringWithSign(), primary(ritual),
+		"a ritual magic spell's RSL is relative to its ritual magic skill, so no attribute prefix")
+	c.Equal(ritual.RelativeLevel(), primary(ritual), "the RSL column must agree with the exported \"rsl\" value")
+
+	iq := ResolveAttributeName(e, regular.Difficulty.Attribute)
+	c.Equal(iq+regular.AdjustedRelativeLevel().StringWithSign(), primary(regular),
+		"a regular spell's RSL is relative to its attribute, so it keeps the prefix")
+	c.Equal(regular.RelativeLevel(), primary(regular), "the RSL column must agree with the exported \"rsl\" value")
+
+	// A spell that cannot be resolved displays as "-" regardless of its kind.
+	unresolvable := addTestRitualMagicSpell(e, "Light", "Water")
+	e.Recalculate()
+	c.Equal(fxp.Min, unresolvable.AdjustedRelativeLevel(),
+		"precondition: the spell must have no resolvable relative level")
+	c.Equal("-", primary(unresolvable), "an unresolvable relative level displays as \"-\"")
+}
+
 // TestSpellMarshalUnsatisfiedReason verifies that the unsatisfied reason is written in both calc branches. Ritual magic
 // spells that are unsatisfied typically have a level of fxp.Min, which takes the branch that used to omit the field --
 // so exactly the spells that have a reason were the ones losing it.
