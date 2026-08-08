@@ -13,7 +13,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json/v2"
-	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -37,6 +36,57 @@ type rule struct {
 	Book     string
 	Page     string
 	Link     string
+}
+
+// rulesLookupResult is the outcome of the download, handed from the download goroutine to the UI thread as a unit.
+type rulesLookupResult struct {
+	rules map[string][]*rule
+	err   error
+}
+
+// runRulesLookupDownload performs the download on a background goroutine while the UI thread waits inside RunModal(),
+// hands the result to that thread through resultChan and only then calls finish, which is what eventually stops the
+// modal loop. resultChan must be buffered so that the send can never block, since nothing can receive from it until
+// the modal loop has been stopped. The ordering is what makes the hand-off safe: downloadRulesLookupFile receives from
+// resultChan only after RunModal() has returned, so the send is guaranteed to have completed first. Letting the
+// goroutine write variables shared with the UI thread instead would allow a failed download to be observed as a
+// success, silently writing an empty notes file rather than reporting the error.
+func runRulesLookupDownload(resultChan chan<- rulesLookupResult, download func() (map[string][]*rule, error), finish func()) {
+	var result rulesLookupResult
+	defer func() {
+		resultChan <- result
+		finish()
+	}()
+	result.rules, result.err = download()
+}
+
+// retrieveRulesLookupData downloads the GURPS Rules Lookup data and returns its rules grouped by book.
+func retrieveRulesLookupData() (map[string][]*rule, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	data, err := xhttp.RetrieveData(ctx, nil,
+		"https://raw.githubusercontent.com/StefanLeng/GURPSRulesLookup/refs/heads/master/src/assets/gurps_rules.json")
+	if err != nil {
+		return nil, err
+	}
+	return parseRulesLookupData(data)
+}
+
+// parseRulesLookupData parses the downloaded GURPS Rules Lookup data and returns its rules grouped by book.
+func parseRulesLookupData(data []byte) (map[string][]*rule, error) {
+	r, err := xio.NewBOMStripper(bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	var all []*rule
+	if err = json.UnmarshalRead(r, &all); err != nil {
+		return nil, errs.Wrap(err)
+	}
+	rules := make(map[string][]*rule)
+	for _, one := range all {
+		rules[one.Book] = append(rules[one.Book], one)
+	}
+	return rules, nil
 }
 
 func downloadRulesLookupFile() {
@@ -75,34 +125,17 @@ func downloadRulesLookupFile() {
 	frame = frame.Align()
 	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
 	wnd.ToFront()
-	rules := make(map[string][]*rule)
-	go func() {
-		defer wnd.StopModal(unison.ModalResponseOK)
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-		defer cancel()
-		const gurpsRulesLookupURL = "https://raw.githubusercontent.com/StefanLeng/GURPSRulesLookup/refs/heads/master/src/assets/gurps_rules.json"
-		var data []byte
-		if data, err = xhttp.RetrieveData(ctx, nil, gurpsRulesLookupURL); err != nil {
-			return
-		}
-		var r io.Reader
-		if r, err = xio.NewBOMStripper(bytes.NewBuffer(data)); err != nil {
-			return
-		}
-		var all []*rule
-		if err = json.UnmarshalRead(r, &all); err != nil {
-			err = errs.Wrap(err)
-			return
-		}
-		for _, r := range all {
-			rules[r.Book] = append(rules[r.Book], r)
-		}
-	}()
+	resultChan := make(chan rulesLookupResult, 1)
+	go runRulesLookupDownload(resultChan, retrieveRulesLookupData, func() {
+		unison.InvokeTask(func() { wnd.StopModal(unison.ModalResponseOK) })
+	})
 	wnd.RunModal()
-	if err != nil {
-		Workspace.ErrorHandler(unableMsg, err)
+	result := <-resultChan
+	if result.err != nil {
+		Workspace.ErrorHandler(unableMsg, result.err)
 		return
 	}
+	rules := result.rules
 	dialog := unison.NewSaveDialog()
 	settings := gurps.GlobalSettings()
 	dialog.SetInitialDirectory(settings.LastDir(gurps.RulesLookupLastDirKey))
