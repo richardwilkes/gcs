@@ -274,6 +274,25 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 	}
 }
 
+// asDefense returns this SkillDefault re-pointed at the given defense (ParryID or BlockID) when it names the other
+// defense, and the receiver unchanged otherwise. A "Cloak Parry" default names the Cloak skill; the parry conversion
+// SkillLevelFast() applies to it is the wrong one when the caller is computing a block, and halving the resulting
+// parry level a second time would fold the parry bonus into the block on top of that. Re-pointing it makes such a
+// default contribute exactly what a plain skill default to the same skill would, with the defense being computed
+// supplying its own +3 and its own bonus. Note that this is only right between the two defenses -- the weapon's attack
+// skill deliberately leaves a defense-type default alone; see Weapon.SkillLevel.
+func (s *SkillDefault) asDefense(defenseID string) *SkillDefault {
+	switch s.Type() {
+	case ParryID, BlockID:
+		if s.Type() != defenseID {
+			repointed := *s
+			repointed.DefaultType = defenseID
+			return &repointed
+		}
+	}
+	return s
+}
+
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
 	for _, sk := range entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes) {

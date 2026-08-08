@@ -486,6 +486,11 @@ func (w *Weapon) SkillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	best := fxp.Min
 	replacements := w.NameableReplacements()
 	for _, def := range w.Defaults {
+		// A parry- or block-type default is deliberately left to resolve to its defense level here rather than to the
+		// level of the skill it names. Such a default exists to feed the parry or block calculation -- the Tonfa in
+		// the High Tech library carries "Brawling Parry" and "Karate Parry" alongside its real attack defaults -- and
+		// scoring it by the named skill would let a high Karate win this max and become the weapon's attack skill.
+		// Halved, it stays out of the way.
 		if level := def.SkillLevelFast(entity, replacements, false, nil, true); level != fxp.Min {
 			level += adj
 			if best < level {
@@ -661,6 +666,9 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xbytes.InsertBuffer
 	replacements := w.NameableReplacements()
 	for _, one := range w.Defaults {
 		if one.SkillBased() {
+			// Ranked exactly the way SkillLevel() ranks them, so that the skill whose bonuses are collected is the one
+			// the weapon actually attacks with. That includes leaving a parry- or block-type default scored by its
+			// defense level; see the note in SkillLevel().
 			if level := one.SkillLevelFast(entity, replacements, false, nil, true); best < level {
 				best = level
 				bestDef = one

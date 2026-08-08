@@ -196,6 +196,12 @@ func newWeaponWithBonuses(melee bool, bonuses ...*gurps.WeaponBonus) *gurps.Weap
 // along with a trait carrying a melee weapon that can both parry and block. The weapon has no defaults; the caller
 // supplies whichever ones the test needs.
 func newDefenseTestWeapon(c check.Checker) *gurps.Weapon {
+	return newDefenseTestWeaponWithBonuses(c, 1, 1)
+}
+
+// newDefenseTestWeaponWithBonuses is newDefenseTestWeapon with the parry and block bonuses stated separately, so that a
+// test can tell which of the two a defense calculation actually applied.
+func newDefenseTestWeaponWithBonuses(c check.Checker, parryBonus, blockBonus int) *gurps.Weapon {
 	e := gurps.NewEntity()
 
 	sk := gurps.NewSkill(e, nil, false)
@@ -207,9 +213,12 @@ func newDefenseTestWeapon(c check.Checker) *gurps.Weapon {
 
 	bonuses := gurps.NewTrait(e, nil, false)
 	bonuses.Name = "Improved Defenses"
-	for _, attrID := range []string{gurps.ParryID, gurps.BlockID} {
-		bonus := gurps.NewAttributeBonus(attrID)
-		bonus.Amount = fxp.One
+	for _, one := range []struct {
+		attrID string
+		amount int
+	}{{gurps.ParryID, parryBonus}, {gurps.BlockID, blockBonus}} {
+		bonus := gurps.NewAttributeBonus(one.attrID)
+		bonus.Amount = fxp.FromInteger(one.amount)
 		bonuses.Features = append(bonuses.Features, bonus)
 	}
 	e.Traits = append(e.Traits, bonuses)
@@ -224,9 +233,40 @@ func newDefenseTestWeapon(c check.Checker) *gurps.Weapon {
 
 	e.Recalculate()
 	c.Equal(fxp.FromInteger(14), sk.LevelData.Level, "the Cloak skill should be at level 14")
-	c.Equal(fxp.One, e.ParryBonus, "the entity should have a +1 parry bonus")
-	c.Equal(fxp.One, e.BlockBonus, "the entity should have a +1 block bonus")
+	c.Equal(fxp.FromInteger(parryBonus), e.ParryBonus, "the entity should have a +%d parry bonus", parryBonus)
+	c.Equal(fxp.FromInteger(blockBonus), e.BlockBonus, "the entity should have a +%d block bonus", blockBonus)
 	return w
+}
+
+// TestWeaponSkillLevelIgnoresDefenseTypeDefaults verifies that a parry- or block-type weapon default does not become
+// the weapon's attack skill. The one Defaults list feeds the attack, parry, and block calculations alike, and a
+// defense-type default is there for the defenses: the Tonfa in the High Tech library carries "Brawling Parry" and
+// "Karate Parry" alongside its real attack defaults. Scoring such a default by the level of the skill it names would
+// let a high Karate win the attack, so it stays scored by its halved defense level, which keeps it out of the way.
+func TestWeaponSkillLevelIgnoresDefenseTypeDefaults(t *testing.T) {
+	c := check.New(t)
+	w := newDefenseTestWeapon(c)
+	e := w.Entity()
+
+	// Stand in for the Tonfa: a weaker skill the weapon really attacks with, alongside the strong Cloak-14 that the
+	// weapon only names for its parry.
+	tonfa := gurps.NewSkill(e, nil, false)
+	tonfa.Name = "Tonfa"
+	tonfa.Difficulty.Attribute = gurps.DexterityID
+	tonfa.Difficulty.Difficulty = difficulty.Average
+	tonfa.Points = fxp.FromInteger(12) // DX+3, i.e. level 13
+	e.Skills = append(e.Skills, tonfa)
+	e.Recalculate()
+
+	tonfaDefault := newDefenseTestDefault(gurps.SkillID)
+	tonfaDefault.Name.Qualifier = "Tonfa"
+	w.Defaults = []*gurps.SkillDefault{tonfaDefault, newDefenseTestDefault(gurps.ParryID)}
+
+	// The attack stays on Tonfa-13. Cloak's parry level of 11 loses the max, as intended; Cloak-14 would have won it.
+	c.Equal(fxp.FromInteger(13), w.SkillLevel(nil), "a parry-type default must not take over the attack skill")
+
+	// The parry, meanwhile, is the better of Tonfa's (13/2 + 3 + 1) and Cloak's (14/2 + 3 + 1).
+	c.Equal("11", w.Parry.Resolve(w, nil).String(), "the parry-type default still feeds the parry")
 }
 
 // newDefenseTestDefault creates a skill default of the given type that matches the "Cloak" skill created by

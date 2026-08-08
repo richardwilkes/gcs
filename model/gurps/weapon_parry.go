@@ -93,6 +93,8 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 			replacements := w.NameableReplacements()
 			best := fxp.Min
 			for _, def := range w.Defaults {
+				// A block-type default names a skill, not a parry basis, so resolve it as a parry-type one.
+				def = def.asDefense(ParryID)
 				level := def.SkillLevelFast(entity, replacements, false, nil, true)
 				if level == fxp.Min {
 					continue

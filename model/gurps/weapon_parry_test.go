@@ -83,3 +83,43 @@ func TestWeaponParryResolveParryTypeDefault(t *testing.T) {
 	w.Defaults[0].Modifier = -fxp.One
 	c.Equal("12", w.Parry.Resolve(w, nil).String(), "parry-type default with modifiers")
 }
+
+// TestWeaponParryResolveBlockTypeDefault verifies that a block-type weapon default contributes to a parry what a plain
+// skill default to the same skill would. A weapon's Defaults list feeds the parry and block calculations alike, so a
+// block-type default reaches the parry calculation; converting the block level it already carries into a parry level
+// halved the skill a second time and folded the block bonus into the parry.
+func TestWeaponParryResolveBlockTypeDefault(t *testing.T) {
+	c := check.New(t)
+	w := newDefenseTestWeapon(c)
+
+	// A block-type default must yield the same parry as the skill-type default it is derived from: 14/2 + 3 + 1.
+	w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(gurps.BlockID)}
+	c.Equal("11", w.Parry.Resolve(w, nil).String(), "block-type default")
+
+	// Mixing it with a skill-type default changes nothing, since both resolve to the same parry.
+	w.Defaults = []*gurps.SkillDefault{
+		newDefenseTestDefault(gurps.SkillID),
+		newDefenseTestDefault(gurps.BlockID),
+	}
+	c.Equal("11", w.Parry.Resolve(w, nil).String(), "both defaults")
+
+	// The weapon's own parry modifier and the default's modifier still apply on top: 11 - 1 + 2.
+	w.Parry.Modifier = fxp.Two
+	w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(gurps.BlockID)}
+	w.Defaults[0].Modifier = -fxp.One
+	c.Equal("12", w.Parry.Resolve(w, nil).String(), "block-type default with modifiers")
+}
+
+// TestWeaponParryResolveAppliesParryBonus verifies that the parry calculation applies the entity's parry bonus and not
+// its block bonus, whichever kind of default it resolves from. The two bonuses are equal in the default fixture, so
+// this uses one where they differ.
+func TestWeaponParryResolveAppliesParryBonus(t *testing.T) {
+	c := check.New(t)
+	w := newDefenseTestWeaponWithBonuses(c, 2, 1) // +2 parry, +1 block
+
+	// Every kind of default resolves to the same parry, built from the parry bonus alone: 14/2 + 3 + 2.
+	for _, defaultType := range []string{gurps.SkillID, gurps.ParryID, gurps.BlockID} {
+		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
+		c.Equal("12", w.Parry.Resolve(w, nil).String(), "%q default uses the parry bonus", defaultType)
+	}
+}
