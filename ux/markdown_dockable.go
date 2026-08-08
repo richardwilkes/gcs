@@ -116,7 +116,11 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		}
 		d.original = string(data)
 	}
-	d.content = xstrings.NormalizeLineEndings(d.original)
+	// Normalize the original as well, since that is what the content is compared against to determine whether the
+	// dockable has been modified. Without this, a file stored with CRLF (or CR) line endings would be reported as
+	// modified the moment it was opened.
+	d.original = xstrings.NormalizeLineEndings(d.original)
+	d.content = d.original
 	d.markdown.SetContent(d.content, 0)
 
 	d.editor = NewMultiLineStringField(nil, "", "",
