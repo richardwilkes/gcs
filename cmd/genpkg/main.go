@@ -58,7 +58,7 @@ func main() {
 		Mac: packager.MacOnlyOpts{
 			FinderAppName:             xos.AppName,
 			AppID:                     xos.AppIdentifier,
-			MinimumSystemVersionAMD64: "10.15",
+			MinimumSystemVersionAMD64: "11.0",
 			MinimumSystemVersionARM64: "11.0",
 			CategoryUTI:               "public.app-category.role-playing-games",
 			CodeSigning: packager.MacCodeSigning{
