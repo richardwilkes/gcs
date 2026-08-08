@@ -475,12 +475,15 @@ func (t *TraitModifier) CostMultiplier() fxp.Int {
 	return CostMultiplierForTraitModifier(t.Levels, t.trait, t.UseLevelFromTrait)
 }
 
-// CostMultiplierForTraitModifier returns the amount to multiply the cost by.
+// CostMultiplierForTraitModifier returns the amount to multiply the cost by. A "use level from owner" modifier is
+// costed against the trait's purchased levels rather than its current level: bonus-granted levels are free, so they
+// must not attract enhancement or limitation percentages. This matches Trait.AdjustedPoints, which derives the leveled
+// base cost from those same purchased levels.
 func CostMultiplierForTraitModifier(baseLevels fxp.Int, trait *Trait, useLevelFromTrait bool) fxp.Int {
 	var multiplier fxp.Int
 	if useLevelFromTrait {
 		if trait != nil && trait.IsLeveled() {
-			multiplier = trait.CurrentLevel()
+			multiplier = trait.Levels
 		}
 	} else {
 		multiplier = baseLevels
@@ -492,10 +495,12 @@ func CostMultiplierForTraitModifier(baseLevels fxp.Int, trait *Trait, useLevelFr
 }
 
 // CurrentLevel returns the current level of the modifier or zero if it is not leveled. Minimum of 1 will be returned
-// if it has levels at all.
+// if it has levels at all. Unlike CostMultiplier, a "use level from owner" modifier reports the trait's current level,
+// bonus-granted levels included, since this drives the per-level features the modifier carries and how it displays,
+// neither of which is a matter of what was paid for.
 func (t *TraitModifier) CurrentLevel() fxp.Int {
 	if t.Enabled() && t.IsLeveled() {
-		return t.CostMultiplier()
+		return t.RawCurrentLevel().Max(fxp.One)
 	}
 	return 0
 }

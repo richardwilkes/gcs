@@ -106,6 +106,49 @@ func TestTraitMaxLevelPerLevelBonusOwners(t *testing.T) {
 		"a per-level bonus on a use-level-from-owner modifier scales by the trait's level")
 }
 
+// TestTraitModifierCostUsesPurchasedLevels verifies that a "use level from owner" modifier is costed against the
+// trait's purchased levels rather than its bonus-adjusted current level, so that free levels granted by a TraitBonus
+// don't attract enhancement percentages. The modifier's own level -- which drives its per-level features and its
+// display -- still tracks the bonus-adjusted level.
+func TestTraitModifierCostUsesPurchasedLevels(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	trait := NewTrait(e, nil, false)
+	trait.Name = "Innate Attack"
+	trait.CanLevel = true
+	trait.Levels = fxp.Three
+	trait.PointsPerLevel = fxp.Ten
+	mod := NewTraitModifier(e, nil, false)
+	mod.CostAdj = "+10%"
+	mod.UseLevelFromTrait = true
+	trait.Modifiers = []*TraitModifier{mod}
+	trait.SetDataOwner(e)
+	e.Traits = append(e.Traits, trait)
+	e.Recalculate()
+
+	// 3 purchased levels at 10 points each, enhanced by 3 * 10%: 30 + 30*30/100.
+	c.Equal(fxp.FromInteger(39), trait.AdjustedPoints(), "10/level x 3 levels, +30%")
+	c.Equal(fxp.Three, mod.CurrentLevel(), "the modifier's level matches the trait's")
+
+	// A TraitBonus grants 2 free levels. Those raise the trait's current level, but not what was paid for, so neither
+	// the leveled base cost nor the enhancement may move.
+	granter := NewTrait(e, nil, false)
+	granter.Name = "Granter"
+	bonus := NewTraitBonus()
+	bonus.NameCriteria.Qualifier = "Innate Attack"
+	bonus.Amount = fxp.Two
+	granter.Features = append(granter.Features, bonus)
+	e.Traits = append(e.Traits, granter)
+	e.Recalculate()
+
+	c.Equal(fxp.Five, trait.CurrentLevel(), "the bonus raises the trait's current level to 5")
+	c.Equal(fxp.FromInteger(39), trait.AdjustedPoints(),
+		"bonus-granted levels are free, so the enhancement stays at +30%")
+	c.Equal(fxp.Five, mod.CurrentLevel(),
+		"the modifier's level still tracks the trait's current level, for its per-level features and display")
+}
+
 // TestTraitDescriptionSelfControlSuffix verifies that the description cell shows the self-control roll suffix for every
 // roll other than "None required", including the "Never resist" case.
 func TestTraitDescriptionSelfControlSuffix(t *testing.T) {
