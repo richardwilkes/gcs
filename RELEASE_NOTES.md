@@ -84,7 +84,11 @@
 - Fixed double-counting of +3 and defense bonus for parry/block weapon defaults. This now also covers the case where
   the default is for the other defense: a parry-type default feeding a weapon's block (or a block-type default feeding
   its parry) is resolved from the skill it names, so it is halved once and given the bonus belonging to the defense
-  being computed, rather than being halved a second time and carrying the wrong defense's bonus.
+  being computed, rather than being halved a second time and carrying the wrong defense's bonus. Adjustments to the
+  weapon's skill — the penalty for a minimum ST higher than your own, and bonuses aimed at this weapon's skill — are
+  now folded into the skill level before it is halved, rather than being applied to the already-halved defense, where
+  they counted for twice as much. A weapon that names the same skill both ways, as the Tonfa in the High Tech library
+  does, no longer shows an inflated parry or block.
 - Fixed another case of the key handling not properly masking out sticky modifier keys (CapsLock & NumLock), this time
   affecting use of the Tab key to move focus between fields.
 - Fixed spell prerequisite counting (for things like "6 spells from the Air college") so that a spell which itself

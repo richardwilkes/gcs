@@ -293,6 +293,19 @@ func (s *SkillDefault) asDefense(defenseID string) *SkillDefault {
 	return s
 }
 
+// defenseLevelFast returns the defense level for a defense-type default (one whose Type() is ParryID or BlockID),
+// folding skillAdj into the named skill's level before the halving that turns it into a defense level and adding
+// defenseBonus afterwards. SkillLevelFast() performs that halving itself, so a caller holding a skill-level adjustment
+// -- a minimum-ST penalty or a bonus aimed at this weapon's skill -- cannot simply add it to that result: at defense
+// scale the adjustment would count for twice what it does on the skill-type default path.
+func (s *SkillDefault) defenseLevelFast(entity *Entity, replacements map[string]string, skillAdj, defenseBonus fxp.Int) fxp.Int {
+	best := s.bestFast(entity, replacements, false, nil)
+	if best == fxp.Min {
+		return fxp.Min
+	}
+	return s.finalLevel((best + skillAdj).Div(fxp.Two).Floor() + fxp.Three + defenseBonus)
+}
+
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
 	for _, sk := range entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes) {

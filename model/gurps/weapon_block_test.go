@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -95,6 +96,43 @@ func TestWeaponBlockResolveParryTypeDefault(t *testing.T) {
 	w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(gurps.ParryID)}
 	w.Defaults[0].Modifier = -fxp.One
 	c.Equal("12", w.Block.Resolve(w, nil).String(), "parry-type default with modifiers")
+}
+
+// TestWeaponBlockResolveMinSTPenaltyAtSkillScale verifies that a skill-level adjustment -- here the penalty for
+// wielding a weapon whose minimum ST exceeds the character's -- is folded into the skill level before it is halved
+// into a block, whichever kind of default the block resolves from. A defense-type default arrives already converted,
+// so adding the adjustment to it counted the adjustment at twice the weight the skill-type path gives it.
+func TestWeaponBlockResolveMinSTPenaltyAtSkillScale(t *testing.T) {
+	c := check.New(t)
+	w := newDefenseTestWeapon(c)
+	w.Strength = gurps.WeaponStrength{Min: fxp.FromInteger(12)} // -2 to skill for the ST 10 character
+
+	// (14 - 2)/2 + 3 + 1, not (14/2 + 3 + 1) - 2.
+	for _, defaultType := range []string{gurps.SkillID, gurps.BlockID, gurps.ParryID} {
+		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
+		c.Equal("10", w.Block.Resolve(w, nil).String(), "%q default", defaultType)
+	}
+}
+
+// TestWeaponBlockResolveThisWeaponSkillBonusAtSkillScale verifies the same for a skill bonus aimed at this weapon, the
+// other half of the base adjustment, with both kinds of default present so that an over-weighted adjustment on the
+// defense-type one would win the max in Resolve() and inflate the displayed block.
+func TestWeaponBlockResolveThisWeaponSkillBonusAtSkillScale(t *testing.T) {
+	c := check.New(t)
+	w := newDefenseTestWeapon(c)
+	owner, ok := w.Owner.(*gurps.Trait)
+	c.True(ok, "the test weapon should be owned by a trait")
+	bonus := gurps.NewSkillBonus()
+	bonus.SelectionType = skillsel.ThisWeapon
+	bonus.Amount = fxp.One
+	owner.Features = append(owner.Features, bonus)
+	w.Defaults = []*gurps.SkillDefault{
+		newDefenseTestDefault(gurps.SkillID),
+		newDefenseTestDefault(gurps.BlockID),
+	}
+
+	// (14 + 1)/2 + 3 + 1 for both defaults, so neither can out-bid the other: 11, not 12.
+	c.Equal("11", w.Block.Resolve(w, nil).String(), "a this-weapon skill bonus must not count double")
 }
 
 // TestWeaponBlockResolveAppliesBlockBonus verifies that the block calculation applies the entity's block bonus and not

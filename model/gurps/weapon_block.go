@@ -85,16 +85,23 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 			for _, def := range w.Defaults {
 				// A parry-type default names a skill, not a block basis, so resolve it as a block-type one.
 				def = def.asDefense(BlockID)
-				level := def.SkillLevelFast(entity, replacements, false, nil, true)
-				if level == fxp.Min {
-					continue
-				}
-				level += preAdj
-				if def.Type() != BlockID {
-					// Convert the skill level into a block level. A block-type default has already had this
-					// conversion applied to it by SkillLevelFast(), so applying it again would double-count both
-					// the +3 and the entity's block bonus.
-					level = level.Div(fxp.Two).Floor() + fxp.Three + entity.BlockBonus
+				var level fxp.Int
+				if def.Type() == BlockID {
+					// A block-type default names the skill whose block is wanted, so the skill-level adjustment has
+					// to be folded in before the conversion to a block level, exactly as it is on the other path.
+					// SkillLevelFast() would hand back an already-converted level, and adding the adjustment to that
+					// would weight it twice.
+					level = def.defenseLevelFast(entity, replacements, preAdj, entity.BlockBonus)
+					if level == fxp.Min {
+						continue
+					}
+				} else {
+					level = def.SkillLevelFast(entity, replacements, false, nil, true)
+					if level == fxp.Min {
+						continue
+					}
+					// Convert the skill level into a block level.
+					level = (level + preAdj).Div(fxp.Two).Floor() + fxp.Three + entity.BlockBonus
 				}
 				level += postAdj
 				if best < level {
