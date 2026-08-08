@@ -319,6 +319,13 @@
   to 5, and so is still equivalent to "C,1-5".
 - Fixed the "New Equipment Modifiers Library" command not appearing in the Menu Keys settings, where it shared an
   internal identifier with "New Equipment Library". It now has its own entry and can be assigned a key binding.
+- Fixed typing in the notes field of a hit location that shares its ID with another, as the Right and Left Leg (and
+  Arm) of the standard humanoid body do. The first keystroke sent the focus to the other location's field, so the rest
+  of what you typed was recorded against the wrong location, and undoing the edit restored the text into the wrong
+  location as well.
+- Fixed edits to the second and later attributes added with the "Add Attribute" button in the Attribute Settings being
+  applied to the first one added instead. Undoing a change to such an attribute wrote the restored text into the
+  earlier addition's matching field, and the focus could afterward land on the wrong attribute's field.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.

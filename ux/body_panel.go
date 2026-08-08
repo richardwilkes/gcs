@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -217,7 +218,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		}
 
 		title := fmt.Sprintf(i18n.Text("Notes for the **%s** hit location"), location.TableName)
-		notesField := NewStringPageField(p.targetMgr, "body:"+location.ID(), title,
+		notesField := NewStringPageField(p.targetMgr, bodyLocationRefKey(indexes), title,
 			func() string { return location.Notes }, func(value string) { location.Notes = value })
 		notesField.Tooltip = newMarkdownTooltip(title, "")
 		notesField.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
@@ -227,6 +228,20 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			p.addTable(location.SubTable, depth+1)
 		}
 	}
+}
+
+// bodyLocationRefKey returns the reference key for the hit location found at the given index path within a Body. The
+// index path is used rather than the location's ID because IDs are not unique -- the factory Humanoid body has two
+// locations with the ID "leg" and two with "arm" -- and a non-unique key resolves to the wrong location's field when
+// focus is restored after a rebuild or when an undo is applied.
+func bodyLocationRefKey(indexes []int) string {
+	var buffer strings.Builder
+	buffer.WriteString("body")
+	for _, index := range indexes {
+		buffer.WriteByte(':')
+		buffer.WriteString(strconv.Itoa(index))
+	}
+	return buffer.String()
 }
 
 func (p *BodyPanel) addSeparator() {

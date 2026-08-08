@@ -155,27 +155,7 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 			AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
 		}
 		undo.BeforeData = d.defs.Clone()
-		attrDef := &gurps.AttributeDef{}
-		base := ""
-		for {
-			for v := 'a'; v <= 'z'; v++ {
-				attempt := fmt.Sprintf("%s%c", base, v)
-				if _, exists := d.defs.Set[attempt]; !exists {
-					attrDef.DefID = attempt
-					break
-				}
-			}
-			if attrDef.DefID != "" {
-				break
-			}
-			base += "a"
-		}
-		for _, v := range d.defs.Set {
-			if attrDef.Order <= v.Order {
-				attrDef.Order = v.Order + 1
-			}
-		}
-		d.defs.Set[attrDef.DefID] = attrDef
+		attrDef := d.addAttributeDef()
 		p := newAttrDefSettingsPanel(d, attrDef)
 		d.content.AddChild(p)
 		undo.AfterData = d.defs.Clone()
@@ -187,6 +167,35 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 		d.Window().Focus().ScrollIntoView()
 	}
 	toolbar.AddChild(addButton)
+}
+
+// addAttributeDef creates a new attribute definition with an unused ID, an order that places it last, and its own
+// target key prefix, then adds it to the set. The key prefix is what makes the definition's widget reference keys
+// unique within the dockable; without one, a second added attribute would build the same reference keys as the first,
+// and undo and focus restoration would then resolve to the wrong attribute's widgets.
+func (d *attributeSettingsDockable) addAttributeDef() *gurps.AttributeDef {
+	attrDef := &gurps.AttributeDef{KeyPrefix: d.targetMgr.NextPrefix()}
+	base := ""
+	for {
+		for v := 'a'; v <= 'z'; v++ {
+			attempt := fmt.Sprintf("%s%c", base, v)
+			if _, exists := d.defs.Set[attempt]; !exists {
+				attrDef.DefID = attempt
+				break
+			}
+		}
+		if attrDef.DefID != "" {
+			break
+		}
+		base += "a"
+	}
+	for _, v := range d.defs.Set {
+		if attrDef.Order <= v.Order {
+			attrDef.Order = v.Order + 1
+		}
+	}
+	d.defs.Set[attrDef.DefID] = attrDef
+	return attrDef
 }
 
 func (d *attributeSettingsDockable) initContent(content *unison.Panel) {
