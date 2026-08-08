@@ -22,10 +22,10 @@ import (
 var legacyEvalEmbeddedRegex = regexp.MustCompile(`\|\|[^|]+\|\|`)
 
 type operator struct {
-	symbol      string
-	replacement string
-	precedence  int
-	unary       bool
+	symbol     string
+	call       string // When set, the operator is emitted as a call to this function rather than as an infix operator.
+	precedence int
+	unary      bool
 }
 
 type parsedFunction struct {
@@ -87,7 +87,11 @@ func ExprToScript(expr string) string {
 			{symbol: "*", precedence: 6},
 			{symbol: "/", precedence: 6},
 			{symbol: "%", precedence: 6},
-			{symbol: "^", replacement: "**", precedence: 7},
+			// JavaScript's ** is not a usable stand-in for the legacy exponent operator: it is right-associative
+			// where the legacy operator was left-associative (2^3^2 is 64, not 512), and its grammar rejects an
+			// unparenthesized unary operand on its left, making "-$st ** 2" a syntax error. Math.pow has neither
+			// problem, since the tree already carries the intended grouping.
+			{symbol: "^", call: "Math.pow", precedence: 7},
 		},
 		functions: map[string]string{
 			"if":     "iff",
@@ -381,14 +385,20 @@ func (e *exprToScript) process(parts []string, op any) ([]string, error) {
 		start := len(parts)
 		var err error
 		if v.left != nil && v.right != nil {
-			if parts, err = e.process(parts, v.left); err != nil {
-				return parts, err
-			}
-			if v.op != nil {
-				parts = append(parts, v.op.String())
-			}
-			if parts, err = e.process(parts, v.right); err != nil {
-				return parts, err
+			if v.op != nil && v.op.call != "" {
+				if parts, err = e.processCall(parts, v); err != nil {
+					return parts, err
+				}
+			} else {
+				if parts, err = e.process(parts, v.left); err != nil {
+					return parts, err
+				}
+				if v.op != nil {
+					parts = append(parts, v.op.String())
+				}
+				if parts, err = e.process(parts, v.right); err != nil {
+					return parts, err
+				}
 			}
 		} else {
 			unaryOp := v.unaryOp
@@ -478,6 +488,31 @@ func (e *exprToScript) process(parts []string, op any) ([]string, error) {
 	}
 }
 
+// processCall emits a binary operator as a call to the function named by the operator, with the left and right sides as
+// its two arguments. The tree already encodes the grouping the legacy expression called for, so the call form carries
+// it over without depending on the precedence or associativity of any JavaScript operator.
+func (e *exprToScript) processCall(parts []string, v *expressionTree) ([]string, error) {
+	start := len(parts)
+	var err error
+	if parts, err = e.process(parts, v.left); err != nil {
+		return parts, err
+	}
+	mid := len(parts)
+	if mid == start {
+		return parts, errs.New("expression is invalid")
+	}
+	if parts, err = e.process(parts, v.right); err != nil {
+		return parts, err
+	}
+	if len(parts) == mid {
+		return parts, errs.New("expression is invalid")
+	}
+	parts[start] = v.op.call + "(" + parts[start]
+	parts[mid-1] += ","
+	parts[len(parts)-1] += ")"
+	return parts, nil
+}
+
 func extractDiceArg(parts []string, arg string) ([]string, bool) {
 	if strings.IndexByte(arg, '(') != -1 {
 		return parts, false
@@ -505,9 +540,6 @@ func extractNextEvalArg(args string) (arg, remaining string) {
 }
 
 func (o *operator) String() string {
-	if o.replacement != "" {
-		return o.replacement
-	}
 	return o.symbol
 }
 
