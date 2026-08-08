@@ -10,8 +10,8 @@ require (
 	github.com/richardwilkes/canvas v0.2.5
 	github.com/richardwilkes/pdfview v0.5.1
 	github.com/richardwilkes/rpgtools v1.13.0
-	github.com/richardwilkes/toolbox/v2 v2.15.2
-	github.com/richardwilkes/unison v0.96.2-0.20260806203133-51056f8f3b50
+	github.com/richardwilkes/toolbox/v2 v2.15.3
+	github.com/richardwilkes/unison v0.97.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.5

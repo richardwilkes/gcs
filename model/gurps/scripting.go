@@ -301,6 +301,28 @@ func scriptResolveErrorLoggingSuppressed() bool {
 	return scriptResolveErrorSuppression.Load() > 0
 }
 
+// intFromScript narrows a number supplied by a script to an int, saturating at the ends of the int range rather than
+// letting the conversion itself go out of range.
+//
+// Go leaves the conversion of an out-of-range float64 to an integer implementation-defined, and the architectures GCS
+// ships on disagree: arm64 saturates to MaxInt64 while amd64 produces MinInt64. goja performs exactly that conversion
+// when it maps a JS number onto a Go int parameter — its own ToInteger saturates correctly, but the reflect-based
+// ExportTo used for parameters does not — so a binding that takes an int is handed a different value depending on the
+// machine. Taking such arguments as a float64 and narrowing them here keeps every architecture in agreement. NaN, which
+// compares false against everything, becomes 0.
+func intFromScript(value float64) int {
+	switch {
+	case math.IsNaN(value):
+		return 0
+	case value >= math.MaxInt:
+		return math.MaxInt
+	case value <= math.MinInt:
+		return math.MinInt
+	default:
+		return int(value)
+	}
+}
+
 // mustDefineGlobal defines a global binding that scripts may read but not replace. A plain Runtime.Set would create a
 // writable global, which a script could then overwrite (`dice = null`) for every script that later reused the pooled
 // runtime.

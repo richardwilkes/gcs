@@ -17,7 +17,11 @@ import (
 
 type scriptDice struct{}
 
-func (d scriptDice) From(count, sides, modifier, multiplier *int) string {
+// From builds a dice specification from the supplied components. The components arrive as float64 rather than int so
+// that intFromScript can narrow them; letting goja narrow them instead made dice.from(1e300, 6) yield "999999d" on
+// arm64 and "0" on amd64. The Roller clamps whatever it is given to the configured maxima, so the saturated value it
+// receives here lands on the same limit everywhere.
+func (d scriptDice) From(count, sides, modifier, multiplier *float64) string {
 	var result dice.Dice
 	// Account for the dice(sides) shorthand
 	if count != nil && sides == nil && modifier == nil && multiplier == nil {
@@ -27,17 +31,17 @@ func (d scriptDice) From(count, sides, modifier, multiplier *int) string {
 	if sides == nil {
 		return ""
 	}
-	result.Sides = *sides
+	result.Sides = intFromScript(*sides)
 	if count != nil {
-		result.Count = *count
+		result.Count = intFromScript(*count)
 	} else {
 		result.Count = 1
 	}
 	if modifier != nil {
-		result.Modifier = *modifier
+		result.Modifier = intFromScript(*modifier)
 	}
 	if multiplier != nil {
-		result.Multiplier = *multiplier
+		result.Multiplier = intFromScript(*multiplier)
 	} else {
 		result.Multiplier = 1
 	}

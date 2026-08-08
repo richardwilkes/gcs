@@ -10,7 +10,7 @@
 package gurps
 
 import (
-	"fmt"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
@@ -58,19 +58,36 @@ func (s scriptMeasurement) SizeModifier(yards float64) int {
 }
 
 func (s scriptMeasurement) Modifier(length float64, units string, forSize bool) int {
-	l, err := fxp.LengthFromString(fmt.Sprintf("%v %s", length, units), fxp.Yard)
-	if err != nil {
-		return 0
-	}
-	result := ssrtInchesToValue(fxp.Int(l), forSize)
+	// The units are resolved directly rather than by formatting the length into a string and parsing it back. That
+	// round trip discarded any length too large for the fixed-point type: fxp.FromFloat now saturates such a value to
+	// the representable maximum, but routing it through fxp.LengthFromString turned the range error into a flat 0 — the
+	// smallest possible answer for the largest possible input. Converting here also makes measure.modifier(x, "yd", …)
+	// agree with measure.rangeModifier(x) and measure.sizeModifier(x), which have always converted this way.
+	result := ssrtInchesToValue(lengthUnitForScript(units).ToInches(fxp.FromFloat(length)), forSize)
 	if !forSize {
 		result = -result
 	}
 	return result
 }
 
-func (s scriptMeasurement) ModifierToYards(ssrtValue int) float64 {
-	return fxp.AsFloat[float64](ssrtToYards(ssrtValue))
+// lengthUnitForScript resolves the units named by a script. Yards are the fallback for anything unrecognized, which is
+// the default that was in use when these units were resolved by parsing a formatted string.
+func lengthUnitForScript(units string) fxp.LengthUnit {
+	units = strings.TrimSpace(units)
+	for _, unit := range fxp.LengthUnits {
+		if strings.EqualFold(unit.Key(), units) {
+			return unit
+		}
+	}
+	return fxp.Yard
+}
+
+// ModifierToYards takes its argument as a float64 rather than an int so that intFromScript can narrow it; letting goja
+// narrow it made measure.modifierToYards(1e300) answer 700000000000000 on arm64 and 0.0055 on amd64. ssrtToYards clamps
+// whatever it is given to the table's range, so the saturated value it receives here lands on the same end of the table
+// everywhere.
+func (s scriptMeasurement) ModifierToYards(ssrtValue float64) float64 {
+	return fxp.AsFloat[float64](ssrtToYards(intFromScript(ssrtValue)))
 }
 
 func ssrtInchesToValue(inches fxp.Int, allowNegative bool) int {
