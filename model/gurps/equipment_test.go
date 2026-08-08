@@ -101,3 +101,90 @@ func TestEquipmentEditDataResolvesModifierNameables(t *testing.T) {
 	c.True(target == target.Modifiers[0].OwningEquipment(), "the applied copy points at the equipment it was applied to")
 	c.Equal("Steel mesh", target.Modifiers[0].NameWithReplacements())
 }
+
+// TestEquipmentCloneAttachesModifiersToTheClone verifies that a clone's modifier copies are pointed at the clone rather
+// than at the equipment they were cloned from, so that they resolve their nameable placeholders with the clone's
+// replacements. Duplicating a nested row in a standalone equipment list never re-attaches the data owner, so a
+// mispointed modifier would keep rendering from the original's replacements for the rest of the session.
+func TestEquipmentCloneAttachesModifiersToTheClone(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	eqp := NewEquipment(entity, nil, false)
+	eqp.Name = "Armor"
+	eqp.Replacements = map[string]string{"Material": "Steel"}
+	mod := NewEquipmentModifier(entity, nil, true)
+	mod.Name = "@Material@ plating"
+	child := NewEquipmentModifier(entity, mod, false)
+	child.Name = "@Material@ rivets"
+	mod.Children = []*EquipmentModifier{child}
+	eqp.Modifiers = []*EquipmentModifier{mod}
+	eqp.SetDataOwner(entity)
+
+	clone := eqp.Clone(LibraryFile{}, entity, nil, false)
+	c.Equal(1, len(clone.Modifiers))
+	if len(clone.Modifiers) != 1 || len(clone.Modifiers[0].Children) != 1 {
+		return
+	}
+	c.True(clone == clone.Modifiers[0].OwningEquipment(), "the clone's modifier points at the clone")
+	c.True(clone == clone.Modifiers[0].Children[0].OwningEquipment(), "the clone's child modifier points at the clone")
+
+	// Diverging the clone's replacements must move the clone's modifiers only.
+	clone.Replacements["Material"] = "Bronze"
+	c.Equal("Bronze plating", clone.Modifiers[0].NameWithReplacements())
+	c.Equal("Bronze rivets", clone.Modifiers[0].Children[0].NameWithReplacements())
+	c.Equal("Steel plating", eqp.Modifiers[0].NameWithReplacements(), "the original's modifier is unaffected")
+	c.Equal("Steel rivets", eqp.Modifiers[0].Children[0].NameWithReplacements(),
+		"the original's child modifier is unaffected")
+}
+
+// TestEquipmentCloneMigratesLegacyModifierReplacements verifies that cloning equipment whose modifiers still carry the
+// legacy per-modifier replacements migrates them into the clone rather than into the equipment being cloned.
+func TestEquipmentCloneMigratesLegacyModifierReplacements(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	eqp := NewEquipment(entity, nil, false)
+	eqp.Name = "Armor"
+	mod := NewEquipmentModifier(entity, nil, false)
+	mod.Name = "@Material@ plating"
+	mod.Replacements = map[string]string{"Material": "Steel"}
+	eqp.Modifiers = []*EquipmentModifier{mod}
+
+	clone := eqp.Clone(LibraryFile{}, entity, nil, false)
+	c.Equal(0, len(eqp.Replacements), "the equipment being cloned isn't mutated")
+	c.Equal(1, len(clone.Modifiers))
+	if len(clone.Modifiers) != 1 {
+		return
+	}
+	c.Equal("Steel", clone.Replacements["Material"], "the legacy replacements were migrated into the clone")
+	c.Equal("Steel plating", clone.Modifiers[0].NameWithReplacements())
+
+	// The original's modifier still carries its own replacements, so it resolves once it is attached normally.
+	eqp.SetDataOwner(entity)
+	c.Equal("Steel plating", eqp.Modifiers[0].NameWithReplacements())
+}
+
+// TestEquipmentEditDataCapturesMigratedReplacements verifies that populating an editor from equipment whose modifiers
+// still carry the legacy per-modifier replacements captures the migrated replacements in the editor's snapshot.
+// Without that, applying the editor's data back writes the pre-migration snapshot and silently drops them.
+func TestEquipmentEditDataCapturesMigratedReplacements(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	eqp := NewEquipment(entity, nil, false)
+	eqp.Name = "Armor"
+	mod := NewEquipmentModifier(entity, nil, false)
+	mod.Name = "@Material@ plating"
+	mod.Replacements = map[string]string{"Material": "Steel"}
+	eqp.Modifiers = []*EquipmentModifier{mod}
+
+	var edit EquipmentEditData
+	edit.CopyFrom(eqp)
+	c.Equal("Steel", edit.Replacements["Material"], "the editor's snapshot has the migrated replacements")
+
+	edit.ApplyTo(eqp)
+	c.Equal("Steel", eqp.Replacements["Material"], "applying the editor's data preserves the migrated replacements")
+	c.Equal(1, len(eqp.Modifiers))
+	if len(eqp.Modifiers) != 1 {
+		return
+	}
+	c.Equal("Steel plating", eqp.Modifiers[0].NameWithReplacements())
+}

@@ -215,7 +215,7 @@ func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, 
 	other.AdjustSource(from, e.SourcedID, preserveID)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
-	other.CopyFrom(e)
+	other.copyFrom(other, &e.EquipmentEditData, false)
 	PropagateNodeNoteClosedState(e, other)
 	if e.HasChildren() {
 		other.Children = make([]*Equipment, 0, len(e.Children))
@@ -1038,6 +1038,17 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 			// (e.g. "@Material@"), since the accessors fall back to the unsubstituted text when there is no equipment.
 			cloned.setEquipment(equipment)
 			e.Modifiers = append(e.Modifiers, cloned)
+		}
+		// setEquipment() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't
+		// the holder of this data when an editor is being populated, so pick up anything it added. This is a no-op
+		// when this data is the equipment's own, since both maps are then the same one.
+		for k, v := range equipment.Replacements {
+			if _, exists := e.Replacements[k]; !exists {
+				if e.Replacements == nil {
+					e.Replacements = make(map[string]string)
+				}
+				e.Replacements[k] = v
+			}
 		}
 	}
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)

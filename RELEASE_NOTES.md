@@ -143,6 +143,13 @@
   This could make a modifier on the container display its nameable substitutions using the wording of the last child
   costed, and let the container's substitutions leak into a child. The container's modifiers now stay with the
   container while still being costed against each child that inherits them.
+- Fixed the nameable substitutions of an equipment modifier being taken from the wrong item, or lost outright, when a
+  piece of equipment is duplicated or edited. A duplicate kept its modifiers pointed at the original, so they showed the
+  original's substitutions and followed along as it was changed — most visible in an equipment list, where nothing later
+  puts it right. In older data files, where such substitutions are still stored on the modifier rather than on the
+  equipment it belongs to, they were moved onto the original instead of the duplicate, leaving the duplicate showing raw
+  placeholders such as "@Material@"; opening one of these items in the equipment editor and applying the changes
+  discarded them entirely.
 - Fixed a hidden weapon usage disappearing when another usage on the same character was identical to it apart from
   being hidden. Only one of the two was listed, making it impossible to reveal the hidden one again; both now appear in
   the places where the Hide checkbox is shown.
