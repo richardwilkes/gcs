@@ -126,34 +126,38 @@ func (o *AncestryOptions) RandomAge(entity *Entity, not int) int {
 
 // RandomHair returns a randomized hair.
 func (o *AncestryOptions) RandomHair(not string) string {
-	if choice := ChooseWeightedStringOption(o.HairOptions, not); choice != "" {
-		return choice
-	}
-	return defaultHair
+	return chooseWeightedStringOption(o.HairOptions, not, defaultHair)
 }
 
 // RandomEye returns a randomized eye.
 func (o *AncestryOptions) RandomEye(not string) string {
-	if choice := ChooseWeightedStringOption(o.EyeOptions, not); choice != "" {
-		return choice
-	}
-	return defaultEye
+	return chooseWeightedStringOption(o.EyeOptions, not, defaultEye)
 }
 
 // RandomSkin returns a randomized skin.
 func (o *AncestryOptions) RandomSkin(not string) string {
-	if choice := ChooseWeightedStringOption(o.SkinOptions, not); choice != "" {
-		return choice
-	}
-	return defaultSkin
+	return chooseWeightedStringOption(o.SkinOptions, not, defaultSkin)
 }
 
 // RandomHandedness returns a randomized handedness.
 func (o *AncestryOptions) RandomHandedness(not string) string {
-	if choice := ChooseWeightedStringOption(o.HandednessOptions, not); choice != "" {
+	return chooseWeightedStringOption(o.HandednessOptions, not, defaultHandedness)
+}
+
+// chooseWeightedStringOption randomly selects one of the options, preferring one other than 'not'. If excluding 'not'
+// leaves nothing to choose from -- as happens when the options consist solely of the value being replaced -- a second,
+// unfiltered pass is made, so that the ancestry's own choice is kept rather than being replaced by def, a value the
+// ancestry may not define at all. def is only used when there are no usable options.
+func chooseWeightedStringOption(options []*WeightedStringOption, not, def string) string {
+	if choice := ChooseWeightedStringOption(options, not); choice != "" {
 		return choice
 	}
-	return defaultHandedness
+	if not != "" {
+		if choice := ChooseWeightedStringOption(options, ""); choice != "" {
+			return choice
+		}
+	}
+	return def
 }
 
 // RandomName returns a randomized name.

@@ -73,6 +73,52 @@ func TestRandomGender(t *testing.T) {
 	c.Equal("Female", (&Ancestry{}).RandomGender("Female"), "no gender options preserves the current gender")
 }
 
+// TestRandomStringOptions verifies that randomizing the hair, eyes, skin and handedness always yields a value the
+// ancestry actually defines. Excluding the current value from an ancestry that defines only one left a total weight of
+// 0, so the hard-coded package default ("Brown"/"Right") was substituted for the ancestry's own lone choice.
+func TestRandomStringOptions(t *testing.T) {
+	c := check.New(t)
+
+	opt := func(value string) *WeightedStringOption {
+		return &WeightedStringOption{Weight: 1, Value: value}
+	}
+
+	single := &Ancestry{CommonOptions: &AncestryOptions{AncestryOptionsData: AncestryOptionsData{
+		HairOptions:       []*WeightedStringOption{opt("Green")},
+		EyeOptions:        []*WeightedStringOption{opt("Violet")},
+		SkinOptions:       []*WeightedStringOption{opt("Blue")},
+		HandednessOptions: []*WeightedStringOption{opt("Ambidextrous")},
+	}}}
+	c.Equal("Green", single.RandomHair("", "Green"), "the lone hair option is kept rather than replaced")
+	c.Equal("Violet", single.RandomEyes("", "Violet"), "the lone eye option is kept rather than replaced")
+	c.Equal("Blue", single.RandomSkin("", "Blue"), "the lone skin option is kept rather than replaced")
+	c.Equal("Ambidextrous", single.RandomHandedness("", "Ambidextrous"),
+		"the lone handedness option is kept rather than replaced")
+	c.Equal("Green", single.RandomHair("", ""), "the lone hair option is chosen when nothing is excluded")
+
+	// When an alternative exists, the current value is still excluded from the choice.
+	pair := &Ancestry{CommonOptions: &AncestryOptions{AncestryOptionsData: AncestryOptionsData{
+		HairOptions: []*WeightedStringOption{opt("Green"), opt("Blue")},
+	}}}
+	for range 20 {
+		c.Equal("Blue", pair.RandomHair("", "Green"), "the alternative hair is chosen when one exists")
+	}
+
+	// An ancestry with no options at all still falls back to the package defaults.
+	none := &Ancestry{}
+	c.Equal(defaultHair, none.RandomHair("", "Green"), "no hair options falls back to the default")
+	c.Equal(defaultEye, none.RandomEyes("", "Violet"), "no eye options falls back to the default")
+	c.Equal(defaultSkin, none.RandomSkin("", "Blue"), "no skin options falls back to the default")
+	c.Equal(defaultHandedness, none.RandomHandedness("", "Ambidextrous"),
+		"no handedness options falls back to the default")
+
+	// Options that can never be chosen (no weight) are treated as if they weren't there.
+	zero := &AncestryOptions{AncestryOptionsData: AncestryOptionsData{
+		HairOptions: []*WeightedStringOption{{Value: "Green"}},
+	}}
+	c.Equal(defaultHair, zero.RandomHair("Green"), "a weightless hair option falls back to the default")
+}
+
 // TestAncestryWithValuelessGenderOption verifies that a gender option whose "value" object is missing from the file is
 // ignored rather than dereferenced. Randomizing an entity's description (or creating a sheet with auto-fill enabled)
 // reaches both RandomGender and GenderedOptions, which previously panicked on the nil Value.

@@ -26,12 +26,11 @@
   `1` or `-1`), a value ending in `%` adjusts by a percentage (e.g. `-10%`), and a value with an `x` multiplies (e.g.
   `x2`). It can optionally scale per level, and can apply to the equipment it is attached to ("to this equipment") or to
   other equipment matched by name and tags ("to equipment whose name"). The resolved maximum is always kept within the
-  range 0 to 9,999,999.
+  range 0 to 9,999,999. When such a feature lowers the maximum below a piece of equipment's current remaining uses, the
+  remaining uses shown (and adjusted by the uses commands) are now capped at the new maximum; the stored value is left
+  untouched until you change it or save the file, at which point it is brought into range.
 - Added a "Reset Uses to Maximum" command alongside the existing "Increase Uses" and "Decrease Uses" commands, available
   from the menus, the equipment context menu, and as an assignable key binding.
-- When a feature lowers a piece of equipment's maximum uses below its current remaining uses, the remaining uses shown
-  (and adjusted by the uses commands) are now capped at the new maximum. The stored value is left untouched until you
-  change it or save the file, at which point it is brought into range.
 - Added a maximum level to leveled traits, shown alongside the Level and Cost Per Level fields in the trait editor. It
   may be a plain number or a script expression (e.g. one that varies with SM or ST), and the editor displays the
   resolved value. A trait whose level exceeds its maximum is flagged on the character sheet with the same warning used
@@ -91,8 +90,6 @@
 - Fixed spell prerequisite counting (for things like "6 spells from the Air college") so that a spell which itself
   requires the spell being checked is no longer counted toward that spell's own prerequisites, avoiding a circular
   prerequisite relationship. (#737)
-- Fixed markdown page references whose path is URL-encoded (e.g. `md:User%20Guide/Scripting%20Guide`) so they resolve to
-  the correct file, just like their non-encoded equivalents.
 - Fixed the display of a skill whose optional specialization resolves to an empty string, so it no longer shows an empty
   set of parentheses `()` after the skill name.
 - Fixed the Linux desktop integration so the application window is correctly associated with its launcher icon (added
@@ -120,20 +117,21 @@
   relative to the frontmost window, falling back to the primary display only when no window is available. This also
   covers the system Open and Save dialogs on Windows.
 - Fix unary operator handling and panics in legacy expression conversion.
-- Fixed various issues in the legacy text export templates.
-- Fixed the tag include and exclude filters in the legacy text export templates never matching a tag that contains a
-  colon. Only the individual colon-separated portions of a tag were compared, so naming a full tag such as
-  "Advantage: Mental" matched nothing; the whole tag is now matched as well.
-- Fixed the Page Reference Mappings view not showing the newly chosen PDF for a mapping until the view was closed and
-  reopened. This affected the view when it was in a window of its own, which is the case when the Settings group is set
-  to open in its own window.
-- Fixed the Attributes, Body Type, and Sheet Settings views for a character sheet or template being left open when the
-  sheet or template they belong to was closed. As above, this affected them when they were in windows of their own.
+- Fixed various issues in the legacy text export templates, among them the tag include and exclude filters never
+  matching a tag that contains a colon. Only the individual colon-separated portions of a tag were compared, so naming a
+  full tag such as "Advantage: Mental" matched nothing; the whole tag is now matched as well.
+- Fixed two problems with the settings views when they are in windows of their own, which is the case when the Settings
+  group is set to open in its own window: the Page Reference Mappings view didn't show the newly chosen PDF for a
+  mapping until it was closed and reopened, and the Attributes, Body Type, and Sheet Settings views for a character
+  sheet or template were left open when the sheet or template they belong to was closed.
 - Fixed the cost shown for a leveled trait modifier so it reflects the modifier's current level. A modifier costing
   +10% per level and set to 3 levels displayed +10% in the modifier list, even though the points charged were correct;
   it now displays the total (+30%). Also fixed a modifier set to take its level from the trait it is attached to
   showing no level or level-scaled cost in the trait editor's modifier list until something else forced a
-  recalculation. (#1079)
+  recalculation. (#1079) The cost of such a "use level from owner" modifier was further computed from the trait's
+  current level rather than the levels actually paid for. Levels granted to the trait by a feature are free, so they no
+  longer add enhancement or limitation percentages to its cost. The level the modifier displays, and that its own
+  per-level features use, still reflects the granted levels.
 - Fixed a trait whose self-control roll is set to "Never resist" not showing its "No CR" notation after the trait's
   name.
 - Fixed a crash when a trait has a per-level bonus that adjusts its own level, or two traits each adjust the other's
@@ -183,9 +181,11 @@
 - Fixed a crash when displaying, editing, or copying a technique whose data file is missing its "Defaults To"
   information, as can happen with hand-edited files. Such a technique now loads with an empty default that can be filled
   in.
-- Fixed the gender randomizer on a character sheet clearing the Gender field when the character's ancestry defines only
-  one gender. The current value was always excluded from the choices, leaving nothing to pick; the single available
-  gender is now kept, and an ancestry with no gender options leaves the field untouched.
+- Fixed the randomizers on a character sheet when the character's ancestry defines only one choice for a field. The
+  value being replaced was always excluded from the choices, leaving nothing to pick, so the Gender field was cleared
+  and the hair, eye color, skin, and handedness fields fell back to the built-in default of "Brown" (or "Right" for
+  handedness) — a value the ancestry doesn't offer at all. The ancestry's lone choice is now kept in every case, and an
+  ancestry with no options at all leaves the gender untouched.
 - Fixed the DR tooltip for a hit location nested inside another location repeating its summary once for every level of
   nesting.
 - Fixed data files with upper- or mixed-case file extensions (e.g. ".ANCESTRY") being silently skipped when scanning a
@@ -194,28 +194,30 @@
 - Fixed a character's portrait being permanently discarded when the image couldn't be decoded. The data was cleared as
   soon as the sheet was displayed and lost for good at the next save; it is now kept intact, since a different build of
   GCS may be able to read it.
-- Fixed a damaged or unreadable settings file being silently replaced with factory defaults and then overwritten at the
-  next save, destroying it. The problem is now logged and the offending file is renamed with a ".bad" suffix so its
-  contents can be recovered.
-- Fixed loading a sheet settings file written in the older format that nests its content under a "sheet_settings"
-  entry. Such a file appeared to contain nothing and factory defaults were used instead; it now loads correctly.
+- Fixed two problems that caused a settings file to be abandoned in favor of factory defaults. A damaged or unreadable
+  file was silently replaced and then overwritten at the next save, destroying it; the problem is now logged and the
+  offending file is renamed with a ".bad" suffix so its contents can be recovered. A sheet settings file written in the
+  older format that nests its content under a "sheet_settings" entry appeared to contain nothing; it now loads
+  correctly.
 - Fixed downloading a library update treating an HTTP error response — a rate limit message, an expired link, a server
   error — as if it were the library archive itself. The download now stops with a clear message naming the address and
   the status returned, instead of failing later with a confusing error.
 - Fixed changing a library's location in the Library Settings triggering a flurry of redundant re-scans of the library
   navigator, and a possible crash when the new location couldn't be monitored for changes.
-- Fixed the scripting API reporting a huge nonsensical number for the level or relative level of a skill or spell whose
-  level cannot be computed; `skill.level`, `skill.relativeLevel`, `spell.level`, `spell.relativeLevel`, and
-  `entity.skillLevel` now report 0 in that case. In addition, `spell.techLevel` now returns an empty string rather than
-  `undefined` for a spell with no tech level, and `spell.difficulty` now returns the difficulty's key (e.g. "h") rather
-  than its display name (e.g. "Hard"), matching what `skill.difficulty` has always returned — a script that relied on
-  the old `spell.difficulty` value will need updating.
-- Fixed a script occasionally failing with "script execution timed out" when it hadn't actually timed out: a timeout
-  belonging to a script that had just finished could land on the next script to reuse the same interpreter.
-- Fixed scripts being able to alter the JavaScript environment that later scripts run in. A script that replaced a
-  built-in or left variables behind on the global object could silently change the behavior of every script run
-  afterwards, including those of other open documents. The built-ins are now protected and anything a script leaves
-  behind is cleared away before the interpreter is reused.
+- Fixed several values reported by the scripting API. A huge nonsensical number was returned for the level or relative
+  level of a skill or spell whose level cannot be computed; `skill.level`, `skill.relativeLevel`, `spell.level`,
+  `spell.relativeLevel`, and `entity.skillLevel` now report 0 in that case. `spell.techLevel` now returns an empty
+  string rather than `undefined` for a spell with no tech level, and `spell.difficulty` now returns the difficulty's key
+  (e.g. "h") rather than its display name (e.g. "Hard"), matching what `skill.difficulty` has always returned — a script
+  that relied on the old `spell.difficulty` value will need updating. Finally, the `id` and `parentID` properties of
+  traits, trait modifiers, skills, spells, equipment, equipment modifiers, notes, and weapons were handed to the script
+  engine as objects rather than plain text, so comparing one against a known ID (with `===`, `indexOf`, or `includes`)
+  always failed, making the IDs unusable; they are now plain text.
+- Fixed two ways one script could disrupt the scripts that run after it in the same interpreter. A timeout belonging to
+  a script that had just finished could land on the next script, failing it with "script execution timed out" when it
+  hadn't actually timed out. A script that replaced a built-in or left variables behind on the global object could
+  silently change the behavior of every script run afterwards, including those of other open documents; the built-ins
+  are now protected and anything a script leaves behind is cleared away before the interpreter is reused.
 - Stopped the log from filling with script resolution errors while a script expression is being typed into an item
   editor. The editors re-evaluate the text on every keystroke to build their live previews, so the half-finished
   expression naturally fails until it is complete; those intermediate failures are no longer logged, while failures
@@ -230,11 +232,10 @@
 - Fixed pop-up and context menus opened in windows that have no menu bar of their own — dialogs and the separate
   settings windows — not closing when clicking elsewhere, moving the window, or switching to another application, and
   keystrokes leaking through to the window behind them while they were open.
-- Fixed dragging a container row onto one of its own children: instead of refusing the drop, GCS moved the container
-  out to the top level of the list. The drop is now correctly rejected.
-- Fixed two drop-position errors when moving rows by dragging: dropping a row back at the position it already occupies
-  no longer nudges it up one row, and dragging equipment from one equipment list to another now inserts it where it was
-  dropped rather than at a shifted position.
+- Fixed three errors in where a row lands when moved by dragging: dragging a container row onto one of its own children
+  moved the container out to the top level of the list instead of refusing the drop, dropping a row back at the position
+  it already occupies nudged it up one row, and dragging equipment from one equipment list to another inserted it at a
+  shifted position rather than where it was dropped.
 - Fixed a row's disclosure triangle opening or closing when a click or drag that began somewhere else happened to end
   on top of it.
 - Fixed a crash that could occur when the contents of a list changed while a row was being clicked or dragged.
@@ -255,8 +256,10 @@
 - Fixed the height and vertical alignment of a line of text that mixes fonts of different sizes, such as inline code
   within a markdown paragraph. Such lines were measured using only the first font on the line and could be clipped;
   they now get the room they need and share a common baseline.
-- Fixed markdown headings that contain bold, italic, or code formatting: their full text is now used, so the anchors
-  automatically generated for them and the links pointing at them resolve correctly.
+- Fixed two cases of markdown links not resolving. A page reference whose path is URL-encoded (e.g.
+  `md:User%20Guide/Scripting%20Guide`) now resolves to the correct file, just like its non-encoded equivalent, and a
+  heading that contains bold, italic, or code formatting now uses its full text, so the anchor automatically generated
+  for it and the links pointing at it resolve correctly.
 - Fixed an image in a markdown document that failed to load on the first attempt never being retried, leaving it
   missing for as long as the document was open.
 - Fixed a number of errors in how SVG artwork is interpreted, including the order in which multiple transforms are
@@ -276,9 +279,6 @@
 - Fixed a crash when using Reset in the Font Settings on a fresh installation, before any settings had been saved.
 - Fixed the penalty applied when a spell's equipment prerequisite isn't met being applied to every spell on the sheet
   rather than just the spell that requires the missing equipment.
-- Fixed the `id` and `parentID` properties that scripts see on traits, trait modifiers, skills, spells, equipment,
-  equipment modifiers, notes, and weapons. They were handed to the script engine as objects rather than plain text, so
-  comparing one against a known ID (with `===`, `indexOf`, or `includes`) always failed, making the IDs unusable.
 - Fixed a default to an attribute the character doesn't have being treated as usable when the "Use Half-Stat Defaults"
   option is on. Such a default now stays unresolvable, instead of producing a nonsense level that was stored as the
   skill's adjusted level and offered as a choice in Swap Defaults.
@@ -286,10 +286,6 @@
   trait with an empty Maximum Level is unlimited, but a broadly-scoped bonus of +2 was computed from a base of zero and
   capped the trait at level 2, flagging it on the sheet — turning a feature meant to raise a limit into one that
   created it.
-- Fixed the cost of a "use level from owner" trait modifier, which was computed from the trait's current level rather
-  than the levels actually paid for. Levels granted to the trait by a feature are free, so they no longer add
-  enhancement or limitation percentages to its cost. The level the modifier displays, and that its own per-level
-  features use, still reflects the granted levels.
 - Fixed the "retracting stock" weapon switch, which could be chosen in the feature editor but had no effect. It now
   adds or removes a weapon's retracting stock, along with the tooltip describing the folded-stock statistics.
 - Fixed a script expression entered in one of a weapon's damage fields being silently cut short when it was written
