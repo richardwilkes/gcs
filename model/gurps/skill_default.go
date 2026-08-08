@@ -262,11 +262,13 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 			return fxp.Min
 		}
 		level := entity.ResolveAttributeCurrent(s.Type())
-		if ruleOf20 {
-			level = level.Min(fxp.Twenty)
-		}
-		if entity.SheetSettings.UseHalfStatDefaults {
-			level = level.Div(fxp.Two).Floor() + fxp.Five
+		if level != fxp.Min {
+			if ruleOf20 {
+				level = level.Min(fxp.Twenty)
+			}
+			if entity.SheetSettings.UseHalfStatDefaults {
+				level = level.Div(fxp.Two).Floor() + fxp.Five
+			}
 		}
 		return s.finalLevel(level)
 	}

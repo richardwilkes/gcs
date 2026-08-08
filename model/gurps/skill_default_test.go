@@ -102,6 +102,46 @@ func TestSkillDefaultWhenTL(t *testing.T) {
 		"Carpentry (no TL) must use the character's TL of 5, which fails 'at least 6'")
 }
 
+// TestSkillDefaultUnresolvableAttribute verifies that an attribute-based default whose attribute the entity doesn't
+// define keeps returning the fxp.Min sentinel, even when "use half stat defaults" is enabled. The conversion used to
+// be applied unconditionally, turning the sentinel into a plausible-looking level.
+func TestSkillDefaultUnresolvableAttribute(t *testing.T) {
+	c := check.New(t)
+
+	e := NewEntity()
+	e.SheetSettings.UseHalfStatDefaults = true
+	e.Attributes.Set[IntelligenceID].Adjustment = fxp.Four // IQ 14
+	e.Recalculate()
+
+	missing := &SkillDefault{DefaultType: "zz", Modifier: -fxp.Three}
+	c.Equal(fxp.Min, missing.SkillLevelFast(e, nil, true, nil, false),
+		"a default to an undefined attribute must remain unresolvable")
+	c.Equal(fxp.Min, missing.SkillLevel(e, nil, true, nil, false),
+		"SkillLevel must agree with SkillLevelFast")
+	c.Equal(fxp.Min, missing.SkillLevelFast(e, nil, true, nil, true),
+		"the rule of 20 must not resurrect an unresolvable default")
+
+	// A defined attribute still gets the half-stat treatment: IQ 14 becomes 14/2+5 = 12, less the -3 modifier.
+	iq := &SkillDefault{DefaultType: IntelligenceID, Modifier: -fxp.Three}
+	c.Equal(fxp.Nine, iq.SkillLevelFast(e, nil, true, nil, false),
+		"IQ 14 with half stat defaults resolves to 12, less the -3 modifier")
+}
+
+// TestSkillDefaultUnresolvableAttributeNotChosen verifies end-to-end that a skill won't adopt a default pointing at an
+// attribute the entity doesn't define, which would persist a nonsense adjusted level.
+func TestSkillDefaultUnresolvableAttributeNotChosen(t *testing.T) {
+	c := check.New(t)
+
+	e := NewEntity()
+	e.SheetSettings.UseHalfStatDefaults = true
+	sk := addTestSkill(e, "Hidden Lore", "Bogus", "", fxp.Four)
+	sk.Defaults = []*SkillDefault{{DefaultType: "zz", Modifier: -fxp.Three}}
+	e.Recalculate()
+
+	c.Nil(sk.DefaultedFrom, "an unresolvable attribute default must not be adopted")
+	c.Equal(0, len(sk.resolvableDefaults()), "an unresolvable attribute default must not be offered for swapping")
+}
+
 // TestSkillDefaultWhenTLChosenDefault reproduces issue #1040 end-to-end: an Armory (Body Armor) skill must not default
 // to a skill whose tech level fails the default's WhenTL constraint, even after the character's TL is raised.
 func TestSkillDefaultWhenTLChosenDefault(t *testing.T) {
