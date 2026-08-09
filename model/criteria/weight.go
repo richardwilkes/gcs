@@ -58,6 +58,10 @@ func (w Weight) Describe(units fxp.WeightUnit) string {
 
 // Hash writes this object's contents into the hasher.
 func (w Weight) Hash(h hash.Hash) {
+	if w.IsZero() {
+		xhash.Num8(h, uint8(255))
+		return
+	}
 	xhash.StringWithLen(h, w.Compare)
 	xhash.Num64(h, w.Qualifier)
 }

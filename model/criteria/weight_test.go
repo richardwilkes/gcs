@@ -55,3 +55,22 @@ func TestWeightDescriptionUsesRequestedUnits(t *testing.T) {
 	c.Equal("is at least 2 kg", metric.Describe(fxp.Kilogram))
 	c.Equal("is at least 4 lb", metric.Describe(fxp.Pound))
 }
+
+// TestWeightHashIgnoresQualifierWhenAny verifies that a weight criteria whose comparison is "is anything" hashes the
+// same no matter what stale qualifier it carries, since marshaling omits the criteria entirely in that state.
+func TestWeightHashIgnoresQualifierWhenAny(t *testing.T) {
+	c := check.New(t)
+	fivePounds := fxp.WeightFromInteger(5, fxp.Pound)
+	none := hashOf(weight(criteria.AnyNumber, 0))
+	c.Equal(none, hashOf(weight(criteria.AnyNumber, fivePounds)))
+	c.Equal(none, hashOf(criteria.Weight{}))
+
+	// An invalid comparison is treated as "any" everywhere else, so it must hash as "any", too.
+	c.Equal(none, hashOf(weight(criteria.NumericComparison("bogus"), fivePounds)))
+
+	// A real comparison still contributes both the comparison and its qualifier.
+	five := hashOf(weight(criteria.AtMostNumber, fivePounds))
+	c.NotEqual(none, five)
+	c.NotEqual(five, hashOf(weight(criteria.AtMostNumber, fxp.WeightFromInteger(6, fxp.Pound))))
+	c.NotEqual(five, hashOf(weight(criteria.AtLeastNumber, fivePounds)))
+}

@@ -57,6 +57,10 @@ func (n Number) AltString() string {
 
 // Hash writes this object's contents into the hasher.
 func (n Number) Hash(h hash.Hash) {
+	if n.IsZero() {
+		xhash.Num8(h, uint8(255))
+		return
+	}
 	xhash.StringWithLen(h, n.Compare)
 	xhash.Num64(h, n.Qualifier)
 }
