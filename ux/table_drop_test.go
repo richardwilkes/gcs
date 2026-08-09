@@ -160,3 +160,30 @@ func TestAltDropDeliversRowIndex(t *testing.T) {
 	c.False(table.DropCallback(di, overRow, mod.None), "drop without a targeted row must be declined")
 	c.Equal([]int{0}, provider.altDrops, "declined drop must not invoke the handler")
 }
+
+// TestAltDropNotifiesTheTable verifies that an alternate drop reports the change through the table's
+// DropOccurredCallback, just as unison does for a normal drop. The providers' drop handlers only rebuild when the data
+// owner has an owning entity, so without this notification a template or a traits/equipment list dockable keeps showing
+// itself as unmodified after the drop, with no modified marker on its tab and no prompt to save on the way out.
+func TestAltDropNotifiesTheTable(t *testing.T) {
+	c := check.New(t)
+	original := flushDragFeedback
+	flushDragFeedback = func(_ *unison.Panel) {}
+	defer func() { flushDragFeedback = original }()
+
+	provider := &fakeAltDropProvider{}
+	table := newAltDropTestTable(provider)
+	c.NotNil(table.DropOccurredCallback, "drop support must install a drop notification")
+	notified := 0
+	table.DropOccurredCallback = func() { notified++ }
+	overRow := geom.Point{X: 1, Y: table.MinimumRowHeight / 2}
+	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+
+	c.Equal(drag.Copy, table.DragEnteredCallback(di, overRow, mod.None), "enter over row")
+	c.True(table.DropCallback(di, overRow, mod.None), "drop over row must be handled")
+	c.Equal(1, notified, "a completed drop must notify the table")
+
+	// With no row targeted, nothing was dropped, so there is nothing to report.
+	c.False(table.DropCallback(di, overRow, mod.None), "drop without a targeted row must be declined")
+	c.Equal(1, notified, "a declined drop must not notify the table")
+}

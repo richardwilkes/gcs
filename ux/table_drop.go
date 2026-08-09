@@ -94,6 +94,10 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 				if altDropRowIndex != -1 {
 					undo := willDropCallback(nil, table, false)
 					altDropSupport.Drop(altDropRowIndex, draggedTableData)
+					// Notify the table the same way unison does for a normal drop. The providers' drop handlers only
+					// rebuild when the data owner has an owning entity, so without this the dockable holding a
+					// template or a traits/equipment list would go on showing itself as unmodified.
+					unison.SafeCall(table.DropOccurredCallback)
 					finishDidDrop(undo, nil, table, false)
 					altDropRowIndex = -1
 					flushDragFeedback(table.AsPanel())

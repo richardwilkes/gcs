@@ -533,7 +533,6 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 		MarkModified(check)
 		return true
 	}
-	unison.NewCheckBox()
 	check.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
 		return true
 	}
