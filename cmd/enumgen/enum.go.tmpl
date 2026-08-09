@@ -111,9 +111,6 @@ func (enum *{{$name}}) UnmarshalText(text []byte) error {
 
 {{wrapComment (printf "Extract%s extracts the value from a string." $name) 120}}
 func Extract{{$name}}(str string) {{$name}} {
-{{- if and (eq .Name "size") (eq .Pkg "model/paper")}}
-	str = strings.TrimPrefix(strings.TrimPrefix(str, "na-"), "iso-") // For older files that had the Java prefixes
-{{- end}}
     for _, enum := range {{$name}}s {
         if strings.EqualFold(enum.Key(), str){{if .HasOldKeys}} ||
 			slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }){{end}} {

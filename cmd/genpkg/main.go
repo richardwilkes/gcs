@@ -28,8 +28,13 @@ import (
 	"github.com/richardwilkes/toolbox/v2/ximage"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xyaml"
-	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/cmd/upack/packager"
+)
+
+const (
+	iconsPath     = "pkgicons"
+	docIconSuffix = "_doc.png"
+	overlaySize   = 512
 )
 
 //go:embed doc-1024.png
@@ -39,18 +44,76 @@ func main() {
 	early.Configure()
 	ux.RegisterExternalFileTypes()
 	ux.RegisterGCSFileTypes()
-	const iconsPath = "pkgicons"
-	xos.ExitIfErr(fs.WalkDir(os.DirFS(iconsPath), ".", func(path string, d fs.DirEntry, _ error) error {
-		if !d.IsDir() && strings.HasSuffix(path, "_doc.png") {
-			return os.Remove(filepath.Join(iconsPath, path))
+	if fi, err := os.Stat(iconsPath); err != nil || !fi.IsDir() {
+		xos.ExitWithMsg("must be run from the top-level directory of the repository; no " + iconsPath +
+			" directory was found")
+	}
+	xos.ExitIfErr(removeGeneratedDocIcons(iconsPath))
+	xos.ExitIfErr(xyaml.Save("packaging.yml", buildConfig()))
+	xos.ExitIfErr(generateDocIcons(iconsPath))
+}
+
+// generateDocIcons creates a document icon for each of the file types GCS owns by overlaying the file type's icon onto
+// the generic document image. The SVGs are rendered by canvas' CPU rasterizer, which needs neither a GPU context nor a
+// window, so unison doesn't have to be started up for this.
+func generateDocIcons(dir string) error {
+	docImg, _, err := image.Decode(bytes.NewBuffer(docImgBytes))
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	for _, fi := range gurps.KnownFileTypes {
+		if !fi.IsGCSData {
+			continue
+		}
+		var overlay image.Image
+		if overlay, err = svg.CreateImageFromSVG(fi.SVG, overlaySize); err != nil {
+			return err
+		}
+		if err = writePNG(filepath.Join(dir, docIconName(fi)), ximage.Stack(docImg, overlay)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func writePNG(dstPath string, img image.Image) (err error) {
+	var f *os.File
+	if f, err = os.Create(dstPath); err != nil {
+		return errs.Wrap(err)
+	}
+	defer func() {
+		if closeErr := errs.Wrap(f.Close()); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
+	return errs.Wrap(png.Encode(f, img))
+}
+
+// removeGeneratedDocIcons removes the document icons left over from a previous run, so that only the ones this run
+// generates remain. The error passed into the walk function has to be checked, since the directory entry is nil
+// whenever that error isn't, which is what happens when dir itself can't be read.
+func removeGeneratedDocIcons(dir string) error {
+	return fs.WalkDir(os.DirFS(dir), ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && strings.HasSuffix(p, docIconSuffix) {
+			return os.Remove(filepath.Join(dir, p))
 		}
 		return nil
-	}))
+	})
+}
 
+// docIconName returns the name of the document icon file generated for the given file type.
+func docIconName(fi *gurps.FileInfo) string {
+	return fi.UTI.Extensions[0][1:] + docIconSuffix
+}
+
+func buildConfig() *packager.Config {
 	cfg := packager.Config{
 		FullName:        "GURPS Character Sheet",
 		ExecutableName:  xos.AppCmdName,
-		AppIcon:         "pkgicons/app.png",
+		AppIcon:         iconsPath + "/app.png",
 		Description:     ux.AppDescription(),
 		CopyrightHolder: xos.CopyrightHolder,
 		CopyrightYears:  xos.CopyrightYears(),
@@ -78,7 +141,6 @@ func main() {
 		}
 		data := packager.FileData{
 			Name:       one.Name,
-			Icon:       "pkgicons/" + extensions[0] + "_doc.png",
 			Role:       "Viewer",
 			Rank:       "Alternate",
 			UTI:        one.UTI.UTI,
@@ -87,42 +149,16 @@ func main() {
 			MimeTypes:  one.UTI.MimeTypes,
 		}
 		if one.IsGCSData {
+			// Document icons are only generated for the file types GCS owns, and the packager only consumes the icon
+			// of an entry whose Rank is Owner, so the others are deliberately left without one rather than pointing at
+			// a file that will never exist.
+			data.Icon = iconsPath + "/" + docIconName(one)
 			data.Role = "Editor"
 			data.Rank = "Owner"
 		}
 		cfg.FileInfo = append(cfg.FileInfo, &data)
 	}
-	xos.ExitIfErr(xyaml.Save("packaging.yml", &cfg))
-
-	// The doc icons use unison's image code to generate the icons, so we need to start it up.
-	unison.Start(
-		unison.StartupFinishedCallback(func() {
-			w, err := unison.NewWindow("")
-			xos.ExitIfErr(err)
-			w.ToFront()
-			unison.InvokeTask(func() {
-				var docImg image.Image
-				if docImg, _, err = image.Decode(bytes.NewBuffer(docImgBytes)); err != nil {
-					xos.ExitIfErr(errs.Wrap(err))
-				}
-				for i := range gurps.KnownFileTypes {
-					fi := gurps.KnownFileTypes[i]
-					if !fi.IsGCSData {
-						continue
-					}
-					var overlay image.Image
-					overlay, err = svg.CreateImageFromSVG(fi.SVG, 512)
-					xos.ExitIfErr(err)
-					var f *os.File
-					f, err = os.Create(filepath.Join(iconsPath, fi.UTI.Extensions[0][1:]+"_doc.png"))
-					xos.ExitIfErr(err)
-					xos.ExitIfErr(errs.Wrap(png.Encode(f, ximage.Stack(docImg, overlay))))
-					xos.ExitIfErr(f.Close())
-				}
-				w.Dispose() // Will cause the app to quit.
-			})
-		}),
-	)
+	return &cfg
 }
 
 func extractConformsTo(u *uti.DataType) []string {

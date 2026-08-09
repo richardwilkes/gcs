@@ -25,6 +25,7 @@ import (
 	"text/template"
 	"unicode"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -92,6 +93,23 @@ func removeExistingGenFiles(rootDir string) {
 }
 
 func processEnumTemplate(rootDir string, info *enumInfo) {
+	data, err := generateEnumSource(info)
+	if err != nil {
+		if data == nil {
+			xos.ExitIfErr(err)
+		}
+		// The source couldn't be formatted, so write it out unformatted, since being able to look at the bad output is
+		// what makes such a failure diagnosable.
+		fmt.Println("unable to format source file: " + filepath.Join(info.Pkg, info.Name+genSuffix))
+	}
+	dir := filepath.Join(rootDir, info.Pkg)
+	xos.ExitIfErr(os.MkdirAll(dir, 0o750))
+	xos.ExitIfErr(os.WriteFile(filepath.Join(dir, info.Name+genSuffix), data, 0o640))
+}
+
+// generateEnumSource returns the content of the generated file for the given enum. If the generated source can't be
+// formatted, the unformatted source is returned along with the error.
+func generateEnumSource(info *enumInfo) ([]byte, error) {
 	tmpl, err := template.New("enum.go.tmpl").Funcs(template.FuncMap{
 		"fileLeaf":     filepath.Base,
 		"join":         join,
@@ -99,18 +117,19 @@ func processEnumTemplate(rootDir string, info *enumInfo) {
 		"toIdentifier": toIdentifier,
 		"wrapComment":  wrapComment,
 	}).Parse(enumTmplData)
-	xos.ExitIfErr(err)
+	if err != nil {
+		return nil, errs.Wrap(err)
+	}
 	var buffer bytes.Buffer
 	writeGeneratedFromComment(&buffer, "enum.go.tmpl")
-	xos.ExitIfErr(tmpl.Execute(&buffer, info))
+	if err = tmpl.Execute(&buffer, info); err != nil {
+		return nil, errs.Wrap(err)
+	}
 	var data []byte
 	if data, err = format.Source(buffer.Bytes()); err != nil {
-		fmt.Println("unable to format source file: " + filepath.Join(info.Pkg, info.Name+genSuffix))
-		data = buffer.Bytes()
+		return buffer.Bytes(), errs.Wrap(err)
 	}
-	dir := filepath.Join(rootDir, info.Pkg)
-	xos.ExitIfErr(os.MkdirAll(dir, 0o750))
-	xos.ExitIfErr(os.WriteFile(filepath.Join(dir, info.Name+genSuffix), data, 0o640))
+	return data, nil
 }
 
 func writeGeneratedFromComment(w io.Writer, tmplName string) {
@@ -127,10 +146,6 @@ func join(values []string) string {
 		fmt.Fprintf(&buffer, "%q", one)
 	}
 	return buffer.String()
-}
-
-func (e *enumInfo) LocalType() string {
-	return xstrings.FirstToLower(toIdentifier(e.Name)) + "Data"
 }
 
 func (e *enumInfo) IDFor(v *enumValue) string {

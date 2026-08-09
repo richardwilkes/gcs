@@ -7,7 +7,7 @@ copyright_years: 1998-2026
 trademarks: GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.
 file_info:
   - name: PDF Document
-    icon: pkgicons/pdf_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: com.adobe.pdf
@@ -19,7 +19,7 @@ file_info:
       - application/pdf
       - application/x-pdf
   - name: Markdown Document
-    icon: pkgicons/md_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: net.daringfireball.markdown
@@ -31,7 +31,7 @@ file_info:
     mime_types:
       - text/markdown
   - name: PNG Image
-    icon: pkgicons/png_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: public.png
@@ -42,7 +42,7 @@ file_info:
     mime_types:
       - image/png
   - name: WEBP Image
-    icon: pkgicons/webp_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: org.webmproject.webp
@@ -53,7 +53,7 @@ file_info:
     mime_types:
       - image/webp
   - name: JPEG Image
-    icon: pkgicons/jpeg_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: public.jpeg
@@ -70,7 +70,7 @@ file_info:
       - image/jpeg
       - image/jpg
   - name: GIF Image
-    icon: pkgicons/gif_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: com.compuserve.gif
@@ -81,7 +81,7 @@ file_info:
     mime_types:
       - image/gif
   - name: ICO Image
-    icon: pkgicons/ico_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: com.microsoft.ico
@@ -93,7 +93,7 @@ file_info:
       - image/x-icon
       - image/vnd.microsoft.icon
   - name: WBMP Image
-    icon: pkgicons/wbmp_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: com.adobe.wbmp
@@ -104,7 +104,7 @@ file_info:
     mime_types:
       - image/vnd.wap.wbmp
   - name: BMP Image
-    icon: pkgicons/bmp_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: com.microsoft.bmp
@@ -117,7 +117,7 @@ file_info:
       - image/bmp
       - image/x-bmp
   - name: SVG Image
-    icon: pkgicons/svg_doc.png
+    icon: ""
     role: Viewer
     rank: Alternate
     uti: public.svg-image
@@ -242,11 +242,14 @@ file_info:
 mac:
   finder_app_name: GCS
   app_id: com.trollworks.gcs
-  minimum_system_version_amd64: "10.15"
+  minimum_system_version_amd64: "11.0"
   minimum_system_version_arm64: "11.0"
   category_uti: public.app-category.role-playing-games
   code_signing:
     identity: Richard Wilkes
     credentials: gcs-notary
+    api_key: ""
+    api_key_id: ""
+    api_key_issuer: ""
     options:
       - runtime

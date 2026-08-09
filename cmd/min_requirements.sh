@@ -173,16 +173,21 @@ extract_archives() {
 				echo "warning: hdiutil not available; skipping $archive" >&2
 				continue
 			}
-			dest="$archive.extracted"
-			mkdir -p "$dest"
 			# Mount read-only, copy the .app out, then detach. The mount point
 			# is the trailing /Volumes/... path on the last line of the output.
-			mnt=$(hdiutil attach -nobrowse -readonly "$archive" 2>/dev/null |
-				sed -nE 's#.*(/Volumes/.*)$#\1#p' | tail -1)
-			if [ -n "$mnt" ]; then
-				cp -R "$mnt"/*.app "$dest"/ 2>/dev/null || true
-				hdiutil detach -quiet "$mnt" 2>/dev/null || true
+			# The mount runs as an `if` condition so that a failure (a corrupt
+			# or partial download) only skips this archive: as a bare
+			# assignment, pipefail plus errexit would abort the entire
+			# analysis, silently and with no output.
+			if ! mnt=$(hdiutil attach -nobrowse -readonly "$archive" 2>/dev/null |
+				sed -nE 's#.*(/Volumes/.*)$#\1#p' | tail -1) || [ -z "$mnt" ]; then
+				echo "warning: unable to mount $archive; skipping it" >&2
+				continue
 			fi
+			dest="$archive.extracted"
+			mkdir -p "$dest"
+			cp -R "$mnt"/*.app "$dest"/ 2>/dev/null || true
+			hdiutil detach -quiet "$mnt" 2>/dev/null || true
 			;;
 		esac
 	done < <(find "$dir" -type f \( -name '*.tgz' -o -name '*.tar.gz' -o -name '*.zip' -o -name '*.dmg' \) -print0)
