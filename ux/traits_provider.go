@@ -121,7 +121,9 @@ func (p *traitsProvider) AltDropSupport() *AltDropSupport {
 						if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
 							rebuilder.Rebuild(true)
 						}
-						ProcessModifiers(p.table, rows)
+						// The prompt has to be given the row the modifiers were dropped onto, since modifiers
+						// themselves aren't something ProcessModifiers can process.
+						ProcessModifiers(p.table, []*gurps.Trait{rowData})
 						ProcessNameables(p.table, rows)
 					}
 				}

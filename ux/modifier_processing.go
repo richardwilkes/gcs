@@ -41,7 +41,14 @@ func ProcessModifiersForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T
 	ProcessModifiers(table, data)
 }
 
-// ProcessModifiers processes the rows for modifiers that can be toggled on or off.
+// The modifier prompts are held in variables so that tests can substitute non-interactive implementations.
+var (
+	promptForTraitModifiers     = processModifiers[*gurps.TraitModifier]
+	promptForEquipmentModifiers = processModifiers[*gurps.EquipmentModifier]
+)
+
+// ProcessModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
+// modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing.
 func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	rebuild := func() {
 		if builder := unison.AncestorOrSelf[Rebuildable](owner); builder != nil {
@@ -52,11 +59,11 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 		gurps.Traverse(func(row T) bool {
 			switch t := any(row).(type) {
 			case *gurps.Trait:
-				if processModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
+				if promptForTraitModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
 					rebuild()
 				}
 			case *gurps.Equipment:
-				if processModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
+				if promptForEquipmentModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
 					rebuild()
 				}
 			}
