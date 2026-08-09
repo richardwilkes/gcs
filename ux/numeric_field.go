@@ -22,21 +22,23 @@ import (
 // NumericField holds a numeric value that can be edited.
 type NumericField[T xmath.Integer | xmath.Float] struct {
 	*unison.Field
-	targetMgr     *TargetMgr
-	targetKey     string
-	undoTitle     string
-	getPrototypes func(minValue, maxValue T) []T
-	get           func() T
-	set           func(T)
-	Format        func(T) string
-	extract       func(s string) (T, error)
-	lastValue     T
-	minValue      T
-	maxValue      T
-	exception     T
-	hasException  bool
-	useGet        bool
-	marksModified bool
+	targetMgr         *TargetMgr
+	targetKey         string
+	undoTitle         string
+	getPrototypes     func(minValue, maxValue T) []T
+	get               func() T
+	set               func(T)
+	Format            func(T) string
+	extract           func(s string) (T, error)
+	validationTooltip *unison.Panel
+	savedTooltip      *unison.Panel
+	lastValue         T
+	minValue          T
+	maxValue          T
+	exception         T
+	hasException      bool
+	useGet            bool
+	marksModified     bool
 }
 
 // NewNumericField creates a new field that formats its content.
@@ -117,10 +119,20 @@ func (f *NumericField[T]) mustExtract(s string) T {
 
 func (f *NumericField[T]) validate() bool {
 	if text := f.tooltipTextForValidation(); text != "" {
-		f.Tooltip = newWrappedTooltip(text)
+		if f.Tooltip != f.validationTooltip {
+			f.savedTooltip = f.Tooltip
+		}
+		f.validationTooltip = newWrappedTooltip(text)
+		f.Tooltip = f.validationTooltip
 		return false
 	}
-	f.Tooltip = nil
+	if f.validationTooltip != nil {
+		if f.Tooltip == f.validationTooltip {
+			f.Tooltip = f.savedTooltip
+		}
+		f.validationTooltip = nil
+		f.savedTooltip = nil
+	}
 	return true
 }
 
