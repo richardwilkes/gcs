@@ -293,21 +293,33 @@ func (w *Weapon) MarshalJSONTo(enc *jsontext.Encoder) error {
 		Calc *calc `json:"calc,omitzero"`
 	}{
 		WeaponData: w.WeaponData,
-		Calc: &calc{
-			Level:  w.SkillLevel(nil).Max(0),
-			Damage: w.Damage.ResolvedDamage(nil),
-		},
 	}
-	if data.Calc.Strength = w.Strength.Resolve(w, nil).String(); data.Calc.Strength == w.Strength.String() {
-		data.Calc.Strength = ""
-	}
-	if w.IsMelee() {
+	// Clearing the fields that don't apply to this kind of weapon is part of writing out the data, so it happens
+	// whether or not the derived values are wanted.
+	melee := w.IsMelee()
+	if melee {
 		data.Accuracy = WeaponAccuracy{}
 		data.Range = WeaponRange{}
 		data.RateOfFire = WeaponRoF{}
 		data.Shots = WeaponShots{}
 		data.Bulk = WeaponBulk{}
 		data.Recoil = WeaponRecoil{}
+	} else {
+		data.Parry = WeaponParry{}
+		data.Block = WeaponBlock{}
+		data.Reach = WeaponReach{}
+	}
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &data)
+	}
+	data.Calc = &calc{
+		Level:  w.SkillLevel(nil).Max(0),
+		Damage: w.Damage.ResolvedDamage(nil),
+	}
+	if data.Calc.Strength = w.Strength.Resolve(w, nil).String(); data.Calc.Strength == w.Strength.String() {
+		data.Calc.Strength = ""
+	}
+	if melee {
 		if data.Calc.Parry = w.Parry.Resolve(w, nil).String(); data.Calc.Parry == w.Parry.String() {
 			data.Calc.Parry = ""
 		}
@@ -318,9 +330,6 @@ func (w *Weapon) MarshalJSONTo(enc *jsontext.Encoder) error {
 			data.Calc.Reach = ""
 		}
 	} else {
-		data.Parry = WeaponParry{}
-		data.Block = WeaponBlock{}
-		data.Reach = WeaponReach{}
 		if data.Calc.Accuracy = w.Accuracy.Resolve(w, nil).String(); data.Calc.Accuracy == w.Accuracy.String() {
 			data.Calc.Accuracy = ""
 		}

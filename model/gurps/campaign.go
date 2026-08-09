@@ -76,7 +76,5 @@ func (c *Campaign) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // Hash writes this object's contents into the hasher.
 func (c *Campaign) Hash(h hash.Hash) {
-	if err := json.MarshalWrite(h, c, json.Deterministic(true)); err != nil {
-		errs.Log(err)
-	}
+	HashJSON(h, c)
 }

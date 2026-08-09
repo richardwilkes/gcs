@@ -204,9 +204,7 @@ func (t *Template) SetNoteList(list []*Note) {
 
 // Hash writes this object's contents into the hasher.
 func (t *Template) Hash(h hash.Hash) {
-	if err := json.MarshalWrite(h, t, json.Deterministic(true)); err != nil {
-		errs.Log(err)
-	}
+	HashJSON(h, t)
 }
 
 // EnsureAttachments ensures that all attachments have their data owner set to the Template.

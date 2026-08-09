@@ -121,8 +121,9 @@ type Entity struct {
 	features                       features
 	variableResolverExclusions     map[string]bool
 	skillResolverExclusions        map[string]bool
-	scriptCache                    map[scriptResolveKey]string // not safe for concurrent use on the same entity
+	scriptCache                    map[scriptResolveKey]scriptResolveResult // not safe for concurrent use
 	scriptResolvingDepth           int
+	abandonedScripts               int64
 	variableCache                  map[string]string
 	basicLiftCache                 fxp.Weight
 	encumbranceLevelCache          encumbrance.Level
@@ -200,8 +201,19 @@ func (e *Entity) Save(filePath string) error {
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
+//
+// Writing an entity out does not recalculate it first. Recalculating is not a read-only operation — it updates the
+// skill levels, the features and prerequisites, and the "defaulted_from" of every skill, the last of which is written
+// to disk — so doing it here would mean that merely hashing an entity to ask whether it has unsaved changes rewrote
+// part of it, and rewrote it from values the scripts in the data produce, which are not guaranteed to come out the
+// same twice. The callers that need the derived state current — Save, the exporters, and the sheet whenever anything
+// changes — recalculate for themselves.
 func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
-	e.Recalculate()
+	if omitCalc(enc) {
+		data := e.EntityData
+		data.Version = jio.CurrentDataVersion
+		return json.MarshalEncode(enc, &data)
+	}
 	type calc struct {
 		Swing                 dice.Dice  `json:"swing"`
 		Thrust                dice.Dice  `json:"thrust"`
@@ -287,7 +299,7 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 func (e *Entity) DiscardCaches() {
 	e.variableResolverExclusions = make(map[string]bool)
 	e.skillResolverExclusions = make(map[string]bool)
-	e.scriptCache = make(map[scriptResolveKey]string)
+	e.scriptCache = make(map[scriptResolveKey]scriptResolveResult)
 	e.variableCache = make(map[string]string)
 	e.basicLiftCache = -1
 	e.encumbranceLevelCache = encumbrance.LastLevel + 1
@@ -1703,9 +1715,7 @@ func (e *Entity) Hash(h hash.Hash) {
 	saved := e.ModifiedOn
 	e.ModifiedOn = jio.Time{}
 	defer func() { e.ModifiedOn = saved }()
-	if err := json.MarshalWrite(h, e, json.Deterministic(true)); err != nil {
-		errs.Log(err)
-	}
+	HashJSON(h, e)
 }
 
 // SetPointsRecord sets a new points record list, adjusting the total points.

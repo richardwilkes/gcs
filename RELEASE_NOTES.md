@@ -334,6 +334,16 @@
   stuck on the level the editor was opened with, and changing the weight (or turning a modifier on or off) no longer
   left a "per pound" cost modifier stuck on the original weight. These previews now match what the character sheet
   shows once you apply the changes, instead of jumping to a different number afterward.
+- Fixed untouched documents sometimes claiming to have unsaved changes. Deciding whether a character sheet, template,
+  or loot sheet differed from its saved form compared the derived values (skill levels, resolved notes, and the like)
+  along with the data they are derived from, and computing them runs any scripts embedded in the data. A script that
+  exceeded the permitted per-script execution time resolved to a stand-in value instead of its real one, so on a
+  machine that was briefly too busy, an untouched document could start showing the unsaved-changes marker and
+  prompting to save on close — and an editor with no edits in it could enable its Apply and Cancel buttons and prompt
+  to save as well. Derived values are now left out of these comparisons, which they added nothing to, and a script
+  stopped before it could produce an answer no longer replaces the recorded values it was meant to recompute, so a
+  busy moment can no longer change what gets written to disk. As a side benefit, the unsaved-changes check no longer
+  runs any scripts at all, making it dramatically faster on sheets with script-heavy content.
 - Windows only: Fixed mouse dragging that leaves the window. Dragging rows past the edge of a list to auto-scroll and
   releasing the mouse button outside the window now work correctly, instead of the button appearing to remain held
   down and every later mouse movement being treated as a drag.

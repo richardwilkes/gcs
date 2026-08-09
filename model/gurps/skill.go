@@ -288,6 +288,9 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserve
 // MarshalJSONTo implements json.MarshalerTo.
 func (s *Skill) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &s.SkillData)
+	}
 	type calcNoLevel struct {
 		ResolvedNotes     string `json:"resolved_notes,omitzero"`
 		UnsatisfiedReason string `json:"unsatisfied_reason,omitzero"`
@@ -913,8 +916,21 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 // UpdateLevel updates the level of the skill, returning true if it has changed.
 func (s *Skill) UpdateLevel() bool {
 	saved := s.LevelData
-	s.DefaultedFrom = s.bestDefaultWithPoints(nil)
-	s.LevelData = s.CalculateLevel(nil)
+	var defaultedFrom *SkillDefault
+	var level Level
+	if anyScriptAbandonedDuring(EntityFromNode(s), func() {
+		defaultedFrom = s.bestDefaultWithPoints(nil)
+		level = s.CalculateLevel(nil)
+	}) {
+		// A script was stopped before it could produce an answer, so what came back stood in for one rather than being
+		// one, and both of these were computed from it. Neither is kept: what is already here was arrived at when the
+		// scripts did finish, which makes it merely out of date, whereas storing these would make it wrong -- and
+		// DefaultedFrom is written to disk, so it would be wrong there too until something recalculated it. The next
+		// recalculation that gets through its scripts puts both right.
+		return false
+	}
+	s.DefaultedFrom = defaultedFrom
+	s.LevelData = level
 	return saved != s.LevelData
 }
 

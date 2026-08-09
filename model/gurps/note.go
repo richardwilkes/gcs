@@ -187,6 +187,9 @@ func (n *Note) MarshalJSONTo(enc *jsontext.Encoder) error {
 		ResolvedNotes string `json:"resolved_text,omitzero"`
 	}
 	n.ClearUnusedFieldsForType()
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &n.NoteData)
+	}
 	data := struct {
 		NoteData
 		Calc *calc `json:"calc,omitzero"`

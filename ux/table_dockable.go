@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"encoding/json/v2"
 	"hash"
 	"strings"
 	"time"
@@ -429,9 +428,7 @@ func (d *TableDockable[T]) Hash(h hash.Hash) {
 	for _, row := range rows {
 		data = append(data, row.Data())
 	}
-	if err := json.MarshalWrite(h, data, json.Deterministic(true)); err != nil {
-		errs.Log(err)
-	}
+	gurps.HashJSON(h, data)
 }
 
 // AllTags returns all tags currently present in the data.

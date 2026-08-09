@@ -11,7 +11,6 @@ package ux
 
 import (
 	"bytes"
-	"encoding/json/v2"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -284,15 +283,15 @@ func (e *editor[N, D]) Tooltip() string {
 var pruneIDFields = regexp.MustCompile(`\s*"id":\s*"[^"]+",?\s*`)
 
 func (e *editor[N, D]) isModified() bool {
-	d1, err := json.Marshal(e.beforeData)
+	d1, err := gurps.MarshalWithoutCalc(e.beforeData)
 	if err != nil {
-		errs.Log(errs.Wrap(err))
+		errs.Log(err)
 		return false
 	}
 	var d2 []byte
-	d2, err = json.Marshal(e.editorData)
+	d2, err = gurps.MarshalWithoutCalc(e.editorData)
 	if err != nil {
-		errs.Log(errs.Wrap(err))
+		errs.Log(err)
 		return false
 	}
 	none := []byte{}

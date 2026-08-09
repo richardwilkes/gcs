@@ -294,6 +294,17 @@ type scriptResolveKey struct {
 	text string
 }
 
+// scriptResolveResult is what a resolution produced, along with whether it produced it. A script that GCS stopped part
+// way through -- because it ran past the permitted per-script execution time, or because it recursed too deeply --
+// never computed an answer at all, and the text stands in for one. That is recorded so that a caller about to store a
+// value derived from the resolution can decline to, since whether such a script is stopped depends on how busy the
+// machine happens to be rather than on the data. A script that ran to completion and threw is a different matter: the
+// data is simply wrong, in the same way on every machine and every run, so its result is treated as any other.
+type scriptResolveResult struct {
+	text      string
+	abandoned bool
+}
+
 // ScriptArg is a named argument to be passed to RunString.
 type ScriptArg struct {
 	Name  string
@@ -336,7 +347,7 @@ func discardScriptCache() {
 // reached from multiple goroutines, so all access is guarded by globalResolveMutex.
 var (
 	globalResolveMutex sync.Mutex
-	globalResolveCache = make(map[scriptResolveKey]string)
+	globalResolveCache = make(map[scriptResolveKey]scriptResolveResult)
 )
 
 // DiscardGlobalResolveCache clears the global resolve cache.
@@ -469,6 +480,41 @@ const entityScriptArgName = "entity"
 // so that concurrent entity-less resolutions stay race-free.
 var globalScriptResolvingDepth atomic.Int32
 
+// globalAbandonedScripts counts the scripts abandoned during entity-less resolution, for the same reason
+// globalScriptResolvingDepth exists. Entity-scoped resolution uses the entity's own abandonedScripts field.
+var globalAbandonedScripts atomic.Int64
+
+// noteAbandonedScript records that a script was stopped before it could produce an answer.
+func noteAbandonedScript(entity *Entity) {
+	if entity != nil {
+		entity.abandonedScripts++
+		return
+	}
+	globalAbandonedScripts.Add(1)
+}
+
+// abandonedScripts returns the running count of scripts stopped before they could produce an answer. Only differences
+// between two readings mean anything.
+func abandonedScripts(entity *Entity) int64 {
+	if entity != nil {
+		return entity.abandonedScripts
+	}
+	return globalAbandonedScripts.Load()
+}
+
+// anyScriptAbandonedDuring runs f and reports whether any script was stopped before it could produce an answer while it
+// ran. Callers that are about to store a value they computed from a script use this to decline to store one that was
+// arrived at without the script's real result; see scriptResolveResult for why that matters.
+//
+// For a nil entity the count is the package-global one, so an entity-less resolution abandoned on another goroutine
+// while f runs is reported here too. That costs the caller nothing beyond keeping the value it already had for one more
+// pass, which is what it would have done had the abandonment been its own.
+func anyScriptAbandonedDuring(entity *Entity, f func()) bool {
+	before := abandonedScripts(entity)
+	f()
+	return abandonedScripts(entity) != before
+}
+
 // enterScriptResolution increments the appropriate recursion-depth counter and returns the new depth along with a
 // function that restores it. Resolution recurses through the goja boundary on the calling goroutine (resolving one
 // script can read a value whose own script must be resolved); tracking the depth per-entity keeps that count accurate
@@ -486,11 +532,17 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	depth, leave := enterScriptResolution(entity)
 	defer leave()
 	if depth > maximumAllowedResolvingDepth {
+		noteAbandonedScript(entity)
 		return "script resolution exceeded maximum depth (possible circular reference)"
 	}
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
 	if cached, exists := lookupResolvedScript(entity, key); exists {
-		return cached
+		if cached.abandoned {
+			// A cached abandonment has to be reported again, or only the first caller to ask for this script would
+			// know not to trust what it got back.
+			noteAbandonedScript(entity)
+		}
+		return cached.text
 	}
 	var result string
 	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
@@ -521,22 +573,25 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	var err error
 	xos.SafeCall(func() { result, err = runScript(fxp.SecondsToDuration(maxTime), text, args...) },
 		func(panicErr error) { err = panicErr })
+	abandoned := false
 	if err != nil {
 		//nolint:errcheck // we don't care about the error value here, just the type
 		if _, ok := errors.AsType[*goja.InterruptedError](err); ok {
 			result = fmt.Sprintf("script execution timed out (limited to %v seconds)", maxTime)
+			abandoned = true
+			noteAbandonedScript(entity)
 		} else {
 			result = err.Error()
 		}
 	}
-	storeResolvedScript(entity, key, result)
+	storeResolvedScript(entity, key, scriptResolveResult{text: result, abandoned: abandoned})
 	return result
 }
 
 // lookupResolvedScript returns a previously resolved result for the given key. Entity-scoped results live in the
 // entity's own cache (only touched while recalculating that entity); entity-less results live in the package-global
 // cache and are read under globalResolveMutex.
-func lookupResolvedScript(entity *Entity, key scriptResolveKey) (string, bool) {
+func lookupResolvedScript(entity *Entity, key scriptResolveKey) (scriptResolveResult, bool) {
 	if entity != nil {
 		cached, exists := entity.scriptCache[key]
 		return cached, exists
@@ -548,7 +603,7 @@ func lookupResolvedScript(entity *Entity, key scriptResolveKey) (string, bool) {
 }
 
 // storeResolvedScript records a resolved result for the given key. See lookupResolvedScript for where each is kept.
-func storeResolvedScript(entity *Entity, key scriptResolveKey, result string) {
+func storeResolvedScript(entity *Entity, key scriptResolveKey, result scriptResolveResult) {
 	if entity != nil {
 		entity.scriptCache[key] = result
 		return

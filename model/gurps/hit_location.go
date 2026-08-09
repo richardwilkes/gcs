@@ -74,6 +74,9 @@ func (h *HitLocation) Clone(entity *Entity, owningTable *Body) *HitLocation {
 
 // MarshalJSONTo implements json.MarshalerTo.
 func (h *HitLocation) MarshalJSONTo(enc *jsontext.Encoder) error {
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &h.HitLocationData)
+	}
 	type calc struct {
 		RollRange string         `json:"roll_range"`
 		DR        map[string]int `json:"dr,omitzero"`

@@ -530,7 +530,11 @@ func (s *Sheet) Modified() bool {
 func (s *Sheet) MarkModified(src unison.Paneler) {
 	if !s.awaitingUpdate {
 		s.awaitingUpdate = true
-		s.entity.DiscardCaches()
+		// Everything below reads the derived state -- the panels, the tables, and the calculator all display skill
+		// levels, points and the like -- so the entity is brought up to date first. This used to happen by accident,
+		// as a side effect of the tab asking whether the sheet had unsaved changes, which recalculated the entity on
+		// its way to hashing it.
+		s.entity.Recalculate()
 		s.modifiedFunc()
 		UpdateTitleForDockable(s)
 		skipDeepSync := false

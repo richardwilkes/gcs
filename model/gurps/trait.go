@@ -250,6 +250,9 @@ func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 		CurrentLevel      *fxp.Int `json:"current_level,omitzero"`
 	}
 	t.ClearUnusedFieldsForType()
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &t.TraitData)
+	}
 	data := struct {
 		TraitData
 		Calc calc `json:"calc"`

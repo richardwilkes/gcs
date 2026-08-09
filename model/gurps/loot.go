@@ -111,9 +111,7 @@ func (l *Loot) Hash(h hash.Hash) {
 	saved := l.ModifiedOn
 	l.ModifiedOn = jio.Time{}
 	defer func() { l.ModifiedOn = saved }()
-	if err := json.MarshalWrite(h, l, json.Deterministic(true)); err != nil {
-		errs.Log(err)
-	}
+	HashJSON(h, l)
 }
 
 // EnsureAttachments ensures that all attachments have their data owner set properly.

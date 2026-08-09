@@ -218,6 +218,9 @@ func (e *EquipmentModifier) MarshalJSONTo(enc *jsontext.Encoder) error {
 		ResolvedNotes string `json:"resolved_notes,omitzero"`
 	}
 	e.ClearUnusedFieldsForType()
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &e.EquipmentModifierData)
+	}
 	data := struct {
 		EquipmentModifierData
 		Calc *calc `json:"calc,omitzero"`

@@ -223,6 +223,9 @@ func (t *TraitModifier) MarshalJSONTo(enc *jsontext.Encoder) error {
 		ResolvedNotes string `json:"resolved_notes,omitzero"`
 	}
 	t.ClearUnusedFieldsForType()
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &t.TraitModifierData)
+	}
 	data := struct {
 		TraitModifierData
 		Calc *calc `json:"calc,omitzero"`

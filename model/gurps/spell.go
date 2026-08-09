@@ -286,6 +286,9 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserve
 // MarshalJSONTo implements json.MarshalerTo.
 func (s *Spell) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &s.SpellData)
+	}
 	type calcNoLevel struct {
 		ResolvedNotes     string `json:"resolved_notes,omitzero"`
 		UnsatisfiedReason string `json:"unsatisfied_reason,omitzero"`
@@ -626,14 +629,22 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 func (s *Spell) UpdateLevel() bool {
 	saved := s.LevelData
 	colleges := s.CollegeWithReplacements()
-	if s.IsRitualMagic() {
-		s.LevelData = CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
-			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount, colleges,
-			s.Tags, s.Difficulty, s.AdjustedPoints(nil))
-	} else {
-		s.LevelData = CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
-			colleges, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+	var level Level
+	// A level computed from a script that was stopped before it could produce an answer is not kept, for the reasons
+	// given in Skill.UpdateLevel; the level already here is out of date rather than wrong.
+	if anyScriptAbandonedDuring(EntityFromNode(s), func() {
+		if s.IsRitualMagic() {
+			level = CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
+				s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount, colleges,
+				s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+		} else {
+			level = CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
+				s.PowerSourceWithReplacements(), colleges, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+		}
+	}) {
+		return false
 	}
+	s.LevelData = level
 	return saved != s.LevelData
 }
 

@@ -238,6 +238,9 @@ func (e *Equipment) MarshalJSONTo(enc *jsontext.Encoder) error {
 		UnsatisfiedReason       string      `json:"unsatisfied_reason,omitzero"`
 	}
 	e.ClearUnusedFieldsForType()
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, &e.EquipmentData)
+	}
 	defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
 	data := struct {
 		EquipmentData

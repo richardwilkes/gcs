@@ -52,7 +52,7 @@ func NewAttribute(entity *Entity, attrID string, order int) *Attribute {
 
 // MarshalJSONTo implements json.MarshalerTo.
 func (a *Attribute) MarshalJSONTo(enc *jsontext.Encoder) error {
-	if a.Entity != nil {
+	if a.Entity != nil && !omitCalc(enc) {
 		if def := a.AttributeDef(); def != nil {
 			type calc struct {
 				Value   fxp.Int  `json:"value"`
