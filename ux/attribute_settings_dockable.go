@@ -295,24 +295,7 @@ func (d *attributeSettingsDockable) load(fileSystem fs.FS, filePath string) erro
 		return nil
 	}
 	if !replace {
-		existing := d.defs.Clone()
-		nextOrder := 0
-		for _, def := range d.defs.Set {
-			if def.Order > nextOrder {
-				nextOrder = def.Order
-			}
-		}
-		nextOrder++
-		for key, def := range replacements.Set {
-			if origDef, exists := existing.Set[key]; exists {
-				def.Order = origDef.Order
-			} else {
-				def.Order = nextOrder
-				nextOrder++
-			}
-			existing.Set[key] = def
-		}
-		replacements = existing
+		replacements = mergeAttributeDefs(d.defs, replacements)
 	}
 	replacements.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
@@ -328,6 +311,31 @@ func (d *attributeSettingsDockable) load(fileSystem fs.FS, filePath string) erro
 	d.UndoManager().Add(undo)
 	d.sync()
 	return nil
+}
+
+// mergeAttributeDefs returns a copy of existing with the definitions from incoming merged into it. A definition that is
+// already present keeps the position it currently has, while the new ones are appended after all of the existing ones,
+// retaining the relative order they had in the file they came from. The incoming definitions must therefore be visited
+// in that order rather than by ranging over the map, whose iteration order is random.
+func mergeAttributeDefs(existing, incoming *gurps.AttributeDefs) *gurps.AttributeDefs {
+	merged := existing.Clone()
+	nextOrder := 0
+	for _, def := range merged.Set {
+		if def.Order > nextOrder {
+			nextOrder = def.Order
+		}
+	}
+	nextOrder++
+	for _, def := range incoming.List(false) {
+		if origDef, exists := merged.Set[def.ID()]; exists {
+			def.Order = origDef.Order
+		} else {
+			def.Order = nextOrder
+			nextOrder++
+		}
+		merged.Set[def.ID()] = def
+	}
+	return merged
 }
 
 func (d *attributeSettingsDockable) save(filePath string) error {

@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -126,6 +127,45 @@ func TestAttributeSettingsTabTitle(t *testing.T) {
 	c.Equal("Attributes of Bob", attributeSettingsTabTitle(&entityPanelForTest{entity: entity}),
 		"the translated title must be used, with the name substituted into it")
 	c.Equal("Default Attributes", attributeSettingsTabTitle(nil), "a nil owner yields the defaults title")
+}
+
+// TestMergeAttributeDefsPreservesImportedOrder verifies that merging imported attribute definitions into the existing
+// ones appends the new ones in the order they had in the imported file. The merge used to range over the incoming map,
+// whose iteration order is random, so importing more than one new attribute placed them in an arbitrary order in the
+// dockable and on the sheet.
+func TestMergeAttributeDefsPreservesImportedOrder(t *testing.T) {
+	c := check.New(t)
+	imported := []string{"alpha", "beta", "gamma", "delta", "epsilon", "zeta"}
+	expected := append([]string{"st", "dx"}, imported...)
+	// Run the merge repeatedly, since a single pass over a randomly ordered map may happen to come out sorted.
+	for i := range 20 {
+		existing := &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}
+		existing.Set["st"] = testAttrDef("st", "Old ST", 1)
+		existing.Set["dx"] = testAttrDef("dx", "Old DX", 2)
+		incoming := &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}
+		incoming.Set["dx"] = testAttrDef("dx", "New DX", 1)
+		for j, id := range imported {
+			incoming.Set[id] = testAttrDef(id, id, j+2)
+		}
+
+		merged := mergeAttributeDefs(existing, incoming)
+		ids := make([]string, 0, len(merged.Set))
+		for _, def := range merged.List(false) {
+			ids = append(ids, def.DefID)
+		}
+		c.Equal(expected, ids, "pass %d: imported attributes must keep the order they had in the file", i)
+		c.Equal("New DX", merged.Set["dx"].Name, "pass %d: an imported attribute must replace the existing one", i)
+		c.Equal(2, merged.Set["dx"].Order, "pass %d: a replaced attribute must keep its existing position", i)
+		c.Equal("Old ST", existing.Set["st"].Name, "pass %d: the existing definitions must not be altered", i)
+	}
+}
+
+func testAttrDef(id, name string, order int) *gurps.AttributeDef {
+	def := &gurps.AttributeDef{Order: order}
+	def.DefID = id
+	def.Name = name
+	def.Type = attribute.Integer
+	return def
 }
 
 // initTestAttributeContent builds the dockable's content the way Setup does, inside a scroll panel, since sync() saves
