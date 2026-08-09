@@ -14,6 +14,7 @@ import (
 	"encoding/json/v2"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
@@ -711,5 +712,6 @@ func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
 func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
 	*t = *other
 	t.Tags = slices.Clone(other.Tags)
+	t.Replacements = maps.Clone(other.Replacements)
 	t.Features = other.Features.Clone()
 }

@@ -46,3 +46,35 @@ func TestEquipmentModifierSyncHashIncludesPerLevelAndPerPoundFlags(t *testing.T)
 	c.NotEqual(baseHash, hashWith(func(e *EquipmentModifier) { e.WeightIsPerLevel = true }),
 		"WeightIsPerLevel must affect the sync hash")
 }
+
+// TestEquipmentModifierCloneDoesNotShareReplacements verifies that a copy of a modifier still carrying the legacy
+// replacements map gets its own map. setEquipment() installs a modifier's replacements directly into the equipment it
+// is attached to when that equipment has none of its own, so sharing the map let a later merge into the equipment's map
+// write into the library row the copy came from.
+func TestEquipmentModifierCloneDoesNotShareReplacements(t *testing.T) {
+	c := check.New(t)
+
+	// A library row with legacy replacements, as it arrives from an .eqm file written by an older version.
+	library := NewEquipmentModifier(nil, nil, false)
+	library.Name = "@Material@ Plating"
+	library.Replacements = map[string]string{"Material": "Steel"}
+
+	// Dropping it onto a sheet's equipment row clones it...
+	dup := library.Clone(LibraryFile{}, nil, nil, false)
+	c.Equal(map[string]string{"Material": "Steel"}, dup.Replacements, "the copy carries the replacements")
+
+	// ...and the next attachment pass migrates the copy's map into the equipment, which has none of its own.
+	equipment := NewEquipment(nil, nil, false)
+	dup.setEquipment(equipment)
+	c.Nil(dup.Replacements, "the copy hands its map off to the equipment")
+	c.Equal(map[string]string{"Material": "Steel"}, equipment.Replacements, "the equipment picks up the replacements")
+
+	// A second modifier attaching to the same equipment takes setEquipment's merge branch, writing into the map the
+	// equipment now holds. That must not reach back into the library row.
+	second := NewEquipmentModifier(nil, nil, false)
+	second.Replacements = map[string]string{"Finish": "Blued"}
+	second.setEquipment(equipment)
+	c.Equal(map[string]string{"Material": "Steel", "Finish": "Blued"}, equipment.Replacements,
+		"the equipment merges in the second modifier's replacements")
+	c.Equal(map[string]string{"Material": "Steel"}, library.Replacements, "the library row is left untouched")
+}

@@ -14,6 +14,7 @@ import (
 	"encoding/json/v2"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
@@ -803,5 +804,6 @@ func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
 func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
 	*e = *other
 	e.Tags = slices.Clone(other.Tags)
+	e.Replacements = maps.Clone(other.Replacements)
 	e.Features = other.Features.Clone()
 }
