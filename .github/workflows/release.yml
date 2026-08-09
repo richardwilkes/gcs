@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version (e.g. 5.42.0); leave blank to use build.sh's default"
+        description: "Release version (e.g. 5.42.0); required unless the run targets a v* tag"
         required: false
         default: ""
 
@@ -52,17 +52,24 @@ jobs:
           brew untap aws/tap azure/bicep || true
           brew install create-dmg
 
-      # The tag (v1.2.3 -> 1.2.3) drives the version on tag pushes; a manual run may supply one; otherwise build.sh
-      # falls back to its built-in default.
+      # The tag (v1.2.3 -> 1.2.3) drives the version on tag pushes and a manual run may supply one, but one or the other
+      # is required: `build.sh -d` refuses to build a distribution without GCS_RELEASE, so a run with no version to use
+      # is stopped here, in seconds, rather than after every runner has set up its toolchain.
       - name: Determine version
         id: version
+        # The dispatch input arrives through an env var rather than a `${{ }}` interpolation: expression substitution
+        # happens before the shell ever sees the script, so an interpolated value containing quotes, `;` or `$(...)`
+        # would run as code in a job that holds the macOS signing and notarization secrets.
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            version="${{ github.event.inputs.version }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            version="$INPUT_VERSION"
           elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             version="${GITHUB_REF_NAME#v}"
           else
-            version=""
+            echo "no version: supply the 'version' input when running this workflow outside of a v* tag" >&2
+            exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
