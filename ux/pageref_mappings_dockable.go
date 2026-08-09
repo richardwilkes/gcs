@@ -272,9 +272,6 @@ func ShowPageRefMappings() {
 	d.Saver = d.save
 	d.Resetter = d.reset
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
-	if len(d.content.Children()) > 1 {
-		d.content.Children()[1].RequestFocus()
-	}
 }
 
 func (d *pageRefMappingsDockable) addToStartToolbar(toolbar *unison.Panel) {
