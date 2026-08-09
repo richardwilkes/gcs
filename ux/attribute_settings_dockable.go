@@ -68,11 +68,10 @@ func ShowAttributeSettings(owner EntityPanel) {
 	d.targetMgr = NewTargetMgr(d)
 	if owner != nil {
 		d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
-		d.TabTitle = i18n.Text("Attributes: " + owner.Entity().Profile.Name)
 	} else {
 		d.defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
-		d.TabTitle = i18n.Text("Default Attributes")
 	}
+	d.TabTitle = attributeSettingsTabTitle(owner)
 	d.TabIcon = svg.Attributes
 	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	d.originalHash = gurps.Hash64(d.defs)
@@ -84,6 +83,15 @@ func ShowAttributeSettings(owner EntityPanel) {
 	d.ModifiedCallback = d.modified
 	d.WillCloseCallback = d.willClose
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
+}
+
+// attributeSettingsTabTitle returns the tab title to use for the attribute settings of the given owner, or for the
+// defaults when the owner is nil.
+func attributeSettingsTabTitle(owner EntityPanel) string {
+	if owner == nil {
+		return i18n.Text("Default Attributes")
+	}
+	return fmt.Sprintf(i18n.Text("Attributes: %s"), owner.Entity().Profile.Name)
 }
 
 func (d *attributeSettingsDockable) UndoManager() *unison.UndoManager {
@@ -147,26 +155,32 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	addAttributeText := i18n.Text("Add Attribute")
 	addButton.Tooltip = newWrappedTooltip(addAttributeText)
 	addButton.ClickCallback = func() {
-		undo := &unison.UndoEdit[*gurps.AttributeDefs]{
-			ID:         unison.NextUndoID(),
-			EditName:   addAttributeText,
-			UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-			RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-			AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
-		}
-		undo.BeforeData = d.defs.Clone()
-		attrDef := d.addAttributeDef()
-		p := newAttrDefSettingsPanel(d, attrDef)
-		d.content.AddChild(p)
-		undo.AfterData = d.defs.Clone()
-		d.UndoManager().Add(undo)
-		d.MarkModified(nil)
+		p := d.addAttribute(addAttributeText)
 		p.MarkForLayoutRecursivelyUpward()
 		d.ValidateLayout()
 		FocusFirstContent(d.toolbar, p.AsPanel())
 		d.Window().Focus().ScrollIntoView()
 	}
 	toolbar.AddChild(addButton)
+}
+
+// addAttribute adds a new attribute definition, gives it a panel and records the undo edit, returning the new panel.
+func (d *attributeSettingsDockable) addAttribute(undoName string) *attrDefSettingsPanel {
+	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
+		ID:         unison.NextUndoID(),
+		EditName:   undoName,
+		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
+	}
+	undo.BeforeData = d.defs.Clone()
+	p := newAttrDefSettingsPanel(d, d.addAttributeDef())
+	d.content.AddChild(p)
+	d.adjustDeleteButtons()
+	undo.AfterData = d.defs.Clone()
+	d.UndoManager().Add(undo)
+	d.MarkModified(nil)
+	return p
 }
 
 // addAttributeDef creates a new attribute definition with an unused ID, an order that places it last, and its own
@@ -206,6 +220,20 @@ func (d *attributeSettingsDockable) initContent(content *unison.Panel) {
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
 	for _, def := range d.defs.List(false) {
 		content.AddChild(newAttrDefSettingsPanel(d, def))
+	}
+	d.adjustDeleteButtons()
+}
+
+// adjustDeleteButtons enables the delete button of every attribute panel unless only one attribute remains, in which
+// case the lone panel's button is disabled so that the last attribute can't be removed. Each panel is created with its
+// button enabled, so this must be called whenever panels are added or rebuilt, not just when one is deleted.
+func (d *attributeSettingsDockable) adjustDeleteButtons() {
+	children := d.content.Children()
+	enabled := len(children) > 1
+	for _, child := range children {
+		if panel, ok := child.Self.(*attrDefSettingsPanel); ok {
+			panel.deleteButton.SetEnabled(enabled)
+		}
 	}
 }
 
@@ -249,6 +277,7 @@ func (d *attributeSettingsDockable) sync() {
 	for _, def := range d.defs.List(false) {
 		d.content.AddChild(newAttrDefSettingsPanel(d, def))
 	}
+	d.adjustDeleteButtons()
 	d.MarkForLayoutAndRedraw()
 	d.ValidateLayout()
 	d.MarkModified(nil)

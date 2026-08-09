@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/side"
 )
@@ -161,4 +162,24 @@ func TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks(t *testing.T) {
 	d.sync()
 
 	c.Equal(0, len(recorder.updates), "sync() alone must not be relied upon to notify the sheets")
+}
+
+// TestSheetSettingsTabTitle verifies that the character name is substituted into the tab title rather than being built
+// into the string handed to i18n.Text, which would produce a per-character lookup key that no catalog entry can ever
+// match.
+func TestSheetSettingsTabTitle(t *testing.T) {
+	c := check.New(t)
+	i18n.SetLocalizer(func(text string) string {
+		if text == "Sheet Settings: %s" {
+			return "Sheet Settings for %s"
+		}
+		return text
+	})
+	t.Cleanup(func() { i18n.SetLocalizer(nil) })
+
+	entity := gurps.NewEntity()
+	entity.Profile.Name = "Bob"
+	c.Equal("Sheet Settings for Bob", sheetSettingsTabTitle(&entityPanelForTest{entity: entity}),
+		"the translated title must be used, with the name substituted into it")
+	c.Equal("Default Sheet Settings", sheetSettingsTabTitle(nil), "a nil owner yields the defaults title")
 }

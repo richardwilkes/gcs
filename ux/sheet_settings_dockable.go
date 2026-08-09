@@ -83,17 +83,24 @@ func ShowSheetSettings(owner EntityPanel) {
 	}
 	d := &sheetSettingsDockable{owner: owner}
 	d.Self = d
-	if owner != nil {
-		d.TabTitle = i18n.Text("Sheet Settings: " + owner.Entity().Profile.Name)
-	} else {
-		d.TabTitle = i18n.Text("Default Sheet Settings")
-	}
+	d.TabTitle = sheetSettingsTabTitle(owner)
 	d.TabIcon = svg.Settings
 	d.Extensions = []string{gurps.SheetSettingsExt}
 	d.Loader = d.load
 	d.Saver = d.save
 	d.Resetter = d.reset
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
+}
+
+// sheetSettingsTabTitle returns the tab title to use for the sheet settings of the given owner, or for the defaults
+// when the owner is nil. The character name must be substituted into an otherwise constant string, since i18n.Text
+// looks the whole string up in the translation catalog; passing it a string built with the name embedded produces a key
+// that can never match an entry and can't be extracted for translation in the first place.
+func sheetSettingsTabTitle(owner EntityPanel) string {
+	if owner == nil {
+		return i18n.Text("Default Sheet Settings")
+	}
+	return fmt.Sprintf(i18n.Text("Sheet Settings: %s"), owner.Entity().Profile.Name)
 }
 
 func (d *sheetSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {

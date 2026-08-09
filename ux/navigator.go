@@ -1248,7 +1248,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 func OpenFile(filePath string, initialPage int) (dockable unison.Dockable, wasOpen bool) {
 	absPath, err := filepath.Abs(filePath)
 	if err != nil {
-		Workspace.ErrorHandler(i18n.Text("Unable to resolve path:\n"+filePath), err)
+		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to resolve path:\n%s"), filePath), err)
 		return nil, false
 	}
 	if d := LocateFileBackedDockable(absPath); d != nil {

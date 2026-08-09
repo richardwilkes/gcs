@@ -14,6 +14,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 // TestAddAttributeDefAssignsUniqueKeyPrefix verifies that an attribute added with the "Add Attribute" toolbar button is
@@ -63,9 +66,98 @@ func TestAddAttributeDefKeyPrefixSurvivesUndoData(t *testing.T) {
 	c.Equal(added.KeyPrefix, restored.KeyPrefix, "cloning must preserve the target key prefix")
 }
 
+// TestAttributeDeleteButtonEnablement verifies that the "can't delete the last attribute" guard is recomputed whenever
+// the panels are added or rebuilt, rather than only when one is deleted. Adding an attribute after deleting down to one
+// used to leave the older attribute's delete button disabled forever, and any rebuild (type change, undo, load, reset)
+// used to restore an enabled delete button to a lone attribute.
+func TestAttributeDeleteButtonEnablement(t *testing.T) {
+	c := check.New(t)
+	d := newTestAttributeSettingsDockable()
+	d.defs = &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}
+	first := d.addAttributeDef()
+	second := d.addAttributeDef()
+	initTestAttributeContent(d)
+	c.Equal(2, len(d.content.Children()), "both attributes should have a panel")
+	c.True(attrDeleteButtonEnabled(d, 0), "with two attributes, the first delete button is enabled")
+	c.True(attrDeleteButtonEnabled(d, 1), "with two attributes, the second delete button is enabled")
+
+	// Deleting one leaves a lone attribute that may not be deleted.
+	attrDefPanel(d, 1).deleteAttrDef()
+	c.Equal(1, len(d.content.Children()), "one attribute panel should remain")
+	c.False(attrDeleteButtonEnabled(d, 0), "the last remaining attribute may not be deleted")
+
+	// Adding another attribute with the toolbar button must re-enable the older attribute's delete button.
+	third := d.addAttribute("Add Attribute").def
+	c.Equal(2, len(d.content.Children()), "the added attribute should have a panel")
+	c.True(attrDeleteButtonEnabled(d, 0), "adding an attribute re-enables the older delete button")
+	c.True(attrDeleteButtonEnabled(d, 1), "the added attribute may be deleted")
+
+	// A rebuild with a lone attribute must not hand back an enabled delete button.
+	delete(d.defs.Set, third.DefID)
+	delete(d.defs.Set, second.DefID)
+	d.sync()
+	c.Equal(1, len(d.content.Children()), "only the lone attribute should have a panel")
+	c.Equal(first.DefID, attrDefPanel(d, 0).def.DefID, "the lone attribute should be the one left in the set")
+	c.False(attrDeleteButtonEnabled(d, 0), "a rebuild with one attribute leaves its delete button disabled")
+
+	// A dockable opened with a single attribute starts with the guard in place.
+	d2 := newTestAttributeSettingsDockable()
+	d2.defs = &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}
+	d2.addAttributeDef()
+	initTestAttributeContent(d2)
+	c.False(attrDeleteButtonEnabled(d2, 0), "a dockable opened with one attribute can't delete it")
+}
+
+// TestAttributeSettingsTabTitle verifies that the character name is substituted into the tab title rather than being
+// built into the string handed to i18n.Text, which would produce a per-character lookup key that no catalog entry can
+// ever match.
+func TestAttributeSettingsTabTitle(t *testing.T) {
+	c := check.New(t)
+	i18n.SetLocalizer(func(text string) string {
+		if text == "Attributes: %s" {
+			return "Attributes of %s"
+		}
+		return text
+	})
+	t.Cleanup(func() { i18n.SetLocalizer(nil) })
+
+	entity := gurps.NewEntity()
+	entity.Profile.Name = "Bob"
+	c.Equal("Attributes of Bob", attributeSettingsTabTitle(&entityPanelForTest{entity: entity}),
+		"the translated title must be used, with the name substituted into it")
+	c.Equal("Default Attributes", attributeSettingsTabTitle(nil), "a nil owner yields the defaults title")
+}
+
+// initTestAttributeContent builds the dockable's content the way Setup does, inside a scroll panel, since sync() saves
+// and restores the scroll position.
+func initTestAttributeContent(d *attributeSettingsDockable) {
+	content := unison.NewPanel()
+	scroller := unison.NewScrollPanel()
+	scroller.SetContent(content, behavior.Fill, behavior.Fill)
+	d.initContent(content)
+}
+
+func attrDefPanel(d *attributeSettingsDockable, index int) *attrDefSettingsPanel {
+	children := d.content.Children()
+	if index >= len(children) {
+		return nil
+	}
+	panel, ok := children[index].Self.(*attrDefSettingsPanel)
+	if !ok {
+		return nil
+	}
+	return panel
+}
+
+func attrDeleteButtonEnabled(d *attributeSettingsDockable, index int) bool {
+	panel := attrDefPanel(d, index)
+	return panel != nil && panel.deleteButton.Enabled()
+}
+
 func newTestAttributeSettingsDockable() *attributeSettingsDockable {
 	d := &attributeSettingsDockable{defs: gurps.FactoryAttributeDefs()}
 	d.Self = d
+	d.undoMgr = unison.NewUndoManager(100, func(_ error) {})
 	d.targetMgr = NewTargetMgr(d)
 	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	return d
