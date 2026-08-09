@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -220,4 +221,55 @@ func TestSkillDefaultRemovesBonusUsingOtherSkillsTags(t *testing.T) {
 	c.NotNil(shortsword.DefaultedFrom, "Shortsword should have a resolved default")
 	c.Equal(fxp.Seven, shortsword.DefaultedFrom.Level, "no bonus was baked in, so none may be removed")
 	c.Equal(fxp.Nine, shortsword.LevelData.Level, "Shortsword still earns the Combat bonus for itself")
+}
+
+// TestSkillDefaultTypeCaseInsensitive verifies that level resolution classifies the default type the same way
+// everything else does. Only SetType() sanitizes the type, so a data file not written by GCS can hold "Parry"; such a
+// default was displayed and treated as a parry default everywhere except in SkillLevel/SkillLevelFast, which switched
+// on the exact string and dropped it into the attribute branch, where it silently never resolved.
+func TestSkillDefaultTypeCaseInsensitive(t *testing.T) {
+	c := check.New(t)
+
+	e := NewEntity()
+	e.Attributes.Set[DexterityID].Adjustment = fxp.Four // DX 14
+	broadsword := addTestSkill(e, "Broadsword", "", "", fxp.Four)
+	broadsword.Difficulty.Attribute = DexterityID
+	e.Recalculate()
+
+	withType := func(defaultType string) *SkillDefault {
+		return &SkillDefault{
+			DefaultType: defaultType,
+			Name:        textCriteria(criteria.IsText, "Broadsword"),
+			Modifier:    -fxp.Two,
+		}
+	}
+	for _, canonical := range []string{SkillID, ParryID, BlockID, DodgeID, DexterityID} {
+		expected := withType(canonical).SkillLevel(e, nil, false, nil, false)
+		expectedFast := withType(canonical).SkillLevelFast(e, nil, false, nil, false)
+		c.NotEqual(fxp.Min, expected, "%q must resolve to a real level", canonical)
+		c.NotEqual(fxp.Min, expectedFast, "%q must resolve to a real level via SkillLevelFast", canonical)
+		for _, variant := range []string{
+			strings.ToUpper(canonical), " " + canonical + " ",
+			strings.ToUpper(canonical[:1]) + canonical[1:],
+		} {
+			def := withType(variant)
+			c.Equal(expected, def.SkillLevel(e, nil, false, nil, false),
+				"%q must resolve the same as %q", variant, canonical)
+			c.Equal(expectedFast, def.SkillLevelFast(e, nil, false, nil, false),
+				"%q must resolve the same as %q via SkillLevelFast", variant, canonical)
+			c.Equal(withType(canonical).SkillBased(), def.SkillBased(),
+				"%q must classify the same as %q", variant, canonical)
+			c.Equal(withType(canonical).FullName(e, nil), def.FullName(e, nil),
+				"%q must name the same as %q", variant, canonical)
+		}
+	}
+
+	// The defenses are re-pointed at each other by name, which is the check the weapon parry/block resolution makes.
+	c.Equal(BlockID, withType("Parry").asDefense(BlockID).Type(), "a mixed-case parry default re-points to block")
+	c.Equal(ParryID, withType("Parry").asDefense(ParryID).Type(), "an already-parry default is left alone")
+
+	// A skill-based default must actually reach the named skill, not merely resolve to something.
+	parry := withType("Parry").SkillLevel(e, nil, false, nil, false)
+	c.Equal(broadsword.LevelData.Level.Div(fxp.Two).Floor()+fxp.Three+e.ParryBonus-fxp.Two, parry,
+		"a parry default halves the named skill's level")
 }

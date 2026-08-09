@@ -60,7 +60,15 @@ func migrateStringToCriteriaText(raw jsontext.Value, dst *criteria.Text) error {
 
 // DefaultTypeIsSkillBased returns true if the SkillDefault type is Skill-based.
 func DefaultTypeIsSkillBased(skillDefaultType string) bool {
-	return skillBasedDefaultTypes[strings.ToLower(strings.TrimSpace(skillDefaultType))]
+	return skillBasedDefaultTypes[normalizeDefaultType(skillDefaultType)]
+}
+
+// normalizeDefaultType reduces a SkillDefault type to the form the IDs are written in. Only SetType() sanitizes the
+// type, so a data file not written by GCS may hold something like "Parry" or " dx ", which every classifier here
+// (DefaultTypeIsSkillBased, SkillBased, FullName) already accepts. Level resolution has to agree with them, or such a
+// default is displayed and treated as a parry/block/skill default everywhere except where its level is computed.
+func normalizeDefaultType(skillDefaultType string) string {
+	return strings.ToLower(strings.TrimSpace(skillDefaultType))
 }
 
 // CloneWithoutLevelOrPoints creates a copy, but without the level or points set.
@@ -109,9 +117,9 @@ func (s *SkillDefault) Equivalent(replacements map[string]string, other *SkillDe
 		s.SpecializationWithReplacements(replacements) == other.SpecializationWithReplacements(replacements)
 }
 
-// Type returns the type of the SkillDefault.
+// Type returns the type of the SkillDefault, normalized to the form the IDs are written in.
 func (s *SkillDefault) Type() string {
-	return s.DefaultType
+	return normalizeDefaultType(s.DefaultType)
 }
 
 // SetType sets the type of the SkillDefault.
@@ -129,17 +137,17 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 			buffer.WriteString(s.SpecializationWithReplacements(replacements))
 			buffer.WriteByte(')')
 		}
-		switch {
-		case strings.EqualFold(DodgeID, s.DefaultType):
+		switch s.Type() {
+		case DodgeID:
 			buffer.WriteString(i18n.Text(" Dodge"))
-		case strings.EqualFold(ParryID, s.DefaultType):
+		case ParryID:
 			buffer.WriteString(i18n.Text(" Parry"))
-		case strings.EqualFold(BlockID, s.DefaultType):
+		case BlockID:
 			buffer.WriteString(i18n.Text(" Block"))
 		}
 		return buffer.String()
 	}
-	return ResolveAttributeName(entity, s.DefaultType)
+	return ResolveAttributeName(entity, s.Type())
 }
 
 // NameWithReplacements returns the name of the skill to default from with any nameable keys replaced.
@@ -169,7 +177,7 @@ func (s *SkillDefault) ModifierAsString() string {
 
 // SkillBased returns true if the Type() is Skill-based.
 func (s *SkillDefault) SkillBased() bool {
-	return skillBasedDefaultTypes[strings.ToLower(strings.TrimSpace(s.DefaultType))]
+	return skillBasedDefaultTypes[s.Type()]
 }
 
 // SkillLevel returns the base skill level for this SkillDefault.

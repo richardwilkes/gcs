@@ -356,6 +356,7 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	s.SkillData = localData.SkillData
+	s.Defaults = slices.DeleteFunc(s.Defaults, func(one *SkillDefault) bool { return one == nil })
 	if s.TechniqueDefault != nil {
 		s.TechniqueDefault.Name.Compare = criteria.IsText
 	}
@@ -1109,7 +1110,10 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 
 	result := make([]*SkillDefault, 0, len(s.Defaults))
 	for _, def := range s.Defaults {
-		if e == nil || def == nil || !def.SkillBased() {
+		if def == nil {
+			continue
+		}
+		if e == nil || !def.SkillBased() {
 			result = append(result, def)
 		} else {
 			for _, one := range e.SkillMatching(def.Name, def.Specialization, s.Replacements, true,
@@ -1244,10 +1248,10 @@ func (s *Skill) ModifierNotes() string {
 			if defSkill := s.DefaultSkill(); defSkill != nil {
 				var buffer strings.Builder
 				buffer.WriteString(defSkill.String())
-				switch {
-				case strings.EqualFold(ParryID, def.DefaultType):
+				switch def.Type() {
+				case ParryID:
 					buffer.WriteString(i18n.Text(" Parry"))
-				case strings.EqualFold(BlockID, def.DefaultType):
+				case BlockID:
 					buffer.WriteString(i18n.Text(" Block"))
 				}
 				text = buffer.String()

@@ -133,3 +133,39 @@ func TestTechniqueWithoutDefaultDoesNotPanic(t *testing.T) {
 		c.True(clone.TechniqueDefault == nil, "the clone must still have no default")
 	}, "cloning a technique without a default must not panic")
 }
+
+// TestSkillWithNullDefaultEntry verifies that a JSON null in a skill's "defaults" array is dropped rather than
+// dereferenced. Such an entry decodes into a nil pointer without error, and everything that walks the defaults --
+// level resolution, hashing, nameable extraction -- reads the elements without a nil check, so a data file holding one
+// crashed GCS instead of the entry simply being skipped.
+func TestSkillWithNullDefaultEntry(t *testing.T) {
+	c := check.New(t)
+	var sk Skill
+	c.NoError(json.Unmarshal([]byte(`{"type":"skill","name":"Shortsword","difficulty":"dx/a","points":0,`+
+		`"defaults":[null,{"type":"skill","name":{"compare":"is","qualifier":"Broadsword"},"modifier":-2}]}`), &sk),
+		"a skill with a null default entry should load")
+	c.Equal(1, len(sk.Defaults), "the null entry was dropped and the usable one kept")
+
+	e := NewEntity()
+	broadsword := addTestSkill(e, "Broadsword", "", "", fxp.One)
+	broadsword.Difficulty.Attribute = DexterityID
+	e.Skills = append(e.Skills, &sk)
+	sk.SetDataOwner(e)
+	c.NotPanics(e.Recalculate, "recalculating with a null default entry must not panic")
+
+	// The surviving default still resolves, so the null entry cost nothing but itself.
+	c.NotNil(sk.DefaultedFrom, "the usable default still resolves")
+	c.Equal(broadsword.LevelData.Level-fxp.Two, sk.LevelData.Level, "Shortsword defaults to Broadsword-2")
+
+	// The other walkers over the defaults must be equally safe.
+	c.NotPanics(func() { Hash64(&sk) }, "hashing must not panic")
+	c.NotPanics(func() { sk.FillWithNameableKeys(make(map[string]string), nil) },
+		"nameable extraction must not panic")
+	c.NotPanics(func() { sk.Clone(LibraryFile{}, e, nil, false) }, "cloning must not panic")
+
+	// A nil that reaches the list some other way must be skipped rather than handed back to callers that dereference
+	// it, since resolveToSpecificDefaults' own nil guard used to append it anyway.
+	sk.Defaults = append([]*SkillDefault{nil}, sk.Defaults...)
+	c.Equal(1, len(sk.resolveToSpecificDefaults()), "a nil default is not passed along")
+	c.NotPanics(e.Recalculate, "recalculating still must not panic")
+}
