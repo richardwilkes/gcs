@@ -63,9 +63,21 @@ func InstallExportCmdHandlers(dockable ExportDockable) {
 	p.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { Print(dockable) })
 }
 
+// pageInfoProviderFor returns the dockable's page info provider, first performing any last-minute setup it needs. A
+// gurps.Template has no title or modification timestamp of its own, so both must be supplied by the dockable holding
+// it; without this, a template's page footers come out blank, or carry stale values left behind by an earlier export.
+// Every path that builds pages goes through here so that no such path can skip the setup.
+func pageInfoProviderFor(dockable ExportDockable) gurps.PageInfoProvider {
+	if tmplDockable, ok := dockable.(*Template); ok {
+		tmplDockable.template.ExplicitPageTitle = tmplDockable.Title()
+		tmplDockable.template.ExplicitModifiedOn = ""
+	}
+	return dockable.PageInfoProvider()
+}
+
 // Print the given dockable.
 func Print(dockable ExportDockable) {
-	p := dockable.PageInfoProvider()
+	p := pageInfoProviderFor(dockable)
 	data, err := newPageExporter(p).exportAsPDFBytes()
 	if err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to create print data!"), err)
@@ -90,10 +102,6 @@ func doPrint(title string, printer *printing.Printer, jobAttributes *printing.Jo
 
 // ExportPage exports the given dockable to the specified file type, one of "pdf", "webp", "png", or "jpeg".
 func ExportPage(ext string, dockable ExportDockable) {
-	if tmplDockable, ok := dockable.(*Template); ok {
-		tmplDockable.template.ExplicitPageTitle = tmplDockable.Title()
-		tmplDockable.template.ExplicitModifiedOn = ""
-	}
 	dockable.AsPanel().Window().ShowCursor()
 	dialog := unison.NewSaveDialog()
 	backingFilePath := dockable.BackingFilePath()
@@ -103,7 +111,7 @@ func ExportPage(ext string, dockable ExportDockable) {
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			exporter := newPageExporter(dockable.PageInfoProvider())
+			exporter := newPageExporter(pageInfoProviderFor(dockable))
 			var err error
 			switch ext {
 			case "pdf":
