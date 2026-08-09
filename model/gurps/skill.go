@@ -274,7 +274,7 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserve
 	}
 	other.AdjustSource(from, s.SourcedID, preserveID)
 	other.ThirdParty = s.ThirdParty
-	other.CopyFrom(s)
+	other.copyFrom(other, &s.SkillEditData, s.Container(), false, s.IsTechnique())
 	PropagateNodeNoteClosedState(s, other)
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
@@ -1429,7 +1429,7 @@ func (s *Skill) SyncWithSource() {
 						s.TechniqueLimitModifier = &mod
 					}
 					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-					s.Weapons = CloneWeapons(other.Weapons, false)
+					s.Weapons = CloneWeapons(other.Weapons, s, false)
 					s.Features = other.Features.Clone()
 				}
 			}
@@ -1495,7 +1495,7 @@ func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (s *SkillEditData) CopyFrom(other *Skill) {
-	s.copyFrom(&other.SkillEditData, other.Container(), false, other.IsTechnique())
+	s.copyFrom(other, &other.SkillEditData, other.Container(), false, other.IsTechnique())
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1505,10 +1505,10 @@ func (s *SkillEditData) SetNameableReplacements(replacements map[string]string) 
 
 // ApplyTo implements node.EditorData.
 func (s *SkillEditData) ApplyTo(other *Skill) {
-	other.copyFrom(s, other.Container(), true, other.IsTechnique())
+	other.copyFrom(other, s, other.Container(), true, other.IsTechnique())
 }
 
-func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply, isTechnique bool) {
+func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer, isApply, isTechnique bool) {
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
@@ -1544,7 +1544,7 @@ func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply, isT
 		}
 	}
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	s.Weapons = CloneWeapons(other.Weapons, isApply)
+	s.Weapons = CloneWeapons(other.Weapons, skill, isApply)
 	s.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
 		s.Study = make([]*Study, len(other.Study))

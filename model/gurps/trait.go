@@ -230,7 +230,7 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, preserve
 	other.AdjustSource(from, t.SourcedID, preserveID)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
-	other.CopyFrom(t)
+	other.copyFrom(other, &t.TraitEditData, false)
 	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
@@ -1056,7 +1056,7 @@ func (t *Trait) SyncWithSource() {
 					t.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
 					t.TraitNonContainerSyncData = other.TraitNonContainerSyncData
-					t.Weapons = CloneWeapons(other.Weapons, false)
+					t.Weapons = CloneWeapons(other.Weapons, t, false)
 					t.Features = other.Features.Clone()
 				}
 			}
@@ -1142,7 +1142,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 		}
 	}
 	t.Prereq = t.Prereq.CloneResolvingEmpty(false, isApply)
-	t.Weapons = CloneWeapons(other.Weapons, isApply)
+	t.Weapons = CloneWeapons(other.Weapons, trait, isApply)
 	t.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
 		t.Study = make([]*Study, len(other.Study))

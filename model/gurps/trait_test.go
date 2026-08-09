@@ -283,3 +283,54 @@ func TestTraitEditDataCopyLinksModifiers(t *testing.T) {
 	c.Equal(fxp.FromInteger(16), AdjustedPoints(nil, trait, data.CanLevel, data.BasePoints, data.Levels,
 		data.PointsPerLevel, data.SelfControl, data.Frequency, data.Modifiers, data.RoundCostDown), "10 + 2*3")
 }
+
+// TestTraitCloneModifiersBelongToTheClone verifies that duplicating a trait gives the copies of its modifiers to the
+// duplicate. Clone() routed through CopyFrom(), which exists for the editor and therefore points the modifier copies at
+// the trait handed to it -- the trait being cloned. The duplicate's modifiers then resolved their names against the
+// original's replacements and their levels from the original's level, so editing the original dragged the duplicate's
+// modifiers along with it. Sheets and templates hide this by reattaching owners on rebuild, but a traits library file
+// never does.
+func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
+	c := check.New(t)
+
+	source := NewTrait(nil, nil, false)
+	source.Name = "@element@ Resistance"
+	source.Replacements = map[string]string{"element": "Fire"}
+	source.CanLevel = true
+	source.Levels = fxp.Three
+	source.BasePoints = fxp.FromInteger(10)
+	mod := NewTraitModifier(nil, nil, false)
+	mod.Name = "@element@ Only"
+	mod.CostAdj = "+2"
+	mod.UseLevelFromTrait = true
+	source.Modifiers = []*TraitModifier{mod}
+	source.SetDataOwner(nil)
+
+	clone := source.Clone(LibraryFile{}, nil, nil, false)
+	c.Equal(1, len(clone.Modifiers), "the modifier was copied")
+	// Compared as pointers: the two traits are equal by value at this point, so only identity distinguishes them.
+	c.True(clone.Modifiers[0].OwningTrait() == clone, "the copy belongs to the clone, not the trait cloned from")
+	c.True(mod.OwningTrait() == source, "the original's modifier still belongs to the original")
+
+	// Diverging the clone must not be read through the original, and vice versa.
+	clone.Replacements["element"] = "Ice"
+	clone.Levels = fxp.Five
+	c.Equal("Ice Only", clone.Modifiers[0].NameWithReplacements(),
+		"the copy resolves names against the clone's replacements")
+	c.Equal(fxp.Five, clone.Modifiers[0].CurrentLevel(), "the copy takes its level from the clone")
+	c.Equal(fxp.FromInteger(20), clone.AdjustedPoints(), "10 + 2*5")
+	c.Equal("Fire Only", mod.NameWithReplacements(), "the original's modifier is unaffected")
+	c.Equal(fxp.Three, mod.CurrentLevel(), "the original's modifier still reports the original's level")
+	c.Equal(fxp.FromInteger(16), source.AdjustedPoints(), "10 + 2*3")
+
+	// Children are cloned the same way, so their modifiers must follow the same rule.
+	parent := NewTrait(nil, nil, true)
+	parent.Name = "Container"
+	source.parent = parent
+	parent.Children = []*Trait{source}
+	parent.SetDataOwner(nil)
+	clonedContainer := parent.Clone(LibraryFile{}, nil, nil, false)
+	c.Equal(1, len(clonedContainer.Children), "the child was cloned")
+	clonedChild := clonedContainer.Children[0]
+	c.True(clonedChild.Modifiers[0].OwningTrait() == clonedChild, "a cloned child's modifier belongs to that child")
+}

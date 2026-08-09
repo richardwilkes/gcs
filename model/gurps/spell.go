@@ -272,7 +272,7 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserve
 	}
 	other.AdjustSource(from, s.SourcedID, preserveID)
 	other.ThirdParty = s.ThirdParty
-	other.CopyFrom(s)
+	other.copyFrom(other, &s.SpellEditData, s.Container(), false)
 	PropagateNodeNoteClosedState(s, other)
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
@@ -1184,7 +1184,7 @@ func (s *Spell) SyncWithSource() {
 					s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
 					s.College = slices.Clone(s.College)
 					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-					s.Weapons = CloneWeapons(other.Weapons, false)
+					s.Weapons = CloneWeapons(other.Weapons, s, false)
 				}
 			}
 		}
@@ -1238,7 +1238,7 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (s *SpellEditData) CopyFrom(other *Spell) {
-	s.copyFrom(&other.SpellEditData, other.Container(), false)
+	s.copyFrom(other, &other.SpellEditData, other.Container(), false)
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1248,10 +1248,10 @@ func (s *SpellEditData) SetNameableReplacements(replacements map[string]string) 
 
 // ApplyTo implements node.EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
-	other.copyFrom(s, other.Container(), true)
+	other.copyFrom(other, s, other.Container(), true)
 }
 
-func (s *SpellEditData) copyFrom(other *SpellEditData, isContainer, isApply bool) {
+func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer, isApply bool) {
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
@@ -1261,7 +1261,7 @@ func (s *SpellEditData) copyFrom(other *SpellEditData, isContainer, isApply bool
 	}
 	s.College = slices.Clone(other.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	s.Weapons = CloneWeapons(other.Weapons, isApply)
+	s.Weapons = CloneWeapons(other.Weapons, spell, isApply)
 	if len(other.Study) != 0 {
 		s.Study = make([]*Study, len(other.Study))
 		for i := range other.Study {

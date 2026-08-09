@@ -173,14 +173,18 @@ func (w *Weapon) IsRanged() bool {
 	return tid.IsKind(w.TID, kinds.WeaponRanged)
 }
 
-// CloneWeapons clones the input list of weapons.
-func CloneWeapons(list []*Weapon, preserveIDs bool) []*Weapon {
+// CloneWeapons clones the input list of weapons, pointing each copy at the given owner. Weapon.Clone() carries the
+// original's owner over, since it has no way to know the new one, so the owner must be supplied here: a weapon resolves
+// its nameable replacements, skill defaults and strength requirements through its owner, so a copy left pointing at the
+// node it was copied from reports that node's values rather than its own holder's.
+func CloneWeapons(list []*Weapon, owner WeaponOwner, preserveIDs bool) []*Weapon {
 	if len(list) == 0 {
 		return nil
 	}
 	weapons := make([]*Weapon, len(list))
 	for i, w := range list {
 		weapons[i] = w.Clone(LibraryFile{}, nil, nil, preserveIDs)
+		weapons[i].SetOwner(owner)
 	}
 	return weapons
 }

@@ -973,7 +973,7 @@ func (e *Equipment) SyncWithSource() {
 				e.EquipmentSyncData = other.EquipmentSyncData
 				e.Tags = slices.Clone(other.Tags)
 				e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-				e.Weapons = CloneWeapons(other.Weapons, false)
+				e.Weapons = CloneWeapons(other.Weapons, e, false)
 				e.Features = other.Features.Clone()
 			}
 		}
@@ -1055,6 +1055,6 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 		}
 	}
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
-	e.Weapons = CloneWeapons(other.Weapons, isApply)
+	e.Weapons = CloneWeapons(other.Weapons, equipment, isApply)
 	e.Features = other.Features.Clone()
 }
