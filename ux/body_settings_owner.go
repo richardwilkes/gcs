@@ -15,7 +15,12 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-var _ BodySettingsOwner = &globalBodySettingsOwner{}
+// globalBodySettings is the owner used when editing the default (global) body settings. Exactly one instance must ever
+// exist, since ShowBodySettings decides whether an already-open dockable can be reactivated by comparing its owner to
+// the one passed in. globalBodySettingsOwner is a zero-size struct, and the Go spec permits distinct zero-size
+// variables to share an address, so allocating a fresh owner for each invocation would make that comparison depend on
+// unspecified behavior.
+var globalBodySettings BodySettingsOwner = &globalBodySettingsOwner{}
 
 // BodySettingsOwner is the interface that a panel must implement to be able to display and edit Body settings.
 type BodySettingsOwner interface {

@@ -43,14 +43,10 @@ type bodySettingsDockable struct {
 	inDragOver     bool
 }
 
-// ShowBodySettings the Body Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
+// ShowBodySettings shows the Body Settings. Pass in globalBodySettings to edit the defaults or a sheet to edit the
+// sheet's.
 func ShowBodySettings(owner BodySettingsOwner) {
-	if Activate(func(d unison.Dockable) bool {
-		if s, ok := d.AsPanel().Self.(*bodySettingsDockable); ok && owner == s.owner {
-			return true
-		}
-		return false
-	}) {
+	if Activate(func(d unison.Dockable) bool { return isBodySettingsFor(d, owner) }) {
 		return
 	}
 	d := &bodySettingsDockable{
@@ -72,6 +68,14 @@ func ShowBodySettings(owner BodySettingsOwner) {
 	d.ModifiedCallback = d.modified
 	d.WillCloseCallback = d.willClose
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
+}
+
+// isBodySettingsFor returns true if the dockable is the body settings dockable belonging to the given owner. Owners are
+// compared by identity, so the caller must always pass the same owner for a given set of settings -- see the comment on
+// globalBodySettings for the defaults.
+func isBodySettingsFor(d unison.Dockable, owner BodySettingsOwner) bool {
+	s, ok := d.AsPanel().Self.(*bodySettingsDockable)
+	return ok && s.owner == owner
 }
 
 func (d *bodySettingsDockable) UndoManager() *unison.UndoManager {
