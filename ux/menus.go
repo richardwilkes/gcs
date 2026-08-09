@@ -445,7 +445,9 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 			}
 		}
 	}
-	if menu.Count() == 2 {
+	// Count the templates that were added rather than the menu items, since the menu also holds the fixed prologue
+	// above and a title for each library that contributed, none of which are export templates.
+	if index == 0 {
 		s.appendDisabledMenuItem(menu, i18n.Text("No export templates available"))
 	}
 }
