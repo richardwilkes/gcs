@@ -53,6 +53,22 @@ type pointsEditor struct {
 	promptForSave    bool
 }
 
+// newPointsEditor returns an editor holding the two copies of the entity's points record list, without building any of
+// the editor's UI. Both copies are put into the same order, since the editor displays and compares them in that order
+// and a list loaded from a file may have been stored in some other order.
+func newPointsEditor(owner Rebuildable, entity *gurps.Entity) *pointsEditor {
+	e := &pointsEditor{
+		owner:   owner,
+		entity:  entity,
+		before:  gurps.ClonePointsRecordList(entity.PointsRecord),
+		current: gurps.ClonePointsRecordList(entity.PointsRecord),
+	}
+	e.Self = e
+	gurps.SortPointsRecordList(e.before)
+	gurps.SortPointsRecordList(e.current)
+	return e
+}
+
 func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	if Activate(func(d unison.Dockable) bool {
 		if e, ok := d.AsPanel().Self.(*pointsEditor); ok {
@@ -62,14 +78,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	}) {
 		return
 	}
-	e := &pointsEditor{
-		owner:   owner,
-		entity:  entity,
-		before:  gurps.ClonePointsRecordList(entity.PointsRecord),
-		current: gurps.ClonePointsRecordList(entity.PointsRecord),
-	}
-	e.Self = e
-	slices.SortFunc(e.current, func(a, b *gurps.PointsRecord) int { return b.When.Compare(a.When) })
+	e := newPointsEditor(owner, entity)
 
 	if defDC := DefaultDockContainer(); defDC != nil {
 		if e.previousDockable = defDC.CurrentDockable(); !xreflect.IsNil(e.previousDockable) {
@@ -300,14 +309,9 @@ func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 		}
 	}
 	for _, sheet := range sheets {
-		pe := &pointsEditor{
-			owner:  sheet,
-			entity: sheet.entity,
-			before: gurps.ClonePointsRecordList(sheet.entity.PointsRecord),
-		}
-		pe.Self = pe
-		pe.current = slices.Insert(gurps.ClonePointsRecordList(sheet.entity.PointsRecord), 0, rec)
-		slices.SortFunc(pe.current, func(a, b *gurps.PointsRecord) int { return b.When.Compare(a.When) })
+		pe := newPointsEditor(sheet, sheet.entity)
+		pe.current = slices.Insert(pe.current, 0, rec)
+		gurps.SortPointsRecordList(pe.current)
 		pe.applyWithoutFocusNext()
 	}
 }
@@ -332,10 +336,14 @@ func (e *pointsEditor) Tooltip() string {
 }
 
 func (e *pointsEditor) Modified() bool {
-	modified := !reflect.DeepEqual(e.before, e.current)
+	modified := e.isModified()
 	e.applyButton.SetEnabled(modified)
 	e.cancelButton.SetEnabled(modified)
 	return modified
+}
+
+func (e *pointsEditor) isModified() bool {
+	return !reflect.DeepEqual(e.before, e.current)
 }
 
 func (e *pointsEditor) MarkModified(_ unison.Paneler) {
@@ -362,7 +370,7 @@ func (e *pointsEditor) AttemptClose() bool {
 	if !CloseGroup(e) {
 		return false
 	}
-	if e.promptForSave && !reflect.DeepEqual(e.before, e.current) {
+	if e.promptForSave && e.isModified() {
 		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
 		case unison.ModalResponseDiscard:
 		case unison.ModalResponseOK:

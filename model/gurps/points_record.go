@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 )
@@ -29,4 +31,10 @@ func ClonePointsRecordList(list []*PointsRecord) []*PointsRecord {
 		clone[i] = &record
 	}
 	return clone
+}
+
+// SortPointsRecordList sorts the provided PointsRecord list into the order GCS presents and stores them in, which is
+// most recent first.
+func SortPointsRecordList(list []*PointsRecord) {
+	slices.SortFunc(list, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
 }

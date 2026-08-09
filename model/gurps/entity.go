@@ -1721,7 +1721,7 @@ func (e *Entity) Hash(h hash.Hash) {
 // SetPointsRecord sets a new points record list, adjusting the total points.
 func (e *Entity) SetPointsRecord(record []*PointsRecord) {
 	e.PointsRecord = ClonePointsRecordList(record)
-	slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
+	SortPointsRecordList(e.PointsRecord)
 	e.TotalPoints = 0
 	for _, rec := range record {
 		e.TotalPoints += rec.Points
