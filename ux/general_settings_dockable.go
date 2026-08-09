@@ -555,7 +555,6 @@ func (d *generalSettingsDockable) createOpenInWindowCheckboxes(content *unison.P
 						settings.OpenInWindow = slices.Delete(settings.OpenInWindow, i, i+1)
 					}
 				}
-				Workspace.Navigator.mapDeepSearch()
 			})
 		box.ClientData()["group"] = group
 		d.openInWindowCheckbox = append(d.openInWindowCheckbox, box)
