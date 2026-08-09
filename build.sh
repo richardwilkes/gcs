@@ -77,7 +77,7 @@ for arg in "$@"; do
 		echo "  -p, --genpkg Generate the icons and packaging.yml file"
 		echo "  -i, --i18n   Extract the localization template"
 		echo "  -l, --lint   Run the linters"
-		echo "  -r, --race   Run the tests with race-checking enabled"
+		echo "  -r, --race   Run the tests, race-checking those that exercise concurrency"
 		echo "  -t, --test   Run the tests"
 		echo "  -h, --help   This help text"
 		exit 0
@@ -182,13 +182,18 @@ if [ "$LINT"x == "1x" ]; then
 fi
 
 # Run the tests
+#
+# Race instrumentation slows the test packages down 3-10x, yet the detector can only ever report an access made while
+# two or more goroutines are live, which almost none of the tests produce. So the full suite runs uninstrumented, and
+# the race pass is limited to the TestRace wrappers (see model/gurps/race_coverage_test.go), which re-run just the
+# tests that actually put multiple goroutines over shared state.
 if [ "$TEST"x == "1x" ]; then
+	echo -e "\033[33mTesting...\033[0m"
+	go test ./... | grep -v "no test files"
 	if [ -n "$RACE" ]; then
-		echo -e "\033[33mTesting with -race enabled...\033[0m"
-	else
-		echo -e "\033[33mTesting...\033[0m"
+		echo -e "\033[33mRace-checking the concurrency tests...\033[0m"
+		go test -race -run '^TestRace$' ./... | grep -Ev "no test files|no tests to run"
 	fi
-	go test $RACE ./... | grep -v "no test files"
 fi
 
 # Package
