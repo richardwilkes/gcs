@@ -18,6 +18,7 @@ import (
 type ApplyTemplateUndoEditData struct {
 	sheet     *Sheet
 	profile   gurps.ProfileRandom
+	bodyType  *gurps.Body
 	traits    PreservedTableData[*gurps.Trait]
 	skills    PreservedTableData[*gurps.Skill]
 	spells    PreservedTableData[*gurps.Spell]
@@ -29,7 +30,11 @@ type ApplyTemplateUndoEditData struct {
 func NewApplyTemplateUndoEditData(sheet *Sheet) (*ApplyTemplateUndoEditData, error) {
 	var data ApplyTemplateUndoEditData
 	data.sheet = sheet
-	data.profile = sheet.Entity().Profile.ProfileRandom
+	entity := sheet.Entity()
+	data.profile = entity.Profile.ProfileRandom
+	if entity.SheetSettings.BodyType != nil {
+		data.bodyType = entity.SheetSettings.BodyType.Clone(entity, nil)
+	}
 	if err := data.traits.Collect(sheet.Traits.Table); err != nil {
 		return nil, err
 	}
@@ -50,7 +55,11 @@ func NewApplyTemplateUndoEditData(sheet *Sheet) (*ApplyTemplateUndoEditData, err
 
 // Apply the data.
 func (a *ApplyTemplateUndoEditData) Apply() {
-	a.sheet.Entity().Profile.ProfileRandom = a.profile
+	entity := a.sheet.Entity()
+	entity.Profile.ProfileRandom = a.profile
+	if a.bodyType != nil {
+		entity.SheetSettings.BodyType = a.bodyType.Clone(entity, nil)
+	}
 	updateRandomizedProfileFieldsWithoutUndo(a.sheet)
 	if err := a.traits.Apply(a.sheet.Traits.Table); err != nil {
 		errs.Log(err)

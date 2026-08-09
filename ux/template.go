@@ -356,7 +356,39 @@ func (t *Template) applyTemplate(suppressRandomizePromptAsBool any) {
 	}
 }
 
+// templateRows holds the rows cloned from a template for insertion into a sheet.
+type templateRows struct {
+	traits    []*Node[*gurps.Trait]
+	skills    []*Node[*gurps.Skill]
+	spells    []*Node[*gurps.Spell]
+	equipment []*Node[*gurps.Equipment]
+	notes     []*Node[*gurps.Note]
+}
+
+// processTemplatePickers presents the template picker dialog for each row that has one, replacing the rows with the
+// resulting choices. It returns false if the user canceled one of them, in which case the rows must be discarded.
+func processTemplatePickers(rows *templateRows) bool {
+	var abort bool
+	if rows.traits, abort = processPickerRows(rows.traits); abort {
+		return false
+	}
+	if rows.skills, abort = processPickerRows(rows.skills); abort {
+		return false
+	}
+	if rows.spells, abort = processPickerRows(rows.spells); abort {
+		return false
+	}
+	return true
+}
+
 func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) bool {
+	return t.applyTemplateToSheetWithPickers(sheet, suppressRandomizePrompt, processTemplatePickers)
+}
+
+// applyTemplateToSheetWithPickers applies the template to the sheet, using processPickers to resolve any template
+// pickers the template's rows contain. The picker processing is passed in so that headless tests, which have no way to
+// respond to the dialogs it would otherwise present, can substitute their own.
+func (t *Template) applyTemplateToSheetWithPickers(sheet *Sheet, suppressRandomizePrompt bool, processPickers func(rows *templateRows) bool) bool {
 	var undo *unison.UndoEdit[*ApplyTemplateUndoEditData]
 	mgr := unison.UndoManagerFor(sheet)
 	if mgr != nil {
@@ -375,48 +407,50 @@ func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bo
 		}
 	}
 	e := sheet.Entity()
-	if t.template.BodyType != nil {
-		e.SheetSettings.BodyType = t.template.BodyType.Clone(e, nil)
-	}
+	// Nothing from here until the pickers have been dealt with may modify the sheet: canceling a picker abandons the
+	// entire operation, which must leave the sheet exactly as it was. That includes the answer to the Ancestry question
+	// below, which is asked here to preserve the order the questions are presented in, but not acted upon until the
+	// operation is known to be going through.
+	disableExistingAncestries := false
 	templateAncestries := gurps.ActiveAncestries(ExtractNodeDataFromList(t.Traits.Table.RootRows()))
 	if len(templateAncestries) != 0 {
 		entityAncestries := gurps.ActiveAncestries(e.Traits)
 		if len(entityAncestries) != 0 {
-			if unison.YesNoDialog(fmt.Sprintf(i18n.Text(`The template contains an Ancestry (%s).
+			disableExistingAncestries = unison.YesNoDialog(fmt.Sprintf(i18n.Text(`The template contains an Ancestry (%s).
 Disable your character's existing Ancestry (%s)?`),
-				templateAncestries[0].Name, entityAncestries[0].Name), "") == unison.ModalResponseOK {
-				for _, one := range gurps.ActiveAncestryTraits(e.Traits) {
-					one.Disabled = true
-				}
-			}
+				templateAncestries[0].Name, entityAncestries[0].Name), "") == unison.ModalResponseOK
 		}
 	}
-	traits := cloneRows(sheet.Traits.Table, t.Traits.Table.RootRows())
-	skills := cloneRows(sheet.Skills.Table, t.Skills.Table.RootRows())
-	spells := cloneRows(sheet.Spells.Table, t.Spells.Table.RootRows())
-	equipment := cloneRows(sheet.CarriedEquipment.Table, t.Equipment.Table.RootRows())
-	notes := cloneRows(sheet.Notes.Table, t.Notes.Table.RootRows())
-	var abort bool
-	if traits, abort = processPickerRows(traits); abort {
-		return false
+	rows := &templateRows{
+		traits:    cloneRows(sheet.Traits.Table, t.Traits.Table.RootRows()),
+		skills:    cloneRows(sheet.Skills.Table, t.Skills.Table.RootRows()),
+		spells:    cloneRows(sheet.Spells.Table, t.Spells.Table.RootRows()),
+		equipment: cloneRows(sheet.CarriedEquipment.Table, t.Equipment.Table.RootRows()),
+		notes:     cloneRows(sheet.Notes.Table, t.Notes.Table.RootRows()),
 	}
-	if skills, abort = processPickerRows(skills); abort {
-		return false
+	if !processPickers(rows) {
+		return false // A picker was canceled, so the sheet has been left untouched.
 	}
-	if spells, abort = processPickerRows(spells); abort {
-		return false
+	// The sheet is modified from this point on.
+	if t.template.BodyType != nil {
+		e.SheetSettings.BodyType = t.template.BodyType.Clone(e, nil)
+	}
+	if disableExistingAncestries {
+		for _, one := range gurps.ActiveAncestryTraits(e.Traits) {
+			one.Disabled = true
+		}
 	}
 	// Skills and spells merge points with identical existing rows during appendRows, and the merge match includes the
 	// nameable replacements. Since skills and spells have no modifiers to toggle, resolve their nameables up front so
 	// that the merge compares against the final replacements; otherwise re-applying a template would compare empty
 	// replacements against the already-resolved existing rows and add duplicates instead of merging.
-	ProcessNameables(sheet.Skills.Table, ExtractNodeDataFromList(skills))
-	ProcessNameables(sheet.Spells.Table, ExtractNodeDataFromList(spells))
-	appendRows(sheet.Traits.Table, traits)
-	appendRows(sheet.Skills.Table, skills)
-	appendRows(sheet.Spells.Table, spells)
-	appendRows(sheet.CarriedEquipment.Table, equipment)
-	appendRows(sheet.Notes.Table, notes)
+	ProcessNameables(sheet.Skills.Table, ExtractNodeDataFromList(rows.skills))
+	ProcessNameables(sheet.Spells.Table, ExtractNodeDataFromList(rows.spells))
+	appendRows(sheet.Traits.Table, rows.traits)
+	appendRows(sheet.Skills.Table, rows.skills)
+	appendRows(sheet.Spells.Table, rows.spells)
+	appendRows(sheet.CarriedEquipment.Table, rows.equipment)
+	appendRows(sheet.Notes.Table, rows.notes)
 	sheet.Rebuild(true)
 	ProcessModifiersForSelection(sheet.Traits.Table)
 	ProcessModifiersForSelection(sheet.CarriedEquipment.Table)
