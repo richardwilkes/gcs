@@ -24,6 +24,16 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
+const (
+	// handoffMarker precedes the length-prefixed payload a secondary instance hands off to the primary one.
+	handoffMarker = 22
+	// maxHandoffPayloadSize bounds the payload a handoff may carry. The payload is only a JSON array of the absolute
+	// paths named on the command line, so this is far more than any real invocation can produce, given that the
+	// command line itself is limited to a fraction of this by the OS. Without a bound, any local process able to
+	// connect to the handoff port could claim a payload of up to 4GB and force an allocation of that size.
+	maxHandoffPayloadSize = 4 << 20
+)
+
 func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, paths []string) {
 	const address = "127.0.0.1:13322"
 	var pathsBuffer []byte
@@ -76,8 +86,13 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 		errs.Log(errs.New("unexpected app identifier"))
 		return false
 	}
+	if len(pathsBuffer) > maxHandoffPayloadSize {
+		errs.Log(errs.Newf("handoff payload size of %d exceeds the maximum of %d", len(pathsBuffer),
+			maxHandoffPayloadSize))
+		return false
+	}
 	buffer = make([]byte, 5)
-	buffer[0] = 22
+	buffer[0] = handoffMarker
 	binary.LittleEndian.PutUint32(buffer[1:], uint32(len(pathsBuffer))) //nolint:gosec // No, this won't overflow
 	n, err := conn.Write(buffer)
 	if err != nil {
@@ -138,31 +153,41 @@ func processHandoff(conn net.Conn, pathsChan chan<- []string) {
 		errs.Log(err)
 		return
 	}
-	var single [1]byte
-	if _, err := io.ReadFull(conn, single[:]); err != nil {
-		errs.Log(err)
-		return
-	}
-	if single[0] != 22 {
-		errs.Log(errs.Newf("unexpected value for single[0]: %d", single[0]))
-		return
-	}
-	var sizeBuffer [4]byte
-	if _, err := io.ReadFull(conn, sizeBuffer[:]); err != nil {
-		errs.Log(err)
-		return
-	}
-	size := int(binary.LittleEndian.Uint32(sizeBuffer[:]))
-	buffer := make([]byte, size)
-	if _, err := io.ReadFull(conn, buffer); err != nil {
-		errs.Log(err)
-		return
-	}
-	var paths []string
-	if err := json.Unmarshal(buffer, &paths); err != nil {
+	paths, err := readHandoffPaths(conn)
+	if err != nil {
 		errs.Log(err)
 		return
 	}
 	slog.Info("received handoff", "paths", paths)
 	pathsChan <- paths
+}
+
+// readHandoffPaths reads a handoff payload -- the marker byte, a little-endian 32-bit byte count, then that many bytes
+// of JSON -- and returns the paths it holds. The byte count is checked before it is used to allocate, since it arrives
+// from an unauthenticated local connection.
+func readHandoffPaths(r io.Reader) ([]string, error) {
+	var single [1]byte
+	if _, err := io.ReadFull(r, single[:]); err != nil {
+		return nil, errs.Wrap(err)
+	}
+	if single[0] != handoffMarker {
+		return nil, errs.Newf("unexpected value for single[0]: %d", single[0])
+	}
+	var sizeBuffer [4]byte
+	if _, err := io.ReadFull(r, sizeBuffer[:]); err != nil {
+		return nil, errs.Wrap(err)
+	}
+	size := binary.LittleEndian.Uint32(sizeBuffer[:])
+	if size > maxHandoffPayloadSize {
+		return nil, errs.Newf("handoff payload size of %d exceeds the maximum of %d", size, maxHandoffPayloadSize)
+	}
+	buffer := make([]byte, size)
+	if _, err := io.ReadFull(r, buffer); err != nil {
+		return nil, errs.Wrap(err)
+	}
+	var paths []string
+	if err := json.Unmarshal(buffer, &paths); err != nil {
+		return nil, errs.Wrap(err)
+	}
+	return paths, nil
 }
