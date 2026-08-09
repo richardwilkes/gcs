@@ -118,6 +118,55 @@ func TestLengthFromStringUnitSuffixes(t *testing.T) {
 	}
 }
 
+// TestLengthFromStringOptionalInchMarker verifies that the inches portion of a feet-and-inches value is honored even
+// when the closing inch marker hasn't been typed yet. The length fields validate on every keystroke and reject the rune
+// when parsing fails, so `6'2` must be a valid intermediate state -- and it must mean 6'2", not 6' with the inches
+// silently discarded.
+func TestLengthFromStringOptionalInchMarker(t *testing.T) {
+	c := check.New(t)
+	for _, d := range []struct {
+		text     string
+		expected int
+	}{
+		{text: `6'2`, expected: 74},
+		{text: `6'2"`, expected: 74},
+		{text: `6'  2`, expected: 74},
+		{text: `6'`, expected: 72},
+		{text: `6'0`, expected: 72},
+		{text: `12"`, expected: 12},
+		{text: `-2'6`, expected: -30},
+		{text: `6'11`, expected: 83},
+	} {
+		w, err := fxp.LengthFromString(d.text, fxp.Inch)
+		c.NoError(err, "parsing %q", d.text)
+		c.Equal(fxp.LengthFromInteger(d.expected, fxp.Inch), w, "parsing %q", d.text)
+	}
+
+	// A fractional inch isn't lost, either; it just isn't an integer number of inches.
+	w, err := fxp.LengthFromString(`6'0.5`, fxp.Inch)
+	c.NoError(err)
+	c.Equal(fxp.LengthFromFixed(fxp.FromStringForced("72.5"), fxp.Inch), w)
+
+	// Every prefix of a feet-and-inches value must parse, since NumericField.runeTyped rejects a keystroke whose
+	// resulting text doesn't parse. If any prefix failed, the user could never finish typing the value.
+	full := `6'2"`
+	for i := 1; i <= len(full); i++ {
+		_, err = fxp.LengthFromString(full[:i], fxp.Inch)
+		c.NoError(err, "parsing prefix %q", full[:i])
+	}
+}
+
+// TestLengthFromStringRejectsTrailingText verifies that the feet-and-inches parser consumes the entire input. Trailing
+// text used to be silently discarded (e.g. `6'2"junk` parsed as 6'2" and `12"3` as 12"), storing a value the user never
+// typed instead of reporting the input as malformed.
+func TestLengthFromStringRejectsTrailingText(t *testing.T) {
+	c := check.New(t)
+	for _, text := range []string{`6'2"junk`, `12"3`, `6'2"3`, `6'2""`, `6'x`, `6'2'3`, `12"3'`, `"`} {
+		_, err := fxp.LengthFromString(text, fxp.Inch)
+		c.HasError(err, "parsing %q should fail", text)
+	}
+}
+
 // TestLengthFromStringCaseInsensitive verifies that unit suffixes are matched without regard to case.
 func TestLengthFromStringCaseInsensitive(t *testing.T) {
 	c := check.New(t)
