@@ -48,6 +48,7 @@ func (a *Attributes) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &list); err != nil {
 		return err
 	}
+	list = slices.DeleteFunc(list, func(one *Attribute) bool { return one == nil })
 	a.Set = make(map[string]*Attribute, len(list))
 	for i, one := range list {
 		one.Order = i

@@ -14,6 +14,7 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -75,6 +76,7 @@ func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if a.Base == "" && legacy.AttributeBase != "" {
 		a.Base = ExprToScript(legacy.AttributeBase)
 	}
+	a.Thresholds = slices.DeleteFunc(a.Thresholds, func(one *PoolThreshold) bool { return one == nil })
 	for _, threshold := range a.Thresholds {
 		threshold.Value = strings.ReplaceAll(threshold.Value, "$self", "$"+a.DefID)
 	}

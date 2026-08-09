@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"testing"
+	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -116,4 +118,55 @@ func TestAttributeDefPlacementResolution(t *testing.T) {
 	c.True(def.Relevant(e, SecondaryAttrKind), "revealed as secondary: relevant as secondary")
 	c.False(def.Relevant(e, PrimaryAttrKind), "revealed as secondary: not relevant as primary")
 	c.Equal(SecondaryAttrKind, def.Kind(e), "revealed as secondary: secondary kind")
+}
+
+// TestAttributeDefsWithNullRows verifies that JSON null entries in an attribute definition list (or in a pool's
+// threshold list) are dropped rather than dereferenced. json/v2 decodes a null array entry into a nil pointer without
+// error, so a hand-edited or corrupt .attr file — or the SheetSettings.Attributes embedded in a .gcs sheet or a
+// settings file — used to crash GCS with a nil-pointer panic instead of loading.
+func TestAttributeDefsWithNullRows(t *testing.T) {
+	c := check.New(t)
+
+	const data = `{
+	"version": 5,
+	"rows": [
+		{"id":"st","type":"integer","name":"ST","base":"10","cost_per_point":10},
+		null,
+		{"id":"hp","type":"pool","name":"HP","base":"$st","cost_per_point":2,"thresholds":[
+			null,
+			{"state":"Dead","value":"-$self*5","ops":["halve_move"]}
+		]}
+	]
+}`
+	defs, err := NewAttributeDefsFromFile(fstest.MapFS{"Test.attr": {Data: []byte(data)}}, "Test.attr")
+	c.NoError(err, "a file with a null row should load")
+	c.Equal(2, len(defs.Set), "the null row should be dropped")
+	list := defs.List(false)
+	c.Equal("st", list[0].ID(), "first surviving row")
+	c.Equal(1, list[0].Order, "orders remain sequential with no gap for the dropped row")
+	c.Equal("hp", list[1].ID(), "second surviving row")
+	c.Equal(2, list[1].Order, "orders remain sequential with no gap for the dropped row")
+	c.Equal(1, len(list[1].Thresholds), "the null threshold should be dropped")
+	c.Equal("Dead", list[1].Thresholds[0].State, "the surviving threshold is intact")
+	c.Equal("-$hp*5", list[1].Thresholds[0].Value, "$self is still resolved in the surviving threshold")
+
+	// Cloning and hashing must not trip over the sanitized data either.
+	c.NotNil(defs.Clone(), "clone works")
+	c.Equal(Hash64(defs), Hash64(defs.Clone()), "hash of clone matches")
+}
+
+// TestAttributesWithNullRows verifies that a JSON null entry in an entity's attribute list is dropped rather than
+// dereferenced while decoding.
+func TestAttributesWithNullRows(t *testing.T) {
+	c := check.New(t)
+
+	var attrs Attributes
+	c.NoError(json.Unmarshal([]byte(`[{"attr_id":"st","adj":2},null,{"attr_id":"dx","adj":1}]`), &attrs),
+		"a null attribute entry should not panic or error")
+	c.Equal(2, len(attrs.Set), "the null entry should be dropped")
+	list := attrs.List()
+	c.Equal("st", list[0].ID(), "first surviving attribute")
+	c.Equal(0, list[0].Order, "orders remain sequential with no gap for the dropped entry")
+	c.Equal("dx", list[1].ID(), "second surviving attribute")
+	c.Equal(1, list[1].Order, "orders remain sequential with no gap for the dropped entry")
 }
