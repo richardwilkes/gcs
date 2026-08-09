@@ -12,6 +12,7 @@ package paper
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"math"
 	"strconv"
 	"strings"
 
@@ -37,7 +38,7 @@ func LengthFromString(text string) Length {
 // ParseLengthFromString parses a Length from the text. May have any of the known unit suffixes or no notation at all,
 // in which case inch is used.
 func ParseLengthFromString(text string) (length Length, err error) {
-	text = strings.TrimLeft(strings.TrimSpace(text), "+")
+	text = strings.ToLower(strings.TrimLeft(strings.TrimSpace(text), "+"))
 	for _, unit := range Units {
 		if strings.HasSuffix(text, unit.Key()) {
 			length.Units = unit
@@ -47,6 +48,13 @@ func ParseLengthFromString(text string) (length Length, err error) {
 	}
 	if length.Length, err = strconv.ParseFloat(text, 64); err != nil {
 		return length, errs.NewWithCause("invalid value", err)
+	}
+	// strconv.ParseFloat accepts "inf", "infinity" and "nan" (and any leading '+' has already been trimmed), none of
+	// which are < 0, so they must be rejected explicitly. Letting one through poisons the page layout arithmetic with
+	// a non-finite number that then survives a save/load round trip.
+	if math.IsInf(length.Length, 0) || math.IsNaN(length.Length) {
+		length.Length = 0
+		return length, errs.New("value must be a finite number")
 	}
 	if length.Length < 0 {
 		return length, errs.New("value must be zero or greater")
@@ -89,7 +97,8 @@ func (l *Length) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
 func (l *Length) EnsureValidity() {
 	l.Units = l.Units.EnsureValid()
-	if l.Length < 0 {
+	// Neither +Inf nor NaN is < 0, so they have to be checked for separately.
+	if l.Length < 0 || math.IsInf(l.Length, 0) || math.IsNaN(l.Length) {
 		l.Length = 0
 	}
 }
