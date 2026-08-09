@@ -592,58 +592,24 @@ Each top-level item in this sheet will be treated as a potential item to select 
 The quantity of that top-level item will be used to determine the likelihood of it
 being selected, with larger numbers increasing the chance it is chosen.`), 400)
 	content.AddChild(markdown)
-	input := unison.NewPanel()
-	input.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-		HAlign:   align.Fill,
-		VAlign:   align.Fill,
-	})
-	input.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
-	input.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 4}))
 	settings := gurps.GlobalSettings()
-	minValue := settings.LootGenMinValue
-	maxValue := settings.LootGenMaxValue
-	var dialog *unison.Dialog
-	var minField, maxField *DecimalField
-	validateOK := func() {
-		dialog.Button(unison.ModalResponseOK).SetEnabled(minValue <= maxValue && maxValue >= minValue &&
-			!minField.Invalid() && !maxField.Invalid())
-	}
-	label := i18n.Text("Target (Minimum) Value")
-	input.AddChild(NewFieldLeadingLabel(label, false))
-	minField = NewDecimalField(nil, "", label,
-		func() fxp.Int { return minValue },
-		func(value fxp.Int) {
-			minValue = value
-			validateOK()
-		},
-		fxp.One, fxp.TenMillionMinusOne, false, false)
-	input.AddChild(minField)
-	label = i18n.Text("Maximum Value")
-	input.AddChild(NewFieldLeadingLabel(label, false))
-	maxField = NewDecimalField(nil, "", label,
-		func() fxp.Int { return maxValue },
-		func(value fxp.Int) {
-			maxValue = value
-			validateOK()
-		},
-		fxp.One, fxp.TenMillionMinusOne, false, false)
-	input.AddChild(maxField)
-	content.AddChild(input)
+	gen := newTreasureGenPanel(settings.LootGenMinValue, settings.LootGenMaxValue)
+	content.AddChild(gen.panel)
 	icon := &unison.DrawableSVG{
 		SVG:  svg.MagicWand,
 		Size: geom.Size{Width: 48, Height: 48},
 	}
 	var err error
-	if dialog, err = unison.NewDialog(icon, unison.DefaultDialogTheme.QuestionIconInk, content,
+	if gen.dialog, err = unison.NewDialog(icon, unison.DefaultDialogTheme.QuestionIconInk, content,
 		[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()},
 		unison.FloatingWindowOption(), unison.NotResizableWindowOption()); err != nil {
 		errs.Log(err)
 		return
 	}
-	if dialog.RunModal() == unison.ModalResponseOK {
+	gen.validateOK() // The fields couldn't set the button state while they were being created, so do it now
+	if gen.dialog.RunModal() == unison.ModalResponseOK {
+		minValue := gen.minValue
+		maxValue := gen.maxValue
 		var current fxp.Int
 		r := xrand.New()
 		settings.LootGenMinValue = minValue
@@ -713,6 +679,61 @@ or under the maximum value of $%s with the available items.`),
 		sheet.hash = 0 // Force it to be recognized as unsaved
 		DisplayNewDockable(sheet)
 	}
+}
+
+type treasureGenPanel struct {
+	panel    *unison.Panel
+	dialog   *unison.Dialog
+	minField *DecimalField
+	maxField *DecimalField
+	minValue fxp.Int
+	maxValue fxp.Int
+}
+
+func newTreasureGenPanel(minValue, maxValue fxp.Int) *treasureGenPanel {
+	p := &treasureGenPanel{
+		panel:    unison.NewPanel(),
+		minValue: minValue,
+		maxValue: maxValue,
+	}
+	p.panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
+	})
+	p.panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
+	p.panel.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 4}))
+	label := i18n.Text("Target (Minimum) Value")
+	p.panel.AddChild(NewFieldLeadingLabel(label, false))
+	p.minField = NewDecimalField(nil, "", label,
+		func() fxp.Int { return p.minValue },
+		func(value fxp.Int) {
+			p.minValue = value
+			p.validateOK()
+		},
+		fxp.One, fxp.TenMillionMinusOne, false, false)
+	p.panel.AddChild(p.minField)
+	label = i18n.Text("Maximum Value")
+	p.panel.AddChild(NewFieldLeadingLabel(label, false))
+	p.maxField = NewDecimalField(nil, "", label,
+		func() fxp.Int { return p.maxValue },
+		func(value fxp.Int) {
+			p.maxValue = value
+			p.validateOK()
+		},
+		fxp.One, fxp.TenMillionMinusOne, false, false)
+	p.panel.AddChild(p.maxField)
+	return p
+}
+
+func (p *treasureGenPanel) validateOK() {
+	if p.dialog == nil || p.minField == nil || p.maxField == nil {
+		return
+	}
+	p.dialog.Button(unison.ModalResponseOK).SetEnabled(p.minValue <= p.maxValue && !p.minField.Invalid() &&
+		!p.maxField.Invalid())
 }
 
 func pruneEquipmentList(remaining fxp.Int, items []*gurps.Equipment) (revisedItems []*gurps.Equipment, total, highest fxp.Int) {
