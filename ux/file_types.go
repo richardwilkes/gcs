@@ -52,7 +52,9 @@ func registerSpecialFileInfo(extension string, icon *unison.SVG) {
 func RegisterExternalFileTypes() {
 	registerPDFFileInfo()
 	registerMarkdownFileInfo()
-	groupWith := slices.Sorted(maps.Keys(xslices.Set(imgfmt.AllReadableExtensions())))
+	// The imgfmt enum has no SVG member, so add the SVG extensions explicitly, otherwise SVG files won't group with the
+	// other image files (or even with each other).
+	groupWith := slices.Sorted(maps.Keys(xslices.Set(append(imgfmt.AllReadableExtensions(), uti.SVG.Extensions...))))
 	for _, one := range imgfmt.All {
 		if one.CanRead() {
 			registerImageFileInfo(one, groupWith)
