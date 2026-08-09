@@ -16,7 +16,9 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
@@ -101,6 +103,77 @@ func TestLoadSettingsOrDefaultsWithNullLibraryEntry(t *testing.T) {
 	c.True(ok, "the usable library entry survived")
 	_, ok = settings.LibrarySet["a/b"]
 	c.False(ok, "the null entry was skipped")
+}
+
+// TestSettingsSaveWithNullMapEntries verifies that a settings file holding a JSON null in place of a navigator node, a
+// column-sizing entry, or a PDF entry is survivable. Such entries decode without error, so the file loaded fine and
+// then Save() -- which runs on quit and after any settings change -- panicked while pruning stale entries, losing the
+// session's settings changes.
+func TestSettingsSaveWithNullMapEntries(t *testing.T) {
+	c := check.New(t)
+	countErrorLogging(t)
+	dir := t.TempDir()
+	p := filepath.Join(dir, "settings.json")
+	c.NoError(os.WriteFile(p, []byte(`{
+	"library_explorer": {"nodes": {"F@bad": null, "F@good": {"id": "3abcdefghij", "last": 9999999999}}},
+	"column_sizing": {"bad": null, "good": {"-1": 9999999, "0": 120}},
+	"pdfs": {"bad": null, "good": {"last": 9999999999, "toc": {"Chapter 1": null}}}
+}`), 0o600))
+	settings := loadSettingsOrDefaults(p)
+	c.Equal(2, len(settings.LibraryExplorer.Nodes), "both node entries decoded")
+	c.Equal(2, len(settings.ColumnSizing), "both column sizing entries decoded")
+	c.Equal(2, len(settings.PDFs), "both PDF entries decoded")
+
+	prevPath := SettingsPath
+	SettingsPath = filepath.Join(dir, "saved.json")
+	t.Cleanup(func() { SettingsPath = prevPath })
+	c.NotPanics(func() { c.NoError(settings.Save()) }, "saving must not panic on null entries")
+
+	// The unusable entries are gone and the usable ones survived.
+	c.Equal(1, len(settings.LibraryExplorer.Nodes), "the null node entry was dropped")
+	c.NotNil(settings.LibraryExplorer.Nodes["F@good"], "the usable node entry survived")
+	c.Equal(1, len(settings.ColumnSizing), "the null column sizing entry was dropped")
+	c.Equal(float32(120), settings.ColumnSizing["good"][0], "the usable column sizing entry survived")
+	c.Equal(1, len(settings.PDFs), "the null PDF entry was dropped")
+	good := settings.PDFs["good"]
+	c.NotNil(good, "the usable PDF entry survived")
+	c.Equal(0, len(good.TOC), "the null table of contents entry was dropped")
+
+	// What was written back is loadable and holds the same surviving entries.
+	reloaded := loadSettingsOrDefaults(SettingsPath)
+	c.Equal(1, len(reloaded.LibraryExplorer.Nodes), "the saved file has just the usable node entry")
+	c.Equal(1, len(reloaded.ColumnSizing), "the saved file has just the usable column sizing entry")
+	c.Equal(1, len(reloaded.PDFs), "the saved file has just the usable PDF entry")
+}
+
+// TestIDLookupsWithNullMapEntries verifies that the ID lookups treat a null settings entry as if it were absent rather
+// than dereferencing it.
+func TestIDLookupsWithNullMapEntries(t *testing.T) {
+	c := check.New(t)
+	settings := GlobalSettings()
+
+	const nullPDF = "/does/not/exist/null.pdf"
+	settings.PDFs[nullPDF] = nil
+	t.Cleanup(func() { delete(settings.PDFs, nullPDF) })
+	var id tid.TID
+	c.NotPanics(func() { id = IDForPDFTOC(nullPDF, "Chapter 1", 3) })
+	c.True(tid.IsKind(id, kinds.TableOfContents), "a usable TOC ID was returned")
+
+	// A null in place of a title's page map is the same hazard one level down.
+	const nullTOCPDF = "/does/not/exist/null_toc.pdf"
+	settings.PDFs[nullTOCPDF] = &PDFInfo{TOC: map[string]map[int]tid.TID{"Chapter 1": nil}}
+	t.Cleanup(func() { delete(settings.PDFs, nullTOCPDF) })
+	c.NotPanics(func() { id = IDForPDFTOC(nullTOCPDF, "Chapter 1", 3) })
+	c.True(tid.IsKind(id, kinds.TableOfContents), "a usable TOC ID was returned")
+
+	const nullNode = "/does/not/exist/null_node"
+	if settings.LibraryExplorer.Nodes == nil {
+		settings.LibraryExplorer.Nodes = make(map[string]*NavNodeInfo)
+	}
+	settings.LibraryExplorer.Nodes[nullNode] = nil
+	t.Cleanup(func() { delete(settings.LibraryExplorer.Nodes, nullNode) })
+	c.NotPanics(func() { id = IDForNavNode(nullNode, kinds.NavigatorFile) })
+	c.True(tid.IsKind(id, kinds.NavigatorFile), "a usable navigator node ID was returned")
 }
 
 // TestSetAsideDamagedSettingsWithMissingFile verifies that setting aside a file that isn't there is a no-op rather than

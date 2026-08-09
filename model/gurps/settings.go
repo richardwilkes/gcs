@@ -186,7 +186,7 @@ func setAsideDamagedSettings(filePath string) {
 func (s *Settings) Save() error {
 	cutoff := time.Now().Add(-time.Hour * 24 * 120).Unix()
 	for k, v := range s.LibraryExplorer.Nodes {
-		if v.LastUsed < cutoff ||
+		if v == nil || v.LastUsed < cutoff ||
 			// Also prune out old keys before we had dirs in the favorites list
 			(!strings.HasPrefix(k, "F@") && !strings.HasPrefix(k, "_@")) {
 			delete(s.LibraryExplorer.Nodes, k)
@@ -199,7 +199,9 @@ func (s *Settings) Save() error {
 	}
 	columnCutoff := ToColumnCutoff(cutoff)
 	for k, v := range s.ColumnSizing {
-		if last, ok := v[-1]; !ok {
+		if v == nil {
+			delete(s.ColumnSizing, k)
+		} else if last, ok := v[-1]; !ok {
 			// Fixup missing last-used for old data.
 			v[-1] = ToColumnCutoff(time.Now().Unix())
 		} else if last < columnCutoff {
@@ -207,7 +209,7 @@ func (s *Settings) Save() error {
 		}
 	}
 	for k, v := range s.PDFs {
-		if v.LastOpened < cutoff {
+		if v == nil || v.LastOpened < cutoff {
 			delete(s.PDFs, k)
 		}
 	}
@@ -244,6 +246,12 @@ func (s *Settings) EnsureValidity() {
 	}
 	if s.PDFs == nil {
 		s.PDFs = make(map[string]*PDFInfo)
+	}
+	maps.DeleteFunc(s.LibraryExplorer.Nodes, func(_ string, v *NavNodeInfo) bool { return v == nil })
+	maps.DeleteFunc(s.ColumnSizing, func(_ string, v map[int]float32) bool { return v == nil })
+	maps.DeleteFunc(s.PDFs, func(_ string, v *PDFInfo) bool { return v == nil })
+	for _, v := range s.PDFs {
+		maps.DeleteFunc(v.TOC, func(_ string, m map[int]tid.TID) bool { return m == nil })
 	}
 	if s.LootGenMinValue <= 0 {
 		s.LootGenMinValue = fxp.Thousand
@@ -404,7 +412,7 @@ func SetClosedState(key string, closed bool) bool {
 func IDForPDFTOC(pdfPath, title string, pageNum int) tid.TID {
 	settings := GlobalSettings()
 	pi, ok := settings.PDFs[pdfPath]
-	if !ok {
+	if !ok || pi == nil {
 		pi = &PDFInfo{}
 		settings.PDFs[pdfPath] = pi
 	}
@@ -413,7 +421,7 @@ func IDForPDFTOC(pdfPath, title string, pageNum int) tid.TID {
 		pi.TOC = make(map[string]map[int]tid.TID)
 	}
 	titleMap, ok := pi.TOC[title]
-	if !ok {
+	if !ok || titleMap == nil {
 		titleMap = make(map[int]tid.TID)
 		pi.TOC[title] = titleMap
 	}
@@ -432,7 +440,7 @@ func IDForNavNode(fullPath string, kind byte) tid.TID {
 		settings.LibraryExplorer.Nodes = make(map[string]*NavNodeInfo)
 	}
 	info, ok := settings.LibraryExplorer.Nodes[fullPath]
-	if !ok {
+	if !ok || info == nil {
 		info = &NavNodeInfo{
 			ID: tid.MustNewTID(kind),
 		}
