@@ -17,23 +17,24 @@ type WeightedStringOption struct {
 	Value  string `json:"value"`
 }
 
-// Valid returns true if this option has a valid weight.
+// Valid returns true if this option has a valid weight. A file may contain a null entry, so this must be checked before
+// dereferencing the option.
 func (o *WeightedStringOption) Valid() bool {
-	return o.Weight > 0
+	return o != nil && o.Weight > 0
 }
 
 // ChooseWeightedStringOption selects a string option from the available set.
 func ChooseWeightedStringOption(options []*WeightedStringOption, not string) string {
 	total := 0
 	for _, one := range options {
-		if one.Value != not {
+		if one.Valid() && one.Value != not {
 			total += one.Weight
 		}
 	}
 	if total > 0 {
 		choice := 1 + xrand.New().Intn(total)
 		for _, one := range options {
-			if one.Value != not {
+			if one.Valid() && one.Value != not {
 				choice -= one.Weight
 				if choice < 1 {
 					return one.Value

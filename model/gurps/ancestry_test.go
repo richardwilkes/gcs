@@ -163,3 +163,49 @@ func TestAncestryWithValuelessGenderOption(t *testing.T) {
 	c.Equal("Female", a.RandomGender(""), "a nil gender option is ignored")
 	c.Nil(a.GenderedOptions("Male"), "a nil gender option is not matched")
 }
+
+// TestAncestryWithNullStringOptions verifies that a JSON null in one of the string option arrays is ignored rather than
+// dereferenced. Randomizing the description (or creating a sheet with auto-fill enabled) reaches these lists and
+// previously panicked on the nil entry.
+func TestAncestryWithNullStringOptions(t *testing.T) {
+	c := check.New(t)
+
+	const data = `{
+	"type": "ancestry",
+	"version": 5,
+	"name": "Human",
+	"common_options": {
+		"hair_options": [ null, { "weight": 1, "value": "Green" } ],
+		"eye_options": [ null, { "weight": 1, "value": "Violet" } ],
+		"skin_options": [ null, { "weight": 1, "value": "Blue" } ],
+		"handedness_options": [ null, { "weight": 1, "value": "Ambidextrous" } ]
+	}
+}`
+	fileSystem := fstest.MapFS{"Human.ancestry": {Data: []byte(data)}}
+	a, err := NewAncestryFromFile(fileSystem, "Human.ancestry")
+	c.NoError(err, "ancestry file with null string options should load")
+	c.Equal(2, len(a.CommonOptions.HairOptions), "both hair options should be present")
+	c.Nil(a.CommonOptions.HairOptions[0], "the first hair option should be nil")
+
+	// Only the valid option may be chosen, no matter what is excluded.
+	for range 20 {
+		c.Equal("Green", a.RandomHair("", ""), "the only valid hair option is chosen")
+		c.Equal("Green", a.RandomHair("", "Blue"), "the nil hair option is never chosen")
+		c.Equal("Violet", a.RandomEyes("", ""), "the only valid eye option is chosen")
+		c.Equal("Blue", a.RandomSkin("", ""), "the only valid skin option is chosen")
+		c.Equal("Ambidextrous", a.RandomHandedness("", ""), "the only valid handedness option is chosen")
+	}
+	c.Equal("Green", a.RandomHair("", "Green"), "excluding the lone valid option keeps the current hair")
+
+	// A list consisting solely of unusable entries falls back to the default rather than panicking.
+	only := &AncestryOptions{AncestryOptionsData: AncestryOptionsData{
+		HairOptions:       []*WeightedStringOption{nil},
+		EyeOptions:        []*WeightedStringOption{nil, {Value: "Violet"}},
+		SkinOptions:       []*WeightedStringOption{nil},
+		HandednessOptions: []*WeightedStringOption{nil},
+	}}
+	c.Equal(defaultHair, only.RandomHair("Green"), "a nil-only hair list falls back to the default")
+	c.Equal(defaultEye, only.RandomEye(""), "a nil plus weightless eye list falls back to the default")
+	c.Equal(defaultSkin, only.RandomSkin(""), "a nil-only skin list falls back to the default")
+	c.Equal(defaultHandedness, only.RandomHandedness(""), "a nil-only handedness list falls back to the default")
+}
