@@ -289,22 +289,31 @@ func (n *Navigator) addLibrary() {
 }
 
 func (n *Navigator) favoriteSelection() {
-	if n.table.HasSelection() {
-		changed := false
-		selection := n.table.SelectedRows(true)
-		seen := make(map[string]bool)
-		for _, row := range selection {
-			if seen[row.path] || row.IsLibrary() || row.IsFavorites() {
-				continue
-			}
-			changed = true
-			seen[row.path] = true
-			row.library.ToggleFavorite(row.path)
-		}
-		if changed {
-			n.Reload()
-		}
+	if n.table.HasSelection() && toggleFavorites(n.table.SelectedRows(true)) {
+		n.Reload()
 	}
+}
+
+// toggleFavorites toggles the favorite state of each of the given rows, skipping library and favorites nodes as well as
+// any row that resolves to a file already toggled by an earlier row. Returns true if at least one favorite was toggled.
+func toggleFavorites(rows []*NavigatorNode) bool {
+	changed := false
+	seen := make(map[string]bool)
+	for _, row := range rows {
+		if row.IsLibrary() || row.IsFavorites() {
+			continue
+		}
+		// Key on the full path on disk rather than the library-relative path, since the same relative path can exist in
+		// more than one library and favorites are tracked per library.
+		p := row.Path()
+		if seen[p] {
+			continue
+		}
+		changed = true
+		seen[p] = true
+		row.library.ToggleFavorite(row.path)
+	}
+	return changed
 }
 
 func (n *Navigator) deleteSelection() {
@@ -423,6 +432,29 @@ var disallowedWindowsFileNames = map[string]bool{
 	"lpt9": true,
 }
 
+// trimmedNameIsValid returns the given name with leading and trailing whitespace removed, along with whether that
+// trimmed name is usable as a file or directory name. Callers must build their paths from the trimmed name, since that
+// is the name that was validated.
+func trimmedNameIsValid(name string) (trimmed string, valid bool) {
+	trimmed = strings.TrimSpace(name)
+	return trimmed, trimmed != "" && !strings.HasPrefix(trimmed, ".") && !strings.ContainsAny(trimmed, `/\:`) &&
+		!disallowedWindowsFileNames[strings.ToLower(trimmed)]
+}
+
+// renamedPath returns the path that renaming the file or directory at oldPath to the given new name produces. The name
+// is trimmed, matching what trimmedNameIsValid validates, so that the path checked for collisions is the same one the
+// rename targets.
+func renamedPath(oldPath, newName string) string {
+	return filepath.Join(filepath.Dir(oldPath), strings.TrimSpace(newName)+filepath.Ext(oldPath))
+}
+
+// newFolderPath returns the path that creating a folder with the given name inside parentDir produces. The name is
+// trimmed, matching what trimmedNameIsValid validates, so that the path checked for collisions is the same one that
+// gets created.
+func newFolderPath(parentDir, name string) string {
+	return filepath.Join(parentDir, strings.TrimSpace(name))
+}
+
 func (n *Navigator) renameSelection() {
 	if n.table.SelectionCount() == 1 {
 		row := n.table.SelectedRows(false)[0]
@@ -458,12 +490,9 @@ func (n *Navigator) renameSelection() {
 			return
 		}
 		newField.ValidateCallback = func() bool {
-			trimmed := strings.TrimSpace(newName)
-			valid := trimmed != "" && !strings.HasPrefix(trimmed, ".") && !strings.ContainsAny(newName, `/\:`) &&
-				!disallowedWindowsFileNames[strings.ToLower(newName)]
+			_, valid := trimmedNameIsValid(newName)
 			if valid {
-				oldPath := row.Path()
-				if _, err = os.Stat(filepath.Join(filepath.Dir(oldPath), trimmed+filepath.Ext(oldPath))); err == nil {
+				if _, err = os.Stat(renamedPath(row.Path(), newName)); err == nil {
 					valid = false
 				}
 			}
@@ -473,7 +502,7 @@ func (n *Navigator) renameSelection() {
 		newField.Validate() // Here to update the OK button
 		if dialog.RunModal() == unison.ModalResponseOK {
 			oldPath := row.Path()
-			newPath := filepath.Join(filepath.Dir(oldPath), newName+filepath.Ext(oldPath))
+			newPath := renamedPath(oldPath, newName)
 			if err = os.Rename(oldPath, newPath); err != nil {
 				Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to rename:\n%s"), oldPath), err)
 			} else {
@@ -1014,7 +1043,7 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 						}
 					case uti.Markdown.Extensions[0]:
 						if data, err := os.ReadFile(p); err == nil {
-							content = string(bytes.ToLower(data))
+							content = n.addToContentCache(p, string(bytes.ToLower(data)))
 						}
 					}
 				}
@@ -1301,19 +1330,18 @@ func (n *Navigator) newFolder() {
 			return
 		}
 		field.ValidateCallback = func() bool {
-			trimmed := strings.TrimSpace(name)
-			valid := trimmed != "" && !strings.HasPrefix(trimmed, ".") && !strings.ContainsAny(name, `/\:`) &&
-				!disallowedWindowsFileNames[strings.ToLower(name)]
+			_, valid := trimmedNameIsValid(name)
 			if valid {
-				if _, err = os.Stat(filepath.Join(parentDir, trimmed)); err == nil {
+				if _, err = os.Stat(newFolderPath(parentDir, name)); err == nil {
 					valid = false
 				}
 			}
 			dialog.Button(unison.ModalResponseOK).SetEnabled(valid)
 			return valid
 		}
+		field.Validate() // Here to update the OK button
 		if dialog.RunModal() == unison.ModalResponseOK {
-			dirPath := filepath.Join(parentDir, name)
+			dirPath := newFolderPath(parentDir, name)
 			if err = os.Mkdir(dirPath, 0o750); err != nil {
 				Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
 			} else {
