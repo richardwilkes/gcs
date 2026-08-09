@@ -535,7 +535,7 @@ func (w *Weapon) usesCrossbowSkill() bool {
 func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var adj fxp.Int
 	minST := w.Strength.Resolve(w, nil).Min
-	switch w.Damage.StrengthType {
+	switch w.Damage.resolvedStrengthType(nil) {
 	case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
 		minST -= e.TelekineticStrength()
 	case stdmg.IQThrust, stdmg.IQSwing:

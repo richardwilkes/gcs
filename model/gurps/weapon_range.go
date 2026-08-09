@@ -119,7 +119,7 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 		}
 		if st == 0 {
 			if entity := w.Entity(); entity != nil {
-				switch w.Damage.StrengthType {
+				switch w.Damage.resolvedStrengthType(nil) {
 				case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
 					st = entity.TelekineticStrength()
 				case stdmg.IQThrust, stdmg.IQSwing:
