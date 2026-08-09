@@ -10,14 +10,20 @@
 package ux
 
 import (
+	"bufio"
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/unison"
@@ -56,21 +62,16 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	var drawable unison.Drawable
 	var size geom.Size
 	var kind string
-	if strings.HasSuffix(strings.ToLower(filePath), ".svg") {
-		r, err := os.Open(filePath)
+	if isSVGPath(filePath) {
+		vector, err := loadSVGFromFile(filePath)
 		if err != nil {
-			return nil, errs.Wrap(err)
-		}
-		defer xio.CloseIgnoringErrors(r)
-		var svg *unison.SVG
-		if svg, err = unison.NewSVGFromReader(r); err != nil {
 			return nil, err
 		}
 		drawable = &unison.DrawableSVG{
-			SVG:  svg,
-			Size: svg.SuggestedSize(),
+			SVG:  vector,
+			Size: vector.SuggestedSize(),
 		}
-		size = svg.Size()
+		size = vector.Size()
 		kind = "SVG"
 	} else {
 		img, err := unison.NewImageFromFilePathOrURL(context.Background(), nil, filePath,
@@ -148,6 +149,34 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	d.AddChild(d.scroll)
 
 	return d, nil
+}
+
+// isSVGPath returns true if the path uses one of the extensions registered for SVG content. Note that this covers both
+// ".svg" and ".svgz", since both are registered by uti.SVG and therefore advertised as openable.
+func isSVGPath(filePath string) bool {
+	return slices.Contains(uti.SVG.Extensions, strings.ToLower(filepath.Ext(filePath)))
+}
+
+// loadSVGFromFile loads the SVG found at the given path. ".svgz" files hold gzip-compressed SVG data, which the SVG
+// parser can't consume directly, so the content is decompressed first. The gzip header is checked rather than the
+// extension, since compressed content is sometimes stored with the plain ".svg" extension as well.
+func loadSVGFromFile(filePath string) (*unison.SVG, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, errs.Wrap(err)
+	}
+	defer xio.CloseIgnoringErrors(f)
+	buffered := bufio.NewReader(f)
+	var r io.Reader = buffered
+	if header, peekErr := buffered.Peek(2); peekErr == nil && header[0] == 0x1f && header[1] == 0x8b {
+		var gz *gzip.Reader
+		if gz, err = gzip.NewReader(buffered); err != nil {
+			return nil, errs.Wrap(err)
+		}
+		defer xio.CloseIgnoringErrors(gz)
+		r = gz
+	}
+	return unison.NewSVGFromReader(r)
 }
 
 func (d *ImageDockable) updateCursor(_ geom.Point) *unison.Cursor {
