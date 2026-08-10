@@ -11,7 +11,7 @@ require (
 	github.com/richardwilkes/pdfview v0.5.2
 	github.com/richardwilkes/rpgtools v1.13.0
 	github.com/richardwilkes/toolbox/v2 v2.15.3
-	github.com/richardwilkes/unison v0.97.1
+	github.com/richardwilkes/unison v0.97.2
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.5
