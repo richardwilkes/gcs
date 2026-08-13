@@ -1,4 +1,4 @@
-# Changes since v5.45.0
+# Changes since the last release
 
 ## New & Improved
 

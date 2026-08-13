@@ -8,7 +8,7 @@ require (
 	github.com/go-git/go-git/v6 v6.0.0-alpha.5
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/canvas v0.2.5
-	github.com/richardwilkes/pdfview v0.5.2
+	github.com/richardwilkes/pdfview v0.5.3
 	github.com/richardwilkes/rpgtools v1.13.0
 	github.com/richardwilkes/toolbox/v2 v2.15.3
 	github.com/richardwilkes/unison v0.97.3
@@ -16,9 +16,9 @@ require (
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.5
 	github.com/zeebo/xxh3 v1.1.0
-	golang.org/x/image v0.44.0
+	golang.org/x/image v0.45.0
 	golang.org/x/sys v0.47.0
-	golang.org/x/text v0.40.0
+	golang.org/x/text v0.41.0
 )
 
 require (
