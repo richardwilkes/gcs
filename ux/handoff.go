@@ -16,12 +16,14 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/unison"
 )
 
 const (
@@ -32,6 +34,11 @@ const (
 	// command line itself is limited to a fraction of this by the OS. Without a bound, any local process able to
 	// connect to the handoff port could claim a payload of up to 4GB and force an allocation of that size.
 	maxHandoffPayloadSize = 4 << 20
+	// readyTimeout bounds how long startup may take before the app is presumed to be wedged.
+	readyTimeout = 2 * time.Minute
+	// orderlyExitGrace bounds how long the orderly shutdown triggered by readyTimeout expiring is given to finish
+	// before the process is terminated outright.
+	orderlyExitGrace = 5 * time.Second
 )
 
 func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, paths []string) {
@@ -115,7 +122,8 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 }
 
 func waitForReady(readyChan <-chan struct{}) {
-	const driverNote = " to become ready; this may be due to defective input device drivers"
+	const driverNote = " to become ready; this may be due to defective graphics or input device drivers, or to " +
+		"third-party software that hooks them"
 	started := time.Now()
 	select {
 	case <-readyChan:
@@ -124,9 +132,18 @@ func waitForReady(readyChan <-chan struct{}) {
 		if elapsed > 10*time.Second {
 			slog.Warn("app took an excessive amount of time" + driverNote)
 		}
-	case <-time.After(2 * time.Minute):
+	case <-time.After(readyTimeout):
 		// This is here to try and ensure GCS doesn't hang around in the background if something goes wrong at startup.
-		slog.Error("timed out waiting for app" + driverNote)
+		slog.Error("timed out waiting for app"+driverNote, "workaround",
+			"set "+unison.CPURenderingEnvKey+"=1 in the environment to bypass hardware-accelerated rendering")
+		// xos.Exit() runs the registered exit functions, one of which hands the window teardown to the UI thread and
+		// waits without bound for it to complete. Arriving here means the UI thread is almost certainly stuck, so
+		// that wait would never return and the process would linger in the background -- the very thing this timeout
+		// exists to prevent. Arm an unconditional exit first so that termination happens either way.
+		time.AfterFunc(orderlyExitGrace, func() {
+			slog.Error("orderly shutdown did not complete; terminating")
+			os.Exit(1)
+		})
 		xos.Exit(1)
 	}
 }
