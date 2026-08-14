@@ -28,7 +28,7 @@ func TestCrashOutputPathFor(t *testing.T) {
 }
 
 // writeCrashFile creates one of the crash output files with the requested size.
-func writeCrashFile(t *testing.T, base string, n int, size int) string {
+func writeCrashFile(t *testing.T, base string, n, size int) string {
 	t.Helper()
 	path := crashOutputPathFor(base, n)
 	if err := os.WriteFile(path, make([]byte, size), 0o644); err != nil {
