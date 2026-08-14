@@ -19,6 +19,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/updater"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -68,6 +69,11 @@ func main() {
 
 	syncToLibraryData := flag.Bool("sync", false, fmt.Sprintf(i18n.Text("Syncs all character sheet (%s), template (%s), and loot (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), gurps.SheetExt, gurps.TemplatesExt, gurps.LootExt))
 
+	// Not meant to be typed by anyone. A copy of GCS is started this way to finish applying an update once the copy
+	// that prepared it has exited, since replacing a running application from within itself is not something any of
+	// the supported systems allow.
+	finishUpdate := flag.String("finish-update", "", i18n.Text("Internal use only. Finish applying a previously prepared update, using the state in the specified `file`"))
+
 	var logCfg xslog.Config
 	logCfg.AddFlags()
 
@@ -82,11 +88,18 @@ func main() {
 	ux.RegisterKnownFileTypes()
 	gurps.GlobalSettings() // Here to force early initialization
 
-	if msg := exclusiveModeMsg(*convertFiles, *syncToLibraryData, *textTmplPath); msg != "" {
+	if msg := exclusiveModeMsg(*convertFiles, *syncToLibraryData, *textTmplPath, *finishUpdate); msg != "" {
 		xos.ExitWithMsg(msg)
 	}
 
 	switch {
+	case *finishUpdate != "":
+		// This must stay ahead of anything that could reach ux.Start: the helper's whole job is to wait for the
+		// single-instance service to let go of its port, so it must never try to join that protocol itself.
+		if err := updater.Finish(*finishUpdate); err != nil {
+			errs.Log(err)
+			xos.Exit(1)
+		}
 	case *convertFiles:
 		if err := gurps.Convert(fileList...); err != nil {
 			xos.ExitWithMsg(err.Error())
@@ -191,9 +204,9 @@ func rotateCrashOutput(base string, cfg xslog.Rotator) {
 }
 
 // exclusiveModeMsg returns a non-empty error message if more than one of the mutually exclusive command-line modes
-// (--convert, --sync, --text) has been specified. These modes each take over the process and exit, so only one may be
-// requested at a time.
-func exclusiveModeMsg(convert, sync bool, textTmplPath string) string {
+// (--convert, --sync, --text, --finish-update) has been specified. These modes each take over the process and exit, so
+// only one may be requested at a time.
+func exclusiveModeMsg(convert, sync bool, textTmplPath, finishUpdatePath string) string {
 	var modes []string
 	if convert {
 		modes = append(modes, "--convert")
@@ -203,6 +216,9 @@ func exclusiveModeMsg(convert, sync bool, textTmplPath string) string {
 	}
 	if textTmplPath != "" {
 		modes = append(modes, "--text")
+	}
+	if finishUpdatePath != "" {
+		modes = append(modes, "--finish-update")
 	}
 	if len(modes) > 1 {
 		return fmt.Sprintf(i18n.Text("Cannot specify more than one of %s"), strings.Join(modes, ", "))

@@ -355,7 +355,7 @@ func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
 
 	for _, code := range []int{http.StatusNotFound, http.StatusForbidden, http.StatusTooManyRequests} {
 		status = code
-		data, err := lib.downloadRelease(t.Context(), srv.Client(), release)
+		data, err := lib.downloadRelease(t.Context(), srv.Client(), &release)
 		c.HasError(err, "status %d", code)
 		c.Nil(data, "status %d", code)
 		c.Contains(err.Error(), strconv.Itoa(code), "status %d", code)
@@ -364,7 +364,7 @@ func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
 
 	// A successful response must still hand back the body unchanged.
 	status = http.StatusOK
-	data, err := lib.downloadRelease(t.Context(), srv.Client(), release)
+	data, err := lib.downloadRelease(t.Context(), srv.Client(), &release)
 	c.NoError(err)
 	c.Equal([]byte("not a zip file"), data)
 }

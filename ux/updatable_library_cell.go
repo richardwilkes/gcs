@@ -23,13 +23,13 @@ import (
 type updatableLibraryCell struct {
 	unison.Panel
 	library           *gurps.Library
-	release           gurps.Release
+	release           *gurps.Release
 	title             *unison.Label
 	button            *unison.Button
 	inButtonMouseDown bool
 }
 
-func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel gurps.Release) *updatableLibraryCell {
+func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel *gurps.Release) *updatableLibraryCell {
 	c := &updatableLibraryCell{
 		library: lib,
 		release: rel,

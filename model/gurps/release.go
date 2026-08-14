@@ -22,12 +22,39 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
+// ReleaseAsset holds information about a single file attached to a GitHub release. These are the packaged
+// distributions the release workflow uploads, as opposed to the source archives GitHub generates on its own.
+type ReleaseAsset struct {
+	Name   string
+	URL    string
+	Digest string
+	Size   int64
+}
+
+// SHA256 returns the hex-encoded SHA-256 of the asset, or an empty string if GitHub didn't supply one. The digest
+// field was only added to the API in 2025, so assets from older releases don't have it.
+func (a *ReleaseAsset) SHA256() string {
+	return strings.TrimPrefix(a.Digest, "sha256:")
+}
+
 // Release holds information about a single release of a GitHub repo.
 type Release struct {
 	Version     string
 	Notes       string
 	ZipFileURL  string
+	Assets      []ReleaseAsset
 	CheckFailed bool
+}
+
+// Asset returns the asset with the given name, if present. Matching is case-insensitive, since the names come from
+// the API rather than the local filesystem.
+func (r *Release) Asset(name string) (ReleaseAsset, bool) {
+	for _, one := range r.Assets {
+		if strings.EqualFold(one.Name, name) {
+			return one, true
+		}
+	}
+	return ReleaseAsset{}, false
 }
 
 // HasUpdate returns true if there is an update available.
@@ -79,6 +106,12 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 		TagName    string `json:"tag_name"`
 		Body       string `json:"body"`
 		ZipBallURL string `json:"zipball_url"`
+		Assets     []struct {
+			Name   string `json:"name"`
+			URL    string `json:"browser_download_url"`
+			Digest string `json:"digest"`
+			Size   int64  `json:"size"`
+		} `json:"assets"`
 	}
 	if err = json.UnmarshalRead(rsp.Body, &releases); err != nil {
 		return nil, errs.NewWithCause("unable to decode response from GitHub API "+uri, err)
@@ -88,10 +121,23 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 			if version := strings.TrimSpace(one.TagName[1:]); version != "" &&
 				(currentVersion == version || xstrings.NaturalLess(currentVersion, version, true)) {
 				if filter == nil || !filter(version, one.Body) {
+					var assets []ReleaseAsset
+					if len(one.Assets) != 0 {
+						assets = make([]ReleaseAsset, len(one.Assets))
+						for i, asset := range one.Assets {
+							assets[i] = ReleaseAsset{
+								Name:   asset.Name,
+								URL:    asset.URL,
+								Digest: asset.Digest,
+								Size:   asset.Size,
+							}
+						}
+					}
 					versions = append(versions, Release{
 						Version:    version,
 						Notes:      one.Body,
 						ZipFileURL: one.ZipBallURL,
+						Assets:     assets,
 					})
 				}
 			}

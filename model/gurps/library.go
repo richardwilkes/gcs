@@ -464,7 +464,7 @@ func (l *Library) refreshVersionOnDisk() {
 }
 
 // Download the release onto the local disk.
-func (l *Library) Download(ctx context.Context, client *http.Client, release Release) error {
+func (l *Library) Download(ctx context.Context, client *http.Client, release *Release) error {
 	libData := l.Data() // Not named "data", since the byte buffers below already use that name
 	p := l.Path()
 	tmpDir, err := os.MkdirTemp(filepath.Dir(p), filepath.Base(p)+"_*")
@@ -602,7 +602,7 @@ func (l *Library) extractFile(f *zip.File, dst string) (err error) {
 	return err
 }
 
-func (l *Library) downloadRelease(ctx context.Context, client *http.Client, release Release) ([]byte, error) {
+func (l *Library) downloadRelease(ctx context.Context, client *http.Client, release *Release) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, release.ZipFileURL, http.NoBody)
 	if err != nil {
 		return nil, errs.NewWithCause("unable to create request for "+release.ZipFileURL, err)

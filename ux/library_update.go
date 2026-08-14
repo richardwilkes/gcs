@@ -23,7 +23,7 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-func initiateLibraryUpdate(lib *gurps.Library, rel gurps.Release) bool {
+func initiateLibraryUpdate(lib *gurps.Library, rel *gurps.Release) bool {
 	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Update %s to %s?"), lib.Data().Title, filterVersion(rel.Version)),
 		i18n.Text(`Existing content for this library will be removed and replaced.
 Content in other libraries will not be modified`)) != unison.ModalResponseOK {
@@ -110,7 +110,7 @@ func runLibraryUpdate(resultChan chan<- error, download func() error, finish fun
 	err = download()
 }
 
-func performLibraryUpdate(lib *gurps.Library, rel gurps.Release) error {
+func performLibraryUpdate(lib *gurps.Library, rel *gurps.Release) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	lib.StopAllWatches()
