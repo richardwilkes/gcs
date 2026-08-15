@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -31,6 +32,20 @@ func awaitLibraryUpdateResult(t *testing.T, resultChan <-chan error) error {
 	case <-time.After(libraryUpdateHandshakeTimeout):
 		t.Fatal("timed out waiting for the library update result")
 		return nil
+	}
+}
+
+// TestLibraryPhaseTitleDistinguishesPhases verifies that the window says which part of the update is running. The bar
+// starts over when the phase changes, so a label that didn't change with it would read as a bar that had lost its
+// place.
+func TestLibraryPhaseTitleDistinguishesPhases(t *testing.T) {
+	c := check.New(t)
+	downloading := libraryPhaseTitle(gurps.LibraryUpdateDownloading, "Master Library", "5.13.0")
+	installing := libraryPhaseTitle(gurps.LibraryUpdateInstalling, "Master Library", "5.13.0")
+	c.NotEqual(downloading, installing)
+	for _, title := range []string{downloading, installing} {
+		c.Contains(title, "Master Library")
+		c.Contains(title, "5.13", "the version the user is being given must be in the title")
 	}
 }
 

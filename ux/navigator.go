@@ -548,7 +548,7 @@ func (n *Navigator) updateLibrarySelection() {
 	for _, row := range n.table.SelectedRows(true) {
 		if row.IsLibrary() {
 			_, releases := row.library.AvailableReleases()
-			if len(releases) == 0 || !releases[0].HasUpdate() || !initiateLibraryUpdate(row.library, releases[0]) {
+			if len(releases) == 0 || !releases[0].HasUpdate() || !initiateLibraryUpdate(row.library, &releases[0]) {
 				return
 			}
 		}

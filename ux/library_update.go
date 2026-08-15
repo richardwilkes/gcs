@@ -11,6 +11,7 @@ package ux
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -23,7 +24,12 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-func initiateLibraryUpdate(lib *gurps.Library, rel gurps.Release) bool {
+// libraryUpdateTimeout bounds the whole update. It is generous because a library is tens of megabytes of archive and a
+// great many files to write, and some connections are slow; the Cancel button, not this, is how an impatient user stops
+// it.
+const libraryUpdateTimeout = 30 * time.Minute
+
+func initiateLibraryUpdate(lib *gurps.Library, rel *gurps.Release) bool {
 	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Update %s to %s?"), lib.Data().Title, filterVersion(rel.Version)),
 		i18n.Text(`Existing content for this library will be removed and replaced.
 Content in other libraries will not be modified`)) != unison.ModalResponseOK {
@@ -58,6 +64,9 @@ documents from the library are open.`))
 		Workspace.ErrorHandler(i18n.Text("Unable to update"), err)
 		return false
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), libraryUpdateTimeout)
+	defer cancel()
+
 	content := unison.NewPanel()
 	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.NewUniformInsets(2*unison.StdHSpacing))))
@@ -66,15 +75,28 @@ documents from the library are open.`))
 		VSpacing: unison.StdVSpacing,
 	})
 	label := unison.NewLabel()
-	label.SetTitle(fmt.Sprintf(i18n.Text("Updating %s to %s…"), libData.Title, filterVersion(rel.Version)))
+	label.SetTitle(libraryPhaseTitle(gurps.LibraryUpdateDownloading, libData.Title, rel.Version))
 	content.AddChild(label)
-	progress := unison.NewProgressBar(0)
+	progress := unison.NewProgressBar(progressResolution)
 	progress.SetLayoutData(&unison.FlexLayoutData{
 		MinSize: geom.Size{Width: 500},
 		HAlign:  align.Fill,
 		HGrab:   true,
 	})
 	content.AddChild(progress)
+	// canceling is written and read only on the UI thread: here, and inside the task the progress reporter posts. That
+	// is what keeps the label from being rewritten with the phase that was already underway when the user asked to stop.
+	canceling := false
+	cancelButton := unison.NewButton()
+	cancelButton.SetTitle(i18n.Text("Cancel"))
+	cancelButton.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
+	cancelButton.ClickCallback = func() {
+		canceling = true
+		cancelButton.SetEnabled(false)
+		label.SetTitle(i18n.Text("Canceling…"))
+		cancel()
+	}
+	content.AddChild(cancelButton)
 	wnd.SetContent(content)
 	wnd.Pack()
 	wndFrame := wnd.FrameRect()
@@ -86,10 +108,17 @@ documents from the library are open.`))
 	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
 	wnd.ToFront()
 	resultChan := make(chan error, 1)
-	go runLibraryUpdate(resultChan, func() error { return performLibraryUpdate(lib, rel) },
+	reportProgress := libraryUpdateProgress(label, progress, libData.Title, rel.Version, func() bool { return canceling })
+	go runLibraryUpdate(resultChan, func() error { return performLibraryUpdate(ctx, lib, rel, reportProgress) },
 		func() { finishLibraryUpdate(wnd, lib) })
 	wnd.RunModal()
 	if err = <-resultChan; err != nil {
+		if errors.Is(ctx.Err(), context.Canceled) {
+			// The user asked for this, so there is nothing to report. The library itself is untouched: a failed update
+			// puts the previous content back before it returns. A deadline that expired is deliberately not treated the
+			// same way, since nobody asked for that and it needs saying.
+			return false
+		}
 		Workspace.ErrorHandler(i18n.Text("Unable to update"), err)
 		return false
 	}
@@ -110,11 +139,37 @@ func runLibraryUpdate(resultChan chan<- error, download func() error, finish fun
 	err = download()
 }
 
-func performLibraryUpdate(lib *gurps.Library, rel gurps.Release) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-	defer cancel()
+func performLibraryUpdate(ctx context.Context, lib *gurps.Library, rel *gurps.Release, progress gurps.LibraryUpdateProgress) error {
 	lib.StopAllWatches()
-	return lib.Download(ctx, &http.Client{}, rel)
+	return lib.Download(ctx, &http.Client{}, rel, progress)
+}
+
+// libraryUpdateProgress returns a progress reporter that keeps the window's label and bar in step with the update. The
+// fraction it receives is relative to the phase it comes with, so the bar starts over each time the phase changes,
+// which is also when the label is rewritten to say what is now happening -- unless the user has asked to stop, in which
+// case the label already says so and must be left alone. canceling is only ever consulted on the UI thread.
+func libraryUpdateProgress(label *unison.Label, bar *unison.ProgressBar, title, version string, canceling func() bool) gurps.LibraryUpdateProgress {
+	post := throttledProgress(bar)
+	phase := gurps.LibraryUpdateDownloading
+	return func(current gurps.LibraryUpdatePhase, fraction float64) {
+		if current != phase {
+			phase = current
+			unison.InvokeTask(func() {
+				if !canceling() {
+					label.SetTitle(libraryPhaseTitle(current, title, version))
+				}
+			})
+		}
+		post(fraction)
+	}
+}
+
+// libraryPhaseTitle describes what the update is doing at the moment.
+func libraryPhaseTitle(phase gurps.LibraryUpdatePhase, title, version string) string {
+	if phase == gurps.LibraryUpdateInstalling {
+		return fmt.Sprintf(i18n.Text("Installing %s %s…"), title, filterVersion(version))
+	}
+	return fmt.Sprintf(i18n.Text("Downloading %s %s…"), title, filterVersion(version))
 }
 
 // finishLibraryUpdate refreshes the library's list of available releases and then posts the teardown of the progress

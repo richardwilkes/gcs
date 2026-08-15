@@ -18,6 +18,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -27,6 +28,10 @@ import (
 )
 
 const (
+	// handoffPort is the port the primary instance holds for its entire life. It is named here rather than being
+	// buried in the address below because the updater waits on it: being able to bind it is how the helper knows the
+	// application has exited and that the replacement it starts will be able to become the primary instance.
+	handoffPort = 13322
 	// handoffMarker precedes the length-prefixed payload a secondary instance hands off to the primary one.
 	handoffMarker = 22
 	// maxHandoffPayloadSize bounds the payload a handoff may carry. The payload is only a JSON array of the absolute
@@ -42,7 +47,7 @@ const (
 )
 
 func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, paths []string) {
-	const address = "127.0.0.1:13322"
+	address := net.JoinHostPort("127.0.0.1", strconv.Itoa(handoffPort))
 	var pathsBuffer []byte
 	slog.Info("starting handoff service")
 	now := time.Now()

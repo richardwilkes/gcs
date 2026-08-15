@@ -257,7 +257,7 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 			if relVersion := filterVersion(releases[0].Version); filterVersion(current) != relVersion {
 				if n.updateCellReleaseVersion != relVersion || n.updateCellCache == nil {
 					n.updateCellReleaseVersion = relVersion
-					n.updateCellCache = newUpdatableLibraryCell(n.library, label, releases[0])
+					n.updateCellCache = newUpdatableLibraryCell(n.library, label, &releases[0])
 				} else {
 					n.updateCellCache.updateForeground(foreground)
 				}

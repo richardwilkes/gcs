@@ -42,6 +42,10 @@ func Start(files []string) {
 			} else {
 				unison.DefaultTitleIcons = []*unison.Image{appIcon}
 			}
+			// Settle up after an update applied while this application was not running, before anything else has a
+			// chance to look at the installation directory. This runs only in the primary instance, since the handoff
+			// service has already decided that by the time this callback fires.
+			ReportAppUpdateOutcome()
 			CheckForAppUpdates()
 			wnd, err := unison.NewWindow(xos.AppName)
 			xos.ExitIfErr(err)
@@ -66,6 +70,10 @@ func Start(files []string) {
 			}
 			return true
 		}),
+		// A prepared update is applied from here rather than from wherever the quit was requested, because
+		// unison.AttemptQuit does not return when the quit succeeds -- it reaches xos.Exit and the process ends. This
+		// callback is reached on every exit that still runs Go code, and does nothing unless an update is waiting.
+		unison.QuittingCallback(applyPendingUpdate),
 	) // Never returns
 }
 

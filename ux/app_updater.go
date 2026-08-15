@@ -11,6 +11,7 @@ package ux
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/updater"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -100,48 +102,162 @@ func CheckForAppUpdates() {
 	}
 }
 
+// downloadPageResponse is the response code for the button that opens the download page rather than installing. The
+// pre-defined codes are taken by Cancel and by the default action, so a third button needs one of its own.
+const downloadPageResponse = unison.ModalResponseUserBase
+
 // NotifyOfAppUpdate notifies the user of the available update.
 func NotifyOfAppUpdate() {
-	if title, releases, _ := appUpdate.Result(); releases != nil {
-		var buffer strings.Builder
-		fmt.Fprintf(&buffer, "# %s\n", title)
-		for i, rel := range releases {
-			if i != 0 {
-				buffer.WriteString("---\n")
-			}
-			fmt.Fprintf(&buffer, "## Release Notes for %s %s\n", xos.AppName, filterVersion(rel.Version))
-			buffer.WriteString(rel.Notes)
-			buffer.WriteByte('\n')
-		}
+	title, releases, _ := appUpdate.Result()
+	if releases == nil {
+		return
+	}
+	// Work out whether this installation can update itself before the dialog is built, so that the choice offered
+	// matches what is actually possible and the user is never told an update is being installed only to be refused
+	// after thirty megabytes have been downloaded.
+	plan, unavailableMsg := planAppUpdate(&releases[0])
 
-		md := unison.NewMarkdown(true)
-		md.SetBorder(unison.NewEmptyBorder(unison.StdInsets()))
-		md.SetContent(buffer.String(), 0)
-
-		scroll := unison.NewScrollPanel()
-		scroll.SetContent(md, behavior.Unmodified, behavior.Unmodified)
-
-		dialog, err := unison.NewDialog(
-			&unison.DrawableSVG{
-				SVG:  svg.Download,
-				Size: geom.NewSize(48, 48),
-			},
-			unison.DefaultLabelTheme.OnBackgroundInk, scroll,
-			[]*unison.DialogButtonInfo{
-				unison.NewCancelButtonInfo(),
-				unison.NewOKButtonInfoWithTitle(i18n.Text("Download")),
-			},
-		)
-		if err != nil {
-			errs.Log(err)
-			return
+	var buffer strings.Builder
+	fmt.Fprintf(&buffer, "# %s\n", title)
+	for i, rel := range releases {
+		if i != 0 {
+			buffer.WriteString("---\n")
 		}
-		gurps.GlobalSettings().LastSeenGCSVersion = releases[0].Version
-		if dialog.RunModal() == unison.ModalResponseOK {
-			if err = xos.OpenBrowser("https://" + WebSiteDomain); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to open web page for download"), err)
-			}
+		fmt.Fprintf(&buffer, "## Release Notes for %s %s\n", xos.AppName, filterVersion(rel.Version))
+		buffer.WriteString(rel.Notes)
+		buffer.WriteByte('\n')
+	}
+	if unavailableMsg != "" {
+		fmt.Fprintf(&buffer, "---\n%s\n", unavailableMsg)
+	}
+
+	md := unison.NewMarkdown(true)
+	md.SetBorder(unison.NewEmptyBorder(unison.StdInsets()))
+	md.SetContent(buffer.String(), 0)
+
+	scroll := unison.NewScrollPanel()
+	scroll.SetContent(md, behavior.Unmodified, behavior.Unmodified)
+
+	buttons := []*unison.DialogButtonInfo{
+		unison.NewCancelButtonInfo(),
+		{Title: i18n.Text("Download Page"), ResponseCode: downloadPageResponse},
+	}
+	if plan != nil {
+		buttons = append(buttons, unison.NewOKButtonInfoWithTitle(i18n.Text("Install & Restart")))
+	}
+
+	dialog, err := unison.NewDialog(
+		&unison.DrawableSVG{
+			SVG:  svg.Download,
+			Size: geom.NewSize(48, 48),
+		},
+		unison.DefaultLabelTheme.OnBackgroundInk, scroll, buttons,
+	)
+	if err != nil {
+		errs.Log(err)
+		return
+	}
+	gurps.GlobalSettings().LastSeenGCSVersion = releases[0].Version
+	switch dialog.RunModal() {
+	case unison.ModalResponseOK:
+		InitiateAppUpdate(plan)
+	case downloadPageResponse:
+		if err = xos.OpenBrowser("https://" + WebSiteDomain); err != nil {
+			Workspace.ErrorHandler(i18n.Text("Unable to open web page for download"), err)
 		}
+	}
+}
+
+// planAppUpdate checks whether this installation can replace itself with the given release. It returns either a plan to
+// do so, or a message explaining why it cannot, which the dialog shows alongside the release notes.
+func planAppUpdate(release *gurps.Release) (plan *updater.Plan, unavailableMsg string) {
+	assets := make([]updater.Asset, len(release.Assets))
+	for i := range release.Assets {
+		assets[i] = updater.Asset{
+			Name:   release.Assets[i].Name,
+			URL:    release.Assets[i].URL,
+			SHA256: release.Assets[i].SHA256(),
+			Size:   release.Assets[i].Size,
+		}
+	}
+	plan, err := updater.CurrentPreflight(release.Version, assets)
+	if err == nil {
+		return plan, ""
+	}
+	errs.Log(err)
+	var unavailable *updater.Unavailable
+	if errors.As(err, &unavailable) {
+		return nil, blockerMessage(unavailable.Blocker)
+	}
+	return nil, fmt.Sprintf(i18n.Text("%s can't install this update automatically."), xos.AppName)
+}
+
+// blockerMessage explains, in the user's language, why an update cannot be installed automatically, and where possible
+// what they can do about it. The updater deals in stable identifiers rather than messages precisely so that this
+// translation happens here, at the point of display.
+func blockerMessage(blocker updater.Blocker) string {
+	switch blocker {
+	case updater.BlockerDevBuild:
+		return i18n.Text("Development builds can't be updated automatically.")
+	case updater.BlockerRenamedExecutable:
+		return fmt.Sprintf(i18n.Text("This copy of %s has been renamed, so it can't be updated automatically."),
+			xos.AppName)
+	case updater.BlockerNotABundle:
+		return fmt.Sprintf(i18n.Text("This copy of %s isn't installed as an application, so it can't be updated automatically."),
+			xos.AppName)
+	case updater.BlockerTranslocated:
+		return fmt.Sprintf(i18n.Text("%s is running from a temporary copy. Move it to your Applications folder and open it from there to enable automatic updates."),
+			xos.AppName)
+	case updater.BlockerPackageManaged:
+		return fmt.Sprintf(i18n.Text("%s was installed by a package manager, which should be used to update it."),
+			xos.AppName)
+	case updater.BlockerHomebrew:
+		return i18n.Text("This copy was installed by Homebrew. Run `brew upgrade --cask gcs` to update it.")
+	case updater.BlockerReadOnly:
+		return fmt.Sprintf(i18n.Text("%s can't write to the folder it's installed in, so it can't update itself. Installing it somewhere you have permission to write, such as your Applications folder, enables automatic updates."),
+			xos.AppName)
+	case updater.BlockerNoAsset:
+		return i18n.Text("This release doesn't include a build for this system.")
+	case updater.BlockerNoDigest:
+		return i18n.Text("This release can't be verified automatically, so it has to be installed by hand.")
+	default:
+		return fmt.Sprintf(i18n.Text("%s can't install this update automatically."), xos.AppName)
+	}
+}
+
+// ReportAppUpdateOutcome settles up after an update that was applied while the application was not running, clearing
+// away what it left behind and telling the user if anything went wrong. Success is silent: the version shown in the
+// About box is confirmation enough.
+func ReportAppUpdateOutcome() {
+	outcome := updater.ReportAndSweep()
+	if outcome == nil || outcome.Reason == updater.ReasonNone || outcome.Reason == updater.ReasonAbandoned {
+		return
+	}
+	if outcome.Applied {
+		// Installed successfully; only what came after it did not. Nothing here needs the user's attention badly
+		// enough to interrupt them, since they are looking at the new version already.
+		return
+	}
+	unison.WarningDialogWithMessage(fmt.Sprintf(i18n.Text("%s was not updated"), xos.AppName),
+		xstrings.Wrap("", outcomeMessage(outcome.Reason), 100))
+}
+
+// outcomeMessage explains why an update that had already been prepared was not applied. The result is wrapped by the
+// caller rather than here, since a dialog is the only thing that shows it and the wrapping belongs with the width the
+// dialog wants.
+func outcomeMessage(reason updater.Reason) string {
+	switch reason {
+	case updater.ReasonPredecessorRunning:
+		return fmt.Sprintf(i18n.Text("The previous copy of %s did not finish quitting, so nothing was changed. Try the update again."),
+			xos.AppName)
+	case updater.ReasonSwapFailed:
+		return fmt.Sprintf(i18n.Text("The update could not be installed, so the previous version was kept. Downloading it from the %s web site and installing it by hand will work."),
+			xos.AppName)
+	case updater.ReasonVersionMismatch:
+		return i18n.Text("The update reported success but a different version is running. The previous version has been kept.")
+	default:
+		return fmt.Sprintf(i18n.Text("The update could not be installed. Downloading it from the %s web site and installing it by hand will work."),
+			xos.AppName)
 	}
 }
 
