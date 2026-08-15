@@ -62,6 +62,30 @@ func stagePayload(ctx context.Context, archivePath, dstPath string) (err error) 
 	return nil
 }
 
+// stageHelper places a copy of the running application in the staging directory and returns the executable to run. See
+// Stage for why the helper is a copy at all.
+//
+// The whole bundle is copied, not just the executable inside it. A bundle's main executable is signed with the hashes
+// of Contents/Info.plist and of the sealed resource directory recorded in its own signature, so that file on its own
+// carries a signature that can never be satisfied: macOS rejects it and kills the process at exec, before a line of
+// this program runs. Nothing would report that, either -- the helper starts as the application quits, and a process the
+// kernel kills writes no log.
+//
+// For the same reason the copy has to keep the executable's name and its position within the bundle. Only the name of
+// the bundle directory itself is free, and it deliberately does not end in ".app", so that Launch Services does not
+// index a second com.trollworks.gcs sitting in the staging directory.
+//
+// ditto rather than a hand-rolled copy, for the reason given in stagePayload: it is what carries the extended
+// attributes, access control lists and BSD flags a valid signature depends on. For a target that is a bare executable
+// rather than a bundle, this copies just that file, which is the same thing the other platforms do.
+func stageHelper(ctx context.Context, t *Target, workDir string) (string, error) {
+	dst := filepath.Join(workDir, helperName)
+	if err := run(ctx, "/usr/bin/ditto", t.Path, dst); err != nil {
+		return "", errs.NewWithCause("unable to prepare the update helper", err)
+	}
+	return t.ExecWithin(dst), nil
+}
+
 // attachDMG mounts the disk image at an explicit mount point.
 //
 // The mount point is given rather than discovered because the volume is named "GCS v<version>", and a user who already

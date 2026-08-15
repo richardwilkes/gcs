@@ -14,6 +14,7 @@ package updater
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -37,6 +38,19 @@ func stagePayload(_ context.Context, archivePath, dstPath string) error {
 	}
 	defer xio.CloseIgnoringErrors(f)
 	return ExtractSingleTGZ(f, wantName, dstPath)
+}
+
+// stageHelper places a copy of the running executable in the staging directory and returns the path to run. See Stage
+// for why the helper is a copy at all.
+func stageHelper(_ context.Context, t *Target, workDir string) (string, error) {
+	dst := filepath.Join(workDir, helperName)
+	if err := xos.Copy(t.Exec, dst); err != nil {
+		return "", errs.NewWithCause("unable to prepare the update helper", err)
+	}
+	if err := os.Chmod(dst, executableModePerm); err != nil {
+		return "", errs.NewWithCause("unable to prepare the update helper", err)
+	}
+	return dst, nil
 }
 
 // verifyPayload has nothing to check on these platforms. The distributions carry no signature -- the packager signs

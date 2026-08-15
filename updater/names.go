@@ -18,10 +18,11 @@ const (
 	// backupSuffix separates the displaced installation's original name from the unique suffix that follows it. See
 	// Target.BackupPath for why the resulting name is shaped the way it is.
 	backupSuffix = ".old-"
-	// helperName is the copy of the running executable that finishes the update after the application exits. It is a
+	// helperName is the copy of the running application that finishes the update after that application exits. It is a
 	// copy rather than the installed file so that, once the application has quit, nothing under the installation
 	// directory is in use by any GCS process -- which is what makes the swap and the cleanup unconditionally safe,
-	// notably on Windows, where a running image cannot be deleted.
+	// notably on Windows, where a running image cannot be deleted. It names a file everywhere except macOS, where a
+	// copy of the whole bundle is required and this names that; see stageHelper.
 	helperName = "helper"
 	// stateName is the record shared between the application that stages an update, the helper that applies it, and
 	// the newly installed application that reports and cleans up after it.

@@ -10,13 +10,103 @@
 package updater
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
+
+// signedBundle builds a directory shaped like an application bundle around a real Mach-O and signs it, then returns
+// what an update to it would replace.
+//
+// An ad-hoc signature is enough. It seals Contents/Info.plist and the resource directory exactly as the Developer ID
+// signature on a released build does, and it is those seals that decide whether a copy of the executable can run --
+// which makes what follows reproducible on any Mac, with no signing identity and no network.
+func signedBundle(t *testing.T, dir string) Target {
+	t.Helper()
+	for _, tool := range []string{"/usr/bin/codesign", "/usr/bin/ditto"} {
+		if _, err := os.Stat(tool); err != nil {
+			t.Skipf("%s is needed for this test", tool)
+		}
+	}
+	bundle := filepath.Join(dir, BundleName)
+	exePath := filepath.Join(bundle, "Contents", "MacOS", CmdName)
+	// Any real Mach-O will do, and one that is on every macOS installation avoids building one here. A plain copy of
+	// the bytes, since this is standing in for an executable rather than trying to be that one: the flags on a system
+	// binary are not ours to reproduce, and the signature that matters is applied below.
+	data, err := os.ReadFile("/bin/echo")
+	if err != nil {
+		t.Skipf("unable to prepare an executable for this test: %v", err)
+	}
+	if err = os.MkdirAll(filepath.Dir(exePath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(exePath, data, executableModePerm); err != nil { //nolint:gosec // A path under the test's own temporary directory
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(bundle, "Contents", "Info.plist"), `<?xml version="1.0" encoding="UTF-8"?>`+
+		`<plist version="1.0"><dict><key>CFBundleExecutable</key><string>`+CmdName+`</string>`+
+		`<key>CFBundleIdentifier</key><string>com.trollworks.gcs.test</string></dict></plist>`)
+	write(t, filepath.Join(bundle, "Contents", "Resources", "app.icns"), "icon data")
+	// --options runtime matches how the released application is signed, since the hardened runtime is part of what
+	// makes macOS insist the signature actually verifies.
+	out, err := exec.Command("/usr/bin/codesign", "-s", "-", "-f", "--options", "runtime", //nolint:gosec // Fixed tool path
+		bundle).CombinedOutput()
+	if err != nil {
+		t.Skipf("unable to sign a bundle for this test: %v\n%s", err, out)
+	}
+
+	target, err := ResolveTarget(exePath, xos.MacOS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return target
+}
+
+// verifySignature asks the same tool the operating system consults whether the code at path would be allowed to run.
+func verifySignature(ctx context.Context, path string) error {
+	return run(ctx, "/usr/bin/codesign", "--verify", "--strict", path)
+}
+
+// TestStageHelperCopiesEnoughOfTheBundleToRun is a regression test for an update that could never be applied.
+//
+// The helper was once a bare copy of the bundle's main executable. macOS refuses to run one of those: that executable's
+// signature records the hashes of Contents/Info.plist and of the sealed resource directory, and outside the bundle
+// there is nothing for them to match, so the kernel kills the process at exec. The update simply never happened, and
+// because the helper starts as the application is quitting and died before running any of its own code, nothing
+// anywhere said why.
+func TestStageHelperCopiesEnoughOfTheBundleToRun(t *testing.T) {
+	c := check.New(t)
+	target := signedBundle(t, t.TempDir())
+	workDir := t.TempDir()
+
+	helper, err := stageHelper(t.Context(), &target, workDir)
+	c.NoError(err)
+
+	c.NoError(verifySignature(t.Context(), helper),
+		"the staged helper does not satisfy its own signature, so macOS will refuse to run it")
+
+	// The same executable copied out on its own, the way it once was, must fail -- otherwise the check above proves
+	// nothing. ditto rather than a plain copy, to show that this is not about losing extended attributes on the way.
+	bare := filepath.Join(t.TempDir(), helperName)
+	c.NoError(run(t.Context(), "/usr/bin/ditto", target.Exec, bare))
+	c.HasError(verifySignature(t.Context(), bare),
+		"a bare copy of the executable is supposed to fail; if it no longer does, this test has stopped guarding anything")
+
+	// The executable has to keep its name and its position within the bundle, since both are part of what is checked.
+	c.Equal(filepath.Join(workDir, helperName, "Contents", "MacOS", CmdName), helper)
+	c.Equal("icon data", read(t, filepath.Join(workDir, helperName, "Contents", "Resources", "app.icns")),
+		"everything the signature seals has to come across, not just the executable and the plist")
+	// Only the name of the copied bundle is free, and it must not end in ".app", or Launch Services would index a
+	// second application sitting in the staging directory.
+	c.False(strings.HasSuffix(helperName, ".app"),
+		"the staged copy must not look like a second installed application")
+}
 
 // makeDMG builds a real disk image holding a directory shaped like an application bundle, so that the mount, copy and
 // unmount sequence is exercised against the tools it actually uses rather than against a stand-in.

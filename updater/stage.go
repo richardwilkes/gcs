@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // Phase is the step a staging operation has reached, so the caller can say what is happening.
@@ -110,9 +109,17 @@ func (p *Plan) Stage(ctx context.Context, client *http.Client, progress func(fra
 		return nil, err
 	}
 
+	// The helper is a copy of the *running* build rather than the downloaded one because the command line between the
+	// two is a contract: having the same compilation write it and read it means the compiler checks it. Handing the job
+	// to the new build would make it a permanent cross-version interface, where a rename years from now silently breaks
+	// every older version's ability to update.
+	//
+	// It is a copy rather than the installed file so that, once the application has exited, nothing under the
+	// installation directory is open by any GCS process. That is what lets the swap and the cleanup be unconditional --
+	// Windows will not delete a running image, and would otherwise leave the displaced copy behind for a week.
 	report(PhasePreparing)
-	helper := filepath.Join(workDir, helperName)
-	if err = copyHelper(p.Target.Exec, helper); err != nil {
+	helper, err := stageHelper(ctx, &p.Target, workDir)
+	if err != nil {
 		return nil, err
 	}
 
@@ -122,27 +129,6 @@ func (p *Plan) Stage(ctx context.Context, client *http.Client, progress func(fra
 		Helper:  helper,
 		LogPath: filepath.Join(workDir, logName),
 	}, nil
-}
-
-// copyHelper places a copy of the running executable in the staging directory, to be run once the application has
-// exited.
-//
-// It is a copy of the *running* build rather than the downloaded one because the command line between the two is a
-// contract: having the same compilation write it and read it means the compiler checks it. Handing the job to the new
-// build would make it a permanent cross-version interface, where a rename years from now silently breaks every older
-// version's ability to update.
-//
-// It is a copy rather than the installed file so that, once the application has exited, nothing under the installation
-// directory is open by any GCS process. That is what lets the swap and the cleanup be unconditional -- Windows will not
-// delete a running image, and would otherwise leave the displaced copy behind for a week.
-func copyHelper(src, dst string) error {
-	if err := xos.Copy(src, dst); err != nil {
-		return errs.NewWithCause("unable to prepare the update helper", err)
-	}
-	if err := os.Chmod(dst, executableModePerm); err != nil {
-		return errs.NewWithCause("unable to prepare the update helper", err)
-	}
-	return nil
 }
 
 // Discard throws away a prepared update. Nothing in the installation has been touched at this point, so this only has
