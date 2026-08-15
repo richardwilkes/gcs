@@ -22,7 +22,8 @@ const (
 	// copy rather than the installed file so that, once the application has quit, nothing under the installation
 	// directory is in use by any GCS process -- which is what makes the swap and the cleanup unconditionally safe,
 	// notably on Windows, where a running image cannot be deleted. It names a file everywhere except macOS, where a
-	// copy of the whole bundle is required and this names that; see stageHelper.
+	// copy of the whole bundle is required and this names that; see stageHelper. It is the base name only -- Windows
+	// requires an ".exe" extension on top of it before the copy can be started at all; see helperFileName.
 	helperName = "helper"
 	// stateName is the record shared between the application that stages an update, the helper that applies it, and
 	// the newly installed application that reports and cleans up after it.

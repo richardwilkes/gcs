@@ -11,6 +11,7 @@ package updater
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -61,6 +62,26 @@ func TestStageHelperProducesAnExecutableCopy(t *testing.T) {
 	if runtime.GOOS != xos.WindowsOS {
 		c.True(fi.Mode().Perm()&0o100 != 0, "the helper must be executable")
 	}
+}
+
+// TestStageHelperCanBeStarted is a regression test for an update that could be prepared but never applied.
+//
+// The helper was staged as a bare "helper", with no extension. On Windows that copy cannot be started at all: the
+// program name is resolved against PATHEXT even when it is an absolute path, so os/exec rejected it with "executable
+// file not found in %PATH%" and every Windows update failed at the final step, after the user had already waited
+// through the whole download.
+//
+// exec.LookPath is what this checks against because it applies exactly the rule Start does, and it does not require a
+// real executable image -- so the stub the fixture writes is enough to catch a name that could never be run.
+func TestStageHelperCanBeStarted(t *testing.T) {
+	c := check.New(t)
+	target := installed(t, t.TempDir())
+
+	helper, err := stageHelper(t.Context(), &target, t.TempDir())
+	c.NoError(err)
+
+	_, err = exec.LookPath(helper)
+	c.NoError(err, "the staged helper must be startable by the path stageHelper hands back")
 }
 
 // TestStageHelperLeavesTheInstallationAlone confirms the property the whole design rests on at this point: preparing an

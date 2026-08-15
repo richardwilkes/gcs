@@ -34,7 +34,7 @@ func exchange(payload, target, backup string) (bool, error) {
 	var err error
 	for i := range renameAttempts {
 		if err = unix.RenamexNp(payload, target, unix.RENAME_SWAP); err == nil {
-			logSwap(target, payload, backup)
+			slog.Info("replacing the installed version", "target", target, "payload", payload, "backup", backup)
 			// The previous version is now where the staged copy was. Move it to the recorded backup path so that the
 			// startup sweep can find it, and so that it is not removed along with the staging directory.
 			if renameErr := renameWithRetry(payload, backup); renameErr != nil {

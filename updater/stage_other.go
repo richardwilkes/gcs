@@ -40,10 +40,24 @@ func stagePayload(_ context.Context, archivePath, dstPath string) error {
 	return ExtractSingleTGZ(f, wantName, dstPath)
 }
 
+// helperFileName returns the name to give the staged copy of the running executable.
+//
+// On Windows the ".exe" extension is required, not cosmetic. Windows resolves a program against the PATHEXT list before
+// starting it, and os/exec applies that rule even when handed an absolute path, so an extensionless copy is refused
+// outright -- "executable file not found in %PATH%" -- despite being a perfectly good image at exactly the path named.
+// Since nothing else cares what the helper is called, carrying the extension costs nothing, and without it no update
+// can ever be applied on Windows: staging succeeds, and then the helper that would finish the job cannot be started.
+func helperFileName() string {
+	if runtime.GOOS == xos.WindowsOS {
+		return helperName + ".exe"
+	}
+	return helperName
+}
+
 // stageHelper places a copy of the running executable in the staging directory and returns the path to run. See Stage
 // for why the helper is a copy at all.
 func stageHelper(_ context.Context, t *Target, workDir string) (string, error) {
-	dst := filepath.Join(workDir, helperName)
+	dst := filepath.Join(workDir, helperFileName())
 	if err := xos.Copy(t.Exec, dst); err != nil {
 		return "", errs.NewWithCause("unable to prepare the update helper", err)
 	}

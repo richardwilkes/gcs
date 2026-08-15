@@ -10,7 +10,6 @@
 package updater
 
 import (
-	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -117,9 +116,4 @@ func renameWithRetry(from, to string) error {
 		}
 	}
 	return errs.Wrap(err)
-}
-
-// logSwap records what was done, so that a report of an update going wrong has something behind it.
-func logSwap(target, payload, backup string) {
-	slog.Info("replacing the installed version", "target", target, "payload", payload, "backup", backup)
 }

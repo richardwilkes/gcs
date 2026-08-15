@@ -105,13 +105,13 @@ func TestLoadStateIgnoresUnknownFields(t *testing.T) {
 func TestStateTargetInfo(t *testing.T) {
 	c := check.New(t)
 
-	bundle := (&State{Target: "/Applications/GCS.app", Bundle: true}).TargetInfo()
+	bundle := (&State{Target: hostPath("/Applications/GCS.app"), Bundle: true}).TargetInfo()
 	c.Equal(KindBundle, bundle.Kind)
-	c.Equal("/Applications", bundle.Parent)
+	c.Equal(hostPath("/Applications"), bundle.Parent)
 
-	exe := (&State{Target: "/home/someone/bin/gcs"}).TargetInfo()
+	exe := (&State{Target: hostPath("/home/someone/bin/gcs")}).TargetInfo()
 	c.Equal(KindExecutable, exe.Kind)
-	c.Equal("/home/someone/bin", exe.Parent)
+	c.Equal(hostPath("/home/someone/bin"), exe.Parent)
 }
 
 // TestStateSaveIsAtomic verifies that a state file is never observed half-written. Readers are separate processes, and
