@@ -40,6 +40,13 @@ import (
 
 const releaseFile = "release.txt"
 
+// defaultDownloadSizeEstimate scales the download portion of the progress bar the first time a library is updated,
+// before a real size has been recorded for it. A guess that is too small shows as a bar that pauses just short of the
+// end of the download; one that is too large, as a bar that jumps to it. Being a little over the size of the Master
+// Library, which is by far the largest and most commonly updated of them, trades the pause for the jump. Every update
+// records what it actually transferred, so this only has to be close enough to be useful once.
+const defaultDownloadSizeEstimate = 32 * 1024 * 1024
+
 var (
 	libraryChangeLock     sync.Mutex
 	notifyOfLibraryChange func()
@@ -463,10 +470,44 @@ func (l *Library) refreshVersionOnDisk() {
 	l.lock.Unlock()
 }
 
-// Download the release onto the local disk.
-func (l *Library) Download(ctx context.Context, client *http.Client, release *Release) error {
+// Download the release onto the local disk. progress, which may be nil, is called as the work proceeds; see
+// LibraryUpdateProgress for what it receives and what is required of it.
+func (l *Library) Download(ctx context.Context, client *http.Client, release *Release, progress LibraryUpdateProgress) error {
 	libData := l.Data() // Not named "data", since the byte buffers below already use that name
 	p := l.Path()
+	// What the last download transferred is the only basis there is for scaling the download portion of the bar, and it
+	// lives in the directory that is about to be moved aside, so it has to be read now.
+	estimate := l.recordedDownloadSize()
+	if estimate <= 0 {
+		estimate = defaultDownloadSizeEstimate
+	}
+	// Everything to do with progress goes through the one lock, because the git transport reads its responses on
+	// goroutines of go-git's choosing. Counting a chunk and reporting where that leaves things as a single unit is what
+	// keeps two of those goroutines from delivering their progress out of order, which would show as a bar that jumps
+	// backwards, and it means the caller's function is never entered twice at once.
+	var lock sync.Mutex
+	var received int64
+	report := func(phase LibraryUpdatePhase, fraction float64) {
+		lock.Lock()
+		defer lock.Unlock()
+		if progress != nil {
+			progress(phase, fraction)
+		}
+	}
+	countReceived := func(n int64) {
+		lock.Lock()
+		defer lock.Unlock()
+		received += n
+		if progress != nil {
+			progress(LibraryUpdateDownloading, estimatedFraction(received, estimate))
+		}
+	}
+	transferred := func() int64 {
+		lock.Lock()
+		defer lock.Unlock()
+		return received
+	}
+	report(LibraryUpdateDownloading, 0)
 	tmpDir, err := os.MkdirTemp(filepath.Dir(p), filepath.Base(p)+"_*")
 	if err != nil {
 		return errs.NewWithCause("unable to create temporary directory", err)
@@ -505,14 +546,35 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 		var hash string
 		if hash, err = downloadLatestCommit(ctx,
 			"https://github.com/"+libData.GitHubAccountName+"/"+libData.RepoName+".git",
-			libData.AccessToken, mfs); err != nil {
+			libData.AccessToken, mfs, countReceived); err != nil {
 			return err
 		}
 		// use hash that was actually downloaded, in case a commit occurred between our original check and the download
 		release.Version = hash
+		// The clone lives in memory, so the pass that totals up the work costs nothing worth avoiding, and having the
+		// total is what lets the second pass report real progress rather than a count of files against nothing.
+		var total int64
+		if err = util.Walk(mfs, "Library", func(_ string, info os.FileInfo, walkErr error) error {
+			if walkErr != nil {
+				return walkErr
+			}
+			if !info.IsDir() {
+				total += info.Size()
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+		var written int64
+		report(LibraryUpdateInstalling, 0)
 		if err = util.Walk(mfs, "Library", func(path string, info os.FileInfo, walkErr error) error {
 			if walkErr != nil {
 				return walkErr
+			}
+			// Writing the content out is the half of the update the context would otherwise have no say over, and it is
+			// long enough to be worth interrupting, so each file is a chance to stop.
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				return errs.Wrap(ctxErr)
 			}
 			parts := strings.SplitN(filepath.ToSlash(path), "/", 2)
 			if len(parts) != 2 {
@@ -535,13 +597,15 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 			if walkErr = os.WriteFile(fullPath, data, 0o640); walkErr != nil {
 				return errs.NewWithCause("unable to write "+fullPath, walkErr)
 			}
+			written += info.Size()
+			report(LibraryUpdateInstalling, exactFraction(written, total))
 			return nil
 		}); err != nil {
 			return err
 		}
 	} else {
 		var data []byte
-		data, err = l.downloadRelease(ctx, client, release)
+		data, err = l.downloadRelease(ctx, client, release, countReceived)
 		if err != nil {
 			return err
 		}
@@ -549,33 +613,39 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 		if zr, err = zip.NewReader(bytes.NewReader(data), int64(len(data))); err != nil {
 			return errs.NewWithCause("unable to open archive "+release.ZipFileURL, err)
 		}
-		for _, f := range zr.File {
-			fi := f.FileInfo()
-			mode := fi.Mode()
-			if mode&os.ModeType == 0 { // normal files only
-				parts := strings.SplitN(filepath.ToSlash(f.Name), "/", 3)
-				if len(parts) != 3 {
-					continue
-				}
-				if !strings.EqualFold("Library", parts[1]) {
-					continue
-				}
-				fullPath := filepath.Join(root, parts[2])
-				if !strings.HasPrefix(fullPath, rootWithTrailingSep) {
-					return errs.Newf("path outside of destination directory is not permitted: %s", fullPath)
-				}
-				parent := filepath.Dir(fullPath)
-				if err = os.MkdirAll(parent, 0o750); err != nil {
-					return errs.NewWithCause("unable to create directory "+parent, err)
-				}
-				if err = l.extractFile(f, fullPath); err != nil {
-					return errs.NewWithCause("unable to create file "+fullPath, err)
-				}
+		entries, total := libraryArchiveContent(zr)
+		var written int64
+		report(LibraryUpdateInstalling, 0)
+		for _, entry := range entries {
+			// Unpacking is the half of the update the context would otherwise have no say over, and it is long enough to
+			// be worth interrupting, so each file is a chance to stop.
+			if err = ctx.Err(); err != nil {
+				return errs.Wrap(err)
 			}
+			fullPath := filepath.Join(root, entry.path)
+			if !strings.HasPrefix(fullPath, rootWithTrailingSep) {
+				return errs.Newf("path outside of destination directory is not permitted: %s", fullPath)
+			}
+			parent := filepath.Dir(fullPath)
+			if err = os.MkdirAll(parent, 0o750); err != nil {
+				return errs.NewWithCause("unable to create directory "+parent, err)
+			}
+			if err = l.extractFile(entry.file, fullPath); err != nil {
+				return errs.NewWithCause("unable to create file "+fullPath, err)
+			}
+			written += int64(entry.file.UncompressedSize64)
+			report(LibraryUpdateInstalling, exactFraction(written, total))
 		}
 	}
+	// Both paths above report their progress as they go, but neither can be relied upon to have finished on a whole
+	// number of anything -- an archive holding no library content reports nothing at all -- so the phase is closed out
+	// here rather than leaving a bar that stops short of its end.
+	report(LibraryUpdateInstalling, 1)
+	// The size of what was transferred is recorded with the version so that the next update has something better than a
+	// guess to scale its progress bar against. It goes on a second line, which both VersionOnDisk() and versions of GCS
+	// that predate it ignore, since they read only the first.
 	f := filepath.Join(root, releaseFile)
-	if err = os.WriteFile(f, []byte(release.Version+"\n"), 0o640); err != nil {
+	if err = os.WriteFile(f, []byte(release.Version+"\n"+strconv.FormatInt(transferred(), 10)+"\n"), 0o640); err != nil {
 		return errs.NewWithCause("unable to write version file "+f, err)
 	}
 	l.refreshVersionOnDisk()
@@ -602,7 +672,54 @@ func (l *Library) extractFile(f *zip.File, dst string) (err error) {
 	return err
 }
 
-func (l *Library) downloadRelease(ctx context.Context, client *http.Client, release *Release) ([]byte, error) {
+// libraryArchiveEntry is a file from a downloaded archive that belongs to the library, paired with its path relative to
+// the library's directory.
+type libraryArchiveEntry struct {
+	file *zip.File
+	path string
+}
+
+// libraryArchiveContent picks out the files in the archive that make up the library's content and totals the space they
+// will take up once expanded. GitHub's source archives hold everything beneath a single top-level directory named for
+// the repository and the commit, so what is wanted is the normal files below that directory's "Library" folder.
+func libraryArchiveContent(zr *zip.Reader) (entries []libraryArchiveEntry, total int64) {
+	for _, f := range zr.File {
+		if f.FileInfo().Mode()&os.ModeType != 0 { // normal files only
+			continue
+		}
+		parts := strings.SplitN(filepath.ToSlash(f.Name), "/", 3)
+		if len(parts) != 3 || !strings.EqualFold("Library", parts[1]) {
+			continue
+		}
+		entries = append(entries, libraryArchiveEntry{file: f, path: parts[2]})
+		total += int64(f.UncompressedSize64)
+	}
+	return entries, total
+}
+
+// recordedDownloadSize returns the number of bytes the last download of this library transferred, or 0 if that isn't
+// known. Download() writes it on the second line of the release file. It only ever scales a progress bar, so a file
+// that doesn't hold what is expected is treated as "not known" rather than as an error.
+func (l *Library) recordedDownloadSize() int64 {
+	l.lock.RLock()
+	pathOnDisk := l.data.PathOnDisk
+	l.lock.RUnlock()
+	data, err := os.ReadFile(filepath.Join(pathOnDisk, releaseFile))
+	if err != nil {
+		return 0
+	}
+	lines := bytes.SplitN(data, []byte{'\n'}, 3)
+	if len(lines) < 2 {
+		return 0
+	}
+	size, err := strconv.ParseInt(strings.TrimSpace(string(lines[1])), 10, 64)
+	if err != nil || size < 0 {
+		return 0
+	}
+	return size
+}
+
+func (l *Library) downloadRelease(ctx context.Context, client *http.Client, release *Release, received func(n int64)) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, release.ZipFileURL, http.NoBody)
 	if err != nil {
 		return nil, errs.NewWithCause("unable to create request for "+release.ZipFileURL, err)
@@ -618,9 +735,12 @@ func (l *Library) downloadRelease(ctx context.Context, client *http.Client, rele
 	if rsp.StatusCode < 200 || rsp.StatusCode > 299 {
 		return nil, errs.New("unexpected response code from " + release.ZipFileURL + " -> " + rsp.Status)
 	}
-	var data []byte
-	if data, err = io.ReadAll(rsp.Body); err != nil {
+	// The body is read through a counter rather than with io.ReadAll() so that the caller can follow the download as it
+	// arrives. GitHub generates these archives on the fly and sends them without a Content-Length, so counting what has
+	// turned up is all there is to go on.
+	var buffer bytes.Buffer
+	if _, err = buffer.ReadFrom(&countingReader{r: rsp.Body, received: received}); err != nil {
 		return nil, errs.NewWithCause("unable to download "+release.ZipFileURL, err)
 	}
-	return data, nil
+	return buffer.Bytes(), nil
 }

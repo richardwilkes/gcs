@@ -12,6 +12,9 @@ package gurps
 import (
 	"context"
 	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -35,7 +38,7 @@ func TestDownloadLatestCommitReservedName(t *testing.T) {
 	wantHash := buildBareLibraryRepo(t, srcDir, "Library/Space/Con Man.gct", "hello con man\n")
 
 	fs := memfs.New()
-	hash, err := downloadLatestCommit(context.Background(), srcDir, "", fs)
+	hash, err := downloadLatestCommit(context.Background(), srcDir, "", fs, nil)
 	c.NoError(err, "downloadLatestCommit should tolerate Windows reserved device names")
 	c.Equal(wantHash.String(), hash, "returned hash should match the source commit")
 
@@ -47,6 +50,32 @@ func TestDownloadLatestCommitReservedName(t *testing.T) {
 		c.NoError(f.Close(), "should be able to close the checked-out file")
 		c.Equal("hello con man\n", string(data), "the checked-out file should have the expected content")
 	}
+}
+
+// TestCountingTransportMeasuresResponses verifies that the transport handed to go-git counts everything it receives and
+// still closes what it wrapped. go-git reports nothing about the pack it is receiving -- the messages it writes to
+// CloneOptions.Progress come from the server and stop before the transfer starts -- so this count is the whole basis
+// for the progress shown while a "use latest commit" library is being fetched.
+func TestCountingTransportMeasuresResponses(t *testing.T) {
+	c := check.New(t)
+	body := strings.Repeat("pack data", 1000)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		io.WriteString(w, body) //nolint:errcheck // Nothing useful can be done with a failure to write to the test client
+	}))
+	defer srv.Close()
+
+	var total int64
+	client := *srv.Client()
+	client.Transport = &countingTransport{base: client.Transport, received: func(n int64) { total += n }}
+	for i := range 2 { // Two requests, since a clone makes more than one and the count has to span them all
+		rsp, err := client.Get(srv.URL)
+		c.NoError(err, "request %d", i)
+		data, err := io.ReadAll(rsp.Body)
+		c.NoError(err, "request %d", i)
+		c.NoError(rsp.Body.Close(), "request %d", i)
+		c.Equal(len(body), len(data), "request %d", i)
+	}
+	c.Equal(int64(2*len(body)), total)
 }
 
 // buildBareLibraryRepo creates a bare git repository at dir containing a single commit with one file at filePath holding

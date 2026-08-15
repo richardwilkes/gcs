@@ -355,18 +355,21 @@ func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
 
 	for _, code := range []int{http.StatusNotFound, http.StatusForbidden, http.StatusTooManyRequests} {
 		status = code
-		data, err := lib.downloadRelease(t.Context(), srv.Client(), &release)
+		data, err := lib.downloadRelease(t.Context(), srv.Client(), &release, nil)
 		c.HasError(err, "status %d", code)
 		c.Nil(data, "status %d", code)
 		c.Contains(err.Error(), strconv.Itoa(code), "status %d", code)
 		c.Contains(err.Error(), srv.URL, "status %d", code)
 	}
 
-	// A successful response must still hand back the body unchanged.
+	// A successful response must still hand back the body unchanged, and must account for every byte of it, since the
+	// progress bar is scaled by that count.
 	status = http.StatusOK
-	data, err := lib.downloadRelease(t.Context(), srv.Client(), &release)
+	var counted int64
+	data, err := lib.downloadRelease(t.Context(), srv.Client(), &release, func(n int64) { counted += n })
 	c.NoError(err)
 	c.Equal([]byte("not a zip file"), data)
+	c.Equal(int64(len("not a zip file")), counted)
 }
 
 // TestCheckForAvailableUpgradeNotifiesLateInstalledFunc verifies that an update check completing before the UI has

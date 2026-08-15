@@ -21,6 +21,14 @@
   unless a crash actually occurs. The file is rotated on the same terms as the log, and honors the same size and
   retention settings, so it cannot grow without bound.
 
+- Updating a library now shows how far along it is, and can be stopped. The window that appears while a library is
+  being updated used to show a bar that only shuffled back and forth, which said nothing about how much longer it would
+  take -- a wait of several minutes on a slow connection looked exactly like one of a few seconds. It now fills as the
+  content arrives and again as it is written to disk, and says which of the two it is doing. A **Cancel** button stops
+  an update that is taking longer than you want to wait, whichever of the two it is in the middle of, and the library
+  is left holding exactly what it held before. An update also no longer gives up after two minutes, which was not long
+  enough to fetch a library the size of the Master Library over a slow connection.
+
 ## Bug Fixes
 
 - macOS: Fixed a crash that could occur when dragging, which most often showed up as GCS disappearing while working on
