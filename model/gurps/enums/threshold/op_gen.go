@@ -25,6 +25,12 @@ const (
 	HalveST
 )
 
+// DefaultOp is the default value.
+const DefaultOp Op = Unknown
+
+// FirstOp is the first valid value.
+const FirstOp Op = Unknown
+
 // LastOp is the last valid value.
 const LastOp Op = HalveST
 
@@ -41,10 +47,10 @@ type Op byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Op) EnsureValid() Op {
-	if enum <= HalveST {
+	if enum >= FirstOp && enum <= LastOp {
 		return enum
 	}
-	return 0
+	return DefaultOp
 }
 
 // Key returns the key used in serialization.
@@ -59,7 +65,7 @@ func (enum Op) Key() string {
 	case HalveST:
 		return "halve_st"
 	default:
-		return Op(0).Key()
+		return DefaultOp.Key()
 	}
 }
 
@@ -75,7 +81,7 @@ func (enum Op) String() string {
 	case HalveST:
 		return i18n.Text(`Halve Strength`)
 	default:
-		return Op(0).String()
+		return DefaultOp.String()
 	}
 }
 
@@ -91,7 +97,7 @@ func (enum Op) AltString() string {
 	case HalveST:
 		return i18n.Text(`Halve Strength (round up; does not affect HP and damage)`)
 	default:
-		return Op(0).AltString()
+		return DefaultOp.AltString()
 	}
 }
 
@@ -113,5 +119,18 @@ func ExtractOp(str string) Op {
 			return enum
 		}
 	}
-	return 0
+	return DefaultOp
+}
+
+// ExtractKnownOp extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractOp, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
+// is dispatching on the type to detect unknown types.
+func ExtractKnownOp(str string) (value Op, known bool) {
+	for _, enum := range Ops {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultOp, false
 }

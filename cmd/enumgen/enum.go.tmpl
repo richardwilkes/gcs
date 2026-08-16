@@ -12,11 +12,14 @@
 package {{fileLeaf .Pkg}}
 
 import (
-	{{if .HasOldKeys}}"slices"
-	{{end}}"strings"
+	{{- if .HasOldKeys}}
+	"slices"
+	{{- end}}
+	"strings"
     {{- if .NeedI18N}}
 
-	"github.com/richardwilkes/toolbox/v2/i18n"{{end}}
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	{{- end}}
 )
 
 // Possible values.
@@ -26,12 +29,18 @@ const (
 	{{- end}}
 )
 
+// Default{{$name}} is the default value.
+const Default{{$name}} {{$name}} = {{$info.IDFor .Default}}
+
+// First{{$name}} is the first valid value.
+const First{{$name}} {{$name}} = {{$info.IDFor .First}}
+
 // Last{{$name}} is the last valid value.
-const Last{{$name}} {{$name}} = {{$info.IDFor (last .Values)}}
+const Last{{$name}} {{$name}} = {{$info.IDFor .Last}}
 
 {{wrapComment (printf "%ss holds all possible values." $name) 116}}
 var {{$name}}s = []{{$name}}{
-    {{- range .Values}}
+    {{- range .RealValues}}
     {{$info.IDFor .}},
     {{- end}}
 }
@@ -41,33 +50,41 @@ type {{$name}} byte
 
 // EnsureValid ensures this is of a known value.
 func (enum {{$name}}) EnsureValid() {{$name}} {
-	if enum <= {{.IDFor (last .Values)}} {
+	if enum >= First{{$name}} && enum <= Last{{$name}} {
 		return enum
 	}
-	return 0
+	return Default{{$name}}
 }
 
 // Key returns the key used in serialization.
 func (enum {{$name}}) Key() string {
     switch enum {
-    {{- range .Values}}
+    {{- range .RealValues}}
     case {{$info.IDFor .}}:
         return "{{.Key}}"
     {{- end}}
     default:
-        return {{$name}}(0).Key()
+        {{- if .DefaultUnknown}}
+        return "{{.Default.Key}}"
+        {{- else}}
+        return Default{{$name}}.Key()
+        {{- end}}
     }
 }
 
 {{if .HasOldKeys -}}
 func (enum {{$name}}) oldKeys() []string {
     switch enum {
-    {{- range .Values}}
+    {{- range .RealValues}}
     case {{$info.IDFor .}}:
         return {{if .OldKeys}}[]string{ {{join .OldKeys}} }{{else}}nil{{end}}
     {{- end}}
     default:
-        return {{$name}}(0).oldKeys()
+        {{- if .DefaultUnknown}}
+        return {{if .Default.OldKeys}}[]string{ {{join .Default.OldKeys}} }{{else}}nil{{end}}
+        {{- else}}
+        return Default{{$name}}.oldKeys()
+        {{- end}}
     }
 }
 {{- end}}
@@ -80,7 +97,11 @@ func (enum {{$name}}) String() string {
         return {{if not .NoLocalize}}i18n.Text({{end}}{{printf "%#q" .StringValue}}{{if not .NoLocalize}}){{end}}
     {{- end}}
     default:
-        return {{$name}}(0).String()
+        {{- if .DefaultUnknown}}
+        return {{if not .Default.NoLocalize}}i18n.Text({{end}}{{printf "%#q" .Default.StringValue}}{{if not .Default.NoLocalize}}){{end}}
+        {{- else}}
+        return Default{{$name}}.String()
+        {{- end}}
     }
 }
 
@@ -93,7 +114,11 @@ func (enum {{$name}}) AltString() string {
         return {{if not .NoLocalizeAlt}}i18n.Text({{end}}{{printf "%#q" .Alt}}{{if not .NoLocalizeAlt}}){{end}}
     {{- end}}
     default:
-        return {{$name}}(0).AltString()
+        {{- if .DefaultUnknown}}
+        return {{if not .NoLocalizeAlt}}i18n.Text({{end}}{{printf "%#q" .Default.Alt}}{{if not .NoLocalizeAlt}}){{end}}
+        {{- else}}
+        return Default{{$name}}.AltString()
+        {{- end}}
     }
 }
 {{- end}}
@@ -112,10 +137,31 @@ func (enum *{{$name}}) UnmarshalText(text []byte) error {
 {{wrapComment (printf "Extract%s extracts the value from a string." $name) 120}}
 func Extract{{$name}}(str string) {{$name}} {
     for _, enum := range {{$name}}s {
-        if strings.EqualFold(enum.Key(), str){{if .HasOldKeys}} ||
-			slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }){{end}} {
+        if strings.EqualFold(enum.Key(), str) {
             return enum
         }
+        {{- if .HasOldKeys}}
+        if slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
+            return enum
+        }
+        {{- end}}
     }
-    return 0
+    return Default{{$name}}
+}
+
+{{wrapComment (printf "ExtractKnown%s extracts the value from a string, reporting whether the string was actually recognized." $name) 120}}
+//
+{{wrapComment (printf "Unlike Extract%s, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that is dispatching on the type to detect unknown types." $name) 120}}
+func ExtractKnown{{$name}}(str string) (value {{$name}}, known bool) {
+    for _, enum := range {{$name}}s {
+        if strings.EqualFold(enum.Key(), str) {
+            return enum, true
+        }
+        {{- if .HasOldKeys}}
+        if slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
+            return enum, true
+        }
+        {{- end}}
+    }
+    return Default{{$name}}, false
 }

@@ -32,6 +32,12 @@ const (
 	Unknown
 )
 
+// DefaultType is the default value.
+const DefaultType Type = Unknown
+
+// FirstType is the first valid value.
+const FirstType Type = List
+
 // LastType is the last valid value.
 const LastType Type = Unknown
 
@@ -46,7 +52,6 @@ var Types = []Type{
 	Skill,
 	Spell,
 	Script,
-	Unknown,
 }
 
 // Type holds the type of a Prereq.
@@ -54,10 +59,10 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= Unknown {
+	if enum >= FirstType && enum <= LastType {
 		return enum
 	}
-	return 0
+	return DefaultType
 }
 
 // Key returns the key used in serialization.
@@ -81,10 +86,8 @@ func (enum Type) Key() string {
 		return "spell_prereq"
 	case Script:
 		return "script_prereq"
-	case Unknown:
-		return "unknown_prereq"
 	default:
-		return Type(0).Key()
+		return "unknown_prereq"
 	}
 }
 
@@ -108,10 +111,8 @@ func (enum Type) oldKeys() []string {
 		return nil
 	case Script:
 		return nil
-	case Unknown:
-		return nil
 	default:
-		return Type(0).oldKeys()
+		return nil
 	}
 }
 
@@ -139,7 +140,7 @@ func (enum Type) String() string {
 	case Unknown:
 		return i18n.Text(`an unknown prerequisite type`)
 	default:
-		return Type(0).String()
+		return i18n.Text(`an unknown prerequisite type`)
 	}
 }
 
@@ -157,10 +158,28 @@ func (enum *Type) UnmarshalText(text []byte) error {
 // ExtractType extracts the value from a string.
 func ExtractType(str string) Type {
 	for _, enum := range Types {
-		if strings.EqualFold(enum.Key(), str) ||
-			slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+		if slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
 			return enum
 		}
 	}
-	return 0
+	return DefaultType
+}
+
+// ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
+// is dispatching on the type to detect unknown types.
+func ExtractKnownType(str string) (value Type, known bool) {
+	for _, enum := range Types {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+		if slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
+			return enum, true
+		}
+	}
+	return DefaultType, false
 }

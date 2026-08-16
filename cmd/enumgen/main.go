@@ -50,10 +50,12 @@ type enumValue struct {
 }
 
 type enumInfo struct {
-	Pkg    string
-	Name   string
-	Desc   string
-	Values []*enumValue
+	Pkg            string
+	Name           string
+	Desc           string
+	Values         []*enumValue
+	DefaultLast    bool
+	DefaultUnknown bool
 }
 
 func main() {
@@ -113,6 +115,7 @@ func generateEnumSource(info *enumInfo) ([]byte, error) {
 	tmpl, err := template.New("enum.go.tmpl").Funcs(template.FuncMap{
 		"fileLeaf":     filepath.Base,
 		"join":         join,
+		"first":        first,
 		"last":         last,
 		"toIdentifier": toIdentifier,
 		"wrapComment":  wrapComment,
@@ -174,6 +177,42 @@ func (e *enumInfo) HasOldKeys() bool {
 	return false
 }
 
+func (e *enumInfo) Default() *enumValue {
+	if len(e.Values) > 0 {
+		if e.DefaultLast {
+			return e.Values[len(e.Values)-1]
+		}
+		return e.Values[0]
+
+	}
+	return nil
+}
+
+func (e *enumInfo) First() *enumValue {
+	if len(e.Values) > 0 {
+		return e.Values[0]
+	}
+	return nil
+}
+
+func (e *enumInfo) Last() *enumValue {
+	if len(e.Values) > 0 {
+		return e.Values[len(e.Values)-1]
+	}
+	return nil
+}
+
+func (e *enumInfo) RealValues() []*enumValue {
+	if e.DefaultUnknown && len(e.Values) > 0 {
+		if e.DefaultLast {
+			return e.Values[:len(e.Values)-1]
+		}
+		return e.Values[1:]
+
+	}
+	return e.Values
+}
+
 func (e *enumInfo) NeedI18N() bool {
 	for _, one := range e.Values {
 		if !one.NoLocalize || (one.Alt != "" && !one.NoLocalizeAlt) {
@@ -188,6 +227,10 @@ func (e *enumValue) StringValue() string {
 		return cases.Title(language.AmericanEnglish).String(strings.ReplaceAll(e.Key, "_", " "))
 	}
 	return e.String
+}
+
+func first(in []*enumValue) *enumValue {
+	return in[0]
 }
 
 func last(in []*enumValue) *enumValue {
@@ -789,6 +832,8 @@ var allEnums = []*enumInfo{
 				String: "Is an unknown feature type",
 			},
 		},
+		DefaultLast:    true,
+		DefaultUnknown: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/equipmentsel",
@@ -932,6 +977,8 @@ var allEnums = []*enumInfo{
 				String: "an unknown prerequisite type",
 			},
 		},
+		DefaultLast:    true,
+		DefaultUnknown: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/progression",

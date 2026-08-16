@@ -31,6 +31,12 @@ const (
 	SubEditors
 )
 
+// DefaultGroup is the default value.
+const DefaultGroup Group = CharacterSheets
+
+// FirstGroup is the first valid value.
+const FirstGroup Group = CharacterSheets
+
 // LastGroup is the last valid value.
 const LastGroup Group = SubEditors
 
@@ -53,10 +59,10 @@ type Group byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Group) EnsureValid() Group {
-	if enum <= SubEditors {
+	if enum >= FirstGroup && enum <= LastGroup {
 		return enum
 	}
-	return 0
+	return DefaultGroup
 }
 
 // Key returns the key used in serialization.
@@ -83,7 +89,7 @@ func (enum Group) Key() string {
 	case SubEditors:
 		return "sub-editors"
 	default:
-		return Group(0).Key()
+		return DefaultGroup.Key()
 	}
 }
 
@@ -111,7 +117,7 @@ func (enum Group) String() string {
 	case SubEditors:
 		return i18n.Text(`Sub-Editors`)
 	default:
-		return Group(0).String()
+		return DefaultGroup.String()
 	}
 }
 
@@ -133,5 +139,18 @@ func ExtractGroup(str string) Group {
 			return enum
 		}
 	}
-	return 0
+	return DefaultGroup
+}
+
+// ExtractKnownGroup extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractGroup, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// that is dispatching on the type to detect unknown types.
+func ExtractKnownGroup(str string) (value Group, known bool) {
+	for _, enum := range Groups {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultGroup, false
 }

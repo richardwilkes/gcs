@@ -29,6 +29,12 @@ const (
 	Meter
 )
 
+// DefaultLengthUnit is the default value.
+const DefaultLengthUnit LengthUnit = FeetAndInches
+
+// FirstLengthUnit is the first valid value.
+const FirstLengthUnit LengthUnit = FeetAndInches
+
 // LastLengthUnit is the last valid value.
 const LastLengthUnit LengthUnit = Meter
 
@@ -51,10 +57,10 @@ type LengthUnit byte
 
 // EnsureValid ensures this is of a known value.
 func (enum LengthUnit) EnsureValid() LengthUnit {
-	if enum <= Meter {
+	if enum >= FirstLengthUnit && enum <= LastLengthUnit {
 		return enum
 	}
-	return 0
+	return DefaultLengthUnit
 }
 
 // Key returns the key used in serialization.
@@ -77,7 +83,7 @@ func (enum LengthUnit) Key() string {
 	case Meter:
 		return "m"
 	default:
-		return LengthUnit(0).Key()
+		return DefaultLengthUnit.Key()
 	}
 }
 
@@ -101,7 +107,7 @@ func (enum LengthUnit) String() string {
 	case Meter:
 		return `m`
 	default:
-		return LengthUnit(0).String()
+		return DefaultLengthUnit.String()
 	}
 }
 
@@ -123,5 +129,18 @@ func ExtractLengthUnit(str string) LengthUnit {
 			return enum
 		}
 	}
-	return 0
+	return DefaultLengthUnit
+}
+
+// ExtractKnownLengthUnit extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractLengthUnit, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// caller that is dispatching on the type to detect unknown types.
+func ExtractKnownLengthUnit(str string) (value LengthUnit, known bool) {
+	for _, enum := range LengthUnits {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultLengthUnit, false
 }

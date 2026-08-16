@@ -9,8 +9,6 @@
 
 package feature
 
-import "strings"
-
 // SelectableTypes holds the possible Type values that may be chosen by the user. Unknown is excluded, since it exists
 // only to hold onto feature data this version of GCS doesn't understand.
 var SelectableTypes []Type
@@ -31,16 +29,4 @@ func init() {
 			SelectableTypesWithoutContainedWeightReduction = append(SelectableTypesWithoutContainedWeightReduction, one)
 		}
 	}
-}
-
-// ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized. Unlike
-// ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that is
-// dispatching on the type to detect data it has no knowledge of.
-func ExtractKnownType(str string) (value Type, known bool) {
-	for _, enum := range Types {
-		if enum != Unknown && strings.EqualFold(enum.Key(), str) {
-			return enum, true
-		}
-	}
-	return Unknown, false
 }

@@ -25,6 +25,12 @@ const (
 	Hidden
 )
 
+// DefaultPlacement is the default value.
+const DefaultPlacement Placement = Automatic
+
+// FirstPlacement is the first valid value.
+const FirstPlacement Placement = Automatic
+
 // LastPlacement is the last valid value.
 const LastPlacement Placement = Hidden
 
@@ -41,10 +47,10 @@ type Placement byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Placement) EnsureValid() Placement {
-	if enum <= Hidden {
+	if enum >= FirstPlacement && enum <= LastPlacement {
 		return enum
 	}
-	return 0
+	return DefaultPlacement
 }
 
 // Key returns the key used in serialization.
@@ -59,7 +65,7 @@ func (enum Placement) Key() string {
 	case Hidden:
 		return "hidden"
 	default:
-		return Placement(0).Key()
+		return DefaultPlacement.Key()
 	}
 }
 
@@ -75,7 +81,7 @@ func (enum Placement) String() string {
 	case Hidden:
 		return i18n.Text(`Hidden`)
 	default:
-		return Placement(0).String()
+		return DefaultPlacement.String()
 	}
 }
 
@@ -97,5 +103,18 @@ func ExtractPlacement(str string) Placement {
 			return enum
 		}
 	}
-	return 0
+	return DefaultPlacement
+}
+
+// ExtractKnownPlacement extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractPlacement, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// that is dispatching on the type to detect unknown types.
+func ExtractKnownPlacement(str string) (value Placement, known bool) {
+	for _, enum := range Placements {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultPlacement, false
 }

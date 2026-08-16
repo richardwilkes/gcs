@@ -23,6 +23,12 @@ const (
 	Multiplier
 )
 
+// DefaultValue is the default value.
+const DefaultValue Value = Addition
+
+// FirstValue is the first valid value.
+const FirstValue Value = Addition
+
 // LastValue is the last valid value.
 const LastValue Value = Multiplier
 
@@ -39,10 +45,10 @@ type Value byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Value) EnsureValid() Value {
-	if enum <= Multiplier {
+	if enum >= FirstValue && enum <= LastValue {
 		return enum
 	}
-	return 0
+	return DefaultValue
 }
 
 // Key returns the key used in serialization.
@@ -57,7 +63,7 @@ func (enum Value) Key() string {
 	case Multiplier:
 		return "x"
 	default:
-		return Value(0).Key()
+		return DefaultValue.Key()
 	}
 }
 
@@ -73,7 +79,7 @@ func (enum Value) String() string {
 	case Multiplier:
 		return `x`
 	default:
-		return Value(0).String()
+		return DefaultValue.String()
 	}
 }
 
@@ -95,5 +101,18 @@ func ExtractValue(str string) Value {
 			return enum
 		}
 	}
-	return 0
+	return DefaultValue
+}
+
+// ExtractKnownValue extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractValue, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// that is dispatching on the type to detect unknown types.
+func ExtractKnownValue(str string) (value Value, known bool) {
+	for _, enum := range Values {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultValue, false
 }

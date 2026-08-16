@@ -26,6 +26,12 @@ const (
 	Gram
 )
 
+// DefaultWeightUnit is the default value.
+const DefaultWeightUnit WeightUnit = Pound
+
+// FirstWeightUnit is the first valid value.
+const FirstWeightUnit WeightUnit = Pound
+
 // LastWeightUnit is the last valid value.
 const LastWeightUnit WeightUnit = Gram
 
@@ -47,10 +53,10 @@ type WeightUnit byte
 
 // EnsureValid ensures this is of a known value.
 func (enum WeightUnit) EnsureValid() WeightUnit {
-	if enum <= Gram {
+	if enum >= FirstWeightUnit && enum <= LastWeightUnit {
 		return enum
 	}
-	return 0
+	return DefaultWeightUnit
 }
 
 // Key returns the key used in serialization.
@@ -71,7 +77,7 @@ func (enum WeightUnit) Key() string {
 	case Gram:
 		return "g"
 	default:
-		return WeightUnit(0).Key()
+		return DefaultWeightUnit.Key()
 	}
 }
 
@@ -93,7 +99,7 @@ func (enum WeightUnit) String() string {
 	case Gram:
 		return `g`
 	default:
-		return WeightUnit(0).String()
+		return DefaultWeightUnit.String()
 	}
 }
 
@@ -115,5 +121,18 @@ func ExtractWeightUnit(str string) WeightUnit {
 			return enum
 		}
 	}
-	return 0
+	return DefaultWeightUnit
+}
+
+// ExtractKnownWeightUnit extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractWeightUnit, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// caller that is dispatching on the type to detect unknown types.
+func ExtractKnownWeightUnit(str string) (value WeightUnit, known bool) {
+	for _, enum := range WeightUnits {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultWeightUnit, false
 }

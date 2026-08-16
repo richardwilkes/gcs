@@ -32,6 +32,12 @@ const (
 	OldLeveledSwing
 )
 
+// DefaultOption is the default value.
+const DefaultOption Option = None
+
+// FirstOption is the first valid value.
+const FirstOption Option = None
+
 // LastOption is the last valid value.
 const LastOption Option = OldLeveledSwing
 
@@ -55,10 +61,10 @@ type Option byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Option) EnsureValid() Option {
-	if enum <= OldLeveledSwing {
+	if enum >= FirstOption && enum <= LastOption {
 		return enum
 	}
-	return 0
+	return DefaultOption
 }
 
 // Key returns the key used in serialization.
@@ -87,7 +93,7 @@ func (enum Option) Key() string {
 	case OldLeveledSwing:
 		return "sw_leveled"
 	default:
-		return Option(0).Key()
+		return DefaultOption.Key()
 	}
 }
 
@@ -117,7 +123,7 @@ func (enum Option) String() string {
 	case OldLeveledSwing:
 		return i18n.Text(`sw (leveled)`)
 	default:
-		return Option(0).String()
+		return DefaultOption.String()
 	}
 }
 
@@ -139,5 +145,18 @@ func ExtractOption(str string) Option {
 			return enum
 		}
 	}
-	return 0
+	return DefaultOption
+}
+
+// ExtractKnownOption extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractOption, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// that is dispatching on the type to detect unknown types.
+func ExtractKnownOption(str string) (value Option, known bool) {
+	for _, enum := range Options {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultOption, false
 }

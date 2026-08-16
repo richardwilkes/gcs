@@ -60,6 +60,12 @@ const (
 	Unknown
 )
 
+// DefaultType is the default value.
+const DefaultType Type = Unknown
+
+// FirstType is the first valid value.
+const FirstType Type = AttributeBonus
+
 // LastType is the last valid value.
 const LastType Type = Unknown
 
@@ -103,7 +109,6 @@ var Types = []Type{
 	SelectorOverride,
 	CostReduction,
 	ContainedWeightReduction,
-	Unknown,
 }
 
 // Type holds the type of a Feature.
@@ -111,10 +116,10 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= Unknown {
+	if enum >= FirstType && enum <= LastType {
 		return enum
 	}
-	return 0
+	return DefaultType
 }
 
 // Key returns the key used in serialization.
@@ -196,10 +201,8 @@ func (enum Type) Key() string {
 		return "cost_reduction"
 	case ContainedWeightReduction:
 		return "contained_weight_reduction"
-	case Unknown:
-		return "unknown"
 	default:
-		return Type(0).Key()
+		return "unknown"
 	}
 }
 
@@ -285,7 +288,7 @@ func (enum Type) String() string {
 	case Unknown:
 		return i18n.Text(`Is an unknown feature type`)
 	default:
-		return Type(0).String()
+		return i18n.Text(`Is an unknown feature type`)
 	}
 }
 
@@ -307,5 +310,18 @@ func ExtractType(str string) Type {
 			return enum
 		}
 	}
-	return 0
+	return DefaultType
+}
+
+// ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
+// is dispatching on the type to detect unknown types.
+func ExtractKnownType(str string) (value Type, known bool) {
+	for _, enum := range Types {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultType, false
 }

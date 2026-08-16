@@ -25,6 +25,12 @@ const (
 	Final
 )
 
+// DefaultType is the default value.
+const DefaultType Type = Original
+
+// FirstType is the first valid value.
+const FirstType Type = Original
+
 // LastType is the last valid value.
 const LastType Type = Final
 
@@ -41,10 +47,10 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= Final {
+	if enum >= FirstType && enum <= LastType {
 		return enum
 	}
-	return 0
+	return DefaultType
 }
 
 // Key returns the key used in serialization.
@@ -59,7 +65,7 @@ func (enum Type) Key() string {
 	case Final:
 		return "to_final_cost"
 	default:
-		return Type(0).Key()
+		return DefaultType.Key()
 	}
 }
 
@@ -75,7 +81,7 @@ func (enum Type) String() string {
 	case Final:
 		return i18n.Text(`to final cost`)
 	default:
-		return Type(0).String()
+		return DefaultType.String()
 	}
 }
 
@@ -91,7 +97,7 @@ func (enum Type) AltString() string {
 	case Final:
 		return i18n.Text(`"+5", "-5", "+10%", "-10%", "x3.2"`)
 	default:
-		return Type(0).AltString()
+		return DefaultType.AltString()
 	}
 }
 
@@ -113,5 +119,18 @@ func ExtractType(str string) Type {
 			return enum
 		}
 	}
-	return 0
+	return DefaultType
+}
+
+// ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
+// is dispatching on the type to detect unknown types.
+func ExtractKnownType(str string) (value Type, known bool) {
+	for _, enum := range Types {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultType, false
 }

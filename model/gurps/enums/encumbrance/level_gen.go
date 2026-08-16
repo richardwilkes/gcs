@@ -26,6 +26,12 @@ const (
 	ExtraHeavy
 )
 
+// DefaultLevel is the default value.
+const DefaultLevel Level = No
+
+// FirstLevel is the first valid value.
+const FirstLevel Level = No
+
 // LastLevel is the last valid value.
 const LastLevel Level = ExtraHeavy
 
@@ -43,10 +49,10 @@ type Level byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Level) EnsureValid() Level {
-	if enum <= ExtraHeavy {
+	if enum >= FirstLevel && enum <= LastLevel {
 		return enum
 	}
-	return 0
+	return DefaultLevel
 }
 
 // Key returns the key used in serialization.
@@ -63,7 +69,7 @@ func (enum Level) Key() string {
 	case ExtraHeavy:
 		return "extra_heavy"
 	default:
-		return Level(0).Key()
+		return DefaultLevel.Key()
 	}
 }
 
@@ -81,7 +87,7 @@ func (enum Level) String() string {
 	case ExtraHeavy:
 		return i18n.Text(`X-Heavy`)
 	default:
-		return Level(0).String()
+		return DefaultLevel.String()
 	}
 }
 
@@ -103,5 +109,18 @@ func ExtractLevel(str string) Level {
 			return enum
 		}
 	}
-	return 0
+	return DefaultLevel
+}
+
+// ExtractKnownLevel extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractLevel, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// that is dispatching on the type to detect unknown types.
+func ExtractKnownLevel(str string) (value Level, known bool) {
+	for _, enum := range Levels {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultLevel, false
 }

@@ -27,6 +27,12 @@ const (
 	Any
 )
 
+// DefaultType is the default value.
+const DefaultType Type = Name
+
+// FirstType is the first valid value.
+const FirstType Type = Name
+
 // LastType is the last valid value.
 const LastType Type = Any
 
@@ -44,10 +50,10 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= Any {
+	if enum >= FirstType && enum <= LastType {
 		return enum
 	}
-	return 0
+	return DefaultType
 }
 
 // Key returns the key used in serialization.
@@ -64,7 +70,7 @@ func (enum Type) Key() string {
 	case Any:
 		return "any"
 	default:
-		return Type(0).Key()
+		return DefaultType.Key()
 	}
 }
 
@@ -81,7 +87,7 @@ func (enum Type) oldKeys() []string {
 	case Any:
 		return nil
 	default:
-		return Type(0).oldKeys()
+		return DefaultType.oldKeys()
 	}
 }
 
@@ -99,7 +105,7 @@ func (enum Type) String() string {
 	case Any:
 		return i18n.Text(`of any kind`)
 	default:
-		return Type(0).String()
+		return DefaultType.String()
 	}
 }
 
@@ -117,10 +123,28 @@ func (enum *Type) UnmarshalText(text []byte) error {
 // ExtractType extracts the value from a string.
 func ExtractType(str string) Type {
 	for _, enum := range Types {
-		if strings.EqualFold(enum.Key(), str) ||
-			slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+		if slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
 			return enum
 		}
 	}
-	return 0
+	return DefaultType
+}
+
+// ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
+// is dispatching on the type to detect unknown types.
+func ExtractKnownType(str string) (value Type, known bool) {
+	for _, enum := range Types {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+		if slices.ContainsFunc(enum.oldKeys(), func(s string) bool { return strings.EqualFold(s, str) }) {
+			return enum, true
+		}
+	}
+	return DefaultType, false
 }

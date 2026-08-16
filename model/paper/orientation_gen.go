@@ -23,6 +23,12 @@ const (
 	Landscape
 )
 
+// DefaultOrientation is the default value.
+const DefaultOrientation Orientation = Portrait
+
+// FirstOrientation is the first valid value.
+const FirstOrientation Orientation = Portrait
+
 // LastOrientation is the last valid value.
 const LastOrientation Orientation = Landscape
 
@@ -37,10 +43,10 @@ type Orientation byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Orientation) EnsureValid() Orientation {
-	if enum <= Landscape {
+	if enum >= FirstOrientation && enum <= LastOrientation {
 		return enum
 	}
-	return 0
+	return DefaultOrientation
 }
 
 // Key returns the key used in serialization.
@@ -51,7 +57,7 @@ func (enum Orientation) Key() string {
 	case Landscape:
 		return "landscape"
 	default:
-		return Orientation(0).Key()
+		return DefaultOrientation.Key()
 	}
 }
 
@@ -63,7 +69,7 @@ func (enum Orientation) String() string {
 	case Landscape:
 		return i18n.Text(`Landscape`)
 	default:
-		return Orientation(0).String()
+		return DefaultOrientation.String()
 	}
 }
 
@@ -85,5 +91,18 @@ func ExtractOrientation(str string) Orientation {
 			return enum
 		}
 	}
-	return 0
+	return DefaultOrientation
+}
+
+// ExtractKnownOrientation extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractOrientation, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// caller that is dispatching on the type to detect unknown types.
+func ExtractKnownOrientation(str string) (value Orientation, known bool) {
+	for _, enum := range Orientations {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultOrientation, false
 }

@@ -28,6 +28,12 @@ const (
 	MajorCostOfLivingIncrease
 )
 
+// DefaultAdjustment is the default value.
+const DefaultAdjustment Adjustment = NoAdjustment
+
+// FirstAdjustment is the first valid value.
+const FirstAdjustment Adjustment = NoAdjustment
+
 // LastAdjustment is the last valid value.
 const LastAdjustment Adjustment = MajorCostOfLivingIncrease
 
@@ -47,10 +53,10 @@ type Adjustment byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Adjustment) EnsureValid() Adjustment {
-	if enum <= MajorCostOfLivingIncrease {
+	if enum >= FirstAdjustment && enum <= LastAdjustment {
 		return enum
 	}
-	return 0
+	return DefaultAdjustment
 }
 
 // Key returns the key used in serialization.
@@ -71,7 +77,7 @@ func (enum Adjustment) Key() string {
 	case MajorCostOfLivingIncrease:
 		return "major_cost_of_living_increase"
 	default:
-		return Adjustment(0).Key()
+		return DefaultAdjustment.Key()
 	}
 }
 
@@ -93,7 +99,7 @@ func (enum Adjustment) String() string {
 	case MajorCostOfLivingIncrease:
 		return i18n.Text(`Includes a Major Cost of Living Increase and Merchant Skill Penalty`)
 	default:
-		return Adjustment(0).String()
+		return DefaultAdjustment.String()
 	}
 }
 
@@ -115,7 +121,7 @@ func (enum Adjustment) AltString() string {
 	case MajorCostOfLivingIncrease:
 		return i18n.Text(`+%d%% Cost of Living Increase`)
 	default:
-		return Adjustment(0).AltString()
+		return DefaultAdjustment.AltString()
 	}
 }
 
@@ -137,5 +143,18 @@ func ExtractAdjustment(str string) Adjustment {
 			return enum
 		}
 	}
-	return 0
+	return DefaultAdjustment
+}
+
+// ExtractKnownAdjustment extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractAdjustment, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// caller that is dispatching on the type to detect unknown types.
+func ExtractKnownAdjustment(str string) (value Adjustment, known bool) {
+	for _, enum := range Adjustments {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultAdjustment, false
 }
