@@ -31,7 +31,7 @@ func (p *Prereqs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		var typeData struct {
 			Type string `json:"type"`
 		}
-		if err := json.Unmarshal(one, &typeData); err != nil {
+		if err := json.Unmarshal(one, &typeData, dec.Options()); err != nil {
 			return errs.Wrap(err)
 		}
 		// Note that the type is extracted as a string and resolved with ExtractKnownType rather than being unmarshaled
@@ -68,7 +68,7 @@ func (p *Prereqs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			(*p)[i] = NewUnknownPrereq(typeData.Type, one)
 			continue
 		}
-		if err := json.Unmarshal(one, &pr); err != nil {
+		if err := json.Unmarshal(one, &pr, dec.Options()); err != nil {
 			return errs.Wrap(err)
 		}
 		(*p)[i] = pr

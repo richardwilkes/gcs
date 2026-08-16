@@ -40,13 +40,16 @@ type SkillDefault struct {
 	WhenTL         criteria.Number `json:"when_tl,omitzero"`
 }
 
-func migrateStringToCriteriaText(raw jsontext.Value, dst *criteria.Text) error {
+// migrateStringToCriteriaText loads a criteria.Text that may have been written in the old format, where it was a plain
+// string rather than an object. The raw value was captured by the caller rather than decoded in place, so the caller's
+// options have to be handed back in for the re-parse to be made under the same terms as the decode it came from.
+func migrateStringToCriteriaText(raw jsontext.Value, dst *criteria.Text, opts json.Options) error {
 	if len(raw) == 0 {
 		return nil
 	}
 	if raw[0] == '"' {
 		var str string
-		if err := json.Unmarshal(raw, &str); err != nil {
+		if err := json.Unmarshal(raw, &str, opts); err != nil {
 			return err
 		}
 		if str != "" {
@@ -55,7 +58,7 @@ func migrateStringToCriteriaText(raw jsontext.Value, dst *criteria.Text) error {
 		}
 		return nil
 	}
-	return json.Unmarshal(raw, dst)
+	return json.Unmarshal(raw, dst, opts)
 }
 
 // DefaultTypeIsSkillBased returns true if the SkillDefault type is Skill-based.
@@ -101,10 +104,10 @@ func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	s.AdjLevel = localData.AdjLevel
 	s.Points = localData.Points
 	s.WhenTL = localData.WhenTL
-	if err := migrateStringToCriteriaText(localData.Name, &s.Name); err != nil {
+	if err := migrateStringToCriteriaText(localData.Name, &s.Name, dec.Options()); err != nil {
 		return err
 	}
-	return migrateStringToCriteriaText(localData.Specialization, &s.Specialization)
+	return migrateStringToCriteriaText(localData.Specialization, &s.Specialization, dec.Options())
 }
 
 // Equivalent returns true if this can be considered equivalent to other.

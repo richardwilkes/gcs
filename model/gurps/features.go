@@ -43,7 +43,7 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		var justTypeData struct {
 			Type string `json:"type"`
 		}
-		if err := json.Unmarshal(one, &justTypeData); err != nil {
+		if err := json.Unmarshal(one, &justTypeData, dec.Options()); err != nil {
 			return errs.Wrap(err)
 		}
 		// Note that the type is extracted as a string and resolved with ExtractKnownType rather than being unmarshaled
@@ -114,7 +114,7 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			(*f)[i] = NewUnknownFeature(justTypeData.Type, one)
 			continue
 		}
-		if err := json.Unmarshal(one, &feat); err != nil {
+		if err := json.Unmarshal(one, &feat, dec.Options()); err != nil {
 			return errs.Wrap(err)
 		}
 		(*f)[i] = feat
