@@ -61,15 +61,15 @@ type Node[T NodeTypes] interface {
 }
 
 // RawPointsAdjuster defines methods for nodes that can have their raw points adjusted must implement.
-type RawPointsAdjuster[T NodeTypes] interface {
-	Node[T]
+type RawPointsAdjuster interface {
+	Container() bool
 	RawPoints() fxp.Int
 	SetRawPoints(points fxp.Int) bool
 }
 
 // SkillAdjustmentProvider defines methods for nodes that can have their skill level adjusted must implement.
-type SkillAdjustmentProvider[T NodeTypes] interface {
-	RawPointsAdjuster[T]
+type SkillAdjustmentProvider interface {
+	RawPointsAdjuster
 	IncrementSkillLevel()
 	DecrementSkillLevel()
 }

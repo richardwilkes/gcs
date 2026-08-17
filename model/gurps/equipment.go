@@ -38,11 +38,11 @@ import (
 )
 
 var (
-	_ WeaponOwner                   = &Equipment{}
-	_ LeveledOwner                  = &Equipment{}
-	_ Node[*Equipment]              = &Equipment{}
-	_ TechLevelProvider[*Equipment] = &Equipment{}
-	_ EditorData[*Equipment]        = &EquipmentEditData{}
+	_ WeaponOwner            = &Equipment{}
+	_ LeveledOwner           = &Equipment{}
+	_ Node[*Equipment]       = &Equipment{}
+	_ TechLevelProvider      = &Equipment{}
+	_ EditorData[*Equipment] = &EquipmentEditData{}
 )
 
 // Columns that can be used with the equipment method .CellData()
