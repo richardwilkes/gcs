@@ -16,13 +16,13 @@ import (
 )
 
 // TableUndoEditData holds the data necessary to provide undo for a table.
-type TableUndoEditData[T gurps.NodeTypes] struct {
+type TableUndoEditData[T gurps.Node[T]] struct {
 	Table *unison.Table[*Node[T]]
 	Data  PreservedTableData[T]
 }
 
 // NewTableUndoEditData collects the undo edit data for a table.
-func NewTableUndoEditData[T gurps.NodeTypes](table *unison.Table[*Node[T]]) *TableUndoEditData[T] {
+func NewTableUndoEditData[T gurps.Node[T]](table *unison.Table[*Node[T]]) *TableUndoEditData[T] {
 	if table == nil {
 		return nil
 	}
@@ -45,13 +45,13 @@ func (t *TableUndoEditData[T]) Apply() {
 }
 
 // TableDragUndoEditData holds the undo edit data for a table drag.
-type TableDragUndoEditData[T gurps.NodeTypes] struct {
+type TableDragUndoEditData[T gurps.Node[T]] struct {
 	From *TableUndoEditData[T]
 	To   *TableUndoEditData[T]
 }
 
 // NewTableDragUndoEditData collects the undo edit data for a table drag.
-func NewTableDragUndoEditData[T gurps.NodeTypes](from, to *unison.Table[*Node[T]]) *TableDragUndoEditData[T] {
+func NewTableDragUndoEditData[T gurps.Node[T]](from, to *unison.Table[*Node[T]]) *TableDragUndoEditData[T] {
 	return &TableDragUndoEditData[T]{
 		From: NewTableUndoEditData(from),
 		To:   NewTableUndoEditData(to),

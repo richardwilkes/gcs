@@ -45,11 +45,12 @@ import (
 )
 
 var (
+	_ = assertNode[*Trait]
+	_ = assertEditorData[*Trait]
+
 	_ WeaponOwner            = &Trait{}
-	_ Node[*Trait]           = &Trait{}
 	_ TemplatePickerProvider = &Trait{}
 	_ LeveledOwner           = &Trait{}
-	_ EditorData[*Trait]     = &TraitEditData{}
 )
 
 // Columns that can be used with the trait method .CellData()

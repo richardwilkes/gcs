@@ -321,7 +321,7 @@ func (s *pageState) key() string {
 	return ""
 }
 
-func addRowPanel[T gurps.NodeTypes](rowPanel *unison.Panel, list *PageList[T], key string, startAtMap map[string]int) {
+func addRowPanel[T gurps.Node[T]](rowPanel *unison.Panel, list *PageList[T], key string, startAtMap map[string]int) {
 	list.ClientData()[pageKey] = key
 	count := list.RowCount()
 	startAt := startAtMap[key]

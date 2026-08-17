@@ -36,10 +36,11 @@ import (
 )
 
 var (
-	_ Node[*TraitModifier]       = &TraitModifier{}
-	_ GeneralModifier            = &TraitModifier{}
-	_ LeveledOwner               = &TraitModifier{}
-	_ EditorData[*TraitModifier] = &TraitModifierEditData{}
+	_ = assertNode[*TraitModifier]
+	_ = assertEditorData[*TraitModifier]
+
+	_ GeneralModifier = &TraitModifier{}
+	_ LeveledOwner    = &TraitModifier{}
 )
 
 // Columns that can be used with the trait modifier method .CellData()

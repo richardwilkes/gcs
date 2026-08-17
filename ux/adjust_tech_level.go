@@ -15,7 +15,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-func techLevelExtractor[T gurps.NodeTypes](amount fxp.Int) func(T) (gurps.TechLevelProvider, bool) {
+func techLevelExtractor[T gurps.Node[T]](amount fxp.Int) func(T) (gurps.TechLevelProvider, bool) {
 	return func(data T) (gurps.TechLevelProvider, bool) {
 		if provider, ok := any(data).(gurps.TechLevelProvider); ok && provider.RequiresTL() {
 			if _, changed := gurps.AdjustTechLevel(provider.TL(), amount); changed {
@@ -26,11 +26,11 @@ func techLevelExtractor[T gurps.NodeTypes](amount fxp.Int) func(T) (gurps.TechLe
 	}
 }
 
-func canAdjustTechLevel[T gurps.NodeTypes](table *unison.Table[*Node[T]], amount fxp.Int) bool {
+func canAdjustTechLevel[T gurps.Node[T]](table *unison.Table[*Node[T]], amount fxp.Int) bool {
 	return canAdjustSelection(table, techLevelExtractor[T](amount))
 }
 
-func adjustTechLevel[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], amount fxp.Int) {
+func adjustTechLevel[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], amount fxp.Int) {
 	title := increaseTechLevelAction.Title
 	if amount < 0 {
 		title = decreaseTechLevelAction.Title

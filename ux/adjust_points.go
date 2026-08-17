@@ -16,7 +16,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-func rawPointsExtractor[T gurps.NodeTypes](increment bool) func(T) (gurps.RawPointsAdjuster, bool) {
+func rawPointsExtractor[T gurps.Node[T]](increment bool) func(T) (gurps.RawPointsAdjuster, bool) {
 	return func(data T) (gurps.RawPointsAdjuster, bool) {
 		if provider, ok := any(data).(gurps.RawPointsAdjuster); ok && !provider.Container() &&
 			(increment || provider.RawPoints() > 0) {
@@ -26,11 +26,11 @@ func rawPointsExtractor[T gurps.NodeTypes](increment bool) func(T) (gurps.RawPoi
 	}
 }
 
-func canAdjustRawPoints[T gurps.NodeTypes](table *unison.Table[*Node[T]], increment bool) bool {
+func canAdjustRawPoints[T gurps.Node[T]](table *unison.Table[*Node[T]], increment bool) bool {
 	return canAdjustSelection(table, rawPointsExtractor[T](increment))
 }
 
-func adjustRawPoints[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
+func adjustRawPoints[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
 	title := i18n.Text("Decrement Points")
 	if increment {
 		title = i18n.Text("Increment Points")

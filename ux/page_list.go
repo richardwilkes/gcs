@@ -27,7 +27,7 @@ var (
 )
 
 // PageList holds a list for a sheet page.
-type PageList[T gurps.NodeTypes] struct {
+type PageList[T gurps.Node[T]] struct {
 	unison.Panel
 	tableHeader *unison.TableHeader[*Node[T]]
 	Table       *unison.Table[*Node[T]]
@@ -129,7 +129,7 @@ func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
 	return p
 }
 
-func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
+func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
 	header, table := NewNodeTable(provider, fonts.PageFieldPrimary)
 	table.ClientData()[WorkingDirKey] = WorkingDirProvider(owner)
 	table.RefKey = provider.RefKey()

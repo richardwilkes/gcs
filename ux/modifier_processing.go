@@ -10,10 +10,7 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -25,14 +22,8 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-type modifiersOnly interface {
-	*gurps.TraitModifier | *gurps.EquipmentModifier
-	fmt.Stringer
-	nameable.Applier
-}
-
 // ProcessModifiersForSelection processes the selected rows for modifiers that can be toggled on or off.
-func ProcessModifiersForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+func ProcessModifiersForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	rows := table.SelectedRows(true)
 	data := make([]T, 0, len(rows))
 	for _, row := range rows {
@@ -49,7 +40,7 @@ var (
 
 // ProcessModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
 // modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing.
-func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
+func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 	rebuild := func() {
 		if builder := unison.AncestorOrSelf[Rebuildable](owner); builder != nil {
 			builder.Rebuild(true)
@@ -59,11 +50,11 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 		gurps.Traverse(func(row T) bool {
 			switch t := any(row).(type) {
 			case *gurps.Trait:
-				if promptForTraitModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
+				if promptForTraitModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers) {
 					rebuild()
 				}
 			case *gurps.Equipment:
-				if promptForEquipmentModifiers(xstrings.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
+				if promptForEquipmentModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers) {
 					rebuild()
 				}
 			}
@@ -72,7 +63,7 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	}
 }
 
-func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
+func processModifiers[T gurps.Node[T]](title string, modifiers []T) bool {
 	if len(modifiers) == 0 {
 		return false
 	}

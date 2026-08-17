@@ -16,7 +16,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -29,7 +28,7 @@ import (
 	"github.com/richardwilkes/unison/enums/side"
 )
 
-func processPickerRows[T gurps.NodeTypes](rows []*Node[T]) (revised []*Node[T], abort bool) {
+func processPickerRows[T gurps.Node[T]](rows []*Node[T]) (revised []*Node[T], abort bool) {
 	for _, one := range ExtractNodeDataFromList(rows) {
 		result, cancel := processPickerRow(one)
 		if cancel {
@@ -42,13 +41,12 @@ func processPickerRows[T gurps.NodeTypes](rows []*Node[T]) (revised []*Node[T], 
 	return revised, false
 }
 
-func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
-	n := gurps.AsNode(row)
-	if !n.Container() {
+func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
+	if !row.Container() {
 		return []T{row}, false
 	}
-	children := n.NodeChildren()
-	tpp, ok := n.(gurps.TemplatePickerProvider)
+	children := row.NodeChildren()
+	tpp, ok := any(row).(gurps.TemplatePickerProvider)
 	if !ok || tpp.TemplatePickerData().IsZero() {
 		rowChildren := make([]T, 0, len(children))
 		for _, child := range children {
@@ -59,7 +57,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 			}
 			rowChildren = append(rowChildren, result...)
 		}
-		n.SetChildren(rowChildren)
+		row.SetChildren(rowChildren)
 		SetParents(rowChildren, row)
 		return []T{row}, false
 	}
@@ -210,7 +208,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 			rowChildren = append(rowChildren, result...)
 		}
 	}
-	SetParents(rowChildren, n.Parent())
+	SetParents(rowChildren, row.Parent())
 	return rowChildren, false
 }
 
@@ -221,7 +219,7 @@ func pickerMatchStateColor(matches bool) unison.Color {
 	return unison.ThemeError.GetColor()
 }
 
-func addPickerRow[T gurps.NodeTypes](parent *unison.Panel, row T, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
+func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -295,7 +293,7 @@ func addPickerRow[T gurps.NodeTypes](parent *unison.Panel, row T, callback func(
 	return boxes
 }
 
-func updatePickerCheckBoxTitle[T gurps.NodeTypes](checkBox *unison.CheckBox, row T) {
+func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T) {
 	title := row.String()
 	points := rawPoints(row)
 	if points != 0 {
@@ -351,16 +349,12 @@ func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, callbac
 	checkBox.MarkForRedraw()
 }
 
-type pickerRowPointEditorTypes interface {
-	*gurps.Skill | *gurps.Spell
-	nameable.Applier
-	fmt.Stringer
-	Kind() string
-	RawPoints() fxp.Int
-	SetRawPoints(fxp.Int) bool
+type pickerRowPointEditorTypes[T gurps.Node[T]] interface {
+	gurps.Node[T]
+	gurps.RawPointsAdjuster
 }
 
-func pickerRowPointEditor[T pickerRowPointEditorTypes](node T, checkBox *unison.CheckBox, callback func()) {
+func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unison.CheckBox, callback func()) {
 	points := node.RawPoints()
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{

@@ -32,8 +32,8 @@ import (
 )
 
 var (
-	_ Node[*Note]       = &Note{}
-	_ EditorData[*Note] = &NoteEditData{}
+	_ = assertNode[*Note]
+	_ = assertEditorData[*NoteEditData]
 )
 
 // Columns that can be used with the note method .CellData()

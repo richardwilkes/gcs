@@ -31,15 +31,15 @@ type DataOwnerProvider interface {
 	DataOwner() DataOwner
 }
 
-// NodeTypes is a constraint that defines the types that may be nodes.
-type NodeTypes interface {
-	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
-	nameable.Applier
-	fmt.Stringer
-}
-
 // Node defines the methods required of nodes in our tables.
-type Node[T NodeTypes] interface {
+//
+// This interface is a "constraint" and cannot be used as a type param, just as a constraint.
+// In practice this just means that it can only be used inside the square brackets of generic methods/types.
+type Node[T Node[T]] interface {
+	// These are the limited set of types that can be nodes. New node types *must* be added here
+	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
+
+	// These are the interface mathods each of the above types must implement as a minimum
 	fmt.Stringer
 	Openable
 	Hashable
@@ -60,6 +60,8 @@ type Node[T NodeTypes] interface {
 	CellData(columnID int, data *CellData)
 }
 
+func assertNode[T Node[T]]() {}
+
 // RawPointsAdjuster defines methods for nodes that can have their raw points adjusted must implement.
 type RawPointsAdjuster interface {
 	Container() bool
@@ -75,24 +77,17 @@ type SkillAdjustmentProvider interface {
 }
 
 // EditorData defines the methods required of editor data.
-type EditorData[T NodeTypes] interface {
+type EditorData[T Node[T]] interface {
 	// CopyFrom copies the corresponding data from the node into this editor data.
 	CopyFrom(T)
 	// ApplyTo copies the editor data into the provided node.
 	ApplyTo(T)
 }
 
-// AsNode converts a T to a Node[T]. This shouldn't require these hoops, but Go generics (as of 1.19) fails to compile
-// otherwise.
-func AsNode[T NodeTypes](in T) Node[T] {
-	if node, ok := any(in).(Node[T]); ok {
-		return node
-	}
-	return nil
-}
+func assertEditorData[T EditorData[N], N Node[N]]() {}
 
 // EntityFromNode returns the owning entity of the node, or nil.
-func EntityFromNode[T NodeTypes](node Node[T]) *Entity {
+func EntityFromNode[T Node[T]](node T) *Entity {
 	if xreflect.IsNil(node) {
 		return nil
 	}
@@ -121,6 +116,6 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 }
 
 // PropagateNodeNoteClosedState propagates the note closed state from one node to another.
-func PropagateNodeNoteClosedState[T NodeTypes](from, to Node[T]) {
+func PropagateNodeNoteClosedState[T Node[T]](from, to T) {
 	SetClosedState("N:"+string(to.ID()), IsClosed("N:"+string(from.ID())))
 }

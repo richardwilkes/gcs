@@ -40,11 +40,12 @@ import (
 )
 
 var (
-	_ Node[*Spell]            = &Spell{}
+	_ = assertNode[*Spell]
+	_ = assertEditorData[*Spell]
+
 	_ TechLevelProvider       = &Spell{}
 	_ SkillAdjustmentProvider = &Spell{}
 	_ TemplatePickerProvider  = &Spell{}
-	_ EditorData[*Spell]      = &SpellEditData{}
 )
 
 // Columns that can be used with the spell method .CellData()

@@ -15,7 +15,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-func skillLevelExtractor[T gurps.NodeTypes](increment bool) func(T) (gurps.SkillAdjustmentProvider, bool) {
+func skillLevelExtractor[T gurps.Node[T]](increment bool) func(T) (gurps.SkillAdjustmentProvider, bool) {
 	return func(data T) (gurps.SkillAdjustmentProvider, bool) {
 		if provider, ok := any(data).(gurps.SkillAdjustmentProvider); ok && !provider.Container() &&
 			(increment || provider.RawPoints() > 0) {
@@ -25,11 +25,11 @@ func skillLevelExtractor[T gurps.NodeTypes](increment bool) func(T) (gurps.Skill
 	}
 }
 
-func canAdjustSkillLevel[T gurps.NodeTypes](table *unison.Table[*Node[T]], increment bool) bool {
+func canAdjustSkillLevel[T gurps.Node[T]](table *unison.Table[*Node[T]], increment bool) bool {
 	return canAdjustSelection(table, skillLevelExtractor[T](increment))
 }
 
-func adjustSkillLevel[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
+func adjustSkillLevel[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
 	title := increaseSkillLevelAction.Title
 	if !increment {
 		title = decreaseSkillLevelAction.Title

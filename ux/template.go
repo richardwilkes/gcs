@@ -528,7 +528,7 @@ func updateWeightField(sheet *Sheet, refKey string, value fxp.Weight) {
 	}
 }
 
-func cloneRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]) []*Node[T] {
+func cloneRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) []*Node[T] {
 	rows = slices.Clone(rows)
 	for j, row := range rows {
 		rows[j] = row.CloneForTarget(table, nil)
@@ -536,7 +536,7 @@ func cloneRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]
 	return rows
 }
 
-func appendRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]) {
+func appendRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) {
 	selMap := make(map[tid.TID]bool)
 	orig := slices.Clone(table.RootRows())
 	switch t := any(table).(type) {
@@ -572,7 +572,7 @@ func appendRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 
 // entityTechLevel returns the tech level of the entity that owns the table, or an empty string if there is none. This
 // is the value substituted for an empty tech level when merging rows, matching what the table providers do on drop.
-func entityTechLevel[T gurps.NodeTypes](table *unison.Table[*Node[T]]) string {
+func entityTechLevel[T gurps.Node[T]](table *unison.Table[*Node[T]]) string {
 	if dataOwnerProvider := unison.Ancestor[gurps.DataOwnerProvider](table); !xreflect.IsNil(dataOwnerProvider) {
 		if dataOwner := dataOwnerProvider.DataOwner(); !xreflect.IsNil(dataOwner) {
 			if entity := dataOwner.OwningEntity(); entity != nil {
@@ -729,7 +729,7 @@ func mergeSpellPoints(existing, incoming []*gurps.Spell, defaultTechLevel string
 // copying a skill or spell that already exists on the sheet adds to its points rather than creating a duplicate. It
 // must be called only after tech levels and nameables have been resolved on the new rows, since the match includes
 // both. Only skills and spells are affected; other row types are left untouched.
-func MergeAddedRows[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+func MergeAddedRows[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	switch t := any(table).(type) {
 	case *unison.Table[*Node[*gurps.Skill]]:
 		mergeNewlySelectedRows(t, mergeSkillPoints)
@@ -738,7 +738,7 @@ func MergeAddedRows[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 	}
 }
 
-func mergeNewlySelectedRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], merge func(existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T) {
+func mergeNewlySelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], merge func(existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T) {
 	sel := table.CopySelectionMap()
 	if len(sel) == 0 {
 		return

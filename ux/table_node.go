@@ -45,37 +45,34 @@ func (c *CellCache) Matches(width float32, data *gurps.CellData) bool {
 }
 
 // Node represents a row in a table.
-type Node[T gurps.NodeTypes] struct {
-	table      *unison.Table[*Node[T]]
-	parent     *Node[T]
-	data       T
-	dataAsNode gurps.Node[T]
-	children   []*Node[T]
-	cellCache  []*CellCache
-	forPage    bool
+type Node[T gurps.Node[T]] struct {
+	table     *unison.Table[*Node[T]]
+	parent    *Node[T]
+	data      T
+	children  []*Node[T]
+	cellCache []*CellCache
+	forPage   bool
 }
 
 // NewNode creates a new node for a table.
-func NewNode[T gurps.NodeTypes](table *unison.Table[*Node[T]], parent *Node[T], data T, forPage bool) *Node[T] {
+func NewNode[T gurps.Node[T]](table *unison.Table[*Node[T]], parent *Node[T], data T, forPage bool) *Node[T] {
 	return &Node[T]{
-		table:      table,
-		parent:     parent,
-		data:       data,
-		dataAsNode: gurps.AsNode(data),
-		cellCache:  make([]*CellCache, len(table.Columns)),
-		forPage:    forPage,
+		table:     table,
+		parent:    parent,
+		data:      data,
+		cellCache: make([]*CellCache, len(table.Columns)),
+		forPage:   forPage,
 	}
 }
 
 // NewNodeLike creates a new node for a table based on the characteristics of an existing node in that table.
-func NewNodeLike[T gurps.NodeTypes](like *Node[T], data T) *Node[T] {
+func NewNodeLike[T gurps.Node[T]](like *Node[T], data T) *Node[T] {
 	return &Node[T]{
-		table:      like.table,
-		parent:     like.parent,
-		data:       data,
-		dataAsNode: gurps.AsNode(data),
-		cellCache:  make([]*CellCache, len(like.table.Columns)),
-		forPage:    like.forPage,
+		table:     like.table,
+		parent:    like.parent,
+		data:      data,
+		cellCache: make([]*CellCache, len(like.table.Columns)),
+		forPage:   like.forPage,
 	}
 }
 
@@ -90,12 +87,12 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 		owner = provider.DataOwner()
 	}
 	return NewNode(table, newParent,
-		n.dataAsNode.Clone(libraryFileFromTable(n.table), owner, newParent.Data(), false), false)
+		n.data.Clone(libraryFileFromTable(n.table), owner, newParent.Data(), false), false)
 }
 
 // ID implements unison.TableRowData.
 func (n *Node[T]) ID() tid.TID {
-	return n.dataAsNode.ID()
+	return n.data.ID()
 }
 
 // Parent implements unison.TableRowData.
@@ -105,18 +102,18 @@ func (n *Node[T]) Parent() *Node[T] {
 
 // SetParent implements unison.TableRowData.
 func (n *Node[T]) SetParent(parent *Node[T]) {
-	n.dataAsNode.SetParent(parent.Data())
+	n.data.SetParent(parent.Data())
 }
 
 // CanHaveChildren implements unison.TableRowData.
 func (n *Node[T]) CanHaveChildren() bool {
-	return n.dataAsNode.Container()
+	return n.data.Container()
 }
 
 // Children implements unison.TableRowData.
 func (n *Node[T]) Children() []*Node[T] {
-	if n.dataAsNode.Container() && n.children == nil {
-		children := n.dataAsNode.NodeChildren()
+	if n.data.Container() && n.children == nil {
+		children := n.data.NodeChildren()
 		n.children = make([]*Node[T], len(children))
 		for i, one := range children {
 			n.children[i] = NewNode(n.table, n, one, n.forPage)
@@ -127,8 +124,8 @@ func (n *Node[T]) Children() []*Node[T] {
 
 // SetChildren implements unison.TableRowData.
 func (n *Node[T]) SetChildren(children []*Node[T]) {
-	if n.dataAsNode.Container() {
-		n.dataAsNode.SetChildren(ExtractNodeDataFromList(children))
+	if n.data.Container() {
+		n.data.SetChildren(ExtractNodeDataFromList(children))
 		n.children = nil
 	}
 }
@@ -143,9 +140,9 @@ func (n *Node[T]) RefreshChildren() {
 // CellDataForSort implements unison.TableRowData.
 func (n *Node[T]) CellDataForSort(index int) string {
 	var data gurps.CellData
-	n.dataAsNode.CellData(n.table.Columns[index].ID, &data)
+	n.data.CellData(n.table.Columns[index].ID, &data)
 	s := data.ForSort()
-	if gurps.GlobalSettings().General.GroupContainersOnSort && n.dataAsNode.Container() {
+	if gurps.GlobalSettings().General.GroupContainersOnSort && n.data.Container() {
 		return containerMarker + s
 	}
 	return s
@@ -154,7 +151,7 @@ func (n *Node[T]) CellDataForSort(index int) string {
 // ColumnCell implements unison.TableRowData.
 func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, selected, indirectlySelected, _ bool) unison.Paneler {
 	var cellData gurps.CellData
-	n.dataAsNode.CellData(n.table.Columns[col].ID, &cellData)
+	n.data.CellData(n.table.Columns[col].ID, &cellData)
 	width := n.table.CellWidth(row, col)
 	if n.cellCache[col].Matches(width, &cellData) {
 		applyInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground, background, selected || indirectlySelected)
@@ -206,14 +203,14 @@ func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink,
 
 // IsOpen implements unison.TableRowData.
 func (n *Node[T]) IsOpen() bool {
-	return n.dataAsNode.IsOpen()
+	return n.data.IsOpen()
 }
 
 // SetOpen implements unison.TableRowData.
 func (n *Node[T]) SetOpen(open bool) {
-	wasOpen := n.dataAsNode.IsOpen()
-	n.dataAsNode.SetOpen(open)
-	if wasOpen != n.dataAsNode.IsOpen() {
+	wasOpen := n.data.IsOpen()
+	n.data.SetOpen(open)
+	if wasOpen != n.data.IsOpen() {
 		n.table.SyncToModel()
 	}
 }
@@ -251,7 +248,7 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 	text = strings.ToLower(text)
 	for i := range n.table.Columns {
 		var data gurps.CellData
-		n.dataAsNode.CellData(n.table.Columns[i].ID, &data)
+		n.data.CellData(n.table.Columns[i].ID, &data)
 		if data.Type != cell.Tags {
 			if strings.Contains(strings.ToLower(data.ForSort()), text) {
 				return true
@@ -798,7 +795,7 @@ func pageRefSeparatorWidth(font unison.Font) float32 {
 // excess width (up to the point where all references are visible) before the remainder goes to the excess-width column.
 func (n *Node[T]) pageRefColumnFullWidth(col int) float32 {
 	var c gurps.CellData
-	n.dataAsNode.CellData(n.table.Columns[col].ID, &c)
+	n.data.CellData(n.table.Columns[col].ID, &c)
 	if c.Type != cell.PageRef {
 		return -1
 	}
@@ -825,7 +822,7 @@ func (n *Node[T]) pageRefColumnFullWidth(col int) float32 {
 // to page reference columns.
 func (n *Node[T]) excessColumnCollapsedWidth(col int) float32 {
 	var c gurps.CellData
-	n.dataAsNode.CellData(n.table.Columns[col].ID, &c)
+	n.data.CellData(n.table.Columns[col].ID, &c)
 	if c.Type != cell.Text {
 		return -1
 	}
@@ -864,14 +861,14 @@ func (n *Node[T]) secondaryFieldFont() unison.Font {
 }
 
 // FindRowIndexByID returns the row index of the row with the given ID in the given table.
-func FindRowIndexByID[T gurps.NodeTypes](table *unison.Table[*Node[T]], id tid.TID) int {
+func FindRowIndexByID[T gurps.Node[T]](table *unison.Table[*Node[T]], id tid.TID) int {
 	_, i := rowIndex(id, 0, table.RootRows())
 	return i
 }
 
-func rowIndex[T gurps.NodeTypes](id tid.TID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
+func rowIndex[T gurps.Node[T]](id tid.TID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
 	for _, row := range rows {
-		if id == row.dataAsNode.ID() {
+		if id == row.data.ID() {
 			return 0, startIndex
 		}
 		startIndex++
@@ -885,7 +882,7 @@ func rowIndex[T gurps.NodeTypes](id tid.TID, startIndex int, rows []*Node[T]) (u
 }
 
 // InsertItems into a table.
-func InsertItems[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
+func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
 	if len(items) == 0 {
 		return
 	}
@@ -894,7 +891,7 @@ func InsertItems[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 	if mgr != nil {
 		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
 			ID:         unison.NextUndoID(),
-			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), gurps.AsNode(items[0]).Kind()),
+			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()),
 			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
 			AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
@@ -909,14 +906,14 @@ func InsertItems[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 			if row.CanHaveChildren() {
 				// Target is container, append to end of that container
 				SetParents(items, target)
-				row.dataAsNode.SetChildren(append(row.dataAsNode.NodeChildren(), items...))
+				row.data.SetChildren(append(row.data.NodeChildren(), items...))
 			} else {
 				// Target isn't a container. If it has a parent, insert after the target within that parent.
 				parent := row.Parent()
 				if parentData := parent.Data(); parentData != zero {
 					SetParents(items, parentData)
-					children := parent.dataAsNode.NodeChildren()
-					parent.dataAsNode.SetChildren(slices.Insert(children, slices.Index(children, target)+1, items...))
+					children := parent.data.NodeChildren()
+					parent.data.SetChildren(slices.Insert(children, slices.Index(children, target)+1, items...))
 				} else {
 					// Otherwise, insert after the target within the top-level list.
 					SetParents(items, zero)
@@ -937,7 +934,7 @@ func InsertItems[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 	table.RequestFocus()
 	selMap := make(map[tid.TID]bool)
 	for _, item := range items {
-		selMap[gurps.AsNode(item).ID()] = true
+		selMap[item.ID()] = true
 	}
 	table.SetSelectionMap(selMap)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
@@ -950,14 +947,14 @@ func InsertItems[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 }
 
 // SetParents of each item.
-func SetParents[T gurps.NodeTypes](items []T, parent T) {
+func SetParents[T gurps.Node[T]](items []T, parent T) {
 	for _, item := range items {
-		gurps.AsNode(item).SetParent(parent)
+		item.SetParent(parent)
 	}
 }
 
 // ExtractNodeDataFromList returns the underlying node data.
-func ExtractNodeDataFromList[T gurps.NodeTypes](list []*Node[T]) []T {
+func ExtractNodeDataFromList[T gurps.Node[T]](list []*Node[T]) []T {
 	dataList := make([]T, 0, len(list))
 	for _, child := range list {
 		dataList = append(dataList, child.data)
