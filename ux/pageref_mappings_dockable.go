@@ -136,6 +136,10 @@ func openPDFPageReference(ref, highlight string, promptContext map[string]bool) 
 			return false
 		}
 		key := ref[:i]
+		// Special-case handing for Basic Set page references that use `B` for pages in the Campaigns book
+		if key == "B" && page >= 338 {
+			key = "BX"
+		}
 		s := gurps.GlobalSettings()
 		pageRef := s.PageRefs.Lookup(key)
 		if pageRef == nil && !promptContext[key] {
