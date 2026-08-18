@@ -42,7 +42,7 @@ type nameableReplacementsSetter interface {
 	SetNameableReplacements(replacements map[string]string)
 }
 
-type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
+type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	unison.Panel
 	owner                Rebuildable
 	target               N
@@ -66,12 +66,12 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	promptForSave        bool
 }
 
-func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, icon *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) *editor[N, D] {
+func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, target N, icon *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) *editor[N, D] {
 	var found *editor[N, D]
-	lookFor := gurps.AsNode(target).ID()
+	lookFor := target.ID()
 	if Activate(func(d unison.Dockable) bool {
 		if e, ok := d.AsPanel().Self.(*editor[N, D]); ok {
-			if e.owner == owner && gurps.AsNode(e.target).ID() == lookFor {
+			if e.owner == owner && e.target.ID() == lookFor {
 				found = e
 				return true
 			}
@@ -144,7 +144,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 	e.AddChild(e.createToolbar(helpMD, initToolbar))
 	e.modificationCallback = initContent(e, content)
 	e.AddChild(e.scroll)
-	e.ClientData()[AssociatedIDKey] = gurps.AsNode(target).ID()
+	e.ClientData()[AssociatedIDKey] = target.ID()
 	e.promptForSave = true
 	e.scroll.Content().AsPanel().ValidateScrollRoot()
 	group := dgroup.Editors
@@ -253,8 +253,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 }
 
 func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string) {
-	node := gurps.AsNode(e.target)
-	tmpNode = node.Clone(node.GetSource().LibraryFile, node.DataOwner(), nil, true)
+	tmpNode = e.target.Clone(e.target.GetSource().LibraryFile, e.target.DataOwner(), nil, true)
 	e.editorData.ApplyTo(tmpNode)
 	m = make(map[string]string)
 	tmpNode.FillWithNameableKeys(m, nil)
@@ -269,7 +268,7 @@ func (e *editor[N, D]) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 }
 
 func (e *editor[N, D]) Title() string {
-	return fmt.Sprintf(i18n.Text("%s Editor for %s"), gurps.AsNode(e.target).Kind(), e.owner.String())
+	return fmt.Sprintf(i18n.Text("%s Editor for %s"), e.target.Kind(), e.owner.String())
 }
 
 func (e *editor[N, D]) String() string {
@@ -314,14 +313,13 @@ func (e *editor[N, D]) Modified() bool {
 // to avoid cloning the target on every call, since Modified is invoked frequently during layout and redraw.
 func (e *editor[N, D]) hasNameableKeys() bool {
 	if xreflect.IsNil(e.nameablesScratch) {
-		node := gurps.AsNode(e.target)
-		e.nameablesScratch = node.Clone(node.GetSource().LibraryFile, node.DataOwner(), nil, true)
+		e.nameablesScratch = e.target.Clone(e.target.GetSource().LibraryFile, e.target.DataOwner(), nil, true)
 		e.nameablesKeys = make(map[string]string)
 	} else {
 		clear(e.nameablesKeys)
 	}
 	e.editorData.ApplyTo(e.nameablesScratch)
-	gurps.AsNode(e.nameablesScratch).FillWithNameableKeys(e.nameablesKeys, nil)
+	e.nameablesScratch.FillWithNameableKeys(e.nameablesKeys, nil)
 	return len(e.nameablesKeys) > 0
 }
 
@@ -339,7 +337,7 @@ func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 }
 
 func (e *editor[N, D]) Rebuild(_ bool) {
-	if entity := gurps.EntityFromNode(gurps.AsNode(e.target)); entity != nil {
+	if entity := gurps.EntityFromNode(e.target); entity != nil {
 		entity.DiscardCaches()
 	} else {
 		gurps.DiscardGlobalResolveCache()
@@ -397,7 +395,7 @@ func (e *editor[N, D]) apply() {
 		target := e.target
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
-			EditName: fmt.Sprintf(i18n.Text("%s Changes"), gurps.AsNode(target).Kind()),
+			EditName: fmt.Sprintf(i18n.Text("%s Changes"), target.Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
 				owner.Rebuild(true)

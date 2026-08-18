@@ -39,7 +39,7 @@ var (
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
-type TableDockable[T gurps.NodeTypes] struct {
+type TableDockable[T gurps.Node[T]] struct {
 	unison.Panel
 	path              string
 	extension         string
@@ -58,7 +58,7 @@ type TableDockable[T gurps.NodeTypes] struct {
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
-func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
+func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
 	header, table := NewNodeTable(provider, nil)
 	d := &TableDockable[T]{
 		path:              filePath,
@@ -334,7 +334,7 @@ func (d *TableDockable[T]) toggleHierarchy() {
 	d.table.SyncToModel()
 }
 
-func setTableDockableRowOpen[T gurps.NodeTypes](row *Node[T], open bool) {
+func setTableDockableRowOpen[T gurps.Node[T]](row *Node[T], open bool) {
 	row.SetOpen(open)
 	for _, child := range row.Children() {
 		if child.CanHaveChildren() {
@@ -364,10 +364,10 @@ func (d *TableDockable[T]) toggleNotes() {
 	d.table.SyncToModel()
 }
 
-func discoverNoteState[T gurps.NodeTypes](n *Node[T], state *int) {
+func discoverNoteState[T gurps.Node[T]](n *Node[T], state *int) {
 	for i := range n.table.Columns {
 		var data gurps.CellData
-		n.dataAsNode.CellData(n.table.Columns[i].ID, &data)
+		n.data.CellData(n.table.Columns[i].ID, &data)
 		if data.Type == cell.Text && data.Secondary != "" {
 			if gurps.IsClosed("N:" + string(n.ID())) {
 				*state = -1
@@ -387,10 +387,10 @@ func discoverNoteState[T gurps.NodeTypes](n *Node[T], state *int) {
 	}
 }
 
-func applyNoteState[T gurps.NodeTypes](n *Node[T], closed bool) {
+func applyNoteState[T gurps.Node[T]](n *Node[T], closed bool) {
 	for i := range n.table.Columns {
 		var data gurps.CellData
-		n.dataAsNode.CellData(n.table.Columns[i].ID, &data)
+		n.data.CellData(n.table.Columns[i].ID, &data)
 		if data.Type == cell.Text && data.Secondary != "" {
 			id := "N:" + string(n.ID())
 			if gurps.IsClosed(id) != closed {
@@ -445,7 +445,7 @@ func (d *TableDockable[T]) ApplyFilter(tags []string) {
 			f = func(row *Node[T]) bool {
 				match := false
 				if d.namesOnlyCheckBox.State == check.On {
-					match = strings.Contains(strings.ToLower(row.dataAsNode.String()), text)
+					match = strings.Contains(strings.ToLower(row.data.String()), text)
 				} else {
 					match = row.PartialMatchExceptTag(text)
 				}

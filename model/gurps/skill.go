@@ -40,11 +40,12 @@ import (
 )
 
 var (
-	_ Node[*Skill]                    = &Skill{}
-	_ TechLevelProvider[*Skill]       = &Skill{}
-	_ SkillAdjustmentProvider[*Skill] = &Skill{}
-	_ TemplatePickerProvider          = &Skill{}
-	_ EditorData[*Skill]              = &SkillEditData{}
+	_ = assertNode[*Skill]
+	_ = assertEditorData[*SkillEditData]
+
+	_ TechLevelProvider       = &Skill{}
+	_ SkillAdjustmentProvider = &Skill{}
+	_ TemplatePickerProvider  = &Skill{}
 )
 
 // Columns that can be used with the skill method .CellData()

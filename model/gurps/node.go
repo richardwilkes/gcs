@@ -31,15 +31,16 @@ type DataOwnerProvider interface {
 	DataOwner() DataOwner
 }
 
-// NodeTypes is a constraint that defines the types that may be nodes.
-type NodeTypes interface {
-	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
-	nameable.Applier
-	fmt.Stringer
-}
-
 // Node defines the methods required of nodes in our tables.
-type Node[T NodeTypes] interface {
+//
+// The type union in the body makes this a constraint, not an ordinary interface: it may only be used as a type
+// parameter's constraint or embedded in another constraint, never as a type. Generic code takes a T Node[T] type
+// parameter and works with T directly.
+type Node[T Node[T]] interface {
+	// These are the limited set of types that can be nodes. New node types *must* be added here
+	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
+
+	// These are the interface methods each of the above types must implement as a minimum
 	fmt.Stringer
 	Openable
 	Hashable
@@ -60,39 +61,34 @@ type Node[T NodeTypes] interface {
 	CellData(columnID int, data *CellData)
 }
 
-// RawPointsAdjuster defines methods for nodes that can have their raw points adjusted must implement.
-type RawPointsAdjuster[T NodeTypes] interface {
-	Node[T]
+func assertNode[T Node[T]]() {}
+
+// RawPointsAdjuster interface for objects that can have their raw points adjusted.
+type RawPointsAdjuster interface {
+	Container() bool
 	RawPoints() fxp.Int
 	SetRawPoints(points fxp.Int) bool
 }
 
-// SkillAdjustmentProvider defines methods for nodes that can have their skill level adjusted must implement.
-type SkillAdjustmentProvider[T NodeTypes] interface {
-	RawPointsAdjuster[T]
+// SkillAdjustmentProvider interface for objects that can have their skill level adjusted.
+type SkillAdjustmentProvider interface {
+	RawPointsAdjuster
 	IncrementSkillLevel()
 	DecrementSkillLevel()
 }
 
 // EditorData defines the methods required of editor data.
-type EditorData[T NodeTypes] interface {
+type EditorData[T Node[T]] interface {
 	// CopyFrom copies the corresponding data from the node into this editor data.
 	CopyFrom(T)
 	// ApplyTo copies the editor data into the provided node.
 	ApplyTo(T)
 }
 
-// AsNode converts a T to a Node[T]. This shouldn't require these hoops, but Go generics (as of 1.19) fails to compile
-// otherwise.
-func AsNode[T NodeTypes](in T) Node[T] {
-	if node, ok := any(in).(Node[T]); ok {
-		return node
-	}
-	return nil
-}
+func assertEditorData[T EditorData[N], N Node[N]]() {}
 
 // EntityFromNode returns the owning entity of the node, or nil.
-func EntityFromNode[T NodeTypes](node Node[T]) *Entity {
+func EntityFromNode[T Node[T]](node T) *Entity {
 	if xreflect.IsNil(node) {
 		return nil
 	}
@@ -121,6 +117,6 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 }
 
 // PropagateNodeNoteClosedState propagates the note closed state from one node to another.
-func PropagateNodeNoteClosedState[T NodeTypes](from, to Node[T]) {
+func PropagateNodeNoteClosedState[T Node[T]](from, to T) {
 	SetClosedState("N:"+string(to.ID()), IsClosed("N:"+string(from.ID())))
 }

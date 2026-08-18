@@ -1078,7 +1078,7 @@ func prepareProfileForContentCache(profile *gurps.Profile) string {
 	}, "\n"))
 }
 
-func prepareForContentCache[T gurps.NodeTypes](data []T) string {
+func prepareForContentCache[T gurps.Node[T]](data []T) string {
 	var buffer strings.Builder
 	gurps.Traverse(func(one T) bool {
 		buffer.WriteString(strings.ToLower(one.String()))

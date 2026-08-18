@@ -15,10 +15,10 @@ import (
 )
 
 // CanOpenPageRef returns true if the current selection on the table has a page reference.
-func CanOpenPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) bool {
+func CanOpenPageRef[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
 		var data gurps.CellData
-		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
+		row.Data().CellData(gurps.PageRefCellAlias, &data)
 		if len(ExtractPageReferences(data.Primary)) != 0 {
 			return true
 		}
@@ -27,11 +27,11 @@ func CanOpenPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) bool {
 }
 
 // OpenPageRef opens the first page reference on each selected item in the table.
-func OpenPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+func OpenPageRef[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	promptCtx := make(map[string]bool)
 	for _, row := range table.SelectedRows(false) {
 		var data gurps.CellData
-		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
+		row.Data().CellData(gurps.PageRefCellAlias, &data)
 		for _, one := range ExtractPageReferences(data.Primary) {
 			OpenPageReference(one, data.Secondary, promptCtx)
 			break
@@ -40,11 +40,11 @@ func OpenPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 }
 
 // OpenEachPageRef opens the all page references on each selected item in the table.
-func OpenEachPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+func OpenEachPageRef[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	promptCtx := make(map[string]bool)
 	for _, row := range table.SelectedRows(false) {
 		var data gurps.CellData
-		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
+		row.Data().CellData(gurps.PageRefCellAlias, &data)
 		for _, one := range ExtractPageReferences(data.Primary) {
 			if OpenPageReference(one, data.Secondary, promptCtx) {
 				return

@@ -47,7 +47,7 @@ func (s *snapshotList[A, V]) finish() {
 }
 
 // canAdjustSelection returns true if any selected row yields an adjustable target via extract.
-func canAdjustSelection[T gurps.NodeTypes, A any](table *unison.Table[*Node[T]], extract func(T) (A, bool)) bool {
+func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], extract func(T) (A, bool)) bool {
 	for _, row := range table.SelectedRows(false) {
 		if _, ok := extract(row.Data()); ok {
 			return true
@@ -60,7 +60,7 @@ func canAdjustSelection[T gurps.NodeTypes, A any](table *unison.Table[*Node[T]],
 // target via extract. When recalculate is true, the owning entity is recalculated after the change (and on undo/redo);
 // when rebuild is true, the owner is rebuilt as well. The same extract should be used by the corresponding
 // canAdjustSelection call so that the enable check and the action never diverge.
-func adjustSelection[T gurps.NodeTypes, A, V any](undoTitle string, owner Rebuildable, table *unison.Table[*Node[T]],
+func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuildable, table *unison.Table[*Node[T]],
 	extract func(T) (A, bool), get func(A) V, set func(A, V), mutate func(A), recalculate, rebuild bool,
 ) {
 	rows := table.SelectedRows(false)
@@ -77,7 +77,7 @@ func adjustSelection[T gurps.NodeTypes, A, V any](undoTitle string, owner Rebuil
 		return
 	}
 	if recalculate {
-		entity := gurps.EntityFromNode(gurps.AsNode(rows[0].Data()))
+		entity := gurps.EntityFromNode(rows[0].Data())
 		before.entity = entity
 		after.entity = entity
 	}

@@ -259,7 +259,7 @@ func (p *weaponsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Nod
 	}
 }
 
-func openWeaponEditor[T gurps.NodeTypes, D gurps.EditorData[T]](sheet *Sheet, pageList *PageList[T], item *gurps.Weapon, itemOwner T, editFunc func(Rebuildable, T) *editor[T, D]) bool {
+func openWeaponEditor[T gurps.Node[T], D gurps.EditorData[T]](sheet *Sheet, pageList *PageList[T], item *gurps.Weapon, itemOwner T, editFunc func(Rebuildable, T) *editor[T, D]) bool {
 	if node := searchSheetTableFor(pageList, itemOwner); node != nil {
 		pageList.Table.DiscloseRow(node, false)
 		pageList.Table.ClearSelection()
@@ -289,7 +289,7 @@ func openWeaponEditor[T gurps.NodeTypes, D gurps.EditorData[T]](sheet *Sheet, pa
 	return false
 }
 
-func searchSheetTableFor[T gurps.NodeTypes](pageList *PageList[T], what T) *Node[T] {
+func searchSheetTableFor[T gurps.Node[T]](pageList *PageList[T], what T) *Node[T] {
 	for _, row := range pageList.Table.RootRows() {
 		if result := searchSheetTableRowsFor(pageList.Table, row, what); result != nil {
 			return result
@@ -298,7 +298,7 @@ func searchSheetTableFor[T gurps.NodeTypes](pageList *PageList[T], what T) *Node
 	return nil
 }
 
-func searchSheetTableRowsFor[T gurps.NodeTypes](table *unison.Table[*Node[T]], row *Node[T], what T) *Node[T] {
+func searchSheetTableRowsFor[T gurps.Node[T]](table *unison.Table[*Node[T]], row *Node[T], what T) *Node[T] {
 	if what == row.data {
 		return row
 	}

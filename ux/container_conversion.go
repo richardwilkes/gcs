@@ -10,49 +10,45 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
-// ConvertableNodeTypes defines the types that the container conversion can work on.
-type ConvertableNodeTypes interface {
-	*gurps.Equipment | *gurps.Note
-	fmt.Stringer
-	nameable.Applier
+// ConvertableContainer defines the methods a node must implement to be convertible to and from a container. Rows are
+// matched against it at runtime, so nodes that do not implement it are simply skipped.
+type ConvertableContainer interface {
 	Container() bool
 	CanConvertToFromContainer() bool
 	ConvertToContainer()
 	ConvertToNonContainer()
 }
 
-type containerConversionList[T ConvertableNodeTypes] struct {
+type containerConversionList struct {
 	Owner Rebuildable
-	List  []*containerConversion[T]
+	List  []*containerConversion
 }
 
-func (c *containerConversionList[T]) Apply() {
+func (c *containerConversionList) Apply() {
 	for _, one := range c.List {
 		one.Apply()
 	}
 	c.Owner.Rebuild(true)
 }
 
-type containerConversion[T ConvertableNodeTypes] struct {
-	Target      T
+type containerConversion struct {
+	Target      ConvertableContainer
 	ToContainer bool
 }
 
-func newContainerConversion[T ConvertableNodeTypes](target T, toContainer bool) *containerConversion[T] {
-	return &containerConversion[T]{
+func newContainerConversion(target ConvertableContainer, toContainer bool) *containerConversion {
+	return &containerConversion{
 		Target:      target,
 		ToContainer: toContainer,
 	}
 }
 
-func (c *containerConversion[T]) Apply() {
+func (c *containerConversion) Apply() {
 	if c.ToContainer {
 		c.Target.ConvertToContainer()
 	} else {
@@ -61,20 +57,23 @@ func (c *containerConversion[T]) Apply() {
 }
 
 // InstallContainerConversionHandlers installs the to & from container conversion handlers.
-func InstallContainerConversionHandlers[T ConvertableNodeTypes](paneler unison.Paneler, owner Rebuildable, table *unison.Table[*Node[T]]) {
-	p := paneler.AsPanel()
-	p.InstallCmdHandlers(ConvertToContainerItemID,
-		func(_ any) bool { return CanConvertToContainer(table) },
-		func(_ any) { ConvertToContainer(owner, table) })
-	p.InstallCmdHandlers(ConvertToNonContainerItemID,
-		func(_ any) bool { return CanConvertToNonContainer(table) },
-		func(_ any) { ConvertToNonContainer(owner, table) })
+func InstallContainerConversionHandlers[T gurps.Node[T]](paneler unison.Paneler, owner Rebuildable, table *unison.Table[*Node[T]]) {
+	var zero T
+	if _, ok := any(zero).(ConvertableContainer); ok {
+		p := paneler.AsPanel()
+		p.InstallCmdHandlers(ConvertToContainerItemID,
+			func(_ any) bool { return CanConvertToContainer(table) },
+			func(_ any) { ConvertToContainer(owner, table) })
+		p.InstallCmdHandlers(ConvertToNonContainerItemID,
+			func(_ any) bool { return CanConvertToNonContainer(table) },
+			func(_ any) { ConvertToNonContainer(owner, table) })
+	}
 }
 
 // CanConvertToContainer returns true if the table's current selection has a row that can be converted to a container.
-func CanConvertToContainer[T ConvertableNodeTypes](table *unison.Table[*Node[T]]) bool {
+func CanConvertToContainer[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); data != nil && data.CanConvertToFromContainer() && !data.Container() {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && !data.Container() {
 			return true
 		}
 	}
@@ -83,9 +82,9 @@ func CanConvertToContainer[T ConvertableNodeTypes](table *unison.Table[*Node[T]]
 
 // CanConvertToNonContainer returns true if the table's current selection has a row that can be converted to a
 // non-container.
-func CanConvertToNonContainer[T ConvertableNodeTypes](table *unison.Table[*Node[T]]) bool {
+func CanConvertToNonContainer[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); data != nil && data.CanConvertToFromContainer() && data.Container() {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && data.Container() {
 			return true
 		}
 	}
@@ -93,11 +92,11 @@ func CanConvertToNonContainer[T ConvertableNodeTypes](table *unison.Table[*Node[
 }
 
 // ConvertToContainer converts any selected rows to containers, if possible.
-func ConvertToContainer[T ConvertableNodeTypes](owner Rebuildable, table *unison.Table[*Node[T]]) {
-	before := &containerConversionList[T]{Owner: owner}
-	after := &containerConversionList[T]{Owner: owner}
+func ConvertToContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]]) {
+	before := &containerConversionList{Owner: owner}
+	after := &containerConversionList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); data != nil && data.CanConvertToFromContainer() && !data.Container() {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && !data.Container() {
 			before.List = append(before.List, newContainerConversion(data, false))
 			after.List = append(after.List, newContainerConversion(data, true))
 			data.ConvertToContainer()
@@ -105,11 +104,11 @@ func ConvertToContainer[T ConvertableNodeTypes](owner Rebuildable, table *unison
 	}
 	if len(before.List) > 0 {
 		if mgr := unison.UndoManagerFor(table); mgr != nil {
-			mgr.Add(&unison.UndoEdit[*containerConversionList[T]]{
+			mgr.Add(&unison.UndoEdit[*containerConversionList]{
 				ID:         unison.NextUndoID(),
 				EditName:   convertToContainerAction.Title,
-				UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList[T]]) { edit.BeforeData.Apply() },
-				RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList[T]]) { edit.AfterData.Apply() },
+				UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.BeforeData.Apply() },
+				RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.AfterData.Apply() },
 				BeforeData: before,
 				AfterData:  after,
 			})
@@ -119,11 +118,11 @@ func ConvertToContainer[T ConvertableNodeTypes](owner Rebuildable, table *unison
 }
 
 // ConvertToNonContainer converts any selected rows to non-containers, if possible.
-func ConvertToNonContainer[T ConvertableNodeTypes](owner Rebuildable, table *unison.Table[*Node[T]]) {
-	before := &containerConversionList[T]{Owner: owner}
-	after := &containerConversionList[T]{Owner: owner}
+func ConvertToNonContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]]) {
+	before := &containerConversionList{Owner: owner}
+	after := &containerConversionList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); data != nil && data.CanConvertToFromContainer() && data.Container() {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && data.Container() {
 			before.List = append(before.List, newContainerConversion(data, true))
 			after.List = append(after.List, newContainerConversion(data, false))
 			data.ConvertToNonContainer()
@@ -131,11 +130,11 @@ func ConvertToNonContainer[T ConvertableNodeTypes](owner Rebuildable, table *uni
 	}
 	if len(before.List) > 0 {
 		if mgr := unison.UndoManagerFor(table); mgr != nil {
-			mgr.Add(&unison.UndoEdit[*containerConversionList[T]]{
+			mgr.Add(&unison.UndoEdit[*containerConversionList]{
 				ID:         unison.NextUndoID(),
 				EditName:   convertToNonContainerAction.Title,
-				UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList[T]]) { edit.BeforeData.Apply() },
-				RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList[T]]) { edit.AfterData.Apply() },
+				UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.BeforeData.Apply() },
+				RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.AfterData.Apply() },
 				BeforeData: before,
 				AfterData:  after,
 			})

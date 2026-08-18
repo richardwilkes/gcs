@@ -109,16 +109,16 @@ func (s *SearchTracker) doSearch(text string) {
 	s.adjustForMatch()
 }
 
-func searchSheetTable[T gurps.NodeTypes](refList *[]*searchRef, text string, namesOnly bool, pageList *PageList[T]) {
+func searchSheetTable[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, pageList *PageList[T]) {
 	for _, row := range pageList.Table.RootRows() {
 		searchSheetTableRows(refList, text, namesOnly, pageList.Table, row)
 	}
 }
 
-func searchSheetTableRows[T gurps.NodeTypes](refList *[]*searchRef, text string, namesOnly bool, table *unison.Table[*Node[T]], row *Node[T]) {
+func searchSheetTableRows[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, table *unison.Table[*Node[T]], row *Node[T]) {
 	if text != "" {
 		if namesOnly {
-			if strings.Contains(strings.ToLower(row.dataAsNode.String()), text) {
+			if strings.Contains(strings.ToLower(row.data.String()), text) {
 				*refList = append(*refList, &searchRef{
 					table: table,
 					row:   row,
@@ -206,7 +206,7 @@ func showSearchRef(ref *searchRef) {
 	}
 }
 
-func showSearchResolvedRef[T gurps.NodeTypes](table *unison.Table[*Node[T]], row *Node[T]) {
+func showSearchResolvedRef[T gurps.Node[T]](table *unison.Table[*Node[T]], row *Node[T]) {
 	table.DiscloseRow(row, false)
 	table.ClearSelection()
 	rowIndex := table.RowToIndex(row)

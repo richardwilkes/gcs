@@ -42,7 +42,7 @@ import (
 	"github.com/zeebo/xxh3"
 )
 
-var _ Node[*Weapon] = &Weapon{}
+var _ = assertNode[*Weapon]
 
 const currentWeaponSubVersion = 1
 

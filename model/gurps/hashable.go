@@ -112,13 +112,12 @@ func MarshalWithoutCalc(in any) ([]byte, error) {
 }
 
 // NodesToHashesByID traverses the provided nodes and generates hashes.
-func NodesToHashesByID[T NodeTypes](result map[tid.TID]HashAndData, data ...T) {
+func NodesToHashesByID[T Node[T]](result map[tid.TID]HashAndData, data ...T) {
 	Traverse(func(one T) bool {
-		node := AsNode(one)
-		id := node.ID()
+		id := one.ID()
 		if _, exists := result[id]; !exists {
 			result[id] = HashAndData{
-				Hash: Hash64(node),
+				Hash: Hash64(one),
 				Data: one,
 			}
 		}

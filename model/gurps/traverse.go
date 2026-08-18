@@ -11,7 +11,7 @@ package gurps
 
 import "slices"
 
-type traversalData[T NodeTypes] struct {
+type traversalData[T Node[T]] struct {
 	list  []T
 	index int
 }
@@ -19,7 +19,7 @@ type traversalData[T NodeTypes] struct {
 // Traverse calls the function 'f' for each node and its children in the input list, recursively. Return true from the
 // function to abort early. If excludeContainers is true, then nodes that are containers will not be passed to 'f',
 // although their children will still be processed as usual.
-func Traverse[T NodeTypes](f func(T) bool, onlyEnabled, excludeContainers bool, in ...T) {
+func Traverse[T Node[T]](f func(T) bool, onlyEnabled, excludeContainers bool, in ...T) {
 	tracking := []*traversalData[T]{
 		{
 			list:  in,
@@ -32,11 +32,10 @@ func Traverse[T NodeTypes](f func(T) bool, onlyEnabled, excludeContainers bool, 
 			tracking = tracking[:len(tracking)-1]
 			continue
 		}
-		one := current.list[current.index]
-		node := AsNode(one)
+		node := current.list[current.index]
 		current.index++
 		if !onlyEnabled || node.Enabled() {
-			if (!excludeContainers || !node.Container()) && f(one) {
+			if (!excludeContainers || !node.Container()) && f(node) {
 				return
 			}
 			if node.HasChildren() {

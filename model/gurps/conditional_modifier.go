@@ -26,7 +26,7 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-var _ Node[*ConditionalModifier] = &ConditionalModifier{}
+var _ = assertNode[*ConditionalModifier]
 
 // Columns that can be used with the conditional modifier method .CellData()
 const (
