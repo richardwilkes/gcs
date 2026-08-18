@@ -39,7 +39,7 @@ type Node[T Node[T]] interface {
 	// These are the limited set of types that can be nodes. New node types *must* be added here
 	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
 
-	// These are the interface mathods each of the above types must implement as a minimum
+	// These are the interface methods each of the above types must implement as a minimum
 	fmt.Stringer
 	Openable
 	Hashable
