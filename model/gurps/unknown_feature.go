@@ -52,6 +52,16 @@ func (u *UnknownFeature) Clone() Feature {
 func (u *UnknownFeature) FillWithNameableKeys(_, _ map[string]string) {
 }
 
+// IsSwitchable implements Feature. An unknown feature has no effect, so it is never considered switchable. Any
+// "switchable" flag written by a newer version of GCS is preserved as part of the raw data.
+func (u *UnknownFeature) IsSwitchable() bool {
+	return false
+}
+
+// SetSwitchable implements Feature. This is a no-op, since the raw data is preserved as-is.
+func (u *UnknownFeature) SetSwitchable(_ bool) {
+}
+
 // MarshalJSONTo implements json.MarshalerTo. The original data is written back out as-is.
 func (u *UnknownFeature) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return enc.WriteValue(u.Data)

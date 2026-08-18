@@ -28,9 +28,10 @@ var _ Bonus = &DRBonus{}
 
 // DRBonusData is split out so that it can be adjusted before and after being serialized.
 type DRBonusData struct {
-	Type           feature.Type `json:"type"`
-	Locations      []string     `json:"locations,omitzero"`
-	Specialization string       `json:"specialization,omitzero"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
+	Locations      []string `json:"locations,omitzero"`
+	Specialization string   `json:"specialization,omitzero"`
 	LeveledAmount
 }
 
@@ -133,6 +134,7 @@ func (d *DRBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, d.Type)
+	xhash.Bool(h, d.Switchable)
 	xhash.Num64(h, len(d.Locations))
 	for _, loc := range d.Locations {
 		xhash.StringWithLen(h, loc)

@@ -149,8 +149,12 @@ func (p *traitsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Tr
 }
 
 func (p *traitsProvider) ColumnIDs() []int {
-	columnIDs := append(
-		make([]int, 0, 4),
+	columnIDs := make([]int, 0, 5)
+	if showSwitchColumn(p.forPage, p.provider, p.RootData()) {
+		columnIDs = append(columnIDs, gurps.TraitSwitchColumn)
+	}
+	columnIDs = append(
+		columnIDs,
 		gurps.TraitDescriptionColumn,
 		gurps.TraitPointsColumn,
 	)

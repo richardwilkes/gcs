@@ -22,8 +22,9 @@ var _ Feature = &ContainedWeightReduction{}
 
 // ContainedWeightReduction holds the data for a weight reduction that can be applied to a container's contents.
 type ContainedWeightReduction struct {
-	Type      feature.Type `json:"type"`
-	Reduction string       `json:"reduction"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
+	Reduction string `json:"reduction"`
 }
 
 // NewContainedWeightReduction creates a new ContainedWeightReduction.
@@ -78,6 +79,7 @@ func (c *ContainedWeightReduction) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, c.Type)
+	xhash.Bool(h, c.Switchable)
 	xhash.StringWithLen(h, c.Reduction)
 }
 

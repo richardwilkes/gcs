@@ -24,8 +24,9 @@ var _ Bonus = &ConditionalModifierBonus{}
 
 // ConditionalModifierBonus holds the data for a conditional modifier bonus.
 type ConditionalModifierBonus struct {
-	Type      feature.Type `json:"type"`
-	Situation string       `json:"situation,omitzero"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
+	Situation string `json:"situation,omitzero"`
 	LeveledAmount
 	BonusOwner `json:"-"`
 }
@@ -72,6 +73,7 @@ func (c *ConditionalModifierBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, c.Type)
+	xhash.Bool(h, c.Switchable)
 	xhash.StringWithLen(h, c.Situation)
 	c.LeveledAmount.Hash(h)
 }

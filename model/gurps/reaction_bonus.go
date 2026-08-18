@@ -24,8 +24,9 @@ var _ Bonus = &ReactionBonus{}
 
 // ReactionBonus holds a modifier due to a reaction.
 type ReactionBonus struct {
-	Type      feature.Type `json:"type"`
-	Situation string       `json:"situation,omitzero"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
+	Situation string `json:"situation,omitzero"`
 	LeveledAmount
 	BonusOwner `json:"-"`
 }
@@ -72,6 +73,7 @@ func (r *ReactionBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, r.Type)
+	xhash.Bool(h, r.Switchable)
 	xhash.StringWithLen(h, r.Situation)
 	r.LeveledAmount.Hash(h)
 }

@@ -51,6 +51,7 @@ var (
 	_ WeaponOwner            = &Trait{}
 	_ TemplatePickerProvider = &Trait{}
 	_ LeveledOwner           = &Trait{}
+	_ FeatureSwitcher        = &Trait{}
 )
 
 // Columns that can be used with the trait method .CellData()
@@ -60,6 +61,7 @@ const (
 	TraitTagsColumn
 	TraitReferenceColumn
 	TraitLibSrcColumn
+	TraitSwitchColumn
 )
 
 // Trait holds an advantage, disadvantage, quirk, or perk.
@@ -89,6 +91,7 @@ type TraitEditData struct {
 	SelfControl  selfctrl.Roll     `json:"cr,omitzero"`
 	Frequency    frequency.Roll    `json:"frequency,omitzero"`
 	Disabled     bool              `json:"disabled,omitzero"`
+	SwitchedOn   bool              `json:"switched_on,omitzero"`
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
 }
@@ -378,6 +381,10 @@ func TraitsHeaderData(columnID int) HeaderData {
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
 		data.Detail = LibSrcTooltip()
+	case TraitSwitchColumn:
+		data.Title = HeaderSwitch
+		data.TitleIsImageKey = true
+		data.Detail = SwitchHeaderTooltip()
 	}
 	return data
 }
@@ -463,6 +470,14 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 			if state != srcstate.Custom {
 				data.Tooltip += "\n" + t.Source.String()
 			}
+		}
+	case TraitSwitchColumn:
+		// Only items that actually have something to switch get a cell; the rest are left blank.
+		if t.HasSwitchableFeatures() {
+			data.Type = cell.Switch
+			data.Checked = t.SwitchedOn
+			data.Alignment = align.Middle
+			data.Tooltip = SwitchCellTooltip()
 		}
 	}
 }
@@ -576,9 +591,9 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 			}
 		}
 	}
-	applyThisTrait(t.Features, t)
+	applyThisTrait(t.ActiveFeatures(), t)
 	Traverse(func(mod *TraitModifier) bool {
-		applyThisTrait(mod.Features, mod)
+		applyThisTrait(mod.Features.Active(t.SwitchedOn), mod)
 		return false
 	}, true, true, t.Modifiers...)
 	if entity := EntityFromNode(t); entity != nil {
@@ -741,9 +756,33 @@ func (t *Trait) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(t), deferredNewScriptTrait(t), t.LocalNotesWithReplacements())
 }
 
-// FeatureList returns the list of Features.
-func (t *Trait) FeatureList() Features {
-	return t.Features
+// ActiveFeatures returns the features of this trait that currently take effect, i.e. all of them except any switchable
+// ones while the trait's switch is off. Features of the trait's modifiers are not included.
+func (t *Trait) ActiveFeatures() Features {
+	return t.Features.Active(t.SwitchedOn)
+}
+
+// HasSwitchableFeatures implements FeatureSwitcher.
+func (t *Trait) HasSwitchableFeatures() bool {
+	if !t.Container() && t.Features.AnySwitchable() {
+		return true
+	}
+	found := false
+	Traverse(func(mod *TraitModifier) bool {
+		found = mod.Features.AnySwitchable()
+		return found
+	}, true, true, t.Modifiers...)
+	return found
+}
+
+// IsSwitchedOn implements FeatureSwitcher.
+func (t *Trait) IsSwitchedOn() bool {
+	return t.SwitchedOn
+}
+
+// SetSwitchedOn implements FeatureSwitcher.
+func (t *Trait) SetSwitchedOn(on bool) {
+	t.SwitchedOn = on
 }
 
 // TagList returns the list of tags.

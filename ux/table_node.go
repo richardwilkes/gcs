@@ -278,6 +278,8 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground,
 		return n.createLabelCell(c, width, foreground, background, selected)
 	case cell.Toggle:
 		return n.createToggleCell(c, foreground)
+	case cell.Switch:
+		return n.createSwitchCell(c, foreground)
 	case cell.PageRef:
 		return n.createPageRefCell(c, width, foreground)
 	case cell.Markdown:
@@ -537,6 +539,50 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 		return true
 	}
 	return check
+}
+
+// createSwitchCell creates the cell for a switch column. Unlike a toggle cell, the "off" state is drawn (as a dash), so
+// that a row whose switch is off can be told apart from one that has nothing to switch (which gets a blank cell).
+func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
+	label := unison.NewLabel()
+	label.VAlign = align.Start
+	font := n.primaryFieldFont()
+	fd := font.Descriptor()
+	fd.Size -= 2
+	label.Font = fd.Font()
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 1}))
+	baseline := font.Baseline()
+	setDrawable := func(on bool) {
+		s := unison.DashSVG
+		if on {
+			s = unison.CheckmarkSVG
+		}
+		label.Drawable = &unison.DrawableSVG{
+			SVG:  s,
+			Size: geom.Size{Width: baseline, Height: baseline},
+		}
+	}
+	setDrawable(c.Checked)
+	label.SetEnabled(!c.Dim)
+	label.HAlign = c.Alignment
+	label.OnBackgroundInk = foreground
+	if c.Tooltip != "" {
+		label.Tooltip = newWrappedTooltip(c.Tooltip)
+	}
+	label.MouseDownCallback = func(_ geom.Point, _, _ int, mods mod.Modifiers) bool {
+		c.Checked = !c.Checked
+		toggleFeatureSwitch(n, label, c.Checked, mods.OptionDown())
+		setDrawable(c.Checked)
+		label.MarkForLayoutAndRedraw()
+		return true
+	}
+	label.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
+		return true
+	}
+	label.MouseUpCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
+		return true
+	}
+	return label
 }
 
 func handleCheck(data any, check unison.Paneler, checked bool) {

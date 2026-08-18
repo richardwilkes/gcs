@@ -383,6 +383,15 @@ func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *Check
 	return checkBox
 }
 
+// addSwitchedOnCheckBox adds the "Switched On" checkbox used by the editors of items that can hold switchable features,
+// preceded by an empty panel to keep it in the field column of a two-column layout.
+func addSwitchedOnCheckBox(parent *unison.Panel, fieldData *bool) *CheckBox {
+	parent.AddChild(unison.NewPanel())
+	checkBox := addCheckBox(parent, i18n.Text("Switched On"), fieldData)
+	checkBox.Tooltip = newWrappedTooltip(gurps.SwitchedOnTooltip())
+	return checkBox
+}
+
 func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *CheckBox {
 	checkBox := NewCheckBox(nil, "", labelText,
 		func() check.Enum { return check.FromBool(!*fieldData) },

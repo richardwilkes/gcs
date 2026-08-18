@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"encoding/json/jsontext"
+	"fmt"
 	"slices"
 	"testing"
 
@@ -17,7 +19,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
+	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
 // findFeatureTypePopup returns the first feature-type switcher popup found anywhere beneath the given panel, or nil if
@@ -134,4 +138,153 @@ func TestFeaturesPanelSwitchMiddleFeature(t *testing.T) {
 	_, ok := features[1].(*gurps.WeaponBonus)
 	c.True(ok, "the middle feature must have been replaced with a WeaponBonus")
 	c.Equal(4, len(panel.Children()), "expected add button + three feature rows after the switch")
+}
+
+// findSwitchableCheckBox returns the first "switchable" checkbox found anywhere beneath the given panel, or nil if
+// there is none. Like findFeatureTypePopup, it lets the tests reach a widget whose position within the row varies from
+// one feature type to the next.
+func findSwitchableCheckBox(p *unison.Panel) *CheckBox {
+	if box, ok := p.Self.(*CheckBox); ok && box.Text.String() == i18n.Text("switchable") {
+		return box
+	}
+	for _, child := range p.Children() {
+		if box := findSwitchableCheckBox(child); box != nil {
+			return box
+		}
+	}
+	return nil
+}
+
+// clickCheckBox puts the checkbox into the given state and runs its click callback, mirroring what a user's click on it
+// does.
+func clickCheckBox(box *CheckBox, on bool) {
+	box.State = uncheck.FromBool(on)
+	box.ClickCallback()
+}
+
+// TestFeaturesPanelSwitchableCheckBoxTogglesTheFlag verifies that the "switchable" checkbox on a feature row is wired
+// to the feature's own flag in both directions.
+func TestFeaturesPanelSwitchableCheckBoxTogglesTheFlag(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.SetOwner(owner)
+	features := gurps.Features{bonus}
+
+	panel := newFeaturesPanel(entity, owner, &features, false)
+	box := findSwitchableCheckBox(panel.Children()[1])
+	c.NotNil(box, "expected a switchable checkbox in the attribute bonus row")
+	c.Equal(uncheck.Off, box.State, "a feature that isn't switchable must start out unchecked")
+	c.False(bonus.IsSwitchable(), "a new attribute bonus must not be switchable")
+
+	clickCheckBox(box, true)
+	c.True(bonus.IsSwitchable(), "checking the box must mark the feature as switchable")
+
+	clickCheckBox(box, false)
+	c.False(bonus.IsSwitchable(), "clearing the box must mark the feature as not switchable")
+}
+
+// TestFeaturesPanelSwitchableCheckBoxReflectsExistingFlag verifies that a feature loaded as switchable shows a checked
+// box rather than an empty one.
+func TestFeaturesPanelSwitchableCheckBoxReflectsExistingFlag(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.SetOwner(owner)
+	bonus.SetSwitchable(true)
+	features := gurps.Features{bonus}
+
+	panel := newFeaturesPanel(entity, owner, &features, false)
+	box := findSwitchableCheckBox(panel.Children()[1])
+	c.NotNil(box, "expected a switchable checkbox in the attribute bonus row")
+	c.Equal(uncheck.On, box.State, "a switchable feature must show a checked box")
+}
+
+// TestFeaturesPanelSwitchPreservesSwitchable verifies that changing a feature's type carries the switchable flag over
+// to the replacement feature, so that a user retyping a feature doesn't silently lose the switch that governs it.
+func TestFeaturesPanelSwitchPreservesSwitchable(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.SetOwner(owner)
+	bonus.SetSwitchable(true)
+	features := gurps.Features{bonus}
+
+	panel := newFeaturesPanel(entity, owner, &features, false)
+	switchFeatureType(c, panel.Children()[1], panel.featureTypesList(), feature.SkillBonus)
+
+	c.Equal(1, len(features), "there must still be exactly one feature")
+	_, ok := features[0].(*gurps.SkillBonus)
+	c.True(ok, "the feature must have been replaced with a SkillBonus")
+	c.True(features[0].IsSwitchable(), "the replacement feature must still be switchable")
+
+	box := findSwitchableCheckBox(panel.Children()[1])
+	c.NotNil(box, "expected a switchable checkbox in the replacement row")
+	c.Equal(uncheck.On, box.State, "the replacement row's checkbox must show the preserved flag")
+}
+
+// TestFeaturesPanelUnknownFeatureHasNoSwitchableCheckBox verifies that a feature this version of GCS doesn't understand
+// offers no switchable checkbox. Its raw data is preserved verbatim, so there is nothing here that could be switched
+// and any such flag in the data must not be second-guessed.
+func TestFeaturesPanelUnknownFeatureHasNoSwitchableCheckBox(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+
+	unknown := gurps.NewUnknownFeature("bogus", jsontext.Value(`{"type":"bogus","switchable":true}`))
+	features := gurps.Features{unknown}
+
+	panel := newFeaturesPanel(entity, owner, &features, false)
+	c.Equal(2, len(panel.Children()), "expected add button + one feature row")
+	c.Nil(findSwitchableCheckBox(panel.Children()[1]), "an unknown feature must not offer a switchable checkbox")
+	c.False(unknown.IsSwitchable(), "an unknown feature is never switchable")
+}
+
+// TestFeaturesPanelSwitchableCheckBoxOnEveryRowType verifies that every feature type that builds its own first row --
+// rather than going through the shared leveled-amount line -- still gets the switchable checkbox, and that the checkbox
+// is wired to that feature.
+func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	equipmentContainer := gurps.NewEquipment(entity, nil, true)
+	for _, one := range []struct {
+		name    string
+		owner   fmt.Stringer
+		feature gurps.Feature
+	}{
+		{name: "weapon switch bonus", owner: trait, feature: gurps.NewWeaponSwitchBonus()},
+		{name: "weapon damage bonus", owner: trait, feature: gurps.NewWeaponDamageBonus()},
+		{name: "contained weight reduction", owner: equipmentContainer, feature: gurps.NewContainedWeightReduction()},
+		{name: "cost reduction", owner: trait, feature: gurps.NewCostReduction(gurps.StrengthID)},
+		{name: "selector override", owner: trait, feature: gurps.NewSelectorOverride(selector.WeaponDamageType)},
+		{name: "equipment max uses bonus", owner: trait, feature: gurps.NewEquipmentMaxUsesBonus()},
+		{name: "trait max level bonus", owner: trait, feature: gurps.NewTraitMaxLevelBonus()},
+		{name: "DR bonus", owner: trait, feature: gurps.NewDRBonus()},
+		{name: "attribute bonus", owner: trait, feature: gurps.NewAttributeBonus(gurps.StrengthID)},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			if bonus, ok := one.feature.(gurps.Bonus); ok {
+				bonus.SetOwner(one.owner)
+			}
+			features := gurps.Features{one.feature}
+			panel := newFeaturesPanel(entity, one.owner, &features, false)
+			c.Equal(2, len(panel.Children()), "expected add button + one feature row")
+			box := findSwitchableCheckBox(panel.Children()[1])
+			c.NotNil(box, "expected a switchable checkbox in the row")
+			c.Equal(uncheck.Off, box.State, "the feature starts out not switchable")
+
+			clickCheckBox(box, true)
+			c.True(one.feature.IsSwitchable(), "checking the box must mark this feature as switchable")
+
+			clickCheckBox(box, false)
+			c.False(one.feature.IsSwitchable(), "clearing the box must mark this feature as not switchable")
+		})
+	}
 }

@@ -40,6 +40,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			} else {
 				addLabelAndDecimalField(content, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
 			}
+			addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
 			valueLabel := i18n.Text("Value")
 			content.AddChild(NewFieldLeadingLabel(valueLabel, false))
 			addScriptField(content, nil, "", valueLabel,

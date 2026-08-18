@@ -40,3 +40,23 @@ func LibSrcTooltip() string {
 func ModifierEnabledTooltip() string {
 	return i18n.Text("Whether this modifier is enabled. Modifiers that are not enabled do not apply any features they may normally contribute.")
 }
+
+// SwitchHeaderTooltip returns the standard tooltip text for the switch column header.
+func SwitchHeaderTooltip() string {
+	return i18n.Text("Whether the switchable features of an item are currently on. Features marked as switchable only take effect while the item's switch is on. Items with no switchable features have nothing to switch, so this column is blank for them.")
+}
+
+// SwitchCellTooltip returns the standard tooltip text for a switch column cell.
+func SwitchCellTooltip() string {
+	return i18n.Text("Click to toggle whether this item's switchable features are on. Features marked as switchable only take effect while the item's switch is on. Hold down the Option/Alt key while clicking to also apply the change to everything contained within this item.")
+}
+
+// SwitchedOnTooltip returns the standard tooltip text for the "Switched On" editor field.
+func SwitchedOnTooltip() string {
+	return i18n.Text("Whether the switchable features of this item are currently on. This only matters if at least one feature is marked as switchable, since features marked as switchable only take effect while the item's switch is on.")
+}
+
+// SwitchableTooltip returns the standard tooltip text for the "switchable" feature checkbox.
+func SwitchableTooltip() string {
+	return i18n.Text("When checked, this feature only takes effect while the switch of the item it belongs to is on. The switch can be toggled from the character sheet or the item's editor.")
+}

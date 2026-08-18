@@ -44,6 +44,7 @@ var (
 	_ WeaponOwner       = &Equipment{}
 	_ LeveledOwner      = &Equipment{}
 	_ TechLevelProvider = &Equipment{}
+	_ FeatureSwitcher   = &Equipment{}
 )
 
 // Columns that can be used with the equipment method .CellData()
@@ -61,6 +62,7 @@ const (
 	EquipmentTagsColumn
 	EquipmentReferenceColumn
 	EquipmentLibSrcColumn
+	EquipmentSwitchColumn
 )
 
 // MaxEquipmentMaxUses is the largest permitted resolved value for an Equipment's maximum uses.
@@ -93,6 +95,7 @@ type EquipmentEditData struct {
 	Level        fxp.Int              `json:"level,omitzero"`
 	Uses         int                  `json:"uses,omitzero"`
 	Equipped     bool                 `json:"equipped,omitzero"`
+	SwitchedOn   bool                 `json:"switched_on,omitzero"`
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
@@ -390,6 +393,10 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
 		data.Detail = LibSrcTooltip()
+	case EquipmentSwitchColumn:
+		data.Title = HeaderSwitch
+		data.TitleIsImageKey = true
+		data.Detail = SwitchHeaderTooltip()
 	}
 	return data
 }
@@ -468,6 +475,17 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Tooltip = state.String()
 			if state != srcstate.Custom {
 				data.Tooltip += "\n" + e.Source.String()
+			}
+		}
+	case EquipmentSwitchColumn:
+		// Only items that actually have something to switch get a cell; the rest are left blank.
+		if e.HasSwitchableFeatures() {
+			data.Type = cell.Switch
+			data.Checked = e.SwitchedOn
+			data.Alignment = align.Middle
+			data.Tooltip = SwitchCellTooltip()
+			if !e.ReallyEquipped() {
+				data.Dim = true
 			}
 		}
 	}
@@ -585,9 +603,33 @@ func (e *Equipment) Notes() string {
 	return e.LocalNotesWithReplacements()
 }
 
-// FeatureList returns the list of Features.
-func (e *Equipment) FeatureList() Features {
-	return e.Features
+// ActiveFeatures returns the features of this equipment that currently take effect, i.e. all of them except any
+// switchable ones while the equipment's switch is off. Features of the equipment's modifiers are not included.
+func (e *Equipment) ActiveFeatures() Features {
+	return e.Features.Active(e.SwitchedOn)
+}
+
+// HasSwitchableFeatures implements FeatureSwitcher.
+func (e *Equipment) HasSwitchableFeatures() bool {
+	if e.Features.AnySwitchable() {
+		return true
+	}
+	found := false
+	Traverse(func(mod *EquipmentModifier) bool {
+		found = mod.Features.AnySwitchable()
+		return found
+	}, true, true, e.Modifiers...)
+	return found
+}
+
+// IsSwitchedOn implements FeatureSwitcher.
+func (e *Equipment) IsSwitchedOn() bool {
+	return e.SwitchedOn
+}
+
+// SetSwitchedOn implements FeatureSwitcher.
+func (e *Equipment) SetSwitchedOn(on bool) {
+	e.SwitchedOn = on
 }
 
 // TagList returns the list of tags.
@@ -701,8 +743,10 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 	for _, one := range children {
 		contained += fxp.Int(one.ExtendedWeight(forSkills, defUnits))
 	}
+	// Switchable reductions, whether on the equipment or its modifiers, only apply while the equipment's switch is on.
+	switchedOn := equipment != nil && equipment.SwitchedOn
 	var percentage, reduction fxp.Int
-	for _, one := range features {
+	for _, one := range features.Active(switchedOn) {
 		if cwr, ok := one.(*ContainedWeightReduction); ok {
 			if cwr.IsPercentageReduction() {
 				percentage += cwr.PercentageReduction()
@@ -713,7 +757,7 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 	}
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.setEquipment(equipment)
-		for _, f := range mod.Features {
+		for _, f := range mod.Features.Active(switchedOn) {
 			if cwr, ok := f.(*ContainedWeightReduction); ok {
 				if cwr.IsPercentageReduction() {
 					percentage += cwr.PercentageReduction()
@@ -765,9 +809,9 @@ func (e *Equipment) ResolvedMaxUses() int {
 			}
 		}
 	}
-	applyThisEquipment(e.Features)
+	applyThisEquipment(e.ActiveFeatures())
 	Traverse(func(mod *EquipmentModifier) bool {
-		applyThisEquipment(mod.Features)
+		applyThisEquipment(mod.Features.Active(e.SwitchedOn))
 		return false
 	}, true, true, e.Modifiers...)
 	if entity := EntityFromNode(e); entity != nil {

@@ -139,7 +139,10 @@ func (p *spellsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Sp
 }
 
 func (p *spellsProvider) ColumnIDs() []int {
-	columnIDs := make([]int, 0, 11)
+	columnIDs := make([]int, 0, 12)
+	if showSwitchColumn(p.forPage, p.provider, p.RootData()) {
+		columnIDs = append(columnIDs, gurps.SpellSwitchColumn)
+	}
 	if p.forPage {
 		if _, ok := p.provider.(*gurps.Entity); ok {
 			columnIDs = append(

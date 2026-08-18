@@ -46,7 +46,8 @@ type WeaponBonus struct {
 
 // WeaponBonusData holds the data for an adjustment to weapon stats which are persisted.
 type WeaponBonusData struct { //nolint:govet // The field alignment here is poor, but kept to reduce diffs in the data
-	Type                           feature.Type    `json:"type"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
 	Percent                        bool            `json:"percent,omitzero"`
 	SelectionType                  wsel.Type       `json:"selection_type"`
 	SwitchType                     wswitch.Type    `json:"switch_type,omitzero"`
@@ -367,6 +368,7 @@ func (w *WeaponBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, w.Type)
+	xhash.Bool(h, w.Switchable)
 	xhash.Bool(h, w.Percent)
 	xhash.Num8(h, w.SelectionType)
 	xhash.Num8(h, w.SwitchType)

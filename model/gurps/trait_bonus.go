@@ -31,7 +31,8 @@ type TraitBonus struct {
 
 // TraitBonusData holds an adjustment to a trait which is persisted.
 type TraitBonusData struct {
-	Type         feature.Type  `json:"type"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
 	NameCriteria criteria.Text `json:"name,omitzero"`
 	TagsCriteria criteria.Text `json:"tags,omitzero"`
 	LeveledAmount
@@ -82,6 +83,7 @@ func (s *TraitBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, s.Type)
+	xhash.Bool(h, s.Switchable)
 	s.NameCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)

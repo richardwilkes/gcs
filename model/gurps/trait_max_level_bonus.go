@@ -29,7 +29,8 @@ var _ Bonus = &TraitMaxLevelBonus{}
 // the value: a plain number (e.g. "+1" or "-1") is an addition, a value with a trailing "%" (e.g. "10%") is a
 // percentage adjustment, and a value with a leading or trailing "x" (e.g. "x2") is a multiplier.
 type TraitMaxLevelBonus struct {
-	Type          feature.Type  `json:"type"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
 	SelectionType traitsel.Type `json:"selection_type"`
 	PerLevel      bool          `json:"per_level,omitzero"`
 	NameCriteria  criteria.Text `json:"name,omitzero"`
@@ -114,6 +115,7 @@ func (t *TraitMaxLevelBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, t.Type)
+	xhash.Bool(h, t.Switchable)
 	xhash.Num8(h, t.SelectionType)
 	t.NameCriteria.Hash(h)
 	t.TagsCriteria.Hash(h)

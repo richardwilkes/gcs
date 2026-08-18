@@ -26,6 +26,7 @@ const (
 	HeaderDatabase      = "database"
 	HeaderStackedCoins  = "stacked-coins"
 	HeaderStackedWeight = "stacked-weight"
+	HeaderSwitch        = "switch"
 )
 
 // HeaderData holds data for creating a column header's visual representation.
@@ -61,7 +62,7 @@ func (c *CellData) ForSort() string {
 			return c.Primary + "\n" + c.Secondary
 		}
 		return c.Primary
-	case cell.Toggle:
+	case cell.Toggle, cell.Switch:
 		if c.Checked {
 			return "√"
 		}

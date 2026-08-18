@@ -26,6 +26,10 @@ type Feature interface {
 	FeatureType() feature.Type
 	Clone() Feature
 	Hash(hash.Hash)
+	// IsSwitchable returns true if this feature only takes effect while the owning item's switch is on.
+	IsSwitchable() bool
+	// SetSwitchable sets whether this feature only takes effect while the owning item's switch is on.
+	SetSwitchable(switchable bool)
 }
 
 // Bonus is an extension of a Feature, which provides a numerical bonus or penalty.

@@ -53,7 +53,8 @@ type SelectorOverride struct {
 
 // SelectorOverrideData is the persisted portion.
 type SelectorOverrideData struct { //nolint:govet // Field order is kept readable for the on-disk JSON rather than packed
-	Type          feature.Type   `json:"type"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
 	Field         selector.Field `json:"field"`
 	Priority      int            `json:"priority,omitzero"`
 	Value         string         `json:"value"`
@@ -140,6 +141,7 @@ func (o *SelectorOverride) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, o.Type)
+	xhash.Bool(h, o.Switchable)
 	xhash.Num8(h, o.Field)
 	xhash.Num64(h, int64(o.Priority))
 	xhash.StringWithLen(h, o.Value)

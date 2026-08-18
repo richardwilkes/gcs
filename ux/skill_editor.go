@@ -42,6 +42,9 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	addTagsLabelAndField(content, &e.editorData.Tags)
+	if !e.target.Container() {
+		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
+	}
 	entity := gurps.EntityFromNode(e.target)
 	if e.target.Container() {
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)

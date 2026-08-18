@@ -759,7 +759,7 @@ func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 	var list []string
 	Traverse(func(eqp *Equipment) bool {
 		if eqp.ReallyEquipped() {
-			for _, f := range eqp.Features {
+			for _, f := range eqp.ActiveFeatures() {
 				if bonus, ok := f.(*DRBonus); ok {
 					for _, loc := range bonus.Locations {
 						if loc == AllID || strings.EqualFold(location.LocID, loc) {

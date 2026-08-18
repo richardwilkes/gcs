@@ -182,9 +182,14 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 }
 
 func (p *equipmentProvider) ColumnIDs() []int {
-	columnIDs := make([]int, 0, 11)
+	columnIDs := make([]int, 0, 12)
 	if p.forPage && p.carried {
 		columnIDs = append(columnIDs, gurps.EquipmentEquippedColumn)
+	}
+	// Unlike the equipped column, the switch column applies to other equipment, too, since some features (e.g.
+	// contained weight reductions) take effect regardless of whether the equipment is carried.
+	if showSwitchColumn(p.forPage, p.provider, p.RootData()) {
+		columnIDs = append(columnIDs, gurps.EquipmentSwitchColumn)
 	}
 	columnIDs = append(
 		columnIDs,

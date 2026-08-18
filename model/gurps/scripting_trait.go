@@ -49,6 +49,7 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	}
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(trait.Tags)) }
 	m["container"] = func() goja.Value { return r.ToValue(trait.Container()) }
+	m["switchedOn"] = func() goja.Value { return r.ToValue(trait.SwitchedOn) }
 	m["points"] = func() goja.Value { return r.ToValue(fxp.AsFloat[float64](trait.AdjustedPoints())) }
 	m["selfControl"] = func() goja.Value { return r.ToValue(trait.ResolvedSelfControl(nil).Number()) }
 	m["selfControlAdjustment"] = func() goja.Value {

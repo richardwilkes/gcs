@@ -40,9 +40,11 @@ func (s *snapshotList[A, V]) finish() {
 	if s.entity != nil {
 		s.entity.Recalculate()
 	}
-	MarkModified(s.owner)
-	if s.rebuild {
-		s.owner.Rebuild(true)
+	if s.owner != nil {
+		MarkModified(s.owner)
+		if s.rebuild {
+			s.owner.Rebuild(true)
+		}
 	}
 }
 
@@ -64,24 +66,39 @@ func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuilda
 	extract func(T) (A, bool), get func(A) V, set func(A, V), mutate func(A), recalculate, rebuild bool,
 ) {
 	rows := table.SelectedRows(false)
-	before := &snapshotList[A, V]{owner: owner, set: set, rebuild: rebuild}
-	after := &snapshotList[A, V]{owner: owner, set: set, rebuild: rebuild}
+	targets := make([]A, 0, len(rows))
 	for _, row := range rows {
 		if target, ok := extract(row.Data()); ok {
-			before.list = append(before.list, valueSnapshot[A, V]{target: target, value: get(target)})
-			mutate(target)
-			after.list = append(after.list, valueSnapshot[A, V]{target: target, value: get(target)})
+			targets = append(targets, target)
 		}
 	}
-	if len(before.list) == 0 {
+	if len(targets) == 0 {
 		return
 	}
+	var entity *gurps.Entity
 	if recalculate {
-		entity := gurps.EntityFromNode(rows[0].Data())
-		before.entity = entity
-		after.entity = entity
+		entity = gurps.EntityFromNode(rows[0].Data())
 	}
-	if mgr := unison.UndoManagerFor(table); mgr != nil {
+	adjustTargets(undoTitle, owner, table, entity, targets, get, set, mutate, rebuild)
+}
+
+// adjustTargets snapshots, mutates, and registers an undoable edit for each of the given targets. undoSource is the
+// panel used to locate the undo manager. When entity is non-nil, it is recalculated after the change (and on
+// undo/redo); when rebuild is true, the owner is rebuilt as well.
+func adjustTargets[A, V any](undoTitle string, owner Rebuildable, undoSource unison.Paneler, entity *gurps.Entity,
+	targets []A, get func(A) V, set func(A, V), mutate func(A), rebuild bool,
+) {
+	if len(targets) == 0 {
+		return
+	}
+	before := &snapshotList[A, V]{owner: owner, entity: entity, set: set, rebuild: rebuild}
+	after := &snapshotList[A, V]{owner: owner, entity: entity, set: set, rebuild: rebuild}
+	for _, target := range targets {
+		before.list = append(before.list, valueSnapshot[A, V]{target: target, value: get(target)})
+		mutate(target)
+		after.list = append(after.list, valueSnapshot[A, V]{target: target, value: get(target)})
+	}
+	if mgr := unison.UndoManagerFor(undoSource); mgr != nil {
 		mgr.Add(&unison.UndoEdit[*snapshotList[A, V]]{
 			ID:         unison.NextUndoID(),
 			EditName:   undoTitle,

@@ -86,6 +86,8 @@ func headerFromData[T gurps.Node[T]](data gurps.HeaderData, forPage bool) unison
 			img1 = svg.Bookmark
 		case gurps.HeaderDatabase:
 			img1 = svg.Database
+		case gurps.HeaderSwitch:
+			img1 = svg.ToggleSwitch
 		case gurps.HeaderStackedCoins:
 			img1 = svg.Stack
 			img2 = svg.Coins

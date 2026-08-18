@@ -65,6 +65,7 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	m["weightIgnoredForSkills"] = func() goja.Value { return r.ToValue(item.WeightIgnoredForSkills) }
 	m["equipped"] = func() goja.Value { return r.ToValue(item.ReallyEquipped()) }
 	m["container"] = func() goja.Value { return r.ToValue(item.Container()) }
+	m["switchedOn"] = func() goja.Value { return r.ToValue(item.SwitchedOn) }
 	m["notes"] = func() goja.Value {
 		return r.ToValue(item.SecondaryText(func(_ display.Option) bool { return true }))
 	}

@@ -402,6 +402,7 @@ var allEnums = []*enumInfo{
 			{Key: "toggle"},
 			{Key: "page_ref"},
 			{Key: "markdown"},
+			{Key: "switch"},
 		},
 	},
 	{
