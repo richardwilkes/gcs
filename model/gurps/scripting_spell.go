@@ -49,7 +49,6 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 	}
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(spell.Tags)) }
 	m["container"] = func() goja.Value { return r.ToValue(spell.Container()) }
-	m["switchedOn"] = func() goja.Value { return r.ToValue(spell.SwitchedOn) }
 	if spell.Container() {
 		m["children"] = func() goja.Value {
 			children := make([]*goja.Object, 0, len(spell.Children))
@@ -66,6 +65,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 			})
 		}
 	} else {
+		m["switchedOn"] = func() goja.Value { return r.ToValue(spell.SwitchedOn) }
 		m["techLevel"] = func() goja.Value {
 			if spell.TechLevel != nil {
 				return r.ToValue(*spell.TechLevel)

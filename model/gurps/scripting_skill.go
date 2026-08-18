@@ -49,7 +49,6 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 	}
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(skill.Tags)) }
 	m["container"] = func() goja.Value { return r.ToValue(skill.Container()) }
-	m["switchedOn"] = func() goja.Value { return r.ToValue(skill.SwitchedOn) }
 	if skill.Container() {
 		m["children"] = func() goja.Value {
 			children := make([]*goja.Object, 0, len(skill.Children))
@@ -69,6 +68,7 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			})
 		}
 	} else {
+		m["switchedOn"] = func() goja.Value { return r.ToValue(skill.SwitchedOn) }
 		m["specialization"] = func() goja.Value { return r.ToValue(skill.SpecializationWithReplacements()) }
 		m["optionalSpecialization"] = func() goja.Value {
 			return r.ToValue(skill.OptionalSpecializationWithReplacements())
