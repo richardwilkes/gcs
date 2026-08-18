@@ -11,6 +11,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -68,7 +69,7 @@ func InstallContainerConversionHandlers[T gurps.Node[T]](paneler unison.Paneler,
 // CanConvertToContainer returns true if the table's current selection has a row that can be converted to a container.
 func CanConvertToContainer[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && data.CanConvertToFromContainer() && !data.Container() {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && !data.Container() {
 			return true
 		}
 	}
@@ -79,7 +80,7 @@ func CanConvertToContainer[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool 
 // non-container.
 func CanConvertToNonContainer[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && data.CanConvertToFromContainer() && data.Container() {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && data.Container() {
 			return true
 		}
 	}
@@ -91,7 +92,7 @@ func ConvertToContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Table[
 	before := &containerConversionList{Owner: owner}
 	after := &containerConversionList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && data.CanConvertToFromContainer() && !data.Container() {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && !data.Container() {
 			before.List = append(before.List, newContainerConversion(data, false))
 			after.List = append(after.List, newContainerConversion(data, true))
 			data.ConvertToContainer()
@@ -117,7 +118,7 @@ func ConvertToNonContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Tab
 	before := &containerConversionList{Owner: owner}
 	after := &containerConversionList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && data.CanConvertToFromContainer() && data.Container() {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && data.Container() {
 			before.List = append(before.List, newContainerConversion(data, true))
 			after.List = append(after.List, newContainerConversion(data, false))
 			data.ConvertToNonContainer()
