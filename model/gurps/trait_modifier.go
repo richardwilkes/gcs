@@ -37,7 +37,7 @@ import (
 
 var (
 	_ = assertNode[*TraitModifier]
-	_ = assertEditorData[*TraitModifier]
+	_ = assertEditorData[*TraitModifierEditData]
 
 	_ GeneralModifier = &TraitModifier{}
 	_ LeveledOwner    = &TraitModifier{}

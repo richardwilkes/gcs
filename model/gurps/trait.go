@@ -46,7 +46,7 @@ import (
 
 var (
 	_ = assertNode[*Trait]
-	_ = assertEditorData[*Trait]
+	_ = assertEditorData[*TraitEditData]
 
 	_ WeaponOwner            = &Trait{}
 	_ TemplatePickerProvider = &Trait{}

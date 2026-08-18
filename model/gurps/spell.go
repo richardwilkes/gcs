@@ -41,7 +41,7 @@ import (
 
 var (
 	_ = assertNode[*Spell]
-	_ = assertEditorData[*Spell]
+	_ = assertEditorData[*SpellEditData]
 
 	_ TechLevelProvider       = &Spell{}
 	_ SkillAdjustmentProvider = &Spell{}

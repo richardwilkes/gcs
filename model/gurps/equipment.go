@@ -39,7 +39,7 @@ import (
 
 var (
 	_ = assertNode[*Equipment]
-	_ = assertEditorData[*Equipment]
+	_ = assertEditorData[*EquipmentEditData]
 
 	_ WeaponOwner       = &Equipment{}
 	_ LeveledOwner      = &Equipment{}

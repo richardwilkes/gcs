@@ -37,7 +37,7 @@ import (
 
 var (
 	_ = assertNode[*EquipmentModifier]
-	_ = assertEditorData[*EquipmentModifier]
+	_ = assertEditorData[*EquipmentModifierEditData]
 
 	_ GeneralModifier = &EquipmentModifier{}
 )
