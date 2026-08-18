@@ -58,13 +58,16 @@ func (c *containerConversion) Apply() {
 
 // InstallContainerConversionHandlers installs the to & from container conversion handlers.
 func InstallContainerConversionHandlers[T gurps.Node[T]](paneler unison.Paneler, owner Rebuildable, table *unison.Table[*Node[T]]) {
-	p := paneler.AsPanel()
-	p.InstallCmdHandlers(ConvertToContainerItemID,
-		func(_ any) bool { return CanConvertToContainer(table) },
-		func(_ any) { ConvertToContainer(owner, table) })
-	p.InstallCmdHandlers(ConvertToNonContainerItemID,
-		func(_ any) bool { return CanConvertToNonContainer(table) },
-		func(_ any) { ConvertToNonContainer(owner, table) })
+	var zero T
+	if _, ok := any(zero).(ConvertableContainer); ok {
+		p := paneler.AsPanel()
+		p.InstallCmdHandlers(ConvertToContainerItemID,
+			func(_ any) bool { return CanConvertToContainer(table) },
+			func(_ any) { ConvertToContainer(owner, table) })
+		p.InstallCmdHandlers(ConvertToNonContainerItemID,
+			func(_ any) bool { return CanConvertToNonContainer(table) },
+			func(_ any) { ConvertToNonContainer(owner, table) })
+	}
 }
 
 // CanConvertToContainer returns true if the table's current selection has a row that can be converted to a container.

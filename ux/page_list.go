@@ -320,13 +320,7 @@ func installEquipmentLevelHandlers(p *PageList[*gurps.Equipment], owner Rebuilda
 }
 
 func (p *PageList[T]) installContainerConversionHandlers(owner Rebuildable) {
-	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-		InstallContainerConversionHandlers(p, owner, t)
-		return
-	}
-	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Note]]); ok {
-		InstallContainerConversionHandlers(p, owner, t)
-	}
+	InstallContainerConversionHandlers(p, owner, p.Table)
 }
 
 // SelectedNodes returns the set of selected nodes. If 'minimal' is true, then children of selected rows that may also
