@@ -1164,7 +1164,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	if len(other.Modifiers) != 0 {
 		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			cloned := one.Clone(one.Source.LibraryFile, trait.owner, nil, isApply)
+			cloned := one.Clone(trait.Source.LibraryFile, trait.owner, nil, isApply)
 			// Point the copy at the trait it belongs to, so that a "use level from owner" modifier can resolve its
 			// level. Prior to this, the copies held in an editor only acquired their trait as a side effect of a point
 			// cost computation.

@@ -1169,7 +1169,7 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	if len(other.Modifiers) != 0 {
 		e.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			cloned := one.Clone(one.Source.LibraryFile, equipment.owner, nil, isApply)
+			cloned := one.Clone(equipment.Source.LibraryFile, equipment.owner, nil, isApply)
 			// Point the copy at the equipment it belongs to, so that its nameable placeholders can be resolved with
 			// that equipment's replacements. Without this, the copies held in an editor show their raw placeholders
 			// (e.g. "@Material@"), since the accessors fall back to the unsubstituted text when there is no equipment.
