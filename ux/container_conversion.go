@@ -15,7 +15,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// ConvertableContainer defines the types that the container conversion can work on.
+// ConvertableContainer defines the methods a node must implement to be convertible to and from a container. Rows are
+// matched against it at runtime, so nodes that do not implement it are simply skipped.
 type ConvertableContainer interface {
 	Container() bool
 	CanConvertToFromContainer() bool

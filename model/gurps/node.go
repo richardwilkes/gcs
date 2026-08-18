@@ -31,10 +31,9 @@ type DataOwnerProvider interface {
 	DataOwner() DataOwner
 }
 
-// Node defines the methods required of nodes in our tables.
-//
-// This interface is a "constraint" and cannot be used as a type param, just as a constraint.
-// In practice this just means that it can only be used inside the square brackets of generic methods/types.
+// The type union in the body makes this a constraint, not an ordinary interface: it may only be used as a type
+// parameter's constraint or embedded in another constraint, never as a type. Generic code takes a T Node[T] type
+// parameter and works with T directly.
 type Node[T Node[T]] interface {
 	// These are the limited set of types that can be nodes. New node types *must* be added here
 	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
@@ -62,14 +61,14 @@ type Node[T Node[T]] interface {
 
 func assertNode[T Node[T]]() {}
 
-// RawPointsAdjuster defines methods for nodes that can have their raw points adjusted must implement.
+// RawPointsAdjuster interface for objects that can have their raw points adjusted.
 type RawPointsAdjuster interface {
 	Container() bool
 	RawPoints() fxp.Int
 	SetRawPoints(points fxp.Int) bool
 }
 
-// SkillAdjustmentProvider defines methods for nodes that can have their skill level adjusted must implement.
+// SkillAdjustmentProvider interface for objects that can have their skill level adjusted.
 type SkillAdjustmentProvider interface {
 	RawPointsAdjuster
 	IncrementSkillLevel()
