@@ -31,6 +31,8 @@ type DataOwnerProvider interface {
 	DataOwner() DataOwner
 }
 
+// Node defines the methods required of nodes in our tables.
+//
 // The type union in the body makes this a constraint, not an ordinary interface: it may only be used as a type
 // parameter's constraint or embedded in another constraint, never as a type. Generic code takes a T Node[T] type
 // parameter and works with T directly.
