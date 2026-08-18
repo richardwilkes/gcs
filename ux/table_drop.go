@@ -36,13 +36,15 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 	table.ClientData()[TableProviderClientKey] = provider
 	unison.InstallDropSupport(table, provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
 		didDropCallback[T])
-	table.DragRemovedRowsCallback = func() { MarkModified(table) }
+	table.DragRemovedRowsCallback = func() { MarkModified(liveTable(table)) }
 	table.DropOccurredCallback = func() {
 		// We need to defer this to give newly added skills a chance to choose their defaults first, before the normal
-		// top-to-bottom sweep fills in the defaults.
+		// top-to-bottom sweep fills in the defaults. By the time the task runs, the drop may have caused the owner to
+		// replace the table, so the one still on screen has to be looked up rather than assumed.
 		unison.InvokeTaskAfter(func() {
-			MarkModified(table)
-			table.RequestFocusWithoutScroll()
+			current := liveTable(table)
+			MarkModified(current)
+			current.RequestFocusWithoutScroll()
 		}, 1)
 	}
 	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
@@ -148,6 +150,10 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		if owner := toEntityProvider.DataOwner(); !xreflect.IsNil(owner) && !xreflect.IsNil(owner.OwningEntity()) {
 			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
 				rebuilder.Rebuild(true)
+				// The rebuild may have replaced the destination table, in which case everything from here on -- the
+				// merging, the undo edit, even finding the undo manager -- has to work with the table that took its
+				// place rather than the one that was dropped onto.
+				to = liveTable(to)
 			}
 		}
 	}

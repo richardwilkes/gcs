@@ -30,6 +30,11 @@ import (
 
 const containerMarker = "\000"
 
+// TableOwnerClientKey is the key used to store a table's Rebuildable owner with the table. It is stored on the table
+// itself, rather than looked up through the panel hierarchy, so that it can still be found after the owner has
+// replaced the table with a new one.
+const TableOwnerClientKey = "table-owner"
+
 // ItemVariant holds the type of item variant to create.
 type ItemVariant int
 

@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -132,6 +133,9 @@ func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
 func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
 	header, table := NewNodeTable(provider, fonts.PageFieldPrimary)
 	table.ClientData()[WorkingDirKey] = WorkingDirProvider(owner)
+	if !xreflect.IsNil(owner) {
+		table.ClientData()[TableOwnerClientKey] = owner
+	}
 	table.RefKey = provider.RefKey()
 	p := &PageList[T]{
 		tableHeader: header,
@@ -175,14 +179,16 @@ func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T]) 
 }
 
 func (p *PageList[T]) needReconstruction() bool {
-	if p == nil {
+	return p == nil || columnsOutOfSync(p.provider.ColumnIDs(), p.Table.Columns)
+}
+
+// columnsOutOfSync returns true if the columns a table is currently showing no longer match the column IDs its provider
+// wants, which means the table has to be built anew, since a table's columns are fixed at creation.
+func columnsOutOfSync(ids []int, columns []unison.ColumnInfo) bool {
+	if len(ids) != len(columns) {
 		return true
 	}
-	ids := p.provider.ColumnIDs()
-	if len(ids) != len(p.Table.Columns) {
-		return true
-	}
-	for i, col := range p.Table.Columns {
+	for i, col := range columns {
 		if col.ID != ids[i] {
 			return true
 		}
