@@ -614,12 +614,7 @@ func (e *Equipment) HasSwitchableFeatures() bool {
 	if e.Features.AnySwitchable() {
 		return true
 	}
-	found := false
-	Traverse(func(mod *EquipmentModifier) bool {
-		found = mod.Features.AnySwitchable()
-		return found
-	}, true, true, e.Modifiers...)
-	return found
+	return anyModifierSwitchable(e.Modifiers, func(mod *EquipmentModifier) Features { return mod.Features })
 }
 
 // IsSwitchedOn implements FeatureSwitcher.

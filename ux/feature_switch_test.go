@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -342,4 +343,79 @@ func TestAdjustTargetsWithUnparentedSource(t *testing.T) {
 
 	c.True(trait.SwitchedOn, "the mutation must have been applied")
 	c.Equal(fxp.One, stBonusFor(entity), "the entity must have been recalculated")
+}
+
+// switchColumnIndex returns the index of the switch column within the given columns, or -1 if it isn't present.
+func switchColumnIndex(columns []unison.ColumnInfo, switchColumnID int) int {
+	for i, one := range columns {
+		if one.ID == switchColumnID {
+			return i
+		}
+	}
+	return -1
+}
+
+// TestDimmedSwitchCellRemainsClickable verifies that the switch of an item that isn't currently contributing its
+// features -- a piece of equipment that isn't equipped, which is the very case the switch column is offered for in the
+// other equipment list -- is still usable. It is drawn dimmed, but the cell has to stay enabled to remain clickable,
+// since a disabled panel receives no mouse events at all.
+func TestDimmedSwitchCellRemainsClickable(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	dimmed := gurps.NewEquipment(entity, nil, false)
+	dimmed.Name = "Powered Armor"
+	dimmed.Equipped = false
+	dimmed.Features = gurps.Features{switchableSTBonus(nil)}
+	lit := gurps.NewEquipment(entity, nil, false)
+	lit.Name = "Powered Boots"
+	lit.Features = gurps.Features{switchableSTBonus(nil)}
+	entity.CarriedEquipment = []*gurps.Equipment{dimmed, lit}
+	sheet.Rebuild(true)
+
+	table := sheet.CarriedEquipment.Table
+	col := switchColumnIndex(table.Columns, gurps.EquipmentSwitchColumn)
+	c.NotEqual(-1, col, "the switch column must be present")
+
+	var cellData gurps.CellData
+	dimmed.CellData(gurps.EquipmentSwitchColumn, &cellData)
+	c.True(cellData.Dim, "the switch cell of equipment that isn't equipped must be dimmed")
+	lit.CellData(gurps.EquipmentSwitchColumn, &cellData)
+	c.False(cellData.Dim, "the switch cell of equipment that is equipped must not be dimmed")
+
+	rows := table.RootRows()
+	c.Equal(2, len(rows), "the carried equipment table must hold both items")
+	dimmedLabel, ok := rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).(*unison.Label)
+	c.True(ok, "the switch cell must be a label")
+	litLabel, ok := rows[1].ColumnCell(1, col, unison.Black, unison.White, false, false, false).(*unison.Label)
+	c.True(ok, "the switch cell must be a label")
+
+	c.True(dimmedLabel.Enabled(), "a dimmed switch cell must stay enabled, or it would never see a click")
+	c.NotEqual(reflect.ValueOf(litLabel.DrawCallback).Pointer(), reflect.ValueOf(dimmedLabel.DrawCallback).Pointer(),
+		"a dimmed switch cell must not draw itself the way an undimmed one does")
+
+	// The cell has to be part of the sheet's panel tree for the undo manager to be found, which is where the table
+	// itself puts it when it lays out the row.
+	table.AddChild(dimmedLabel)
+	c.True(dimmedLabel.MouseDownCallback(geom.Point{}, 1, 1, mod.None), "the click must be consumed")
+	c.True(dimmed.SwitchedOn, "clicking a dimmed switch cell must still throw the switch")
+}
+
+// TestOwnerRecalculatesOnlyForItsOwnSheet verifies the check that keeps a single edit from recalculating the entity
+// twice: a sheet always recalculates its own entity when it is marked as modified, so the caller must not do so as
+// well, while anything else leaves that to the caller.
+func TestOwnerRecalculatesOnlyForItsOwnSheet(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+
+	c.True(ownerRecalculates(sheet, entity), "a sheet recalculates its own entity when it is marked as modified")
+	c.True(ownerRecalculates(sheet.Traits, entity), "a panel within the sheet resolves to the sheet")
+	c.False(ownerRecalculates(sheet, gurps.NewEntity()), "another entity isn't the sheet's to recalculate")
+	c.False(ownerRecalculates(sheet, nil), "there is no entity to recalculate")
+	c.False(ownerRecalculates(nil, entity), "there is no owner to do the recalculation")
+	c.False(ownerRecalculates(unison.NewPanel(), entity),
+		"a panel that isn't part of a modifiable root can't recalculate anything")
+	c.False(ownerRecalculates(NewTemplate("test"+gurps.TemplatesExt, gurps.NewTemplate()), entity),
+		"a template doesn't recalculate an entity when it is marked as modified")
 }

@@ -767,12 +767,7 @@ func (t *Trait) HasSwitchableFeatures() bool {
 	if !t.Container() && t.Features.AnySwitchable() {
 		return true
 	}
-	found := false
-	Traverse(func(mod *TraitModifier) bool {
-		found = mod.Features.AnySwitchable()
-		return found
-	}, true, true, t.Modifiers...)
-	return found
+	return anyModifierSwitchable(t.Modifiers, func(mod *TraitModifier) Features { return mod.Features })
 }
 
 // IsSwitchedOn implements FeatureSwitcher.

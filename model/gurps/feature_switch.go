@@ -39,3 +39,15 @@ type FeatureSwitcher interface {
 	// SetSwitchedOn sets whether the switch for this item's switchable features is on.
 	SetSwitchedOn(on bool)
 }
+
+// anyModifierSwitchable returns true if any of the given modifiers has a switchable feature. The traversal matches the
+// one used when features are collected for a character (see Entity.processFeatures), i.e. only enabled, non-container
+// modifiers are considered, so that this answer always agrees with what will actually be applied.
+func anyModifierSwitchable[T Node[T]](modifiers []T, features func(T) Features) bool {
+	found := false
+	Traverse(func(one T) bool {
+		found = features(one).AnySwitchable()
+		return found
+	}, true, true, modifiers...)
+	return found
+}

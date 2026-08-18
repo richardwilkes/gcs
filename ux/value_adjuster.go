@@ -11,6 +11,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -37,7 +38,7 @@ func (s *snapshotList[A, V]) apply() {
 }
 
 func (s *snapshotList[A, V]) finish() {
-	if s.entity != nil {
+	if s.entity != nil && !ownerRecalculates(s.owner, s.entity) {
 		s.entity.Recalculate()
 	}
 	if s.owner != nil {
@@ -45,6 +46,32 @@ func (s *snapshotList[A, V]) finish() {
 		if s.rebuild {
 			s.owner.Rebuild(true)
 		}
+	}
+}
+
+// ownerRecalculates returns true if marking the owner as modified will recalculate the given entity on its own, so
+// that a single edit doesn't pay for the recalculation twice. Sheet.MarkModified always recalculates its own entity
+// before updating anything, since everything it then touches reads the derived state.
+func ownerRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
+	if xreflect.IsNil(owner) || entity == nil {
+		return false
+	}
+	for p := owner.AsPanel(); p != nil; p = p.Parent() {
+		if _, ok := p.Self.(ModifiableRoot); ok {
+			sheet, ok2 := p.Self.(*Sheet)
+			return ok2 && sheet.entity == entity
+		}
+	}
+	return false
+}
+
+// recalculateEntityFor brings the entity that owns the given node up to date, unless marking the given owner as
+// modified will do that on its own, so that a single edit doesn't pay for the recalculation twice. Callers are
+// expected to mark the owner as modified afterwards.
+func recalculateEntityFor[T gurps.Node[T]](node T, owner unison.Paneler) {
+	entity := gurps.EntityFromNode(node)
+	if !ownerRecalculates(owner, entity) {
+		entity.Recalculate()
 	}
 }
 

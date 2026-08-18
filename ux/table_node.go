@@ -496,54 +496,12 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 	}
 }
 
-func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
-	check := unison.NewLabel()
-	check.VAlign = align.Start
-	font := n.primaryFieldFont()
-	fd := font.Descriptor()
-	fd.Size -= 2
-	check.Font = fd.Font()
-	check.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 1}))
-	baseline := font.Baseline()
-	if c.Checked {
-		check.Drawable = &unison.DrawableSVG{
-			SVG:  unison.CheckmarkSVG,
-			Size: geom.Size{Width: baseline, Height: baseline},
-		}
-		check.SetEnabled(!c.Dim)
-	}
-	check.HAlign = c.Alignment
-	check.OnBackgroundInk = foreground
-	if c.Tooltip != "" {
-		check.Tooltip = newWrappedTooltip(c.Tooltip)
-	}
-	check.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
-		c.Checked = !c.Checked
-		handleCheck(n.data, check, c.Checked)
-		if c.Checked {
-			check.Drawable = &unison.DrawableSVG{
-				SVG:  unison.CheckmarkSVG,
-				Size: geom.Size{Width: baseline, Height: baseline},
-			}
-		} else {
-			check.Drawable = nil
-		}
-		check.MarkForLayoutAndRedraw()
-		MarkModified(check)
-		return true
-	}
-	check.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
-		return true
-	}
-	check.MouseUpCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
-		return true
-	}
-	return check
-}
-
-// createSwitchCell creates the cell for a switch column. Unlike a toggle cell, the "off" state is drawn (as a dash), so
-// that a row whose switch is off can be told apart from one that has nothing to switch (which gets a blank cell).
-func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
+// newCheckCell creates a cell that toggles its checked state when clicked. svgFor supplies the SVG to draw for a given
+// state, or nil if nothing should be drawn for it, and onClick is called with the cell and the modifiers that were
+// down at the time of the click, after c.Checked has been updated to its new state.
+func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor func(on bool) *unison.SVG,
+	onClick func(label *unison.Label, mods mod.Modifiers),
+) *unison.Label {
 	label := unison.NewLabel()
 	label.VAlign = align.Start
 	font := n.primaryFieldFont()
@@ -553,17 +511,16 @@ func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) uni
 	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 1}))
 	baseline := font.Baseline()
 	setDrawable := func(on bool) {
-		s := unison.DashSVG
-		if on {
-			s = unison.CheckmarkSVG
-		}
-		label.Drawable = &unison.DrawableSVG{
-			SVG:  s,
-			Size: geom.Size{Width: baseline, Height: baseline},
+		if svg := svgFor(on); svg != nil {
+			label.Drawable = &unison.DrawableSVG{
+				SVG:  svg,
+				Size: geom.Size{Width: baseline, Height: baseline},
+			}
+		} else {
+			label.Drawable = nil
 		}
 	}
 	setDrawable(c.Checked)
-	label.SetEnabled(!c.Dim)
 	label.HAlign = c.Alignment
 	label.OnBackgroundInk = foreground
 	if c.Tooltip != "" {
@@ -571,7 +528,7 @@ func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) uni
 	}
 	label.MouseDownCallback = func(_ geom.Point, _, _ int, mods mod.Modifiers) bool {
 		c.Checked = !c.Checked
-		toggleFeatureSwitch(n, label, c.Checked, mods.OptionDown())
+		onClick(label, mods)
 		setDrawable(c.Checked)
 		label.MarkForLayoutAndRedraw()
 		return true
@@ -581,6 +538,50 @@ func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) uni
 	}
 	label.MouseUpCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
 		return true
+	}
+	return label
+}
+
+func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
+	check := n.newCheckCell(c, foreground,
+		func(on bool) *unison.SVG {
+			if on {
+				return unison.CheckmarkSVG
+			}
+			return nil
+		},
+		func(label *unison.Label, _ mod.Modifiers) {
+			handleCheck(n.data, label, c.Checked)
+			MarkModified(label)
+		})
+	if c.Checked {
+		check.SetEnabled(!c.Dim)
+	}
+	return check
+}
+
+// createSwitchCell creates the cell for a switch column. Unlike a toggle cell, the "off" state is drawn (as a dash), so
+// that a row whose switch is off can be told apart from one that has nothing to switch (which gets a blank cell).
+func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
+	label := n.newCheckCell(c, foreground,
+		func(on bool) *unison.SVG {
+			if on {
+				return unison.CheckmarkSVG
+			}
+			return unison.DashSVG
+		},
+		func(label *unison.Label, mods mod.Modifiers) {
+			toggleFeatureSwitch(n, label, c.Checked, mods.OptionDown())
+		})
+	if c.Dim {
+		// A dimmed switch is drawn with the same filter a disabled cell would use, but the cell is deliberately left
+		// enabled, since the switch can still be thrown for an item that isn't currently contributing its features
+		// (e.g. a piece of equipment that isn't equipped) and a disabled panel would receive no mouse events at all.
+		// The ink is read at draw time so that the cell still picks up the selected row's foreground.
+		label.DrawCallback = func(canvas *unison.Canvas, _ geom.Rect) {
+			unison.DrawLabel(canvas, label.ContentRect(false), label.HAlign, label.VAlign, label.Font, label.Text,
+				label.OnBackgroundInk, label.BackgroundInk, label.Drawable, label.Side, label.Gap, true)
+		}
 	}
 	return label
 }
@@ -608,7 +609,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		gurps.EntityFromNode(item).Recalculate()
+		recalculateEntityFor(item, check)
 	case *gurps.TraitModifier:
 		item.Disabled = !checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
@@ -630,7 +631,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		gurps.EntityFromNode(item).Recalculate()
+		recalculateEntityFor(item, check)
 	case *gurps.EquipmentModifier:
 		item.Disabled = !checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
@@ -652,7 +653,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		gurps.EntityFromNode(item).Recalculate()
+		recalculateEntityFor(item, check)
 	case *gurps.Weapon:
 		item.Hide = checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
@@ -674,7 +675,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		gurps.EntityFromNode(item).Recalculate()
+		recalculateEntityFor(item, check)
 	}
 }
 
@@ -686,7 +687,7 @@ type equipmentAdjuster struct {
 
 func (e *equipmentAdjuster) Apply() {
 	e.Target.Equipped = e.Equipped
-	gurps.EntityFromNode(e.Target).Recalculate()
+	recalculateEntityFor(e.Target, e.Owner)
 	MarkModified(e.Owner)
 }
 
@@ -698,7 +699,7 @@ type equipmentModifierAdjuster struct {
 
 func (e *equipmentModifierAdjuster) Apply() {
 	e.Target.Disabled = e.Disabled || e.Target.Container()
-	gurps.EntityFromNode(e.Target).Recalculate()
+	recalculateEntityFor(e.Target, e.Owner)
 	MarkModified(e.Owner)
 }
 
@@ -710,7 +711,7 @@ type traitModifierAdjuster struct {
 
 func (t *traitModifierAdjuster) Apply() {
 	t.Target.Disabled = t.Disabled || t.Target.Container()
-	gurps.EntityFromNode(t.Target).Recalculate()
+	recalculateEntityFor(t.Target, t.Owner)
 	MarkModified(t.Owner)
 }
 
@@ -722,7 +723,7 @@ type weaponAdjuster struct {
 
 func (w *weaponAdjuster) Apply() {
 	w.Target.Hide = w.Hide
-	gurps.EntityFromNode(w.Target).Recalculate()
+	recalculateEntityFor(w.Target, w.Owner)
 	MarkModified(w.Owner)
 }
 
