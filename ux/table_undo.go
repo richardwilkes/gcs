@@ -66,8 +66,8 @@ func ownerNeedingRebuildFor[T gurps.Node[T]](table *unison.Table[*Node[T]]) Rebu
 	if !ok || !columnsOutOfSync(provider.ColumnIDs(), table.Columns) {
 		return nil
 	}
-	owner, _ := table.ClientData()[TableOwnerClientKey].(Rebuildable)
-	if xreflect.IsNil(owner) {
+	owner, found := table.ClientData()[TableOwnerClientKey].(Rebuildable)
+	if !found || xreflect.IsNil(owner) {
 		return nil
 	}
 	return owner
@@ -82,12 +82,12 @@ func liveTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) *unison.Table[*No
 	if table == nil || table.RefKey == "" {
 		return table
 	}
-	owner, ok := table.ClientData()[TableOwnerClientKey].(Rebuildable)
-	if !ok || xreflect.IsNil(owner) {
+	owner, found := table.ClientData()[TableOwnerClientKey].(Rebuildable)
+	if !found || xreflect.IsNil(owner) {
 		return table
 	}
 	if panel := owner.AsPanel().FindRefKey(table.RefKey); panel != nil {
-		if current, ok2 := panel.Self.(*unison.Table[*Node[T]]); ok2 {
+		if current, ok := panel.Self.(*unison.Table[*Node[T]]); ok {
 			return current
 		}
 	}
