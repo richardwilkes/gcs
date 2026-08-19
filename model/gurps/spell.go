@@ -95,9 +95,9 @@ type SpellEditData struct {
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitzero"`
 	ItemSwitch
+	preconfigurable
 	SpellNonContainerOnlyEditData
 	SkillContainerOnlySyncData
-	preconfigurable
 }
 
 // SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.

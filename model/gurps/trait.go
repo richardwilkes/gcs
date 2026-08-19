@@ -92,9 +92,9 @@ type TraitEditData struct {
 	Frequency    frequency.Roll    `json:"frequency,omitzero"`
 	Disabled     bool              `json:"disabled,omitzero"`
 	ItemSwitch
+	preconfigurable
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
-	preconfigurable
 }
 
 // TraitNonContainerOnlyEditData holds the Trait data that is only applicable to traits that aren't containers.

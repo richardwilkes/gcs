@@ -86,9 +86,9 @@ type SkillEditData struct {
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitzero"`
 	ItemSwitch
+	preconfigurable
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
-	preconfigurable
 }
 
 // SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.
