@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -230,4 +231,77 @@ func TestSkillEditorSwitchedOnCheckBoxOnlyForNonContainers(t *testing.T) {
 		c.Nil(findCheckBoxTitled(content, i18n.Text("Switched On")),
 			"a skill container has nothing to switch, so it must not offer the checkbox")
 	})
+}
+
+// scrollRecordingPanel is a panel that stands in for a scroll area above a table in a headless test, recording the
+// rects it is asked to bring into view.
+type scrollRecordingPanel struct {
+	unison.Panel
+	rects []geom.Rect
+}
+
+func newScrollRecordingPanel() *scrollRecordingPanel {
+	p := &scrollRecordingPanel{}
+	p.Self = p
+	p.ScrollRectIntoViewCallback = func(rect geom.Rect) bool {
+		p.rects = append(p.rects, rect)
+		return true
+	}
+	return p
+}
+
+// focusRecordingPanel is a panel that records whether it was asked to take the focus without scrolling.
+type focusRecordingPanel struct {
+	unison.Panel
+	withoutScroll int
+}
+
+func (p *focusRecordingPanel) RequestFocusWithoutScroll() { p.withoutScroll++ }
+
+// TestRestoreFocusSkipsTableScrolling verifies that giving the focus back to a table after an editor closes does not go
+// through the table's default focus handling, which scrolls the whole table into view and so moved the sheet even when
+// the edited row was already on screen. Every table instantiation provides the scroll-free focus request, and
+// restoreFocus must use it when it is there.
+func TestRestoreFocusSkipsTableScrolling(t *testing.T) {
+	c := check.New(t)
+	var _ focusWithoutScroller = (*unison.Table[*Node[*gurps.Trait]])(nil)
+
+	p := &focusRecordingPanel{}
+	p.Self = p
+	restoreFocus(p.AsPanel())
+	c.Equal(1, p.withoutScroll, "a panel that can take the focus without scrolling must be asked to do so")
+
+	plain := unison.NewPanel()
+	plain.SetFocusable(true)
+	restoreFocus(plain) // No window, so this must simply do nothing rather than panic.
+}
+
+// TestRevealRowForDataScrollsOnlyTheEditedRow verifies that, after an editor closes, only the row holding the edited
+// item is requested to be scrolled into view, not the whole table, and that nothing is requested when the table does
+// not display the item.
+func TestRevealRowForDataScrollsOnlyTheEditedRow(t *testing.T) {
+	c := check.New(t)
+	scroller := newScrollRecordingPanel()
+	provider := &fakeAltDropProvider{}
+	table := unison.NewTable[*Node[*gurps.Trait]](provider)
+	scroller.AddChild(table)
+	traits := []*gurps.Trait{
+		gurps.NewTrait(nil, nil, false),
+		gurps.NewTrait(nil, nil, false),
+		gurps.NewTrait(nil, nil, false),
+	}
+	rows := make([]*Node[*gurps.Trait], len(traits))
+	for i, trait := range traits {
+		rows[i] = NewNode(table, nil, trait, false)
+	}
+	table.SetRootRows(rows)
+	c.True(table.FrameRect().Height > table.RowFrame(2).Height, "the table must be taller than a single row")
+
+	revealRowForData(table, traits[2])
+	c.Equal(1, len(scroller.rects), "revealing a displayed row must ask for exactly one scroll")
+	c.Equal(table.RowFrame(2), scroller.rects[0], "only the edited row, not the whole table, may be scrolled into view")
+
+	scroller.rects = nil
+	revealRowForData(table, gurps.NewTrait(nil, nil, false))
+	c.Equal(0, len(scroller.rects), "an item the table does not display must not cause any scrolling")
 }

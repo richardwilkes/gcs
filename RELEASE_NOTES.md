@@ -42,3 +42,7 @@
   timestamp unchanged before. Several edits (inserting new items, dragging rows in, moving equipment between the two
   lists, and changing the sheet settings among them) also updated the sheet two or three times over for a single edit,
   which on a sheet with many rows made them noticeably slower than they needed to be.
+- Closing an item's editor no longer scrolls the sheet when the row that was edited is still in view. Before, the
+  focus was returned to the list in a way that scrolled the entire list into view, which on a sheet with a long list
+  could move the row far from where it had been. Now only the edited row is brought into view, and only when it isn't
+  already visible.

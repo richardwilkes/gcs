@@ -368,17 +368,69 @@ func (e *editor[N, D]) AttemptClose() bool {
 			return false
 		}
 	}
-	if !xreflect.IsNil(e.previousDockable) {
-		if pdc := unison.Ancestor[*unison.DockContainer](e.previousDockable); pdc != nil {
-			pdc.SetCurrentDockable(e.previousDockable)
-			if e.previousFocusKey != "" {
-				if p := e.previousDockable.AsPanel().FindRefKey(e.previousFocusKey); p != nil {
-					p.RequestFocus()
-				}
-			}
+	if p := showPreviousDockable(e.previousDockable, e.previousFocusKey); p != nil {
+		restoreFocus(p)
+		if table, ok := p.Self.(*unison.Table[*Node[N]]); ok {
+			revealRowForData(table, e.target)
 		}
 	}
 	return AttemptCloseForDockable(e)
+}
+
+// showPreviousDockable makes the dockable that was current when an editor was opened current again and returns the
+// panel within it, identified by its RefKey, that held the keyboard focus at that time. It returns nil when there is no
+// such dockable or panel.
+func showPreviousDockable(previous unison.Dockable, focusKey string) *unison.Panel {
+	if xreflect.IsNil(previous) {
+		return nil
+	}
+	dc := unison.Ancestor[*unison.DockContainer](previous)
+	if dc == nil {
+		return nil
+	}
+	dc.SetCurrentDockable(previous)
+	if focusKey == "" {
+		return nil
+	}
+	return previous.AsPanel().FindRefKey(focusKey)
+}
+
+// focusWithoutScroller is implemented by panels, such as tables, that can take the keyboard focus without performing
+// their default focus-gained scrolling.
+type focusWithoutScroller interface {
+	RequestFocusWithoutScroll()
+}
+
+// restoreFocus gives the keyboard focus back to a panel that held it before an editor was opened. A table's default
+// focus handling scrolls the entire table into view, which moves the surrounding content even when the row the user was
+// working with is still visible, so tables are focused without that. Callers that know which row matters can follow up
+// with revealRowForData, which only scrolls if that row is actually out of view.
+func restoreFocus(p *unison.Panel) {
+	if f, ok := p.Self.(focusWithoutScroller); ok {
+		f.RequestFocusWithoutScroll()
+		return
+	}
+	p.RequestFocus()
+}
+
+// revealRowForData scrolls the table's row holding data into view, but only if the table currently displays such a row
+// and it is not already visible.
+func revealRowForData[T gurps.Node[T]](table *unison.Table[*Node[T]], data T) {
+	if index := rowIndexForData(table, data); index != -1 {
+		table.ScrollRowIntoView(index)
+	}
+}
+
+// rowIndexForData returns the index of the displayed row holding data, or -1 if the table does not currently display
+// one.
+func rowIndexForData[T gurps.Node[T]](table *unison.Table[*Node[T]], data T) int {
+	id := data.ID()
+	for i := table.LastRowIndex(); i >= 0; i-- {
+		if row := table.RowFromIndex(i); row != nil && row.ID() == id {
+			return i
+		}
+	}
+	return -1
 }
 
 func (e *editor[N, D]) UndoManager() *unison.UndoManager {

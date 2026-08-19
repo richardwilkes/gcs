@@ -381,15 +381,8 @@ func (e *pointsEditor) AttemptClose() bool {
 	}
 	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
 		dc.Close(e)
-		if !xreflect.IsNil(e.previousDockable) {
-			if dc = unison.Ancestor[*unison.DockContainer](e.previousDockable); dc != nil {
-				dc.SetCurrentDockable(e.previousDockable)
-				if e.previousFocusKey != "" {
-					if p := e.previousDockable.AsPanel().FindRefKey(e.previousFocusKey); p != nil {
-						p.RequestFocus()
-					}
-				}
-			}
+		if p := showPreviousDockable(e.previousDockable, e.previousFocusKey); p != nil {
+			restoreFocus(p)
 		}
 		return true
 	}
