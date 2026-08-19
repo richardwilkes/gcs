@@ -46,8 +46,8 @@ func stBonusFor(entity *gurps.Entity) fxp.Int {
 }
 
 // TestShowSwitchColumnOnlyForSheetsWithSwitchableRows verifies the conditions under which the switch column appears:
-// only on a character sheet (never in a template, a library list or an editor's table), and only when something in the
-// list actually has a switch to throw.
+// only on a character sheet (never on a loot sheet, in a template, a library list or an editor's table), and only when
+// something in the list actually has a switch to throw.
 func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -60,6 +60,11 @@ func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 	c.False(showSwitchColumn(true, template, switchable),
 		"a template must not show the switch column, even with switchable rows")
 
+	loot := gurps.NewLoot()
+	loot.Equipment = []*gurps.Equipment{switchableWeightReducer(loot)}
+	c.False(showSwitchColumn(true, loot, loot.Equipment),
+		"a loot sheet must not show the switch column, even with switchable rows")
+
 	plain := gurps.NewTrait(entity, nil, false)
 	plain.Name = "Plain"
 	plain.Features = gurps.Features{gurps.NewAttributeBonus(gurps.StrengthID)}
@@ -70,8 +75,9 @@ func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 }
 
 // switchableWeightReducer returns a container holding one child, where the container's contained weight reduction only
-// applies while its switch is on. This is the case that matters on a loot sheet, since it changes what the sheet shows
-// without a character being involved at all.
+// applies while its switch is on. This is the strongest case a loot sheet could make for the switch column, since the
+// reduction changes what the sheet shows without a character being involved at all, yet the column is still reserved
+// for character sheets.
 func switchableWeightReducer(owner gurps.DataOwner) *gurps.Equipment {
 	container := gurps.NewEquipment(owner, nil, true)
 	container.Name = "Bag of Holding"
@@ -87,11 +93,10 @@ func switchableWeightReducer(owner gurps.DataOwner) *gurps.Equipment {
 	return container
 }
 
-// TestLootSheetShowsSwitchColumn verifies that a loot sheet gets the switch column, too. A loot sheet never processes
-// the features that need a character, but the ones that don't -- a contained weight reduction being the obvious one --
-// change what it displays, so the switch that governs them has to be reachable from the list rather than only from the
-// item's editor.
-func TestLootSheetShowsSwitchColumn(t *testing.T) {
+// TestLootSheetDoesNotShowSwitchColumn verifies that a loot sheet never gets the switch column, not even when its
+// equipment has switchable features that change what the sheet displays. The switch column belongs to character sheets
+// alone; everywhere else the switch is thrown from the item's editor.
+func TestLootSheetDoesNotShowSwitchColumn(t *testing.T) {
 	c := check.New(t)
 	loot := gurps.NewLoot()
 	plain := gurps.NewEquipment(loot, nil, false)
@@ -102,10 +107,10 @@ func TestLootSheetShowsSwitchColumn(t *testing.T) {
 
 	container := switchableWeightReducer(loot)
 	loot.Equipment = []*gurps.Equipment{plain, container}
-	c.True(showSwitchColumn(true, loot, loot.Equipment),
-		"a loot sheet with a switchable row must show the switch column")
+	c.False(showSwitchColumn(true, loot, loot.Equipment),
+		"a loot sheet must not show the switch column, even with a switchable row")
 
-	// The switch governs what the loot sheet displays, which is why the column has to be offered there.
+	// The switch still governs what the loot sheet displays; it is simply thrown from the item's editor there.
 	units := loot.WeightUnit()
 	container.SwitchedOn = false
 	off := container.ExtendedWeight(false, units)
@@ -115,9 +120,9 @@ func TestLootSheetShowsSwitchColumn(t *testing.T) {
 	container.SwitchedOn = false
 }
 
-// TestLootSheetSwitchColumnInPlace verifies that the loot sheet's equipment list really does end up with the switch
-// column, through the same provider the sheet itself uses.
-func TestLootSheetSwitchColumnInPlace(t *testing.T) {
+// TestLootSheetHasNoSwitchColumnInPlace verifies that the loot sheet's equipment list really is built without the
+// switch column, through the same provider the sheet itself uses, whether or not anything in it is switchable.
+func TestLootSheetHasNoSwitchColumnInPlace(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
 	saved := Workspace.DocumentDock
@@ -131,8 +136,8 @@ func TestLootSheetSwitchColumnInPlace(t *testing.T) {
 
 	loot.Equipment = []*gurps.Equipment{switchableWeightReducer(loot)}
 	sheet.Rebuild(true)
-	c.NotEqual(-1, switchColumnIndex(sheet.Equipment.Table.Columns, gurps.EquipmentSwitchColumn),
-		"a switchable contained weight reduction must bring the switch column into view")
+	c.Equal(-1, switchColumnIndex(sheet.Equipment.Table.Columns, gurps.EquipmentSwitchColumn),
+		"a switchable contained weight reduction must not bring the switch column into a loot sheet")
 }
 
 // TestShowSwitchColumnFindsNestedRows verifies that the scan looks at every depth, not just the top level, so that a
@@ -285,7 +290,7 @@ func TestSwitchCellClickTogglesTheSwitch(t *testing.T) {
 	table.AddChild(label)
 	c.NotNil(unison.UndoManagerFor(label), "the cell must be able to find the sheet's undo manager")
 
-	c.True(label.MouseDownCallback(geom.Point{}, 1, 1, mod.None), "the click must be consumed")
+	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
 	c.True(trait.SwitchedOn, "clicking the cell must turn the switch on")
 	c.Equal(fxp.One, stBonusFor(entity), "the switchable bonus must apply once the switch is on")
 	drawable, ok = label.Drawable.(*unison.DrawableSVG)
@@ -391,7 +396,7 @@ func TestToggleFeatureSwitchWithoutDescendants(t *testing.T) {
 // TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone verifies that an option-click only reaches the
 // descendants that actually have something to switch. Throwing the switch of an item with no switchable features would
 // change nothing the user could see, yet the new state would still be written to the file, altering the sheet's
-// contents, bloating the undo edit and making an item that came from a library diverge from its source.
+// contents and bloating the undo edit.
 func TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -521,7 +526,7 @@ func TestDimmedSwitchCellRemainsClickable(t *testing.T) {
 	// The cell has to be part of the sheet's panel tree for the undo manager to be found, which is where the table
 	// itself puts it when it lays out the row.
 	table.AddChild(dimmedLabel)
-	c.True(dimmedLabel.MouseDownCallback(geom.Point{}, 1, 1, mod.None), "the click must be consumed")
+	c.True(dimmedLabel.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
 	c.True(dimmed.SwitchedOn, "clicking a dimmed switch cell must still throw the switch")
 }
 

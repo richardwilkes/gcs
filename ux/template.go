@@ -1116,11 +1116,15 @@ func newTemplateTablesUndoData(t *Template) *templateTablesUndoData {
 }
 
 func (t *templateTablesUndoData) Apply() {
-	t.traits.Apply()
-	t.skills.Apply()
-	t.spells.Apply()
-	t.equipment.Apply()
-	t.notes.Apply()
+	// Every list is put back before any of them is reported, so that the undo updates the template once rather than
+	// once per table. See restoredTables for why the reporting can't be done until all of the data is in place.
+	var restored restoredTables
+	restored.add(t.traits.restore())
+	restored.add(t.skills.restore())
+	restored.add(t.spells.restore())
+	restored.add(t.equipment.restore())
+	restored.add(t.notes.restore())
+	restored.report()
 }
 
 func (t *Template) syncWithAllSources() {

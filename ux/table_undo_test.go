@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -187,4 +188,98 @@ func TestUndoOfOrdinaryEditSyncsTheSheetOnlyOnce(t *testing.T) {
 	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
 	c.Equal(0, table.LastRowIndex(), "undo must put the row back into the visible table")
 	c.Equal(1, counter.count, "an undo that leaves the columns alone must still sync the sheet exactly once")
+}
+
+// newSwitchableSkill returns a non-container skill carrying a single switchable +1 ST bonus, so that a sheet's skills
+// list needs the switch column while the skill is in it.
+func newSwitchableSkill(entity *gurps.Entity, name string) *gurps.Skill {
+	skill := gurps.NewSkill(entity, nil, false)
+	skill.Name = name
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.SetSwitchable(true)
+	bonus.SetOwner(skill)
+	skill.Features = gurps.Features{bonus}
+	return skill
+}
+
+// TestUndoSpanningEveryListSyncsTheSheetOnlyOnce verifies that an undo that puts every one of a sheet's lists back at
+// once -- what "Sync With All Sources" registers -- updates the sheet a single time, even when more than one of those
+// lists has to gain or lose its switch column. Restoring each list and reporting it right away would recalculate the
+// entity and re-sync every table on the sheet up to six times over for the one undo.
+func TestUndoSpanningEveryListSyncsTheSheetOnlyOnce(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"the traits switch column must start out absent")
+	c.NotEqual(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
+		"the skills switch column must start out absent")
+
+	traitCount := len(entity.Traits)
+	skillCount := len(entity.Skills)
+	before := newSheetTablesUndoData(sheet)
+	entity.Traits = append(entity.Traits, newSwitchableTrait(entity, "Claws"))
+	entity.Skills = append(entity.Skills, newSwitchableSkill(entity, "Body Sense"))
+	sheet.Traits.Table.SyncToModel()
+	sheet.Skills.Table.SyncToModel()
+	sheet.Rebuild(true)
+	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"the switchable trait must bring in the traits switch column")
+	c.Equal(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
+		"the switchable skill must bring in the skills switch column")
+	after := newSheetTablesUndoData(sheet)
+	counter := installSyncCounter(sheet)
+
+	counter.count = 0
+	before.Apply()
+	c.Equal(traitCount, len(entity.Traits), "undo must take the trait back out of the entity")
+	c.Equal(skillCount, len(entity.Skills), "undo must take the skill back out of the entity")
+	c.Equal(1, counter.count, "an undo spanning every list must sync the sheet exactly once")
+	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"undo must take the traits switch column away again")
+	c.NotEqual(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
+		"undo must take the skills switch column away again")
+	c.Nil(ownerNeedingRebuildFor(sheet.Traits.Table), "the traits table's columns must match its provider after undo")
+	c.Nil(ownerNeedingRebuildFor(sheet.Skills.Table), "the skills table's columns must match its provider after undo")
+
+	counter.count = 0
+	after.Apply()
+	c.Equal(traitCount+1, len(entity.Traits), "redo must put the trait back into the entity")
+	c.Equal(skillCount+1, len(entity.Skills), "redo must put the skill back into the entity")
+	c.Equal(1, counter.count, "a redo spanning every list must sync the sheet exactly once")
+	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"redo must bring the traits switch column back")
+	c.Equal(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
+		"redo must bring the skills switch column back")
+	c.Nil(ownerNeedingRebuildFor(sheet.Traits.Table), "the traits table's columns must match its provider after redo")
+	c.Nil(ownerNeedingRebuildFor(sheet.Skills.Table), "the skills table's columns must match its provider after redo")
+}
+
+// TestUndoOfApplyTemplateSyncsTheSheetOnlyOnce verifies the same thing for the other multi-table undo: undoing an
+// "Apply Template" puts five of the sheet's lists back and then rebuilds the sheet, and that rebuild is all the
+// reporting the undo needs. It still has to bump the modification timestamp, since that is the one thing marking the
+// sheet as modified would have done that the rebuild does not.
+func TestUndoOfApplyTemplateSyncsTheSheetOnlyOnce(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	traitCount := len(entity.Traits)
+	template := newTestTemplateWithBodyType("Template Body")
+	c.True(template.applyTemplateToSheet(sheet, true), "the template must be applied")
+	c.Equal(traitCount+1, len(entity.Traits), "the template's trait must have been added to the sheet")
+	c.True(sheet.undoMgr.CanUndo(), "applying a template must be undoable")
+	counter := installSyncCounter(sheet)
+
+	counter.count = 0
+	entity.ModifiedOn = jio.Time{}
+	sheet.undoMgr.Undo()
+	c.Equal(traitCount, len(entity.Traits), "undo must take the template's trait back out of the entity")
+	c.Equal(traitCount, len(sheet.Traits.Table.RootRows()), "undo must take the row back out of the visible table")
+	c.Equal(1, counter.count, "undoing an apply template must sync the sheet exactly once")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "undo must still bump the modification timestamp")
+
+	counter.count = 0
+	sheet.undoMgr.Redo()
+	c.Equal(traitCount+1, len(entity.Traits), "redo must put the template's trait back into the entity")
+	c.Equal(1, counter.count, "redoing an apply template must sync the sheet exactly once")
 }

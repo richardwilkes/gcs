@@ -794,12 +794,19 @@ func newSheetTablesUndoData(sheet *Sheet) *sheetTablesUndoData {
 }
 
 func (s *sheetTablesUndoData) Apply() {
-	s.traits.Apply()
-	s.skills.Apply()
-	s.spells.Apply()
-	s.carriedEquipment.Apply()
-	s.otherEquipment.Apply()
-	s.notes.Apply()
+	// Every list is put back before any of them is reported. Restoring a list may leave its columns out of step with
+	// what its content now calls for (the switch column comes and goes with the presence of switchable features), and
+	// more than one list can be in that state at once, but a single rebuild of the sheet brings all of them back into
+	// line -- and if none of them need it, a single mark as modified covers them all. Reporting each list as it was
+	// restored would recalculate the entity and re-sync every table on the sheet up to six times for one undo.
+	var restored restoredTables
+	restored.add(s.traits.restore())
+	restored.add(s.skills.restore())
+	restored.add(s.spells.restore())
+	restored.add(s.carriedEquipment.restore())
+	restored.add(s.otherEquipment.restore())
+	restored.add(s.notes.restore())
+	restored.report()
 }
 
 func (s *Sheet) syncWithAllSources() {

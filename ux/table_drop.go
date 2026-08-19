@@ -167,7 +167,19 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		// rows already on a sheet have had these resolved.
 		if !isForCharacterOrLootSheet(from) {
 			ProcessModifiersForSelection(to)
+			// Answering the modifier prompt rebuilds the owner all over again, and that rebuild can replace the tables
+			// just as the one above did: only the modifiers that are enabled count toward a row having switchable
+			// features, so turning one on or off can add or take away the switch column, and a list can only change its
+			// columns by building a new table. An orphaned table has no Rebuildable above it, so a rebuild asked for
+			// through it never happens, and the rows it reports as selected are its own rather than the ones the user
+			// is now looking at -- both of which the steps below depend upon. Applying nameable substitutions rebuilds
+			// as well, so refresh again afterwards. Refreshing both tables each time keeps them comparable, for the
+			// same reason the rebuild above does.
+			from = liveTable(from)
+			to = liveTable(to)
 			ProcessNameablesForSelection(to)
+			from = liveTable(from)
+			to = liveTable(to)
 		}
 		// Merge points into identical existing rows whenever rows are actually being added (from a different table),
 		// including a drag from another sheet. A drag within the same table is only a reorder, so it is left alone.

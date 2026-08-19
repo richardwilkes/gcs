@@ -492,9 +492,12 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 // expandThisArmorDRBonus handles a DR bonus that specifies no locations (a "this armor" bonus). Such a bonus applies to
 // whatever locations the owning piece of equipment already grants DR to, so we resolve those locations by scanning the
 // equipment's other DR bonuses and emitting a single copy of the bonus, carrying the original's specialization, that
-// covers the union of the locations they name. Emitting exactly one copy matters: a location named by more than one of
-// the equipment's DR bonuses must still receive the "this armor" amount just once. If the owner isn't a piece of
-// equipment, the bonus is dropped, since there is nothing for it to attach to.
+// covers the union of the locations they name. The DR bonuses of the equipment's enabled modifiers count as well,
+// subject to the equipment's switch, just as they do when features are collected: a modifier that extends the armor to
+// further locations (say, a hood that adds DR to the skull) makes those locations part of what "this armor" covers,
+// whether the "this armor" bonus itself came from the equipment or from one of its modifiers. Emitting exactly one copy
+// matters: a location named by more than one of those DR bonuses must still receive the "this armor" amount just once.
+// If the owner isn't a piece of equipment, the bonus is dropped, since there is nothing for it to attach to.
 func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwner LeveledOwner, src *DRBonus) {
 	eqp, ok := owner.(*Equipment)
 	if !ok {
@@ -503,18 +506,25 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 	// Keyed by the lowercased location, since location matching is case-insensitive, with the first spelling
 	// encountered as the value.
 	locations := make(map[string]string)
-	for _, f := range eqp.ActiveFeatures() {
-		drBonus, ok2 := f.(*DRBonus)
-		if !ok2 || len(drBonus.Locations) == 0 {
-			continue
-		}
-		for _, loc := range drBonus.Locations {
-			key := strings.ToLower(loc)
-			if _, exists := locations[key]; !exists {
-				locations[key] = loc
+	collect := func(features Features) {
+		for _, f := range features {
+			drBonus, ok2 := f.(*DRBonus)
+			if !ok2 || len(drBonus.Locations) == 0 {
+				continue
+			}
+			for _, loc := range drBonus.Locations {
+				key := strings.ToLower(loc)
+				if _, exists := locations[key]; !exists {
+					locations[key] = loc
+				}
 			}
 		}
 	}
+	collect(eqp.ActiveFeatures())
+	Traverse(func(mod *EquipmentModifier) bool {
+		collect(mod.Features.Active(eqp.SwitchedOn))
+		return false
+	}, true, true, eqp.Modifiers...)
 	if len(locations) == 0 {
 		return
 	}

@@ -435,8 +435,12 @@ func newLootTablesUndoData(l *LootSheet) *lootTablesUndoData {
 }
 
 func (l *lootTablesUndoData) Apply() {
-	l.equipment.Apply()
-	l.notes.Apply()
+	// Both lists are put back before either is reported, so that the undo updates the sheet once rather than once per
+	// table. See restoredTables for why the reporting can't be done until all of the data is in place.
+	var restored restoredTables
+	restored.add(l.equipment.restore())
+	restored.add(l.notes.restore())
+	restored.report()
 }
 
 func (l *LootSheet) syncWithAllSources() {

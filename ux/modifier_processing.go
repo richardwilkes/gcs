@@ -42,6 +42,14 @@ var (
 // modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing.
 func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 	rebuild := func() {
+		// The owner is normally the table the rows live in, and that table may have been replaced -- by a rebuild
+		// before this was called (the alternate drop path rebuilds before prompting) or by the rebuild an earlier
+		// prompt in this very loop asked for, since toggling a modifier can add or take away the switch column and a
+		// list can only change its columns by building a new table. An orphaned table has no Rebuildable above it, so
+		// the rebuild would silently be skipped; looking the live table up first keeps every prompt's answer reflected.
+		if table, ok := owner.(*unison.Table[*Node[T]]); ok {
+			owner = liveTable(table)
+		}
 		if builder := unison.AncestorOrSelf[Rebuildable](owner); builder != nil {
 			builder.Rebuild(true)
 		}

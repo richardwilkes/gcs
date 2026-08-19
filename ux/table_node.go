@@ -499,6 +499,14 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 // newCheckCell creates a cell that toggles its checked state when clicked. svgFor supplies the SVG to draw for a given
 // state, or nil if nothing should be drawn for it, and onClick is called with the cell and the modifiers that were
 // down at the time of the click, after c.Checked has been updated to its new state.
+//
+// Only a single click of the primary button toggles the cell. A press of any other button is deliberately left
+// unconsumed, so that the table's own handling gets it and selects the row and pops up its context menu -- these cells
+// sit at the very front of the page lists, where they are a natural right-click target. A primary press with any other
+// click count is consumed, but doesn't toggle: the second click of a double-click would otherwise flip the state
+// straight back, leaving the item unchanged at the cost of two undo edits, and passing it along would instead have the
+// table open the row's editor. The drag and up callbacks report the same consumption as the press they belong to, so
+// that a press the cell didn't take is left to the table from beginning to end.
 func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor func(on bool) *unison.SVG,
 	onClick func(label *unison.Label, mods mod.Modifiers),
 ) *unison.Label {
@@ -526,7 +534,12 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 	if c.Tooltip != "" {
 		label.Tooltip = newWrappedTooltip(c.Tooltip)
 	}
-	label.MouseDownCallback = func(_ geom.Point, _, _ int, mods mod.Modifiers) bool {
+	tookPress := false
+	label.MouseDownCallback = func(_ geom.Point, button, clickCount int, mods mod.Modifiers) bool {
+		tookPress = button == unison.ButtonLeft
+		if !tookPress || clickCount != 1 {
+			return tookPress
+		}
 		c.Checked = !c.Checked
 		// The new state is drawn and a layout asked for before the click is reported, since reporting it marks the
 		// owner as modified, which re-syncs the table and recreates every cell, leaving this label detached from the
@@ -537,10 +550,10 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 		return true
 	}
 	label.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
-		return true
+		return tookPress
 	}
 	label.MouseUpCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
-		return true
+		return tookPress
 	}
 	return label
 }

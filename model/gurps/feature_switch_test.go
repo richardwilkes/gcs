@@ -759,6 +759,53 @@ func TestSwitchableThisArmorDRBonus(t *testing.T) {
 		"with the switch on the located DR applies and the 'this armor' bonus expands onto it")
 }
 
+// TestSwitchableThisArmorDRBonusFromModifier verifies that the DR bonuses of the equipment's modifiers, which also
+// contribute locations to the "this armor" expansion, are gated by the equipment's switch there just as they are when
+// features are collected: a modifier's switchable located DR bonus only becomes something for the "this armor" bonus
+// to expand onto while the equipment's switch is on.
+func TestSwitchableThisArmorDRBonusFromModifier(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	alwaysLocated := NewDRBonus()
+	alwaysLocated.Locations = []string{TorsoID}
+	alwaysLocated.Specialization = AllID
+	alwaysLocated.Amount = fxp.Two
+
+	thisArmor := NewDRBonus()
+	thisArmor.Locations = nil // No locations, i.e. "this armor".
+	thisArmor.Specialization = AllID
+	thisArmor.Amount = fxp.One
+
+	modLocated := NewDRBonus()
+	modLocated.Locations = []string{"arm"}
+	modLocated.Specialization = AllID
+	modLocated.Amount = fxp.Four
+	modLocated.Switchable = true
+
+	eqp := NewEquipment(e, nil, false)
+	eqp.Name = "Mail Hauberk"
+	eqp.Features = Features{alwaysLocated, thisArmor}
+	mod := NewEquipmentModifier(e, nil, false)
+	mod.Name = "Sleeves"
+	mod.Features = Features{modLocated}
+	eqp.Modifiers = []*EquipmentModifier{mod}
+	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	e.Recalculate()
+
+	c.Equal(3, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
+		"the equipment's own located DR still receives the 'this armor' bonus while the switch is off")
+	c.Equal(0, e.AddDRBonusesFor("arm", nil, nil)[AllID],
+		"with the switch off the modifier's located DR doesn't apply, so the 'this armor' bonus doesn't reach it")
+
+	eqp.SetSwitchedOn(true)
+	e.Recalculate()
+	c.Equal(3, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
+		"the equipment's own located DR is unaffected by the switch")
+	c.Equal(5, e.AddDRBonusesFor("arm", nil, nil)[AllID],
+		"with the switch on the modifier's located DR applies and the 'this armor' bonus expands onto it")
+}
+
 // TestScriptSwitchedOn verifies that the switch state of each kind of item is readable from the scripts the data owner
 // writes, so that a script can react to it.
 func TestScriptSwitchedOn(t *testing.T) {
@@ -1086,8 +1133,19 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 			dim:   true,
 		},
 		{
+			// The weapon reads its owner's active features directly, so a "named weapon" bonus can still land on the
+			// item's own weapon while the item is unequipped.
 			name:  "unequipped weapon with a 'named weapon' bonus",
 			build: func() *Equipment { return withWeapon(item(weaponAccBonus(wsel.WithName))) },
+		},
+		{
+			name:  "unequipped item with a 'named weapon' bonus but no weapon",
+			build: func() *Equipment { return item(weaponAccBonus(wsel.WithName)) },
+			dim:   true,
+		},
+		{
+			name:  "unequipped weapon with a 'weapon with required skill' bonus",
+			build: func() *Equipment { return withWeapon(item(weaponAccBonus(wsel.WithRequiredSkill))) },
 			dim:   true,
 		},
 		{

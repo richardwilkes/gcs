@@ -38,25 +38,61 @@ func NewTableUndoEditData[T gurps.Node[T]](table *unison.Table[*Node[T]]) *Table
 
 // Apply the undo edit data to a table.
 func (t *TableUndoEditData[T]) Apply() {
+	var restored restoredTables
+	restored.add(t.restore())
+	restored.report()
+}
+
+// restore puts the preserved data back into the table that is currently showing it, without reporting the change to
+// anything, and returns that table along with the owner that has to rebuild its lists for the table's columns to match
+// what its provider now calls for, or nil if the columns already match. Nothing is returned if there was nothing to
+// restore or the restore failed. The reporting is left to restoredTables, so that an undo spanning several tables can
+// do it just once for all of them.
+func (t *TableUndoEditData[T]) restore() (*unison.Table[*Node[T]], Rebuildable) {
 	if t == nil {
-		return
+		return nil, nil
 	}
 	table := liveTable(t.Table)
 	if err := t.Data.Restore(table); err != nil {
 		errs.Log(err)
-		return
+		return nil, nil
 	}
+	return table, ownerNeedingRebuildFor(table)
+}
+
+// restoredTables accumulates the results of restoring one or more tables, so that the undo they belong to reports the
+// change exactly once no matter how many tables it had to put back.
+type restoredTables struct {
+	table unison.Paneler
+	owner Rebuildable
+}
+
+// add records what restoring one table produced, i.e. the results of a TableUndoEditData.restore() call.
+func (r *restoredTables) add(table unison.Paneler, ownerNeedingRebuild Rebuildable) {
+	if xreflect.IsNil(r.table) && !xreflect.IsNil(table) {
+		r.table = table
+	}
+	if xreflect.IsNil(r.owner) && !xreflect.IsNil(ownerNeedingRebuild) {
+		r.owner = ownerNeedingRebuild
+	}
+}
+
+// report tells the rest of the app about the restored data.
+func (r *restoredTables) report() {
 	// Some columns are only present when the data calls for them (the switch column, for one), so putting the old data
 	// back may require the owner to rebuild its lists to bring such a column into or out of view. Which of the two is
-	// needed can't be known until the data is back in place, which is why the restore above doesn't report the change
-	// on its own: a rebuild already recalculates the entity, re-syncs every table, refreshes the search results and
-	// restores the focus and scroll position, i.e. everything marking the table as modified would do, so exactly one of
-	// the two is done rather than paying for all of that work twice on a sheet that may hold hundreds of rows.
-	if owner := ownerNeedingRebuildFor(table); !xreflect.IsNil(owner) {
-		owner.Rebuild(true)
+	// needed can't be known until the data is back in place, which is why restoring doesn't report the change on its
+	// own: a rebuild already recalculates the entity, re-syncs every table, refreshes the search results and restores
+	// the focus and scroll position, i.e. everything marking a table as modified would do. So exactly one of the two is
+	// done, once for the whole undo rather than once per table, since on a sheet that may hold hundreds of rows all of
+	// that work is the entire cost of the edit and an undo spanning six tables would otherwise pay it six times over.
+	if !xreflect.IsNil(r.owner) {
+		r.owner.Rebuild(true)
 		return
 	}
-	MarkModified(table)
+	if !xreflect.IsNil(r.table) {
+		MarkModified(r.table)
+	}
 }
 
 // ownerNeedingRebuildFor returns the owner that has to rebuild its lists for the given table to show the columns its

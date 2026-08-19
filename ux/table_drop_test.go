@@ -278,3 +278,186 @@ func TestReorderWithinATableIsNotTreatedAsAnAddition(t *testing.T) {
 	c.Equal(fxp.One, first.Points, "a reorder must leave the points alone")
 	c.Equal(fxp.One, second.Points, "a reorder must leave the points alone")
 }
+
+// newLibraryStyleTraitsTable returns a traits table with nothing above it in the panel hierarchy, standing in for a
+// library list: rows arriving from one count as coming from outside a sheet, so their modifiers and nameables are
+// prompted for and their points are merged into any identical rows already present.
+func newLibraryStyleTraitsTable(traits ...*gurps.Trait) *unison.Table[*Node[*gurps.Trait]] {
+	data := gurps.NewTemplate()
+	data.SetTraitList(traits)
+	provider := NewTraitsProvider(data, false)
+	table := unison.NewTable[*Node[*gurps.Trait]](provider)
+	provider.SetTable(table)
+	table.ClientData()[TableProviderClientKey] = provider
+	table.SetRootRows(provider.RootRows())
+	return table
+}
+
+// newSwitchableTraitModifier returns a disabled trait modifier carrying a switchable +1 ST bonus, so that enabling it
+// is what gives its owner switchable features.
+func newSwitchableTraitModifier(name string) *gurps.TraitModifier {
+	modifier := gurps.NewTraitModifier(nil, nil, false)
+	modifier.Name = name
+	modifier.Disabled = true
+	modifier.Features = gurps.Features{switchableSTBonus(nil)}
+	return modifier
+}
+
+// stubTraitModifierPrompt substitutes a non-interactive trait modifier prompt that hands the modifiers it was asked to
+// show to the given responder and reports back whatever the responder returns, letting a test drive the rebuild that
+// answering the prompt triggers. The count of prompts actually shown is returned, and the real prompt is restored when
+// the test finishes.
+func stubTraitModifierPrompt(t *testing.T, respond func(modifiers []*gurps.TraitModifier) bool) *int {
+	t.Helper()
+	original := promptForTraitModifiers
+	t.Cleanup(func() { promptForTraitModifiers = original })
+	shown := 0
+	promptForTraitModifiers = func(_ string, modifiers []*gurps.TraitModifier) bool {
+		if len(modifiers) == 0 {
+			return false // The real prompt has nothing to show in this case, so it can't change anything either.
+		}
+		shown++
+		return respond(modifiers)
+	}
+	return &shown
+}
+
+// enableAllModifiers is a stubTraitModifierPrompt responder standing in for the user turning on every modifier the
+// prompt offers, and reporting the change so that the owner is rebuilt.
+func enableAllModifiers(modifiers []*gurps.TraitModifier) bool {
+	for _, one := range modifiers {
+		one.Disabled = false
+	}
+	return true
+}
+
+// TestDropPromptingForModifiersSurvivesTheDestinationTableBeingReplaced verifies that a drop arriving from a library
+// list completes against the list that is on screen even though answering the modifier prompt replaces it partway
+// through. Only the modifiers that are enabled count toward a row having switchable features, so turning one on brings
+// the switch column into view, and a list can only gain a column by being built anew -- leaving the table the drop was
+// handed orphaned, with no sheet above it from which to reach the undo manager or ask for a rebuild.
+func TestDropPromptingForModifiersSurvivesTheDestinationTableBeingReplaced(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	to := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(to)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c.Equal(-1, switchColumnIndex(to.Columns, gurps.TraitSwitchColumn),
+		"the traits list must start out without the switch column")
+	originalTraits := len(entity.Traits) // A new entity may come with traits of its own, such as the natural attacks.
+
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Claws"
+	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
+	from := newLibraryStyleTraitsTable(trait)
+	shown := stubTraitModifierPrompt(t, enableAllModifiers)
+
+	// Drive the drop the way unison's drop handling does: collect the undo data, add the row to the model, bring the
+	// destination up to date and select the new row, then hand off to the drop completion.
+	undo := willDropCallback(from, to, false)
+	c.NotNil(undo, "the drop must be undoable")
+	entity.Traits = append(entity.Traits, trait)
+	to.SyncToModel()
+	to.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	didDropCallback(undo, from, to, false)
+
+	c.Equal(1, *shown, "a drop from a library must prompt for the dropped row's modifiers")
+	live := sheet.Traits.Table
+	c.NotEqual(to, live, "gaining the switch column must replace the traits table")
+	c.False(columnsOutOfSync(sheet.Traits.provider.ColumnIDs(), live.Columns),
+		"the live traits list must show the columns its content calls for")
+	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
+		"enabling the switchable modifier must bring the switch column into view")
+	c.True(live.CopySelectionMap()[trait.ID()], "the dropped row must be selected in the list the user is looking at")
+	c.True(mgr.CanUndo(), "the drop must have registered an undo edit")
+
+	mgr.Undo()
+	c.Equal(originalTraits, len(entity.Traits), "undo must take the dropped trait back off the sheet")
+	c.Equal(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
+		"undo must take the switch column away again")
+}
+
+// TestCopyRowsToRebuildsTheListThatReplacedTheOneItWasGiven verifies that the work CopyRowsTo does once its
+// post-processing has finished -- scrolling to the new rows, recording the undo edit and rebuilding the owner -- is
+// aimed at the table that is on screen. The post-processing prompts for modifiers, and answering that prompt rebuilds
+// the sheet; since only enabled modifiers count toward a row having switchable features, the switch column can come or
+// go, and a list can only change its columns by being built anew. Whatever the post-processing does after that point
+// -- the remaining rows' prompts, the nameable substitutions, the point merge -- only reaches the screen if the
+// closing rebuild does, and an orphaned table has no sheet above it to rebuild.
+func TestCopyRowsToRebuildsTheListThatReplacedTheOneItWasGiven(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	target := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(target)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	originalTraits := len(entity.Traits) // A new entity may come with traits of its own, such as the natural attacks.
+
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Claws"
+	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
+	source := newLibraryStyleTraitsTable(trait)
+
+	var copied *gurps.Trait
+	CopyRowsTo(target, source.RootRows(), func(rows []*Node[*gurps.Trait]) {
+		copied = rows[0].Data()
+		// Stand in for the modifier prompt: turning the modifier on gives the trait a switchable feature, so the
+		// traits list needs the switch column and can only get it by being built anew. The table CopyRowsTo is holding
+		// is an orphan from here on.
+		copied.Modifiers[0].Disabled = false
+		sheet.Rebuild(true)
+		// Stand in for everything the post-processing does after that prompt. It changes the model again -- here by
+		// turning the modifier back off, which takes the switch column away again -- and counts on the rebuild at the
+		// end of the copy to put the list back in step with its content.
+		copied.Modifiers[0].Disabled = true
+	}, true)
+
+	live := sheet.Traits.Table
+	c.NotEqual(target, live, "gaining the switch column must replace the traits table")
+	c.False(columnsOutOfSync(sheet.Traits.provider.ColumnIDs(), live.Columns),
+		"the copy must rebuild the list that replaced the one it was handed")
+	c.Equal(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
+		"the switch column must go away again once nothing is switchable")
+	c.True(live.CopySelectionMap()[copied.ID()], "the copied row must be selected in the list the user is looking at")
+	c.True(mgr.CanUndo(), "the copy must have registered an undo edit")
+
+	mgr.Undo()
+	c.Equal(originalTraits, len(entity.Traits), "undo must take the copied trait back off the sheet")
+}
+
+// TestCopyToSheetPostProcessingSurvivesTheTargetTableBeingReplaced verifies that the post-processing performed for a
+// copy onto a sheet keeps working with the list that is on screen. It starts by prompting for the modifiers of the
+// incoming rows, and answering that prompt rebuilds the sheet, which replaces the table when the toggled modifier
+// carries a switchable feature; the nameable substitutions and the point merge that follow have to be applied to the
+// list that took its place rather than to the orphan.
+func TestCopyToSheetPostProcessingSurvivesTheTargetTableBeingReplaced(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	target := sheet.Traits.Table
+	c.Equal(-1, switchColumnIndex(target.Columns, gurps.TraitSwitchColumn),
+		"the traits list must start out without the switch column")
+	originalTraits := len(entity.Traits) // A new entity may come with traits of its own, such as the natural attacks.
+
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Claws"
+	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
+	source := newLibraryStyleTraitsTable(trait)
+	shown := stubTraitModifierPrompt(t, enableAllModifiers)
+
+	CopyRowsTo(target, source.RootRows(), func(_ []*Node[*gurps.Trait]) {
+		processCopiedRowsForSheet(source, target)
+	}, true)
+
+	c.Equal(1, *shown, "a copy from a library must prompt for the copied row's modifiers")
+	c.Equal(originalTraits+1, len(entity.Traits), "the trait must have been copied onto the sheet")
+	live := sheet.Traits.Table
+	c.NotEqual(target, live, "gaining the switch column must replace the traits table")
+	c.False(columnsOutOfSync(sheet.Traits.provider.ColumnIDs(), live.Columns),
+		"the live traits list must show the columns its content calls for")
+	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
+		"enabling the switchable modifier must bring the switch column into view")
+	c.True(live.CopySelectionMap()[entity.Traits[len(entity.Traits)-1].ID()],
+		"the copied row must be selected in the list the user is looking at")
+}

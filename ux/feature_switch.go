@@ -16,18 +16,15 @@ import (
 )
 
 // showSwitchColumn returns true if the switch column should be present in a page list showing the given rows. The
-// column is only shown on character sheets and loot sheets (never in templates or library lists), and only when at
+// column is only shown on character sheets (never on loot sheets, in templates or in library lists), and only when at
 // least one row, at any depth, has switchable features, so that sheets which don't make use of switchable features
-// aren't cluttered by an empty column. Loot sheets are included because the features that don't need a character to
-// process them -- most notably contained weight reductions -- take effect on a loot sheet just as they do on a sheet,
-// so without the column the only way to throw such a switch would be to open the item's editor.
+// aren't cluttered by an empty column. Anywhere else, the switch of an item that has one is thrown from the item's
+// editor.
 func showSwitchColumn[T gurps.Node[T]](forPage bool, provider gurps.DataOwnerProvider, rows []T) bool {
 	if !forPage {
 		return false
 	}
-	switch provider.(type) {
-	case *gurps.Entity, *gurps.Loot:
-	default:
+	if _, ok := provider.(*gurps.Entity); !ok {
 		return false
 	}
 	return anySwitchable(rows)
@@ -51,10 +48,9 @@ func anySwitchable[T gurps.Node[T]](rows []T) bool {
 // toggleFeatureSwitch sets the switch of the node's data to the given state, registering an undoable edit and
 // recalculating the owning entity. If includeDescendants is true, everything contained within it that actually has
 // something to switch is set as well. Descendants with no switchable features are deliberately left out: throwing their
-// switch would have no effect on anything, yet the new state would still be written to the file and would make an item
-// that came from a library diverge from its source for no reason the user could see. The node itself is always a
-// target, since a switch cell -- the only thing that calls this -- is only created for an item whose
-// HasSwitchableFeatures() is true, so the target list is never empty.
+// switch would have no effect the user could see, yet the new state would still be written to the file and show up as a
+// change to the sheet. The node itself is always a target, since a switch cell -- the only thing that calls this -- is
+// only created for an item whose HasSwitchableFeatures() is true, so the target list is never empty.
 func toggleFeatureSwitch[T gurps.Node[T]](n *Node[T], source unison.Paneler, on, includeDescendants bool) {
 	switcher, ok := any(n.Data()).(gurps.FeatureSwitcher)
 	if !ok {

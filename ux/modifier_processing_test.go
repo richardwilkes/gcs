@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -136,7 +137,8 @@ func TestAltDropOnEquipmentPromptsForTargetModifiers(t *testing.T) {
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
 	modTable := unison.NewTable[*Node[*gurps.EquipmentModifier]](
-		&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
+		&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{},
+	)
 	provider.AltDropSupport().Drop(0, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
 		Table: modTable,
 		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
@@ -146,4 +148,46 @@ func TestAltDropOnEquipmentPromptsForTargetModifiers(t *testing.T) {
 	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target equipment")
 	c.Equal([]modifierPrompt{{title: "Target Equipment", modifiers: []string{"Existing", "Dropped"}}}, *prompts,
 		"the drop must prompt for the target equipment's modifiers")
+}
+
+// TestProcessModifiersRebuildsThroughAReplacedTable verifies that answering a modifier prompt still rebuilds the sheet
+// when the table ProcessModifiers was handed has since been replaced. The alternate drop path rebuilds before it
+// prompts, and an earlier prompt in the same pass rebuilds too, and either rebuild can replace the table when the
+// answer adds or takes away the switch column, so the lookup for the owner to rebuild has to go through the live table
+// rather than upward from the orphan.
+func TestProcessModifiersRebuildsThroughAReplacedTable(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	first := gurps.NewTrait(entity, nil, false)
+	first.Name = "Claws"
+	first.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Sharp")}
+	second := gurps.NewTrait(entity, nil, false)
+	second.Name = "Fangs"
+	plain := gurps.NewTraitModifier(nil, nil, false)
+	plain.Name = "Venomous"
+	plain.Disabled = true
+	plain.Features = gurps.Features{gurps.NewAttributeBonus(gurps.StrengthID)} // Not switchable: applies once enabled.
+	second.Modifiers = []*gurps.TraitModifier{plain}
+	entity.Traits = []*gurps.Trait{first, second}
+	sheet.Rebuild(true)
+	stale := sheet.Traits.Table
+	c.Equal(-1, switchColumnIndex(stale.Columns, gurps.TraitSwitchColumn),
+		"with every modifier disabled, the traits list must start out without the switch column")
+	c.Equal(fxp.Int(0), stBonusFor(entity), "nothing contributes to ST while every modifier is disabled")
+
+	// Enabling the first trait's modifier gives it switchable features, so the rebuild the prompt asks for brings the
+	// switch column in and replaces the table. Enabling the second trait's modifier changes nothing about the columns,
+	// but the rebuild its answer asks for is what recalculates the entity with the modifier's bonus in play -- and it
+	// is asked for through a table that the first answer orphaned.
+	shown := stubTraitModifierPrompt(t, enableAllModifiers)
+	ProcessModifiers(stale, []*gurps.Trait{first, second})
+	c.Equal(2, *shown, "both traits must have been prompted for")
+	c.NotEqual(stale, sheet.Traits.Table, "enabling the first modifier must have replaced the traits table")
+	c.NotEqual(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
+		"the live traits table must have gained the switch column")
+	c.False(plain.Disabled, "the second prompt's answer must have been applied to the model")
+	c.Equal(fxp.One, stBonusFor(entity),
+		"the rebuild after the second answer must have recalculated the entity, bringing the enabled bonus into play")
+	c.Nil(ownerNeedingRebuildFor(sheet.Traits.Table), "the live table's columns must match its provider")
 }

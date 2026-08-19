@@ -661,8 +661,11 @@ func (e *Equipment) anySwitchableMattersWhileUnequipped(features Features) bool 
 			}
 		case *WeaponBonus:
 			// "To this weapon" bonuses are resolved by the weapon itself, and the weapons of unequipped equipment are
-			// still displayed when the sheet is set to show them all.
-			if f.SelectionType == wsel.ThisWeapon && len(e.Weapons) != 0 {
+			// still displayed when the sheet is set to show them all. "To a named weapon" bonuses count, too: the
+			// entity's own collection only reaches really-equipped items, but the weapon additionally reads its
+			// owner's active features directly, no matter where that owner lives, so such a bonus still lands on this
+			// equipment's own weapon whenever the name, usage and tag criteria match it.
+			if (f.SelectionType == wsel.ThisWeapon || f.SelectionType == wsel.WithName) && len(e.Weapons) != 0 {
 				return true
 			}
 		case *SkillBonus:

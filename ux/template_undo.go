@@ -61,20 +61,26 @@ func (a *ApplyTemplateUndoEditData) Apply() {
 		entity.SheetSettings.BodyType = a.bodyType.Clone(entity, nil)
 	}
 	updateRandomizedProfileFieldsWithoutUndo(a.sheet)
-	if err := a.traits.Apply(a.sheet.Traits.Table); err != nil {
+	// The tables are only restored here, not marked as modified: the rebuild below recalculates the entity, re-syncs
+	// every table, refreshes the search results and restores the focus and scroll position, so reporting each table as
+	// it is put back would perform all of that work five more times than necessary for a single undo.
+	if err := a.traits.Restore(a.sheet.Traits.Table); err != nil {
 		errs.Log(err)
 	}
-	if err := a.skills.Apply(a.sheet.Skills.Table); err != nil {
+	if err := a.skills.Restore(a.sheet.Skills.Table); err != nil {
 		errs.Log(err)
 	}
-	if err := a.spells.Apply(a.sheet.Spells.Table); err != nil {
+	if err := a.spells.Restore(a.sheet.Spells.Table); err != nil {
 		errs.Log(err)
 	}
-	if err := a.equipment.Apply(a.sheet.CarriedEquipment.Table); err != nil {
+	if err := a.equipment.Restore(a.sheet.CarriedEquipment.Table); err != nil {
 		errs.Log(err)
 	}
-	if err := a.notes.Apply(a.sheet.Notes.Table); err != nil {
+	if err := a.notes.Restore(a.sheet.Notes.Table); err != nil {
 		errs.Log(err)
 	}
+	// Bumping the modification timestamp is the one thing marking the sheet as modified would have done that the
+	// rebuild doesn't, and it has to happen before the rebuild for the panel showing it to pick up the new value.
+	a.sheet.modifiedFunc()
 	a.sheet.Rebuild(true)
 }
