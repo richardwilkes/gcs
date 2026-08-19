@@ -63,9 +63,7 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 			// them. The live table has to be looked up without regard for T, since on the very path this is here for
 			// the rows are the modifiers that were dropped and T is therefore not the row type of the table they
 			// landed in.
-			if rebuildable := unison.AncestorOrSelf[Rebuildable](liveOwner(owner)); rebuildable != nil {
-				rebuildable.Rebuild(true)
-			}
+			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
 		}
 	}
 }

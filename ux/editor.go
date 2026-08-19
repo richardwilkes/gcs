@@ -398,16 +398,16 @@ func (e *editor[N, D]) apply() {
 			EditName: fmt.Sprintf(i18n.Text("%s Changes"), target.Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
-				owner.Rebuild(true)
+				rebuildAsModified(owner, true)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.AfterData.ApplyTo(target)
-				owner.Rebuild(true)
+				rebuildAsModified(owner, true)
 			},
 			BeforeData: e.beforeData,
 			AfterData:  e.editorData,
 		})
 	}
 	e.editorData.ApplyTo(e.target)
-	e.owner.Rebuild(true)
+	rebuildAsModified(e.owner, true)
 }

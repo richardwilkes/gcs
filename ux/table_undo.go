@@ -87,43 +87,20 @@ func (r *restoredTables) add(table unison.Paneler, owner Rebuildable) {
 func (r *restoredTables) report() {
 	// An owner is rebuilt rather than merely told that one of its tables changed, because far more of what it shows
 	// than the rows themselves is derived from the data that was just put back, and only rebuilding recomputes any of
-	// it: a sheet only carries the melee weapons, ranged weapons, reactions and conditional modifiers lists on the
-	// page while there is something to put in them, the weapon lists drop the columns nothing in them uses, and the
-	// switch column comes and goes with the presence of switchable features (a set of columns can only change by
-	// building a new table, since a table's columns are fixed at creation). A rebuild is otherwise a superset of
-	// marking a table as modified -- it recalculates the entity, re-syncs every table, refreshes the search results
-	// and restores the focus and scroll position -- apart from bumping the owner's modification timestamp, which is
-	// therefore done here as well. Marking as modified is left for the tables that have no owner recorded, i.e. those
+	// it (see rebuildAsModified). Marking as modified is left for the tables that have no owner recorded, i.e. those
 	// in an editor or a library list, which nothing ever replaces or reshapes.
 	//
 	// Whichever of the two applies happens once for the whole undo rather than once per table, which is why restoring
 	// doesn't report the change on its own: on a sheet that may hold hundreds of rows all of that work is the entire
 	// cost of the edit, and an undo spanning six tables would otherwise pay it six times over.
 	if !xreflect.IsNil(r.owner) {
-		if bumper, ok := r.owner.(modificationTimestampBumper); ok {
-			// The bump has to happen before the rebuild for the panel showing it to pick up the new value.
-			bumper.bumpModificationTimestamp()
-		}
-		r.owner.Rebuild(true)
+		rebuildAsModified(r.owner, true)
 		return
 	}
 	if !xreflect.IsNil(r.table) {
 		MarkModified(r.table)
 	}
 }
-
-// modificationTimestampBumper is implemented by those owners that record when their data was last changed. Marking such
-// an owner as modified bumps that timestamp, but rebuilding it doesn't, so anything that rebuilds in place of marking
-// as modified has to ask for the bump itself. Not every owner has one -- a template's modification time is whatever the
-// file system says it is -- which is why this is an optional interface rather than part of Rebuildable.
-type modificationTimestampBumper interface {
-	bumpModificationTimestamp()
-}
-
-var (
-	_ modificationTimestampBumper = &Sheet{}
-	_ modificationTimestampBumper = &LootSheet{}
-)
 
 // liveTable returns the table that is currently showing the data the given table was created for. An owner that has to
 // alter its set of columns can only do so by replacing the table entirely, which leaves any table captured earlier

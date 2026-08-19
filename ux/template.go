@@ -452,7 +452,7 @@ Disable your character's existing Ancestry (%s)?`),
 	appendRows(sheet.Spells.Table, rows.spells)
 	appendRows(sheet.CarriedEquipment.Table, rows.equipment)
 	appendRows(sheet.Notes.Table, rows.notes)
-	sheet.Rebuild(true)
+	rebuildAsModified(sheet, true)
 	ProcessModifiersForSelection(sheet.Traits.Table)
 	ProcessModifiersForSelection(sheet.CarriedEquipment.Table)
 	ProcessNameablesForSelection(sheet.Traits.Table)
@@ -466,7 +466,7 @@ Disable your character's existing Ancestry (%s)?`),
 		if randomize {
 			e.Profile.ApplyRandomizers(e)
 			updateRandomizedProfileFieldsWithoutUndo(sheet)
-			sheet.Rebuild(true)
+			rebuildAsModified(sheet, true)
 		}
 	}
 	if mgr != nil && undo != nil {
@@ -784,9 +784,7 @@ func mergeNewlySelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], merg
 	}
 	table.SetRootRows(newRoots)
 	table.SetSelectionMap(newSel)
-	if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-		builder.Rebuild(true)
-	}
+	rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 }
 
 func rawPoints(child any) fxp.Int {
@@ -1162,7 +1160,7 @@ func (t *Template) syncWithAllSources() {
 		undo.AfterData = newTemplateTablesUndoData(t)
 		mgr.Add(undo)
 	}
-	t.Rebuild(true)
+	rebuildAsModified(t, true)
 }
 
 // BodySettingsTitle implements BodySettingsOwner.
@@ -1182,7 +1180,7 @@ func (t *Template) BodySettings(forReset bool) *gurps.Body {
 func (t *Template) SetBodySettings(body *gurps.Body) {
 	t.lastBody = body
 	t.template.BodyType = body
-	t.Rebuild(true)
+	rebuildAsModified(t, true)
 }
 
 func (t *Template) disclosureTables() []disclosureTables {

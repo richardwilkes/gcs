@@ -50,9 +50,7 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 		// The lookup is made without regard for T, so that it holds up for any owner rather than only for one whose row
 		// type happens to match the rows handed in.
 		owner = liveOwner(owner)
-		if builder := unison.AncestorOrSelf[Rebuildable](owner); builder != nil {
-			builder.Rebuild(true)
-		}
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](owner), true)
 	}
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {

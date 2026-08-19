@@ -38,3 +38,10 @@
   the location.
 - A template's equipment list now shows or hides its TL and LC columns as soon as the corresponding sheet settings are
   changed, rather than only after the template is reopened.
+- A character sheet's modification timestamp is now updated by every edit made through its lists, not just some of
+  them. Applying changes from an item's editor, deleting or duplicating rows, moving equipment between the carried and
+  other equipment lists, converting rows to or from containers, answering a modifier or nameables prompt, swapping
+  skill defaults, syncing with library sources, applying a template, and editing the point records all left the
+  timestamp unchanged before. Several edits (inserting new items, dragging rows in, moving equipment between the two
+  lists, and changing the sheet settings among them) also updated the sheet two or three times over for a single edit,
+  which on a sheet with many rows made them noticeably slower than they needed to be.

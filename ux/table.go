@@ -452,8 +452,15 @@ func OpenEditor[T gurps.Node[T]](table *unison.Table[*Node[T]], edit func(item T
 	}
 }
 
-// DeleteSelection removes the selected nodes from the table.
+// DeleteSelection removes the selected nodes from the table and reports the change by rebuilding the table's owner.
 func DeleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo bool) {
+	deleteSelection(table, recordUndo, true)
+}
+
+// deleteSelection removes the selected nodes from the table. When report is true, the change is reported by rebuilding
+// the table's owner; when it is false, the caller takes that on, for when the deletion is only one part of a larger
+// edit whose parts should be reported once, together (see moveSelectedEquipment).
+func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo, report bool) {
 	if provider, ok := any(table.Model).(TableProvider[T]); ok && HasSelectionAndNotFiltered(table) {
 		sel := table.SelectedRows(true)
 		ids := make(map[tid.TID]bool, len(sel))
@@ -507,8 +514,8 @@ func DeleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo 
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-			builder.Rebuild(true)
+		if report {
+			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 		}
 	}
 }
@@ -568,9 +575,7 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-			builder.Rebuild(true)
-		}
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 	}
 }
 
@@ -606,9 +611,7 @@ func ClearSourceFromSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-			builder.Rebuild(true)
-		}
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 	}
 }
 
@@ -639,14 +642,19 @@ func SyncWithSourceForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-			builder.Rebuild(true)
-		}
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 	}
 }
 
-// CopyRowsTo copies the provided rows to the target table.
+// CopyRowsTo copies the provided rows to the target table and reports the change by rebuilding the table's owner.
 func CopyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T]), recordUndo bool) {
+	copyRowsTo(table, rows, postProcessor, recordUndo, true)
+}
+
+// copyRowsTo copies the provided rows to the target table. When report is true, the change is reported by rebuilding
+// the table's owner; when it is false, the caller takes that on, for when the copy is only one part of a larger edit
+// whose parts should be reported once, together (see moveSelectedEquipment).
+func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T]), recordUndo, report bool) {
 	if table == nil || table.IsFiltered() {
 		return
 	}
@@ -691,8 +699,8 @@ func CopyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 		undo.AfterData = NewTableUndoEditData(table)
 		mgr.Add(undo)
 	}
-	if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-		builder.Rebuild(true)
+	if report {
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 	}
 }
 

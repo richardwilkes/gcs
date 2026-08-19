@@ -36,14 +36,21 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 	table.ClientData()[TableProviderClientKey] = provider
 	unison.InstallDropSupport(table, provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
 		didDropCallback[T])
-	table.DragRemovedRowsCallback = func() { MarkModified(liveTable(table)) }
+	// No DragRemovedRowsCallback is installed. It would only ever fire for a move between two different tables, and
+	// the providers only allow that within a single dockable (see their DropShouldMoveData), so the report made for
+	// the table the rows landed in covers the one they left as well; a separate report for the source would just
+	// update the same owner twice.
 	table.DropOccurredCallback = func() {
-		// We need to defer this to give newly added skills a chance to choose their defaults first, before the normal
-		// top-to-bottom sweep fills in the defaults. By the time the task runs, the drop may have caused the owner to
-		// replace the table, so the one still on screen has to be looked up rather than assumed.
+		// unison notifies the table before it calls the did-drop callback, so this is deferred until the drop handlers
+		// have had their turn, and it has to look up the table still on screen rather than assume it, since those
+		// handlers may have caused the owner to replace the table. The handlers report the drop themselves when they
+		// rebuild the owner (see dropRebuilder), in which case marking the table as modified on top of that would just
+		// repeat the whole update; elsewhere the drop is reported here.
 		unison.InvokeTaskAfter(func() {
 			current := liveTable(table)
-			MarkModified(current)
+			if dropRebuilder(current) == nil {
+				MarkModified(current)
+			}
 			current.RequestFocusWithoutScroll()
 		}, 1)
 	}
@@ -146,21 +153,19 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 			tableProvider.ProcessDropData(from, to)
 		}
 	}
-	if toEntityProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !xreflect.IsNil(toEntityProvider) {
-		if owner := toEntityProvider.DataOwner(); !xreflect.IsNil(owner) && !xreflect.IsNil(owner.OwningEntity()) {
-			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
-				rebuilder.Rebuild(true)
-				// The rebuild covers the whole owner, so it may have replaced either table: adding rows to one list and
-				// removing them from another can change which columns each needs, and a list can only change its
-				// columns by building a new table. Everything from here on -- the checks for where the rows came from
-				// and went, the merging, the undo edit, even finding the undo manager -- has to work with the tables
-				// that took their place rather than the orphaned ones the drag started and finished on. Refreshing
-				// both keeps them comparable: two tables that were the same resolve to the same replacement, and two
-				// that were different have different reference keys, so they stay different.
-				from = liveTable(from)
-				to = liveTable(to)
-			}
-		}
+	if rebuilder := dropRebuilder(to); rebuilder != nil {
+		// This is also what reports the drop (see DropOccurredCallback in InstallTableDropSupport), which is why the
+		// owner is rebuilt as modified rather than just rebuilt.
+		rebuildAsModified(rebuilder, true)
+		// The rebuild covers the whole owner, so it may have replaced either table: adding rows to one list and
+		// removing them from another can change which columns each needs, and a list can only change its columns by
+		// building a new table. Everything from here on -- the checks for where the rows came from and went, the
+		// merging, the undo edit, even finding the undo manager -- has to work with the tables that took their place
+		// rather than the orphaned ones the drag started and finished on. Refreshing both keeps them comparable: two
+		// tables that were the same resolve to the same replacement, and two that were different have different
+		// reference keys, so they stay different.
+		from = liveTable(from)
+		to = liveTable(to)
 	}
 	if isForCharacterOrLootSheet(to) {
 		// Only process modifiers and nameables when the drop comes from something besides a character or loot sheet;
@@ -188,6 +193,32 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		}
 	}
 	finishDidDrop(undo, from, to, move)
+}
+
+// dropRebuilder returns the owner that a drop into the given table is reported to by rebuilding it, or nil if the drop
+// is instead reported by marking the table as modified. A drop into a table showing an entity's data is reported with
+// a rebuild, because the rows that arrive can change more of what the owner shows than the list they landed in: the
+// melee weapons, ranged weapons, reactions and conditional modifiers lists are only on the page while there is
+// something to put in them, and the switch column comes and goes with the presence of switchable features, neither of
+// which anything short of a rebuild re-creates. Everywhere else -- a template, a loot sheet, a library list, or a table
+// in an editor whose item has no entity -- marking the table as modified covers everything a drop can change. The
+// normal and the alternate drop handlers both decide whether to rebuild with this, and the table's drop notification
+// uses it to tell whether they have already reported the drop, so the three always agree. The entity is taken from the
+// table's own provider, which is what the alternate drop handlers clone the dropped rows for. Nil, typed or otherwise,
+// is accepted, since the alternate drop path may have no source table at all.
+func dropRebuilder(table unison.Paneler) Rebuildable {
+	if xreflect.IsNil(table) {
+		return nil
+	}
+	provider, ok := table.AsPanel().ClientData()[TableProviderClientKey].(gurps.DataOwnerProvider)
+	if !ok || xreflect.IsNil(provider) {
+		return nil
+	}
+	owner := provider.DataOwner()
+	if xreflect.IsNil(owner) || owner.OwningEntity() == nil {
+		return nil
+	}
+	return unison.Ancestor[Rebuildable](table)
 }
 
 func isForCharacterOrLootSheet(panel unison.Paneler) bool {

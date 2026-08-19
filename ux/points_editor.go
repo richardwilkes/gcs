@@ -414,16 +414,16 @@ func (e *pointsEditor) applyWithoutFocusNext() {
 			EditName: i18n.Text("Point Record Changes"),
 			UndoFunc: func(edit *unison.UndoEdit[[]*gurps.PointsRecord]) {
 				entity.SetPointsRecord(edit.BeforeData)
-				owner.Rebuild(false)
+				rebuildAsModified(owner, false)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[[]*gurps.PointsRecord]) {
 				entity.SetPointsRecord(edit.AfterData)
-				owner.Rebuild(false)
+				rebuildAsModified(owner, false)
 			},
 			BeforeData: e.before,
 			AfterData:  e.current,
 		})
 	}
 	entity.SetPointsRecord(e.current)
-	owner.Rebuild(true)
+	rebuildAsModified(owner, true)
 }

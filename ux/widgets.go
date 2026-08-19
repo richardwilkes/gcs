@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -68,6 +69,40 @@ func MarkModified(panel unison.Paneler) {
 		}
 		p = p.Parent()
 	}
+}
+
+// modificationTimestampBumper is implemented by those owners that record when their data was last changed. Marking such
+// an owner as modified bumps that timestamp, but rebuilding it doesn't, so anything that rebuilds in place of marking
+// as modified has to ask for the bump itself (see rebuildAsModified). Not every owner has one -- a template's
+// modification time is whatever the file system says it is -- which is why this is an optional interface rather than
+// part of Rebuildable.
+type modificationTimestampBumper interface {
+	bumpModificationTimestamp()
+}
+
+var (
+	_ modificationTimestampBumper = &Sheet{}
+	_ modificationTimestampBumper = &LootSheet{}
+)
+
+// rebuildAsModified reports an edit to its owner by rebuilding the owner, in place of marking it as modified. A
+// rebuild is a superset of marking as modified for every kind of owner -- it recalculates the entity, re-syncs every
+// table, refreshes the search results and restores the focus and scroll position -- and is what an edit needs when it
+// changes more of what the owner shows than the rows it touched: a sheet only carries the melee weapons, ranged
+// weapons, reactions and conditional modifiers lists on the page while there is something to put in them, the weapon
+// lists drop the columns nothing in them uses, and the switch column comes and goes with the presence of switchable
+// features, and a set of columns can only change by building a new table. Doing both would repeat the whole update,
+// and on a sheet holding hundreds of rows that update is the entire cost of the edit. The one thing a rebuild leaves
+// out is bumping the owner's modification timestamp, so that is done here, and before the rebuild, since the panel
+// showing the timestamp only picks up the new value when it is synced. A nil owner, typed or otherwise, is ignored.
+func rebuildAsModified(owner Rebuildable, full bool) {
+	if xreflect.IsNil(owner) {
+		return
+	}
+	if bumper, ok := owner.(modificationTimestampBumper); ok {
+		bumper.bumpModificationTimestamp()
+	}
+	owner.Rebuild(full)
 }
 
 func addSourceFields(parent *unison.Panel, source *gurps.SourcedID) {

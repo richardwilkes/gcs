@@ -41,19 +41,12 @@ func (s *snapshotList[A, V]) finish() {
 	// The owner is an interface, so it is checked the way the rest of this file's callers check it: a typed nil would
 	// slip past a plain comparison and then be asked to rebuild.
 	if !xreflect.IsNil(s.owner) && s.rebuild {
-		// Rebuilding is a superset of marking the owner as modified -- it recalculates the entity, re-syncs every
-		// table, refreshes the search results and restores the focus and scroll position -- so doing both would repeat
-		// the whole update, and on a sheet holding hundreds of rows that update is the entire cost of the edit. The
-		// one thing a rebuild doesn't do is bump the owner's modification timestamp, so that is done here instead, the
-		// same way an undo that rebuilds does it (see restoredTables.report).
+		// Rebuilding stands in for marking the owner as modified (see rebuildAsModified), so the entity only needs
+		// recalculating here when the rebuild won't do it on its own.
 		if s.entity != nil && !ownerRebuildRecalculates(s.owner, s.entity) {
 			s.entity.Recalculate()
 		}
-		if bumper, ok := s.owner.(modificationTimestampBumper); ok {
-			// The bump has to happen before the rebuild for the panel showing it to pick up the new value.
-			bumper.bumpModificationTimestamp()
-		}
-		s.owner.Rebuild(true)
+		rebuildAsModified(s.owner, true)
 		return
 	}
 	if s.entity != nil && !ownerRecalculates(s.owner, s.entity) {

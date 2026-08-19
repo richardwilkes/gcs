@@ -363,16 +363,18 @@ func TestUndoOfMoveBetweenEquipmentListsSyncsTheSheetOnlyOnce(t *testing.T) {
 		"the other equipment list must start out without the switch column")
 
 	sheet.CarriedEquipment.Table.SetSelectionMap(map[tid.TID]bool{eqp.ID(): true})
-	moveSelectedEquipment(sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table)
+	counter := installSyncCounter(sheet)
+	moveSelectedEquipment(sheet, sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table)
 	c.Equal(0, len(entity.CarriedEquipment), "the move must take the item out of the carried equipment")
 	c.Equal(1, len(entity.OtherEquipment), "the move must put the item into the other equipment")
+	c.Equal(1, counter.count, "the move itself must sync the sheet exactly once, not once per list it touches")
 	c.NotEqual(gurps.EquipmentSwitchColumn, sheet.CarriedEquipment.Table.Columns[1].ID,
 		"the switch column must leave the carried equipment list with the item")
 	c.Equal(gurps.EquipmentSwitchColumn, sheet.OtherEquipment.Table.Columns[0].ID,
 		"the switch column must arrive in the other equipment list with the item")
 	c.True(mgr.CanUndo(), "the move must be undoable")
 
-	counter := installSyncCounter(sheet)
+	counter.count = 0
 	counter.onSync = func() {
 		c.Equal(1, len(entity.CarriedEquipment)+len(entity.OtherEquipment),
 			"the item must be in exactly one of the two lists whenever the sheet is brought up to date")

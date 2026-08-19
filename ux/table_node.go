@@ -985,7 +985,6 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 		SetParents(items, zero)
 		setTopList(append(topList(), items...))
 	}
-	MarkModified(table)
 	table.SetRootRows(rowData(table))
 	table.ValidateScrollRoot()
 	table.RequestFocus()
@@ -1000,7 +999,10 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 		undo.AfterData = NewTableUndoEditData(table)
 		mgr.Add(undo)
 	}
-	owner.Rebuild(true)
+	// The change is reported once, by rebuilding the owner: an inserted item can bring a weapon, reaction or
+	// conditional modifier list onto the page, or the switch column into one of the lists, and only a rebuild creates
+	// those. Marking the table as modified on top of that would just repeat the whole update of the owner.
+	rebuildAsModified(owner, true)
 }
 
 // SetParents of each item.

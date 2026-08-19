@@ -474,7 +474,7 @@ func (l *LootSheet) syncWithAllSources() {
 		undo.AfterData = newLootTablesUndoData(l)
 		mgr.Add(undo)
 	}
-	l.Rebuild(true)
+	rebuildAsModified(l, true)
 }
 
 // Rebuild implements widget.Rebuildable.
@@ -545,8 +545,9 @@ func (l *LootSheet) PageInfoProvider() gurps.PageInfoProvider {
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.
 func (l *LootSheet) SheetSettingsUpdated(_ *gurps.Entity, blockLayout bool) {
-	l.MarkModified(nil)
-	l.Rebuild(blockLayout)
+	// A single rebuild both reports the change and refreshes everything the settings affect; marking the sheet as
+	// modified first would only perform the same update a second time (see rebuildAsModified).
+	rebuildAsModified(l, blockLayout)
 }
 
 func (l *LootSheet) disclosureTables() []disclosureTables {

@@ -202,7 +202,7 @@ func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 			p.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
 				func(_ any) bool { return t.HasSelection() },
-				func(_ any) { moveSelectedEquipment(t, sheet.CarriedEquipment.Table) })
+				func(_ any) { moveSelectedEquipment(sheet, t, sheet.CarriedEquipment.Table) })
 		}
 	}
 }
@@ -213,12 +213,16 @@ func (p *PageList[T]) installMoveToOtherEquipmentHandler(owner Rebuildable) {
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 			p.InstallCmdHandlers(MoveToOtherEquipmentItemID,
 				func(_ any) bool { return t.HasSelection() },
-				func(_ any) { moveSelectedEquipment(t, sheet.OtherEquipment.Table) })
+				func(_ any) { moveSelectedEquipment(sheet, t, sheet.OtherEquipment.Table) })
 		}
 	}
 }
 
-func moveSelectedEquipment(from, to *unison.Table[*Node[*gurps.Equipment]]) {
+// moveSelectedEquipment moves the rows selected in one of the sheet's two equipment lists to the other one. The copy
+// into the destination and the deletion from the source are each told not to report the change, so that the sheet is
+// rebuilt once for the move as a whole rather than once per half of it -- and so that both tables are still the ones
+// on screen when the undo data is collected, since a rebuild can replace either list (see liveTable).
+func moveSelectedEquipment(sheet *Sheet, from, to *unison.Table[*Node[*gurps.Equipment]]) {
 	mgr := unison.UndoManagerFor(from)
 	if mgr == nil || mgr != unison.UndoManagerFor(to) {
 		return
@@ -233,10 +237,11 @@ func moveSelectedEquipment(from, to *unison.Table[*Node[*gurps.Equipment]]) {
 		},
 		BeforeData: NewTableDragUndoEditData(from, to),
 	}
-	CopyRowsTo(to, from.SelectedRows(true), nil, false)
-	DeleteSelection(from, false)
+	copyRowsTo(to, from.SelectedRows(true), nil, false, false)
+	deleteSelection(from, false, false)
 	undo.AfterData = NewTableDragUndoEditData(from, to)
 	mgr.Add(undo)
+	rebuildAsModified(sheet, true)
 }
 
 func (p *PageList[T]) installOpenPageReferenceHandlers() {

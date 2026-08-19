@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -181,8 +182,11 @@ func TestProcessModifiersRebuildsThroughAReplacedTable(t *testing.T) {
 	// but the rebuild its answer asks for is what recalculates the entity with the modifier's bonus in play -- and it
 	// is asked for through a table that the first answer orphaned.
 	shown := stubTraitModifierPrompt(t, enableAllModifiers)
+	entity.ModifiedOn = jio.Time{}
 	ProcessModifiers(stale, []*gurps.Trait{first, second})
 	c.Equal(2, *shown, "both traits must have been prompted for")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn,
+		"an answer that changes a modifier is an edit, so it must bump the modification timestamp")
 	c.NotEqual(stale, sheet.Traits.Table, "enabling the first modifier must have replaced the traits table")
 	c.NotEqual(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
 		"the live traits table must have gained the switch column")

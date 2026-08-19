@@ -142,9 +142,9 @@ func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
 				p.table.SyncToModel()
 				if !xreflect.IsNil(dataOwner) {
 					if entity := dataOwner.OwningEntity(); entity != nil {
-						if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
-							rebuilder.Rebuild(true)
-						}
+						// Rebuilding is also what reports the drop when the rows belong to an entity (see
+						// dropRebuilder), so the owner is rebuilt as modified rather than just rebuilt.
+						rebuildAsModified(dropRebuilder(p.table), true)
 						// That rebuild can have replaced this very list: an enabled modifier carrying a
 						// switchable feature gives the row it was dropped onto switchable features, which brings
 						// the switch column into view, and a list can only change its columns by building a new

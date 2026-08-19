@@ -774,8 +774,10 @@ func (s *Sheet) swapDefaults(_ any) {
 			other.SwapDefaults()
 		}
 	}
-	s.entity.Recalculate()
-	s.Skills.Sync()
+	// Marking the sheet as modified recalculates the entity and re-syncs everything that shows a skill level, which
+	// swapping a default can change well beyond the skills list (weapons, for one), and also bumps the modification
+	// timestamp and updates the title, none of which recalculating and syncing the skills table by hand did.
+	s.MarkModified(nil)
 	undo.AfterData = NewTableUndoEditData(s.Skills.Table)
 	s.UndoManager().Add(undo)
 }
@@ -783,8 +785,9 @@ func (s *Sheet) swapDefaults(_ any) {
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.
 func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
 	if s.entity == entity {
-		s.MarkModified(nil)
-		s.Rebuild(blockLayout)
+		// A single rebuild both reports the change and refreshes everything the settings affect; marking the sheet as
+		// modified first would only perform the same update a second time (see rebuildAsModified).
+		rebuildAsModified(s, blockLayout)
 	}
 }
 
@@ -847,7 +850,7 @@ func (s *Sheet) syncWithAllSources() {
 		undo.AfterData = newSheetTablesUndoData(s)
 		mgr.Add(undo)
 	}
-	s.Rebuild(true)
+	rebuildAsModified(s, true)
 }
 
 // Rebuild implements widget.Rebuildable.
