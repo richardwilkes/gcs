@@ -13,6 +13,7 @@
 - Spells can now have features, just like traits, skills and equipment. As a side effect, weapons attached to a spell
   now receive any "this weapon" bonuses defined by the spell's own features.
 - Template items (non-container) now have a "Preconfigured" flag used to indicate that modifier and substitution configuration can be skipped when adding thie item to a character. (#1102)
+- Adding items to a template now triggers modifier selections and nameable replacements (#1101)
 
 ## Bug Fixes
 
@@ -47,3 +48,4 @@
   focus was returned to the list in a way that scrolled the entire list into view, which on a sheet with a long list
   could move the row far from where it had been. Now only the edited row is brought into view, and only when it isn't
   already visible.
+- Modifiers contained by Traits and Equipment properly set their `source` when the trait/equippment is copied to a character sheet or template (#1100)

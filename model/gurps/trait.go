@@ -1165,7 +1165,18 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	if len(other.Modifiers) != 0 {
 		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			cloned := one.Clone(one.Source.LibraryFile, trait.owner, nil, isApply)
+			// The LibraryFile for this clone must come from the parent trait rather than
+			// from `one`. This covers the case where the source data *is* the authoritative
+			// source and therefore carries no source information of its own. `one.Source.LibraryFile`
+			// is empty and `AdjustSource` won't set source data on the copy. `trait.Source.LibraryFile`
+			// holds the already-adjusted source for the trait copy, so it always has the
+			// correct library path.
+			//
+			// Background: when GCS clones an item from one library into another location (as
+			// opposed to duplicating in place), it passes the *source* library as the first
+			// argument to `Clone`. That path, combined with the IDs from the source nodes, is
+			// what builds the `source` values for the clone.
+			cloned := one.Clone(trait.Source.LibraryFile, trait.owner, nil, isApply)
 			// Point the copy at the trait it belongs to, so that a "use level from owner" modifier can resolve its
 			// level. Prior to this, the copies held in an editor only acquired their trait as a side effect of a point
 			// cost computation.
