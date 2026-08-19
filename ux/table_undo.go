@@ -131,19 +131,14 @@ func ownerNeedingRebuildFor[T gurps.Node[T]](table *unison.Table[*Node[T]]) Rebu
 // alter its set of columns can only do so by replacing the table entirely, which leaves any table captured earlier
 // orphaned: applying data to it would update the model but leave the table the user is looking at untouched. A nil
 // table is returned as-is, since callers that may not have a source table at all (the alternate drop path, for one)
-// pass one through here.
+// pass one through here. This is the typed counterpart of liveOwner, for callers that need the table itself rather
+// than just something to ask for a rebuild through.
 func liveTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) *unison.Table[*Node[T]] {
-	if table == nil || table.RefKey == "" {
-		return table
+	if table == nil {
+		return nil
 	}
-	owner, found := table.ClientData()[TableOwnerClientKey].(Rebuildable)
-	if !found || xreflect.IsNil(owner) {
-		return table
-	}
-	if panel := owner.AsPanel().FindRefKey(table.RefKey); panel != nil {
-		if current, ok := panel.Self.(*unison.Table[*Node[T]]); ok {
-			return current
-		}
+	if current, ok := liveOwner(table).(*unison.Table[*Node[T]]); ok {
+		return current
 	}
 	return table
 }
@@ -164,8 +159,17 @@ func NewTableDragUndoEditData[T gurps.Node[T]](from, to *unison.Table[*Node[T]])
 
 // Apply the undo edit data to a table.
 func (t *TableDragUndoEditData[T]) Apply() {
-	t.To.Apply()
-	if t.From != nil {
-		t.From.Apply()
-	}
+	// Both lists have to be back in place before either of them is reported: a row that was dragged from one list to
+	// the other is in neither of them while only the first has been restored, so reporting there would recalculate the
+	// entity and re-sync the whole sheet against a state the user never had, and the second restore would then pay for
+	// the same update all over again. One report covers both, because the two tables always belong to the same owner.
+	// A drag only counts as a move -- the only case that leaves anything to put back in the list the rows came from,
+	// which is why From is nil for the rest -- when both tables are in the same dockable, and only equipment can move
+	// between two different tables at all (see the providers' DropShouldMoveData). So a drag between two sheets is a
+	// copy that leaves the source sheet untouched, and "Move to Other/Carried Equipment" works within one sheet by
+	// construction. A nil From restores nothing and contributes nothing to report.
+	var restored restoredTables
+	restored.add(t.To.restore())
+	restored.add(t.From.restore())
+	restored.report()
 }

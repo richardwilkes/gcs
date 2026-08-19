@@ -60,11 +60,10 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 			// the switch column, and a list can only change its columns by building a new table. An orphaned table
 			// has no Rebuildable above it, so the rebuild would silently be skipped, leaving the substitutions in the
 			// model while the list the user is looking at goes on showing the raw keys and the values derived from
-			// them.
-			if table, ok := owner.(*unison.Table[*Node[T]]); ok {
-				owner = liveTable(table)
-			}
-			if rebuildable := unison.AncestorOrSelf[Rebuildable](owner); rebuildable != nil {
+			// them. The live table has to be looked up without regard for T, since on the very path this is here for
+			// the rows are the modifiers that were dropped and T is therefore not the row type of the table they
+			// landed in.
+			if rebuildable := unison.AncestorOrSelf[Rebuildable](liveOwner(owner)); rebuildable != nil {
 				rebuildable.Rebuild(true)
 			}
 		}

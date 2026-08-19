@@ -513,12 +513,19 @@ func (e *Equipment) ReallyEquipped() bool {
 	return true
 }
 
-// IsCarried returns true if this equipment is rooted in the carried equipment list of the entity that owns it. The
+// IsCarried returns true if this equipment is not rooted in the other equipment list of the entity that owns it. The
 // entity only collects features from carried equipment (see Entity.processFeatures), so an item in the other equipment
 // list contributes nothing to the character no matter what its equipped state says -- and that state can easily say
 // "equipped", since new equipment starts out equipped and nothing clears the flag when an item is created in or moved
 // to the other list. Equipment with no owning entity -- a library list, a template or a loot sheet -- has no second
 // list to be told apart from, so it is considered carried.
+//
+// The answer is arrived at by exclusion so that equipment whose root is in neither list is treated as carried, too.
+// That covers an editor's working clone of a top-level row, which is made with the row's own parent (nil, in that
+// case) and so is rooted outside both lists, as well as a row in flight between lists. Answering "carried" for those
+// mirrors the no-entity case and keeps an editor's preview in agreement with the sheet. The one thing it cannot get
+// right is such a clone of a top-level row from the other equipment list, which reports itself carried; nothing on the
+// clone says otherwise.
 func (e *Equipment) IsCarried() bool {
 	entity := EntityFromNode(e)
 	if entity == nil {
@@ -528,7 +535,7 @@ func (e *Equipment) IsCarried() bool {
 	for root.parent != nil {
 		root = root.parent
 	}
-	return slices.Contains(entity.CarriedEquipment, root)
+	return !slices.Contains(entity.OtherEquipment, root)
 }
 
 // Depth returns the number of parents this node has.

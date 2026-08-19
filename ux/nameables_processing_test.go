@@ -73,6 +73,47 @@ func TestProcessNameablesRebuildsThroughAReplacedTable(t *testing.T) {
 	c.Equal(1, counter.count, "the substitutions must be reflected by a rebuild of the live list's owner")
 }
 
+// TestProcessNameablesRebuildsThroughAReplacedTableForModifierRows verifies the same for the alternate drop path's
+// call, where the rows handed over are the dropped modifiers rather than the rows of the table that came with them.
+// The lookup for the live table therefore can't be driven by the row type, since it doesn't match the table's.
+func TestProcessNameablesRebuildsThroughAReplacedTableForModifierRows(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Claws"
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	stale := sheet.Traits.Table
+	c.Equal(-1, switchColumnIndex(stale.Columns, gurps.TraitSwitchColumn),
+		"the traits list must start out without the switch column")
+
+	// Stand in for the rebuild the alternate drop path performs before it prompts: the modifier that was dropped onto
+	// the trait is enabled and carries a switchable feature, so the trait now has switchable features, which brings the
+	// switch column into view, and a list can only gain a column by being built anew -- leaving the table captured
+	// above orphaned. The modifier's own name is what needs a substitution, so it is the modifier, not the trait, that
+	// the prompt is asked for.
+	modifier := newSwitchableTraitModifier("@Material@ Coating")
+	modifier.Disabled = false
+	trait.Modifiers = []*gurps.TraitModifier{modifier}
+	sheet.Rebuild(true)
+	c.NotEqual(stale, sheet.Traits.Table, "gaining the switch column must replace the traits table")
+	c.Nil(unison.Ancestor[Rebuildable](stale), "an orphaned table must have no rebuildable above it")
+
+	counter := installSyncCounter(sheet)
+	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {
+		for _, one := range nameables {
+			one["Material"] = "Steel"
+		}
+		return true
+	})
+	ProcessNameables(stale, []*gurps.TraitModifier{modifier})
+
+	c.Equal(1, *shown, "the modifier's nameable key must be prompted for")
+	c.Equal("Steel Coating", modifier.NameWithReplacements(), "the substitution must be applied to the modifier")
+	c.Equal(1, counter.count, "the substitutions must be reflected by a rebuild of the live list's owner")
+}
+
 // TestAltDropOnTraitAppliesNameablesToTheLiveList verifies the path the fix above was made for: dropping a trait
 // modifier from a library onto a trait rebuilds the sheet before it prompts, and that rebuild replaces the traits list
 // when the dropped modifier gives the trait switchable features. The nameables prompt that follows is handed the

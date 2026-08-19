@@ -111,14 +111,21 @@ func TestLiveTableResolvesReplacedTables(t *testing.T) {
 }
 
 // syncCounter counts the deep syncs that pass over it, making the number of times a single edit re-syncs an entire
-// sheet observable.
+// sheet observable. The optional onSync hook runs with each of them, so that a test can also look at the state the
+// sheet is being brought up to date against.
 type syncCounter struct {
 	unison.Panel
-	count int
+	onSync func()
+	count  int
 }
 
 // Sync implements Syncer.
-func (s *syncCounter) Sync() { s.count++ }
+func (s *syncCounter) Sync() {
+	s.count++
+	if s.onSync != nil {
+		s.onSync()
+	}
+}
 
 // installSyncCounter adds a sync counter to a sheet, where its deep syncs will reach it. It goes directly on the sheet,
 // whose layout is a single column and which a rebuild never touches, so that it survives the page lists being replaced.
@@ -309,6 +316,112 @@ func TestUndoSpanningEveryListSyncsTheSheetOnlyOnce(t *testing.T) {
 		"redo must bring the skills switch column back")
 	c.Nil(ownerNeedingRebuildFor(sheet.Traits.Table), "the traits table's columns must match its provider after redo")
 	c.Nil(ownerNeedingRebuildFor(sheet.Skills.Table), "the skills table's columns must match its provider after redo")
+}
+
+// newSwitchableEquipment returns a non-container piece of equipment carrying a single switchable +1 ST bonus, so that
+// the sheet's list holding it needs the switch column while it is there.
+func newSwitchableEquipment(entity *gurps.Entity, name string) *gurps.Equipment {
+	eqp := gurps.NewEquipment(entity, nil, false)
+	eqp.Name = name
+	eqp.Features = gurps.Features{switchableSTBonus(nil)}
+	return eqp
+}
+
+// TestUndoOfMoveBetweenEquipmentListsSyncsTheSheetOnlyOnce verifies that undoing a move of rows from one of a sheet's
+// lists to another -- what dragging between the carried and other equipment lists and the "Move to Other Equipment"
+// command both register -- updates the sheet a single time, and only once both lists are back in place. Restoring the
+// list the rows landed in and reporting it right away would recalculate the entity and re-sync the whole sheet while
+// the moved item was in neither list, and restoring the list it came from would then pay for the same update again.
+func TestUndoOfMoveBetweenEquipmentListsSyncsTheSheetOnlyOnce(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	eqp := newSwitchableEquipment(entity, "Powered Armor")
+	entity.CarriedEquipment = []*gurps.Equipment{eqp}
+	sheet.Rebuild(true)
+	mgr := unison.UndoManagerFor(sheet.CarriedEquipment.Table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c.Equal(gurps.EquipmentSwitchColumn, sheet.CarriedEquipment.Table.Columns[1].ID,
+		"the switchable item must bring the switch column into the carried equipment list")
+	c.NotEqual(gurps.EquipmentSwitchColumn, sheet.OtherEquipment.Table.Columns[0].ID,
+		"the other equipment list must start out without the switch column")
+
+	sheet.CarriedEquipment.Table.SetSelectionMap(map[tid.TID]bool{eqp.ID(): true})
+	moveSelectedEquipment(sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table)
+	c.Equal(0, len(entity.CarriedEquipment), "the move must take the item out of the carried equipment")
+	c.Equal(1, len(entity.OtherEquipment), "the move must put the item into the other equipment")
+	c.NotEqual(gurps.EquipmentSwitchColumn, sheet.CarriedEquipment.Table.Columns[1].ID,
+		"the switch column must leave the carried equipment list with the item")
+	c.Equal(gurps.EquipmentSwitchColumn, sheet.OtherEquipment.Table.Columns[0].ID,
+		"the switch column must arrive in the other equipment list with the item")
+	c.True(mgr.CanUndo(), "the move must be undoable")
+
+	counter := installSyncCounter(sheet)
+	counter.onSync = func() {
+		c.Equal(1, len(entity.CarriedEquipment)+len(entity.OtherEquipment),
+			"the item must be in exactly one of the two lists whenever the sheet is brought up to date")
+	}
+	mgr.Undo()
+	c.Equal(1, len(entity.CarriedEquipment), "undo must put the item back into the carried equipment")
+	c.Equal(0, len(entity.OtherEquipment), "undo must take the item back out of the other equipment")
+	c.Equal(1, counter.count, "an undo that puts both lists back must sync the sheet exactly once")
+	c.Nil(ownerNeedingRebuildFor(sheet.CarriedEquipment.Table),
+		"the carried equipment list's columns must match its provider after undo")
+	c.Nil(ownerNeedingRebuildFor(sheet.OtherEquipment.Table),
+		"the other equipment list's columns must match its provider after undo")
+
+	counter.count = 0
+	c.True(mgr.CanRedo(), "the move must be redoable")
+	mgr.Redo()
+	c.Equal(0, len(entity.CarriedEquipment), "redo must take the item back out of the carried equipment")
+	c.Equal(1, len(entity.OtherEquipment), "redo must put the item back into the other equipment")
+	c.Equal(1, counter.count, "a redo that puts both lists back must sync the sheet exactly once")
+	c.Nil(ownerNeedingRebuildFor(sheet.CarriedEquipment.Table),
+		"the carried equipment list's columns must match its provider after redo")
+	c.Nil(ownerNeedingRebuildFor(sheet.OtherEquipment.Table),
+		"the other equipment list's columns must match its provider after redo")
+}
+
+// TestUndoOfDragBetweenSheetsLeavesTheSourceSheetAlone verifies the invariant that lets a drag's undo report itself
+// just once for both of the lists it puts back: they always belong to the same owner. A drag from one sheet to another
+// is a copy rather than a move -- only tables within a single dockable move their data (see the providers'
+// DropShouldMoveData) -- so the source sheet never changes, there is nothing to put back into the list the rows came
+// from, and undoing the drop updates the sheet they landed on alone, exactly once.
+func TestUndoOfDragBetweenSheetsLeavesTheSourceSheetAlone(t *testing.T) {
+	c := check.New(t)
+	source := newTestSheetForTemplate(t)
+	dest := newTestSheetForTemplate(t)
+	sourceEntity := source.Entity()
+	destEntity := dest.Entity()
+	sourceEntity.CarriedEquipment = []*gurps.Equipment{newSwitchableEquipment(sourceEntity, "Powered Armor")}
+	source.Rebuild(true)
+	provider, ok := source.CarriedEquipment.Table.ClientData()[TableProviderClientKey].(TableProvider[*gurps.Equipment])
+	c.True(ok, "the table must have its provider recorded")
+	move := provider.DropShouldMoveData(source.CarriedEquipment.Table, dest.CarriedEquipment.Table)
+	c.False(move, "a drag between two sheets must be a copy rather than a move")
+
+	// Drive the drop the way unison does: collect the undo data, put the dropped row into the destination's model and
+	// select it, then hand off to the drop completion.
+	undo := willDropCallback(source.CarriedEquipment.Table, dest.CarriedEquipment.Table, move)
+	c.NotNil(undo, "the drop must be undoable")
+	c.Nil(undo.BeforeData.From, "a copy leaves nothing to put back into the list the rows came from")
+	dropped := newSwitchableEquipment(destEntity, "Powered Armor")
+	destEntity.CarriedEquipment = []*gurps.Equipment{dropped}
+	dest.CarriedEquipment.Table.SyncToModel()
+	dest.CarriedEquipment.Table.SetSelectionMap(map[tid.TID]bool{dropped.ID(): true})
+	didDropCallback(undo, source.CarriedEquipment.Table, dest.CarriedEquipment.Table, move)
+	c.Equal(gurps.EquipmentSwitchColumn, dest.CarriedEquipment.Table.Columns[1].ID,
+		"the dropped item must bring the switch column into the destination sheet")
+
+	sourceCounter := installSyncCounter(source)
+	destCounter := installSyncCounter(dest)
+	undo.BeforeData.Apply()
+	c.Equal(0, len(destEntity.CarriedEquipment), "undo must take the item back out of the destination sheet")
+	c.Equal(1, len(sourceEntity.CarriedEquipment), "undo must leave the source sheet's item where it is")
+	c.Equal(1, destCounter.count, "undoing the drop must sync the destination sheet exactly once")
+	c.Equal(0, sourceCounter.count, "undoing the drop must not touch the source sheet at all")
+	c.Nil(ownerNeedingRebuildFor(dest.CarriedEquipment.Table),
+		"the destination's carried equipment list's columns must match its provider after undo")
 }
 
 // TestUndoOfApplyTemplateSyncsTheSheetOnlyOnce verifies the same thing for the other multi-table undo: undoing an
