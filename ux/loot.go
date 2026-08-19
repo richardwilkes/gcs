@@ -383,7 +383,7 @@ func (l *LootSheet) MarkModified(_ unison.Paneler) {
 		l.awaitingUpdate = true
 		h, v := l.scroll.Position()
 		focusRefKey := l.targetMgr.CurrentFocusRef()
-		l.loot.ModifiedOn = jio.Now()
+		l.bumpModificationTimestamp()
 		DeepSync(l)
 		UpdateTitleForDockable(l)
 		l.awaitingUpdate = false
@@ -391,6 +391,11 @@ func (l *LootSheet) MarkModified(_ unison.Paneler) {
 		l.targetMgr.ReacquireFocus(focusRefKey, l.toolbar, l.scroll.Content())
 		l.scroll.SetPosition(h, v)
 	}
+}
+
+// bumpModificationTimestamp implements modificationTimestampBumper.
+func (l *LootSheet) bumpModificationTimestamp() {
+	l.loot.ModifiedOn = jio.Now()
 }
 
 // MayAttemptClose implements unison.TabCloser.

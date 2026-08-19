@@ -81,6 +81,6 @@ func (a *ApplyTemplateUndoEditData) Apply() {
 	}
 	// Bumping the modification timestamp is the one thing marking the sheet as modified would have done that the
 	// rebuild doesn't, and it has to happen before the rebuild for the panel showing it to pick up the new value.
-	a.sheet.modifiedFunc()
+	a.sheet.bumpModificationTimestamp()
 	a.sheet.Rebuild(true)
 }

@@ -535,7 +535,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		// as a side effect of the tab asking whether the sheet had unsaved changes, which recalculated the entity on
 		// its way to hashing it.
 		s.entity.Recalculate()
-		s.modifiedFunc()
+		s.bumpModificationTimestamp()
 		UpdateTitleForDockable(s)
 		skipDeepSync := false
 		if !xreflect.IsNil(src) {
@@ -562,6 +562,11 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		}
 		UpdateCalculator(s)
 	}
+}
+
+// bumpModificationTimestamp implements modificationTimestampBumper.
+func (s *Sheet) bumpModificationTimestamp() {
+	s.modifiedFunc()
 }
 
 // MayAttemptClose implements unison.TabCloser

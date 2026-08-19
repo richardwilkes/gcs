@@ -190,6 +190,62 @@ func TestUndoOfOrdinaryEditSyncsTheSheetOnlyOnce(t *testing.T) {
 	c.Equal(1, counter.count, "an undo that leaves the columns alone must still sync the sheet exactly once")
 }
 
+// TestUndoOfColumnChangingEditBumpsTheModificationTimestamp verifies that an undo which has to bring a column into or
+// out of view still reports the sheet as having been changed. Such an undo rebuilds the sheet instead of marking the
+// table as modified, and the rebuild does everything marking as modified would do except bump the modification
+// timestamp, so the undo has to bump it itself. Otherwise undoing the deletion of the last switchable row would leave
+// the sheet claiming it hadn't been touched since it was last saved, while the same undo on any other row would not.
+func TestUndoOfColumnChangingEditBumpsTheModificationTimestamp(t *testing.T) {
+	c := check.New(t)
+	sheet, trait := newSheetWithSwitchableTrait(t)
+	entity := sheet.Entity()
+	mgr := unison.UndoManagerFor(sheet.Traits.Table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+
+	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	DeleteSelection(sheet.Traits.Table, true)
+	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"the switch column must go away with the last switchable row")
+
+	entity.ModifiedOn = jio.Time{}
+	mgr.Undo()
+	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID, "undo must bring the switch column back")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "an undo that rebuilds the sheet must bump the modification timestamp")
+
+	entity.ModifiedOn = jio.Time{}
+	mgr.Redo()
+	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"redo must take the switch column away again")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "a redo that rebuilds the sheet must bump the modification timestamp")
+}
+
+// TestUndoOfOrdinaryEditBumpsTheModificationTimestamp verifies the other half of that: an undo that leaves the column
+// set alone marks the table as modified rather than rebuilding, which has to bump the modification timestamp as well,
+// so that both paths look the same to the user.
+func TestUndoOfOrdinaryEditBumpsTheModificationTimestamp(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Plain"
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	table := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+
+	table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	DeleteSelection(table, true)
+	c.Equal(0, len(entity.Traits), "the trait must be gone from the entity")
+
+	entity.ModifiedOn = jio.Time{}
+	mgr.Undo()
+	c.Equal(table, sheet.Traits.Table, "an unchanged column set must leave the traits table in place")
+	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn,
+		"an undo that leaves the columns alone must bump the modification timestamp, too")
+}
+
 // newSwitchableSkill returns a non-container skill carrying a single switchable +1 ST bonus, so that a sheet's skills
 // list needs the switch column while the skill is in it.
 func newSwitchableSkill(entity *gurps.Entity, name string) *gurps.Skill {

@@ -13,4 +13,5 @@
 
 ## Bug Fixes
 
-- (none yet)
+- The `equipped` property of equipment in scripts now reports `false` for items in the Other Equipment list, since
+  those items don't affect the character no matter what their equipped flag says.

@@ -121,10 +121,19 @@ func (p *traitsProvider) AltDropSupport() *AltDropSupport {
 						if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
 							rebuilder.Rebuild(true)
 						}
-						// The prompt has to be given the row the modifiers were dropped onto, since modifiers
-						// themselves aren't something ProcessModifiers can process.
-						ProcessModifiers(p.table, []*gurps.Trait{rowData})
-						ProcessNameables(p.table, rows)
+						// That rebuild can have replaced this very list: an enabled modifier carrying a
+						// switchable feature gives the row it was dropped onto switchable features, which brings
+						// the switch column into view, and a list can only change its columns by building a new
+						// table. p belongs to the list that was replaced and its table field is never updated, so
+						// each prompt below has to be aimed at the table that took its place -- an orphan has no
+						// Rebuildable above it, so the rebuild its answer asks for would silently be skipped. The
+						// lookup is made twice because answering the modifier prompt rebuilds as well, which can
+						// replace the list a second time.
+						//
+						// The modifier prompt has to be given the row the modifiers were dropped onto, since
+						// modifiers themselves aren't something ProcessModifiers can process.
+						ProcessModifiers(liveTable(p.table), []*gurps.Trait{rowData})
+						ProcessNameables(liveTable(p.table), rows)
 					}
 				}
 			}

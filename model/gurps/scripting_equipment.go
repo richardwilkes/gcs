@@ -63,7 +63,10 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 		return r.ToValue(fxp.AsFloat[float64](fxp.Int(item.ExtendedWeight(false, fxp.Pound))))
 	}
 	m["weightIgnoredForSkills"] = func() goja.Value { return r.ToValue(item.WeightIgnoredForSkills) }
-	m["equipped"] = func() goja.Value { return r.ToValue(item.ReallyEquipped()) }
+	// To a script, "equipped" means "affecting the character", so an item in the other equipment list is never
+	// equipped: the character collects nothing from that list, and the equipped flag is meaningless there, since
+	// nothing clears it when an item is created in or moved to it.
+	m["equipped"] = func() goja.Value { return r.ToValue(item.IsCarried() && item.ReallyEquipped()) }
 	m["container"] = func() goja.Value { return r.ToValue(item.Container()) }
 	m["switchedOn"] = func() goja.Value { return r.ToValue(item.SwitchedOn) }
 	m["notes"] = func() goja.Value {

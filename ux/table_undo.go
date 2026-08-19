@@ -83,10 +83,15 @@ func (r *restoredTables) report() {
 	// back may require the owner to rebuild its lists to bring such a column into or out of view. Which of the two is
 	// needed can't be known until the data is back in place, which is why restoring doesn't report the change on its
 	// own: a rebuild already recalculates the entity, re-syncs every table, refreshes the search results and restores
-	// the focus and scroll position, i.e. everything marking a table as modified would do. So exactly one of the two is
-	// done, once for the whole undo rather than once per table, since on a sheet that may hold hundreds of rows all of
-	// that work is the entire cost of the edit and an undo spanning six tables would otherwise pay it six times over.
+	// the focus and scroll position, i.e. all that marking a table as modified would do apart from bumping the owner's
+	// modification timestamp, which is therefore done here as well. So exactly one of the two is done, once for the
+	// whole undo rather than once per table, since on a sheet that may hold hundreds of rows all of that work is the
+	// entire cost of the edit and an undo spanning six tables would otherwise pay it six times over.
 	if !xreflect.IsNil(r.owner) {
+		if bumper, ok := r.owner.(modificationTimestampBumper); ok {
+			// The bump has to happen before the rebuild for the panel showing it to pick up the new value.
+			bumper.bumpModificationTimestamp()
+		}
 		r.owner.Rebuild(true)
 		return
 	}
@@ -94,6 +99,19 @@ func (r *restoredTables) report() {
 		MarkModified(r.table)
 	}
 }
+
+// modificationTimestampBumper is implemented by those owners that record when their data was last changed. Marking such
+// an owner as modified bumps that timestamp, but rebuilding it doesn't, so anything that rebuilds in place of marking
+// as modified has to ask for the bump itself. Not every owner has one -- a template's modification time is whatever the
+// file system says it is -- which is why this is an optional interface rather than part of Rebuildable.
+type modificationTimestampBumper interface {
+	bumpModificationTimestamp()
+}
+
+var (
+	_ modificationTimestampBumper = &Sheet{}
+	_ modificationTimestampBumper = &LootSheet{}
+)
 
 // ownerNeedingRebuildFor returns the owner that has to rebuild its lists for the given table to show the columns its
 // provider now calls for, or nil if the columns already match or there is no owner to ask.

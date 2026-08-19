@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"encoding/json/v2"
+	"slices"
 	"strings"
 	"testing"
 
@@ -1011,12 +1012,13 @@ func TestContainerSwitchIsClearedForSkillsAndSpells(t *testing.T) {
 	}
 }
 
-// TestEquipmentSwitchCellDimming verifies when the equipment switch cell is drawn dimmed. The switch column is shown
-// for the other equipment list as well as the carried one, and nothing in the other list is ever equipped, so keying
-// the dimming off the equipped state alone would dim every switch there -- including the ones that genuinely change
-// something. Dimming means "throwing this switch would change nothing right now", so it may only happen when every
-// switchable feature the item contributes is one that reaches the character solely through the entity's collection
-// pass over really-equipped carried equipment. Either way the cell stays a live switch; the dimming is purely visual.
+// TestEquipmentSwitchCellDimming verifies when the equipment switch cell is drawn dimmed. Dimming means "throwing this
+// switch would change nothing right now", so it may only happen when every switchable feature the item contributes is
+// one that reaches the character solely through the entity's collection pass over really-equipped carried equipment.
+// The switch column is shown for the other equipment list as well as the carried one, and the equipped flag says
+// nothing useful there -- new equipment starts out equipped and nothing clears the flag when an item is created in or
+// moved to that list -- so both the list the item is rooted in and its equipped state have to be taken into account.
+// Either way the cell stays a live switch; the dimming is purely visual.
 func TestEquipmentSwitchCellDimming(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -1052,11 +1054,14 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 		bonus.Switchable = true
 		return bonus
 	}
+	// Both constructors put what they build into the entity's carried equipment list, since that is where an item has
+	// to live for the character to collect anything from it at all.
 	item := func(features ...Feature) *Equipment {
 		eqp := NewEquipment(e, nil, false)
 		eqp.Name = "Amulet"
 		eqp.Equipped = false
 		eqp.Features = features
+		e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 		return eqp
 	}
 	withWeapon := func(eqp *Equipment) *Equipment {
@@ -1074,7 +1079,22 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 		child.Name = "Anvil"
 		child.BaseWeight = "10 lb"
 		bag.Children = []*Equipment{child}
+		e.CarriedEquipment = append(e.CarriedEquipment, bag)
 		return bag
+	}
+	// inOther moves a top-level item the constructors above placed in the carried list over to the other equipment
+	// list, leaving its equipped flag alone.
+	inOther := func(eqp *Equipment) *Equipment {
+		e.CarriedEquipment = slices.DeleteFunc(e.CarriedEquipment, func(one *Equipment) bool { return one == eqp })
+		e.OtherEquipment = append(e.OtherEquipment, eqp)
+		return eqp
+	}
+	nested := func(parent *Equipment, features ...Feature) *Equipment {
+		child := NewEquipment(e, parent, false)
+		child.Name = "Ring"
+		child.Features = features
+		parent.Children = append(parent.Children, child)
+		return child
 	}
 
 	for _, tc := range []struct {
@@ -1083,7 +1103,7 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 		dim   bool
 	}{
 		{
-			name: "equipped item with an entity-collected feature",
+			name: "carried, equipped item with an entity-collected feature",
 			build: func() *Equipment {
 				eqp := item(attributeBonus())
 				eqp.Equipped = true
@@ -1094,6 +1114,73 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 			name:  "unequipped item with an entity-collected feature",
 			build: func() *Equipment { return item(attributeBonus()) },
 			dim:   true,
+		},
+		{
+			// Nothing clears the equipped flag when an item is created in or moved to the other equipment list, so
+			// the flag can't be trusted there: the character collects nothing from that list.
+			name: "equipped item in the other list with an entity-collected feature",
+			build: func() *Equipment {
+				eqp := item(attributeBonus())
+				eqp.Equipped = true
+				return inOther(eqp)
+			},
+			dim: true,
+		},
+		{
+			name: "equipped container in the other list with a contained weight reduction",
+			build: func() *Equipment {
+				bag := fullBag(weightReduction())
+				bag.Equipped = true
+				return inOther(bag)
+			},
+		},
+		{
+			name: "equipped item in the other list with a 'this equipment' max uses bonus",
+			build: func() *Equipment {
+				eqp := item(maxUsesBonus(equipmentsel.ThisEquipment))
+				eqp.Equipped = true
+				return inOther(eqp)
+			},
+		},
+		{
+			// Which list an item belongs to is decided by the root of the tree it lives in, so an equipped item
+			// tucked inside a container in the other list is no more use to the character than the container is.
+			name: "equipped child of an equipped container in the other list",
+			build: func() *Equipment {
+				bag := fullBag()
+				bag.Equipped = true
+				return nested(inOther(bag), attributeBonus())
+			},
+			dim: true,
+		},
+		{
+			name: "equipped child of an equipped carried container",
+			build: func() *Equipment {
+				bag := fullBag()
+				bag.Equipped = true
+				return nested(bag, attributeBonus())
+			},
+		},
+		{
+			// A library list, a template and a loot sheet have no owning entity and therefore no carried/other split,
+			// so the equipped state alone decides there. The switch column is never shown outside a character sheet,
+			// so this only has to stay sensible, not visible.
+			name: "equipped item with no owning entity",
+			build: func() *Equipment {
+				eqp := NewEquipment(nil, nil, false)
+				eqp.Features = Features{attributeBonus()}
+				return eqp
+			},
+		},
+		{
+			name: "unequipped item with no owning entity",
+			build: func() *Equipment {
+				eqp := NewEquipment(nil, nil, false)
+				eqp.Equipped = false
+				eqp.Features = Features{attributeBonus()}
+				return eqp
+			},
+			dim: true,
 		},
 		{
 			name:  "unequipped container with a contained weight reduction",
@@ -1194,4 +1281,126 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 	var data CellData
 	item(NewAttributeBonus(StrengthID)).CellData(EquipmentSwitchColumn, &data)
 	c.NotEqual(cell.Switch, data.Type, "an item with nothing switchable gets no switch cell")
+}
+
+// TestTraitSwitchCellDimming verifies when the trait switch cell is drawn dimmed. A disabled trait -- or one inside a
+// disabled container -- is in the same position as unequipped equipment: every collection pass over the traits skips
+// the ones that aren't enabled, so its features, its modifiers' features, its weapons and its reactions and
+// conditional modifiers are all left out, and even the one thing a trait resolves from its own switchable features,
+// ResolvedMaxLevels, is only consulted for enabled traits. Throwing the switch therefore changes nothing the user can
+// see, which is exactly what dimming means. As with equipment, the cell stays a live switch; the dimming is purely
+// visual.
+func TestTraitSwitchCellDimming(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	attributeBonus := func() Feature {
+		bonus := NewAttributeBonus(StrengthID)
+		bonus.Switchable = true
+		return bonus
+	}
+	maxLevelBonus := func() Feature {
+		bonus := NewTraitMaxLevelBonus()
+		bonus.SelectionType = traitsel.ThisTrait
+		bonus.Amount = "+2"
+		bonus.Switchable = true
+		return bonus
+	}
+	trait := func(features ...Feature) *Trait {
+		one := NewTrait(e, nil, false)
+		one.Name = "Gadget"
+		one.Features = features
+		e.Traits = append(e.Traits, one)
+		return one
+	}
+	inContainer := func(one *Trait) *Trait {
+		parent := NewTrait(e, nil, true)
+		parent.Name = "Gadgets"
+		e.Traits = slices.DeleteFunc(e.Traits, func(other *Trait) bool { return other == one })
+		one.SetParent(parent)
+		parent.Children = []*Trait{one}
+		e.Traits = append(e.Traits, parent)
+		return one
+	}
+
+	for _, tc := range []struct {
+		name  string
+		build func() *Trait
+		dim   bool
+	}{
+		{
+			name:  "enabled trait",
+			build: func() *Trait { return trait(attributeBonus()) },
+		},
+		{
+			name: "disabled trait",
+			build: func() *Trait {
+				one := trait(attributeBonus())
+				one.Disabled = true
+				return one
+			},
+			dim: true,
+		},
+		{
+			name: "enabled trait inside an enabled container",
+			build: func() *Trait {
+				return inContainer(trait(attributeBonus()))
+			},
+		},
+		{
+			name: "enabled trait inside a disabled container",
+			build: func() *Trait {
+				one := inContainer(trait(attributeBonus()))
+				one.Parent().Disabled = true
+				return one
+			},
+			dim: true,
+		},
+		{
+			name: "disabled trait whose switchable feature comes from a modifier",
+			build: func() *Trait {
+				one := trait()
+				mod := NewTraitModifier(e, nil, false)
+				mod.Name = "Blessed"
+				mod.Features = Features{attributeBonus()}
+				one.Modifiers = []*TraitModifier{mod}
+				one.Disabled = true
+				return one
+			},
+			dim: true,
+		},
+		{
+			// ResolvedMaxLevels applies a switchable "to this trait" maximum level bonus without asking the entity
+			// for anything, but the only thing that consults it for a sheet's traits skips the disabled ones, so the
+			// switch is still inert here.
+			name: "disabled trait with a 'this trait' maximum level bonus",
+			build: func() *Trait {
+				one := trait(maxLevelBonus())
+				one.CanLevel = true
+				one.MaxLevels = "3"
+				one.Levels = fxp.One
+				one.Disabled = true
+				return one
+			},
+			dim: true,
+		},
+	} {
+		one := tc.build()
+		var data CellData
+		one.CellData(TraitSwitchColumn, &data)
+		c.Equal(cell.Switch, data.Type, "%s: the cell is still a switch", tc.name)
+		c.Equal(tc.dim, data.Dim, "%s: dim state", tc.name)
+
+		// Dimming is purely visual: the cell must still report the switch's state so it stays clickable.
+		one.SetSwitchedOn(true)
+		data = CellData{}
+		one.CellData(TraitSwitchColumn, &data)
+		c.Equal(cell.Switch, data.Type, "%s: the cell is still a switch while on", tc.name)
+		c.True(data.Checked, "%s: the cell reports the switch as on", tc.name)
+		c.Equal(tc.dim, data.Dim, "%s: dim state doesn't depend on the switch's own state", tc.name)
+	}
+
+	// A trait with nothing to switch gets no switch cell at all, dimmed or otherwise.
+	var data CellData
+	trait(NewAttributeBonus(StrengthID)).CellData(TraitSwitchColumn, &data)
+	c.NotEqual(cell.Switch, data.Type, "a trait with nothing switchable gets no switch cell")
 }
