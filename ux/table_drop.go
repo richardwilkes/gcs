@@ -170,7 +170,7 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 	if isForCharacterOrLootSheet(to) || isForTemplate(to) {
 		// Only process modifiers and nameables when the drop comes from something besides a character, loot sheet
 		// or template; rows already on one of those have had these resolved.
-		if !(isForCharacterOrLootSheet(from) || isForTemplate(from)) {
+		if !isForCharacterOrLootSheet(from) && !isForTemplate(from) {
 			ProcessModifiersForSelection(to)
 			// Answering the modifier prompt rebuilds the owner all over again, and that rebuild can replace the tables
 			// just as the one above did: only the modifiers that are enabled count toward a row having switchable

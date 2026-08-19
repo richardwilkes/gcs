@@ -356,12 +356,12 @@ func copySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 // then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
 // destination isn't a character or loot sheet.
 func processCopiedRowsForSheet[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
-	if !(isForCharacterOrLootSheet(target) || isForTemplate(target)) {
+	if !isForCharacterOrLootSheet(target) && !isForTemplate(target) {
 		return
 	}
 	// Only process modifiers and nameables when copying from something besides a character or loot sheet; rows already
 	// on a sheet have had these resolved.
-	if !(isForCharacterOrLootSheet(source) || isForTemplate(source)) {
+	if !isForCharacterOrLootSheet(source) && !isForTemplate(source) {
 		ProcessModifiersForSelection(target)
 		// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us: only
 		// the modifiers that are enabled count toward a row having switchable features, so turning one on or off can
