@@ -327,3 +327,51 @@ func TestMergeAddedRows(t *testing.T) {
 		c.Equal(0, len(containerChildren[0].Children()), "the merged child must no longer be in the view")
 	})
 }
+
+// TestTemplateReplacesAListWhoseColumnsChanged verifies that a template rebuilds a list from scratch when the columns
+// it has to show no longer match the ones it has, and that the "New ..." commands then create their items in the list
+// that took its place. A template's equipment list follows the global sheet settings for its TL and LC columns, which
+// the user can change while the template is open; a list that was merely synced would go on showing the old columns,
+// and a command that captured the list when the template was created would be creating items in an orphan afterwards
+// -- the model would gain the item, but it would be neither selected in the list on screen nor undoable, since an
+// orphaned table can't find the undo manager.
+func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
+	c := check.New(t)
+	settings := gurps.GlobalSettings().SheetSettings()
+	saved := settings.HideTLColumn
+	t.Cleanup(func() { settings.HideTLColumn = saved })
+	settings.HideTLColumn = false
+
+	data := gurps.NewTemplate()
+	template := newTestTemplateDockable("My Template", data)
+	stale := template.Equipment
+	c.True(columnsMatchProvider(stale.Table), "the equipment list must start out with the columns its provider wants")
+	hasTL := func(table *unison.Table[*Node[*gurps.Equipment]]) bool {
+		for _, col := range table.Columns {
+			if col.ID == gurps.EquipmentTLColumn {
+				return true
+			}
+		}
+		return false
+	}
+	c.True(hasTL(stale.Table), "the TL column must be shown while the setting says to show it")
+
+	settings.HideTLColumn = true
+	template.Rebuild(true)
+	c.NotEqual(stale, template.Equipment, "hiding the TL column must have replaced the equipment list")
+	c.True(columnsMatchProvider(template.Equipment.Table), "the replacement must have the columns its provider wants")
+	c.False(hasTL(template.Equipment.Table), "the replacement must not have the TL column")
+
+	mgr := template.UndoManager()
+	c.NotNil(mgr, "the template must have an undo manager")
+	c.False(mgr.CanUndo(), "nothing has been done yet")
+	template.AsPanel().PerformCmd(nil, NewCarriedEquipmentItemID)
+	c.Equal(1, len(data.Equipment), "the command must have added an item to the template")
+	c.Equal(1, template.Equipment.Table.RootRowCount(), "the new row must be in the list that is on screen")
+	c.True(template.Equipment.Table.CopySelectionMap()[data.Equipment[0].ID()],
+		"the new row must be selected in the list that is on screen")
+	c.True(mgr.CanUndo(), "creating an item must be undoable")
+	mgr.Undo()
+	c.Equal(0, len(data.Equipment), "undo must take the new item back out of the template")
+	c.Equal(0, template.Equipment.Table.RootRowCount(), "undo must take the row back out of the list on screen")
+}

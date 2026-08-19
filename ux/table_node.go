@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -278,6 +279,8 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground,
 		return n.createLabelCell(c, width, foreground, background, selected)
 	case cell.Toggle:
 		return n.createToggleCell(c, foreground)
+	case cell.Switch:
+		return n.createSwitchCell(c, foreground)
 	case cell.PageRef:
 		return n.createPageRefCell(c, width, foreground)
 	case cell.Markdown:
@@ -494,75 +497,140 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 	}
 }
 
-func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
-	check := unison.NewLabel()
-	check.VAlign = align.Start
+// newCheckCell creates a cell that toggles its checked state when clicked. svgFor supplies the SVG to draw for a given
+// state, or nil if nothing should be drawn for it, and onClick is called with the cell and the modifiers that were
+// down at the time of the click, after c.Checked has been updated to its new state. onClick returns whether it took the
+// change; if it didn't, the cell is put back the way it was, so that it never shows a state the model didn't take on.
+//
+// Only a single click of the primary button toggles the cell. A press of any other button is deliberately left
+// unconsumed, so that the table's own handling gets it and selects the row and pops up its context menu -- these cells
+// sit at the very front of the page lists, where they are a natural right-click target. A primary press with any other
+// click count is consumed, but doesn't toggle: the second click of a double-click would otherwise flip the state
+// straight back, leaving the item unchanged at the cost of two undo edits, and passing it along would instead have the
+// table open the row's editor. The drag and up callbacks report the same consumption as the press they belong to, so
+// that a press the cell didn't take is left to the table from beginning to end.
+func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor func(on bool) *unison.SVG,
+	onClick func(label *unison.Label, mods mod.Modifiers) bool,
+) *unison.Label {
+	label := unison.NewLabel()
+	label.VAlign = align.Start
 	font := n.primaryFieldFont()
 	fd := font.Descriptor()
 	fd.Size -= 2
-	check.Font = fd.Font()
-	check.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 1}))
+	label.Font = fd.Font()
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 1}))
 	baseline := font.Baseline()
-	if c.Checked {
-		check.Drawable = &unison.DrawableSVG{
-			SVG:  unison.CheckmarkSVG,
-			Size: geom.Size{Width: baseline, Height: baseline},
-		}
-		check.SetEnabled(!c.Dim)
-	}
-	check.HAlign = c.Alignment
-	check.OnBackgroundInk = foreground
-	if c.Tooltip != "" {
-		check.Tooltip = newWrappedTooltip(c.Tooltip)
-	}
-	check.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
-		c.Checked = !c.Checked
-		handleCheck(n.data, check, c.Checked)
-		if c.Checked {
-			check.Drawable = &unison.DrawableSVG{
-				SVG:  unison.CheckmarkSVG,
+	setDrawable := func(on bool) {
+		if svg := svgFor(on); svg != nil {
+			label.Drawable = &unison.DrawableSVG{
+				SVG:  svg,
 				Size: geom.Size{Width: baseline, Height: baseline},
 			}
 		} else {
-			check.Drawable = nil
+			label.Drawable = nil
 		}
-		check.MarkForLayoutAndRedraw()
-		MarkModified(check)
+	}
+	setDrawable(c.Checked)
+	label.HAlign = c.Alignment
+	label.OnBackgroundInk = foreground
+	if c.Tooltip != "" {
+		label.Tooltip = newWrappedTooltip(c.Tooltip)
+	}
+	tookPress := false
+	label.MouseDownCallback = func(_ geom.Point, button, clickCount int, mods mod.Modifiers) bool {
+		tookPress = button == unison.ButtonLeft
+		if !tookPress || clickCount != 1 {
+			return tookPress
+		}
+		c.Checked = !c.Checked
+		// The new state is drawn and a layout asked for before the click is reported, since reporting it marks the
+		// owner as modified, which re-syncs the table and recreates every cell, leaving this label detached from the
+		// panel tree, where changing its drawable and marking it for layout and redraw would have no effect at all.
+		setDrawable(c.Checked)
+		label.MarkForLayoutAndRedraw()
+		if !onClick(label, mods) {
+			c.Checked = !c.Checked
+			setDrawable(c.Checked)
+			label.MarkForLayoutAndRedraw()
+		}
 		return true
 	}
-	check.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
-		return true
+	label.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
+		return tookPress
 	}
-	check.MouseUpCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
-		return true
+	label.MouseUpCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
+		return tookPress
+	}
+	return label
+}
+
+func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
+	check := n.newCheckCell(c, foreground,
+		func(on bool) *unison.SVG {
+			if on {
+				return unison.CheckmarkSVG
+			}
+			return nil
+		},
+		func(label *unison.Label, _ mod.Modifiers) bool {
+			if !handleCheck(n.data, label, c.Checked) {
+				MarkModified(label)
+			}
+			return true
+		})
+	if c.Checked {
+		check.SetEnabled(!c.Dim)
 	}
 	return check
 }
 
-func handleCheck(data any, check unison.Paneler, checked bool) {
+// createSwitchCell creates the cell for a switch column. Unlike a toggle cell, the "off" state is drawn (as a dash), so
+// that a row whose switch is off can be told apart from one that has nothing to switch (which gets a blank cell).
+func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
+	label := n.newCheckCell(c, foreground,
+		func(on bool) *unison.SVG {
+			if on {
+				return unison.CheckmarkSVG
+			}
+			return unison.DashSVG
+		},
+		func(label *unison.Label, mods mod.Modifiers) bool {
+			return toggleFeatureSwitch(n, label, c.Checked, mods.OptionDown())
+		})
+	if c.Dim {
+		// The switch of an item that isn't currently contributing its features -- a piece of equipment that isn't
+		// equipped, a trait that is turned off -- is drawn dimmed to say so, which is exactly what a disabled label
+		// does: Label.DefaultDraw applies the disabled filter whenever the label isn't enabled. Disabling it costs
+		// nothing here, because a cell is not a panel the window dispatches to. The table hands mouse events to its
+		// cells itself (Table.DefaultMouseDown and friends locate the cell panel and call it directly), and its
+		// tooltip lookup does the same; neither consults the cell's enabled state, and the window only ever sees the
+		// table, since a cell is attached to it for the duration of a single event rather than being one of its
+		// children. So the switch stays every bit as usable as an undimmed one, which it has to be: dimming here says
+		// the switch has no effect at the moment, not that it can't be thrown.
+		label.SetEnabled(false)
+	}
+	return label
+}
+
+// handleCheck applies the new state of a toggle cell to the item it belongs to, registering an undoable edit. It
+// returns true if it has already reported the change to the item's owner, in which case the caller must not mark the
+// owner as modified on top of that; false means the caller has to do the reporting.
+func handleCheck(data any, check unison.Paneler, checked bool) bool {
 	switch item := data.(type) {
 	case *gurps.Equipment:
-		item.Equipped = checked
-		if mgr := unison.UndoManagerFor(check); mgr != nil {
-			owner := unison.AncestorOrSelf[Rebuildable](check)
-			mgr.Add(&unison.UndoEdit[*equipmentAdjuster]{
-				ID:       unison.NextUndoID(),
-				EditName: i18n.Text("Toggle Equipped"),
-				UndoFunc: func(edit *unison.UndoEdit[*equipmentAdjuster]) { edit.BeforeData.Apply() },
-				RedoFunc: func(edit *unison.UndoEdit[*equipmentAdjuster]) { edit.AfterData.Apply() },
-				BeforeData: &equipmentAdjuster{
-					Owner:    owner,
-					Target:   item,
-					Equipped: !item.Equipped,
-				},
-				AfterData: &equipmentAdjuster{
-					Owner:    owner,
-					Target:   item,
-					Equipped: item.Equipped,
-				},
-			})
-		}
-		gurps.EntityFromNode(item).Recalculate()
+		// Equipping or unequipping an item is routed through the same machinery as the Toggle Equipped command, so that
+		// the two behave identically: the owner is rebuilt rather than merely marked as modified, since an item that
+		// starts or stops contributing takes its weapons, reactions and conditional modifiers into or out of play,
+		// and whether the lists showing those appear on the page at all -- along with which columns they hold -- is
+		// decided only when the owner creates its lists. Nothing gets reported when there is no owner to report to,
+		// which is exactly when marking as modified would find nothing to tell either.
+		owner := unison.AncestorOrSelf[Rebuildable](check)
+		adjustTargets(i18n.Text("Toggle Equipped"), owner, check, gurps.EntityFromNode(item), []*gurps.Equipment{item},
+			func(e *gurps.Equipment) bool { return e.Equipped },
+			func(e *gurps.Equipment, v bool) { e.Equipped = v },
+			func(e *gurps.Equipment) { e.Equipped = checked },
+			true)
+		return !xreflect.IsNil(owner)
 	case *gurps.TraitModifier:
 		item.Disabled = !checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
@@ -584,7 +652,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		gurps.EntityFromNode(item).Recalculate()
+		recalculateEntityFor(item, check)
 	case *gurps.EquipmentModifier:
 		item.Disabled = !checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
@@ -606,7 +674,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		gurps.EntityFromNode(item).Recalculate()
+		recalculateEntityFor(item, check)
 	case *gurps.Weapon:
 		item.Hide = checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
@@ -628,20 +696,9 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		gurps.EntityFromNode(item).Recalculate()
+		recalculateEntityFor(item, check)
 	}
-}
-
-type equipmentAdjuster struct {
-	Owner    Rebuildable
-	Target   *gurps.Equipment
-	Equipped bool
-}
-
-func (e *equipmentAdjuster) Apply() {
-	e.Target.Equipped = e.Equipped
-	gurps.EntityFromNode(e.Target).Recalculate()
-	MarkModified(e.Owner)
+	return false
 }
 
 type equipmentModifierAdjuster struct {
@@ -652,7 +709,7 @@ type equipmentModifierAdjuster struct {
 
 func (e *equipmentModifierAdjuster) Apply() {
 	e.Target.Disabled = e.Disabled || e.Target.Container()
-	gurps.EntityFromNode(e.Target).Recalculate()
+	recalculateEntityFor(e.Target, e.Owner)
 	MarkModified(e.Owner)
 }
 
@@ -664,7 +721,7 @@ type traitModifierAdjuster struct {
 
 func (t *traitModifierAdjuster) Apply() {
 	t.Target.Disabled = t.Disabled || t.Target.Container()
-	gurps.EntityFromNode(t.Target).Recalculate()
+	recalculateEntityFor(t.Target, t.Owner)
 	MarkModified(t.Owner)
 }
 
@@ -676,7 +733,7 @@ type weaponAdjuster struct {
 
 func (w *weaponAdjuster) Apply() {
 	w.Target.Hide = w.Hide
-	gurps.EntityFromNode(w.Target).Recalculate()
+	recalculateEntityFor(w.Target, w.Owner)
 	MarkModified(w.Owner)
 }
 
@@ -928,7 +985,6 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 		SetParents(items, zero)
 		setTopList(append(topList(), items...))
 	}
-	MarkModified(table)
 	table.SetRootRows(rowData(table))
 	table.ValidateScrollRoot()
 	table.RequestFocus()
@@ -943,7 +999,10 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 		undo.AfterData = NewTableUndoEditData(table)
 		mgr.Add(undo)
 	}
-	owner.Rebuild(true)
+	// The change is reported once, by rebuilding the owner: an inserted item can bring a weapon, reaction or
+	// conditional modifier list onto the page, or the switch column into one of the lists, and only a rebuild creates
+	// those. Marking the table as modified on top of that would just repeat the whole update of the owner.
+	rebuildAsModified(owner, true)
 }
 
 // SetParents of each item.

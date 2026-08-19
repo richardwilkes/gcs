@@ -21,9 +21,10 @@ var _ Feature = &CostReduction{}
 
 // CostReduction holds the data for a cost reduction.
 type CostReduction struct {
-	Type       feature.Type `json:"type"`
-	Attribute  string       `json:"attribute,omitzero"`
-	Percentage fxp.Int      `json:"percentage,omitzero"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
+	Attribute  string  `json:"attribute,omitzero"`
+	Percentage fxp.Int `json:"percentage,omitzero"`
 }
 
 // NewCostReduction creates a new CostReduction.
@@ -57,6 +58,7 @@ func (c *CostReduction) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, c.Type)
+	xhash.Bool(h, c.Switchable)
 	xhash.StringWithLen(h, c.Attribute)
 	xhash.Num64(h, c.Percentage)
 }

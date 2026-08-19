@@ -484,6 +484,7 @@ func (p *featuresPanel) addEquipmentMaxUsesModifierLine(parent *unison.Panel, f 
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number, percentage or multiplier, e.g. "-1", "10%" or "x2"`))
 	panel.AddChild(field)
 	addCheckBox(panel, i18n.Text("per level"), &f.PerLevel)
+	addSwitchableCheckBox(panel, f)
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -548,6 +549,7 @@ func (p *featuresPanel) addTraitMaxLevelModifierLine(parent *unison.Panel, f *gu
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number, percentage or multiplier, e.g. "-1", "10%" or "x2"`))
 	panel.AddChild(field)
 	addCheckBox(panel, i18n.Text("per level"), &f.PerLevel)
+	addSwitchableCheckBox(panel, f)
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -738,6 +740,7 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWe
 		return err == nil
 	}
 	wrapper.AddChild(field)
+	addSwitchableCheckBox(wrapper, f)
 	p.addWrapperAtIndex(panel, wrapper, -1, false)
 	return panel, field
 }
@@ -758,6 +761,7 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) (main *
 		f.Percentage = fxp.FromInteger((index + 1) * 5)
 		MarkModified(wrapper)
 	}
+	addSwitchableCheckBox(wrapper, f)
 	p.addWrapperAtIndex(panel, wrapper, -1, true)
 	return panel, pop
 }
@@ -766,6 +770,7 @@ func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Fea
 	panel := unison.NewPanel()
 	p.addTypeSwitcher(panel, f)
 	field, _ := addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
+	addSwitchableCheckBox(panel, f)
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -785,7 +790,7 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 	if wb.Type == feature.WeaponSwitch {
 		wrapper := unison.NewPanel()
 		wrapper.AddChild(switcher)
-		switcher.SetLayoutData(&unison.FlexLayoutData{HSpan: 3})
+		switcher.SetLayoutData(&unison.FlexLayoutData{HSpan: 4})
 		if wb.SwitchType == wswitch.NotSwitched {
 			wb.SwitchType = wswitch.Types[1]
 		}
@@ -794,8 +799,13 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 		wrapper.AddChild(spacer)
 		addPopup(wrapper, wswitch.Types[1:], &wb.SwitchType)
 		focus = addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &wb.SwitchTypeValue)
+		// The checkbox belongs inside the wrapper, at the end of its second row, so that it sits snugly after the last
+		// control just as it does on every other feature row. Placing it beside the wrapper instead would leave it
+		// top-aligned against a two-row neighbor and pinned to the far right edge, since the wrapper's column absorbs
+		// all of the slack.
+		addSwitchableCheckBox(wrapper, wb)
 		wrapper.SetLayout(&unison.FlexLayout{
-			Columns:  3,
+			Columns:  4,
 			HSpacing: unison.StdHSpacing,
 			VSpacing: unison.StdVSpacing,
 		})
@@ -820,6 +830,7 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 			addCheckBox(panel, i18n.Text("per die"), &wb.PerDie)
 		}
 		addCheckBox(panel, i18n.Text("as a %"), &wb.Percent)
+		addSwitchableCheckBox(panel, wb)
 	}
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
@@ -836,7 +847,10 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 
 func (p *featuresPanel) createSelectorOverridePanel(f *gurps.SelectorOverride) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	p.addTypeSwitcher(panel, f)
+	wrapper := unison.NewPanel()
+	p.addTypeSwitcher(wrapper, f)
+	addSwitchableCheckBox(wrapper, f)
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
 	panel.AddChild(unison.NewPanel())
 	focus = p.addSelectorOverrideLine(panel, f)
 	if gurps.SelectorFieldDescriptorFor(f.Field).Scope == gurps.SelectorScopeTrait {
@@ -982,6 +996,17 @@ func (p *featuresPanel) featureTypesList() []feature.Type {
 	return feature.SelectableTypesWithoutContainedWeightReduction
 }
 
+// addSwitchableCheckBox adds the checkbox that marks a feature as switchable, i.e. one that only takes effect while the
+// owning item's switch is on.
+func addSwitchableCheckBox(parent *unison.Panel, f gurps.Feature) *CheckBox {
+	checkBox := NewCheckBox(nil, "", i18n.Text("switchable"),
+		func() check.Enum { return check.FromBool(f.IsSwitchable()) },
+		func(state check.Enum) { f.SetSwitchable(state == check.On) })
+	checkBox.Tooltip = newWrappedTooltip(gurps.SwitchableTooltip())
+	parent.AddChild(checkBox)
+	return checkBox
+}
+
 func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) *unison.PopupMenu[feature.Type] {
 	currentType := f.FeatureType()
 	popup := addPopup(parent, p.featureTypesList(), &currentType)
@@ -994,9 +1019,10 @@ func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) *
 				return
 			}
 			lastFeatureTypeUsed = item
+			newFeature.SetSwitchable(f.IsSwitchable())
 			// Remove the old row by its list position rather than via parent.Parent(): the type switcher isn't nested
-			// at a fixed depth for every feature type (the SelectorOverride row hosts it directly on the base panel),
-			// so walking up from the switcher could reach the whole features panel and delete the entire section.
+			// at a fixed depth for every feature type, so walking up from the switcher could reach the whole features
+			// panel and delete the entire section.
 			p.RemoveChildAtIndex(i + 1) // child 0 is the add button; feature at list index i is at child index i+1
 			list[i] = newFeature
 			p.insertFeaturePanel(i+1, newFeature)

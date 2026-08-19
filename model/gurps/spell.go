@@ -46,6 +46,8 @@ var (
 	_ TechLevelProvider       = &Spell{}
 	_ SkillAdjustmentProvider = &Spell{}
 	_ TemplatePickerProvider  = &Spell{}
+	_ FeatureSwitcher         = &Spell{}
+	_ LeveledOwner            = &Spell{}
 )
 
 // Columns that can be used with the spell method .CellData()
@@ -67,6 +69,7 @@ const (
 	SpellPointsColumn
 	SpellDescriptionForPageColumn
 	SpellLibSrcColumn
+	SpellSwitchColumn
 )
 
 // Spell holds the data for a spell.
@@ -91,6 +94,7 @@ type SpellEditData struct {
 	SpellSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitzero"`
+	ItemSwitch
 	SpellNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 }
@@ -129,6 +133,7 @@ type SpellNonContainerOnlySyncData struct {
 	PrereqCount     int                 `json:"prereq_count,omitzero"`
 	Prereq          *PrereqList         `json:"prereqs,omitzero"`
 	Weapons         []*Weapon           `json:"weapons,omitzero"`
+	Features        Features            `json:"features,omitzero"`
 }
 
 type spellListData struct {
@@ -428,6 +433,10 @@ func SpellsHeaderData(columnID int) HeaderData {
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
 		data.Detail = LibSrcTooltip()
+	case SpellSwitchColumn:
+		data.Title = HeaderSwitch
+		data.TitleIsImageKey = true
+		data.Detail = SwitchHeaderTooltip()
 	}
 	return data
 }
@@ -572,6 +581,15 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			if state != srcstate.Custom {
 				data.Tooltip += "\n" + s.Source.String()
 			}
+		}
+	case SpellSwitchColumn:
+		// Only items that actually have something to switch get a cell; the rest are left blank.
+		if s.HasSwitchableFeatures() {
+			data.Type = cell.Switch
+			data.Checked = s.SwitchedOn
+			data.Alignment = align.Middle
+			// A container never gets here (see HasSwitchableFeatures), so there are never contents to cascade to.
+			data.Tooltip = SwitchCellTooltip(false)
 		}
 	}
 }
@@ -933,9 +951,25 @@ func (s *Spell) Rituals() string {
 	}
 }
 
-// FeatureList returns the list of Features.
-func (s *Spell) FeatureList() Features {
-	return nil
+// IsLeveled implements LeveledOwner.
+func (s *Spell) IsLeveled() bool {
+	return !s.Container()
+}
+
+// CurrentLevel implements LeveledOwner.
+func (s *Spell) CurrentLevel() fxp.Int {
+	return s.LevelData.Level
+}
+
+// ActiveFeatures returns the features of this spell that currently take effect, i.e. all of them except any switchable
+// ones while the spell's switch is off.
+func (s *Spell) ActiveFeatures() Features {
+	return s.Features.Active(s.SwitchedOn)
+}
+
+// HasSwitchableFeatures implements FeatureSwitcher.
+func (s *Spell) HasSwitchableFeatures() bool {
+	return !s.Container() && s.Features.AnySwitchable()
 }
 
 // TagList returns the list of tags.
@@ -1126,6 +1160,9 @@ func (s *Spell) FillWithNameableKeys(m, existing map[string]string) {
 	for _, one := range s.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
+	for _, one := range s.Features {
+		one.FillWithNameableKeys(m, existing)
+	}
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -1150,6 +1187,9 @@ func (s *Spell) Kind() string {
 func (s *Spell) ClearUnusedFieldsForType() {
 	if s.Container() {
 		s.SpellNonContainerOnlyEditData = SpellNonContainerOnlyEditData{}
+		// A container's features never apply, so it can never have anything to switch (see HasSwitchableFeatures).
+		// Clearing the switch keeps a stale on-state from being carried around with no way for the user to reach it.
+		s.ItemSwitch = ItemSwitch{}
 		s.Difficulty = AttributeDifficulty{omit: true}
 		if s.TemplatePicker == nil {
 			s.TemplatePicker = &TemplatePicker{}
@@ -1186,6 +1226,7 @@ func (s *Spell) SyncWithSource() {
 					s.College = slices.Clone(s.College)
 					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 					s.Weapons = CloneWeapons(other.Weapons, s, false)
+					s.Features = other.Features.Clone()
 				}
 			}
 		}
@@ -1235,6 +1276,10 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	for _, weapon := range s.Weapons {
 		weapon.Hash(h)
 	}
+	xhash.Num64(h, len(s.Features))
+	for _, feature := range s.Features {
+		feature.Hash(h)
+	}
 }
 
 // CopyFrom implements node.EditorData.
@@ -1263,6 +1308,7 @@ func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer
 	s.College = slices.Clone(other.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	s.Weapons = CloneWeapons(other.Weapons, spell, isApply)
+	s.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
 		s.Study = make([]*Study, len(other.Study))
 		for i := range other.Study {

@@ -32,6 +32,32 @@ func (f Features) Clone() Features {
 	return result
 }
 
+// AnySwitchable returns true if any of the features are switchable.
+func (f Features) AnySwitchable() bool {
+	for _, one := range f {
+		if one.IsSwitchable() {
+			return true
+		}
+	}
+	return false
+}
+
+// Active returns the features that currently take effect for an owner whose switch is in the given state: every
+// feature that is not switchable, plus the switchable ones only when switchedOn is true. The receiver is returned
+// unchanged (no allocation) when nothing needs to be filtered out.
+func (f Features) Active(switchedOn bool) Features {
+	if switchedOn || !f.AnySwitchable() {
+		return f
+	}
+	result := make(Features, 0, len(f))
+	for _, one := range f {
+		if !one.IsSwitchable() {
+			result = append(result, one)
+		}
+	}
+	return result
+}
+
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var v []jsontext.Value

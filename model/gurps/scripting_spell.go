@@ -65,6 +65,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 			})
 		}
 	} else {
+		m["switchedOn"] = func() goja.Value { return r.ToValue(spell.SwitchedOn) }
 		m["techLevel"] = func() goja.Value {
 			if spell.TechLevel != nil {
 				return r.ToValue(*spell.TechLevel)

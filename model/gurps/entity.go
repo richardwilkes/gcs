@@ -360,9 +360,11 @@ func (e *Entity) ensureAttachments() {
 func (e *Entity) processFeatures() {
 	e.features = features{}
 	var selfControlTraits []*Trait
+	// Switchable features, whether on an item or on one of its modifiers, only take effect while the switch of the
+	// primary item (trait, skill, spell, or equipment) is on, which is what the .Active() calls below enforce.
 	Traverse(func(t *Trait) bool {
 		if !t.Container() {
-			for _, f := range t.Features {
+			for _, f := range t.ActiveFeatures() {
 				e.processFeature(t, nil, f, t)
 			}
 		}
@@ -371,7 +373,7 @@ func (e *Entity) processFeatures() {
 		// first.
 		selfControlTraits = append(selfControlTraits, t)
 		Traverse(func(mod *TraitModifier) bool {
-			for _, f := range mod.Features {
+			for _, f := range mod.Features.Active(t.SwitchedOn) {
 				e.processFeature(t, nil, f, mod)
 			}
 			return false
@@ -379,20 +381,26 @@ func (e *Entity) processFeatures() {
 		return false
 	}, true, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
-		for _, f := range s.Features {
+		for _, f := range s.ActiveFeatures() {
 			e.processFeature(s, nil, f, s)
 		}
 		return false
 	}, false, true, e.Skills...)
+	Traverse(func(s *Spell) bool {
+		for _, f := range s.ActiveFeatures() {
+			e.processFeature(s, nil, f, s)
+		}
+		return false
+	}, false, true, e.Spells...)
 	Traverse(func(eqp *Equipment) bool {
 		if !eqp.ReallyEquipped() {
 			return false
 		}
-		for _, f := range eqp.Features {
+		for _, f := range eqp.ActiveFeatures() {
 			e.processFeature(eqp, nil, f, eqp)
 		}
 		Traverse(func(mod *EquipmentModifier) bool {
-			for _, f := range mod.Features {
+			for _, f := range mod.Features.Active(eqp.SwitchedOn) {
 				e.processFeature(eqp, mod, f, eqp)
 			}
 			return false
@@ -484,9 +492,12 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 // expandThisArmorDRBonus handles a DR bonus that specifies no locations (a "this armor" bonus). Such a bonus applies to
 // whatever locations the owning piece of equipment already grants DR to, so we resolve those locations by scanning the
 // equipment's other DR bonuses and emitting a single copy of the bonus, carrying the original's specialization, that
-// covers the union of the locations they name. Emitting exactly one copy matters: a location named by more than one of
-// the equipment's DR bonuses must still receive the "this armor" amount just once. If the owner isn't a piece of
-// equipment, the bonus is dropped, since there is nothing for it to attach to.
+// covers the union of the locations they name. The DR bonuses of the equipment's enabled modifiers count as well,
+// subject to the equipment's switch, just as they do when features are collected: a modifier that extends the armor to
+// further locations (say, a hood that adds DR to the skull) makes those locations part of what "this armor" covers,
+// whether the "this armor" bonus itself came from the equipment or from one of its modifiers. Emitting exactly one copy
+// matters: a location named by more than one of those DR bonuses must still receive the "this armor" amount just once.
+// If the owner isn't a piece of equipment, the bonus is dropped, since there is nothing for it to attach to.
 func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwner LeveledOwner, src *DRBonus) {
 	eqp, ok := owner.(*Equipment)
 	if !ok {
@@ -495,24 +506,35 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 	// Keyed by the lowercased location, since location matching is case-insensitive, with the first spelling
 	// encountered as the value.
 	locations := make(map[string]string)
-	for _, f := range eqp.FeatureList() {
-		drBonus, ok2 := f.(*DRBonus)
-		if !ok2 || len(drBonus.Locations) == 0 {
-			continue
-		}
-		for _, loc := range drBonus.Locations {
-			key := strings.ToLower(loc)
-			if _, exists := locations[key]; !exists {
-				locations[key] = loc
+	collect := func(features Features) {
+		for _, f := range features {
+			drBonus, ok2 := f.(*DRBonus)
+			if !ok2 || len(drBonus.Locations) == 0 {
+				continue
+			}
+			for _, loc := range drBonus.Locations {
+				key := strings.ToLower(loc)
+				if _, exists := locations[key]; !exists {
+					locations[key] = loc
+				}
 			}
 		}
 	}
+	collect(eqp.ActiveFeatures())
+	Traverse(func(mod *EquipmentModifier) bool {
+		collect(mod.Features.Active(eqp.SwitchedOn))
+		return false
+	}, true, true, eqp.Modifiers...)
 	if len(locations) == 0 {
 		return
 	}
+	// The switch flag is carried over so that the copy still describes itself the way the original does. It plays no
+	// part in whether the copy applies -- the original has already passed the switch gate to get here -- but anything
+	// that later asks the collected bonuses whether they are switchable should get the truthful answer.
 	bonus := &DRBonus{
 		DRBonusData: DRBonusData{
 			Type:           feature.DRBonus,
+			FeatureSwitch:  src.FeatureSwitch,
 			Locations:      slices.Sorted(maps.Values(locations)),
 			Specialization: src.Specialization,
 			LeveledAmount:  src.LeveledAmount,
@@ -1515,10 +1537,10 @@ func (e *Entity) gatherConditionalModifiers(
 	Traverse(func(t *Trait) bool {
 		source := i18n.Text("from trait ") + t.String()
 		if !t.Container() {
-			collectFromList(source, t.Features, m)
+			collectFromList(source, t.ActiveFeatures(), m)
 		}
 		Traverse(func(mod *TraitModifier) bool {
-			collectFromList(source, mod.Features, m)
+			collectFromList(source, mod.Features.Active(t.SwitchedOn), m)
 			return false
 		}, true, true, t.Modifiers...)
 		if perTrait != nil {
@@ -1529,18 +1551,22 @@ func (e *Entity) gatherConditionalModifiers(
 	Traverse(func(eqp *Equipment) bool {
 		if eqp.ReallyEquipped() {
 			source := i18n.Text("from equipment ") + eqp.NameWithReplacements()
-			collectFromList(source, eqp.Features, m)
+			collectFromList(source, eqp.ActiveFeatures(), m)
 			Traverse(func(mod *EquipmentModifier) bool {
-				collectFromList(source, mod.Features, m)
+				collectFromList(source, mod.Features.Active(eqp.SwitchedOn), m)
 				return false
 			}, true, true, eqp.Modifiers...)
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
 	Traverse(func(sk *Skill) bool {
-		collectFromList(i18n.Text("from skill ")+sk.String(), sk.Features, m)
+		collectFromList(i18n.Text("from skill ")+sk.String(), sk.ActiveFeatures(), m)
 		return false
 	}, false, true, e.Skills...)
+	Traverse(func(sp *Spell) bool {
+		collectFromList(i18n.Text("from spell ")+sp.String(), sp.ActiveFeatures(), m)
+		return false
+	}, false, true, e.Spells...)
 	list := make([]*ConditionalModifier, 0, len(m))
 	for _, v := range m {
 		list = append(list, v)

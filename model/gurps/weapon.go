@@ -71,7 +71,9 @@ type WeaponOwner interface {
 	nameable.Accesser
 	DataOwner() DataOwner
 	ResolveLocalNotes() string
-	FeatureList() Features
+	// ActiveFeatures returns the owner's own features that currently take effect (i.e. excluding any switchable
+	// features while the owner's switch is off).
+	ActiveFeatures() Features
 	TagList() []string
 	RatedStrength() fxp.Int
 }
@@ -562,12 +564,12 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 	for _, bonus := range e.NamedWeaponSkillBonusesFor(nameQualifier, w.UsageWithReplacements(), w.Owner.TagList(), tooltip) {
 		adj += bonus.AdjustedAmount()
 	}
-	for _, f := range w.Owner.FeatureList() {
+	for _, f := range w.Owner.ActiveFeatures() {
 		adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 	}
 	if t, ok := w.Owner.(*Trait); ok {
 		Traverse(func(mod *TraitModifier) bool {
-			for _, f := range mod.Features {
+			for _, f := range mod.Features.Active(t.SwitchedOn) {
 				adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 			}
 			return false
@@ -575,7 +577,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 	}
 	if eqp, ok := w.Owner.(*Equipment); ok {
 		Traverse(func(mod *EquipmentModifier) bool {
-			for _, f := range mod.Features {
+			for _, f := range mod.Features.Active(eqp.SwitchedOn) {
 				adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 			}
 			return false
@@ -738,13 +740,13 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 	}
 	nameQualifier := w.String()
 	entity.AddNamedWeaponBonusesFor(nameQualifier, usage, tags, dieCount, tooltip, bonusSet, allowed)
-	for _, f := range w.Owner.FeatureList() {
+	for _, f := range w.Owner.ActiveFeatures() {
 		w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
 	}
 	if t, ok := w.Owner.(*Trait); ok {
 		Traverse(func(mod *TraitModifier) bool {
 			var bonus Bonus
-			for _, f := range mod.Features {
+			for _, f := range mod.Features.Active(t.SwitchedOn) {
 				if bonus, ok = f.(Bonus); ok {
 					bonus.SetSubOwner(mod)
 				}
@@ -756,7 +758,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 	if eqp, ok := w.Owner.(*Equipment); ok {
 		Traverse(func(mod *EquipmentModifier) bool {
 			var bonus Bonus
-			for _, f := range mod.Features {
+			for _, f := range mod.Features.Active(eqp.SwitchedOn) {
 				if bonus, ok = f.(Bonus); ok {
 					bonus.SetSubOwner(mod)
 				}

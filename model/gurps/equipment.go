@@ -24,7 +24,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -44,6 +46,7 @@ var (
 	_ WeaponOwner       = &Equipment{}
 	_ LeveledOwner      = &Equipment{}
 	_ TechLevelProvider = &Equipment{}
+	_ FeatureSwitcher   = &Equipment{}
 )
 
 // Columns that can be used with the equipment method .CellData()
@@ -61,6 +64,7 @@ const (
 	EquipmentTagsColumn
 	EquipmentReferenceColumn
 	EquipmentLibSrcColumn
+	EquipmentSwitchColumn
 )
 
 // MaxEquipmentMaxUses is the largest permitted resolved value for an Equipment's maximum uses.
@@ -93,6 +97,7 @@ type EquipmentEditData struct {
 	Level        fxp.Int              `json:"level,omitzero"`
 	Uses         int                  `json:"uses,omitzero"`
 	Equipped     bool                 `json:"equipped,omitzero"`
+	ItemSwitch
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
@@ -390,6 +395,10 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
 		data.Detail = LibSrcTooltip()
+	case EquipmentSwitchColumn:
+		data.Title = HeaderSwitch
+		data.TitleIsImageKey = true
+		data.Detail = SwitchHeaderTooltip()
 	}
 	return data
 }
@@ -470,6 +479,27 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 				data.Tooltip += "\n" + e.Source.String()
 			}
 		}
+	case EquipmentSwitchColumn:
+		// Only items that actually have something to switch get a cell; the rest are left blank.
+		if e.HasSwitchableFeatures() {
+			data.Type = cell.Switch
+			data.Checked = e.SwitchedOn
+			data.Alignment = align.Middle
+			data.Tooltip = SwitchCellTooltip(e.Container())
+			// Dim (but leave usable) a switch that would change nothing if thrown right now. The character only
+			// collects features from carried equipment that is really equipped, and this column is present for the
+			// other equipment list as well, where the equipped flag is meaningless -- nothing clears it when an item
+			// is created in or moved to that list. Neither state is the whole answer, though: the features the
+			// equipment resolves for itself take effect no matter which list it lives in.
+			//
+			// The tests are ordered by cost, since this runs for every column of every row on each sort and each
+			// keystroke of a search: ReallyEquipped only walks the parent chain, IsCarried additionally scans the
+			// entity's root equipment lists, and switchMattersWhileUnequipped traverses every modifier, so each is
+			// only reached when the cheaper ones ahead of it left the answer open.
+			if (!e.ReallyEquipped() || !e.IsCarried()) && !e.switchMattersWhileUnequipped() {
+				data.Dim = true
+			}
+		}
 	}
 }
 
@@ -486,6 +516,45 @@ func (e *Equipment) ReallyEquipped() bool {
 		p = p.parent
 	}
 	return true
+}
+
+// IsCarried returns true if this equipment is not rooted in the other equipment list of the entity that owns it. The
+// entity only collects features from carried equipment (see Entity.processFeatures), so an item in the other equipment
+// list contributes nothing to the character no matter what its equipped state says -- and that state can easily say
+// "equipped", since new equipment starts out equipped and nothing clears the flag when an item is created in or moved
+// to the other list. Equipment with no owning entity -- a library list, a template or a loot sheet -- has no second
+// list to be told apart from, so it is considered carried.
+//
+// A row on a sheet is always rooted in one of the two lists, and the other equipment list is checked first, since it is
+// normally the far shorter of the two. Only a root found in neither list needs any further work, and there are two ways
+// to get one. An editor's working clone is made with the row's own parent, which is nil for a top-level row, leaving
+// the clone rooted outside both lists while keeping the ID of the row it stands for; that ID is what settles the
+// question, so the clone's preview of Extended Value and Extended Weight agrees with the sheet no matter which list the
+// row came from. A row in flight between the lists has no such counterpart to be found and is treated as carried, which
+// mirrors the no-entity case.
+func (e *Equipment) IsCarried() bool {
+	entity := EntityFromNode(e)
+	if entity == nil {
+		return true
+	}
+	root := e
+	for root.parent != nil {
+		root = root.parent
+	}
+	if slices.Contains(entity.OtherEquipment, root) {
+		return false
+	}
+	if slices.Contains(entity.CarriedEquipment, root) {
+		return true
+	}
+	// An orphan root: look for the row it stands for in the other equipment list, at any depth. No matching lookup in
+	// the carried equipment list is needed, since "carried" is the answer whenever nothing says otherwise.
+	standsForOther := false
+	Traverse(func(other *Equipment) bool {
+		standsForOther = other.TID == root.TID
+		return standsForOther
+	}, false, false, entity.OtherEquipment...)
+	return !standsForOther
 }
 
 // Depth returns the number of parents this node has.
@@ -585,9 +654,71 @@ func (e *Equipment) Notes() string {
 	return e.LocalNotesWithReplacements()
 }
 
-// FeatureList returns the list of Features.
-func (e *Equipment) FeatureList() Features {
-	return e.Features
+// ActiveFeatures returns the features of this equipment that currently take effect, i.e. all of them except any
+// switchable ones while the equipment's switch is off. Features of the equipment's modifiers are not included.
+func (e *Equipment) ActiveFeatures() Features {
+	return e.Features.Active(e.SwitchedOn)
+}
+
+// HasSwitchableFeatures implements FeatureSwitcher.
+func (e *Equipment) HasSwitchableFeatures() bool {
+	if e.Features.AnySwitchable() {
+		return true
+	}
+	return anyModifierSwitchable(e.Modifiers, func(mod *EquipmentModifier) Features { return mod.Features })
+}
+
+// switchMattersWhileUnequipped returns true if any of the switchable features this equipment currently contributes --
+// its own or those of its enabled modifiers -- would still take effect while the entity isn't collecting from the
+// equipment, i.e. while it isn't really equipped or isn't carried at all. The owning entity only collects features
+// from carried equipment that is really equipped (see Entity.processFeatures), but a handful of features are resolved
+// by the equipment itself, no matter which list it lives in or whether it is equipped, so the switch controlling one
+// of those is never inert.
+func (e *Equipment) switchMattersWhileUnequipped() bool {
+	if e.anySwitchableMattersWhileUnequipped(e.Features) {
+		return true
+	}
+	return anyEnabledNonContainerModifier(e.Modifiers, func(mod *EquipmentModifier) bool {
+		return e.anySwitchableMattersWhileUnequipped(mod.Features)
+	})
+}
+
+// anySwitchableMattersWhileUnequipped returns true if any of the given features is switchable and is one this
+// equipment resolves for itself rather than one that only reaches the character through the owning entity.
+func (e *Equipment) anySwitchableMattersWhileUnequipped(features Features) bool {
+	for _, one := range features {
+		if !one.IsSwitchable() {
+			continue
+		}
+		switch f := one.(type) {
+		case *ContainedWeightReduction:
+			// Applied by ContainedWeightAdjustedForModifiers, which runs for every container in both the carried and
+			// the other equipment lists -- but there is nothing to reduce without contents.
+			if len(e.Children) != 0 {
+				return true
+			}
+		case *EquipmentMaxUsesBonus:
+			// "To this equipment" bonuses are applied by ResolvedMaxUses, which the equipment resolves for itself.
+			if f.SelectionType == equipmentsel.ThisEquipment {
+				return true
+			}
+		case *WeaponBonus:
+			// "To this weapon" bonuses are resolved by the weapon itself, and the weapons of unequipped equipment are
+			// still displayed when the sheet is set to show them all. "To a named weapon" bonuses count, too: the
+			// entity's own collection only reaches really-equipped items, but the weapon additionally reads its
+			// owner's active features directly, no matter where that owner lives, so such a bonus still lands on this
+			// equipment's own weapon whenever the name, usage and tag criteria match it.
+			if (f.SelectionType == wsel.ThisWeapon || f.SelectionType == wsel.WithName) && len(e.Weapons) != 0 {
+				return true
+			}
+		case *SkillBonus:
+			// Likewise for a skill bonus aimed at this equipment's own weapons.
+			if f.SelectionType == skillsel.ThisWeapon && len(e.Weapons) != 0 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // TagList returns the list of tags.
@@ -701,8 +832,10 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 	for _, one := range children {
 		contained += fxp.Int(one.ExtendedWeight(forSkills, defUnits))
 	}
+	// Switchable reductions, whether on the equipment or its modifiers, only apply while the equipment's switch is on.
+	switchedOn := equipment != nil && equipment.SwitchedOn
 	var percentage, reduction fxp.Int
-	for _, one := range features {
+	for _, one := range features.Active(switchedOn) {
 		if cwr, ok := one.(*ContainedWeightReduction); ok {
 			if cwr.IsPercentageReduction() {
 				percentage += cwr.PercentageReduction()
@@ -713,7 +846,7 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 	}
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.setEquipment(equipment)
-		for _, f := range mod.Features {
+		for _, f := range mod.Features.Active(switchedOn) {
 			if cwr, ok := f.(*ContainedWeightReduction); ok {
 				if cwr.IsPercentageReduction() {
 					percentage += cwr.PercentageReduction()
@@ -765,9 +898,9 @@ func (e *Equipment) ResolvedMaxUses() int {
 			}
 		}
 	}
-	applyThisEquipment(e.Features)
+	applyThisEquipment(e.ActiveFeatures())
 	Traverse(func(mod *EquipmentModifier) bool {
-		applyThisEquipment(mod.Features)
+		applyThisEquipment(mod.Features.Active(e.SwitchedOn))
 		return false
 	}, true, true, e.Modifiers...)
 	if entity := EntityFromNode(e); entity != nil {

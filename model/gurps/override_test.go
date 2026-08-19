@@ -134,6 +134,8 @@ func (n *nilOwnerOverride) SubOwner() fmt.Stringer                      { return
 func (n *nilOwnerOverride) SetSubOwner(owner fmt.Stringer)              { n.subOwner = owner }
 func (n *nilOwnerOverride) OverridePriority() int                       { return 0 }
 func (n *nilOwnerOverride) OverrideSpecificity() int                    { return 0 }
+func (n *nilOwnerOverride) IsSwitchable() bool                          { return false }
+func (n *nilOwnerOverride) SetSwitchable(_ bool)                        {}
 
 func (n *nilOwnerOverride) Clone() gurps.Feature {
 	return &nilOwnerOverride{owner: n.owner, subOwner: n.subOwner}

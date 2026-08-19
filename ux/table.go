@@ -30,6 +30,11 @@ import (
 
 const containerMarker = "\000"
 
+// TableOwnerClientKey is the key used to store a table's Rebuildable owner with the table. It is stored on the table
+// itself, rather than looked up through the panel hierarchy, so that it can still be found after the owner has
+// replaced the table with a new one.
+const TableOwnerClientKey = "table-owner"
+
 // ItemVariant holds the type of item variant to create.
 type ItemVariant int
 
@@ -338,22 +343,39 @@ func copySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 					// restore the resolved tech levels, nameables, or the merged points.
 					CopyRowsTo(targetTable, sel, func(_ []*Node[T]) {
 						processDropData()
-						if isForCharacterOrLootSheet(targetTable) {
-							// Only process modifiers and nameables when copying from something besides a character or
-							// loot sheet; rows already on a sheet have had these resolved.
-							if !isForCharacterOrLootSheet(table) {
-								ProcessModifiersForSelection(targetTable)
-								ProcessNameablesForSelection(targetTable)
-							}
-							// The copy always adds rows to a different sheet, so always merge points into identical
-							// existing rows, including when copying from another sheet.
-							MergeAddedRows(targetTable)
-						}
+						processCopiedRowsForSheet(table, targetTable)
 					}, true)
 				}
 			}
 		}
 	}
+}
+
+// processCopiedRowsForSheet resolves the just-copied, currently-selected rows of a sheet's table the same way a drop
+// onto a sheet does: prompting for the modifiers and nameables of rows that arrived from somewhere other than a sheet,
+// then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
+// destination isn't a character or loot sheet.
+func processCopiedRowsForSheet[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
+	if !isForCharacterOrLootSheet(target) {
+		return
+	}
+	// Only process modifiers and nameables when copying from something besides a character or loot sheet; rows already
+	// on a sheet have had these resolved.
+	if !isForCharacterOrLootSheet(source) {
+		ProcessModifiersForSelection(target)
+		// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us: only
+		// the modifiers that are enabled count toward a row having switchable features, so turning one on or off can
+		// add or take away the switch column, and a list can only change its columns by building a new table. An
+		// orphaned table has no Rebuildable above it, so a rebuild asked for through it never happens, and the rows it
+		// reports as selected are its own rather than the ones the user is now looking at -- both of which the steps
+		// below depend upon. Applying nameable substitutions rebuilds as well, so look it up again afterwards too.
+		target = liveTable(target)
+		ProcessNameablesForSelection(target)
+		target = liveTable(target)
+	}
+	// The copy always adds rows to a different sheet, so always merge points into identical existing rows, including
+	// when copying from another sheet.
+	MergeAddedRows(target)
 }
 
 func copySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
@@ -430,8 +452,15 @@ func OpenEditor[T gurps.Node[T]](table *unison.Table[*Node[T]], edit func(item T
 	}
 }
 
-// DeleteSelection removes the selected nodes from the table.
+// DeleteSelection removes the selected nodes from the table and reports the change by rebuilding the table's owner.
 func DeleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo bool) {
+	deleteSelection(table, recordUndo, true)
+}
+
+// deleteSelection removes the selected nodes from the table. When report is true, the change is reported by rebuilding
+// the table's owner; when it is false, the caller takes that on, for when the deletion is only one part of a larger
+// edit whose parts should be reported once, together (see moveSelectedEquipment).
+func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo, report bool) {
 	if provider, ok := any(table.Model).(TableProvider[T]); ok && HasSelectionAndNotFiltered(table) {
 		sel := table.SelectedRows(true)
 		ids := make(map[tid.TID]bool, len(sel))
@@ -485,8 +514,8 @@ func DeleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo 
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-			builder.Rebuild(true)
+		if report {
+			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 		}
 	}
 }
@@ -546,9 +575,7 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-			builder.Rebuild(true)
-		}
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 	}
 }
 
@@ -584,9 +611,7 @@ func ClearSourceFromSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-			builder.Rebuild(true)
-		}
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 	}
 }
 
@@ -617,14 +642,19 @@ func SyncWithSourceForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-			builder.Rebuild(true)
-		}
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 	}
 }
 
-// CopyRowsTo copies the provided rows to the target table.
+// CopyRowsTo copies the provided rows to the target table and reports the change by rebuilding the table's owner.
 func CopyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T]), recordUndo bool) {
+	copyRowsTo(table, rows, postProcessor, recordUndo, true)
+}
+
+// copyRowsTo copies the provided rows to the target table. When report is true, the change is reported by rebuilding
+// the table's owner; when it is false, the caller takes that on, for when the copy is only one part of a larger edit
+// whose parts should be reported once, together (see moveSelectedEquipment).
+func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T]), recordUndo, report bool) {
 	if table == nil || table.IsFiltered() {
 		return
 	}
@@ -654,6 +684,14 @@ func CopyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 	table.SetSelectionMap(selMap)
 	if postProcessor != nil {
 		postProcessor(rows)
+		// The post-processing can put a prompt in front of the user, and answering one rebuilds the owner: only the
+		// modifiers that are enabled count toward a row having switchable features, so toggling one can add or take
+		// away the switch column, and a list can only change its columns by building a new table. That leaves the
+		// table we were handed orphaned, with no Rebuildable above it, so the scroll below would aim at a detached
+		// table and the closing rebuild would be skipped entirely -- leaving the sheet showing whatever the last
+		// rebuild produced, with no deferred refresh on this path to cover for it. Note that the selection needs no
+		// restoring, since the rebuild that produced the replacement records it and puts it back by row ID.
+		table = liveTable(table)
 	}
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
@@ -661,8 +699,8 @@ func CopyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 		undo.AfterData = NewTableUndoEditData(table)
 		mgr.Add(undo)
 	}
-	if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-		builder.Rebuild(true)
+	if report {
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 	}
 }
 

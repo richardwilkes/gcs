@@ -11,6 +11,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -37,12 +38,70 @@ func (s *snapshotList[A, V]) apply() {
 }
 
 func (s *snapshotList[A, V]) finish() {
-	if s.entity != nil {
+	// The owner is an interface, so it is checked the way the rest of this file's callers check it: a typed nil would
+	// slip past a plain comparison and then be asked to rebuild.
+	if !xreflect.IsNil(s.owner) && s.rebuild {
+		// Rebuilding stands in for marking the owner as modified (see rebuildAsModified), so the entity only needs
+		// recalculating here when the rebuild won't do it on its own.
+		if s.entity != nil && !ownerRebuildRecalculates(s.owner, s.entity) {
+			s.entity.Recalculate()
+		}
+		rebuildAsModified(s.owner, true)
+		return
+	}
+	if s.entity != nil && !ownerRecalculates(s.owner, s.entity) {
 		s.entity.Recalculate()
 	}
-	MarkModified(s.owner)
-	if s.rebuild {
-		s.owner.Rebuild(true)
+	if !xreflect.IsNil(s.owner) {
+		MarkModified(s.owner)
+	}
+}
+
+// sheetOwning returns the sheet that the given panel belongs to and that displays the given entity, or nil if there
+// isn't one. The walk up the hierarchy stops at the first ModifiableRoot, since that is the document an edit reports
+// itself to; anything above it belongs to something else.
+func sheetOwning(owner unison.Paneler, entity *gurps.Entity) *Sheet {
+	if xreflect.IsNil(owner) || entity == nil {
+		return nil
+	}
+	for p := owner.AsPanel(); p != nil; p = p.Parent() {
+		if _, ok := p.Self.(ModifiableRoot); ok {
+			if sheet, ok2 := p.Self.(*Sheet); ok2 && sheet.entity == entity {
+				return sheet
+			}
+			return nil
+		}
+	}
+	return nil
+}
+
+// ownerRecalculates returns true if marking the owner as modified will recalculate the given entity on its own, so
+// that a single edit doesn't pay for the recalculation twice. Only a Sheet does that, and only for its own entity:
+// Sheet.MarkModified recalculates before updating anything, since everything it then touches reads the derived state.
+// A sheet that is already in the middle of an update pass doesn't count, since MarkModified does nothing at all while
+// awaitingUpdate is set. Skipping the recalculation in that case wouldn't defer it, it would drop it, leaving the
+// derived state stale until some unrelated later edit. Reading the flag here is safe: it is only ever set and cleared
+// within MarkModified, which, like everything else here, runs on the UI thread.
+func ownerRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
+	sheet := sheetOwning(owner, entity)
+	return sheet != nil && !sheet.awaitingUpdate
+}
+
+// ownerRebuildRecalculates returns true if rebuilding the owner will recalculate the given entity on its own. As with
+// marking as modified, only a Sheet does, and only for its own entity, since Sheet.Rebuild recalculates before it
+// updates anything that reads the derived state. Unlike marking as modified, a rebuild is never suppressed, so there
+// is no in-progress update pass to take into account here.
+func ownerRebuildRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
+	return sheetOwning(owner, entity) != nil
+}
+
+// recalculateEntityFor brings the entity that owns the given node up to date, unless marking the given owner as
+// modified will do that on its own, so that a single edit doesn't pay for the recalculation twice. Callers are
+// expected to mark the owner as modified afterwards.
+func recalculateEntityFor[T gurps.Node[T]](node T, owner unison.Paneler) {
+	entity := gurps.EntityFromNode(node)
+	if !ownerRecalculates(owner, entity) {
+		entity.Recalculate()
 	}
 }
 
@@ -57,31 +116,48 @@ func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], e
 }
 
 // adjustSelection snapshots, mutates, and registers an undoable edit for each selected row that yields an adjustable
-// target via extract. When recalculate is true, the owning entity is recalculated after the change (and on undo/redo);
-// when rebuild is true, the owner is rebuilt as well. The same extract should be used by the corresponding
-// canAdjustSelection call so that the enable check and the action never diverge.
+// target via extract. When recalculate is true, the owning entity is recalculated after the change (and on undo/redo).
+// Pass rebuild for a change that alters more of what the owner shows than the rows being adjusted -- which lists are
+// on the page, which columns they hold -- so that the owner is rebuilt rather than just marked as modified. The same
+// extract should be used by the corresponding canAdjustSelection call so that the enable check and the action never
+// diverge.
 func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuildable, table *unison.Table[*Node[T]],
 	extract func(T) (A, bool), get func(A) V, set func(A, V), mutate func(A), recalculate, rebuild bool,
 ) {
 	rows := table.SelectedRows(false)
-	before := &snapshotList[A, V]{owner: owner, set: set, rebuild: rebuild}
-	after := &snapshotList[A, V]{owner: owner, set: set, rebuild: rebuild}
+	targets := make([]A, 0, len(rows))
 	for _, row := range rows {
 		if target, ok := extract(row.Data()); ok {
-			before.list = append(before.list, valueSnapshot[A, V]{target: target, value: get(target)})
-			mutate(target)
-			after.list = append(after.list, valueSnapshot[A, V]{target: target, value: get(target)})
+			targets = append(targets, target)
 		}
 	}
-	if len(before.list) == 0 {
+	if len(targets) == 0 {
 		return
 	}
+	var entity *gurps.Entity
 	if recalculate {
-		entity := gurps.EntityFromNode(rows[0].Data())
-		before.entity = entity
-		after.entity = entity
+		entity = gurps.EntityFromNode(rows[0].Data())
 	}
-	if mgr := unison.UndoManagerFor(table); mgr != nil {
+	adjustTargets(undoTitle, owner, table, entity, targets, get, set, mutate, rebuild)
+}
+
+// adjustTargets snapshots, mutates, and registers an undoable edit for each of the given targets. undoSource is the
+// panel used to locate the undo manager. When entity is non-nil, it is recalculated after the change (and on
+// undo/redo); when rebuild is true, the owner is rebuilt instead of merely being marked as modified.
+func adjustTargets[A, V any](undoTitle string, owner Rebuildable, undoSource unison.Paneler, entity *gurps.Entity,
+	targets []A, get func(A) V, set func(A, V), mutate func(A), rebuild bool,
+) {
+	if len(targets) == 0 {
+		return
+	}
+	before := &snapshotList[A, V]{owner: owner, entity: entity, set: set, rebuild: rebuild}
+	after := &snapshotList[A, V]{owner: owner, entity: entity, set: set, rebuild: rebuild}
+	for _, target := range targets {
+		before.list = append(before.list, valueSnapshot[A, V]{target: target, value: get(target)})
+		mutate(target)
+		after.list = append(after.list, valueSnapshot[A, V]{target: target, value: get(target)})
+	}
+	if mgr := unison.UndoManagerFor(undoSource); mgr != nil {
 		mgr.Add(&unison.UndoEdit[*snapshotList[A, V]]{
 			ID:         unison.NextUndoID(),
 			EditName:   undoTitle,

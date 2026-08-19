@@ -180,8 +180,9 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 
 	l.InstallCmdHandlers(SaveItemID, func(_ any) bool { return l.Modified() }, func(_ any) { l.save(false) })
 	l.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { l.save(true) })
-	l.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, l.Equipment)
-	l.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, l.Notes)
+	l.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
+		func() itemCreator { return l.Equipment })
+	l.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return l.Notes })
 	InstallExportCmdHandlers(l)
 
 	l.loot.EnsureAttachments()
@@ -293,15 +294,20 @@ func addLootTextField(parent *unison.Panel, targetMgr *TargetMgr, title, fieldRe
 		func(s string) { *field = s }))
 }
 
-func (l *LootSheet) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {
+// installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the loot
+// sheet's lists. As on a character sheet, the list is looked up through the getter each time a command is invoked
+// rather than captured here, since a list whose set of columns has to change can only do so by being replaced outright
+// and a captured list would then be an orphan nobody is looking at. See Sheet.installNewItemCmdHandlers for what goes
+// wrong when that happens.
+func (l *LootSheet) installNewItemCmdHandlers(itemID, containerID int, creator func() itemCreator) {
 	variant := NoItemVariant
 	if containerID == -1 {
 		variant = AlternateItemVariant
 	} else {
 		l.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator.CreateItem(l, ContainerItemVariant) })
+			func(_ any) { creator().CreateItem(l, ContainerItemVariant) })
 	}
-	l.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator.CreateItem(l, variant) })
+	l.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(l, variant) })
 }
 
 func (l *LootSheet) keyToPanel(key *uti.DataType) *unison.Panel {
@@ -383,7 +389,7 @@ func (l *LootSheet) MarkModified(_ unison.Paneler) {
 		l.awaitingUpdate = true
 		h, v := l.scroll.Position()
 		focusRefKey := l.targetMgr.CurrentFocusRef()
-		l.loot.ModifiedOn = jio.Now()
+		l.bumpModificationTimestamp()
 		DeepSync(l)
 		UpdateTitleForDockable(l)
 		l.awaitingUpdate = false
@@ -391,6 +397,11 @@ func (l *LootSheet) MarkModified(_ unison.Paneler) {
 		l.targetMgr.ReacquireFocus(focusRefKey, l.toolbar, l.scroll.Content())
 		l.scroll.SetPosition(h, v)
 	}
+}
+
+// bumpModificationTimestamp implements modificationTimestampBumper.
+func (l *LootSheet) bumpModificationTimestamp() {
+	l.loot.ModifiedOn = jio.Now()
 }
 
 // MayAttemptClose implements unison.TabCloser.
@@ -435,8 +446,12 @@ func newLootTablesUndoData(l *LootSheet) *lootTablesUndoData {
 }
 
 func (l *lootTablesUndoData) Apply() {
-	l.equipment.Apply()
-	l.notes.Apply()
+	// Both lists are put back before either is reported, so that the undo updates the sheet once rather than once per
+	// table. See restoredTables for why the reporting can't be done until all of the data is in place.
+	var restored restoredTables
+	restored.add(l.equipment.restore())
+	restored.add(l.notes.restore())
+	restored.report()
 }
 
 func (l *LootSheet) syncWithAllSources() {
@@ -459,7 +474,7 @@ func (l *LootSheet) syncWithAllSources() {
 		undo.AfterData = newLootTablesUndoData(l)
 		mgr.Add(undo)
 	}
-	l.Rebuild(true)
+	rebuildAsModified(l, true)
 }
 
 // Rebuild implements widget.Rebuildable.
@@ -528,10 +543,17 @@ func (l *LootSheet) PageInfoProvider() gurps.PageInfoProvider {
 	return l.loot
 }
 
-// SheetSettingsUpdated implements gurps.SheetSettingsResponder.
-func (l *LootSheet) SheetSettingsUpdated(_ *gurps.Entity, blockLayout bool) {
-	l.MarkModified(nil)
-	l.Rebuild(blockLayout)
+// SheetSettingsUpdated implements gurps.SheetSettingsResponder. A loot sheet has no entity of its own and reads the
+// global sheet settings (see Loot.WeightUnit and Loot.PageSettings), so only a change to those -- reported with
+// a nil entity -- concerns it, just as with a template. A change to one character's per-sheet settings is none of its
+// business, and responding to it anyway would bump the loot sheet's modification timestamp for an edit that was never
+// made to it.
+func (l *LootSheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
+	if entity == nil {
+		// A single rebuild both reports the change and refreshes everything the settings affect; marking the sheet as
+		// modified first would only perform the same update a second time (see rebuildAsModified).
+		rebuildAsModified(l, blockLayout)
+	}
 }
 
 func (l *LootSheet) disclosureTables() []disclosureTables {

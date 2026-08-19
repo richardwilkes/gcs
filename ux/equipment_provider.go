@@ -142,13 +142,22 @@ func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
 				p.table.SyncToModel()
 				if !xreflect.IsNil(dataOwner) {
 					if entity := dataOwner.OwningEntity(); entity != nil {
-						if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
-							rebuilder.Rebuild(true)
-						}
-						// The prompt has to be given the row the modifiers were dropped onto, since modifiers
-						// themselves aren't something ProcessModifiers can process.
-						ProcessModifiers(p.table, []*gurps.Equipment{rowData})
-						ProcessNameables(p.table, rows)
+						// Rebuilding is also what reports the drop when the rows belong to an entity (see
+						// dropRebuilder), so the owner is rebuilt as modified rather than just rebuilt.
+						rebuildAsModified(dropRebuilder(p.table), true)
+						// That rebuild can have replaced this very list: an enabled modifier carrying a
+						// switchable feature gives the row it was dropped onto switchable features, which brings
+						// the switch column into view, and a list can only change its columns by building a new
+						// table. p belongs to the list that was replaced and its table field is never updated, so
+						// each prompt below has to be aimed at the table that took its place -- an orphan has no
+						// Rebuildable above it, so the rebuild its answer asks for would silently be skipped. The
+						// lookup is made twice because answering the modifier prompt rebuilds as well, which can
+						// replace the list a second time.
+						//
+						// The modifier prompt has to be given the row the modifiers were dropped onto, since
+						// modifiers themselves aren't something ProcessModifiers can process.
+						ProcessModifiers(liveTable(p.table), []*gurps.Equipment{rowData})
+						ProcessNameables(liveTable(p.table), rows)
 					}
 				}
 			}
@@ -182,9 +191,14 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 }
 
 func (p *equipmentProvider) ColumnIDs() []int {
-	columnIDs := make([]int, 0, 11)
+	columnIDs := make([]int, 0, 12)
 	if p.forPage && p.carried {
 		columnIDs = append(columnIDs, gurps.EquipmentEquippedColumn)
+	}
+	// Unlike the equipped column, the switch column applies to other equipment, too, since some features (e.g.
+	// contained weight reductions) take effect regardless of whether the equipment is carried.
+	if showSwitchColumn(p.forPage, p.provider, p.RootData()) {
+		columnIDs = append(columnIDs, gurps.EquipmentSwitchColumn)
 	}
 	columnIDs = append(
 		columnIDs,

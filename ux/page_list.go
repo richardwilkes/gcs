@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -132,6 +133,9 @@ func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
 func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
 	header, table := NewNodeTable(provider, fonts.PageFieldPrimary)
 	table.ClientData()[WorkingDirKey] = WorkingDirProvider(owner)
+	if !xreflect.IsNil(owner) {
+		table.ClientData()[TableOwnerClientKey] = owner
+	}
 	table.RefKey = provider.RefKey()
 	p := &PageList[T]{
 		tableHeader: header,
@@ -175,14 +179,16 @@ func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T]) 
 }
 
 func (p *PageList[T]) needReconstruction() bool {
-	if p == nil {
+	return p == nil || columnsOutOfSync(p.provider.ColumnIDs(), p.Table.Columns)
+}
+
+// columnsOutOfSync returns true if the columns a table is currently showing no longer match the column IDs its provider
+// wants, which means the table has to be built anew, since a table's columns are fixed at creation.
+func columnsOutOfSync(ids []int, columns []unison.ColumnInfo) bool {
+	if len(ids) != len(columns) {
 		return true
 	}
-	ids := p.provider.ColumnIDs()
-	if len(ids) != len(p.Table.Columns) {
-		return true
-	}
-	for i, col := range p.Table.Columns {
+	for i, col := range columns {
 		if col.ID != ids[i] {
 			return true
 		}
@@ -196,7 +202,7 @@ func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 			p.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
 				func(_ any) bool { return t.HasSelection() },
-				func(_ any) { moveSelectedEquipment(t, sheet.CarriedEquipment.Table) })
+				func(_ any) { moveSelectedEquipment(sheet, t, sheet.CarriedEquipment.Table) })
 		}
 	}
 }
@@ -207,12 +213,16 @@ func (p *PageList[T]) installMoveToOtherEquipmentHandler(owner Rebuildable) {
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 			p.InstallCmdHandlers(MoveToOtherEquipmentItemID,
 				func(_ any) bool { return t.HasSelection() },
-				func(_ any) { moveSelectedEquipment(t, sheet.OtherEquipment.Table) })
+				func(_ any) { moveSelectedEquipment(sheet, t, sheet.OtherEquipment.Table) })
 		}
 	}
 }
 
-func moveSelectedEquipment(from, to *unison.Table[*Node[*gurps.Equipment]]) {
+// moveSelectedEquipment moves the rows selected in one of the sheet's two equipment lists to the other one. The copy
+// into the destination and the deletion from the source are each told not to report the change, so that the sheet is
+// rebuilt once for the move as a whole rather than once per half of it -- and so that both tables are still the ones
+// on screen when the undo data is collected, since a rebuild can replace either list (see liveTable).
+func moveSelectedEquipment(sheet *Sheet, from, to *unison.Table[*Node[*gurps.Equipment]]) {
 	mgr := unison.UndoManagerFor(from)
 	if mgr == nil || mgr != unison.UndoManagerFor(to) {
 		return
@@ -227,10 +237,11 @@ func moveSelectedEquipment(from, to *unison.Table[*Node[*gurps.Equipment]]) {
 		},
 		BeforeData: NewTableDragUndoEditData(from, to),
 	}
-	CopyRowsTo(to, from.SelectedRows(true), nil, false)
-	DeleteSelection(from, false)
+	copyRowsTo(to, from.SelectedRows(true), nil, false, false)
+	deleteSelection(from, false, false)
 	undo.AfterData = NewTableDragUndoEditData(from, to)
 	mgr.Add(undo)
+	rebuildAsModified(sheet, true)
 }
 
 func (p *PageList[T]) installOpenPageReferenceHandlers() {

@@ -32,7 +32,8 @@ type SpellPointBonus struct {
 
 // SpellPointBonusData holds an adjustment to a spell's points which is persisted.
 type SpellPointBonusData struct {
-	Type           feature.Type    `json:"type"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
 	SpellMatchType spellmatch.Type `json:"match"`
 	NameCriteria   criteria.Text   `json:"name,omitzero"`
 	TagsCriteria   criteria.Text   `json:"tags,omitzero"`
@@ -92,6 +93,7 @@ func (s *SpellPointBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, s.Type)
+	xhash.Bool(h, s.Switchable)
 	xhash.Num8(h, s.SpellMatchType)
 	s.NameCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)

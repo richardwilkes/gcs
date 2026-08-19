@@ -23,7 +23,8 @@ var _ Bonus = &AttributeBonus{}
 
 // AttributeBonus holds the data for a bonus to an attribute.
 type AttributeBonus struct {
-	Type       feature.Type   `json:"type"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
 	Limitation stlimit.Option `json:"limitation,omitzero"`
 	Attribute  string         `json:"attribute"`
 	LeveledAmount
@@ -81,6 +82,7 @@ func (a *AttributeBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, a.Type)
+	xhash.Bool(h, a.Switchable)
 	xhash.Num8(h, a.Limitation)
 	xhash.StringWithLen(h, a.Attribute)
 	a.LeveledAmount.Hash(h)

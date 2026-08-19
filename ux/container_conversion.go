@@ -33,7 +33,7 @@ func (c *containerConversionList) Apply() {
 	for _, one := range c.List {
 		one.Apply()
 	}
-	c.Owner.Rebuild(true)
+	rebuildAsModified(c.Owner, true)
 }
 
 type containerConversion struct {
@@ -113,7 +113,7 @@ func ConvertToContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Table[
 				AfterData:  after,
 			})
 		}
-		owner.Rebuild(true)
+		rebuildAsModified(owner, true)
 	}
 }
 
@@ -139,6 +139,6 @@ func ConvertToNonContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Tab
 				AfterData:  after,
 			})
 		}
-		owner.Rebuild(true)
+		rebuildAsModified(owner, true)
 	}
 }

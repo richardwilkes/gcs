@@ -276,6 +276,10 @@ var (
 	magicWandData string
 	MagicWand     = unison.MustSVGFromContentString(magicWandData)
 
+	//go:embed toggle_switch.svg
+	toggleSwitchData string
+	ToggleSwitch     = unison.MustSVGFromContentString(toggleSwitchData)
+
 	//go:embed weight.svg
 	weightData string
 	Weight     = unison.MustSVGFromContentString(weightData)

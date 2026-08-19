@@ -37,8 +37,12 @@ func (d *PreservedTableData[T]) Collect(table *unison.Table[*Node[T]]) error {
 	return nil
 }
 
-// Apply the data and selection state to a table.
-func (d *PreservedTableData[T]) Apply(table *unison.Table[*Node[T]]) error {
+// Restore puts the data and selection state back into a table without reporting the change to anything. The reporting
+// is left to the caller, which rebuilds the table's owner -- or, for a table that has no owner, marks the table as
+// modified -- once the data is back in place, and only one of the two, since a rebuild already recalculates the entity
+// and re-syncs every table on its own. Leaving it to the caller is what lets an undo that has to put several tables
+// back report the change a single time for all of them (see restoredTables).
+func (d *PreservedTableData[T]) Restore(table *unison.Table[*Node[T]]) error {
 	provider, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])
 	if !ok {
 		return errs.New("unable to locate provider")
@@ -47,7 +51,6 @@ func (d *PreservedTableData[T]) Apply(table *unison.Table[*Node[T]]) error {
 		return err
 	}
 	table.SyncToModel()
-	MarkModified(table)
 	table.SetSelectionMap(d.selMap)
 	return nil
 }

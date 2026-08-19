@@ -46,6 +46,8 @@ var (
 	_ TechLevelProvider       = &Skill{}
 	_ SkillAdjustmentProvider = &Skill{}
 	_ TemplatePickerProvider  = &Skill{}
+	_ FeatureSwitcher         = &Skill{}
+	_ LeveledOwner            = &Skill{}
 )
 
 // Columns that can be used with the skill method .CellData()
@@ -58,6 +60,7 @@ const (
 	SkillRelativeLevelColumn
 	SkillPointsColumn
 	SkillLibSrcColumn
+	SkillSwitchColumn
 )
 
 // Skill holds the data for a skill.
@@ -82,6 +85,7 @@ type SkillEditData struct {
 	SkillSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitzero"`
+	ItemSwitch
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 }
@@ -412,6 +416,10 @@ func SkillsHeaderData(columnID int) HeaderData {
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
 		data.Detail = LibSrcTooltip()
+	case SkillSwitchColumn:
+		data.Title = HeaderSwitch
+		data.TitleIsImageKey = true
+		data.Detail = SwitchHeaderTooltip()
 	}
 	return data
 }
@@ -481,6 +489,15 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 			if state != srcstate.Custom {
 				data.Tooltip += "\n" + s.Source.String()
 			}
+		}
+	case SkillSwitchColumn:
+		// Only items that actually have something to switch get a cell; the rest are left blank.
+		if s.HasSwitchableFeatures() {
+			data.Type = cell.Switch
+			data.Checked = s.SwitchedOn
+			data.Alignment = align.Middle
+			// A container never gets here (see HasSwitchableFeatures), so there are never contents to cascade to.
+			data.Tooltip = SwitchCellTooltip(false)
 		}
 	}
 }
@@ -564,9 +581,15 @@ func (s *Skill) HasDefaultTo(other *Skill) bool {
 	return false
 }
 
-// FeatureList returns the list of Features.
-func (s *Skill) FeatureList() Features {
-	return s.Features
+// ActiveFeatures returns the features of this skill that currently take effect, i.e. all of them except any switchable
+// ones while the skill's switch is off.
+func (s *Skill) ActiveFeatures() Features {
+	return s.Features.Active(s.SwitchedOn)
+}
+
+// HasSwitchableFeatures implements FeatureSwitcher.
+func (s *Skill) HasSwitchableFeatures() bool {
+	return !s.Container() && s.Features.AnySwitchable()
 }
 
 // TagList returns the list of tags.
@@ -1371,6 +1394,9 @@ func (s *Skill) Kind() string {
 func (s *Skill) ClearUnusedFieldsForType() {
 	if s.Container() {
 		s.SkillNonContainerOnlyEditData = SkillNonContainerOnlyEditData{}
+		// A container's features never apply, so it can never have anything to switch (see HasSwitchableFeatures).
+		// Clearing the switch keeps a stale on-state from being carried around with no way for the user to reach it.
+		s.ItemSwitch = ItemSwitch{}
 		s.Difficulty = AttributeDifficulty{omit: true}
 		if s.TemplatePicker == nil {
 			s.TemplatePicker = &TemplatePicker{}

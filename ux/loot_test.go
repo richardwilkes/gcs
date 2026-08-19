@@ -14,7 +14,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 )
 
 // TestTreasureGenPanelWithInRangeValues verifies that the fields are primed with the values they were given and that
@@ -66,4 +68,64 @@ func TestTreasureGenPanelValidateOKWithoutDialog(t *testing.T) {
 	p.minField = nil
 	p.maxField = nil
 	p.validateOK()
+}
+
+// newTestLootSheet returns a loot sheet that can be built and rebuilt without a window, the way
+// newTestSheetForTemplate does for a character sheet. Both the toolbar and the rebuild path reach for global state, so
+// the key bindable actions are registered and a document dock is installed for the duration of the test.
+func newTestLootSheet(t *testing.T) *LootSheet {
+	t.Helper()
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	saved := Workspace.DocumentDock
+	t.Cleanup(func() { Workspace.DocumentDock = saved })
+	Workspace.DocumentDock = NewDocumentDock()
+	return NewLootSheet("test"+gurps.LootExt, gurps.NewLoot())
+}
+
+// TestLootSheetNewItemCommandUsesTheLiveList verifies that a loot sheet's "New Equipment" command adds its item to the
+// list the user is looking at rather than to whichever list existed when the sheet was created. LootSheet.createLists
+// replaces any list whose columns no longer match what its provider asks for, exactly as a character sheet does, and a
+// command holding on to the list it was handed at construction would afterwards be creating items in an orphan: the
+// insertion wouldn't be undoable, since an orphaned table can't find the undo manager, and the new row would be
+// neither selected nor scrolled into view in the list that is on screen. Nothing in a loot sheet's data calls for a
+// different set of columns today -- the switch column is reserved for character sheets -- so the mismatch that drives
+// the replacement is arranged here directly.
+func TestLootSheetNewItemCommandUsesTheLiveList(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	stale := sheet.Equipment
+	mgr := sheet.UndoManager()
+	c.NotNil(mgr, "the loot sheet must have an undo manager")
+	c.False(mgr.CanUndo(), "nothing has been done yet")
+
+	sheet.Equipment.Table.Columns = append(sheet.Equipment.Table.Columns, unison.ColumnInfo{ID: -1})
+	sheet.Rebuild(true)
+	c.NotEqual(stale, sheet.Equipment, "a column set that no longer matches must have replaced the equipment list")
+
+	sheet.AsPanel().PerformCmd(nil, NewOtherEquipmentItemID)
+	c.Equal(1, len(sheet.loot.Equipment), "the command must have added a piece of equipment to the loot")
+	added := sheet.loot.Equipment[0]
+	c.Equal(1, sheet.Equipment.Table.RootRowCount(), "the new row must be in the list that is on screen")
+	c.True(sheet.Equipment.Table.CopySelectionMap()[added.ID()],
+		"the new row must be selected in the list that is on screen")
+
+	c.True(mgr.CanUndo(), "creating an item must be undoable")
+	mgr.Undo()
+	c.Equal(0, len(sheet.loot.Equipment), "undo must take the new equipment back out of the loot")
+	c.Equal(0, sheet.Equipment.Table.RootRowCount(), "undo must take the row back out of the list that is on screen")
+}
+
+// TestLootSheetIgnoresAnotherEntitySheetSettings verifies that a loot sheet only responds to a change in the global sheet
+// settings, which is what it reads from, and not to a change made in some character's per-sheet settings. Responding
+// to the latter would rebuild the loot sheet and bump its modification timestamp for an edit that was never made to it.
+func TestLootSheetIgnoresAnotherEntitySheetSettings(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	sheet.loot.ModifiedOn = jio.Time{}
+
+	sheet.SheetSettingsUpdated(gurps.NewEntity(), true)
+	c.Equal(jio.Time{}, sheet.loot.ModifiedOn, "another entity's settings change must not touch the loot sheet")
+
+	sheet.SheetSettingsUpdated(nil, true)
+	c.NotEqual(jio.Time{}, sheet.loot.ModifiedOn, "a global settings change must be reported to the loot sheet")
 }

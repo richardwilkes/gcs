@@ -381,15 +381,8 @@ func (e *pointsEditor) AttemptClose() bool {
 	}
 	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
 		dc.Close(e)
-		if !xreflect.IsNil(e.previousDockable) {
-			if dc = unison.Ancestor[*unison.DockContainer](e.previousDockable); dc != nil {
-				dc.SetCurrentDockable(e.previousDockable)
-				if e.previousFocusKey != "" {
-					if p := e.previousDockable.AsPanel().FindRefKey(e.previousFocusKey); p != nil {
-						p.RequestFocus()
-					}
-				}
-			}
+		if p := showPreviousDockable(e.previousDockable, e.previousFocusKey); p != nil {
+			restoreFocus(p)
 		}
 		return true
 	}
@@ -414,16 +407,16 @@ func (e *pointsEditor) applyWithoutFocusNext() {
 			EditName: i18n.Text("Point Record Changes"),
 			UndoFunc: func(edit *unison.UndoEdit[[]*gurps.PointsRecord]) {
 				entity.SetPointsRecord(edit.BeforeData)
-				owner.Rebuild(false)
+				rebuildAsModified(owner, false)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[[]*gurps.PointsRecord]) {
 				entity.SetPointsRecord(edit.AfterData)
-				owner.Rebuild(false)
+				rebuildAsModified(owner, false)
 			},
 			BeforeData: e.before,
 			AfterData:  e.current,
 		})
 	}
 	entity.SetPointsRecord(e.current)
-	owner.Rebuild(true)
+	rebuildAsModified(owner, true)
 }

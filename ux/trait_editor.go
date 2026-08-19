@@ -36,6 +36,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	content.AddChild(unison.NewPanel())
 	addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
+	addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
 	var perLevelField, levelField *DecimalField
 	var maxLevelField *StringField
 	entity := gurps.EntityFromNode(e.target)

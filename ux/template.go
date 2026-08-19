@@ -177,13 +177,14 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 
 	t.InstallCmdHandlers(SaveItemID, func(_ any) bool { return t.Modified() }, func(_ any) { t.save(false) })
 	t.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { t.save(true) })
-	t.installNewItemCmdHandlers(NewTraitItemID, NewTraitContainerItemID, t.Traits)
-	t.installNewItemCmdHandlers(NewSkillItemID, NewSkillContainerItemID, t.Skills)
-	t.installNewItemCmdHandlers(NewTechniqueItemID, -1, t.Skills)
-	t.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, t.Spells)
-	t.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, t.Spells)
-	t.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID, t.Equipment)
-	t.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, t.Notes)
+	t.installNewItemCmdHandlers(NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return t.Traits })
+	t.installNewItemCmdHandlers(NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return t.Skills })
+	t.installNewItemCmdHandlers(NewTechniqueItemID, -1, func() itemCreator { return t.Skills })
+	t.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return t.Spells })
+	t.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, func() itemCreator { return t.Spells })
+	t.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
+		func() itemCreator { return t.Equipment })
+	t.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return t.Notes })
 	t.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
 		InsertItems(t, t.Traits.Table, t.template.TraitList, t.template.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
@@ -451,7 +452,7 @@ Disable your character's existing Ancestry (%s)?`),
 	appendRows(sheet.Spells.Table, rows.spells)
 	appendRows(sheet.CarriedEquipment.Table, rows.equipment)
 	appendRows(sheet.Notes.Table, rows.notes)
-	sheet.Rebuild(true)
+	rebuildAsModified(sheet, true)
 	ProcessModifiersForSelection(sheet.Traits.Table)
 	ProcessModifiersForSelection(sheet.CarriedEquipment.Table)
 	ProcessNameablesForSelection(sheet.Traits.Table)
@@ -465,7 +466,7 @@ Disable your character's existing Ancestry (%s)?`),
 		if randomize {
 			e.Profile.ApplyRandomizers(e)
 			updateRandomizedProfileFieldsWithoutUndo(sheet)
-			sheet.Rebuild(true)
+			rebuildAsModified(sheet, true)
 		}
 	}
 	if mgr != nil && undo != nil {
@@ -783,9 +784,7 @@ func mergeNewlySelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], merg
 	}
 	table.SetRootRows(newRoots)
 	table.SetSelectionMap(newSel)
-	if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
-		builder.Rebuild(true)
-	}
+	rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
 }
 
 func rawPoints(child any) fxp.Int {
@@ -813,15 +812,22 @@ func rawPoints(child any) fxp.Int {
 	}
 }
 
-func (t *Template) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {
+// installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the template's
+// lists. As on a character sheet, the list is looked up through the getter each time a command is invoked rather than
+// captured here, since a list whose set of columns has to change can only do so by being replaced outright (a table's
+// columns are fixed at creation -- see PageList.needReconstruction). A template's lists never grow the switch column,
+// which is reserved for character sheets (see showSwitchColumn), but the equipment list's TL and LC columns follow the
+// global sheet settings, which the user can change while the template is open. See Sheet.installNewItemCmdHandlers for
+// what goes wrong when a captured list is left orphaned by such a replacement.
+func (t *Template) installNewItemCmdHandlers(itemID, containerID int, creator func() itemCreator) {
 	variant := NoItemVariant
 	if containerID == -1 {
 		variant = AlternateItemVariant
 	} else {
 		t.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator.CreateItem(t, ContainerItemVariant) })
+			func(_ any) { creator().CreateItem(t, ContainerItemVariant) })
 	}
-	t.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator.CreateItem(t, variant) })
+	t.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(t, variant) })
 }
 
 // Entity implements gurps.EntityProvider
@@ -927,6 +933,10 @@ func (t *Template) save(forceSaveAs bool) bool {
 	return success
 }
 
+// createLists (re)creates the page's lists from the global block layout. A list is only built anew when the columns it
+// has to show no longer match the ones it has, since a table's columns are fixed at creation; otherwise the existing
+// list is kept and synced. Anything that captured a list has to allow for it being replaced -- see
+// installNewItemCmdHandlers.
 func (t *Template) createLists() {
 	h, v := t.scroll.Position()
 	var refocusOnKey string
@@ -956,7 +966,7 @@ func (t *Template) createLists() {
 		for _, c := range col {
 			switch c {
 			case gurps.BlockLayoutTraitsKey:
-				if t.Traits == nil {
+				if t.Traits.needReconstruction() {
 					t.Traits = NewTraitsPageList(t, t.template)
 				} else {
 					t.Traits.Sync()
@@ -966,7 +976,7 @@ func (t *Template) createLists() {
 					refocusOn = t.Traits.Table
 				}
 			case gurps.BlockLayoutSkillsKey:
-				if t.Skills == nil {
+				if t.Skills.needReconstruction() {
 					t.Skills = NewSkillsPageList(t, t.template)
 				} else {
 					t.Skills.Sync()
@@ -976,7 +986,7 @@ func (t *Template) createLists() {
 					refocusOn = t.Skills.Table
 				}
 			case gurps.BlockLayoutSpellsKey:
-				if t.Spells == nil {
+				if t.Spells.needReconstruction() {
 					t.Spells = NewSpellsPageList(t, t.template)
 				} else {
 					t.Spells.Sync()
@@ -986,7 +996,7 @@ func (t *Template) createLists() {
 					refocusOn = t.Spells.Table
 				}
 			case gurps.BlockLayoutEquipmentKey:
-				if t.Equipment == nil {
+				if t.Equipment.needReconstruction() {
 					t.Equipment = NewCarriedEquipmentPageList(t, t.template)
 				} else {
 					t.Equipment.Sync()
@@ -996,7 +1006,7 @@ func (t *Template) createLists() {
 					refocusOn = t.Equipment.Table
 				}
 			case gurps.BlockLayoutNotesKey:
-				if t.Notes == nil {
+				if t.Notes.needReconstruction() {
 					t.Notes = NewNotesPageList(t, t.template)
 				} else {
 					t.Notes.Sync()
@@ -1116,11 +1126,15 @@ func newTemplateTablesUndoData(t *Template) *templateTablesUndoData {
 }
 
 func (t *templateTablesUndoData) Apply() {
-	t.traits.Apply()
-	t.skills.Apply()
-	t.spells.Apply()
-	t.equipment.Apply()
-	t.notes.Apply()
+	// Every list is put back before any of them is reported, so that the undo updates the template once rather than
+	// once per table. See restoredTables for why the reporting can't be done until all of the data is in place.
+	var restored restoredTables
+	restored.add(t.traits.restore())
+	restored.add(t.skills.restore())
+	restored.add(t.spells.restore())
+	restored.add(t.equipment.restore())
+	restored.add(t.notes.restore())
+	restored.report()
 }
 
 func (t *Template) syncWithAllSources() {
@@ -1146,7 +1160,7 @@ func (t *Template) syncWithAllSources() {
 		undo.AfterData = newTemplateTablesUndoData(t)
 		mgr.Add(undo)
 	}
-	t.Rebuild(true)
+	rebuildAsModified(t, true)
 }
 
 // BodySettingsTitle implements BodySettingsOwner.
@@ -1166,7 +1180,7 @@ func (t *Template) BodySettings(forReset bool) *gurps.Body {
 func (t *Template) SetBodySettings(body *gurps.Body) {
 	t.lastBody = body
 	t.template.BodyType = body
-	t.Rebuild(true)
+	rebuildAsModified(t, true)
 }
 
 func (t *Template) disclosureTables() []disclosureTables {

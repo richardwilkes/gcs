@@ -178,6 +178,64 @@ func newTestDRBonus(amount fxp.Int, specialization string, locations ...string) 
 	return bonus
 }
 
+// TestEntityThisArmorDRBonusIncludesModifierLocations verifies that the DR bonuses an equipment modifier contributes
+// count toward the locations a "this armor" DR bonus expands onto, in both directions: a "this armor" bonus on the
+// equipment picks up the locations its modifiers add, and one carried by a modifier picks up the equipment's own
+// locations. Locations named by both are still only granted the bonus once, and a disabled modifier contributes
+// nothing.
+func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	eqp := NewEquipment(e, nil, false)
+	eqp.Name = "Mail Hauberk"
+	eqp.Features = Features{
+		newTestDRBonus(fxp.Four, AllID, TorsoID),
+		newTestDRBonus(fxp.One, AllID), // no locations, i.e. "this armor"
+	}
+	mod := NewEquipmentModifier(e, nil, false)
+	mod.Name = "Sleeves"
+	mod.Features = Features{
+		newTestDRBonus(fxp.Two, AllID, "arm"),
+		newTestDRBonus(fxp.Three, AllID, "Torso"), // repeats a location the equipment covers, with a different case
+	}
+	eqp.Modifiers = []*EquipmentModifier{mod}
+	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	e.Recalculate()
+
+	c.Equal(8, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
+		"torso: 4 + 3 base DR, plus the 'this armor' bonus applied once")
+	c.Equal(3, e.AddDRBonusesFor("arm", nil, nil)[AllID],
+		"arm: the modifier's 2 base DR, plus the 'this armor' bonus")
+
+	mod.Disabled = true
+	e.Recalculate()
+	c.Equal(5, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
+		"torso: only the equipment's own 4 base DR remains, plus the 'this armor' bonus")
+	c.Equal(0, e.AddDRBonusesFor("arm", nil, nil)[AllID],
+		"arm: a disabled modifier grants no DR, so the 'this armor' bonus doesn't reach it")
+
+	// The reverse direction: the "this armor" bonus lives on the modifier, so it must expand onto both the
+	// equipment's own locations and those of the modifiers.
+	e = NewEntity()
+	eqp = NewEquipment(e, nil, false)
+	eqp.Name = "Mail Hauberk"
+	eqp.Features = Features{newTestDRBonus(fxp.Four, AllID, TorsoID)}
+	mod = NewEquipmentModifier(e, nil, false)
+	mod.Name = "Sleeves"
+	mod.Features = Features{
+		newTestDRBonus(fxp.Two, AllID, "arm"),
+		newTestDRBonus(fxp.One, AllID), // no locations, i.e. "this armor"
+	}
+	eqp.Modifiers = []*EquipmentModifier{mod}
+	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	e.Recalculate()
+
+	c.Equal(5, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
+		"torso: the modifier's 'this armor' bonus expands onto the equipment's own location")
+	c.Equal(3, e.AddDRBonusesFor("arm", nil, nil)[AllID],
+		"arm: the modifier's 'this armor' bonus expands onto the modifier's own location")
+}
+
 func TestEntityHideZeroValueConditionalModifiers(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

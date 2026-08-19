@@ -29,7 +29,8 @@ var _ Bonus = &EquipmentMaxUsesBonus{}
 // operation and the value: a plain number (e.g. "+1" or "-1") is an addition, a value with a trailing "%" (e.g. "10%")
 // is a percentage adjustment, and a value with a leading or trailing "x" (e.g. "x2") is a multiplier.
 type EquipmentMaxUsesBonus struct {
-	Type          feature.Type      `json:"type"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
 	SelectionType equipmentsel.Type `json:"selection_type"`
 	PerLevel      bool              `json:"per_level,omitzero"`
 	NameCriteria  criteria.Text     `json:"name,omitzero"`
@@ -114,6 +115,7 @@ func (e *EquipmentMaxUsesBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, e.Type)
+	xhash.Bool(h, e.Switchable)
 	xhash.Num8(h, e.SelectionType)
 	e.NameCriteria.Hash(h)
 	e.TagsCriteria.Hash(h)

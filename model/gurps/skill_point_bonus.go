@@ -32,7 +32,8 @@ type SkillPointBonus struct {
 
 // SkillPointBonusData holds an adjustment to a skill's points which is persisted.
 type SkillPointBonusData struct {
-	Type                           feature.Type  `json:"type"`
+	Type feature.Type `json:"type"`
+	FeatureSwitch
 	NameCriteria                   criteria.Text `json:"name,omitzero"`
 	SpecializationCriteria         criteria.Text `json:"specialization,omitzero"`
 	OptionalSpecializationCriteria criteria.Text `json:"optional_specialization,omitzero"`
@@ -99,6 +100,7 @@ func (s *SkillPointBonus) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, s.Type)
+	xhash.Bool(h, s.Switchable)
 	s.NameCriteria.Hash(h)
 	s.SpecializationCriteria.Hash(h)
 	s.OptionalSpecializationCriteria.Hash(h)

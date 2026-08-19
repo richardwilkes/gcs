@@ -29,6 +29,9 @@ func ProcessNameablesForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]
 	ProcessNameables(table, data)
 }
 
+// The nameables prompt is held in a variable so that tests can substitute a non-interactive implementation.
+var promptForNameables = ShowNameablesDialog
+
 // ProcessNameables processes the rows and their children for any nameables.
 func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 	var data []T
@@ -47,13 +50,20 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 		}, false, false, row)
 	}
 	if len(data) > 0 {
-		if ShowNameablesDialog(titles, nameables) {
+		if promptForNameables(titles, nameables) {
 			for i, row := range data {
 				row.ApplyNameableKeys(nameables[i])
 			}
-			if rebuildable := unison.Ancestor[Rebuildable](owner); rebuildable != nil {
-				rebuildable.Rebuild(true)
-			}
+			// The owner is normally the table the rows live in, and that table may have been replaced by a rebuild
+			// before this was called -- the alternate drop path rebuilds before prompting, and the modifier prompt
+			// that precedes this one rebuilds when its answer changes something, either of which can add or take away
+			// the switch column, and a list can only change its columns by building a new table. An orphaned table
+			// has no Rebuildable above it, so the rebuild would silently be skipped, leaving the substitutions in the
+			// model while the list the user is looking at goes on showing the raw keys and the values derived from
+			// them. The live table has to be looked up without regard for T, since on the very path this is here for
+			// the rows are the modifiers that were dropped and T is therefore not the row type of the table they
+			// landed in.
+			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
 		}
 	}
 }

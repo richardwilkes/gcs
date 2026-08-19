@@ -24,10 +24,11 @@ const (
 	Toggle
 	PageRef
 	Markdown
+	Switch
 )
 
 // LastType is the last valid value.
-const LastType Type = Markdown
+const LastType Type = Switch
 
 // Types holds all possible values.
 var Types = []Type{
@@ -36,6 +37,7 @@ var Types = []Type{
 	Toggle,
 	PageRef,
 	Markdown,
+	Switch,
 }
 
 // Type holds the type of table cell.
@@ -43,7 +45,7 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= Markdown {
+	if enum <= Switch {
 		return enum
 	}
 	return 0
@@ -62,6 +64,8 @@ func (enum Type) Key() string {
 		return "page_ref"
 	case Markdown:
 		return "markdown"
+	case Switch:
+		return "switch"
 	default:
 		return Type(0).Key()
 	}
@@ -80,6 +84,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Page Ref`)
 	case Markdown:
 		return i18n.Text(`Markdown`)
+	case Switch:
+		return i18n.Text(`Switch`)
 	default:
 		return Type(0).String()
 	}
