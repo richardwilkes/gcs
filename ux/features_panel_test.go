@@ -108,8 +108,8 @@ func TestFeaturesPanelSwitchToSelectorOverride(t *testing.T) {
 	c.Equal(2, len(panel.Children()), "expected add button + one feature row after the switch")
 }
 
-// TestFeaturesPanelSwitchMiddleFeature guards the index-based removal: with several features present, switching the type
-// of one in the middle must replace only that row and leave the others (and their order) untouched.
+// TestFeaturesPanelSwitchMiddleFeature guards the index-based removal: with several features present, switching the
+// type of one in the middle must replace only that row and leave the others (and their order) untouched.
 func TestFeaturesPanelSwitchMiddleFeature(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
