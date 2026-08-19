@@ -62,10 +62,25 @@ type FeatureSwitcher interface {
 // one used when features are collected for a character (see Entity.processFeatures), i.e. only enabled, non-container
 // modifiers are considered, so that this answer always agrees with what will actually be applied.
 func anyModifierSwitchable[T Node[T]](modifiers []T, features func(T) Features) bool {
-	found := false
-	Traverse(func(one T) bool {
-		found = found || features(one).AnySwitchable()
-		return found
-	}, true, true, modifiers...)
-	return found
+	return anyEnabledNonContainerModifier(modifiers, func(mod T) bool { return features(mod).AnySwitchable() })
+}
+
+// anyEnabledNonContainerModifier returns true if the given predicate holds for any enabled, non-container modifier
+// among the given ones, at any depth, descending only through enabled containers -- exactly the set of modifiers
+// Traverse(f, true, true, modifiers...) visits. It is written as a plain recursion rather than in terms of Traverse,
+// since Traverse allocates a copy of the children of every container it descends into, and this is called from
+// CellData for every row on every sort and every keystroke of a search.
+func anyEnabledNonContainerModifier[T Node[T]](modifiers []T, predicate func(T) bool) bool {
+	for _, mod := range modifiers {
+		if !mod.Enabled() {
+			continue
+		}
+		if !mod.Container() && predicate(mod) {
+			return true
+		}
+		if mod.HasChildren() && anyEnabledNonContainerModifier(mod.NodeChildren(), predicate) {
+			return true
+		}
+	}
+	return false
 }

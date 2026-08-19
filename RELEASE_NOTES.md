@@ -30,3 +30,11 @@
 - Right-clicking one of the checkmark columns of the sheet's lists (Equipped, a modifier's enabled state, a weapon's
   hidden state) now selects the row and brings up its context menu, just as right-clicking anywhere else in the row
   does, rather than toggling the checkmark.
+- Equipping or unequipping an item, whether by clicking its Equipped checkmark or with the Toggle Equipped command, now
+  brings the Reactions, Conditional Modifiers and weapon lists onto or off of the sheet as the item's contributions
+  come and go, rather than leaving them as they were until something else caused the sheet to be rebuilt.
+- The per-hit-location equipment lists produced by the legacy text export now include armor whose DR reaches the
+  location through the location that contains it (for body types that use sub-tables), matching the DR reported for
+  the location.
+- A template's equipment list now shows or hides its TL and LC columns as soon as the corresponding sheet settings are
+  changed, rather than only after the template is reopened.

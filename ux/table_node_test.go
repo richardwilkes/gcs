@@ -21,8 +21,8 @@ import (
 )
 
 // TestEquippedCellClickRecalculatesTheSheet verifies that clicking the equipped checkbox brings the item's features
-// into play and that undoing takes them back out. The recalculation is left to the sheet, which performs it when it is
-// marked as modified, so this covers the path where the cell itself no longer asks for one.
+// into play and that undoing takes them back out. The recalculation is left to the sheet, which performs it as part of
+// the rebuild the click asks for, so this covers the path where the cell itself no longer asks for one.
 func TestEquippedCellClickRecalculatesTheSheet(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -75,10 +75,11 @@ func TestCheckCellDrawsTheNewStateBeforeReportingTheClick(t *testing.T) {
 	var seen unison.Drawable
 	var neededLayout bool
 	clicks := 0
-	record := func(label *unison.Label, _ mod.Modifiers) {
+	record := func(label *unison.Label, _ mod.Modifiers) bool {
 		clicks++
 		seen = label.Drawable
 		neededLayout = label.NeedsLayout
+		return true
 	}
 
 	// A switch cell draws both states, so the report must see the new drawable in either direction.
@@ -282,4 +283,113 @@ func TestCheckCellDoubleClickTogglesOnlyOnce(t *testing.T) {
 		c.Equal(fxp.Int(0), stBonusFor(entity), "undo must take the feature back out of play")
 		c.False(mgr.CanUndo(), "a double-click must register exactly one edit")
 	})
+}
+
+// TestCheckCellRevertsADeclinedClick verifies that a check cell whose click isn't taken -- the report answers false --
+// puts its checked state and drawable back, since it flips both before reporting and would otherwise go on showing a
+// state the model never took on.
+func TestCheckCellRevertsADeclinedClick(t *testing.T) {
+	c := check.New(t)
+	_, table := NewNodeTable(NewTraitsProvider(gurps.NewEntity(), false), nil)
+	node := NewNode(table, nil, gurps.NewTrait(nil, nil, false), false)
+	data := &gurps.CellData{}
+	clicks := 0
+	label := node.newCheckCell(data, unison.Black,
+		func(on bool) *unison.SVG {
+			if on {
+				return unison.CheckmarkSVG
+			}
+			return unison.DashSVG
+		},
+		func(_ *unison.Label, _ mod.Modifiers) bool {
+			clicks++
+			return false
+		})
+	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None),
+		"the click must still be consumed, so that the table doesn't act on it")
+	c.Equal(1, clicks, "the click must have been reported")
+	c.False(data.Checked, "a declined click must leave the checked state as it was")
+	drawable, ok := label.Drawable.(*unison.DrawableSVG)
+	c.True(ok, "the cell must still draw an SVG")
+	c.Equal(unison.DashSVG, drawable.SVG, "a declined click must put the drawable back")
+}
+
+// newSheetWithReactionGrantingEquipment returns a sheet whose entity carries a single, unequipped piece of equipment
+// with a reaction bonus, along with that equipment. Nothing else supplies a reaction, so the Reactions list is only on
+// the page while the item is equipped.
+func newSheetWithReactionGrantingEquipment(t *testing.T) (*Sheet, *gurps.Equipment) {
+	t.Helper()
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	eqp := gurps.NewEquipment(entity, nil, false)
+	eqp.Name = "Badge of Office"
+	eqp.Equipped = false
+	bonus := gurps.NewReactionBonus()
+	bonus.Situation = "from the townsfolk"
+	eqp.Features = gurps.Features{bonus}
+	entity.CarriedEquipment = []*gurps.Equipment{eqp}
+	sheet.Rebuild(true)
+	return sheet, eqp
+}
+
+// TestEquippedCellClickRebuildsConditionallyPresentLists verifies that equipping an item through its cell rebuilds the
+// sheet, so that a list which only appears while the item contributes -- the Reactions list, for equipment granting a
+// reaction bonus -- comes and goes with the equipped state, and that the sheet is updated exactly once per click.
+func TestEquippedCellClickRebuildsConditionallyPresentLists(t *testing.T) {
+	c := check.New(t)
+	sheet, eqp := newSheetWithReactionGrantingEquipment(t)
+	c.False(listAttachedToSheet(sheet, sheet.Reactions), "while unequipped, the Reactions list must not be on the page")
+	counter := installSyncCounter(sheet)
+
+	click := func() {
+		table := sheet.CarriedEquipment.Table
+		label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false, false).(*unison.Label)
+		c.True(ok, "the equipped cell must be a label")
+		table.AddChild(label)
+		c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
+	}
+
+	click()
+	c.True(eqp.Equipped, "clicking the cell must equip the item")
+	c.True(listAttachedToSheet(sheet, sheet.Reactions), "equipping must bring the Reactions list onto the page")
+	c.Equal(1, sheet.Reactions.Table.RootRowCount(), "the Reactions list must show the item's reaction")
+	c.Equal(1, counter.count, "equipping must update the sheet exactly once")
+
+	counter.count = 0
+	click()
+	c.False(eqp.Equipped, "clicking the cell again must unequip the item")
+	c.False(listAttachedToSheet(sheet, sheet.Reactions), "unequipping must take the Reactions list off the page")
+	c.Equal(1, counter.count, "unequipping must update the sheet exactly once")
+
+	mgr := sheet.UndoManager()
+	c.NotNil(mgr, "the sheet must have an undo manager")
+	counter.count = 0
+	c.True(mgr.CanUndo(), "the click must be undoable")
+	mgr.Undo()
+	c.True(eqp.Equipped, "undo must equip the item again")
+	c.True(listAttachedToSheet(sheet, sheet.Reactions), "undo must bring the Reactions list back onto the page")
+	c.Equal(1, counter.count, "undo must update the sheet exactly once")
+}
+
+// TestToggleEquippedRebuildsConditionallyPresentLists verifies the same for the Toggle Equipped command.
+func TestToggleEquippedRebuildsConditionallyPresentLists(t *testing.T) {
+	c := check.New(t)
+	sheet, eqp := newSheetWithReactionGrantingEquipment(t)
+	c.False(listAttachedToSheet(sheet, sheet.Reactions), "while unequipped, the Reactions list must not be on the page")
+	counter := installSyncCounter(sheet)
+
+	table := sheet.CarriedEquipment.Table
+	table.SelectByIndex(0)
+	toggleEquipped(sheet, table)
+	c.True(eqp.Equipped, "the command must equip the item")
+	c.True(listAttachedToSheet(sheet, sheet.Reactions), "equipping must bring the Reactions list onto the page")
+	c.Equal(1, counter.count, "equipping must update the sheet exactly once")
+
+	counter.count = 0
+	table = sheet.CarriedEquipment.Table
+	table.SelectByIndex(0)
+	toggleEquipped(sheet, table)
+	c.False(eqp.Equipped, "the command must unequip the item again")
+	c.False(listAttachedToSheet(sheet, sheet.Reactions), "unequipping must take the Reactions list off the page")
+	c.Equal(1, counter.count, "unequipping must update the sheet exactly once")
 }

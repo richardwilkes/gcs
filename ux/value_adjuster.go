@@ -38,7 +38,9 @@ func (s *snapshotList[A, V]) apply() {
 }
 
 func (s *snapshotList[A, V]) finish() {
-	if s.owner != nil && s.rebuild {
+	// The owner is an interface, so it is checked the way the rest of this file's callers check it: a typed nil would
+	// slip past a plain comparison and then be asked to rebuild.
+	if !xreflect.IsNil(s.owner) && s.rebuild {
 		// Rebuilding is a superset of marking the owner as modified -- it recalculates the entity, re-syncs every
 		// table, refreshes the search results and restores the focus and scroll position -- so doing both would repeat
 		// the whole update, and on a sheet holding hundreds of rows that update is the entire cost of the edit. The
@@ -57,7 +59,7 @@ func (s *snapshotList[A, V]) finish() {
 	if s.entity != nil && !ownerRecalculates(s.owner, s.entity) {
 		s.entity.Recalculate()
 	}
-	if s.owner != nil {
+	if !xreflect.IsNil(s.owner) {
 		MarkModified(s.owner)
 	}
 }

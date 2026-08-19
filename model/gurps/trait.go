@@ -477,7 +477,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 			data.Type = cell.Switch
 			data.Checked = t.SwitchedOn
 			data.Alignment = align.Middle
-			data.Tooltip = SwitchCellTooltip()
+			data.Tooltip = SwitchCellTooltip(t.Container())
 			// A disabled trait -- or one inside a disabled container -- has already been dimmed above, which is
 			// exactly what the switch cell wants: throwing the switch of a disabled trait changes nothing the user can
 			// see, since every collection pass (features, weapons, reactions and conditional modifiers) skips traits

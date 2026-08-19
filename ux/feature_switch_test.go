@@ -629,3 +629,83 @@ func TestOwnerRecalculatesOnlyForItsOwnSheet(t *testing.T) {
 	c.False(ownerRecalculates(NewTemplate("test"+gurps.TemplatesExt, gurps.NewTemplate()), entity),
 		"a template doesn't recalculate an entity when it is marked as modified")
 }
+
+// newSheetWithSwitchableReaction returns a sheet whose entity holds one trait carrying a switchable reaction bonus that
+// is currently switched off, along with that trait. With the switch off, the sheet has no reactions to show, so the
+// Reactions list is not on the page.
+func newSheetWithSwitchableReaction(t *testing.T) (*Sheet, *gurps.Trait) {
+	t.Helper()
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Charisma"
+	bonus := gurps.NewReactionBonus()
+	bonus.Situation = "from everyone"
+	bonus.SetSwitchable(true)
+	trait.Features = gurps.Features{bonus}
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	return sheet, trait
+}
+
+// TestToggleFeatureSwitchRebuildsConditionallyPresentLists verifies that throwing a switch rebuilds the sheet rather
+// than merely marking it as modified. A switchable feature can be a reaction bonus, and the Reactions list is only
+// carried on the page while there is a reaction to show -- something decided only when the sheet creates its lists --
+// so a toggle that only marked the sheet as modified would leave the list missing after switching on, and leave an
+// empty list behind after switching off. The rebuild is also the whole of the update: the sheet must not be synced a
+// second time on top of it.
+func TestToggleFeatureSwitchRebuildsConditionallyPresentLists(t *testing.T) {
+	c := check.New(t)
+	sheet, trait := newSheetWithSwitchableReaction(t)
+	entity := sheet.Entity()
+	c.False(listAttachedToSheet(sheet, sheet.Reactions), "with the switch off, the Reactions list must not be on the page")
+	table := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	counter := installSyncCounter(sheet)
+
+	c.True(toggleFeatureSwitch(table.RootRows()[0], table, true, false), "the trait must have a switch to throw")
+	c.True(trait.SwitchedOn, "the switch must be on")
+	c.Equal(1, len(entity.Reactions()), "the reaction must be in play once the switch is on")
+	c.True(listAttachedToSheet(sheet, sheet.Reactions), "switching on must bring the Reactions list onto the page")
+	c.Equal(1, sheet.Reactions.Table.RootRowCount(), "the Reactions list must show the reaction")
+	c.Equal(1, counter.count, "throwing the switch must update the sheet exactly once")
+
+	counter.count = 0
+	c.True(toggleFeatureSwitch(sheet.Traits.Table.RootRows()[0], sheet.Traits.Table, false, false),
+		"the trait must still have a switch to throw")
+	c.False(trait.SwitchedOn, "the switch must be off again")
+	c.False(listAttachedToSheet(sheet, sheet.Reactions), "switching off must take the Reactions list off the page")
+	c.Equal(1, counter.count, "throwing the switch back must update the sheet exactly once")
+
+	counter.count = 0
+	c.True(mgr.CanUndo(), "throwing the switch must be undoable")
+	mgr.Undo()
+	c.True(trait.SwitchedOn, "undo must turn the switch back on")
+	c.True(listAttachedToSheet(sheet, sheet.Reactions), "undo must bring the Reactions list back onto the page")
+	c.Equal(1, counter.count, "undoing the toggle must update the sheet exactly once")
+
+	counter.count = 0
+	mgr.Undo()
+	c.False(trait.SwitchedOn, "the second undo must turn the switch off again")
+	c.False(listAttachedToSheet(sheet, sheet.Reactions), "the second undo must take the Reactions list off again")
+	c.Equal(1, counter.count, "the second undo must update the sheet exactly once")
+}
+
+// TestToggleFeatureSwitchDeclinesRowsWithoutASwitch verifies that a row whose data has no switch is left alone and
+// reported as such, so that a switch cell -- which flips its drawn state before asking -- can put itself back.
+func TestToggleFeatureSwitchDeclinesRowsWithoutASwitch(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	note := gurps.NewNote(entity, nil, false)
+	note.MarkDown = "A note has nothing to switch"
+	entity.Notes = []*gurps.Note{note}
+	sheet.Rebuild(true)
+	table := sheet.Notes.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+
+	c.False(toggleFeatureSwitch(table.RootRows()[0], table, true, false), "a note has no switch to throw")
+	c.False(mgr.CanUndo(), "declining must not register an undo edit")
+}

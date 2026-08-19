@@ -51,10 +51,18 @@ func anySwitchable[T gurps.Node[T]](rows []T) bool {
 // switch would have no effect the user could see, yet the new state would still be written to the file and show up as a
 // change to the sheet. The node itself is always a target, since a switch cell -- the only thing that calls this -- is
 // only created for an item whose HasSwitchableFeatures() is true, so the target list is never empty.
-func toggleFeatureSwitch[T gurps.Node[T]](n *Node[T], source unison.Paneler, on, includeDescendants bool) {
+//
+// The owner is rebuilt rather than merely marked as modified, since a switchable feature can be a reaction bonus, a
+// conditional modifier bonus or a weapon bonus, and whether the lists showing those appear on the page at all -- along
+// with which columns the weapon lists hold -- is decided only when the owner creates its lists.
+//
+// Returns false, without changing anything, if the node's data has no switch to throw. That can't happen for a switch
+// cell, but the caller uses the answer to put the cell back the way it was rather than showing a state the model never
+// took on.
+func toggleFeatureSwitch[T gurps.Node[T]](n *Node[T], source unison.Paneler, on, includeDescendants bool) bool {
 	switcher, ok := any(n.Data()).(gurps.FeatureSwitcher)
 	if !ok {
-		return
+		return false
 	}
 	targets := []gurps.FeatureSwitcher{switcher}
 	if includeDescendants {
@@ -70,5 +78,6 @@ func toggleFeatureSwitch[T gurps.Node[T]](n *Node[T], source unison.Paneler, on,
 		func(s gurps.FeatureSwitcher) bool { return s.IsSwitchedOn() },
 		func(s gurps.FeatureSwitcher, v bool) { s.SetSwitchedOn(v) },
 		func(s gurps.FeatureSwitcher) { s.SetSwitchedOn(on) },
-		false)
+		true)
+	return true
 }

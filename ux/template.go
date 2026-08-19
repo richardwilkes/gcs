@@ -177,13 +177,14 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 
 	t.InstallCmdHandlers(SaveItemID, func(_ any) bool { return t.Modified() }, func(_ any) { t.save(false) })
 	t.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { t.save(true) })
-	t.installNewItemCmdHandlers(NewTraitItemID, NewTraitContainerItemID, t.Traits)
-	t.installNewItemCmdHandlers(NewSkillItemID, NewSkillContainerItemID, t.Skills)
-	t.installNewItemCmdHandlers(NewTechniqueItemID, -1, t.Skills)
-	t.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, t.Spells)
-	t.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, t.Spells)
-	t.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID, t.Equipment)
-	t.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, t.Notes)
+	t.installNewItemCmdHandlers(NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return t.Traits })
+	t.installNewItemCmdHandlers(NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return t.Skills })
+	t.installNewItemCmdHandlers(NewTechniqueItemID, -1, func() itemCreator { return t.Skills })
+	t.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return t.Spells })
+	t.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, func() itemCreator { return t.Spells })
+	t.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
+		func() itemCreator { return t.Equipment })
+	t.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return t.Notes })
 	t.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
 		InsertItems(t, t.Traits.Table, t.template.TraitList, t.template.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
@@ -814,20 +815,21 @@ func rawPoints(child any) fxp.Int {
 }
 
 // installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the template's
-// lists. Unlike the sheets, a template can capture the list itself rather than a getter for it: the only reason a list
-// is ever replaced is a change to the set of columns it has to show, and the one column that comes and goes with the
-// data -- the switch column -- is reserved for character sheets (see showSwitchColumn). Template.createLists therefore
-// only ever creates a list it doesn't already have, so the list captured here is the one the user is looking at for as
-// long as the template is open.
-func (t *Template) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {
+// lists. As on a character sheet, the list is looked up through the getter each time a command is invoked rather than
+// captured here, since a list whose set of columns has to change can only do so by being replaced outright (a table's
+// columns are fixed at creation -- see PageList.needReconstruction). A template's lists never grow the switch column,
+// which is reserved for character sheets (see showSwitchColumn), but the equipment list's TL and LC columns follow the
+// global sheet settings, which the user can change while the template is open. See Sheet.installNewItemCmdHandlers for
+// what goes wrong when a captured list is left orphaned by such a replacement.
+func (t *Template) installNewItemCmdHandlers(itemID, containerID int, creator func() itemCreator) {
 	variant := NoItemVariant
 	if containerID == -1 {
 		variant = AlternateItemVariant
 	} else {
 		t.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator.CreateItem(t, ContainerItemVariant) })
+			func(_ any) { creator().CreateItem(t, ContainerItemVariant) })
 	}
-	t.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator.CreateItem(t, variant) })
+	t.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(t, variant) })
 }
 
 // Entity implements gurps.EntityProvider
@@ -933,6 +935,10 @@ func (t *Template) save(forceSaveAs bool) bool {
 	return success
 }
 
+// createLists (re)creates the page's lists from the global block layout. A list is only built anew when the columns it
+// has to show no longer match the ones it has, since a table's columns are fixed at creation; otherwise the existing
+// list is kept and synced. Anything that captured a list has to allow for it being replaced -- see
+// installNewItemCmdHandlers.
 func (t *Template) createLists() {
 	h, v := t.scroll.Position()
 	var refocusOnKey string
@@ -962,7 +968,7 @@ func (t *Template) createLists() {
 		for _, c := range col {
 			switch c {
 			case gurps.BlockLayoutTraitsKey:
-				if t.Traits == nil {
+				if t.Traits.needReconstruction() {
 					t.Traits = NewTraitsPageList(t, t.template)
 				} else {
 					t.Traits.Sync()
@@ -972,7 +978,7 @@ func (t *Template) createLists() {
 					refocusOn = t.Traits.Table
 				}
 			case gurps.BlockLayoutSkillsKey:
-				if t.Skills == nil {
+				if t.Skills.needReconstruction() {
 					t.Skills = NewSkillsPageList(t, t.template)
 				} else {
 					t.Skills.Sync()
@@ -982,7 +988,7 @@ func (t *Template) createLists() {
 					refocusOn = t.Skills.Table
 				}
 			case gurps.BlockLayoutSpellsKey:
-				if t.Spells == nil {
+				if t.Spells.needReconstruction() {
 					t.Spells = NewSpellsPageList(t, t.template)
 				} else {
 					t.Spells.Sync()
@@ -992,7 +998,7 @@ func (t *Template) createLists() {
 					refocusOn = t.Spells.Table
 				}
 			case gurps.BlockLayoutEquipmentKey:
-				if t.Equipment == nil {
+				if t.Equipment.needReconstruction() {
 					t.Equipment = NewCarriedEquipmentPageList(t, t.template)
 				} else {
 					t.Equipment.Sync()
@@ -1002,7 +1008,7 @@ func (t *Template) createLists() {
 					refocusOn = t.Equipment.Table
 				}
 			case gurps.BlockLayoutNotesKey:
-				if t.Notes == nil {
+				if t.Notes.needReconstruction() {
 					t.Notes = NewNotesPageList(t, t.template)
 				} else {
 					t.Notes.Sync()

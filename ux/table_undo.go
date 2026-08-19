@@ -44,7 +44,10 @@ func (t *TableUndoEditData[T]) Apply() {
 }
 
 // restore puts the preserved data back into the table that is currently showing it, without reporting the change to
-// anything, and returns that table along with the owner it belongs to, if any. Nothing is returned if there was
+// anything, and returns that table along with the owner it belongs to, if any. It has to be the table on screen rather
+// than the one the data was collected from: the model would come back either way, since an orphaned table's provider
+// still points at it, but the selection would not, because the rebuild that follows records and re-applies the
+// selection of the table on screen and would discard one restored into an orphan. Nothing is returned if there was
 // nothing to restore or the restore failed. The reporting is left to restoredTables, so that an undo spanning several
 // tables can do it just once for all of them.
 func (t *TableUndoEditData[T]) restore() (*unison.Table[*Node[T]], Rebuildable) {

@@ -528,9 +528,13 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 	if len(locations) == 0 {
 		return
 	}
+	// The switch flag is carried over so that the copy still describes itself the way the original does. It plays no
+	// part in whether the copy applies -- the original has already passed the switch gate to get here -- but anything
+	// that later asks the collected bonuses whether they are switchable should get the truthful answer.
 	bonus := &DRBonus{
 		DRBonusData: DRBonusData{
 			Type:           feature.DRBonus,
+			FeatureSwitch:  src.FeatureSwitch,
 			Locations:      slices.Sorted(maps.Values(locations)),
 			Specialization: src.Specialization,
 			LeveledAmount:  src.LeveledAmount,

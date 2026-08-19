@@ -326,6 +326,16 @@ func TestHasSwitchableFeatures(t *testing.T) {
 	spell.Features = Features{switchableBonus()}
 	c.True(spell.HasSwitchableFeatures(), "a spell with a switchable feature has something to switch")
 
+	// A skill or spell container's features never apply (see Entity.processFeatures), so even features that were left
+	// on one -- ClearUnusedFieldsForType strips them, but a caller that sets them directly bypasses that -- give it
+	// nothing to switch.
+	skillContainer := NewSkill(e, nil, true)
+	skillContainer.Features = Features{switchableBonus()}
+	c.False(skillContainer.HasSwitchableFeatures(), "a skill container's features never apply, so they aren't switchable")
+	spellContainer := NewSpell(e, nil, true)
+	spellContainer.Features = Features{switchableBonus()}
+	c.False(spellContainer.HasSwitchableFeatures(), "a spell container's features never apply, so they aren't switchable")
+
 	// Equipment counts both its own features and those of its enabled modifiers.
 	eqp := NewEquipment(e, nil, false)
 	c.False(eqp.HasSwitchableFeatures(), "equipment with no features has nothing to switch")
@@ -1403,4 +1413,172 @@ func TestTraitSwitchCellDimming(t *testing.T) {
 	var data CellData
 	trait(NewAttributeBonus(StrengthID)).CellData(TraitSwitchColumn, &data)
 	c.NotEqual(cell.Switch, data.Type, "a trait with nothing switchable gets no switch cell")
+}
+
+// TestThisArmorDRBonusExpansionKeepsSwitchable verifies that the copy of a "this armor" DR bonus that the entity emits
+// onto the armor's locations still describes itself the way the original does: a switchable original yields a
+// switchable copy. The flag has no bearing on whether the copy applies -- the original has already passed the switch
+// gate by the time it is expanded -- but anything that later asks the collected bonuses whether they are switchable
+// should get the truthful answer.
+func TestThisArmorDRBonusExpansionKeepsSwitchable(t *testing.T) {
+	c := check.New(t)
+	for _, switchable := range []bool{false, true} {
+		e := NewEntity()
+		located := NewDRBonus()
+		located.Locations = []string{TorsoID}
+		located.Specialization = AllID
+		located.Amount = fxp.Four
+		thisArmor := NewDRBonus()
+		thisArmor.Locations = nil // No locations, i.e. "this armor".
+		thisArmor.Specialization = "crushing"
+		thisArmor.Amount = fxp.One
+		thisArmor.Switchable = switchable
+		eqp := NewEquipment(e, nil, false)
+		eqp.Name = "Mail Hauberk"
+		eqp.Features = Features{located, thisArmor}
+		eqp.SwitchedOn = true
+		e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+		e.Recalculate()
+
+		var expanded *DRBonus
+		for _, bonus := range e.features.drBonuses {
+			if bonus.Specialization == "crushing" {
+				expanded = bonus
+			}
+		}
+		c.NotNil(expanded, "the 'this armor' bonus must have been expanded onto the armor's locations")
+		c.Equal([]string{TorsoID}, expanded.Locations, "the expansion must cover the armor's located DR")
+		c.Equal(switchable, expanded.IsSwitchable(),
+			"the expansion must carry the switchable flag of the bonus it was made from")
+	}
+}
+
+// TestSpellIsALeveledOwner verifies the leveled-owner behavior a spell's features rely on: a per-level feature on a
+// spell scales with the spell's level, exactly as one on a skill does with the skill's, and a spell container --
+// which never has features that apply -- reports itself as not leveled.
+func TestSpellIsALeveledOwner(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	spell := NewSpell(e, nil, false)
+	spell.Name = "Fireball"
+	spell.Points = fxp.Four
+	bonus := NewAttributeBonus(StrengthID)
+	bonus.Amount = fxp.One
+	bonus.PerLevel = true
+	spell.Features = Features{bonus}
+	e.Spells = append(e.Spells, spell)
+	e.Recalculate()
+
+	c.True(spell.IsLeveled(), "a spell is a leveled owner")
+	c.True(spell.LevelData.Level > 0, "precondition: the spell resolves to a positive level")
+	c.Equal(spell.LevelData.Level, spell.CurrentLevel(), "a spell's current level is its resolved level")
+	c.Equal(spell.LevelData.Level, e.AttributeBonusFor(StrengthID, stlimit.None, nil),
+		"a per-level bonus on a spell must be multiplied by the spell's level")
+
+	container := NewSpell(e, nil, true)
+	c.False(container.IsLeveled(), "a spell container is not a leveled owner")
+}
+
+// TestSwitchCellTooltipMentionsCascadeOnlyForContainers verifies that the switch cell's tooltip only offers the
+// Option/Alt-click cascade for a row that has contents to cascade to.
+func TestSwitchCellTooltipMentionsCascadeOnlyForContainers(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	switchable := func() *AttributeBonus {
+		bonus := NewAttributeBonus(StrengthID)
+		bonus.Switchable = true
+		return bonus
+	}
+	tooltipFor := func(node interface{ CellData(int, *CellData) }, column int) string {
+		var data CellData
+		node.CellData(column, &data)
+		c.Equal(cell.Switch, data.Type, "the row must have a switch cell")
+		return data.Tooltip
+	}
+	c.False(strings.Contains(SwitchCellTooltip(false), "Option/Alt"), "a leaf's tooltip must not offer the cascade")
+	c.True(strings.Contains(SwitchCellTooltip(true), "Option/Alt"), "a container's tooltip must offer the cascade")
+
+	trait := NewTrait(e, nil, false)
+	trait.Features = Features{switchable()}
+	c.Equal(SwitchCellTooltip(false), tooltipFor(trait, TraitSwitchColumn), "a trait's tooltip must not offer the cascade")
+	traitContainer := NewTrait(e, nil, true)
+	mod := NewTraitModifier(e, nil, false)
+	mod.Features = Features{switchable()}
+	traitContainer.Modifiers = []*TraitModifier{mod}
+	c.Equal(SwitchCellTooltip(true), tooltipFor(traitContainer, TraitSwitchColumn),
+		"a trait container's tooltip must offer the cascade")
+
+	eqp := NewEquipment(e, nil, false)
+	eqp.Features = Features{switchable()}
+	c.Equal(SwitchCellTooltip(false), tooltipFor(eqp, EquipmentSwitchColumn),
+		"a piece of equipment's tooltip must not offer the cascade")
+	eqpContainer := NewEquipment(e, nil, true)
+	eqpContainer.Features = Features{switchable()}
+	c.Equal(SwitchCellTooltip(true), tooltipFor(eqpContainer, EquipmentSwitchColumn),
+		"an equipment container's tooltip must offer the cascade")
+
+	skill := NewSkill(e, nil, false)
+	skill.Features = Features{switchable()}
+	c.Equal(SwitchCellTooltip(false), tooltipFor(skill, SkillSwitchColumn), "a skill's tooltip must not offer the cascade")
+	spell := NewSpell(e, nil, false)
+	spell.Features = Features{switchable()}
+	c.Equal(SwitchCellTooltip(false), tooltipFor(spell, SpellSwitchColumn), "a spell's tooltip must not offer the cascade")
+}
+
+// TestLegacyExportListsArmorForSubLocations verifies that the legacy text export's hit-location armor list agrees with
+// the DR it prints for a location that lives in another location's sub-table: such a location inherits the DR of the
+// locations that own it (see HitLocation.accumulateDR), so armor whose DR bonus names the owning location has to be
+// listed for it as well. Armor naming "all" is listed for it too, since "all" applies at the top-level owning location.
+func TestLegacyExportListsArmorForSubLocations(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	body := e.SheetSettings.BodyType
+	torso := body.LookupLocationByID(e, TorsoID)
+	c.NotNil(torso, "the torso location should exist")
+	gizzard := NewHitLocation(e, "")
+	gizzard.LocID = "gizzard"
+	gizzard.ChoiceName = "Gizzard"
+	gizzard.TableName = "Gizzard"
+	gizzard.Slots = 1
+	sub := &Body{}
+	sub.AddLocation(gizzard)
+	torso.SetSubTable(sub)
+	body.Update(e)
+	c.Equal(gizzard, body.LookupLocationByID(e, "gizzard"), "the sub-location must be reachable through the body")
+
+	plate := NewEquipment(e, nil, false)
+	plate.Name = "Plate"
+	torsoBonus := NewDRBonus()
+	torsoBonus.Locations = []string{TorsoID}
+	torsoBonus.Specialization = AllID
+	torsoBonus.Amount = fxp.Four
+	plate.Features = Features{torsoBonus}
+
+	aura := NewEquipment(e, nil, false)
+	aura.Name = "Aura"
+	allBonus := NewDRBonus()
+	allBonus.Locations = []string{AllID}
+	allBonus.Specialization = AllID
+	allBonus.Amount = fxp.One
+	aura.Features = Features{allBonus}
+
+	helm := NewEquipment(e, nil, false)
+	helm.Name = "Helm"
+	skullBonus := NewDRBonus()
+	skullBonus.Locations = []string{"skull"}
+	skullBonus.Specialization = AllID
+	skullBonus.Amount = fxp.Two
+	helm.Features = Features{skullBonus}
+
+	e.CarriedEquipment = append(e.CarriedEquipment, plate, aura, helm)
+	e.Recalculate()
+
+	c.Equal("5", gizzard.DisplayDR(e, nil), "precondition: the sub-location inherits the torso's DR and the 'all' DR")
+	ex := &legacyExporter{entity: e}
+	c.Equal([]string{"Plate", "Aura"}, ex.hitLocationEquipment(gizzard),
+		"armor covering the owning location, and armor covering 'all', must be listed for the sub-location")
+	c.Equal([]string{"Plate", "Aura"}, ex.hitLocationEquipment(torso),
+		"the owning location's own list is unchanged")
+	c.Equal([]string{"Aura", "Helm"}, ex.hitLocationEquipment(body.LookupLocationByID(e, "skull")),
+		"an unrelated location is unaffected")
 }

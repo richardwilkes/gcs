@@ -485,7 +485,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Type = cell.Switch
 			data.Checked = e.SwitchedOn
 			data.Alignment = align.Middle
-			data.Tooltip = SwitchCellTooltip()
+			data.Tooltip = SwitchCellTooltip(e.Container())
 			// Dim (but leave usable) a switch that would change nothing if thrown right now. The character only
 			// collects features from carried equipment that is really equipped, and this column is present for the
 			// other equipment list as well, where the equipped flag is meaningless -- nothing clears it when an item
@@ -678,12 +678,9 @@ func (e *Equipment) switchMattersWhileUnequipped() bool {
 	if e.anySwitchableMattersWhileUnequipped(e.Features) {
 		return true
 	}
-	found := false
-	Traverse(func(mod *EquipmentModifier) bool {
-		found = found || e.anySwitchableMattersWhileUnequipped(mod.Features)
-		return found
-	}, true, true, e.Modifiers...)
-	return found
+	return anyEnabledNonContainerModifier(e.Modifiers, func(mod *EquipmentModifier) bool {
+		return e.anySwitchableMattersWhileUnequipped(mod.Features)
+	})
 }
 
 // anySwitchableMattersWhileUnequipped returns true if any of the given features is switchable and is one this

@@ -46,9 +46,14 @@ func SwitchHeaderTooltip() string {
 	return i18n.Text("Whether the switchable features of an item are currently on. Features marked as switchable only take effect while the item's switch is on. Items with no switchable features have nothing to switch, so this column is blank for them.")
 }
 
-// SwitchCellTooltip returns the standard tooltip text for a switch column cell.
-func SwitchCellTooltip() string {
-	return i18n.Text("Click to toggle whether this item's switchable features are on. Features marked as switchable only take effect while the item's switch is on. Hold down the Option/Alt key while clicking to also apply the change to everything contained within this item.")
+// SwitchCellTooltip returns the standard tooltip text for a switch column cell. The Option/Alt-click hint is only
+// included for a container, since that is the only kind of row with contents for the change to be applied to.
+func SwitchCellTooltip(container bool) string {
+	text := i18n.Text("Click to toggle whether this item's switchable features are on. Features marked as switchable only take effect while the item's switch is on.")
+	if container {
+		text += " " + i18n.Text("Hold down the Option/Alt key while clicking to also apply the change to everything contained within this item.")
+	}
+	return text
 }
 
 // SwitchedOnTooltip returns the standard tooltip text for the "Switched On" editor field.

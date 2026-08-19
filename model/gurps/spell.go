@@ -588,7 +588,8 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			data.Type = cell.Switch
 			data.Checked = s.SwitchedOn
 			data.Alignment = align.Middle
-			data.Tooltip = SwitchCellTooltip()
+			// A container never gets here (see HasSwitchableFeatures), so there are never contents to cascade to.
+			data.Tooltip = SwitchCellTooltip(false)
 		}
 	}
 }

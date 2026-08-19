@@ -42,6 +42,11 @@ func TestUndoOfDeleteSurvivesSwitchColumnDisappearing(t *testing.T) {
 	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
 	c.Equal(0, sheet.Traits.Table.LastRowIndex(), "undo must put the row back into the visible table")
 	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID, "undo must bring the switch column back")
+	// The selection is the part of the restore that only the visible table can show: the rebuild that follows the
+	// restore records and re-applies the selection of the table on screen, so a selection restored into an orphan
+	// would be lost.
+	c.True(sheet.Traits.Table.CopySelectionMap()[trait.ID()],
+		"undo must restore the selection into the visible table, not the orphaned one it was collected from")
 
 	c.True(mgr.CanRedo(), "the deletion must be redoable")
 	mgr.Redo()
@@ -87,6 +92,10 @@ func TestUndoOfDropSurvivesSwitchColumnAppearing(t *testing.T) {
 	c.Equal(1, len(entity.Traits), "redo must put the trait back into the entity")
 	c.Equal(0, sheet.Traits.Table.LastRowIndex(), "redo must put the row back into the visible table")
 	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID, "redo must bring the switch column back")
+	// As with the undo of a deletion, the selection can only be restored into the table on screen, since the rebuild
+	// that follows records and re-applies that table's selection.
+	c.True(sheet.Traits.Table.CopySelectionMap()[trait.ID()],
+		"redo must restore the selection into the visible table, not the orphaned one it was collected from")
 }
 
 // TestLiveTableResolvesReplacedTables verifies the lookup that keeps the above working: a table that its owner has
