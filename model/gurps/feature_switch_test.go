@@ -16,6 +16,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
@@ -843,4 +844,296 @@ func TestLegacyExportSkipsSwitchedOffDRBonuses(t *testing.T) {
 	eqp.SetSwitchedOn(true)
 	c.True(strings.Contains(strings.Join(ex.hitLocationEquipment(location), ","), "Mail Hauberk"),
 		"a switched-on DR bonus contributes its equipment to the export")
+}
+
+// TestAnyModifierSwitchable covers the modifier scan that decides whether an item with no switchable features of its
+// own still gets a switch. The answer must not depend on where the switchable modifier sits in the list or how deep it
+// sits in the container tree, and it must ignore both disabled modifiers and the containers' own features, matching
+// what Entity.processFeatures actually applies.
+func TestAnyModifierSwitchable(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	plain := func() *TraitModifier {
+		mod := NewTraitModifier(e, nil, false)
+		mod.Features = Features{NewAttributeBonus(StrengthID)}
+		return mod
+	}
+	switchable := func() *TraitModifier {
+		mod := NewTraitModifier(e, nil, false)
+		bonus := NewAttributeBonus(StrengthID)
+		bonus.Switchable = true
+		mod.Features = Features{bonus}
+		return mod
+	}
+	disabled := func() *TraitModifier {
+		mod := switchable()
+		mod.Disabled = true
+		return mod
+	}
+	container := func(children ...*TraitModifier) *TraitModifier {
+		mod := NewTraitModifier(e, nil, true)
+		bonus := NewAttributeBonus(StrengthID)
+		bonus.Switchable = true
+		mod.Features = Features{bonus} // A container's own features never apply, so they must not be counted.
+		mod.Children = children
+		return mod
+	}
+	for _, tc := range []struct {
+		name      string
+		modifiers []*TraitModifier
+		expected  bool
+	}{
+		{name: "no modifiers at all"},
+		{name: "nothing switchable", modifiers: []*TraitModifier{plain(), plain()}},
+		{name: "only a disabled modifier is switchable", modifiers: []*TraitModifier{plain(), disabled()}},
+		{name: "only a container's own features are switchable", modifiers: []*TraitModifier{container()}},
+		{name: "switchable first", modifiers: []*TraitModifier{switchable(), plain()}, expected: true},
+		{name: "switchable last", modifiers: []*TraitModifier{plain(), plain(), switchable()}, expected: true},
+		{
+			name:      "switchable between plain ones",
+			modifiers: []*TraitModifier{plain(), switchable(), plain()},
+			expected:  true,
+		},
+		{
+			name:      "switchable followed by a disabled one",
+			modifiers: []*TraitModifier{switchable(), disabled()},
+			expected:  true,
+		},
+		{
+			name:      "switchable nested in a container",
+			modifiers: []*TraitModifier{plain(), container(plain(), switchable())},
+			expected:  true,
+		},
+		{
+			name:      "switchable nested two containers deep",
+			modifiers: []*TraitModifier{container(container(plain(), switchable()))},
+			expected:  true,
+		},
+	} {
+		c.Equal(tc.expected, anyModifierSwitchable(tc.modifiers, func(mod *TraitModifier) Features {
+			return mod.Features
+		}), tc.name)
+	}
+}
+
+// TestContainerSwitchIsClearedForSkillsAndSpells verifies that a switch state doesn't linger on an item that can never
+// present a switch. SwitchedOn lives in the edit data shared by containers and non-containers, but a container skill or
+// spell reports nothing to switch, so an on-state that got set on one -- or that was left behind when a non-container
+// was turned into a container -- would be written to disk with no way for the user to reach it again. Trait and
+// equipment containers keep theirs: both can genuinely contribute switchable features.
+func TestContainerSwitchIsClearedForSkillsAndSpells(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	type switchableItem interface {
+		FeatureSwitcher
+		ClearUnusedFieldsForType()
+	}
+	for _, tc := range []struct {
+		name    string
+		make    func(container bool) switchableItem
+		cleared bool
+	}{
+		{name: "skill", make: func(container bool) switchableItem { return NewSkill(e, nil, container) }, cleared: true},
+		{name: "spell", make: func(container bool) switchableItem { return NewSpell(e, nil, container) }, cleared: true},
+		{name: "trait", make: func(container bool) switchableItem { return NewTrait(e, nil, container) }},
+		{name: "equipment", make: func(container bool) switchableItem { return NewEquipment(e, nil, container) }},
+	} {
+		// A non-container's switch is never touched, no matter the type.
+		item := tc.make(false)
+		item.SetSwitchedOn(true)
+		item.ClearUnusedFieldsForType()
+		c.True(item.IsSwitchedOn(), "%s: a non-container keeps its switch", tc.name)
+
+		// A container's switch is cleared only where it could never be reached again.
+		item = tc.make(true)
+		item.SetSwitchedOn(true)
+		item.ClearUnusedFieldsForType()
+		c.Equal(!tc.cleared, item.IsSwitchedOn(), "%s container: switch state after clearing the unused fields",
+			tc.name)
+
+		// The same has to hold through a save, which is where a stale state would otherwise reach the file.
+		item = tc.make(true)
+		item.SetSwitchedOn(true)
+		data, err := json.Marshal(item)
+		c.NoError(err, "%s container: should marshal", tc.name)
+		if tc.cleared {
+			c.NotContains(string(data), "switched_on", "%s container: a stale switch is not written", tc.name)
+		} else {
+			c.Contains(string(data), `"switched_on":true`, "%s container: the switch is written", tc.name)
+		}
+	}
+}
+
+// TestEquipmentSwitchCellDimming verifies when the equipment switch cell is drawn dimmed. The switch column is shown
+// for the other equipment list as well as the carried one, and nothing in the other list is ever equipped, so keying
+// the dimming off the equipped state alone would dim every switch there -- including the ones that genuinely change
+// something. Dimming means "throwing this switch would change nothing right now", so it may only happen when every
+// switchable feature the item contributes is one that reaches the character solely through the entity's collection
+// pass over really-equipped carried equipment. Either way the cell stays a live switch; the dimming is purely visual.
+func TestEquipmentSwitchCellDimming(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	attributeBonus := func() Feature {
+		bonus := NewAttributeBonus(StrengthID)
+		bonus.Switchable = true
+		return bonus
+	}
+	weightReduction := func() Feature {
+		reduction := NewContainedWeightReduction()
+		reduction.Reduction = "50%"
+		reduction.Switchable = true
+		return reduction
+	}
+	maxUsesBonus := func(sel equipmentsel.Type) Feature {
+		bonus := NewEquipmentMaxUsesBonus()
+		bonus.SelectionType = sel
+		bonus.Amount = "+3"
+		bonus.Switchable = true
+		return bonus
+	}
+	weaponAccBonus := func(sel wsel.Type) Feature {
+		bonus := NewWeaponAccBonus()
+		bonus.SelectionType = sel
+		bonus.Amount = fxp.Two
+		bonus.Switchable = true
+		return bonus
+	}
+	weaponSkillBonus := func(sel skillsel.Type) Feature {
+		bonus := NewSkillBonus()
+		bonus.SelectionType = sel
+		bonus.Amount = fxp.Two
+		bonus.Switchable = true
+		return bonus
+	}
+	item := func(features ...Feature) *Equipment {
+		eqp := NewEquipment(e, nil, false)
+		eqp.Name = "Amulet"
+		eqp.Equipped = false
+		eqp.Features = features
+		return eqp
+	}
+	withWeapon := func(eqp *Equipment) *Equipment {
+		w := NewWeapon(eqp, false)
+		w.Defaults = []*SkillDefault{{DefaultType: DexterityID}}
+		eqp.Weapons = []*Weapon{w}
+		return eqp
+	}
+	fullBag := func(features ...Feature) *Equipment {
+		bag := NewEquipment(e, nil, true)
+		bag.Name = "Bag"
+		bag.Equipped = false
+		bag.Features = features
+		child := NewEquipment(e, bag, false)
+		child.Name = "Anvil"
+		child.BaseWeight = "10 lb"
+		bag.Children = []*Equipment{child}
+		return bag
+	}
+
+	for _, tc := range []struct {
+		name  string
+		build func() *Equipment
+		dim   bool
+	}{
+		{
+			name: "equipped item with an entity-collected feature",
+			build: func() *Equipment {
+				eqp := item(attributeBonus())
+				eqp.Equipped = true
+				return eqp
+			},
+		},
+		{
+			name:  "unequipped item with an entity-collected feature",
+			build: func() *Equipment { return item(attributeBonus()) },
+			dim:   true,
+		},
+		{
+			name:  "unequipped container with a contained weight reduction",
+			build: func() *Equipment { return fullBag(weightReduction()) },
+		},
+		{
+			name:  "unequipped empty container with a contained weight reduction",
+			build: func() *Equipment { return item(weightReduction()) },
+			dim:   true,
+		},
+		{
+			name: "unequipped container whose modifier supplies the weight reduction",
+			build: func() *Equipment {
+				bag := fullBag()
+				mod := NewEquipmentModifier(e, nil, false)
+				mod.Features = Features{weightReduction()}
+				bag.Modifiers = []*EquipmentModifier{mod}
+				return bag
+			},
+		},
+		{
+			name:  "unequipped item with a 'this equipment' max uses bonus",
+			build: func() *Equipment { return item(maxUsesBonus(equipmentsel.ThisEquipment)) },
+		},
+		{
+			name:  "unequipped item with a 'named equipment' max uses bonus",
+			build: func() *Equipment { return item(maxUsesBonus(equipmentsel.EquipmentWithName)) },
+			dim:   true,
+		},
+		{
+			name:  "unequipped weapon with a 'this weapon' bonus",
+			build: func() *Equipment { return withWeapon(item(weaponAccBonus(wsel.ThisWeapon))) },
+		},
+		{
+			name:  "unequipped item with a 'this weapon' bonus but no weapon",
+			build: func() *Equipment { return item(weaponAccBonus(wsel.ThisWeapon)) },
+			dim:   true,
+		},
+		{
+			name:  "unequipped weapon with a 'named weapon' bonus",
+			build: func() *Equipment { return withWeapon(item(weaponAccBonus(wsel.WithName))) },
+			dim:   true,
+		},
+		{
+			name:  "unequipped weapon with a 'this weapon' skill bonus",
+			build: func() *Equipment { return withWeapon(item(weaponSkillBonus(skillsel.ThisWeapon))) },
+		},
+		{
+			name:  "unequipped weapon with a named skill bonus",
+			build: func() *Equipment { return withWeapon(item(weaponSkillBonus(skillsel.Name))) },
+			dim:   true,
+		},
+		{
+			name: "unequipped item with both an entity-collected feature and a locally resolved one",
+			build: func() *Equipment {
+				bag := fullBag(attributeBonus(), weightReduction())
+				return bag
+			},
+		},
+		{
+			name: "item with zero quantity is not really equipped",
+			build: func() *Equipment {
+				eqp := item(attributeBonus())
+				eqp.Equipped = true
+				eqp.Quantity = 0
+				return eqp
+			},
+			dim: true,
+		},
+	} {
+		eqp := tc.build()
+		var data CellData
+		eqp.CellData(EquipmentSwitchColumn, &data)
+		c.Equal(cell.Switch, data.Type, "%s: the cell is still a switch", tc.name)
+		c.Equal(tc.dim, data.Dim, "%s: dim state", tc.name)
+
+		// Dimming is purely visual: the cell must still report the switch's state so it stays clickable.
+		eqp.SetSwitchedOn(true)
+		data = CellData{}
+		eqp.CellData(EquipmentSwitchColumn, &data)
+		c.Equal(cell.Switch, data.Type, "%s: the cell is still a switch while on", tc.name)
+		c.True(data.Checked, "%s: the cell reports the switch as on", tc.name)
+		c.Equal(tc.dim, data.Dim, "%s: dim state doesn't depend on the switch's own state", tc.name)
+	}
+
+	// An item with nothing to switch gets no switch cell at all, dimmed or otherwise.
+	var data CellData
+	item(NewAttributeBonus(StrengthID)).CellData(EquipmentSwitchColumn, &data)
+	c.NotEqual(cell.Switch, data.Type, "an item with nothing switchable gets no switch cell")
 }

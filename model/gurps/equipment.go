@@ -24,7 +24,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -95,7 +97,7 @@ type EquipmentEditData struct {
 	Level        fxp.Int              `json:"level,omitzero"`
 	Uses         int                  `json:"uses,omitzero"`
 	Equipped     bool                 `json:"equipped,omitzero"`
-	SwitchedOn   bool                 `json:"switched_on,omitzero"`
+	ItemSwitch
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
@@ -484,7 +486,11 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Checked = e.SwitchedOn
 			data.Alignment = align.Middle
 			data.Tooltip = SwitchCellTooltip()
-			if !e.ReallyEquipped() {
+			// Dim (but leave usable) a switch that would change nothing if thrown right now. This column is present
+			// for the other equipment list as well, where nothing is ever equipped, so the equipped state alone isn't
+			// enough to decide: the features the equipment resolves for itself take effect no matter which list it
+			// lives in.
+			if !e.ReallyEquipped() && !e.switchMattersWhileUnequipped() {
 				data.Dim = true
 			}
 		}
@@ -617,14 +623,56 @@ func (e *Equipment) HasSwitchableFeatures() bool {
 	return anyModifierSwitchable(e.Modifiers, func(mod *EquipmentModifier) Features { return mod.Features })
 }
 
-// IsSwitchedOn implements FeatureSwitcher.
-func (e *Equipment) IsSwitchedOn() bool {
-	return e.SwitchedOn
+// switchMattersWhileUnequipped returns true if any of the switchable features this equipment currently contributes --
+// its own or those of its enabled modifiers -- would still take effect while the equipment isn't equipped. The owning
+// entity only collects features from carried equipment that is really equipped (see Entity.processFeatures), but a
+// handful of features are resolved by the equipment itself, no matter which list it lives in or whether it is
+// equipped, so the switch controlling one of those is never inert.
+func (e *Equipment) switchMattersWhileUnequipped() bool {
+	if e.anySwitchableMattersWhileUnequipped(e.Features) {
+		return true
+	}
+	found := false
+	Traverse(func(mod *EquipmentModifier) bool {
+		found = found || e.anySwitchableMattersWhileUnequipped(mod.Features)
+		return found
+	}, true, true, e.Modifiers...)
+	return found
 }
 
-// SetSwitchedOn implements FeatureSwitcher.
-func (e *Equipment) SetSwitchedOn(on bool) {
-	e.SwitchedOn = on
+// anySwitchableMattersWhileUnequipped returns true if any of the given features is switchable and is one this
+// equipment resolves for itself rather than one that only reaches the character through the owning entity.
+func (e *Equipment) anySwitchableMattersWhileUnequipped(features Features) bool {
+	for _, one := range features {
+		if !one.IsSwitchable() {
+			continue
+		}
+		switch f := one.(type) {
+		case *ContainedWeightReduction:
+			// Applied by ContainedWeightAdjustedForModifiers, which runs for every container in both the carried and
+			// the other equipment lists -- but there is nothing to reduce without contents.
+			if len(e.Children) != 0 {
+				return true
+			}
+		case *EquipmentMaxUsesBonus:
+			// "To this equipment" bonuses are applied by ResolvedMaxUses, which the equipment resolves for itself.
+			if f.SelectionType == equipmentsel.ThisEquipment {
+				return true
+			}
+		case *WeaponBonus:
+			// "To this weapon" bonuses are resolved by the weapon itself, and the weapons of unequipped equipment are
+			// still displayed when the sheet is set to show them all.
+			if f.SelectionType == wsel.ThisWeapon && len(e.Weapons) != 0 {
+				return true
+			}
+		case *SkillBonus:
+			// Likewise for a skill bonus aimed at this equipment's own weapons.
+			if f.SelectionType == skillsel.ThisWeapon && len(e.Weapons) != 0 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // TagList returns the list of tags.

@@ -50,8 +50,12 @@ func (s *snapshotList[A, V]) finish() {
 }
 
 // ownerRecalculates returns true if marking the owner as modified will recalculate the given entity on its own, so
-// that a single edit doesn't pay for the recalculation twice. Sheet.MarkModified always recalculates its own entity
-// before updating anything, since everything it then touches reads the derived state.
+// that a single edit doesn't pay for the recalculation twice. Only a Sheet does that, and only for its own entity:
+// Sheet.MarkModified recalculates before updating anything, since everything it then touches reads the derived state.
+// A sheet that is already in the middle of an update pass doesn't count, since MarkModified does nothing at all while
+// awaitingUpdate is set. Skipping the recalculation in that case wouldn't defer it, it would drop it, leaving the
+// derived state stale until some unrelated later edit. Reading the flag here is safe: it is only ever set and cleared
+// within MarkModified, which, like everything else here, runs on the UI thread.
 func ownerRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 	if xreflect.IsNil(owner) || entity == nil {
 		return false
@@ -59,7 +63,7 @@ func ownerRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 	for p := owner.AsPanel(); p != nil; p = p.Parent() {
 		if _, ok := p.Self.(ModifiableRoot); ok {
 			sheet, ok2 := p.Self.(*Sheet)
-			return ok2 && sheet.entity == entity
+			return ok2 && !sheet.awaitingUpdate && sheet.entity == entity
 		}
 	}
 	return false

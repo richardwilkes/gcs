@@ -528,9 +528,12 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 	}
 	label.MouseDownCallback = func(_ geom.Point, _, _ int, mods mod.Modifiers) bool {
 		c.Checked = !c.Checked
-		onClick(label, mods)
+		// The new state is drawn and a layout asked for before the click is reported, since reporting it marks the
+		// owner as modified, which re-syncs the table and recreates every cell, leaving this label detached from the
+		// panel tree, where changing its drawable and marking it for layout and redraw would have no effect at all.
 		setDrawable(c.Checked)
 		label.MarkForLayoutAndRedraw()
+		onClick(label, mods)
 		return true
 	}
 	label.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {

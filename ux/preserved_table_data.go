@@ -37,8 +37,22 @@ func (d *PreservedTableData[T]) Collect(table *unison.Table[*Node[T]]) error {
 	return nil
 }
 
-// Apply the data and selection state to a table.
+// Apply the data and selection state to a table, marking it as modified so that the change is reflected everywhere
+// that shows the derived state.
 func (d *PreservedTableData[T]) Apply(table *unison.Table[*Node[T]]) error {
+	if err := d.Restore(table); err != nil {
+		return err
+	}
+	MarkModified(table)
+	return nil
+}
+
+// Restore puts the data and selection state back into a table without reporting the change to anything. Callers that
+// go on to rebuild the table's owner should use this rather than Apply and leave the reporting to the rebuild, which
+// recalculates the entity and re-syncs every table on its own; doing both would perform all of that work twice. Note
+// that whether a rebuild is needed can only be determined once the data is back in place, since the set of columns a
+// list requires depends on its content.
+func (d *PreservedTableData[T]) Restore(table *unison.Table[*Node[T]]) error {
 	provider, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])
 	if !ok {
 		return errs.New("unable to locate provider")
@@ -47,7 +61,6 @@ func (d *PreservedTableData[T]) Apply(table *unison.Table[*Node[T]]) error {
 		return err
 	}
 	table.SyncToModel()
-	MarkModified(table)
 	table.SetSelectionMap(d.selMap)
 	return nil
 }

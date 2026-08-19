@@ -108,3 +108,83 @@ func TestLiveTableResolvesReplacedTables(t *testing.T) {
 	_, orphan := NewNodeTable(NewTraitsProvider(gurps.NewEntity(), false), nil)
 	c.Equal(orphan, liveTable(orphan), "a table with no recorded owner must resolve to itself")
 }
+
+// syncCounter counts the deep syncs that pass over it, making the number of times a single edit re-syncs an entire
+// sheet observable.
+type syncCounter struct {
+	unison.Panel
+	count int
+}
+
+// Sync implements Syncer.
+func (s *syncCounter) Sync() { s.count++ }
+
+// installSyncCounter adds a sync counter to a sheet, where its deep syncs will reach it. It goes directly on the sheet,
+// whose layout is a single column and which a rebuild never touches, so that it survives the page lists being replaced.
+func installSyncCounter(sheet *Sheet) *syncCounter {
+	counter := &syncCounter{}
+	counter.Self = counter
+	sheet.AsPanel().AddChild(counter)
+	return counter
+}
+
+// TestUndoOfColumnChangingEditSyncsTheSheetOnlyOnce verifies that an undo that has to bring a column into or out of
+// view doesn't pay for the update twice. Putting the data back and marking the table as modified would recalculate the
+// entity and re-sync every table, and the rebuild that the changed column set then requires does all of that over
+// again. Only one of the two is warranted, and on a sheet with many rows the difference is the whole cost of the edit.
+func TestUndoOfColumnChangingEditSyncsTheSheetOnlyOnce(t *testing.T) {
+	c := check.New(t)
+	sheet, trait := newSheetWithSwitchableTrait(t)
+	entity := sheet.Entity()
+	mgr := unison.UndoManagerFor(sheet.Traits.Table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	counter := installSyncCounter(sheet)
+
+	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	DeleteSelection(sheet.Traits.Table, true)
+	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"the switch column must go away with the last switchable row")
+
+	counter.count = 0
+	mgr.Undo()
+	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
+	c.Equal(0, sheet.Traits.Table.LastRowIndex(), "undo must put the row back into the visible table")
+	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID, "undo must bring the switch column back")
+	c.Equal(1, counter.count, "an undo that brings a column into view must sync the sheet exactly once")
+
+	counter.count = 0
+	mgr.Redo()
+	c.Equal(0, len(entity.Traits), "redo must remove the trait from the entity again")
+	c.Equal(-1, sheet.Traits.Table.LastRowIndex(), "redo must remove the row from the visible table again")
+	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"redo must take the switch column away again")
+	c.Equal(1, counter.count, "a redo that takes a column out of view must sync the sheet exactly once")
+}
+
+// TestUndoOfOrdinaryEditSyncsTheSheetOnlyOnce verifies the other half of the same choice: an undo that leaves the
+// column set alone doesn't rebuild, so marking the table as modified is what has to do the syncing -- and it still has
+// to happen, exactly once.
+func TestUndoOfOrdinaryEditSyncsTheSheetOnlyOnce(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Plain"
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	table := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	counter := installSyncCounter(sheet)
+
+	table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	DeleteSelection(table, true)
+	c.Equal(0, len(entity.Traits), "the trait must be gone from the entity")
+
+	counter.count = 0
+	mgr.Undo()
+	c.Equal(table, sheet.Traits.Table, "an unchanged column set must leave the traits table in place")
+	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
+	c.Equal(0, table.LastRowIndex(), "undo must put the row back into the visible table")
+	c.Equal(1, counter.count, "an undo that leaves the columns alone must still sync the sheet exactly once")
+}

@@ -91,7 +91,7 @@ type TraitEditData struct {
 	SelfControl  selfctrl.Roll     `json:"cr,omitzero"`
 	Frequency    frequency.Roll    `json:"frequency,omitzero"`
 	Disabled     bool              `json:"disabled,omitzero"`
-	SwitchedOn   bool              `json:"switched_on,omitzero"`
+	ItemSwitch
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
 }
@@ -768,16 +768,6 @@ func (t *Trait) HasSwitchableFeatures() bool {
 		return true
 	}
 	return anyModifierSwitchable(t.Modifiers, func(mod *TraitModifier) Features { return mod.Features })
-}
-
-// IsSwitchedOn implements FeatureSwitcher.
-func (t *Trait) IsSwitchedOn() bool {
-	return t.SwitchedOn
-}
-
-// SetSwitchedOn implements FeatureSwitcher.
-func (t *Trait) SetSwitchedOn(on bool) {
-	t.SwitchedOn = on
 }
 
 // TagList returns the list of tags.

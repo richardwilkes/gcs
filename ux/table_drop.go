@@ -150,9 +150,14 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		if owner := toEntityProvider.DataOwner(); !xreflect.IsNil(owner) && !xreflect.IsNil(owner.OwningEntity()) {
 			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
 				rebuilder.Rebuild(true)
-				// The rebuild may have replaced the destination table, in which case everything from here on -- the
-				// merging, the undo edit, even finding the undo manager -- has to work with the table that took its
-				// place rather than the one that was dropped onto.
+				// The rebuild covers the whole owner, so it may have replaced either table: adding rows to one list and
+				// removing them from another can change which columns each needs, and a list can only change its
+				// columns by building a new table. Everything from here on -- the checks for where the rows came from
+				// and went, the merging, the undo edit, even finding the undo manager -- has to work with the tables
+				// that took their place rather than the orphaned ones the drag started and finished on. Refreshing
+				// both keeps them comparable: two tables that were the same resolve to the same replacement, and two
+				// that were different have different reference keys, so they stay different.
+				from = liveTable(from)
 				to = liveTable(to)
 			}
 		}
@@ -189,6 +194,11 @@ func finishDidDrop[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData
 	if undo == nil {
 		return
 	}
+	// A drop handler may have rebuilt the owner, replacing either table -- the alternate drop path rebuilds from within
+	// the provider's handler, where there is no chance to refresh them beforehand -- and an orphaned table can't even
+	// find the undo manager, so the edit would be silently discarded.
+	from = liveTable(from)
+	to = liveTable(to)
 	mgr := unison.UndoManagerFor(to)
 	if mgr == nil {
 		return

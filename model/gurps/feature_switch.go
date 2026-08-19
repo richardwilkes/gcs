@@ -28,6 +28,24 @@ func (s *FeatureSwitch) SetSwitchable(switchable bool) {
 	s.Switchable = switchable
 }
 
+// ItemSwitch is embedded in the edit data of every primary item type that can own switchable features (a trait, skill,
+// spell, or piece of equipment). It holds the on/off state of the switch that controls those features, including the
+// ones contributed by the item's modifiers. The state is a local choice made on the sheet rather than part of the
+// item's source data, so it is deliberately left out of the item's hash.
+type ItemSwitch struct {
+	SwitchedOn bool `json:"switched_on,omitzero"`
+}
+
+// IsSwitchedOn implements FeatureSwitcher.
+func (s *ItemSwitch) IsSwitchedOn() bool {
+	return s.SwitchedOn
+}
+
+// SetSwitchedOn implements FeatureSwitcher.
+func (s *ItemSwitch) SetSwitchedOn(on bool) {
+	s.SwitchedOn = on
+}
+
 // FeatureSwitcher is implemented by the primary data types that own features and therefore carry the switch that
 // controls their switchable features.
 type FeatureSwitcher interface {
@@ -46,7 +64,7 @@ type FeatureSwitcher interface {
 func anyModifierSwitchable[T Node[T]](modifiers []T, features func(T) Features) bool {
 	found := false
 	Traverse(func(one T) bool {
-		found = features(one).AnySwitchable()
+		found = found || features(one).AnySwitchable()
 		return found
 	}, true, true, modifiers...)
 	return found

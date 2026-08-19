@@ -69,6 +69,72 @@ func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 	c.True(showSwitchColumn(true, entity, switchable), "a sheet with a switchable row must show the switch column")
 }
 
+// switchableWeightReducer returns a container holding one child, where the container's contained weight reduction only
+// applies while its switch is on. This is the case that matters on a loot sheet, since it changes what the sheet shows
+// without a character being involved at all.
+func switchableWeightReducer(owner gurps.DataOwner) *gurps.Equipment {
+	container := gurps.NewEquipment(owner, nil, true)
+	container.Name = "Bag of Holding"
+	reduction := gurps.NewContainedWeightReduction()
+	reduction.Reduction = "50%"
+	reduction.SetSwitchable(true)
+	container.Features = gurps.Features{reduction}
+	child := gurps.NewEquipment(owner, container, false)
+	child.Name = "Anvil"
+	child.BaseWeight = "10 lb"
+	child.SetParent(container)
+	container.Children = []*gurps.Equipment{child}
+	return container
+}
+
+// TestLootSheetShowsSwitchColumn verifies that a loot sheet gets the switch column, too. A loot sheet never processes
+// the features that need a character, but the ones that don't -- a contained weight reduction being the obvious one --
+// change what it displays, so the switch that governs them has to be reachable from the list rather than only from the
+// item's editor.
+func TestLootSheetShowsSwitchColumn(t *testing.T) {
+	c := check.New(t)
+	loot := gurps.NewLoot()
+	plain := gurps.NewEquipment(loot, nil, false)
+	plain.Name = "Torch"
+	loot.Equipment = []*gurps.Equipment{plain}
+	c.False(showSwitchColumn(true, loot, loot.Equipment),
+		"a loot sheet with nothing switchable must not show the switch column")
+
+	container := switchableWeightReducer(loot)
+	loot.Equipment = []*gurps.Equipment{plain, container}
+	c.True(showSwitchColumn(true, loot, loot.Equipment),
+		"a loot sheet with a switchable row must show the switch column")
+
+	// The switch governs what the loot sheet displays, which is why the column has to be offered there.
+	units := loot.WeightUnit()
+	container.SwitchedOn = false
+	off := container.ExtendedWeight(false, units)
+	container.SwitchedOn = true
+	c.NotEqual(off, container.ExtendedWeight(false, units),
+		"the switch must change the weight a loot sheet displays")
+	container.SwitchedOn = false
+}
+
+// TestLootSheetSwitchColumnInPlace verifies that the loot sheet's equipment list really does end up with the switch
+// column, through the same provider the sheet itself uses.
+func TestLootSheetSwitchColumnInPlace(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	saved := Workspace.DocumentDock
+	t.Cleanup(func() { Workspace.DocumentDock = saved })
+	Workspace.DocumentDock = NewDocumentDock()
+
+	loot := gurps.NewLoot()
+	sheet := NewLootSheet("test"+gurps.LootExt, loot)
+	c.Equal(-1, switchColumnIndex(sheet.Equipment.Table.Columns, gurps.EquipmentSwitchColumn),
+		"without switchable features, there is no switch column")
+
+	loot.Equipment = []*gurps.Equipment{switchableWeightReducer(loot)}
+	sheet.Rebuild(true)
+	c.NotEqual(-1, switchColumnIndex(sheet.Equipment.Table.Columns, gurps.EquipmentSwitchColumn),
+		"a switchable contained weight reduction must bring the switch column into view")
+}
+
 // TestShowSwitchColumnFindsNestedRows verifies that the scan looks at every depth, not just the top level, so that a
 // switchable item tucked inside a container still brings the column into view.
 func TestShowSwitchColumnFindsNestedRows(t *testing.T) {
@@ -320,6 +386,64 @@ func TestToggleFeatureSwitchWithoutDescendants(t *testing.T) {
 		c.False(child.SwitchedOn, "child %d's switch must have been left alone", i)
 	}
 	c.Equal(fxp.One, stBonusFor(sheet.Entity()), "only the container's modifier may be contributing")
+}
+
+// TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone verifies that an option-click only reaches the
+// descendants that actually have something to switch. Throwing the switch of an item with no switchable features would
+// change nothing the user could see, yet the new state would still be written to the file, altering the sheet's
+// contents, bloating the undo edit and making an item that came from a library diverge from its source.
+func TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	container := gurps.NewTrait(entity, nil, true)
+	container.Name = "Cybernetics"
+	modifier := gurps.NewTraitModifier(entity, nil, false)
+	modifier.Name = "Powered"
+	modifier.Features = gurps.Features{switchableSTBonus(nil)}
+	container.Modifiers = []*gurps.TraitModifier{modifier}
+	switchable := newSwitchableTrait(entity, "Claws")
+	plain := gurps.NewTrait(entity, nil, false)
+	plain.Name = "Plain"
+	plain.Features = gurps.Features{gurps.NewAttributeBonus(gurps.StrengthID)}
+	featureless := gurps.NewTrait(entity, nil, false)
+	featureless.Name = "Featureless"
+	nested := gurps.NewTrait(entity, nil, true)
+	nested.Name = "Nested"
+	deep := newSwitchableTrait(entity, "Armor")
+	deep.SetParent(nested)
+	nested.Children = []*gurps.Trait{deep}
+	children := []*gurps.Trait{switchable, plain, featureless, nested}
+	for _, child := range children {
+		child.SetParent(container)
+	}
+	container.Children = children
+	entity.Traits = []*gurps.Trait{container}
+	sheet.Rebuild(true)
+	c.Equal(fxp.One, stBonusFor(entity), "only the always-on bonus is in play to start with")
+
+	table := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+
+	toggleFeatureSwitch(table.RootRows()[0], table, true, true)
+	c.True(container.SwitchedOn, "the container's switch must be on")
+	c.True(switchable.SwitchedOn, "a switchable child's switch must be on")
+	c.True(deep.SwitchedOn, "a switchable child at any depth must be reached")
+	c.False(plain.SwitchedOn, "a child whose features are all always-on must be left alone")
+	c.False(featureless.SwitchedOn, "a child with no features at all must be left alone")
+	c.False(nested.SwitchedOn, "a container with nothing of its own to switch must be left alone")
+	c.Equal(fxp.FromInteger(4), stBonusFor(entity),
+		"the container's modifier, both switchable children and the always-on bonus must all be contributing")
+
+	mgr.Undo()
+	c.False(container.SwitchedOn, "undo must turn the container's switch back off")
+	c.False(switchable.SwitchedOn, "undo must turn the switchable child's switch back off")
+	c.False(deep.SwitchedOn, "undo must turn the deeper switchable child's switch back off")
+	c.False(plain.SwitchedOn, "undo must leave the untouched child alone as well")
+	c.False(featureless.SwitchedOn, "undo must leave the untouched child alone as well")
+	c.False(nested.SwitchedOn, "undo must leave the untouched container alone as well")
+	c.Equal(fxp.One, stBonusFor(entity), "undo must take the switchable bonuses back out of play")
 }
 
 // TestAdjustTargetsWithUnparentedSource verifies that adjusting a value from a panel that isn't part of a window's

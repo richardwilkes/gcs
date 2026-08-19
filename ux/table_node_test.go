@@ -63,3 +63,66 @@ func TestEquippedCellClickRecalculatesTheSheet(t *testing.T) {
 	c.True(eqp.Equipped, "redo must equip the item again")
 	c.Equal(fxp.One, stBonusFor(entity), "redo must put the feature back into play")
 }
+
+// TestCheckCellDrawsTheNewStateBeforeReportingTheClick verifies the order of operations within a check cell's click
+// handling. Reporting the click marks the owner as modified, which re-syncs the table and recreates every cell,
+// leaving the clicked label detached from the panel tree, where updating its drawable and marking it for layout and
+// redraw would accomplish nothing at all. Both have to happen while the label is still the one on screen.
+func TestCheckCellDrawsTheNewStateBeforeReportingTheClick(t *testing.T) {
+	c := check.New(t)
+	_, table := NewNodeTable(NewTraitsProvider(gurps.NewEntity(), false), nil)
+	node := NewNode(table, nil, gurps.NewTrait(nil, nil, false), false)
+	var seen unison.Drawable
+	var neededLayout bool
+	clicks := 0
+	record := func(label *unison.Label, _ mod.Modifiers) {
+		clicks++
+		seen = label.Drawable
+		neededLayout = label.NeedsLayout
+	}
+
+	// A switch cell draws both states, so the report must see the new drawable in either direction.
+	switchCellData := &gurps.CellData{}
+	label := node.newCheckCell(switchCellData, unison.Black,
+		func(on bool) *unison.SVG {
+			if on {
+				return unison.CheckmarkSVG
+			}
+			return unison.DashSVG
+		}, record)
+
+	label.NeedsLayout = false
+	c.True(label.MouseDownCallback(geom.Point{}, 1, 1, mod.None), "the click must be consumed")
+	c.Equal(1, clicks, "the click must be reported once")
+	c.True(switchCellData.Checked, "the click must flip the checked state")
+	drawable, ok := seen.(*unison.DrawableSVG)
+	c.True(ok, "the report must see an SVG drawable")
+	c.Equal(unison.CheckmarkSVG, drawable.SVG, "the drawable must show the new state before the click is reported")
+	c.True(neededLayout, "the layout must be requested before the click is reported")
+
+	label.NeedsLayout = false
+	c.True(label.MouseDownCallback(geom.Point{}, 1, 1, mod.None), "the second click must be consumed")
+	c.Equal(2, clicks, "the second click must be reported")
+	c.False(switchCellData.Checked, "the second click must flip the checked state back")
+	drawable, ok = seen.(*unison.DrawableSVG)
+	c.True(ok, "the report must see an SVG drawable")
+	c.Equal(unison.DashSVG, drawable.SVG, "the drawable must show the new state before the click is reported")
+	c.True(neededLayout, "the layout must be requested before the click is reported")
+
+	// A toggle cell draws nothing at all when it is off, so the report must see the drawable already cleared.
+	toggleCellData := &gurps.CellData{Checked: true}
+	label = node.newCheckCell(toggleCellData, unison.Black,
+		func(on bool) *unison.SVG {
+			if on {
+				return unison.CheckmarkSVG
+			}
+			return nil
+		}, record)
+
+	label.NeedsLayout = false
+	c.True(label.MouseDownCallback(geom.Point{}, 1, 1, mod.None), "the click must be consumed")
+	c.Equal(3, clicks, "the click must be reported")
+	c.False(toggleCellData.Checked, "the click must flip the checked state")
+	c.Nil(seen, "the drawable must be cleared before the click is reported")
+	c.True(neededLayout, "the layout must be requested before the click is reported")
+}

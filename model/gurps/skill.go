@@ -84,7 +84,7 @@ type SkillEditData struct {
 	SkillSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitzero"`
-	SwitchedOn   bool              `json:"switched_on,omitzero"`
+	ItemSwitch
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 }
@@ -588,16 +588,6 @@ func (s *Skill) ActiveFeatures() Features {
 // HasSwitchableFeatures implements FeatureSwitcher.
 func (s *Skill) HasSwitchableFeatures() bool {
 	return !s.Container() && s.Features.AnySwitchable()
-}
-
-// IsSwitchedOn implements FeatureSwitcher.
-func (s *Skill) IsSwitchedOn() bool {
-	return s.SwitchedOn
-}
-
-// SetSwitchedOn implements FeatureSwitcher.
-func (s *Skill) SetSwitchedOn(on bool) {
-	s.SwitchedOn = on
 }
 
 // TagList returns the list of tags.
@@ -1402,6 +1392,9 @@ func (s *Skill) Kind() string {
 func (s *Skill) ClearUnusedFieldsForType() {
 	if s.Container() {
 		s.SkillNonContainerOnlyEditData = SkillNonContainerOnlyEditData{}
+		// A container's features never apply, so it can never have anything to switch (see HasSwitchableFeatures).
+		// Clearing the switch keeps a stale on-state from being carried around with no way for the user to reach it.
+		s.ItemSwitch = ItemSwitch{}
 		s.Difficulty = AttributeDifficulty{omit: true}
 		if s.TemplatePicker == nil {
 			s.TemplatePicker = &TemplatePicker{}

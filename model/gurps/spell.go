@@ -94,7 +94,7 @@ type SpellEditData struct {
 	SpellSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitzero"`
-	SwitchedOn   bool              `json:"switched_on,omitzero"`
+	ItemSwitch
 	SpellNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 }
@@ -971,16 +971,6 @@ func (s *Spell) HasSwitchableFeatures() bool {
 	return !s.Container() && s.Features.AnySwitchable()
 }
 
-// IsSwitchedOn implements FeatureSwitcher.
-func (s *Spell) IsSwitchedOn() bool {
-	return s.SwitchedOn
-}
-
-// SetSwitchedOn implements FeatureSwitcher.
-func (s *Spell) SetSwitchedOn(on bool) {
-	s.SwitchedOn = on
-}
-
 // TagList returns the list of tags.
 func (s *Spell) TagList() []string {
 	return s.Tags
@@ -1196,6 +1186,9 @@ func (s *Spell) Kind() string {
 func (s *Spell) ClearUnusedFieldsForType() {
 	if s.Container() {
 		s.SpellNonContainerOnlyEditData = SpellNonContainerOnlyEditData{}
+		// A container's features never apply, so it can never have anything to switch (see HasSwitchableFeatures).
+		// Clearing the switch keeps a stale on-state from being carried around with no way for the user to reach it.
+		s.ItemSwitch = ItemSwitch{}
 		s.Difficulty = AttributeDifficulty{omit: true}
 		if s.TemplatePicker == nil {
 			s.TemplatePicker = &TemplatePicker{}

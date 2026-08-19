@@ -54,6 +54,21 @@ type CellData struct {
 	InlineTag         string
 }
 
+// Values used by ForSort to represent the state of a toggle or switch cell.
+const (
+	// checkedSortValue is what a toggle or switch that is on sorts and searches as.
+	checkedSortValue = "√"
+	// switchOffSortValue is what a switch that is off sorts and searches as. A switch column has three states, not two:
+	// on, off, and "nothing to switch" -- and the last of those isn't a switch cell at all, since rows with nothing to
+	// switch are left as an empty text cell. That is also how the cells are drawn: a checkmark for on, a dash for off,
+	// and nothing at all for a row with no switch. The off state therefore needs a value of its own, or sorting by the
+	// column would interleave the rows whose switch is off with the ones that have no switch, hiding the very
+	// distinction the cells are drawn to show. An en dash is used, since it mirrors the dash the cell is drawn with
+	// and, like the checkmark, won't be typed into the search field by accident, the way an ASCII hyphen would be.
+	// Sorted ascending, this groups the rows as no switch, then off, then on.
+	switchOffSortValue = "–"
+)
+
 // ForSort returns a string that can be used to sort or search against for this data.
 func (c *CellData) ForSort() string {
 	switch c.Type {
@@ -62,10 +77,15 @@ func (c *CellData) ForSort() string {
 			return c.Primary + "\n" + c.Secondary
 		}
 		return c.Primary
-	case cell.Toggle, cell.Switch:
+	case cell.Toggle:
 		if c.Checked {
-			return "√"
+			return checkedSortValue
 		}
+	case cell.Switch:
+		if c.Checked {
+			return checkedSortValue
+		}
+		return switchOffSortValue
 	case cell.PageRef, cell.Tags, cell.Markdown:
 		return c.Primary
 	}
