@@ -88,6 +88,7 @@ type SkillEditData struct {
 	ItemSwitch
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
+	preconfigurable
 }
 
 // SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.

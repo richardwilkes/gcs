@@ -34,6 +34,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	addUserDescLabelAndField(content, &e.editorData.UserDesc)
 	addTagsLabelAndField(content, &e.editorData.Tags)
+	addPreconfigurable(e, content)
 	content.AddChild(unison.NewPanel())
 	addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
 	addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)

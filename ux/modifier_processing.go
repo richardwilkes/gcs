@@ -54,6 +54,10 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 	}
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
+			// If the row is preconfigured, bypass processing
+			if gurps.IsNodePreconfigured(row) {
+				return false
+			}
 			switch t := any(row).(type) {
 			case *gurps.Trait:
 				if promptForTraitModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers) {

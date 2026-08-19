@@ -80,6 +80,7 @@ func initEquipmentEditor(carried bool) func(e *editor[*gurps.Equipment, *gurps.E
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Ignore weight for skills"), &e.editorData.WeightIgnoredForSkills)
 		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
+		addPreconfigurable(e, content)
 		resolvedMaxUses := func() int { return cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedMaxUses() }
 		usesLabel := i18n.Text("Uses Left")
 		wrapper := addFlowWrapper(content, usesLabel, 5)

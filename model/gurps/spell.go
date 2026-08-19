@@ -97,6 +97,7 @@ type SpellEditData struct {
 	ItemSwitch
 	SpellNonContainerOnlyEditData
 	SkillContainerOnlySyncData
+	preconfigurable
 }
 
 // SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.

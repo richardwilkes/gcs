@@ -94,6 +94,7 @@ type TraitEditData struct {
 	ItemSwitch
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
+	preconfigurable
 }
 
 // TraitNonContainerOnlyEditData holds the Trait data that is only applicable to traits that aren't containers.

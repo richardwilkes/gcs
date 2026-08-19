@@ -98,6 +98,7 @@ type EquipmentEditData struct {
 	Uses         int                  `json:"uses,omitzero"`
 	Equipped     bool                 `json:"equipped,omitzero"`
 	ItemSwitch
+	preconfigurable
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.

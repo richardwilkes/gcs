@@ -95,6 +95,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		addLabelAndMultiLineStringField(content, i18n.Text("Item"), "", &e.editorData.Item)
 	}
 	addTagsLabelAndField(content, &e.editorData.Tags)
+	addPreconfigurable(e, content)
 	if e.target.Container() {
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	} else {

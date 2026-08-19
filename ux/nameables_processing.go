@@ -11,8 +11,10 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -37,20 +39,31 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 	var data []T
 	var titles []string
 	var nameables []map[string]string
+	var visibleKeys [][]string
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
 			m := make(map[string]string)
 			row.FillWithNameableKeys(m, nil)
-			if len(m) > 0 {
-				data = append(data, row)
-				titles = append(titles, row.String())
-				nameables = append(nameables, m)
+			if len(m) == 0 {
+				return false
 			}
+			var keys []string
+			if gurps.IsNodePreconfigured(row) {
+				// Only prompt for keys that don't already have a replacement recorded; the rest were already
+				// resolved and shouldn't be asked about again.
+				if keys = missingNameableKeys(row, m); len(keys) == 0 {
+					return false
+				}
+			}
+			data = append(data, row)
+			titles = append(titles, row.String())
+			nameables = append(nameables, m)
+			visibleKeys = append(visibleKeys, keys) // nil means "show all keys"
 			return false
 		}, false, false, row)
 	}
 	if len(data) > 0 {
-		if promptForNameables(titles, nameables) {
+		if promptForNameables(titles, nameables, visibleKeys) {
 			for i, row := range data {
 				row.ApplyNameableKeys(nameables[i])
 			}
@@ -68,8 +81,24 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 	}
 }
 
-// ShowNameablesDialog shows a dialog for editing nameables.
-func ShowNameablesDialog(titles []string, nameables []map[string]string) bool {
+// missingNameableKeys returns the keys in m that don't already have an explicit replacement recorded on row.
+func missingNameableKeys[T gurps.Node[T]](row T, m map[string]string) []string {
+	var existing map[string]string
+	if accessor, ok := any(row).(nameable.Accesser); ok && !xreflect.IsNil(accessor) {
+		existing = accessor.NameableReplacements()
+	}
+	missing := make([]string, 0, len(m))
+	for key := range m {
+		if _, has := existing[key]; !has {
+			missing = append(missing, key)
+		}
+	}
+	return missing
+}
+
+// ShowNameablesDialog shows a dialog for editing nameables. For each row, visibleKeys restricts which keys of the
+// corresponding nameables map are shown/editable; a nil entry shows all of that row's keys.
+func ShowNameablesDialog(titles []string, nameables []map[string]string, visibleKeys [][]string) bool {
 	list := unison.NewPanel()
 	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
 	list.SetLayout(&unison.FlexLayout{
@@ -78,9 +107,12 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string) bool {
 		VSpacing: unison.StdVSpacing,
 	})
 	for i, one := range titles {
-		keys := make([]string, 0, len(nameables[i]))
-		for k := range nameables[i] {
-			keys = append(keys, k)
+		keys := visibleKeys[i]
+		if keys == nil {
+			keys = make([]string, 0, len(nameables[i]))
+			for k := range nameables[i] {
+				keys = append(keys, k)
+			}
 		}
 		xstrings.SortStringsNaturalAscending(keys)
 		if i != 0 {
