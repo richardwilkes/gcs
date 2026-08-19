@@ -757,15 +757,13 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 
 // hitLocationEquipment returns the names of the carried, really-equipped pieces of equipment that grant DR to the
 // given hit location, in the order they appear in the carried equipment list. What counts as granting DR mirrors how
-// the DR printed for the location is arrived at (see HitLocation.accumulateDR and Entity.AddDRBonusesFor), so that
-// the two agree:
+// the DR printed for the location is arrived at (see Entity.AddDRBonusesFor), so that the two agree:
 //
 //   - The DR bonuses of an item's enabled, non-container modifiers are considered as well as the item's own, subject to
 //     the item's switch, exactly as they are when the entity collects features (see Entity.processFeatures). Armor
 //     that only reaches the location through a modifier -- a hood adding DR to the skull, say -- is therefore listed.
-//   - A location inherits the DR of the locations that own it, so a bonus naming an owning location -- the torso, for
-//     a location in the torso's sub-table -- covers the location as well. A bonus naming the "all" location covers
-//     every location, since the topmost owning location is always a top-level one and "all" applies there.
+//   - A bonus naming the "all" location covers every location this is called for, since the hit location loop only
+//     visits the top-level locations of the body (see processHitLocationLoop) and "all" applies to those.
 //   - A "this armor" DR bonus (one that names no locations) needs no examination of its own, since it covers the union
 //     of the locations named by the item's and its enabled modifiers' located DR bonuses (see
 //     Entity.expandThisArmorDRBonus), every one of which is already scanned here; the item therefore gets listed for
@@ -773,15 +771,14 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 //
 // Each piece of equipment is named at most once, no matter how many of its DR bonuses reach the location.
 func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
-	ids := locationAndOwnerIDs(location)
 	var list []string
 	Traverse(func(eqp *Equipment) bool {
 		if !eqp.ReallyEquipped() {
 			return false
 		}
-		grantsDR := drBonusCoversAnyLocation(eqp.Features, eqp.SwitchedOn, ids) ||
+		grantsDR := drBonusCoversLocation(eqp.Features, eqp.SwitchedOn, location.LocID) ||
 			anyEnabledNonContainerModifier(eqp.Modifiers, func(mod *EquipmentModifier) bool {
-				return drBonusCoversAnyLocation(mod.Features, eqp.SwitchedOn, ids)
+				return drBonusCoversLocation(mod.Features, eqp.SwitchedOn, location.LocID)
 			})
 		if grantsDR {
 			list = append(list, eqp.NameWithReplacements())
@@ -791,38 +788,19 @@ func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 	return list
 }
 
-// locationAndOwnerIDs returns the ID of the given hit location followed by the IDs of the locations that own it, from
-// the nearest outward, i.e. the locations whose DR the given one inherits (see HitLocation.accumulateDR).
-func locationAndOwnerIDs(location *HitLocation) []string {
-	var ids []string
-	for loc := location; loc != nil; {
-		ids = append(ids, loc.LocID)
-		if loc.owningTable == nil {
-			break
-		}
-		loc = loc.owningTable.owningLocation
-	}
-	return ids
-}
-
-// drBonusCoversAnyLocation returns true if any of the given features that is active for an owner whose switch is in
-// the given state is a DR bonus naming one of the given hit location IDs, either explicitly or via the "all" location.
-// The switch is applied here rather than by way of Features.Active, since this runs once per hit location for every
-// piece of equipment during an export and Features.Active allocates whenever it has something to filter out.
-func drBonusCoversAnyLocation(features Features, switchedOn bool, ids []string) bool {
+// drBonusCoversLocation returns true if any of the given features that is active for an owner whose switch is in the
+// given state is a DR bonus naming the given hit location ID, either explicitly or via the "all" location. The switch
+// is applied here rather than by way of Features.Active, since this runs once per hit location for every piece of
+// equipment during an export and Features.Active allocates whenever it has something to filter out.
+func drBonusCoversLocation(features Features, switchedOn bool, locID string) bool {
 	for _, f := range features {
 		if f.IsSwitchable() && !switchedOn {
 			continue
 		}
 		if bonus, ok := f.(*DRBonus); ok {
 			for _, loc := range bonus.Locations {
-				if loc == AllID {
+				if loc == AllID || strings.EqualFold(loc, locID) {
 					return true
-				}
-				for _, id := range ids {
-					if strings.EqualFold(id, loc) {
-						return true
-					}
 				}
 			}
 		}

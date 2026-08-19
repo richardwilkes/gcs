@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -112,4 +113,19 @@ func TestLootSheetNewItemCommandUsesTheLiveList(t *testing.T) {
 	mgr.Undo()
 	c.Equal(0, len(sheet.loot.Equipment), "undo must take the new equipment back out of the loot")
 	c.Equal(0, sheet.Equipment.Table.RootRowCount(), "undo must take the row back out of the list that is on screen")
+}
+
+// TestLootSheetIgnoresAnotherEntitySheetSettings verifies that a loot sheet only responds to a change in the global sheet
+// settings, which is what it reads from, and not to a change made in some character's per-sheet settings. Responding
+// to the latter would rebuild the loot sheet and bump its modification timestamp for an edit that was never made to it.
+func TestLootSheetIgnoresAnotherEntitySheetSettings(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	sheet.loot.ModifiedOn = jio.Time{}
+
+	sheet.SheetSettingsUpdated(gurps.NewEntity(), true)
+	c.Equal(jio.Time{}, sheet.loot.ModifiedOn, "another entity's settings change must not touch the loot sheet")
+
+	sheet.SheetSettingsUpdated(nil, true)
+	c.NotEqual(jio.Time{}, sheet.loot.ModifiedOn, "a global settings change must be reported to the loot sheet")
 }
