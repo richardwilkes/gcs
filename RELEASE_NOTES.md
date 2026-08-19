@@ -14,6 +14,7 @@
   now receive any "this weapon" bonuses defined by the spell's own features.
 - Template items (non-container) now have a "Preconfigured" flag used to indicate that modifier and substitution configuration can be skipped when adding thie item to a character. (#1102)
 - Adding items to a template now triggers modifier selections and nameable replacements (#1101)
+- Template items (non-container) now have a "Preconfigured" flag used to indicate that modifier and substitution configuration can be skipped when adding thie item to a character. (#1102)
 
 ## Bug Fixes
 
