@@ -180,8 +180,9 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 
 	l.InstallCmdHandlers(SaveItemID, func(_ any) bool { return l.Modified() }, func(_ any) { l.save(false) })
 	l.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { l.save(true) })
-	l.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, l.Equipment)
-	l.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, l.Notes)
+	l.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
+		func() itemCreator { return l.Equipment })
+	l.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return l.Notes })
 	InstallExportCmdHandlers(l)
 
 	l.loot.EnsureAttachments()
@@ -293,15 +294,20 @@ func addLootTextField(parent *unison.Panel, targetMgr *TargetMgr, title, fieldRe
 		func(s string) { *field = s }))
 }
 
-func (l *LootSheet) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {
+// installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the loot
+// sheet's lists. As on a character sheet, the list is looked up through the getter each time a command is invoked
+// rather than captured here, since a list whose set of columns has to change can only do so by being replaced outright
+// and a captured list would then be an orphan nobody is looking at. See Sheet.installNewItemCmdHandlers for what goes
+// wrong when that happens.
+func (l *LootSheet) installNewItemCmdHandlers(itemID, containerID int, creator func() itemCreator) {
 	variant := NoItemVariant
 	if containerID == -1 {
 		variant = AlternateItemVariant
 	} else {
 		l.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator.CreateItem(l, ContainerItemVariant) })
+			func(_ any) { creator().CreateItem(l, ContainerItemVariant) })
 	}
-	l.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator.CreateItem(l, variant) })
+	l.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(l, variant) })
 }
 
 func (l *LootSheet) keyToPanel(key *uti.DataType) *unison.Panel {

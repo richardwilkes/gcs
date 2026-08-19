@@ -44,10 +44,9 @@ func (t *TableUndoEditData[T]) Apply() {
 }
 
 // restore puts the preserved data back into the table that is currently showing it, without reporting the change to
-// anything, and returns that table along with the owner that has to rebuild its lists for the table's columns to match
-// what its provider now calls for, or nil if the columns already match. Nothing is returned if there was nothing to
-// restore or the restore failed. The reporting is left to restoredTables, so that an undo spanning several tables can
-// do it just once for all of them.
+// anything, and returns that table along with the owner it belongs to, if any. Nothing is returned if there was
+// nothing to restore or the restore failed. The reporting is left to restoredTables, so that an undo spanning several
+// tables can do it just once for all of them.
 func (t *TableUndoEditData[T]) restore() (*unison.Table[*Node[T]], Rebuildable) {
 	if t == nil {
 		return nil, nil
@@ -57,7 +56,11 @@ func (t *TableUndoEditData[T]) restore() (*unison.Table[*Node[T]], Rebuildable) 
 		errs.Log(err)
 		return nil, nil
 	}
-	return table, ownerNeedingRebuildFor(table)
+	owner, found := table.ClientData()[TableOwnerClientKey].(Rebuildable)
+	if !found {
+		return table, nil
+	}
+	return table, owner
 }
 
 // restoredTables accumulates the results of restoring one or more tables, so that the undo they belong to reports the
@@ -68,25 +71,31 @@ type restoredTables struct {
 }
 
 // add records what restoring one table produced, i.e. the results of a TableUndoEditData.restore() call.
-func (r *restoredTables) add(table unison.Paneler, ownerNeedingRebuild Rebuildable) {
+func (r *restoredTables) add(table unison.Paneler, owner Rebuildable) {
 	if xreflect.IsNil(r.table) && !xreflect.IsNil(table) {
 		r.table = table
 	}
-	if xreflect.IsNil(r.owner) && !xreflect.IsNil(ownerNeedingRebuild) {
-		r.owner = ownerNeedingRebuild
+	if xreflect.IsNil(r.owner) && !xreflect.IsNil(owner) {
+		r.owner = owner
 	}
 }
 
 // report tells the rest of the app about the restored data.
 func (r *restoredTables) report() {
-	// Some columns are only present when the data calls for them (the switch column, for one), so putting the old data
-	// back may require the owner to rebuild its lists to bring such a column into or out of view. Which of the two is
-	// needed can't be known until the data is back in place, which is why restoring doesn't report the change on its
-	// own: a rebuild already recalculates the entity, re-syncs every table, refreshes the search results and restores
-	// the focus and scroll position, i.e. all that marking a table as modified would do apart from bumping the owner's
-	// modification timestamp, which is therefore done here as well. So exactly one of the two is done, once for the
-	// whole undo rather than once per table, since on a sheet that may hold hundreds of rows all of that work is the
-	// entire cost of the edit and an undo spanning six tables would otherwise pay it six times over.
+	// An owner is rebuilt rather than merely told that one of its tables changed, because far more of what it shows
+	// than the rows themselves is derived from the data that was just put back, and only rebuilding recomputes any of
+	// it: a sheet only carries the melee weapons, ranged weapons, reactions and conditional modifiers lists on the
+	// page while there is something to put in them, the weapon lists drop the columns nothing in them uses, and the
+	// switch column comes and goes with the presence of switchable features (a set of columns can only change by
+	// building a new table, since a table's columns are fixed at creation). A rebuild is otherwise a superset of
+	// marking a table as modified -- it recalculates the entity, re-syncs every table, refreshes the search results
+	// and restores the focus and scroll position -- apart from bumping the owner's modification timestamp, which is
+	// therefore done here as well. Marking as modified is left for the tables that have no owner recorded, i.e. those
+	// in an editor or a library list, which nothing ever replaces or reshapes.
+	//
+	// Whichever of the two applies happens once for the whole undo rather than once per table, which is why restoring
+	// doesn't report the change on its own: on a sheet that may hold hundreds of rows all of that work is the entire
+	// cost of the edit, and an undo spanning six tables would otherwise pay it six times over.
 	if !xreflect.IsNil(r.owner) {
 		if bumper, ok := r.owner.(modificationTimestampBumper); ok {
 			// The bump has to happen before the rebuild for the panel showing it to pick up the new value.
@@ -112,20 +121,6 @@ var (
 	_ modificationTimestampBumper = &Sheet{}
 	_ modificationTimestampBumper = &LootSheet{}
 )
-
-// ownerNeedingRebuildFor returns the owner that has to rebuild its lists for the given table to show the columns its
-// provider now calls for, or nil if the columns already match or there is no owner to ask.
-func ownerNeedingRebuildFor[T gurps.Node[T]](table *unison.Table[*Node[T]]) Rebuildable {
-	provider, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])
-	if !ok || !columnsOutOfSync(provider.ColumnIDs(), table.Columns) {
-		return nil
-	}
-	owner, found := table.ClientData()[TableOwnerClientKey].(Rebuildable)
-	if !found || xreflect.IsNil(owner) {
-		return nil
-	}
-	return owner
-}
 
 // liveTable returns the table that is currently showing the data the given table was created for. An owner that has to
 // alter its set of columns can only do so by replacing the table entirely, which leaves any table captured earlier

@@ -110,6 +110,13 @@ func TestLiveTableResolvesReplacedTables(t *testing.T) {
 	c.Equal(orphan, liveTable(orphan), "a table with no recorded owner must resolve to itself")
 }
 
+// columnsMatchProvider returns true if the columns a table is showing are the ones its provider now calls for, i.e.
+// that the list it belongs to doesn't have to be built anew for the user to see the right set of columns.
+func columnsMatchProvider[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
+	provider, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])
+	return ok && !columnsOutOfSync(provider.ColumnIDs(), table.Columns)
+}
+
 // syncCounter counts the deep syncs that pass over it, making the number of times a single edit re-syncs an entire
 // sheet observable. The optional onSync hook runs with each of them, so that a test can also look at the state the
 // sheet is being brought up to date against.
@@ -302,8 +309,8 @@ func TestUndoSpanningEveryListSyncsTheSheetOnlyOnce(t *testing.T) {
 		"undo must take the traits switch column away again")
 	c.NotEqual(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
 		"undo must take the skills switch column away again")
-	c.Nil(ownerNeedingRebuildFor(sheet.Traits.Table), "the traits table's columns must match its provider after undo")
-	c.Nil(ownerNeedingRebuildFor(sheet.Skills.Table), "the skills table's columns must match its provider after undo")
+	c.True(columnsMatchProvider(sheet.Traits.Table), "the traits table's columns must match its provider after undo")
+	c.True(columnsMatchProvider(sheet.Skills.Table), "the skills table's columns must match its provider after undo")
 
 	counter.count = 0
 	after.Apply()
@@ -314,8 +321,8 @@ func TestUndoSpanningEveryListSyncsTheSheetOnlyOnce(t *testing.T) {
 		"redo must bring the traits switch column back")
 	c.Equal(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
 		"redo must bring the skills switch column back")
-	c.Nil(ownerNeedingRebuildFor(sheet.Traits.Table), "the traits table's columns must match its provider after redo")
-	c.Nil(ownerNeedingRebuildFor(sheet.Skills.Table), "the skills table's columns must match its provider after redo")
+	c.True(columnsMatchProvider(sheet.Traits.Table), "the traits table's columns must match its provider after redo")
+	c.True(columnsMatchProvider(sheet.Skills.Table), "the skills table's columns must match its provider after redo")
 }
 
 // newSwitchableEquipment returns a non-container piece of equipment carrying a single switchable +1 ST bonus, so that
@@ -365,9 +372,9 @@ func TestUndoOfMoveBetweenEquipmentListsSyncsTheSheetOnlyOnce(t *testing.T) {
 	c.Equal(1, len(entity.CarriedEquipment), "undo must put the item back into the carried equipment")
 	c.Equal(0, len(entity.OtherEquipment), "undo must take the item back out of the other equipment")
 	c.Equal(1, counter.count, "an undo that puts both lists back must sync the sheet exactly once")
-	c.Nil(ownerNeedingRebuildFor(sheet.CarriedEquipment.Table),
+	c.True(columnsMatchProvider(sheet.CarriedEquipment.Table),
 		"the carried equipment list's columns must match its provider after undo")
-	c.Nil(ownerNeedingRebuildFor(sheet.OtherEquipment.Table),
+	c.True(columnsMatchProvider(sheet.OtherEquipment.Table),
 		"the other equipment list's columns must match its provider after undo")
 
 	counter.count = 0
@@ -376,9 +383,9 @@ func TestUndoOfMoveBetweenEquipmentListsSyncsTheSheetOnlyOnce(t *testing.T) {
 	c.Equal(0, len(entity.CarriedEquipment), "redo must take the item back out of the carried equipment")
 	c.Equal(1, len(entity.OtherEquipment), "redo must put the item back into the other equipment")
 	c.Equal(1, counter.count, "a redo that puts both lists back must sync the sheet exactly once")
-	c.Nil(ownerNeedingRebuildFor(sheet.CarriedEquipment.Table),
+	c.True(columnsMatchProvider(sheet.CarriedEquipment.Table),
 		"the carried equipment list's columns must match its provider after redo")
-	c.Nil(ownerNeedingRebuildFor(sheet.OtherEquipment.Table),
+	c.True(columnsMatchProvider(sheet.OtherEquipment.Table),
 		"the other equipment list's columns must match its provider after redo")
 }
 
@@ -420,7 +427,7 @@ func TestUndoOfDragBetweenSheetsLeavesTheSourceSheetAlone(t *testing.T) {
 	c.Equal(1, len(sourceEntity.CarriedEquipment), "undo must leave the source sheet's item where it is")
 	c.Equal(1, destCounter.count, "undoing the drop must sync the destination sheet exactly once")
 	c.Equal(0, sourceCounter.count, "undoing the drop must not touch the source sheet at all")
-	c.Nil(ownerNeedingRebuildFor(dest.CarriedEquipment.Table),
+	c.True(columnsMatchProvider(dest.CarriedEquipment.Table),
 		"the destination's carried equipment list's columns must match its provider after undo")
 }
 
@@ -451,4 +458,52 @@ func TestUndoOfApplyTemplateSyncsTheSheetOnlyOnce(t *testing.T) {
 	sheet.undoMgr.Redo()
 	c.Equal(traitCount+1, len(entity.Traits), "redo must put the template's trait back into the entity")
 	c.Equal(1, counter.count, "redoing an apply template must sync the sheet exactly once")
+}
+
+// listAttachedToSheet returns true if the given page list is currently part of the sheet's panel tree, i.e. that it is
+// one of the lists the sheet is showing. Several of a sheet's lists are only carried on the page while they have rows,
+// and which ones those are is decided when the sheet creates its lists.
+func listAttachedToSheet(sheet *Sheet, list unison.Paneler) bool {
+	target := list.AsPanel()
+	return sheet.AsPanel().HasInSelfOrDescendants(func(one *unison.Panel) bool { return one == target })
+}
+
+// TestUndoRestoresAConditionallyPresentList verifies that an undo puts back the parts of a sheet that only creating the
+// lists anew can. The melee weapons list is carried on the page solely while the character has a melee weapon, so
+// deleting the only trait that supplies one takes the whole list off the page. The traits table's own columns are
+// untouched by that deletion, so an undo that only rebuilt when the restored table's columns had changed would settle
+// for marking the traits table as modified, leaving the melee weapons list missing until some unrelated later edit
+// happened to rebuild the sheet.
+func TestUndoRestoresAConditionallyPresentList(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Claws"
+	trait.Weapons = []*gurps.Weapon{gurps.NewWeapon(trait, true)}
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	mgr := unison.UndoManagerFor(sheet.Traits.Table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c.Equal(1, sheet.MeleeWeapons.Table.RootRowCount(), "the trait's weapon must be in the melee weapons list")
+	c.True(listAttachedToSheet(sheet, sheet.MeleeWeapons), "the melee weapons list must start out on the page")
+
+	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	DeleteSelection(sheet.Traits.Table, true)
+	c.Equal(0, len(entity.Traits), "the trait must be gone from the entity")
+	c.Equal(0, sheet.MeleeWeapons.Table.RootRowCount(), "the weapon must go with the trait that supplied it")
+	c.False(listAttachedToSheet(sheet, sheet.MeleeWeapons),
+		"an empty melee weapons list must come off the page")
+
+	c.True(mgr.CanUndo(), "the deletion must be undoable")
+	mgr.Undo()
+	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
+	c.Equal(1, sheet.MeleeWeapons.Table.RootRowCount(), "undo must bring the weapon back")
+	c.True(listAttachedToSheet(sheet, sheet.MeleeWeapons), "undo must put the melee weapons list back on the page")
+
+	c.True(mgr.CanRedo(), "the deletion must be redoable")
+	mgr.Redo()
+	c.Equal(0, len(entity.Traits), "redo must remove the trait from the entity again")
+	c.False(listAttachedToSheet(sheet, sheet.MeleeWeapons),
+		"redo must take the melee weapons list back off the page")
 }

@@ -189,5 +189,5 @@ func TestProcessModifiersRebuildsThroughAReplacedTable(t *testing.T) {
 	c.False(plain.Disabled, "the second prompt's answer must have been applied to the model")
 	c.Equal(fxp.One, stBonusFor(entity),
 		"the rebuild after the second answer must have recalculated the entity, bringing the enabled bonus into play")
-	c.Nil(ownerNeedingRebuildFor(sheet.Traits.Table), "the live table's columns must match its provider")
+	c.True(columnsMatchProvider(sheet.Traits.Table), "the live table's columns must match its provider")
 }

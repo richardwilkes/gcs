@@ -140,19 +140,29 @@ func TestFeaturesPanelSwitchMiddleFeature(t *testing.T) {
 	c.Equal(4, len(panel.Children()), "expected add button + three feature rows after the switch")
 }
 
-// findSwitchableCheckBox returns the first "switchable" checkbox found anywhere beneath the given panel, or nil if
-// there is none. Like findFeatureTypePopup, it lets the tests reach a widget whose position within the row varies from
-// one feature type to the next.
-func findSwitchableCheckBox(p *unison.Panel) *CheckBox {
+// switchableCheckBoxes returns every "switchable" checkbox found anywhere beneath the given panel. Like
+// findFeatureTypePopup, it lets the tests reach a widget whose position within the row varies from one feature type to
+// the next, and returning all of them rather than just the first lets a test insist that a row has exactly one.
+func switchableCheckBoxes(p *unison.Panel) []*CheckBox {
 	if box, ok := p.Self.(*CheckBox); ok && box.Text.String() == i18n.Text("switchable") {
-		return box
+		return []*CheckBox{box}
 	}
+	var boxes []*CheckBox
 	for _, child := range p.Children() {
-		if box := findSwitchableCheckBox(child); box != nil {
-			return box
-		}
+		boxes = append(boxes, switchableCheckBoxes(child)...)
 	}
-	return nil
+	return boxes
+}
+
+// findSwitchableCheckBox returns the sole "switchable" checkbox beneath the given panel, or nil if there is none. A row
+// carrying more than one is a failure, since the extra would be an unattached duplicate of the same flag.
+func findSwitchableCheckBox(c check.Checker, p *unison.Panel) *CheckBox {
+	boxes := switchableCheckBoxes(p)
+	if len(boxes) == 0 {
+		return nil
+	}
+	c.Equal(1, len(boxes), "a row must not hold more than one switchable checkbox")
+	return boxes[0]
 }
 
 // clickCheckBox puts the checkbox into the given state and runs its click callback, mirroring what a user's click on it
@@ -174,7 +184,7 @@ func TestFeaturesPanelSwitchableCheckBoxTogglesTheFlag(t *testing.T) {
 	features := gurps.Features{bonus}
 
 	panel := newFeaturesPanel(entity, owner, &features, false)
-	box := findSwitchableCheckBox(panel.Children()[1])
+	box := findSwitchableCheckBox(c, panel.Children()[1])
 	c.NotNil(box, "expected a switchable checkbox in the attribute bonus row")
 	c.Equal(uncheck.Off, box.State, "a feature that isn't switchable must start out unchecked")
 	c.False(bonus.IsSwitchable(), "a new attribute bonus must not be switchable")
@@ -199,7 +209,7 @@ func TestFeaturesPanelSwitchableCheckBoxReflectsExistingFlag(t *testing.T) {
 	features := gurps.Features{bonus}
 
 	panel := newFeaturesPanel(entity, owner, &features, false)
-	box := findSwitchableCheckBox(panel.Children()[1])
+	box := findSwitchableCheckBox(c, panel.Children()[1])
 	c.NotNil(box, "expected a switchable checkbox in the attribute bonus row")
 	c.Equal(uncheck.On, box.State, "a switchable feature must show a checked box")
 }
@@ -224,7 +234,7 @@ func TestFeaturesPanelSwitchPreservesSwitchable(t *testing.T) {
 	c.True(ok, "the feature must have been replaced with a SkillBonus")
 	c.True(features[0].IsSwitchable(), "the replacement feature must still be switchable")
 
-	box := findSwitchableCheckBox(panel.Children()[1])
+	box := findSwitchableCheckBox(c, panel.Children()[1])
 	c.NotNil(box, "expected a switchable checkbox in the replacement row")
 	c.Equal(uncheck.On, box.State, "the replacement row's checkbox must show the preserved flag")
 }
@@ -242,13 +252,59 @@ func TestFeaturesPanelUnknownFeatureHasNoSwitchableCheckBox(t *testing.T) {
 
 	panel := newFeaturesPanel(entity, owner, &features, false)
 	c.Equal(2, len(panel.Children()), "expected add button + one feature row")
-	c.Nil(findSwitchableCheckBox(panel.Children()[1]), "an unknown feature must not offer a switchable checkbox")
+	c.Nil(findSwitchableCheckBox(c, panel.Children()[1]), "an unknown feature must not offer a switchable checkbox")
 	c.False(unknown.IsSwitchable(), "an unknown feature is never switchable")
 }
 
+// TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast guards the layout of the weapon "switch" row, the one row whose
+// controls live in a nested two-row wrapper. The switchable checkbox belongs at the end of the wrapper's second row,
+// right after the last control, as it is on every other row. As a sibling of the wrapper instead, it was top-aligned
+// against the wrapper's two rows and pinned to the far right edge, since the wrapper's column takes up all the slack.
+func TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+
+	bonus := gurps.NewWeaponSwitchBonus()
+	bonus.SetOwner(owner)
+	features := gurps.Features{bonus}
+
+	panel := newFeaturesPanel(entity, owner, &features, false)
+	boxes := switchableCheckBoxes(panel.Children()[1])
+	c.Equal(1, len(boxes), "expected exactly one switchable checkbox in the row")
+	if len(boxes) != 1 {
+		return
+	}
+	box := boxes[0]
+	wrapper := box.Parent()
+	c.NotNil(wrapper, "the checkbox must live inside the wrapper holding the switch controls")
+
+	children := wrapper.Children()
+	c.Equal(5, len(children), "the wrapper holds the type switcher, the indent spacer, both popups and the checkbox")
+	c.True(children[len(children)-1] == box.AsPanel(), "the checkbox must be the last widget in the wrapper")
+	_, ok := children[len(children)-2].Self.(*unison.PopupMenu[string])
+	c.True(ok, "the checkbox must sit immediately after the bool popup")
+
+	layout, ok := wrapper.Layout().(*unison.FlexLayout)
+	c.True(ok, "the wrapper must use a flex layout")
+	c.Equal(4, layout.Columns, "the wrapper's second row holds the spacer, both popups and the checkbox")
+	data, ok := children[0].LayoutData().(*unison.FlexLayoutData)
+	c.True(ok, "the type switcher must carry flex layout data")
+	c.Equal(layout.Columns, data.HSpan, "the type switcher must span the whole first row")
+
+	// The wrapper is the only thing on the line, so the line's column count must be 1: anything else beside the wrapper
+	// would be shoved aside by the column the wrapper's HGrab expands.
+	line := wrapper.Parent()
+	c.NotNil(line, "the wrapper must be attached to the line panel")
+	c.Equal(1, len(line.Children()), "the wrapper must be the only widget on the line")
+	lineLayout, ok := line.Layout().(*unison.FlexLayout)
+	c.True(ok, "the line panel must use a flex layout")
+	c.Equal(len(line.Children()), lineLayout.Columns, "the line's column count must match its child count")
+}
+
 // TestFeaturesPanelSwitchableCheckBoxOnEveryRowType verifies that every feature type that builds its own first row --
-// rather than going through the shared leveled-amount line -- still gets the switchable checkbox, and that the checkbox
-// is wired to that feature.
+// rather than going through the shared leveled-amount line -- gets exactly one switchable checkbox, and that the
+// checkbox is wired to that feature.
 func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
 	entity := gurps.NewEntity()
 	trait := gurps.NewTrait(entity, nil, false)
@@ -276,8 +332,12 @@ func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
 			features := gurps.Features{one.feature}
 			panel := newFeaturesPanel(entity, one.owner, &features, false)
 			c.Equal(2, len(panel.Children()), "expected add button + one feature row")
-			box := findSwitchableCheckBox(panel.Children()[1])
-			c.NotNil(box, "expected a switchable checkbox in the row")
+			boxes := switchableCheckBoxes(panel.Children()[1])
+			c.Equal(1, len(boxes), "expected exactly one switchable checkbox in the row")
+			if len(boxes) != 1 {
+				return
+			}
+			box := boxes[0]
 			c.Equal(uncheck.Off, box.State, "the feature starts out not switchable")
 
 			clickCheckBox(box, true)

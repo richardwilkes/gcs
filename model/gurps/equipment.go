@@ -491,7 +491,12 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			// other equipment list as well, where the equipped flag is meaningless -- nothing clears it when an item
 			// is created in or moved to that list. Neither state is the whole answer, though: the features the
 			// equipment resolves for itself take effect no matter which list it lives in.
-			if (!e.IsCarried() || !e.ReallyEquipped()) && !e.switchMattersWhileUnequipped() {
+			//
+			// The tests are ordered by cost, since this runs for every column of every row on each sort and each
+			// keystroke of a search: ReallyEquipped only walks the parent chain, IsCarried additionally scans the
+			// entity's root equipment lists, and switchMattersWhileUnequipped traverses every modifier, so each is
+			// only reached when the cheaper ones ahead of it left the answer open.
+			if (!e.ReallyEquipped() || !e.IsCarried()) && !e.switchMattersWhileUnequipped() {
 				data.Dim = true
 			}
 		}
@@ -520,12 +525,13 @@ func (e *Equipment) ReallyEquipped() bool {
 // to the other list. Equipment with no owning entity -- a library list, a template or a loot sheet -- has no second
 // list to be told apart from, so it is considered carried.
 //
-// The answer is arrived at by exclusion so that equipment whose root is in neither list is treated as carried, too.
-// That covers an editor's working clone of a top-level row, which is made with the row's own parent (nil, in that
-// case) and so is rooted outside both lists, as well as a row in flight between lists. Answering "carried" for those
-// mirrors the no-entity case and keeps an editor's preview in agreement with the sheet. The one thing it cannot get
-// right is such a clone of a top-level row from the other equipment list, which reports itself carried; nothing on the
-// clone says otherwise.
+// A row on a sheet is always rooted in one of the two lists, and the other equipment list is checked first, since it is
+// normally the far shorter of the two. Only a root found in neither list needs any further work, and there are two ways
+// to get one. An editor's working clone is made with the row's own parent, which is nil for a top-level row, leaving
+// the clone rooted outside both lists while keeping the ID of the row it stands for; that ID is what settles the
+// question, so the clone's preview of Extended Value and Extended Weight agrees with the sheet no matter which list the
+// row came from. A row in flight between the lists has no such counterpart to be found and is treated as carried, which
+// mirrors the no-entity case.
 func (e *Equipment) IsCarried() bool {
 	entity := EntityFromNode(e)
 	if entity == nil {
@@ -535,7 +541,20 @@ func (e *Equipment) IsCarried() bool {
 	for root.parent != nil {
 		root = root.parent
 	}
-	return !slices.Contains(entity.OtherEquipment, root)
+	if slices.Contains(entity.OtherEquipment, root) {
+		return false
+	}
+	if slices.Contains(entity.CarriedEquipment, root) {
+		return true
+	}
+	// An orphan root: look for the row it stands for in the other equipment list, at any depth. No matching lookup in
+	// the carried equipment list is needed, since "carried" is the answer whenever nothing says otherwise.
+	standsForOther := false
+	Traverse(func(other *Equipment) bool {
+		standsForOther = other.TID == root.TID
+		return standsForOther
+	}, false, false, entity.OtherEquipment...)
+	return !standsForOther
 }
 
 // Depth returns the number of parents this node has.

@@ -72,8 +72,8 @@ func TestScriptEquipmentEquipped(t *testing.T) {
 // TestScriptEquipmentEquippedOnEditorClone verifies that the working clone the equipment editor makes to preview
 // Extended Value and Extended Weight resolves scripts the same way the row it was cloned from does. The editor clones
 // with the row's own parent, which is nil for a top-level row, so the clone is rooted in neither of the entity's
-// equipment lists. Such a root has to be treated as carried, or a script reading self.equipped would answer one way on
-// the sheet and another in the editor's preview.
+// equipment lists. The clone keeps the ID of the row it stands for, though, so a script reading self.equipped must
+// answer the same in the editor's preview as it does on the sheet, whichever list the row lives in.
 func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 	c := check.New(t)
 
@@ -123,13 +123,22 @@ func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 	c.Equal(baseValue(otherChild), baseValue(otherChildClone),
 		"the editor's preview of a nested other item agrees with the sheet")
 
-	// A top-level item in the other list is the one case the clone cannot get right: nothing on it says which list it
-	// came from, and treating an unknown root as carried is what keeps every other case in agreement. The editor's
-	// preview of such an item therefore reports it as equipped, which is what it did before the equipped property
-	// started consulting the list at all.
+	// A top-level item in the other list has no parent to point the clone back at its list, so the clone is rooted in
+	// neither list. The ID it preserves still identifies the row it stands for, and finding that row in the other list
+	// is what keeps the preview in agreement with the sheet.
 	c.False(other.IsCarried(), "a top-level item in the other list is not carried")
 	otherClone := cloneForEditor(other)
-	c.True(otherClone.IsCarried(), "the editor's clone of a top-level other item is rooted in neither list")
+	c.False(otherClone.IsCarried(),
+		"the editor's clone of a top-level other item is resolved through its ID, so it is still not carried")
 	c.Equal(fxp.FromInteger(50), baseValue(other), "the sheet resolves the top-level other item as unequipped")
-	c.Equal(fxp.FromInteger(100), baseValue(otherClone), "the editor's preview treats it as equipped")
+	c.Equal(baseValue(other), baseValue(otherClone),
+		"the editor's preview of a top-level other item agrees with the sheet")
+
+	// A row that belongs to neither list -- one in flight between them, say -- has nothing to identify it, so it falls
+	// back to being carried, just as equipment with no owning entity does.
+	inFlight := NewEquipment(e, nil, false)
+	inFlight.Name = "In Flight"
+	inFlight.BaseValue = script
+	c.True(inFlight.IsCarried(), "an item in neither list is carried")
+	c.Equal(fxp.FromInteger(100), baseValue(inFlight), "an item in neither list resolves as equipped")
 }

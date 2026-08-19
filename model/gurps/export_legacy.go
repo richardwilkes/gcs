@@ -755,24 +755,50 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 	}
 }
 
+// hitLocationEquipment returns the names of the carried, really-equipped pieces of equipment that grant DR to the
+// given hit location, in the order they appear in the carried equipment list. The DR bonuses of an item's enabled,
+// non-container modifiers are considered as well, subject to the item's switch, exactly as they are when the entity
+// collects features (see Entity.processFeatures): the DR printed for the location comes from that collection, so armor
+// that only reaches the location through a modifier -- a hood adding DR to the skull, say -- has to be listed
+// alongside it. A "this armor" DR bonus (one that names no locations) needs no examination of its own, since it covers
+// the union of the locations named by the item's and its enabled modifiers' located DR bonuses (see
+// Entity.expandThisArmorDRBonus), every one of which is already scanned here; the item therefore gets listed for
+// precisely the locations such a bonus can reach. Each piece of equipment is named at most once, no matter how many of
+// its DR bonuses reach the location.
 func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 	var list []string
 	Traverse(func(eqp *Equipment) bool {
-		if eqp.ReallyEquipped() {
-			for _, f := range eqp.ActiveFeatures() {
-				if bonus, ok := f.(*DRBonus); ok {
-					for _, loc := range bonus.Locations {
-						if loc == AllID || strings.EqualFold(location.LocID, loc) {
-							list = append(list, eqp.NameWithReplacements())
-							break
-						}
-					}
-				}
-			}
+		if !eqp.ReallyEquipped() {
+			return false
+		}
+		grantsDR := drBonusCoversLocation(eqp.ActiveFeatures(), location)
+		if !grantsDR {
+			Traverse(func(mod *EquipmentModifier) bool {
+				grantsDR = drBonusCoversLocation(mod.Features.Active(eqp.SwitchedOn), location)
+				return grantsDR
+			}, true, true, eqp.Modifiers...)
+		}
+		if grantsDR {
+			list = append(list, eqp.NameWithReplacements())
 		}
 		return false
 	}, false, false, ex.entity.CarriedEquipment...)
 	return list
+}
+
+// drBonusCoversLocation returns true if any of the given features is a DR bonus that names the given hit location,
+// either explicitly or via the "all" location.
+func drBonusCoversLocation(features Features, location *HitLocation) bool {
+	for _, f := range features {
+		if bonus, ok := f.(*DRBonus); ok {
+			for _, loc := range bonus.Locations {
+				if loc == AllID || strings.EqualFold(location.LocID, loc) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {

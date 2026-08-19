@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -124,13 +123,8 @@ func TestLootSheetDoesNotShowSwitchColumn(t *testing.T) {
 // switch column, through the same provider the sheet itself uses, whether or not anything in it is switchable.
 func TestLootSheetHasNoSwitchColumnInPlace(t *testing.T) {
 	c := check.New(t)
-	registerKeyBindingsOnce.Do(func() { registerActions() })
-	saved := Workspace.DocumentDock
-	t.Cleanup(func() { Workspace.DocumentDock = saved })
-	Workspace.DocumentDock = NewDocumentDock()
-
-	loot := gurps.NewLoot()
-	sheet := NewLootSheet("test"+gurps.LootExt, loot)
+	sheet := newTestLootSheet(t)
+	loot := sheet.loot
 	c.Equal(-1, switchColumnIndex(sheet.Equipment.Table.Columns, gurps.EquipmentSwitchColumn),
 		"without switchable features, there is no switch column")
 
@@ -486,8 +480,9 @@ func switchColumnIndex(columns []unison.ColumnInfo, switchColumnID int) int {
 
 // TestDimmedSwitchCellRemainsClickable verifies that the switch of an item that isn't currently contributing its
 // features -- a piece of equipment that isn't equipped, which is the very case the switch column is offered for in the
-// other equipment list -- is still usable. It is drawn dimmed, but the cell has to stay enabled to remain clickable,
-// since a disabled panel receives no mouse events at all.
+// other equipment list -- is still usable. Its cell is disabled, which is what draws it dimmed, and that costs it
+// nothing: a table hands mouse events to its cells itself, without consulting their enabled state, so the switch can
+// still be thrown. Dimming says the switch has no effect at the moment, not that it can't be thrown.
 func TestDimmedSwitchCellRemainsClickable(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -519,15 +514,101 @@ func TestDimmedSwitchCellRemainsClickable(t *testing.T) {
 	litLabel, ok := rows[1].ColumnCell(1, col, unison.Black, unison.White, false, false, false).(*unison.Label)
 	c.True(ok, "the switch cell must be a label")
 
-	c.True(dimmedLabel.Enabled(), "a dimmed switch cell must stay enabled, or it would never see a click")
-	c.NotEqual(reflect.ValueOf(litLabel.DrawCallback).Pointer(), reflect.ValueOf(dimmedLabel.DrawCallback).Pointer(),
-		"a dimmed switch cell must not draw itself the way an undimmed one does")
+	c.False(dimmedLabel.Enabled(), "a dimmed switch cell is disabled, which is what draws it with the dimming filter")
+	c.True(litLabel.Enabled(), "an undimmed switch cell is drawn normally")
 
 	// The cell has to be part of the sheet's panel tree for the undo manager to be found, which is where the table
 	// itself puts it when it lays out the row.
 	table.AddChild(dimmedLabel)
+	mgr := unison.UndoManagerFor(dimmedLabel)
+	c.NotNil(mgr, "the cell must be able to find the sheet's undo manager")
 	c.True(dimmedLabel.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
 	c.True(dimmed.SwitchedOn, "clicking a dimmed switch cell must still throw the switch")
+	c.True(mgr.CanUndo(), "throwing a dimmed switch must be undoable, just like any other")
+	c.True(dimmedLabel.MouseUpCallback(geom.Point{}, unison.ButtonLeft, mod.None),
+		"the release must be consumed by the dimmed cell as well")
+	drawable, ok := dimmedLabel.Drawable.(*unison.DrawableSVG)
+	c.True(ok, "the dimmed switch cell must draw an SVG")
+	c.Equal(unison.CheckmarkSVG, drawable.SVG, "the dimmed cell must show the switch it just threw as on")
+}
+
+// clickSwitchCellThroughTable delivers a primary click to the cell at the given row and column the way a real one
+// arrives: at the center of the frame the table itself computes for that cell, through the table's own mouse
+// callbacks, which are what locate the cell under the pointer and hand it the event. The table has to have been sized
+// beforehand, since those frames come from the column widths and row heights a layout pass produces.
+func clickSwitchCellThroughTable[T gurps.Node[T]](table *unison.Table[*Node[T]], row, col int) (down, up bool) {
+	where := table.CellFrame(row, col).Center()
+	down = table.MouseDownCallback(where, unison.ButtonLeft, 1, mod.None)
+	up = table.MouseUpCallback(where, unison.ButtonLeft, mod.None)
+	return down, up
+}
+
+// TestSwitchCellIsClickableThroughTheTable verifies the property that lets a dimmed switch cell be a disabled panel,
+// along the path a user actually takes rather than by calling the cell's own callback directly: the table locates the
+// cell under the pointer and hands it the press itself (Table.DefaultMouseDown and friends), never consulting the
+// cell's enabled state, and the window only ever sees the table, since a cell is attached to the table for the
+// duration of a single event rather than being one of its children. So a dimmed switch is thrown by a click exactly as
+// an undimmed one is. Both are driven identically here, so that the dimmed case is measured against a known-good
+// baseline, and each ends with a press on an ordinary column that does reach the table's own row selection -- which
+// shows the dispatch really is happening rather than the presses going nowhere.
+func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		dim  bool
+	}{
+		{name: "dimmed", dim: true},
+		{name: "undimmed", dim: false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			entity := sheet.Entity()
+			trait := newSwitchableTrait(entity, "Claws")
+			// A trait that is turned off contributes nothing, which is what dims its switch cell; whether it has a
+			// switch to throw at all doesn't depend on that.
+			trait.Disabled = tc.dim
+			entity.Traits = []*gurps.Trait{trait}
+			sheet.Rebuild(true)
+			table := sheet.Traits.Table
+			col := switchColumnIndex(table.Columns, gurps.TraitSwitchColumn)
+			c.NotEqual(-1, col, "the switch column must be present")
+			mgr := unison.UndoManagerFor(table)
+			c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+			c.False(mgr.CanUndo(), "nothing has been done yet")
+
+			// Hit testing needs the table to know how wide its columns and how tall its rows are, which it does even
+			// without a window: syncing a page list sizes its columns to their content (see sizePageTableColumns) and
+			// syncing a table to its model measures every row, and the rebuild above did both. The frame is checked
+			// here so that a change to any of that shows up as this rather than as presses that quietly land nowhere.
+			c.False(table.CellFrame(0, col).Empty(), "the switch cell must have a frame to aim at")
+			label, ok := table.RootRows()[0].ColumnCell(0, col, unison.Black, unison.White, false, false,
+				false).(*unison.Label)
+			c.True(ok, "the switch cell must be a label")
+			if tc.dim {
+				c.False(label.Enabled(), "a dimmed switch cell is disabled, which is what draws it dimmed")
+			} else {
+				c.True(label.Enabled(), "an undimmed switch cell is drawn normally")
+			}
+
+			down, up := clickSwitchCellThroughTable(table, 0, col)
+			c.True(down, "the table must let the cell consume the press")
+			c.True(up, "the table must let the cell consume the release")
+			c.True(trait.SwitchedOn, "a click delivered by the table must throw the switch")
+			c.False(table.HasSelection(),
+				"the cell must have taken the press before the table's own row selection could run")
+			c.True(mgr.CanUndo(), "the click must have registered an undo edit")
+			mgr.Undo()
+			c.False(trait.SwitchedOn, "undo must turn the switch back off")
+			c.False(mgr.CanUndo(), "the click must have registered exactly one edit")
+
+			descCol := table.ColumnIndexForID(gurps.TraitDescriptionColumn)
+			c.NotEqual(-1, descCol, "the description column must be present")
+			down, _ = clickSwitchCellThroughTable(table, 0, descCol)
+			c.True(down, "the press must be consumed")
+			c.True(table.HasSelection(),
+				"a press that no cell takes must reach the table's own row selection, or nothing was dispatched")
+		})
+	}
 }
 
 // TestOwnerRecalculatesOnlyForItsOwnSheet verifies the check that keeps a single edit from recalculating the entity

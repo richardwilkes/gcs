@@ -189,3 +189,115 @@ func newTestWeapon(owner WeaponOwner, melee bool, usage string) *Weapon {
 	w.Usage = usage
 	return w
 }
+
+// TestLegacyExportHitLocationEquipmentFromModifier verifies that armor whose DR for a location comes from one of its
+// modifiers is listed for that location, since the DR printed for the location already includes the modifier's
+// contribution.
+func TestLegacyExportHitLocationEquipmentFromModifier(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	helm := NewEquipment(e, nil, false)
+	helm.Name = "Helmet"
+	helm.Modifiers = append(helm.Modifiers, newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID,
+		"skull")))
+	e.CarriedEquipment = append(e.CarriedEquipment, helm)
+	e.Recalculate()
+
+	ex := &legacyExporter{entity: e}
+	skull := e.SheetSettings.BodyType.LookupLocationByID(e, "skull")
+	c.NotNil(skull, "the default body has a skull location")
+	c.Equal("5", skull.DisplayDR(e, nil), "the modifier's DR reaches the location, on top of the skull's own 2")
+	c.Equal([]string{"Helmet"}, ex.hitLocationEquipment(skull), "the armor providing that DR is listed")
+
+	torso := e.SheetSettings.BodyType.LookupLocationByID(e, TorsoID)
+	c.NotNil(torso, "the default body has a torso location")
+	c.Equal("0", torso.DisplayDR(e, nil), "no DR reaches a location the modifier doesn't name")
+	c.Equal(0, len(ex.hitLocationEquipment(torso)), "and nothing is listed for it")
+}
+
+// TestLegacyExportHitLocationEquipment verifies which pieces of equipment are listed as providing DR to a hit location:
+// only carried, really-equipped ones, counting both their own DR bonuses and those of their enabled, non-container
+// modifiers, with switchable bonuses honoring the owning item's switch, and each item named at most once no matter how
+// many of its bonuses reach the location.
+func TestLegacyExportHitLocationEquipment(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	// Two DR bonuses that both reach the torso; the item must still only be listed once.
+	plate := NewEquipment(e, nil, false)
+	plate.Name = "Plate Armor"
+	plate.Features = Features{
+		newTestDRBonus(fxp.Two, AllID, TorsoID),
+		newTestDRBonus(fxp.One, AllID, "Torso"), // the same location, with a different case
+	}
+
+	// DR that only reaches the skull through an enabled modifier.
+	helm := NewEquipment(e, nil, false)
+	helm.Name = "Helmet"
+	helm.Modifiers = append(helm.Modifiers, newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID,
+		"skull")))
+
+	// A disabled modifier contributes nothing, exactly as it does when features are collected.
+	cloak := NewEquipment(e, nil, false)
+	cloak.Name = "Cloak"
+	disabled := newTestDRBonusModifier(e, "Hood", newTestDRBonus(fxp.Five, AllID, "skull"))
+	disabled.Disabled = true
+	cloak.Modifiers = append(cloak.Modifiers, disabled)
+
+	// Switchable bonuses, on the item and on one of its modifiers, only count while the item's switch is on.
+	cape := NewEquipment(e, nil, false)
+	cape.Name = "Cape"
+	switchable := newTestDRBonus(fxp.Seven, AllID, "skull")
+	switchable.Switchable = true
+	cape.Features = Features{switchable}
+	switchableOnMod := newTestDRBonus(fxp.Nine, AllID, "skull")
+	switchableOnMod.Switchable = true
+	cape.Modifiers = append(cape.Modifiers, newTestDRBonusModifier(e, "Lining", switchableOnMod))
+
+	// A "this armor" bonus needs no examination of its own: it covers the locations the item's and its modifiers'
+	// located bonuses name, and those are what get scanned, so the modifier's skull bonus is what lists the robe.
+	robe := NewEquipment(e, nil, false)
+	robe.Name = "Robe"
+	robe.Features = Features{newTestDRBonus(fxp.Six, AllID)} // no locations, i.e. "this armor"
+	robe.Modifiers = append(robe.Modifiers, newTestDRBonusModifier(e, "Cowl", newTestDRBonus(fxp.One, AllID, "skull")))
+
+	// Neither an unequipped carried item nor an item in the other equipment list contributes DR to the character.
+	stowed := NewEquipment(e, nil, false)
+	stowed.Name = "Stowed Helm"
+	stowed.Equipped = false
+	stowed.Features = Features{newTestDRBonus(fxp.Eight, AllID, "skull")}
+	spare := NewEquipment(e, nil, false)
+	spare.Name = "Spare Helm"
+	spare.Features = Features{newTestDRBonus(fxp.Eight, AllID, "skull")}
+
+	e.CarriedEquipment = append(e.CarriedEquipment, plate, helm, cloak, cape, robe, stowed)
+	e.OtherEquipment = append(e.OtherEquipment, spare)
+	e.Recalculate()
+
+	ex := &legacyExporter{entity: e}
+	skull := e.SheetSettings.BodyType.LookupLocationByID(e, "skull")
+	c.NotNil(skull, "the default body has a skull location")
+	c.Equal([]string{"Helmet", "Robe"}, ex.hitLocationEquipment(skull),
+		"only the armor actually granting DR to the skull is listed")
+
+	torso := e.SheetSettings.BodyType.LookupLocationByID(e, TorsoID)
+	c.NotNil(torso, "the default body has a torso location")
+	c.Equal([]string{"Plate Armor"}, ex.hitLocationEquipment(torso),
+		"an item with two DR bonuses reaching the same location is listed once")
+
+	// Throwing the cape's switch brings both of its switchable bonuses into play.
+	cape.SwitchedOn = true
+	c.Equal([]string{"Helmet", "Cape", "Robe"}, ex.hitLocationEquipment(skull),
+		"switching the cape on adds it to the skull's list")
+
+	// The same list reaches the template through the @EQUIPMENT key of the hit location loop.
+	c.Contains(runLegacyExport(t, c, e, "@HIT_LOCATION_LOOP_START[@WHERE:@EQUIPMENT]@HIT_LOCATION_LOOP_END"),
+		"["+skull.TableName+":Helmet, Cape, Robe]")
+}
+
+func newTestDRBonusModifier(owner DataOwner, name string, bonus *DRBonus) *EquipmentModifier {
+	mod := NewEquipmentModifier(owner, nil, false)
+	mod.Name = name
+	mod.Features = Features{bonus}
+	return mod
+}

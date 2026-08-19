@@ -140,7 +140,7 @@ func (p *skillsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Sk
 }
 
 func (p *skillsProvider) ColumnIDs() []int {
-	columnIDs := make([]int, 0, 6)
+	columnIDs := make([]int, 0, 7)
 	if showSwitchColumn(p.forPage, p.provider, p.RootData()) {
 		columnIDs = append(columnIDs, gurps.SkillSwitchColumn)
 	}

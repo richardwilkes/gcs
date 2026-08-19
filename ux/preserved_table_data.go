@@ -38,10 +38,10 @@ func (d *PreservedTableData[T]) Collect(table *unison.Table[*Node[T]]) error {
 }
 
 // Restore puts the data and selection state back into a table without reporting the change to anything. The reporting
-// is left to the caller, which either rebuilds the table's owner or marks the table as modified once the data is back
-// in place -- and only one of the two, since a rebuild already recalculates the entity and re-syncs every table on its
-// own. Note that whether a rebuild is needed can only be determined once the data is back in place, since the set of
-// columns a list requires depends on its content (see TableUndoEditData.restore).
+// is left to the caller, which rebuilds the table's owner -- or, for a table that has no owner, marks the table as
+// modified -- once the data is back in place, and only one of the two, since a rebuild already recalculates the entity
+// and re-syncs every table on its own. Leaving it to the caller is what lets an undo that has to put several tables
+// back report the change a single time for all of them (see restoredTables).
 func (d *PreservedTableData[T]) Restore(table *unison.Table[*Node[T]]) error {
 	provider, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])
 	if !ok {

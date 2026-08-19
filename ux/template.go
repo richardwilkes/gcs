@@ -813,6 +813,12 @@ func rawPoints(child any) fxp.Int {
 	}
 }
 
+// installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the template's
+// lists. Unlike the sheets, a template can capture the list itself rather than a getter for it: the only reason a list
+// is ever replaced is a change to the set of columns it has to show, and the one column that comes and goes with the
+// data -- the switch column -- is reserved for character sheets (see showSwitchColumn). Template.createLists therefore
+// only ever creates a list it doesn't already have, so the list captured here is the one the user is looking at for as
+// long as the template is open.
 func (t *Template) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {
 	variant := NoItemVariant
 	if containerID == -1 {

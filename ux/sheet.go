@@ -217,14 +217,16 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 
 	s.InstallCmdHandlers(SaveItemID, func(_ any) bool { return s.Modified() }, func(_ any) { s.save(false) })
 	s.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { s.save(true) })
-	s.installNewItemCmdHandlers(NewTraitItemID, NewTraitContainerItemID, s.Traits)
-	s.installNewItemCmdHandlers(NewSkillItemID, NewSkillContainerItemID, s.Skills)
-	s.installNewItemCmdHandlers(NewTechniqueItemID, -1, s.Skills)
-	s.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, s.Spells)
-	s.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, s.Spells)
-	s.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID, s.CarriedEquipment)
-	s.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, s.OtherEquipment)
-	s.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, s.Notes)
+	s.installNewItemCmdHandlers(NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return s.Traits })
+	s.installNewItemCmdHandlers(NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return s.Skills })
+	s.installNewItemCmdHandlers(NewTechniqueItemID, -1, func() itemCreator { return s.Skills })
+	s.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return s.Spells })
+	s.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, func() itemCreator { return s.Spells })
+	s.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
+		func() itemCreator { return s.CarriedEquipment })
+	s.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
+		func() itemCreator { return s.OtherEquipment })
+	s.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return s.Notes })
 	s.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
 		InsertItems(s, s.Traits.Table, s.entity.TraitList, s.entity.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
@@ -455,15 +457,23 @@ func (s *Sheet) keyToPanel(key *uti.DataType) *unison.Panel {
 	return p.AsPanel()
 }
 
-func (s *Sheet) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {
+// installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the sheet's
+// lists. The list is looked up through the getter each time a command is invoked rather than captured here, since a
+// list whose set of columns has to change can only do so by being replaced outright (a table's columns are fixed at
+// creation -- see PageList.needReconstruction), which leaves the list that was captured orphaned. Creating an item in
+// an orphaned list still updates the model, but everything that goes with it is aimed at a table nobody is looking at:
+// the undo edit can't even find the undo manager, so the insertion isn't undoable and the user's next undo silently
+// takes back the edit before it, and the new row is neither selected nor scrolled into view in the list that is
+// actually on screen.
+func (s *Sheet) installNewItemCmdHandlers(itemID, containerID int, creator func() itemCreator) {
 	variant := NoItemVariant
 	if containerID == -1 {
 		variant = AlternateItemVariant
 	} else {
 		s.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator.CreateItem(s, ContainerItemVariant) })
+			func(_ any) { creator().CreateItem(s, ContainerItemVariant) })
 	}
-	s.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator.CreateItem(s, variant) })
+	s.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(s, variant) })
 }
 
 // DockableKind implements widget.DockableKind
@@ -799,11 +809,10 @@ func newSheetTablesUndoData(sheet *Sheet) *sheetTablesUndoData {
 }
 
 func (s *sheetTablesUndoData) Apply() {
-	// Every list is put back before any of them is reported. Restoring a list may leave its columns out of step with
-	// what its content now calls for (the switch column comes and goes with the presence of switchable features), and
-	// more than one list can be in that state at once, but a single rebuild of the sheet brings all of them back into
-	// line -- and if none of them need it, a single mark as modified covers them all. Reporting each list as it was
-	// restored would recalculate the entity and re-sync every table on the sheet up to six times for one undo.
+	// Every list is put back before any of them is reported, so that the undo updates the sheet once rather than once
+	// per table: a single rebuild of the sheet brings all six lists back into line, while reporting each one as it was
+	// restored would recalculate the entity and re-sync every table on the sheet up to six times over for the one
+	// undo. See restoredTables for the rest of the reasoning.
 	var restored restoredTables
 	restored.add(s.traits.restore())
 	restored.add(s.skills.restore())

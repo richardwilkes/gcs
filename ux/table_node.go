@@ -590,14 +590,16 @@ func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) uni
 			toggleFeatureSwitch(n, label, c.Checked, mods.OptionDown())
 		})
 	if c.Dim {
-		// A dimmed switch is drawn with the same filter a disabled cell would use, but the cell is deliberately left
-		// enabled, since the switch can still be thrown for an item that isn't currently contributing its features
-		// (e.g. a piece of equipment that isn't equipped) and a disabled panel would receive no mouse events at all.
-		// The ink is read at draw time so that the cell still picks up the selected row's foreground.
-		label.DrawCallback = func(canvas *unison.Canvas, _ geom.Rect) {
-			unison.DrawLabel(canvas, label.ContentRect(false), label.HAlign, label.VAlign, label.Font, label.Text,
-				label.OnBackgroundInk, label.BackgroundInk, label.Drawable, label.Side, label.Gap, true)
-		}
+		// The switch of an item that isn't currently contributing its features -- a piece of equipment that isn't
+		// equipped, a trait that is turned off -- is drawn dimmed to say so, which is exactly what a disabled label
+		// does: Label.DefaultDraw applies the disabled filter whenever the label isn't enabled. Disabling it costs
+		// nothing here, because a cell is not a panel the window dispatches to. The table hands mouse events to its
+		// cells itself (Table.DefaultMouseDown and friends locate the cell panel and call it directly), and its
+		// tooltip lookup does the same; neither consults the cell's enabled state, and the window only ever sees the
+		// table, since a cell is attached to it for the duration of a single event rather than being one of its
+		// children. So the switch stays every bit as usable as an undimmed one, which it has to be: dimming here says
+		// the switch has no effect at the moment, not that it can't be thrown.
+		label.SetEnabled(false)
 	}
 	return label
 }
