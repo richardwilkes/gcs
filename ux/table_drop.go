@@ -167,11 +167,10 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		from = liveTable(from)
 		to = liveTable(to)
 	}
-	if isForCharacterOrLootSheet(to) || isForTemplate(to) {
+	if shouldProcessModifiersAndNameables(to) {
 		// Only process modifiers and nameables when the drop comes from something besides a character, loot sheet
 		// or template; rows already on one of those have had these resolved.
-		if !isForCharacterOrLootSheet(from) && !isForTemplate(from) {
-			ProcessModifiersForSelection(to)
+		if !shouldProcessModifiersAndNameables(from) {
 			// Answering the modifier prompt rebuilds the owner all over again, and that rebuild can replace the tables
 			// just as the one above did: only the modifiers that are enabled count toward a row having switchable
 			// features, so turning one on or off can add or take away the switch column, and a list can only change its
@@ -180,6 +179,7 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 			// is now looking at -- both of which the steps below depend upon. Applying nameable substitutions rebuilds
 			// as well, so refresh again afterwards. Refreshing both tables each time keeps them comparable, for the
 			// same reason the rebuild above does.
+			ProcessModifiersForSelection(to)
 			from = liveTable(from)
 			to = liveTable(to)
 			ProcessNameablesForSelection(to)
@@ -221,25 +221,16 @@ func dropRebuilder(table unison.Paneler) Rebuildable {
 	return unison.Ancestor[Rebuildable](table)
 }
 
-func isForCharacterOrLootSheet(panel unison.Paneler) bool {
+func shouldProcessModifiersAndNameables(panel unison.Paneler) bool {
 	if xreflect.IsNil(panel) {
 		return false
 	}
 	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
-	case *Sheet, *LootSheet:
+	case *Sheet, *LootSheet, *Template:
 		return true
 	default:
 		return false
 	}
-}
-
-func isForTemplate(panel unison.Paneler) bool {
-	if xreflect.IsNil(panel) {
-		return false
-	}
-
-	_, ok := unison.AncestorOrSelf[unison.Dockable](panel).(*Template)
-	return ok
 }
 
 func finishDidDrop[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
