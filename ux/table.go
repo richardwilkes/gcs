@@ -356,12 +356,12 @@ func copySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 // then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
 // destination isn't a character or loot sheet.
 func processCopiedRowsForSheet[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
-	if !isForCharacterOrLootSheet(target) {
+	if !(isForCharacterOrLootSheet(target) || isForTemplate(target)) {
 		return
 	}
 	// Only process modifiers and nameables when copying from something besides a character or loot sheet; rows already
 	// on a sheet have had these resolved.
-	if !isForCharacterOrLootSheet(source) {
+	if !(isForCharacterOrLootSheet(source) || isForTemplate(source)) {
 		ProcessModifiersForSelection(target)
 		// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us: only
 		// the modifiers that are enabled count toward a row having switchable features, so turning one on or off can
@@ -383,17 +383,35 @@ func copySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 		if templates := PromptForDestination(OpenTemplates(unison.Ancestor[*Template](table))); len(templates) > 0 {
 			sel := table.SelectedRows(true)
 			for _, t := range templates {
+				var targetTable *unison.Table[*Node[T]]
+				var processDropData func()
 				switch any(sel[0].Data()).(type) {
 				case *gurps.Trait:
-					CopyRowsTo(convertTable[T](t.Traits.Table), sel, nil, true)
+					targetTable = convertTable[T](t.Traits.Table)
+					processDropData = func() { t.Traits.provider.ProcessDropData(nil, t.Traits.Table) }
 				case *gurps.Skill:
-					CopyRowsTo(convertTable[T](t.Skills.Table), sel, nil, true)
+					targetTable = convertTable[T](t.Skills.Table)
+					processDropData = func() { t.Skills.provider.ProcessDropData(nil, t.Skills.Table) }
 				case *gurps.Spell:
-					CopyRowsTo(convertTable[T](t.Spells.Table), sel, nil, true)
+					targetTable = convertTable[T](t.Spells.Table)
+					processDropData = func() { t.Spells.provider.ProcessDropData(nil, t.Spells.Table) }
 				case *gurps.Equipment:
-					CopyRowsTo(convertTable[T](t.Equipment.Table), sel, nil, true)
+					targetTable = convertTable[T](t.Equipment.Table)
+					processDropData = func() { t.Equipment.provider.ProcessDropData(nil, t.Equipment.Table) }
 				case *gurps.Note:
-					CopyRowsTo(convertTable[T](t.Notes.Table), sel, nil, true)
+					targetTable = convertTable[T](t.Notes.Table)
+					processDropData = func() { t.Notes.provider.ProcessDropData(nil, t.Notes.Table) }
+				default:
+					continue
+				}
+				if targetTable != nil {
+					// All processing must happen inside the postProcessor so it is captured by the undo edit's
+					// after-state (CopyRowsTo records that after the postProcessor runs); otherwise redo would not
+					// restore the resolved tech levels, nameables, or the merged points.
+					CopyRowsTo(targetTable, sel, func(_ []*Node[T]) {
+						processDropData()
+						processCopiedRowsForSheet(table, targetTable)
+					}, true)
 				}
 			}
 		}
