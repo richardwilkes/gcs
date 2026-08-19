@@ -12,6 +12,7 @@
   don't apply.
 - Spells can now have features, just like traits, skills and equipment. As a side effect, weapons attached to a spell
   now receive any "this weapon" bonuses defined by the spell's own features.
+- Adding items to a template now triggers modifier selections and nameable replacements (#1101)
 
 ## Bug Fixes
 
