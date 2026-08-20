@@ -20,10 +20,17 @@ func addPreconfigurable[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D],
 	if _, ownerIsTemplate := owner.(*Template); !ownerIsTemplate {
 		return
 	}
-	if e.target.Container() {
-		return
-	}
 	if p, ok := any(e.editorData).(gurps.Preconfigurable); ok && !xreflect.IsNil(p) {
+		if e.target.Container() {
+			if !p.CanPreconfigureContainer() {
+				return
+			}
+		} else {
+			if !p.CanPreconfigureItem() {
+				return
+			}
+		}
+
 		// This panel serves only to fill the space where a label would normally be located
 		parent.AddChild(unison.NewPanel())
 		addCheckBox(parent, i18n.Text("Preconfigured"), p.PreconfiguredRef())

@@ -13,6 +13,8 @@ import "github.com/richardwilkes/toolbox/v2/xreflect"
 
 // Preconfigurable interface for objects that can have their selections and substitutions marked as preconfigured.
 type Preconfigurable interface {
+	CanPreconfigureItem() bool
+	CanPreconfigureContainer() bool
 	IsPreconfigured() bool
 	PreconfiguredRef() *bool
 	SetPreconfigured(bool)
@@ -21,6 +23,16 @@ type Preconfigurable interface {
 // preconfigurable self contained Preconfigurable implementation that can be embedded in another struct in this package
 type preconfigurable struct {
 	Preconfigured bool `json:"preconfigured,omitzero"`
+}
+
+// CanPreconfigureItem implements Preconfigurable.
+func (tl *preconfigurable) CanPreconfigureItem() bool {
+	return true
+}
+
+// CanPreconfigureContainer implements Preconfigurable.
+func (tl *preconfigurable) CanPreconfigureContainer() bool {
+	return false
 }
 
 // IsPreconfigured implements Preconfigurable.
@@ -36,6 +48,18 @@ func (tl *preconfigurable) PreconfiguredRef() *bool {
 // SetPreconfigured implements Preconfigurable.
 func (tl *preconfigurable) SetPreconfigured(preconfigured bool) {
 	tl.Preconfigured = preconfigured
+}
+
+// IsNodePreconfigurable reports whether the given node can be marked preconfigured.
+func IsNodePreconfigurable[T Node[T]](node T) bool {
+	if tl, ok := any(node).(Preconfigurable); ok && !xreflect.IsNil(tl) {
+		if node.Container() {
+			return tl.CanPreconfigureContainer()
+		} else {
+			return tl.CanPreconfigureItem()
+		}
+	}
+	return false
 }
 
 // IsNodePreconfigured reports whether the given node has been marked as preconfigured, meaning its modifiers and nameable
