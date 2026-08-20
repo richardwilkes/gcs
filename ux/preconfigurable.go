@@ -36,3 +36,31 @@ func addPreconfigurable[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D],
 		addCheckBox(parent, i18n.Text("Preconfigured"), p.PreconfiguredRef())
 	}
 }
+
+func shouldClearPreconfiguredFlag(panel unison.Paneler) bool {
+	if xreflect.IsNil(panel) {
+		return false
+	}
+	if _, ok := unison.AncestorOrSelf[unison.Dockable](panel).(*Template); ok {
+		return false
+	}
+	return true
+}
+
+func clearPreconfiguredFlag[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) bool {
+	if !shouldClearPreconfiguredFlag(table) {
+		return false
+	}
+	if rows == nil {
+		rows = table.SelectedRows(true)
+	}
+	var changes bool
+	for _, row := range rows {
+		node := row.Data()
+		if tl, ok := any(node).(gurps.Preconfigurable); ok && !xreflect.IsNil(node) && tl.IsPreconfigured() {
+			changes = true
+			tl.SetPreconfigured(false)
+		}
+	}
+	return changes
+}

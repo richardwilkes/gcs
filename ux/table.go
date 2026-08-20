@@ -341,41 +341,15 @@ func copySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 					// All processing must happen inside the postProcessor so it is captured by the undo edit's
 					// after-state (CopyRowsTo records that after the postProcessor runs); otherwise redo would not
 					// restore the resolved tech levels, nameables, or the merged points.
-					CopyRowsTo(targetTable, sel, func(_ []*Node[T]) {
+					CopyRowsTo(targetTable, sel, func(rows []*Node[T]) {
 						processDropData()
-						processCopiedRowsForSheet(table, targetTable)
+						processCopiedRows(table, targetTable)
+						clearPreconfiguredFlag(targetTable, rows)
 					}, true)
 				}
 			}
 		}
 	}
-}
-
-// processCopiedRowsForSheet resolves the just-copied, currently-selected rows of a sheet's table the same way a drop
-// onto a sheet does: prompting for the modifiers and nameables of rows that arrived from somewhere other than a sheet,
-// then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
-// destination isn't a character or loot sheet.
-func processCopiedRowsForSheet[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
-	if !shouldProcessModifiersAndNameables(target) {
-		return
-	}
-	// Only process modifiers and nameables when copying from something besides a character or loot sheet; rows already
-	// on a sheet have had these resolved.
-	if !shouldProcessModifiersAndNameables(source) {
-		// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us: only
-		// the modifiers that are enabled count toward a row having switchable features, so turning one on or off can
-		// add or take away the switch column, and a list can only change its columns by building a new table. An
-		// orphaned table has no Rebuildable above it, so a rebuild asked for through it never happens, and the rows it
-		// reports as selected are its own rather than the ones the user is now looking at -- both of which the steps
-		// below depend upon. Applying nameable substitutions rebuilds as well, so look it up again afterwards too.
-		ProcessModifiersForSelection(target)
-		target = liveTable(target)
-		ProcessNameablesForSelection(target)
-		target = liveTable(target)
-	}
-	// The copy always adds rows to a different sheet, so always merge points into identical existing rows, including
-	// when copying from another sheet.
-	MergeAddedRows(target)
 }
 
 func copySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
@@ -408,13 +382,40 @@ func copySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 					// All processing must happen inside the postProcessor so it is captured by the undo edit's
 					// after-state (CopyRowsTo records that after the postProcessor runs); otherwise redo would not
 					// restore the resolved tech levels, nameables, or the merged points.
-					CopyRowsTo(targetTable, sel, func(_ []*Node[T]) {
+					CopyRowsTo(targetTable, sel, func(rows []*Node[T]) {
 						processDropData()
-						processCopiedRowsForSheet(table, targetTable)
+						processCopiedRows(table, targetTable)
+						clearPreconfiguredFlag(targetTable, rows)
 					}, true)
 				}
 			}
 		}
+	}
+}
+
+// processCopiedRows resolves the just-copied, currently-selected rows of a sheet's table the same way a drop
+// onto a sheet does: prompting for the modifiers and nameables of rows that arrived from somewhere other than a sheet,
+// then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
+// destination isn't a character or loot sheet.
+func processCopiedRows[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
+	if shouldProcessModifiersAndNameables(target) {
+		// Only process modifiers and nameables when copying from something besides a character or loot sheet; rows already
+		// on a sheet have had these resolved.
+		if !shouldProcessModifiersAndNameables(source) {
+			// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us: only
+			// the modifiers that are enabled count toward a row having switchable features, so turning one on or off can
+			// add or take away the switch column, and a list can only change its columns by building a new table. An
+			// orphaned table has no Rebuildable above it, so a rebuild asked for through it never happens, and the rows it
+			// reports as selected are its own rather than the ones the user is now looking at -- both of which the steps
+			// below depend upon. Applying nameable substitutions rebuilds as well, so look it up again afterwards too.
+			ProcessModifiersForSelection(target)
+			target = liveTable(target)
+			ProcessNameablesForSelection(target)
+			target = liveTable(target)
+		}
+		// The copy always adds rows to a different sheet, so always merge points into identical existing rows, including
+		// when copying from another sheet.
+		MergeAddedRows(target)
 	}
 }
 
