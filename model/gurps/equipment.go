@@ -1204,3 +1204,8 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	e.Weapons = CloneWeapons(other.Weapons, equipment, isApply)
 	e.Features = other.Features.Clone()
 }
+
+// CanPreconfigureContainer implements Preconfigurable.
+func (e *EquipmentEditData) CanPreconfigureContainer() bool {
+	return true
+}
