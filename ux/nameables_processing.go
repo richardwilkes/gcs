@@ -107,7 +107,10 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		VSpacing: unison.StdVSpacing,
 	})
 	for i, one := range titles {
-		keys := visibleKeys[i]
+		var keys []string
+		if visibleKeys != nil {
+			keys = visibleKeys[i]
+		}
 		if keys == nil {
 			keys = make([]string, 0, len(nameables[i]))
 			for k := range nameables[i] {
