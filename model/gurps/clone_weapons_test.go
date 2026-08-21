@@ -38,7 +38,7 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 				n.Replacements = map[string]string{"kind": "Fire"}
 				n.Weapons = []*Weapon{NewWeapon(n, true)}
 				n.SetDataOwner(nil)
-				dup := n.Clone(LibraryFile{}, nil, nil, false)
+				dup := n.Clone(LibraryFile{}, nil, nil, Reference)
 				dup.Replacements["kind"] = "Ice"
 				return n, dup, n.Weapons[0], dup.Weapons[0]
 			},
@@ -51,7 +51,7 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 				n.Replacements = map[string]string{"kind": "Fire"}
 				n.Weapons = []*Weapon{NewWeapon(n, true)}
 				n.SetDataOwner(nil)
-				dup := n.Clone(LibraryFile{}, nil, nil, false)
+				dup := n.Clone(LibraryFile{}, nil, nil, Reference)
 				dup.Replacements["kind"] = "Ice"
 				return n, dup, n.Weapons[0], dup.Weapons[0]
 			},
@@ -64,7 +64,7 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 				n.Replacements = map[string]string{"kind": "Fire"}
 				n.Weapons = []*Weapon{NewWeapon(n, false)}
 				n.SetDataOwner(nil)
-				dup := n.Clone(LibraryFile{}, nil, nil, false)
+				dup := n.Clone(LibraryFile{}, nil, nil, Reference)
 				dup.Replacements["kind"] = "Ice"
 				return n, dup, n.Weapons[0], dup.Weapons[0]
 			},
@@ -77,7 +77,7 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 				n.Replacements = map[string]string{"kind": "Fire"}
 				n.Weapons = []*Weapon{NewWeapon(n, true)}
 				n.SetDataOwner(nil)
-				dup := n.Clone(LibraryFile{}, nil, nil, false)
+				dup := n.Clone(LibraryFile{}, nil, nil, Reference)
 				dup.Replacements["kind"] = "Ice"
 				return n, dup, n.Weapons[0], dup.Weapons[0]
 			},

@@ -60,7 +60,7 @@ func TestEquipmentModifierCloneDoesNotShareReplacements(t *testing.T) {
 	library.Replacements = map[string]string{"Material": "Steel"}
 
 	// Dropping it onto a sheet's equipment row clones it...
-	dup := library.Clone(LibraryFile{}, nil, nil, false)
+	dup := library.Clone(LibraryFile{}, nil, nil, Reference)
 	c.Equal(map[string]string{"Material": "Steel"}, dup.Replacements, "the copy carries the replacements")
 
 	// ...and the next attachment pass migrates the copy's map into the equipment, which has none of its own.

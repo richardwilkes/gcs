@@ -177,22 +177,22 @@ func (w *Weapon) IsRanged() bool {
 // original's owner over, since it has no way to know the new one, so the owner must be supplied here: a weapon resolves
 // its nameable replacements, skill defaults and strength requirements through its owner, so a copy left pointing at the
 // node it was copied from reports that node's values rather than its own holder's.
-func CloneWeapons(list []*Weapon, owner WeaponOwner, preserveIDs bool) []*Weapon {
+func CloneWeapons(list []*Weapon, owner WeaponOwner, mode CloneMode) []*Weapon {
 	if len(list) == 0 {
 		return nil
 	}
 	weapons := make([]*Weapon, len(list))
 	for i, w := range list {
-		weapons[i] = w.Clone(LibraryFile{}, nil, nil, preserveIDs)
+		weapons[i] = w.Clone(LibraryFile{}, nil, nil, mode)
 		weapons[i].SetOwner(owner)
 	}
 	return weapons
 }
 
 // Clone implements Node.
-func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, preserveID bool) *Weapon {
+func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, mode CloneMode) *Weapon {
 	other := *w
-	if !preserveID {
+	if mode != Copy {
 		other.TID = tid.MustNewTID(w.TID[0])
 		other.ClonedFromTID = w.TID
 	}
@@ -1041,7 +1041,7 @@ func (w *Weapon) ColumnHasData(columnID int) bool {
 
 // CopyFrom implements node.EditorData.
 func (w *Weapon) CopyFrom(t *Weapon) {
-	*w = *t.Clone(LibraryFile{}, t.DataOwner(), nil, false)
+	*w = *t.Clone(LibraryFile{}, t.DataOwner(), nil, Duplicate)
 }
 
 // ApplyTo implements node.EditorData.
@@ -1052,7 +1052,7 @@ func (w *Weapon) ApplyTo(t *Weapon) {
 	// a trait, skill or spell editor back to the weapon it came from.
 	savedTID := t.TID
 	savedClonedFromTID := t.ClonedFromTID
-	*t = *w.Clone(LibraryFile{}, t.DataOwner(), nil, true)
+	*t = *w.Clone(LibraryFile{}, t.DataOwner(), nil, Copy)
 	t.TID = savedTID
 	t.ClonedFromTID = savedClonedFromTID
 }

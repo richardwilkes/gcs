@@ -153,7 +153,7 @@ func extendedWeightForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEd
 }
 
 func cloneEquipmentWithOverlay(e *gurps.Equipment, overlay *gurps.EquipmentEditData) *gurps.Equipment {
-	clone := e.Clone(e.Source.LibraryFile, e.DataOwner(), e.Parent(), true)
+	clone := e.Clone(e.Source.LibraryFile, e.DataOwner(), e.Parent(), gurps.Copy)
 	clone.EquipmentEditData = *overlay
 	return clone
 }

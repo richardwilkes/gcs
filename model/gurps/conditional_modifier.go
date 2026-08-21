@@ -109,13 +109,13 @@ func (c *ConditionalModifier) Hash(h hash.Hash) {
 }
 
 // Clone implements Node.
-func (c *ConditionalModifier) Clone(_ LibraryFile, _ DataOwner, _ *ConditionalModifier, preserveID bool) *ConditionalModifier {
+func (c *ConditionalModifier) Clone(_ LibraryFile, _ DataOwner, _ *ConditionalModifier, mode CloneMode) *ConditionalModifier {
 	clone := &ConditionalModifier{
 		From:    c.From,
 		Amounts: slices.Clone(c.Amounts),
 		Sources: slices.Clone(c.Sources),
 	}
-	if preserveID {
+	if mode == Copy {
 		clone.TID = c.TID
 	} else {
 		clone.TID = tid.MustNewTID(kinds.ConditionalModifier)

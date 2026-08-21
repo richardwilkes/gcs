@@ -97,7 +97,7 @@ func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 
 	// This is how ux.cloneEquipmentWithOverlay builds the clone the editor previews with.
 	cloneForEditor := func(eqp *Equipment) *Equipment {
-		return eqp.Clone(eqp.Source.LibraryFile, eqp.DataOwner(), eqp.Parent(), true)
+		return eqp.Clone(eqp.Source.LibraryFile, eqp.DataOwner(), eqp.Parent(), Copy)
 	}
 
 	// The clone preserves the ID of the row it came from, and script results are cached per entity by (self ID, script
