@@ -63,6 +63,7 @@ type NoteData struct {
 type NoteEditData struct {
 	NoteSyncData
 	Replacements map[string]string `json:"replacements,omitzero"`
+	preconfigurable
 }
 
 // NoteSyncData holds the note sync data that is common to both containers and non-containers.

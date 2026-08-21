@@ -26,7 +26,7 @@ func stubNameablesPrompt(t *testing.T, respond func(nameables []map[string]strin
 	original := promptForNameables
 	t.Cleanup(func() { promptForNameables = original })
 	shown := 0
-	promptForNameables = func(_ []string, nameables []map[string]string) bool {
+	promptForNameables = func(_ []string, nameables []map[string]string, _ [][]string) bool {
 		shown++
 		return respond(nameables)
 	}

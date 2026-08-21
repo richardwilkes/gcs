@@ -86,6 +86,7 @@ type SkillEditData struct {
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitzero"`
 	ItemSwitch
+	preconfigurable
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 }

@@ -447,7 +447,7 @@ func TestCopyToSheetPostProcessingSurvivesTheTargetTableBeingReplaced(t *testing
 	shown := stubTraitModifierPrompt(t, enableAllModifiers)
 
 	CopyRowsTo(target, source.RootRows(), func(_ []*Node[*gurps.Trait]) {
-		processCopiedRowsForSheet(source, target)
+		processCopiedRows(source, target)
 	}, true)
 
 	c.Equal(1, *shown, "a copy from a library must prompt for the copied row's modifiers")

@@ -98,6 +98,7 @@ type EquipmentEditData struct {
 	Uses         int                  `json:"uses,omitzero"`
 	Equipped     bool                 `json:"equipped,omitzero"`
 	ItemSwitch
+	preconfigurable
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
@@ -1202,4 +1203,9 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
 	e.Weapons = CloneWeapons(other.Weapons, equipment, isApply)
 	e.Features = other.Features.Clone()
+}
+
+// CanPreconfigureContainer implements Preconfigurable.
+func (e *EquipmentEditData) CanPreconfigureContainer() bool {
+	return true
 }

@@ -92,6 +92,7 @@ type TraitEditData struct {
 	Frequency    frequency.Roll    `json:"frequency,omitzero"`
 	Disabled     bool              `json:"disabled,omitzero"`
 	ItemSwitch
+	preconfigurable
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
 }
@@ -1193,4 +1194,9 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 		}
 	}
 	t.TemplatePicker = t.TemplatePicker.Clone()
+}
+
+// CanPreconfigureContainer implements Preconfigurable.
+func (t *TraitEditData) CanPreconfigureContainer() bool {
+	return true
 }
