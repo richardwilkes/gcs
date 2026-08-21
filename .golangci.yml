@@ -84,6 +84,7 @@ linters:
     govet:
       disable:
         - composites
+        - fieldalignment
       enable-all: true
       settings:
         printf:
