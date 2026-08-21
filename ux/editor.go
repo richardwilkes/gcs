@@ -284,6 +284,10 @@ func (e *editor[N, D]) Owner() Rebuildable {
 	return e.owner
 }
 
+func (e *editor[N, D]) Target() N {
+	return e.target
+}
+
 var pruneIDFields = regexp.MustCompile(`\s*"id":\s*"[^"]+",?\s*`)
 
 func (e *editor[N, D]) isModified() bool {

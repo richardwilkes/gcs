@@ -60,6 +60,22 @@ func HasOwner[T Rebuildable](panel *unison.Panel) bool {
 	return !xreflect.IsNil(FindOwner[T](panel))
 }
 
+// Targeted defines the methods a value with a node target should have
+type Targeted[N gurps.Node[N]] interface {
+	Target() N
+}
+
+func FindTarget[T gurps.Node[T]](panel *unison.Panel) T {
+	for panel != nil {
+		if targeted, ok := any(panel.Self).(Targeted[T]); ok {
+			return targeted.Target()
+		}
+		panel = panel.Parent()
+	}
+	var zero T
+	return zero
+}
+
 // Syncer should be called to sync an object's UI state to its model.
 type Syncer interface {
 	Sync()
