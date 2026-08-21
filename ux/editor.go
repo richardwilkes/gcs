@@ -142,8 +142,8 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	})
 
 	e.AddChild(e.createToolbar(helpMD, initToolbar))
-	e.modificationCallback = initContent(e, content)
 	e.AddChild(e.scroll)
+	e.modificationCallback = initContent(e, content)
 	e.ClientData()[AssociatedIDKey] = target.ID()
 	e.promptForSave = true
 	e.scroll.Content().AsPanel().ValidateScrollRoot()
