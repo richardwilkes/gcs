@@ -35,6 +35,7 @@ var (
 	_ unison.UndoManagerProvider = &editor[*gurps.Note, *gurps.NoteEditData]{}
 	_ GroupedCloser              = &editor[*gurps.Note, *gurps.NoteEditData]{}
 	_ Rebuildable                = &editor[*gurps.Note, *gurps.NoteEditData]{}
+	_ Owned                      = &editor[*gurps.Note, *gurps.NoteEditData]{}
 )
 
 // nameableReplacementsSetter is implemented by editor data that can have its nameable replacements set directly.
@@ -277,6 +278,10 @@ func (e *editor[N, D]) String() string {
 
 func (e *editor[N, D]) Tooltip() string {
 	return ""
+}
+
+func (e *editor[N, D]) Owner() Rebuildable {
+	return e.owner
 }
 
 var pruneIDFields = regexp.MustCompile(`\s*"id":\s*"[^"]+",?\s*`)

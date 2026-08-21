@@ -36,6 +36,30 @@ type Rebuildable interface {
 	Rebuild(full bool)
 }
 
+// Owned defines the methods a value owned by a Rebuildable should have
+type Owned interface {
+	Owner() Rebuildable
+}
+
+func FindOwner[T Rebuildable](panel *unison.Panel) T {
+	for panel != nil {
+		if owned, ok := any(panel.Self).(Owned); ok {
+			if owner, ok := owned.Owner().AsPanel().Self.(T); ok {
+				return owner
+			}
+			panel = owned.Owner().AsPanel()
+		} else {
+			panel = panel.Parent()
+		}
+	}
+	var zero T
+	return zero
+}
+
+func HasOwner[T Rebuildable](panel *unison.Panel) bool {
+	return !xreflect.IsNil(FindOwner[T](panel))
+}
+
 // Syncer should be called to sync an object's UI state to its model.
 type Syncer interface {
 	Sync()
