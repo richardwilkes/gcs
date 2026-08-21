@@ -253,7 +253,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 }
 
 func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string) {
-	tmpNode = e.target.Clone(e.target.GetSource().LibraryFile, e.target.DataOwner(), nil, true)
+	tmpNode = e.target.Clone(e.target.GetSource().LibraryFile, e.target.DataOwner(), nil, gurps.Copy)
 	e.editorData.ApplyTo(tmpNode)
 	m = make(map[string]string)
 	tmpNode.FillWithNameableKeys(m, nil)
@@ -313,7 +313,7 @@ func (e *editor[N, D]) Modified() bool {
 // to avoid cloning the target on every call, since Modified is invoked frequently during layout and redraw.
 func (e *editor[N, D]) hasNameableKeys() bool {
 	if xreflect.IsNil(e.nameablesScratch) {
-		e.nameablesScratch = e.target.Clone(e.target.GetSource().LibraryFile, e.target.DataOwner(), nil, true)
+		e.nameablesScratch = e.target.Clone(e.target.GetSource().LibraryFile, e.target.DataOwner(), nil, gurps.Copy)
 		e.nameablesKeys = make(map[string]string)
 	} else {
 		clear(e.nameablesKeys)

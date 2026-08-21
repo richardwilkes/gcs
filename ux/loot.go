@@ -692,7 +692,7 @@ or under the maximum value of $%s with the available items.`),
 		}
 		loot := gurps.NewLoot()
 		for item, quantity := range m {
-			clone := item.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(item), nil, false)
+			clone := item.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(item), nil, gurps.Reference)
 			clone.Quantity = fxp.FromInteger(quantity)
 			loot.Equipment = append(loot.Equipment, clone)
 		}

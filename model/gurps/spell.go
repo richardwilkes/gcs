@@ -269,7 +269,7 @@ func (s *Spell) IsRitualMagic() bool {
 }
 
 // Clone implements Node.
-func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserveID bool) *Spell {
+func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, mode CloneMode) *Spell {
 	var other *Spell
 	if s.IsRitualMagic() {
 		other = NewRitualMagicSpell(owner, parent, false)
@@ -277,14 +277,14 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserve
 		other = NewSpell(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
-	other.AdjustSource(from, s.SourcedID, preserveID)
+	other.AdjustSource(from, s.SourcedID, mode == Copy, mode == Reference)
 	other.ThirdParty = s.ThirdParty
-	other.copyFrom(other, &s.SpellEditData, s.Container(), false)
+	other.copyFrom(other, &s.SpellEditData, s.Container(), false, mode)
 	PropagateNodeNoteClosedState(s, other)
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
 		for _, child := range s.Children {
-			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, mode))
 		}
 	}
 	return other
@@ -1226,7 +1226,7 @@ func (s *Spell) SyncWithSource() {
 					s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
 					s.College = slices.Clone(s.College)
 					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-					s.Weapons = CloneWeapons(other.Weapons, s, false)
+					s.Weapons = CloneWeapons(other.Weapons, s, Reference)
 					s.Features = other.Features.Clone()
 				}
 			}
@@ -1285,7 +1285,7 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (s *SpellEditData) CopyFrom(other *Spell) {
-	s.copyFrom(other, &other.SpellEditData, other.Container(), false)
+	s.copyFrom(other, &other.SpellEditData, other.Container(), false, Copy)
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1295,10 +1295,14 @@ func (s *SpellEditData) SetNameableReplacements(replacements map[string]string) 
 
 // ApplyTo implements node.EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
-	other.copyFrom(other, s, other.Container(), true)
+	other.copyFrom(other, s, other.Container(), true, Copy)
 }
 
-func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer, isApply bool) {
+// copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it
+// back, and only affects how an empty Prereq list is resolved. mode controls how cloned weapons are
+// cloned -- CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same spell's own
+// data, not producing a new one; Clone passes its own mode through.
+func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer, isApply bool, mode CloneMode) {
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
@@ -1308,7 +1312,7 @@ func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer
 	}
 	s.College = slices.Clone(other.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	s.Weapons = CloneWeapons(other.Weapons, spell, isApply)
+	s.Weapons = CloneWeapons(other.Weapons, spell, mode)
 	s.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
 		s.Study = make([]*Study, len(other.Study))

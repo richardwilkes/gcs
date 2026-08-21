@@ -230,17 +230,17 @@ func (t *Trait) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, preserveID bool) *Trait {
+func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode CloneMode) *Trait {
 	other := NewTrait(owner, parent, t.Container())
-	other.AdjustSource(from, t.SourcedID, preserveID)
+	other.AdjustSource(from, t.SourcedID, mode == Copy, mode == Reference)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
-	other.copyFrom(other, &t.TraitEditData, false)
+	other.copyFrom(other, &t.TraitEditData, false, mode)
 	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
 		for _, child := range t.Children {
-			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, mode))
 		}
 	}
 	return other
@@ -1088,7 +1088,7 @@ func (t *Trait) SyncWithSource() {
 					t.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
 					t.TraitNonContainerSyncData = other.TraitNonContainerSyncData
-					t.Weapons = CloneWeapons(other.Weapons, t, false)
+					t.Weapons = CloneWeapons(other.Weapons, t, Reference)
 					t.Features = other.Features.Clone()
 				}
 			}
@@ -1144,7 +1144,7 @@ func (t *TraitContainerSyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (t *TraitEditData) CopyFrom(other *Trait) {
-	t.copyFrom(other, &other.TraitEditData, false)
+	t.copyFrom(other, &other.TraitEditData, false, Copy)
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1154,10 +1154,14 @@ func (t *TraitEditData) SetNameableReplacements(replacements map[string]string) 
 
 // ApplyTo implements node.EditorData.
 func (t *TraitEditData) ApplyTo(other *Trait) {
-	other.copyFrom(other, t, true)
+	other.copyFrom(other, t, true, Copy)
 }
 
-func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply bool) {
+// copyFrom copies other into t. isApply distinguishes staging the editor's working copy from committing it
+// back, and only affects how an empty Prereq list is resolved. mode controls how nested modifiers and
+// weapons are cloned -- CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same
+// trait's own data, not producing a new one; Clone passes its own mode through.
+func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply bool, mode CloneMode) {
 	*t = *other
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
@@ -1176,7 +1180,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 			// opposed to duplicating in place), it passes the *source* library as the first
 			// argument to `Clone`. That path, combined with the IDs from the source nodes, is
 			// what builds the `source` values for the clone.
-			cloned := one.Clone(trait.Source.LibraryFile, trait.owner, nil, isApply)
+			cloned := one.Clone(trait.Source.LibraryFile, trait.owner, nil, mode)
 			// Point the copy at the trait it belongs to, so that a "use level from owner" modifier can resolve its
 			// level. Prior to this, the copies held in an editor only acquired their trait as a side effect of a point
 			// cost computation.
@@ -1185,7 +1189,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 		}
 	}
 	t.Prereq = t.Prereq.CloneResolvingEmpty(false, isApply)
-	t.Weapons = CloneWeapons(other.Weapons, trait, isApply)
+	t.Weapons = CloneWeapons(other.Weapons, trait, mode)
 	t.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
 		t.Study = make([]*Study, len(other.Study))

@@ -135,7 +135,7 @@ func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
 				rows := make([]*gurps.EquipmentModifier, 0, len(tableDragData.Rows))
 				libraryFile := libraryFileFromTable(tableDragData.Table)
 				for _, row := range tableDragData.Rows {
-					rows = append(rows, row.Data().Clone(libraryFile, dataOwner, nil, false))
+					rows = append(rows, row.Data().Clone(libraryFile, dataOwner, nil, gurps.Reference))
 				}
 				rowData := p.table.RowFromIndex(rowIndex).Data()
 				rowData.Modifiers = append(rowData.Modifiers, rows...)
