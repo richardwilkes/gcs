@@ -745,13 +745,16 @@ func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey
 }
 
 func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey string, tp **gurps.TemplatePicker) (typePopup *unison.PopupMenu[picker.Type], comparisonPopup *unison.PopupMenu[string], field unison.Paneler) {
+	if !HasOwner[*Template](parent) {
+		return
+	}
 	if *tp == nil {
 		*tp = &gurps.TemplatePicker{}
 	}
 	last := (*tp).Type
-	wrapper := addFlowWrapper(parent, i18n.Text("Template Choices"), 3)
+	wrapper := addFlowWrapper(parent, i18n.Text("Choices"), 3)
 	typePopup = addPopup(wrapper, picker.Types, &(*tp).Type)
-	text := i18n.Text("Template Choice Quantifier")
+	text := i18n.Text("Choice Quantifier")
 	comparisonPopup, field = addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*tp).Qualifier, fxp.Min,
 		fxp.Max, 1, false, false)
 	// A picker that isn't in use has nothing to quantify, so both the comparison and the qualifier are blanked out. The
