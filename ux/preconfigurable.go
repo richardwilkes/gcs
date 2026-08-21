@@ -16,8 +16,7 @@ import (
 )
 
 func addPreconfigurable[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent *unison.Panel) {
-	owner := e.owner.AsPanel().Self
-	if _, ownerIsTemplate := owner.(*Template); !ownerIsTemplate {
+	if !HasOwner[*Template](parent) {
 		return
 	}
 	if p, ok := any(e.editorData).(gurps.Preconfigurable); ok && !xreflect.IsNil(p) {
