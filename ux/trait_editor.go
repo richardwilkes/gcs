@@ -123,8 +123,8 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		}
 		ancestryPopup = addLabelAndPopup(content, i18n.Text("Ancestry"), "", choices, &e.editorData.Ancestry)
 		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != container.Ancestry)
-		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	}
+	addChoices(e, content, true)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)

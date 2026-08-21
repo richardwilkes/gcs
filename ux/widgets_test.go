@@ -77,10 +77,11 @@ func TestMarkdownHardLineBreaksPreservesParagraphs(t *testing.T) {
 // newTemplateChoices builds the "Template Choices" row an item editor shows for a template picker, returning the two
 // popups and the qualifier field it is made of.
 func newTemplateChoices(pickerType picker.Type, compare criteria.NumericComparison) (typePopup *unison.PopupMenu[picker.Type], comparisonPopup *unison.PopupMenu[string], field unison.Paneler) {
-	tp := &gurps.TemplatePicker{Type: pickerType}
-	tp.Qualifier.Compare = compare
-	tp.Qualifier.Qualifier = fxp.One
-	return addTemplateChoices(unison.NewPanel(), nil, "", &tp)
+	trait := gurps.NewTrait(nil, nil, true)
+	trait.TemplatePicker.Type = pickerType
+	trait.TemplatePicker.Qualifier.Compare = compare
+	trait.TemplatePicker.Qualifier.Qualifier = fxp.One
+	return addChoices(&editor[*gurps.Trait, *gurps.TraitData]{target: trait}, unison.NewPanel(), false)
 }
 
 // TestTemplateChoicesOpeningState verifies that a freshly opened editor blanks the template picker's comparison popup

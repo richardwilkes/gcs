@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -758,46 +757,6 @@ func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey
 	parent.AddChild(field)
 	checkBox = addCheckBox(parent, title, &amount.PerLevel)
 	return field, checkBox
-}
-
-func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey string, tp **gurps.TemplatePicker) (typePopup *unison.PopupMenu[picker.Type], comparisonPopup *unison.PopupMenu[string], field unison.Paneler) {
-	if !HasOwner[*Template](parent) {
-		return
-	}
-	if *tp == nil {
-		*tp = &gurps.TemplatePicker{}
-	}
-	last := (*tp).Type
-	wrapper := addFlowWrapper(parent, i18n.Text("Choices"), 3)
-	typePopup = addPopup(wrapper, picker.Types, &(*tp).Type)
-	text := i18n.Text("Choice Quantifier")
-	comparisonPopup, field = addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*tp).Qualifier, fxp.Min,
-		fxp.Max, 1, false, false)
-	// A picker that isn't in use has nothing to quantify, so both the comparison and the qualifier are blanked out. The
-	// qualifier is blanked as well whenever the comparison doesn't use one. The opening state must be settled the same
-	// way the selection callback settles it, or an untouched editor lets the user alter a picker that will be dropped
-	// on save, or refuses edits to one that will be kept.
-	adjust := func(pickerType picker.Type) {
-		notApplicable := pickerType == picker.NotApplicable
-		adjustPopupBlank(comparisonPopup, notApplicable)
-		adjustFieldBlank(field, notApplicable || (*tp).Qualifier.Compare == criteria.AnyNumber)
-	}
-	typePopup.SelectionChangedCallback = func(p *unison.PopupMenu[picker.Type]) {
-		if item, ok := p.Selected(); ok {
-			(*tp).Type = item
-			if last == picker.NotApplicable && item != picker.NotApplicable {
-				(*tp).Qualifier.Qualifier = fxp.One
-				if syncer, ok2 := field.(Syncer); ok2 {
-					syncer.Sync()
-				}
-			}
-			last = item
-			adjust(item)
-			MarkModified(parent)
-		}
-	}
-	adjust((*tp).Type)
-	return typePopup, comparisonPopup, field
 }
 
 func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoTitle, tooltip string, get func() string, set func(string), includeMarkdownButton bool) *StringField {
