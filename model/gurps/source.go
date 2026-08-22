@@ -242,7 +242,7 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 // A 'Reference' when original has no Source of its own, anchors Source to reference the original.
 // Otherwise Source is copied directly from the original.
 func (s *SourcedID) AdjustSource(from LibraryFile, original SourcedID, mode CloneMode) {
-	// For a 'Copy' it shoudl be identical, including IDs
+	// For a 'Copy' it should be identical, including IDs
 	if mode == Copy {
 		s.TID = original.TID
 	}
