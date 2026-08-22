@@ -43,7 +43,7 @@ type Owned interface {
 // FindOwner follow the lineage of a panel up locate a parent that satisfies `Owned`
 func FindOwner[T Rebuildable](panel *unison.Panel) T {
 	for panel != nil {
-		if owned, ok := any(panel.Self).(Owned); ok {
+		if owned, ok := any(panel.Self).(Owned); ok && !xreflect.IsNil(owned) && !xreflect.IsNil(owned.Owner()) {
 			if owner, ok2 := owned.Owner().AsPanel().Self.(T); ok2 {
 				return owner
 			}
