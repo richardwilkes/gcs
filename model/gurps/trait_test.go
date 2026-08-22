@@ -306,7 +306,7 @@ func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
 	source.Modifiers = []*TraitModifier{mod}
 	source.SetDataOwner(nil)
 
-	clone := source.Clone(LibraryFile{}, nil, nil, false)
+	clone := source.Clone(LibraryFile{}, nil, nil, Reference)
 	c.Equal(1, len(clone.Modifiers), "the modifier was copied")
 	// Compared as pointers: the two traits are equal by value at this point, so only identity distinguishes them.
 	c.True(clone.Modifiers[0].OwningTrait() == clone, "the copy belongs to the clone, not the trait cloned from")
@@ -329,7 +329,7 @@ func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
 	source.parent = parent
 	parent.Children = []*Trait{source}
 	parent.SetDataOwner(nil)
-	clonedContainer := parent.Clone(LibraryFile{}, nil, nil, false)
+	clonedContainer := parent.Clone(LibraryFile{}, nil, nil, Reference)
 	c.Equal(1, len(clonedContainer.Children), "the child was cloned")
 	clonedChild := clonedContainer.Children[0]
 	c.True(clonedChild.Modifiers[0].OwningTrait() == clonedChild, "a cloned child's modifier belongs to that child")

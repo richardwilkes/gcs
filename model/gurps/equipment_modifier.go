@@ -198,9 +198,9 @@ func (e *EquipmentModifier) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
+func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *EquipmentModifier, mode CloneMode) *EquipmentModifier {
 	other := NewEquipmentModifier(owner, parent, e.Container())
-	other.AdjustSource(from, e.SourcedID, preserveID)
+	other.AdjustSource(from, e.SourcedID, mode == Copy, mode == Reference)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
 	other.CopyFrom(e)
@@ -208,7 +208,7 @@ func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *Equ
 	if e.HasChildren() {
 		other.Children = make([]*EquipmentModifier, 0, len(e.Children))
 		for _, child := range e.Children {
-			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, mode))
 		}
 	}
 	return other

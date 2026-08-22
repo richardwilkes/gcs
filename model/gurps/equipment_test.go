@@ -120,7 +120,7 @@ func TestEquipmentCloneAttachesModifiersToTheClone(t *testing.T) {
 	eqp.Modifiers = []*EquipmentModifier{mod}
 	eqp.SetDataOwner(entity)
 
-	clone := eqp.Clone(LibraryFile{}, entity, nil, false)
+	clone := eqp.Clone(LibraryFile{}, entity, nil, Reference)
 	c.Equal(1, len(clone.Modifiers))
 	if len(clone.Modifiers) != 1 || len(clone.Modifiers[0].Children) != 1 {
 		return
@@ -149,7 +149,7 @@ func TestEquipmentCloneMigratesLegacyModifierReplacements(t *testing.T) {
 	mod.Replacements = map[string]string{"Material": "Steel"}
 	eqp.Modifiers = []*EquipmentModifier{mod}
 
-	clone := eqp.Clone(LibraryFile{}, entity, nil, false)
+	clone := eqp.Clone(LibraryFile{}, entity, nil, Reference)
 	c.Equal(0, len(eqp.Replacements), "the equipment being cloned isn't mutated")
 	c.Equal(1, len(clone.Modifiers))
 	if len(clone.Modifiers) != 1 {
