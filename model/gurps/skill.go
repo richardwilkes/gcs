@@ -278,7 +278,7 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode Clo
 		other = NewSkill(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
-	other.AdjustSource(from, s.SourcedID, mode == Copy, mode == Reference)
+	other.AdjustSource(from, s.SourcedID, mode)
 	other.ThirdParty = s.ThirdParty
 	other.copyFrom(other, &s.SkillEditData, s.Container(), false, mode, s.IsTechnique())
 	PropagateNodeNoteClosedState(s, other)

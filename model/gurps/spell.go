@@ -277,7 +277,7 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, mode Clo
 		other = NewSpell(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
-	other.AdjustSource(from, s.SourcedID, mode == Copy, mode == Reference)
+	other.AdjustSource(from, s.SourcedID, mode)
 	other.ThirdParty = s.ThirdParty
 	other.copyFrom(other, &s.SpellEditData, s.Container(), false, mode)
 	PropagateNodeNoteClosedState(s, other)

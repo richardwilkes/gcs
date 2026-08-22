@@ -232,7 +232,7 @@ func (t *Trait) SetOpen(open bool) {
 // Clone implements Node.
 func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode CloneMode) *Trait {
 	other := NewTrait(owner, parent, t.Container())
-	other.AdjustSource(from, t.SourcedID, mode == Copy, mode == Reference)
+	other.AdjustSource(from, t.SourcedID, mode)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.copyFrom(other, &t.TraitEditData, false, mode)

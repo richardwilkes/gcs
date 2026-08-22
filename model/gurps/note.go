@@ -169,7 +169,7 @@ func (n *Note) SetOpen(open bool) {
 // Clone implements Node.
 func (n *Note) Clone(from LibraryFile, owner DataOwner, parent *Note, mode CloneMode) *Note {
 	other := NewNote(owner, parent, n.Container())
-	other.AdjustSource(from, n.SourcedID, mode == Copy, mode == Reference)
+	other.AdjustSource(from, n.SourcedID, mode)
 	other.SetOpen(n.IsOpen())
 	other.ThirdParty = n.ThirdParty
 	other.CopyFrom(n)

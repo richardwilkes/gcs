@@ -205,7 +205,7 @@ func (t *TraitModifier) SetOpen(open bool) {
 // Clone implements Node.
 func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitModifier, mode CloneMode) *TraitModifier {
 	other := NewTraitModifier(owner, parent, t.Container())
-	other.AdjustSource(from, t.SourcedID, mode == Copy, mode == Reference)
+	other.AdjustSource(from, t.SourcedID, mode)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.CopyFrom(t)

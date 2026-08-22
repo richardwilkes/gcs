@@ -219,7 +219,7 @@ func (e *Equipment) SetOpen(open bool) {
 // Clone implements Node.
 func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, mode CloneMode) *Equipment {
 	other := NewEquipment(owner, parent, e.Container())
-	other.AdjustSource(from, e.SourcedID, mode == Copy, mode == Reference)
+	other.AdjustSource(from, e.SourcedID, mode)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
 	other.copyFrom(other, &e.EquipmentEditData, false, mode)
