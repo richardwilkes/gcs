@@ -651,14 +651,14 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 							if current+count.Mul(singleValue) > maxValue {
 								count = count.Dec()
 							}
-							m[item] += fxp.AsInteger[int](count)
+							m[item] += count.AsInteger[int]()
 							current += count.Mul(singleValue)
 						case singleValue < fxp.OneHundredth && minValue-current > fxp.One:
 							count := fxp.One.Div(singleValue).Ceil()
 							if current+count.Mul(singleValue) > maxValue {
 								count = count.Dec()
 							}
-							m[item] += fxp.AsInteger[int](count)
+							m[item] += count.AsInteger[int]()
 							current += count.Mul(singleValue)
 						default:
 							m[item]++

@@ -25,16 +25,14 @@ import (
 func TestPrepareProfileForContentCache(t *testing.T) {
 	c := check.New(t)
 	content := prepareProfileForContentCache(&gurps.Profile{
-		ProfileRandom: gurps.ProfileRandom{
-			Name:       "Conan",
-			Age:        "Thirty",
-			Birthday:   "January 1",
-			Eyes:       "Blue",
-			Hair:       "Black",
-			Skin:       "Tan",
-			Handedness: "Right",
-			Gender:     "Male",
-		},
+		Name:         "Conan",
+		Age:          "Thirty",
+		Birthday:     "January 1",
+		Eyes:         "Blue",
+		Hair:         "Black",
+		Skin:         "Tan",
+		Handedness:   "Right",
+		Gender:       "Male",
 		PlayerName:   "Robert",
 		Title:        "King Of Aquilonia",
 		Organization: "The Black Dragons",

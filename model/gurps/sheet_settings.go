@@ -78,21 +78,19 @@ func SheetSettingsFor(entity *Entity) *SheetSettings {
 // FactorySheetSettings returns a new SheetSettings with factory defaults.
 func FactorySheetSettings() *SheetSettings {
 	return &SheetSettings{
-		SheetSettingsData: SheetSettingsData{
-			Page:                    NewPageSettings(),
-			BlockLayout:             NewBlockLayout(),
-			Attributes:              FactoryAttributeDefs(),
-			BodyType:                FactoryBody(),
-			DamageProgression:       progression.BasicSet,
-			DefaultLengthUnits:      fxp.FeetAndInches,
-			DefaultWeightUnits:      fxp.Pound,
-			UserDescriptionDisplay:  display.Tooltip,
-			ModifiersDisplay:        display.Inline,
-			NotesDisplay:            display.Inline,
-			SkillLevelAdjDisplay:    display.Tooltip,
-			ShowSpellAdj:            true,
-			HideUnusedWeaponColumns: false,
-		},
+		Page:                    NewPageSettings(),
+		BlockLayout:             NewBlockLayout(),
+		Attributes:              FactoryAttributeDefs(),
+		BodyType:                FactoryBody(),
+		DamageProgression:       progression.BasicSet,
+		DefaultLengthUnits:      fxp.FeetAndInches,
+		DefaultWeightUnits:      fxp.Pound,
+		UserDescriptionDisplay:  display.Tooltip,
+		ModifiersDisplay:        display.Inline,
+		NotesDisplay:            display.Inline,
+		SkillLevelAdjDisplay:    display.Tooltip,
+		ShowSpellAdj:            true,
+		HideUnusedWeaponColumns: false,
 	}
 }
 

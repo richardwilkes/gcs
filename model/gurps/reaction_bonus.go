@@ -34,9 +34,9 @@ type ReactionBonus struct {
 // NewReactionBonus creates a new ReactionBonus.
 func NewReactionBonus() *ReactionBonus {
 	return &ReactionBonus{
-		Type:          feature.ReactionBonus,
-		Situation:     i18n.Text("from others"),
-		LeveledAmount: LeveledAmount{Amount: fxp.One},
+		Type:      feature.ReactionBonus,
+		Situation: i18n.Text("from others"),
+		Amount:    fxp.One,
 	}
 }
 

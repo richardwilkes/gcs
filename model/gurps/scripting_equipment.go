@@ -46,21 +46,21 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(item.NameWithReplacements()) }
 	m["techLevel"] = func() goja.Value { return r.ToValue(item.TechLevel) }
 	m["legalityClass"] = func() goja.Value { return r.ToValue(item.LegalityClass) }
-	m["quantity"] = func() goja.Value { return r.ToValue(fxp.AsFloat[float64](item.Quantity)) }
-	m["level"] = func() goja.Value { return r.ToValue(fxp.AsFloat[float64](item.Level)) }
+	m["quantity"] = func() goja.Value { return r.ToValue(item.Quantity.AsFloat[float64]()) }
+	m["level"] = func() goja.Value { return r.ToValue(item.Level.AsFloat[float64]()) }
 	m["uses"] = func() goja.Value { return r.ToValue(item.ResolvedUses()) }
 	m["maxUses"] = func() goja.Value { return r.ToValue(item.ResolvedMaxUses()) }
 	m["value"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](item.AdjustedValue()))
+		return r.ToValue(item.AdjustedValue().AsFloat[float64]())
 	}
 	m["extendedValue"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](item.ExtendedValue()))
+		return r.ToValue(item.ExtendedValue().AsFloat[float64]())
 	}
 	m["weight"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(item.AdjustedWeight(false, fxp.Pound))))
+		return r.ToValue(fxp.Int(item.AdjustedWeight(false, fxp.Pound)).AsFloat[float64]())
 	}
 	m["extendedWeight"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(item.ExtendedWeight(false, fxp.Pound))))
+		return r.ToValue(fxp.Int(item.ExtendedWeight(false, fxp.Pound)).AsFloat[float64]())
 	}
 	m["weightIgnoredForSkills"] = func() goja.Value { return r.ToValue(item.WeightIgnoredForSkills) }
 	// To a script, "equipped" means "affecting the character", so an item in the other equipment list is never

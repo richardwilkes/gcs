@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
@@ -87,7 +86,7 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 		}
 		m["attribute"] = func() goja.Value { return r.ToValue(skill.Difficulty.Attribute) }
 		m["difficulty"] = func() goja.Value { return r.ToValue(skill.Difficulty.Difficulty.Key()) }
-		m["points"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](skill.AdjustedPoints(nil))) }
+		m["points"] = func() goja.Value { return r.ToValue(skill.AdjustedPoints(nil).AsInteger[int]()) }
 		m["level"] = func() goja.Value {
 			entity := EntityFromNode(skill)
 			if entity == nil {

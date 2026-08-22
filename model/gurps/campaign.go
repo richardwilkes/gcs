@@ -56,10 +56,8 @@ func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 // NewCampaign creates a new Campaign.
 func NewCampaign() *Campaign {
 	return &Campaign{
-		CampaignData: CampaignData{
-			ID:            tid.MustNewTID(kinds.Campaign),
-			SheetSettings: GlobalSettings().SheetSettings().Clone(nil),
-		},
+		ID:            tid.MustNewTID(kinds.Campaign),
+		SheetSettings: GlobalSettings().SheetSettings().Clone(nil),
 	}
 }
 

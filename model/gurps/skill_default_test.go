@@ -42,13 +42,13 @@ func newWhenTLSkillDefault(name, specialization string, when criteria.Number) *S
 		WhenTL:      when,
 	}
 	if specialization != "" {
-		def.Specialization = criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: specialization}}
+		def.Specialization = criteria.Text{Compare: criteria.IsText, Qualifier: specialization}
 	}
 	return def
 }
 
 func numberCriteria(compare criteria.NumericComparison, qualifier fxp.Int) criteria.Number {
-	return criteria.Number{NumberData: criteria.NumberData{Compare: compare, Qualifier: qualifier}}
+	return criteria.Number{Compare: compare, Qualifier: qualifier}
 }
 
 // TestSkillDefaultWhenTL verifies that a skill default's WhenTL constraint is evaluated against the tech level of the

@@ -55,9 +55,8 @@ func IsNodePreconfigurable[T Node[T]](node T) bool {
 	if tl, ok := any(node).(Preconfigurable); ok && !xreflect.IsNil(tl) {
 		if node.Container() {
 			return tl.CanPreconfigureContainer()
-		} else {
-			return tl.CanPreconfigureItem()
 		}
+		return tl.CanPreconfigureItem()
 	}
 	return false
 }

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"slices"
 	"strings"
 )
 
@@ -57,12 +58,9 @@ func SanitizeID(id string, permitLeadingDigits bool, reserved ...string) string 
 	for {
 		ok := true
 		id = buffer.String()
-		for _, one := range reserved {
-			if one == id {
-				buffer.WriteByte('_')
-				ok = false
-				break
-			}
+		if slices.Contains(reserved, id) {
+			buffer.WriteByte('_')
+			ok = false
 		}
 		if ok {
 			return id

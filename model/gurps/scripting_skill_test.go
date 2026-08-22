@@ -65,10 +65,10 @@ func TestScriptSkillLevelWithPoints(t *testing.T) {
 	e.Skills = append(e.Skills, sk)
 	e.Recalculate()
 	c.NotEqual(fxp.Min, sk.LevelData.Level)
-	c.Equal(strconv.Itoa(fxp.AsInteger[int](sk.LevelData.Level)),
+	c.Equal(strconv.Itoa(sk.LevelData.Level.AsInteger[int]()),
 		ResolveScript(e, deferredNewScriptSkill(sk), "self.level"))
 	c.True(sk.LevelData.RelativeLevel < 0) // precondition: an Average skill with 1 point is below its attribute
-	c.Equal(strconv.Itoa(fxp.AsInteger[int](sk.LevelData.RelativeLevel)),
+	c.Equal(strconv.Itoa(sk.LevelData.RelativeLevel.AsInteger[int]()),
 		ResolveScript(e, deferredNewScriptSkill(sk), "self.relativeLevel"))
 }
 

@@ -101,7 +101,7 @@ func (p *spellsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.
 }
 
 func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Spell]]) {
-	if dataOwnerProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !xreflect.IsNil(dataOwnerProvider) {
+	if dataOwnerProvider := to.Ancestor[gurps.DataOwnerProvider](); !xreflect.IsNil(dataOwnerProvider) {
 		if dataOwner := dataOwnerProvider.DataOwner(); !xreflect.IsNil(dataOwner) {
 			if entity := dataOwner.OwningEntity(); entity != nil {
 				for _, row := range to.SelectedRows(true) {

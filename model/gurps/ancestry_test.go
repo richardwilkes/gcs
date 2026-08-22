@@ -55,7 +55,7 @@ func TestRandomGender(t *testing.T) {
 	gender := func(name string) *WeightedAncestryOptions {
 		return &WeightedAncestryOptions{
 			Weight: 1,
-			Value:  &AncestryOptions{AncestryOptionsData: AncestryOptionsData{Name: name}},
+			Value:  &AncestryOptions{Name: name},
 		}
 	}
 
@@ -83,12 +83,12 @@ func TestRandomStringOptions(t *testing.T) {
 		return &WeightedStringOption{Weight: 1, Value: value}
 	}
 
-	single := &Ancestry{CommonOptions: &AncestryOptions{AncestryOptionsData: AncestryOptionsData{
+	single := &Ancestry{CommonOptions: &AncestryOptions{
 		HairOptions:       []*WeightedStringOption{opt("Green")},
 		EyeOptions:        []*WeightedStringOption{opt("Violet")},
 		SkinOptions:       []*WeightedStringOption{opt("Blue")},
 		HandednessOptions: []*WeightedStringOption{opt("Ambidextrous")},
-	}}}
+	}}
 	c.Equal("Green", single.RandomHair("", "Green"), "the lone hair option is kept rather than replaced")
 	c.Equal("Violet", single.RandomEyes("", "Violet"), "the lone eye option is kept rather than replaced")
 	c.Equal("Blue", single.RandomSkin("", "Blue"), "the lone skin option is kept rather than replaced")
@@ -97,9 +97,9 @@ func TestRandomStringOptions(t *testing.T) {
 	c.Equal("Green", single.RandomHair("", ""), "the lone hair option is chosen when nothing is excluded")
 
 	// When an alternative exists, the current value is still excluded from the choice.
-	pair := &Ancestry{CommonOptions: &AncestryOptions{AncestryOptionsData: AncestryOptionsData{
+	pair := &Ancestry{CommonOptions: &AncestryOptions{
 		HairOptions: []*WeightedStringOption{opt("Green"), opt("Blue")},
-	}}}
+	}}
 	for range 20 {
 		c.Equal("Blue", pair.RandomHair("", "Green"), "the alternative hair is chosen when one exists")
 	}
@@ -113,9 +113,9 @@ func TestRandomStringOptions(t *testing.T) {
 		"no handedness options falls back to the default")
 
 	// Options that can never be chosen (no weight) are treated as if they weren't there.
-	zero := &AncestryOptions{AncestryOptionsData: AncestryOptionsData{
+	zero := &AncestryOptions{
 		HairOptions: []*WeightedStringOption{{Value: "Green"}},
-	}}
+	}
 	c.Equal(defaultHair, zero.RandomHair("Green"), "a weightless hair option falls back to the default")
 }
 
@@ -198,12 +198,12 @@ func TestAncestryWithNullStringOptions(t *testing.T) {
 	c.Equal("Green", a.RandomHair("", "Green"), "excluding the lone valid option keeps the current hair")
 
 	// A list consisting solely of unusable entries falls back to the default rather than panicking.
-	only := &AncestryOptions{AncestryOptionsData: AncestryOptionsData{
+	only := &AncestryOptions{
 		HairOptions:       []*WeightedStringOption{nil},
 		EyeOptions:        []*WeightedStringOption{nil, {Value: "Violet"}},
 		SkinOptions:       []*WeightedStringOption{nil},
 		HandednessOptions: []*WeightedStringOption{nil},
-	}}
+	}
 	c.Equal(defaultHair, only.RandomHair("Green"), "a nil-only hair list falls back to the default")
 	c.Equal(defaultEye, only.RandomEye(""), "a nil plus weightless eye list falls back to the default")
 	c.Equal(defaultSkin, only.RandomSkin(""), "a nil-only skin list falls back to the default")

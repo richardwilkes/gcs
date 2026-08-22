@@ -23,22 +23,20 @@ type TargetUndo[T any] struct {
 // NewTargetUndo creates a new undo that supports having a revisable target.
 func NewTargetUndo[T any](targetMgr *TargetMgr, targetKey, title string, undoID int64, applyCallback func(target *unison.Panel, data T), beforeData T) *TargetUndo[T] {
 	t := &TargetUndo[T]{
-		UndoEdit: unison.UndoEdit[T]{
-			ID:       undoID,
-			EditName: title,
-			EditCost: 1,
-			AbsorbFunc: func(e *unison.UndoEdit[T], other unison.Undoable) bool {
-				if e2, ok := other.(*TargetUndo[T]); ok && e.ID == e2.ID {
-					e.AfterData = e2.AfterData
-					return true
-				}
-				return false
-			},
-			BeforeData: beforeData,
+		ID:       undoID,
+		EditName: title,
+		EditCost: 1,
+		AbsorbFunc: func(e *unison.UndoEdit[T], other unison.Undoable) bool {
+			if e2, ok := other.(*TargetUndo[T]); ok && e.ID == e2.ID {
+				e.AfterData = e2.AfterData
+				return true
+			}
+			return false
 		},
-		mgr:      targetMgr,
-		key:      targetKey,
-		callback: applyCallback,
+		BeforeData: beforeData,
+		mgr:        targetMgr,
+		key:        targetKey,
+		callback:   applyCallback,
 	}
 	t.UndoFunc = func(e *unison.UndoEdit[T]) { t.apply(e.BeforeData) }
 	t.RedoFunc = func(e *unison.UndoEdit[T]) { t.apply(e.AfterData) }

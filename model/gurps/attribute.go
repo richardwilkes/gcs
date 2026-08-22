@@ -42,9 +42,7 @@ type Attribute struct {
 // NewAttribute creates a new Attribute.
 func NewAttribute(entity *Entity, attrID string, order int) *Attribute {
 	return &Attribute{
-		AttributeData: AttributeData{
-			AttrID: attrID,
-		},
+		AttrID: attrID,
 		Entity: entity,
 		Order:  order,
 	}

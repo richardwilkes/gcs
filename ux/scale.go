@@ -103,7 +103,7 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 	}
 	installFunc := func() {
 		scroller.ParentChangedCallback = nil
-		installViewScaleHandlers(unison.Ancestor[unison.Dockable](scroller), minValue, maxValue, get, defValue,
+		installViewScaleHandlers(scroller.Ancestor[unison.Dockable](), minValue, maxValue, get, defValue,
 			func(scale int) {
 				if get() != scale {
 					SetFieldValue(scaleField.Field, scaleField.Format(scale))
@@ -114,7 +114,7 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 			afterApply()
 		}
 	}
-	if dockable := unison.Ancestor[unison.Dockable](scroller); xreflect.IsNil(dockable) {
+	if dockable := scroller.Ancestor[unison.Dockable](); xreflect.IsNil(dockable) {
 		scroller.ParentChangedCallback = installFunc
 	} else {
 		installFunc()

@@ -319,8 +319,9 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 								func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true))
 						} else {
 							a.AddChild(NewIntegerPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
-								func() int { return fxp.AsInteger[int](attr.Maximum().Floor()) },
-								func(v int) { attr.SetMaximum(fxp.FromInteger(v)) }, fxp.AsInteger[int](fxp.Min.Floor()), fxp.AsInteger[int](fxp.Max.Floor()), false, true))
+								func() int { return attr.Maximum().Floor().AsInteger[int]() },
+								func(v int) { attr.SetMaximum(fxp.FromInteger(v)) },
+								fxp.Min.Floor().AsInteger[int](), fxp.Max.Floor().AsInteger[int](), false, true))
 						}
 					}
 					a.AddChild(NewPageLabel(def.CombinedName()))
@@ -329,7 +330,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 		}
 	}
 	if a.targetMgr != nil {
-		if sheet := unison.Ancestor[*Sheet](a); sheet != nil {
+		if sheet := a.Ancestor[*Sheet](); sheet != nil {
 			a.targetMgr.ReacquireFocus(focusRefKey, sheet.toolbar, sheet.scroll.Content())
 		}
 	}

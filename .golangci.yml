@@ -15,6 +15,7 @@ linters:
     - govet
     - ineffassign
     - misspell
+    - modernize
     - prealloc
     - predeclared
     - revive
@@ -84,6 +85,7 @@ linters:
     govet:
       disable:
         - composites
+        - fieldalignment
       enable-all: true
       settings:
         printf:
@@ -158,9 +160,6 @@ linters:
         - -SA5008
   exclusions:
     generated: lax
-    rules:
-      - path: (.+)\.go$
-        text: 'fieldalignment: struct with \d+ pointer bytes could be'
 issues:
   max-same-issues: 0
 formatters:
@@ -169,4 +168,7 @@ formatters:
     - goimports
   settings:
     gofumpt:
-      extra-rules: true
+      extra:
+        group-params: true
+        clothe-returns: true
+        balance-calls: true

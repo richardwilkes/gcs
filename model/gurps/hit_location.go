@@ -51,13 +51,11 @@ type HitLocation struct {
 // NewHitLocation creates a new hit location.
 func NewHitLocation(entity *Entity, keyPrefix string) *HitLocation {
 	return &HitLocation{
-		HitLocationData: HitLocationData{
-			LocID:      "id",
-			ChoiceName: i18n.Text("untitled choice"),
-			TableName:  i18n.Text("untitled location"),
-		},
-		Entity:    entity,
-		KeyPrefix: keyPrefix,
+		LocID:      "id",
+		ChoiceName: i18n.Text("untitled choice"),
+		TableName:  i18n.Text("untitled location"),
+		Entity:     entity,
+		KeyPrefix:  keyPrefix,
 	}
 }
 

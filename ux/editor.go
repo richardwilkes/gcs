@@ -92,7 +92,7 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	if defDC := DefaultDockContainer(); defDC != nil {
 		if e.previousDockable = defDC.CurrentDockable(); !xreflect.IsNil(e.previousDockable) {
 			if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
-				if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
+				if focus.Ancestor[unison.Dockable]() == e.previousDockable {
 					e.previousFocusKey = focus.RefKey
 				}
 			}

@@ -532,8 +532,8 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 		for _, one := range AllDockables() {
 			if fbd, ok := one.(FileBackedDockable); ok {
 				p := fbd.BackingFilePath()
-				if strings.HasPrefix(p, oldPath) {
-					fbd.SetBackingFilePath(filepath.Join(newPath, strings.TrimPrefix(p, oldPath)))
+				if after, ok2 := strings.CutPrefix(p, oldPath); ok2 {
+					fbd.SetBackingFilePath(filepath.Join(newPath, after))
 				}
 			}
 		}
@@ -662,11 +662,9 @@ func (n *Navigator) mouseDown(where geom.Point, button, clickCount int, mods mod
 				}
 				n.FlushDrawing()
 				cm.Popup(geom.Rect{
-					Point: n.table.PointToRoot(where),
-					Size: geom.Size{
-						Width:  1,
-						Height: 1,
-					},
+					Point:  n.table.PointToRoot(where),
+					Width:  1,
+					Height: 1,
 				}, 0)
 			}
 			cm.Dispose()

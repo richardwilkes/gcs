@@ -203,7 +203,7 @@ func (p *PortraitPanel) processFileDrop(f string) {
 		errs.Log(err, "file", f)
 		return
 	}
-	sheet := unison.Ancestor[*Sheet](p)
+	sheet := p.Ancestor[*Sheet]()
 	sheet.undoMgr.Add(&unison.UndoEdit[[]byte]{
 		ID:         unison.NextUndoID(),
 		EditName:   i18n.Text("Set Portrait"),

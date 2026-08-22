@@ -104,8 +104,7 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 		return tags
 	}
 	for _, one := range categories {
-		parts := strings.Split(one, "/")
-		for _, part := range parts {
+		for part := range strings.SplitSeq(one, "/") {
 			if part = strings.TrimSpace(part); part != "" {
 				if !slices.ContainsFunc(tags, func(s string) bool { return strings.EqualFold(s, part) }) {
 					tags = append(tags, part)

@@ -86,7 +86,7 @@ func (p *fakeAltDropProvider) AltDropSupport() *AltDropSupport {
 // newAltDropTestTable returns a table with drop support installed and a single root row, whose height is the table's
 // MinimumRowHeight since no columns are configured, so points with a small Y are over the row and large Y values miss.
 func newAltDropTestTable(provider *fakeAltDropProvider) *unison.Table[*Node[*gurps.Trait]] {
-	table := unison.NewTable[*Node[*gurps.Trait]](provider)
+	table := unison.NewTable(provider)
 	InstallTableDropSupport(table, provider)
 	table.SetRootRows([]*Node[*gurps.Trait]{NewNode(table, nil, gurps.NewTrait(nil, nil, false), false)})
 	return table
@@ -286,7 +286,7 @@ func newLibraryStyleTraitsTable(traits ...*gurps.Trait) *unison.Table[*Node[*gur
 	data := gurps.NewTemplate()
 	data.SetTraitList(traits)
 	provider := NewTraitsProvider(data, false)
-	table := unison.NewTable[*Node[*gurps.Trait]](provider)
+	table := unison.NewTable(provider)
 	provider.SetTable(table)
 	table.ClientData()[TableProviderClientKey] = provider
 	table.SetRootRows(provider.RootRows())

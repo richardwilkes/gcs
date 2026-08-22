@@ -10,6 +10,7 @@
 package criteria
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -46,10 +47,8 @@ type StringComparison string
 
 // EnsureValid ensures this is of a known value.
 func (s StringComparison) EnsureValid() StringComparison {
-	for _, one := range AllStringComparisons {
-		if one == s {
-			return s
-		}
+	if slices.Contains(AllStringComparisons, s) {
+		return s
 	}
 	return AllStringComparisons[0]
 }

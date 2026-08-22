@@ -35,14 +35,14 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 		m["hair"] = func() goja.Value { return r.ToValue(entity.Profile.Hair) }
 		m["skin"] = func() goja.Value { return r.ToValue(entity.Profile.Skin) }
 		m["handedness"] = func() goja.Value { return r.ToValue(entity.Profile.Handedness) }
-		m["heightInInches"] = func() goja.Value { return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.Profile.Height))) }
-		m["weightInPounds"] = func() goja.Value { return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.Profile.Weight))) }
+		m["heightInInches"] = func() goja.Value { return r.ToValue(fxp.Int(entity.Profile.Height).AsFloat[float64]()) }
+		m["weightInPounds"] = func() goja.Value { return r.ToValue(fxp.Int(entity.Profile.Weight).AsFloat[float64]()) }
 		m["displayHeightUnits"] = func() goja.Value { return r.ToValue(settings.DefaultLengthUnits.Key()) }
 		m["displayWeightUnits"] = func() goja.Value { return r.ToValue(settings.DefaultWeightUnits.Key()) }
 		m["sizeModifier"] = func() goja.Value { return r.ToValue(entity.Profile.AdjustedSizeModifier()) }
-		m["liftingStrength"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](entity.LiftingStrength())) }
-		m["strikingStrength"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](entity.StrikingStrength())) }
-		m["throwingStrength"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](entity.ThrowingStrength())) }
+		m["liftingStrength"] = func() goja.Value { return r.ToValue(entity.LiftingStrength().AsInteger[int]()) }
+		m["strikingStrength"] = func() goja.Value { return r.ToValue(entity.StrikingStrength().AsInteger[int]()) }
+		m["throwingStrength"] = func() goja.Value { return r.ToValue(entity.ThrowingStrength().AsInteger[int]()) }
 		m["extraDiceFromModifiers"] = func() goja.Value { return r.ToValue(settings.UseModifyingDicePlusAdds) }
 		m["attributes"] = func() goja.Value {
 			list := entity.Attributes.List()
@@ -108,15 +108,15 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 		m["points"] = func() goja.Value {
 			pb := entity.PointsBreakdown()
 			p := make(map[string]func() goja.Value)
-			p["total"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Total())) }
-			p["unspent"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](entity.TotalPoints - pb.Total())) }
-			p["ancestry"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Ancestry)) }
-			p["attributes"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Attributes)) }
-			p["advantages"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Advantages)) }
-			p["disadvantages"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Disadvantages)) }
-			p["quirks"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Quirks)) }
-			p["skills"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Skills)) }
-			p["spells"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](pb.Spells)) }
+			p["total"] = func() goja.Value { return r.ToValue(pb.Total().AsInteger[int]()) }
+			p["unspent"] = func() goja.Value { return r.ToValue((entity.TotalPoints - pb.Total()).AsInteger[int]()) }
+			p["ancestry"] = func() goja.Value { return r.ToValue(pb.Ancestry.AsInteger[int]()) }
+			p["attributes"] = func() goja.Value { return r.ToValue(pb.Attributes.AsInteger[int]()) }
+			p["advantages"] = func() goja.Value { return r.ToValue(pb.Advantages.AsInteger[int]()) }
+			p["disadvantages"] = func() goja.Value { return r.ToValue(pb.Disadvantages.AsInteger[int]()) }
+			p["quirks"] = func() goja.Value { return r.ToValue(pb.Quirks.AsInteger[int]()) }
+			p["skills"] = func() goja.Value { return r.ToValue(pb.Skills.AsInteger[int]()) }
+			p["spells"] = func() goja.Value { return r.ToValue(pb.Spells.AsInteger[int]()) }
 			return r.NewDynamicObject(NewScriptObject(r, p))
 		}
 		m["currentEncumbrance"] = func() goja.Value {
@@ -125,7 +125,7 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 				returnMoveFactor := call.Argument(1).ToBoolean()
 				level := int(entity.EncumbranceLevel(forSkills))
 				if returnMoveFactor {
-					return r.ToValue(fxp.AsFloat[float64](fxp.One - fxp.FromInteger(level).Mul(fxp.Two).Div(fxp.Ten)))
+					return r.ToValue((fxp.One - fxp.FromInteger(level).Mul(fxp.Two).Div(fxp.Ten)).AsFloat[float64]())
 				}
 				return r.ToValue(level)
 			})
@@ -229,7 +229,7 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 					}
 					return false
 				}, true, true, entity.Traits...)
-				return r.ToValue(fxp.AsFloat[float64](level))
+				return r.ToValue(level.AsFloat[float64]())
 			})
 		}
 		m["weaponDamage"] = func() goja.Value {

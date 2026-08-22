@@ -57,7 +57,7 @@ func TestProcessNameablesRebuildsThroughAReplacedTable(t *testing.T) {
 	trait.Modifiers = []*gurps.TraitModifier{modifier}
 	sheet.Rebuild(true)
 	c.NotEqual(stale, sheet.Traits.Table, "gaining the switch column must replace the traits table")
-	c.Nil(unison.Ancestor[Rebuildable](stale), "an orphaned table must have no rebuildable above it")
+	c.Nil(stale.Ancestor[Rebuildable](), "an orphaned table must have no rebuildable above it")
 
 	counter := installSyncCounter(sheet)
 	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {
@@ -98,7 +98,7 @@ func TestProcessNameablesRebuildsThroughAReplacedTableForModifierRows(t *testing
 	trait.Modifiers = []*gurps.TraitModifier{modifier}
 	sheet.Rebuild(true)
 	c.NotEqual(stale, sheet.Traits.Table, "gaining the switch column must replace the traits table")
-	c.Nil(unison.Ancestor[Rebuildable](stale), "an orphaned table must have no rebuildable above it")
+	c.Nil(stale.Ancestor[Rebuildable](), "an orphaned table must have no rebuildable above it")
 
 	counter := installSyncCounter(sheet)
 	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {
@@ -136,7 +136,7 @@ func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 	// necessary, and its name needs a substitution.
 	dropped := newSwitchableTraitModifier("@Material@ Coating")
 	dropped.Disabled = false
-	modTable := unison.NewTable[*Node[*gurps.TraitModifier]](&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
 	counter := installSyncCounter(sheet)
 	syncsWhenAsked := -1
 	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {
@@ -183,9 +183,7 @@ func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
 	dropped := gurps.NewEquipmentModifier(nil, nil, false)
 	dropped.Name = "@Material@ Coating"
 	dropped.Features = gurps.Features{switchableSTBonus(nil)}
-	modTable := unison.NewTable[*Node[*gurps.EquipmentModifier]](
-		&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{},
-	)
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
 	counter := installSyncCounter(sheet)
 	syncsWhenAsked := -1
 	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {

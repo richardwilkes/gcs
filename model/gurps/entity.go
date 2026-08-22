@@ -246,11 +246,11 @@ func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 			Dodge:                 make([]int, len(encumbrance.Levels)),
 		},
 	}
-	data.Version = jio.CurrentDataVersion
 	for i, one := range encumbrance.Levels {
 		data.Calc.Move[i] = e.Move(one)
 		data.Calc.Dodge[i] = e.Dodge(one)
 	}
+	data.Version = jio.CurrentDataVersion
 	return json.MarshalEncode(enc, &data)
 }
 
@@ -532,13 +532,11 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 	// part in whether the copy applies -- the original has already passed the switch gate to get here -- but anything
 	// that later asks the collected bonuses whether they are switchable should get the truthful answer.
 	bonus := &DRBonus{
-		DRBonusData: DRBonusData{
-			Type:           feature.DRBonus,
-			FeatureSwitch:  src.FeatureSwitch,
-			Locations:      slices.Sorted(maps.Values(locations)),
-			Specialization: src.Specialization,
-			LeveledAmount:  src.LeveledAmount,
-		},
+		Type:           feature.DRBonus,
+		FeatureSwitch:  src.FeatureSwitch,
+		Locations:      slices.Sorted(maps.Values(locations)),
+		Specialization: src.Specialization,
+		LeveledAmount:  src.LeveledAmount,
 	}
 	bonus.SetOwner(owner)
 	bonus.SetSubOwner(subOwner)
@@ -808,22 +806,22 @@ func (e *Entity) TelekineticStrength() fxp.Int {
 
 // Thrust returns the thrust value for the current strength.
 func (e *Entity) Thrust() dice.Dice {
-	return e.ThrustFor(fxp.AsInteger[int](e.StrikingStrength()))
+	return e.ThrustFor(e.StrikingStrength().AsInteger[int]())
 }
 
 // LiftingThrust returns the lifting thrust value for the current strength.
 func (e *Entity) LiftingThrust() dice.Dice {
-	return e.ThrustFor(fxp.AsInteger[int](e.LiftingStrength()))
+	return e.ThrustFor(e.LiftingStrength().AsInteger[int]())
 }
 
 // IQThrust returns the IQ thrust value for the current intelligence.
 func (e *Entity) IQThrust() dice.Dice {
-	return e.ThrustFor(fxp.AsInteger[int](e.ResolveAttributeCurrent(IntelligenceID)))
+	return e.ThrustFor(e.ResolveAttributeCurrent(IntelligenceID).AsInteger[int]())
 }
 
 // TelekineticThrust returns the telekinetic thrust value for the current telekinesis level.
 func (e *Entity) TelekineticThrust() dice.Dice {
-	return e.ThrustFor(fxp.AsInteger[int](e.TelekineticStrength()))
+	return e.ThrustFor(e.TelekineticStrength().AsInteger[int]())
 }
 
 // ThrustFor returns the thrust value for the provided strength.
@@ -833,22 +831,22 @@ func (e *Entity) ThrustFor(st int) dice.Dice {
 
 // Swing returns the swing value for the current strength.
 func (e *Entity) Swing() dice.Dice {
-	return e.SwingFor(fxp.AsInteger[int](e.StrikingStrength()))
+	return e.SwingFor(e.StrikingStrength().AsInteger[int]())
 }
 
 // LiftingSwing returns the lifting swing value for the current strength.
 func (e *Entity) LiftingSwing() dice.Dice {
-	return e.SwingFor(fxp.AsInteger[int](e.LiftingStrength()))
+	return e.SwingFor(e.LiftingStrength().AsInteger[int]())
 }
 
 // IQSwing returns the IQ swing value for the current intelligence.
 func (e *Entity) IQSwing() dice.Dice {
-	return e.SwingFor(fxp.AsInteger[int](e.ResolveAttributeCurrent(IntelligenceID)))
+	return e.SwingFor(e.ResolveAttributeCurrent(IntelligenceID).AsInteger[int]())
 }
 
 // TelekineticSwing returns the telekinetic swing value for the current telekinesis level.
 func (e *Entity) TelekineticSwing() dice.Dice {
-	return e.SwingFor(fxp.AsInteger[int](e.TelekineticStrength()))
+	return e.SwingFor(e.TelekineticStrength().AsInteger[int]())
 }
 
 // SwingFor returns the swing value for the provided strength.
@@ -928,7 +926,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 	for _, one := range e.features.drBonuses {
 		for _, loc := range one.Locations {
 			if (loc == AllID && isTopLevel) || strings.EqualFold(loc, locationID) {
-				drMap[strings.ToLower(one.Specialization)] += fxp.AsInteger[int](one.AdjustedAmount())
+				drMap[strings.ToLower(one.Specialization)] += one.AdjustedAmount().AsInteger[int]()
 				one.AddToTooltip(tooltip)
 				break
 			}
@@ -1106,7 +1104,7 @@ func (e *Entity) Move(enc encumbrance.Level) int {
 		}
 		return 0
 	}
-	return fxp.AsInteger[int](move)
+	return move.AsInteger[int]()
 }
 
 // BestSkillNamed returns the best skill that matches.
@@ -1200,7 +1198,7 @@ func (e *Entity) Dodge(enc encumbrance.Level) int {
 	if divisor > 0 {
 		dodge = dodge.Div(fxp.FromInteger(divisor)).Ceil()
 	}
-	return fxp.AsInteger[int]((dodge + enc.Penalty()).Max(fxp.One))
+	return (dodge + enc.Penalty()).Max(fxp.One).AsInteger[int]()
 }
 
 // EncumbranceLevel returns the current Encumbrance level.
@@ -1308,13 +1306,13 @@ func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 			diff = st.Div(fxp.Ten).Floor() - fxp.One
 			st -= diff.Mul(fxp.Ten)
 		}
-		v = fxp.FromFloat(math.Pow(10, fxp.AsFloat[float64](st)/10)).Mul(fxp.Two)
+		v = fxp.FromFloat(math.Pow(10, st.AsFloat[float64]()/10)).Mul(fxp.Two)
 		if st <= fxp.Six {
 			v = v.Mul(fxp.Ten).Round().Div(fxp.Ten)
 		} else {
 			v = v.Round()
 		}
-		v = v.Mul(fxp.FromFloat(math.Pow(10, fxp.AsFloat[float64](diff))))
+		v = v.Mul(fxp.FromFloat(math.Pow(10, diff.AsFloat[float64]())))
 	} else {
 		v = st.Mul(st).Div(fxp.Five)
 	}

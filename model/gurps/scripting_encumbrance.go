@@ -26,34 +26,34 @@ func newScriptEncumbrance(r *goja.Runtime, entity *Entity) *goja.Object {
 	m["levelForSkills"] = func() goja.Value { return r.ToValue(int(entity.EncumbranceLevel(true))) }
 	m["moveFactor"] = func() goja.Value {
 		level := entity.EncumbranceLevel(false)
-		return r.ToValue(fxp.AsFloat[float64](fxp.One - fxp.FromInteger(int(level)).Mul(fxp.Two).Div(fxp.Ten)))
+		return r.ToValue((fxp.One - fxp.FromInteger(int(level)).Mul(fxp.Two).Div(fxp.Ten)).AsFloat[float64]())
 	}
 	m["weightCarried"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.WeightCarried(false))))
+		return r.ToValue(fxp.Int(entity.WeightCarried(false)).AsFloat[float64]())
 	}
 	m["maximumCarry"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.MaximumCarry(encumbrance.ExtraHeavy))))
+		return r.ToValue(fxp.Int(entity.MaximumCarry(encumbrance.ExtraHeavy)).AsFloat[float64]())
 	}
 	m["basicLift"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.BasicLift())))
+		return r.ToValue(fxp.Int(entity.BasicLift()).AsFloat[float64]())
 	}
 	m["oneHandedLift"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.OneHandedLift())))
+		return r.ToValue(fxp.Int(entity.OneHandedLift()).AsFloat[float64]())
 	}
 	m["twoHandedLift"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.TwoHandedLift())))
+		return r.ToValue(fxp.Int(entity.TwoHandedLift()).AsFloat[float64]())
 	}
 	m["shoveAndKnockOver"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.ShoveAndKnockOver())))
+		return r.ToValue(fxp.Int(entity.ShoveAndKnockOver()).AsFloat[float64]())
 	}
 	m["runningShoveAndKnockOver"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.RunningShoveAndKnockOver())))
+		return r.ToValue(fxp.Int(entity.RunningShoveAndKnockOver()).AsFloat[float64]())
 	}
 	m["carryOnBack"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.CarryOnBack())))
+		return r.ToValue(fxp.Int(entity.CarryOnBack()).AsFloat[float64]())
 	}
 	m["shiftSlightly"] = func() goja.Value {
-		return r.ToValue(fxp.AsFloat[float64](fxp.Int(entity.ShiftSlightly())))
+		return r.ToValue(fxp.Int(entity.ShiftSlightly()).AsFloat[float64]())
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

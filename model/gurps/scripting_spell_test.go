@@ -55,10 +55,10 @@ func TestScriptSpellLevelWithPoints(t *testing.T) {
 	spell.Points = fxp.One
 	e.Spells = append(e.Spells, spell)
 	e.Recalculate()
-	c.Equal(strconv.Itoa(fxp.AsInteger[int](spell.LevelData.Level)),
+	c.Equal(strconv.Itoa(spell.LevelData.Level.AsInteger[int]()),
 		ResolveScript(e, deferredNewScriptSpell(spell), "self.level"))
 	c.True(spell.LevelData.RelativeLevel < 0) // precondition: a Hard spell with 1 point is below its attribute
-	c.Equal(strconv.Itoa(fxp.AsInteger[int](spell.LevelData.RelativeLevel)),
+	c.Equal(strconv.Itoa(spell.LevelData.RelativeLevel.AsInteger[int]()),
 		ResolveScript(e, deferredNewScriptSpell(spell), "self.relativeLevel"))
 }
 

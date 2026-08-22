@@ -939,7 +939,7 @@ func (s *Spell) Rituals() string {
 		return buffer.String()
 	default:
 		addPartToBuffer(&buffer, ritualText, i18n.Text("none"))
-		adj := fxp.AsInteger[int]((level - fxp.Fifteen).Div(fxp.Five))
+		adj := (level - fxp.Fifteen).Div(fxp.Five).AsInteger[int]()
 		class := strings.ToLower(s.ClassWithReplacements())
 		if !strings.Contains(class, "missile") {
 			addPartToBuffer(&buffer, i18n.Text("Time"),

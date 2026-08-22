@@ -195,7 +195,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 			text = i18n.Text("SM Reduction")
 			content.AddChild(NewFieldLeadingLabel(text, false))
 			numField := NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
-				func() int { return fxp.AsInteger[int](p.def.CostAdjPercentPerSM) },
+				func() int { return p.def.CostAdjPercentPerSM.AsInteger[int]() },
 				func(v int) { p.def.CostAdjPercentPerSM = fxp.FromInteger(v) },
 				0, 80, false, false)
 			numField.Tooltip = newWrappedTooltip(i18n.Text("The reduction in cost for each SM greater than 0"))

@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
@@ -54,7 +53,7 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 		if p.Has {
 			switch p.LevelCriteria.Compare {
 			case criteria.EqualsNumber, criteria.AtLeastNumber:
-				levels := fxp.AsInteger[int](p.LevelCriteria.Qualifier)
+				levels := p.LevelCriteria.Qualifier.AsInteger[int]()
 				base := 1
 				if p.NameCriteria.Qualifier == "Magery" {
 					base = 0
@@ -79,7 +78,7 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 			count := 1
 			if p.QuantityCriteria.Compare == criteria.EqualsNumber ||
 				p.QuantityCriteria.Compare == criteria.AtLeastNumber {
-				count = fxp.AsInteger[int](p.QuantityCriteria.Qualifier)
+				count = p.QuantityCriteria.Qualifier.AsInteger[int]()
 			}
 			key := "Sp:" + strings.ToLower(p.QualifierCriteria.Qualifier)
 			needTraverse := count == 1 && p.SubType == spellcmp.Name && p.QualifierCriteria.Compare == criteria.IsText

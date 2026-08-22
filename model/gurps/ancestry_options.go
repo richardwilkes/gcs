@@ -113,7 +113,7 @@ func (o *AncestryOptions) RandomWeight(entity *Entity, not fxp.Weight) fxp.Weigh
 func (o *AncestryOptions) RandomAge(entity *Entity, not int) int {
 	i := 0
 	for {
-		age := fxp.AsInteger[int](ResolveToNumber(entity, ScriptSelfProvider{}, o.AgeScript))
+		age := ResolveToNumber(entity, ScriptSelfProvider{}, o.AgeScript).AsInteger[int]()
 		if age <= 0 {
 			age = defaultAge
 		}

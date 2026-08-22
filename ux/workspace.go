@@ -84,7 +84,7 @@ func InitWorkspace(wnd *unison.Window) {
 	Workspace.DocumentDock = NewDocumentDock()
 	wnd.SetContent(Workspace.TopDock)
 	Workspace.TopDock.DockTo(Workspace.Navigator, nil, side.Left)
-	dc := unison.Ancestor[*unison.DockContainer](Workspace.Navigator)
+	dc := Workspace.Navigator.Ancestor[*unison.DockContainer]()
 	Workspace.TopDock.DockTo(Workspace.DocumentDock, dc, side.Right)
 	dc.SetCurrentDockable(Workspace.Navigator)
 	wnd.AllowCloseCallback = isWorkspaceAllowedToClose
@@ -338,7 +338,7 @@ func IsDockableInWorkspace(d unison.Dockable) bool {
 // CurrentlyFocusedDockContainer returns the currently focused DockContainer, if any.
 func CurrentlyFocusedDockContainer() *unison.DockContainer {
 	if focus := Workspace.Window.Focus(); focus != nil {
-		if dc := unison.Ancestor[*unison.DockContainer](focus); dc != nil && dc.Dock == Workspace.DocumentDock.Dock {
+		if dc := focus.Ancestor[*unison.DockContainer](); dc != nil && dc.Dock == Workspace.DocumentDock.Dock {
 			return dc
 		}
 	}

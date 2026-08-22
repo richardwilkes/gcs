@@ -28,13 +28,13 @@ func newSkillDefaultTo(name, specialization string, anySpecialization bool, modi
 		Modifier:    modifier,
 	}
 	if !anySpecialization {
-		def.Specialization = criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: specialization}}
+		def.Specialization = criteria.Text{Compare: criteria.IsText, Qualifier: specialization}
 	}
 	return def
 }
 
 func textCriteria(compare criteria.StringComparison, qualifier string) criteria.Text {
-	return criteria.Text{TextData: criteria.TextData{Compare: compare, Qualifier: qualifier}}
+	return criteria.Text{Compare: compare, Qualifier: qualifier}
 }
 
 // addRitualMagic creates a Ritual Magic skill with the given specialization and points. When defaultMode is non-empty

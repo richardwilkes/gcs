@@ -34,9 +34,9 @@ type ConditionalModifierBonus struct {
 // NewConditionalModifierBonus creates a new ConditionalModifierBonus.
 func NewConditionalModifierBonus() *ConditionalModifierBonus {
 	return &ConditionalModifierBonus{
-		Type:          feature.ConditionalModifier,
-		Situation:     i18n.Text("triggering condition"),
-		LeveledAmount: LeveledAmount{Amount: fxp.One},
+		Type:      feature.ConditionalModifier,
+		Situation: i18n.Text("triggering condition"),
+		Amount:    fxp.One,
 	}
 }
 

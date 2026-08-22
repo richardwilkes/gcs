@@ -163,11 +163,9 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 				}
 				table.FlushDrawing()
 				cm.Popup(geom.Rect{
-					Point: table.PointToRoot(where),
-					Size: geom.Size{
-						Width:  1,
-						Height: 1,
-					},
+					Point:  table.PointToRoot(where),
+					Width:  1,
+					Height: 1,
 				}, 0)
 			}
 			cm.Dispose()
@@ -182,19 +180,19 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 	if t, ok := any(table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		t.InstallCmdHandlers(IncrementItemID,
 			func(_ any) bool { return canAdjustQuantity(t, true) },
-			func(_ any) { adjustQuantity(unison.AncestorOrSelf[Rebuildable](t), t, true) })
+			func(_ any) { adjustQuantity(t.AncestorOrSelf[Rebuildable](), t, true) })
 		t.InstallCmdHandlers(DecrementItemID,
 			func(_ any) bool { return canAdjustQuantity(t, false) },
-			func(_ any) { adjustQuantity(unison.AncestorOrSelf[Rebuildable](t), t, false) })
+			func(_ any) { adjustQuantity(t.AncestorOrSelf[Rebuildable](), t, false) })
 		t.InstallCmdHandlers(IncrementUsesItemID,
 			func(_ any) bool { return canAdjustUses(t, 1) },
-			func(_ any) { adjustUses(unison.AncestorOrSelf[Rebuildable](t), t, 1) })
+			func(_ any) { adjustUses(t.AncestorOrSelf[Rebuildable](), t, 1) })
 		t.InstallCmdHandlers(DecrementUsesItemID,
 			func(_ any) bool { return canAdjustUses(t, -1) },
-			func(_ any) { adjustUses(unison.AncestorOrSelf[Rebuildable](t), t, -1) })
+			func(_ any) { adjustUses(t.AncestorOrSelf[Rebuildable](), t, -1) })
 		t.InstallCmdHandlers(ResetUsesToMaxItemID,
 			func(_ any) bool { return canResetUsesToMax(t) },
-			func(_ any) { resetUsesToMax(unison.AncestorOrSelf[Rebuildable](t), t) })
+			func(_ any) { resetUsesToMax(t.AncestorOrSelf[Rebuildable](), t) })
 	}
 
 	return header, table
@@ -287,23 +285,23 @@ func isAcceptableTypeForSheetOrTemplate(data any) bool {
 
 func canCopySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
 	var t T
-	return table.HasSelection() && len(OpenSheets(unison.Ancestor[*Sheet](table))) > 0 && isAcceptableTypeForSheetOrTemplate(t)
+	return table.HasSelection() && len(OpenSheets(table.Ancestor[*Sheet]())) > 0 && isAcceptableTypeForSheetOrTemplate(t)
 }
 
 func canCopySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
 	var t T
-	return table.HasSelection() && len(OpenTemplates(unison.Ancestor[*Template](table))) > 0 && isAcceptableTypeForSheetOrTemplate(t)
+	return table.HasSelection() && len(OpenTemplates(table.Ancestor[*Template]())) > 0 && isAcceptableTypeForSheetOrTemplate(t)
 }
 
 func libraryFileFromTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) gurps.LibraryFile {
-	if d := unison.Ancestor[*TableDockable[T]](table); d != nil {
+	if d := table.Ancestor[*TableDockable[T]](); d != nil {
 		for _, lib := range gurps.GlobalSettings().Libraries() {
 			libPathOnDisk := lib.Data().PathOnDisk + string(filepath.Separator)
 			filePathOnDisk := d.BackingFilePath()
-			if strings.HasPrefix(filePathOnDisk, libPathOnDisk) {
+			if after, ok := strings.CutPrefix(filePathOnDisk, libPathOnDisk); ok {
 				return gurps.LibraryFile{
 					Library: lib.Key(),
-					Path:    filepath.ToSlash(strings.TrimPrefix(filePathOnDisk, libPathOnDisk)),
+					Path:    filepath.ToSlash(after),
 				}
 			}
 		}
@@ -313,7 +311,7 @@ func libraryFileFromTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) gurps.
 
 func copySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	if table.HasSelection() {
-		if sheets := PromptForDestination(OpenSheets(unison.Ancestor[*Sheet](table))); len(sheets) > 0 {
+		if sheets := PromptForDestination(OpenSheets(table.Ancestor[*Sheet]())); len(sheets) > 0 {
 			sel := table.SelectedRows(true)
 			for _, s := range sheets {
 				var targetTable *unison.Table[*Node[T]]
@@ -354,7 +352,7 @@ func copySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 
 func copySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	if table.HasSelection() {
-		if templates := PromptForDestination(OpenTemplates(unison.Ancestor[*Template](table))); len(templates) > 0 {
+		if templates := PromptForDestination(OpenTemplates(table.Ancestor[*Template]())); len(templates) > 0 {
 			sel := table.SelectedRows(true)
 			for _, t := range templates {
 				var targetTable *unison.Table[*Node[T]]
@@ -534,7 +532,7 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 			mgr.Add(undo)
 		}
 		if report {
-			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
+			rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 		}
 	}
 }
@@ -594,7 +592,7 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
+		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 	}
 }
 
@@ -630,7 +628,7 @@ func ClearSourceFromSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
+		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 	}
 }
 
@@ -661,7 +659,7 @@ func SyncWithSourceForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
-		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
+		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 	}
 }
 
@@ -719,7 +717,7 @@ func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 		mgr.Add(undo)
 	}
 	if report {
-		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
+		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 	}
 }
 

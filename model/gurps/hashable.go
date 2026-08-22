@@ -13,6 +13,7 @@ import (
 	"encoding/base64"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"errors"
 	"fmt"
 	"hash"
 
@@ -41,7 +42,7 @@ type omitCalcMarkerType struct{}
 // type is marshaled. The type it names must also stay a private, non-interface one, so that the standard library's own
 // fast path for "any" values is left in place.
 var omitCalcMarker = json.JoinMarshalers(
-	json.MarshalToFunc(func(_ *jsontext.Encoder, _ omitCalcMarkerType) error { return json.SkipFunc }),
+	json.MarshalToFunc(func(_ *jsontext.Encoder, _ omitCalcMarkerType) error { return errors.ErrUnsupported }),
 )
 
 // omitCalc reports whether the marshal in progress is one whose "calc" members will be discarded, meaning the work of

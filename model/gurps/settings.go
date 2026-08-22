@@ -124,7 +124,7 @@ func GlobalSettings() *Settings {
 		globalSettings.Colors.MakeCurrent()
 		globalSettings.Fonts.MakeCurrent()
 		unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
-			return fxp.AsFloat[float32](globalSettings.General.ScrollWheelMultiplier)
+			return globalSettings.General.ScrollWheelMultiplier.AsFloat[float32]()
 		}
 		unison.DefaultFieldTheme.InitialClickSelectsAll = func(_ *unison.Field) bool {
 			return globalSettings.General.InitialFieldClickSelectsAll

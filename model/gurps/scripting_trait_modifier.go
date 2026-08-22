@@ -13,7 +13,6 @@ import (
 	"slices"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
@@ -39,7 +38,7 @@ func newScriptTraitModifier(r *goja.Runtime, mod *TraitModifier) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(mod.NameWithReplacements()) }
 	m["level"] = func() goja.Value {
 		if mod.IsLeveled() {
-			return r.ToValue(fxp.AsFloat[float64](mod.RawCurrentLevel()))
+			return r.ToValue(mod.RawCurrentLevel().AsFloat[float64]())
 		}
 		return goja.Undefined()
 	}

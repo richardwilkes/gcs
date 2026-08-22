@@ -923,7 +923,7 @@ func CombineTags(tags []string) string {
 // ExtractTags from a combined tags string.
 func ExtractTags(tags string) []string {
 	var list []string
-	for _, one := range strings.Split(tags, ",") {
+	for one := range strings.SplitSeq(tags, ",") {
 		if one = strings.TrimSpace(one); one != "" {
 			list = append(list, one)
 		}

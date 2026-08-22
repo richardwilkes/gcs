@@ -98,7 +98,7 @@ jobs:
       # build constraints, so this single runner covers every source file, including the per-platform ones.
       - name: Check formatting
         env:
-          GOEXPERIMENT: jsonv2
+          GOEXPERIMENT: simd
         run: golangci-lint fmt --diff
 
   lint:
@@ -127,6 +127,6 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         env:
           GOOS: ${{ matrix.goos }}
-          GOEXPERIMENT: jsonv2
+          GOEXPERIMENT: simd
         with:
           version: latest

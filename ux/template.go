@@ -580,7 +580,7 @@ func appendRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T])
 // entityTechLevel returns the tech level of the entity that owns the table, or an empty string if there is none. This
 // is the value substituted for an empty tech level when merging rows, matching what the table providers do on drop.
 func entityTechLevel[T gurps.Node[T]](table *unison.Table[*Node[T]]) string {
-	if dataOwnerProvider := unison.Ancestor[gurps.DataOwnerProvider](table); !xreflect.IsNil(dataOwnerProvider) {
+	if dataOwnerProvider := table.Ancestor[gurps.DataOwnerProvider](); !xreflect.IsNil(dataOwnerProvider) {
 		if dataOwner := dataOwnerProvider.DataOwner(); !xreflect.IsNil(dataOwner) {
 			if entity := dataOwner.OwningEntity(); entity != nil {
 				return entity.Profile.TechLevel
@@ -790,7 +790,7 @@ func mergeNewlySelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], merg
 	}
 	table.SetRootRows(newRoots)
 	table.SetSelectionMap(newSel)
-	rebuildAsModified(unison.AncestorOrSelf[Rebuildable](table), true)
+	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }
 
 func rawPoints(child any) fxp.Int {

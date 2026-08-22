@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
@@ -46,7 +45,7 @@ func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
 	m["notes"] = func() goja.Value { return r.ToValue(w.Notes()) }
 	m["usage"] = func() goja.Value { return r.ToValue(w.UsageWithReplacements()) }
 	m["usageNotes"] = func() goja.Value { return r.ToValue(w.ResolveUsageNotes()) }
-	m["level"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](w.SkillLevel(nil).Max(0))) }
+	m["level"] = func() goja.Value { return r.ToValue(w.SkillLevel(nil).Max(0).AsInteger[int]()) }
 	m["damage"] = func() goja.Value { return r.ToValue(w.Damage.ResolvedDamage(nil)) }
 	m["strength"] = func() goja.Value { return r.ToValue(w.Strength.Resolve(w, nil).String()) }
 	m["hidden"] = func() goja.Value { return r.ToValue(w.Hide) }

@@ -44,12 +44,10 @@ type DRBonus struct {
 // NewDRBonus creates a new DRBonus.
 func NewDRBonus() *DRBonus {
 	return &DRBonus{
-		DRBonusData: DRBonusData{
-			Type:           feature.DRBonus,
-			Locations:      []string{TorsoID},
-			Specialization: AllID,
-			LeveledAmount:  LeveledAmount{Amount: fxp.One},
-		},
+		Type:           feature.DRBonus,
+		Locations:      []string{TorsoID},
+		Specialization: AllID,
+		Amount:         fxp.One,
 	}
 }
 

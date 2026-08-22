@@ -266,10 +266,7 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 			st += amt
 		}
 	}
-	st = addWeaponPercentBonus(st, percentMin)
-	if st < 0 {
-		st = 0
-	}
+	st = max(addWeaponPercentBonus(st, percentMin), 0)
 	if maxST > 0 && maxST < st {
 		st = maxST
 	}
@@ -288,11 +285,11 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	switch t := w.Owner.Owner.(type) {
 	case *Trait:
 		if t.IsLeveled() {
-			levels = fxp.AsInteger[int](t.CurrentLevel())
+			levels = t.CurrentLevel().AsInteger[int]()
 		}
 	case *Equipment:
 		if t.IsLeveled() {
-			levels = fxp.AsInteger[int](t.Level)
+			levels = t.Level.AsInteger[int]()
 		}
 	}
 	if baseLeveledSpec := w.resolvedDamageString(selector.WeaponBaseDamageDicePerLevel, w.BaseLeveled, nil); levels > 0 && baseLeveledSpec != "" {
@@ -300,7 +297,7 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 		leveled = multiplyDice(levels, leveled)
 		base, baseSub = addDice(base, leveled, baseSub, leveledSub)
 	}
-	intST := fxp.AsInteger[int](st)
+	intST := st.AsInteger[int]()
 	var stDamage dice.Dice
 	switch strengthType {
 	case stdmg.Thrust, stdmg.LiftingThrust, stdmg.TelekineticThrust, stdmg.IQThrust:
@@ -353,7 +350,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 						amt = amt.Div(fxp.Two)
 					}
 				}
-				base.Modifier += fxp.AsInteger[int](amt)
+				base.Modifier += amt.AsInteger[int]()
 			}
 		case feature.WeaponDRDivisorBonus:
 			amt := bonus.AdjustedAmountForWeapon(w.Owner)
@@ -370,7 +367,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		if adjustForPhoenixFlame {
 			amt = amt.Div(fxp.Two)
 		}
-		base.Modifier += fxp.AsInteger[int](amt)
+		base.Modifier += amt.AsInteger[int]()
 	}
 	if percentDamageBonus != 0 {
 		base = adjustDiceForPercentBonus(base, percentDamageBonus)
@@ -445,9 +442,9 @@ func addDice(left, right dice.Dice, leftSub, rightSub bool) (d dice.Dice, sub bo
 		averageRight := fxp.FromInteger(right.Count * (right.Sides + 1)).Div(fxp.Two).Mul(fxp.FromInteger(right.Multiplier))
 		averageBoth := averageLeft + averageRight
 		d = dice.Dice{
-			Count:      fxp.AsInteger[int](averageBoth.Div(average)),
+			Count:      averageBoth.Div(average).AsInteger[int](),
 			Sides:      sides,
-			Modifier:   fxp.AsInteger[int](averageBoth.Mod(average).Round()) + left.Modifier + right.Modifier,
+			Modifier:   averageBoth.Mod(average).Round().AsInteger[int]() + left.Modifier + right.Modifier,
 			Multiplier: 1,
 		}
 	} else {
@@ -479,9 +476,9 @@ func adjustDiceForPercentBonus(d dice.Dice, percent fxp.Int) dice.Dice {
 		modifier += (average - count.Mul(averagePerDie)).Round()
 	}
 	return dice.Dice{
-		Count:      fxp.AsInteger[int](count),
+		Count:      count.AsInteger[int](),
 		Sides:      d.Sides,
-		Modifier:   fxp.AsInteger[int](modifier),
+		Modifier:   modifier.AsInteger[int](),
 		Multiplier: d.Multiplier,
 	}
 }

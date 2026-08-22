@@ -106,8 +106,8 @@ func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gur
 		return true
 	}
 	// Within same dockable?
-	dockable := unison.Ancestor[unison.Dockable](from)
-	if dockable != nil && dockable == unison.Ancestor[unison.Dockable](to) {
+	dockable := from.Ancestor[unison.Dockable]()
+	if dockable != nil && dockable == to.Ancestor[unison.Dockable]() {
 		return true
 	}
 	return false

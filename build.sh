@@ -3,7 +3,7 @@ set -eo pipefail
 
 trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
 
-export GOEXPERIMENT=jsonv2
+export GOEXPERIMENT=simd
 
 # Process args
 RELEASE="0.0"
@@ -101,6 +101,13 @@ fi
 case $(uname -s) in
 Darwin*)
 	export MACOSX_DEPLOYMENT_TARGET=11
+	# Go 1.27+ hard-stamps its own macOS support floor (13.0 as of 1.27) into the intermediate go.o it hands to
+	# Apple's linker, which makes ld warn "object file (go.o) was built for newer 'macOS' version" on every link
+	# that targets 11. Go still runs fine on macOS 11 -- the floor only tracks which builders the Go team keeps
+	# around -- so stamp go.o with our real target instead. GOFLAGS covers the go test and go run links; the
+	# main build's explicit -ldflags below overrides GOFLAGS, so EXTRA_LD_FLAGS needs it as well.
+	EXTRA_LD_FLAGS="$EXTRA_LD_FLAGS -macos=11.0"
+	export GOFLAGS="$GOFLAGS -ldflags=-macos=11.0"
 	;;
 MINGW*|MSYS*)
 	WINDOWS=1

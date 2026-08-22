@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
@@ -50,7 +49,7 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(trait.Tags)) }
 	m["container"] = func() goja.Value { return r.ToValue(trait.Container()) }
 	m["switchedOn"] = func() goja.Value { return r.ToValue(trait.SwitchedOn) }
-	m["points"] = func() goja.Value { return r.ToValue(fxp.AsFloat[float64](trait.AdjustedPoints())) }
+	m["points"] = func() goja.Value { return r.ToValue(trait.AdjustedPoints().AsFloat[float64]()) }
 	m["selfControl"] = func() goja.Value { return r.ToValue(trait.ResolvedSelfControl(nil).Number()) }
 	m["selfControlAdjustment"] = func() goja.Value {
 		return r.ToValue(trait.ResolvedSelfControlAdjustment(nil).Key())
@@ -77,7 +76,7 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	} else {
 		if trait.CanLevel {
 			m["level"] = func() goja.Value {
-				return r.ToValue(fxp.AsFloat[float64](trait.CurrentLevel()))
+				return r.ToValue(trait.CurrentLevel().AsFloat[float64]())
 			}
 		}
 		m["weapons"] = func() goja.Value {

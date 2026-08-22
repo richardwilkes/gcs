@@ -49,8 +49,8 @@ func LengthFromStringForced(text string, defaultUnits LengthUnit) Length {
 func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 	text = strings.ToLower(strings.TrimLeft(strings.TrimSpace(text), "+"))
 	for _, unit := range lengthUnitsBySuffixLen {
-		if strings.HasSuffix(text, unit.Key()) {
-			value, err := FromString(strings.TrimSpace(strings.TrimSuffix(text, unit.Key())))
+		if before, ok := strings.CutSuffix(text, unit.Key()); ok {
+			value, err := FromString(strings.TrimSpace(before))
 			if err != nil {
 				return 0, err
 			}

@@ -34,8 +34,7 @@ type AltDropSupport struct {
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
-	unison.InstallDropSupport(table, provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
-		didDropCallback[T])
+	table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
 	// No DragRemovedRowsCallback is installed. It would only ever fire for a move between two different tables, and
 	// the providers only allow that within a single dockable (see their DropShouldMoveData), so the report made for
 	// the table the rows landed in covers the one they left as well; a separate report for the source would just

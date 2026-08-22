@@ -95,7 +95,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		dsvg.Size = geom.NewSize(height, height)
 	}
 	editButton.ClickCallback = func() {
-		displayPointsEditor(unison.AncestorOrSelf[Rebuildable](p), p.entity)
+		displayPointsEditor(p.AncestorOrSelf[Rebuildable](), p.entity)
 	}
 	hdri.AddChild(editButton)
 	p.AddChild(hdr)

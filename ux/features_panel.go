@@ -754,7 +754,7 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) (main *
 	for i := 5; i <= 80; i += 5 {
 		choices = append(choices, fmt.Sprintf(i18n.Text("by %d%%"), i))
 	}
-	choice := choices[max(min((fxp.AsInteger[int](f.Percentage)/5)-1, 15), 0)]
+	choice := choices[max(min((f.Percentage.AsInteger[int]()/5)-1, 15), 0)]
 	pop := addPopup(wrapper, choices, &choice)
 	pop.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
 		popup.SelectIndex(index)
@@ -884,7 +884,7 @@ func (p *featuresPanel) addSelectorOverrideLine(parent *unison.Panel, f *gurps.S
 		if d.Scope == gurps.SelectorScopeTrait {
 			// The usage row is hidden for trait-scoped fields, so clear any criterion the user set while the field was
 			// weapon-scoped rather than leaving an invisible one behind in the data.
-			f.UsageCriteria = criteria.Text{TextData: criteria.TextData{Compare: criteria.AnyText}}
+			f.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
 		}
 		p.rebuildFeaturePanel(f)
 	}

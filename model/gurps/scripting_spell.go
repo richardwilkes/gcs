@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
@@ -80,7 +79,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 		}
 		m["attribute"] = func() goja.Value { return r.ToValue(spell.Difficulty.Attribute) }
 		m["difficulty"] = func() goja.Value { return r.ToValue(spell.Difficulty.Difficulty.Key()) }
-		m["points"] = func() goja.Value { return r.ToValue(fxp.AsInteger[int](spell.AdjustedPoints(nil))) }
+		m["points"] = func() goja.Value { return r.ToValue(spell.AdjustedPoints(nil).AsInteger[int]()) }
 		m["college"] = func() goja.Value { return r.ToValue(spell.CollegeWithReplacements()) }
 		m["powerSource"] = func() goja.Value { return r.ToValue(spell.PowerSourceWithReplacements()) }
 		m["spellClass"] = func() goja.Value { return r.ToValue(spell.ClassWithReplacements()) }

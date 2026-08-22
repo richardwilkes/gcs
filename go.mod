@@ -1,17 +1,17 @@
 module github.com/richardwilkes/gcs/v5
 
-go 1.26.6
+go 1.27.0
 
 require (
-	github.com/dop251/goja v0.0.0-20260806115107-493f22071ef6
+	github.com/dop251/goja v0.0.0-20260820211235-95a30dcd3fa5
 	github.com/go-git/go-billy/v6 v6.0.0-alpha.2
 	github.com/go-git/go-git/v6 v6.0.0-alpha.5
 	github.com/google/uuid v1.6.0
-	github.com/richardwilkes/canvas v0.2.5
-	github.com/richardwilkes/pdfview v0.5.3
+	github.com/richardwilkes/canvas v0.3.0
+	github.com/richardwilkes/pdfview v0.6.0
 	github.com/richardwilkes/rpgtools v1.13.0
-	github.com/richardwilkes/toolbox/v2 v2.15.3
-	github.com/richardwilkes/unison v0.98.0
+	github.com/richardwilkes/toolbox/v2 v2.17.0
+	github.com/richardwilkes/unison v0.99.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.5
@@ -39,14 +39,12 @@ require (
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/miekg/dns v1.1.72 // indirect
+	github.com/miekg/dns v1.1.73 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/mod v0.40.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/tools v0.49.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

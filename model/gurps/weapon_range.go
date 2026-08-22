@@ -138,10 +138,7 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 				st += amt
 			}
 		}
-		st = addWeaponPercentBonus(st, percentMin)
-		if st < 0 {
-			st = 0
-		}
+		st = max(addWeaponPercentBonus(st, percentMin), 0)
 		if maxST > 0 && maxST < st {
 			st = maxST
 		}

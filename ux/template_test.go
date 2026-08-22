@@ -36,8 +36,6 @@ func newTestSpell(name string, points fxp.Int, techLevel *string) *gurps.Spell {
 	return s
 }
 
-func ptr(s string) *string { return &s }
-
 // TestMergeSkillPoints verifies that applying a template's skills onto an existing set folds the points of identical
 // skills together, correctly distinguishing skills that differ only by tech level.
 func TestMergeSkillPoints(t *testing.T) {
@@ -54,8 +52,8 @@ func TestMergeSkillPoints(t *testing.T) {
 	})
 
 	t.Run("identical skill with a matching TL merges points", func(_ *testing.T) {
-		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), ptr("8"))}
-		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), ptr("8"))}
+		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), new("8"))}
+		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("8"))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
@@ -63,8 +61,8 @@ func TestMergeSkillPoints(t *testing.T) {
 	})
 
 	t.Run("skill with a differing TL is not merged", func(_ *testing.T) {
-		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), ptr("8"))}
-		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), ptr("9"))}
+		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), new("8"))}
+		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("9"))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
 		c.Equal(1, len(remaining))
@@ -74,8 +72,8 @@ func TestMergeSkillPoints(t *testing.T) {
 	// This reproduces the reported bug: on the first apply the skill's empty TL is resolved to the entity's TL, so on
 	// the second apply the incoming skill (still empty TL) must resolve to that same TL and merge rather than duplicate.
 	t.Run("incoming empty TL resolves to the entity TL and merges", func(_ *testing.T) {
-		existing := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), ptr("3"))}
-		incoming := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), ptr(""))}
+		existing := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), new("3"))}
+		incoming := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), new(""))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
@@ -87,7 +85,7 @@ func TestMergeSkillPoints(t *testing.T) {
 	// will merge with it.
 	t.Run("surviving incoming empty TL is resolved to the entity TL", func(_ *testing.T) {
 		var existing []*gurps.Skill
-		incoming := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), ptr(""))}
+		incoming := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), new(""))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
 		c.Equal(1, len(remaining))
@@ -99,10 +97,10 @@ func TestMergeSkillPoints(t *testing.T) {
 	t.Run("matches the correct TL variant when several share a hash", func(_ *testing.T) {
 		// The matching TL9 variant is listed first so that a lookup keyed only by hash (retaining just the
 		// last-seen TL8 variant) would fail to merge; the merge must consider every candidate for the hash.
-		existingTL9 := newTestSkill("Guns", fxp.FromInteger(1), ptr("9"))
-		existingTL8 := newTestSkill("Guns", fxp.FromInteger(4), ptr("8"))
+		existingTL9 := newTestSkill("Guns", fxp.FromInteger(1), new("9"))
+		existingTL8 := newTestSkill("Guns", fxp.FromInteger(4), new("8"))
 		existing := []*gurps.Skill{existingTL9, existingTL8}
-		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), ptr("9"))}
+		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("9"))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
@@ -115,7 +113,7 @@ func TestMergeSkillPoints(t *testing.T) {
 	// A skill with a TL must not merge into a same-named skill that has no TL at all.
 	t.Run("a skill with a TL does not merge with one lacking a TL", func(_ *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), nil)}
-		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), ptr("8"))}
+		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("8"))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
 		c.Equal(1, len(remaining))
@@ -175,8 +173,8 @@ func TestMergeSpellPoints(t *testing.T) {
 	c := check.New(t)
 
 	t.Run("identical spell with a matching TL merges points", func(_ *testing.T) {
-		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(4), ptr("3"))}
-		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(2), ptr("3"))}
+		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(4), new("3"))}
+		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(2), new("3"))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSpellPoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
@@ -186,10 +184,10 @@ func TestMergeSpellPoints(t *testing.T) {
 	t.Run("matches the correct TL variant when several share a hash", func(_ *testing.T) {
 		// The matching TL4 variant is listed first so a lookup keyed only by hash would retain the TL3 variant and
 		// fail to merge; the merge must consider every candidate for the hash.
-		existingTL4 := newTestSpell("Fireball", fxp.FromInteger(1), ptr("4"))
-		existingTL3 := newTestSpell("Fireball", fxp.FromInteger(4), ptr("3"))
+		existingTL4 := newTestSpell("Fireball", fxp.FromInteger(1), new("4"))
+		existingTL3 := newTestSpell("Fireball", fxp.FromInteger(4), new("3"))
 		existing := []*gurps.Spell{existingTL4, existingTL3}
-		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(2), ptr("4"))}
+		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(2), new("4"))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSpellPoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
@@ -198,8 +196,8 @@ func TestMergeSpellPoints(t *testing.T) {
 	})
 
 	t.Run("incoming empty TL resolves to the entity TL and merges", func(_ *testing.T) {
-		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(1), ptr("3"))}
-		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(1), ptr(""))}
+		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(1), new("3"))}
+		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(1), new(""))}
 		selMap := make(map[tid.TID]bool)
 		remaining := mergeSpellPoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
@@ -218,7 +216,7 @@ func TestMergeSpellPoints(t *testing.T) {
 }
 
 func newSkillTable(skills ...*gurps.Skill) (*unison.Table[*Node[*gurps.Skill]], []*Node[*gurps.Skill]) {
-	table := unison.NewTable[*Node[*gurps.Skill]](&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
+	table := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
 	nodes := make([]*Node[*gurps.Skill], len(skills))
 	for i, s := range skills {
 		nodes[i] = NewNode(table, nil, s, false)
@@ -257,9 +255,9 @@ func TestMergeAddedRows(t *testing.T) {
 	// Only the newly-added (selected) row is treated as incoming; two identical existing rows must not merge with each
 	// other, and an added row must merge into the first matching existing candidate.
 	t.Run("added row merges into an existing row that shares a hash", func(_ *testing.T) {
-		existingTL8 := newTestSkill("Guns", fxp.FromInteger(4), ptr("8"))
-		existingTL9 := newTestSkill("Guns", fxp.FromInteger(1), ptr("9"))
-		added := newTestSkill("Guns", fxp.FromInteger(2), ptr("9"))
+		existingTL8 := newTestSkill("Guns", fxp.FromInteger(4), new("8"))
+		existingTL9 := newTestSkill("Guns", fxp.FromInteger(1), new("9"))
+		added := newTestSkill("Guns", fxp.FromInteger(2), new("9"))
 		table, nodes := newSkillTable(existingTL8, existingTL9, added)
 		table.SetSelectionMap(map[tid.TID]bool{nodes[2].ID(): true})
 		MergeAddedRows(table)
@@ -279,7 +277,7 @@ func TestMergeAddedRows(t *testing.T) {
 		child := newTestSkill("Brawling", fxp.FromInteger(2), nil)
 		child.SetParent(container)
 		container.Children = []*gurps.Skill{child}
-		table := unison.NewTable[*Node[*gurps.Skill]](&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
+		table := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
 		existingNode := NewNode(table, nil, existing, false)
 		containerNode := NewNode(table, nil, container, false)
 		table.SetRootRows([]*Node[*gurps.Skill]{existingNode, containerNode})
@@ -309,7 +307,7 @@ func TestMergeAddedRows(t *testing.T) {
 		child := newTestSkill("Brawling", fxp.FromInteger(2), nil)
 		child.SetParent(subContainer)
 		subContainer.Children = []*gurps.Skill{child}
-		table := unison.NewTable[*Node[*gurps.Skill]](&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
+		table := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
 		existingNode := NewNode(table, nil, existing, false)
 		containerNode := NewNode(table, nil, container, false)
 		table.SetRootRows([]*Node[*gurps.Skill]{existingNode, containerNode})

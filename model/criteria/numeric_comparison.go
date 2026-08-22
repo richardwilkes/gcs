@@ -10,6 +10,7 @@
 package criteria
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -39,10 +40,8 @@ type NumericComparison string
 
 // EnsureValid ensures this is of a known value.
 func (n NumericComparison) EnsureValid() NumericComparison {
-	for _, one := range AllNumericComparisons {
-		if one == n {
-			return n
-		}
+	if slices.Contains(AllNumericComparisons, n) {
+		return n
 	}
 	return AllNumericComparisons[0]
 }

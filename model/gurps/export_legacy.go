@@ -564,7 +564,7 @@ func (ex *legacyExporter) unidentifiedKey(key string) {
 }
 
 func splitIntoMap(in, prefix string, m map[string]bool) {
-	for _, one := range strings.Split(in[len(prefix):], "_") {
+	for one := range strings.SplitSeq(in[len(prefix):], "_") {
 		if one != "" {
 			m[one] = true
 		}
@@ -839,7 +839,7 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 				case "DESCRIPTION_USER_FORMATTED":
 					userDesc := t.UserDescWithReplacements()
 					if userDesc != "" {
-						for _, one := range strings.Split(userDesc, "\n") {
+						for one := range strings.SplitSeq(userDesc, "\n") {
 							ex.out.WriteString("<p>")
 							ex.writeEncodedText(one)
 							ex.out.WriteString("</p>\n")
@@ -1156,7 +1156,7 @@ func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 			case "NOTE_FORMATTED":
 				s := n.String()
 				if strings.TrimSpace(s) != "" {
-					for _, one := range strings.Split(s, "\n") {
+					for one := range strings.SplitSeq(s, "\n") {
 						ex.out.WriteString("<p>")
 						ex.writeEncodedText(one)
 						ex.out.WriteString("</p>\n")

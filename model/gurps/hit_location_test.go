@@ -32,7 +32,7 @@ func TestHitLocationDRTooltipSummaryNotDuplicated(t *testing.T) {
 	hand.Slots = 1
 	hand.DRBonus = 1
 
-	sub := &Body{BodyData: BodyData{Roll: dice.Dice{Count: 3, Sides: 6}, Locations: []*HitLocation{hand}}}
+	sub := &Body{Roll: dice.Dice{Count: 3, Sides: 6}, Locations: []*HitLocation{hand}}
 	sub.Update(e)
 
 	arm := NewHitLocation(e, "")
@@ -43,7 +43,7 @@ func TestHitLocationDRTooltipSummaryNotDuplicated(t *testing.T) {
 	arm.DRBonus = 2
 	arm.SetSubTable(sub)
 
-	body := &Body{BodyData: BodyData{Roll: dice.Dice{Count: 3, Sides: 6}, Locations: []*HitLocation{arm}}}
+	body := &Body{Roll: dice.Dice{Count: 3, Sides: 6}, Locations: []*HitLocation{arm}}
 	body.Update(e)
 	e.SheetSettings.BodyType = body
 

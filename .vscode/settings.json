@@ -1,5 +1,5 @@
 {
 	"go.toolsEnvVars": {
-		"GOEXPERIMENT": "jsonv2"
+		"GOEXPERIMENT": "simd"
 	}
 }

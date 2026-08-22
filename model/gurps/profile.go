@@ -111,13 +111,13 @@ func (p *Profile) ExportPortrait(filePath string) error {
 
 // AdjustedSizeModifier returns the adjusted size modifier.
 func (p *Profile) AdjustedSizeModifier() int {
-	return p.SizeModifier + fxp.AsInteger[int](p.SizeModifierBonus)
+	return p.SizeModifier + p.SizeModifierBonus.AsInteger[int]()
 }
 
 // SetAdjustedSizeModifier sets the adjusted size modifier.
 func (p *Profile) SetAdjustedSizeModifier(value int) {
 	if value != p.AdjustedSizeModifier() {
-		p.SizeModifier = value - fxp.AsInteger[int](p.SizeModifierBonus)
+		p.SizeModifier = value - p.SizeModifierBonus.AsInteger[int]()
 	}
 }
 

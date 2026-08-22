@@ -22,7 +22,7 @@ func (s scriptMeasurement) FormatLength(inches float64, toUnits string) string {
 }
 
 func (s scriptMeasurement) LengthToInches(value float64, fromUnits string) float64 {
-	return fxp.AsFloat[float64](fxp.ExtractLengthUnit(fromUnits).ToInches(fxp.FromFloat(value)))
+	return fxp.ExtractLengthUnit(fromUnits).ToInches(fxp.FromFloat(value)).AsFloat[float64]()
 }
 
 func (s scriptMeasurement) StringLengthToInches(str, defaultUnits string) float64 {
@@ -30,7 +30,7 @@ func (s scriptMeasurement) StringLengthToInches(str, defaultUnits string) float6
 	if err != nil {
 		return 0
 	}
-	return fxp.AsFloat[float64](fxp.Int(length))
+	return fxp.Int(length).AsFloat[float64]()
 }
 
 func (s scriptMeasurement) FormatWeight(pounds float64, toUnits string) string {
@@ -38,7 +38,7 @@ func (s scriptMeasurement) FormatWeight(pounds float64, toUnits string) string {
 }
 
 func (s scriptMeasurement) WeightToPounds(value float64, fromUnits string) float64 {
-	return fxp.AsFloat[float64](fxp.ExtractWeightUnit(fromUnits).ToPounds(fxp.FromFloat(value)))
+	return fxp.ExtractWeightUnit(fromUnits).ToPounds(fxp.FromFloat(value)).AsFloat[float64]()
 }
 
 func (s scriptMeasurement) StringWeightToPounds(str, defaultUnits string) float64 {
@@ -46,7 +46,7 @@ func (s scriptMeasurement) StringWeightToPounds(str, defaultUnits string) float6
 	if err != nil {
 		return 0
 	}
-	return fxp.AsFloat[float64](fxp.Int(weight))
+	return fxp.Int(weight).AsFloat[float64]()
 }
 
 func (s scriptMeasurement) RangeModifier(yards float64) int {
@@ -87,7 +87,7 @@ func lengthUnitForScript(units string) fxp.LengthUnit {
 // whatever it is given to the table's range, so the saturated value it receives here lands on the same end of the table
 // everywhere.
 func (s scriptMeasurement) ModifierToYards(ssrtValue float64) float64 {
-	return fxp.AsFloat[float64](ssrtToYards(intFromScript(ssrtValue)))
+	return ssrtToYards(intFromScript(ssrtValue)).AsFloat[float64]()
 }
 
 func ssrtInchesToValue(inches fxp.Int, allowNegative bool) int {

@@ -17,7 +17,7 @@ import (
 )
 
 func skillName(name string) criteria.Text {
-	return criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: name}}
+	return criteria.Text{Compare: criteria.IsText, Qualifier: name}
 }
 
 // NewNaturalAttacks creates a new "Natural Attacks" trait.

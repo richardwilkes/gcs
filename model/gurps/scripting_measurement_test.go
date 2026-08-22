@@ -233,8 +233,8 @@ func TestSSRTValueFromScriptIsArchitectureIndependent(t *testing.T) {
 	}
 
 	// End to end through the script binding: the extremes must map to the ends of the table on every architecture.
-	top := fxp.AsFloat[float64](ssrtToYards(maxSSRTValue))
-	bottom := fxp.AsFloat[float64](ssrtToYards(minSSRTValue))
+	top := ssrtToYards(maxSSRTValue).AsFloat[float64]()
+	bottom := ssrtToYards(minSSRTValue).AsFloat[float64]()
 	for _, tc := range []struct {
 		expr string
 		want float64
@@ -243,7 +243,7 @@ func TestSSRTValueFromScriptIsArchitectureIndependent(t *testing.T) {
 		{expr: "measure.modifierToYards(-1e300)", want: bottom},
 		{expr: "measure.modifierToYards(Infinity)", want: top},
 		{expr: "measure.modifierToYards(-Infinity)", want: bottom},
-		{expr: "measure.modifierToYards(NaN)", want: fxp.AsFloat[float64](ssrtToYards(0))},
+		{expr: "measure.modifierToYards(NaN)", want: ssrtToYards(0).AsFloat[float64]()},
 	} {
 		v, err := runScript(0, tc.expr)
 		c.NoError(err, "expr %q", tc.expr)

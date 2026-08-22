@@ -11,6 +11,7 @@ package emweight
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
@@ -33,10 +34,8 @@ func (enum Type) Permitted() []Value {
 func (enum Type) DetermineModifierWeightValueTypeFromString(s string) Value {
 	mvt := ValueFromString(s)
 	permitted := enum.Permitted()
-	for _, one := range permitted {
-		if one == mvt {
-			return mvt
-		}
+	if slices.Contains(permitted, mvt) {
+		return mvt
 	}
 	return permitted[0]
 }

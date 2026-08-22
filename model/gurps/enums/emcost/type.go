@@ -11,6 +11,7 @@ package emcost
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
@@ -33,10 +34,8 @@ func (enum Type) Permitted() []Value {
 func (enum Type) FromString(s string) Value {
 	cvt := Addition.FromString(s)
 	permitted := enum.Permitted()
-	for _, one := range permitted {
-		if one == cvt {
-			return cvt
-		}
+	if slices.Contains(permitted, cvt) {
+		return cvt
 	}
 	return permitted[0]
 }

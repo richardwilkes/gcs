@@ -83,7 +83,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	if defDC := DefaultDockContainer(); defDC != nil {
 		if e.previousDockable = defDC.CurrentDockable(); !xreflect.IsNil(e.previousDockable) {
 			if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
-				if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
+				if focus.Ancestor[unison.Dockable]() == e.previousDockable {
 					e.previousFocusKey = focus.RefKey
 				}
 			}
@@ -379,7 +379,7 @@ func (e *pointsEditor) AttemptClose() bool {
 			return false
 		}
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
+	if dc := e.Ancestor[*unison.DockContainer](); dc != nil {
 		dc.Close(e)
 		if p := showPreviousDockable(e.previousDockable, e.previousFocusKey); p != nil {
 			restoreFocus(p)

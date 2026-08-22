@@ -629,11 +629,11 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 	panel.AddChild(popup)
 	if integerOnly {
 		field = NewIntegerField(targetMgr, targetKey, undoTitle,
-			func() int { return fxp.AsInteger[int](numCriteria.Qualifier) },
+			func() int { return numCriteria.Qualifier.AsInteger[int]() },
 			func(value int) {
 				numCriteria.Qualifier = fxp.FromInteger(value)
 				MarkModified(panel)
-			}, fxp.AsInteger[int](minValue), fxp.AsInteger[int](maxValue), false, false)
+			}, minValue.AsInteger[int](), maxValue.AsInteger[int](), false, false)
 		panel.AddChild(field)
 	} else {
 		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue)
@@ -699,7 +699,7 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 	}
 	parent.AddChild(popup)
 	field = NewIntegerField(targetMgr, targetKey, i18n.Text("Quantity Criteria"),
-		func() int { return fxp.AsInteger[int](numCriteria.Qualifier) },
+		func() int { return numCriteria.Qualifier.AsInteger[int]() },
 		func(value int) {
 			numCriteria.Qualifier = fxp.FromInteger(value)
 			MarkModified(parent)

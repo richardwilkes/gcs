@@ -185,8 +185,7 @@ func planAppUpdate(release *gurps.Release) (plan *updater.Plan, unavailableMsg s
 		return plan, ""
 	}
 	errs.Log(err)
-	var unavailable *updater.Unavailable
-	if errors.As(err, &unavailable) {
+	if unavailable, ok := errors.AsType[*updater.Unavailable](err); ok {
 		return nil, blockerMessage(unavailable.Blocker)
 	}
 	return nil, fmt.Sprintf(i18n.Text("%s can't install this update automatically."), xos.AppName)

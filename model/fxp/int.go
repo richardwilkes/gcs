@@ -119,16 +119,6 @@ func FromStringForced(value string) Int {
 	return fixed64.FromStringForced[DP](value)
 }
 
-// AsInteger returns the equivalent value in the destination type.
-func AsInteger[T xmath.Integer](value Int) T {
-	return fixed64.AsInteger[DP, T](value)
-}
-
-// AsFloat returns the equivalent value in the destination type.
-func AsFloat[T xmath.Float](value Int) T {
-	return fixed64.AsFloat[DP, T](value)
-}
-
 // ApplyRounding rounds in the positive direction if roundDown is false, or in the negative direction if roundDown is
 // true.
 func ApplyRounding(value Int, roundDown bool) Int {
@@ -187,7 +177,7 @@ func Extract(in string) (value Int, remainder string) {
 
 // SecondsToDuration converts a fixed-point value in seconds to a time.Duration.
 func SecondsToDuration(value Int) time.Duration {
-	return time.Duration(AsInteger[int64](value.Mul(Thousand))) * time.Millisecond
+	return time.Duration(value.Mul(Thousand).AsInteger[int64]()) * time.Millisecond
 }
 
 // IntLessFromString compares two strings as Ints.

@@ -139,12 +139,10 @@ func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
 	w.TID = tid.MustNewTID(weaponKind(melee))
 	w.SubVersion = currentWeaponSubVersion
 	w.Damage = WeaponDamage{
-		WeaponDamageData: WeaponDamageData{
-			Type:                      "cr",
-			StrengthMultiplier:        fxp.One,
-			ArmorDivisor:              fxp.One,
-			FragmentationArmorDivisor: fxp.One,
-		},
+		Type:                      "cr",
+		StrengthMultiplier:        fxp.One,
+		ArmorDivisor:              fxp.One,
+		FragmentationArmorDivisor: fxp.One,
 	}
 	w.Owner = owner
 	if melee {

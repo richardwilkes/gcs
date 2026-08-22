@@ -115,14 +115,12 @@ func NewTableColumnHeader[T gurps.Node[T]](title, tooltip string, less func(a, b
 // PageTableColumnHeaderTheme holds the theme values for PageTableColumnHeaders. Modifying this data will not alter
 // existing PageTableColumnHeaders, but will alter any PageTableColumnHeaders created in the future.
 var PageTableColumnHeaderTheme = unison.LabelTheme{
-	TextDecoration: unison.TextDecoration{
-		Font:            fonts.PageLabelPrimary,
-		OnBackgroundInk: colors.OnHeader,
-	},
-	Gap:    3,
-	HAlign: align.Middle,
-	VAlign: align.Middle,
-	Side:   side.Left,
+	Font:            fonts.PageLabelPrimary,
+	OnBackgroundInk: colors.OnHeader,
+	Gap:             3,
+	HAlign:          align.Middle,
+	VAlign:          align.Middle,
+	Side:            side.Left,
 }
 
 var _ unison.TableColumnHeader[*Node[*gurps.Trait]] = &PageTableColumnHeader[*gurps.Trait]{}

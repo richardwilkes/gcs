@@ -283,7 +283,7 @@ func TestRevealRowForDataScrollsOnlyTheEditedRow(t *testing.T) {
 	c := check.New(t)
 	scroller := newScrollRecordingPanel()
 	provider := &fakeAltDropProvider{}
-	table := unison.NewTable[*Node[*gurps.Trait]](provider)
+	table := unison.NewTable(provider)
 	scroller.AddChild(table)
 	traits := []*gurps.Trait{
 		gurps.NewTrait(nil, nil, false),

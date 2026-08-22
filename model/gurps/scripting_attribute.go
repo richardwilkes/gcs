@@ -71,7 +71,7 @@ func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 				}
 				return goja.Undefined()
 			}
-			return r.ToValue(fxp.AsFloat[float64](v))
+			return r.ToValue(v.AsFloat[float64]())
 		}
 		return goja.Undefined()
 	}
@@ -99,7 +99,7 @@ func maximumValueOfAttribute(r *goja.Runtime, attr *Attribute) goja.Value {
 			}
 			return goja.Undefined()
 		}
-		return r.ToValue(fxp.AsFloat[float64](v))
+		return r.ToValue(v.AsFloat[float64]())
 	}
 	return goja.Undefined()
 }

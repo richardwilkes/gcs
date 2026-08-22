@@ -377,8 +377,8 @@ func createTemplateFuncs() texttmpl.FuncMap {
 		"lastIndexStr":  strings.LastIndex,
 		"lower":         strings.ToLower,
 		"numberFrom":    numberFrom,
-		"numberToFloat": fxp.AsFloat[float64],
-		"numberToInt":   fxp.AsInteger[int],
+		"numberToFloat": fxp.Int.AsFloat[float64],
+		"numberToInt":   fxp.Int.AsInteger[int],
 		"repeat":        strings.Repeat,
 		"replace":       strings.ReplaceAll,
 		"split":         strings.Split,
@@ -520,7 +520,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	slices.SortFunc(data.Attributes.Pools, func(a, b *exportedPool) int { return cmp.Compare(a.order, b.order) })
 	currentEnc := entity.EncumbranceLevel(false)
 	for _, enc := range encumbrance.Levels {
-		penalty := fxp.AsInteger[int](enc.Penalty())
+		penalty := enc.Penalty().AsInteger[int]()
 		data.Encumbrance = append(data.Encumbrance, &exportedEncumbrance{
 			Name:      enc.String(),
 			Level:     -penalty,

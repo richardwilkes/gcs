@@ -126,12 +126,10 @@ func TestLegacyExportAttributeNameSuffixes(t *testing.T) {
 
 	// An attribute whose own ID ends with "_full" must still resolve via the "_name" suffix.
 	e.SheetSettings.Attributes.Set["hit_full"] = &AttributeDef{
-		AttributeDefData: AttributeDefData{
-			DefID: "hit_full",
-			Type:  attribute.Integer,
-			Name:  "Hit Full",
-			Base:  "3",
-		},
+		DefID: "hit_full",
+		Type:  attribute.Integer,
+		Name:  "Hit Full",
+		Base:  "3",
 		Order: len(e.SheetSettings.Attributes.Set),
 	}
 	e.Attributes.Set["hit_full"] = NewAttribute(e, "hit_full", len(e.Attributes.Set))

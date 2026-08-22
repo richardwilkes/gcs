@@ -915,7 +915,7 @@ func (e *Equipment) ResolvedMaxUses() int {
 	result := fxp.FromInteger(e.MaxUses) + addition
 	result += result.Mul(percentage).Div(fxp.Hundred)
 	result = result.Mul(multiplier)
-	return fxp.AsInteger[int](result.Max(0).Min(fxp.FromInteger(MaxEquipmentMaxUses)))
+	return result.Max(0).Min(fxp.FromInteger(MaxEquipmentMaxUses)).AsInteger[int]()
 }
 
 // ResolvedUses returns the current Uses capped at ResolvedMaxUses. This is the value that should be displayed; the

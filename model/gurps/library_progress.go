@@ -83,8 +83,9 @@ type countingReadCloser struct {
 
 func newCountingReadCloser(body io.ReadCloser, received func(n int64)) *countingReadCloser {
 	return &countingReadCloser{
-		countingReader: countingReader{r: body, received: received},
-		closer:         body,
+		r:        body,
+		received: received,
+		closer:   body,
 	}
 }
 

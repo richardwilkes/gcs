@@ -61,9 +61,9 @@ func NewBlockLayoutFromString(str string) (blockLayout *BlockLayout, inputWasVal
 	var layout []string
 	remaining := CreateFullKeySet()
 	inputWasValid = true
-	for _, line := range strings.Split(strings.ToLower(str), "\n") {
+	for line := range strings.SplitSeq(strings.ToLower(str), "\n") {
 		var parts []string
-		for _, part := range strings.Split(xstrings.CollapseSpaces(line), " ") {
+		for part := range strings.SplitSeq(xstrings.CollapseSpaces(line), " ") {
 			if part == "" {
 				continue
 			}
@@ -106,7 +106,7 @@ func (b *BlockLayout) EnsureValidity() {
 	remaining := CreateFullKeySet()
 	for _, line := range b.Layout {
 		var parts []string
-		for _, part := range strings.Split(strings.ToLower(xstrings.CollapseSpaces(line)), " ") {
+		for part := range strings.SplitSeq(strings.ToLower(xstrings.CollapseSpaces(line)), " ") {
 			part = mapOldLayoutKeys(part)
 			if remaining[part] {
 				delete(remaining, part)
@@ -136,7 +136,7 @@ func (b *BlockLayout) ByRow() [][]string {
 	remaining := CreateFullKeySet()
 	for _, line := range b.Layout {
 		var parts []string
-		for _, part := range strings.Split(strings.ToLower(xstrings.CollapseSpaces(line)), " ") {
+		for part := range strings.SplitSeq(strings.ToLower(xstrings.CollapseSpaces(line)), " ") {
 			part = mapOldLayoutKeys(part)
 			if remaining[part] {
 				delete(remaining, part)

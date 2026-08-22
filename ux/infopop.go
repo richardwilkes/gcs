@@ -51,7 +51,7 @@ func ClearInfoPop(target unison.Paneler) {
 // AddHelpToInfoPop adds one or more lines of help text to an InfoPop.
 func AddHelpToInfoPop(target unison.Paneler, text string) {
 	tip := prepareInfoPop(target)
-	for _, str := range strings.Split(text, "\n") {
+	for str := range strings.SplitSeq(text, "\n") {
 		if str == "" && len(tip.Children()) == 0 {
 			continue
 		}

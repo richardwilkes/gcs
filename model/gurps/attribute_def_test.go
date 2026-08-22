@@ -56,11 +56,11 @@ func TestAttributeDefEffectivePlacement(t *testing.T) {
 	e := NewEntity()
 	e.Traits = append(e.Traits, newTraitNamed(e, "Magery"))
 
-	def := &AttributeDef{AttributeDefData: AttributeDefData{
+	def := &AttributeDef{
 		DefID: "sm",
 		Type:  attribute.Integer,
 		Base:  "10",
-	}}
+	}
 
 	// A plain Hidden placement stays hidden regardless of traits.
 	def.Placement = attribute.Hidden
@@ -91,14 +91,14 @@ func TestAttributeDefPlacementResolution(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	def := &AttributeDef{AttributeDefData: AttributeDefData{
+	def := &AttributeDef{
 		DefID:                "sm",
 		Type:                 attribute.Integer,
 		Base:                 "10",
 		Placement:            attribute.Hidden,
 		PlacementTrait:       "Magery",
 		PlacementWhenPresent: attribute.Primary,
-	}}
+	}
 
 	// Without the trait, the attribute is hidden, so it is not relevant to any displayed kind. (Relevant is the gate
 	// used when laying out the sheet.)

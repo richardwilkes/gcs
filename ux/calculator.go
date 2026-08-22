@@ -821,7 +821,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 		return false
 	}, true, false, entity.Traits...)
 	if levels > 0 {
-		distance = distance.Mul(fxp.FromFloat(math.Pow(2, fxp.AsFloat[float64](levels))))
+		distance = distance.Mul(fxp.FromFloat(math.Pow(2, levels.AsFloat[float64]())))
 	}
 	if broad {
 		distance = distance.Mul(fxp.Twelve)
