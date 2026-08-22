@@ -40,6 +40,7 @@ type Owned interface {
 	Owner() Rebuildable
 }
 
+// FindOwner follow the lineage of a panel up locate a parent that satisfies `Owned`
 func FindOwner[T Rebuildable](panel *unison.Panel) T {
 	for panel != nil {
 		if owned, ok := any(panel.Self).(Owned); ok {
@@ -55,6 +56,7 @@ func FindOwner[T Rebuildable](panel *unison.Panel) T {
 	return zero
 }
 
+// HasOwner follow the lineage of a panel up to determine if parent satisfies `Owned`
 func HasOwner[T Rebuildable](panel *unison.Panel) bool {
 	return !xreflect.IsNil(FindOwner[T](panel))
 }
@@ -64,6 +66,7 @@ type Targeted[N gurps.Node[N]] interface {
 	Target() N
 }
 
+// FindTarget follow the lineage of a panel up locate a parent that satisfies `Targeted`
 func FindTarget[T gurps.Node[T]](panel *unison.Panel) T {
 	for panel != nil {
 		if targeted, ok := any(panel.Self).(Targeted[T]); ok {
