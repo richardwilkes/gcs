@@ -794,15 +794,26 @@ func mergeNewlySelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], merg
 }
 
 func rawPoints[T gurps.Node[T]](child T) fxp.Int {
-	if xreflect.IsNil(child) || !child.Container() {
+	if xreflect.IsNil(child) {
 		return 0
 	}
-	if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
-		tp := pickable.TemplatePickerData()
-		if tp != nil && tp.Type == picker.Points && tp.Qualifier.Compare == criteria.EqualsNumber {
-			return tp.Qualifier.Qualifier
+	if child.Container() {
+		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
+			tp := pickable.TemplatePickerData()
+			if tp != nil && tp.Type == picker.Points && tp.Qualifier.Compare == criteria.EqualsNumber {
+				return tp.Qualifier.Qualifier
+			}
 		}
 	}
+	// Covers skills and spells
+	if rp, ok := any(child).(interface{ RawPoints() fxp.Int }); ok {
+		return rp.RawPoints()
+	}
+	// Covers traits
+	if rp, ok := any(child).(interface{ AdjustedPoints() fxp.Int }); ok {
+		return rp.AdjustedPoints()
+	}
+	// Fallback
 	return 0
 }
 
