@@ -128,7 +128,7 @@ func TestTechniqueWithoutDefaultDoesNotPanic(t *testing.T) {
 	c.NotPanics(func() { sk.AdjustedRelativeLevel() }, "AdjustedRelativeLevel must not panic")
 	c.NotPanics(func() { sk.CellData(SkillDescriptionColumn, &CellData{}) }, "CellData must not panic")
 	c.NotPanics(func() {
-		clone := sk.Clone(LibraryFile{}, e, nil, false)
+		clone := sk.Clone(LibraryFile{}, e, nil, Reference)
 		c.True(clone.IsTechnique(), "the clone must still be a technique")
 		c.True(clone.TechniqueDefault == nil, "the clone must still have no default")
 	}, "cloning a technique without a default must not panic")
@@ -161,7 +161,7 @@ func TestSkillWithNullDefaultEntry(t *testing.T) {
 	c.NotPanics(func() { Hash64(&sk) }, "hashing must not panic")
 	c.NotPanics(func() { sk.FillWithNameableKeys(make(map[string]string), nil) },
 		"nameable extraction must not panic")
-	c.NotPanics(func() { sk.Clone(LibraryFile{}, e, nil, false) }, "cloning must not panic")
+	c.NotPanics(func() { sk.Clone(LibraryFile{}, e, nil, Reference) }, "cloning must not panic")
 
 	// A nil that reaches the list some other way must be skipped rather than handed back to callers that dereference
 	// it, since resolveToSpecificDefaults' own nil guard used to append it anyway.

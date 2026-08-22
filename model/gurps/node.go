@@ -45,7 +45,7 @@ type Node[T Node[T]] interface {
 	Openable
 	Hashable
 	nameable.Applier
-	Clone(from LibraryFile, owner DataOwner, newParent T, preserveID bool) T
+	Clone(from LibraryFile, owner DataOwner, newParent T, mode CloneMode) T
 	GetSource() Source
 	ClearSource()
 	SyncWithSource()
@@ -119,3 +119,21 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 func PropagateNodeNoteClosedState[T Node[T]](from, to T) {
 	SetClosedState("N:"+string(to.ID()), IsClosed("N:"+string(from.ID())))
 }
+
+// CloneMode controls how Clone treats the resulting node's ID and Source relative to the node being cloned.
+type CloneMode int
+
+const (
+	// Reference creates a fresh ID and, if the node being cloned has no Source of its own, anchors the
+	// result's Source to reference it. Used when copying a node into a different list: "Copy to Character
+	// Sheet"/"Copy to Template", drag-and-drop from a library into a sheet or template, dropping a
+	// modifier onto a row.
+	Reference CloneMode = iota
+	// Duplicate create a fresh ID but copies the node being cloned's Source verbatim, even when empty. Used
+	// for "Duplicate": the result is a sibling within the same list, not a new reference to the original.
+	Duplicate
+	// Copy preserves the ID of the node being cloned and copies its Source verbatim, even when empty.
+	// Used for in-memory working copies never inserted into any list: the editor's CopyFrom/ApplyTo
+	// staging round trip, and scratch clones for live preview/calculation.
+	Copy
+)

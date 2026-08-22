@@ -28,7 +28,7 @@ func TestTraitModifierCloneDoesNotShareReplacements(t *testing.T) {
 	library.Replacements = map[string]string{"Element": "Fire"}
 
 	// Dropping it onto a sheet's trait row clones it...
-	dup := library.Clone(LibraryFile{}, nil, nil, false)
+	dup := library.Clone(LibraryFile{}, nil, nil, Reference)
 	c.Equal(map[string]string{"Element": "Fire"}, dup.Replacements, "the copy carries the replacements")
 
 	// ...and the next attachment pass migrates the copy's map into the trait, which has none of its own.

@@ -266,7 +266,7 @@ func (s *Skill) IsTechnique() bool {
 }
 
 // Clone implements Node.
-func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserveID bool) *Skill {
+func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode CloneMode) *Skill {
 	var other *Skill
 	if s.IsTechnique() {
 		var skillName string
@@ -278,14 +278,14 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserve
 		other = NewSkill(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
-	other.AdjustSource(from, s.SourcedID, preserveID)
+	other.AdjustSource(from, s.SourcedID, mode)
 	other.ThirdParty = s.ThirdParty
-	other.copyFrom(other, &s.SkillEditData, s.Container(), false, s.IsTechnique())
+	other.copyFrom(other, &s.SkillEditData, s.Container(), false, mode, s.IsTechnique())
 	PropagateNodeNoteClosedState(s, other)
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
 		for _, child := range s.Children {
-			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, mode))
 		}
 	}
 	return other
@@ -1457,7 +1457,7 @@ func (s *Skill) SyncWithSource() {
 						s.TechniqueLimitModifier = &mod
 					}
 					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-					s.Weapons = CloneWeapons(other.Weapons, s, false)
+					s.Weapons = CloneWeapons(other.Weapons, s, Reference)
 					s.Features = other.Features.Clone()
 				}
 			}
@@ -1523,7 +1523,7 @@ func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (s *SkillEditData) CopyFrom(other *Skill) {
-	s.copyFrom(other, &other.SkillEditData, other.Container(), false, other.IsTechnique())
+	s.copyFrom(other, &other.SkillEditData, other.Container(), false, Copy, other.IsTechnique())
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1533,10 +1533,14 @@ func (s *SkillEditData) SetNameableReplacements(replacements map[string]string) 
 
 // ApplyTo implements node.EditorData.
 func (s *SkillEditData) ApplyTo(other *Skill) {
-	other.copyFrom(other, s, other.Container(), true, other.IsTechnique())
+	other.copyFrom(other, s, other.Container(), true, Copy, other.IsTechnique())
 }
 
-func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer, isApply, isTechnique bool) {
+// copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it
+// back, and only affects how an empty Prereq list is resolved. mode controls how cloned weapons are
+// cloned -- CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same skill's own
+// data, not producing a new one; Clone passes its own mode through.
+func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer, isApply bool, mode CloneMode, isTechnique bool) {
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
@@ -1572,7 +1576,7 @@ func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer
 		}
 	}
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	s.Weapons = CloneWeapons(other.Weapons, skill, isApply)
+	s.Weapons = CloneWeapons(other.Weapons, skill, mode)
 	s.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
 		s.Study = make([]*Study, len(other.Study))

@@ -217,17 +217,17 @@ func (e *Equipment) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, preserveID bool) *Equipment {
+func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, mode CloneMode) *Equipment {
 	other := NewEquipment(owner, parent, e.Container())
-	other.AdjustSource(from, e.SourcedID, preserveID)
+	other.AdjustSource(from, e.SourcedID, mode)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
-	other.copyFrom(other, &e.EquipmentEditData, false)
+	other.copyFrom(other, &e.EquipmentEditData, false, mode)
 	PropagateNodeNoteClosedState(e, other)
 	if e.HasChildren() {
 		other.Children = make([]*Equipment, 0, len(e.Children))
 		for _, child := range e.Children {
-			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, mode))
 		}
 	}
 	return other
@@ -1108,7 +1108,7 @@ func (e *Equipment) SyncWithSource() {
 				e.EquipmentSyncData = other.EquipmentSyncData
 				e.Tags = slices.Clone(other.Tags)
 				e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-				e.Weapons = CloneWeapons(other.Weapons, e, false)
+				e.Weapons = CloneWeapons(other.Weapons, e, Reference)
 				e.Features = other.Features.Clone()
 			}
 		}
@@ -1149,7 +1149,7 @@ func (e *EquipmentSyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (e *EquipmentEditData) CopyFrom(other *Equipment) {
-	e.copyFrom(other, &other.EquipmentEditData, false)
+	e.copyFrom(other, &other.EquipmentEditData, false, Copy)
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1159,10 +1159,14 @@ func (e *EquipmentEditData) SetNameableReplacements(replacements map[string]stri
 
 // ApplyTo implements node.EditorData.
 func (e *EquipmentEditData) ApplyTo(other *Equipment) {
-	other.copyFrom(other, e, true)
+	other.copyFrom(other, e, true, Copy)
 }
 
-func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditData, isApply bool) {
+// copyFrom copies other into e. isApply distinguishes staging the editor's working copy from committing it
+// back, and only affects how an empty Prereq list is resolved. mode controls how nested modifiers and
+// weapons are cloned -- CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same
+// equipment's own data, not producing a new one; Clone passes its own mode through.
+func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditData, isApply bool, mode CloneMode) {
 	*e = *other
 	e.Tags = slices.Clone(other.Tags)
 	e.Replacements = maps.Clone(other.Replacements)
@@ -1181,7 +1185,7 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 			// opposed to duplicating in place), it passes the *source* library as the first
 			// argument to `Clone`. That path, combined with the IDs from the source nodes, is
 			// what builds the `source` values for the clone.
-			cloned := one.Clone(equipment.Source.LibraryFile, equipment.owner, nil, isApply)
+			cloned := one.Clone(equipment.Source.LibraryFile, equipment.owner, nil, mode)
 			// Point the copy at the equipment it belongs to, so that its nameable placeholders can be resolved with
 			// that equipment's replacements. Without this, the copies held in an editor show their raw placeholders
 			// (e.g. "@Material@"), since the accessors fall back to the unsubstituted text when there is no equipment.
@@ -1201,7 +1205,7 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 		}
 	}
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
-	e.Weapons = CloneWeapons(other.Weapons, equipment, isApply)
+	e.Weapons = CloneWeapons(other.Weapons, equipment, mode)
 	e.Features = other.Features.Clone()
 }
 

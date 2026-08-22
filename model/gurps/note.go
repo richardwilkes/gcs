@@ -167,16 +167,16 @@ func (n *Note) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (n *Note) Clone(from LibraryFile, owner DataOwner, parent *Note, preserveID bool) *Note {
+func (n *Note) Clone(from LibraryFile, owner DataOwner, parent *Note, mode CloneMode) *Note {
 	other := NewNote(owner, parent, n.Container())
-	other.AdjustSource(from, n.SourcedID, preserveID)
+	other.AdjustSource(from, n.SourcedID, mode)
 	other.SetOpen(n.IsOpen())
 	other.ThirdParty = n.ThirdParty
 	other.CopyFrom(n)
 	if n.HasChildren() {
 		other.Children = make([]*Note, 0, len(n.Children))
 		for _, child := range n.Children {
-			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, mode))
 		}
 	}
 	return other

@@ -88,7 +88,7 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 		owner = provider.DataOwner()
 	}
 	return NewNode(table, newParent,
-		n.data.Clone(libraryFileFromTable(n.table), owner, newParent.Data(), false), false)
+		n.data.Clone(libraryFileFromTable(n.table), owner, newParent.Data(), gurps.Reference), false)
 }
 
 // ID implements unison.TableRowData.

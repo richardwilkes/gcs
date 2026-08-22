@@ -236,14 +236,21 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 	return srcstate.Missing, nil
 }
 
-// AdjustSource adjusts the source of a SourcedID to match the given LibraryFile.
-func (s *SourcedID) AdjustSource(from LibraryFile, original SourcedID, preserve bool) {
-	if preserve {
+// AdjustSource adjusts TID and Source based on `original` and the clone `mode`.
+//
+// A 'Copy' keeps original's TID instead of minting a fresh one.
+// A 'Reference' when original has no Source of its own, anchors Source to reference the original.
+// Otherwise Source is copied directly from the original.
+func (s *SourcedID) AdjustSource(from LibraryFile, original SourcedID, mode CloneMode) {
+	// For a 'Copy' it should be identical, including IDs
+	if mode == Copy {
 		s.TID = original.TID
 	}
-	s.Source = original.Source
-	if s.Source.Library == "" {
-		s.Source.LibraryFile = from
-		s.Source.TID = original.TID
+	if mode == Reference && original.Source.Library == "" {
+		// If this is for a 'Reference' *and* the original is "root" data, create a new reference source
+		s.Source = Source{LibraryFile: from, TID: original.TID}
+	} else {
+		// Copy source data as-is from the original
+		s.Source = original.Source
 	}
 }

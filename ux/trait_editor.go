@@ -178,7 +178,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 }
 
 func cloneTraitWithOverlay(t *gurps.Trait, overlay *gurps.TraitEditData) *gurps.Trait {
-	clone := t.Clone(t.Source.LibraryFile, t.DataOwner(), t.Parent(), true)
+	clone := t.Clone(t.Source.LibraryFile, t.DataOwner(), t.Parent(), gurps.Copy)
 	clone.TraitEditData = *overlay
 	return clone
 }
