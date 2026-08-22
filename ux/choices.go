@@ -19,20 +19,24 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent *unison.Panel, templateOnly bool) (*unison.PopupMenu[picker.Type], *unison.PopupMenu[string], unison.Paneler) {
+func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent *unison.Panel, templateOnly bool) (
+	typePopup *unison.PopupMenu[picker.Type],
+	comparisonPopup *unison.PopupMenu[string],
+	field unison.Paneler,
+) {
 	if templateOnly && !HasOwner[*Template](parent) {
-		return nil, nil, nil
+		return
 	}
 
 	if xreflect.IsNil(e.target) || !e.target.Container() {
-		return nil, nil, nil
+		return
 	}
 
 	var tp *gurps.TemplatePicker
 	if pickable, ok := any(e.target).(gurps.TemplatePickerProvider); ok {
 		tp = pickable.TemplatePickerData()
 	} else {
-		return nil, nil, nil
+		return
 	}
 
 	if tp == nil {
@@ -41,9 +45,9 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 
 	last := tp.Type
 	wrapper := addFlowWrapper(parent, i18n.Text("Choices"), 3)
-	typePopup := addPopup(wrapper, picker.Types, &tp.Type)
+	typePopup = addPopup(wrapper, picker.Types, &tp.Type)
 	text := i18n.Text("Choice Quantifier")
-	comparisonPopup, field := addNumericCriteriaPanel(wrapper, nil, "", "", text, &tp.Qualifier, fxp.Min, fxp.Max, 1, false, false)
+	comparisonPopup, field = addNumericCriteriaPanel(wrapper, nil, "", "", text, &tp.Qualifier, fxp.Min, fxp.Max, 1, false, false)
 
 	// A picker that isn't in use has nothing to quantify, so both the comparison and the qualifier are blanked out. The
 	// qualifier is blanked as well whenever the comparison doesn't use one. The opening state must be settled the same
@@ -72,5 +76,5 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 
 	adjust(tp.Type)
 
-	return typePopup, comparisonPopup, field
+	return
 }
