@@ -44,7 +44,7 @@ type Owned interface {
 func FindOwner[T Rebuildable](panel *unison.Panel) T {
 	for panel != nil {
 		if owned, ok := any(panel.Self).(Owned); ok {
-			if owner, ok := owned.Owner().AsPanel().Self.(T); ok {
+			if owner, ok2 := owned.Owner().AsPanel().Self.(T); ok2 {
 				return owner
 			}
 			panel = owned.Owner().AsPanel()

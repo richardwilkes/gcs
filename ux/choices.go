@@ -25,18 +25,18 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 	field unison.Paneler,
 ) {
 	if templateOnly && !HasOwner[*Template](parent) {
-		return
+		return typePopup, comparisonPopup, field
 	}
 
 	if xreflect.IsNil(e.target) || !e.target.Container() {
-		return
+		return typePopup, comparisonPopup, field
 	}
 
 	var tp *gurps.TemplatePicker
 	if pickable, ok := any(e.target).(gurps.TemplatePickerProvider); ok {
 		tp = pickable.TemplatePickerData()
 	} else {
-		return
+		return typePopup, comparisonPopup, field
 	}
 
 	if tp == nil {
@@ -76,5 +76,5 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 
 	adjust(tp.Type)
 
-	return
+	return typePopup, comparisonPopup, field
 }
