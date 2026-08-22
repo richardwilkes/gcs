@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -34,6 +33,49 @@ type Rebuildable interface {
 	unison.Paneler
 	fmt.Stringer
 	Rebuild(full bool)
+}
+
+// Owned defines the methods a value owned by a Rebuildable should have
+type Owned interface {
+	Owner() Rebuildable
+}
+
+// FindOwner follow the lineage of a panel up locate a parent that satisfies `Owned`
+func FindOwner[T Rebuildable](panel *unison.Panel) T {
+	for panel != nil {
+		if owned, ok := any(panel.Self).(Owned); ok && !xreflect.IsNil(owned) && !xreflect.IsNil(owned.Owner()) {
+			if owner, ok2 := owned.Owner().AsPanel().Self.(T); ok2 {
+				return owner
+			}
+			panel = owned.Owner().AsPanel()
+		} else {
+			panel = panel.Parent()
+		}
+	}
+	var zero T
+	return zero
+}
+
+// HasOwner follow the lineage of a panel up to determine if parent satisfies `Owned`
+func HasOwner[T Rebuildable](panel *unison.Panel) bool {
+	return !xreflect.IsNil(FindOwner[T](panel))
+}
+
+// Targeted defines the methods a value with a node target should have
+type Targeted[N gurps.Node[N]] interface {
+	Target() N
+}
+
+// FindTarget follow the lineage of a panel up locate a parent that satisfies `Targeted`
+func FindTarget[T gurps.Node[T]](panel *unison.Panel) T {
+	for panel != nil {
+		if targeted, ok := any(panel.Self).(Targeted[T]); ok {
+			return targeted.Target()
+		}
+		panel = panel.Parent()
+	}
+	var zero T
+	return zero
 }
 
 // Syncer should be called to sync an object's UI state to its model.
@@ -718,43 +760,6 @@ func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey
 	parent.AddChild(field)
 	checkBox = addCheckBox(parent, title, &amount.PerLevel)
 	return field, checkBox
-}
-
-func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey string, tp **gurps.TemplatePicker) (typePopup *unison.PopupMenu[picker.Type], comparisonPopup *unison.PopupMenu[string], field unison.Paneler) {
-	if *tp == nil {
-		*tp = &gurps.TemplatePicker{}
-	}
-	last := (*tp).Type
-	wrapper := addFlowWrapper(parent, i18n.Text("Template Choices"), 3)
-	typePopup = addPopup(wrapper, picker.Types, &(*tp).Type)
-	text := i18n.Text("Template Choice Quantifier")
-	comparisonPopup, field = addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*tp).Qualifier, fxp.Min,
-		fxp.Max, 1, false, false)
-	// A picker that isn't in use has nothing to quantify, so both the comparison and the qualifier are blanked out. The
-	// qualifier is blanked as well whenever the comparison doesn't use one. The opening state must be settled the same
-	// way the selection callback settles it, or an untouched editor lets the user alter a picker that will be dropped
-	// on save, or refuses edits to one that will be kept.
-	adjust := func(pickerType picker.Type) {
-		notApplicable := pickerType == picker.NotApplicable
-		adjustPopupBlank(comparisonPopup, notApplicable)
-		adjustFieldBlank(field, notApplicable || (*tp).Qualifier.Compare == criteria.AnyNumber)
-	}
-	typePopup.SelectionChangedCallback = func(p *unison.PopupMenu[picker.Type]) {
-		if item, ok := p.Selected(); ok {
-			(*tp).Type = item
-			if last == picker.NotApplicable && item != picker.NotApplicable {
-				(*tp).Qualifier.Qualifier = fxp.One
-				if syncer, ok2 := field.(Syncer); ok2 {
-					syncer.Sync()
-				}
-			}
-			last = item
-			adjust(item)
-			MarkModified(parent)
-		}
-	}
-	adjust((*tp).Type)
-	return typePopup, comparisonPopup, field
 }
 
 func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoTitle, tooltip string, get func() string, set func(string), includeMarkdownButton bool) *StringField {

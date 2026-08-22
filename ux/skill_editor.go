@@ -47,9 +47,8 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	}
 	addPreconfigurable(e, content)
 	entity := gurps.EntityFromNode(e.target)
-	if e.target.Container() {
-		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
-	} else {
+	addChoices(e, content, true)
+	if !e.target.Container() {
 		if e.target.IsTechnique() {
 			if e.editorData.TechniqueDefault == nil {
 				// Data loaded from JSON without a "default" field leaves this nil, so give the editor something to

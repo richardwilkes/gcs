@@ -793,29 +793,28 @@ func mergeNewlySelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], merg
 	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }
 
-func rawPoints(child any) fxp.Int {
-	switch nc := child.(type) {
-	case *gurps.Skill:
-		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
-			nc.TemplatePicker.Qualifier.Compare == criteria.EqualsNumber {
-			return nc.TemplatePicker.Qualifier.Qualifier
-		}
-		return nc.RawPoints()
-	case *gurps.Spell:
-		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
-			nc.TemplatePicker.Qualifier.Compare == criteria.EqualsNumber {
-			return nc.TemplatePicker.Qualifier.Qualifier
-		}
-		return nc.RawPoints()
-	case *gurps.Trait:
-		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
-			nc.TemplatePicker.Qualifier.Compare == criteria.EqualsNumber {
-			return nc.TemplatePicker.Qualifier.Qualifier
-		}
-		return nc.AdjustedPoints()
-	default:
+func rawPoints[T gurps.Node[T]](child T) fxp.Int {
+	if xreflect.IsNil(child) {
 		return 0
 	}
+	if child.Container() {
+		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
+			tp := pickable.TemplatePickerData()
+			if tp != nil && tp.Type == picker.Points && tp.Qualifier.Compare == criteria.EqualsNumber {
+				return tp.Qualifier.Qualifier
+			}
+		}
+	}
+	// Covers skills and spells
+	if rp, ok := any(child).(interface{ RawPoints() fxp.Int }); ok {
+		return rp.RawPoints()
+	}
+	// Covers traits
+	if rp, ok := any(child).(interface{ AdjustedPoints() fxp.Int }); ok {
+		return rp.AdjustedPoints()
+	}
+	// Fallback
+	return 0
 }
 
 // installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the template's

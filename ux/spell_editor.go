@@ -96,9 +96,8 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	}
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPreconfigurable(e, content)
-	if e.target.Container() {
-		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
-	} else {
+	addChoices(e, content, true)
+	if !e.target.Container() {
 		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)

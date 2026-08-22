@@ -35,6 +35,7 @@ var (
 	_ unison.UndoManagerProvider = &editor[*gurps.Note, *gurps.NoteEditData]{}
 	_ GroupedCloser              = &editor[*gurps.Note, *gurps.NoteEditData]{}
 	_ Rebuildable                = &editor[*gurps.Note, *gurps.NoteEditData]{}
+	_ Owned                      = &editor[*gurps.Note, *gurps.NoteEditData]{}
 )
 
 // nameableReplacementsSetter is implemented by editor data that can have its nameable replacements set directly.
@@ -142,8 +143,8 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	})
 
 	e.AddChild(e.createToolbar(helpMD, initToolbar))
-	e.modificationCallback = initContent(e, content)
 	e.AddChild(e.scroll)
+	e.modificationCallback = initContent(e, content)
 	e.ClientData()[AssociatedIDKey] = target.ID()
 	e.promptForSave = true
 	e.scroll.Content().AsPanel().ValidateScrollRoot()
@@ -277,6 +278,14 @@ func (e *editor[N, D]) String() string {
 
 func (e *editor[N, D]) Tooltip() string {
 	return ""
+}
+
+func (e *editor[N, D]) Owner() Rebuildable {
+	return e.owner
+}
+
+func (e *editor[N, D]) Target() N {
+	return e.target
 }
 
 var pruneIDFields = regexp.MustCompile(`\s*"id":\s*"[^"]+",?\s*`)
