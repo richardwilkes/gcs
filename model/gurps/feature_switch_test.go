@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/json/v2"
 	"slices"
 	"strings"
 	"testing"
@@ -24,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -91,7 +91,7 @@ func TestEveryFeatureTypeCarriesTheSwitchableFlag(t *testing.T) {
 	for _, ft := range feature.SelectableTypes {
 		key := ft.Key()
 		var loaded Features
-		c.NoError(json.Unmarshal([]byte(`[{"type":"`+key+`","switchable":true}]`), &loaded), "%s: should load", key)
+		c.NoError(jio.Unmarshal([]byte(`[{"type":"`+key+`","switchable":true}]`), &loaded), "%s: should load", key)
 		c.Equal(1, len(loaded), "%s: a single feature should load", key)
 		if len(loaded) != 1 {
 			continue
@@ -100,7 +100,7 @@ func TestEveryFeatureTypeCarriesTheSwitchableFlag(t *testing.T) {
 		c.False(unknown, "%s: should load as a known feature type, not an UnknownFeature", key)
 		c.True(loaded[0].IsSwitchable(), "%s: the switchable flag should survive the load", key)
 
-		data, err := json.Marshal(loaded)
+		data, err := jio.Marshal(loaded)
 		c.NoError(err, "%s: should marshal", key)
 		c.Contains(string(data), `"switchable":true`, "%s: the switchable flag should be written out", key)
 		switchedHash := Hash64(loaded[0])
@@ -108,14 +108,14 @@ func TestEveryFeatureTypeCarriesTheSwitchableFlag(t *testing.T) {
 		// The same feature with the flag cleared must not write the key at all, and must hash differently.
 		loaded[0].SetSwitchable(false)
 		c.False(loaded[0].IsSwitchable(), "%s: the flag should clear", key)
-		data, err = json.Marshal(loaded)
+		data, err = jio.Marshal(loaded)
 		c.NoError(err, "%s: should marshal", key)
 		c.NotContains(string(data), "switchable", "%s: a non-switchable feature should omit the key", key)
 		c.NotEqual(switchedHash, Hash64(loaded[0]), "%s: the switchable flag should participate in the hash", key)
 
 		// A feature loaded without the key is not switchable.
 		var plain Features
-		c.NoError(json.Unmarshal([]byte(`[{"type":"`+key+`"}]`), &plain), "%s: should load without the key", key)
+		c.NoError(jio.Unmarshal([]byte(`[{"type":"`+key+`"}]`), &plain), "%s: should load without the key", key)
 		if len(plain) == 1 {
 			c.False(plain[0].IsSwitchable(), "%s: a feature without the key is not switchable", key)
 		}
@@ -127,9 +127,14 @@ func TestEveryFeatureTypeCarriesTheSwitchableFlag(t *testing.T) {
 // GCS.
 func TestUnknownFeatureIgnoresButPreservesSwitchable(t *testing.T) {
 	c := check.New(t)
-	const data = `[{"type":"future_bonus_from_a_newer_gcs","switchable":true,"amount":3}]`
+	data, err := jio.Marshal([]map[string]any{{
+		"type":       "future_bonus_from_a_newer_gcs",
+		"switchable": true,
+		"amount":     3,
+	}})
+	c.NoError(err, "could not prepare test data")
 	var features Features
-	c.NoError(json.Unmarshal([]byte(data), &features), "an unknown feature type must still load")
+	c.NoError(jio.Unmarshal(data, &features), "an unknown feature type must still load")
 	c.Equal(1, len(features), "the unknown feature should be present")
 	unknown, ok := features[0].(*UnknownFeature)
 	c.True(ok, "the feature should load as an UnknownFeature")
@@ -139,9 +144,9 @@ func TestUnknownFeatureIgnoresButPreservesSwitchable(t *testing.T) {
 	unknown.SetSwitchable(true)
 	c.False(unknown.IsSwitchable(), "setting the flag on an unknown feature changes nothing")
 
-	out, err := json.Marshal(features)
+	out, err := jio.Marshal(features)
 	c.NoError(err, "the unknown feature should marshal")
-	c.Equal(data, string(out), "the unknown feature must be reproduced byte for byte, switchable flag included")
+	c.Equal(string(data), string(out), "the unknown feature must be reproduced byte for byte, switchable flag included")
 
 	// The switchable state of an unknown feature must also stay out of the way of the switch machinery.
 	c.False(features.AnySwitchable(), "an unknown feature doesn't make a list switchable")
@@ -217,7 +222,7 @@ func TestSwitchedOnJSONRoundTrip(t *testing.T) {
 			},
 			reload: func(data []byte) (FeatureSwitcher, error) {
 				var t Trait
-				return &t, json.Unmarshal(data, &t)
+				return &t, jio.Unmarshal(data, &t)
 			},
 		},
 		{
@@ -229,7 +234,7 @@ func TestSwitchedOnJSONRoundTrip(t *testing.T) {
 			},
 			reload: func(data []byte) (FeatureSwitcher, error) {
 				var s Skill
-				return &s, json.Unmarshal(data, &s)
+				return &s, jio.Unmarshal(data, &s)
 			},
 		},
 		{
@@ -241,7 +246,7 @@ func TestSwitchedOnJSONRoundTrip(t *testing.T) {
 			},
 			reload: func(data []byte) (FeatureSwitcher, error) {
 				var s Spell
-				return &s, json.Unmarshal(data, &s)
+				return &s, jio.Unmarshal(data, &s)
 			},
 		},
 		{
@@ -253,14 +258,14 @@ func TestSwitchedOnJSONRoundTrip(t *testing.T) {
 			},
 			reload: func(data []byte) (FeatureSwitcher, error) {
 				var eqp Equipment
-				return &eqp, json.Unmarshal(data, &eqp)
+				return &eqp, jio.Unmarshal(data, &eqp)
 			},
 		},
 	} {
 		item, switcher := one.make()
 
 		// A switch that is off is not written at all.
-		data, err := json.Marshal(item)
+		data, err := jio.Marshal(item)
 		c.NoError(err, "%s: should marshal", one.name)
 		c.NotContains(string(data), "switched_on", "%s: an off switch is not written", one.name)
 		restored, err := one.reload(data)
@@ -269,7 +274,7 @@ func TestSwitchedOnJSONRoundTrip(t *testing.T) {
 
 		// A switch that is on is written and comes back on.
 		switcher.SetSwitchedOn(true)
-		data, err = json.Marshal(item)
+		data, err = jio.Marshal(item)
 		c.NoError(err, "%s: should marshal", one.name)
 		c.Contains(string(data), `"switched_on":true`, "%s: an on switch is written", one.name)
 		restored, err = one.reload(data)
@@ -1012,7 +1017,7 @@ func TestContainerSwitchIsClearedForSkillsAndSpells(t *testing.T) {
 		// The same has to hold through a save, which is where a stale state would otherwise reach the file.
 		item = tc.make(true)
 		item.SetSwitchedOn(true)
-		data, err := json.Marshal(item)
+		data, err := jio.Marshal(item)
 		c.NoError(err, "%s container: should marshal", tc.name)
 		if tc.cleared {
 			c.NotContains(string(data), "switched_on", "%s container: a stale switch is not written", tc.name)

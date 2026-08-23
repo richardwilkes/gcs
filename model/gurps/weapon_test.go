@@ -10,7 +10,6 @@
 package gurps_test
 
 import (
-	"encoding/json/v2"
 	"strings"
 	"testing"
 
@@ -21,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -29,34 +29,34 @@ func TestWeaponParryAndBlockStorage(t *testing.T) {
 	c := check.New(t)
 
 	w := gurps.NewWeapon(nil, true)
-	data, err := json.Marshal(w)
+	data, err := jio.Marshal(w)
 	c.NoError(err)
 	s := string(data)
 	c.NotContains(s, "parry")
 	c.NotContains(s, "block")
 
 	var loadedWeapon gurps.Weapon
-	c.NoError(json.Unmarshal(data, &loadedWeapon))
+	c.NoError(jio.Unmarshal(data, &loadedWeapon))
 	c.Equal(gurps.WeaponParry{}, loadedWeapon.Parry)
 	c.Equal(gurps.WeaponBlock{}, loadedWeapon.Block)
 
 	w.Parry.CanParry = true
 	w.Block.CanBlock = true
-	data, err = json.Marshal(&w)
+	data, err = jio.Marshal(&w)
 	c.NoError(err)
 	s = string(data)
 	c.Contains(s, "parry")
 	c.Contains(s, "block")
 
 	w = gurps.NewWeapon(nil, false)
-	data, err = json.Marshal(w)
+	data, err = jio.Marshal(w)
 	c.NoError(err)
 	s = string(data)
 	c.NotContains(s, "parry")
 	c.NotContains(s, "block")
 
 	loadedWeapon = gurps.Weapon{}
-	c.NoError(json.Unmarshal(data, &loadedWeapon))
+	c.NoError(jio.Unmarshal(data, &loadedWeapon))
 	c.Equal(gurps.WeaponParry{}, loadedWeapon.Parry)
 	c.Equal(gurps.WeaponBlock{}, loadedWeapon.Block)
 }
@@ -136,7 +136,7 @@ func TestWeaponDamageWithNilOwner(t *testing.T) {
 		_ = w.Damage.String()
 	})
 	c.NotPanics(func() {
-		_, err := json.Marshal(w)
+		_, err := jio.Marshal(w)
 		c.NoError(err)
 	})
 }

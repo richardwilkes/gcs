@@ -50,7 +50,7 @@ type LootData struct {
 // NewLootFromFile loads Loot from a file.
 func NewLootFromFile(fileSystem fs.FS, filePath string) (*Loot, error) {
 	var l Loot
-	if err := jio.Load(fileSystem, filePath, &l); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &l); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(l.Version); err != nil {

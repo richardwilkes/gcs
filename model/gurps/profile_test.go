@@ -35,7 +35,7 @@ func TestProfilePortraitDataSurvivesDecodeFailure(t *testing.T) {
 
 	// The data must still be written out when saved.
 	var buffer bytes.Buffer
-	c.NoError(jio.Save(&buffer, &p))
+	c.NoError(jio.MarshalWrite(&buffer, &p))
 	c.True(strings.Contains(buffer.String(), `"portrait":`))
 
 	// Replacing the data must clear the undecodable state so a valid image can be loaded afterwards.

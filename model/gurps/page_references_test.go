@@ -10,12 +10,12 @@
 package gurps
 
 import (
-	"encoding/json/v2"
 	"os"
 	"path/filepath"
 	"testing"
 	"testing/fstest"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -24,13 +24,13 @@ import (
 func TestPageRefsUnmarshalSkipsNullEntries(t *testing.T) {
 	c := check.New(t)
 	var refs PageRefs
-	c.NotPanics(func() { c.NoError(json.Unmarshal([]byte(`{"B":null}`), &refs)) })
+	c.NotPanics(func() { c.NoError(jio.Unmarshal([]byte(`{"B":null}`), &refs)) })
 	c.True(refs.IsZero())
 	c.Equal(0, len(refs.List()))
 
 	// A null alongside a usable entry must cost only the null.
 	c.NotPanics(func() {
-		c.NoError(json.Unmarshal([]byte(`{"B":null,"BX":{"path":"/refs/basic.pdf","offset":2}}`), &refs))
+		c.NoError(jio.Unmarshal([]byte(`{"B":null,"BX":{"path":"/refs/basic.pdf","offset":2}}`), &refs))
 	})
 	list := refs.List()
 	c.Equal(1, len(list))

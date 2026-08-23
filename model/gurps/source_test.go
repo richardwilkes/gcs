@@ -10,10 +10,10 @@
 package gurps
 
 import (
-	"encoding/json/v2"
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -27,13 +27,13 @@ func TestSourcePathSeparatorNormalization(t *testing.T) {
 	// A path loaded with backslash separators is normalized to forward slashes.
 	const windowsAuthored = `{"id":"a","source":{"library":"Master Library","path":"Basic Set\\Basic Set Traits.adq","id":"x"}}`
 	var loaded SourcedID
-	c.NoError(json.Unmarshal([]byte(windowsAuthored), &loaded), "backslash path should load")
+	c.NoError(jio.Unmarshal([]byte(windowsAuthored), &loaded), "backslash path should load")
 	c.Equal("Basic Set/Basic Set Traits.adq", loaded.Source.Path, "path should be normalized on load")
 
 	// An already-normalized path is left unchanged on load.
 	const unixAuthored = `{"id":"a","source":{"library":"Master Library","path":"Basic Set/Basic Set Traits.adq","id":"x"}}`
 	var loaded2 SourcedID
-	c.NoError(json.Unmarshal([]byte(unixAuthored), &loaded2), "forward-slash path should load")
+	c.NoError(jio.Unmarshal([]byte(unixAuthored), &loaded2), "forward-slash path should load")
 	c.Equal("Basic Set/Basic Set Traits.adq", loaded2.Source.Path, "forward-slash path should be unchanged")
 
 	// A source carrying a backslash path in memory is always written out with forward slashes.
@@ -44,13 +44,13 @@ func TestSourcePathSeparatorNormalization(t *testing.T) {
 			TID:         "x",
 		},
 	}
-	data, err := json.Marshal(&inMemory)
+	data, err := jio.Marshal(&inMemory)
 	c.NoError(err, "source should marshal")
 	c.False(strings.Contains(string(data), `\`), "marshaled output must not contain backslashes")
 	c.True(strings.Contains(string(data), "Basic Set/Basic Set Traits.adq"), "marshaled output should use forward slashes")
 
 	// Round-tripping the marshaled output preserves the normalized path.
 	var roundTripped SourcedID
-	c.NoError(json.Unmarshal(data, &roundTripped), "marshaled source should load")
+	c.NoError(jio.Unmarshal(data, &roundTripped), "marshaled source should load")
 	c.Equal("Basic Set/Basic Set Traits.adq", roundTripped.Source.Path, "round-tripped path should remain normalized")
 }

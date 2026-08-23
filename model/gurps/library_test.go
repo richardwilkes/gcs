@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/json/v2"
 	"fmt"
 	"maps"
 	"net/http"
@@ -25,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/rjeczalik/notify"
 )
@@ -295,19 +295,19 @@ func TestLibraryJSONRoundTrip(t *testing.T) {
 	lib.ToggleFavorite("b.gcs")
 	lib.ToggleFavorite("a.gcs")
 	libs := Libraries(map[string]*Library{lib.Key(): lib})
-	data, err := json.Marshal(&libs)
+	data, err := jio.Marshal(&libs)
 	c.NoError(err)
 
 	// Pin the serialized shape. In particular, the GitHub account and repository names must not appear in the library
 	// object itself, since they travel in the key it is filed under.
 	var raw map[string]map[string]any
-	c.NoError(json.Unmarshal(data, &raw))
+	c.NoError(jio.Unmarshal(data, &raw))
 	obj, found := raw["someone/repo"]
 	c.True(found)
 	c.Equal([]string{"access_token", "favorites", "id", "path", "title"}, slices.Sorted(maps.Keys(obj)))
 
 	var loaded Libraries
-	c.NoError(json.Unmarshal(data, &loaded))
+	c.NoError(jio.Unmarshal(data, &loaded))
 	restored, ok := loaded["someone/repo"]
 	c.True(ok)
 	c.NotNil(restored)
@@ -321,12 +321,12 @@ func TestLibraryJSONRoundTrip(t *testing.T) {
 func TestLibrariesUnmarshalSkipsNullEntries(t *testing.T) {
 	c := check.New(t)
 	var libs Libraries
-	c.NotPanics(func() { c.NoError(json.Unmarshal([]byte(`{"a/b":null}`), &libs)) })
+	c.NotPanics(func() { c.NoError(jio.Unmarshal([]byte(`{"a/b":null}`), &libs)) })
 	c.Equal(0, len(libs))
 
 	// A null alongside a usable entry must cost only the null.
 	c.NotPanics(func() {
-		c.NoError(json.Unmarshal([]byte(`{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`), &libs))
+		c.NoError(jio.Unmarshal([]byte(`{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`), &libs))
 	})
 	c.Equal(1, len(libs))
 	lib, ok := libs["someone/repo"]

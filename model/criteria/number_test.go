@@ -10,12 +10,12 @@
 package criteria_test
 
 import (
-	"encoding/json/v2"
 	"hash"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/zeebo/xxh3"
 )
@@ -60,9 +60,9 @@ func TestNumberEqualJSONHashesEqually(t *testing.T) {
 	type holder struct {
 		Criteria criteria.Number `json:"criteria,omitzero"`
 	}
-	stale, err := json.Marshal(&holder{Criteria: number(criteria.AnyNumber, fxp.FromInteger(10))})
+	stale, err := jio.Marshal(&holder{Criteria: number(criteria.AnyNumber, fxp.FromInteger(10))})
 	c.NoError(err)
-	clean, err := json.Marshal(&holder{Criteria: number(criteria.AnyNumber, 0)})
+	clean, err := jio.Marshal(&holder{Criteria: number(criteria.AnyNumber, 0)})
 	c.NoError(err)
 	c.Equal(string(clean), string(stale))
 	c.Equal(hashOf(number(criteria.AnyNumber, 0)), hashOf(number(criteria.AnyNumber, fxp.FromInteger(10))))

@@ -10,11 +10,11 @@
 package gurps
 
 import (
-	"encoding/json/v2"
 	"testing"
 	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -161,7 +161,7 @@ func TestAttributesWithNullRows(t *testing.T) {
 	c := check.New(t)
 
 	var attrs Attributes
-	c.NoError(json.Unmarshal([]byte(`[{"attr_id":"st","adj":2},null,{"attr_id":"dx","adj":1}]`), &attrs),
+	c.NoError(jio.Unmarshal([]byte(`[{"attr_id":"st","adj":2},null,{"attr_id":"dx","adj":1}]`), &attrs),
 		"a null attribute entry should not panic or error")
 	c.Equal(2, len(attrs.Set), "the null entry should be dropped")
 	list := attrs.List()

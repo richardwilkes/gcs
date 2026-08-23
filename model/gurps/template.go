@@ -51,7 +51,7 @@ type TemplateData struct {
 // NewTemplateFromFile loads a Template from a file.
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var t Template
-	if err := jio.Load(fileSystem, filePath, &t); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &t); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(t.Version); err != nil {

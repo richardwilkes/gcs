@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -93,7 +94,7 @@ func TestHashedFormHasNoDerivedValues(t *testing.T) {
 	c := check.New(t)
 	e := newPopulatedEntity()
 
-	saved, err := json.Marshal(e, json.Deterministic(true))
+	saved, err := jio.Marshal(e, json.Deterministic(true))
 	c.NoError(err, "the entity marshals")
 	c.True(strings.Contains(string(saved), `"calc":`), "the saved form still publishes its derived values")
 
@@ -102,7 +103,7 @@ func TestHashedFormHasNoDerivedValues(t *testing.T) {
 
 	// What is left must still be well-formed JSON, since it is what the hash is computed over.
 	var round map[string]any
-	c.NoError(json.Unmarshal([]byte(hashed), &round), "the hashed form is valid JSON")
+	c.NoError(jio.Unmarshal([]byte(hashed), &round), "the hashed form is valid JSON")
 
 	// The hash must still notice an edit.
 	before := Hash64(e)
@@ -251,7 +252,7 @@ func TestEditDataMarshalsWithoutDerivedValues(t *testing.T) {
 	c.NotEqual(0, len(data.Weapons), "the test requires the edit data to hold weapons")
 	c.NotEqual(0, len(data.Modifiers), "the test requires the edit data to hold modifiers")
 
-	saved, err := json.Marshal(&data, json.Deterministic(true))
+	saved, err := jio.Marshal(&data, json.Deterministic(true))
 	c.NoError(err, "the edit data marshals")
 	c.True(strings.Contains(string(saved), `"calc":`), "an ordinary marshal of it still publishes derived values")
 

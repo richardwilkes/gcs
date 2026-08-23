@@ -72,7 +72,7 @@ func CurrentBindings() []*Binding {
 // defaults.
 func NewKeyBindingsFromFS(fileSystem fs.FS, filePath string) (*KeyBindings, error) {
 	var b KeyBindings
-	if err := jio.Load(fileSystem, filePath, &b); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &b); err != nil {
 		return nil, err
 	}
 	return &b, nil

@@ -11,7 +11,6 @@ package gurps_test
 
 import (
 	"encoding/json/jsontext"
-	"encoding/json/v2"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -34,7 +34,7 @@ func compactJSON(c check.Checker, in string) string {
 // jsonArrayElement extracts a single element from a JSON array as raw text.
 func jsonArrayElement(c check.Checker, in string, index int) string {
 	var elements []jsontext.Value
-	c.NoError(json.Unmarshal([]byte(in), &elements), "should be able to split %s", in)
+	c.NoError(jio.Unmarshal([]byte(in), &elements), "should be able to split %s", in)
 	c.True(index < len(elements), "element %d should exist in %s", index, in)
 	return compactJSON(c, elements[index].String())
 }
@@ -62,7 +62,7 @@ func TestUnknownFeaturePreserved(t *testing.T) {
 	}
 ]`
 	var features gurps.Features
-	c.NoError(json.Unmarshal([]byte(data), &features), "unknown feature type must not prevent loading")
+	c.NoError(jio.Unmarshal([]byte(data), &features), "unknown feature type must not prevent loading")
 	c.Equal(2, len(features), "both features should be present")
 
 	bonus, ok := features[0].(*gurps.AttributeBonus)
@@ -74,7 +74,7 @@ func TestUnknownFeaturePreserved(t *testing.T) {
 	c.Equal("future_bonus_from_a_newer_gcs", unknown.Kind, "the original type should be retained")
 	c.Equal(feature.Unknown, unknown.FeatureType(), "an UnknownFeature reports the Unknown type")
 
-	out, err := json.Marshal(features)
+	out, err := jio.Marshal(features)
 	c.NoError(err, "features should marshal")
 	c.Equal(jsonArrayElement(c, data, 1), jsonArrayElement(c, string(out), 1),
 		"saving must reproduce the unknown feature exactly")
@@ -111,7 +111,7 @@ func TestUnknownPrereqPreserved(t *testing.T) {
 	}
 ]`
 	var prereqs gurps.Prereqs
-	c.NoError(json.Unmarshal([]byte(data), &prereqs), "unknown prereq type must not prevent loading")
+	c.NoError(jio.Unmarshal([]byte(data), &prereqs), "unknown prereq type must not prevent loading")
 	c.Equal(2, len(prereqs), "both prereqs should be present")
 
 	_, ok := prereqs[0].(*gurps.AttributePrereq)
@@ -127,7 +127,7 @@ func TestUnknownPrereqPreserved(t *testing.T) {
 	c.False(unknown.Satisfied(nil, nil, &tooltip, "", nil), "an unknown prereq is never satisfied")
 	c.Contains(tooltip.String(), "future_prereq_from_a_newer_gcs", "the tooltip should name the unknown type")
 
-	out, err := json.Marshal(prereqs)
+	out, err := jio.Marshal(prereqs)
 	c.NoError(err, "prereqs should marshal")
 	c.Equal(jsonArrayElement(c, data, 1), jsonArrayElement(c, string(out), 1),
 		"saving must reproduce the unknown prereq exactly")

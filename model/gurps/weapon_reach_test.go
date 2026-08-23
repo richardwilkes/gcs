@@ -11,11 +11,11 @@
 package gurps_test
 
 import (
-	"encoding/json/v2"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -80,10 +80,10 @@ func TestWeaponReachRoundTripsThroughJSON(t *testing.T) {
 		{Min: fxp.Two, Max: fxp.Three, CloseCombat: true, ChangeRequiresReady: true},
 		{Min: fxp.Five, Max: fxp.Five, CloseCombat: true},
 	} {
-		data, err := json.Marshal(original)
+		data, err := jio.Marshal(original)
 		c.NoError(err, "test %d", i)
 		var reloaded gurps.WeaponReach
-		c.NoError(json.Unmarshal(data, &reloaded), "test %d", i)
+		c.NoError(jio.Unmarshal(data, &reloaded), "test %d", i)
 		c.Equal(original, reloaded, "test %d (%s)", i, original.String())
 	}
 }
