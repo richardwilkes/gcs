@@ -2,7 +2,16 @@
 
 ## New & Improved
 
-- Page references for `B:338+` (Basic Set: Campaigns) are redirected to use `BX` automatically. This allows split PDF users to open `B338+` page references. (#1098)
+- The PDF viewer now uses the page labels embedded in a PDF, so pages are identified by the numbering printed in the
+  book itself rather than by counting pages in the file. The page field in the toolbar shows and accepts these labels,
+  including non-numeric ones such as `iv` for the fourth page of frontmatter. If you had set a page offset for a PDF to
+  compensate for covers or frontmatter, you may need to reset it to 0, since the page labels already account for those
+  pages.
+- Page references may now use non-numeric page labels. When one is used, a colon **must** separate the reference key
+  from the label: to reference page `iv` of the Basic Set, use `B:iv`. References that already include a colon, such as
+  the Pyramid references (e.g. `PY104:12`), work as they always have — do not add a second colon.
+- Page references for `B338+` (Basic Set: Campaigns) are redirected to use `BX` automatically. This allows split PDF
+  users to open `B338+` page references. (#1098)
 - Features can now be marked as "switchable". A switchable feature only takes effect while the switch of the trait,
   skill, spell, or equipment it belongs to is on. The switch is per item (a modifier's switchable features follow the
   switch of the item the modifier belongs to) and can be toggled from a new column that appears on the character sheet
@@ -13,7 +22,8 @@
 - Spells can now have features, just like traits, skills and equipment. As a side effect, weapons attached to a spell
   now receive any "this weapon" bonuses defined by the spell's own features.
 - Adding items to a template now triggers modifier selections and nameable replacements (#1101)
-- Template items (non-container) now have a "Preconfigured" flag used to indicate that modifier and substitution configuration can be skipped when adding thie item to a character. (#1102)
+- Template items (non-container) now have a "Preconfigured" flag used to indicate that modifier and substitution
+  configuration can be skipped when adding thie item to a character. (#1102)
 
 ## Bug Fixes
 
@@ -48,4 +58,5 @@
   focus was returned to the list in a way that scrolled the entire list into view, which on a sheet with a long list
   could move the row far from where it had been. Now only the edited row is brought into view, and only when it isn't
   already visible.
-- Modifiers contained by Traits and Equipment properly set their `source` when the trait/equippment is copied to a character sheet or template (#1100)
+- Modifiers contained by Traits and Equipment properly set their `source` when the trait/equippment is copied to a
+  character sheet or template (#1100)

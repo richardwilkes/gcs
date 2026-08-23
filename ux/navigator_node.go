@@ -353,7 +353,7 @@ func (n *NavigatorNode) Refresh() {
 // OpenNodeContent opens the node's content.
 func (n *NavigatorNode) OpenNodeContent() (dockable unison.Dockable, wasOpen bool) {
 	if n.IsFile() {
-		return OpenFile(n.Path(), 0)
+		return OpenFile(n.Path(), gurps.PageInfo{})
 	}
 	return nil, false
 }

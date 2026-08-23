@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
@@ -53,12 +54,12 @@ func HandleLink(p unison.Paneler, target string) {
 	}
 	if !unison.HasURLPrefix(revised) && !unison.HasAnyPrefix(unison.DefaultMarkdownTheme.AltLinkPrefixes, revised) {
 		if xos.FileIsReadable(revised) {
-			OpenFile(revised, 0)
+			OpenFile(revised, gurps.PageInfo{})
 			return
 		}
 		md := revised + ".md"
 		if xos.FileIsReadable(md) {
-			OpenFile(md, 0)
+			OpenFile(md, gurps.PageInfo{})
 			return
 		}
 		revised = target

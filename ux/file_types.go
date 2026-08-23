@@ -65,7 +65,7 @@ func RegisterExternalFileTypes() {
 		UTI:       uti.SVG,
 		GroupWith: groupWith,
 		SVG:       svg.ImageFile,
-		Load:      func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
+		Load:      func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return NewImageDockable(filePath) },
 		IsImage:   true,
 	}
 	fi.Register()
@@ -77,7 +77,7 @@ func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
 		UTI:       format.UTI(),
 		GroupWith: groupWith,
 		SVG:       svg.ImageFile,
-		Load:      func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
+		Load:      func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return NewImageDockable(filePath) },
 		IsImage:   true,
 	}
 	fi.Register()
@@ -102,7 +102,7 @@ func registerMarkdownFileInfo() {
 		GroupWith:        uti.Markdown.Extensions,
 		SVG:              svg.MarkdownFile,
 		IsDeepSearchable: true,
-		Load: func(filePath string, _ int) (unison.Dockable, error) {
+		Load: func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) {
 			return NewMarkdownDockable(filePath, true, false)
 		},
 	}
@@ -151,7 +151,7 @@ func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG,
 		UTI:              dt,
 		GroupWith:        groupWith,
 		SVG:              icon,
-		Load:             func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
+		Load:             func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:        true,
 		IsDeepSearchable: true,
 	}
@@ -170,7 +170,7 @@ func registerExportableGCSFileInfo(name, ext string, icon *unison.SVG, loader fu
 		UTI:              dt,
 		GroupWith:        []string{ext},
 		SVG:              icon,
-		Load:             func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
+		Load:             func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:        true,
 		IsExportable:     true,
 		IsDeepSearchable: true,

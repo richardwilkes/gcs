@@ -1200,7 +1200,7 @@ func OpenFiles(filePaths []string) {
 			Workspace.ErrorHandler(i18n.Text("Unable to open ")+one, err)
 		} else {
 			Workspace.Window.ToFront()
-			OpenFile(p, 0)
+			OpenFile(p, gurps.PageInfo{})
 		}
 	}
 }
@@ -1272,7 +1272,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 }
 
 // OpenFile attempts to open the given file path.
-func OpenFile(filePath string, initialPage int) (dockable unison.Dockable, wasOpen bool) {
+func OpenFile(filePath string, initialPage gurps.PageInfo) (dockable unison.Dockable, wasOpen bool) {
 	absPath, err := filepath.Abs(filePath)
 	if err != nil {
 		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to resolve path:\n%s"), filePath), err)
@@ -1287,7 +1287,7 @@ func OpenFile(filePath string, initialPage int) (dockable unison.Dockable, wasOp
 		return nil, false
 	}
 	if fi.IsPDF && strings.TrimSpace(gurps.GlobalSettings().General.ExternalPDFCmdLine) != "" {
-		openExternalPDF(absPath, "", max(initialPage, 1))
+		openExternalPDF(absPath, "", initialPage)
 		return nil, false
 	}
 	var d unison.Dockable

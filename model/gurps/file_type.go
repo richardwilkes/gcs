@@ -64,7 +64,7 @@ type FileInfo struct {
 	UTI              *uti.DataType
 	GroupWith        []string
 	SVG              *unison.SVG
-	Load             func(filePath string, initialPage int) (unison.Dockable, error)
+	Load             func(filePath string, pageInfo PageInfo) (unison.Dockable, error)
 	IsSpecial        bool
 	IsGCSData        bool
 	IsImage          bool

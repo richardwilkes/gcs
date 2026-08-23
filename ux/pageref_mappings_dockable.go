@@ -105,7 +105,7 @@ func splitMarkdownPageRef(ref string) (path, anchor string) {
 }
 
 func openMarkdownFileAtAnchor(filePath, anchor string) {
-	dockable, _ := OpenFile(filePath, 0)
+	dockable, _ := OpenFile(filePath, gurps.PageInfo{})
 	if anchor == "" {
 		return
 	}
@@ -119,31 +119,47 @@ func openPDFPageReference(ref, highlight string, promptContext map[string]bool) 
 	if promptContext == nil {
 		promptContext = make(map[string]bool)
 	}
-	i := len(ref) - 1
-	for i >= 0 {
-		ch := ref[i]
-		if ch >= '0' && ch <= '9' {
-			i--
-		} else {
-			i++
-			break
+	var pageInfo gurps.PageInfo
+	var key string
+	hadColon := false
+	// First, look for a separating colon. These are mandatory if the key would otherwise end in a number, or if the
+	// page number portion is not a number and instead references a page label in a pdf, such as "iv".
+	i := strings.Index(ref, ":")
+	if i >= 0 {
+		hadColon = true
+		key = ref[:i]
+		pageInfo.Label = ref[i+1:]
+	} else if i == -1 {
+		i = len(ref) - 1
+		for i >= 0 {
+			ch := ref[i]
+			if ch >= '0' && ch <= '9' {
+				i--
+			} else {
+				i++
+				break
+			}
 		}
+		key = ref[:i]
+		pageInfo.Label = ref[i:]
 	}
-	if i > 0 {
-		page, err := strconv.Atoi(ref[i:])
-		if err != nil {
-			unison.ErrorDialogWithMessage(i18n.Text("Unable to open ")+ref, i18n.Text("Does it exist?"))
-			return false
-		}
-		key := ref[:i]
+	if key != "" && pageInfo.Label != "" {
 		// Special-case handing for Basic Set page references that use `B` for pages in the Campaigns book
-		if key == "B" && page >= 338 {
-			key = "BX"
+		if key == "B" {
+			if pageNum, err := strconv.Atoi(pageInfo.Label); err == nil && pageNum >= 338 {
+				key = "BX"
+			}
 		}
 		s := gurps.GlobalSettings()
 		pageRef := s.PageRefs.Lookup(key)
+		if pageRef == nil && hadColon {
+			pageRef = s.PageRefs.Lookup(key + ":")
+		}
 		if pageRef == nil && !promptContext[key] {
 			pdfName := PageRefKeyToName(key)
+			if pdfName == "" && hadColon {
+				pdfName = PageRefKeyToName(key + ":")
+			}
 			if pdfName != "" {
 				pdfName = fmt.Sprintf(i18n.Text("\nThis key is normally mapped to a PDF named:\n%s"), pdfName)
 			}
@@ -158,19 +174,19 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 			}
 		}
 		if pageRef != nil {
+			pageInfo.Offset = pageRef.Offset
 			if strings.TrimSpace(s.General.ExternalPDFCmdLine) == "" {
-				pageNum := page + pageRef.Offset - 1 // The pdf package uses 0 for the first page, not 1
-				if d, wasOpen := OpenFile(pageRef.Path, pageNum); d != nil {
+				if d, wasOpen := OpenFile(pageRef.Path, pageInfo); d != nil {
 					if pdfDockable, ok := d.(*PDFDockable); ok {
 						pdfDockable.SetSearchText(highlight)
-						pdfDockable.LoadPage(pageNum)
+						pdfDockable.LoadPage(pageInfo)
 						if !wasOpen {
 							pdfDockable.ClearHistory()
 						}
 					}
 				}
 			} else {
-				openExternalPDF(pageRef.Path, highlight, page+pageRef.Offset)
+				openExternalPDF(pageRef.Path, highlight, pageInfo)
 			}
 		}
 	}
@@ -179,7 +195,7 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 
 var variablesRegexp = regexp.MustCompile(`\$(\w+)`)
 
-func openExternalPDF(filePath, highlight string, pageNum int) {
+func openExternalPDF(filePath, highlight string, pageInfo gurps.PageInfo) {
 	errTitle := i18n.Text("Unable to use external PDF command line")
 	input := strings.TrimSpace(gurps.GlobalSettings().General.ExternalPDFCmdLine)
 	parts, err := xflag.SplitCommandLineWithoutEscapes(input)
@@ -199,7 +215,7 @@ func openExternalPDF(filePath, highlight string, pageNum int) {
 			case "$TEXT":
 				return highlight
 			case "$PAGE":
-				return strconv.Itoa(pageNum)
+				return pageInfo.ToExternalForm()
 			default:
 				return s
 			}

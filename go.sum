@@ -22,8 +22,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2/v2 v2.7.1 h1:yqDtwI1ptXXvEUNpYTk2lad4jLtAcKqkzepn4savSk4=
 github.com/dlclark/regexp2/v2 v2.7.1/go.mod h1:avUrQvPaLz2DrFNHJF0taWAFFX2C1GMSSoeiqFjcBmU=
-github.com/dop251/goja v0.0.0-20260820211235-95a30dcd3fa5 h1:vtyXXUeZQM4iNxud6zzTtdxT95nBJrelu77+DS0Vyi0=
-github.com/dop251/goja v0.0.0-20260820211235-95a30dcd3fa5/go.mod h1:LiIEzozrcvNXorsG/3+ypGqdTUAqZryhzSsqi0oU/Qg=
+github.com/dop251/goja v0.0.0-20260822123354-58e940e0d230 h1:IbnYnQ6X6nkyeAh08QsmZkObNOh/FVtAAmAOFKZ9wys=
+github.com/dop251/goja v0.0.0-20260822123354-58e940e0d230/go.mod h1:u8yZRUavu+N4EnFFy6J5fVtjE7lEcZ2YyV2GcBXY9c8=
 github.com/ebitengine/purego v0.11.0-alpha.9 h1:nH3UEIa45o38JcEgQlPgBFuGU0BkdU68u3v/IXrgo9k=
 github.com/ebitengine/purego v0.11.0-alpha.9/go.mod h1:DCHPP08djqhNSoTfImcnHYQRZmd0qhakvrozqaEYhGQ=
 github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=
@@ -73,8 +73,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/richardwilkes/canvas v0.3.0 h1:JOoYkYDSiRdOQ1dZXBt8A570hwFrJq6fD8TKjeEMuf4=
 github.com/richardwilkes/canvas v0.3.0/go.mod h1:aJIMjIpTc54KadGTf0hTNq/PhS8Xm+sYzzcujJWHuy8=
-github.com/richardwilkes/pdfview v0.6.0 h1:4QiNhlJQAHpRd6XNnxORqQGFLYH+65HU5XkAPCDYB7Q=
-github.com/richardwilkes/pdfview v0.6.0/go.mod h1:qSkVI4lyTge4gKTh5TK0WPvyQhXgqOgYH6sHG/+uFfc=
+github.com/richardwilkes/pdfview v0.7.0 h1:NEi7azJXwQyya3zf7Iw2hjSeq+p5r45fZb6oByIG/Zc=
+github.com/richardwilkes/pdfview v0.7.0/go.mod h1:qSkVI4lyTge4gKTh5TK0WPvyQhXgqOgYH6sHG/+uFfc=
 github.com/richardwilkes/rpgtools v1.13.0 h1:TJRbAP4wze5kR8WLks/YxVDeHjaU2jngbv+dooCBKO4=
 github.com/richardwilkes/rpgtools v1.13.0/go.mod h1:OFs1x0j3vqubqEo32tvXP70VzEO9pEjaNv6RWWmQG+M=
 github.com/richardwilkes/toolbox/v2 v2.17.0 h1:AIJzdqC2oTHktF32zR/U7BVV5HAkO6rlH3kFt+0itXA=

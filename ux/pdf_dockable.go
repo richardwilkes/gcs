@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -66,7 +67,6 @@ type PDFDockable struct {
 	autoScalingPopup       *unison.PopupMenu[autoscale.Option]
 	searchField            *unison.Field
 	matchesLabel           *unison.Label
-	pageCountLabel         *unison.Label
 	sideBarButton          *unison.Button
 	backButton             *unison.Button
 	forwardButton          *unison.Button
@@ -76,11 +76,13 @@ type PDFDockable struct {
 	lastPageButton         *unison.Button
 	link                   *PDFLink
 	loadErr                error
+	labelToPageNumMap      map[string]int
+	pageLabels             []string
 	pageRects              []geom.Rect
 	history                []int
 	boundsKnownCallbacks   []func()
+	initialPageInfo        gurps.PageInfo
 	currentPage            int
-	initialPage            int
 	pendingScrollPage      int
 	linkPage               int
 	scale                  int
@@ -105,14 +107,14 @@ type PDFDockable struct {
 // unresponsive before its window has even appeared. Instead, a fully-formed dockable in a loading state is returned
 // immediately and the document is prepared on a background goroutine. As a result, this never fails; a document that
 // can't be loaded reports the failure within the dockable rather than by returning an error.
-func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
+func NewPDFDockable(filePath string, initialPageInfo gurps.PageInfo) (unison.Dockable, error) {
 	generalSettings := gurps.GlobalSettings().General
 	d := &PDFDockable{
 		path:              filePath,
+		initialPageInfo:   initialPageInfo,
 		scale:             generalSettings.InitialPDFUIScale,
 		autoScaling:       generalSettings.PDFAutoScaling,
 		noUpdate:          true,
-		initialPage:       initialPage,
 		pendingScrollPage: -1,
 		linkPage:          -1,
 		loadStarted:       time.Now(),
@@ -177,6 +179,7 @@ func (d *PDFDockable) loadCompleted(pdf *PDFRenderer, err error) {
 	}
 	d.pdf = pdf
 	d.buildPageLayout()
+	d.buildPageLabelCache()
 	d.syncPageCountDependents()
 	d.MarkForLayoutAndRedraw()
 	// This has to come before the scroll below: the callbacks are what create the window for a dockable whose placement
@@ -186,7 +189,7 @@ func (d *PDFDockable) loadCompleted(pdf *PDFRenderer, err error) {
 	d.notifyBoundsKnown()
 	// The scroll to the initially requested page couldn't be honored at construction time, since there were no pages to
 	// scroll to yet, so it is issued now.
-	d.LoadPage(d.initialPage)
+	d.LoadPage(d.initialPageInfo)
 	if d.HasInSelfOrDescendants(func(p *unison.Panel) bool { return p.Focused() }) {
 		// The focus arrived while the document was still loading, so the claim the focus callbacks would have made was
 		// dropped on the floor. Make it now, so a document that was opened and focused normally renders ahead of the
@@ -274,6 +277,28 @@ func (d *PDFDockable) buildPageLayout() {
 	d.docSize = geom.NewSize(docWidth, y)
 }
 
+func (d *PDFDockable) buildPageLabelCache() {
+	d.pageLabels = d.pdf.doc.PageLabels()
+	d.labelToPageNumMap = make(map[string]int)
+	for pageNum, label := range d.pageLabels {
+		label = normalizePageLabel(label)
+		if _, exists := d.labelToPageNumMap[label]; !exists {
+			d.labelToPageNumMap[label] = pageNum
+		}
+	}
+}
+
+func normalizePageLabel(label string) string {
+	return strings.ToLower(strings.TrimSpace(label))
+}
+
+func (d *PDFDockable) pageLabel(pageNum int) string {
+	if pageNum < 0 || pageNum >= len(d.pageLabels) {
+		return ""
+	}
+	return d.pageLabels[pageNum]
+}
+
 // DockKey implements KeyedDockable.
 func (d *PDFDockable) DockKey() string {
 	return filePrefix + d.path
@@ -349,30 +374,23 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	// document has been laid out.
 	d.pageNumberField = unison.NewField()
 	d.pageNumberField.SetEnabled(false)
-	d.pageNumberField.SetMinimumTextWidthUsing(strconv.Itoa(d.pageCount() * 10))
+	d.pageNumberField.SetMinimumTextWidthUsing("1000")
 	d.pageNumberField.ModifiedCallback = func(_, after *unison.FieldState) {
-		if d.noUpdate {
+		if d.noUpdate || d.pdf == nil {
 			return
 		}
-		if pageNum, e := strconv.Atoi(after.Text); e == nil && pageNum > 0 && pageNum <= d.pageCount() {
-			d.ScrollToPage(pageNum-1, true)
+		if pageNum, exists := d.labelToPageNumMap[normalizePageLabel(after.Text)]; exists {
+			d.ScrollToPage(pageNum, true)
 		}
 	}
 	d.pageNumberField.ValidateCallback = func() bool {
-		pageNum, e := strconv.Atoi(d.pageNumberField.Text())
-		if e != nil || pageNum < 1 || pageNum > d.pageCount() {
-			return false
+		if d.pdf == nil {
+			return true
 		}
-		return true
+		_, exists := d.labelToPageNumMap[normalizePageLabel(d.pageNumberField.Text())]
+		return exists
 	}
 	first.AddChild(d.pageNumberField)
-
-	d.pageCountLabel = unison.NewLabel()
-	d.pageCountLabel.Font = unison.DefaultFieldTheme.Font
-	d.pageCountLabel.SetTitle(fmt.Sprintf(i18n.Text("of %d"), d.pageCount()))
-	first.AddChild(d.pageCountLabel)
-
-	first.AddChild(NewToolbarSeparator())
 
 	d.backButton = unison.NewSVGButton(svg.Back)
 	d.backButton.Tooltip = newWrappedTooltip(i18n.Text("Back"))
@@ -385,8 +403,6 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	d.forwardButton.ClickCallback = d.Forward
 	d.forwardButton.SetEnabled(false)
 	first.AddChild(d.forwardButton)
-
-	first.AddChild(NewToolbarSeparator())
 
 	d.firstPageButton = unison.NewSVGButton(svg.First)
 	d.firstPageButton.Tooltip = newWrappedTooltip(i18n.Text("First Page"))
@@ -461,11 +477,9 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 // syncPageCountDependents brings the toolbar widgets whose appearance depends on the page count into agreement with
 // it. They are created while the document is still loading, so the page count they were built against was zero.
 func (d *PDFDockable) syncPageCountDependents() {
-	count := d.pageCount()
 	d.pageNumberField.SetEnabled(true)
-	d.pageNumberField.SetMinimumTextWidthUsing(strconv.Itoa(count * 10))
-	d.pageCountLabel.SetTitle(fmt.Sprintf(i18n.Text("of %d"), count))
-	d.pageCountLabel.Parent().MarkForLayoutAndRedraw()
+	d.pageNumberField.SetMinimumTextWidthUsing(d.pageLabels...)
+	d.pageNumberField.Parent().MarkForLayoutAndRedraw()
 }
 
 func (d *PDFDockable) createTOC() {
@@ -616,16 +630,22 @@ func (d *PDFDockable) Forward() {
 }
 
 // LoadPage scrolls to the specified page, recording the jump in the history.
-func (d *PDFDockable) LoadPage(pageNumber int) {
+func (d *PDFDockable) LoadPage(pageInfo gurps.PageInfo) {
 	if d.pdf == nil {
 		// The document hasn't finished loading, so there is nothing to scroll to yet. Hold onto the request and let the
 		// load completion issue it, which is the same path the page the dockable was created for takes. This matters
 		// for a page reference that targets a document which is already open but still loading: the jump it asks for
 		// must supersede the one the dockable was opened with rather than being dropped.
-		d.initialPage = pageNumber
+		d.initialPageInfo = pageInfo
 		return
 	}
-	d.ScrollToPage(pageNumber, true)
+	pageNum, exists := d.labelToPageNumMap[normalizePageLabel(pageInfo.Label)]
+	if exists {
+		pageNum = min(max(pageNum+pageInfo.Offset, 0), d.pdf.PageCount()-1)
+	} else {
+		pageNum = 0
+	}
+	d.ScrollToPage(pageNum, true)
 }
 
 // ScrollToPage scrolls the view so that the top of the given 0-based page is at the top of the view. If recordHistory
@@ -720,10 +740,12 @@ func (d *PDFDockable) syncViewState() {
 	d.noUpdate = true
 	defer func() { d.noUpdate = noUpdate }()
 
-	pageText := strconv.Itoa(d.currentPage + 1)
-	if pageText != d.pageNumberField.Text() {
-		d.pageNumberField.SetText(pageText)
-		d.pageNumberField.Parent().MarkForLayoutAndRedraw()
+	if d.pdf != nil {
+		pageText := d.pageLabel(d.currentPage)
+		if pageText != d.pageNumberField.Text() {
+			d.pageNumberField.SetText(pageText)
+			d.pageNumberField.Parent().MarkForLayoutAndRedraw()
+		}
 	}
 
 	matchText := "-"
@@ -1098,7 +1120,11 @@ func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty geom.Rect) {
 	if waitFor := maxElapsedRenderTimeWithoutOverlay - time.Since(requested); waitFor > renderTimeSlop {
 		unison.InvokeTaskAfter(d.MarkForRedraw, waitFor)
 	} else {
-		d.drawOverlayMsg(gc, dirty, fmt.Sprintf(i18n.Text("Rendering page %d…"), pageNumber+1), false)
+		label := d.pageLabel(pageNumber)
+		if label == "" {
+			label = strconv.Itoa(pageNumber + 1)
+		}
+		d.drawOverlayMsg(gc, dirty, fmt.Sprintf(i18n.Text("Rendering page %s…"), label), false)
 	}
 }
 
