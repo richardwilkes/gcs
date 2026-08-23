@@ -10,8 +10,12 @@
 - Page references may now use non-numeric page labels. When one is used, a colon **must** separate the reference key
   from the label: to reference page `iv` of the Basic Set, use `B:iv`. References that already include a colon, such as
   the Pyramid references (e.g. `PY104:12`), work as they always have — do not add a second colon.
-- Page references for `B338+` (Basic Set: Campaigns) are redirected to use `BX` automatically. This allows split PDF
-  users to open `B338+` page references. (#1098)
+- Page references of `B338` and higher refer to material in Basic Set: Campaigns, the second of the two volumes the
+  Basic Set was published as, and are now automatically redirected to the `BX` reference key. Previously, these
+  references only opened for those who had combined the two volumes into a single PDF mapped to the `B` key; now they
+  work with the volumes kept as separate PDFs. If you use a single PDF instead — whether a combined PDF of the two
+  volumes or the new single-volume Basic Set Revised, which keeps the same page numbering for the same content — map
+  the `BX` key to it as well as the `B` key. (#1098)
 - Features can now be marked as "switchable". A switchable feature only takes effect while the switch of the trait,
   skill, spell, or equipment it belongs to is on. The switch is per item (a modifier's switchable features follow the
   switch of the item the modifier belongs to) and can be toggled from a new column that appears on the character sheet
@@ -21,10 +25,20 @@
   don't apply.
 - Spells can now have features, just like traits, skills and equipment. As a side effect, weapons attached to a spell
   now receive any "this weapon" bonuses defined by the spell's own features.
-- Adding items to a template now triggers modifier selections and nameable replacements (#1101)
-- Template items (non-container) now have a "Preconfigured" flag used to indicate that modifier and substitution
-  configuration can be skipped when adding thie item to a character. (#1102)
+- Adding an item to a template now prompts for its modifier selections and name substitutions, just as adding it to a
+  character sheet does. (#1101)
+- Items in a template can now be marked "Preconfigured" with a new checkbox in their editors. When a preconfigured item
+  is added to a character, the prompts for modifier selections and name substitutions are skipped, since you already
+  answered them while building the template. Trait and equipment containers can be preconfigured as well; the flag is
+  cleared automatically when an item is copied anywhere other than a template. (#1102)
 - Attribute pools can now be hidden, just like primary and secondary attributes. (#1103)
+- The PDF viewer displays pages faster. The graphics libraries GCS is built on now use the vector (SIMD) instructions
+  of modern processors for work done on the CPU, and PDF pages are always rendered there, so page display — including
+  decoding the images inside a PDF — speeds up for everyone. Normal interface drawing happens on the GPU and is
+  unaffected, but when GCS has to fall back to CPU rendering because working OpenGL support isn't available, that path
+  is now much faster as well: fills and gradients render 40–60% faster, blurs up to 27x faster, and the screen update
+  step on Windows and Linux has been sped up too. On older Intel/AMD processors that lack AVX2 support, GCS
+  automatically falls back to the previous code; the rendered output is identical either way.
 
 ## Bug Fixes
 
@@ -52,12 +66,17 @@
   them. Applying changes from an item's editor, deleting or duplicating rows, moving equipment between the carried and
   other equipment lists, converting rows to or from containers, answering a modifier or nameables prompt, swapping
   skill defaults, syncing with library sources, applying a template, and editing the point records all left the
-  timestamp unchanged before. Several edits (inserting new items, dragging rows in, moving equipment between the two
-  lists, and changing the sheet settings among them) also updated the sheet two or three times over for a single edit,
-  which on a sheet with many rows made them noticeably slower than they needed to be.
+  timestamp unchanged before. Several edits also redrew the sheet two or three times over, which on a sheet with many
+  rows made them noticeably slower than they needed to be.
 - Closing an item's editor no longer scrolls the sheet when the row that was edited is still in view. Before, the
   focus was returned to the list in a way that scrolled the entire list into view, which on a sheet with a long list
   could move the row far from where it had been. Now only the edited row is brought into view, and only when it isn't
   already visible.
-- Modifiers contained by Traits and Equipment properly set their `source` when the trait/equippment is copied to a
-  character sheet or template (#1100)
+- Modifiers now keep their connection to the library item they came from when the trait or equipment item holding them
+  is copied to a character sheet or template, so syncing with library sources updates them as well. (#1100)
+- Opening a trait, skill, spell, or equipment editor and clicking Apply no longer silently replaces the hidden
+  identifiers of every modifier and weapon within the item. Those identifiers are how GCS matches items to their
+  library sources, so an edit that changed nothing could still quietly break later syncs. Duplicating an item of your
+  own creation also no longer marks the copy as if it had come from a library. (#1106)
+- Fixed a memory error in the user interface library that could destabilize GCS on Windows when it created cursors or
+  the images shown while dragging.
