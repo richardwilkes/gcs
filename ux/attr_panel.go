@@ -360,7 +360,7 @@ func (a *AttrPanel) Sync() {
 		a.rebuild(attrs)
 	} else if a.kind == gurps.PoolAttrKind {
 		for _, def := range attrs.List(false) {
-			if def.Pool() && def.Type != attribute.PoolSeparator {
+			if def.Pool(a.entity) && def.Type != attribute.PoolSeparator {
 				id := def.ID()
 				if label, exists := a.stateLabels[id]; exists {
 					if attr, ok := a.entity.Attributes.Set[id]; ok {

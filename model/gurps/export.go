@@ -504,7 +504,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 				a := newExportedAttribute(def, attr)
 				data.Attributes.Secondary = append(data.Attributes.Secondary, a)
 				data.Attributes.SecondaryByID[def.DefID] = a
-			case def.Pool():
+			case def.Pool(entity):
 				p := &exportedPool{
 					exportedAttribute: newExportedAttribute(def, attr),
 					Current:           attr.Current(),

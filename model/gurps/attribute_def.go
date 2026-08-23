@@ -148,7 +148,7 @@ func (a *AttributeDef) EffectivePlacement(entity *Entity) attribute.Placement {
 // Kind returns the kind of attribute this is, resolved against the given entity.
 func (a *AttributeDef) Kind(entity *Entity) int {
 	switch {
-	case a.Pool():
+	case a.Pool(entity):
 		return PoolAttrKind
 	case a.Primary(entity):
 		return PrimaryAttrKind
@@ -169,39 +169,54 @@ func (a *AttributeDef) Relevant(entity *Entity, kind int) bool {
 
 // Primary returns true if the base value is a non-derived value, resolved against the given entity.
 func (a *AttributeDef) Primary(entity *Entity) bool {
-	if a.Type == attribute.PrimarySeparator {
+	switch a.Type {
+	case attribute.PrimarySeparator:
 		return true
-	}
-	placement := a.EffectivePlacement(entity)
-	if a.Type == attribute.Pool || a.Type == attribute.PoolRef || placement == attribute.Secondary || a.IsSeparator() {
+	case attribute.Pool, attribute.PoolRef:
 		return false
+	default:
+		placement := a.EffectivePlacement(entity)
+		if placement == attribute.Secondary || a.IsSeparator() {
+			return false
+		}
+		if placement == attribute.Primary {
+			return true
+		}
+		_, err := fxp.FromString(strings.TrimSpace(a.Base))
+		return err == nil
 	}
-	if placement == attribute.Primary {
-		return true
-	}
-	_, err := fxp.FromString(strings.TrimSpace(a.Base))
-	return err == nil
 }
 
 // Secondary returns true if the base value is a derived value, resolved against the given entity.
 func (a *AttributeDef) Secondary(entity *Entity) bool {
-	if a.Type == attribute.SecondarySeparator {
+	switch a.Type {
+	case attribute.SecondarySeparator:
 		return true
-	}
-	placement := a.EffectivePlacement(entity)
-	if a.Type == attribute.Pool || a.Type == attribute.PoolRef || placement == attribute.Primary || a.IsSeparator() {
+	case attribute.Pool, attribute.PoolRef:
 		return false
+	default:
+		placement := a.EffectivePlacement(entity)
+		if placement == attribute.Primary || a.IsSeparator() {
+			return false
+		}
+		if placement == attribute.Secondary {
+			return true
+		}
+		_, err := fxp.FromString(strings.TrimSpace(a.Base))
+		return err != nil
 	}
-	if placement == attribute.Secondary {
-		return true
-	}
-	_, err := fxp.FromString(strings.TrimSpace(a.Base))
-	return err != nil
 }
 
-// Pool returns true if the base value is a pool value.
-func (a *AttributeDef) Pool() bool {
-	return a.Type == attribute.PoolSeparator || a.Type == attribute.Pool || a.Type == attribute.PoolRef
+// Pool returns true if the base value is a pool value, resolved against the given entity.
+func (a *AttributeDef) Pool(entity *Entity) bool {
+	switch a.Type {
+	case attribute.PoolSeparator:
+		return true
+	case attribute.Pool, attribute.PoolRef:
+		return a.EffectivePlacement(entity) == attribute.Automatic
+	default:
+		return false
+	}
 }
 
 // AllowsDecimal returns true if the value can have a decimal point in it.

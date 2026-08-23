@@ -24,6 +24,7 @@
 - Adding items to a template now triggers modifier selections and nameable replacements (#1101)
 - Template items (non-container) now have a "Preconfigured" flag used to indicate that modifier and substitution
   configuration can be skipped when adding thie item to a character. (#1102)
+- Attribute pools can now be hidden, just like primary and secondary attributes. (#1103)
 
 ## Bug Fixes
 

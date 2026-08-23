@@ -147,7 +147,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
 		attribute.Types...))
 
-	if (p.def.Type != attribute.Pool && p.def.Type != attribute.PoolRef) && !p.def.IsSeparator() {
+	if !p.def.IsSeparator() {
 		content.AddChild(NewFieldLeadingLabel(i18n.Text("Placement"), false))
 		content.AddChild(p.createPlacementPanel())
 	}
@@ -220,13 +220,21 @@ func (p *attrDefSettingsPanel) createPlacementPanel() *unison.Panel {
 	panel := unison.NewPanel()
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 
-	panel.AddChild(NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement", i18n.Text("Placement"),
-		func() attribute.Placement { return p.def.Placement },
-		func(placement attribute.Placement) {
-			p.def.Placement = placement
-			p.dockable.sync()
-		},
-		attribute.Placements...))
+	var placements []attribute.Placement
+	if p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef {
+		placements = []attribute.Placement{attribute.Automatic, attribute.Hidden}
+	} else {
+		placements = attribute.Placements
+	}
+	panel.AddChild(
+		NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement", i18n.Text("Placement"),
+			func() attribute.Placement { return p.def.Placement },
+			func(placement attribute.Placement) {
+				p.def.Placement = placement
+				p.dockable.sync()
+			},
+			placements...),
+	)
 
 	columns := 1
 	if p.def.Placement == attribute.Hidden {
@@ -242,12 +250,22 @@ func (p *attrDefSettingsPanel) createPlacementPanel() *unison.Panel {
 		panel.AddChild(field)
 
 		panel.AddChild(NewFieldTrailingLabel(i18n.Text("is present, then"), false))
-
-		panel.AddChild(NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement_when_present",
-			i18n.Text("Placement When Present"),
-			func() attribute.Placement { return p.def.PlacementWhenPresent },
-			func(placement attribute.Placement) { p.def.PlacementWhenPresent = placement },
-			attribute.Automatic, attribute.Primary, attribute.Secondary))
+		var whenPresentPopup *Popup[attribute.Placement]
+		if p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef {
+			whenPresentPopup = NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement_when_present",
+				i18n.Text("Placement When Present"),
+				func() attribute.Placement { return attribute.Automatic },
+				func(_ attribute.Placement) {},
+				attribute.Automatic)
+			whenPresentPopup.SetEnabled(false)
+		} else {
+			whenPresentPopup = NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement_when_present",
+				i18n.Text("Placement When Present"),
+				func() attribute.Placement { return p.def.PlacementWhenPresent },
+				func(placement attribute.Placement) { p.def.PlacementWhenPresent = placement },
+				attribute.Automatic, attribute.Primary, attribute.Secondary)
+		}
+		panel.AddChild(whenPresentPopup)
 		columns = 5
 	}
 	panel.SetLayout(&unison.FlexLayout{
