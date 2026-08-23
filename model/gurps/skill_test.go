@@ -10,12 +10,12 @@
 package gurps
 
 import (
-	"encoding/json/v2"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -110,7 +110,7 @@ func TestSkillPrereqTooltipPunctuation(t *testing.T) {
 func TestTechniqueWithoutDefaultDoesNotPanic(t *testing.T) {
 	c := check.New(t)
 	var sk Skill
-	c.NoError(json.Unmarshal([]byte(`{"type":"technique","name":"Feint","difficulty":"h","points":2}`), &sk),
+	c.NoError(jio.Unmarshal([]byte(`{"type":"technique","name":"Feint","difficulty":"h","points":2}`), &sk),
 		"a technique without a default should load")
 	c.True(sk.IsTechnique(), "the loaded skill must be a technique")
 	c.True(sk.TechniqueDefault == nil, "the loaded technique must have no default")
@@ -141,7 +141,7 @@ func TestTechniqueWithoutDefaultDoesNotPanic(t *testing.T) {
 func TestSkillWithNullDefaultEntry(t *testing.T) {
 	c := check.New(t)
 	var sk Skill
-	c.NoError(json.Unmarshal([]byte(`{"type":"skill","name":"Shortsword","difficulty":"dx/a","points":0,`+
+	c.NoError(jio.Unmarshal([]byte(`{"type":"skill","name":"Shortsword","difficulty":"dx/a","points":0,`+
 		`"defaults":[null,{"type":"skill","name":{"compare":"is","qualifier":"Broadsword"},"modifier":-2}]}`), &sk),
 		"a skill with a null default entry should load")
 	c.Equal(1, len(sk.Defaults), "the null entry was dropped and the usable one kept")

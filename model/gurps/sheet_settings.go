@@ -100,19 +100,19 @@ func NewSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*SheetSettings
 	// wrapper struct would promote that unmarshaler onto the wrapper, causing it to consume the entire document and
 	// leaving the legacy "sheet_settings" field permanently unpopulated.
 	var raw jsontext.Value
-	if err := jio.Load(fileSystem, filePath, &raw); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &raw); err != nil {
 		return nil, err
 	}
 	var data struct {
 		OldLocation *SheetSettings `json:"sheet_settings"`
 	}
-	if err := json.Unmarshal(raw, &data); err != nil {
+	if err := jio.Unmarshal(raw, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
 	s := data.OldLocation
 	if s == nil {
 		s = &SheetSettings{}
-		if err := json.Unmarshal(raw, s); err != nil {
+		if err := jio.Unmarshal(raw, s); err != nil {
 			return nil, errs.Wrap(err)
 		}
 	}

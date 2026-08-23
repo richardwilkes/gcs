@@ -11,7 +11,6 @@ package ux
 
 import (
 	"encoding/binary"
-	"encoding/json/v2"
 	"io"
 	"math"
 	"net"
@@ -19,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -77,7 +77,7 @@ func TestReadHandoffPathsRejectsOversizedPayload(t *testing.T) {
 // truncated stream is reported rather than silently treated as an empty path list.
 func TestReadHandoffPathsRejectsMalformedFraming(t *testing.T) {
 	c := check.New(t)
-	payload, err := json.Marshal([]string{"/tmp/a.gcs"})
+	payload, err := jio.Marshal([]string{"/tmp/a.gcs"})
 	c.NoError(err)
 	for _, one := range []struct {
 		name string
@@ -145,7 +145,7 @@ func TestHandoffRoundTrip(t *testing.T) {
 	c := check.New(t)
 	useTestAppIdentifier(t)
 	want := []string{"/tmp/one.gcs", "/tmp/two.gct"}
-	payload, err := json.Marshal(want)
+	payload, err := jio.Marshal(want)
 	c.NoError(err)
 	client, server := net.Pipe()
 	defer xio.CloseIgnoringErrors(client)

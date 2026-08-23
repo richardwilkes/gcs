@@ -133,7 +133,7 @@ func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSett
 		GeneralSettings
 		OldLocation *GeneralSettings `json:"general"`
 	}
-	if err := jio.Load(fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
 		return nil, err
 	}
 	var s *GeneralSettings

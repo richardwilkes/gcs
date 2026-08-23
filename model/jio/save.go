@@ -28,21 +28,16 @@ func SaveToFile(path string, data any) error {
 		return errs.Wrap(err)
 	}
 	if err := xos.WriteSafeFile(path, func(w io.Writer) error {
-		return Save(w, data)
+		if err := MarshalWrite(w, data, jsontext.WithIndent("\t"), json.Deterministic(true)); err != nil {
+			return err
+		}
+		// Add a newline at the end of the file for POSIX compliance.
+		if _, err := w.Write([]byte{'\n'}); err != nil {
+			return err
+		}
+		return nil
 	}); err != nil {
 		return errs.NewWithCause(path, err)
-	}
-	return nil
-}
-
-// Save writes the data as nicely-formatted JSON to the given writer.
-func Save(w io.Writer, data any) error {
-	if err := json.MarshalWrite(w, data, json.Deterministic(true), jsontext.WithIndent("\t")); err != nil {
-		return errs.Wrap(err)
-	}
-	// Add a newline at the end of the file for POSIX compliance.
-	if _, err := w.Write([]byte{'\n'}); err != nil {
-		return errs.Wrap(err)
 	}
 	return nil
 }
@@ -52,11 +47,27 @@ func Save(w io.Writer, data any) error {
 func SerializeAndCompress(data any) ([]byte, error) {
 	var buffer bytes.Buffer
 	gz := gzip.NewWriter(&buffer)
-	if err := json.MarshalWrite(gz, data); err != nil {
-		return nil, errs.Wrap(err)
+	if err := MarshalWrite(gz, data); err != nil {
+		return nil, err
 	}
 	if err := gz.Close(); err != nil {
 		return nil, errs.Wrap(err)
 	}
 	return buffer.Bytes(), nil
+}
+
+// Marshal drop-in replacement for json.Marshal that applies any application-wide options
+func Marshal(data any, opts ...json.Options) ([]byte, error) {
+	var buffer bytes.Buffer
+	if err := MarshalWrite(&buffer, data, opts...); err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
+}
+
+// MarshalWrite drop-in replacement for json.MarshalWrite that applies any application-wide options
+func MarshalWrite(w io.Writer, data any, opts ...json.Options) error {
+	// NOTE: Any application-wide JSON Marshal options belong here.
+	opts = append([]json.Options{}, opts...)
+	return errs.Wrap(json.MarshalWrite(w, data, opts...))
 }

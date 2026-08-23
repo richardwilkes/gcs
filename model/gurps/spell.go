@@ -145,7 +145,7 @@ type spellListData struct {
 // NewSpellsFromFile loads an Spell list from a file.
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 	var data spellListData
-	if err := jio.Load(fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

@@ -139,7 +139,7 @@ func GlobalSettings() *Settings {
 // overwrite the user's settings without a trace.
 func loadSettingsOrDefaults(filePath string) Settings {
 	var settings Settings
-	if err := jio.Load(nil, filePath, &settings); err != nil {
+	if err := jio.LoadFromFile(nil, filePath, &settings); err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
 			errs.Log(errs.NewWithCause("unable to load settings; reverting to factory defaults", err), "path", filePath)
 			setAsideDamagedSettings(filePath)

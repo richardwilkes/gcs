@@ -12,7 +12,6 @@ package ux
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json/v2"
 	"io"
 	"log/slog"
 	"net"
@@ -21,6 +20,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -67,7 +67,7 @@ func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, pat
 					absPaths[i] = p
 				}
 			}
-			if pathsBuffer, err = json.Marshal(absPaths); err != nil {
+			if pathsBuffer, err = jio.Marshal(absPaths); err != nil {
 				errs.Log(err, "paths", absPaths)
 				xos.Exit(1)
 			}
@@ -208,7 +208,7 @@ func readHandoffPaths(r io.Reader) ([]string, error) {
 		return nil, errs.Wrap(err)
 	}
 	var paths []string
-	if err := json.Unmarshal(buffer, &paths); err != nil {
+	if err := jio.Unmarshal(buffer, &paths); err != nil {
 		return nil, errs.Wrap(err)
 	}
 	return paths, nil

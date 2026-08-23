@@ -10,13 +10,13 @@
 package gurps_test
 
 import (
-	"encoding/json/v2"
 	"testing"
 	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -41,7 +41,7 @@ func TestLegacyTraitPrereqKeyLoads(t *testing.T) {
 	}
 ]`
 	var prereqs gurps.Prereqs
-	c.NoError(json.Unmarshal([]byte(data), &prereqs), "a legacy prereq key must load")
+	c.NoError(jio.Unmarshal([]byte(data), &prereqs), "a legacy prereq key must load")
 	c.Equal(1, len(prereqs), "the prereq should be present")
 
 	p, ok := prereqs[0].(*gurps.TraitPrereq)
@@ -56,7 +56,7 @@ func TestLegacyTraitPrereqKeyLoads(t *testing.T) {
 	c.Equal(criteria.AtLeastNumber, p.LevelCriteria.Compare, "the level comparison should load normally")
 
 	// Saving migrates the key to the current one rather than preserving the retired spelling.
-	out, err := json.Marshal(prereqs)
+	out, err := jio.Marshal(prereqs)
 	c.NoError(err, "the prereqs should marshal")
 	c.Contains(string(out), `"type":"trait_prereq"`, "saving should write the current key")
 	c.NotContains(string(out), "advantage_prereq", "saving should not retain the retired key")

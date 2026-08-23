@@ -10,12 +10,12 @@
 package gurps
 
 import (
-	"encoding/json/v2"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -211,7 +211,7 @@ func TestSpellMarshalUnsatisfiedReason(t *testing.T) {
 	c := check.New(t)
 	const reason = "Requires Magery 1"
 	marshaled := func(s *Spell) string {
-		data, err := json.Marshal(s)
+		data, err := jio.Marshal(s)
 		c.NoError(err)
 		return string(data)
 	}

@@ -44,7 +44,7 @@ type CampaignData struct {
 // NewCampaignFromFile loads a Campaign from a file.
 func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 	var campaign Campaign
-	if err := jio.Load(fileSystem, filePath, &campaign); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &campaign); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(campaign.Version); err != nil {

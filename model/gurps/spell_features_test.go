@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/json/v2"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -18,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
@@ -39,20 +39,20 @@ func TestSpellFeaturesRoundTrip(t *testing.T) {
 
 	spell := NewSpell(e, nil, false)
 	spell.Name = "Fireball"
-	data, err := json.Marshal(spell)
+	data, err := jio.Marshal(spell)
 	c.NoError(err, "a spell with no features should marshal")
 	c.NotContains(string(data), `"features"`, "a spell with no features writes no features key")
 
 	bonus := newSpellFeatureTestSkillBonus("Alchemy", fxp.Two)
 	bonus.Switchable = true
 	spell.Features = Features{bonus, NewAttributeBonus(StrengthID)}
-	data, err = json.Marshal(spell)
+	data, err = jio.Marshal(spell)
 	c.NoError(err, "a spell with features should marshal")
 	c.Contains(string(data), `"features"`, "a spell's features are written")
 	c.Contains(string(data), `"switchable":true`, "a spell's switchable feature keeps its flag")
 
 	var restored Spell
-	c.NoError(json.Unmarshal(data, &restored), "a spell with features should load")
+	c.NoError(jio.Unmarshal(data, &restored), "a spell with features should load")
 	c.Equal(2, len(restored.Features), "both features come back")
 	if len(restored.Features) == 2 {
 		reloaded, ok := restored.Features[0].(*SkillBonus)

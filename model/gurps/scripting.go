@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"context"
-	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -26,6 +25,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/dop251/goja/parser"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
@@ -623,7 +623,7 @@ func compiledProgram(text string) (*goja.Program, error) {
 	if program := lookupCompiledProgram(text); program != nil {
 		return program, nil
 	}
-	jsBytes, err := json.Marshal(text)
+	jsBytes, err := jio.Marshal(text)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal script text: %w", err)
 	}

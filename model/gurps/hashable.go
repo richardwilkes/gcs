@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -105,7 +106,7 @@ func HashJSON(h hash.Hash, in any) {
 // The encoding is deterministic, since the bytes are compared directly and json/v2 is otherwise free to write a map's
 // entries in a different order each time.
 func MarshalWithoutCalc(in any) ([]byte, error) {
-	data, err := json.Marshal(in, json.Deterministic(true), json.WithMarshalers(omitCalcMarker))
+	data, err := jio.Marshal(in, json.Deterministic(true), json.WithMarshalers(omitCalcMarker))
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}

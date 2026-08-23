@@ -137,7 +137,7 @@ type skillListData struct {
 // NewSkillsFromFile loads an Skill list from a file.
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	var data skillListData
-	if err := jio.Load(fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

@@ -142,7 +142,7 @@ type traitListData struct {
 // NewTraitsFromFile loads an Trait list from a file.
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 	var data traitListData
-	if err := jio.Load(fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {

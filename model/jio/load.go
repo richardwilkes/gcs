@@ -21,8 +21,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xio"
 )
 
-// Load JSON data from the specified filesystem path. 'fileSystem' may be nil, in which case os.Open() is used instead.
-func Load(fileSystem fs.FS, path string, result any) error {
+// LoadFromFile JSON data from the specified filesystem path. 'fileSystem' may be nil, in which case os.Open() is used instead.
+func LoadFromFile(fileSystem fs.FS, path string, result any) error {
 	var f fs.File
 	var err error
 	if fileSystem == nil {
@@ -38,7 +38,7 @@ func Load(fileSystem fs.FS, path string, result any) error {
 	if r, err = xio.NewBOMStripper(f); err != nil {
 		return err
 	}
-	return errs.Wrap(json.UnmarshalRead(r, result))
+	return UnmarshalRead(r, result)
 }
 
 // DecompressAndDeserialize decompresses the buffer, then loads JSON data from it.
@@ -47,10 +47,21 @@ func DecompressAndDeserialize(data []byte, result any) error {
 	if err != nil {
 		return errs.Wrap(err)
 	}
-	if err = json.UnmarshalRead(r, result); err != nil {
+	if err = UnmarshalRead(r, result); err != nil {
 		// Note that we don't explicitly close the gzip reader on error because this is all done in memory and it isn't
 		// necessary to free resources.
 		return errs.Wrap(err)
 	}
 	return errs.Wrap(r.Close())
+}
+
+// Unmarshal drop-in replacement for json.Unmarshal that applies any application-wide options
+func Unmarshal(data []byte, result any, opts ...json.Options) error {
+	return UnmarshalRead(bytes.NewReader(data), result, opts...)
+}
+
+// UnmarshalRead drop-in replacement for json.UnmarshalRead that applies any application-wide options
+func UnmarshalRead(r io.Reader, result any, opts ...json.Options) error {
+	opts = append([]json.Options{}, opts...)
+	return errs.Wrap(json.UnmarshalRead(r, result, opts...))
 }
