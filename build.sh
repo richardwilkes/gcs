@@ -121,7 +121,7 @@ STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 # Generate the source
 if [ "$BUILD_GEN"x == "1x" ]; then
 	echo -e "\033[33mGenerating...\033[0m"
-	go generate ./cmd/enumgen/main.go
+	GOOS="" GOARCH="" go generate ./cmd/enumgen/main.go
 fi
 
 # Generate the translation file
