@@ -22,6 +22,12 @@ const (
 	Millimeter
 )
 
+// DefaultUnit is the default value.
+const DefaultUnit Unit = Inch
+
+// FirstUnit is the first valid value.
+const FirstUnit Unit = Inch
+
 // LastUnit is the last valid value.
 const LastUnit Unit = Millimeter
 
@@ -37,10 +43,10 @@ type Unit byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Unit) EnsureValid() Unit {
-	if enum <= Millimeter {
+	if enum >= FirstUnit && enum <= LastUnit {
 		return enum
 	}
-	return 0
+	return DefaultUnit
 }
 
 // Key returns the key used in serialization.
@@ -53,7 +59,7 @@ func (enum Unit) Key() string {
 	case Millimeter:
 		return "mm"
 	default:
-		return Unit(0).Key()
+		return DefaultUnit.Key()
 	}
 }
 
@@ -67,7 +73,7 @@ func (enum Unit) String() string {
 	case Millimeter:
 		return `mm`
 	default:
-		return Unit(0).String()
+		return DefaultUnit.String()
 	}
 }
 
@@ -89,5 +95,18 @@ func ExtractUnit(str string) Unit {
 			return enum
 		}
 	}
-	return 0
+	return DefaultUnit
+}
+
+// ExtractKnownUnit extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractUnit, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
+// is dispatching on the type to detect unknown types.
+func ExtractKnownUnit(str string) (value Unit, known bool) {
+	for _, enum := range Units {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultUnit, false
 }

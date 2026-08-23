@@ -34,6 +34,12 @@ const (
 	WeaponFragmentationType
 )
 
+// DefaultField is the default value.
+const DefaultField Field = TraitSelfControlRoll
+
+// FirstField is the first valid value.
+const FirstField Field = TraitSelfControlRoll
+
 // LastField is the last valid value.
 const LastField Field = WeaponFragmentationType
 
@@ -59,10 +65,10 @@ type Field byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Field) EnsureValid() Field {
-	if enum <= WeaponFragmentationType {
+	if enum >= FirstField && enum <= LastField {
 		return enum
 	}
-	return 0
+	return DefaultField
 }
 
 // Key returns the key used in serialization.
@@ -95,7 +101,7 @@ func (enum Field) Key() string {
 	case WeaponFragmentationType:
 		return "weapon_fragmentation_type"
 	default:
-		return Field(0).Key()
+		return DefaultField.Key()
 	}
 }
 
@@ -129,7 +135,7 @@ func (enum Field) String() string {
 	case WeaponFragmentationType:
 		return i18n.Text(`weapon fragmentation damage type`)
 	default:
-		return Field(0).String()
+		return DefaultField.String()
 	}
 }
 
@@ -151,5 +157,18 @@ func ExtractField(str string) Field {
 			return enum
 		}
 	}
-	return 0
+	return DefaultField
+}
+
+// ExtractKnownField extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractField, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// that is dispatching on the type to detect unknown types.
+func ExtractKnownField(str string) (value Field, known bool) {
+	for _, enum := range Fields {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultField, false
 }

@@ -30,6 +30,12 @@ const (
 	PoolSeparator
 )
 
+// DefaultType is the default value.
+const DefaultType Type = Integer
+
+// FirstType is the first valid value.
+const FirstType Type = Integer
+
 // LastType is the last valid value.
 const LastType Type = PoolSeparator
 
@@ -51,10 +57,10 @@ type Type byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Type) EnsureValid() Type {
-	if enum <= PoolSeparator {
+	if enum >= FirstType && enum <= LastType {
 		return enum
 	}
-	return 0
+	return DefaultType
 }
 
 // Key returns the key used in serialization.
@@ -79,7 +85,7 @@ func (enum Type) Key() string {
 	case PoolSeparator:
 		return "pool_separator"
 	default:
-		return Type(0).Key()
+		return DefaultType.Key()
 	}
 }
 
@@ -105,7 +111,7 @@ func (enum Type) String() string {
 	case PoolSeparator:
 		return i18n.Text(`Pool Separator`)
 	default:
-		return Type(0).String()
+		return DefaultType.String()
 	}
 }
 
@@ -127,5 +133,18 @@ func ExtractType(str string) Type {
 			return enum
 		}
 	}
-	return 0
+	return DefaultType
+}
+
+// ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
+// is dispatching on the type to detect unknown types.
+func ExtractKnownType(str string) (value Type, known bool) {
+	for _, enum := range Types {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultType, false
 }

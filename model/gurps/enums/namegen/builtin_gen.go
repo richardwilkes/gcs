@@ -28,6 +28,12 @@ const (
 	UnweightedAmericanLast
 )
 
+// DefaultBuiltin is the default value.
+const DefaultBuiltin Builtin = None
+
+// FirstBuiltin is the first valid value.
+const FirstBuiltin Builtin = None
+
 // LastBuiltin is the last valid value.
 const LastBuiltin Builtin = UnweightedAmericanLast
 
@@ -47,10 +53,10 @@ type Builtin byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Builtin) EnsureValid() Builtin {
-	if enum <= UnweightedAmericanLast {
+	if enum >= FirstBuiltin && enum <= LastBuiltin {
 		return enum
 	}
-	return 0
+	return DefaultBuiltin
 }
 
 // Key returns the key used in serialization.
@@ -71,7 +77,7 @@ func (enum Builtin) Key() string {
 	case UnweightedAmericanLast:
 		return "unweighted_american_last"
 	default:
-		return Builtin(0).Key()
+		return DefaultBuiltin.Key()
 	}
 }
 
@@ -93,7 +99,7 @@ func (enum Builtin) String() string {
 	case UnweightedAmericanLast:
 		return i18n.Text(`Unweighted American Last`)
 	default:
-		return Builtin(0).String()
+		return DefaultBuiltin.String()
 	}
 }
 
@@ -115,5 +121,18 @@ func ExtractBuiltin(str string) Builtin {
 			return enum
 		}
 	}
-	return 0
+	return DefaultBuiltin
+}
+
+// ExtractKnownBuiltin extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractBuiltin, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// that is dispatching on the type to detect unknown types.
+func ExtractKnownBuiltin(str string) (value Builtin, known bool) {
+	for _, enum := range Builtins {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultBuiltin, false
 }

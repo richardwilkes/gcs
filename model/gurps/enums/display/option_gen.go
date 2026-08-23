@@ -25,6 +25,12 @@ const (
 	InlineAndTooltip
 )
 
+// DefaultOption is the default value.
+const DefaultOption Option = NotShown
+
+// FirstOption is the first valid value.
+const FirstOption Option = NotShown
+
 // LastOption is the last valid value.
 const LastOption Option = InlineAndTooltip
 
@@ -41,10 +47,10 @@ type Option byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Option) EnsureValid() Option {
-	if enum <= InlineAndTooltip {
+	if enum >= FirstOption && enum <= LastOption {
 		return enum
 	}
-	return 0
+	return DefaultOption
 }
 
 // Key returns the key used in serialization.
@@ -59,7 +65,7 @@ func (enum Option) Key() string {
 	case InlineAndTooltip:
 		return "inline_and_tooltip"
 	default:
-		return Option(0).Key()
+		return DefaultOption.Key()
 	}
 }
 
@@ -75,7 +81,7 @@ func (enum Option) String() string {
 	case InlineAndTooltip:
 		return i18n.Text(`Inline & Tooltip`)
 	default:
-		return Option(0).String()
+		return DefaultOption.String()
 	}
 }
 
@@ -97,5 +103,18 @@ func ExtractOption(str string) Option {
 			return enum
 		}
 	}
-	return 0
+	return DefaultOption
+}
+
+// ExtractKnownOption extracts the value from a string, reporting whether the string was actually recognized.
+//
+// Unlike ExtractOption, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// that is dispatching on the type to detect unknown types.
+func ExtractKnownOption(str string) (value Option, known bool) {
+	for _, enum := range Options {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum, true
+		}
+	}
+	return DefaultOption, false
 }
