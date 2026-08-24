@@ -73,8 +73,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/richardwilkes/canvas v0.3.0 h1:JOoYkYDSiRdOQ1dZXBt8A570hwFrJq6fD8TKjeEMuf4=
 github.com/richardwilkes/canvas v0.3.0/go.mod h1:aJIMjIpTc54KadGTf0hTNq/PhS8Xm+sYzzcujJWHuy8=
-github.com/richardwilkes/pdfview v0.7.0 h1:NEi7azJXwQyya3zf7Iw2hjSeq+p5r45fZb6oByIG/Zc=
-github.com/richardwilkes/pdfview v0.7.0/go.mod h1:qSkVI4lyTge4gKTh5TK0WPvyQhXgqOgYH6sHG/+uFfc=
+github.com/richardwilkes/pdfview v0.8.0 h1:Qd1StxzSlju/pdunUQfxJRX+8xCHk/PyIlUvItvJHEY=
+github.com/richardwilkes/pdfview v0.8.0/go.mod h1:qSkVI4lyTge4gKTh5TK0WPvyQhXgqOgYH6sHG/+uFfc=
 github.com/richardwilkes/rpgtools v1.13.0 h1:TJRbAP4wze5kR8WLks/YxVDeHjaU2jngbv+dooCBKO4=
 github.com/richardwilkes/rpgtools v1.13.0/go.mod h1:OFs1x0j3vqubqEo32tvXP70VzEO9pEjaNv6RWWmQG+M=
 github.com/richardwilkes/toolbox/v2 v2.17.0 h1:AIJzdqC2oTHktF32zR/U7BVV5HAkO6rlH3kFt+0itXA=
