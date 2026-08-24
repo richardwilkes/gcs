@@ -27,7 +27,9 @@ func newChoices(pickerType picker.Type, compare criteria.NumericComparison) (typ
 	trait.TemplatePicker.Type = pickerType
 	trait.TemplatePicker.Qualifier.Compare = compare
 	trait.TemplatePicker.Qualifier.Qualifier = fxp.One
-	return addChoices(&editor[*gurps.Trait, *gurps.TraitData]{target: trait}, unison.NewPanel(), false)
+	e := &editor[*gurps.Trait, *gurps.TraitEditData]{target: trait, editorData: &gurps.TraitEditData{}}
+	e.editorData.CopyFrom(trait)
+	return addChoices(e, unison.NewPanel(), false)
 }
 
 // TestChoicesOpeningState verifies that a freshly opened editor blanks the picker's comparison popup
@@ -57,7 +59,10 @@ func TestChoicesOpeningState(t *testing.T) {
 }
 
 // TestChoicesFollowTheTypeSelection verifies that choosing a picker type updates the comparison popup
-// and qualifier field, and that returning to Not Applicable blanks them both again.
+// and qualifier field, and that returning to Not Applicable blanks them both again. A Not Applicable
+// picker's qualifier data is meaningless and is normalized away (see TemplatePicker.Clone) as soon as the
+// editor stages the data, so putting a fresh picker to use starts with the comparison blank until one is
+// chosen, rather than resurrecting whatever was set before it went out of use.
 func TestChoicesFollowTheTypeSelection(t *testing.T) {
 	c := check.New(t)
 	typePopup, comparison, field := newChoices(picker.NotApplicable, criteria.EqualsNumber)
@@ -66,7 +71,10 @@ func TestChoicesFollowTheTypeSelection(t *testing.T) {
 
 	typePopup.Select(picker.Count)
 	c.True(comparison.Enabled(), "putting the picker to use must offer a comparison")
-	c.True(field.AsPanel().Enabled(), "putting the picker to use must offer a qualifier")
+	c.False(field.AsPanel().Enabled(), "a freshly enabled picker has no comparison yet, so no qualifier to offer")
+
+	comparison.SelectIndex(criteria.ExtractNumericComparisonIndex(string(criteria.EqualsNumber)))
+	c.True(field.AsPanel().Enabled(), "choosing a comparison that takes a qualifier must offer one")
 
 	typePopup.Select(picker.NotApplicable)
 	c.False(comparison.Enabled(), "taking the picker out of use must withdraw the comparison")

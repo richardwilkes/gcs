@@ -385,7 +385,7 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 }
 
 // TemplatePickerData returns the TemplatePicker data, if any.
-func (s *Spell) TemplatePickerData() *TemplatePicker {
+func (s *SpellContainerOnlySyncData) TemplatePickerData() *TemplatePicker {
 	return s.TemplatePicker
 }
 
