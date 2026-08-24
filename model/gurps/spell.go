@@ -97,7 +97,7 @@ type SpellEditData struct {
 	ItemSwitch
 	preconfigurable
 	SpellNonContainerOnlyEditData
-	SkillContainerOnlySyncData
+	SpellContainerOnlySyncData
 }
 
 // SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.
@@ -107,6 +107,11 @@ type SpellNonContainerOnlyEditData struct {
 	Points           fxp.Int     `json:"points,omitzero"`
 	Study            []*Study    `json:"study,omitzero"`
 	StudyHoursNeeded study.Level `json:"study_hours_needed,omitzero"`
+}
+
+// SpellContainerOnlySyncData holds the spell sync data that is only applicable to spells that are containers.
+type SpellContainerOnlySyncData struct {
+	TemplatePicker *TemplatePicker `json:"template_picker,omitzero"`
 }
 
 // SpellSyncData holds the spell sync data that is common to both containers and non-containers.
@@ -380,7 +385,7 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 }
 
 // TemplatePickerData returns the TemplatePicker data, if any.
-func (s *Spell) TemplatePickerData() *TemplatePicker {
+func (s *SpellContainerOnlySyncData) TemplatePickerData() *TemplatePicker {
 	return s.TemplatePicker
 }
 
@@ -1196,7 +1201,7 @@ func (s *Spell) ClearUnusedFieldsForType() {
 			s.TemplatePicker = &TemplatePicker{}
 		}
 	} else {
-		s.SkillContainerOnlySyncData = SkillContainerOnlySyncData{}
+		s.SpellContainerOnlySyncData = SpellContainerOnlySyncData{}
 		s.Children = nil
 		s.Difficulty.omit = false
 	}
@@ -1220,7 +1225,7 @@ func (s *Spell) SyncWithSource() {
 				s.SpellSyncData = other.SpellSyncData
 				s.Tags = slices.Clone(other.Tags)
 				if s.Container() {
-					s.SkillContainerOnlySyncData = other.SkillContainerOnlySyncData
+					s.SpellContainerOnlySyncData = other.SpellContainerOnlySyncData
 					s.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
 					s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
@@ -1239,7 +1244,7 @@ func (s *Spell) SyncWithSource() {
 func (s *Spell) Hash(h hash.Hash) {
 	s.SpellSyncData.hash(h)
 	if s.Container() {
-		s.SkillContainerOnlySyncData.hash(h)
+		s.SpellContainerOnlySyncData.hash(h)
 	} else {
 		s.SpellNonContainerOnlySyncData.hash(h)
 	}
@@ -1254,6 +1259,10 @@ func (s *SpellSyncData) hash(h hash.Hash) {
 	for _, tag := range s.Tags {
 		xhash.StringWithLen(h, tag)
 	}
+}
+
+func (s *SpellContainerOnlySyncData) hash(h hash.Hash) {
+	s.TemplatePicker.Hash(h)
 }
 
 func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {

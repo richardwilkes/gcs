@@ -357,7 +357,7 @@ func (t *Trait) EffectivelyDisabled() bool {
 }
 
 // TemplatePickerData returns the TemplatePicker data, if any.
-func (t *Trait) TemplatePickerData() *TemplatePicker {
+func (t *TraitContainerSyncData) TemplatePickerData() *TemplatePicker {
 	return t.TemplatePicker
 }
 

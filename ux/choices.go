@@ -33,7 +33,7 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 	}
 
 	var tp *gurps.TemplatePicker
-	if pickable, ok := any(e.target).(gurps.TemplatePickerProvider); ok {
+	if pickable, ok := any(e.editorData).(gurps.TemplatePickerProvider); ok {
 		tp = pickable.TemplatePickerData()
 	} else {
 		return typePopup, comparisonPopup, field
