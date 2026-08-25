@@ -12,14 +12,27 @@ package gurps
 import (
 	"os"
 	"testing"
+
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
+// ciScriptExecTimeLimit is the per-script execution time limit, in seconds, the tests run with under CI (which every
+// hosted runner announces by setting CI in the environment). The runners are slow, shared machines that go test loads
+// further by running several packages' test binaries at once, and legitimate scripts have been seen to exceed even
+// PermittedScriptExecTimeMax on them. Nothing in the tests depends on the limit being tight, so it only needs to be
+// small enough that a script which really has run away cannot stall the run for long.
+var ciScriptExecTimeLimit = fxp.FromInteger(30)
+
 // TestMain raises the per-script execution time limit for the duration of the tests. The production default
-// (PermittedScriptExecTimeDef) is intentionally small, but some CI machines are slow enough that legitimate scripts can
-// exceed it, resulting in intermittent timeout failures. The tests are not exercising the timeout behavior, so use the
-// largest permitted limit here instead. It must stay within the permitted range, since anything outside of it would be
-// silently reset to the default by GeneralSettings.EnsureValidity, reintroducing the flakiness this guards against.
+// (PermittedScriptExecTimeDef) is intentionally small and the tests are not exercising the timeout behavior, so they
+// run with the largest limit users are permitted to set -- or, under CI, with ciScriptExecTimeLimit. The override
+// bypasses the settings entirely, so GeneralSettings.EnsureValidity cannot silently reset it to the default.
+// ux/main_test.go does the same for the ux tests, whose sheets resolve scripts as they are recalculated.
 func TestMain(m *testing.M) {
-	GlobalSettings().General.PermittedPerScriptExecTime = PermittedScriptExecTimeMax
+	limit := PermittedScriptExecTimeMax
+	if os.Getenv("CI") != "" {
+		limit = ciScriptExecTimeLimit
+	}
+	SetScriptExecTimeLimitForTesting(limit)
 	os.Exit(m.Run())
 }

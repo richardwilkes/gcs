@@ -375,10 +375,9 @@ func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 // rather than hanging the application.
 func TestScriptResultConversionHonorsTimeout(t *testing.T) {
 	c := check.New(t)
-	settings := GlobalSettings().General
-	prev := settings.PermittedPerScriptExecTime
-	settings.PermittedPerScriptExecTime = fxp.Tenth
-	defer func() { settings.PermittedPerScriptExecTime = prev }()
+	prev := scriptExecTimeLimitOverride.Load()
+	SetScriptExecTimeLimitForTesting(fxp.Tenth)
+	defer scriptExecTimeLimitOverride.Store(prev)
 	DiscardGlobalResolveCache()
 	defer DiscardGlobalResolveCache()
 
@@ -395,6 +394,33 @@ func TestScriptResultConversionHonorsTimeout(t *testing.T) {
 
 	// A well-behaved object result is still converted normally.
 	c.Equal("converted", ResolveScript(nil, ScriptSelfProvider{}, "({toString: function() { return 'converted' }})"))
+}
+
+// TestScriptExecTimeLimitOverride verifies that the per-script execution time limit the tests run with is the override
+// SetScriptExecTimeLimitForTesting installs rather than the one in the general settings. The override exists so CI can
+// run with a limit beyond what users may configure, so it has to be honored as given -- outside the permitted range and
+// untouched by settings validation -- has to be what actually cuts a script short, and has to fall away when cleared.
+func TestScriptExecTimeLimitOverride(t *testing.T) {
+	c := check.New(t)
+	prev := scriptExecTimeLimitOverride.Load()
+	defer scriptExecTimeLimitOverride.Store(prev)
+	DiscardGlobalResolveCache()
+	defer DiscardGlobalResolveCache()
+
+	settings := GlobalSettings().General
+	SetScriptExecTimeLimitForTesting(0)
+	c.Equal(settings.PermittedPerScriptExecTime, scriptExecTimeLimit(), "without an override, the settings limit applies")
+
+	beyondMax := PermittedScriptExecTimeMax + fxp.One
+	SetScriptExecTimeLimitForTesting(beyondMax)
+	c.Equal(beyondMax, scriptExecTimeLimit(), "the override is honored beyond the permitted range")
+	settings.EnsureValidity()
+	c.Equal(beyondMax, scriptExecTimeLimit(), "settings validation leaves the override alone")
+
+	SetScriptExecTimeLimitForTesting(fxp.FromStringForced("0.01"))
+	c.Equal("script execution timed out (limited to 0.01 seconds)",
+		ResolveScript(nil, ScriptSelfProvider{}, "(function() { for (;;); })()"),
+		"the override is the limit a runaway script is cut short at")
 }
 
 // TestScriptObjectResultConcurrency resolves object-valued scripts, whose results can only be turned into strings by

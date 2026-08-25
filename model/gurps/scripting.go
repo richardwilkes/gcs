@@ -527,6 +527,28 @@ func enterScriptResolution(entity *Entity) (depth int, leave func()) {
 	return int(globalScriptResolvingDepth.Add(1)), func() { globalScriptResolvingDepth.Add(-1) }
 }
 
+// scriptExecTimeLimitOverride, when non-zero, takes the place of the per-script execution time limit from the general
+// settings. Only SetScriptExecTimeLimitForTesting sets it.
+var scriptExecTimeLimitOverride atomic.Int64
+
+// SetScriptExecTimeLimitForTesting overrides the number of seconds a script may run before ResolveScript interrupts
+// it; passing 0 restores the limit from the general settings. Users may only configure that limit between
+// PermittedScriptExecTimeMin and PermittedScriptExecTimeMax, and the production default is deliberately small, but
+// neither suits the tests: they are not exercising the timeout, and some CI runners are slow enough that legitimate
+// scripts exceed even the maximum. The override lives outside the settings so that nothing which validates them (see
+// GeneralSettings.EnsureValidity) can quietly reset it to the default. Only tests should call this.
+func SetScriptExecTimeLimitForTesting(seconds fxp.Int) {
+	scriptExecTimeLimitOverride.Store(int64(seconds))
+}
+
+// scriptExecTimeLimit returns the number of seconds a script may run before it is interrupted.
+func scriptExecTimeLimit() fxp.Int {
+	if limit := scriptExecTimeLimitOverride.Load(); limit != 0 {
+		return fxp.Int(limit)
+	}
+	return GlobalSettings().General.PermittedPerScriptExecTime
+}
+
 // ResolveScript will process a script.
 func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
 	depth, leave := enterScriptResolution(entity)
@@ -545,7 +567,7 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		return cached.text
 	}
 	var result string
-	maxTime := GlobalSettings().General.PermittedPerScriptExecTime
+	maxTime := scriptExecTimeLimit()
 	args := []ScriptArg{{
 		Name:  entityScriptArgName,
 		Value: func(r *goja.Runtime) any { return newScriptEntity(r, entity) },

@@ -32,4 +32,5 @@ func TestRace(t *testing.T) {
 	t.Run("ScriptObjectResultConcurrency", TestScriptObjectResultConcurrency)
 	t.Run("ScriptResultConversionHonorsTimeout", TestScriptResultConversionHonorsTimeout)
 	t.Run("ScriptTimeoutDoesNotAffectNextRun", TestScriptTimeoutDoesNotAffectNextRun)
+	t.Run("ScriptExecTimeLimitOverride", TestScriptExecTimeLimitOverride)
 }
