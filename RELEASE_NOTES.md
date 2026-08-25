@@ -27,4 +27,7 @@
 
 ## Bug Fixes
 
-- (none yet)
+- A skill's optional specialization is no longer treated as part of its library data. Setting one on a skill that came
+  from a library used to make the skill show as not matching its source, and Sync with Source (or the sheet's sync-all
+  button) then wiped the optional specialization out. Such a skill now shows as matching its source and keeps its
+  optional specialization through a sync.

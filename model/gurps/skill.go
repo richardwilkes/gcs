@@ -94,11 +94,12 @@ type SkillEditData struct {
 // SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlyEditData struct {
 	SkillNonContainerOnlySyncData
-	TechLevel        *string       `json:"tech_level,omitzero"`
-	Points           fxp.Int       `json:"points,omitzero"`
-	DefaultedFrom    *SkillDefault `json:"defaulted_from,omitzero"`
-	Study            []*Study      `json:"study,omitzero"`
-	StudyHoursNeeded study.Level   `json:"study_hours_needed,omitzero"`
+	OptionalSpecialization string        `json:"optional_specialization,omitzero"`
+	TechLevel              *string       `json:"tech_level,omitzero"`
+	Points                 fxp.Int       `json:"points,omitzero"`
+	DefaultedFrom          *SkillDefault `json:"defaulted_from,omitzero"`
+	Study                  []*Study      `json:"study,omitzero"`
+	StudyHoursNeeded       study.Level   `json:"study_hours_needed,omitzero"`
 }
 
 // SkillSyncData holds the skill sync data that is common to both containers and non-containers.
@@ -113,7 +114,6 @@ type SkillSyncData struct {
 // SkillNonContainerOnlySyncData holds the Skill sync data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlySyncData struct {
 	Specialization               string              `json:"specialization,omitzero"`
-	OptionalSpecialization       string              `json:"optional_specialization,omitzero"`
 	Difficulty                   AttributeDifficulty `json:"difficulty,omitzero"`
 	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitzero"`
 	Defaults                     []*SkillDefault     `json:"defaults,omitzero"`
@@ -1493,7 +1493,6 @@ func (s *SkillContainerOnlySyncData) hash(h hash.Hash) {
 
 func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.Specialization)
-	xhash.StringWithLen(h, s.OptionalSpecialization)
 	s.Difficulty.Hash(h)
 	xhash.Num64(h, s.EncumbrancePenaltyMultiplier)
 	xhash.Num64(h, len(s.Defaults))

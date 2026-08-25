@@ -15,29 +15,57 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
-// TestSkillHashIncludesOptionalSpecialization verifies that the optional specialization participates in the sync hash.
-// Without it, SourceMatcher cannot tell a library skill from a local copy that differs only in that field, so the skill
-// reports as matching its source while SyncWithSource would happily overwrite the field.
-func TestSkillHashIncludesOptionalSpecialization(t *testing.T) {
+// TestSkillOptionalSpecializationNotSynced verifies that the optional specialization is left out of the Source Sync
+// mechanism entirely. It is a per-character choice layered on top of the library's skill, so a character that has
+// picked one must still report as matching its source, and syncing with the source must never replace it with the
+// library's value.
+func TestSkillOptionalSpecializationNotSynced(t *testing.T) {
 	c := check.New(t)
-	newSkill := func(optionalSpecialization string) *Skill {
-		sk := NewSkill(nil, nil, false)
+	e := NewEntity()
+	newSkill := func(owner DataOwner, pageRef, optionalSpecialization string) *Skill {
+		sk := NewSkill(owner, nil, false)
 		sk.Name = "Ritual Magic"
 		sk.Specialization = "Fire"
+		sk.Difficulty.Attribute = IntelligenceID
+		sk.PageRef = pageRef
 		sk.OptionalSpecialization = optionalSpecialization
 		return sk
 	}
-	c.NotEqual(Hash64(newSkill("")), Hash64(newSkill("Flame")),
-		"skills differing only in optional specialization must hash differently")
-	c.NotEqual(Hash64(newSkill("Flame")), Hash64(newSkill("Ember")),
-		"skills with differing optional specializations must hash differently")
-	c.Equal(Hash64(newSkill("Flame")), Hash64(newSkill("Flame")),
-		"skills with identical optional specializations must hash the same")
+
+	// Stand in for the skill as it appears in a library file, and a character's copy of it that differs only in the
+	// optional specialization the character chose. The library data is injected directly into the source matcher, which
+	// is what a real sync gets from the library file it loaded.
+	source := newSkill(nil, "B242", "Ember")
+	local := newSkill(e, "B242", "Flame")
+	e.Skills = append(e.Skills, local)
+	libFile := LibraryFile{Library: "Test Library", Path: "Test" + SkillsExt}
+	local.Source = Source{LibraryFile: libFile, TID: source.TID}
+	e.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
+		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
+	}
+
+	// Differing only in optional specialization is no difference at all as far as the source is concerned.
+	c.Equal(Hash64(source), Hash64(local), "skills differing only in optional specialization must hash the same")
+	state, _ := e.SourceMatcher().Match(local)
+	c.Equal(srcstate.Matched, state, "a skill differing from its source only in optional specialization matches it")
+	local.SyncWithSource()
+	c.Equal("Flame", local.OptionalSpecialization, "syncing a matched skill leaves the optional specialization alone")
+
+	// Once the local copy drifts on a field that *is* synced, the sync must bring that field back into line while still
+	// leaving the optional specialization untouched.
+	local.PageRef = ""
+	state, _ = e.SourceMatcher().Match(local)
+	c.Equal(srcstate.Mismatched, state, "precondition: a differing page reference is a mismatch")
+	local.SyncWithSource()
+	c.Equal("B242", local.PageRef, "the sync brings the source's page reference across")
+	c.Equal("Flame", local.OptionalSpecialization, "the sync leaves the local optional specialization in place")
 }
 
 // TestSkillPrereqTooltipPunctuation verifies the unsatisfied-prereq description doesn't emit doubled commas when more
