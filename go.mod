@@ -11,7 +11,7 @@ require (
 	github.com/richardwilkes/pdfview v0.8.0
 	github.com/richardwilkes/rpgtools v1.13.0
 	github.com/richardwilkes/toolbox/v2 v2.17.0
-	github.com/richardwilkes/unison v0.99.0
+	github.com/richardwilkes/unison v0.99.1
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.5
@@ -34,7 +34,7 @@ require (
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/go-text/typesetting v0.3.4 // indirect
-	github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3 // indirect
+	github.com/google/pprof v0.0.0-20260825171938-4d453200e7d9 // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
