@@ -24,15 +24,15 @@ import (
 // SheetSettingsResponder defines the method required to be notified of updates to the SheetSettings.
 type SheetSettingsResponder interface {
 	// SheetSettingsUpdated will be called when the SheetSettings have been updated. The provided Entity will be nil if
-	// it was the default SheetSettings that was updated rather than one attached to a specific entity. blockLayout will
-	// be true if the BlockLayout was altered, which usually requires a full rebuild.
-	SheetSettingsUpdated(entity *Entity, blockLayout bool)
+	// it was the default SheetSettings that was updated rather than one attached to a specific entity. fullRebuild will
+	// be true if the change requires the content to be rebuilt from scratch rather than merely synchronized.
+	SheetSettingsUpdated(entity *Entity, fullRebuild bool)
 }
 
 // SheetSettingsData holds the SheetSettings data that is written to disk.
 type SheetSettingsData struct {
 	Page                          *PageSettings      `json:"page,omitzero"`
-	BlockLayout                   *BlockLayout       `json:"block_layout,omitzero"`
+	Layout                        *SheetLayout       `json:"layout,omitzero"`
 	Attributes                    *AttributeDefs     `json:"attributes,omitzero"`
 	BodyType                      *Body              `json:"body_type,omitzero"`
 	DamageProgression             progression.Option `json:"damage_progression"`
@@ -79,7 +79,7 @@ func SheetSettingsFor(entity *Entity) *SheetSettings {
 func FactorySheetSettings() *SheetSettings {
 	return &SheetSettings{
 		Page:                    NewPageSettings(),
-		BlockLayout:             NewBlockLayout(),
+		Layout:                  FactorySheetLayout(),
 		Attributes:              FactoryAttributeDefs(),
 		BodyType:                FactoryBody(),
 		DamageProgression:       progression.BasicSet,
@@ -127,10 +127,10 @@ func (s *SheetSettings) EnsureValidity() {
 	} else {
 		s.Page.EnsureValidity()
 	}
-	if s.BlockLayout == nil {
-		s.BlockLayout = NewBlockLayout()
+	if s.Layout == nil {
+		s.Layout = FactorySheetLayout()
 	} else {
-		s.BlockLayout.EnsureValidity()
+		s.Layout.EnsureValidity()
 	}
 	if s.Attributes == nil {
 		s.Attributes = FactoryAttributeDefs()
@@ -156,8 +156,9 @@ func (s *SheetSettings) MarshalJSONTo(enc *jsontext.Encoder) error {
 func (s *SheetSettings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content struct {
 		SheetSettingsData
-		OldBodyType             *Body `json:"hit_locations"`
-		OldShowTraitModifierAdj bool  `json:"show_advantage_modifier_adj"`
+		OldBodyType             *Body    `json:"hit_locations"`
+		OldBlockLayout          []string `json:"block_layout"`
+		OldShowTraitModifierAdj bool     `json:"show_advantage_modifier_adj"`
 	}
 	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err
@@ -165,6 +166,9 @@ func (s *SheetSettings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	s.SheetSettingsData = content.SheetSettingsData
 	if s.BodyType == nil && content.OldBodyType != nil {
 		s.BodyType = content.OldBodyType
+	}
+	if s.Layout == nil && len(content.OldBlockLayout) != 0 {
+		s.Layout = NewSheetLayoutFromLegacyRows(content.OldBlockLayout)
 	}
 	if !s.ShowTraitModifierAdj && content.OldShowTraitModifierAdj {
 		s.ShowTraitModifierAdj = true
@@ -177,7 +181,7 @@ func (s *SheetSettings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone := *s
 	clone.Page = s.Page.Clone()
-	clone.BlockLayout = s.BlockLayout.Clone()
+	clone.Layout = s.Layout.Clone()
 	clone.Attributes = s.Attributes.Clone()
 	clone.BodyType = s.BodyType.Clone(entity, nil)
 	return &clone

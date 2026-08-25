@@ -94,6 +94,31 @@ func (p *Page) insets() geom.Insets {
 	return insets
 }
 
+// pageNumbering returns this page's number, counting from 1, and how many pages there are, both taken from the pages
+// that share its parent. Only the pages are counted: while the block layout is being edited the sheet's content also
+// holds the editor's overlay, and a page whose footer counted that would call itself the second of two -- and, being
+// even-numbered, swap the two halves of its footer around.
+func (p *Page) pageNumbering() (number, count int) {
+	parent := p.Parent()
+	if parent == nil {
+		return 1, 1
+	}
+	for _, child := range parent.Children() {
+		if page, ok := child.Self.(*Page); ok {
+			count++
+			if page == p {
+				number = count
+			}
+		}
+	}
+	if number == 0 {
+		// Can't happen, since the page is one of its parent's children, but a footer that said "Page 0" would be worse
+		// than one that counted from 1.
+		return 1, max(count, 1)
+	}
+	return number, count
+}
+
 func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	insets := p.insets()
 	_, prefSize, _ := p.LayoutSizes(nil, geom.Size{})
@@ -103,8 +128,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	r.Width -= insets.Left + insets.Right
 	r.Y = r.Bottom() - insets.Bottom
 	r.Height = insets.Bottom
-	parent := p.Parent()
-	pageNumber := parent.IndexOfChild(p) + 1
+	pageNumber, pageCount := p.pageNumbering()
 
 	primaryDecorations := &unison.TextDecoration{
 		Font:            fonts.PageFooterPrimary,
@@ -137,7 +161,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 
 	center = unison.NewText(WebSiteDomain, secondaryDecorations)
 	left = unison.NewText(i18n.Text("All rights reserved"), secondaryDecorations)
-	right = unison.NewText(fmt.Sprintf(i18n.Text("Page %d of %d"), pageNumber, len(parent.Children())), secondaryDecorations)
+	right = unison.NewText(fmt.Sprintf(i18n.Text("Page %d of %d"), pageNumber, pageCount), secondaryDecorations)
 	if pageNumber&1 == 0 {
 		left, right = right, left
 	}

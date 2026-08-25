@@ -31,7 +31,8 @@ var (
 // sheetSettingsRecorder is a Dockable that records the sheet settings updates it is sent.
 type sheetSettingsRecorder struct {
 	unison.Panel
-	updates []bool // one entry per notification, holding the blockLayout (full rebuild) flag
+	entities []*gurps.Entity // one entry per notification, holding the entity whose settings changed
+	updates  []bool          // one entry per notification, holding the fullRebuild flag
 }
 
 func (r *sheetSettingsRecorder) TitleIcon(_ geom.Size) unison.Drawable { return nil }
@@ -39,8 +40,9 @@ func (r *sheetSettingsRecorder) Title() string                         { return 
 func (r *sheetSettingsRecorder) Tooltip() string                       { return "" }
 func (r *sheetSettingsRecorder) Modified() bool                        { return false }
 
-func (r *sheetSettingsRecorder) SheetSettingsUpdated(_ *gurps.Entity, blockLayout bool) {
-	r.updates = append(r.updates, blockLayout)
+func (r *sheetSettingsRecorder) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
+	r.entities = append(r.entities, entity)
+	r.updates = append(r.updates, fullRebuild)
 }
 
 func (r *sheetSettingsRecorder) sawFullRebuild() bool {

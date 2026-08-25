@@ -56,7 +56,6 @@ func NewDescriptionPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Descriptio
 		HSpacing: 4,
 	})
 	d.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
 		HAlign: align.Fill,
 		HGrab:  true,
 	})

@@ -168,6 +168,10 @@ var (
 	lastData string
 	Last     = unison.MustSVGFromContentString(lastData)
 
+	//go:embed layout.svg
+	layoutData string
+	Layout     = unison.MustSVGFromContentString(layoutData)
+
 	//go:embed link.svg
 	linkData string
 	Link     = unison.MustSVGFromContentString(linkData)

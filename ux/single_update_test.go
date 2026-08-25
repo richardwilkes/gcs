@@ -56,14 +56,14 @@ func TestSheetSettingsUpdatedSyncsTheSheetOnlyOnce(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	for _, blockLayout := range []bool{false, true} {
+	for _, fullRebuild := range []bool{false, true} {
 		entity.ModifiedOn = jio.Time{}
 		counter := installSyncCounter(sheet)
-		sheet.SheetSettingsUpdated(entity, blockLayout)
-		c.Equal(1, counter.count, "a sheet settings change must sync the sheet exactly once (blockLayout=%v)",
-			blockLayout)
+		sheet.SheetSettingsUpdated(entity, fullRebuild)
+		c.Equal(1, counter.count, "a sheet settings change must sync the sheet exactly once (fullRebuild=%v)",
+			fullRebuild)
 		c.NotEqual(jio.Time{}, entity.ModifiedOn,
-			"a sheet settings change must bump the modification timestamp (blockLayout=%v)", blockLayout)
+			"a sheet settings change must bump the modification timestamp (fullRebuild=%v)", fullRebuild)
 		sheet.AsPanel().RemoveChild(counter)
 	}
 

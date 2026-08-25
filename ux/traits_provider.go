@@ -40,7 +40,7 @@ func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) TableProv
 }
 
 func (p *traitsProvider) RefKey() string {
-	return gurps.BlockLayoutTraitsKey
+	return gurps.BlockTraitsKey
 }
 
 func (p *traitsProvider) AllTags() []string {

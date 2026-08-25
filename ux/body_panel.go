@@ -53,7 +53,6 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,
-		VSpan:  3,
 	})
 	locations := gurps.SheetSettingsFor(entity).BodyType
 	p.hash = gurps.Hash64(locations)
@@ -221,7 +220,12 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		notesField := NewStringPageField(p.targetMgr, bodyLocationRefKey(indexes), title,
 			func() string { return location.Notes }, func(value string) { location.Notes = value })
 		notesField.Tooltip = newMarkdownTooltip(title, "")
-		notesField.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
+		// The notes column takes up whatever width the block has beyond what the other columns need, so that a block
+		// made wider than its content fills out rather than leaving its notes fields at their natural width.
+		notesField.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: align.Fill,
+			HGrab:  true,
+		})
 		p.AddChild(notesField)
 
 		if location.IsOpen(indexes) {

@@ -30,7 +30,7 @@ func NewReactionModifiersProvider(provider gurps.ReactionModifierListProvider) T
 }
 
 func (p *reactionModProvider) RefKey() string {
-	return gurps.BlockLayoutReactionsKey
+	return gurps.BlockReactionsKey
 }
 
 func (p *reactionModProvider) AllTags() []string {

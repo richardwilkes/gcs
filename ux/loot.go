@@ -548,11 +548,11 @@ func (l *LootSheet) PageInfoProvider() gurps.PageInfoProvider {
 // a nil entity -- concerns it, just as with a template. A change to one character's per-sheet settings is none of its
 // business, and responding to it anyway would bump the loot sheet's modification timestamp for an edit that was never
 // made to it.
-func (l *LootSheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
+func (l *LootSheet) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
 	if entity == nil {
 		// A single rebuild both reports the change and refreshes everything the settings affect; marking the sheet as
 		// modified first would only perform the same update a second time (see rebuildAsModified).
-		rebuildAsModified(l, blockLayout)
+		rebuildAsModified(l, fullRebuild)
 	}
 }
 

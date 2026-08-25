@@ -82,8 +82,6 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 		HSpacing: 4,
 	})
 	a.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  a.hspan(),
-		VSpan:  a.vspan(),
 		HAlign: align.Fill,
 		VAlign: align.Fill,
 	})
@@ -152,20 +150,6 @@ func (a *AttrPanel) columns() int {
 		return 6
 	}
 	return 3
-}
-
-func (a *AttrPanel) hspan() int {
-	if a.kind == gurps.PoolAttrKind {
-		return 2
-	}
-	return 1
-}
-
-func (a *AttrPanel) vspan() int {
-	if a.kind == gurps.SecondaryAttrKind {
-		return 2
-	}
-	return 1
 }
 
 func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {

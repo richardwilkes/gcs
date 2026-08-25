@@ -47,9 +47,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.End,
 		VAlign: align.Fill,
-		VSpan:  2,
 		VGrab:  true,
 	})
 
@@ -106,9 +104,9 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HSpacing: 4,
 	})
 	p.ptsList.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.End,
+		HAlign: align.Fill,
 		VAlign: align.Fill,
-		VSpan:  2,
+		HGrab:  true,
 		VGrab:  true,
 	})
 	p.AddChild(p.ptsList)
@@ -200,6 +198,10 @@ func (p *PointsPanel) addPointsField(field *NonEditablePageField, title, tooltip
 	p.ptsList.AddChild(field)
 	label := NewPageLabel(title)
 	label.Tooltip = newWrappedTooltip(tooltip)
+	label.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
 	p.ptsList.AddChild(label)
 	return label
 }

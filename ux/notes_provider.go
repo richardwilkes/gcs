@@ -39,7 +39,7 @@ func NewNotesProvider(provider gurps.NoteListProvider, forPage bool) TableProvid
 }
 
 func (p *notesProvider) RefKey() string {
-	return gurps.BlockLayoutNotesKey
+	return gurps.BlockNotesKey
 }
 
 func (p *notesProvider) AllTags() []string {

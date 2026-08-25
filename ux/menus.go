@@ -121,6 +121,7 @@ const (
 	Scale400ItemID
 	Scale500ItemID
 	Scale600ItemID
+	EditSheetLayoutItemID
 	DockUnDockItemID
 
 	FirstNonContainerMarker // Keep this block grouped together
@@ -354,6 +355,8 @@ func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, scale400Action.NewMenuItem(f))
 	m.InsertItem(-1, scale500Action.NewMenuItem(f))
 	m.InsertItem(-1, scale600Action.NewMenuItem(f))
+	m.InsertSeparator(-1, false)
+	m.InsertItem(-1, editSheetLayoutAction.NewMenuItem(f))
 	platformViewMenuAddition(m)
 	return m
 }

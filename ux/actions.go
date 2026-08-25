@@ -51,6 +51,7 @@ var (
 	dockUnDockAction               *unison.Action
 	downloadRulesFileAction        *unison.Action
 	duplicateAction                *unison.Action
+	editSheetLayoutAction          *unison.Action
 	exportAsJPEGAction             *unison.Action
 	exportAsPDFAction              *unison.Action
 	exportAsPNGAction              *unison.Action
@@ -325,6 +326,12 @@ func registerActions() {
 		ID:              DuplicateItemID,
 		Title:           i18n.Text("Duplicate"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyU, Modifiers: mod.OSMenuCommand()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	editSheetLayoutAction = registerKeyBindableAction("edit.sheet.layout", &unison.Action{
+		ID:              EditSheetLayoutItemID,
+		Title:           i18n.Text("Edit Sheet Layout"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})

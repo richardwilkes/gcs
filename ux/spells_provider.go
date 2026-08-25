@@ -41,7 +41,7 @@ func NewSpellsProvider(provider gurps.SpellListProvider, forPage bool) TableProv
 }
 
 func (p *spellsProvider) RefKey() string {
-	return gurps.BlockLayoutSpellsKey
+	return gurps.BlockSpellsKey
 }
 
 func (p *spellsProvider) AllTags() []string {

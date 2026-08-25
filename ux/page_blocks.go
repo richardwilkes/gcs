@@ -12,99 +12,38 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
-func createPageTopBlock(entity *gurps.Entity, targetMgr *TargetMgr) (page *Page, modifiedFunc, syncDisclosureFunc func()) {
-	page = NewPage(entity)
-	var top *unison.Panel
-	top, modifiedFunc = createPageFirstRow(entity, targetMgr)
-	page.AddChild(top)
-	var bottom *unison.Panel
-	bottom, syncDisclosureFunc = createPageSecondRow(entity, targetMgr)
-	page.AddChild(bottom)
-	return page, modifiedFunc, syncDisclosureFunc
-}
-
-func createPageFirstRow(entity *gurps.Entity, targetMgr *TargetMgr) (top *unison.Panel, modifiedFunc func()) {
-	right := unison.NewPanel()
-	right.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: 1,
-		VSpacing: 1,
-		HAlign:   align.Fill,
-		VAlign:   align.Fill,
-	})
-	right.AddChild(NewIdentityPanel(entity, targetMgr))
-	miscPanel := NewMiscPanel(entity, targetMgr)
-	right.AddChild(miscPanel)
-	right.AddChild(NewPointsPanel(entity, targetMgr))
-	right.AddChild(NewDescriptionPanel(entity, targetMgr))
-
-	top = unison.NewPanel()
-	portraitPanel := NewPortraitPanel(entity)
-	top.SetLayout(&portraitLayout{
-		portrait: portraitPanel,
-		rest:     right,
-	})
-	top.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-	})
-	top.AddChild(portraitPanel)
-	top.AddChild(right)
-
-	return top, miscPanel.UpdateModified
-}
-
-func createPageSecondRow(entity *gurps.Entity, targetMgr *TargetMgr) (p *unison.Panel, syncDisclosureFunc func()) {
-	p = unison.NewPanel()
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  4,
-		HSpacing: 1,
-		VSpacing: 1,
-		HAlign:   align.Fill,
-		VAlign:   align.Fill,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-	})
-
-	endWrapper := unison.NewPanel()
-	endWrapper.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		VSpacing: 1,
-	})
-	endWrapper.SetLayoutData(&unison.FlexLayoutData{
-		VSpan:  3,
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	endWrapper.AddChild(NewEncumbrancePanel(entity))
-	endWrapper.AddChild(NewLiftingPanel(entity))
-
-	primaryAttrPanel := NewPrimaryAttrPanel(entity, targetMgr)
-	p.AddChild(primaryAttrPanel)
-	secondaryAttrPanel := NewSecondaryAttrPanel(entity, targetMgr)
-	p.AddChild(secondaryAttrPanel)
-	bodyPanel := NewBodyPanel(entity, targetMgr)
-	p.AddChild(bodyPanel)
-	p.AddChild(endWrapper)
-	damagePanel := NewDamagePanel(entity, targetMgr)
-	p.AddChild(damagePanel)
-	poolPanel := NewPointPoolsPanel(entity, targetMgr)
-	p.AddChild(poolPanel)
-
-	return p, func() {
-		primaryAttrPanel.forceSync()
-		secondaryAttrPanel.forceSync()
-		poolPanel.forceSync()
-		damagePanel.forceSync()
-		bodyPanel.sync(true)
+// newSheetBlockPanel creates the panel for the block with the given key. The ten list blocks are not built here -- the
+// sheet, the template and the page exporter each have their own reasons for building those themselves -- so nil comes
+// back for one of those, as well as for a key that names no block at all.
+func newSheetBlockPanel(key string, entity *gurps.Entity, targetMgr *TargetMgr) unison.Paneler {
+	switch key {
+	case gurps.BlockPortraitKey:
+		return NewPortraitPanel(entity)
+	case gurps.BlockIdentityKey:
+		return NewIdentityPanel(entity, targetMgr)
+	case gurps.BlockMiscellaneousKey:
+		return NewMiscPanel(entity, targetMgr)
+	case gurps.BlockPointsKey:
+		return NewPointsPanel(entity, targetMgr)
+	case gurps.BlockDescriptionKey:
+		return NewDescriptionPanel(entity, targetMgr)
+	case gurps.BlockPrimaryAttributesKey:
+		return NewPrimaryAttrPanel(entity, targetMgr)
+	case gurps.BlockSecondaryAttributesKey:
+		return NewSecondaryAttrPanel(entity, targetMgr)
+	case gurps.BlockPointPoolsKey:
+		return NewPointPoolsPanel(entity, targetMgr)
+	case gurps.BlockBodyKey:
+		return NewBodyPanel(entity, targetMgr)
+	case gurps.BlockDamageKey:
+		return NewDamagePanel(entity, targetMgr)
+	case gurps.BlockEncumbranceKey:
+		return NewEncumbrancePanel(entity)
+	case gurps.BlockLiftingKey:
+		return NewLiftingPanel(entity)
+	default:
+		return nil
 	}
 }

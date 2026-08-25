@@ -68,7 +68,6 @@ type sheetSettingsDockable struct {
 	leftMarginField                    *unison.Field
 	bottomMarginField                  *unison.Field
 	rightMarginField                   *unison.Field
-	blockLayoutField                   *unison.Field
 }
 
 // ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
@@ -132,7 +131,6 @@ func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
 	d.createUnitsOfMeasurement(content)
 	d.createWhereToDisplay(content)
 	d.createPageSettings(content)
-	d.createBlockLayout(content)
 }
 
 func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
@@ -349,47 +347,6 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 	content.AddChild(panel)
 }
 
-func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
-	s := d.settings()
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	label := unison.NewLabel()
-	desc := label.Font.Descriptor()
-	desc.Weight = weight.Bold
-	label.Font = desc.Font()
-	label.SetTitle(i18n.Text("Block Layout"))
-	panel.AddChild(label)
-	d.blockLayoutField = unison.NewMultiLineField()
-	lastBlockLayout := s.BlockLayout.String()
-	d.blockLayoutField.SetText(lastBlockLayout)
-	d.blockLayoutField.ValidateCallback = func() bool {
-		_, valid := gurps.NewBlockLayoutFromString(d.blockLayoutField.Text())
-		return valid
-	}
-	d.blockLayoutField.ModifiedCallback = func(_, after *unison.FieldState) {
-		if blockLayout, valid := gurps.NewBlockLayoutFromString(after.Text); valid {
-			localSettings := d.settings()
-			currentBlockLayout := blockLayout.String()
-			if lastBlockLayout != currentBlockLayout {
-				lastBlockLayout = currentBlockLayout
-				localSettings.BlockLayout = blockLayout
-				d.syncSheet(true)
-			}
-		}
-	}
-	d.blockLayoutField.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(d.blockLayoutField)
-	content.AddChild(panel)
-}
-
 func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, current string, set func(value string)) *unison.Field {
 	panel.AddChild(NewFieldLeadingLabel(i18n.Text("Paper Size"), false))
 	wrapper := unison.NewPanel()
@@ -533,7 +490,6 @@ func (d *sheetSettingsDockable) sync() {
 	d.leftMarginField.SetText(s.Page.LeftMargin.String())
 	d.bottomMarginField.SetText(s.Page.BottomMargin.String())
 	d.rightMarginField.SetText(s.Page.RightMargin.String())
-	d.blockLayoutField.SetText(s.BlockLayout.String())
 	d.MarkForRedraw()
 }
 

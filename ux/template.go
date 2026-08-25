@@ -64,6 +64,8 @@ type Template struct {
 	Spells            *PageList[*gurps.Spell]
 	Equipment         *PageList[*gurps.Equipment]
 	Notes             *PageList[*gurps.Note]
+	refocusOnKey      string
+	refocusOn         unison.Paneler
 	dragReroutePanel  *unison.Panel
 	lastBody          *gurps.Body
 	searchTracker     *SearchTracker
@@ -938,102 +940,43 @@ func (t *Template) save(forceSaveAs bool) bool {
 	return success
 }
 
-// createLists (re)creates the page's lists from the global block layout. A list is only built anew when the columns it
-// has to show no longer match the ones it has, since a table's columns are fixed at creation; otherwise the existing
-// list is kept and synced. Anything that captured a list has to allow for it being replaced -- see
-// installNewItemCmdHandlers.
+// createLists (re)creates the page's lists from the default block layout, which is the one templates follow. A list is
+// only built anew when the columns it has to show no longer match the ones it has, since a table's columns are fixed
+// at creation; otherwise the existing list is kept and synced. Anything that captured a list has to allow for it being
+// replaced -- see installNewItemCmdHandlers.
 func (t *Template) createLists() {
 	h, v := t.scroll.Position()
-	var refocusOnKey string
-	var refocusOn unison.Paneler
+	t.refocusOnKey = ""
+	t.refocusOn = nil
 	if wnd := t.Window(); wnd != nil {
 		if focus := wnd.Focus(); focus != nil {
 			// For page lists, the focus will be the table, so we need to look up a level
 			if focus = focus.Parent(); focus != nil {
 				switch focus.Self {
 				case t.Traits:
-					refocusOnKey = gurps.BlockLayoutTraitsKey
+					t.refocusOnKey = gurps.BlockTraitsKey
 				case t.Skills:
-					refocusOnKey = gurps.BlockLayoutSkillsKey
+					t.refocusOnKey = gurps.BlockSkillsKey
 				case t.Spells:
-					refocusOnKey = gurps.BlockLayoutSpellsKey
+					t.refocusOnKey = gurps.BlockSpellsKey
 				case t.Equipment:
-					refocusOnKey = gurps.BlockLayoutEquipmentKey
+					t.refocusOnKey = gurps.BlockEquipmentKey
 				case t.Notes:
-					refocusOnKey = gurps.BlockLayoutNotesKey
+					t.refocusOnKey = gurps.BlockNotesKey
 				}
 			}
 		}
 	}
 	t.content.RemoveAllChildren()
-	for _, col := range gurps.GlobalSettings().Sheet.BlockLayout.ByRow() {
-		rowPanel := unison.NewPanel()
-		for _, c := range col {
-			switch c {
-			case gurps.BlockLayoutTraitsKey:
-				if t.Traits.needReconstruction() {
-					t.Traits = NewTraitsPageList(t, t.template)
-				} else {
-					t.Traits.Sync()
-				}
-				rowPanel.AddChild(t.Traits)
-				if c == refocusOnKey {
-					refocusOn = t.Traits.Table
-				}
-			case gurps.BlockLayoutSkillsKey:
-				if t.Skills.needReconstruction() {
-					t.Skills = NewSkillsPageList(t, t.template)
-				} else {
-					t.Skills.Sync()
-				}
-				rowPanel.AddChild(t.Skills)
-				if c == refocusOnKey {
-					refocusOn = t.Skills.Table
-				}
-			case gurps.BlockLayoutSpellsKey:
-				if t.Spells.needReconstruction() {
-					t.Spells = NewSpellsPageList(t, t.template)
-				} else {
-					t.Spells.Sync()
-				}
-				rowPanel.AddChild(t.Spells)
-				if c == refocusOnKey {
-					refocusOn = t.Spells.Table
-				}
-			case gurps.BlockLayoutEquipmentKey:
-				if t.Equipment.needReconstruction() {
-					t.Equipment = NewCarriedEquipmentPageList(t, t.template)
-				} else {
-					t.Equipment.Sync()
-				}
-				rowPanel.AddChild(t.Equipment)
-				if c == refocusOnKey {
-					refocusOn = t.Equipment.Table
-				}
-			case gurps.BlockLayoutNotesKey:
-				if t.Notes.needReconstruction() {
-					t.Notes = NewNotesPageList(t, t.template)
-				} else {
-					t.Notes.Sync()
-				}
-				rowPanel.AddChild(t.Notes)
-				if c == refocusOnKey {
-					refocusOn = t.Notes.Table
-				}
-			}
-		}
-		if len(rowPanel.Children()) != 0 {
-			rowPanel.SetLayout(&unison.FlexLayout{
-				Columns:      len(rowPanel.Children()),
-				HSpacing:     1,
-				HAlign:       align.Fill,
-				EqualColumns: true,
-			})
-			rowPanel.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: align.Fill,
-				HGrab:  true,
-			})
-			t.content.AddChild(rowPanel)
+	layout := gurps.GlobalSettings().Sheet.Layout.Filtered(gurps.IsTemplateBlockKey)
+	for _, band := range buildLayoutBands(layout.Root, t.layoutLeaf) {
+		t.content.AddChild(band)
+	}
+	// A list the layout doesn't show is still brought into being, since the rebuild's selection tracking and the
+	// dockable's other machinery reach for all five of them without asking whether they are on the page.
+	for _, key := range gurps.AllBlockKeys {
+		if gurps.IsTemplateBlockKey(key) && !layout.Contains(key) {
+			t.layoutLeaf(key)
 		}
 	}
 
@@ -1070,16 +1013,66 @@ func (t *Template) createLists() {
 	t.content.AddChild(panel)
 
 	t.content.ApplyPreferredSize()
-	if refocusOn != nil {
-		refocusOn.AsPanel().RequestFocus()
+	if t.refocusOn != nil {
+		t.refocusOn.AsPanel().RequestFocus()
 	}
 	t.scroll.SetPosition(h, v)
 }
 
+// layoutLeaf returns the panel to show for the block with the given key, or nil if a template has no such block. The
+// list the focus was in when the page was taken apart is noted as it goes by, so that the focus can be put back into
+// it once the page has been rebuilt.
+func (t *Template) layoutLeaf(key string) unison.Paneler {
+	var list, table unison.Paneler
+	switch key {
+	case gurps.BlockTraitsKey:
+		if t.Traits.needReconstruction() {
+			t.Traits = NewTraitsPageList(t, t.template)
+		} else {
+			t.Traits.Sync()
+		}
+		list, table = t.Traits, t.Traits.Table
+	case gurps.BlockSkillsKey:
+		if t.Skills.needReconstruction() {
+			t.Skills = NewSkillsPageList(t, t.template)
+		} else {
+			t.Skills.Sync()
+		}
+		list, table = t.Skills, t.Skills.Table
+	case gurps.BlockSpellsKey:
+		if t.Spells.needReconstruction() {
+			t.Spells = NewSpellsPageList(t, t.template)
+		} else {
+			t.Spells.Sync()
+		}
+		list, table = t.Spells, t.Spells.Table
+	case gurps.BlockEquipmentKey:
+		if t.Equipment.needReconstruction() {
+			t.Equipment = NewCarriedEquipmentPageList(t, t.template)
+		} else {
+			t.Equipment.Sync()
+		}
+		list, table = t.Equipment, t.Equipment.Table
+	case gurps.BlockNotesKey:
+		if t.Notes.needReconstruction() {
+			t.Notes = NewNotesPageList(t, t.template)
+		} else {
+			t.Notes.Sync()
+		}
+		list, table = t.Notes, t.Notes.Table
+	default:
+		return nil
+	}
+	if key == t.refocusOnKey {
+		t.refocusOn = table
+	}
+	return list
+}
+
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.
-func (t *Template) SheetSettingsUpdated(e *gurps.Entity, blockLayout bool) {
+func (t *Template) SheetSettingsUpdated(e *gurps.Entity, fullRebuild bool) {
 	if e == nil {
-		t.Rebuild(blockLayout)
+		t.Rebuild(fullRebuild)
 	}
 }
 

@@ -41,7 +41,7 @@ func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) TableProv
 }
 
 func (p *skillsProvider) RefKey() string {
-	return gurps.BlockLayoutSkillsKey
+	return gurps.BlockSkillsKey
 }
 
 func (p *skillsProvider) AllTags() []string {

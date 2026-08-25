@@ -43,9 +43,9 @@ func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage
 
 func (p *equipmentProvider) RefKey() string {
 	if p.carried {
-		return gurps.BlockLayoutEquipmentKey
+		return gurps.BlockEquipmentKey
 	}
-	return gurps.BlockLayoutOtherEquipmentKey
+	return gurps.BlockOtherEquipmentKey
 }
 
 func (p *equipmentProvider) AllTags() []string {

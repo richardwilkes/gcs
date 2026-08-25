@@ -71,7 +71,7 @@ func TestNewSheetSettingsFromFileAppliesEnsureValidity(t *testing.T) {
 			s, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t, content))
 			c.NoError(err)
 			c.NotNil(s.Page)
-			c.NotNil(s.BlockLayout)
+			c.NotNil(s.Layout)
 			c.NotNil(s.Attributes)
 			c.NotNil(s.BodyType)
 		})
@@ -82,9 +82,11 @@ func TestNewSheetSettingsFromFileAppliesEnsureValidity(t *testing.T) {
 // (*SheetSettings).UnmarshalJSONFrom are honored regardless of which location the settings were found in.
 func TestNewSheetSettingsFromFileLegacyFields(t *testing.T) {
 	const body = `{"name":"Test Body","roll":"3d"}`
+	const fields = `"show_advantage_modifier_adj":true,"hit_locations":` + body +
+		`,"block_layout":["notes","advantages skills"]`
 	for name, content := range map[string]string{
-		"current": `{"show_advantage_modifier_adj":true,"hit_locations":` + body + `}`,
-		"old":     `{"sheet_settings":{"show_advantage_modifier_adj":true,"hit_locations":` + body + `}}`,
+		"current": `{` + fields + `}`,
+		"old":     `{"sheet_settings":{` + fields + `}}`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			c := check.New(t)
@@ -93,6 +95,20 @@ func TestNewSheetSettingsFromFileLegacyFields(t *testing.T) {
 			c.True(s.ShowTraitModifierAdj)
 			c.NotNil(s.BodyType)
 			c.Equal("Test Body", s.BodyType.Name)
+			c.NotNil(s.Layout)
+			// The legacy block layout becomes the layout tree, with "advantages" mapped onto "traits" and the blocks
+			// it didn't mention appended.
+			c.Equal([][]string{
+				{BlockNotesKey},
+				{BlockTraitsKey, BlockSkillsKey},
+				{BlockReactionsKey},
+				{BlockConditionalModifiersKey},
+				{BlockMeleeKey},
+				{BlockRangedKey},
+				{BlockSpellsKey},
+				{BlockEquipmentKey},
+				{BlockOtherEquipmentKey},
+			}, s.Layout.ListBands())
 		})
 	}
 }

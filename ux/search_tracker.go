@@ -115,6 +115,15 @@ func searchSheetTable[T gurps.Node[T]](refList *[]*searchRef, text string, names
 	}
 }
 
+// searchPlacedSheetTable searches a sheet's list, but only when the layout has placed it on the page. A list that
+// isn't on the page has no parent (see Sheet.buildLayout), and a match found in one could only be shown by scrolling a
+// table nobody is looking at into view.
+func searchPlacedSheetTable[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, pageList *PageList[T]) {
+	if pageList != nil && pageList.AsPanel().Parent() != nil {
+		searchSheetTable(refList, text, namesOnly, pageList)
+	}
+}
+
 func searchSheetTableRows[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, table *unison.Table[*Node[T]], row *Node[T]) {
 	if text != "" {
 		if namesOnly {

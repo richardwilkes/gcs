@@ -138,7 +138,7 @@ func legacyTextExport(entity *Entity, tmpl []byte, exportPath string) (err error
 func (ex *legacyExporter) emitKey(key string) error {
 	switch key {
 	case "GRID_TEMPLATE":
-		ex.out.WriteString(ex.entity.SheetSettings.BlockLayout.HTMLGridTemplate())
+		ex.out.WriteString(ex.entity.SheetSettings.Layout.HTMLGridTemplate())
 	case "ENCODING_OFF":
 		ex.encodeText = false
 	case "ENHANCED_KEY_PARSING":

@@ -30,7 +30,7 @@ func NewConditionalModifiersProvider(provider gurps.ConditionalModifierListProvi
 }
 
 func (p *condModProvider) RefKey() string {
-	return gurps.BlockLayoutConditionalModifiersKey
+	return gurps.BlockConditionalModifiersKey
 }
 
 func (p *condModProvider) AllTags() []string {

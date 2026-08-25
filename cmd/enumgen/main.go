@@ -836,6 +836,48 @@ var allEnums = []*enumInfo{
 		DefaultUnknown: true,
 	},
 	{
+		Pkg:  "model/gurps/enums/layoutedge",
+		Name: "enum",
+		Desc: "holds the edge of a sheet layout block that a drop targets",
+		Values: []*enumValue{
+			{
+				Key:        "top",
+				NoLocalize: true,
+			},
+			{
+				Key:        "left",
+				NoLocalize: true,
+			},
+			{
+				Key:        "bottom",
+				NoLocalize: true,
+			},
+			{
+				Key:        "right",
+				NoLocalize: true,
+			},
+		},
+	},
+	{
+		Pkg:  "model/gurps/enums/layoutnode",
+		Name: "type",
+		Desc: "holds the type of a sheet layout node",
+		Values: []*enumValue{
+			{
+				Key:        "block",
+				NoLocalize: true,
+			},
+			{
+				Key:        "row",
+				NoLocalize: true,
+			},
+			{
+				Key:        "column",
+				NoLocalize: true,
+			},
+		},
+	},
+	{
 		Pkg:  "model/gurps/enums/equipmentsel",
 		Name: "type",
 		Desc: "holds the type of an equipment selection",

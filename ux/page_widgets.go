@@ -140,17 +140,6 @@ func installPageFieldFontAndFocusBorders(field *unison.Field) {
 	)
 }
 
-// NewStringPageFieldNoGrab creates a new text entry field for a sheet page, but with HGrab set to false.
-func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
-	field := NewStringField(targetMgr, targetKey, undoTitle, get, set)
-	installPageFieldFontAndFocusBorders(field.Field)
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Middle,
-	})
-	return field
-}
-
 // NewHeightPageField creates a new height entry field for a sheet page.
 func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Length, set func(fxp.Length), minValue, maxValue fxp.Length, noMinWidth bool) *LengthField {
 	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
