@@ -193,6 +193,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 				return t.Traits.provider.RootRows()
 			}, gurps.NewNaturalAttacks(nil, nil))
 	})
+	t.InstallCmdHandlers(OrganizeTraitsItemID, unison.AlwaysEnabled, func(_ any) { organizeTraits(t, t.Traits.Table) })
 	t.InstallCmdHandlers(ApplyTemplateItemID, t.canApplyTemplate, t.applyTemplate)
 	t.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, t.newSheetFromTemplate)
 	InstallExportCmdHandlers(t)

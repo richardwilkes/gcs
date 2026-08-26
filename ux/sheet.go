@@ -246,6 +246,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 				return s.Traits.provider.RootRows()
 			}, gurps.NewNaturalAttacks(s.entity, nil))
 	})
+	s.InstallCmdHandlers(OrganizeTraitsItemID, unison.AlwaysEnabled, func(_ any) { organizeTraits(s, s.Traits.Table) })
 	s.InstallCmdHandlers(SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
 	InstallExportCmdHandlers(s)
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)

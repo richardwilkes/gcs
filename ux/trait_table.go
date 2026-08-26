@@ -50,7 +50,14 @@ func NewTraitTableDockableFromFile(filePath string) (unison.Dockable, error) {
 // NewTraitTableDockable creates a new unison.Dockable for trait list files.
 func NewTraitTableDockable(filePath string, traits []*gurps.Trait) *TableDockable[*gurps.Trait] {
 	provider := &traitListProvider{traits: traits}
-	return NewTableDockable(filePath, gurps.TraitsExt, NewTraitsProvider(provider, false),
+	d := NewTableDockable(filePath, gurps.TraitsExt, NewTraitsProvider(provider, false),
 		func(path string) error { return gurps.SaveTraits(provider.TraitList(), path) },
 		NewTraitItemID, NewTraitContainerItemID)
+	// Organizing moves rows around, which unison.Table.ApplyFilter says must not be done while a filter is applied,
+	// so the command is turned off whenever the content filter is hiding part of the list, just as Delete, Duplicate
+	// and the source commands are.
+	d.InstallCmdHandlers(OrganizeTraitsItemID,
+		func(_ any) bool { return !d.table.IsFiltered() },
+		func(_ any) { organizeTraits(d, d.table) })
+	return d
 }

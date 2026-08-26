@@ -106,6 +106,7 @@ var (
 	openEachPageReferenceAction         *unison.Action
 	openEditorAction                    *unison.Action
 	openOnePageReferenceAction          *unison.Action
+	organizeTraitsAction                *unison.Action
 	pageRefMappingsAction               *unison.Action
 	perSheetAttributeSettingsAction     *unison.Action
 	perSheetBodyTypeSettingsAction      *unison.Action
@@ -171,6 +172,12 @@ func registerActions() {
 	cloneSheetAction = registerKeyBindableAction("clone.sheet", &unison.Action{
 		ID:              CloneSheetItemID,
 		Title:           i18n.Text("Clone Character Sheet & Re-Randomize Fields"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	organizeTraitsAction = registerKeyBindableAction("organize.traits", &unison.Action{
+		ID:              OrganizeTraitsItemID,
+		Title:           i18n.Text("Organize Traits"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})

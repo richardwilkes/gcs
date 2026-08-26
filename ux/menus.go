@@ -79,6 +79,7 @@ const (
 	MoveToCarriedEquipmentItemID
 	ItemMenuID
 	AddNaturalAttacksItemID
+	OrganizeTraitsItemID
 	OpenEditorItemID
 	CloneSheetItemID
 	CopyToSheetItemID
@@ -256,6 +257,7 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, applyTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newSheetFromTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, cloneSheetAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, organizeTraitsAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, incrementAction.NewMenuItem(f))

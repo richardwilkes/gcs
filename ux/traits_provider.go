@@ -237,5 +237,9 @@ func (p *traitsProvider) ContextMenuItems() []ContextMenuItem {
 			Title: i18n.Text("Add Natural Attacks"),
 			ID:    AddNaturalAttacksItemID,
 		},
+		{
+			Title: organizeTraitsAction.Title,
+			ID:    OrganizeTraitsItemID,
+		},
 	})
 }

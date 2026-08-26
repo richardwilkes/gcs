@@ -24,6 +24,14 @@
 - When printing or exporting a sheet, a block that doesn't fit in the space left on a page is now moved whole to the
   next page rather than being cut in two. Lists continue to be split across pages as before, and blocks that sit side
   by side are kept together.
+- Edit ▸ Organize Traits, available on character sheets, templates and trait library lists, files each top-level trait
+  that isn't a container into an Advantages, Perks, Disadvantages, Quirks, Features or Languages container, creating
+  any that don't exist yet, placing them at the top of the list in that order, and sorting their contents by name. A
+  trait carrying a Language tag goes into Languages; otherwise a tag naming exactly one of the other categories
+  decides, and anything else is placed by its point cost (a disabled trait by the cost it would have if enabled). Only
+  containers of the group type are reused, and any of these containers left empty is removed. The whole rearrangement
+  is a single undoable step, and the command is also available from the traits list's context menu. On a trait library
+  list it is disabled while the content filter is in use, since a filtered list can't be rearranged.
 
 ## Bug Fixes
 
