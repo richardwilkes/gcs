@@ -41,18 +41,40 @@ func Extract(str string, m, existing map[string]string) {
 				if value, ok := existing[one]; ok {
 					m[one] = value
 				} else {
-					m[one] = one
+					m[one] = DefaultValue(one)
 				}
 			}
 		}
 	}
 }
 
-// Apply replaces the matching nameable sections with the values from the set.
+// Apply replaces the matching nameable sections with the values from the set. Any section left unresolved -- i.e.
+// it has no entry in m at all -- is rendered in its compact form, "@Label@", rather than the full raw
+// "@Label|...@" markup: the '@' wrapper is kept so displayed text (sheet rows, table columns, tooltips) still
+// visibly flags the value as an unresolved nameable, while collapsing away the option list, tooltip, and flags that
+// are only meaningful while editing. The label used here comes from ParseMarker, so an old-format marker that
+// matches its fallback cascade (see ParseMarker) gets the same compact treatment as a real pipe-delimited key,
+// rather than dumping its full raw text into the display.
 func Apply(str string, m map[string]string) string {
-	if strings.Count(str, "@") > 1 {
+	count := strings.Count(str, "@")
+	if count > 1 {
 		for k, v := range m {
 			str = strings.ReplaceAll(str, "@"+k+"@", v)
+		}
+		count = strings.Count(str, "@")
+		if count > 1 {
+			parts := strings.Split(str, "@")
+			var b strings.Builder
+			for i, one := range parts {
+				if i%2 == 1 && i < count {
+					b.WriteByte('@')
+					b.WriteString(ParseMarker(one).Label)
+					b.WriteByte('@')
+					continue
+				}
+				b.WriteString(one)
+			}
+			str = b.String()
 		}
 	}
 	return str
@@ -70,7 +92,11 @@ func ApplyToList(in []string, m map[string]string) []string {
 	return list
 }
 
-// Reduce returns a map of the replacements which exist in needed.
+// Reduce returns a map of the replacements which exist in needed. "Not set" and "empty" are not conflated here: an
+// entry present in replacements with an empty value is a deliberate, resolved choice (only legal when the marker's
+// AllowEmpty is set -- see ParseSyntax) and is kept, exactly like any other value. "Not set" is represented purely
+// by a key's absence from replacements in the first place, so it never reaches this function as an entry to
+// consider -- there is nothing for Reduce to omit.
 func Reduce(needed, replacements map[string]string) map[string]string {
 	ret := make(map[string]string)
 	for k, v := range replacements {

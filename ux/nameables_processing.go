@@ -139,14 +139,18 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		})
 		list.AddChild(header)
 		for _, k := range keys {
+			marker := nameable.ParseMarker(k)
 			label := unison.NewLabel()
-			label.SetTitle(k)
+			label.SetTitle(marker.Label)
+			if marker.Tooltip != "" {
+				label.Tooltip = newWrappedTooltip(marker.Tooltip)
+			}
 			label.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: align.End,
 				VAlign: align.Middle,
 			})
 			list.AddChild(label)
-			list.AddChild(createNameableField(k, nameables[i]))
+			list.AddChild(createNameableField(&marker, nameables[i]))
 		}
 	}
 	scroll := unison.NewScrollPanel()
@@ -174,17 +178,35 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 	return unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK
 }
 
-func createNameableField(key string, m map[string]string) *unison.Field {
-	field := unison.NewField()
-	field.SetMinimumTextWidthUsing("Something reasonable")
-	field.SetText(m[key])
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Middle,
-		HGrab:  true,
-	})
-	field.ModifiedCallback = func(_, after *unison.FieldState) {
-		m[key] = after.Text
+// createNameableField builds the widget used to edit the replacement value for the marker.
+//
+// marker comes from nameable.ParseMarker, which always succeeds -- an old-format, no-pipe key gets a synthesized
+// marker (see ParseMarker) rather than a plain text field, so every nameable, old format or new, gets the same
+// NewComboField shell: its options (if any) listed, an "empty" entry when AllowEmpty is set (which every
+// synthesized legacy marker has), and free typing enabled when FreeForm is set (also always true for a synthesized
+// marker, matching old-format markers' traditional unrestricted typing). A "not set" entry is always included too
+// -- for now; that's this function's call, not NewComboField's, since NewComboField itself has no opinion on
+// whether "not set" should be offered (see its docs) -- and it's now the only way to clear a substitution, there's
+// no separate "clear" button in the dialog.
+func createNameableField(marker *nameable.Marker, m map[string]string) unison.Paneler {
+	var initial *string
+	if v, ok := m[marker.Raw]; ok {
+		initial = &v
 	}
-	return field
+	options := make([]*string, 0, len(marker.Options)+2)
+	options = append(options, nil)
+	if marker.AllowEmpty {
+		options = append(options, new(string))
+	}
+	for _, one := range marker.Options {
+		options = append(options, &one)
+	}
+	widget, _ := NewComboField(options, marker.FreeForm, 0, initial, func(value *string) {
+		if value == nil {
+			delete(m, marker.Raw)
+			return
+		}
+		m[marker.Raw] = *value
+	})
+	return widget
 }
