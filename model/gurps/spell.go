@@ -1146,20 +1146,21 @@ func (s *Spell) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = s.Replacements
 	}
-	nameable.Extract(s.Name, m, existing)
-	nameable.Extract(s.LocalNotes, m, existing)
-	nameable.Extract(s.PowerSource, m, existing)
-	nameable.Extract(s.Class, m, existing)
-	nameable.Extract(s.Resist, m, existing)
-	nameable.Extract(s.CastingCost, m, existing)
-	nameable.Extract(s.MaintenanceCost, m, existing)
-	nameable.Extract(s.CastingTime, m, existing)
-	nameable.Extract(s.Duration, m, existing)
-	nameable.Extract(s.Item, m, existing)
-	nameable.Extract(s.RitualSkillName, m, existing)
-	for _, one := range s.College {
-		nameable.Extract(one, m, existing)
-	}
+	nameable.Extract(
+		m, existing,
+		s.Name,
+		s.LocalNotes,
+		s.PowerSource,
+		s.Class,
+		s.Resist,
+		s.CastingCost,
+		s.MaintenanceCost,
+		s.CastingTime,
+		s.Duration,
+		s.Item,
+		s.RitualSkillName,
+	)
+	nameable.Extract(m, existing, s.College...)
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m, existing)
 	}

@@ -354,7 +354,7 @@ func (n *Note) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = n.Replacements
 	}
-	nameable.Extract(n.MarkDown, m, existing)
+	nameable.Extract(m, existing, n.MarkDown)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.

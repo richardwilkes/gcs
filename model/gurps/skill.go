@@ -1311,10 +1311,13 @@ func (s *Skill) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = s.Replacements
 	}
-	nameable.Extract(s.Name, m, existing)
-	nameable.Extract(s.LocalNotes, m, existing)
-	nameable.Extract(s.Specialization, m, existing)
-	nameable.Extract(s.OptionalSpecialization, m, existing)
+	nameable.Extract(
+		m, existing,
+		s.Name,
+		s.LocalNotes,
+		s.Specialization,
+		s.OptionalSpecialization,
+	)
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m, existing)
 	}

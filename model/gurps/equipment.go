@@ -969,10 +969,13 @@ func (e *Equipment) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = e.Replacements
 	}
-	nameable.Extract(e.Name, m, existing)
-	nameable.Extract(e.LocalNotes, m, existing)
-	nameable.Extract(e.BaseValue, m, existing)
-	nameable.Extract(e.BaseWeight, m, existing)
+	nameable.Extract(
+		m, existing,
+		e.Name,
+		e.LocalNotes,
+		e.BaseValue,
+		e.BaseWeight,
+	)
 	if e.Prereq != nil {
 		e.Prereq.FillWithNameableKeys(m, existing)
 	}

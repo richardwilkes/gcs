@@ -31,17 +31,19 @@ type Applier interface {
 	ApplyNameableKeys(m map[string]string)
 }
 
-// Extract the nameable sections of the string into the set.
-func Extract(str string, m, existing map[string]string) {
-	count := strings.Count(str, "@")
-	if count > 1 {
-		parts := strings.Split(str, "@")
-		for i, one := range parts {
-			if i%2 == 1 && i < count {
-				if value, ok := existing[one]; ok {
-					m[one] = value
-				} else {
-					m[one] = DefaultValue(one)
+// Extract the nameable sections of the strings into the target.
+func Extract(target, existing map[string]string, in ...string) {
+	for _, str := range in {
+		count := strings.Count(str, "@")
+		if count > 1 {
+			parts := strings.Split(str, "@")
+			for i, one := range parts {
+				if i%2 == 1 && i < count {
+					if value, ok := existing[one]; ok {
+						target[one] = value
+					} else {
+						target[one] = DefaultValue(one)
+					}
 				}
 			}
 		}

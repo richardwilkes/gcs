@@ -166,11 +166,11 @@ func TestDefaultValue(t *testing.T) {
 func TestExtractPipeDelimited(t *testing.T) {
 	c := check.New(t)
 	m := make(map[string]string)
-	nameable.Extract("A @Element|Fire|Water@ spell", m, nil)
+	nameable.Extract(m, nil, "A @Element|Fire|Water@ spell")
 	c.Equal("Fire", m["Element|Fire|Water"])
 
 	m = make(map[string]string)
-	nameable.Extract("A @Element|Fire|Water|?@ spell", m, nil)
+	nameable.Extract(m, nil, "A @Element|Fire|Water|?@ spell")
 	c.Equal("", m["Element|Fire|Water|?"])
 }
 

@@ -541,8 +541,11 @@ func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) 
 		if existing == nil && e.equipment != nil {
 			existing = e.equipment.Replacements
 		}
-		nameable.Extract(e.Name, m, existing)
-		nameable.Extract(e.LocalNotes, m, existing)
+		nameable.Extract(
+			m, existing,
+			e.Name,
+			e.LocalNotes,
+		)
 		for _, one := range e.Features {
 			one.FillWithNameableKeys(m, existing)
 		}

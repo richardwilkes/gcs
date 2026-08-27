@@ -90,9 +90,12 @@ func (o *SelectorOverride) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (o *SelectorOverride) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(o.NameCriteria.Qualifier, m, existing)
-	nameable.Extract(o.UsageCriteria.Qualifier, m, existing)
-	nameable.Extract(o.TagsCriteria.Qualifier, m, existing)
+	nameable.Extract(
+		m, existing,
+		o.NameCriteria.Qualifier,
+		o.UsageCriteria.Qualifier,
+		o.TagsCriteria.Qualifier,
+	)
 }
 
 // OverridePriority implements Override.
