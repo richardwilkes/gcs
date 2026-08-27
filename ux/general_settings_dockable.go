@@ -12,6 +12,7 @@ package ux
 import (
 	"cmp"
 	"errors"
+	"fmt"
 	"io/fs"
 	"maps"
 	"os"
@@ -24,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -51,6 +53,8 @@ type generalSettingsDockable struct {
 	initialClickSelectsAllCheckbox  *CheckBox
 	expandPageReferencesCheckbox    *CheckBox
 	restoreWorkspaceOnStartCheckbox *CheckBox
+	appUpdateCheckPopup             *unison.PopupMenu[updatecheck.Option]
+	libraryUpdateCheckPopup         *unison.PopupMenu[updatecheck.Option]
 	deepSearchableCheckbox          []*CheckBox
 	openInWindowCheckbox            []*CheckBox
 	pointsField                     *DecimalField
@@ -111,6 +115,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	})
 	d.createPlayerAndDescFields(content)
 	d.createCheckboxBlock(content)
+	d.createUpdateCheckPopups(content)
 	d.createInitialPointsFields(content)
 	d.createTechLevelField(content)
 	d.createCalendarPopup(content)
@@ -273,6 +278,40 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.expandPageReferencesCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel("", false))
 	content.AddChild(d.expandPageReferencesCheckbox)
+}
+
+func (d *generalSettingsDockable) createUpdateCheckPopups(content *unison.Panel) {
+	d.appUpdateCheckPopup = newUpdateCheckPopup(content,
+		fmt.Sprintf(i18n.Text("Check for %s Updates"), xos.AppName),
+		fmt.Sprintf(i18n.Text("How often to look for a newer version of %s. Help ▸ Check for %s updates always works."),
+			xos.AppName, xos.AppName),
+		func() updatecheck.Option { return gurps.GlobalSettings().General.AppUpdateCheck },
+		func(option updatecheck.Option) { gurps.GlobalSettings().General.AppUpdateCheck = option })
+	d.libraryUpdateCheckPopup = newUpdateCheckPopup(content, i18n.Text("Check for Library Updates"),
+		i18n.Text("How often to look for newer versions of the libraries. The Library Explorer's update buttons always work, checking for releases when clicked if no check has been made yet."),
+		func() updatecheck.Option { return gurps.GlobalSettings().General.LibraryUpdateCheck },
+		func(option updatecheck.Option) { gurps.GlobalSettings().General.LibraryUpdateCheck = option })
+}
+
+// newUpdateCheckPopup adds a labeled popup menu for choosing how often an update check should be made.
+func newUpdateCheckPopup(content *unison.Panel, title, tooltip string, get func() updatecheck.Option,
+	set func(updatecheck.Option),
+) *unison.PopupMenu[updatecheck.Option] {
+	content.AddChild(NewFieldLeadingLabel(title, false))
+	popup := unison.NewPopupMenu[updatecheck.Option]()
+	popup.AddItem(updatecheck.Options...)
+	// The initial selection must be made before the callback is installed, since selecting an item calls it.
+	popup.Select(get())
+	popup.Tooltip = newWrappedTooltip(tooltip)
+	popup.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[updatecheck.Option]) {
+		if option, ok := p.Selected(); ok {
+			set(option)
+			ApplyUpdateCheckSettings()
+		}
+	}
+	content.AddChild(popup)
+	return popup
 }
 
 func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Panel) {
@@ -578,6 +617,8 @@ func (d *generalSettingsDockable) sync() {
 	gs := s.General
 	d.nameField.SetText(gs.DefaultPlayerName)
 	SetCheckBoxState(d.restoreWorkspaceOnStartCheckbox, gs.RestoreWorkspaceOnStart)
+	d.appUpdateCheckPopup.Select(gs.AppUpdateCheck)
+	d.libraryUpdateCheckPopup.Select(gs.LibraryUpdateCheck)
 	SetCheckBoxState(d.autoFillProfileCheckbox, gs.AutoFillProfile)
 	SetCheckBoxState(d.groupContainersOnSortCheckbox, gs.GroupContainersOnSort)
 	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, gs.AutoAddNaturalAttacks)
@@ -617,6 +658,9 @@ func (d *generalSettingsDockable) sync() {
 			}
 		}
 	}
+	// The popups' own callbacks cover a change made in the popup; this covers the settings being replaced wholesale by
+	// a reset or a load, where the callback wouldn't fire for a value that didn't change.
+	ApplyUpdateCheckSettings()
 	d.MarkForRedraw()
 }
 

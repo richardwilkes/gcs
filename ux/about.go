@@ -11,9 +11,9 @@ package ux
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/updater"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -59,7 +59,7 @@ func ShowAbout(_ unison.MenuItem) {
 		content.AddChild(img)
 
 		var version string
-		if xos.AppVersion != "" && xos.AppVersion != "0.0" && !strings.HasSuffix(xos.AppVersion, "+dirty") {
+		if !updater.IsDevVersion(xos.AppVersion) {
 			version = "Version **" + xos.AppVersion + "**"
 		} else {
 			version = "_**Development Version**_"

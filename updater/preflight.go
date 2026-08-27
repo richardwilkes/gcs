@@ -109,7 +109,7 @@ func checkHomebrew(targetPath string) error {
 //
 // The inputs are parameters rather than being read from globals so that each refusal can be reached from a test.
 func Preflight(exePath, goos, goarch, fromVersion, toVersion string, assets []Asset, lookupEnv func(string) (string, bool)) (*Plan, error) {
-	if fromVersion == "" || fromVersion == "0.0" {
+	if IsDevVersion(fromVersion) {
 		return nil, &Unavailable{Blocker: BlockerDevBuild, Detail: "version is " + fromVersion}
 	}
 	target, err := ResolveTarget(exePath, goos)

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"net/http"
@@ -19,6 +20,7 @@ import (
 	"runtime"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -381,11 +383,7 @@ func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
 	resetLibraryChangeNotification()
 	defer resetLibraryChangeNotification()
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		fmt.Fprint(w, `[{"tag_name":"v5","body":"notes","zipball_url":"http://127.0.0.1/z.zip"}]`)
-	}))
-	defer srv.Close()
-	client := &http.Client{Transport: &redirectingTransport{host: srv.Listener.Addr().String()}}
+	client, setReleases := newReleasesServer(t, "5")
 
 	// The library has no release.txt, so its version on disk is "0" while the newest release is "5": an upgrade is
 	// available and a notification is due.
@@ -405,14 +403,132 @@ func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
 	SetNotifyOfLibraryChangeFunc(func() { later.Add(1) })
 	c.Equal(int64(0), later.Load())
 
-	// With a function installed, a check reporting an upgrade notifies directly.
+	// With a function installed, a check that turns up a release the previous one didn't notifies directly.
+	setReleases("5.1", "5")
 	lib.CheckForAvailableUpgrade(t.Context(), client)
 	c.Equal(int64(1), later.Load())
 
 	// A check that finds nothing newer than what is on disk must not notify.
-	c.NoError(os.WriteFile(filepath.Join(lib.Data().PathOnDisk, releaseFile), []byte("5\n"), 0o600))
+	c.NoError(os.WriteFile(filepath.Join(lib.Data().PathOnDisk, releaseFile), []byte("5.1\n"), 0o600))
 	lib.CheckForAvailableUpgrade(t.Context(), client)
 	c.Equal(int64(1), later.Load())
+}
+
+// TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges verifies that repeating a check whose answer hasn't
+// changed notifies only the first time. A notification reloads the entire library tree, so a check that ran every hour
+// and notified every time would restart the filesystem watches, drop the caches and disturb whatever the user had in
+// progress, over and over, for as long as an update went uninstalled.
+func TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges(t *testing.T) {
+	c := check.New(t)
+	resetLibraryChangeNotification()
+	t.Cleanup(resetLibraryChangeNotification)
+
+	// The function is installed before the first check, so nothing can be latched as a pending notification instead of
+	// being counted here.
+	var calls atomic.Int64
+	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+
+	client, _ := newReleasesServer(t, "5")
+	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(1), calls.Load(), "the first check surfaces the pending update")
+	for range 3 {
+		lib.CheckForAvailableUpgrade(t.Context(), client)
+	}
+	c.Equal(int64(1), calls.Load(), "repeating the same check announces nothing new")
+
+	// A library whose content was replaced on disk outside of the app is a change the next check must announce, since
+	// the version the navigator is showing is no longer the one that is there.
+	c.NoError(os.WriteFile(filepath.Join(lib.Data().PathOnDisk, releaseFile), []byte("4\n"), 0o600))
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(2), calls.Load(), "the version on disk changed")
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(2), calls.Load(), "...and once is enough for that, too")
+}
+
+// TestCheckForAvailableUpgradeStaysQuietForLocalLibrary verifies that a library that isn't backed by a GitHub repo
+// never notifies. There are no releases for it, so the newest release reads as "" while the version on disk reads as
+// "0" for want of a release.txt, and comparing those two directly made every check of such a library announce an
+// update that doesn't exist -- which, with periodic checks, would reload the library tree on every one of them.
+func TestCheckForAvailableUpgradeStaysQuietForLocalLibrary(t *testing.T) {
+	c := check.New(t)
+	resetLibraryChangeNotification()
+	t.Cleanup(resetLibraryChangeNotification)
+
+	var calls atomic.Int64
+	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+
+	// An empty GitHub account name means there is nothing to ask about, so the nil client is never touched. Should that
+	// ever cease to be true, the test fails loudly rather than reaching out to the network.
+	lib := NewLibrary("Local", "", "", "local", t.TempDir())
+	for range 3 {
+		lib.CheckForAvailableUpgrade(t.Context(), nil)
+	}
+	c.Equal(int64(0), calls.Load())
+	current, releases := lib.AvailableReleases()
+	c.Equal("0", current)
+	c.Equal(0, len(releases))
+}
+
+// TestNeedsUpgradeCheck verifies what the Library Explorer relies on to keep its update buttons usable when the periodic
+// checks are turned off: a library with a repository behind it reports that it needs a check until one completes, a
+// check that couldn't reach the repository leaves it needing one so that it can be tried again, and a library with no
+// repository never needs one, since there is nothing to ask.
+func TestNeedsUpgradeCheck(t *testing.T) {
+	c := check.New(t)
+	resetLibraryChangeNotification()
+	t.Cleanup(resetLibraryChangeNotification)
+
+	local := NewLibrary("Local", "", "", "local", t.TempDir())
+	c.False(local.NeedsUpgradeCheck(), "a library without a repository has nothing to check")
+	local.CheckForAvailableUpgrade(t.Context(), nil)
+	c.False(local.NeedsUpgradeCheck())
+
+	client, _ := newReleasesServer(t, "5")
+	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
+	c.True(lib.NeedsUpgradeCheck(), "a library that has never been checked needs a check")
+
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	lib.CheckForAvailableUpgrade(ctx, client)
+	c.True(lib.NeedsUpgradeCheck(), "a check that failed must leave the library needing one")
+	_, releases := lib.AvailableReleases()
+	c.Equal(0, len(releases))
+
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.False(lib.NeedsUpgradeCheck(), "a check that completed satisfies the need")
+	_, releases = lib.AvailableReleases()
+	c.Equal(1, len(releases))
+}
+
+// TestCheckForAvailableUpgradeNotifiesWhenReleaseAppears verifies that a check turning up a release the previous check
+// didn't have does notify, which is the entire point of checking more than once.
+func TestCheckForAvailableUpgradeNotifiesWhenReleaseAppears(t *testing.T) {
+	c := check.New(t)
+	resetLibraryChangeNotification()
+	t.Cleanup(resetLibraryChangeNotification)
+
+	var calls atomic.Int64
+	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+
+	client, setReleases := newReleasesServer(t)
+	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(0), calls.Load(), "a repo with no releases yet has nothing to announce")
+
+	setReleases("5")
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(1), calls.Load(), "the release that has just appeared is announced")
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(1), calls.Load(), "...and only once")
+
+	// A newer release turning up later is a change of its own.
+	setReleases("5.1", "5")
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(2), calls.Load())
+	current, releases := lib.AvailableReleases()
+	c.Equal("0", current)
+	c.Equal(2, len(releases))
 }
 
 // TestNotifyOfLibraryChangeConcurrent verifies that the notification function may be installed by the UI thread while
@@ -488,6 +604,29 @@ func resetLibraryChangeNotification() {
 	notifyOfLibraryChange = nil
 	pendingLibraryChange = false
 	libraryChangeLock.Unlock()
+}
+
+// newReleasesServer starts a stand-in for the GitHub releases API. It returns a client that reaches it in place of the
+// API host baked into LoadReleases, along with a function that replaces what it serves, so that a test can run more
+// than one check against differing answers. Each version given becomes a release, in the order supplied.
+func newReleasesServer(t *testing.T, initialVersions ...string) (client *http.Client, setReleases func(versions ...string)) {
+	t.Helper()
+	var body atomic.Pointer[string]
+	setReleases = func(versions ...string) {
+		entries := make([]string, 0, len(versions))
+		for _, version := range versions {
+			entries = append(entries,
+				fmt.Sprintf(`{"tag_name":"v%s","body":"notes","zipball_url":"http://127.0.0.1/z.zip"}`, version))
+		}
+		content := "[" + strings.Join(entries, ",") + "]"
+		body.Store(&content)
+	}
+	setReleases(initialVersions...)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, *body.Load())
+	}))
+	t.Cleanup(srv.Close)
+	return &http.Client{Transport: &redirectingTransport{host: srv.Listener.Addr().String()}}, setReleases
 }
 
 // redirectingTransport sends requests to a test server rather than to the GitHub API host baked into LoadReleases.

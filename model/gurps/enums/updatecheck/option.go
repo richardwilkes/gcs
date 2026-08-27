@@ -1,0 +1,29 @@
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, version 2.0. If a copy of the MPL was not distributed with
+// this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, version 2.0.
+
+package updatecheck
+
+import "time"
+
+// Interval returns how long to wait between repeating checks, or 0 if checks should not repeat.
+func (enum Option) Interval() time.Duration {
+	switch enum {
+	case Hourly:
+		return time.Hour
+	case Daily:
+		return 24 * time.Hour
+	default:
+		return 0
+	}
+}
+
+// ChecksAtLaunch returns true if a check should be made when the application starts.
+func (enum Option) ChecksAtLaunch() bool {
+	return enum != Never
+}

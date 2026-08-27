@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/gcs/v5/updater"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -30,33 +31,73 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 )
 
+// appUpdater holds what is known about available application updates. Two kinds of check write to it: a visible one,
+// which the user asked for or which runs at launch, and a quiet one, which the repeating schedule runs in the
+// background. A visible check announces itself by blanking what is known and setting updating, so that the menu and
+// the toolbar button say a check is under way; a quiet check leaves the previous answer on display until it has a
+// better one, so that a failed or unchanged background check never takes away an update the user has already been
+// told about.
 type appUpdater struct {
-	lock     sync.RWMutex
-	result   string
-	releases []gurps.Release
-	updating bool
+	lock      sync.RWMutex
+	frequency func() updatecheck.Option // nil means the general settings' AppUpdateCheck; tests inject a value
+	result    string
+	releases  []gurps.Release
+	updating  bool
+	quiet     bool // a quiet check is in flight
+	seq       int  // bumped by every visible check, so a quiet result that arrives late can be recognized as stale
 }
 
 var appUpdate appUpdater
 
+// Reset marks the start of a visible check, returning false if one is already running. The sequence number is bumped
+// so that any quiet check still in flight is discarded when it finishes: the visible check has taken over.
 func (u *appUpdater) Reset() bool {
 	u.lock.Lock()
 	defer u.lock.Unlock()
 	if u.updating {
 		return false
 	}
-	u.result = fmt.Sprintf(i18n.Text("Checking for %s updates…"), xos.AppName)
+	u.result = checkingForAppUpdatesText()
 	u.releases = nil
 	u.updating = true
+	u.seq++
 	return true
 }
 
+// Result returns what is currently known. Until a check has recorded something, the title says why there is nothing:
+// the checks are off, one is under way in the background, or none has run yet. The Help menu shows the title verbatim,
+// so it must never be blank.
 func (u *appUpdater) Result() (title string, releases []gurps.Release, updating bool) {
 	u.lock.RLock()
 	defer u.lock.RUnlock()
+	if u.result == "" {
+		return u.uncheckedTitleLocked(), u.releases, u.updating
+	}
 	return u.result, u.releases, u.updating
 }
 
+// uncheckedTitleLocked returns the title for the state in which no check has recorded anything. The lock must already
+// be held.
+func (u *appUpdater) uncheckedTitleLocked() string {
+	switch {
+	case u.quiet:
+		return checkingForAppUpdatesText()
+	case u.option() == updatecheck.Never:
+		return fmt.Sprintf(i18n.Text("Automatic %s update checks are off"), xos.AppName)
+	default:
+		return fmt.Sprintf(i18n.Text("No %s update check has run yet"), xos.AppName)
+	}
+}
+
+// option returns the update check setting in force.
+func (u *appUpdater) option() updatecheck.Option {
+	if u.frequency != nil {
+		return u.frequency()
+	}
+	return gurps.GlobalSettings().General.AppUpdateCheck
+}
+
+// SetResult records the outcome of a visible check that found nothing to offer.
 func (u *appUpdater) SetResult(str string) {
 	u.lock.Lock()
 	u.result = str
@@ -64,42 +105,157 @@ func (u *appUpdater) SetResult(str string) {
 	u.lock.Unlock()
 }
 
+// SetReleases records the releases a visible check found.
 func (u *appUpdater) SetReleases(releases []gurps.Release) {
 	u.lock.Lock()
-	u.result = fmt.Sprintf(i18n.Text("%s %s is available!"), xos.AppName, filterVersion(releases[0].Version))
-	u.releases = releases
-	u.updating = false
+	u.setReleasesLocked(releases)
 	u.lock.Unlock()
 }
 
-// CheckForAppUpdates initiates a fresh check for application updates.
+// setReleasesLocked records the releases an update check found. The lock must already be held.
+func (u *appUpdater) setReleasesLocked(releases []gurps.Release) {
+	u.result = fmt.Sprintf(i18n.Text("%s %s is available!"), xos.AppName, filterVersion(releases[0].Version))
+	u.releases = releases
+	u.updating = false
+}
+
+// noAppUpdatesText returns the title shown when a check completed and found nothing newer than what is running.
+func noAppUpdatesText() string {
+	return fmt.Sprintf(i18n.Text("No %s updates are available"), xos.AppName)
+}
+
+// checkingForAppUpdatesText returns the title shown while a check is under way.
+func checkingForAppUpdatesText() string {
+	return fmt.Sprintf(i18n.Text("Checking for %s updates…"), xos.AppName)
+}
+
+// unableToAccessAppUpdateSiteText returns the title shown when a check couldn't reach the update site.
+func unableToAccessAppUpdateSiteText() string {
+	return fmt.Sprintf(i18n.Text("Unable to access the %s update site"), xos.AppName)
+}
+
+// devVersionAppUpdateText returns the title shown by a development build, which never looks for updates.
+func devVersionAppUpdateText() string {
+	return fmt.Sprintf(i18n.Text("Development versions don't look for %s updates"), xos.AppName)
+}
+
+// beginQuiet claims the right to run a quiet check, returning the sequence number to hand back to finishQuiet. It
+// refuses while a visible check is running, since that check's answer is the one the user is waiting on, and while
+// another quiet check is already in flight.
+func (u *appUpdater) beginQuiet() (seq int, ok bool) {
+	u.lock.Lock()
+	defer u.lock.Unlock()
+	if u.updating || u.quiet {
+		return 0, false
+	}
+	u.quiet = true
+	return u.seq, true
+}
+
+// finishQuiet records the outcome of a quiet check. A result whose sequence number no longer matches is discarded: a
+// visible check started after this one began, and its answer is the newer one. A failed check leaves what is known
+// untouched, so a network hiccup can't erase an update the user has already been told about; the caller logs the
+// error. When nothing was known, though, there is nothing to protect, and the failure is recorded so that the Help
+// menu says the site couldn't be reached rather than that no check has run.
+func (u *appUpdater) finishQuiet(seq int, releases []gurps.Release, err error) {
+	u.lock.Lock()
+	defer u.lock.Unlock()
+	u.quiet = false
+	if seq != u.seq {
+		return
+	}
+	if err != nil {
+		if u.result == "" {
+			u.result = unableToAccessAppUpdateSiteText()
+		}
+		return
+	}
+	if len(releases) == 0 || releases[0].Version == xos.AppVersion {
+		u.result = noAppUpdatesText()
+		u.releases = nil
+		return
+	}
+	u.setReleasesLocked(releases)
+}
+
+// loadAppReleases retrieves the releases newer than the running version.
+func loadAppReleases(ctx context.Context) ([]gurps.Release, error) {
+	return gurps.LoadReleases(ctx, &http.Client{}, "richardwilkes", "", "gcs", xos.AppVersion,
+		func(version, _ string) bool {
+			// Don't bother showing changes from before 5.0.0, since those were the Java version
+			return xstrings.NaturalLess(version, "5.0.0", true)
+		}, false)
+}
+
+// CheckForAppUpdates initiates a fresh check for application updates. This is the visible path: the state says a check
+// is running while it is, and a release that hasn't been shown yet opens the notification dialog. A development build
+// has no release behind it to compare against, so it says so rather than checking.
 func CheckForAppUpdates() {
-	if xos.AppVersion == "0.0" {
-		appUpdate.SetResult(fmt.Sprintf(i18n.Text("Development versions don't look for %s updates"), xos.AppName))
+	if updater.IsDevVersion(xos.AppVersion) {
+		appUpdate.SetResult(devVersionAppUpdateText())
+		unison.InvokeTask(SyncAppUpdateButton)
 		return
 	}
 	if appUpdate.Reset() {
+		unison.InvokeTask(SyncAppUpdateButton)
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 			defer cancel()
-			releases, err := gurps.LoadReleases(ctx, &http.Client{}, "richardwilkes", "", "gcs", xos.AppVersion,
-				func(version, _ string) bool {
-					// Don't bother showing changes from before 5.0.0, since those were the Java version
-					return xstrings.NaturalLess(version, "5.0.0", true)
-				}, false)
+			releases, err := loadAppReleases(ctx)
 			if err != nil {
-				appUpdate.SetResult(fmt.Sprintf(i18n.Text("Unable to access the %s update site"), xos.AppName))
+				appUpdate.SetResult(unableToAccessAppUpdateSiteText())
 				errs.Log(err)
+				unison.InvokeTask(SyncAppUpdateButton)
 				return
 			}
 			if len(releases) == 0 || releases[0].Version == xos.AppVersion {
-				appUpdate.SetResult(fmt.Sprintf(i18n.Text("No %s updates are available"), xos.AppName))
+				appUpdate.SetResult(noAppUpdatesText())
+				unison.InvokeTask(SyncAppUpdateButton)
 				return
 			}
 			appUpdate.SetReleases(releases)
-			unison.InvokeTask(NotifyOfAppUpdate)
+			unison.InvokeTask(func() {
+				SyncAppUpdateButton()
+				if shouldShowAppUpdateDialog(releases[0].Version, gurps.GlobalSettings().LastSeenGCSVersion) {
+					NotifyOfAppUpdate()
+				}
+			})
 		}()
 	}
+}
+
+// shouldShowAppUpdateDialog reports whether a release warrants interrupting the user with the notification dialog.
+// LastSeenGCSVersion is written when the dialog is shown (see NotifyOfAppUpdate, just before it goes modal) and is
+// cleared by the manual Help menu action (see checkForAppUpdatesAction in actions.go), so the dialog opens the first
+// time a release is seen and whenever the user asks for a check, while later launches that turn up the same release
+// they've already declined say so with the toolbar button alone.
+func shouldShowAppUpdateDialog(version, lastSeen string) bool {
+	return version != lastSeen
+}
+
+// checkForAppUpdatesQuietly checks for application updates without ever interrupting the user: no dialog, and nothing
+// already known is taken away by a check that fails or finds nothing. This is what the repeating schedule runs.
+func checkForAppUpdatesQuietly() {
+	if updater.IsDevVersion(xos.AppVersion) {
+		// Development versions have no release behind them to compare against, so they never look for updates. Saying
+		// so is what the visible check does too, and it beats a status claiming that a check is still to come.
+		appUpdate.SetResult(devVersionAppUpdateText())
+		return
+	}
+	seq, ok := appUpdate.beginQuiet()
+	if !ok {
+		return
+	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+		defer cancel()
+		releases, err := loadAppReleases(ctx)
+		if err != nil {
+			errs.Log(err)
+		}
+		appUpdate.finishQuiet(seq, releases, err)
+		unison.InvokeTask(SyncAppUpdateButton)
+	}()
 }
 
 // downloadPageResponse is the response code for the button that opens the download page rather than installing. The

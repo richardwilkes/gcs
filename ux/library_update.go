@@ -57,56 +57,22 @@ documents from the library are open.`))
 		}
 	}
 
-	frame := windowPlacementFrame()
-	wnd, err := unison.NewWindow(i18n.Text("Updating…"), unison.FloatingWindowOption(),
-		unison.NotResizableWindowOption(), unison.UndecoratedWindowOption(), unison.TransientWindowOption())
+	ctx, cancel := context.WithTimeout(context.Background(), libraryUpdateTimeout)
+	defer cancel()
+	// canceling is written and read only on the UI thread: the Cancel button's callback, and the task the progress
+	// reporter posts. That is what keeps the label from being rewritten with the phase that was already underway when
+	// the user asked to stop.
+	canceling := false
+	progress := unison.NewProgressBar(progressResolution)
+	wnd, label, err := newLibraryProgressWindow(i18n.Text("Updating…"),
+		libraryPhaseTitle(gurps.LibraryUpdateDownloading, libData.Title, rel.Version), progress, func() {
+			canceling = true
+			cancel()
+		})
 	if err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to update"), err)
 		return false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), libraryUpdateTimeout)
-	defer cancel()
-
-	content := unison.NewPanel()
-	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.NewUniformInsets(2*unison.StdHSpacing))))
-	content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		VSpacing: unison.StdVSpacing,
-	})
-	label := unison.NewLabel()
-	label.SetTitle(libraryPhaseTitle(gurps.LibraryUpdateDownloading, libData.Title, rel.Version))
-	content.AddChild(label)
-	progress := unison.NewProgressBar(progressResolution)
-	progress.SetLayoutData(&unison.FlexLayoutData{
-		MinSize: geom.Size{Width: 500},
-		HAlign:  align.Fill,
-		HGrab:   true,
-	})
-	content.AddChild(progress)
-	// canceling is written and read only on the UI thread: here, and inside the task the progress reporter posts. That
-	// is what keeps the label from being rewritten with the phase that was already underway when the user asked to stop.
-	canceling := false
-	cancelButton := unison.NewButton()
-	cancelButton.SetTitle(i18n.Text("Cancel"))
-	cancelButton.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
-	cancelButton.ClickCallback = func() {
-		canceling = true
-		cancelButton.SetEnabled(false)
-		label.SetTitle(i18n.Text("Canceling…"))
-		cancel()
-	}
-	content.AddChild(cancelButton)
-	wnd.SetContent(content)
-	wnd.Pack()
-	wndFrame := wnd.FrameRect()
-	frame.Y += (frame.Height - wndFrame.Height) / 3
-	frame.Height = wndFrame.Height
-	frame.X += (frame.Width - wndFrame.Width) / 2
-	frame.Width = wndFrame.Width
-	frame = frame.Align()
-	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
-	wnd.ToFront()
 	resultChan := make(chan error, 1)
 	reportProgress := libraryUpdateProgress(label, progress, libData.Title, rel.Version, func() bool { return canceling })
 	go runLibraryUpdate(resultChan, func() error { return performLibraryUpdate(ctx, lib, rel, reportProgress) },
@@ -123,6 +89,54 @@ documents from the library are open.`))
 		return false
 	}
 	return true
+}
+
+// newLibraryProgressWindow builds the small floating window the library operations report on themselves in: a label
+// saying what is happening, a progress bar, and a Cancel button that disables itself, rewrites the label to say the
+// operation is being canceled and calls cancel. The window is packed and placed over the active window, ready for
+// RunModal, which is what disposes of it.
+func newLibraryProgressWindow(windowTitle, labelTitle string, bar *unison.ProgressBar, cancel func()) (wnd *unison.Window, label *unison.Label, err error) {
+	frame := windowPlacementFrame()
+	if wnd, err = unison.NewWindow(windowTitle, unison.FloatingWindowOption(), unison.NotResizableWindowOption(),
+		unison.UndecoratedWindowOption(), unison.TransientWindowOption()); err != nil {
+		return nil, nil, err
+	}
+	content := unison.NewPanel()
+	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
+		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.NewUniformInsets(2*unison.StdHSpacing))))
+	content.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		VSpacing: unison.StdVSpacing,
+	})
+	label = unison.NewLabel()
+	label.SetTitle(labelTitle)
+	content.AddChild(label)
+	bar.SetLayoutData(&unison.FlexLayoutData{
+		MinSize: geom.Size{Width: 500},
+		HAlign:  align.Fill,
+		HGrab:   true,
+	})
+	content.AddChild(bar)
+	cancelButton := unison.NewButton()
+	cancelButton.SetTitle(i18n.Text("Cancel"))
+	cancelButton.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
+	cancelButton.ClickCallback = func() {
+		cancelButton.SetEnabled(false)
+		label.SetTitle(i18n.Text("Canceling…"))
+		cancel()
+	}
+	content.AddChild(cancelButton)
+	wnd.SetContent(content)
+	wnd.Pack()
+	wndFrame := wnd.FrameRect()
+	frame.Y += (frame.Height - wndFrame.Height) / 3
+	frame.Height = wndFrame.Height
+	frame.X += (frame.Width - wndFrame.Width) / 2
+	frame.Width = wndFrame.Width
+	frame = frame.Align()
+	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
+	wnd.ToFront()
+	return wnd, label, nil
 }
 
 // runLibraryUpdate performs the download on a background goroutine while the UI thread waits inside RunModal(), hands

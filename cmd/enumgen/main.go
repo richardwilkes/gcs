@@ -1389,6 +1389,28 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
+		Pkg:  "model/gurps/enums/updatecheck",
+		Name: "option",
+		Desc: "holds how often to check for updates",
+		Values: []*enumValue{
+			{
+				Key:    "at_launch",
+				String: "At launch",
+			},
+			{
+				Key:    "hourly",
+				String: "At launch and every hour",
+			},
+			{
+				Key:    "daily",
+				String: "At launch and every day",
+			},
+			{
+				Key: "never",
+			},
+		},
+	},
+	{
 		Pkg:  "model/gurps/enums/wsel",
 		Name: "type",
 		Desc: "holds the type of a weapon selection",

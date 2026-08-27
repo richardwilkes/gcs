@@ -67,14 +67,20 @@ func TestPreflightAcceptsAWritableInstallation(t *testing.T) {
 }
 
 // TestPreflightRefusesADevBuild verifies that a build with no release behind it never tries to update. The stamped
-// version is "0.0" for anything not built by the release workflow.
+// version is "0.0" for a build with no version at all, but a plain `go build` from a git checkout stamps a VCS
+// pseudo-version instead, optionally with "+dirty" appended, and those must be refused just the same.
 func TestPreflightRefusesADevBuild(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
 	exePath := filepath.Join(dir, CmdName)
 	write(t, exePath, "binary")
 
-	for _, version := range []string{"0.0", ""} {
+	for _, version := range []string{
+		"0.0",
+		"",
+		"5.48.1-0.20260826001723-41ebfa03e3e8",
+		"5.48.1-0.20260826001723-41ebfa03e3e8+dirty",
+	} {
 		_, err := Preflight(exePath, xos.LinuxOS, "amd64", version, "5.46.0", linuxAssets("5.46.0"), noEnv)
 		c.HasError(err, version)
 		c.Equal(BlockerDevBuild, blockerOf(t, err), version)

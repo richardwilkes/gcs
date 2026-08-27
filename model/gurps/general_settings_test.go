@@ -10,8 +10,11 @@
 package gurps
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -71,4 +74,48 @@ func TestCursorSizeValidation(t *testing.T) {
 	s.EnsureValidity()
 	c.Equal(CursorSizeMin, s.CursorSize, "an in-range cursor size is preserved")
 	c.Equal(geom.NewSize(CursorSizeMin, CursorSizeMin), unison.CursorSize(), "validation applies the size to unison")
+}
+
+// TestUpdateCheckSettings verifies the app and library update check settings: new settings start at the default, an
+// out-of-range value is reset rather than left to produce nonsense, a settings file written before these settings
+// existed loads as the default, chosen values survive a save/load round trip, and the default doesn't bloat the saved
+// file.
+func TestUpdateCheckSettings(t *testing.T) {
+	c := check.New(t)
+
+	s := NewGeneralSettings()
+	c.Equal(updatecheck.AtLaunch, s.AppUpdateCheck, "new settings check for app updates at launch")
+	c.Equal(updatecheck.AtLaunch, s.LibraryUpdateCheck, "new settings check for library updates at launch")
+
+	s.AppUpdateCheck = updatecheck.Option(200)
+	s.LibraryUpdateCheck = updatecheck.Option(200)
+	s.EnsureValidity()
+	c.Equal(updatecheck.AtLaunch, s.AppUpdateCheck, "an out-of-range app update check is reset to the default")
+	c.Equal(updatecheck.AtLaunch, s.LibraryUpdateCheck, "an out-of-range library update check is reset to the default")
+
+	// A settings file written before these settings existed has no such keys, so they load as the default.
+	p := filepath.Join(t.TempDir(), "general.json")
+	c.NoError(os.WriteFile(p, []byte(`{"version":2}`), 0o600))
+	loaded, err := NewGeneralSettingsFromFile(nil, p)
+	c.NoError(err)
+	c.Equal(updatecheck.AtLaunch, loaded.AppUpdateCheck,
+		"a pre-existing settings file checks for app updates at launch")
+	c.Equal(updatecheck.AtLaunch, loaded.LibraryUpdateCheck,
+		"a pre-existing settings file checks for library updates at launch")
+
+	// Chosen values survive a round trip through the file.
+	s.AppUpdateCheck = updatecheck.Daily
+	s.LibraryUpdateCheck = updatecheck.Never
+	c.NoError(s.Save(p))
+	loaded, err = NewGeneralSettingsFromFile(nil, p)
+	c.NoError(err)
+	c.Equal(updatecheck.Daily, loaded.AppUpdateCheck, "the app update check survives a save and load")
+	c.Equal(updatecheck.Never, loaded.LibraryUpdateCheck, "the library update check survives a save and load")
+
+	// The default is omitted from the saved file.
+	c.NoError(NewGeneralSettings().Save(p))
+	data, err := os.ReadFile(p)
+	c.NoError(err)
+	c.NotContains(string(data), "app_update_check", "the default app update check isn't written")
+	c.NotContains(string(data), "library_update_check", "the default library update check isn't written")
 }

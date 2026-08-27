@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -57,6 +58,8 @@ const (
 	InitialMarkdownUIScaleDef  = 100
 	InitialImageUIScaleDef     = 100
 	InitialPDFAutoScaling      = autoscale.No
+	InitialAppUpdateCheck      = updatecheck.AtLaunch
+	InitialLibraryUpdateCheck  = updatecheck.AtLaunch
 	AutoColWidthMin            = 50
 	AutoColWidthMax            = 9999
 	MaximumAutoColWidthDef     = 800
@@ -68,34 +71,36 @@ const currentGeneralSettingsVersion = 2
 
 // GeneralSettings holds general settings for a sheet.
 type GeneralSettings struct {
-	DefaultPlayerName           string           `json:"default_player_name,omitzero"`
-	DefaultTechLevel            string           `json:"default_tech_level,omitzero"`
-	CalendarName                string           `json:"calendar_ref,omitzero"`
-	ExternalPDFCmdLine          string           `json:"external_pdf_cmd_line,omitzero"`
-	InitialPoints               fxp.Int          `json:"initial_points"`
-	TooltipDelay                fxp.Int          `json:"tooltip_delay"`
-	TooltipDismissal            fxp.Int          `json:"tooltip_dismissal"`
-	ScrollWheelMultiplier       fxp.Int          `json:"scroll_wheel_multiplier"`
-	PermittedPerScriptExecTime  fxp.Int          `json:"permitted_per_script_exec_time,omitzero"`
-	Version                     int              `json:"version,omitzero"`
-	NavigatorUIScale            int              `json:"navigator_scale"`
-	InitialListUIScale          int              `json:"initial_list_scale"`
-	InitialEditorUIScale        int              `json:"initial_editor_scale"`
-	InitialSheetUIScale         int              `json:"initial_sheet_scale"`
-	InitialPDFUIScale           int              `json:"initial_pdf_scale"`
-	InitialMarkdownUIScale      int              `json:"initial_md_scale"`
-	InitialImageUIScale         int              `json:"initial_img_scale"`
-	MaximumAutoColWidth         int              `json:"maximum_auto_col_width"`
-	ImageResolution             int              `json:"image_resolution"`
-	MonitorResolution           int              `json:"monitor_resolution,omitzero"`
-	CursorSize                  int              `json:"cursor_size"`
-	PDFAutoScaling              autoscale.Option `json:"pdf_auto_scaling,omitzero"`
-	AutoFillProfile             bool             `json:"auto_fill_profile"`
-	AutoAddNaturalAttacks       bool             `json:"add_natural_attacks"`
-	GroupContainersOnSort       bool             `json:"group_containers_on_sort"`
-	InitialFieldClickSelectsAll bool             `json:"initial_field_click_selects_all"`
-	RestoreWorkspaceOnStart     bool             `json:"restore_workspace_on_start"`
-	ExpandPageReferences        bool             `json:"expand_page_references"`
+	DefaultPlayerName           string             `json:"default_player_name,omitzero"`
+	DefaultTechLevel            string             `json:"default_tech_level,omitzero"`
+	CalendarName                string             `json:"calendar_ref,omitzero"`
+	ExternalPDFCmdLine          string             `json:"external_pdf_cmd_line,omitzero"`
+	InitialPoints               fxp.Int            `json:"initial_points"`
+	TooltipDelay                fxp.Int            `json:"tooltip_delay"`
+	TooltipDismissal            fxp.Int            `json:"tooltip_dismissal"`
+	ScrollWheelMultiplier       fxp.Int            `json:"scroll_wheel_multiplier"`
+	PermittedPerScriptExecTime  fxp.Int            `json:"permitted_per_script_exec_time,omitzero"`
+	Version                     int                `json:"version,omitzero"`
+	NavigatorUIScale            int                `json:"navigator_scale"`
+	InitialListUIScale          int                `json:"initial_list_scale"`
+	InitialEditorUIScale        int                `json:"initial_editor_scale"`
+	InitialSheetUIScale         int                `json:"initial_sheet_scale"`
+	InitialPDFUIScale           int                `json:"initial_pdf_scale"`
+	InitialMarkdownUIScale      int                `json:"initial_md_scale"`
+	InitialImageUIScale         int                `json:"initial_img_scale"`
+	MaximumAutoColWidth         int                `json:"maximum_auto_col_width"`
+	ImageResolution             int                `json:"image_resolution"`
+	MonitorResolution           int                `json:"monitor_resolution,omitzero"`
+	CursorSize                  int                `json:"cursor_size"`
+	PDFAutoScaling              autoscale.Option   `json:"pdf_auto_scaling,omitzero"`
+	AppUpdateCheck              updatecheck.Option `json:"app_update_check,omitzero"`
+	LibraryUpdateCheck          updatecheck.Option `json:"library_update_check,omitzero"`
+	AutoFillProfile             bool               `json:"auto_fill_profile"`
+	AutoAddNaturalAttacks       bool               `json:"add_natural_attacks"`
+	GroupContainersOnSort       bool               `json:"group_containers_on_sort"`
+	InitialFieldClickSelectsAll bool               `json:"initial_field_click_selects_all"`
+	RestoreWorkspaceOnStart     bool               `json:"restore_workspace_on_start"`
+	ExpandPageReferences        bool               `json:"expand_page_references"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.
@@ -120,6 +125,8 @@ func NewGeneralSettings() *GeneralSettings {
 		ImageResolution:            ImageResolutionDef,
 		CursorSize:                 CursorSizeDef,
 		PDFAutoScaling:             InitialPDFAutoScaling,
+		AppUpdateCheck:             InitialAppUpdateCheck,
+		LibraryUpdateCheck:         InitialLibraryUpdateCheck,
 		AutoFillProfile:            true,
 		AutoAddNaturalAttacks:      true,
 		RestoreWorkspaceOnStart:    true,
@@ -239,6 +246,8 @@ func (s *GeneralSettings) EnsureValidity() {
 		MaximumAutoColWidthDef)
 	s.CursorSize = fxp.ResetIfOutOfRange(s.CursorSize, CursorSizeMin, CursorSizeMax, CursorSizeDef)
 	s.PDFAutoScaling = s.PDFAutoScaling.EnsureValid()
+	s.AppUpdateCheck = s.AppUpdateCheck.EnsureValid()
+	s.LibraryUpdateCheck = s.LibraryUpdateCheck.EnsureValid()
 	s.UpdateToolTipTiming()
 	s.UpdateCursorSize()
 }

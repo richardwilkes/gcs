@@ -127,6 +127,7 @@ type Library struct {
 	releases          []Release
 	current           string
 	lock              sync.RWMutex
+	checked           bool
 }
 
 // NewLibrary creates a new library.
@@ -395,10 +396,25 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 		lastRelease = releases[0].Version
 	}
 	l.lock.Lock()
+	prevCurrent := l.current
+	prevLastRelease := ""
+	if len(l.releases) != 0 {
+		prevLastRelease = l.releases[0].Version
+	}
+	firstCheck := !l.checked
+	l.checked = true
 	l.releases = releases
 	l.current = current
 	l.lock.Unlock()
-	if current != lastRelease {
+	// A notification reloads the entire library tree, which restarts the filesystem watches, drops what has been cached
+	// and disturbs anything in progress, so one is sent only when this check turned up something the previous check
+	// didn't: an update that has just become available, or a library whose content changed on disk outside of the app.
+	// The first check of a library also announces an update that was already pending, which is what raises the
+	// indicator at startup. A library with no releases to compare against -- a local one, or a repo whose releases were
+	// all rejected as incompatible -- has nothing to announce, even though the "0" that stands in for an unknown
+	// version on disk differs from the empty version of a release that isn't there.
+	updateAvailable := lastRelease != "" && current != lastRelease
+	if updateAvailable && (firstCheck || prevCurrent != current || prevLastRelease != lastRelease) {
 		NotifyOfLibraryChange()
 	}
 }
@@ -408,6 +424,15 @@ func (l *Library) AvailableReleases() (current string, releases []Release) {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
 	return l.current, l.releases
+}
+
+// NeedsUpgradeCheck returns true if the library is backed by a GitHub repository and no update check of it has
+// completed, either because none has been made -- with the periodic checks turned off, none is -- or because every one
+// made so far failed to reach the repository. A library that isn't backed by a repository has nothing to check.
+func (l *Library) NeedsUpgradeCheck() bool {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return !l.checked && l.gitHubAccountName != "" && l.repoName != ""
 }
 
 // Compare the two libraries for sorting purposes.

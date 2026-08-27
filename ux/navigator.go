@@ -60,6 +60,7 @@ type FileBackedDockable interface {
 type Navigator struct {
 	unison.Panel
 	toolbar                   *unison.Panel
+	buttonRow                 *unison.Panel // The toolbar row the update button is added to when there is an update
 	backButton                *unison.Button
 	forwardButton             *unison.Button
 	searchField               *unison.Field
@@ -71,12 +72,14 @@ type Navigator struct {
 	libraryReleaseNotesButton *unison.Button
 	configLibraryButton       *unison.Button
 	favoriteButton            *unison.Button
+	appUpdateButton           *unison.Button
 	scroll                    *unison.ScrollPanel
 	table                     *unison.Table[*NavigatorNode]
 	tokens                    []*gurps.MonitorToken
 	searchResult              []*NavigatorNode
 	deepSearch                map[string]bool
 	contentCache              map[string]string
+	appUpdatePulse            appUpdatePulse
 	searchIndex               int
 	needReload                bool
 	adjustTableSizePending    bool
@@ -136,6 +139,9 @@ func newNavigator() *Navigator {
 		func(any) { n.searchField.RequestFocus() })
 
 	n.selectionChanged()
+	// The launch-time update check can finish before the Library Explorer exists, in which case the notification that
+	// would have revealed the button has already come and gone.
+	n.syncAppUpdateButton()
 	n.EventuallyReload() // Without this, the version for libraries is sometimes truncated at initial load
 	return n
 }
@@ -195,6 +201,9 @@ func (n *Navigator) setupToolBar() {
 	n.favoriteButton.Tooltip = newWrappedTooltip(i18n.Text("Toggle Favorite"))
 	n.favoriteButton.ClickCallback = n.favoriteSelection
 
+	n.appUpdateButton = newAppUpdateButton(NotifyOfAppUpdate)
+	n.appUpdatePulse.apply = n.applyAppUpdatePulse
+
 	first := unison.NewPanel()
 	first.AddChild(NewDefaultInfoPop())
 	first.AddChild(helpButton)
@@ -222,6 +231,7 @@ func (n *Navigator) setupToolBar() {
 	first.AddChild(n.renameButton)
 	first.AddChild(n.deleteButton)
 	first.AddChild(n.favoriteButton)
+	n.buttonRow = first // n.appUpdateButton joins this row only while there is an update to announce
 	for _, child := range first.Children() {
 		child.SetLayoutData(align.Middle)
 	}
@@ -544,24 +554,47 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 	}
 }
 
-func (n *Navigator) updateLibrarySelection() {
+// selectedLibraries returns the libraries among the selected rows, in selection order.
+func (n *Navigator) selectedLibraries() []*gurps.Library {
+	var libs []*gurps.Library
 	for _, row := range n.table.SelectedRows(true) {
 		if row.IsLibrary() {
-			_, releases := row.library.AvailableReleases()
-			if len(releases) == 0 || !releases[0].HasUpdate() || !initiateLibraryUpdate(row.library, &releases[0]) {
-				return
-			}
+			libs = append(libs, row.library)
+		}
+	}
+	return libs
+}
+
+// updateLibrarySelection updates each selected library to its newest release, checking first for any whose releases
+// aren't known yet.
+func (n *Navigator) updateLibrarySelection() {
+	libs := n.selectedLibraries()
+	if !n.checkLibraryReleases(libs) {
+		return
+	}
+	for _, lib := range libs {
+		_, releases := lib.AvailableReleases()
+		if len(releases) == 0 || !releases[0].HasUpdate() {
+			reportNoLibraryReleases(lib)
+			return
+		}
+		if !initiateLibraryUpdate(lib, &releases[0]) {
+			return
 		}
 	}
 }
 
+// showSelectionReleaseNotes shows the release notes of each selected library, checking first for any whose releases
+// aren't known yet.
 func (n *Navigator) showSelectionReleaseNotes() {
-	for _, row := range n.table.SelectedRows(true) {
-		if !row.IsLibrary() {
-			continue
-		}
-		current, releases := row.library.AvailableReleases()
+	libs := n.selectedLibraries()
+	if !n.checkLibraryReleases(libs) {
+		return
+	}
+	for _, lib := range libs {
+		current, releases := lib.AvailableReleases()
 		if len(releases) == 0 || !releases[0].HasUpdate() {
+			reportNoLibraryReleases(lib)
 			return
 		}
 		var content strings.Builder
@@ -578,8 +611,16 @@ func (n *Navigator) showSelectionReleaseNotes() {
 			}
 			content.WriteString(release.Notes)
 		}
-		ShowReadOnlyMarkdown(fmt.Sprintf(i18n.Text("%s Release Notes"), row.library.Data().Title), content.String())
+		ShowReadOnlyMarkdown(fmt.Sprintf(i18n.Text("%s Release Notes"), lib.Data().Title), content.String())
 	}
+}
+
+// checkLibraryReleases is checkLibraryReleases with the toolbar brought back into line afterwards: a check that found
+// nothing to offer leaves the buttons with nothing to do, and one that found an update reloads the tree on its own.
+func (n *Navigator) checkLibraryReleases(libs []*gurps.Library) bool {
+	ok := checkLibraryReleases(libs)
+	n.selectionChanged()
+	return ok
 }
 
 func (n *Navigator) configureSelection() {
@@ -839,8 +880,7 @@ func (n *Navigator) selectionChanged() {
 					deleteEnabled = false
 				}
 				if downloadEnabled {
-					_, releases := row.library.AvailableReleases()
-					downloadEnabled = len(releases) != 0 && releases[0].HasUpdate()
+					downloadEnabled = libraryUpdateButtonsEnabled(row.library)
 				}
 			} else {
 				hasOther = true

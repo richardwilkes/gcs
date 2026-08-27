@@ -56,6 +56,10 @@ func (l *Libraries) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 				errs.Log(err, "key", k)
 				continue
 			}
+			// The version on disk isn't part of what was saved, and an update check is the only other thing that fills
+			// it in, so without this a library would show no version at all until one ran -- which, with the periodic
+			// checks turned off, may be never.
+			lib.refreshVersionOnDisk()
 			libs[lib.Key()] = lib
 		}
 	}
@@ -93,14 +97,18 @@ func (l Libraries) List() []*Library {
 	return libs
 }
 
-// PerformUpdateChecks checks each of the libraries for updates.
+// PerformUpdateChecks checks each of the libraries for updates in the background. The set is captured on the calling
+// goroutine, since the map may be modified while the checks run.
 func (l Libraries) PerformUpdateChecks() {
-	client := &http.Client{}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-	defer cancel()
-	var wg sync.WaitGroup
-	for _, lib := range l {
-		wg.Go(func() { lib.CheckForAvailableUpgrade(ctx, client) })
-	}
-	wg.Wait()
+	libs := l.List()
+	go func() {
+		client := &http.Client{}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+		defer cancel()
+		var wg sync.WaitGroup
+		for _, lib := range libs {
+			wg.Go(func() { lib.CheckForAvailableUpgrade(ctx, client) })
+		}
+		wg.Wait()
+	}()
 }

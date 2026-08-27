@@ -32,9 +32,21 @@
   containers of the group type are reused, and any of these containers left empty is removed. The whole rearrangement
   is a single undoable step, and the command is also available from the traits list's context menu. On a trait library
   list it is disabled while the content filter is in use, since a filtered list can't be rearranged.
+- General Settings has two new choices, "Check for GCS Updates" and "Check for Library Updates". Each can be set to
+  check at launch (the default, and what GCS has always done), at launch and every hour, at launch and every day, or
+  never. Help ▸ Check for GCS updates and the Library Explorer's update buttons still work no matter what these are
+  set to: when no check has been made yet, the Library Explorer's buttons look for the library's releases when
+  clicked. Turning either check on from never runs it right away.
+- When a check finds a newer version of GCS, a pulsing "Software Update Available" button appears in the Library
+  Explorer's toolbar. Click it to read the release notes and install the update. The button settles down after a
+  couple of minutes and pulses again only when a newer release turns up. The update window now opens on its own only
+  the first time a given release is seen -- later launches just show the button -- and Help ▸ Check for GCS updates
+  always opens it. With "Check for GCS Updates" set to never, the button isn't shown.
 
 ## Bug Fixes
 
+- The version numbers shown for libraries in the Library Explorer no longer depend on an update check having been
+  made.
 - A skill's optional specialization is no longer treated as part of its library data. Setting one on a skill that came
   from a library used to make the skill show as not matching its source, and Sync with Source (or the sheet's sync-all
   button) then wiped the optional specialization out. Such a skill now shows as matching its source and keeps its

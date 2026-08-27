@@ -28,6 +28,7 @@ func TestRace(t *testing.T) {
 	t.Run("LibraryWatchDeliversNothingUntilSomethingHappens", TestLibraryWatchDeliversNothingUntilSomethingHappens)
 	t.Run("LibrarySetPathSyncsEachWatcherOnce", TestLibrarySetPathSyncsEachWatcherOnce)
 	t.Run("NotifyOfLibraryChangeConcurrent", TestNotifyOfLibraryChangeConcurrent)
+	t.Run("PerformUpdateChecksSnapshotsTheSet", TestPerformUpdateChecksSnapshotsTheSet)
 	t.Run("ScriptResolutionConcurrency", TestScriptResolutionConcurrency)
 	t.Run("ScriptObjectResultConcurrency", TestScriptObjectResultConcurrency)
 	t.Run("ScriptResultConversionHonorsTimeout", TestScriptResultConversionHonorsTimeout)
