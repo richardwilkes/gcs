@@ -178,33 +178,6 @@ func NewComboField(options []*string, editable bool, minWidth float32, initial *
 		return t == notSetDisplay || t == emptyDisplay
 	}
 
-	// visibleCandidates narrows options to those matching the field's current text (when editable and non-empty),
-	// for opening the dropdown filtered to what's already been typed. Two things are deliberately never filtered
-	// out, mirroring each other:
-	//   - The "not set" and "empty" entries themselves: they're control entries, not type-ahead content, so they
-	//     stay visible regardless of what's been typed.
-	//   - Real options, when the field's current text is itself the "not set"/"empty" placeholder rather than typed
-	//     content: that placeholder text is treated as if the field were blank (no filter) for this purpose, so it's
-	//     never used as literal filter text against real options -- "«not set»" would prefix-match none of them.
-	visibleCandidates := func() []*string {
-		text := field.Text()
-		if isShowingPlaceholder() {
-			text = ""
-		}
-		if !editable || text == "" ||
-			slices.ContainsFunc(options, func(one *string) bool { return one != nil && *one == text }) {
-			return options
-		}
-		lower := strings.ToLower(text)
-		out := make([]*string, 0, len(options))
-		for _, one := range options {
-			if one == nil || *one == "" || strings.HasPrefix(strings.ToLower(*one), lower) {
-				out = append(out, one)
-			}
-		}
-		return out
-	}
-
 	selectValue := func(value *string) {
 		// Run this action deferred so it's not happening inside the popup menu callback
 		// The task should trigger on the very next UI tick, after the native popup has been torn down
@@ -219,7 +192,7 @@ func NewComboField(options []*string, editable bool, minWidth float32, initial *
 
 	openMenu := func() {
 		field.RequestFocus()
-		list := visibleCandidates()
+		list := options
 		currentText := field.Text()
 		initialIndex := 0
 		fac := unison.DefaultMenuFactory()
