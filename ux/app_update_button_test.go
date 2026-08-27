@@ -80,6 +80,8 @@ func TestShowAppUpdateButton(t *testing.T) {
 	}{
 		{name: "no update known", releases: nil, option: updatecheck.AtLaunch, expected: false},
 		{name: "no update known, never", releases: nil, option: updatecheck.Never, expected: false},
+		// The caller reads the first release, so an empty list must count as no update even though it isn't nil.
+		{name: "empty update list", releases: []gurps.Release{}, option: updatecheck.AtLaunch, expected: false},
 		{name: "update known, at launch", releases: releases, option: updatecheck.AtLaunch, expected: true},
 		{name: "update known, hourly", releases: releases, option: updatecheck.Hourly, expected: true},
 		{name: "update known, daily", releases: releases, option: updatecheck.Daily, expected: true},

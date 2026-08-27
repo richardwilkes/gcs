@@ -39,9 +39,11 @@
   clicked. Turning either check on from never runs it right away.
 - When a check finds a newer version of GCS, a pulsing "Software Update Available" button appears in the Library
   Explorer's toolbar. Click it to read the release notes and install the update. The button settles down after a
-  couple of minutes and pulses again only when a newer release turns up. The update window now opens on its own only
-  the first time a given release is seen -- later launches just show the button -- and Help ▸ Check for GCS updates
-  always opens it. With "Check for GCS Updates" set to never, the button isn't shown.
+  couple of minutes. It pulses again when a newer release turns up, and whenever it reappears after having been
+  hidden, as it is by Help ▸ Check for GCS updates and by "Check for GCS Updates" being switched back on from never.
+  The update window now opens on its own only the first time a given release is seen -- later launches just show the
+  button -- and Help ▸ Check for GCS updates, which is usable whenever a check isn't already running, always opens it.
+  With "Check for GCS Updates" set to never, the button isn't shown.
 
 ## Bug Fixes
 

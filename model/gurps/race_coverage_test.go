@@ -27,6 +27,16 @@ func TestRace(t *testing.T) {
 	t.Run("LibrarySetPathAfterWatchFailsRestartsWatch", TestLibrarySetPathAfterWatchFailsRestartsWatch)
 	t.Run("LibraryWatchDeliversNothingUntilSomethingHappens", TestLibraryWatchDeliversNothingUntilSomethingHappens)
 	t.Run("LibrarySetPathSyncsEachWatcherOnce", TestLibrarySetPathSyncsEachWatcherOnce)
+	t.Run("CheckForAvailableUpgradeJoinsACheckInFlight", TestCheckForAvailableUpgradeJoinsACheckInFlight)
+	t.Run("CheckForAvailableUpgradeWaiterHonorsItsContext", TestCheckForAvailableUpgradeWaiterHonorsItsContext)
+	t.Run("ConfigureDiscardsACheckInFlight", TestConfigureDiscardsACheckInFlight)
+	t.Run("ConfigureForKeyDiscardsChecksOfTheOldRepository", TestConfigureForKeyDiscardsChecksOfTheOldRepository)
+	t.Run("SetPathDiscardsACheckInFlight", TestSetPathDiscardsACheckInFlight)
+	t.Run("DownloadDiscardsACheckInFlight", TestDownloadDiscardsACheckInFlight)
+	t.Run("CheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded",
+		TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded)
+	t.Run("CheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsCanceled",
+		TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsCanceled)
 	t.Run("NotifyOfLibraryChangeConcurrent", TestNotifyOfLibraryChangeConcurrent)
 	t.Run("PerformUpdateChecksSnapshotsTheSet", TestPerformUpdateChecksSnapshotsTheSet)
 	t.Run("ScriptResolutionConcurrency", TestScriptResolutionConcurrency)
