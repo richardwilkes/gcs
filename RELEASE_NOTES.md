@@ -42,6 +42,7 @@
   couple of minutes and pulses again only when a newer release turns up. The update window now opens on its own only
   the first time a given release is seen -- later launches just show the button -- and Help ▸ Check for GCS updates
   always opens it. With "Check for GCS Updates" set to never, the button isn't shown.
+- New option to combine existing libraries into a unified rule set through File > Create Combined Ruleset
 
 ## Bug Fixes
 
