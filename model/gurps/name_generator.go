@@ -34,8 +34,8 @@ type NameGeneratorRef struct {
 // in the order listed here.
 type TrainingData struct {
 	BuiltIn    namegen.Builtin `json:"built_in_training_data,omitzero"`
-	Weighted   map[string]int  `json:"weighted_training_data,omitzero"`
-	Unweighted []string        `json:"training_data,omitzero"`
+	Weighted   map[string]int  `json:"weighted_training_data,omitempty"`
+	Unweighted []string        `json:"training_data,omitempty"`
 }
 
 func (t *TrainingData) data() map[string]int {
@@ -79,7 +79,7 @@ type NameGenerator struct {
 	NoFirstToUpper bool             `json:"no_first_to_upper,omitzero"`
 	Separator      string           `json:"separator,omitzero"` // Only valid for namegen.Compound
 	Depth          int              `json:"depth,omitzero"`     // Only valid for namegen.MarkovLetter
-	Compound       []*NameGenerator `json:"compound,omitzero"`  // Only valid for namegen.Compound
+	Compound       []*NameGenerator `json:"compound,omitempty"` // Only valid for namegen.Compound
 	TrainingData
 	namer names.Namer
 }

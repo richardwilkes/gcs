@@ -33,7 +33,7 @@ type PoolThresholdData struct {
 	State       string         `json:"state"`
 	Value       string         `json:"value"`
 	Explanation string         `json:"explanation,omitzero"`
-	Ops         []threshold.Op `json:"ops,omitzero"`
+	Ops         []threshold.Op `json:"ops,omitempty"`
 }
 
 // MarshalJSONTo implements json.MarshalerTo.

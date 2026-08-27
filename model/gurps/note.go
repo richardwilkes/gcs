@@ -54,15 +54,15 @@ type Note struct {
 type NoteData struct {
 	SourcedID
 	NoteEditData
-	ThirdParty map[string]any `json:"third_party,omitzero"`
-	Children   []*Note        `json:"children,omitzero"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	Children   []*Note        `json:"children,omitempty"` // Only for containers
 	parent     *Note
 }
 
 // NoteEditData holds the Note data that can be edited by the UI detail editor.
 type NoteEditData struct {
 	NoteSyncData
-	Replacements map[string]string `json:"replacements,omitzero"`
+	Replacements map[string]string `json:"replacements,omitempty"`
 	preconfigurable
 }
 
@@ -71,7 +71,7 @@ type NoteSyncData struct {
 	MarkDown         string   `json:"markdown,omitzero"`
 	PageRef          string   `json:"reference,omitzero"`
 	PageRefHighlight string   `json:"reference_highlight,omitzero"`
-	Tags             []string `json:"tags,omitzero"`
+	Tags             []string `json:"tags,omitempty"`
 }
 
 type noteListData struct {

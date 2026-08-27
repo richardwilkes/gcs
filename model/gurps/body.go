@@ -36,7 +36,7 @@ var embeddedFS embed.FS
 type BodyData struct {
 	Name      string         `json:"name,omitzero"`
 	Roll      dice.Dice      `json:"roll"`
-	Locations []*HitLocation `json:"locations,omitzero"`
+	Locations []*HitLocation `json:"locations,omitempty"`
 }
 
 // Body holds a set of hit locations.

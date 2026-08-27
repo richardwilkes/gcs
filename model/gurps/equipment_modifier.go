@@ -65,8 +65,8 @@ type EquipmentModifier struct {
 type EquipmentModifierData struct {
 	SourcedID
 	EquipmentModifierEditData
-	ThirdParty map[string]any       `json:"third_party,omitzero"`
-	Children   []*EquipmentModifier `json:"children,omitzero"` // Only for containers
+	ThirdParty map[string]any       `json:"third_party,omitempty"`
+	Children   []*EquipmentModifier `json:"children,omitempty"` // Only for containers
 	parent     *EquipmentModifier
 }
 
@@ -74,7 +74,7 @@ type EquipmentModifierData struct {
 type EquipmentModifierEditData struct {
 	EquipmentModifierSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
-	Replacements map[string]string `json:"replacements,omitzero"` // Not actually used any longer, but kept so that we can migrate old data
+	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
 	EquipmentModifierEditDataNonContainerOnly
 }
 
@@ -91,7 +91,7 @@ type EquipmentModifierSyncData struct {
 	PageRef          string   `json:"reference,omitzero"`
 	PageRefHighlight string   `json:"reference_highlight,omitzero"`
 	LocalNotes       string   `json:"local_notes,omitzero"`
-	Tags             []string `json:"tags,omitzero"`
+	Tags             []string `json:"tags,omitempty"`
 }
 
 // EquipmentModifierNonContainerSyncData holds the EquipmentModifier sync data that is only applicable to Equipment
@@ -106,7 +106,7 @@ type EquipmentModifierNonContainerSyncData struct {
 	TechLevel         string        `json:"tech_level,omitzero"`
 	CostAmount        string        `json:"cost,omitzero"`
 	WeightAmount      string        `json:"weight,omitzero"`
-	Features          Features      `json:"features,omitzero"`
+	Features          Features      `json:"features,omitempty"`
 }
 
 type equipmentModifierListData struct {

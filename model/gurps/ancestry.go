@@ -27,7 +27,7 @@ const DefaultAncestry = "Human"
 type Ancestry struct {
 	Name          string                     `json:"name,omitzero"`
 	CommonOptions *AncestryOptions           `json:"common_options,omitzero"`
-	GenderOptions []*WeightedAncestryOptions `json:"gender_options,omitzero"`
+	GenderOptions []*WeightedAncestryOptions `json:"gender_options,omitempty"`
 }
 
 type ancestryData struct {

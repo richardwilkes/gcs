@@ -81,8 +81,8 @@ type Equipment struct {
 type EquipmentData struct {
 	SourcedID
 	EquipmentEditData
-	ThirdParty map[string]any `json:"third_party,omitzero"`
-	Children   []*Equipment   `json:"children,omitzero"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	Children   []*Equipment   `json:"children,omitempty"` // Only for containers
 	parent     *Equipment
 }
 
@@ -90,8 +90,8 @@ type EquipmentData struct {
 type EquipmentEditData struct {
 	EquipmentSyncData
 	VTTNotes     string               `json:"vtt_notes,omitzero"`
-	Replacements map[string]string    `json:"replacements,omitzero"`
-	Modifiers    []*EquipmentModifier `json:"modifiers,omitzero"`
+	Replacements map[string]string    `json:"replacements,omitempty"`
+	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
 	RatedST      fxp.Int              `json:"rated_strength,omitzero"`
 	Quantity     fxp.Int              `json:"quantity"`
 	Level        fxp.Int              `json:"level,omitzero"`
@@ -109,13 +109,13 @@ type EquipmentSyncData struct {
 	LocalNotes             string      `json:"local_notes,omitzero"`
 	TechLevel              string      `json:"tech_level,omitzero"`
 	LegalityClass          string      `json:"legality_class,omitzero"`
-	Tags                   []string    `json:"tags,omitzero"`
+	Tags                   []string    `json:"tags,omitempty"`
 	BaseValue              string      `json:"base_value,omitzero"`
 	BaseWeight             string      `json:"base_weight,omitzero"`
 	MaxUses                int         `json:"max_uses,omitzero"`
 	Prereq                 *PrereqList `json:"prereqs,omitzero"`
-	Weapons                []*Weapon   `json:"weapons,omitzero"`
-	Features               Features    `json:"features,omitzero"`
+	Weapons                []*Weapon   `json:"weapons,omitempty"`
+	Features               Features    `json:"features,omitempty"`
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
 }
 

@@ -43,8 +43,8 @@ type LootData struct {
 	Location   string       `json:"location,omitzero"`
 	Session    string       `json:"session,omitzero"`
 	ModifiedOn jio.Time     `json:"modified_date"`
-	Equipment  []*Equipment `json:"equipment,omitzero"`
-	Notes      []*Note      `json:"notes,omitzero"`
+	Equipment  []*Equipment `json:"equipment,omitempty"`
+	Notes      []*Note      `json:"notes,omitempty"`
 }
 
 // NewLootFromFile loads Loot from a file.

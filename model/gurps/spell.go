@@ -84,8 +84,8 @@ type Spell struct {
 type SpellData struct {
 	SourcedID
 	SpellEditData
-	ThirdParty map[string]any `json:"third_party,omitzero"`
-	Children   []*Spell       `json:"children,omitzero"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	Children   []*Spell       `json:"children,omitempty"` // Only for containers
 	parent     *Spell
 }
 
@@ -93,7 +93,7 @@ type SpellData struct {
 type SpellEditData struct {
 	SpellSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
-	Replacements map[string]string `json:"replacements,omitzero"`
+	Replacements map[string]string `json:"replacements,omitempty"`
 	ItemSwitch
 	preconfigurable
 	SpellNonContainerOnlyEditData
@@ -105,7 +105,7 @@ type SpellNonContainerOnlyEditData struct {
 	SpellNonContainerOnlySyncData
 	TechLevel        *string     `json:"tech_level,omitzero"`
 	Points           fxp.Int     `json:"points,omitzero"`
-	Study            []*Study    `json:"study,omitzero"`
+	Study            []*Study    `json:"study,omitempty"`
 	StudyHoursNeeded study.Level `json:"study_hours_needed,omitzero"`
 }
 
@@ -120,13 +120,13 @@ type SpellSyncData struct {
 	PageRef          string   `json:"reference,omitzero"`
 	PageRefHighlight string   `json:"reference_highlight,omitzero"`
 	LocalNotes       string   `json:"local_notes,omitzero"`
-	Tags             []string `json:"tags,omitzero"`
+	Tags             []string `json:"tags,omitempty"`
 }
 
 // SpellNonContainerOnlySyncData holds the spell sync data that is only applicable to traits that aren't containers.
 type SpellNonContainerOnlySyncData struct {
 	Difficulty      AttributeDifficulty `json:"difficulty,omitzero"`
-	College         CollegeList         `json:"college,omitzero"`
+	College         CollegeList         `json:"college,omitempty"`
 	PowerSource     string              `json:"power_source,omitzero"`
 	Class           string              `json:"spell_class,omitzero"`
 	Resist          string              `json:"resist,omitzero"`
@@ -138,8 +138,8 @@ type SpellNonContainerOnlySyncData struct {
 	RitualSkillName string              `json:"base_skill,omitzero"`
 	PrereqCount     int                 `json:"prereq_count,omitzero"`
 	Prereq          *PrereqList         `json:"prereqs,omitzero"`
-	Weapons         []*Weapon           `json:"weapons,omitzero"`
-	Features        Features            `json:"features,omitzero"`
+	Weapons         []*Weapon           `json:"weapons,omitempty"`
+	Features        Features            `json:"features,omitempty"`
 }
 
 type spellListData struct {
