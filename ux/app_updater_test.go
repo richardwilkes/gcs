@@ -158,6 +158,33 @@ func TestQuietCheckFailureWithNothingKnownIsReported(t *testing.T) {
 	c.Equal(noAppUpdatesText(), title)
 }
 
+// TestCheckingCoversBothKindsOfCheck verifies that Checking() reports a quiet check as well as a visible one, while
+// Result() goes on reporting only the visible kind as updating. The Help menu's check item is disabled on the strength
+// of Checking(), so that it can't start a second request while a background check is already on its way; the status
+// item and the toolbar button read Result(), and a quiet check must not take a known update away from them.
+func TestCheckingCoversBothKindsOfCheck(t *testing.T) {
+	c := check.New(t)
+	var u appUpdater
+	u.SetReleases(pendingAppRelease)
+	c.False(u.Checking(), "nothing is in flight to begin with")
+
+	seq, ok := u.beginQuiet()
+	c.True(ok)
+	c.True(u.Checking(), "a quiet check must count as a check in flight")
+	_, releases, updating := u.Result()
+	c.False(updating, "a quiet check must not report as a visible one")
+	c.Equal(1, len(releases), "a quiet check must leave the known update on display")
+	u.finishQuiet(seq, pendingAppRelease, nil)
+	c.False(u.Checking(), "a finished quiet check must no longer count")
+
+	c.True(u.Reset())
+	c.True(u.Checking(), "a visible check must count as a check in flight")
+	_, _, updating = u.Result()
+	c.True(updating)
+	u.SetResult(noAppUpdatesText())
+	c.False(u.Checking(), "a finished visible check must no longer count")
+}
+
 // TestShouldShowAppUpdateDialog verifies the rule that keeps the update dialog from reappearing at every launch: it
 // opens for a release that hasn't been seen and stays shut for the one recorded as already seen.
 func TestShouldShowAppUpdateDialog(t *testing.T) {

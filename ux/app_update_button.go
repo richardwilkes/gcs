@@ -46,8 +46,8 @@ func SyncAppUpdateButton() {
 // the toolbar's flow layout, and even one reporting no size would still have the layout's spacing added after it.
 func newAppUpdateButton(click func()) *unison.Button {
 	button := unison.NewSVGButton(svg.Download)
-	button.HideBase = false // Unlike the other toolbar buttons, this one is a filled chip, so that it stands out
-	// The inks must be set before the title, since SetTitle snapshots the text decoration.
+	// Unlike the other toolbar buttons, this one is a filled chip in the warning colors, so that it stands out.
+	button.HideBase = false
 	button.BackgroundInk = unison.ThemeWarning
 	button.OnBackgroundInk = unison.ThemeOnWarning
 	button.SetTitle(i18n.Text("Software Update Available"))
@@ -58,9 +58,9 @@ func newAppUpdateButton(click func()) *unison.Button {
 
 // showAppUpdateButton returns true if the update button should be visible. With the setting at Never, the button is
 // never shown, even for an update that is already known from an earlier check or from an explicit check made through
-// the Help menu.
+// the Help menu. The caller reads the first release, so an empty list counts as no update, whether or not it is nil.
 func showAppUpdateButton(releases []gurps.Release, option updatecheck.Option) bool {
-	return releases != nil && option != updatecheck.Never
+	return len(releases) != 0 && option != updatecheck.Never
 }
 
 // syncAppUpdateButton adds the update button to the toolbar or removes it, updates its tooltip, and starts or stops its

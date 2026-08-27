@@ -41,7 +41,10 @@ func libraryUpdateButtonsEnabled(lib *gurps.Library) bool {
 // Libraries whose releases are already known aren't asked about again, so when the periodic checks have been running
 // this returns at once. Otherwise a small window reports on the check while it runs, which the user may cancel, and the
 // result is false if they did or if a library still has no answer once the checks have finished, the failure having
-// been reported. Must be called on the UI thread; it runs a modal loop while waiting on the checks.
+// been reported. A library whose check is still in flight -- the launch-time or periodic check having not yet finished
+// with it -- is waited on rather than asked again, since Library.CheckForAvailableUpgrade() joins a check already under
+// way instead of making a second request. Must be called on the UI thread; it runs a modal loop while waiting on the
+// checks.
 func checkLibraryReleases(libs []*gurps.Library) bool {
 	var pending []*gurps.Library
 	for _, lib := range libs {

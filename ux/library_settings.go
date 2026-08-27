@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -275,7 +276,20 @@ func (d *librarySettingsDockable) apply() {
 		Workspace.ErrorHandler(i18n.Text("Unable to update library location"), err)
 	}
 	Workspace.Navigator.Reload()
-	go checkForLibraryUpgrade(d.library)
+	// A library that has just been pointed at a different repository has no releases to show until it has been checked
+	// (see Library.Configure). With the periodic checks on, that is done now, in the background, so that the Library
+	// Explorer's indicator is right as soon as it can be. With them off, the Library Explorer asks when its update
+	// buttons are clicked, as it does for any unchecked library, rather than a check being made behind a setting that
+	// says not to. A library that has already been checked and whose repository didn't change has nothing to ask.
+	if libraryCheckWantedAfterApply(d.library, gurps.GlobalSettings().General.LibraryUpdateCheck) {
+		go checkForLibraryUpgrade(d.library)
+	}
+}
+
+// libraryCheckWantedAfterApply returns true if applying the library's settings should be followed by a background check
+// of its releases.
+func libraryCheckWantedAfterApply(lib *gurps.Library, option updatecheck.Option) bool {
+	return option != updatecheck.Never && lib.NeedsUpgradeCheck()
 }
 
 func checkForLibraryUpgrade(lib *gurps.Library) {

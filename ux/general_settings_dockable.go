@@ -658,9 +658,6 @@ func (d *generalSettingsDockable) sync() {
 			}
 		}
 	}
-	// The popups' own callbacks cover a change made in the popup; this covers the settings being replaced wholesale by
-	// a reset or a load, where the callback wouldn't fire for a value that didn't change.
-	ApplyUpdateCheckSettings()
 	d.MarkForRedraw()
 }
 
