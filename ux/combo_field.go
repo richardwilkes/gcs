@@ -206,11 +206,15 @@ func NewComboField(options []*string, editable bool, minWidth float32, initial *
 	}
 
 	selectValue := func(value *string) {
-		setDisplay(value)
-		field.RequestFocus()
-		if changed != nil {
-			changed(value)
-		}
+		// Run this action deferred so it's not happening inside the popup menu callback
+		// The task should trigger on the very next UI tick, after the native popup has been torn down
+		unison.InvokeTask(func() {
+			setDisplay(value)
+			field.RequestFocus()
+			if changed != nil {
+				changed(value)
+			}
+		})
 	}
 
 	openMenu := func() {
