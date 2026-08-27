@@ -94,7 +94,7 @@ type libraryPersistentData struct {
 	Title       string   `json:"title,omitzero"`
 	AccessToken string   `json:"access_token,omitzero"`
 	PathOnDisk  string   `json:"path,omitzero"`
-	Favorites   []string `json:"favorites,omitzero"`
+	Favorites   []string `json:"favorites,omitempty"`
 	UseLatest   bool     `json:"use_latest,omitzero"`
 }
 

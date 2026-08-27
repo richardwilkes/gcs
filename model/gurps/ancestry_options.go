@@ -40,11 +40,11 @@ type AncestryOptionsData struct {
 	HeightScript      string                  `json:"height_script,omitzero"`
 	WeightScript      string                  `json:"weight_script,omitzero"`
 	AgeScript         string                  `json:"age_script,omitzero"`
-	HairOptions       []*WeightedStringOption `json:"hair_options,omitzero"`
-	EyeOptions        []*WeightedStringOption `json:"eye_options,omitzero"`
-	SkinOptions       []*WeightedStringOption `json:"skin_options,omitzero"`
-	HandednessOptions []*WeightedStringOption `json:"handedness_options,omitzero"`
-	NameGenerators    []string                `json:"name_generators,omitzero"`
+	HairOptions       []*WeightedStringOption `json:"hair_options,omitempty"`
+	EyeOptions        []*WeightedStringOption `json:"eye_options,omitempty"`
+	SkinOptions       []*WeightedStringOption `json:"skin_options,omitempty"`
+	HandednessOptions []*WeightedStringOption `json:"handedness_options,omitempty"`
+	NameGenerators    []string                `json:"name_generators,omitempty"`
 }
 
 // MarshalJSONTo implements json.MarshalerTo.

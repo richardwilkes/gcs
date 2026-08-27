@@ -54,7 +54,7 @@ type AttributeDefData struct {
 	Base                 string              `json:"base,omitzero"`
 	CostPerPoint         fxp.Int             `json:"cost_per_point,omitzero"`
 	CostAdjPercentPerSM  fxp.Int             `json:"cost_adj_percent_per_sm,omitzero"`
-	Thresholds           []*PoolThreshold    `json:"thresholds,omitzero"`
+	Thresholds           []*PoolThreshold    `json:"thresholds,omitempty"`
 }
 
 // MarshalJSONTo implements json.MarshalerTo.

@@ -30,7 +30,7 @@ var _ Bonus = &DRBonus{}
 type DRBonusData struct {
 	Type feature.Type `json:"type"`
 	FeatureSwitch
-	Locations      []string `json:"locations,omitzero"`
+	Locations      []string `json:"locations,omitempty"`
 	Specialization string   `json:"specialization,omitzero"`
 	LeveledAmount
 }

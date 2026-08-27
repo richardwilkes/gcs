@@ -203,7 +203,7 @@ type SheetLayoutNode struct {
 	Key       string             `json:"key,omitzero"`        // Block only
 	Weight    fxp.Int            `json:"weight,omitzero"`     // Share of the width when the parent is a Row; <= 0 is 1
 	MinHeight paper.Length       `json:"min_height,omitzero"` // Block only; 0 means use the natural height
-	Children  []*SheetLayoutNode `json:"children,omitzero"`   // Row and Column only
+	Children  []*SheetLayoutNode `json:"children,omitempty"`  // Row and Column only
 	// Square is Block only. In a Row, the block's width is taken from the row's height so that its content is square,
 	// instead of from its weight; ignored elsewhere.
 	Square bool `json:"square,omitzero"`
@@ -250,7 +250,7 @@ func (n *SheetLayoutNode) Hash(h hash.Hash) {
 // the blocks it doesn't know about.
 type SheetLayout struct {
 	Root   *SheetLayoutNode `json:"root"`
-	Hidden []string         `json:"hidden,omitzero"`
+	Hidden []string         `json:"hidden,omitempty"`
 }
 
 // blockNode creates a new Block node for the given key.

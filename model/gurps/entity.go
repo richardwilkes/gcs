@@ -75,19 +75,19 @@ type EntityData struct {
 	Version          int             `json:"version"`
 	ID               tid.TID         `json:"id"`
 	TotalPoints      fxp.Int         `json:"total_points"`
-	PointsRecord     []*PointsRecord `json:"points_record,omitzero"`
+	PointsRecord     []*PointsRecord `json:"points_record,omitempty"`
 	Profile          Profile         `json:"profile"`
 	SheetSettings    *SheetSettings  `json:"settings,omitzero"`
 	Attributes       *Attributes     `json:"attributes,omitzero"`
-	Traits           []*Trait        `json:"traits,omitzero"`
-	Skills           []*Skill        `json:"skills,omitzero"`
-	Spells           []*Spell        `json:"spells,omitzero"`
-	CarriedEquipment []*Equipment    `json:"equipment,omitzero"`
-	OtherEquipment   []*Equipment    `json:"other_equipment,omitzero"`
-	Notes            []*Note         `json:"notes,omitzero"`
+	Traits           []*Trait        `json:"traits,omitempty"`
+	Skills           []*Skill        `json:"skills,omitempty"`
+	Spells           []*Spell        `json:"spells,omitempty"`
+	CarriedEquipment []*Equipment    `json:"equipment,omitempty"`
+	OtherEquipment   []*Equipment    `json:"other_equipment,omitempty"`
+	Notes            []*Note         `json:"notes,omitempty"`
 	CreatedOn        jio.Time        `json:"created_date"`
 	ModifiedOn       jio.Time        `json:"modified_date"`
-	ThirdParty       map[string]any  `json:"third_party,omitzero"`
+	ThirdParty       map[string]any  `json:"third_party,omitempty"`
 }
 
 type features struct {

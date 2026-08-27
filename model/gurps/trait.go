@@ -76,8 +76,8 @@ type Trait struct {
 type TraitData struct {
 	SourcedID
 	TraitEditData
-	ThirdParty map[string]any `json:"third_party,omitzero"`
-	Children   []*Trait       `json:"children,omitzero"` // Only for containers
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	Children   []*Trait       `json:"children,omitempty"` // Only for containers
 	parent     *Trait
 }
 
@@ -86,8 +86,8 @@ type TraitEditData struct {
 	TraitSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	UserDesc     string            `json:"userdesc,omitzero"`
-	Replacements map[string]string `json:"replacements,omitzero"`
-	Modifiers    []*TraitModifier  `json:"modifiers,omitzero"`
+	Replacements map[string]string `json:"replacements,omitempty"`
+	Modifiers    []*TraitModifier  `json:"modifiers,omitempty"`
 	SelfControl  selfctrl.Roll     `json:"cr,omitzero"`
 	Frequency    frequency.Roll    `json:"frequency,omitzero"`
 	Disabled     bool              `json:"disabled,omitzero"`
@@ -101,7 +101,7 @@ type TraitEditData struct {
 type TraitNonContainerOnlyEditData struct {
 	TraitNonContainerSyncData
 	Levels           fxp.Int     `json:"levels,omitzero"`
-	Study            []*Study    `json:"study,omitzero"`
+	Study            []*Study    `json:"study,omitempty"`
 	StudyHoursNeeded study.Level `json:"study_hours_needed,omitzero"`
 }
 
@@ -111,7 +111,7 @@ type TraitSyncData struct {
 	PageRef          string              `json:"reference,omitzero"`
 	PageRefHighlight string              `json:"reference_highlight,omitzero"`
 	LocalNotes       string              `json:"local_notes,omitzero"`
-	Tags             []string            `json:"tags,omitzero"`
+	Tags             []string            `json:"tags,omitempty"`
 	Prereq           *PrereqList         `json:"prereqs,omitzero"`
 	SelfControlAdj   selfctrl.Adjustment `json:"cr_adj,omitzero"`
 }
@@ -121,8 +121,8 @@ type TraitNonContainerSyncData struct {
 	BasePoints     fxp.Int   `json:"base_points,omitzero"`
 	PointsPerLevel fxp.Int   `json:"points_per_level,omitzero"`
 	MaxLevels      string    `json:"max_levels,omitzero"`
-	Weapons        []*Weapon `json:"weapons,omitzero"`
-	Features       Features  `json:"features,omitzero"`
+	Weapons        []*Weapon `json:"weapons,omitempty"`
+	Features       Features  `json:"features,omitempty"`
 	RoundCostDown  bool      `json:"round_down,omitzero"`
 	CanLevel       bool      `json:"can_level,omitzero"`
 }

@@ -77,7 +77,7 @@ func (h *HitLocation) MarshalJSONTo(enc *jsontext.Encoder) error {
 	}
 	type calc struct {
 		RollRange string         `json:"roll_range"`
-		DR        map[string]int `json:"dr,omitzero"`
+		DR        map[string]int `json:"dr,omitempty"`
 	}
 	data := struct {
 		HitLocationData

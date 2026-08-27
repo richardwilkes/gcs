@@ -74,8 +74,8 @@ type TraitModifier struct {
 type TraitModifierData struct {
 	SourcedID
 	TraitModifierEditData
-	ThirdParty map[string]any   `json:"third_party,omitzero"`
-	Children   []*TraitModifier `json:"children,omitzero"` // Only for containers
+	ThirdParty map[string]any   `json:"third_party,omitempty"`
+	Children   []*TraitModifier `json:"children,omitempty"` // Only for containers
 	parent     *TraitModifier
 }
 
@@ -83,7 +83,7 @@ type TraitModifierData struct {
 type TraitModifierEditData struct {
 	TraitModifierSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
-	Replacements map[string]string `json:"replacements,omitzero"` // Not actually used any longer, but kept so that we can migrate old data
+	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
 	TraitModifierEditDataNonContainerOnly
 }
 
@@ -101,7 +101,7 @@ type TraitModifierSyncData struct {
 	PageRef          string   `json:"reference,omitzero"`
 	PageRefHighlight string   `json:"reference_highlight,omitzero"`
 	LocalNotes       string   `json:"local_notes,omitzero"`
-	Tags             []string `json:"tags,omitzero"`
+	Tags             []string `json:"tags,omitempty"`
 }
 
 // TraitModifierNonContainerSyncData holds the TraitModifier sync data that is only applicable to TraitModifiers that
@@ -111,7 +111,7 @@ type TraitModifierNonContainerSyncData struct {
 	UseLevelFromTrait bool           `json:"use_level_from_trait,omitzero"`
 	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitzero"`
 	Affects           affects.Option `json:"affects,omitzero"`
-	Features          Features       `json:"features,omitzero"`
+	Features          Features       `json:"features,omitempty"`
 }
 
 type traitModifierListData struct {
