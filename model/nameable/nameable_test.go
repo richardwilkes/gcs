@@ -69,3 +69,21 @@ func TestApplyToListUnresolvedAllowEmptyComboFallsBackToLabel(t *testing.T) {
 	got := nameable.ApplyToList([]string{"A @Element|Fire|Water|?@ spell"}, m)
 	c.Equal([]string{"A @Element@ spell"}, got)
 }
+
+func TestApplyToListResolvesSameMarkerAcrossMultipleEntries(t *testing.T) {
+	c := check.New(t)
+	// ApplyToList extracts its full marker set from every entry in the list up front, so a marker resolved via one
+	// entry's key must still resolve correctly when it recurs in another entry, and an entry with no markers at all
+	// must pass through untouched.
+	m := map[string]string{"Element|Fire|Water": "Fire"}
+	got := nameable.ApplyToList([]string{
+		"A @Element|Fire|Water@ spell",
+		"No markers here",
+		"Another @Element|Fire|Water@ spell, and an @Element|Fire|Water|?@ one too",
+	}, m)
+	c.Equal([]string{
+		"A Fire spell",
+		"No markers here",
+		"Another Fire spell, and an @Element@ one too",
+	}, got)
+}

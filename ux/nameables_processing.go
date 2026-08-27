@@ -139,7 +139,10 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		})
 		list.AddChild(header)
 		for _, k := range keys {
-			marker := nameable.ParseMarker(k)
+			marker, ok := nameable.ParseMarker(k)
+			if !ok {
+				continue
+			}
 			label := unison.NewLabel()
 			label.SetTitle(marker.Label)
 			if marker.Tooltip != "" {
@@ -180,14 +183,14 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 
 // createNameableField builds the widget used to edit the replacement value for the marker.
 //
-// marker comes from nameable.ParseMarker, which always succeeds -- an old-format, no-pipe key gets a synthesized
-// marker (see ParseMarker) rather than a plain text field, so every nameable, old format or new, gets the same
-// NewComboField shell: its options (if any) listed, an "empty" entry when AllowEmpty is set (which every
-// synthesized legacy marker has), and free typing enabled when FreeForm is set (also always true for a synthesized
-// marker, matching old-format markers' traditional unrestricted typing). A "not set" entry is always included too
-// -- for now; that's this function's call, not NewComboField's, since NewComboField itself has no opinion on
-// whether "not set" should be offered (see its docs) -- and it's now the only way to clear a substitution, there's
-// no separate "clear" button in the dialog.
+// marker comes from nameable.ParseMarker, called by our caller with its ok result already checked -- an old-format,
+// no-pipe key gets a synthesized marker (see ParseMarker) rather than a plain text field, so every nameable, old
+// format or new, gets the same NewComboField shell: its options (if any) listed, an "empty" entry when AllowEmpty is
+// set (which every synthesized legacy marker has), and free typing enabled when FreeForm is set (also always true
+// for a synthesized marker, matching old-format markers' traditional unrestricted typing). A "not set" entry is
+// always included too -- for now; that's this function's call, not NewComboField's, since NewComboField itself has
+// no opinion on whether "not set" should be offered (see its docs) -- and it's now the only way to clear a
+// substitution, there's no separate "clear" button in the dialog.
 func createNameableField(marker *nameable.Marker, m map[string]string) unison.Paneler {
 	var initial *string
 	if v, ok := m[marker.Raw]; ok {

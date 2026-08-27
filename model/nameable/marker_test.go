@@ -10,23 +10,24 @@
 package nameable_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestParseSyntaxPlainKeyFails(t *testing.T) {
+func TestParseMarkerPlainKeyFallsBackToLegacy(t *testing.T) {
 	c := check.New(t)
-	_, err := nameable.ParseSyntax("Weapon Name")
-	c.True(errors.Is(err, nameable.ErrNoSyntax))
+	marker, ok := nameable.ParseMarker("Weapon Name")
+	c.True(ok)
+	c.True(marker.Legacy)
+	c.Equal("Weapon Name", marker.Label)
 }
 
-func TestParseSyntaxBasic(t *testing.T) {
+func TestParseMarkerBasic(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax("Element|Fire|Water|Earth")
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker("Element|Fire|Water|Earth")
+	c.True(ok)
 	c.Equal("Element|Fire|Water|Earth", marker.Raw)
 	c.Equal("Element", marker.Label)
 	c.Equal("", marker.Tooltip)
@@ -35,132 +36,176 @@ func TestParseSyntaxBasic(t *testing.T) {
 	c.False(marker.FreeForm)
 }
 
-func TestParseSyntaxWithTooltip(t *testing.T) {
+func TestParseMarkerSkipsEmptyNonLabelSegments(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax("Element|tt(Pick the affinity)|Fire|Water")
-	c.NoError(err)
+	// A stray "||" (e.g. from hand-edited data, or a trailing "|" before the closing '@') shouldn't surface as a
+	// blank option, tooltip, or token -- it's silently dropped rather than treated as ErrEmptyLabel.
+	marker, ok := nameable.ParseMarker("Element||Fire||Water|")
+	c.True(ok)
+	c.Equal("Element", marker.Label)
+	c.Equal([]string{"Fire", "Water"}, marker.Options)
+}
+
+func TestParseMarkerWithTooltip(t *testing.T) {
+	c := check.New(t)
+	marker, ok := nameable.ParseMarker("Element|tt(Pick the affinity)|Fire|Water")
+	c.True(ok)
 	c.Equal("Element", marker.Label)
 	c.Equal("Pick the affinity", marker.Tooltip)
 	c.Equal([]string{"Fire", "Water"}, marker.Options)
 }
 
-func TestParseSyntaxLabelMayContainColon(t *testing.T) {
+func TestParseMarkerLabelMayContainColon(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax("Time: HH:MM|Morning|Afternoon|Evening")
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker("Time: HH:MM|Morning|Afternoon|Evening")
+	c.True(ok)
 	c.Equal("Time: HH:MM", marker.Label)
 	c.Equal("", marker.Tooltip)
 	c.Equal([]string{"Morning", "Afternoon", "Evening"}, marker.Options)
 }
 
-func TestParseSyntaxTooltipMayContainColon(t *testing.T) {
+func TestParseMarkerTooltipMayContainColon(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax("Element|tt(Ratio is 1:2)|Fire|Water")
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker("Element|tt(Ratio is 1:2)|Fire|Water")
+	c.True(ok)
 	c.Equal("Element", marker.Label)
 	c.Equal("Ratio is 1:2", marker.Tooltip)
 }
 
-func TestParseSyntaxTooltipAnywhereInSegments(t *testing.T) {
+func TestParseMarkerTooltipAnywhereInSegments(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax("Element|Fire|tt(Pick one)|Water|?")
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker("Element|Fire|tt(Pick one)|Water|?")
+	c.True(ok)
 	c.Equal("Pick one", marker.Tooltip)
 	c.Equal([]string{"Fire", "Water"}, marker.Options)
 	c.True(marker.AllowEmpty)
 }
 
-func TestParseSyntaxMultipleTooltipLinesJoined(t *testing.T) {
+func TestParseMarkerMultipleTooltipLinesJoined(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax("Element|tt(First line)|tt(Second line)|Fire")
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker("Element|tt(First line)|tt(Second line)|Fire")
+	c.True(ok)
 	c.Equal("First line\nSecond line", marker.Tooltip)
 	c.Equal([]string{"Fire"}, marker.Options)
 }
 
-func TestParseSyntaxEscapedPipeInLabel(t *testing.T) {
+func TestParseMarkerEscapedPipeInLabel(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax(`Fire\|Water|Hot|Cold`)
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker(`Fire\|Water|Hot|Cold`)
+	c.True(ok)
 	c.Equal("Fire|Water", marker.Label)
 	c.Equal([]string{"Hot", "Cold"}, marker.Options)
 }
 
-func TestParseSyntaxEscapedPipeInOption(t *testing.T) {
+func TestParseMarkerEscapedPipeInOption(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax(`Element|Hot\|Cold|Water`)
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker(`Element|Hot\|Cold|Water`)
+	c.True(ok)
 	c.Equal([]string{"Hot|Cold", "Water"}, marker.Options)
 }
 
-func TestParseSyntaxEscapedPipeInTooltip(t *testing.T) {
+func TestParseMarkerEscapedPipeInTrailingOption(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax(`Element|tt(Choose one\|Two)|Fire`)
-	c.NoError(err)
+	// The trailing segment (after the last '|', or the whole string when there's no '|' at all) must be unescaped
+	// and trimmed the same as every other segment.
+	marker, ok := nameable.ParseMarker(`Element|Water|Hot\|Cold`)
+	c.True(ok)
+	c.Equal([]string{"Water", "Hot|Cold"}, marker.Options)
+}
+
+func TestParseMarkerTrimsWhitespaceInBareLabel(t *testing.T) {
+	c := check.New(t)
+	marker, ok := nameable.ParseMarker("  Weapon Name  ")
+	c.True(ok)
+	c.True(marker.Legacy)
+	c.Equal("Weapon Name", marker.Label)
+}
+
+func TestParseMarkerEscapedPipeInTooltip(t *testing.T) {
+	c := check.New(t)
+	marker, ok := nameable.ParseMarker(`Element|tt(Choose one\|Two)|Fire`)
+	c.True(ok)
 	c.Equal("Choose one|Two", marker.Tooltip)
 	c.Equal([]string{"Fire"}, marker.Options)
 }
 
-func TestParseSyntaxEscapedNewlineInTooltip(t *testing.T) {
+func TestParseMarkerEscapedNewlineInTooltip(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax(`Element|tt(Line one\nLine two)|Fire`)
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker(`Element|tt(Line one\nLine two)|Fire`)
+	c.True(ok)
 	c.Equal("Line one\nLine two", marker.Tooltip)
 }
 
-func TestParseSyntaxEscapedNewlineInLabel(t *testing.T) {
+func TestParseMarkerEscapedNewlineInLabel(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax(`Multi\nLine|Fire|Water`)
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker(`Multi\nLine|Fire|Water`)
+	c.True(ok)
 	c.Equal("Multi\nLine", marker.Label)
 }
 
-func TestParseSyntaxAllowEmptyAndFreeForm(t *testing.T) {
+func TestParseMarkerAllowEmptyAndFreeForm(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax("Element|Fire|Water|?|*")
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker("Element|Fire|Water|?|*")
+	c.True(ok)
 	c.True(marker.AllowEmpty)
 	c.True(marker.FreeForm)
 	c.Equal([]string{"Fire", "Water"}, marker.Options)
 }
 
-func TestParseSyntaxFreeFormOnlyNoOptions(t *testing.T) {
+func TestParseMarkerFreeFormOnlyNoOptions(t *testing.T) {
 	c := check.New(t)
-	marker, err := nameable.ParseSyntax("Element|*")
-	c.NoError(err)
+	marker, ok := nameable.ParseMarker("Element|*")
+	c.True(ok)
 	c.True(marker.FreeForm)
 	c.Equal(0, len(marker.Options))
 }
 
-func TestParseSyntaxEmptyLabelFails(t *testing.T) {
+func TestParseMarkerEmptyLabelFails(t *testing.T) {
 	c := check.New(t)
-	_, err := nameable.ParseSyntax("|Fire|Water")
-	c.True(errors.Is(err, nameable.ErrEmptyLabel))
+	_, ok := nameable.ParseMarker("|Fire|Water")
+	c.False(ok)
 }
 
-func TestParseSyntaxNoOptionsNoFreeFormFails(t *testing.T) {
+func TestParseMarkerNoOptionsImpliesFreeForm(t *testing.T) {
 	c := check.New(t)
-	_, err := nameable.ParseSyntax("Element|?")
-	c.True(errors.Is(err, nameable.ErrNoOptions))
+	// No literal options and no explicit FreeFormToken -- there's nothing else it could mean, so FreeForm is turned
+	// on automatically instead of failing.
+	marker, ok := nameable.ParseMarker("Element|?")
+	c.True(ok)
+	c.True(marker.FreeForm)
+	c.True(marker.AllowEmpty)
+	c.Equal(0, len(marker.Options))
 }
 
-func TestParseSyntaxNoPipeFails(t *testing.T) {
+func TestParseMarkerNoPipeFallsBackToLegacy(t *testing.T) {
 	c := check.New(t)
-	_, err := nameable.ParseSyntax("Element:Fire:Water")
-	c.True(errors.Is(err, nameable.ErrNoSyntax))
+	marker, ok := nameable.ParseMarker("Element:Fire:Water")
+	c.True(ok)
+	c.True(marker.Legacy)
 }
 
-func TestParseSyntaxSingleSegmentFails(t *testing.T) {
+func TestParseMarkerSingleSegmentFallsBackToLegacy(t *testing.T) {
 	c := check.New(t)
-	_, err := nameable.ParseSyntax("Element")
-	c.True(errors.Is(err, nameable.ErrNoSyntax))
+	marker, ok := nameable.ParseMarker("Element")
+	c.True(ok)
+	c.True(marker.Legacy)
+	c.Equal("Element", marker.Label)
 }
 
 func TestDefaultValue(t *testing.T) {
 	c := check.New(t)
-	c.Equal("Weapon Name", nameable.DefaultValue("Weapon Name"))
-	c.Equal("Fire", nameable.DefaultValue("Element|Fire|Water"))
-	c.Equal("", nameable.DefaultValue("Element|Fire|Water|?"))
+
+	marker, ok := nameable.ParseMarker("Weapon Name")
+	c.True(ok)
+	c.Equal("Weapon Name", marker.DefaultValue())
+
+	marker, ok = nameable.ParseMarker("Element|Fire|Water")
+	c.True(ok)
+	c.Equal("Fire", marker.DefaultValue())
+
+	marker, ok = nameable.ParseMarker("Element|Fire|Water|?")
+	c.True(ok)
+	c.Equal("", marker.DefaultValue())
 }
 
 func TestExtractPipeDelimited(t *testing.T) {
@@ -172,6 +217,16 @@ func TestExtractPipeDelimited(t *testing.T) {
 	m = make(map[string]string)
 	nameable.Extract(m, nil, "A @Element|Fire|Water|?@ spell")
 	c.Equal("", m["Element|Fire|Water|?"])
+}
+
+func TestExtractMarkersEscapedBackslashBeforeAtIsNotEscapedAt(t *testing.T) {
+	c := check.New(t)
+	// Two literal backslashes immediately before '@' form one escaped-backslash pair (per the same pairing rule
+	// splitSegments uses for '|'), leaving the '@' itself unescaped and free to open a marker.
+	markers := nameable.ExtractMarkers(`A\\@Element|Fire|Water@ B`)
+	c.Equal(1, len(markers))
+	_, ok := markers["Element|Fire|Water"]
+	c.True(ok)
 }
 
 func TestReduceKeepsAllowEmptyEmptyValue(t *testing.T) {

@@ -9,7 +9,9 @@
 
 package nameable
 
-import "strings"
+import (
+	"strings"
+)
 
 // Filler defines the method for filling the nameable key map.
 type Filler interface {
@@ -31,78 +33,70 @@ type Applier interface {
 	ApplyNameableKeys(m map[string]string)
 }
 
-// Extract the nameable sections of the strings into the target.
-func Extract(target, existing map[string]string, in ...string) {
-	for _, str := range in {
-		count := strings.Count(str, "@")
-		if count > 1 {
-			parts := strings.Split(str, "@")
-			for i, one := range parts {
-				if i%2 == 1 && i < count {
-					if value, ok := existing[one]; ok {
-						target[one] = value
-					} else {
-						target[one] = DefaultValue(one)
-					}
-				}
-			}
+// Extract nameable markers from the provided strings
+// Each extracted marker will be a key and it's value will come from existing or be the default for the marker.
+func Extract(target, existing map[string]string, in ...string) map[string]string {
+	if target == nil {
+		target = make(map[string]string)
+	}
+	markers := ExtractMarkers(in...)
+	for _, marker := range markers {
+		if v, ok := existing[marker.Raw]; ok {
+			target[marker.Raw] = v
+		} else {
+			target[marker.Raw] = marker.DefaultValue()
 		}
 	}
+	return target
 }
 
-// Apply replaces the matching nameable sections with the values from the set. Any section left unresolved -- i.e.
-// it has no entry in m at all -- is rendered in its compact form, "@Label@", rather than the full raw
-// "@Label|...@" markup: the '@' wrapper is kept so displayed text (sheet rows, table columns, tooltips) still
-// visibly flags the value as an unresolved nameable, while collapsing away the option list, tooltip, and flags that
-// are only meaningful while editing. The label used here comes from ParseMarker, so an old-format marker that
-// matches its fallback cascade (see ParseMarker) gets the same compact treatment as a real pipe-delimited key,
-// rather than dumping its full raw text into the display.
-func Apply(str string, m map[string]string) string {
-	count := strings.Count(str, "@")
-	if count > 1 {
-		for k, v := range m {
-			str = strings.ReplaceAll(str, "@"+k+"@", v)
-		}
-		count = strings.Count(str, "@")
-		if count > 1 {
-			parts := strings.Split(str, "@")
-			var b strings.Builder
-			for i, one := range parts {
-				if i%2 == 1 && i < count {
-					b.WriteByte('@')
-					b.WriteString(ParseMarker(one).Label)
-					b.WriteByte('@')
-					continue
-				}
-				b.WriteString(one)
-			}
-			str = b.String()
-		}
-	}
-	return str
+// Apply replaces nameable markers with their replacement values in a single string.
+//
+// Any unresolved markers are rendered in their compact form, "`@Label@`".
+// The '@' wrapper is kept on unresolved markers so displayed text (sheet rows, table columns, tooltips) still
+// visibly flags the value as an unresolved nameable marker.
+func Apply(str string, replacements map[string]string) string {
+	return ApplyToList([]string{str}, replacements)[0]
 }
 
-// ApplyToList replaces the matching nameable sections with the values from the set.
-func ApplyToList(in []string, m map[string]string) []string {
+// ApplyToList replaces nameable markers with their replacement values in a slice of strings.
+//
+// Any unresolved markers are rendered in their compact form, "`@Label@`".
+// The '@' wrapper is kept on unresolved markers so displayed text (sheet rows, table columns, tooltips) still
+// visibly flags the value as an unresolved nameable marker.
+func ApplyToList(in []string, replacements map[string]string) []string {
 	if len(in) == 0 {
 		return nil
 	}
-	list := make([]string, len(in))
-	for i := range list {
-		list[i] = Apply(in[i], m)
+
+	markers := ExtractMarkers(in...)
+
+	delim := string(MarkerDelimiter)
+	out := make([]string, len(in))
+	for i, str := range in {
+		if strings.ContainsRune(str, MarkerDelimiter) {
+			for _, marker := range markers {
+				if v, ok := replacements[marker.Raw]; ok {
+					str = strings.ReplaceAll(str, delim+marker.Raw+delim, v)
+				} else {
+					str = strings.ReplaceAll(str, delim+marker.Raw+delim, delim+marker.Label+delim)
+				}
+			}
+		}
+		out[i] = str
 	}
-	return list
+	return out
 }
 
-// Reduce returns a map of the replacements which exist in needed. "Not set" and "empty" are not conflated here: an
+// Reduce returns a map of the replacements which exist in nameables. "Not set" and "empty" are not conflated here: an
 // entry present in replacements with an empty value is a deliberate, resolved choice (only legal when the marker's
-// AllowEmpty is set -- see ParseSyntax) and is kept, exactly like any other value. "Not set" is represented purely
+// AllowEmpty is set -- see ParseMarker) and is kept, exactly like any other value. "Not set" is represented purely
 // by a key's absence from replacements in the first place, so it never reaches this function as an entry to
 // consider -- there is nothing for Reduce to omit.
-func Reduce(needed, replacements map[string]string) map[string]string {
+func Reduce(nameables, replacements map[string]string) map[string]string {
 	ret := make(map[string]string)
 	for k, v := range replacements {
-		if _, ok := needed[k]; ok {
+		if _, ok := nameables[k]; ok {
 			ret[k] = v
 		}
 	}

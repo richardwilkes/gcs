@@ -53,21 +53,14 @@ const comboFieldButtonPadding = 6
 // action -- never edited into character by character.
 //
 // The dropdown is a plain unison.Menu (via unison.DefaultMenuFactory), built fresh and shown each time it's opened
-// -- by clicking the field or button, or pressing Down while the field has focus -- rather than kept open and
-// re-filtered live as you type. Its options are filtered once, at that moment, to those whose displayed text starts
-// with whatever's currently in the field (case-insensitive) -- except the "not set" and "empty" entries, which are
-// control entries rather than type-ahead content and so always stay in the list regardless of the filter, and
-// except when the field's current text is itself one of those two placeholders, which is treated as if the field
-// were blank (no filter at all) rather than as literal filter text -- "«not set»" would prefix-match none of the
-// real options, wrongly hiding all of them. If the field's text exactly matches a literal option, the dropdown
-// shows the full, unfiltered list instead of just that one match, so browsing alternatives from a completed value
-// stays easy. Once open, all of the usual Menu behavior applies as-is (arrow-key navigation, Enter to choose,
-// Escape or an outside click to dismiss), and clicking into the field to keep typing simply dismisses it like any
-// other outside click.
+// -- by clicking the field or button, or pressing Down while the field has focus. It always lists every option,
+// unfiltered by whatever's currently in the field; the item matching the field's current displayed text (if any) is
+// what starts pre-highlighted. Once open, all of the usual Menu behavior applies as-is (arrow-key navigation, Enter
+// to choose, Escape or an outside click to dismiss), and clicking into the field to keep typing simply dismisses it
+// like any other outside click.
 //
-// If editable is true, the field accepts typed input, narrowing the dropdown as described above. If editable is
-// false, the field accepts no typed input at all -- clicking it or the dropdown button just opens the full option
-// list for picking, with no filtering.
+// If editable is true, the field accepts typed input. If editable is false, the field accepts no typed input at
+// all -- clicking it or the dropdown button just opens the full option list for picking.
 //
 // If options offers no "empty" entry (no element pointing at ""), typing the field down to a literal blank ("" --
 // not the "not set" placeholder, which is never blank text) is treated as invalid, not as a value: the field is
