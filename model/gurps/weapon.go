@@ -95,7 +95,7 @@ type WeaponData struct {
 	Shots      WeaponShots     `json:"shots,omitzero"`
 	Bulk       WeaponBulk      `json:"bulk,omitzero"`
 	Recoil     WeaponRecoil    `json:"recoil,omitzero"`
-	Defaults   []*SkillDefault `json:"defaults,omitzero"`
+	Defaults   []*SkillDefault `json:"defaults,omitempty"`
 	Hide       bool            `json:"hide,omitzero"`
 }
 

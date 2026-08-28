@@ -43,7 +43,7 @@ type Profile struct {
 	Organization        string        `json:"organization,omitzero"`
 	Religion            string        `json:"religion,omitzero"`
 	TechLevel           string        `json:"tech_level,omitzero"`
-	PortraitData        []byte        `json:"portrait,omitzero"`
+	PortraitData        []byte        `json:"portrait,omitempty"`
 	PortraitImage       *unison.Image `json:"-"`
 	SizeModifier        int           `json:"SM,omitzero"`
 	SizeModifierBonus   fxp.Int       `json:"-"`

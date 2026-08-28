@@ -40,11 +40,11 @@ type Template struct {
 type TemplateData struct {
 	Version   int          `json:"version"`
 	ID        tid.TID      `json:"id"`
-	Traits    []*Trait     `json:"traits,omitzero"`
-	Skills    []*Skill     `json:"skills,omitzero"`
-	Spells    []*Spell     `json:"spells,omitzero"`
-	Equipment []*Equipment `json:"equipment,omitzero"`
-	Notes     []*Note      `json:"notes,omitzero"`
+	Traits    []*Trait     `json:"traits,omitempty"`
+	Skills    []*Skill     `json:"skills,omitempty"`
+	Spells    []*Spell     `json:"spells,omitempty"`
+	Equipment []*Equipment `json:"equipment,omitempty"`
+	Notes     []*Note      `json:"notes,omitempty"`
 	BodyType  *Body        `json:"body_type,omitzero"`
 }
 
