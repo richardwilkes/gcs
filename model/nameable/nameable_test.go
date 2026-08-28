@@ -70,6 +70,36 @@ func TestApplyToListUnresolvedAllowEmptyComboFallsBackToLabel(t *testing.T) {
 	c.Equal([]string{"A @Element@ spell"}, got)
 }
 
+func TestApplyUnresolvedMarkersWithSharedLabelDoNotBleed(t *testing.T) {
+	c := check.New(t)
+	// nameable.go:82 rewrites an unresolved marker to its compact "@Label@" form inside the very loop that performs
+	// the replacements, keyed off a map iteration order that Go randomizes per call. "@Who: A deity@" collapses to
+	// "@Who@" when left unresolved, which is exactly the raw key of the sibling marker "@Who@" -- if that marker's
+	// own replacement pass runs after the collapse, "The King" leaks into a slot that should have stayed unresolved.
+	// Looping guards against a single lucky iteration order masking the bug.
+	m := map[string]string{"Who": "The King"}
+	for range 500 {
+		c.Equal("Patron (@Who@) and The King", nameable.Apply("Patron (@Who: A deity@) and @Who@", m))
+	}
+}
+
+func TestApplyToListUnresolvedMarkersWithSharedLabelDoNotBleedAcrossEntries(t *testing.T) {
+	c := check.New(t)
+	// Same collision as TestApplyUnresolvedMarkersWithSharedLabelDoNotBleed, but ApplyToList collects markers across
+	// the whole slice, so the leak can cross from one string to an entirely unrelated one.
+	m := map[string]string{"Habit": "Nail-biting"}
+	for range 500 {
+		got := nameable.ApplyToList([]string{
+			"@Habit: Curtness, Ranting, Scowling, etc.@",
+			"@Habit@",
+		}, m)
+		c.Equal([]string{
+			"@Habit@",
+			"Nail-biting",
+		}, got)
+	}
+}
+
 func TestApplyToListResolvesSameMarkerAcrossMultipleEntries(t *testing.T) {
 	c := check.New(t)
 	// ApplyToList extracts its full marker set from every entry in the list up front, so a marker resolved via one
