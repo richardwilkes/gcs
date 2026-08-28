@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"strings"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -130,7 +132,11 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		}
 		header := unison.NewLabel()
 		header.Font = unison.SystemFont
-		header.SetTitle(xstrings.Truncate(one, 40, true))
+		headerTitle := xstrings.Truncate(one, 50, true)
+		header.SetTitle(headerTitle)
+		if strings.HasSuffix(headerTitle, "…") {
+			header.Tooltip = newWrappedTooltip(one)
+		}
 		header.SetLayoutData(&unison.FlexLayoutData{
 			HSpan:  2,
 			HAlign: align.Fill,
@@ -144,9 +150,14 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 				continue
 			}
 			label := unison.NewLabel()
-			label.SetTitle(marker.Label)
-			if marker.Tooltip != "" {
-				label.Tooltip = newWrappedTooltip(marker.Tooltip)
+			title := xstrings.Truncate(marker.Label, 60, true)
+			tooltip := marker.Tooltip
+			if strings.HasSuffix(title, "…") {
+				tooltip = strings.TrimSpace(marker.Label + "\n\n" + tooltip)
+			}
+			label.SetTitle(title)
+			if tooltip != "" {
+				label.Tooltip = newWrappedTooltip(tooltip)
 			}
 			label.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: align.End,
