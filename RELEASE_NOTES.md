@@ -44,6 +44,7 @@
   The update window now opens on its own only the first time a given release is seen -- later launches just show the
   button -- and Help ▸ Check for GCS updates, which is usable whenever a check isn't already running, always opens it.
   With "Check for GCS Updates" set to never, the button isn't shown.
+- Added more capabilities to the substitution placeholders - See the User Guide or PR (#1113) for more details.
 
 ## Bug Fixes
 
