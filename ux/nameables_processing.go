@@ -152,6 +152,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 				HAlign: align.End,
 				VAlign: align.Middle,
 			})
+			label.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 20}))
 			list.AddChild(label)
 			list.AddChild(createNameableField(&marker, nameables[i]))
 		}
