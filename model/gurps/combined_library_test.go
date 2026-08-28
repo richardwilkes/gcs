@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -73,16 +74,19 @@ func buildCombinedLibraryFixture(t *testing.T) (lib *Library, snapshot map[strin
 	return lib, snapshot
 }
 
-func snapshotDirFiles(t *testing.T, root string) map[string][]byte {
+func snapshotDirFiles(t *testing.T, dir string) map[string][]byte {
 	t.Helper()
 	c := check.New(t)
+	root, err := os.OpenRoot(dir)
+	c.NoError(err)
+	defer func() { c.NoError(root.Close()) }()
 	snapshot := make(map[string][]byte)
-	c.NoError(filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	c.NoError(fs.WalkDir(root.FS(), ".", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() {
-			data, readErr := os.ReadFile(path)
+		if !entry.IsDir() {
+			data, readErr := root.ReadFile(path)
 			if readErr != nil {
 				return readErr
 			}

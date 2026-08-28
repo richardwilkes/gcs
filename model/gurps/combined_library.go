@@ -281,19 +281,33 @@ func isCombinedContainer[T Node[T]](node T) bool {
 func mergeCombinedPageRefs[T Node[T]](dst, src T) {
 	switch d := any(dst).(type) {
 	case *Trait:
-		d.PageRef = combinePageRefs(d.PageRef, any(src).(*Trait).PageRef)
+		if s, ok := any(src).(*Trait); ok {
+			d.PageRef = combinePageRefs(d.PageRef, s.PageRef)
+		}
 	case *TraitModifier:
-		d.PageRef = combinePageRefs(d.PageRef, any(src).(*TraitModifier).PageRef)
+		if s, ok := any(src).(*TraitModifier); ok {
+			d.PageRef = combinePageRefs(d.PageRef, s.PageRef)
+		}
 	case *Skill:
-		d.PageRef = combinePageRefs(d.PageRef, any(src).(*Skill).PageRef)
+		if s, ok := any(src).(*Skill); ok {
+			d.PageRef = combinePageRefs(d.PageRef, s.PageRef)
+		}
 	case *Spell:
-		d.PageRef = combinePageRefs(d.PageRef, any(src).(*Spell).PageRef)
+		if s, ok := any(src).(*Spell); ok {
+			d.PageRef = combinePageRefs(d.PageRef, s.PageRef)
+		}
 	case *Equipment:
-		d.PageRef = combinePageRefs(d.PageRef, any(src).(*Equipment).PageRef)
+		if s, ok := any(src).(*Equipment); ok {
+			d.PageRef = combinePageRefs(d.PageRef, s.PageRef)
+		}
 	case *EquipmentModifier:
-		d.PageRef = combinePageRefs(d.PageRef, any(src).(*EquipmentModifier).PageRef)
+		if s, ok := any(src).(*EquipmentModifier); ok {
+			d.PageRef = combinePageRefs(d.PageRef, s.PageRef)
+		}
 	case *Note:
-		d.PageRef = combinePageRefs(d.PageRef, any(src).(*Note).PageRef)
+		if s, ok := any(src).(*Note); ok {
+			d.PageRef = combinePageRefs(d.PageRef, s.PageRef)
+		}
 	}
 }
 
