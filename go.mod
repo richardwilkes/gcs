@@ -10,7 +10,7 @@ require (
 	github.com/richardwilkes/canvas v0.3.0
 	github.com/richardwilkes/pdfview v0.8.0
 	github.com/richardwilkes/rpgtools v1.14.0
-	github.com/richardwilkes/toolbox/v2 v2.17.0
+	github.com/richardwilkes/toolbox/v2 v2.17.1-0.20260829151906-52f6933993fa
 	github.com/richardwilkes/unison v0.101.1-0.20260828002716-2cf497d0ca95
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0

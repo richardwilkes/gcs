@@ -18,7 +18,7 @@ import (
 
 func TestParseMarkerRealCombo(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.ParseMarker("Element|Fire|Water")
+	marker, ok := nameable.NewMarker("Element|Fire|Water")
 	c.True(ok)
 	c.False(marker.Legacy)
 	c.Equal("Element|Fire|Water", marker.Raw)
@@ -30,15 +30,18 @@ func TestParseMarkerRealCombo(t *testing.T) {
 
 func TestParseMarkerRawPreservedAcrossAllFallbackTiers(t *testing.T) {
 	c := check.New(t)
-	for _, raw := range []string{
-		"Rare: Acceleration, Altitude Sickness, etc.", // tier 1
-		"Class: Mammalia", // tier 2
-		"Weapon Name",     // tier 3
+	for _, tc := range []struct {
+		raw    string
+		legacy bool
+	}{
+		{raw: "Rare: Acceleration, Altitude Sickness, etc.", legacy: true}, // tier 1
+		{raw: "Class: Mammalia", legacy: true},                             // tier 2
+		{raw: "Weapon Name", legacy: false},                                // tier 3 -- a blessed current form now
 	} {
-		marker, ok := nameable.ParseMarker(raw)
-		c.True(marker.Legacy)
+		marker, ok := nameable.NewMarker(tc.raw)
 		c.True(ok)
-		c.Equal(raw, marker.Raw)
+		c.Equal(tc.legacy, marker.Legacy)
+		c.Equal(tc.raw, marker.Raw)
 	}
 }
 
@@ -46,7 +49,7 @@ func TestParseMarkerRawPreservedAcrossAllFallbackTiers(t *testing.T) {
 
 func TestParseMarkerTier1ExampleList(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.ParseMarker("Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.")
+	marker, ok := nameable.NewMarker("Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.")
 	c.True(ok)
 	c.True(marker.Legacy)
 	c.Equal("Rare", marker.Label)
@@ -59,7 +62,7 @@ func TestParseMarkerTier1ExampleList(t *testing.T) {
 
 func TestParseMarkerTier1NoTrailingPeriod(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.ParseMarker("Skill: Fast-Draw, Smith, etc")
+	marker, ok := nameable.NewMarker("Skill: Fast-Draw, Smith, etc")
 	c.True(ok)
 	c.True(marker.Legacy)
 	c.Equal("Skill", marker.Label)
@@ -72,7 +75,7 @@ func TestParseMarkerTier1NoTrailingPeriod(t *testing.T) {
 func TestParseMarkerTier1RequiresTwoOrMoreItems(t *testing.T) {
 	c := check.New(t)
 	// Only one item before "etc." isn't a strong enough signal -- falls through to tier 2 instead.
-	marker, ok := nameable.ParseMarker("Absurd: chocolate, etc.")
+	marker, ok := nameable.NewMarker("Absurd: chocolate, etc.")
 	c.True(ok)
 	c.True(marker.Legacy)
 	c.Equal("Absurd", marker.Label)
@@ -84,7 +87,7 @@ func TestParseMarkerTier1RequiresTrailingEtc(t *testing.T) {
 	c := check.New(t)
 	// Two items but no "etc." reads as a closed, exhaustive set (e.g. a fixed enum), not an example list -- falls
 	// through to tier 2 instead of being marked free-form with those as options.
-	marker, ok := nameable.ParseMarker("Type: Mental, Physical, Magical or Chi")
+	marker, ok := nameable.NewMarker("Type: Mental, Physical, Magical or Chi")
 	c.True(ok)
 	c.True(marker.Legacy)
 	c.Equal("Type", marker.Label)
@@ -98,7 +101,7 @@ func TestParseMarkerTier1RequiresTrailingEtc(t *testing.T) {
 
 func TestParseMarkerTier2SingleValue(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.ParseMarker("Class: Mammalia")
+	marker, ok := nameable.NewMarker("Class: Mammalia")
 	c.True(ok)
 	c.True(marker.Legacy)
 	c.Equal("Class", marker.Label)
@@ -113,7 +116,7 @@ func TestParseMarkerTier2EmbeddedCommaFallsThroughFromTier1(t *testing.T) {
 	// This one does end in "etc." and has 2+ comma-separated segments, but a comma embedded inside a quoted phrase
 	// throws off tier 1's item splitting -- it's expected to land safely in tier 2 (a tooltip) rather than being
 	// mis-split into garbage options.
-	marker, ok := nameable.ParseMarker(`Habit: Witless witticisms, calling people "nuncle," abuse of custard, etc.`)
+	marker, ok := nameable.NewMarker(`Habit: Witless witticisms, calling people "nuncle," abuse of custard, etc.`)
 	c.True(ok)
 	c.True(marker.Legacy)
 	c.Equal("Habit", marker.Label)
@@ -123,21 +126,22 @@ func TestParseMarkerTier2EmbeddedCommaFallsThroughFromTier1(t *testing.T) {
 
 func TestParseMarkerTier2LabelLengthBoundary(t *testing.T) {
 	c := check.New(t)
-	// A leading segment longer than 40 characters doesn't read as a short label -- falls through to tier 3.
-	marker, ok := nameable.ParseMarker("This leading segment is far too long to read as a label: short tail")
+	// A leading segment longer than 40 characters doesn't read as a short label -- falls through to tier 3, which is
+	// no longer tagged Legacy (it's a blessed current form).
+	marker, ok := nameable.NewMarker("This leading segment is far too long to read as a label: short tail")
 	c.True(ok)
-	c.True(marker.Legacy)
+	c.False(marker.Legacy)
 	c.Equal("This leading segment is far too long to read as a label: short tail", marker.Label)
 	c.Equal("", marker.Tooltip)
 }
 
-// Tier 3: no colon-shape at all -- today's behavior, unchanged except for AllowEmpty/FreeForm now being set.
+// Tier 3: no colon-shape at all -- a blessed current form (not Legacy), with AllowEmpty/FreeForm set.
 
 func TestParseMarkerTier3PlainLabel(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.ParseMarker("Weapon Name")
+	marker, ok := nameable.NewMarker("Weapon Name")
 	c.True(ok)
-	c.True(marker.Legacy)
+	c.False(marker.Legacy)
 	c.Equal("Weapon Name", marker.Label)
 	c.Equal("", marker.Tooltip)
 	c.Equal(0, len(marker.Options))
@@ -148,15 +152,15 @@ func TestParseMarkerTier3PlainLabel(t *testing.T) {
 func TestParseMarkerNeverFails(t *testing.T) {
 	c := check.New(t)
 	for _, raw := range []string{"@@@", ":", "::::", "no colon here at all"} {
-		marker, ok := nameable.ParseMarker(raw)
+		marker, ok := nameable.NewMarker(raw)
 		c.True(ok)
-		c.True(marker.Legacy)
+		c.False(marker.Legacy)
 		c.Equal(raw, marker.Label)
 	}
 }
 
 func TestParseMarkerEmptyRawFails(t *testing.T) {
 	c := check.New(t)
-	_, ok := nameable.ParseMarker("")
+	_, ok := nameable.NewMarker("")
 	c.False(ok)
 }

@@ -145,7 +145,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		})
 		list.AddChild(header)
 		for _, k := range keys {
-			marker, ok := nameable.ParseMarker(k)
+			marker, ok := nameable.NewMarker(k)
 			if !ok {
 				continue
 			}
@@ -205,7 +205,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 // substitution, there's no separate "clear" button in the dialog.
 func createNameableField(marker *nameable.Marker, m map[string]string) unison.Paneler {
 	var initial *string
-	if v, ok := m[marker.Raw]; ok {
+	if v, ok := m[marker.Key()]; ok {
 		initial = &v
 	}
 	options := make([]*string, 0, len(marker.Options)+2)
@@ -219,10 +219,10 @@ func createNameableField(marker *nameable.Marker, m map[string]string) unison.Pa
 
 	apply := func(value *string) {
 		if value == nil {
-			delete(m, marker.Raw)
+			delete(m, marker.Key())
 			return
 		}
-		m[marker.Raw] = *value
+		m[marker.Key()] = *value
 	}
 
 	if marker.FreeForm {

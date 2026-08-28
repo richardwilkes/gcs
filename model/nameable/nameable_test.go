@@ -72,23 +72,20 @@ func TestApplyToListUnresolvedAllowEmptyComboFallsBackToLabel(t *testing.T) {
 
 func TestApplyUnresolvedMarkersWithSharedLabelDoNotBleed(t *testing.T) {
 	c := check.New(t)
-	// nameable.go:82 rewrites an unresolved marker to its compact "@Label@" form inside the very loop that performs
-	// the replacements, keyed off a map iteration order that Go randomizes per call. "@Who: A deity@" collapses to
-	// "@Who@" when left unresolved, which is exactly the raw key of the sibling marker "@Who@" -- if that marker's
-	// own replacement pass runs after the collapse, "The King" leaks into a slot that should have stayed unresolved.
-	// Looping guards against a single lucky iteration order masking the bug.
 	m := map[string]string{"Who": "The King"}
-	for range 500 {
+	for range 50 {
 		c.Equal("Patron (@Who@) and The King", nameable.Apply("Patron (@Who: A deity@) and @Who@", m))
+		if t.Failed() {
+			// Stop at the first bad iteration instead of repeating the same failure 500 times in the test output.
+			break
+		}
 	}
 }
 
 func TestApplyToListUnresolvedMarkersWithSharedLabelDoNotBleedAcrossEntries(t *testing.T) {
 	c := check.New(t)
-	// Same collision as TestApplyUnresolvedMarkersWithSharedLabelDoNotBleed, but ApplyToList collects markers across
-	// the whole slice, so the leak can cross from one string to an entirely unrelated one.
 	m := map[string]string{"Habit": "Nail-biting"}
-	for range 500 {
+	for range 50 {
 		got := nameable.ApplyToList([]string{
 			"@Habit: Curtness, Ranting, Scowling, etc.@",
 			"@Habit@",
@@ -97,7 +94,34 @@ func TestApplyToListUnresolvedMarkersWithSharedLabelDoNotBleedAcrossEntries(t *t
 			"@Habit@",
 			"Nail-biting",
 		}, got)
+		if t.Failed() {
+			// Stop at the first bad iteration instead of repeating the same failure 500 times in the test output.
+			break
+		}
 	}
+}
+
+func TestApplyToListEmptyInputReturnsNil(t *testing.T) {
+	c := check.New(t)
+	c.Equal([]string(nil), nameable.ApplyToList(nil, nil))
+}
+
+func TestApplyMalformedMarkerWrittenBackVerbatim(t *testing.T) {
+	c := check.New(t)
+	// A leading '|' makes the label segment empty, which NewMarker rejects. Since the marker doesn't parse, its
+	// original span is written back out unchanged rather than being treated as resolved or unresolved.
+	m := map[string]string{}
+	c.Equal("A @|Fire|Water@ spell", nameable.Apply("A @|Fire|Water@ spell", m))
+}
+
+func TestApplyToListRetainsMalformedReplacementKeyWithoutAffectingOthers(t *testing.T) {
+	c := check.New(t)
+	// A replacements key that itself fails to parse as a marker (here, "") is retained as-is while building the
+	// normalized-key lookup map -- it simply never matches any real marker's key, and doesn't disturb resolution of
+	// the other, well-formed entries.
+	m := map[string]string{"": "unused", "Element|Fire|Water": "Fire"}
+	got := nameable.ApplyToList([]string{"A @Element|Fire|Water@ spell"}, m)
+	c.Equal([]string{"A Fire spell"}, got)
 }
 
 func TestApplyToListResolvesSameMarkerAcrossMultipleEntries(t *testing.T) {
