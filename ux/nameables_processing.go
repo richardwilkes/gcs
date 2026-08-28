@@ -204,12 +204,49 @@ func createNameableField(marker *nameable.Marker, m map[string]string) unison.Pa
 	for _, one := range marker.Options {
 		options = append(options, &one)
 	}
-	widget, _ := NewComboField(options, marker.FreeForm, 0, initial, func(value *string) {
+
+	apply := func(value *string) {
 		if value == nil {
 			delete(m, marker.Raw)
 			return
 		}
 		m[marker.Raw] = *value
-	})
-	return widget
+	}
+
+	if marker.FreeForm {
+		field := unison.NewComboField(options, initial, apply)
+
+		// Use a fixed string to set the lower bounds on the ComboField width
+		minWidth := field.MinimumTextWidth
+		field.SetMinimumTextWidthUsing("A reasonably wide string")
+		field.MinimumTextWidth = max(field.MinimumTextWidth, minWidth)
+
+		return field
+	}
+
+	popup := unison.NewPopupMenu[*string]()
+	var selected *string
+	for _, one := range options {
+		popup.AddItem(one)
+		if one != nil && initial != nil && *one == *initial {
+			selected = one
+		}
+	}
+	popup.Select(selected)
+	popup.ItemRendererCallback = func(item *string) string {
+		switch {
+		case item == nil:
+			return i18n.Text("«not set»")
+		case *item == "":
+			return i18n.Text("«empty»")
+		default:
+			return *item
+		}
+	}
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[*string]) {
+		if item, ok := p.Selected(); ok {
+			apply(item)
+		}
+	}
+	return popup
 }
