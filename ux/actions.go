@@ -930,9 +930,12 @@ func registerActions() {
 	checkForAppUpdatesAction = &unison.Action{
 		ID:    CheckForAppUpdatesItemID,
 		Title: fmt.Sprintf(i18n.Text("Check for %s updates"), xos.AppName),
+		// Usable whenever no check is already running, whatever the setting and whatever is already known: with an
+		// update known, a fresh check reopens the update window, which is what the settings tooltip and the release
+		// notes promise. A quiet check counts as running, so that the item doesn't offer to start a second request for
+		// an answer that is already on its way.
 		EnabledCallback: func(_ *unison.Action, _ any) bool {
-			_, releases, updating := AppUpdateResult()
-			return !updating && releases == nil
+			return !AppUpdateCheckInProgress()
 		},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			gurps.GlobalSettings().LastSeenGCSVersion = ""

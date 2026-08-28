@@ -126,8 +126,20 @@ type Library struct {
 	repoName          string
 	releases          []Release
 	current           string
+	check             *libraryCheck // the update check in flight; nil while none is
 	lock              sync.RWMutex
-	checked           bool
+	checkSeq          int  // see libraryCheck.seq
+	checked           bool // an update check has completed since the repository was last changed
+}
+
+// libraryCheck describes an update check in flight, so that a caller arriving while it runs can wait on it and then
+// tell whether what it produced serves them or they need to make a check of their own.
+type libraryCheck struct {
+	done chan struct{} // closed once the check has finished and answered has been set
+	// seq is the checkSeq the check was made for. The check is discarded on landing if that has moved on, which it does
+	// whenever the repository or the content on disk is replaced.
+	seq      int
+	answered bool // set under the library lock before done is closed; see CheckForAvailableUpgrade
 }
 
 // NewLibrary creates a new library.
@@ -166,6 +178,11 @@ func (l *Library) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 func (l *Library) Data() LibraryData {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
+	return l.snapshot()
+}
+
+// snapshot builds the LibraryData for the current state. The library lock must be held when calling this.
+func (l *Library) snapshot() LibraryData {
 	return LibraryData{
 		LibraryConfig: l.config(),
 		ID:            l.data.ID,
@@ -192,15 +209,38 @@ func (l *Library) config() LibraryConfig {
 }
 
 // Configure applies the given configuration as a single atomic operation. Note that this may change the value returned
-// by Key().
+// by Key(). A change to the repository being followed -- the account, the repository name, or whether to follow its
+// latest commit rather than its releases -- discards what any earlier check found, since that described the old one:
+// the releases are dropped, the library is left needing a check (see NeedsUpgradeCheck), a check still in flight for
+// the old repository is discarded when it finishes, and the version on disk is re-read, since whether the library is
+// the User Library can change along with the key.
 func (l *Library) Configure(config LibraryConfig) {
 	l.lock.Lock()
-	defer l.lock.Unlock()
 	l.data.Title = config.Title
 	l.data.AccessToken = config.AccessToken
-	l.data.UseLatest = config.UseLatest
-	l.gitHubAccountName = config.GitHubAccountName
-	l.repoName = config.RepoName
+	repoChanged := l.setRepository(config.GitHubAccountName, config.RepoName, config.UseLatest)
+	l.lock.Unlock()
+	if repoChanged {
+		l.refreshVersionOnDisk()
+	}
+}
+
+// setRepository points the library at the given repository and reports whether that differs from the one it was
+// following. A change discards what any earlier check found, as described for Configure(), apart from the re-read of
+// the version on disk, which the caller must do once the lock has been released, since it reads a file. Dropping the
+// releases and bumping the sequence number in the same critical section as the change of repository is what keeps a
+// check from landing in between with the old repository's answer. The library lock must be held when calling this.
+func (l *Library) setRepository(gitHubAccountName, repoName string, useLatest bool) bool {
+	if l.gitHubAccountName == gitHubAccountName && l.repoName == repoName && l.data.UseLatest == useLatest {
+		return false
+	}
+	l.gitHubAccountName = gitHubAccountName
+	l.repoName = repoName
+	l.data.UseLatest = useLatest
+	l.releases = nil
+	l.checked = false
+	l.checkSeq++
+	return true
 }
 
 // SetID sets the unique ID of this library. Should only be used for a library that doesn't yet have one.
@@ -221,7 +261,11 @@ func (l *Library) Valid() bool {
 	return strings.TrimSpace(l.data.PathOnDisk) != "" && strings.TrimSpace(l.data.Title) != ""
 }
 
-// ConfigureForKey configures the GitHub account name and repository name from the given key.
+// ConfigureForKey configures the GitHub account name and repository name from the given key, which is the form they
+// take when a Libraries set is saved. A change of repository is treated exactly as Configure() treats one. A freshly
+// loaded library follows no repository until this is called, so for it the key is always a change, and the re-read of
+// the version on disk that comes with the change is what fills the version in: it isn't part of what was saved, and an
+// update check is the only other thing that sets it -- which, with the periodic checks turned off, may never run.
 func (l *Library) ConfigureForKey(key string) error {
 	parts := strings.SplitN(key, "/", 2)
 	if len(parts) != 2 {
@@ -232,9 +276,11 @@ func (l *Library) ConfigureForKey(key string) error {
 		return errs.Newf("invalid library key: %s", key)
 	}
 	l.lock.Lock()
-	defer l.lock.Unlock()
-	l.gitHubAccountName = strings.TrimSpace(parts[0])
-	l.repoName = repoName
+	repoChanged := l.setRepository(strings.TrimSpace(parts[0]), repoName, l.data.UseLatest)
+	l.lock.Unlock()
+	if repoChanged {
+		l.refreshVersionOnDisk()
+	}
 	return nil
 }
 
@@ -374,9 +420,58 @@ func (l *Library) IsUser() bool {
 	return IsUserLibraryKey(l.gitHubAccountName, l.repoName)
 }
 
-// CheckForAvailableUpgrade returns releases that can be upgraded to.
+// CheckForAvailableUpgrade retrieves the releases that can be upgraded to, recording them for AvailableReleases(). Only
+// one check of a library runs at a time: a call made while another is in flight -- the Library Explorer asking on the
+// user's behalf while the launch-time or periodic check is still under way, say -- waits for that one to finish rather
+// than making a second request for the same answer, and returns once it has, or once ctx is done. The check that was
+// waited on serves the caller only if it answered for the repository the library follows now, whether with its
+// releases or with a failure to reach it, which asking again at once would only repeat. One that was discarded because
+// the repository was reconfigured while it ran -- its answer describing a repository the library no longer follows --
+// or that was cut short by its own caller's context rather than by this one's, leaves the need it was waited on for
+// unmet, so the caller then makes a check of its own. Without that, a check made from the settings dialog or the
+// Library Explorer right after a repository change would wait on the doomed launch-time check and come back with
+// nothing, leaving the library unchecked until the next scheduled check.
 func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Client) {
-	data := l.Data()
+	for ctx.Err() == nil {
+		l.lock.Lock()
+		if check := l.check; check != nil {
+			l.lock.Unlock()
+			select {
+			case <-check.done:
+			case <-ctx.Done():
+				return
+			}
+			l.lock.RLock()
+			served := check.answered && check.seq == l.checkSeq
+			l.lock.RUnlock()
+			if served {
+				return
+			}
+			continue
+		}
+		check := &libraryCheck{done: make(chan struct{}), seq: l.checkSeq}
+		l.check = check
+		// The configuration is captured along with the sequence number so that a check always lands, or is discarded,
+		// as a check of the repository it actually asked. Taken separately, a reconfiguration between the two would
+		// have the check ask the new repository and then throw the answer away as stale.
+		data := l.snapshot()
+		l.lock.Unlock()
+		l.performCheck(ctx, client, check, &data)
+		return
+	}
+}
+
+// performCheck makes the request for the given check, which the caller has just registered as the one in flight, and
+// records what it finds. Whatever happens, the check is unregistered and its waiters released before this returns.
+func (l *Library) performCheck(ctx context.Context, client *http.Client, check *libraryCheck, data *LibraryData) {
+	answered := false
+	defer func() {
+		l.lock.Lock()
+		l.check = nil
+		check.answered = answered
+		l.lock.Unlock()
+		close(check.done)
+	}()
 	incompatibleFutureLibraryVersion := strconv.Itoa(jio.CurrentDataVersion + 1)
 	minimumLibraryVersion := strconv.Itoa(jio.MinimumLibraryVersion)
 	releases, err := LoadReleases(ctx, client, data.GitHubAccountName, data.AccessToken, data.RepoName, "",
@@ -386,6 +481,10 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 				xstrings.NaturalLess(incompatibleFutureLibraryVersion, version, true)
 		}, data.UseLatest)
 	if err != nil {
+		// A failure to reach the repository is an answer of sorts: a caller waiting on this check gains nothing by
+		// asking again at once. Being cut short by the context is not, since that context belonged to whoever started
+		// the check, and a waiter with a live context of its own still wants the answer.
+		answered = ctx.Err() == nil
 		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", data.Title, "repo",
 			data.RepoName, "account", data.GitHubAccountName)
 		return
@@ -396,6 +495,11 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 		lastRelease = releases[0].Version
 	}
 	l.lock.Lock()
+	if check.seq != l.checkSeq {
+		l.lock.Unlock()
+		return // The repository was changed while this check ran, so its answer is about the wrong one
+	}
+	answered = true
 	prevCurrent := l.current
 	prevLastRelease := ""
 	if len(l.releases) != 0 {
@@ -408,13 +512,17 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 	l.lock.Unlock()
 	// A notification reloads the entire library tree, which restarts the filesystem watches, drops what has been cached
 	// and disturbs anything in progress, so one is sent only when this check turned up something the previous check
-	// didn't: an update that has just become available, or a library whose content changed on disk outside of the app.
-	// The first check of a library also announces an update that was already pending, which is what raises the
-	// indicator at startup. A library with no releases to compare against -- a local one, or a repo whose releases were
-	// all rejected as incompatible -- has nothing to announce, even though the "0" that stands in for an unknown
-	// version on disk differs from the empty version of a release that isn't there.
+	// didn't: an update that has just become available, a library whose content changed on disk outside of the app, or
+	// an update that was on offer and no longer is -- the release having been withdrawn, or the library having been
+	// brought up to date outside of the app -- which must take the indicator down. The first check of a library also
+	// announces an update that was already pending, which is what raises the indicator at startup. A library with no
+	// releases to compare against -- a local one, or a repo whose releases were all rejected as incompatible -- has
+	// nothing to announce, even though the "0" that stands in for an unknown version on disk differs from the empty
+	// version of a release that isn't there.
+	prevUpdateAvailable := prevLastRelease != "" && prevCurrent != prevLastRelease
 	updateAvailable := lastRelease != "" && current != lastRelease
-	if updateAvailable && (firstCheck || prevCurrent != current || prevLastRelease != lastRelease) {
+	if updateAvailable && (firstCheck || prevCurrent != current || prevLastRelease != lastRelease) ||
+		prevUpdateAvailable && !updateAvailable {
 		NotifyOfLibraryChange()
 	}
 }
@@ -427,8 +535,10 @@ func (l *Library) AvailableReleases() (current string, releases []Release) {
 }
 
 // NeedsUpgradeCheck returns true if the library is backed by a GitHub repository and no update check of it has
-// completed, either because none has been made -- with the periodic checks turned off, none is -- or because every one
-// made so far failed to reach the repository. A library that isn't backed by a repository has nothing to check.
+// completed since it was pointed at that repository, either because none has been made -- with the periodic checks
+// turned off, none is -- or because every one made so far failed to reach the repository. A library that isn't backed
+// by a repository has nothing to check. A check that is still in flight doesn't yet satisfy the need; calling
+// CheckForAvailableUpgrade() waits for it, and makes a check of its own if that one turns out not to have answered.
 func (l *Library) NeedsUpgradeCheck() bool {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
@@ -486,12 +596,20 @@ func (l *Library) VersionOnDisk() string {
 	return strings.TrimSpace(string(bytes.SplitN(data, []byte{'\n'}, 2)[0]))
 }
 
-// refreshVersionOnDisk updates the cached "current" version from what is present on disk. The library lock must not be
-// held when calling this.
+// refreshVersionOnDisk updates the cached "current" version from what is present on disk and discards any update check
+// still in flight, since the version that check reads -- which it does before taking the lock -- may be of what was
+// there before. Everything that replaces what is on disk must call this once the replacement is in place: a change of
+// path, a download, whether it succeeded or not, and a change of repository, which can change whether the library is
+// the User Library. Without the discard, a check that read the old directory's version, or the "0" that stands in for
+// a directory moved aside during a download, could land after the refresh and put that back as the current version,
+// showing an update for a library that is in fact up to date until the next scheduled check corrected it. A discarded
+// check leaves the library as it found it -- whether it had been checked is unchanged -- and whoever waited on it asks
+// again; see CheckForAvailableUpgrade. The library lock must not be held when calling this.
 func (l *Library) refreshVersionOnDisk() {
 	current := l.VersionOnDisk()
 	l.lock.Lock()
 	l.current = current
+	l.checkSeq++
 	l.lock.Unlock()
 }
 
@@ -557,6 +675,12 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 				errs.Log(errs.NewWithCause("unable to move the old directory back into place", err), "old", tmpDir, "new", p)
 			}
 		}
+		// Whether the new content is now in place or the old has been put back, what is on disk was replaced while an
+		// update check may have been reading it, so the cached version is re-read here and any such check discarded.
+		// That matters as much for a download that failed as for one that succeeded: the check would otherwise land
+		// with the "0" it read while the directory was aside, and the update flow, which waits on the check either
+		// way, would be told that it was served.
+		l.refreshVersionOnDisk()
 	}()
 	if err = os.MkdirAll(p, 0o750); err != nil {
 		return errs.NewWithCause("unable to create directory "+p, err)
@@ -673,7 +797,6 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 	if err = os.WriteFile(f, []byte(release.Version+"\n"+strconv.FormatInt(transferred(), 10)+"\n"), 0o640); err != nil {
 		return errs.NewWithCause("unable to write version file "+f, err)
 	}
-	l.refreshVersionOnDisk()
 	success = true
 	return nil
 }

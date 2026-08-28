@@ -141,6 +141,25 @@ func TestPeriodicCheckKeepsTheClockRunningWhenNothingChanged(t *testing.T) {
 	c.Equal(2, len(h.ticks))
 }
 
+// TestPeriodicCheckTickSkipsTheWorkWhenTheSettingNoLongerRepeats verifies that a tick which finds the setting changed
+// behind its back -- to Never, or to checking only at launch -- neither runs the work nor schedules another tick.
+// Every path that changes the setting reschedules, which retires the tick, so this is a backstop; but a backstop that
+// ran one last check the user had just turned off would be worse than none.
+func TestPeriodicCheckTickSkipsTheWorkWhenTheSettingNoLongerRepeats(t *testing.T) {
+	c := check.New(t)
+	for _, option := range []updatecheck.Option{updatecheck.Never, updatecheck.AtLaunch} {
+		h := newPeriodicCheckHarness(updatecheck.Hourly)
+		c.True(h.check.reschedule(), "an hourly setting must report that the checks repeat")
+		c.Equal(1, len(h.ticks))
+		h.option = option
+		h.ticks[0].fire()
+		c.Equal(0, h.runs, "a tick that finds the setting at %s must not run the work", option.Key())
+		c.Equal(1, len(h.ticks), "a tick that finds the setting at %s must not schedule another", option.Key())
+		c.False(h.check.pending)
+		c.False(h.check.reschedule(), "a setting of %s must report that the checks don't repeat", option.Key())
+	}
+}
+
 // TestPeriodicCheckRunsAtOnceWhenTurnedOn verifies that switching the checks on from Never runs the work immediately,
 // and that nothing else does: not starting the schedule at launch, whose check is made separately, and not moving
 // between settings that already check. Without this, turning the checks on left the Help menu insisting that they were

@@ -52,14 +52,12 @@ func (l *Libraries) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			if strings.HasPrefix(k, "*/") { // GCS v5.4 and earlier use * for local dirs that weren't on github
 				k = k[1:]
 			}
+			// Applying the key is also what fills in the version on disk, which isn't part of what was saved; see
+			// ConfigureForKey().
 			if err := lib.ConfigureForKey(k); err != nil {
 				errs.Log(err, "key", k)
 				continue
 			}
-			// The version on disk isn't part of what was saved, and an update check is the only other thing that fills
-			// it in, so without this a library would show no version at all until one ran -- which, with the periodic
-			// checks turned off, may be never.
-			lib.refreshVersionOnDisk()
 			libs[lib.Key()] = lib
 		}
 	}

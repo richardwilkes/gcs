@@ -186,11 +186,15 @@ func TestUpdateCheckPopupsRunACheckWhenTurnedOn(t *testing.T) {
 }
 
 // TestUpdateCheckPopupsFollowTheSettings verifies that the popups can be brought back into line with settings that were
-// replaced wholesale, as a reset or a load of a settings file does. This is what sync() performs; the rest of sync()
-// isn't exercised here, since a bare dockable has none of the other widgets it touches.
+// replaced wholesale, as a reset or a load of a settings file does, and that selecting the replaced value is enough to
+// bring the repeating check into line with it as well: the popup's own callback reschedules on a change, and a value
+// that didn't change needs no rescheduling, since the schedule reads the settings live. This is what sync() performs;
+// the rest of sync() isn't exercised here, since a bare dockable has none of the other widgets it touches.
 func TestUpdateCheckPopupsFollowTheSettings(t *testing.T) {
 	c := check.New(t)
-	gs, _ := prepareUpdateCheckSettings(t)
+	gs, stub := prepareUpdateCheckSettings(t)
+	ApplyUpdateCheckSettings() // What launch does, after making its own checks
+	c.Equal(0, len(stub.ticks), "checking at launch must not schedule a repeating check")
 
 	d := &generalSettingsDockable{}
 	d.createUpdateCheckPopups(unison.NewPanel())
@@ -206,6 +210,15 @@ func TestUpdateCheckPopupsFollowTheSettings(t *testing.T) {
 	selected, ok = d.libraryUpdateCheckPopup.Selected()
 	c.True(ok, "the library update popup should have a selection")
 	c.Equal(updatecheck.Hourly, selected, "the library update popup should show the replaced setting")
+	c.True(libraryUpdateCheck.pending, "selecting the replaced setting must reschedule the check")
+	c.Equal(updatecheck.Hourly, libraryUpdateCheck.scheduled)
+
+	// Replacing the settings with the same values again, as re-applying a settings file does, changes nothing, so the
+	// tick already pending must be left alone.
+	ticks := len(stub.ticks)
+	d.appUpdateCheckPopup.Select(gs.AppUpdateCheck)
+	d.libraryUpdateCheckPopup.Select(gs.LibraryUpdateCheck)
+	c.Equal(ticks, len(stub.ticks), "re-selecting an unchanged setting must not schedule another tick")
 }
 
 // TestDeepSearchCheckboxRebuildsDeepSearch is the counterpart to TestOpenInWindowCheckboxLeavesDeepSearchAlone: the

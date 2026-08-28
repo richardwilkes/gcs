@@ -76,6 +76,15 @@ func (u *appUpdater) Result() (title string, releases []gurps.Release, updating 
 	return u.result, u.releases, u.updating
 }
 
+// Checking returns true while a check of either kind is in flight. Result() reports only a visible check as updating,
+// since a quiet one leaves what is known on display; this is for the Help menu's check item, which has no business
+// starting a second request for an answer that is already on its way.
+func (u *appUpdater) Checking() bool {
+	u.lock.RLock()
+	defer u.lock.RUnlock()
+	return u.updating || u.quiet
+}
+
 // uncheckedTitleLocked returns the title for the state in which no check has recorded anything. The lock must already
 // be held.
 func (u *appUpdater) uncheckedTitleLocked() string {
@@ -419,4 +428,9 @@ func outcomeMessage(reason updater.Reason) string {
 // AppUpdateResult returns the current results of any outstanding app update check.
 func AppUpdateResult() (title string, releases []gurps.Release, updating bool) {
 	return appUpdate.Result()
+}
+
+// AppUpdateCheckInProgress returns true while an app update check of either kind, visible or quiet, is in flight.
+func AppUpdateCheckInProgress() bool {
+	return appUpdate.Checking()
 }
