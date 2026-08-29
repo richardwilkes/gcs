@@ -64,8 +64,8 @@ func NewCalendarRefFromFS(fileSystem fs.FS, filePath string) (*CalendarRef, erro
 
 // RandomBirthday generates a random birthday month and day.
 func (c *CalendarRef) RandomBirthday(not string) string {
+	var base int64
 	year := 1
-	base := 0
 	cfg := c.Calendar.Config()
 	if cfg.LeapYear != nil {
 		year = cfg.LeapYear.Every
@@ -77,7 +77,7 @@ func (c *CalendarRef) RandomBirthday(not string) string {
 	daysInYear := c.Calendar.Days(year)
 	result := ""
 	for range 5 {
-		if result = c.Calendar.NewDateByDays(base + xrand.New().Intn(daysInYear)).Format("%M %D"); result != not {
+		if result = c.Calendar.NewDateByDays(base + int64(xrand.New().Intn(daysInYear))).Format("%M %D"); result != not {
 			break
 		}
 	}

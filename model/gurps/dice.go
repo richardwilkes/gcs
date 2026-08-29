@@ -32,7 +32,9 @@ func InitRollers() error {
 		GURPSFormat:            true,
 		ExtraDiceFromModifiers: false,
 	}
-	dice.SetDefaultConfig(cfg)
+	if err := dice.SetDefaultConfig(cfg); err != nil {
+		return err
+	}
 	var err error
 	if Roller, err = dice.NewRoller(cfg); err != nil {
 		return err
