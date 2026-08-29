@@ -145,13 +145,15 @@ func Reduce(nameables, replacements map[string]string) map[string]string {
 
 	ret := make(map[string]string, min(len(nameables), len(replacements)))
 	for k, v := range replacements {
-		key := k
-		if m, ok := NewMarker(k); ok {
+		if m, parsed := NewMarker(k); parsed {
 			// Use the normalized key value - this makes sure the replacement key uses the most recent normalization
-			key = m.Key()
-		}
-		if _, ok := nameables[key]; ok {
-			ret[k] = v
+			key := m.Key()
+			// Using a normalized key for replacements means multiple values may have the same key afterwards.
+			// This is an acceptable edge-case scenario since it only surfaces with non-legacy markers.
+			// Those non-legacy markers only appear with this new code which will always write out normalized values.
+			if _, found := nameables[key]; found {
+				ret[key] = v
+			}
 		}
 	}
 

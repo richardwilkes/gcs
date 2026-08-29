@@ -141,3 +141,32 @@ func TestApplyToListResolvesSameMarkerAcrossMultipleEntries(t *testing.T) {
 		"Another Fire spell, and an @Element@ one too",
 	}, got)
 }
+
+func TestReduceEmptyNameablesReturnsNil(t *testing.T) {
+	c := check.New(t)
+	c.Equal(map[string]string(nil), nameable.Reduce(nil, map[string]string{"Habit": "Nail-biting"}))
+}
+
+func TestReduceOmitsReplacementsNotInNameables(t *testing.T) {
+	c := check.New(t)
+	nameables := map[string]string{"Habit": "Bad Habit"}
+	replacements := map[string]string{"Habit": "Nail-biting", "Weapon Name": "Excalibur"}
+	c.Equal(map[string]string{"Habit": "Nail-biting"}, nameable.Reduce(nameables, replacements))
+}
+
+func TestReduceStoresUnderNormalizedKeyEvenWhenReplacementKeyIsUnnormalized(t *testing.T) {
+	c := check.New(t)
+	// The replacements map is keyed on the raw, legacy marker text (as it would have been stored before marker
+	// normalization existed), while nameables (as produced by Extract) is keyed on the normalized form. Reduce must
+	// store the value under the normalized key -- not the raw replacement key -- or the entry silently fails to
+	// resolve later since Apply/ApplyToList look up replacements by normalized key.
+	const raw = "Class: Mammalia"
+	marker, ok := nameable.NewMarker(raw)
+	c.True(ok)
+	normalizedKey := marker.Key()
+	c.NotEqual(raw, normalizedKey)
+
+	nameables := map[string]string{normalizedKey: "Mammalia"}
+	replacements := map[string]string{raw: "Mammalia"}
+	c.Equal(map[string]string{normalizedKey: "Mammalia"}, nameable.Reduce(nameables, replacements))
+}

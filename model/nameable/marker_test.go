@@ -407,10 +407,8 @@ func TestReduceKeepsAllowEmptyChosenValue(t *testing.T) {
 
 func TestReduceRetainsMalformedReplacementKeyButHasNoEffect(t *testing.T) {
 	c := check.New(t)
-	// A replacements key that itself fails to parse as a marker (here, "") is retained rather than dropped while
-	// building the normalized-key map -- but note Reduce's final matching pass currently compares against
-	// nameables/replacements by their raw, un-normalized keys, so that normalization has no effect on the result
-	// either way; this only pins Reduce's current behavior, not an endorsement of it.
+	// A replacements key that itself fails to parse as a marker (here, "") is retained as-is rather than dropped,
+	// but simply never matches any real marker's key, so it has no effect on the result here.
 	needed := map[string]string{"Element|Fire|Water": ""}
 	replacements := map[string]string{"": "unused", "Element|Fire|Water": "Fire"}
 	reduced := nameable.Reduce(needed, replacements)
