@@ -375,7 +375,10 @@ func (l *Library) CleanupFavorites() {
 	l.data.Favorites = favs
 }
 
-// Watch for changes in the directory tree of this library.
+// Watch for changes in the directory tree of this library. Each change is reported with the full path of what changed,
+// named the way this library names it: beneath Path(), and beneath any symlinked directory registered with
+// MonitorToken.AddSubPath, rather than wherever those resolve to on disk. A path built from Path() and a directory
+// entry within it can therefore be compared directly with what the callback receives.
 func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
 	return l.obtainMonitor().newWatch(callback, callbackOnUIThread)
 }

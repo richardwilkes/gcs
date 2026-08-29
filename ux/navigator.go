@@ -12,10 +12,14 @@ package ux
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -78,10 +82,15 @@ type Navigator struct {
 	tokens                    []*gurps.MonitorToken
 	searchResult              []*NavigatorNode
 	deepSearch                map[string]bool
-	contentCache              map[string]string
+	contentCache              map[string]*contentCacheEntry
+	lastBuild                 *contentCacheBuild
+	invalidatedPaths          map[string]bool
 	appUpdatePulse            appUpdatePulse
+	cacheGeneration           atomic.Int64
 	searchIndex               int
+	prewarmSuspensions        int
 	needReload                bool
+	prewarmPending            bool
 	adjustTableSizePending    bool
 }
 
@@ -158,6 +167,7 @@ func (n *Navigator) mapDeepSearch() {
 			n.deepSearch[ext] = true
 		}
 	}
+	n.prewarmContentCache()
 }
 
 func (n *Navigator) setupToolBar() {
@@ -359,10 +369,15 @@ func (n *Navigator) deleteSelection() {
 			header := xstrings.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
 			if unison.QuestionDialog(header,
 				i18n.Text("Note: This action will NOT remove any files from disk.")) == unison.ModalResponseOK {
-				libs := gurps.GlobalSettings().LibrarySet
+				libs := gurps.GlobalSettings().Libraries
 				for _, row := range selection {
-					delete(libs, row.library.Key())
+					// Removal must go through Remove rather than delete(), since the deep search content loaders
+					// read the library set from background goroutines.
+					libs.Remove(row.library.Key())
 					row.library.StopAllWatches()
+					// Close any settings dockable still open for the library, since an apply from it would put the
+					// library back into the set.
+					closeLibrarySettings(row.library)
 				}
 				n.Reload()
 			}
@@ -777,8 +792,17 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 		})
 }
 
-func (n *Navigator) watchCallback(_ *gurps.Library, _ string, _ notify.Event) {
-	n.EventuallyReload()
+// watchCallback is what the filesystem watches on the libraries report each change to, on the UI thread. Whatever the
+// change, the deep search content cache entry for the path is dropped so that a search re-reads the file rather than
+// matching on its previous contents. The path arrives named the way the library names it (see Library.Watch), which
+// is also how NavigatorNode.Path() names it, so it is the cache key as is. A change that may have altered the tree is
+// followed by a reload; a plain write to a file's contents does not need one, and a file arriving in pieces would
+// otherwise restart the reload's cache rebuild on every piece.
+func (n *Navigator) watchCallback(_ *gurps.Library, fullPath string, what notify.Event) {
+	n.invalidateContentCacheEntry(fullPath)
+	if what&^notify.Write != 0 {
+		n.EventuallyReload()
+	}
 }
 
 // EventuallyReload calls Reload() after a small delay, collapsing intervening requests to do the same. May be called
@@ -795,7 +819,6 @@ func (n *Navigator) EventuallyReload() {
 
 // Reload the content of the navigator view.
 func (n *Navigator) Reload() {
-	n.contentCache = nil
 	n.needReload = false
 	for _, token := range n.tokens {
 		token.Stop()
@@ -808,10 +831,11 @@ func (n *Navigator) Reload() {
 	n.table.SyncToModel()
 	n.ApplySelectedPaths(selection)
 	n.table.SizeColumnsToFit(true)
+	n.prewarmContentCache()
 }
 
 func (n *Navigator) populateRows() []*NavigatorNode {
-	libs := gurps.GlobalSettings().LibrarySet.List()
+	libs := gurps.GlobalSettings().Libraries.List()
 	rows := make([]*NavigatorNode, 0, 1+len(libs))
 	rows = append(rows, NewFavoritesNode(n))
 	for _, lib := range libs {
@@ -985,6 +1009,41 @@ func (n *Navigator) searchModified(_, _ *unison.FieldState) {
 	n.adjustForMatch()
 }
 
+// rerunSearch rebuilds the search results for the given text, preserving the user's place in the match list when the
+// row they were on is still among the new results. A completed background cache prewarm re-runs any active search, and
+// without this the completion would silently reset the position while the user is walking the matches.
+func (n *Navigator) rerunSearch(text string, rows []*NavigatorNode) {
+	var current *NavigatorNode
+	if n.searchIndex >= 0 && n.searchIndex < len(n.searchResult) {
+		current = n.searchResult[n.searchIndex]
+	}
+	n.searchResult = nil
+	n.search(text, rows)
+	n.searchIndex = -1
+	if current != nil {
+		n.searchIndex = slices.Index(n.searchResult, current)
+		if n.searchIndex == -1 {
+			// A Reload rebuilds the tree with fresh node objects, so pointer identity fails even though the row the
+			// user was on is still among the results. Fall back to the path, the same identity the navigator uses to
+			// carry selection and disclosure across a reload. A favorited file appears twice with the same path; the
+			// first copy is close enough.
+			p := current.Path()
+			n.searchIndex = slices.IndexFunc(n.searchResult, func(row *NavigatorNode) bool { return row.Path() == p })
+		}
+	}
+}
+
+// rerunActiveSearch re-runs the search currently in the search field, if there is one, keeping the user's place in the
+// match list, and refreshes the search toolbar. Only the toolbar is refreshed: this runs from asynchronous completions,
+// and re-selecting the current match would yank the selection and scroll position away from whatever the user has
+// clicked on since.
+func (n *Navigator) rerunActiveSearch() {
+	if n.searchField != nil && n.searchField.Text() != "" {
+		n.rerunSearch(strings.ToLower(n.searchField.Text()), n.table.RootRows())
+		n.updateMatchControls()
+	}
+}
+
 func (n *Navigator) search(text string, rows []*NavigatorNode) {
 	if text == "" {
 		return
@@ -994,101 +1053,20 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 			n.searchResult = append(n.searchResult, row)
 		} else if row.IsFile() {
 			p := row.Path()
-			content, ok := n.contentCache[p]
-			if !ok {
-				fi := gurps.FileInfoFor(p)
-				if n.deepSearch[fi.UTI.Extensions[0]] {
-					dir := os.DirFS(filepath.Dir(p))
-					fileName := filepath.Base(p)
-					switch fi.UTI.Extensions[0] {
-					case gurps.EquipmentExt:
-						if data, err := gurps.NewEquipmentFromFile(dir, fileName); err == nil {
-							content = n.addToContentCache(p, prepareForContentCache(data))
-						}
-					case gurps.EquipmentModifiersExt:
-						if data, err := gurps.NewEquipmentModifiersFromFile(dir, fileName); err == nil {
-							content = n.addToContentCache(p, prepareForContentCache(data))
-						}
-					case gurps.NotesExt:
-						if data, err := gurps.NewNotesFromFile(dir, fileName); err == nil {
-							content = n.addToContentCache(p, prepareForContentCache(data))
-						}
-					case gurps.SheetExt:
-						if data, err := gurps.NewEntityFromFile(dir, fileName); err == nil {
-							for _, one := range data.Skills {
-								one.TechLevel = nil
-							}
-							for _, one := range data.Spells {
-								one.TechLevel = nil
-							}
-							content = n.addToContentCache(p, strings.Join([]string{
-								prepareProfileForContentCache(&data.Profile),
-								prepareForContentCache(data.Traits),
-								prepareForContentCache(data.Skills),
-								prepareForContentCache(data.Spells),
-								prepareForContentCache(data.CarriedEquipment),
-								prepareForContentCache(data.OtherEquipment),
-								prepareForContentCache(data.Notes),
-							}, "\n"))
-						}
-					case gurps.SkillsExt:
-						if data, err := gurps.NewSkillsFromFile(dir, fileName); err == nil {
-							for _, one := range data {
-								one.TechLevel = nil
-							}
-							content = n.addToContentCache(p, prepareForContentCache(data))
-						}
-					case gurps.SpellsExt:
-						if data, err := gurps.NewSpellsFromFile(dir, fileName); err == nil {
-							for _, one := range data {
-								one.TechLevel = nil
-							}
-							content = n.addToContentCache(p, prepareForContentCache(data))
-						}
-					case gurps.TemplatesExt:
-						if data, err := gurps.NewTemplateFromFile(dir, fileName); err == nil {
-							for _, one := range data.Skills {
-								one.TechLevel = nil
-							}
-							for _, one := range data.Spells {
-								one.TechLevel = nil
-							}
-							content = n.addToContentCache(p, strings.Join([]string{
-								prepareForContentCache(data.Traits),
-								prepareForContentCache(data.Skills),
-								prepareForContentCache(data.Spells),
-								prepareForContentCache(data.Equipment),
-								prepareForContentCache(data.Notes),
-							}, "\n"))
-						}
-					case gurps.LootExt:
-						if data, err := gurps.NewLootFromFile(dir, fileName); err == nil {
-							content = n.addToContentCache(p, strings.Join([]string{ //nolint:gocritic // Fine as-is
-								prepareForContentCache(data.Equipment),
-								prepareForContentCache(data.Notes),
-							}, "\n"))
-						}
-					// TODO: Re-enable Campaign files
-					// case gurps.CampaignExt:
-					// TODO: Implement
-					case gurps.TraitModifiersExt:
-						if data, err := gurps.NewTraitModifiersFromFile(dir, fileName); err == nil {
-							content = n.addToContentCache(p, prepareForContentCache(data))
-						}
-					case gurps.TraitsExt:
-						if data, err := gurps.NewTraitsFromFile(dir, fileName); err == nil {
-							content = n.addToContentCache(p, prepareForContentCache(data))
-						}
-					case uti.Markdown.Extensions[0]:
-						if data, err := os.ReadFile(p); err == nil {
-							content = n.addToContentCache(p, string(bytes.ToLower(data)))
-						}
-					}
+			// The deep search check must come before the cache lookup, so that disabling a type in the settings takes
+			// effect immediately rather than only after the asynchronous cache rebuild completes.
+			if n.deepSearch[gurps.FileInfoFor(p).UTI.Extensions[0]] {
+				// A cache hit is served as is, without checking the file on disk: the filesystem watches drop the
+				// entry for a file as soon as its change is reported (see watchCallback), which is what keeps this
+				// from being a stat per deep-searchable file on every keystroke.
+				entry, ok := n.contentCache[p]
+				if !ok || entry == nil {
+					entry = loadContentCacheEntry(p)
+					n.addToContentCache(p, entry)
 				}
-			}
-			content = strings.TrimSpace(content)
-			if content != "" && strings.Contains(content, text) {
-				n.searchResult = append(n.searchResult, row)
+				if entry != nil && entry.content != "" && strings.Contains(entry.content, text) {
+					n.searchResult = append(n.searchResult, row)
+				}
 			}
 		}
 		if row.CanHaveChildren() {
@@ -1126,12 +1104,344 @@ func prepareForContentCache[T gurps.Node[T]](data []T) string {
 	return buffer.String()
 }
 
-func (n *Navigator) addToContentCache(p, content string) string {
-	if n.contentCache == nil {
-		n.contentCache = make(map[string]string)
+// contentCacheEntry holds the extracted, lowercased and trimmed text of one file for the deep search, along with the
+// file metadata used to decide whether the entry can be reused when the cache is revalidated after a reload. Size and
+// modification time are deliberately used instead of a content hash: hashing would require reading every file just to
+// decide whether it needs to be re-read, and the case it would catch — a content change that alters neither size nor
+// modification time — is unlikely to occur in real use.
+type contentCacheEntry struct {
+	modTime time.Time
+	content string
+	size    int64
+}
+
+// isCurrent returns true if the file at the given path still has the size and modification time captured in the entry.
+// Only the background cache builds check this; a search serves cache hits without touching the disk, relying on the
+// filesystem watches to drop the entries of changed files (see invalidateContentCacheEntry).
+func (e *contentCacheEntry) isCurrent(p string) bool {
+	fi, err := os.Stat(p)
+	return err == nil && fi.Size() == e.size && fi.ModTime().Equal(e.modTime)
+}
+
+// contentCacheBuild is one background build of the deep search content cache, kept so that the build which supersedes
+// it can inherit the entries it completed instead of starting over from the live cache alone. Reloads arrive
+// back-to-back at startup — the navigator's own, then one for each launch-time library check that finds a change — and
+// each cancels the build before it, so without the hand-off the first full parse of a large library would be restarted
+// from zero several times over. The inherited entries are revalidated against the files' size and modification time
+// like any other, so a canceled build's partial work is as safe to reuse as a finished one's.
+type contentCacheBuild struct {
+	done    chan struct{}                 // Closed once entries may be read
+	entries map[string]*contentCacheEntry // What the build started from, overlaid with what it completed
+}
+
+// loadContentCacheEntry reads the file at the given path and extracts its searchable text. The search text is
+// lowercased before comparison, so the content is lowercased as well. A file that fails to load or parse — including
+// one whose parse panics — produces an entry with empty content, so it isn't pointlessly re-read (or re-panicked on)
+// on every keystroke. The file metadata is captured before the read so that a concurrent modification can only make
+// the entry look older than it is, never newer.
+func loadContentCacheEntry(p string) *contentCacheEntry {
+	entry := &contentCacheEntry{}
+	if fi, err := os.Stat(p); err == nil {
+		entry.modTime = fi.ModTime()
+		entry.size = fi.Size()
 	}
-	n.contentCache[p] = content
-	return content
+	xos.SafeCall(func() { entry.content = extractContentForCache(p) }, nil)
+	return entry
+}
+
+// extractContentForCache extracts the searchable text of the file at the given path.
+func extractContentForCache(p string) string {
+	dir := os.DirFS(filepath.Dir(p))
+	fileName := filepath.Base(p)
+	var content string
+	switch gurps.FileInfoFor(p).UTI.Extensions[0] {
+	case gurps.EquipmentExt:
+		if data, err := gurps.NewEquipmentFromFile(dir, fileName); err == nil {
+			content = prepareForContentCache(data)
+		}
+	case gurps.EquipmentModifiersExt:
+		if data, err := gurps.NewEquipmentModifiersFromFile(dir, fileName); err == nil {
+			content = prepareForContentCache(data)
+		}
+	case gurps.NotesExt:
+		if data, err := gurps.NewNotesFromFile(dir, fileName); err == nil {
+			content = prepareForContentCache(data)
+		}
+	case gurps.SheetExt:
+		if data, err := gurps.NewEntityFromFile(dir, fileName); err == nil {
+			for _, one := range data.Skills {
+				one.TechLevel = nil
+			}
+			for _, one := range data.Spells {
+				one.TechLevel = nil
+			}
+			content = strings.Join([]string{
+				prepareProfileForContentCache(&data.Profile),
+				prepareForContentCache(data.Traits),
+				prepareForContentCache(data.Skills),
+				prepareForContentCache(data.Spells),
+				prepareForContentCache(data.CarriedEquipment),
+				prepareForContentCache(data.OtherEquipment),
+				prepareForContentCache(data.Notes),
+			}, "\n")
+		}
+	case gurps.SkillsExt:
+		if data, err := gurps.NewSkillsFromFile(dir, fileName); err == nil {
+			for _, one := range data {
+				one.TechLevel = nil
+			}
+			content = prepareForContentCache(data)
+		}
+	case gurps.SpellsExt:
+		if data, err := gurps.NewSpellsFromFile(dir, fileName); err == nil {
+			for _, one := range data {
+				one.TechLevel = nil
+			}
+			content = prepareForContentCache(data)
+		}
+	case gurps.TemplatesExt:
+		if data, err := gurps.NewTemplateFromFile(dir, fileName); err == nil {
+			for _, one := range data.Skills {
+				one.TechLevel = nil
+			}
+			for _, one := range data.Spells {
+				one.TechLevel = nil
+			}
+			content = strings.Join([]string{
+				prepareForContentCache(data.Traits),
+				prepareForContentCache(data.Skills),
+				prepareForContentCache(data.Spells),
+				prepareForContentCache(data.Equipment),
+				prepareForContentCache(data.Notes),
+			}, "\n")
+		}
+	case gurps.LootExt:
+		if data, err := gurps.NewLootFromFile(dir, fileName); err == nil {
+			content = strings.Join([]string{ //nolint:gocritic // Fine as-is
+				prepareForContentCache(data.Equipment),
+				prepareForContentCache(data.Notes),
+			}, "\n")
+		}
+	// TODO: Re-enable Campaign files
+	// case gurps.CampaignExt:
+	// TODO: Implement
+	case gurps.TraitModifiersExt:
+		if data, err := gurps.NewTraitModifiersFromFile(dir, fileName); err == nil {
+			content = prepareForContentCache(data)
+		}
+	case gurps.TraitsExt:
+		if data, err := gurps.NewTraitsFromFile(dir, fileName); err == nil {
+			content = prepareForContentCache(data)
+		}
+	case uti.Markdown.Extensions[0]:
+		if data, err := os.ReadFile(p); err == nil {
+			content = string(bytes.ToLower(data))
+		}
+	}
+	return strings.TrimSpace(content)
+}
+
+func (n *Navigator) addToContentCache(p string, entry *contentCacheEntry) {
+	if n.contentCache == nil {
+		n.contentCache = make(map[string]*contentCacheEntry)
+	}
+	n.contentCache[p] = entry
+}
+
+// invalidateContentCacheEntry drops the deep search content cache entry for the given path, so that the next search
+// re-reads the file rather than matching on its previous contents. The filesystem watches call this as each change is
+// reported, which is what lets a search serve cache hits without checking the files on disk: revalidating every hit
+// against the file's size and modification time instead would be a stat per deep-searchable file on each keystroke,
+// thousands of syscalls per character typed with the master library enabled. A background build that is in flight may
+// already have read the file's old contents, so the path is also noted for applyPrewarmedContentCache to drop from that
+// build's result. Must be called on the UI thread, like the searches and the cache builds.
+func (n *Navigator) invalidateContentCacheEntry(p string) {
+	delete(n.contentCache, p)
+	if n.invalidatedPaths == nil {
+		n.invalidatedPaths = make(map[string]bool)
+	}
+	n.invalidatedPaths[p] = true
+}
+
+// collectDeepSearchPaths adds the path of each file row whose type is enabled for deep search to the given map. The
+// favorites node repeats paths that also appear under their libraries, so a map is used to de-duplicate.
+func (n *Navigator) collectDeepSearchPaths(rows []*NavigatorNode, paths map[string]bool) {
+	for _, row := range rows {
+		if row.IsFile() {
+			if p := row.Path(); n.deepSearch[gurps.FileInfoFor(p).UTI.Extensions[0]] {
+				paths[p] = true
+			}
+		}
+		if row.CanHaveChildren() {
+			n.collectDeepSearchPaths(row.Children(), paths)
+		}
+	}
+}
+
+// prewarmContentCache rebuilds the deep search content cache on background goroutines so the first keystroke in the
+// search field doesn't have to read and parse every deep-searchable file inline on the UI thread. Entries from the
+// previous cache are reused when the file's size and modification time are unchanged, so a reload triggered by a
+// single file change only pays to re-parse that file rather than entire libraries. Must be called on the UI thread;
+// the completed cache is swapped in on the UI thread as well. A newer call cancels an older one that is still running
+// and inherits the entries it had completed, so back-to-back reloads make a large build incremental rather than
+// restarting it from zero.
+func (n *Navigator) prewarmContentCache() {
+	if n.prewarmSuspensions > 0 {
+		n.prewarmPending = true
+		return
+	}
+	if n.table == nil {
+		return // Not fully constructed, as happens in tests
+	}
+	gen := n.cacheGeneration.Add(1)
+	// The build below starts from the cache as it is now, which already lacks the entries invalidated so far, so only
+	// invalidations that arrive while it runs need to be applied to its result. The build it inherits from may have
+	// read those files before their changes were reported, though, so its entries for them are not inherited.
+	invalidated := n.invalidatedPaths
+	n.invalidatedPaths = nil
+	paths := make(map[string]bool)
+	n.collectDeepSearchPaths(n.table.RootRows(), paths)
+	if len(paths) == 0 {
+		// The user just disabled the last deep-search type. There is nothing to build, so no completion will run the
+		// usual re-search; re-run any active search here so the now-invalid deep-search matches don't linger in the
+		// results until the next keystroke.
+		n.contentCache = nil
+		n.lastBuild = nil
+		n.rerunActiveSearch()
+		return
+	}
+	// Republish the settings the background parses read, so they are as fresh as this build and the workers never
+	// touch the live, UI-thread-mutated structures even if some settings editor missed publishing after a change.
+	gurps.SyncScriptExecTimeLimit()
+	gurps.SyncGlobalSheetSettings()
+	// The workers read this snapshot, since searches on the UI thread may add to the live map while they run. It is
+	// allocated even when the live cache is empty, as it is at startup, since the build overlays its results onto it.
+	previous := make(map[string]*contentCacheEntry, len(paths))
+	maps.Copy(previous, n.contentCache)
+	prior := n.lastBuild
+	build := &contentCacheBuild{done: make(chan struct{})}
+	n.lastBuild = build
+	go func() {
+		if prior != nil {
+			// The generation bump above canceled the prior build, if it was still running, and it stops at the next
+			// file boundary, so this wait is brief. Its entries fill in what the live cache lacks; anything the live
+			// cache holds is at least as new.
+			<-prior.done
+			for p, entry := range prior.entries {
+				if _, ok := previous[p]; !ok && !invalidated[p] {
+					previous[p] = entry
+				}
+			}
+		}
+		fresh := buildContentCache(paths, previous, func() bool { return n.cacheGeneration.Load() != gen })
+		// Hand everything this build knows to the one that supersedes it, if any: the entries it completed and the
+		// ones it inherited but was canceled before it reached. The snapshot is private to this build and its
+		// workers have all exited, so it can be overlaid in place.
+		maps.Copy(previous, fresh)
+		build.entries = previous
+		close(build.done)
+		unison.InvokeTask(func() {
+			// A search made while the cache was still being built may have produced incomplete results, so re-run any
+			// active search now that the full content is available, keeping the user's place in the match list.
+			if n.applyPrewarmedContentCache(gen, fresh) {
+				n.lastBuild = nil // The live cache now holds everything this build knew, so there is nothing to inherit
+				n.rerunActiveSearch()
+			}
+		})
+	}()
+}
+
+// applyPrewarmedContentCache installs a content cache produced by a background build and reports whether it did so. A
+// build whose generation is no longer current has been superseded — a newer prewarm or a suspension started after it
+// began — so its result is not installed, where it would clobber the cache the newer build will install; the newer
+// build inherits its entries instead (see contentCacheBuild). Entries for files whose changes were reported while the
+// build ran are left out, since the build may have read them before the change; the next search re-reads those inline.
+// Must be called on the UI thread.
+func (n *Navigator) applyPrewarmedContentCache(gen int64, fresh map[string]*contentCacheEntry) bool {
+	if gen != n.cacheGeneration.Load() {
+		return false
+	}
+	for p := range n.invalidatedPaths {
+		delete(fresh, p)
+	}
+	n.invalidatedPaths = nil
+	n.contentCache = fresh
+	return true
+}
+
+// suspendContentCachePrewarm holds off background rebuilds of the deep search content cache until the matching call to
+// resumeContentCachePrewarm. A library update writes hundreds of files, and each batch of filesystem watch events
+// would otherwise kick off another rebuild that the next batch immediately cancels, so a caller that is about to churn
+// the libraries suspends first. Any build already in flight is abandoned as well, since it is reading files that are
+// about to be replaced; the rebuild on resume inherits what it completed and revalidates each entry against the file on
+// disk, so the replaced files are re-read and the rest are not. Suspensions nest; must be called on the UI thread, like
+// the prewarm itself.
+func (n *Navigator) suspendContentCachePrewarm() {
+	n.prewarmSuspensions++
+	if n.prewarmSuspensions == 1 {
+		n.cacheGeneration.Add(1)
+		// A build may just have been abandoned, and there is no way to tell, so a rebuild on resume is always owed.
+		n.prewarmPending = true
+	}
+}
+
+// resumeContentCachePrewarm lifts the hold placed by the matching call to suspendContentCachePrewarm. When the last
+// suspension is lifted, the single rebuild that the held-off requests collapsed into is owed. It is handed to a Reload
+// rather than started directly, since Reload runs a prewarm of its own and the work a suspension covers ends with a
+// reload anyway (a library update schedules one via EventuallyReload): starting the rebuild directly would only have
+// that reload's prewarm cancel and repeat it. The EventuallyReload here collapses with the caller's into a single
+// Reload, leaving one rebuild. Must be called on the UI thread.
+func (n *Navigator) resumeContentCachePrewarm() {
+	if n.liftContentCachePrewarmSuspension() {
+		n.EventuallyReload()
+	}
+}
+
+// liftContentCachePrewarmSuspension is the bookkeeping half of resumeContentCachePrewarm: it lifts one suspension and
+// reports whether that was the last one with a rebuild owed, taking ownership of the owed rebuild -- clearing the
+// pending flag -- when so. An unmatched call is harmless.
+func (n *Navigator) liftContentCachePrewarmSuspension() bool {
+	if n.prewarmSuspensions == 0 {
+		return false
+	}
+	n.prewarmSuspensions--
+	if n.prewarmSuspensions != 0 || !n.prewarmPending {
+		return false
+	}
+	n.prewarmPending = false
+	return true
+}
+
+// buildContentCache produces a content cache entry for each of the given paths, spreading the work across the
+// available CPUs. Entries from the previous cache are reused when the file's size and modification time are
+// unchanged. The canceled function, if non-nil, is polled between files so an obsolete build can stop early.
+func buildContentCache(paths map[string]bool, previous map[string]*contentCacheEntry, canceled func() bool) map[string]*contentCacheEntry {
+	var wg sync.WaitGroup
+	var lock sync.Mutex
+	fresh := make(map[string]*contentCacheEntry, len(paths))
+	in := make(chan string, len(paths))
+	for p := range paths {
+		in <- p
+	}
+	close(in)
+	for range min(runtime.NumCPU(), len(paths)) {
+		wg.Go(func() {
+			for p := range in {
+				if canceled != nil && canceled() {
+					return
+				}
+				entry := previous[p]
+				if entry == nil || !entry.isCurrent(p) {
+					entry = loadContentCacheEntry(p)
+				}
+				lock.Lock()
+				fresh[p] = entry
+				lock.Unlock()
+			}
+		})
+	}
+	wg.Wait()
+	return fresh
 }
 
 func (n *Navigator) previousMatch() {
@@ -1148,7 +1458,26 @@ func (n *Navigator) nextMatch() {
 	}
 }
 
+// adjustForMatch updates the search toolbar and, when a match is current, selects it and scrolls it into view. Only
+// direct user actions (typing in the search field, stepping between matches) should call this; asynchronous paths that
+// merely refresh the results must use updateMatchControls instead, since grabbing the selection while the user may
+// have moved on to other rows would discard their place.
 func (n *Navigator) adjustForMatch() {
+	n.updateMatchControls()
+	if n.searchIndex >= 0 && n.searchIndex < len(n.searchResult) {
+		row := n.searchResult[n.searchIndex]
+		n.table.DiscloseRow(row, false)
+		n.table.ClearSelection()
+		i := n.table.RowToIndex(row)
+		n.table.SelectByIndex(i)
+		n.ValidateLayout()
+		n.table.ScrollRowIntoView(i)
+	}
+}
+
+// updateMatchControls updates the back/forward buttons and the matches label for the current search results without
+// touching the table's selection or scroll position.
+func (n *Navigator) updateMatchControls() {
 	n.backButton.SetEnabled(n.searchIndex > 0)
 	n.forwardButton.SetEnabled(len(n.searchResult) != 0 && n.searchIndex != len(n.searchResult)-1)
 	if len(n.searchResult) != 0 {
@@ -1156,15 +1485,6 @@ func (n *Navigator) adjustForMatch() {
 			n.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("- of %d"), len(n.searchResult)))
 		} else {
 			n.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), n.searchIndex+1, len(n.searchResult)))
-		}
-		if n.searchIndex >= 0 {
-			row := n.searchResult[n.searchIndex]
-			n.table.DiscloseRow(row, false)
-			n.table.ClearSelection()
-			i := n.table.RowToIndex(row)
-			n.table.SelectByIndex(i)
-			n.ValidateLayout()
-			n.table.ScrollRowIntoView(i)
 		}
 	} else {
 		n.matchesLabel.SetTitle("-")

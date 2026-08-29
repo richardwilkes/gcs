@@ -172,7 +172,7 @@ func (s *GeneralSettings) UpdateCursorSize() {
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
-func (s *GeneralSettings) CalendarRef(libraries Libraries) *CalendarRef {
+func (s *GeneralSettings) CalendarRef(libraries *Libraries) *CalendarRef {
 	ref := LookupCalendarRef(s.CalendarName, libraries)
 	if ref == nil {
 		if ref = LookupCalendarRef("Gregorian", libraries); ref == nil {

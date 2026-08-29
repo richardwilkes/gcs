@@ -295,7 +295,7 @@ func canCopySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 
 func libraryFileFromTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) gurps.LibraryFile {
 	if d := table.Ancestor[*TableDockable[T]](); d != nil {
-		for _, lib := range gurps.GlobalSettings().Libraries() {
+		for _, lib := range gurps.GlobalSettings().Libraries.List() {
 			libPathOnDisk := lib.Data().PathOnDisk + string(filepath.Separator)
 			filePathOnDisk := d.BackingFilePath()
 			if after, ok := strings.CutPrefix(filePathOnDisk, libPathOnDisk); ok {

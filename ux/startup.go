@@ -30,7 +30,7 @@ func Start(files []string) {
 	pathsChan := make(chan []string, 32)
 	startHandoffService(readyChan, pathsChan, files)
 	if settings := gurps.GlobalSettings(); settings.General.LibraryUpdateCheck.ChecksAtLaunch() {
-		settings.LibrarySet.PerformUpdateChecks()
+		settings.Libraries.PerformUpdateChecks()
 	}
 	unison.Start(
 		unison.StartupFinishedCallback(func() {

@@ -18,6 +18,8 @@ import "testing"
 // race detector; see model/gurps/race_coverage_test.go for the full rationale. When adding a test that involves
 // concurrency, list it here as well so the race pass covers it.
 func TestRace(t *testing.T) {
+	t.Run("BuildContentCacheReuseAndFailureCaching", TestBuildContentCacheReuseAndFailureCaching)
 	t.Run("HandoffRefusesOversizedPayload", TestHandoffRefusesOversizedPayload)
 	t.Run("HandoffRoundTrip", TestHandoffRoundTrip)
+	t.Run("SupersededCacheBuildHandsEntriesToItsSuccessor", TestSupersededCacheBuildHandsEntriesToItsSuccessor)
 }

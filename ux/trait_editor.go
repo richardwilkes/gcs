@@ -116,7 +116,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		addLabelAndPopup(content, i18n.Text("Container Type"), "", container.Types,
 			&e.editorData.ContainerType)
 		var choices []string
-		for _, lib := range gurps.AvailableAncestries(gurps.GlobalSettings().Libraries()) {
+		for _, lib := range gurps.AvailableAncestries(gurps.GlobalSettings().Libraries) {
 			for _, one := range lib.List {
 				choices = append(choices, one.Name)
 			}

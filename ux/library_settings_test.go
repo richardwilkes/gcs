@@ -40,3 +40,38 @@ func TestLibraryCheckWantedAfterApply(t *testing.T) {
 			option.Key())
 	}
 }
+
+// TestLibrarySettingsTitle verifies that the settings view's title names the library, falling back to a placeholder
+// for a library that has not been named yet, so that neither the tab nor the save prompt trails off after the colon.
+func TestLibrarySettingsTitle(t *testing.T) {
+	c := check.New(t)
+	c.Equal("Library Settings: Master Library", librarySettingsTitle("Master Library"))
+	c.Equal("Library Settings: Untitled Library", librarySettingsTitle(""))
+}
+
+// TestLibraryKeyTakenByOther verifies the collision check that keeps apply() from storing a library under an
+// account/repo pair another library already uses, which would silently replace that library in the global set.
+func TestLibraryKeyTakenByOther(t *testing.T) {
+	c := check.New(t)
+	libs := gurps.NewLibraries()
+	dir := t.TempDir()
+	existing := gurps.NewLibrary("Existing", "someone", "", "stuff", dir)
+	libs.Store(existing.Key(), existing)
+
+	// A library keeps its own key without it counting as a collision.
+	c.False(libraryKeyTakenByOther(libs, "someone", "stuff", existing))
+
+	// A different library pointed at that same account/repo pair collides.
+	other := gurps.NewLibrary("Other", "elsewhere", "", "misc", dir)
+	c.True(libraryKeyTakenByOther(libs, "someone", "stuff", other))
+
+	// A brand new library (as created via Navigator.addLibrary) collides with any existing key, including the master
+	// and user library keys, but is free to take an unused one.
+	fresh := &gurps.Library{}
+	c.True(libraryKeyTakenByOther(libs, "someone", "stuff", fresh))
+	master := libs.Master()
+	masterConfig := master.Config()
+	c.True(libraryKeyTakenByOther(libs, masterConfig.GitHubAccountName, masterConfig.RepoName, fresh))
+	c.False(libraryKeyTakenByOther(libs, "someone", "other-stuff", fresh))
+	c.False(libraryKeyTakenByOther(libs, "", "local-only", fresh))
+}

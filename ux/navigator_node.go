@@ -306,7 +306,7 @@ func (n *NavigatorNode) Refresh() {
 			library *gurps.Library
 		}
 		var favs []*fav
-		for _, lib := range gurps.GlobalSettings().LibrarySet {
+		for _, lib := range gurps.GlobalSettings().Libraries.List() {
 			lib.CleanupFavorites()
 			if favorites := lib.Favorites(); len(favorites) != 0 {
 				for _, one := range favorites {

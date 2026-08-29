@@ -53,4 +53,5 @@ func (g *globalBodySettingsOwner) BodySettings(forReset bool) *gurps.Body {
 
 func (g *globalBodySettingsOwner) SetBodySettings(body *gurps.Body) {
 	gurps.GlobalSettings().Sheet.BodyType = body
+	gurps.SyncGlobalSheetSettings()
 }

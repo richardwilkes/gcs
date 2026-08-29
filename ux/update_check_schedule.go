@@ -91,7 +91,7 @@ var (
 	}
 	libraryUpdateCheck = periodicCheck{
 		frequency: func() updatecheck.Option { return gurps.GlobalSettings().General.LibraryUpdateCheck },
-		run:       func() { gurps.GlobalSettings().LibrarySet.PerformUpdateChecks() },
+		run:       func() { gurps.GlobalSettings().Libraries.PerformUpdateChecks() },
 	}
 )
 

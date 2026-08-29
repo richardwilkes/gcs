@@ -138,13 +138,13 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 		n.Source.collectInto(neededLibs)
 		return false
 	}, false, false, provider.NoteList()...)
-	libs := GlobalSettings().Libraries()
+	libs := GlobalSettings().Libraries
 	if sm.libHashes == nil {
 		sm.libHashes = make(map[LibraryFile]libSrcData)
 	}
 	for libFile := range neededLibs {
-		lib, ok := libs[libFile.Library]
-		if !ok {
+		lib := libs.Lookup(libFile.Library)
+		if lib == nil {
 			continue
 		}
 		p := filepath.Join(lib.Path(), filepath.FromSlash(libFile.Path))

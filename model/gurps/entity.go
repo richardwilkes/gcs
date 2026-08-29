@@ -270,8 +270,10 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if !tid.IsKindAndValid(e.ID, kinds.Entity) {
 		e.ID = tid.MustNewTID(kinds.Entity)
 	}
+	// The clone comes from the published snapshot rather than the live global settings, since unmarshaling may be
+	// running on a background goroutine (the deep search content cache) while the UI thread mutates the live settings.
 	if e.SheetSettings == nil {
-		e.SheetSettings = GlobalSettings().SheetSettings().Clone(e)
+		e.SheetSettings = globalSheetSettingsClone(e)
 	}
 	if e.Attributes == nil {
 		e.Attributes = NewAttributes(e)
@@ -1433,14 +1435,14 @@ func (e *Entity) Ancestry() *Ancestry {
 	var anc *Ancestry
 	Traverse(func(t *Trait) bool {
 		if t.Container() && t.ContainerType == container.Ancestry && t.Enabled() {
-			if anc = LookupAncestry(t.Ancestry, GlobalSettings().Libraries()); anc != nil {
+			if anc = LookupAncestry(t.Ancestry, GlobalSettings().Libraries); anc != nil {
 				return true
 			}
 		}
 		return false
 	}, true, false, e.Traits...)
 	if anc == nil {
-		if anc = LookupAncestry(DefaultAncestry, GlobalSettings().Libraries()); anc == nil {
+		if anc = LookupAncestry(DefaultAncestry, GlobalSettings().Libraries); anc == nil {
 			// The default ancestry couldn't be loaded (e.g. a library file with the same name is present but contains
 			// invalid data). Rather than crashing, log the problem and fall back to an empty ancestry so randomization
 			// still produces sane defaults.

@@ -64,7 +64,7 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 	p.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the name using the current ancestry"), func() {
 			p.entity.Profile.Name = p.entity.Ancestry().RandomName(
-				gurps.AvailableNameGenerators(gurps.GlobalSettings().Libraries()), p.entity.Profile.Gender,
+				gurps.AvailableNameGenerators(gurps.GlobalSettings().Libraries), p.entity.Profile.Gender,
 			)
 			SetTextAndMarkModified(nameField.Field, p.entity.Profile.Name)
 		}))
