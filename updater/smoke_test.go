@@ -31,7 +31,10 @@ func buildStandIn(t *testing.T, src string) string {
 	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte(src), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module standin\n\ngo 1.26.0\n"), 0o600); err != nil {
+	// The stand-in uses nothing beyond the standard library, so it asks for no particular Go version -- the one on the
+	// PATH need not be the one running this test -- and GOTOOLCHAIN=local keeps that go from ever reaching out to
+	// download a toolchain, which is the one way this test could otherwise need more than the local machine.
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module standin\n\ngo 1.21\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	exePath := filepath.Join(dir, CmdName)
@@ -40,6 +43,7 @@ func buildStandIn(t *testing.T, src string) string {
 	}
 	cmd := exec.Command("go", "build", "-o", exePath, ".")
 	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), "GOTOOLCHAIN=local")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("unable to build the stand-in executable: %v\n%s", err, out)
 	}
