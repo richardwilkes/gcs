@@ -65,6 +65,9 @@ func Extract(target, existing map[string]string, in ...string) map[string]string
 // The '@' wrapper is kept on unresolved markers so displayed text (sheet rows, table columns, tooltips) still
 // visibly flags the value as an unresolved nameable marker.
 func Apply(str string, replacements map[string]string) string {
+	if !strings.ContainsRune(str, MarkerDelimiter) {
+		return str
+	}
 	return ApplyToList([]string{str}, replacements)[0]
 }
 
