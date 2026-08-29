@@ -25,6 +25,11 @@ type Accesser interface {
 	NameableReplacements() map[string]string
 }
 
+// Setter defines the method for setting the nameable replacements.
+type Setter interface {
+	SetNameableReplacements(replacements map[string]string)
+}
+
 // Applier defines methods types that want to participate the nameable adjustments should implement.
 type Applier interface {
 	Accesser
