@@ -156,17 +156,18 @@ func TestReduceOmitsReplacementsNotInNameables(t *testing.T) {
 
 func TestReduceStoresUnderNormalizedKeyEvenWhenReplacementKeyIsUnnormalized(t *testing.T) {
 	c := check.New(t)
-	// The replacements map is keyed on the raw, legacy marker text (as it would have been stored before marker
-	// normalization existed), while nameables (as produced by Extract) is keyed on the normalized form. Reduce must
-	// store the value under the normalized key -- not the raw replacement key -- or the entry silently fails to
-	// resolve later since Apply/ApplyToList look up replacements by normalized key.
-	const raw = "Class: Mammalia"
+	// The replacements map is keyed on an unnormalized ordering of a current-format marker's segments, while
+	// nameables (as produced by Extract) is keyed on the normalized form. Reduce must store the value under the
+	// normalized key -- not the raw replacement key -- or the entry silently fails to resolve later since
+	// Apply/ApplyToList look up replacements by normalized key. (Legacy markers are exempt from this: their key is
+	// always their raw text, unchanged -- see TestKeyLegacyLabeledMarkerKeepsRawKey.)
+	const raw = "Element|?|Fire|Water"
 	marker, ok := nameable.NewMarker(raw)
 	c.True(ok)
 	normalizedKey := marker.Key()
 	c.NotEqual(raw, normalizedKey)
 
-	nameables := map[string]string{normalizedKey: "Mammalia"}
-	replacements := map[string]string{raw: "Mammalia"}
-	c.Equal(map[string]string{normalizedKey: "Mammalia"}, nameable.Reduce(nameables, replacements))
+	nameables := map[string]string{normalizedKey: "Fire"}
+	replacements := map[string]string{raw: "Fire"}
+	c.Equal(map[string]string{normalizedKey: "Fire"}, nameable.Reduce(nameables, replacements))
 }

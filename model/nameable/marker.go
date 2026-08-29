@@ -159,6 +159,9 @@ type Marker struct {
 
 // Key returns a normalized marker key
 func (m *Marker) Key() string {
+	if m.Legacy {
+		return m.Raw
+	}
 	var sb strings.Builder
 	sb.Grow(len(m.Raw))
 	sb.WriteString(EscapeRunes(m.Label, EscapeRune, SegmentDelimiter))

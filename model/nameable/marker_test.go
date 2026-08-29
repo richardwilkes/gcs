@@ -231,32 +231,27 @@ func TestKeyPlainLegacyLabel(t *testing.T) {
 	c.Equal("Weapon Name", m.Key())
 }
 
-func TestKeyLegacyExampleListMarkerDoesNotShortCircuit(t *testing.T) {
+func TestKeyLegacyExampleListMarkerKeepsRawKey(t *testing.T) {
 	c := check.New(t)
-	// A real, unmodified marker pulled from the GCS master library (the Resistant trait). legacyExampleListPattern
-	// gives it both Options and a Tooltip, so it must NOT hit the plain-legacy short circuit in Key() -- that only
-	// applies when a legacy marker has neither. It gets the full options/flags/tooltip key like any new-format
-	// marker would.
+	// A real, unmodified marker pulled from the GCS master library (the Resistant trait). Legacy markers never go
+	// through key normalization -- regardless of what Options/Tooltip legacyExampleListPattern parsed out of them --
+	// so a sheet saved before Marker.Key() existed keeps resolving under its original raw text.
 	raw := "Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc."
 	m, ok := nameable.NewMarker(raw)
 	c.True(ok)
 	c.True(m.Legacy)
-	c.Equal(
-		"Rare|Acceleration|Altitude Sickness|Bends|Seasickness|Space Sickness|Nanomachines|*|?|"+
-			"tt(Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.)",
-		m.Key(),
-	)
+	c.Equal(raw, m.Key())
 }
 
-func TestKeyLegacyLabeledMarkerDoesNotShortCircuit(t *testing.T) {
+func TestKeyLegacyLabeledMarkerKeepsRawKey(t *testing.T) {
 	c := check.New(t)
-	// A real, unmodified marker pulled from the GCS master library. legacyLabeledPattern gives it a Tooltip (the
-	// text after the colon) with no Options, so -- same as the example-list case above -- it must not hit the
-	// plain-legacy short circuit, since that requires an empty Tooltip too.
-	m, ok := nameable.NewMarker("Class: Mammalia")
+	// A real, unmodified marker pulled from the GCS master library. Same as the example-list case above: legacy
+	// markers key on their raw text unconditionally, even when legacyLabeledPattern parsed out a Tooltip.
+	raw := "Class: Mammalia"
+	m, ok := nameable.NewMarker(raw)
 	c.True(ok)
 	c.True(m.Legacy)
-	c.Equal("Class|*|?|tt(Mammalia)", m.Key())
+	c.Equal(raw, m.Key())
 }
 
 func TestKeyLabelWithOptionsNoFlags(t *testing.T) {
