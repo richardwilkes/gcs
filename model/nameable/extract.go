@@ -45,6 +45,8 @@ type Part struct {
 
 // ExtractParts splits src into literal and placeholder parts, where a placeholder is text delimited by
 // begin and end runes.
+//
+// NOTE: we **do not** trim the src string *by design*. This function is meant to avoid allocating new backing arrays.
 func ExtractParts(src string, begin, end rune) []Part {
 	var parts []Part
 	if begin == EscapeRune {
@@ -155,6 +157,8 @@ func ExtractParts(src string, begin, end rune) []Part {
 }
 
 // ExtractSegments splits src on delimiter, honoring EscapeRune escapes of the delimiter.
+//
+// NOTE: we **do not** trim the src string *by design*. This function is meant to avoid allocating new backing arrays.
 func ExtractSegments(src string, delimiter rune) []string {
 	if delimiter == EscapeRune {
 		panic("cannot use the escape rune as delimiter")
