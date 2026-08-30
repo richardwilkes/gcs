@@ -197,22 +197,6 @@ func TestParseMarkerSingleSegmentIsCurrentFormNotLegacy(t *testing.T) {
 	c.Equal("Element", marker.Label)
 }
 
-func TestDefaultValue(t *testing.T) {
-	c := check.New(t)
-
-	marker, ok := nameable.NewMarker("Weapon Name")
-	c.True(ok)
-	c.Equal("Weapon Name", marker.DefaultValue())
-
-	marker, ok = nameable.NewMarker("Element|Fire|Water")
-	c.True(ok)
-	c.Equal("Fire", marker.DefaultValue())
-
-	marker, ok = nameable.NewMarker("Element|Fire|Water|?")
-	c.True(ok)
-	c.Equal("", marker.DefaultValue())
-}
-
 func TestKeyPlainLegacyLabel(t *testing.T) {
 	c := check.New(t)
 	m, ok := nameable.NewMarker("Weapon Name")
@@ -319,17 +303,17 @@ func TestExtractPipeDelimited(t *testing.T) {
 	c := check.New(t)
 	m := make(map[string]string)
 	nameable.Extract(m, nil, "A @Element|Fire|Water@ spell")
-	c.Equal("Fire", m["Element|Fire|Water"])
+	c.Equal(nameable.Unset, m["Element|Fire|Water"])
 
 	m = make(map[string]string)
 	nameable.Extract(m, nil, "A @Element|Fire|Water|?@ spell")
-	c.Equal("", m["Element|Fire|Water|?"])
+	c.Equal(nameable.Unset, m["Element|Fire|Water|?"])
 }
 
 func TestExtractWithNilTargetCreatesMap(t *testing.T) {
 	c := check.New(t)
 	got := nameable.Extract(nil, nil, "A @Element|Fire|Water@ spell")
-	c.Equal("Fire", got["Element|Fire|Water"])
+	c.Equal(nameable.Unset, got["Element|Fire|Water"])
 }
 
 func TestExtractUsesExistingValueWhenKeyMatches(t *testing.T) {

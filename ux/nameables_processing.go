@@ -197,9 +197,13 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 // always included too -- for now; that's this function's call, not NewComboField's, since NewComboField itself has
 // no opinion on whether "not set" should be offered (see its docs) -- and it's now the only way to clear a
 // substitution, there's no separate "clear" button in the dialog.
+//
+// m's value for this marker's key comes from nameable.Extract, which uses nameable.Unset to mark a marker with
+// no recorded replacement -- every nameable defaults to "not set" here unless a real replacement was already
+// on record, regardless of the marker's Options/AllowEmpty configuration.
 func createNameableField(marker *nameable.Marker, m map[string]string) unison.Paneler {
 	var initial *string
-	if v, ok := m[marker.Key()]; ok {
+	if v, ok := m[marker.Key()]; ok && v != nameable.Unset {
 		initial = &v
 	}
 	options := make([]*string, 0, len(marker.Options)+2)

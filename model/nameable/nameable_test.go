@@ -153,6 +153,13 @@ func TestReduceOmitsReplacementsNotInNameables(t *testing.T) {
 	c.Equal(map[string]string{"Habit": "Nail-biting"}, nameable.Reduce(nameables, replacements))
 }
 
+func TestReduceOmitsUnsetReplacements(t *testing.T) {
+	c := check.New(t)
+	nameables := map[string]string{"Habit": "Bad Habit", "Weapon Name": "A weapon name"}
+	replacements := map[string]string{"Habit": "Nail-biting", "Weapon Name": nameable.Unset}
+	c.Equal(map[string]string{"Habit": "Nail-biting"}, nameable.Reduce(nameables, replacements))
+}
+
 func TestNormalizeRewritesUnnormalizedReplacementKey(t *testing.T) {
 	c := check.New(t)
 	// A replacements map loaded from an old file may be keyed on an unnormalized ordering of a current-format
