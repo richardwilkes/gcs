@@ -191,7 +191,7 @@ func (m *Marker) Key() string {
 	return sb.String()
 }
 
-// DefaultValue return the default value for this marker when no replacement is provided
+// DefaultValue returns the default value for this marker when no replacement is provided.
 func (m *Marker) DefaultValue() string {
 	if !m.AllowEmpty && len(m.Options) > 0 {
 		return m.Options[0]

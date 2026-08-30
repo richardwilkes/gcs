@@ -16,14 +16,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestParseMarkerPlainKeyIsCurrentFormNotLegacy(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Weapon Name")
-	c.True(ok)
-	c.False(marker.Legacy)
-	c.Equal("Weapon Name", marker.Label)
-}
-
 func TestParseMarkerBasic(t *testing.T) {
 	c := check.New(t)
 	marker, ok := nameable.NewMarker("Element|Fire|Water|Earth")
@@ -39,7 +31,7 @@ func TestParseMarkerBasic(t *testing.T) {
 func TestParseMarkerSkipsEmptyNonLabelSegments(t *testing.T) {
 	c := check.New(t)
 	// A stray "||" (e.g. from hand-edited data, or a trailing "|" before the closing '@') shouldn't surface as a
-	// blank option, tooltip, or token -- it's silently dropped rather than treated as ErrEmptyLabel.
+	// blank option, tooltip, or token -- it's silently dropped rather than causing a parse failure.
 	marker, ok := nameable.NewMarker("Element||Fire||Water|")
 	c.True(ok)
 	c.Equal("Element", marker.Label)

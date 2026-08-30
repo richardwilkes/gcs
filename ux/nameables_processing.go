@@ -227,6 +227,11 @@ func createNameableField(marker *nameable.Marker, m map[string]string) unison.Pa
 		field.SetMinimumTextWidthUsing("A reasonably wide string")
 		field.MinimumTextWidth = max(field.MinimumTextWidth, minWidth)
 
+		field.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: align.Fill,
+			VAlign: align.Middle,
+			HGrab:  true,
+		})
 		return field
 	}
 
@@ -237,6 +242,13 @@ func createNameableField(marker *nameable.Marker, m map[string]string) unison.Pa
 		if one != nil && initial != nil && *one == *initial {
 			selected = one
 		}
+	}
+	if initial != nil && selected == nil {
+		// The stored value doesn't match any of the marker's current options -- e.g. a legacy value, or the
+		// options changed since it was set. Show it instead of silently displaying "«not set»" while leaving the
+		// old value in place if the user presses OK without touching this field.
+		popup.AddItem(initial)
+		selected = initial
 	}
 	popup.Select(selected)
 	popup.ItemRendererCallback = func(item *string) string {
@@ -254,5 +266,10 @@ func createNameableField(marker *nameable.Marker, m map[string]string) unison.Pa
 			apply(item)
 		}
 	}
+	popup.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Middle,
+		HGrab:  true,
+	})
 	return popup
 }

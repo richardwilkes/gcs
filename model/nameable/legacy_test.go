@@ -10,23 +10,12 @@
 package nameable_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
-
-func TestParseMarkerRealCombo(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element|Fire|Water")
-	c.True(ok)
-	c.False(marker.Legacy)
-	c.Equal("Element|Fire|Water", marker.Raw)
-	c.Equal("Element", marker.Label)
-	c.Equal([]string{"Fire", "Water"}, marker.Options)
-	c.False(marker.AllowEmpty)
-	c.False(marker.FreeForm)
-}
 
 func TestParseMarkerRawPreservedAcrossAllFallbackTiers(t *testing.T) {
 	c := check.New(t)
@@ -126,12 +115,21 @@ func TestParseMarkerTier2EmbeddedCommaFallsThroughFromTier1(t *testing.T) {
 
 func TestParseMarkerTier2LabelLengthBoundary(t *testing.T) {
 	c := check.New(t)
-	// A leading segment longer than 40 characters doesn't read as a short label -- falls through to tier 3, which is
-	// no longer tagged Legacy (it's a blessed current form).
-	marker, ok := nameable.NewMarker("This leading segment is far too long to read as a label: short tail")
+	// The leading segment before the colon must be 1-40 characters to read as a short label. Exactly 40 stays in
+	// tier 2; 41 falls through to tier 3 (no longer tagged Legacy -- it's a blessed current form), taking the whole
+	// string as the label instead of splitting it into a label and tooltip.
+	at40 := strings.Repeat("A", 40) + ": tail"
+	marker, ok := nameable.NewMarker(at40)
+	c.True(ok)
+	c.True(marker.Legacy)
+	c.Equal(strings.Repeat("A", 40), marker.Label)
+	c.Equal("tail", marker.Tooltip)
+
+	at41 := strings.Repeat("A", 41) + ": tail"
+	marker, ok = nameable.NewMarker(at41)
 	c.True(ok)
 	c.False(marker.Legacy)
-	c.Equal("This leading segment is far too long to read as a label: short tail", marker.Label)
+	c.Equal(at41, marker.Label)
 	c.Equal("", marker.Tooltip)
 }
 

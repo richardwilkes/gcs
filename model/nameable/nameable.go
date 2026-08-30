@@ -140,7 +140,9 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 					sb.WriteRune(MarkerDelimiter)
 				}
 			} else {
-				sb.WriteString(part.Value)
+				// Unescape any escaped marker delimiters so a literal "\@" the user typed to keep an '@' out of
+				// marker detection displays as a plain '@' rather than surfacing the escape itself.
+				sb.WriteString(UnescapeRunes(part.Value, MarkerDelimiter))
 			}
 		}
 		out[i] = sb.String()
@@ -154,6 +156,10 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 // Both maps must already be keyed by normalized marker key: nameables from Extract, and replacements from
 // load-time normalization (see Normalize) or the output of a previous Reduce call. Reduce does not itself
 // normalize either map's keys.
+//
+// Returns nil, not an empty map, when there is nothing to keep -- callers that assign the result directly to a
+// stored Replacements field and later write into it without a nil check (e.g. `x.Replacements[k] = v`) must guard
+// for nil first.
 func Reduce(nameables, replacements map[string]string) map[string]string {
 	// We can return early if there are no known namables or no known replacements
 	if len(nameables) == 0 || len(replacements) == 0 {
