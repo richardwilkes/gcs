@@ -61,6 +61,7 @@ func NewMarker(raw string) (Marker, bool) {
 					options = append(options, item)
 				}
 			}
+			options = unique(options)
 			if len(options) >= 2 {
 				return Marker{
 					Raw:        raw,
@@ -122,6 +123,8 @@ func NewMarker(raw string) (Marker, bool) {
 		}
 		options = append(options, s)
 	}
+
+	options = unique(options)
 
 	// A marker with no literal options is treated as free-form, even if the FreeFormToken wasn't given.
 	// This is a reasonable fallback to prevent an invalid marker config
@@ -203,4 +206,16 @@ func (m *Marker) DefaultValue() string {
 		return m.Raw
 	}
 	return ""
+}
+
+func unique[S ~[]T, T comparable](in S) S {
+	seen := make(map[T]struct{}, len(in))
+	out := make(S, 0, len(in))
+	for _, v := range in {
+		if _, dupe := seen[v]; !dupe {
+			out = append(out, v)
+			seen[v] = struct{}{}
+		}
+	}
+	return out
 }
