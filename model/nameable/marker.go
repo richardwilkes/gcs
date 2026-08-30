@@ -202,11 +202,13 @@ func (m *Marker) DefaultValue() string {
 	if !m.AllowEmpty && len(m.Options) > 0 {
 		return m.Options[0]
 	}
-	if m.Legacy || (len(m.Options) == 0 && m.FreeForm && m.AllowEmpty && m.Tooltip == "") {
-		// Legacy tiers 1/2 default to their own raw text for backward compatibility with sheets saved before this
-		// feature existed. A simple current-form marker (see Key()'s short-circuit) isn't Legacy, but has nothing
-		// sensible to offer either, so it gets the same treatment.
+	if m.Legacy {
+		// Legacy markers default to their own raw text for backward compatibility.
 		return m.Raw
+	}
+	if len(m.Options) == 0 && m.FreeForm && m.AllowEmpty && m.Tooltip == "" {
+		// A simple marker has no default and simply returns the label, retaining previous behavior.
+		return m.Label
 	}
 	return ""
 }
