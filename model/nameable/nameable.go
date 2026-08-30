@@ -49,10 +49,8 @@ func Extract(nameables, replacements map[string]string, in ...string) map[string
 	for _, src := range in {
 		for _, part := range ExtractParts(src, MarkerDelimiter, MarkerDelimiter) {
 			if part.Placeholder {
-				// Unescape any escaped marker delimiters and trim leading/trailing space
-				raw := strings.TrimSpace(UnescapeRunes(part.Value, MarkerDelimiter))
-				// Parse the marker text into a Marker
-				if m, ok := NewMarker(raw); ok {
+				// Parse the unescaped marker text into a Marker
+				if m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter)); ok {
 					// We may end up with duplicates and that's fine, they will collapse to one entry
 					if v, exists := replacements[m.Key()]; exists {
 						nameables[m.Key()] = v
@@ -121,11 +119,8 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 
 		for _, part := range ExtractParts(str, MarkerDelimiter, MarkerDelimiter) {
 			if part.Placeholder {
-				// Unescape any escaped marker delimiters and trim leading/trailing space
-				raw := strings.TrimSpace(UnescapeRunes(part.Value, MarkerDelimiter))
-
-				// Parse the marker text into a Marker
-				if m, ok := NewMarker(raw); ok {
+				// Parse the unescaped marker text into a Marker
+				if m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter)); ok {
 					if r, hasReplacement := replacements[m.Key()]; hasReplacement {
 						sb.WriteString(r)
 					} else {

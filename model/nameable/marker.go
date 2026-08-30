@@ -40,7 +40,10 @@ var (
 )
 
 // NewMarker parses a single nameable marker string into a Marker struct
-func NewMarker(raw string) (Marker, bool) {
+//
+// NOTE: This will trim the marker string and save it as the Raw value.
+func NewMarker(marker string) (Marker, bool) {
+	raw := strings.TrimSpace(marker)
 	segments := ExtractSegments(raw, SegmentDelimiter)
 	if len(segments) == 0 {
 		return Marker{Raw: raw}, false
