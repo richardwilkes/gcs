@@ -835,8 +835,11 @@ func (w *Weapon) NameableReplacements() map[string]string {
 
 // FillWithNameableKeys adds any nameable keys found in this Weapon to the provided map.
 func (w *Weapon) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(w.Usage, m, existing)
-	nameable.Extract(w.UsageNotes, m, existing)
+	nameable.Extract(
+		m, existing,
+		w.Usage,
+		w.UsageNotes,
+	)
 	for _, one := range w.Defaults {
 		one.FillWithNameableKeys(m, existing)
 	}

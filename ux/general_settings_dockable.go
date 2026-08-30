@@ -340,7 +340,7 @@ func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
 func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
 	content.AddChild(NewFieldLeadingLabel(i18n.Text("Calendar"), false))
 	d.calendarPopup = unison.NewPopupMenu[string]()
-	libraries := gurps.GlobalSettings().Libraries()
+	libraries := gurps.GlobalSettings().Libraries
 	for _, lib := range gurps.AvailableCalendarRefs(libraries) {
 		d.calendarPopup.AddDisabledItem(lib.Name)
 		for _, one := range lib.List {
@@ -398,6 +398,7 @@ func (d *generalSettingsDockable) createPermittedScriptExecTimeField(content *un
 		func(v fxp.Int) {
 			general := gurps.GlobalSettings().General
 			general.PermittedPerScriptExecTime = v
+			gurps.SyncScriptExecTimeLimit()
 		}, gurps.PermittedScriptExecTimeMin, gurps.PermittedScriptExecTimeMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.permittedScriptExecTimeField,
 		NewFieldTrailingLabel(i18n.Text("seconds per script"), false)))
@@ -502,7 +503,7 @@ func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	d.localeField.Tooltip = newWrappedTooltip(xstrings.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this generally require quitting and restarting GCS to have the desired effect.`), 100))
+	d.localeField.Tooltip = newWrappedTooltip(xstrings.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this take effect the next time GCS is started.`), 100))
 	d.localeField.Watermark = i18n.Locale()
 	content.AddChild(d.localeField)
 }
@@ -605,6 +606,7 @@ func (d *generalSettingsDockable) createOpenInWindowCheckboxes(content *unison.P
 func (d *generalSettingsDockable) reset() {
 	s := gurps.GlobalSettings()
 	*s.General = *gurps.NewGeneralSettings()
+	gurps.SyncScriptExecTimeLimit()
 	s.DeepSearch = nil
 	s.OpenInWindow = nil
 	languageSetting = ""
@@ -626,7 +628,7 @@ func (d *generalSettingsDockable) sync() {
 	SetCheckBoxState(d.expandPageReferencesCheckbox, gs.ExpandPageReferences)
 	d.pointsField.SetText(gs.InitialPoints.String())
 	d.techLevelField.SetText(gs.DefaultTechLevel)
-	d.calendarPopup.Select(gs.CalendarRef(s.Libraries()).Name)
+	d.calendarPopup.Select(gs.CalendarRef(s.Libraries).Name)
 	SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(gs.InitialListUIScale))
 	SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(gs.InitialEditorUIScale))
 	SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(gs.InitialSheetUIScale))
@@ -667,6 +669,7 @@ func (d *generalSettingsDockable) load(fileSystem fs.FS, filePath string) error 
 		return err
 	}
 	*gurps.GlobalSettings().General = *s
+	gurps.SyncScriptExecTimeLimit()
 	d.sync()
 	return nil
 }
@@ -675,23 +678,24 @@ func (d *generalSettingsDockable) save(filePath string) error {
 	return gurps.GlobalSettings().General.Save(filePath)
 }
 
+// willClose persists the interface locale for the next launch. It deliberately does not apply the setting to
+// i18n.Language: that global has no synchronization and is read by every i18n.Text call, including the ones the deep
+// search content cache makes on its worker goroutines while parsing library files, so it may only be written before any
+// of those goroutines exist, which is what LoadLanguageSetting does at launch.
 func (d *generalSettingsDockable) willClose() bool {
 	filePath := languageSettingPath()
 	if languageSetting == "" {
-		i18n.Language = i18n.Locale()
 		if err := os.Remove(filePath); err != nil && !errors.Is(err, os.ErrNotExist) {
 			errs.Log(err, "path", filePath)
 		}
-	} else {
-		i18n.Language = languageSetting
-		if err := os.WriteFile(filePath, []byte(languageSetting), 0o640); err != nil {
-			errs.Log(err, "path", filePath)
-		}
+	} else if err := os.WriteFile(filePath, []byte(languageSetting), 0o640); err != nil {
+		errs.Log(err, "path", filePath)
 	}
 	return true
 }
 
-// LoadLanguageSetting loads the language setting from disk, if present, and applies it.
+// LoadLanguageSetting loads the language setting from disk, if present, and applies it. Must be called at launch,
+// before any goroutine that may call i18n.Text is started, since i18n.Language is not safe to write once one exists.
 func LoadLanguageSetting() {
 	if data, err := os.ReadFile(languageSettingPath()); err == nil {
 		if s := strings.TrimSpace(strings.SplitN(strings.TrimSpace(string(data)), "\n", 2)[0]); len(s) > 1 && len(s) < 20 {

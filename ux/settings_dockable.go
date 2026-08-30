@@ -183,7 +183,7 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 		id++
 	}
 	if d.Loader != nil {
-		libraries := gurps.GlobalSettings().Libraries()
+		libraries := gurps.GlobalSettings().Libraries
 		sets := gurps.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
 		if len(sets) != 0 {
 			m.InsertSeparator(-1, false)

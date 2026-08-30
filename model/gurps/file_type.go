@@ -73,6 +73,9 @@ type FileInfo struct {
 	IsDeepSearchable bool
 }
 
+// The registry has no synchronization: it is populated at launch and then only read, including by the deep search
+// content cache's worker goroutines via FileInfoFor, so Register must not be called once any goroutine that may reach
+// the registry exists.
 var (
 	// KnownFileTypes holds the registered file types.
 	KnownFileTypes   []*FileInfo

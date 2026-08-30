@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -37,7 +38,7 @@ Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 	}
 	var list []unison.TabCloser
 	libData := lib.Data()
-	p := libData.PathOnDisk + "/"
+	p := libData.PathOnDisk + string(filepath.Separator)
 	for _, one := range AllDockables() {
 		if tc, ok := one.(unison.TabCloser); ok {
 			var fbd FileBackedDockable
@@ -57,6 +58,19 @@ documents from the library are open.`))
 		}
 	}
 
+	// The library's own filesystem watch is stopped before the download starts (see performLibraryUpdate) and only
+	// re-established by the reload that finishLibraryUpdate schedules, so in the normal flow the events the extraction
+	// generates never reach the navigator. Two things can still put a rebuild of the deep search content cache over
+	// the files being replaced. A build already in flight when the update starts is reading them. And the UI thread
+	// keeps servicing tasks inside RunModal(), so a reload triggered while the modal progress window below is up -- by
+	// an update check or a watch event from another library, or by a library rooted inside this one, whose watch sees
+	// the extraction directly -- re-watches every library, this one included, after which each batch of extraction
+	// events would start a rebuild that the next batch immediately cancels. Suspending abandons the in-flight build and
+	// holds the rebuilds off until the update is over. The resume folds the one rebuild that is owed into the reload
+	// that finishLibraryUpdate schedules, whose own prewarm covers it.
+	Workspace.Navigator.suspendContentCachePrewarm()
+	defer Workspace.Navigator.resumeContentCachePrewarm()
+
 	ctx, cancel := context.WithTimeout(context.Background(), libraryUpdateTimeout)
 	defer cancel()
 	// canceling is written and read only on the UI thread: the Cancel button's callback, and the task the progress
@@ -75,11 +89,18 @@ documents from the library are open.`))
 	}
 	resultChan := make(chan error, 1)
 	reportProgress := libraryUpdateProgress(label, progress, libData.Title, rel.Version, func() bool { return canceling })
-	go runLibraryUpdate(resultChan, func() error { return performLibraryUpdate(ctx, lib, rel, reportProgress) },
+	// Download writes the commit hash it actually fetched into the release's Version for a UseLatest library, and rel
+	// aliases an element of the library's own releases slice, which the UI thread reads whenever the navigator reloads.
+	// Hand the goroutine a copy so that write can neither race those reads nor rewrite the recorded release.
+	relCopy := *rel
+	go runLibraryUpdate(resultChan, func() error { return performLibraryUpdate(ctx, lib, &relCopy, reportProgress) },
 		func() { finishLibraryUpdate(wnd, lib) })
 	wnd.RunModal()
 	if err = <-resultChan; err != nil {
-		if errors.Is(ctx.Err(), context.Canceled) {
+		// The returned error, not ctx.Err(), is what says why the download stopped: the context may have been canceled
+		// after a genuine failure (the Cancel button stays live until finishLibraryUpdate's release check completes),
+		// and that failure would otherwise be discarded as "the user canceled".
+		if errors.Is(err, context.Canceled) {
 			// The user asked for this, so there is nothing to report. The library itself is untouched: a failed update
 			// puts the previous content back before it returns. A deadline that expired is deliberately not treated the
 			// same way, since nobody asked for that and it needs saying.

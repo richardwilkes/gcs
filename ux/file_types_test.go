@@ -43,3 +43,21 @@ func TestImageFileTypesGroupWithEachOther(t *testing.T) {
 		}
 	}
 }
+
+// TestRegisterKnownFileTypesRegistersOnce verifies that repeated calls leave the registry as the first call built it.
+// The deep search content cache's worker goroutines read the registry without synchronization, so a second
+// registration -- which the tests would otherwise perform whenever one of them needs the registry -- must not rewrite
+// it underneath a build still running from an earlier test.
+func TestRegisterKnownFileTypesRegistersOnce(t *testing.T) {
+	c := check.New(t)
+	RegisterKnownFileTypes()
+	known := slices.Clone(gurps.KnownFileTypes)
+	c.True(len(known) != 0, "the first call must populate the registry")
+	sheet := gurps.FileInfoFor("x" + gurps.SheetExt)
+	RegisterKnownFileTypes()
+	c.Equal(len(known), len(gurps.KnownFileTypes), "a repeated call must not append to the known file types")
+	for i, fi := range gurps.KnownFileTypes {
+		c.True(known[i] == fi, "a repeated call must not replace entry %d", i)
+	}
+	c.True(sheet == gurps.FileInfoFor("x"+gurps.SheetExt), "a repeated call must not replace the registry entries")
+}

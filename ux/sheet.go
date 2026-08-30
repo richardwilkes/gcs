@@ -1015,6 +1015,9 @@ func (s *Sheet) resetDefaultLayout() {
 // written out at shutdown, as they are for every other in-place change to them, so nothing is saved here.
 func setDefaultSheetLayout(layout *gurps.SheetLayout) {
 	gurps.GlobalSettings().Sheet.Layout = layout
+	// A sheet file without embedded settings clones the published snapshot of the global sheet settings rather than the
+	// live ones, so the snapshot has to be republished for such a sheet opened from now on to get this layout.
+	gurps.SyncGlobalSheetSettings()
 	// Templates lay themselves out from the default layout, so they have to be told. A nil entity is what says the
 	// change was to the defaults rather than to some sheet's own settings, which is why the open sheets ignore it.
 	for _, one := range AllDockables() {

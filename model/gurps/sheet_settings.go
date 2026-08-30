@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"io/fs"
+	"sync/atomic"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
@@ -185,6 +186,31 @@ func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone.Attributes = s.Attributes.Clone()
 	clone.BodyType = s.BodyType.Clone(entity, nil)
 	return &clone
+}
+
+// globalSheetSettingsSnapshot holds a clone of the global sheet settings for readers on goroutines other than the UI
+// thread. Entities are unmarshaled on background goroutines as well as the UI thread (the deep search content cache
+// parses sheets and templates in the background), and one without embedded settings clones the global defaults, but the
+// settings dockables mutate the live SheetSettings in place on the UI thread, so reading it from another goroutine is a
+// data race. The UI thread publishes a clone here instead; see SyncGlobalSheetSettings.
+var globalSheetSettingsSnapshot atomic.Pointer[SheetSettings]
+
+// SyncGlobalSheetSettings publishes a clone of the current global sheet settings for use on any goroutine.
+// GlobalSettings() calls this when the settings are first loaded; any code that changes the global sheet settings
+// afterward -- whether by replacing them or by mutating them in place -- must call it again.
+func SyncGlobalSheetSettings() {
+	syncGlobalSheetSettings(GlobalSettings().Sheet)
+}
+
+func syncGlobalSheetSettings(s *SheetSettings) {
+	globalSheetSettingsSnapshot.Store(s.Clone(nil))
+}
+
+// globalSheetSettingsClone returns a clone of the global sheet settings for the given entity, taken from the snapshot
+// the UI thread publishes rather than from the live settings, so it is safe to call from any goroutine.
+func globalSheetSettingsClone(entity *Entity) *SheetSettings {
+	GlobalSettings() // Makes sure the snapshot has been initialized.
+	return globalSheetSettingsSnapshot.Load().Clone(entity)
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.

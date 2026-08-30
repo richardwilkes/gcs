@@ -142,6 +142,6 @@ func (p *Profile) ApplyRandomizers(entity *Entity) {
 	p.Weight = a.RandomWeight(entity, p.Gender, 0)
 	globalSettings := GlobalSettings()
 	generalSettings := globalSettings.GeneralSettings()
-	p.Name = a.RandomName(AvailableNameGenerators(globalSettings.Libraries()), p.Gender)
-	p.Birthday = generalSettings.CalendarRef(globalSettings.Libraries()).RandomBirthday(p.Birthday)
+	p.Name = a.RandomName(AvailableNameGenerators(globalSettings.Libraries), p.Gender)
+	p.Birthday = generalSettings.CalendarRef(globalSettings.Libraries).RandomBirthday(p.Birthday)
 }

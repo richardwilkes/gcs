@@ -346,6 +346,7 @@ func (d *attributeSettingsDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
 	if d.owner == nil {
 		gurps.GlobalSettings().Sheet.Attributes = d.defs.Clone()
+		gurps.SyncGlobalSheetSettings()
 		return
 	}
 	entity := d.owner.Entity()

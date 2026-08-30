@@ -65,8 +65,11 @@ func (t *TraitMaxLevelBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (t *TraitMaxLevelBonus) FillWithNameableKeys(m, existing map[string]string) {
 	if t.SelectionType == traitsel.TraitWithName {
-		nameable.Extract(t.NameCriteria.Qualifier, m, existing)
-		nameable.Extract(t.TagsCriteria.Qualifier, m, existing)
+		nameable.Extract(
+			m, existing,
+			t.NameCriteria.Qualifier,
+			t.TagsCriteria.Qualifier,
+		)
 	}
 }
 

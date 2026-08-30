@@ -66,11 +66,23 @@ func ShowLibrarySettings(lib *gurps.Library) {
 		isUser:  isUser,
 	}
 	d.Self = d
-	d.TabTitle = fmt.Sprintf(i18n.Text("Library Settings: %s"), d.config.Title)
+	d.TabTitle = librarySettingsTitle(d.config.Title)
 	d.TabIcon = svg.Settings
+	d.WillCloseCallback = d.willClose
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
 	d.updateToolbar()
 	d.nameField.RequestFocus()
+	d.promptForSave = true
+}
+
+// librarySettingsTitle returns the title of the settings view for a library with the given name. A library created via
+// Navigator.addLibrary has no name until one is typed into the view, so an empty name gets a placeholder rather than
+// leaving the title to trail off after the colon.
+func librarySettingsTitle(name string) string {
+	if name == "" {
+		name = i18n.Text("Untitled Library")
+	}
+	return fmt.Sprintf(i18n.Text("Library Settings: %s"), name)
 }
 
 func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -79,9 +91,10 @@ func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	d.applyButton.Tooltip = newWrappedTooltip(i18n.Text("Apply Changes"))
 	d.applyButton.SetEnabled(false)
 	d.applyButton.ClickCallback = func() {
-		d.apply()
-		d.promptForSave = false
-		d.AttemptClose()
+		if d.apply() {
+			d.promptForSave = false
+			d.AttemptClose()
+		}
 	}
 	toolbar.AddChild(d.applyButton)
 
@@ -121,12 +134,14 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	d.githubField = NewStringField(nil, "", title,
 		func() string { return d.config.GitHubAccountName },
 		func(s string) {
-			d.config.GitHubAccountName = s
+			// Trimmed, since Library.ConfigureForKey trims when the settings are reloaded; an untrimmed name here would
+			// let the collision checks pass for a key that collides once it is trimmed on the next launch.
+			d.config.GitHubAccountName = strings.TrimSpace(s)
 			d.updateToolbar()
 		})
 	d.githubField.SetEnabled(!d.special)
 	if !d.special {
-		d.githubField.ValidateCallback = func() bool { return !d.checkForSpecial() }
+		d.githubField.ValidateCallback = func() bool { return !d.checkForSpecial() && !d.keyInUse() }
 	}
 	content.AddChild(d.githubField)
 
@@ -150,12 +165,14 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	d.repoField = NewStringField(nil, "", title,
 		func() string { return d.config.RepoName },
 		func(s string) {
-			d.config.RepoName = s
+			d.config.RepoName = strings.TrimSpace(s) // Trimmed for the same reason as the GitHub account name above
 			d.updateToolbar()
 		})
 	d.repoField.SetEnabled(!d.special)
 	if !d.special {
-		d.repoField.ValidateCallback = func() bool { return d.config.RepoName != "" && !d.checkForSpecial() }
+		d.repoField.ValidateCallback = func() bool {
+			return d.config.RepoName != "" && !d.checkForSpecial() && !d.keyInUse()
+		}
 	}
 	content.AddChild(d.repoField)
 
@@ -177,7 +194,10 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	d.pathField = NewStringField(nil, "", title,
 		func() string { return d.path },
 		func(s string) {
-			d.path = s
+			// Trimmed like the account and repository names: a trailing space survives filepath.IsAbs and
+			// filepath.Abs, so it would be recorded as-is and Library.Path would then create an empty directory
+			// beside the intended one.
+			d.path = strings.TrimSpace(s)
 			d.updateToolbar()
 		})
 	d.pathField.ValidateCallback = func() bool {
@@ -226,6 +246,20 @@ func (d *librarySettingsDockable) checkForSpecial() bool {
 		gurps.IsUserLibraryKey(d.config.GitHubAccountName, d.config.RepoName)
 }
 
+// keyInUse returns true if the account/repo pair currently in the fields already belongs to a different library in the
+// global set, which the store in apply() would otherwise silently replace.
+func (d *librarySettingsDockable) keyInUse() bool {
+	return libraryKeyTakenByOther(gurps.GlobalSettings().Libraries, d.config.GitHubAccountName, d.config.RepoName,
+		d.library)
+}
+
+// libraryKeyTakenByOther returns true if the library key formed from the given account/repo pair belongs to a library
+// in the set other than the given one.
+func libraryKeyTakenByOther(libs *gurps.Libraries, gitHubAccountName, repoName string, lib *gurps.Library) bool {
+	existing := libs.Lookup(gitHubAccountName + "/" + repoName)
+	return existing != nil && existing != lib
+}
+
 func (d *librarySettingsDockable) choosePath() {
 	dlg := unison.NewOpenDialog()
 	dlg.SetAllowsMultipleSelection(false)
@@ -254,27 +288,82 @@ func (d *librarySettingsDockable) choosePath() {
 	}
 }
 
+func (d *librarySettingsDockable) modified() bool {
+	return d.library.Config() != d.config || d.library.Data().PathOnDisk != d.path
+}
+
 func (d *librarySettingsDockable) updateToolbar() {
 	d.nameField.Validate()
 	d.githubField.Validate()
 	d.repoField.Validate()
 	d.pathField.Validate()
-	modified := d.library.Config() != d.config || d.library.Data().PathOnDisk != d.path
+	modified := d.modified()
 	d.applyButton.SetEnabled(modified && !d.nameField.Invalid() && !d.githubField.Invalid() &&
 		!d.repoField.Invalid() && !d.pathField.Invalid())
 	d.cancelButton.SetEnabled(modified)
 }
 
-func (d *librarySettingsDockable) apply() {
+// willClose prompts to save any pending edits before the dockable closes, mirroring the behavior of the editors.
+func (d *librarySettingsDockable) willClose() bool {
+	if !d.promptForSave || !d.modified() {
+		return true
+	}
+	// The name as edited is what the prompt refers to, since that is what would be saved: the tab title still carries
+	// the name the library had when the view was opened, which is empty for a library that has just been added.
+	switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"),
+		librarySettingsTitle(d.config.Title)), "") {
+	case unison.ModalResponseDiscard:
+	case unison.ModalResponseOK:
+		if !d.applyButton.Enabled() {
+			unison.ErrorDialogWithMessage(i18n.Text("Unable to apply the changes"),
+				i18n.Text("One or more fields contain invalid values."))
+			return false
+		}
+		if !d.apply() {
+			return false
+		}
+	default:
+		return false
+	}
+	return true
+}
+
+// closeLibrarySettings closes any open Library Settings dockable for the given library without prompting to save. For
+// use when the library has been removed from the global set, since a later apply from the dockable would put it back.
+func closeLibrarySettings(lib *gurps.Library) {
+	for _, dockable := range AllDockables() {
+		if d, ok := dockable.AsPanel().Self.(*librarySettingsDockable); ok && d.library == lib {
+			d.promptForSave = false
+			d.AttemptClose()
+			return
+		}
+	}
+}
+
+func (d *librarySettingsDockable) apply() bool {
 	wnd := d.Window()
 	wnd.FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
-	libs := gurps.GlobalSettings().LibrarySet
-	delete(libs, d.library.Key())
+	libs := gurps.GlobalSettings().Libraries
+	// The validation callbacks disable the apply button when the key is taken, but the set may have changed since they
+	// last ran, so check again here rather than silently replacing another library.
+	if libraryKeyTakenByOther(libs, d.config.GitHubAccountName, d.config.RepoName, d.library) {
+		unison.ErrorDialogWithMessage(i18n.Text("Unable to update library"),
+			fmt.Sprintf(i18n.Text("Another library is already using %s/%s."), d.config.GitHubAccountName,
+				d.config.RepoName))
+		return false
+	}
+	// The deep search content loaders read the library set from background goroutines, so the re-keying goes through
+	// Rekey, which swaps the keys as one locked operation rather than a Remove followed by a Store that would leave the
+	// library absent from the set in between (see Libraries.Rekey).
+	oldKey := d.library.Key()
 	d.library.Configure(d.config)
-	libs[d.library.Key()] = d.library
+	libs.Rekey(oldKey, d.library)
 	if err := d.library.SetPath(d.path); err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to update library location"), err)
 	}
+	// The library may just have been named or renamed, and the tab should say so.
+	d.TabTitle = librarySettingsTitle(d.config.Title)
+	UpdateTitleForDockable(d)
 	Workspace.Navigator.Reload()
 	// A library that has just been pointed at a different repository has no releases to show until it has been checked
 	// (see Library.Configure). With the periodic checks on, that is done now, in the background, so that the Library
@@ -284,6 +373,7 @@ func (d *librarySettingsDockable) apply() {
 	if libraryCheckWantedAfterApply(d.library, gurps.GlobalSettings().General.LibraryUpdateCheck) {
 		go checkForLibraryUpgrade(d.library)
 	}
+	return true
 }
 
 // libraryCheckWantedAfterApply returns true if applying the library's settings should be followed by a background check

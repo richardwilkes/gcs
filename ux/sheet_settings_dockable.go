@@ -497,6 +497,9 @@ func (d *sheetSettingsDockable) syncSheet(full bool) {
 	var entity *gurps.Entity
 	if d.owner != nil {
 		entity = d.owner.Entity()
+	} else {
+		// The global sheet settings were just changed, so republish the snapshot background parses read.
+		gurps.SyncGlobalSheetSettings()
 	}
 	for _, one := range AllDockables() {
 		if s, ok := one.(gurps.SheetSettingsResponder); ok {

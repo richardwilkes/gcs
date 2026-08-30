@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -1118,13 +1119,34 @@ func TestLeavingEditingModeTakesTheOverlayAway(t *testing.T) {
 	c.Equal(1, len(sheet.content.Children()), "only the page must be left")
 }
 
+// sheetLayoutGivenToNewEntity returns the block layout an entity with no embedded sheet settings is given when it is
+// unmarshaled. It comes from the published snapshot of the global sheet settings rather than the live settings, so it
+// is what shows whether a change to the default layout was published.
+func sheetLayoutGivenToNewEntity(t *testing.T) *gurps.SheetLayout {
+	t.Helper()
+	var e gurps.Entity
+	e.DiscardCaches()
+	check.New(t).NoError(jio.Unmarshal(fmt.Appendf(nil, `{"version":%d}`, jio.CurrentDataVersion), &e))
+	return e.SheetSettings.Layout
+}
+
+// restoreDefaultSheetLayout puts the given layout back as the default for new sheets when the test finishes,
+// republishing it, since the default the test installed was published as well.
+func restoreDefaultSheetLayout(t *testing.T, layout *gurps.SheetLayout) {
+	t.Helper()
+	t.Cleanup(func() {
+		gurps.GlobalSettings().Sheet.Layout = layout
+		gurps.SyncGlobalSheetSettings()
+	})
+}
+
 // TestUseLayoutAsDefaultStoresACopy verifies that making a sheet's layout the default for new sheets stores a copy of
-// it rather than the sheet's own, and tells everything that lays itself out from the defaults about the change.
+// it rather than the sheet's own, publishes it for the sheets opened from then on, and tells everything that lays
+// itself out from the defaults about the change.
 func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
-	saved := global.Sheet.Layout
-	t.Cleanup(func() { global.Sheet.Layout = saved })
+	restoreDefaultSheetLayout(t, global.Sheet.Layout)
 
 	sheet, _ := newTestSheetForLayoutEditing(t)
 	recorder := &sheetSettingsRecorder{}
@@ -1133,12 +1155,16 @@ func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 	sheet.hideLayoutBlock(gurps.BlockNotesKey)
 	recorder.entities = nil
 	recorder.updates = nil
+	c.True(sheetLayoutGivenToNewEntity(t).Contains(gurps.BlockNotesKey),
+		"the published default must start out showing the block the sheet hides, or the test proves nothing")
 
 	sheet.useLayoutAsDefault()
 
 	layout := sheet.Entity().SheetSettings.Layout
 	c.Equal(gurps.Hash64(layout), gurps.Hash64(global.Sheet.Layout), "the default must match the sheet's layout")
 	c.True(layout != global.Sheet.Layout, "the default must be a copy, not the sheet's own layout")
+	c.Equal(gurps.Hash64(layout), gurps.Hash64(sheetLayoutGivenToNewEntity(t)),
+		"a sheet without embedded settings opened from now on must be given the new default")
 	c.Equal(1, len(recorder.updates), "everything that lays itself out from the defaults must be told once")
 	c.True(recorder.updates[0], "the notification must ask for a full rebuild")
 	c.Nil(recorder.entities[0], "a nil entity is what says the change was to the defaults")
@@ -1149,13 +1175,12 @@ func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 }
 
 // TestResetDefaultLayoutRestoresTheFactoryLayout verifies that resetting the default layout puts the factory layout in
-// place for new sheets, leaves the sheet's own layout alone, and tells everything that lays itself out from the
-// defaults about the change.
+// place for new sheets and publishes it for the sheets opened from then on, leaves the sheet's own layout alone, and
+// tells everything that lays itself out from the defaults about the change.
 func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
-	saved := global.Sheet.Layout
-	t.Cleanup(func() { global.Sheet.Layout = saved })
+	restoreDefaultSheetLayout(t, global.Sheet.Layout)
 
 	sheet, _ := newTestSheetForLayoutEditing(t)
 	recorder := &sheetSettingsRecorder{}
@@ -1164,6 +1189,8 @@ func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
 	sheet.hideLayoutBlock(gurps.BlockNotesKey)
 	sheet.useLayoutAsDefault()
 	c.False(global.Sheet.Layout.Contains(gurps.BlockNotesKey), "the default must start out altered")
+	c.False(sheetLayoutGivenToNewEntity(t).Contains(gurps.BlockNotesKey),
+		"the published default must start out altered too, or the test proves nothing")
 	recorder.entities = nil
 	recorder.updates = nil
 
@@ -1171,6 +1198,8 @@ func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
 
 	c.Equal(gurps.Hash64(gurps.FactorySheetLayout()), gurps.Hash64(global.Sheet.Layout),
 		"the default must be the factory layout again")
+	c.Equal(gurps.Hash64(gurps.FactorySheetLayout()), gurps.Hash64(sheetLayoutGivenToNewEntity(t)),
+		"a sheet without embedded settings opened from now on must be given the factory layout again")
 	c.False(sheet.Entity().SheetSettings.Layout.Contains(gurps.BlockNotesKey),
 		"the sheet's own layout must be left alone")
 	c.Equal(1, len(recorder.updates), "everything that lays itself out from the defaults must be told once")

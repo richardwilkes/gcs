@@ -64,9 +64,12 @@ func (p *SkillPrereq) Clone(parent *PrereqList) Prereq {
 
 // FillWithNameableKeys implements Prereq.
 func (p *SkillPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(p.NameCriteria.Qualifier, m, existing)
-	nameable.Extract(p.SpecializationCriteria.Qualifier, m, existing)
-	nameable.Extract(p.OptionalSpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(
+		m, existing,
+		p.NameCriteria.Qualifier,
+		p.SpecializationCriteria.Qualifier,
+		p.OptionalSpecializationCriteria.Qualifier,
+	)
 }
 
 // Satisfied implements Prereq.

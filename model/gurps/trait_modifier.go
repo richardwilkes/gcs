@@ -273,6 +273,7 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		}
 	}
 	t.TraitModifierData = localData.TraitModifierData
+	t.Replacements = nameable.Normalize(t.Replacements)
 	if t.LocalNotes == "" && localData.ExprNotes != "" {
 		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}
@@ -597,8 +598,11 @@ func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
 		if existing == nil && t.trait != nil {
 			existing = t.trait.Replacements
 		}
-		nameable.Extract(t.Name, m, existing)
-		nameable.Extract(t.LocalNotes, m, existing)
+		nameable.Extract(
+			m, existing,
+			t.Name,
+			t.LocalNotes,
+		)
 		for _, one := range t.Features {
 			one.FillWithNameableKeys(m, existing)
 		}

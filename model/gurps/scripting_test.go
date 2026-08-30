@@ -224,9 +224,8 @@ func TestScriptSkillOptionalSpecializationMatch(t *testing.T) {
 }
 
 // TestScriptResolutionConcurrency hammers the package-global script state (the compiled-program cache, the entity-less
-// resolve cache and its discard path, and the entity-less recursion-depth counter) from several goroutines at once. Run
+// resolve cache and its discard path, and the entity-less recursion-depth map) from several goroutines at once. Run
 // under the race detector (go test -race) it guards against reintroducing unsynchronized access to that shared state.
-// The goroutine count is kept below maximumAllowedResolvingDepth so concurrency alone cannot trip the depth limit.
 func TestScriptResolutionConcurrency(t *testing.T) {
 	DiscardGlobalResolveCache()
 	const goroutines = 8
@@ -250,6 +249,91 @@ func TestScriptResolutionConcurrency(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+}
+
+// TestEntitylessScriptDepthIsPerGoroutine verifies that the depth limit on entity-less script resolution measures each
+// goroutine's own recursion, not how many goroutines happen to be resolving at once. Both halves matter: the deep search
+// content cache runs a worker per CPU through entity-less resolution, so on a machine with more CPUs than
+// maximumAllowedResolvingDepth a shared counter would refuse resolutions that were not recursing at all and bake the
+// refusal into the cached search text; and the limit must still catch a genuinely circular reference on every goroutine
+// at the same depth it would if that goroutine were alone.
+func TestEntitylessScriptDepthIsPerGoroutine(t *testing.T) {
+	c := check.New(t)
+	DiscardGlobalResolveCache()
+	defer DiscardGlobalResolveCache()
+	// Every goroutine in the first half parks inside a script until the others arrive, so the script's timer has to
+	// cover however long that takes on a loaded runner.
+	previous := scriptExecTimeLimitOverride.Load()
+	SetScriptExecTimeLimitForTesting(fxp.FromInteger(60))
+	defer scriptExecTimeLimitOverride.Store(previous)
+
+	// Breadth: twice the limit's worth of goroutines, all inside an entity-less resolution at the same moment.
+	const goroutines = maximumAllowedResolvingDepth * 2
+	var barrier sync.WaitGroup
+	barrier.Add(goroutines)
+	parked := ScriptSelfProvider{
+		ID: "parked",
+		Provider: func(_ *goja.Runtime) any {
+			return func() int {
+				barrier.Done()
+				barrier.Wait()
+				return 1
+			}
+		},
+	}
+	results := make([]string, goroutines)
+	var wg sync.WaitGroup
+	wg.Add(goroutines)
+	for i := range goroutines {
+		go func() {
+			defer wg.Done()
+			results[i] = ResolveScript(nil, parked, "self()")
+			if results[i] != "1" {
+				// A refused resolution never reached the barrier; stand in for it so a regression fails rather than
+				// hangs.
+				barrier.Done()
+			}
+		}()
+	}
+	wg.Wait()
+	for i, got := range results {
+		c.Equal("1", got, "goroutine %d must not be refused for depth that other goroutines hold", i)
+	}
+
+	// Depth: several goroutines each chase a circular reference at once. Each must be allowed exactly
+	// maximumAllowedResolvingDepth levels of its own recursion, whatever the others are doing, and then be refused.
+	const chasers = 4
+	levels := make([]int, chasers)
+	final := make([]string, chasers)
+	wg.Add(chasers)
+	for i := range chasers {
+		go func() {
+			defer wg.Done()
+			var circular ScriptSelfProvider
+			circular = ScriptSelfProvider{
+				ID: fmt.Sprintf("circular-%d", i),
+				Provider: func(_ *goja.Runtime) any {
+					return func() string {
+						levels[i]++
+						return ResolveScript(nil, circular, "self()")
+					}
+				},
+			}
+			final[i] = ResolveScript(nil, circular, "self()")
+		}()
+	}
+	wg.Wait()
+	for i := range chasers {
+		c.Equal("script resolution exceeded maximum depth (possible circular reference)", final[i],
+			"chaser %d must be refused once its own recursion exceeds the limit", i)
+		c.Equal(maximumAllowedResolvingDepth, levels[i],
+			"chaser %d must be allowed exactly the limit's worth of its own levels first", i)
+	}
+
+	entitylessResolvingDepthsMutex.Lock()
+	remaining := len(entitylessResolvingDepths)
+	entitylessResolvingDepthsMutex.Unlock()
+	c.Equal(0, remaining, "no depth entry may outlive its goroutine's resolution")
 }
 
 // TestScriptCacheIsBounded verifies that the compiled-program cache cannot grow without bound while still keeping the
@@ -426,7 +510,7 @@ func TestScriptExecTimeLimitOverride(t *testing.T) {
 // TestScriptObjectResultConcurrency resolves object-valued scripts, whose results can only be turned into strings by
 // running JavaScript, from several goroutines at once. Run under the race detector (go test -race) it guards against
 // converting a result after its runtime has been handed back to the pool, where another goroutine may already be using
-// it. The goroutine count is kept below maximumAllowedResolvingDepth so concurrency alone cannot trip the depth limit.
+// it.
 func TestScriptObjectResultConcurrency(t *testing.T) {
 	DiscardGlobalResolveCache()
 	defer DiscardGlobalResolveCache()

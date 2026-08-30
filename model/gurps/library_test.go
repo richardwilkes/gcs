@@ -292,6 +292,146 @@ func TestLibrarySetPathSyncsEachWatcherOnce(t *testing.T) {
 	}
 }
 
+// TestMonitorTokenLibraryPaths verifies the translation from the paths the platform watcher reports to the ones the
+// library names things by. rjeczalik/notify resolves the symlinks in every path it watches and reports changes beneath
+// the resolved path, so a reported path is only useful to a caller once the resolved prefix has been swapped back for
+// the watched path as it was configured.
+func TestMonitorTokenLibraryPaths(t *testing.T) {
+	c := check.New(t)
+	abs := func(parts ...string) string {
+		return filepath.Join(append([]string{string(filepath.Separator)}, parts...)...)
+	}
+	root := abs("cfg", "lib")
+	token := &MonitorToken{
+		monitor: newMonitor(&Library{}),
+		root:    root,
+		watched: map[string]string{
+			root:                           abs("real", "lib"),
+			filepath.Join(root, "linked"):  abs("elsewhere", "target"),
+			filepath.Join(root, "inside"):  abs("real", "lib", "deeper", "target"),
+			filepath.Join(root, "tricked"): abs("real", "lib", "deeper", "target") + string(filepath.Separator),
+		},
+	}
+	c.Equal([]string{abs("cfg", "lib", "a", "b.gcs")}, token.libraryPaths(abs("real", "lib", "a", "b.gcs")),
+		"a path beneath the resolved root is reported beneath the configured root")
+	c.Equal([]string{root}, token.libraryPaths(abs("real", "lib")), "the resolved root itself maps to the configured root")
+	c.Equal([]string{abs("cfg", "lib", "linked", "x.gcs")}, token.libraryPaths(abs("elsewhere", "target", "x.gcs")),
+		"a path beneath a symlinked directory's target is reported beneath the symlink")
+	c.Equal([]string{abs("real", "libx", "y.gcs")}, token.libraryPaths(abs("real", "libx", "y.gcs")),
+		"a prefix match must respect path component boundaries")
+	c.Equal([]string{abs("unrelated", "z.gcs")}, token.libraryPaths(abs("unrelated", "z.gcs")),
+		"a path beneath nothing watched is passed through as is")
+	c.Equal([]string{
+		abs("cfg", "lib", "deeper", "target", "f.gcs"),
+		abs("cfg", "lib", "inside", "f.gcs"),
+		abs("cfg", "lib", "tricked", "f.gcs"),
+	}, token.libraryPaths(abs("real", "lib", "deeper", "target", "f.gcs")),
+		"a file the library holds under several names is reported under each of them")
+}
+
+// TestLibraryWatchReportsPathsAsTheLibraryNamesThem verifies, against the real platform watcher, that a change is
+// reported with the path the library names it by rather than the one the watcher resolves it to. Every temporary
+// directory on macOS is one such case (/var is a symlink to /private/var), and a library configured through a symlink,
+// or holding a symlinked directory registered via AddSubPath, is the general one. The navigator's deep search cache is
+// keyed by the library's paths and drops the entry for each reported change; a change reported under any other path
+// would leave a stale entry in place.
+func TestLibraryWatchReportsPathsAsTheLibraryNamesThem(t *testing.T) {
+	// See TestLibrarySetPathAfterWatchFailsRestartsWatch for why events cannot be delivered on Windows under -race.
+	if raceEnabled && runtime.GOOS == "windows" {
+		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
+	}
+	c := check.New(t)
+	dir := t.TempDir()
+	actual := filepath.Join(dir, "real")
+	c.NoError(os.MkdirAll(actual, 0o750))
+	link := filepath.Join(dir, "link")
+	if err := os.Symlink(actual, link); err != nil {
+		t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
+	}
+	target := filepath.Join(dir, "target")
+	c.NoError(os.MkdirAll(target, 0o750))
+	c.NoError(os.Symlink(target, filepath.Join(actual, "linked")))
+
+	// The library is configured through the symlink, so nothing it names is where the watcher will see it.
+	lib := NewLibrary("Test", "someone", "", "repo", link)
+	events := make(chan string, 64)
+	token := lib.Watch(func(_ *Library, fullPath string, what notify.Event) {
+		if what != EventRootSync {
+			select {
+			case events <- fullPath:
+			default:
+			}
+		}
+	}, false)
+	defer token.Stop()
+	token.AddSubPath("linked")
+
+	expect := func(created, want string) {
+		t.Helper()
+		c.NoError(os.WriteFile(created, []byte("{}"), 0o600))
+		deadline := time.After(10 * time.Second)
+		for {
+			select {
+			case p := <-events:
+				if filepath.Base(p) == filepath.Base(created) {
+					c.Equal(want, p)
+					return
+				}
+			case <-deadline:
+				t.Fatalf("no filesystem event was delivered for %s", created)
+			}
+		}
+	}
+	expect(filepath.Join(link, "direct.gcs"), filepath.Join(link, "direct.gcs"))
+	expect(filepath.Join(target, "via-link.gcs"), filepath.Join(link, "linked", "via-link.gcs"))
+}
+
+// TestLibraryWatchSurvivesCaseMismatch verifies that a library whose configured path differs in case from the one on
+// disk, as happens when the path is typed rather than picked on a case-insensitive filesystem, still has its changes
+// reported, and reported under the configured path. On macOS, FSEvents reports paths in their on-disk case and
+// rjeczalik/notify drops anything that does not begin with the path it was asked to watch, so handing it the path as
+// typed would make the watch silently report nothing at all.
+func TestLibraryWatchSurvivesCaseMismatch(t *testing.T) {
+	// See TestLibrarySetPathAfterWatchFailsRestartsWatch for why events cannot be delivered on Windows under -race.
+	if raceEnabled && runtime.GOOS == "windows" {
+		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
+	}
+	c := check.New(t)
+	dir := t.TempDir()
+	c.NoError(os.MkdirAll(filepath.Join(dir, "MyLib", "Sub"), 0o750))
+	typed := filepath.Join(dir, "mylib", "sub")
+	if _, err := os.Stat(typed); err != nil {
+		t.Skip("the filesystem is case-sensitive, so the path as typed is simply a different path")
+	}
+
+	lib := NewLibrary("Test", "someone", "", "repo", typed)
+	events := make(chan string, 64)
+	token := lib.Watch(func(_ *Library, fullPath string, what notify.Event) {
+		if what != EventRootSync {
+			select {
+			case events <- fullPath:
+			default:
+			}
+		}
+	}, false)
+	defer token.Stop()
+
+	created := filepath.Join(typed, "new.gcs")
+	c.NoError(os.WriteFile(created, []byte("{}"), 0o600))
+	deadline := time.After(10 * time.Second)
+	for {
+		select {
+		case p := <-events:
+			if filepath.Base(p) == "new.gcs" {
+				c.Equal(created, p, "the change must be reported under the path as the library names it")
+				return
+			}
+		case <-deadline:
+			t.Fatalf("no filesystem event was delivered for %s", created)
+		}
+	}
+}
+
 func TestLibraryJSONRoundTrip(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -299,8 +439,8 @@ func TestLibraryJSONRoundTrip(t *testing.T) {
 	lib := NewLibrary("Extra", "someone", "secret", "repo", dir)
 	lib.ToggleFavorite("b.gcs")
 	lib.ToggleFavorite("a.gcs")
-	libs := Libraries(map[string]*Library{lib.Key(): lib})
-	data, err := jio.Marshal(&libs)
+	libs := &Libraries{m: map[string]*Library{lib.Key(): lib}}
+	data, err := jio.Marshal(libs)
 	c.NoError(err)
 
 	// Pin the serialized shape. In particular, the GitHub account and repository names must not appear in the library
@@ -313,8 +453,7 @@ func TestLibraryJSONRoundTrip(t *testing.T) {
 
 	var loaded Libraries
 	c.NoError(jio.Unmarshal(data, &loaded))
-	restored, ok := loaded["someone/repo"]
-	c.True(ok)
+	restored := loaded.Lookup("someone/repo")
 	c.NotNil(restored)
 	c.Equal(lib.Data(), restored.Data())
 	c.Equal(lib.Favorites(), restored.Favorites())
@@ -329,15 +468,14 @@ func TestLibrariesUnmarshalSkipsNullEntries(t *testing.T) {
 	c := check.New(t)
 	var libs Libraries
 	c.NotPanics(func() { c.NoError(jio.Unmarshal([]byte(`{"a/b":null}`), &libs)) })
-	c.Equal(0, len(libs))
+	c.Equal(0, libs.Len())
 
 	// A null alongside a usable entry must cost only the null.
 	c.NotPanics(func() {
 		c.NoError(jio.Unmarshal([]byte(`{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`), &libs))
 	})
-	c.Equal(1, len(libs))
-	lib, ok := libs["someone/repo"]
-	c.True(ok)
+	c.Equal(1, libs.Len())
+	lib := libs.Lookup("someone/repo")
 	c.NotNil(lib)
 	c.Equal("Good", lib.Data().Title)
 

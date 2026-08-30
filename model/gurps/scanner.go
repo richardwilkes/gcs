@@ -39,7 +39,7 @@ type NamedFileSet struct {
 }
 
 // ScanForNamedFileSets scans for settings files of a particular type.
-func ScanForNamedFileSets(builtIn fs.FS, builtInDir string, omitDuplicateNames bool, libraries Libraries, extensions ...string) []*NamedFileSet {
+func ScanForNamedFileSets(builtIn fs.FS, builtInDir string, omitDuplicateNames bool, libraries *Libraries, extensions ...string) []*NamedFileSet {
 	set := make(map[string]bool)
 	list := make([]*NamedFileSet, 0)
 	for _, lib := range libraries.List() {

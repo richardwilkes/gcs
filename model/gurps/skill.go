@@ -362,6 +362,7 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	s.SkillData = localData.SkillData
+	s.Replacements = nameable.Normalize(s.Replacements)
 	s.Defaults = slices.DeleteFunc(s.Defaults, func(one *SkillDefault) bool { return one == nil })
 	if s.TechniqueDefault != nil {
 		s.TechniqueDefault.Name.Compare = criteria.IsText
@@ -1311,10 +1312,13 @@ func (s *Skill) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = s.Replacements
 	}
-	nameable.Extract(s.Name, m, existing)
-	nameable.Extract(s.LocalNotes, m, existing)
-	nameable.Extract(s.Specialization, m, existing)
-	nameable.Extract(s.OptionalSpecialization, m, existing)
+	nameable.Extract(
+		m, existing,
+		s.Name,
+		s.LocalNotes,
+		s.Specialization,
+		s.OptionalSpecialization,
+	)
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m, existing)
 	}

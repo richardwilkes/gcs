@@ -474,14 +474,27 @@ const maximumAllowedResolvingDepth = 20
 // entityScriptArgName is the name the entity is bound to within scripts.
 const entityScriptArgName = "entity"
 
-// globalScriptResolvingDepth guards entity-less script resolution against runaway or circular references. Entity-scoped
+// entitylessResolvingDepths guards entity-less script resolution against runaway or circular references. Entity-scoped
 // resolution uses the entity's own scriptResolvingDepth field instead (see enterScriptResolution); only scripts with no
-// associated entity (e.g. nodes in a standalone library file) fall back to this package-global counter, which is atomic
-// so that concurrent entity-less resolutions stay race-free.
-var globalScriptResolvingDepth atomic.Int32
+// associated entity (e.g. nodes in a standalone library file) fall back to this map, which holds the depth of every
+// goroutine currently inside such a resolution, keyed by goroutine ID.
+//
+// The depth has to be per-goroutine, not process-wide: resolution recurses synchronously on the goroutine that started
+// it, so a goroutine's own depth is the only measure of whether it is chasing a circular reference. Entity-less
+// resolution happens on many goroutines at once (the deep search content cache parses library files on a worker per
+// CPU while the UI thread draws library lists and editors), and a shared counter would add all of their depths
+// together and refuse a resolution that had nothing to do with any of them -- and a refusal on a worker is baked into
+// that worker's cached search text. Go has no goroutine-local storage, so the key is the ID currentGoroutineID reads
+// from the runtime; entries exist only while their goroutine is inside a resolution and are removed when it leaves.
+var (
+	entitylessResolvingDepthsMutex sync.Mutex
+	entitylessResolvingDepths      = make(map[uint64]int)
+)
 
-// globalAbandonedScripts counts the scripts abandoned during entity-less resolution, for the same reason
-// globalScriptResolvingDepth exists. Entity-scoped resolution uses the entity's own abandonedScripts field.
+// globalAbandonedScripts counts the scripts abandoned during entity-less resolution; entity-scoped resolution uses the
+// entity's own abandonedScripts field. Unlike the resolving depth this is deliberately process-wide, since only
+// differences between two readings mean anything and counting another goroutine's abandonment is harmless (see
+// anyScriptAbandonedDuring).
 var globalAbandonedScripts atomic.Int64
 
 // noteAbandonedScript records that a script was stopped before it could produce an answer.
@@ -517,14 +530,28 @@ func anyScriptAbandonedDuring(entity *Entity, f func()) bool {
 
 // enterScriptResolution increments the appropriate recursion-depth counter and returns the new depth along with a
 // function that restores it. Resolution recurses through the goja boundary on the calling goroutine (resolving one
-// script can read a value whose own script must be resolved); tracking the depth per-entity keeps that count accurate
-// even when unrelated entities are resolved concurrently on different goroutines.
+// script can read a value whose own script must be resolved); tracking the depth per-entity, or per-goroutine when
+// there is no entity, keeps that count accurate even when unrelated resolutions run concurrently on different
+// goroutines. An entity is only ever resolved on one goroutine at a time, so its field needs no locking.
 func enterScriptResolution(entity *Entity) (depth int, leave func()) {
 	if entity != nil {
 		entity.scriptResolvingDepth++
 		return entity.scriptResolvingDepth, func() { entity.scriptResolvingDepth-- }
 	}
-	return int(globalScriptResolvingDepth.Add(1)), func() { globalScriptResolvingDepth.Add(-1) }
+	id := currentGoroutineID()
+	entitylessResolvingDepthsMutex.Lock()
+	entitylessResolvingDepths[id]++
+	depth = entitylessResolvingDepths[id]
+	entitylessResolvingDepthsMutex.Unlock()
+	return depth, func() {
+		entitylessResolvingDepthsMutex.Lock()
+		if entitylessResolvingDepths[id] > 1 {
+			entitylessResolvingDepths[id]--
+		} else {
+			delete(entitylessResolvingDepths, id)
+		}
+		entitylessResolvingDepthsMutex.Unlock()
+	}
 }
 
 // scriptExecTimeLimitOverride, when non-zero, takes the place of the per-script execution time limit from the general
@@ -541,12 +568,31 @@ func SetScriptExecTimeLimitForTesting(seconds fxp.Int) {
 	scriptExecTimeLimitOverride.Store(int64(seconds))
 }
 
+// scriptExecTimeLimitMirror mirrors GlobalSettings().General.PermittedPerScriptExecTime. Scripts execute on background
+// goroutines as well as the UI thread (the deep search content cache parses sheets and templates in the background),
+// but the settings dialog mutates the GeneralSettings struct in place on the UI thread -- including wholesale copies of
+// it on load and reset -- so reading the field from another goroutine is a data race. The UI thread publishes the value
+// here instead; see SyncScriptExecTimeLimit.
+var scriptExecTimeLimitMirror atomic.Int64
+
+// SyncScriptExecTimeLimit publishes the current GlobalSettings().General.PermittedPerScriptExecTime for script
+// execution on any goroutine. GlobalSettings() calls this when the settings are first loaded; any code that changes the
+// value afterward must call it again.
+func SyncScriptExecTimeLimit() {
+	syncScriptExecTimeLimit(GlobalSettings().General)
+}
+
+func syncScriptExecTimeLimit(s *GeneralSettings) {
+	scriptExecTimeLimitMirror.Store(int64(s.PermittedPerScriptExecTime))
+}
+
 // scriptExecTimeLimit returns the number of seconds a script may run before it is interrupted.
 func scriptExecTimeLimit() fxp.Int {
 	if limit := scriptExecTimeLimitOverride.Load(); limit != 0 {
 		return fxp.Int(limit)
 	}
-	return GlobalSettings().General.PermittedPerScriptExecTime
+	GlobalSettings() // Makes sure the mirror has been initialized.
+	return fxp.Int(scriptExecTimeLimitMirror.Load())
 }
 
 // ResolveScript will process a script.

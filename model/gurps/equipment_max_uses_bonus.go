@@ -65,8 +65,11 @@ func (e *EquipmentMaxUsesBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (e *EquipmentMaxUsesBonus) FillWithNameableKeys(m, existing map[string]string) {
 	if e.SelectionType == equipmentsel.EquipmentWithName {
-		nameable.Extract(e.NameCriteria.Qualifier, m, existing)
-		nameable.Extract(e.TagsCriteria.Qualifier, m, existing)
+		nameable.Extract(
+			m, existing,
+			e.NameCriteria.Qualifier,
+			e.TagsCriteria.Qualifier,
+		)
 	}
 }
 

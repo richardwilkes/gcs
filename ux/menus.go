@@ -426,7 +426,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 	menu.InsertItem(-1, exportAsJPEGAction.NewMenuItem(factory))
 	menu.InsertSeparator(-1, false)
 	index := 0
-	for _, lib := range gurps.GlobalSettings().Libraries().List() {
+	for _, lib := range gurps.GlobalSettings().Libraries.List() {
 		dir := lib.Path()
 		entries, err := fs.ReadDir(os.DirFS(dir), outputTemplatesDirName)
 		if err != nil {

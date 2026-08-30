@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"strings"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -82,18 +84,12 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 }
 
 // missingNameableKeys returns the keys in m that don't already have an explicit replacement recorded on row.
-func missingNameableKeys[T gurps.Node[T]](row T, m map[string]string) []string {
-	var existing map[string]string
+func missingNameableKeys[T gurps.Node[T]](row T, nameables map[string]string) []string {
+	var replacements map[string]string
 	if accessor, ok := any(row).(nameable.Accesser); ok && !xreflect.IsNil(accessor) {
-		existing = accessor.NameableReplacements()
+		replacements = accessor.NameableReplacements()
 	}
-	missing := make([]string, 0, len(m))
-	for key := range m {
-		if _, has := existing[key]; !has {
-			missing = append(missing, key)
-		}
-	}
-	return missing
+	return nameable.Missing(nameables, replacements)
 }
 
 // ShowNameablesDialog shows a dialog for editing nameables. For each row, visibleKeys restricts which keys of the
@@ -130,7 +126,11 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		}
 		header := unison.NewLabel()
 		header.Font = unison.SystemFont
-		header.SetTitle(xstrings.Truncate(one, 40, true))
+		headerTitle := xstrings.Truncate(one, 50, true)
+		header.SetTitle(headerTitle)
+		if headerTitle != one {
+			header.Tooltip = newWrappedTooltip(one)
+		}
 		header.SetLayoutData(&unison.FlexLayoutData{
 			HSpan:  2,
 			HAlign: align.Fill,
@@ -139,14 +139,27 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		})
 		list.AddChild(header)
 		for _, k := range keys {
+			marker, ok := nameable.NewMarker(k)
+			if !ok {
+				continue
+			}
 			label := unison.NewLabel()
-			label.SetTitle(k)
+			title := xstrings.Truncate(marker.Label, 60, true)
+			tooltip := marker.Tooltip
+			if title != marker.Label {
+				tooltip = strings.TrimSpace(marker.Label + "\n\n" + tooltip)
+			}
+			label.SetTitle(title)
+			if tooltip != "" {
+				label.Tooltip = newWrappedTooltip(tooltip)
+			}
 			label.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: align.End,
 				VAlign: align.Middle,
 			})
+			label.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 20}))
 			list.AddChild(label)
-			list.AddChild(createNameableField(k, nameables[i]))
+			list.AddChild(createNameableField(&marker, nameables[i]))
 		}
 	}
 	scroll := unison.NewScrollPanel()
@@ -174,17 +187,93 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 	return unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK
 }
 
-func createNameableField(key string, m map[string]string) *unison.Field {
-	field := unison.NewField()
-	field.SetMinimumTextWidthUsing("Something reasonable")
-	field.SetText(m[key])
-	field.SetLayoutData(&unison.FlexLayoutData{
+// createNameableField builds the widget used to edit the replacement value for the marker.
+//
+// marker comes from nameable.NewMarker, called by our caller with its ok result already checked -- an old-format,
+// no-pipe key gets a synthesized marker (see NewMarker) rather than a plain text field, so every nameable, old
+// format or new, gets the same NewComboField shell: its options (if any) listed, an "empty" entry when AllowEmpty is
+// set (which every synthesized legacy marker has), and free typing enabled when FreeForm is set (also always true
+// for a synthesized marker, matching old-format markers' traditional unrestricted typing). A "not set" entry is
+// always included too -- for now; that's this function's call, not NewComboField's, since NewComboField itself has
+// no opinion on whether "not set" should be offered (see its docs) -- and it's now the only way to clear a
+// substitution, there's no separate "clear" button in the dialog.
+//
+// m's value for this marker's key comes from nameable.Extract, which uses nameable.Unset to mark a marker with
+// no recorded replacement -- every nameable defaults to "not set" here unless a real replacement was already
+// on record, regardless of the marker's Options/AllowEmpty configuration.
+func createNameableField(marker *nameable.Marker, m map[string]string) unison.Paneler {
+	var initial *string
+	if v, ok := m[marker.Key()]; ok && v != nameable.Unset {
+		initial = &v
+	}
+	options := make([]*string, 0, len(marker.Options)+2)
+	options = append(options, nil)
+	if marker.AllowEmpty {
+		options = append(options, new(string))
+	}
+	for _, one := range marker.Options {
+		options = append(options, &one)
+	}
+
+	apply := func(value *string) {
+		if value == nil {
+			delete(m, marker.Key())
+			return
+		}
+		m[marker.Key()] = *value
+	}
+
+	if marker.FreeForm {
+		field := unison.NewComboField(options, initial, apply)
+
+		// Use a fixed string to set the lower bounds on the ComboField width
+		minWidth := field.MinimumTextWidth
+		field.SetMinimumTextWidthUsing("A reasonably wide string")
+		field.MinimumTextWidth = max(field.MinimumTextWidth, minWidth)
+
+		field.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: align.Fill,
+			VAlign: align.Middle,
+			HGrab:  true,
+		})
+		return field
+	}
+
+	popup := unison.NewPopupMenu[*string]()
+	var selected *string
+	for _, one := range options {
+		popup.AddItem(one)
+		if one != nil && initial != nil && *one == *initial {
+			selected = one
+		}
+	}
+	if initial != nil && selected == nil {
+		// The stored value doesn't match any of the marker's current options -- e.g. a legacy value, or the
+		// options changed since it was set. Show it instead of silently displaying "«not set»" while leaving the
+		// old value in place if the user presses OK without touching this field.
+		popup.AddItem(initial)
+		selected = initial
+	}
+	popup.Select(selected)
+	popup.ItemRendererCallback = func(item *string) string {
+		switch {
+		case item == nil:
+			return i18n.Text("«not set»")
+		case *item == "":
+			return i18n.Text("«empty»")
+		default:
+			return *item
+		}
+	}
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[*string]) {
+		if item, ok := p.Selected(); ok {
+			apply(item)
+		}
+	}
+	popup.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 		HGrab:  true,
 	})
-	field.ModifiedCallback = func(_, after *unison.FieldState) {
-		m[key] = after.Text
-	}
-	return field
+	return popup
 }

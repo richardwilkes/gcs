@@ -68,7 +68,7 @@ func openMarkdownPageReference(ref string) {
 	path, anchor := splitMarkdownPageRef(ref[3:])
 	if path != "" {
 		// First check in the Markdown directory of each library.
-		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
+		for _, lib := range gurps.GlobalSettings().Libraries.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", path)
 			if xos.FileIsReadable(filePath) {
 				openMarkdownFileAtAnchor(filePath, anchor)
@@ -76,7 +76,7 @@ func openMarkdownPageReference(ref string) {
 			}
 		}
 		// Then check in the root of each library.
-		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
+		for _, lib := range gurps.GlobalSettings().Libraries.List() {
 			filePath := filepath.Join(lib.Path(), path)
 			if xos.FileIsReadable(filePath) {
 				openMarkdownFileAtAnchor(filePath, anchor)

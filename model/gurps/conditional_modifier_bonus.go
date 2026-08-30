@@ -53,7 +53,7 @@ func (c *ConditionalModifierBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (c *ConditionalModifierBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(c.Situation, m, existing)
+	nameable.Extract(m, existing, c.Situation)
 }
 
 // SetLeveledOwner implements Bonus.

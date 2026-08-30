@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -37,11 +38,6 @@ var (
 	_ Rebuildable                = &editor[*gurps.Note, *gurps.NoteEditData]{}
 	_ Owned                      = &editor[*gurps.Note, *gurps.NoteEditData]{}
 )
-
-// nameableReplacementsSetter is implemented by editor data that can have its nameable replacements set directly.
-type nameableReplacementsSetter interface {
-	SetNameableReplacements(replacements map[string]string)
-}
 
 type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	unison.Panel
@@ -225,7 +221,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 						// editor data. Using CopyFrom here would replace the entire object graph with fresh
 						// sub-objects, orphaning the widgets that are already bound to the existing ones (e.g. the
 						// modifiers table), causing their subsequent edits to be silently lost.
-						if setter, ok2 := any(e.editorData).(nameableReplacementsSetter); ok2 {
+						if setter, ok2 := any(e.editorData).(nameable.Setter); ok2 {
 							setter.SetNameableReplacements(tmp.NameableReplacements())
 						} else {
 							e.editorData.CopyFrom(tmp)

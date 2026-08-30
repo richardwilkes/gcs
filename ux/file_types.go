@@ -12,6 +12,7 @@ package ux
 import (
 	"maps"
 	"slices"
+	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -22,11 +23,17 @@ import (
 	"github.com/richardwilkes/unison/enums/imgfmt"
 )
 
-// RegisterKnownFileTypes registers the known files types.
+var registerKnownFileTypesOnce sync.Once
+
+// RegisterKnownFileTypes registers the known file types. Only the first call registers anything: the registry is read
+// without synchronization by the deep search content cache's worker goroutines, so it must not be rewritten once
+// populated, and the tests call this wherever they need the registry rather than relying on each other.
 func RegisterKnownFileTypes() {
-	registerNavigatorFileTypes()
-	RegisterExternalFileTypes()
-	RegisterGCSFileTypes()
+	registerKnownFileTypesOnce.Do(func() {
+		registerNavigatorFileTypes()
+		RegisterExternalFileTypes()
+		RegisterGCSFileTypes()
+	})
 }
 
 func registerNavigatorFileTypes() {

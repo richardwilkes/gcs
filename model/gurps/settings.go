@@ -56,6 +56,12 @@ var (
 	SettingsPath   string
 	globalOnce     sync.Once
 	globalSettings Settings
+	// closedLock guards Settings.Closed. The UI thread touches the map constantly -- every table sync refreshes the
+	// timestamp of each closed node -- while the unmarshalers for the legacy file format call SetNodeOpen for their
+	// container rows, and the deep search content cache runs those unmarshalers on background goroutines. Nothing else
+	// in Settings is shared that way: the other fields are UI-thread only, or are published for background use via
+	// SyncScriptExecTimeLimit and SyncGlobalSheetSettings.
+	closedLock sync.Mutex
 )
 
 // NavigatorSettings holds settings for the navigator view.
@@ -79,7 +85,7 @@ type PDFInfo struct {
 type Settings struct {
 	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitzero"`
 	General            *GeneralSettings           `json:"general,omitzero"`
-	LibrarySet         Libraries                  `json:"libraries,omitempty"`
+	Libraries          *Libraries                 `json:"libraries,omitempty"`
 	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
 	ThemeMode          thememode.Enum             `json:"theme_mode"`
 	RecentFiles        []string                   `json:"recent_files,omitempty"`
@@ -120,6 +126,10 @@ func GlobalSettings() *Settings {
 		xos.ExitIfErr(InitRollers())
 		globalSettings = loadSettingsOrDefaults(SettingsPath)
 		globalSettings.EnsureValidity()
+		// The private variants are used because the exported ones call GlobalSettings(), which would deadlock inside
+		// this once-initializer.
+		syncScriptExecTimeLimit(globalSettings.General)
+		syncGlobalSheetSettings(globalSettings.Sheet)
 		unison.SetThemeMode(globalSettings.ThemeMode)
 		globalSettings.Colors.MakeCurrent()
 		globalSettings.Fonts.MakeCurrent()
@@ -154,7 +164,7 @@ func factorySettings() Settings {
 	return Settings{
 		LastSeenGCSVersion: xos.AppVersion,
 		General:            NewGeneralSettings(),
-		LibrarySet:         NewLibraries(),
+		Libraries:          NewLibraries(),
 		Sheet:              FactorySheetSettings(),
 	}
 }
@@ -182,8 +192,11 @@ func setAsideDamagedSettings(filePath string) {
 	slog.Warn("preserved the damaged settings file", "path", backup)
 }
 
-// Save to the standard path.
+// Save to the standard path. Must be called on the UI thread; the closed-state map is held locked for the duration,
+// since the marshal reads it while background parses of legacy-format files may be updating it.
 func (s *Settings) Save() error {
+	closedLock.Lock()
+	defer closedLock.Unlock()
 	cutoff := time.Now().Add(-time.Hour * 24 * 120).Unix()
 	for k, v := range s.LibraryExplorer.Nodes {
 		if v == nil || v.LastUsed < cutoff ||
@@ -232,8 +245,8 @@ func (s *Settings) EnsureValidity() {
 	} else {
 		s.General.EnsureValidity()
 	}
-	if len(s.LibrarySet) == 0 {
-		s.LibrarySet = NewLibraries()
+	if s.Libraries.Len() == 0 {
+		s.Libraries = NewLibraries()
 	}
 	if s.LastDirs == nil {
 		s.LastDirs = make(map[string]string)
@@ -359,11 +372,6 @@ func (s *Settings) SheetSettings() *SheetSettings {
 	return s.Sheet
 }
 
-// Libraries implements gurps.SettingsProvider.
-func (s *Settings) Libraries() Libraries {
-	return s.LibrarySet
-}
-
 // IsNodeOpen returns true if the node is currently open.
 func IsNodeOpen(node Openable) bool {
 	if !node.Container() {
@@ -380,9 +388,11 @@ func SetNodeOpen(node Openable, open bool) bool {
 	return SetClosedState("n:"+string(node.ID()), !open)
 }
 
-// IsClosed returns true if the specified key is closed.
+// IsClosed returns true if the specified key is closed. Safe to call from any goroutine.
 func IsClosed(key string) bool {
 	settings := GlobalSettings()
+	closedLock.Lock()
+	defer closedLock.Unlock()
 	_, closed := settings.Closed[key]
 	if closed {
 		settings.Closed[key] = time.Now().Unix()
@@ -390,9 +400,12 @@ func IsClosed(key string) bool {
 	return closed
 }
 
-// SetClosedState sets the current closed state for a key. Returns true if a change was made.
+// SetClosedState sets the current closed state for a key. Returns true if a change was made. Safe to call from any
+// goroutine.
 func SetClosedState(key string, closed bool) bool {
 	settings := GlobalSettings()
+	closedLock.Lock()
+	defer closedLock.Unlock()
 	_, wasClosed := settings.Closed[key]
 	if wasClosed == closed {
 		if closed {

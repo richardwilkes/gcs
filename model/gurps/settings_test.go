@@ -42,7 +42,7 @@ func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 	settings := loadSettingsOrDefaults(p)
 	c.NotNil(settings.General)
 	c.NotNil(settings.Sheet)
-	c.NotEqual(0, len(settings.LibrarySet))
+	c.NotEqual(0, settings.Libraries.Len())
 	c.Equal(int32(0), count.Load())
 	_, err := os.Stat(p + ".bad")
 	c.HasError(err)
@@ -99,10 +99,8 @@ func TestLoadSettingsOrDefaultsWithNullLibraryEntry(t *testing.T) {
 	var settings Settings
 	c.NotPanics(func() { settings = loadSettingsOrDefaults(p) })
 	c.Equal("1.2.3", settings.LastSeenGCSVersion, "the rest of the settings file still loaded")
-	_, ok := settings.LibrarySet["someone/repo"]
-	c.True(ok, "the usable library entry survived")
-	_, ok = settings.LibrarySet["a/b"]
-	c.False(ok, "the null entry was skipped")
+	c.NotNil(settings.Libraries.Lookup("someone/repo"), "the usable library entry survived")
+	c.Nil(settings.Libraries.Lookup("a/b"), "the null entry was skipped")
 }
 
 // TestSettingsSaveWithNullMapEntries verifies that a settings file holding a JSON null in place of a navigator node, a

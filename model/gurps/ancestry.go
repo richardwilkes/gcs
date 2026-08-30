@@ -36,12 +36,12 @@ type ancestryData struct {
 }
 
 // AvailableAncestries scans the libraries and returns the available ancestries.
-func AvailableAncestries(libraries Libraries) []*NamedFileSet {
+func AvailableAncestries(libraries *Libraries) []*NamedFileSet {
 	return ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, AncestryExt)
 }
 
 // LookupAncestry an Ancestry by name.
-func LookupAncestry(name string, libraries Libraries) *Ancestry {
+func LookupAncestry(name string, libraries *Libraries) *Ancestry {
 	for _, lib := range AvailableAncestries(libraries) {
 		for _, one := range lib.List {
 			if one.Name == name {
@@ -197,7 +197,7 @@ func (a *Ancestry) RandomName(nameGeneratorRefs []*NameGeneratorRef, gender stri
 // ActiveAncestries returns a list of Ancestry nodes that are enabled in the given Trait nodes and their descendants.
 func ActiveAncestries(list []*Trait) []*Ancestry {
 	var ancestries []*Ancestry
-	libraries := GlobalSettings().Libraries()
+	libraries := GlobalSettings().Libraries
 	Traverse(func(t *Trait) bool {
 		if t.Container() && t.ContainerType == container.Ancestry && t.Enabled() {
 			if anc := LookupAncestry(t.Ancestry, libraries); anc != nil {
@@ -213,7 +213,7 @@ func ActiveAncestries(list []*Trait) []*Ancestry {
 // descendants.
 func ActiveAncestryTraits(list []*Trait) []*Trait {
 	var result []*Trait
-	libraries := GlobalSettings().Libraries()
+	libraries := GlobalSettings().Libraries
 	Traverse(func(t *Trait) bool {
 		if t.Container() && t.ContainerType == container.Ancestry && t.Enabled() {
 			if ancestry := LookupAncestry(t.Ancestry, libraries); ancestry != nil {

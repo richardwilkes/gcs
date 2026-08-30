@@ -62,8 +62,11 @@ func (s *TraitBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (s *TraitBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(s.NameCriteria.Qualifier, m, existing)
-	nameable.Extract(s.TagsCriteria.Qualifier, m, existing)
+	nameable.Extract(
+		m, existing,
+		s.NameCriteria.Qualifier,
+		s.TagsCriteria.Qualifier,
+	)
 }
 
 // SetLeveledOwner implements Bonus.

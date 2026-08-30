@@ -263,12 +263,18 @@ func (w *WeaponBonus) adjustedAmount(dieCount fxp.Int, leveledOwner LeveledOwner
 
 // FillWithNameableKeys implements Feature.
 func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(w.SpecializationCriteria.Qualifier, m, existing)
-	nameable.Extract(w.OptionalSpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(
+		m, existing,
+		w.SpecializationCriteria.Qualifier,
+		w.OptionalSpecializationCriteria.Qualifier,
+	)
 	if w.SelectionType != wsel.ThisWeapon {
-		nameable.Extract(w.NameCriteria.Qualifier, m, existing)
-		nameable.Extract(w.UsageCriteria.Qualifier, m, existing)
-		nameable.Extract(w.TagsCriteria.Qualifier, m, existing)
+		nameable.Extract(
+			m, existing,
+			w.NameCriteria.Qualifier,
+			w.UsageCriteria.Qualifier,
+			w.TagsCriteria.Qualifier,
+		)
 	}
 }
 

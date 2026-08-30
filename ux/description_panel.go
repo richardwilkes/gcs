@@ -139,7 +139,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the birthday using the current calendar"), func() {
 			global := gurps.GlobalSettings()
-			d.entity.Profile.Birthday = global.General.CalendarRef(global.LibrarySet).RandomBirthday(d.entity.Profile.Birthday)
+			d.entity.Profile.Birthday = global.General.CalendarRef(global.Libraries).RandomBirthday(d.entity.Profile.Birthday)
 			SetTextAndMarkModified(birthdayField.Field, d.entity.Profile.Birthday)
 		}))
 	birthdayField.ClientData()[SkipDeepSync] = true
