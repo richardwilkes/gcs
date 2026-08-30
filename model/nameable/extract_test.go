@@ -122,12 +122,15 @@ func TestExtractPartsUnterminatedPlaceholderPreservesOpenDelimiter(t *testing.T)
 
 func TestExtractPartsControlCharBreaksInProgressPlaceholder(t *testing.T) {
 	c := check.New(t)
-	// A control rune (here, newline) aborts an in-progress placeholder scan, and the abandoned '@'..text is folded
-	// back into a single plain-text run once the following delimiter is (re)opened. That reopened '@' then never
-	// finds a close before end of input, so it survives as a preserved, unterminated literal too.
+	// A control rune (here, newline) aborts an in-progress placeholder scan. Regression test: the abandoned open
+	// delimiter used to be silently dropped (already consumed when the placeholder started, and never written back
+	// out), so "@Foo\nBar..." lost the '@' entirely instead of round-tripping as literal text. Fixed now: the
+	// abort backs up over the dropped delimiter, folding it back into a single plain-text run together with the
+	// abandoned placeholder content. The following '@' then reopens a new placeholder that never finds a close
+	// before end of input, so it survives as a preserved, unterminated literal too.
 	got := nameable.ExtractParts("@Foo\nBar@ baz", '@', '@')
 	c.Equal([]nameable.Part{
-		{Value: "Foo\nBar", Placeholder: false},
+		{Value: "@Foo\nBar", Placeholder: false},
 		{Value: "@ baz", Placeholder: false},
 	}, got)
 }

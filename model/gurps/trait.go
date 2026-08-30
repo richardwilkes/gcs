@@ -304,6 +304,7 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	t.TraitData = localData.TraitData
+	t.Replacements = nameable.Normalize(t.Replacements)
 	if t.LocalNotes == "" && localData.ExprNotes != "" {
 		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}

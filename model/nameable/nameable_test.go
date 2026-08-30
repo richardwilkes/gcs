@@ -116,9 +116,8 @@ func TestApplyMalformedMarkerWrittenBackVerbatim(t *testing.T) {
 
 func TestApplyToListRetainsMalformedReplacementKeyWithoutAffectingOthers(t *testing.T) {
 	c := check.New(t)
-	// A replacements key that itself fails to parse as a marker (here, "") is retained as-is while building the
-	// normalized-key lookup map -- it simply never matches any real marker's key, and doesn't disturb resolution of
-	// the other, well-formed entries.
+	// A replacements key that itself fails to parse as a marker (here, "") simply never matches any real marker's
+	// key, and doesn't disturb resolution of the other, well-formed entries.
 	m := map[string]string{"": "unused", "Element|Fire|Water": "Fire"}
 	got := nameable.ApplyToList([]string{"A @Element|Fire|Water@ spell"}, m)
 	c.Equal([]string{"A Fire spell"}, got)
@@ -154,20 +153,20 @@ func TestReduceOmitsReplacementsNotInNameables(t *testing.T) {
 	c.Equal(map[string]string{"Habit": "Nail-biting"}, nameable.Reduce(nameables, replacements))
 }
 
-func TestReduceStoresUnderNormalizedKeyEvenWhenReplacementKeyIsUnnormalized(t *testing.T) {
+func TestNormalizeRewritesUnnormalizedReplacementKey(t *testing.T) {
 	c := check.New(t)
-	// The replacements map is keyed on an unnormalized ordering of a current-format marker's segments, while
-	// nameables (as produced by Extract) is keyed on the normalized form. Reduce must store the value under the
-	// normalized key -- not the raw replacement key -- or the entry silently fails to resolve later since
-	// Apply/ApplyToList look up replacements by normalized key. (Legacy markers are exempt from this: their key is
-	// always their raw text, unchanged -- see TestKeyLegacyLabeledMarkerKeepsRawKey.)
+	// A replacements map loaded from an old file may be keyed on an unnormalized ordering of a current-format
+	// marker's segments, while nameables (as produced by Extract) is always keyed on the normalized form. Normalize
+	// must rewrite the value to live under the normalized key -- not the raw key -- or the entry would silently fail
+	// to resolve later, since Reduce/Missing/Apply/ApplyToList all expect replacements to already be normalized and
+	// no longer do that normalization themselves. (Legacy markers are exempt from this: their key is always their
+	// raw text, unchanged -- see TestKeyLegacyLabeledMarkerKeepsRawKey.)
 	const raw = "Element|?|Fire|Water"
 	marker, ok := nameable.NewMarker(raw)
 	c.True(ok)
 	normalizedKey := marker.Key()
 	c.NotEqual(raw, normalizedKey)
 
-	nameables := map[string]string{normalizedKey: "Fire"}
 	replacements := map[string]string{raw: "Fire"}
-	c.Equal(map[string]string{normalizedKey: "Fire"}, nameable.Reduce(nameables, replacements))
+	c.Equal(map[string]string{normalizedKey: "Fire"}, nameable.Normalize(replacements))
 }

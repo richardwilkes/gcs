@@ -296,6 +296,7 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	e.EquipmentData = localData.EquipmentData
+	e.Replacements = nameable.Normalize(e.Replacements)
 	if e.BaseValue == "" && localData.Value != 0 {
 		e.BaseValue = localData.Value.String()
 	}

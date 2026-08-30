@@ -84,18 +84,12 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 }
 
 // missingNameableKeys returns the keys in m that don't already have an explicit replacement recorded on row.
-func missingNameableKeys[T gurps.Node[T]](row T, m map[string]string) []string {
-	var existing map[string]string
+func missingNameableKeys[T gurps.Node[T]](row T, nameables map[string]string) []string {
+	var replacements map[string]string
 	if accessor, ok := any(row).(nameable.Accesser); ok && !xreflect.IsNil(accessor) {
-		existing = accessor.NameableReplacements()
+		replacements = accessor.NameableReplacements()
 	}
-	missing := make([]string, 0, len(m))
-	for key := range m {
-		if _, has := existing[key]; !has {
-			missing = append(missing, key)
-		}
-	}
-	return missing
+	return nameable.Missing(nameables, replacements)
 }
 
 // ShowNameablesDialog shows a dialog for editing nameables. For each row, visibleKeys restricts which keys of the
@@ -195,8 +189,8 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 
 // createNameableField builds the widget used to edit the replacement value for the marker.
 //
-// marker comes from nameable.ParseMarker, called by our caller with its ok result already checked -- an old-format,
-// no-pipe key gets a synthesized marker (see ParseMarker) rather than a plain text field, so every nameable, old
+// marker comes from nameable.NewMarker, called by our caller with its ok result already checked -- an old-format,
+// no-pipe key gets a synthesized marker (see NewMarker) rather than a plain text field, so every nameable, old
 // format or new, gets the same NewComboField shell: its options (if any) listed, an "empty" entry when AllowEmpty is
 // set (which every synthesized legacy marker has), and free typing enabled when FreeForm is set (also always true
 // for a synthesized marker, matching old-format markers' traditional unrestricted typing). A "not set" entry is

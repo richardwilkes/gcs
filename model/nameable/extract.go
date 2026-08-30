@@ -131,8 +131,14 @@ func ExtractParts(src string, begin, end rune) []Part {
 
 		// Any control byte breaks a placeholder part stride and any escaping
 		if r < 32 {
+			// Clear the escaping flag
 			isEscaping = false
-			isPlaceholder = false
+			if isPlaceholder {
+				// Clear the placeholder flag
+				isPlaceholder = false
+				// Move the start index backwards by the length of the begin delimiter
+				start -= ol
+			}
 		}
 	}
 	if isPlaceholder {

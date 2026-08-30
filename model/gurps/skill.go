@@ -362,6 +362,7 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	s.SkillData = localData.SkillData
+	s.Replacements = nameable.Normalize(s.Replacements)
 	s.Defaults = slices.DeleteFunc(s.Defaults, func(one *SkillDefault) bool { return one == nil })
 	if s.TechniqueDefault != nil {
 		s.TechniqueDefault.Name.Compare = criteria.IsText

@@ -273,6 +273,7 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		}
 	}
 	t.TraitModifierData = localData.TraitModifierData
+	t.Replacements = nameable.Normalize(t.Replacements)
 	if t.LocalNotes == "" && localData.ExprNotes != "" {
 		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}

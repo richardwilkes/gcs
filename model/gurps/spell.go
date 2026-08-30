@@ -367,6 +367,7 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	s.SpellData = localData.SpellData
+	s.Replacements = nameable.Normalize(s.Replacements)
 	if s.LocalNotes == "" && localData.ExprNotes != "" {
 		s.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}

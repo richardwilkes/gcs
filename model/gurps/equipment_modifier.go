@@ -256,6 +256,7 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	e.EquipmentModifierData = localData.EquipmentModifierData
+	e.Replacements = nameable.Normalize(e.Replacements)
 	if e.LocalNotes == "" && localData.ExprNotes != "" {
 		e.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}

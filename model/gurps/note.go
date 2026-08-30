@@ -223,6 +223,7 @@ func (n *Note) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	n.NoteData = localData.NoteData
+	n.Replacements = nameable.Normalize(n.Replacements)
 	if n.MarkDown == "" && localData.ExprText != "" {
 		n.MarkDown = EmbeddedExprToScript(localData.ExprText)
 	}
