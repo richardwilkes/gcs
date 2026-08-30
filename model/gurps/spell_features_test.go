@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
@@ -336,8 +337,8 @@ func TestSpellFillWithNameableKeysIncludesFeatures(t *testing.T) {
 	m := make(map[string]string)
 	spell.FillWithNameableKeys(m, nil)
 	c.Equal(map[string]string{
-		"what":  "what",
-		"skill": "skill",
-		"spec":  "spec",
+		"what":  nameable.Unset,
+		"skill": nameable.Unset,
+		"spec":  nameable.Unset,
 	}, m, "the keys from the spell's features are offered along with its own")
 }

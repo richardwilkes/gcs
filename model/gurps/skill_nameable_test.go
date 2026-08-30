@@ -12,6 +12,7 @@ package gurps
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -27,10 +28,10 @@ func TestSkillFillWithNameableKeys(t *testing.T) {
 	m := make(map[string]string)
 	s.FillWithNameableKeys(m, nil)
 	c.Equal(map[string]string{
-		"who":  "who",
-		"spec": "spec",
-		"opt":  "opt",
-		"note": "note",
+		"who":  nameable.Unset,
+		"spec": nameable.Unset,
+		"opt":  nameable.Unset,
+		"note": nameable.Unset,
 	}, m)
 }
 
@@ -44,5 +45,5 @@ func TestSkillOptionalSpecializationOnlyNameableKey(t *testing.T) {
 	s.OptionalSpecialization = "@region@"
 	m := make(map[string]string)
 	s.FillWithNameableKeys(m, nil)
-	c.Equal(map[string]string{"region": "region"}, m)
+	c.Equal(map[string]string{"region": nameable.Unset}, m)
 }

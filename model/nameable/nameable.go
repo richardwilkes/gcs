@@ -15,6 +15,11 @@ import (
 	"strings"
 )
 
+// Unset is a sentinel value used in the nameables map produced by Extract to indicate that a marker has no
+// recorded replacement yet. It is bracketed with NUL bytes so it won't collide with a value a user typed
+// or that came from file content. Callers that read Extract's output must treat it the same as the key being absent
+const Unset = "\x00unset\x00"
+
 // Filler defines the method for filling the nameable key map.
 type Filler interface {
 	// FillWithNameableKeys fills the map with nameable keys.
@@ -41,7 +46,7 @@ type Applier interface {
 }
 
 // Extract nameable markers from the provided strings
-// Each extracted marker will be a key and it's value will come from existing or be the default for the marker.
+// Each extracted marker will be a key and its value will come from replacements, or be Unset.
 func Extract(nameables, replacements map[string]string, in ...string) map[string]string {
 	if nameables == nil {
 		nameables = make(map[string]string)
@@ -55,7 +60,7 @@ func Extract(nameables, replacements map[string]string, in ...string) map[string
 					if v, exists := replacements[m.Key()]; exists {
 						nameables[m.Key()] = v
 					} else {
-						nameables[m.Key()] = m.DefaultValue()
+						nameables[m.Key()] = Unset
 					}
 				}
 			}
@@ -152,6 +157,10 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 // load-time normalization (see Normalize) or the output of a previous Reduce call. Reduce does not itself
 // normalize either map's keys.
 //
+// A replacements entry still holding the Unset sentinel (i.e. the substitutions dialog was shown but the user
+// never explicitly chose a value for that marker) is dropped rather than kept, so an untouched marker is never
+// persisted as if it had been resolved.
+//
 // Returns nil, not an empty map, when there is nothing to keep -- callers that assign the result directly to a
 // stored Replacements field and later write into it without a nil check (e.g. `x.Replacements[k] = v`) must guard
 // for nil first.
@@ -163,6 +172,9 @@ func Reduce(nameables, replacements map[string]string) map[string]string {
 
 	ret := make(map[string]string, min(len(nameables), len(replacements)))
 	for k, v := range replacements {
+		if v == Unset {
+			continue
+		}
 		if _, found := nameables[k]; found {
 			ret[k] = v
 		}
