@@ -273,7 +273,7 @@ func TestKeyIncludesAllowEmptyAndFreeFormTokens(t *testing.T) {
 func TestKeyNormalizesEquivalentMarkersToTheSameKey(t *testing.T) {
 	c := check.New(t)
 	// This is the whole point of Key(): two raw marker texts that differ only in segment order are semantically the
-	// same marker and must collapse to one entry in ExtractMarkers and one lookup slot in Extract/Apply.
+	// same marker and must collapse to one entry in Extract and one lookup slot in Extract/Apply.
 	a, ok := nameable.NewMarker("Element|Fire|Water|?")
 	c.True(ok)
 	b, ok := nameable.NewMarker("Element|?|Fire|Water")
@@ -351,7 +351,7 @@ func TestExtractMarkersEscapedBackslashBeforeAtIsNotEscapedAt(t *testing.T) {
 	c := check.New(t)
 	// Two literal backslashes immediately before '@' form one escaped-backslash pair (per the same pairing rule
 	// splitSegments uses for '|'), leaving the '@' itself unescaped and free to open a marker.
-	markers := nameable.ExtractMarkers(`A\\@Element|Fire|Water@ B`)
+	markers := nameable.Extract(nil, nil, `A\\@Element|Fire|Water@ B`)
 	c.Equal(1, len(markers))
 	_, ok := markers["Element|Fire|Water"]
 	c.True(ok)

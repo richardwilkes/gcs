@@ -204,25 +204,3 @@ func (m *Marker) DefaultValue() string {
 	}
 	return ""
 }
-
-// ExtractMarkers extracts and parses markers from input strings
-func ExtractMarkers(in ...string) map[string]Marker {
-	markers := map[string]Marker{}
-
-	for _, src := range in {
-		for _, part := range ExtractParts(src, MarkerDelimiter, MarkerDelimiter) {
-			if part.Placeholder {
-				// Unescape any escaped marker delimiters and trim leading/trailing space
-				raw := strings.TrimSpace(UnescapeRunes(part.Value, MarkerDelimiter))
-
-				// Parse the marker text into a Marker
-				if m, ok := NewMarker(raw); ok {
-					// We may end up with duplicates and that's fine, they will collapse to one entry
-					markers[m.Key()] = m
-				}
-			}
-		}
-	}
-
-	return markers
-}
