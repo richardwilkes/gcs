@@ -199,12 +199,12 @@ func (m *Marker) Key() string {
 
 // DefaultValue returns the default value for this marker when no replacement is provided.
 func (m *Marker) DefaultValue() string {
-	if !m.AllowEmpty && len(m.Options) > 0 {
-		return m.Options[0]
-	}
 	if m.Legacy {
 		// Legacy markers default to their own raw text for backward compatibility.
 		return m.Raw
+	}
+	if !m.AllowEmpty && len(m.Options) > 0 {
+		return m.Options[0]
 	}
 	if len(m.Options) == 0 && m.FreeForm && m.AllowEmpty && m.Tooltip == "" {
 		// A simple marker has no default and simply returns the label, retaining previous behavior.
