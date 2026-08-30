@@ -66,9 +66,9 @@ func (s *SpellPointBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (s *SpellPointBonus) FillWithNameableKeys(m, existing map[string]string) {
 	if s.SpellMatchType != spellmatch.AllColleges {
-		nameable.Extract(s.NameCriteria.Qualifier, m, existing)
+		nameable.Extract(m, existing, s.NameCriteria.Qualifier)
 	}
-	nameable.Extract(s.TagsCriteria.Qualifier, m, existing)
+	nameable.Extract(m, existing, s.TagsCriteria.Qualifier)
 }
 
 // SetLeveledOwner implements Bonus.

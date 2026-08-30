@@ -67,10 +67,13 @@ func (s *SkillPointBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (s *SkillPointBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(s.NameCriteria.Qualifier, m, existing)
-	nameable.Extract(s.SpecializationCriteria.Qualifier, m, existing)
-	nameable.Extract(s.OptionalSpecializationCriteria.Qualifier, m, existing)
-	nameable.Extract(s.TagsCriteria.Qualifier, m, existing)
+	nameable.Extract(
+		m, existing,
+		s.NameCriteria.Qualifier,
+		s.SpecializationCriteria.Qualifier,
+		s.OptionalSpecializationCriteria.Qualifier,
+		s.TagsCriteria.Qualifier,
+	)
 }
 
 // SetLeveledOwner implements Bonus.

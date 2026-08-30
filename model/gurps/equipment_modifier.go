@@ -256,6 +256,7 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	e.EquipmentModifierData = localData.EquipmentModifierData
+	e.Replacements = nameable.Normalize(e.Replacements)
 	if e.LocalNotes == "" && localData.ExprNotes != "" {
 		e.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}
@@ -541,8 +542,11 @@ func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) 
 		if existing == nil && e.equipment != nil {
 			existing = e.equipment.Replacements
 		}
-		nameable.Extract(e.Name, m, existing)
-		nameable.Extract(e.LocalNotes, m, existing)
+		nameable.Extract(
+			m, existing,
+			e.Name,
+			e.LocalNotes,
+		)
 		for _, one := range e.Features {
 			one.FillWithNameableKeys(m, existing)
 		}

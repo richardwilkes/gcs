@@ -65,7 +65,7 @@ func (s *ScriptPrereq) Hash(h hash.Hash) {
 
 // FillWithNameableKeys implements Prereq.
 func (s *ScriptPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(s.Script, m, existing)
+	nameable.Extract(m, existing, s.Script)
 }
 
 // Satisfied implements Prereq.

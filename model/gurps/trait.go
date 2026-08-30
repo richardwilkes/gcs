@@ -304,6 +304,7 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		setOpen = localData.IsOpen
 	}
 	t.TraitData = localData.TraitData
+	t.Replacements = nameable.Normalize(t.Replacements)
 	if t.LocalNotes == "" && localData.ExprNotes != "" {
 		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
 	}
@@ -800,9 +801,12 @@ func (t *Trait) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = t.Replacements
 	}
-	nameable.Extract(t.Name, m, existing)
-	nameable.Extract(t.LocalNotes, m, existing)
-	nameable.Extract(t.UserDesc, m, existing)
+	nameable.Extract(
+		m, existing,
+		t.Name,
+		t.LocalNotes,
+		t.UserDesc,
+	)
 	if t.Prereq != nil {
 		t.Prereq.FillWithNameableKeys(m, existing)
 	}
