@@ -128,7 +128,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		header.Font = unison.SystemFont
 		headerTitle := xstrings.Truncate(one, 50, true)
 		header.SetTitle(headerTitle)
-		if strings.HasSuffix(headerTitle, "…") {
+		if headerTitle != one {
 			header.Tooltip = newWrappedTooltip(one)
 		}
 		header.SetLayoutData(&unison.FlexLayoutData{
@@ -146,7 +146,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 			label := unison.NewLabel()
 			title := xstrings.Truncate(marker.Label, 60, true)
 			tooltip := marker.Tooltip
-			if strings.HasSuffix(title, "…") {
+			if title != marker.Label {
 				tooltip = strings.TrimSpace(marker.Label + "\n\n" + tooltip)
 			}
 			label.SetTitle(title)
