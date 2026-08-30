@@ -46,9 +46,9 @@ func NewMarker(raw string) (Marker, bool) {
 		return Marker{Raw: raw}, false
 	}
 
-	cleanSegment := func(in string) string { return strings.TrimSpace(UnescapeRunes(in, SegmentDelimiter)) }
+	cleanSegment := func(in string) string { return UnescapeRunes(in, EscapeRune, SegmentDelimiter) }
 
-	label := cleanSegment(segments[0])
+	label := cleanSegment(strings.TrimSpace(segments[0]))
 	if label == "" {
 		return Marker{Raw: raw}, false
 	}
@@ -101,7 +101,14 @@ func NewMarker(raw string) (Marker, bool) {
 	var tooltips []string
 
 	for _, rawSegment := range segments[1:] {
-		s := cleanSegment(rawSegment)
+		s := strings.TrimSpace(rawSegment)
+		if strings.HasPrefix(s, TooltipPrefixToken) && strings.HasSuffix(s, TooltipSuffixToken) {
+			tooltipSegment := s[len(TooltipPrefixToken) : len(s)-len(TooltipSuffixToken)]
+			tooltipSegment = strings.TrimSpace(UnescapeRunes(tooltipSegment, EscapeRune, SegmentDelimiter, '\n'))
+			tooltips = append(tooltips, strings.Split(tooltipSegment, "\n")...)
+			continue
+		}
+		s = cleanSegment(s)
 		if s == "" {
 			continue
 		}
@@ -111,12 +118,6 @@ func NewMarker(raw string) (Marker, bool) {
 		}
 		if s == AllowEmptyToken {
 			allowEmpty = true
-			continue
-		}
-		if strings.HasPrefix(s, TooltipPrefixToken) && strings.HasSuffix(s, TooltipSuffixToken) {
-			tooltipSegment := s[len(TooltipPrefixToken) : len(s)-len(TooltipSuffixToken)]
-			tooltipSegment = strings.TrimSpace(UnescapeRunes(tooltipSegment, EscapeRune, '\n'))
-			tooltips = append(tooltips, strings.Split(tooltipSegment, "\n")...)
 			continue
 		}
 		options = append(options, s)
