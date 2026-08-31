@@ -10,8 +10,8 @@ require (
 	github.com/richardwilkes/canvas v0.3.0
 	github.com/richardwilkes/pdfview v0.8.0
 	github.com/richardwilkes/rpgtools v1.14.0
-	github.com/richardwilkes/toolbox/v2 v2.17.1-0.20260829151906-52f6933993fa
-	github.com/richardwilkes/unison v0.101.1-0.20260828002716-2cf497d0ca95
+	github.com/richardwilkes/toolbox/v2 v2.18.0
+	github.com/richardwilkes/unison v0.102.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.5
@@ -29,12 +29,12 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cloudflare/circl v1.6.5 // indirect
 	github.com/dlclark/regexp2/v2 v2.7.1 // indirect
-	github.com/ebitengine/purego v0.11.0-alpha.10 // indirect
+	github.com/ebitengine/purego v0.11.0-alpha.11 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/go-text/typesetting v0.3.4 // indirect
-	github.com/google/pprof v0.0.0-20260825171938-4d453200e7d9 // indirect
+	github.com/google/pprof v0.0.0-20260830191439-4932ad3515ea // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
