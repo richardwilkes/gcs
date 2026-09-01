@@ -66,6 +66,10 @@ func (t *TemplatePicker) String() string {
 
 // Hash writes this object's contents into the hasher.
 func (t *TemplatePicker) Hash(h hash.Hash) {
+	if t == nil {
+		xhash.Num8(h, picker.DefaultType)
+		return
+	}
 	xhash.Num8(h, t.Type)
 	t.Qualifier.Hash(h)
 }

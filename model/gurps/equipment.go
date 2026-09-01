@@ -47,6 +47,10 @@ var (
 	_ LeveledOwner      = &Equipment{}
 	_ TechLevelProvider = &Equipment{}
 	_ FeatureSwitcher   = &Equipment{}
+
+	_ TemplatePickerProvider = &EquipmentData{}
+	_ TemplatePickerProvider = &EquipmentEditData{}
+	_ TemplatePickerProvider = &EquipmentContainerOnlySyncData{}
 )
 
 // Columns that can be used with the equipment method .CellData()
@@ -89,6 +93,7 @@ type EquipmentData struct {
 // EquipmentEditData holds the Equipment data that can be edited by the UI detail editor.
 type EquipmentEditData struct {
 	EquipmentSyncData
+	EquipmentContainerOnlySyncData
 	VTTNotes     string               `json:"vtt_notes,omitzero"`
 	Replacements map[string]string    `json:"replacements,omitempty"`
 	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
@@ -117,6 +122,25 @@ type EquipmentSyncData struct {
 	Weapons                []*Weapon   `json:"weapons,omitempty"`
 	Features               Features    `json:"features,omitempty"`
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
+}
+
+// EquipmentContainerOnlySyncData holds the skill sync data that is only applicable to equipment that are containers.
+type EquipmentContainerOnlySyncData struct {
+	TemplatePicker *TemplatePicker `json:"template_picker,omitzero"`
+}
+
+// TemplatePickerData returns the TemplatePicker data, if any.
+func (e *EquipmentContainerOnlySyncData) TemplatePickerData() *TemplatePicker {
+	return e.TemplatePicker
+}
+
+// SetTemplatePickerData sets the TemplatePicker data.
+func (e *EquipmentContainerOnlySyncData) SetTemplatePickerData(tp *TemplatePicker) {
+	e.TemplatePicker = tp
+}
+
+func (e *EquipmentContainerOnlySyncData) hash(h hash.Hash) {
+	e.TemplatePicker.Hash(h)
 }
 
 type equipmentListData struct {
@@ -161,6 +185,9 @@ func NewEquipment(owner DataOwner, parent *Equipment, container bool) *Equipment
 	e.parent = parent
 	e.owner = owner
 	e.SetOpen(container)
+	if container {
+		e.TemplatePicker = &TemplatePicker{}
+	}
 	return &e
 }
 
@@ -1072,11 +1099,13 @@ func (e *Equipment) CanConvertToFromContainer() bool {
 // ConvertToContainer converts this node to a container.
 func (e *Equipment) ConvertToContainer() {
 	e.TID = tid.TID(kinds.EquipmentContainer) + e.TID[1:]
+	e.ClearUnusedFieldsForType()
 }
 
 // ConvertToNonContainer converts this node to a non-container.
 func (e *Equipment) ConvertToNonContainer() {
 	e.TID = tid.TID(kinds.Equipment) + e.TID[1:]
+	e.ClearUnusedFieldsForType()
 }
 
 // Kind returns the kind of data.
@@ -1089,8 +1118,13 @@ func (e *Equipment) Kind() string {
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (e *Equipment) ClearUnusedFieldsForType() {
-	if !e.Container() {
+	if e.Container() {
+		if e.TemplatePicker == nil {
+			e.TemplatePicker = &TemplatePicker{}
+		}
+	} else {
 		e.Children = nil
+		e.EquipmentContainerOnlySyncData = EquipmentContainerOnlySyncData{}
 	}
 }
 
@@ -1111,6 +1145,9 @@ func (e *Equipment) SyncWithSource() {
 			if other, ok := data.(*Equipment); ok {
 				e.EquipmentSyncData = other.EquipmentSyncData
 				e.Tags = slices.Clone(other.Tags)
+				if e.Container() {
+					e.TemplatePicker = other.TemplatePicker.Clone()
+				}
 				e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 				e.Weapons = CloneWeapons(other.Weapons, e, Reference)
 				e.Features = other.Features.Clone()
@@ -1122,10 +1159,16 @@ func (e *Equipment) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
-	e.hash(h)
+	e.EquipmentSyncData.hash(h)
+	if e.Container() {
+		e.EquipmentContainerOnlySyncData.hash(h)
+	}
 }
 
 func (e *EquipmentSyncData) hash(h hash.Hash) {
+	if e == nil {
+		return
+	}
 	xhash.StringWithLen(h, e.Name)
 	xhash.StringWithLen(h, e.PageRef)
 	xhash.StringWithLen(h, e.PageRefHighlight)
@@ -1211,6 +1254,7 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
 	e.Weapons = CloneWeapons(other.Weapons, equipment, mode)
 	e.Features = other.Features.Clone()
+	e.TemplatePicker = other.TemplatePicker.Clone()
 }
 
 // CanPreconfigureContainer implements Preconfigurable.
