@@ -47,7 +47,11 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	}
 	children := row.NodeChildren()
 	tpp, ok := any(row).(gurps.TemplatePickerProvider)
-	if !ok || tpp.TemplatePickerData().IsZero() {
+	var tp *gurps.TemplatePicker
+	if ok {
+		_, tp = tpp.TemplatePickerData()
+	}
+	if !ok || tp.IsZero() {
 		rowChildren := make([]T, 0, len(children))
 		for _, child := range children {
 			var result []T
@@ -61,7 +65,6 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		SetParents(rowChildren, row)
 		return []T{row}, false
 	}
-	tp := tpp.TemplatePickerData()
 
 	list := unison.NewPanel()
 	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
@@ -126,7 +129,7 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		}
 	}
 	for _, child := range children {
-		boxes = addPickerRow(list, child, callback, boxes)
+		boxes = addPickerRow(list, child, tp.Type, callback, boxes)
 	}
 
 	scroll := unison.NewScrollPanel()
@@ -219,7 +222,7 @@ func pickerMatchStateColor(matches bool) unison.Color {
 	return unison.ThemeError.GetColor()
 }
 
-func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
+func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -227,7 +230,7 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, callback func(),
 	})
 	parent.AddChild(wrapper)
 	checkBox := unison.NewCheckBox()
-	updatePickerCheckBoxTitle(checkBox, row)
+	updatePickerCheckBoxTitle(checkBox, row, pt)
 	checkBox.ClickCallback = callback
 	wrapper.AddChild(checkBox)
 	boxes = append(boxes, checkBox)
@@ -237,19 +240,19 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, callback func(),
 	switch actual := any(row).(type) {
 	case *gurps.Trait:
 		if actual.IsLeveled() {
-			onClick = func() { pickerRowLevelEditor(actual, checkBox, callback) }
+			onClick = func() { pickerRowLevelEditor(actual, checkBox, pt, callback) }
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Skill:
 		if !actual.Container() {
-			onClick = func() { pickerRowPointEditor(actual, checkBox, callback) }
+			onClick = func() { pickerRowPointEditor(actual, checkBox, pt, callback) }
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Spell:
 		if !actual.Container() {
-			onClick = func() { pickerRowPointEditor(actual, checkBox, callback) }
+			onClick = func() { pickerRowPointEditor(actual, checkBox, pt, callback) }
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
@@ -293,20 +296,27 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, callback func(),
 	return boxes
 }
 
-func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T) {
+func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T, pt picker.Type) {
 	title := row.String()
-	points := rawPoints(row)
-	if points != 0 {
-		pointsLabel := i18n.Text("points")
-		if points == fxp.One {
-			pointsLabel = i18n.Text("point")
+	switch pt {
+	case picker.Points:
+		points := rawPoints(row)
+		if points != 0 {
+			pointsLabel := i18n.Text("points")
+			if points == fxp.One {
+				pointsLabel = i18n.Text("point")
+			}
+			title += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
 		}
-		title += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
+	case picker.Count:
+		// NOP
+	default:
+		// NOP
 	}
 	checkBox.SetTitle(title)
 }
 
-func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, callback func()) {
+func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
 	levels := trait.Levels
 	maximum := trait.ResolvedMaxLevels()
 	fieldMax := fxp.MaxBasePoints
@@ -343,7 +353,7 @@ func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, callbac
 		return
 	}
 	trait.Levels = levels
-	updatePickerCheckBoxTitle(checkBox, trait)
+	updatePickerCheckBoxTitle(checkBox, trait, pt)
 	callback()
 	checkBox.MarkForLayoutRecursivelyUpward()
 	checkBox.MarkForRedraw()
@@ -354,7 +364,7 @@ type pickerRowPointEditorTypes[T gurps.Node[T]] interface {
 	gurps.RawPointsAdjuster
 }
 
-func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unison.CheckBox, callback func()) {
+func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
 	points := node.RawPoints()
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -381,7 +391,7 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unis
 		return
 	}
 	node.SetRawPoints(points)
-	updatePickerCheckBoxTitle(checkBox, node)
+	updatePickerCheckBoxTitle(checkBox, node, pt)
 	callback()
 	checkBox.MarkForLayoutRecursivelyUpward()
 	checkBox.MarkForRedraw()

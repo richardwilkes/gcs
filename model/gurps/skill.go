@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -130,7 +131,7 @@ type SkillNonContainerOnlySyncData struct {
 
 // SkillContainerOnlySyncData holds the skill sync data that is only applicable to skills that are containers.
 type SkillContainerOnlySyncData struct {
-	TemplatePicker *TemplatePicker `json:"template_picker,omitzero"`
+	TemplatePicker TemplatePicker `json:"template_picker,omitzero"`
 }
 
 type skillListData struct {
@@ -176,9 +177,7 @@ func NewSkill(owner DataOwner, parent *Skill, container bool) *Skill {
 	s.TID = tid.MustNewTID(skillKind(container))
 	s.parent = parent
 	s.owner = owner
-	if container {
-		s.TemplatePicker = &TemplatePicker{}
-	} else {
+	if !container {
 		s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), DexterityID)
 		s.Difficulty.Difficulty = difficulty.Average
 		s.Points = fxp.One
@@ -388,14 +387,9 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// TemplatePickerData returns the TemplatePicker data, if any.
-func (s *SkillContainerOnlySyncData) TemplatePickerData() *TemplatePicker {
-	return s.TemplatePicker
-}
-
-// SetTemplatePickerData sets the TemplatePicker data.
-func (s *SkillContainerOnlySyncData) SetTemplatePickerData(tp *TemplatePicker) {
-	s.TemplatePicker = tp
+// TemplatePickerData implements TemplatePickerProvider.
+func (s *SkillContainerOnlySyncData) TemplatePickerData() ([]picker.Type, *TemplatePicker) {
+	return picker.TypesForSkills, &s.TemplatePicker
 }
 
 // SkillsHeaderData returns the header data information for the given skill column.
@@ -1412,9 +1406,6 @@ func (s *Skill) ClearUnusedFieldsForType() {
 		// Clearing the switch keeps a stale on-state from being carried around with no way for the user to reach it.
 		s.ItemSwitch = ItemSwitch{}
 		s.Difficulty = AttributeDifficulty{omit: true}
-		if s.TemplatePicker == nil {
-			s.TemplatePicker = &TemplatePicker{}
-		}
 	} else {
 		s.SkillContainerOnlySyncData = SkillContainerOnlySyncData{}
 		s.Children = nil
@@ -1447,7 +1438,6 @@ func (s *Skill) SyncWithSource() {
 				s.Tags = slices.Clone(other.Tags)
 				if s.Container() {
 					s.SkillContainerOnlySyncData = other.SkillContainerOnlySyncData
-					s.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
 					s.SkillNonContainerOnlySyncData = other.SkillNonContainerOnlySyncData
 					if len(other.Defaults) != 0 {
@@ -1596,5 +1586,4 @@ func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer
 			s.Study[i] = other.Study[i].Clone()
 		}
 	}
-	s.TemplatePicker = other.TemplatePicker.Clone()
 }

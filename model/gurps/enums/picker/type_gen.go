@@ -40,6 +40,27 @@ var Types = []Type{
 	Points,
 }
 
+// TypesForSkills holds the Types valid for the "skills" group.
+var TypesForSkills = []Type{
+	NotApplicable,
+	Count,
+	Points,
+}
+
+// TypesForSpells holds the Types valid for the "spells" group.
+var TypesForSpells = []Type{
+	NotApplicable,
+	Count,
+	Points,
+}
+
+// TypesForTraits holds the Types valid for the "traits" group.
+var TypesForTraits = []Type{
+	NotApplicable,
+	Count,
+	Points,
+}
+
 // Type holds the type of template picker.
 type Type byte
 

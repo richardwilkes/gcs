@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -115,7 +116,7 @@ type SpellNonContainerOnlyEditData struct {
 
 // SpellContainerOnlySyncData holds the spell sync data that is only applicable to spells that are containers.
 type SpellContainerOnlySyncData struct {
-	TemplatePicker *TemplatePicker `json:"template_picker,omitzero"`
+	TemplatePicker TemplatePicker `json:"template_picker,omitzero"`
 }
 
 // SpellSyncData holds the spell sync data that is common to both containers and non-containers.
@@ -181,9 +182,7 @@ func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 	s.TID = tid.MustNewTID(spellKind(container))
 	s.parent = parent
 	s.owner = owner
-	if container {
-		s.TemplatePicker = &TemplatePicker{}
-	} else {
+	if !container {
 		s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), IntelligenceID)
 		s.Difficulty.Difficulty = difficulty.Hard
 		s.PowerSource = "Arcane"
@@ -389,14 +388,9 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// TemplatePickerData returns the TemplatePicker data, if any.
-func (s *SpellContainerOnlySyncData) TemplatePickerData() *TemplatePicker {
-	return s.TemplatePicker
-}
-
-// SetTemplatePickerData sets the TemplatePicker data.
-func (s *SpellContainerOnlySyncData) SetTemplatePickerData(tp *TemplatePicker) {
-	s.TemplatePicker = tp
+// TemplatePickerData implements TemplatePickerProvider.
+func (s *SpellContainerOnlySyncData) TemplatePickerData() ([]picker.Type, *TemplatePicker) {
+	return picker.TypesForSpells, &s.TemplatePicker
 }
 
 // SpellsHeaderData returns the header data information for the given spell column.
@@ -1208,9 +1202,6 @@ func (s *Spell) ClearUnusedFieldsForType() {
 		// Clearing the switch keeps a stale on-state from being carried around with no way for the user to reach it.
 		s.ItemSwitch = ItemSwitch{}
 		s.Difficulty = AttributeDifficulty{omit: true}
-		if s.TemplatePicker == nil {
-			s.TemplatePicker = &TemplatePicker{}
-		}
 	} else {
 		s.SpellContainerOnlySyncData = SpellContainerOnlySyncData{}
 		s.Children = nil
@@ -1237,7 +1228,6 @@ func (s *Spell) SyncWithSource() {
 				s.Tags = slices.Clone(other.Tags)
 				if s.Container() {
 					s.SpellContainerOnlySyncData = other.SpellContainerOnlySyncData
-					s.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
 					s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
 					s.College = slices.Clone(s.College)
@@ -1340,5 +1330,4 @@ func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer
 			s.Study[i] = other.Study[i].Clone()
 		}
 	}
-	s.TemplatePicker = s.TemplatePicker.Clone()
 }
