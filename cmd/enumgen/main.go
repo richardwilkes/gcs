@@ -44,6 +44,7 @@ type enumValue struct {
 	OldKeys       []string
 	String        string
 	Alt           string
+	Groups        []string
 	NoLocalize    bool
 	NoLocalizeAlt bool
 	EmptyStringOK bool
@@ -211,6 +212,51 @@ func (e *enumInfo) RealValues() []*enumValue {
 
 	}
 	return e.Values
+}
+
+// Groups returns the raw group memberships declared on this enum's values, keyed by group name, each holding the
+// identifiers of the member values in declaration order. The template is responsible for turning a group name into a
+// proper Go identifier and deciding what to name and how to render the resulting variable.
+//
+// A value whose Groups includes "*" is treated as a member of every other named group declared anywhere in this
+// enum's values, in addition to any groups it names explicitly. If the enum declares no named groups at all, "*" has
+// nothing to expand into and is ignored.
+func (e *enumInfo) Groups() map[string][]string {
+	if len(e.Values) == 0 {
+		return nil
+	}
+	named := make(map[string]bool)
+	for _, v := range e.Values {
+		for _, g := range v.Groups {
+			if g != "*" {
+				named[g] = true
+			}
+		}
+	}
+	if len(named) == 0 {
+		return nil
+	}
+	groups := make(map[string][]string)
+	for _, v := range e.Values {
+		id := e.IDFor(v)
+		added := make(map[string]bool)
+		add := func(name string) {
+			if !added[name] {
+				added[name] = true
+				groups[name] = append(groups[name], id)
+			}
+		}
+		for _, g := range v.Groups {
+			if g == "*" {
+				for name := range named {
+					add(name)
+				}
+			} else {
+				add(g)
+			}
+		}
+	}
+	return groups
 }
 
 func (e *enumInfo) NeedI18N() bool {
