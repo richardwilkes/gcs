@@ -389,6 +389,11 @@ func (s *SkillContainerOnlySyncData) TemplatePickerData() *TemplatePicker {
 	return s.TemplatePicker
 }
 
+// SetTemplatePickerData sets the TemplatePicker data.
+func (s *SkillContainerOnlySyncData) SetTemplatePickerData(tp *TemplatePicker) {
+	s.TemplatePicker = tp
+}
+
 // SkillsHeaderData returns the header data information for the given skill column.
 func SkillsHeaderData(columnID int) HeaderData {
 	var data HeaderData
