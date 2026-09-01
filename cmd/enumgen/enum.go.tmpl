@@ -45,6 +45,15 @@ var {{$name}}s = []{{$name}}{
     {{- end}}
 }
 
+{{range $group, $ids := .Groups -}}
+{{wrapComment (printf "%ssFor%s holds the %ss valid for the %q group." $name (toIdentifier $group) $name $group) 116}}
+var {{$name}}sFor{{toIdentifier $group}} = []{{$name}}{
+    {{- range $ids}}
+    {{.}},
+    {{- end}}
+}
+
+{{end -}}
 {{wrapComment (printf "%s %s." $name .Desc) 120}}
 type {{$name}} byte
 
