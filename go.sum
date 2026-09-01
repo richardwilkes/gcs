@@ -22,10 +22,10 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2/v2 v2.7.1 h1:yqDtwI1ptXXvEUNpYTk2lad4jLtAcKqkzepn4savSk4=
 github.com/dlclark/regexp2/v2 v2.7.1/go.mod h1:avUrQvPaLz2DrFNHJF0taWAFFX2C1GMSSoeiqFjcBmU=
-github.com/dop251/goja v0.0.0-20260826204918-8f1c0696a37b h1:mYHoARbZ0mUYXXsaNeHoDFBft3TK4PpFEe3KU7hdDgg=
-github.com/dop251/goja v0.0.0-20260826204918-8f1c0696a37b/go.mod h1:u8yZRUavu+N4EnFFy6J5fVtjE7lEcZ2YyV2GcBXY9c8=
-github.com/ebitengine/purego v0.11.0-alpha.11 h1:M0Rv0h9UejkDKQnlPF8/OzcMkpnlrTreUxtX+zOMqDE=
-github.com/ebitengine/purego v0.11.0-alpha.11/go.mod h1:DCHPP08djqhNSoTfImcnHYQRZmd0qhakvrozqaEYhGQ=
+github.com/dop251/goja v0.0.0-20260901132549-43234fa61381 h1:vzmJ+R9qxuaksCAB+Kn6wtGgQ01cIfKzUGwWWcX5zXI=
+github.com/dop251/goja v0.0.0-20260901132549-43234fa61381/go.mod h1:u8yZRUavu+N4EnFFy6J5fVtjE7lEcZ2YyV2GcBXY9c8=
+github.com/ebitengine/purego v0.11.0 h1:jhp/D+Nyv7UUW8HAcmcjt2N2rYrYi9m3SL21k0Ua/NI=
+github.com/ebitengine/purego v0.11.0/go.mod h1:DCHPP08djqhNSoTfImcnHYQRZmd0qhakvrozqaEYhGQ=
 github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
 github.com/gliderlabs/ssh v0.3.8 h1:a4YXD1V7xMF9g5nTkdfnja3Sxy1PVDCj1Zg4Wb8vY6c=
@@ -77,8 +77,8 @@ github.com/richardwilkes/pdfview v0.8.0 h1:Qd1StxzSlju/pdunUQfxJRX+8xCHk/PyIlUvI
 github.com/richardwilkes/pdfview v0.8.0/go.mod h1:qSkVI4lyTge4gKTh5TK0WPvyQhXgqOgYH6sHG/+uFfc=
 github.com/richardwilkes/rpgtools v1.14.0 h1:wTUTokRzF6eScPIiko6X5c7QA3clTNLHiOXwbq4QKls=
 github.com/richardwilkes/rpgtools v1.14.0/go.mod h1:XUrkoraM3YiXeS9FRhOIBlWP7/SVY3YvEgytWIQm4CQ=
-github.com/richardwilkes/toolbox/v2 v2.18.0 h1:GdH3oOFFxHwYq5ghEAHr15WT04saVuVrEmKQsfkZTjc=
-github.com/richardwilkes/toolbox/v2 v2.18.0/go.mod h1:7UgBxfqnGbzSo+Wdkf+RRKM/1YOBilwol6jvjLhwvYE=
+github.com/richardwilkes/toolbox/v2 v2.19.0 h1:06426jdRdNu/8iHsRtvyKoJHyGSRDrigvzsXOb8a6sQ=
+github.com/richardwilkes/toolbox/v2 v2.19.0/go.mod h1:7UgBxfqnGbzSo+Wdkf+RRKM/1YOBilwol6jvjLhwvYE=
 github.com/richardwilkes/unison v0.102.0 h1:wT3lNkSClBRUmYSiP0HFJS7aoXHjY5QgaJAr8Wn3MbU=
 github.com/richardwilkes/unison v0.102.0/go.mod h1:8dvfjPGaAuJf+ouqEdJGsi7M49CP/VxmCxotZrTbkR8=
 github.com/rjeczalik/notify v0.9.3 h1:6rJAzHTGKXGj76sbRgDiDcYj/HniypXmSJo1SWakZeY=
