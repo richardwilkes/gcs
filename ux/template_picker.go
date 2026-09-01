@@ -46,12 +46,13 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		return []T{row}, false
 	}
 	children := row.NodeChildren()
-	tpp, ok := any(row).(gurps.TemplatePickerProvider)
 	var tp *gurps.TemplatePicker
-	if ok {
-		_, tp = tpp.TemplatePickerData()
+	if tpp, ok := any(row).(gurps.TemplatePickerProvider); ok {
+		if ok {
+			_, tp = tpp.TemplatePickerData()
+		}
 	}
-	if !ok || tp.IsZero() {
+	if tp.IsZero() {
 		rowChildren := make([]T, 0, len(children))
 		for _, child := range children {
 			var result []T
@@ -104,6 +105,10 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 					total += fxp.One
 				case picker.Points:
 					total += rawPoints(children[i])
+				case picker.Quantity, picker.Cost, picker.Weight:
+					if equipment, valid := any(children[i]).(*gurps.Equipment); valid {
+						total += equipmentPickerMeasure(equipment, tp.Type)
+					}
 				}
 			}
 		}
@@ -256,6 +261,9 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
+	case *gurps.Equipment:
+		pageRef = actual.PageRef
+		pageRefHighlight = actual.PageRefHighlight
 	}
 	if pageRef != "" {
 		if pageRefs := ExtractPageReferences(pageRef); len(pageRefs) > 0 {
@@ -310,10 +318,63 @@ func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T
 		}
 	case picker.Count:
 		// NOP
+	case picker.Quantity, picker.Cost, picker.Weight:
+		if equipment, ok := any(row).(*gurps.Equipment); ok {
+			title += equipmentPickerMeasureSuffix(equipment, pt)
+		}
 	default:
 		// NOP
 	}
 	checkBox.SetTitle(title)
+}
+
+// equipmentPickerMeasure returns the quantity that a piece of equipment contributes toward a Quantity, Cost, or
+// Weight picker's running total.
+func equipmentPickerMeasure(equipment *gurps.Equipment, pt picker.Type) fxp.Int {
+	switch pt {
+	case picker.Quantity:
+		return equipment.Quantity
+	case picker.Cost:
+		return equipment.ExtendedValue()
+	case picker.Weight:
+		units := gurps.SheetSettingsFor(gurps.EntityFromNode(equipment)).DefaultWeightUnits
+		return fxp.Int(equipment.ExtendedWeight(false, units))
+	default:
+		return 0
+	}
+}
+
+// equipmentPickerMeasureSuffix returns the "[...]" tag to append to a checkbox title showing the value that
+// contributes to the active picker's total, formatted appropriately for its type. Count and NotApplicable pickers
+// have nothing informative to add per-row, so they return an empty string.
+func equipmentPickerMeasureSuffix(equipment *gurps.Equipment, pt picker.Type) string {
+	switch pt {
+	case picker.Quantity:
+		qty := equipment.Quantity
+		if qty == 0 {
+			return ""
+		}
+		unitLabel := i18n.Text("units")
+		if qty == fxp.One {
+			unitLabel = i18n.Text("unit")
+		}
+		return fmt.Sprintf(" [%s %s]", qty.Comma(), unitLabel)
+	case picker.Cost:
+		cost := equipment.ExtendedValue()
+		if cost == 0 {
+			return ""
+		}
+		return fmt.Sprintf(" [%s]", cost.Comma())
+	case picker.Weight:
+		units := gurps.SheetSettingsFor(gurps.EntityFromNode(equipment)).DefaultWeightUnits
+		weight := equipment.ExtendedWeight(false, units)
+		if weight == 0 {
+			return ""
+		}
+		return fmt.Sprintf(" [%s]", units.Format(weight))
+	default:
+		return ""
+	}
 }
 
 func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, pt picker.Type, callback func()) {

@@ -382,6 +382,9 @@ func processTemplatePickers(rows *templateRows) bool {
 	if rows.spells, abort = processPickerRows(rows.spells); abort {
 		return false
 	}
+	if rows.equipment, abort = processPickerRows(rows.equipment); abort {
+		return false
+	}
 	return true
 }
 

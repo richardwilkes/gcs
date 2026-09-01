@@ -50,6 +50,12 @@ func (t TemplatePicker) String() string {
 			points = i18n.Text("point")
 		}
 		return fmt.Sprintf(i18n.Text("Pick %s %s worth"), t.Qualifier.AltString(), points)
+	case picker.Quantity:
+		return fmt.Sprintf(i18n.Text("Pick %s in quantity"), t.Qualifier.AltString())
+	case picker.Cost:
+		return fmt.Sprintf(i18n.Text("Pick %s worth of cost"), t.Qualifier.AltString())
+	case picker.Weight:
+		return fmt.Sprintf(i18n.Text("Pick %s worth of weight"), t.Qualifier.AltString())
 	default:
 		return ""
 	}

@@ -22,6 +22,9 @@ const (
 	NotApplicable Type = iota
 	Count
 	Points
+	Quantity
+	Cost
+	Weight
 )
 
 // DefaultType is the default value.
@@ -31,13 +34,25 @@ const DefaultType Type = NotApplicable
 const FirstType Type = NotApplicable
 
 // LastType is the last valid value.
-const LastType Type = Points
+const LastType Type = Weight
 
 // Types holds all possible values.
 var Types = []Type{
 	NotApplicable,
 	Count,
 	Points,
+	Quantity,
+	Cost,
+	Weight,
+}
+
+// TypesForEquipment holds the Types valid for the "equipment" group.
+var TypesForEquipment = []Type{
+	NotApplicable,
+	Count,
+	Quantity,
+	Cost,
+	Weight,
 }
 
 // TypesForSkills holds the Types valid for the "skills" group.
@@ -81,6 +96,12 @@ func (enum Type) Key() string {
 		return "count"
 	case Points:
 		return "points"
+	case Quantity:
+		return "quantity"
+	case Cost:
+		return "cost"
+	case Weight:
+		return "weight"
 	default:
 		return DefaultType.Key()
 	}
@@ -95,6 +116,12 @@ func (enum Type) String() string {
 		return i18n.Text(`Count`)
 	case Points:
 		return i18n.Text(`Points`)
+	case Quantity:
+		return i18n.Text(`Quantity`)
+	case Cost:
+		return i18n.Text(`Cost`)
+	case Weight:
+		return i18n.Text(`Weight`)
 	default:
 		return DefaultType.String()
 	}

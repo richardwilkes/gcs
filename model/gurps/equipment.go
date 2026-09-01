@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
@@ -47,6 +48,10 @@ var (
 	_ LeveledOwner      = &Equipment{}
 	_ TechLevelProvider = &Equipment{}
 	_ FeatureSwitcher   = &Equipment{}
+
+	_ TemplatePickerProvider = &EquipmentData{}
+	_ TemplatePickerProvider = &EquipmentEditData{}
+	_ TemplatePickerProvider = &EquipmentContainerOnlySyncData{}
 )
 
 // Columns that can be used with the equipment method .CellData()
@@ -89,6 +94,7 @@ type EquipmentData struct {
 // EquipmentEditData holds the Equipment data that can be edited by the UI detail editor.
 type EquipmentEditData struct {
 	EquipmentSyncData
+	EquipmentContainerOnlySyncData
 	VTTNotes     string               `json:"vtt_notes,omitzero"`
 	Replacements map[string]string    `json:"replacements,omitempty"`
 	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
@@ -117,6 +123,20 @@ type EquipmentSyncData struct {
 	Weapons                []*Weapon   `json:"weapons,omitempty"`
 	Features               Features    `json:"features,omitempty"`
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
+}
+
+// EquipmentContainerOnlySyncData holds the skill sync data that is only applicable to equipment that are containers.
+type EquipmentContainerOnlySyncData struct {
+	TemplatePicker TemplatePicker `json:"template_picker,omitzero"`
+}
+
+// TemplatePickerData implements TemplatePickerProvider.
+func (e *EquipmentContainerOnlySyncData) TemplatePickerData() ([]picker.Type, *TemplatePicker) {
+	return picker.TypesForEquipment, &e.TemplatePicker
+}
+
+func (e *EquipmentContainerOnlySyncData) hash(h hash.Hash) {
+	e.TemplatePicker.Hash(h)
 }
 
 type equipmentListData struct {
@@ -433,6 +453,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.TemplateInfo = e.TemplatePicker.String()
 	case EquipmentTLColumn:
 		data.Type = cell.Text
 		data.Primary = e.TechLevel
@@ -1072,11 +1093,13 @@ func (e *Equipment) CanConvertToFromContainer() bool {
 // ConvertToContainer converts this node to a container.
 func (e *Equipment) ConvertToContainer() {
 	e.TID = tid.TID(kinds.EquipmentContainer) + e.TID[1:]
+	e.ClearUnusedFieldsForType()
 }
 
 // ConvertToNonContainer converts this node to a non-container.
 func (e *Equipment) ConvertToNonContainer() {
 	e.TID = tid.TID(kinds.Equipment) + e.TID[1:]
+	e.ClearUnusedFieldsForType()
 }
 
 // Kind returns the kind of data.
@@ -1091,6 +1114,7 @@ func (e *Equipment) Kind() string {
 func (e *Equipment) ClearUnusedFieldsForType() {
 	if !e.Container() {
 		e.Children = nil
+		e.EquipmentContainerOnlySyncData = EquipmentContainerOnlySyncData{}
 	}
 }
 
@@ -1110,7 +1134,9 @@ func (e *Equipment) SyncWithSource() {
 		if state, data := e.owner.SourceMatcher().Match(e); state == srcstate.Mismatched {
 			if other, ok := data.(*Equipment); ok {
 				e.EquipmentSyncData = other.EquipmentSyncData
+				e.EquipmentContainerOnlySyncData = other.EquipmentContainerOnlySyncData
 				e.Tags = slices.Clone(other.Tags)
+				e.TemplatePicker = other.TemplatePicker
 				e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 				e.Weapons = CloneWeapons(other.Weapons, e, Reference)
 				e.Features = other.Features.Clone()
@@ -1122,10 +1148,16 @@ func (e *Equipment) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
-	e.hash(h)
+	e.EquipmentSyncData.hash(h)
+	if e.Container() {
+		e.EquipmentContainerOnlySyncData.hash(h)
+	}
 }
 
 func (e *EquipmentSyncData) hash(h hash.Hash) {
+	if e == nil {
+		return
+	}
 	xhash.StringWithLen(h, e.Name)
 	xhash.StringWithLen(h, e.PageRef)
 	xhash.StringWithLen(h, e.PageRefHighlight)

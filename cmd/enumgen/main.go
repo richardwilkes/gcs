@@ -1006,6 +1006,9 @@ var allEnums = []*enumInfo{
 			{Key: "not_applicable", Groups: []string{"*"}},
 			{Key: "count", Groups: []string{"*"}},
 			{Key: "points", Groups: []string{"traits", "skills", "spells"}},
+			{Key: "quantity", Groups: []string{"equipment"}},
+			{Key: "cost", Groups: []string{"equipment"}},
+			{Key: "weight", Groups: []string{"equipment"}},
 		},
 	},
 	{
