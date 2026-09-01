@@ -390,6 +390,11 @@ func (s *SpellContainerOnlySyncData) TemplatePickerData() *TemplatePicker {
 	return s.TemplatePicker
 }
 
+// SetTemplatePickerData sets the TemplatePicker data.
+func (s *SpellContainerOnlySyncData) SetTemplatePickerData(tp *TemplatePicker) {
+	s.TemplatePicker = tp
+}
+
 // SpellsHeaderData returns the header data information for the given spell column.
 func SpellsHeaderData(columnID int) HeaderData {
 	var data HeaderData

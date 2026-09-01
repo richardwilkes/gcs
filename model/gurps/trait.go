@@ -362,6 +362,11 @@ func (t *TraitContainerSyncData) TemplatePickerData() *TemplatePicker {
 	return t.TemplatePicker
 }
 
+// SetTemplatePickerData sets the TemplatePicker data.
+func (t *TraitContainerSyncData) SetTemplatePickerData(tp *TemplatePicker) {
+	t.TemplatePicker = tp
+}
+
 // TraitsHeaderData returns the header data information for the given trait column.
 func TraitsHeaderData(columnID int) HeaderData {
 	var data HeaderData

@@ -23,6 +23,7 @@ import (
 // TemplatePickerProvider defines the methods a TemplatePicker provider has.
 type TemplatePickerProvider interface {
 	TemplatePickerData() *TemplatePicker
+	SetTemplatePickerData(*TemplatePicker)
 }
 
 // TemplatePicker holds the data necessary to allow a template choice to be made.
