@@ -52,6 +52,10 @@ var (
 	_ TemplatePickerProvider = &Trait{}
 	_ LeveledOwner           = &Trait{}
 	_ FeatureSwitcher        = &Trait{}
+
+	_ TemplatePickerProvider = &TraitData{}
+	_ TemplatePickerProvider = &TraitEditData{}
+	_ TemplatePickerProvider = &TraitContainerSyncData{}
 )
 
 // Columns that can be used with the trait method .CellData()

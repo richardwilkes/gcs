@@ -48,6 +48,10 @@ var (
 	_ TemplatePickerProvider  = &Skill{}
 	_ FeatureSwitcher         = &Skill{}
 	_ LeveledOwner            = &Skill{}
+
+	_ TemplatePickerProvider = &SkillData{}
+	_ TemplatePickerProvider = &SkillEditData{}
+	_ TemplatePickerProvider = &SkillContainerOnlySyncData{}
 )
 
 // Columns that can be used with the skill method .CellData()

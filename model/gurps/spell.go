@@ -48,6 +48,10 @@ var (
 	_ TemplatePickerProvider  = &Spell{}
 	_ FeatureSwitcher         = &Spell{}
 	_ LeveledOwner            = &Spell{}
+
+	_ TemplatePickerProvider = &SpellData{}
+	_ TemplatePickerProvider = &SpellEditData{}
+	_ TemplatePickerProvider = &SpellContainerOnlySyncData{}
 )
 
 // Columns that can be used with the spell method .CellData()
