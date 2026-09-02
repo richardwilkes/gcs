@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
@@ -45,7 +46,15 @@ type AttrPanel struct {
 	hash        uint64
 	rowStarts   []int
 	kind        int
+	nameLabels  map[string]*unison.Label
+	valueFields map[string]unison.Paneler
 	stateLabels map[string]*unison.Label
+}
+
+// baseTooltipSetter is implemented by fields that temporarily replace their tooltip with another one, such as
+// NumericField, which shows an explanation of why its content is invalid while that is the case.
+type baseTooltipSetter interface {
+	SetBaseTooltip(tip *unison.Panel)
 }
 
 // NewPrimaryAttrPanel creates a new primary attributes panel.
@@ -156,6 +165,8 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	focusRefKey := a.targetMgr.CurrentFocusRef()
 	a.RemoveAllChildren()
 	a.rowStarts = nil
+	a.nameLabels = make(map[string]*unison.Label)
+	a.valueFields = make(map[string]unison.Paneler)
 	if a.kind == gurps.PoolAttrKind {
 		a.stateLabels = make(map[string]*unison.Label)
 	}
@@ -260,31 +271,34 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 
 					a.AddChild(NewPageLabel(i18n.Text("of")))
 
+					var maximumField unison.Paneler
 					if def.Type == attribute.Pool {
-						a.AddChild(NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":max",
+						maximumField = NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":max",
 							i18n.Text("Point Pool Maximum"), func() fxp.Int { return attr.Maximum() },
 							func(v fxp.Int) {
 								attr.SetMaximum(v)
 								currentField.SetMinMax(currentField.Min(), v)
 								currentField.Sync()
-							}, fxp.Min, fxp.Max, true))
+							}, fxp.Min, fxp.Max, true)
 					} else {
-						a.AddChild(NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
+						maximumField = NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
 							field.SetTitle(attr.Maximum().String())
-						}))
+						})
 					}
+					a.AddChild(maximumField)
+					a.valueFields[def.ID()] = maximumField
 
 					name := NewPageLabel(def.Name)
-					if def.FullName != "" {
-						name.Tooltip = newWrappedTooltip(def.FullName)
-					}
 					a.AddChild(name)
+					a.nameLabels[def.ID()] = name
+					a.updateBonusTooltips(def.ID(), attr)
 
 					state := NewPageLabel("")
 					a.updateThreshold(state, attr)
 					a.AddChild(state)
 					a.stateLabels[def.ID()] = state
 				} else {
+					var valueField unison.Paneler
 					if def.Type == attribute.IntegerRef || def.Type == attribute.DecimalRef {
 						field := NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
 							field.SetTitle(attr.Maximum().String())
@@ -294,21 +308,26 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 							HAlign: align.Fill,
 							VAlign: align.Middle,
 						})
-						a.AddChild(field)
+						valueField = field
 					} else {
 						a.AddChild(a.createPointsField(attr))
 						if def.AllowsDecimal() {
-							a.AddChild(NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
+							valueField = NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
 								func() fxp.Int { return attr.Maximum() },
-								func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true))
+								func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
 						} else {
-							a.AddChild(NewIntegerPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
+							valueField = NewIntegerPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
 								func() int { return attr.Maximum().Floor().AsInteger[int]() },
 								func(v int) { attr.SetMaximum(fxp.FromInteger(v)) },
-								fxp.Min.Floor().AsInteger[int](), fxp.Max.Floor().AsInteger[int](), false, true))
+								fxp.Min.Floor().AsInteger[int](), fxp.Max.Floor().AsInteger[int](), false, true)
 						}
 					}
-					a.AddChild(NewPageLabel(def.CombinedName()))
+					a.AddChild(valueField)
+					a.valueFields[def.ID()] = valueField
+					name := NewPageLabel(def.CombinedName())
+					a.AddChild(name)
+					a.nameLabels[def.ID()] = name
+					a.updateBonusTooltips(def.ID(), attr)
 				}
 			}
 		}
@@ -342,19 +361,66 @@ func (a *AttrPanel) Sync() {
 	if hash := a.computeHash(attrs); hash != a.hash {
 		a.hash = hash
 		a.rebuild(attrs)
-	} else if a.kind == gurps.PoolAttrKind {
-		for _, def := range attrs.List(false) {
-			if def.Pool(a.entity) && def.Type != attribute.PoolSeparator {
-				id := def.ID()
-				if label, exists := a.stateLabels[id]; exists {
-					if attr, ok := a.entity.Attributes.Set[id]; ok {
-						a.updateThreshold(label, attr)
-					}
-				}
+	} else {
+		// The labels only exist for the rows that were actually built, so no further filtering is needed here.
+		for id := range a.nameLabels {
+			if attr, ok := a.entity.Attributes.Set[id]; ok {
+				a.updateBonusTooltips(id, attr)
+			}
+		}
+		for id, label := range a.stateLabels {
+			if attr, ok := a.entity.Attributes.Set[id]; ok {
+				a.updateThreshold(label, attr)
 			}
 		}
 	}
 	MarkForLayoutWithinDockable(a)
+}
+
+// updateBonusTooltips sets the tooltip on both the name label and the value field of an attribute's row, listing the
+// sources of the bonuses currently affecting it, so that hovering over either the name or the number shows where the
+// bonuses come from. Point pool labels show only the abbreviated name, so their full name leads the tooltip.
+func (a *AttrPanel) updateBonusTooltips(id string, attr *gurps.Attribute) {
+	text := a.bonusTooltipText(attr)
+	if label, ok := a.nameLabels[id]; ok {
+		label.Tooltip = wrappedTooltipOrNil(text)
+	}
+	if field, ok := a.valueFields[id]; ok {
+		setValueTooltip(field, wrappedTooltipOrNil(text))
+	}
+}
+
+// setValueTooltip installs a tooltip on an attribute's value field. Fields that temporarily swap their tooltip out for
+// another one, such as the message a NumericField shows while its content is invalid, are told about it indirectly, so
+// that the replacement isn't clobbered while it is showing.
+func setValueTooltip(field unison.Paneler, tip *unison.Panel) {
+	if setter, ok := field.(baseTooltipSetter); ok {
+		setter.SetBaseTooltip(tip)
+		return
+	}
+	field.AsPanel().Tooltip = tip
+}
+
+// bonusTooltipText returns the tooltip text for an attribute, or an empty string if it doesn't need one.
+func (a *AttrPanel) bonusTooltipText(attr *gurps.Attribute) string {
+	var parts []string
+	if a.kind == gurps.PoolAttrKind {
+		if def := attr.AttributeDef(); def != nil && def.FullName != "" {
+			parts = append(parts, def.FullName)
+		}
+	}
+	if tooltip := attr.BonusTooltip(); tooltip != "" {
+		parts = append(parts, tooltip)
+	}
+	return strings.Join(parts, "\n")
+}
+
+// wrappedTooltipOrNil returns a wrapped tooltip for the text, or nil if the text is empty.
+func wrappedTooltipOrNil(text string) *unison.Panel {
+	if text == "" {
+		return nil
+	}
+	return newWrappedTooltip(text)
 }
 
 var poolThresholdDescFont = &unison.DynamicFont{

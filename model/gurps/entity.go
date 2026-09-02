@@ -376,7 +376,9 @@ func (e *Entity) processFeatures() {
 		selfControlTraits = append(selfControlTraits, t)
 		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features.Active(t.SwitchedOn) {
-				e.processFeature(t, nil, f, mod)
+				// The modifier is passed as both the sub-owner, so that tooltips name it alongside the trait, and as
+				// the leveled owner, since a per-level feature on a modifier scales with the modifier's level.
+				e.processFeature(t, mod, f, mod)
 			}
 			return false
 		}, true, true, t.Modifiers...)
@@ -443,6 +445,11 @@ func (e *Entity) processFeatures() {
 	e.BlockBonusTooltip = tooltip.String()
 }
 
+// processFeature collects a feature into the entity's feature lists. The owner is the primary item the feature came
+// from (a trait, skill, spell, or piece of equipment) and the sub-owner, when present, is the modifier of that item
+// that actually carries the feature; together they name the source in tooltips. The leveled owner is the node whose
+// level drives a per-level amount: the modifier itself when the modifier can have levels of its own (trait modifiers),
+// and the primary item when it cannot (equipment modifiers).
 func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveledOwner LeveledOwner) {
 	if bonus, ok := f.(Bonus); ok {
 		bonus.SetOwner(owner)

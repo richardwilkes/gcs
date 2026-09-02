@@ -494,3 +494,53 @@ func TestWeaponPerDieSTBonusTooltip(t *testing.T) {
 	c.Equal("11", w.Strength.Resolve(w, &tooltip).String(), "a per-die minimum ST bonus counts as a single die")
 	c.Contains(tooltip.String(), "+1 (+1 per die) to minimum ST", "the tooltip reports the amount applied")
 }
+
+// TestWeaponPerLevelBonusFromTraitModifier verifies that a per-level weapon bonus carried by one of a trait's
+// modifiers scales with the modifier's level rather than the trait's, and that the tooltip reports the same amount
+// that is applied. A modifier with no levels of its own contributes nothing, even when the trait it hangs off of is
+// leveled; the tooltip previously claimed the trait's level while the value stayed put.
+func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
+	c := check.New(t)
+
+	e := gurps.NewEntity()
+	trait := gurps.NewTrait(e, nil, false)
+	trait.Name = "Innate Attack"
+	trait.CanLevel = true
+	trait.Levels = fxp.Three
+	acc := gurps.NewWeaponAccBonus()
+	acc.SelectionType = wsel.ThisWeapon
+	acc.PerLevel = true
+	mod := gurps.NewTraitModifier(e, nil, false)
+	mod.Name = "Targeting"
+	mod.Features = gurps.Features{acc}
+	trait.Modifiers = []*gurps.TraitModifier{mod}
+	w := gurps.NewWeapon(trait, false)
+	w.Accuracy = gurps.ParseWeaponAccuracy("3")
+	trait.Weapons = []*gurps.Weapon{w}
+	e.Traits = append(e.Traits, trait)
+	e.Recalculate()
+
+	var tooltip xbytes.InsertBuffer
+	c.Equal("3", w.Accuracy.Resolve(w, &tooltip).String(),
+		"a per-level bonus on a modifier with no levels adds nothing, no matter the trait's level")
+	c.Equal("\nInnate Attack 3 (Targeting) [+0 (+1 per level) to weapon accuracy]", tooltip.String(),
+		"the tooltip reports the amount applied rather than scaling by the trait's level")
+
+	// Giving the modifier levels of its own is what makes the bonus count.
+	mod.Levels = fxp.Two
+	e.Recalculate()
+	tooltip.Reset()
+	c.Equal("5", w.Accuracy.Resolve(w, &tooltip).String(), "+1 per level on a level 2 modifier raises Acc 3 to 5")
+	c.Equal("\nInnate Attack 3 (Targeting 2) [+2 (+1 per level) to weapon accuracy]", tooltip.String(),
+		"the tooltip names the modifier with its level and agrees with the amount applied")
+
+	// A "use level from owner" modifier reports the trait's level, and the bonus scales by that.
+	mod.Levels = 0
+	mod.UseLevelFromTrait = true
+	e.Recalculate()
+	tooltip.Reset()
+	c.Equal("6", w.Accuracy.Resolve(w, &tooltip).String(),
+		"a modifier that takes the trait's level of 3 raises Acc 3 to 6")
+	c.Equal("\nInnate Attack 3 (Targeting 3) [+3 (+1 per level) to weapon accuracy]", tooltip.String(),
+		"the tooltip agrees with the amount applied when the level comes from the trait")
+}

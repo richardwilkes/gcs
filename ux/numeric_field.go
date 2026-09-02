@@ -136,6 +136,17 @@ func (f *NumericField[T]) validate() bool {
 	return true
 }
 
+// SetBaseTooltip sets the tooltip to show when the field's content is valid. If the tooltip explaining why the content
+// is currently invalid is showing, the new tooltip is remembered and installed in its place once the content becomes
+// valid again, rather than replacing the explanation while the user still needs to see it.
+func (f *NumericField[T]) SetBaseTooltip(tip *unison.Panel) {
+	if f.validationTooltip != nil && f.Tooltip == f.validationTooltip {
+		f.savedTooltip = tip
+		return
+	}
+	f.Tooltip = tip
+}
+
 func (f *NumericField[T]) tooltipTextForValidation() string {
 	s := strings.TrimSpace(f.Text())
 	v, err := f.extract(s)

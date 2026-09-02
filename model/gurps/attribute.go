@@ -17,8 +17,11 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 var _ Hashable = &Attribute{}
@@ -133,6 +136,37 @@ func (a *Attribute) SetMaximum(value fxp.Int) {
 	if def := a.AttributeDef(); def != nil && !def.IsSeparator() {
 		a.Adjustment = value - (def.BaseValue(a) + a.Bonus)
 	}
+}
+
+// BonusTooltip returns a description of the bonuses currently being applied to this attribute, or an empty string if
+// there are none. Strength bonuses limited to striking, lifting or throwing are listed in sections of their own, since
+// they don't alter the attribute's value.
+func (a *Attribute) BonusTooltip() string {
+	if a.Entity == nil {
+		return ""
+	}
+	var buffer xbytes.InsertBuffer
+	a.Entity.AttributeBonusFor(a.AttrID, stlimit.None, &buffer)
+	if a.AttrID == StrengthID {
+		var limited xbytes.InsertBuffer
+		for _, limitation := range stlimit.Options {
+			if limitation == stlimit.None {
+				continue
+			}
+			limited.Reset()
+			a.Entity.AttributeBonusFor(a.AttrID, limitation, &limited)
+			if limited.Len() != 0 {
+				buffer.WriteByte('\n')
+				buffer.WriteString(xstrings.FirstToUpper(limitation.String()))
+				buffer.WriteByte(':')
+				buffer.WriteString(limited.String())
+			}
+		}
+	}
+	if buffer.Len() == 0 {
+		return ""
+	}
+	return IncludesModifiersFrom() + ":" + buffer.String()
 }
 
 // NameMatches checks if the name matches this Attribute's name or full name. Case is ignored.
