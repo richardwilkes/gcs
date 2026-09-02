@@ -19,6 +19,7 @@ import (
 	"sync"
 	"unsafe"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -522,10 +523,19 @@ func (w *Weapon) SkillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	return best
 }
 
-func (w *Weapon) usesCrossbowSkill() bool {
+// usesCrossbowSkill reports whether the weapon is wielded with the Crossbow skill. A default may name it outright,
+// which counts whether or not the character has the skill, or select it by some other criteria (a tag, say), in which
+// case the skill the default resolves to decides.
+func (w *Weapon) usesCrossbowSkill(e *Entity) bool {
 	replacements := w.NameableReplacements()
 	for _, def := range w.Defaults {
-		if def.NameWithReplacements(replacements) == "Crossbow" {
+		if !def.SkillBased() {
+			continue
+		}
+		if def.Name.Compare.EnsureValid() == criteria.IsText && def.NameWithReplacements(replacements) == "Crossbow" {
+			return true
+		}
+		if sk := def.bestFastMatchingSkill(e, replacements, false, nil); sk != nil && sk.NameWithReplacements() == "Crossbow" {
 			return true
 		}
 	}
@@ -541,7 +551,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 	case stdmg.IQThrust, stdmg.IQSwing:
 		minST -= e.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
 	default:
-		if !w.IsRanged() || (w.Range.MusclePowered && !w.usesCrossbowSkill()) {
+		if !w.IsRanged() || (w.Range.MusclePowered && !w.usesCrossbowSkill(e)) {
 			minST -= e.StrikingStrength()
 		} else {
 			minST -= e.LiftingStrength()
@@ -716,6 +726,14 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 	if bestDef != nil {
 		name = bestDef.NameWithReplacements(replacements)
 		specialization = bestDef.SpecializationWithReplacements(replacements)
+		// The qualifiers only name a skill when the default names one outright. Resolving the default to the skill it
+		// actually scored -- the same one bestFast picked when it won the ranking above -- lets a default that selects
+		// its skill by tag, or by any other criteria, still collect the weapon bonuses qualified by the skill the
+		// weapon really attacks with.
+		if sk := bestDef.bestFastMatchingSkill(entity, replacements, false, nil); sk != nil {
+			name = sk.NameWithReplacements()
+			specialization = sk.SpecializationWithReplacements()
+		}
 	}
 	usage := w.UsageWithReplacements()
 	entity.AddWeaponWithSkillBonusesFor(name, specialization, usage, tags, dieCount, tooltip, bonusSet, allowed)

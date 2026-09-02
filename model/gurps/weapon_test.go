@@ -18,6 +18,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -543,4 +545,140 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 		"a modifier that takes the trait's level of 3 raises Acc 3 to 6")
 	c.Equal("\nInnate Attack 3 (Targeting 3) [+3 (+1 per level) to weapon accuracy]", tooltip.String(),
 		"the tooltip agrees with the amount applied when the level comes from the trait")
+}
+
+// newTagDefaultTestWeapon builds an entity holding a Combat-tagged Broadsword skill, a trait granting +2 damage to any
+// weapon whose required skill is named Broadsword, and a trait-owned melee weapon whose only default is the one given.
+func newTagDefaultTestWeapon(c check.Checker, def *gurps.SkillDefault) *gurps.Weapon {
+	e := gurps.NewEntity()
+
+	sk := gurps.NewSkill(e, nil, false)
+	sk.Name = "Broadsword"
+	sk.Tags = []string{"Combat"}
+	sk.Difficulty.Attribute = gurps.DexterityID
+	sk.Difficulty.Difficulty = difficulty.Average
+	sk.Points = fxp.Four // DX+1, i.e. level 11 with the default DX of 10
+	e.Skills = append(e.Skills, sk)
+
+	master := gurps.NewTrait(e, nil, false)
+	master.Name = "Weapon Master"
+	bonus := gurps.NewWeaponDamageBonus()
+	bonus.SelectionType = wsel.WithRequiredSkill
+	bonus.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Broadsword"}
+	bonus.Amount = fxp.Two
+	master.Features = append(master.Features, bonus)
+	e.Traits = append(e.Traits, master)
+
+	owner := gurps.NewTrait(e, nil, false)
+	owner.Name = "Sword"
+	w := gurps.NewWeapon(owner, true)
+	w.Damage.StrengthType = stdmg.None // keep the resolved damage to just the base and the bonus
+	w.Damage.Base = "1d"
+	w.Defaults = []*gurps.SkillDefault{def}
+	owner.Weapons = []*gurps.Weapon{w}
+	e.Traits = append(e.Traits, owner)
+
+	e.Recalculate()
+	c.Equal(fxp.Eleven, sk.LevelData.Level, "the Broadsword skill should be at level 11")
+	return w
+}
+
+// TestWeaponTagDefaultCollectsSkillBonuses verifies that a weapon whose only skill default selects its skill by tag
+// still collects the weapon bonuses that are qualified by the name of the skill it attacks with. Such a default names
+// no skill outright, so the qualifier text it carries is empty and the bonus would be missed unless the default is
+// resolved to the skill it actually scored. See issue #1112.
+func TestWeaponTagDefaultCollectsSkillBonuses(t *testing.T) {
+	c := check.New(t)
+
+	tagged := newTagDefaultTestWeapon(c, &gurps.SkillDefault{
+		DefaultType: gurps.SkillID,
+		Tags:        criteria.Text{Compare: criteria.IsText, Qualifier: "Combat"},
+	})
+	// The control: the same weapon, with a default that names the skill outright.
+	named := newTagDefaultTestWeapon(c, &gurps.SkillDefault{
+		DefaultType: gurps.SkillID,
+		Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Broadsword"},
+	})
+
+	c.Equal(fxp.Eleven, tagged.SkillLevel(nil), "a tag default must attack with the skill it selects")
+	c.Equal(named.SkillLevel(nil), tagged.SkillLevel(nil),
+		"a tag default must attack at the same level as a default naming the same skill")
+	c.Equal("1d+2 cr", tagged.Damage.ResolvedDamage(nil),
+		"a tag default must collect the +2 granted to weapons whose required skill is Broadsword")
+	c.Equal(named.Damage.ResolvedDamage(nil), tagged.Damage.ResolvedDamage(nil),
+		"a tag default must collect the same skill-qualified bonuses as a default naming the same skill")
+}
+
+// newCrossbowTestWeapon builds an entity whose ST is 10 for striking and 12 for lifting, holding a Crossbow skill
+// tagged "Missile Weapon" at level 12, and returns a muscle-powered ranged weapon with a minimum ST of 12 whose only
+// default is the one given. The weapon is penalized 2 for its minimum ST unless it is recognized as a crossbow, which
+// is drawn with lifting ST.
+func newCrossbowTestWeapon(c check.Checker, def *gurps.SkillDefault) *gurps.Weapon {
+	e := gurps.NewEntity()
+
+	sk := gurps.NewSkill(e, nil, false)
+	sk.Name = "Crossbow"
+	sk.Tags = []string{"Missile Weapon"}
+	sk.Difficulty.Attribute = gurps.DexterityID
+	sk.Difficulty.Difficulty = difficulty.Easy
+	sk.Points = fxp.Four // DX+2, i.e. level 12 with the default DX of 10
+	e.Skills = append(e.Skills, sk)
+
+	lifter := gurps.NewTrait(e, nil, false)
+	lifter.Name = "Lifting ST 2"
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.Amount = fxp.Two
+	bonus.Limitation = stlimit.LiftingOnly
+	lifter.Features = gurps.Features{bonus}
+	e.Traits = append(e.Traits, lifter)
+
+	owner := gurps.NewTrait(e, nil, false)
+	owner.Name = "Crossbow"
+	w := gurps.NewWeapon(owner, false)
+	w.Range.MusclePowered = true
+	w.Strength.Min = fxp.Twelve
+	w.Defaults = []*gurps.SkillDefault{def}
+	owner.Weapons = []*gurps.Weapon{w}
+	e.Traits = append(e.Traits, owner)
+
+	e.Recalculate()
+	c.Equal(fxp.Twelve, sk.LevelData.Level, "the Crossbow skill should be at level 12")
+	c.Equal(fxp.Ten, e.StrikingStrength(), "striking ST should be the unmodified 10")
+	c.Equal(fxp.Twelve, e.LiftingStrength(), "lifting ST should carry the +2")
+	return w
+}
+
+// TestWeaponTagDefaultToCrossbowUsesLiftingST verifies that a muscle-powered ranged weapon whose default reaches the
+// Crossbow skill by tag is drawn with lifting ST, as one naming Crossbow outright is, rather than being penalized
+// against striking ST for its minimum ST.
+func TestWeaponTagDefaultToCrossbowUsesLiftingST(t *testing.T) {
+	c := check.New(t)
+
+	named := newCrossbowTestWeapon(c, &gurps.SkillDefault{
+		DefaultType: gurps.SkillID,
+		Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Crossbow"},
+	})
+	c.Equal(fxp.Twelve, named.SkillLevel(nil), "the control: lifting ST 12 meets the minimum ST, so there is no penalty")
+
+	tagged := newCrossbowTestWeapon(c, &gurps.SkillDefault{
+		DefaultType: gurps.SkillID,
+		Tags:        criteria.Text{Compare: criteria.IsText, Qualifier: "Missile Weapon"},
+	})
+	c.Equal(named.SkillLevel(nil), tagged.SkillLevel(nil),
+		"a default that reaches Crossbow by tag must be drawn with lifting ST as well")
+
+	// A default that reaches some other skill is still drawn with striking ST, and takes the penalty.
+	bow := newCrossbowTestWeapon(c, &gurps.SkillDefault{
+		DefaultType: gurps.SkillID,
+		Tags:        criteria.Text{Compare: criteria.IsText, Qualifier: "Archery"},
+	})
+	bowSkill := gurps.NewSkill(bow.Entity(), nil, false)
+	bowSkill.Name = "Bow"
+	bowSkill.Tags = []string{"Archery"}
+	bowSkill.Difficulty.Attribute = gurps.DexterityID
+	bowSkill.Difficulty.Difficulty = difficulty.Easy
+	bowSkill.Points = fxp.Four
+	bow.Entity().Skills = append(bow.Entity().Skills, bowSkill)
+	bow.Entity().Recalculate()
+	c.Equal(fxp.Ten, bow.SkillLevel(nil), "a bow is drawn with striking ST 10, and is penalized 2 for its minimum ST")
 }

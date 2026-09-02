@@ -8,6 +8,12 @@
   toward them (per B77). A new spell prerequisite asks for the same power source as the spell being edited, but you can
   choose "is anything" to accept any of them, or type in a specific power source to look for. Prerequisites in existing
   files are unchanged until you explicitly change them.
+- Skill defaults can now be selected by tag. Alongside the name and specialization, a default to a skill can ask for a
+  tag, so Stage Combat can default to whichever combat skill the character actually has at -3 instead of having to name
+  each one. Weapon defaults can do the same. Existing files are unchanged until you fill in a tag.
+- A skill with points in it keeps using the default it has been using rather than silently switching to another one,
+  but that no longer applies across a change to its list of defaults: editing them, or syncing them from the library,
+  now picks the best default afresh.
 
 ## Bug Fixes
 

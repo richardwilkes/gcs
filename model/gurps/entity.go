@@ -1149,11 +1149,13 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 	return list
 }
 
-// BestSkillMatching returns the highest-level skill whose name and specialization match the given criteria.
-func (e *Entity) BestSkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) *Skill {
+// BestSkillIn returns the highest-level skill in the list, with the first one encountered winning a tie. The excludes
+// are the ones the list was gathered with, and are passed along so that each candidate's level is calculated under the
+// same terms.
+func BestSkillIn(list []*Skill, excludes map[string]bool) *Skill {
 	var best *Skill
 	var level fxp.Int
-	for _, sk := range e.SkillMatching(nameCriteria, specializationCriteria, replacements, requirePoints, excludes) {
+	for _, sk := range list {
 		skillLevel := sk.CalculateLevel(excludes).Level
 		if best == nil || level < skillLevel {
 			best = sk

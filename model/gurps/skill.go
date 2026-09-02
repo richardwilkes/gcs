@@ -37,6 +37,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/zeebo/xxh3"
 )
 
 var (
@@ -93,6 +94,9 @@ type SkillEditData struct {
 	preconfigurable
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
+	// copiedDefaultsHash is defaultsHash(Defaults) as of CopyFrom, which lets ApplyTo tell whether the defaults have
+	// been edited since. It is only meaningful on edit data that CopyFrom produced.
+	copiedDefaultsHash uint64
 }
 
 // SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.
@@ -565,7 +569,7 @@ func (s *Skill) BaseSkill(e *Entity, def *SkillDefault, requirePoints bool) *Ski
 	if e == nil || def == nil || !def.SkillBased() {
 		return nil
 	}
-	return e.BestSkillMatching(def.Name, def.Specialization, s.Replacements, requirePoints, nil)
+	return def.bestMatchingSkill(e, s.Replacements, requirePoints, nil)
 }
 
 // DefaultSkill returns the skill currently defaulted to, or nil.
@@ -881,11 +885,11 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 	var relativeLevel fxp.Int
 	level := fxp.Min
 	if e != nil && def != nil {
-		if def.DefaultType == SkillID {
+		if def.Type() == SkillID {
 			// Match against the full name and specialization criteria (not just the qualifier strings) so that, e.g.,
 			// a "whose specialization is anything" default resolves to any matching specialization rather than staying
 			// locked on the qualifier text that may linger from a prior "is" selection. See issue #1061.
-			if list := e.SkillMatching(def.Name, def.Specialization, replacements, requirePoints, excludes); len(list) > 0 {
+			if list := def.matchingSkills(e, replacements, requirePoints, excludes); len(list) > 0 {
 				if excludes == nil {
 					excludes = make(map[string]bool)
 				}
@@ -1111,7 +1115,7 @@ func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]boo
 		return level
 	}
 	if def.SkillBased() {
-		if other := e.BestSkillMatching(def.Name, def.Specialization, s.Replacements, true, excludes); other != nil {
+		if other := def.bestMatchingSkill(e, s.Replacements, true, excludes); other != nil {
 			// The bonus being undone was added inside other.CalculateLevel(), which queries it with the other skill's
 			// own qualifiers and tags, so all of them must come from 'other' here, not from this skill.
 			level -= e.SkillBonusFor(other.NameWithReplacements(), other.SpecializationWithReplacements(),
@@ -1126,7 +1130,7 @@ func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool
 	if e == nil || def == nil || !def.SkillBased() {
 		return false
 	}
-	for _, one := range e.SkillMatching(def.Name, def.Specialization, s.Replacements, true, nil) {
+	for _, one := range def.matchingSkills(e, s.Replacements, true, nil) {
 		if one == s {
 			return true
 		}
@@ -1151,9 +1155,13 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 		if e == nil || !def.SkillBased() {
 			result = append(result, def)
 		} else {
-			for _, one := range e.SkillMatching(def.Name, def.Specialization, s.Replacements, true,
-				map[string]bool{s.String(): true}) {
+			for _, one := range def.matchingSkills(e, s.Replacements, true, map[string]bool{s.String(): true}) {
 				local := *def
+				// The copy is pinned to the skill that was matched, by name and specialization, so the tag criteria
+				// has already done its job here. Leaving it on would carry it into the DefaultedFrom that gets
+				// persisted, and would make two expansions of a tag default look different from a plain default to the
+				// same skill, so that neither the swap list nor the "keep the current default" check could pair them.
+				local.Tags = criteria.Text{}
 				local.Name.Compare = criteria.IsText
 				local.Name.Qualifier = one.NameWithReplacements()
 				local.Specialization.Compare = criteria.IsText
@@ -1207,14 +1215,22 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 		return true
 	}
 	e := EntityFromNode(s)
-	sk := e.BestSkillMatching(s.TechniqueDefault.Name, s.TechniqueDefault.Specialization, s.Replacements, false, nil)
+	sk := s.TechniqueDefault.bestMatchingSkill(e, s.Replacements, false, nil)
 	satisfied := sk != nil && (sk.IsTechnique() || sk.Points > 0)
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		if sk == nil {
+		// A default that names its skill outright reads as "a skill named X". One that selects it by some other
+		// criteria is described by FullName in full, and the sentence is shaped around that description instead.
+		named := s.TechniqueDefault.namesSkill(s.Replacements)
+		switch {
+		case sk == nil && named:
 			tooltip.WriteString(i18n.Text("Requires a skill named "))
-		} else {
+		case sk == nil:
+			tooltip.WriteString(i18n.Text("Requires "))
+		case named:
 			tooltip.WriteString(i18n.Text("Requires at least 1 point in the skill named "))
+		default:
+			tooltip.WriteString(i18n.Text("Requires at least 1 point in "))
 		}
 		tooltip.WriteString(s.TechniqueDefault.FullName(e, s.Replacements))
 	}
@@ -1449,6 +1465,11 @@ func (s *Skill) SyncWithSource() {
 					s.SkillContainerOnlySyncData = other.SkillContainerOnlySyncData
 					s.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
+					// As in SkillEditData.ApplyTo: a recorded default is only kept while the declared defaults it was
+					// chosen from stay the same.
+					if defaultsHash(s.Defaults) != defaultsHash(other.Defaults) {
+						s.DefaultedFrom = nil
+					}
 					s.SkillNonContainerOnlySyncData = other.SkillNonContainerOnlySyncData
 					if len(other.Defaults) != 0 {
 						s.Defaults = make([]*SkillDefault, len(other.Defaults))
@@ -1463,6 +1484,7 @@ func (s *Skill) SyncWithSource() {
 						if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
 							s.TechniqueDefault.Name = criteria.Text{}
 							s.TechniqueDefault.Specialization = criteria.Text{}
+							s.TechniqueDefault.Tags = criteria.Text{}
 						}
 					}
 					if other.TechniqueLimitModifier != nil {
@@ -1536,6 +1558,7 @@ func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 // CopyFrom implements node.EditorData.
 func (s *SkillEditData) CopyFrom(other *Skill) {
 	s.copyFrom(other, &other.SkillEditData, other.Container(), false, Copy, other.IsTechnique())
+	s.copiedDefaultsHash = defaultsHash(s.Defaults)
 }
 
 // SetNameableReplacements sets the replacements to be used with Nameables.
@@ -1545,7 +1568,32 @@ func (s *SkillEditData) SetNameableReplacements(replacements map[string]string) 
 
 // ApplyTo implements node.EditorData.
 func (s *SkillEditData) ApplyTo(other *Skill) {
+	// The default a skill records is kept from one recalculation to the next rather than silently jumping to whichever
+	// default currently yields the highest level (see bestDefault). That only holds while the declared defaults it was
+	// chosen from stay the same: once they have been edited, the recorded choice is stale and is made afresh. Whether
+	// they have been is judged against the defaults as they were when this edit data was copied from its skill, not
+	// against the target's current ones: an undo applies a snapshot whose recorded default was chosen from that very
+	// snapshot's defaults, and so is exactly the one to bring back.
+	rechoose := defaultsHash(s.Defaults) != s.copiedDefaultsHash
 	other.copyFrom(other, s, other.Container(), true, Copy, other.IsTechnique())
+	if rechoose {
+		other.DefaultedFrom = nil
+	}
+}
+
+// defaultsHash summarizes a list of declared defaults, in order, by their source data alone: the level and points a
+// resolved default carries are ignored.
+func defaultsHash(defaults []*SkillDefault) uint64 {
+	h := xxh3.New()
+	xhash.Num64(h, len(defaults))
+	for _, def := range defaults {
+		if def == nil {
+			xhash.Num8(h, uint8(255))
+		} else {
+			def.Hash(h)
+		}
+	}
+	return h.Sum64()
 }
 
 // copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it
@@ -1572,8 +1620,11 @@ func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer
 			def := *other.TechniqueDefault
 			s.TechniqueDefault = &def
 			if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-				s.TechniqueDefault.Name.Qualifier = ""
-				s.TechniqueDefault.Specialization.Qualifier = ""
+				// As in SyncWithSource: the criteria are neither shown nor consulted for such a default, but would
+				// still be written to disk and hashed, so nothing of them is kept.
+				s.TechniqueDefault.Name = criteria.Text{}
+				s.TechniqueDefault.Specialization = criteria.Text{}
+				s.TechniqueDefault.Tags = criteria.Text{}
 			}
 		}
 		if other.TechniqueLimitModifier != nil {

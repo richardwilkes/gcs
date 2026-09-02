@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -33,6 +34,7 @@ type SkillDefault struct {
 	DefaultType    string          `json:"type"`
 	Name           criteria.Text   `json:"name,omitzero"`
 	Specialization criteria.Text   `json:"specialization,omitzero"`
+	Tags           criteria.Text   `json:"tags,omitzero"`
 	Modifier       fxp.Int         `json:"modifier,omitzero"`
 	Level          fxp.Int         `json:"level,omitzero"`
 	AdjLevel       fxp.Int         `json:"adjusted_level,omitzero"`
@@ -89,6 +91,7 @@ func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		DefaultType    string          `json:"type"`
 		Name           jsontext.Value  `json:"name,omitzero"`
 		Specialization jsontext.Value  `json:"specialization,omitzero"`
+		Tags           criteria.Text   `json:"tags,omitzero"`
 		Modifier       fxp.Int         `json:"modifier,omitzero"`
 		Level          fxp.Int         `json:"level,omitzero"`
 		AdjLevel       fxp.Int         `json:"adjusted_level,omitzero"`
@@ -99,6 +102,7 @@ func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		return err
 	}
 	s.DefaultType = localData.DefaultType
+	s.Tags = localData.Tags
 	s.Modifier = localData.Modifier
 	s.Level = localData.Level
 	s.AdjLevel = localData.AdjLevel
@@ -113,11 +117,24 @@ func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 // Equivalent returns true if this can be considered equivalent to other.
 func (s *SkillDefault) Equivalent(replacements map[string]string, other *SkillDefault) bool {
 	return other != nil &&
-		s.DefaultType == other.DefaultType &&
+		s.Type() == other.Type() &&
 		s.Modifier == other.Modifier &&
 		s.WhenTL == other.WhenTL &&
 		s.NameWithReplacements(replacements) == other.NameWithReplacements(replacements) &&
-		s.SpecializationWithReplacements(replacements) == other.SpecializationWithReplacements(replacements)
+		s.SpecializationWithReplacements(replacements) == other.SpecializationWithReplacements(replacements) &&
+		sameTagCriteria(s.Tags, other.Tags, replacements)
+}
+
+// sameTagCriteria reports whether two tag criteria select the same skills, judged the way Hash and IsZero judge them:
+// every "is anything" criteria is the same as every other, whatever qualifier it may still carry from an earlier
+// selection and whatever unknown comparison it may hold, and otherwise the comparison and the qualifier (after
+// replacements) must both agree.
+func sameTagCriteria(a, b criteria.Text, replacements map[string]string) bool {
+	if a.IsZero() && b.IsZero() {
+		return true
+	}
+	return a.Compare.EnsureValid() == b.Compare.EnsureValid() &&
+		nameable.Apply(a.Qualifier, replacements) == nameable.Apply(b.Qualifier, replacements)
 }
 
 // Type returns the type of the SkillDefault, normalized to the form the IDs are written in.
@@ -130,27 +147,68 @@ func (s *SkillDefault) SetType(t string) {
 	s.DefaultType = SanitizeID(t, true)
 }
 
-// FullName returns the full name of the skill to default from.
+// FullName returns the full name of the skill to default from. A default that names a skill outright is described by
+// that name, with the specialization in parentheses when it names one; any other selection is spelled out criteria by
+// criteria, in the words the editor uses for them, so that nothing the default matches on goes unmentioned.
 func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) string {
-	if s.SkillBased() {
-		var buffer strings.Builder
+	if !s.SkillBased() {
+		return ResolveAttributeName(entity, s.Type())
+	}
+	var buffer strings.Builder
+	if s.namesSkill(replacements) {
 		buffer.WriteString(s.NameWithReplacements(replacements))
-		if s.Specialization.Qualifier != "" {
+		if spec := s.SpecializationWithReplacements(replacements); spec != "" && !s.Specialization.IsZero() {
 			buffer.WriteString(" (")
-			buffer.WriteString(s.SpecializationWithReplacements(replacements))
+			buffer.WriteString(spec)
 			buffer.WriteByte(')')
 		}
-		switch s.Type() {
-		case DodgeID:
-			buffer.WriteString(i18n.Text(" Dodge"))
-		case ParryID:
-			buffer.WriteString(i18n.Text(" Parry"))
-		case BlockID:
-			buffer.WriteString(i18n.Text(" Block"))
+	} else {
+		buffer.WriteString(i18n.Text("any skill"))
+		var clauses []string
+		if !s.Name.IsZero() {
+			prefix := i18n.Text("whose name")
+			clauses = append(clauses, s.Name.StringWithPrefix(replacements, prefix, prefix))
 		}
-		return buffer.String()
+		if !s.Specialization.IsZero() {
+			prefix := i18n.Text("whose specialization")
+			clauses = append(clauses, s.Specialization.StringWithPrefix(replacements, prefix, prefix))
+		}
+		if !s.Tags.IsZero() {
+			prefix, notPrefix := i18n.Text("at least one tag"), i18n.Text("all tags")
+			if len(clauses) == 0 {
+				prefix, notPrefix = i18n.Text("where at least one tag"), i18n.Text("where all tags")
+			}
+			clauses = append(clauses, s.Tags.StringWithPrefix(replacements, prefix, notPrefix))
+		}
+		for i, clause := range clauses {
+			if i == 0 {
+				buffer.WriteByte(' ')
+			} else {
+				buffer.WriteString(i18n.Text(" and "))
+			}
+			buffer.WriteString(clause)
+		}
 	}
-	return ResolveAttributeName(entity, s.Type())
+	switch s.Type() {
+	case DodgeID:
+		buffer.WriteString(i18n.Text(" Dodge"))
+	case ParryID:
+		buffer.WriteString(i18n.Text(" Parry"))
+	case BlockID:
+		buffer.WriteString(i18n.Text(" Block"))
+	}
+	return buffer.String()
+}
+
+// namesSkill reports whether this default names a skill outright: its name criteria is "is" some name, its
+// specialization criteria is either "is anything" or "is" some specialization (an empty one meaning a skill without
+// one), and it asks nothing of the tags. That is the ordinary kind of default, and the one FullName describes by the
+// name alone.
+func (s *SkillDefault) namesSkill(replacements map[string]string) bool {
+	return s.Name.Compare.EnsureValid() == criteria.IsText &&
+		s.NameWithReplacements(replacements) != "" &&
+		(s.Specialization.IsZero() || s.Specialization.Compare.EnsureValid() == criteria.IsText) &&
+		s.Tags.IsZero()
 }
 
 // NameWithReplacements returns the name of the skill to default from with any nameable keys replaced.
@@ -170,6 +228,7 @@ func (s *SkillDefault) FillWithNameableKeys(m, existing map[string]string) {
 		m, existing,
 		s.Name.Qualifier,
 		s.Specialization.Qualifier,
+		s.Tags.Qualifier,
 	)
 }
 
@@ -229,9 +288,50 @@ func (s *SkillDefault) isTLPermitted(entity *Entity, skillTL string) bool {
 	return s.WhenTL.Compare.Matches(s.WhenTL.Qualifier, tl)
 }
 
+// matchingSkills returns the skills this SkillDefault selects. On top of the name and specialization criteria, the tag
+// criteria (when one has been set) filters the result: the qualifier may hold a comma-separated list of tags, where a
+// positive comparison (is, contains, starts with, ...) matches a skill having any one tag that matches any one of the
+// qualifiers, while a negative one (is not, does not contain, ...) requires every tag of the skill to fail against
+// every qualifier. A skill carrying no tags at all counts as having a single, empty tag.
+func (s *SkillDefault) matchingSkills(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
+	if entity == nil {
+		return nil
+	}
+	list := entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes)
+	if s.Tags.IsZero() {
+		return list
+	}
+	return slices.DeleteFunc(list, func(sk *Skill) bool {
+		return !s.Tags.MatchesList(replacements, sk.Tags...)
+	})
+}
+
+// bestMatchingSkill returns the highest-level skill this SkillDefault selects, or nil if it selects none.
+func (s *SkillDefault) bestMatchingSkill(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) *Skill {
+	return BestSkillIn(s.matchingSkills(entity, replacements, requirePoints, excludes), excludes)
+}
+
+// bestFastMatchingSkill returns the skill bestFast() scores this SkillDefault by: the one with the highest already-
+// calculated level among those the default selects and whose tech level satisfies the WhenTL constraint, with the
+// first one encountered winning a tie.
+func (s *SkillDefault) bestFastMatchingSkill(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) *Skill {
+	var best *Skill
+	level := fxp.Min
+	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
+		if !s.isTLPermitted(entity, sk.TL()) {
+			continue
+		}
+		if level < sk.LevelData.Level {
+			best = sk
+			level = sk.LevelData.Level
+		}
+	}
+	return best
+}
+
 func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
-	for _, sk := range entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes) {
+	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
 		if !s.isTLPermitted(entity, sk.TL()) {
 			continue
 		}
@@ -321,16 +421,10 @@ func (s *SkillDefault) defenseLevelFast(entity *Entity, replacements map[string]
 }
 
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
-	best := fxp.Min
-	for _, sk := range entity.SkillMatching(s.Name, s.Specialization, replacements, requirePoints, excludes) {
-		if !s.isTLPermitted(entity, sk.TL()) {
-			continue
-		}
-		if best < sk.LevelData.Level {
-			best = sk.LevelData.Level
-		}
+	if sk := s.bestFastMatchingSkill(entity, replacements, requirePoints, excludes); sk != nil {
+		return sk.LevelData.Level
 	}
-	return best
+	return fxp.Min
 }
 
 func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
@@ -350,5 +444,9 @@ func (s *SkillDefault) Hash(h hash.Hash) {
 	if !s.WhenTL.IsZero() {
 		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
 		s.WhenTL.Hash(h)
+	}
+	if !s.Tags.IsZero() {
+		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
+		s.Tags.Hash(h)
 	}
 }

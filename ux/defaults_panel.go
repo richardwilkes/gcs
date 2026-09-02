@@ -12,6 +12,7 @@ package ux
 import (
 	"slices"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -111,11 +112,13 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 		for len(panel.Children()) > 4 {
 			panel.RemoveChildAtIndex(len(panel.Children()) - 1)
 		}
-		if def.DefaultType == gurps.SkillID {
+		if def.Type() == gurps.SkillID {
 			panel.AddChild(unison.NewPanel())
 			addNameCriteriaPanel(panel, &def.Name, 3, false)
 			panel.AddChild(unison.NewPanel())
 			addSpecializationCriteriaPanel(panel, &def.Specialization, 3, false)
+			panel.AddChild(unison.NewPanel())
+			addTagCriteriaPanel(panel, &def.Tags, 3, false)
 		}
 		addNumericCriteriaPanel(panel, nil, "", i18n.Text("when the Tech Level"), i18n.Text("When Tech Level"),
 			&def.WhenTL, 0, fxp.Twelve, 3, true, true)
@@ -125,6 +128,13 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 		if item, ok := popup.Selected(); ok {
 			lastDefaultTypeUsed = item.Key
 			callback(popup)
+			if !def.SkillBased() {
+				// The criteria rows go with the type, and what they held would otherwise linger unseen: still written
+				// to disk and still hashed, though nothing consults it on an attribute default.
+				def.Name = criteria.Text{}
+				def.Specialization = criteria.Text{}
+				def.Tags = criteria.Text{}
+			}
 			rebuildDynamicRows()
 			MarkRootAncestorForLayoutRecursively(p)
 		}

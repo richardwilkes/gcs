@@ -627,12 +627,12 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 	popup.SelectIndex(criteria.ExtractStringComparisonIndex(string(strCriteria.Compare)))
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		strCriteria.Compare = criteria.AllStringComparisons[p.SelectedIndex()]
-		adjustFieldBlank(criteriaField, strCriteria.Compare == criteria.AnyText)
+		adjustFieldBlank(criteriaField, strCriteria.IsZero())
 		MarkModified(panel)
 	}
 	panel.AddChild(popup)
 	criteriaField = addStringField(panel, undoTitle, "", &strCriteria.Qualifier)
-	adjustFieldBlank(criteriaField, strCriteria.Compare == criteria.AnyText)
+	adjustFieldBlank(criteriaField, strCriteria.IsZero())
 	parent.AddChild(panel)
 	return popup, criteriaField
 }
