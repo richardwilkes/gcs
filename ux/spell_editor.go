@@ -104,7 +104,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)
 	if !e.target.Container() {
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, true))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 		content.AddChild(e.meleeWeapons)

@@ -101,7 +101,7 @@ func initEquipmentEditor(carried bool) func(e *editor[*gurps.Equipment, *gurps.E
 		addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 		addSourceFields(content, &e.target.SourcedID)
 		adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		modifiersPanel := newEquipmentModifiersPanel(entity, &e.editorData.Modifiers)
 		content.AddChild(modifiersPanel)

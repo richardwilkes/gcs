@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"slices"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -27,7 +28,12 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-const noAndOr = ""
+const (
+	noAndOr = ""
+	// samePowerSourceIndex is the position of the "is the same as this spell's" choice within the power source popup
+	// menu, just after "is anything". The choice is only present when the prerequisite belongs to a spell.
+	samePowerSourceIndex = 1
+)
 
 var lastPrereqTypeUsed = prereq.Trait
 
@@ -37,14 +43,16 @@ type prereqPanel struct {
 	root             **gurps.PrereqList
 	permittedChoices []prereq.Type
 	andOrMap         map[gurps.Prereq]*unison.Label
+	ownerIsSpell     bool
 }
 
-func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoices []prereq.Type) *prereqPanel {
+func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoices []prereq.Type, ownerIsSpell bool) *prereqPanel {
 	p := &prereqPanel{
 		entity:           entity,
 		root:             root,
 		permittedChoices: permittedChoices,
 		andOrMap:         make(map[gurps.Prereq]*unison.Label),
+		ownerIsSpell:     ownerIsSpell,
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -318,6 +326,8 @@ func (p *prereqPanel) createPrereqForType(prereqType prereq.Type, parentList *gu
 	case prereq.Spell:
 		one := gurps.NewSpellPrereq()
 		one.Parent = parentList
+		// Matching the owning spell's power source only makes sense for a prerequisite that belongs to a spell.
+		one.SamePowerSource = p.ownerIsSpell
 		return one
 	case prereq.Script:
 		one := gurps.NewScriptPrereq()
@@ -534,7 +544,75 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) (
 	})
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(second)
+	p.addPowerSourceCriteriaPanel(panel, pr, columns-1)
 	return panel, focus
+}
+
+// addPowerSourceCriteriaPanel adds the row that restricts which power sources may satisfy a spell prerequisite. When
+// the prerequisite belongs to a spell, an extra choice for matching that spell's own power source is offered.
+func (p *prereqPanel) addPowerSourceCriteriaPanel(parent *unison.Panel, pr *gurps.SpellPrereq, hSpan int) {
+	// Only a spell can ask for its own power source, and when it does, any explicit criteria is ignored. Neither of the
+	// other states can be produced here, but a file edited by hand can hold them, so bring the prerequisite into line
+	// before building the popup: otherwise the popup would show something other than what the prerequisite does.
+	pr.SamePowerSource = pr.SamePowerSource && p.ownerIsSpell
+	if pr.SamePowerSource {
+		pr.PowerSourceCriteria.Compare = criteria.AnyText
+	}
+	parent.AddChild(unison.NewPanel())
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+		VAlign:   align.Middle,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  hSpan,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	prefix := i18n.Text("and whose power source")
+	choices := criteria.PrefixedStringComparisonChoices(prefix, prefix)
+	if p.ownerIsSpell {
+		choices = slices.Insert(choices, samePowerSourceIndex, prefix+" "+i18n.Text("is the same as this spell's"))
+	}
+	var criteriaField *StringField
+	popup := unison.NewPopupMenu[string]()
+	for _, one := range choices {
+		popup.AddItem(one)
+	}
+	popup.SelectIndex(p.powerSourceComparisonIndex(pr))
+	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
+		i := pop.SelectedIndex()
+		pr.SamePowerSource = p.ownerIsSpell && i == samePowerSourceIndex
+		if pr.SamePowerSource {
+			pr.PowerSourceCriteria.Compare = criteria.AnyText
+		} else {
+			if p.ownerIsSpell && i > samePowerSourceIndex {
+				i--
+			}
+			pr.PowerSourceCriteria.Compare = criteria.AllStringComparisons[i]
+		}
+		adjustFieldBlank(criteriaField, pr.SamePowerSource || pr.PowerSourceCriteria.Compare == criteria.AnyText)
+		MarkModified(panel)
+	}
+	panel.AddChild(popup)
+	criteriaField = addStringField(panel, i18n.Text("Power Source Qualifier"), "", &pr.PowerSourceCriteria.Qualifier)
+	adjustFieldBlank(criteriaField, pr.SamePowerSource || pr.PowerSourceCriteria.Compare == criteria.AnyText)
+	parent.AddChild(panel)
+}
+
+// powerSourceComparisonIndex returns the index of the power source popup choice that reflects the prerequisite's
+// current state, accounting for the extra choice that is inserted when the prerequisite belongs to a spell.
+func (p *prereqPanel) powerSourceComparisonIndex(pr *gurps.SpellPrereq) int {
+	if p.ownerIsSpell && pr.SamePowerSource {
+		return samePowerSourceIndex
+	}
+	i := criteria.ExtractStringComparisonIndex(string(pr.PowerSourceCriteria.Compare))
+	if p.ownerIsSpell && i >= samePowerSourceIndex {
+		i++
+	}
+	return i
 }
 
 func (p *prereqPanel) createScriptPrereqPanel(depth int, pr *gurps.ScriptPrereq) (main, focus unison.Paneler) {
