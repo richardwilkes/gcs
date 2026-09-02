@@ -50,10 +50,22 @@ func (w Weight) String() string {
 	return w.Describe(fxp.Pound)
 }
 
+// AltString returns the alternate description.
+func (w Weight) AltString() string {
+	return w.AltDescribe(fxp.Pound)
+}
+
 // Describe returns a description of the criteria, with the qualifier expressed in the given units. Note that the
 // qualifier must be described as a weight rather than as a bare number, since the units are part of its meaning.
 func (w Weight) Describe(units fxp.WeightUnit) string {
 	return w.Compare.DescribeWith(units.Format(w.Qualifier))
+}
+
+// AltDescribe returns an alternate description of the criteria, with the qualifier expressed in the given units.
+// Note that the qualifier must be described as a weight rather than as a bare number, since the units are part
+// of its meaning.
+func (w Weight) AltDescribe(units fxp.WeightUnit) string {
+	return w.Compare.AltDescribeWith(units.Format(w.Qualifier))
 }
 
 // Hash writes this object's contents into the hasher.
