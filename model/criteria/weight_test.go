@@ -33,12 +33,18 @@ func TestWeightDescriptionHasUnits(t *testing.T) {
 	c.Equal("is at least 5 lb", weight(criteria.AtLeastNumber, fivePounds).String())
 	c.Equal("is 5 lb", weight(criteria.EqualsNumber, fivePounds).String())
 	c.Equal("is not 5 lb", weight(criteria.NotEqualsNumber, fivePounds).String())
+	c.Equal("at most 5 lb", weight(criteria.AtMostNumber, fivePounds).AltString())
+	c.Equal("at least 5 lb", weight(criteria.AtLeastNumber, fivePounds).AltString())
+	c.Equal("5 lb", weight(criteria.EqualsNumber, fivePounds).AltString())
+	c.Equal("not 5 lb", weight(criteria.NotEqualsNumber, fivePounds).AltString())
 
 	// "is anything" has no qualifier to describe, so no units appear.
 	c.Equal("is anything", weight(criteria.AnyNumber, fivePounds).String())
+	c.Equal("anything", weight(criteria.AnyNumber, fivePounds).AltString())
 
 	// An invalid comparison is treated as "any", just as it is when matching.
 	c.Equal("is anything", weight(criteria.NumericComparison("bogus"), fivePounds).String())
+	c.Equal("anything", weight(criteria.NumericComparison("bogus"), fivePounds).AltString())
 }
 
 // TestWeightDescriptionUsesRequestedUnits verifies that a weight criteria can be described in the units the user has
@@ -49,11 +55,16 @@ func TestWeightDescriptionUsesRequestedUnits(t *testing.T) {
 	c.Equal("is at most 5 lb", crit.Describe(fxp.Pound))
 	c.Equal("is at most 2.5 kg", crit.Describe(fxp.Kilogram))
 	c.Equal("is at most 80 oz", crit.Describe(fxp.Ounce))
+	c.Equal("at most 5 lb", crit.AltDescribe(fxp.Pound))
+	c.Equal("at most 2.5 kg", crit.AltDescribe(fxp.Kilogram))
+	c.Equal("at most 80 oz", crit.AltDescribe(fxp.Ounce))
 
 	// The units are those asked for, not those the qualifier was created with.
 	metric := weight(criteria.AtLeastNumber, fxp.WeightFromInteger(2, fxp.Kilogram))
 	c.Equal("is at least 2 kg", metric.Describe(fxp.Kilogram))
 	c.Equal("is at least 4 lb", metric.Describe(fxp.Pound))
+	c.Equal("at least 2 kg", metric.AltDescribe(fxp.Kilogram))
+	c.Equal("at least 4 lb", metric.AltDescribe(fxp.Pound))
 }
 
 // TestWeightHashIgnoresQualifierWhenAny verifies that a weight criteria whose comparison is "is anything" hashes the

@@ -99,6 +99,12 @@ func (n NumericComparison) DescribeWith(qualifier string) string {
 
 // AltDescribe returns an alternate description of this NumericCompareType using a qualifier.
 func (n NumericComparison) AltDescribe(qualifier fxp.Int) string {
+	return n.AltDescribeWith(qualifier.String())
+}
+
+// AltDescribeWith returns an alternate description of this NumericCompareType using an already-formatted qualifier.
+// Use this for a qualifier that carries more than a bare number, such as a weight with its units.
+func (n NumericComparison) AltDescribeWith(qualifier string) string {
 	v := n.EnsureValid()
 	result := v.AltString()
 	if v == AnyNumber {
@@ -107,7 +113,7 @@ func (n NumericComparison) AltDescribe(qualifier fxp.Int) string {
 	if result != "" {
 		result += " "
 	}
-	return result + qualifier.String()
+	return result + qualifier
 }
 
 // Matches performs a comparison and returns true if the data matches.
