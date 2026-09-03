@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -506,6 +507,10 @@ func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip str
 }
 
 func addPopup[T comparable](parent *unison.Panel, choices []T, fieldData *T) *unison.PopupMenu[T] {
+	// Ensure that the passed field value is in the list of choices
+	if fieldData != nil && len(choices) > 0 && !slices.Contains(choices, *fieldData) {
+		*fieldData = choices[0]
+	}
 	popup := unison.NewPopupMenu[T]()
 	for _, one := range choices {
 		popup.AddItem(one)
