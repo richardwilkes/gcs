@@ -58,5 +58,7 @@ func (t TemplatePicker) String() string {
 // Hash writes this object's contents into the hasher.
 func (t TemplatePicker) Hash(h hash.Hash) {
 	xhash.Num8(h, t.Type)
-	t.Qualifier.Hash(h)
+	if t.Type.EnsureValid() != picker.NotApplicable {
+		t.Qualifier.Hash(h)
+	}
 }
