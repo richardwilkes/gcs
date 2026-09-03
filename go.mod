@@ -14,7 +14,7 @@ require (
 	github.com/richardwilkes/unison v0.102.1-0.20260903011444-f356023e8c00
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
-	github.com/yuin/goldmark v1.8.5
+	github.com/yuin/goldmark v1.8.6
 	github.com/zeebo/xxh3 v1.1.0
 	golang.org/x/image v0.45.0
 	golang.org/x/sys v0.47.0
@@ -34,7 +34,7 @@ require (
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/go-text/typesetting v0.3.4 // indirect
-	github.com/google/pprof v0.0.0-20260830191439-4932ad3515ea // indirect
+	github.com/google/pprof v0.0.0-20260903180319-d6c3cb2f37ec // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
@@ -42,7 +42,7 @@ require (
 	github.com/miekg/dns v1.1.73 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
-	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/crypto v0.56.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
