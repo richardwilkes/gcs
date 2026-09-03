@@ -101,17 +101,26 @@ func findCheckBoxTitled(p *unison.Panel, title string) *CheckBox {
 	return nil
 }
 
-// findFeaturesPanel returns the first features panel found anywhere beneath the given panel, or nil if there is none.
-func findFeaturesPanel(p *unison.Panel) *featuresPanel {
-	if panel, ok := p.Self.(*featuresPanel); ok {
-		return panel
+// findPanel returns the first panel of the requested type found in the given panel or anywhere beneath it. Editors
+// build their sub-panels several levels down and hand back no references to most of them, so a test that wants to
+// drive one has to go looking for it.
+func findPanel[T any](p *unison.Panel) (T, bool) {
+	if panel, ok := p.Self.(T); ok {
+		return panel, true
 	}
 	for _, child := range p.Children() {
-		if panel := findFeaturesPanel(child); panel != nil {
-			return panel
+		if panel, ok := findPanel[T](child); ok {
+			return panel, true
 		}
 	}
-	return nil
+	var zero T
+	return zero, false
+}
+
+// findFeaturesPanel returns the first features panel found anywhere beneath the given panel, or nil if there is none.
+func findFeaturesPanel(p *unison.Panel) *featuresPanel {
+	panel, _ := findPanel[*featuresPanel](p)
+	return panel
 }
 
 // TestTraitEditorHasSwitchedOnCheckBox verifies that both container and non-container traits offer the "Switched On"

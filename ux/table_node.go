@@ -612,129 +612,28 @@ func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) uni
 	return label
 }
 
-// handleCheck applies the new state of a toggle cell to the item it belongs to, registering an undoable edit. It
-// returns true if it has already reported the change to the item's owner, in which case the caller must not mark the
-// owner as modified on top of that; false means the caller has to do the reporting.
+// handleCheck applies the new state of a toggle cell to the item it belongs to, registering an undoable edit. Each
+// kind of toggle is routed through the same machinery as the command that performs it for a whole selection, so that a
+// click and the command behave identically -- same undo title, same choice of recalculating and of rebuilding the
+// owner versus merely marking it as modified. It returns true if it has already reported the change to the item's
+// owner, in which case the caller must not mark the owner as modified on top of that; false means the caller has to do
+// the reporting. Nothing gets reported when there is no owner to report to, which is exactly when marking as modified
+// would find nothing to tell either.
 func handleCheck(data any, check unison.Paneler, checked bool) bool {
+	owner := unison.AncestorOrSelf[Rebuildable](check)
 	switch item := data.(type) {
 	case *gurps.Equipment:
-		// Equipping or unequipping an item is routed through the same machinery as the Toggle Equipped command, so that
-		// the two behave identically: the owner is rebuilt rather than merely marked as modified, since an item that
-		// starts or stops contributing takes its weapons, reactions and conditional modifiers into or out of play,
-		// and whether the lists showing those appear on the page at all -- along with which columns they hold -- is
-		// decided only when the owner creates its lists. Nothing gets reported when there is no owner to report to,
-		// which is exactly when marking as modified would find nothing to tell either.
-		owner := unison.AncestorOrSelf[Rebuildable](check)
-		adjustTargets(i18n.Text("Toggle Equipped"), owner, check, gurps.EntityFromNode(item), []*gurps.Equipment{item},
-			func(e *gurps.Equipment) bool { return e.Equipped },
-			func(e *gurps.Equipment, v bool) { e.Equipped = v },
-			func(e *gurps.Equipment) { e.Equipped = checked },
-			true)
-		return !xreflect.IsNil(owner)
+		adjustEquipped(owner, check, item, checked)
 	case *gurps.TraitModifier:
-		item.Disabled = !checked
-		if mgr := unison.UndoManagerFor(check); mgr != nil {
-			owner := unison.AncestorOrSelf[Rebuildable](check)
-			mgr.Add(&unison.UndoEdit[*traitModifierAdjuster]{
-				ID:       unison.NextUndoID(),
-				EditName: i18n.Text("Toggle Trait Modifier"),
-				UndoFunc: func(edit *unison.UndoEdit[*traitModifierAdjuster]) { edit.BeforeData.Apply() },
-				RedoFunc: func(edit *unison.UndoEdit[*traitModifierAdjuster]) { edit.AfterData.Apply() },
-				BeforeData: &traitModifierAdjuster{
-					Owner:    owner,
-					Target:   item,
-					Disabled: !item.Disabled,
-				},
-				AfterData: &traitModifierAdjuster{
-					Owner:    owner,
-					Target:   item,
-					Disabled: item.Disabled,
-				},
-			})
-		}
-		recalculateEntityFor(item, check)
+		adjustModifierEnabled(owner, check, item, checked)
 	case *gurps.EquipmentModifier:
-		item.Disabled = !checked
-		if mgr := unison.UndoManagerFor(check); mgr != nil {
-			owner := unison.AncestorOrSelf[Rebuildable](check)
-			mgr.Add(&unison.UndoEdit[*equipmentModifierAdjuster]{
-				ID:       unison.NextUndoID(),
-				EditName: i18n.Text("Toggle Equipment Modifier"),
-				UndoFunc: func(edit *unison.UndoEdit[*equipmentModifierAdjuster]) { edit.BeforeData.Apply() },
-				RedoFunc: func(edit *unison.UndoEdit[*equipmentModifierAdjuster]) { edit.AfterData.Apply() },
-				BeforeData: &equipmentModifierAdjuster{
-					Owner:    owner,
-					Target:   item,
-					Disabled: !item.Disabled,
-				},
-				AfterData: &equipmentModifierAdjuster{
-					Owner:    owner,
-					Target:   item,
-					Disabled: item.Disabled,
-				},
-			})
-		}
-		recalculateEntityFor(item, check)
+		adjustModifierEnabled(owner, check, item, checked)
 	case *gurps.Weapon:
-		item.Hide = checked
-		if mgr := unison.UndoManagerFor(check); mgr != nil {
-			owner := unison.AncestorOrSelf[Rebuildable](check)
-			mgr.Add(&unison.UndoEdit[*weaponAdjuster]{
-				ID:       unison.NextUndoID(),
-				EditName: i18n.Text("Toggle Hidden"),
-				UndoFunc: func(edit *unison.UndoEdit[*weaponAdjuster]) { edit.BeforeData.Apply() },
-				RedoFunc: func(edit *unison.UndoEdit[*weaponAdjuster]) { edit.AfterData.Apply() },
-				BeforeData: &weaponAdjuster{
-					Owner:  owner,
-					Target: item,
-					Hide:   !item.Hide,
-				},
-				AfterData: &weaponAdjuster{
-					Owner:  owner,
-					Target: item,
-					Hide:   item.Hide,
-				},
-			})
-		}
-		recalculateEntityFor(item, check)
+		adjustHidden(owner, check, item, checked)
+	default:
+		return false
 	}
-	return false
-}
-
-type equipmentModifierAdjuster struct {
-	Owner    Rebuildable
-	Target   *gurps.EquipmentModifier
-	Disabled bool
-}
-
-func (e *equipmentModifierAdjuster) Apply() {
-	e.Target.Disabled = e.Disabled || e.Target.Container()
-	recalculateEntityFor(e.Target, e.Owner)
-	MarkModified(e.Owner)
-}
-
-type traitModifierAdjuster struct {
-	Owner    Rebuildable
-	Target   *gurps.TraitModifier
-	Disabled bool
-}
-
-func (t *traitModifierAdjuster) Apply() {
-	t.Target.Disabled = t.Disabled || t.Target.Container()
-	recalculateEntityFor(t.Target, t.Owner)
-	MarkModified(t.Owner)
-}
-
-type weaponAdjuster struct {
-	Owner  Rebuildable
-	Target *gurps.Weapon
-	Hide   bool
-}
-
-func (w *weaponAdjuster) Apply() {
-	w.Target.Hide = w.Hide
-	recalculateEntityFor(w.Target, w.Owner)
-	MarkModified(w.Owner)
+	return !xreflect.IsNil(owner)
 }
 
 func convertLinksForPageRef(in string) (string, *unison.SVG) {

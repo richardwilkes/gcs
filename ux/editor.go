@@ -339,6 +339,15 @@ func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 			e.modificationCallback()
 		}
 	})
+	// The editor's tables show row state -- a modifier's enabled checkmark, a weapon's Hide checkmark -- that nothing
+	// above has marked for redraw: DeepSync reaches the editor's fields, which are Syncers, but no table, since neither
+	// unison.Table nor the panels wrapping the editor's tables (traitModifiersPanel, equipmentModifiersPanel,
+	// weaponsPanel) is one, and the dock tab only redraws when its title text changes. A cell click flips its own
+	// drawable by hand, but the command path and the undo or redo of either has nothing to flip, so without this a
+	// toggle could leave a stale checkmark on screen. MarkForRedraw is window-wide and idempotent, and Node.ColumnCell
+	// re-derives the cell data on draw and rebuilds any cell whose cache no longer matches it, so a redraw is all that
+	// is needed here.
+	e.MarkForRedraw()
 }
 
 func (e *editor[N, D]) Rebuild(_ bool) {
@@ -349,7 +358,6 @@ func (e *editor[N, D]) Rebuild(_ bool) {
 	}
 	e.MarkModified(nil)
 	e.MarkForLayoutRecursively()
-	e.MarkForRedraw()
 }
 
 func (e *editor[N, D]) CloseWithGroup(other unison.Paneler) bool {

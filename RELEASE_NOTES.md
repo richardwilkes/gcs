@@ -18,6 +18,10 @@
   that will receive it is highlighted while you drag, and a single undo removes it from all of them again. If the
   modifier has substitutions to fill in, the prompt says which item each copy belongs to. Dropping onto an item that
   isn't part of the selection still affects only that item. (#1096)
+- Toggle State and its shortcut now work inside the detail editors. Select any number of trait or equipment modifiers
+  to turn them on or off, or any number of melee or ranged weapons to hide or show them, and the whole selection is
+  changed at once and taken back with a single undo. The command is also available from the right-click menu of those
+  lists. (#1074)
 
 ## Bug Fixes
 

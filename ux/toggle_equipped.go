@@ -34,3 +34,14 @@ func toggleEquipped(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipmen
 		func(e *gurps.Equipment) { e.Equipped = !e.Equipped },
 		true, true)
 }
+
+// adjustEquipped sets the equipped state of a single piece of equipment. This is the form the checkmark cell uses, so
+// that a click and the command register the same kind of undoable edit and, as above, rebuild the owner.
+func adjustEquipped(owner Rebuildable, undoSource unison.Paneler, eqp *gurps.Equipment, equipped bool) {
+	adjustTargets(i18n.Text("Toggle Equipped"), owner, undoSource, gurps.EntityFromNode(eqp),
+		[]*gurps.Equipment{eqp},
+		func(e *gurps.Equipment) bool { return e.Equipped },
+		func(e *gurps.Equipment, v bool) { e.Equipped = v },
+		func(e *gurps.Equipment) { e.Equipped = equipped },
+		true)
+}

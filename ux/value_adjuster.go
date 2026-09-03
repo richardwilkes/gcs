@@ -95,16 +95,6 @@ func ownerRebuildRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 	return sheetOwning(owner, entity) != nil
 }
 
-// recalculateEntityFor brings the entity that owns the given node up to date, unless marking the given owner as
-// modified will do that on its own, so that a single edit doesn't pay for the recalculation twice. Callers are
-// expected to mark the owner as modified afterwards.
-func recalculateEntityFor[T gurps.Node[T]](node T, owner unison.Paneler) {
-	entity := gurps.EntityFromNode(node)
-	if !ownerRecalculates(owner, entity) {
-		entity.Recalculate()
-	}
-}
-
 // canAdjustSelection returns true if any selected row yields an adjustable target via extract.
 func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], extract func(T) (A, bool)) bool {
 	for _, row := range table.SelectedRows(false) {
