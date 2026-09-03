@@ -21,3 +21,5 @@
   equipment modifiers already were.
 - The tooltip for a per-level weapon bonus attached to a trait modifier now reports the same amount the weapon actually
   receives, rather than an amount based on the trait's level.
+- Copying items from a template to a character is now correctly triggering modifier and nameable configuration. Applying
+  templates was not affected by this bug. (#1126)
