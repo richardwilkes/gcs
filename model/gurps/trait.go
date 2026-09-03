@@ -1061,6 +1061,8 @@ func (t *Trait) ClearUnusedFieldsForType() {
 		}
 		if t.ContainerType != container.AlternativeAbilities {
 			t.AlternativeSlots = 0
+		} else {
+			t.AlternativeSlots = max(t.AlternativeSlots, 1)
 		}
 	} else {
 		t.TraitContainerSyncData = TraitContainerSyncData{}
