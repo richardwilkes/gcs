@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
@@ -134,9 +135,10 @@ type TraitNonContainerSyncData struct {
 
 // TraitContainerSyncData holds the Trait sync data that is only applicable to traits that are containers.
 type TraitContainerSyncData struct {
-	Ancestry       string         `json:"ancestry,omitzero"`
-	TemplatePicker TemplatePicker `json:"template_picker,omitzero"`
-	ContainerType  container.Type `json:"container_type,omitzero"`
+	Ancestry         string         `json:"ancestry,omitzero"`
+	TemplatePicker   TemplatePicker `json:"template_picker,omitzero"`
+	ContainerType    container.Type `json:"container_type,omitzero"`
+	AlternativeSlots int            `json:"alternative_slots,omitzero"`
 }
 
 type traitListData struct {
@@ -439,7 +441,11 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		if t.Container() {
 			switch t.ContainerType {
 			case container.AlternativeAbilities:
-				data.InlineTag = i18n.Text("Alternate")
+				if slots := t.ResolvedAlternativeSlots(); slots > 1 {
+					data.InlineTag = fmt.Sprintf(i18n.Text("Alternate x%d"), slots)
+				} else {
+					data.InlineTag = i18n.Text("Alternate")
+				}
 			case container.Ancestry:
 				data.InlineTag = i18n.Text("Ancestry")
 			case container.Attributes:
@@ -638,18 +644,11 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 		for i, one := range t.Children {
 			values[i] = one.AdjustedPoints()
 		}
-		if len(values) != 0 {
-			// The most expensive child is billed at full cost and the rest at 20%, so the running total starts at the
-			// largest child's cost. It must come from the values themselves rather than from zero, since a set of
-			// children that all cost negative points has no member matching a zero maximum, which would leave every
-			// one of them billed at 20%.
-			points = slices.Max(values)
-		}
-		maximum := points
-		found := false
-		for _, v := range values {
-			if !found && maximum == v {
-				found = true
+		slices.SortFunc(values, func(a, b fxp.Int) int { return cmp.Compare(b, a) })
+		slots := min(t.ResolvedAlternativeSlots(), len(values))
+		for i, v := range values {
+			if i < slots {
+				points += v
 			} else {
 				points += fxp.ApplyRounding(v.Mul(fxp.Twenty).Div(fxp.Hundred), t.RoundCostDown)
 			}
@@ -1057,6 +1056,14 @@ func (t *Trait) Kind() string {
 func (t *Trait) ClearUnusedFieldsForType() {
 	if t.Container() {
 		t.TraitNonContainerOnlyEditData = TraitNonContainerOnlyEditData{}
+		if t.ContainerType != container.Ancestry {
+			t.Ancestry = ""
+		}
+		if t.ContainerType != container.AlternativeAbilities {
+			t.AlternativeSlots = 0
+		} else {
+			t.AlternativeSlots = max(t.AlternativeSlots, 1)
+		}
 	} else {
 		t.TraitContainerSyncData = TraitContainerSyncData{}
 		t.Children = nil
@@ -1139,9 +1146,20 @@ func (t *TraitNonContainerSyncData) hash(h hash.Hash) {
 }
 
 func (t *TraitContainerSyncData) hash(h hash.Hash) {
-	xhash.StringWithLen(h, t.Ancestry)
 	t.TemplatePicker.Hash(h)
 	xhash.Num8(h, t.ContainerType)
+	switch t.ContainerType {
+	case container.Ancestry:
+		xhash.StringWithLen(h, t.Ancestry)
+	case container.AlternativeAbilities:
+		xhash.Num64(h, t.AlternativeSlots)
+	}
+}
+
+// ResolvedAlternativeSlots returns the number of children that should be billed at full price when this is
+// an Alternative Abilities container, i.e. the number of alternative abilities that can be active simultaneously.
+func (t *TraitContainerSyncData) ResolvedAlternativeSlots() int {
+	return max(t.AlternativeSlots, 1)
 }
 
 // CopyFrom implements node.EditorData.
