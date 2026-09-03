@@ -220,6 +220,36 @@ func TestAlternativeAbilitiesCost(t *testing.T) {
 		"mixed children bill the most expensive one at full cost")
 }
 
+// TestAlternativeAbilitiesMultipleSlots verifies that setting AlternativeSlots > 1 bills that many of the
+// most expensive children at full cost and the rest at 20%.
+func TestAlternativeAbilitiesMultipleSlots(t *testing.T) {
+	c := check.New(t)
+
+	newAltContainer := func(slots int, childPoints ...int) *Trait {
+		parent := NewTrait(nil, nil, true)
+		parent.ContainerType = container.AlternativeAbilities
+		parent.AlternativeSlots = slots
+		for _, points := range childPoints {
+			child := NewTrait(nil, parent, false)
+			child.BasePoints = fxp.FromInteger(points)
+			parent.Children = append(parent.Children, child)
+		}
+		return parent
+	}
+
+	// A stored value of 0 means "unset" and behaves like a single slot: 20 + 2.
+	c.Equal(fxp.FromInteger(22), newAltContainer(0, 20, 10).AdjustedPoints(),
+		"an unset slot count resolves to a single slot")
+
+	// With 2 slots, the two most expensive children (20 and 10) are billed in full and the rest at 20%: 20 + 10 + 1.
+	c.Equal(fxp.FromInteger(31), newAltContainer(2, 20, 10, 5).AdjustedPoints(),
+		"two slots bill the two most expensive children at full cost")
+
+	// A slot count larger than the number of children bills every child in full: 20 + 10 + 5.
+	c.Equal(fxp.FromInteger(35), newAltContainer(5, 20, 10, 5).AdjustedPoints(),
+		"a slot count exceeding the child count bills every child at full cost")
+}
+
 // TestInheritedModifiersAreNotRepointed verifies that computing a child's points costs an inherited modifier against
 // that child without re-pointing the modifier at it, leaving the container's own display of the modifier intact.
 func TestInheritedModifiersAreNotRepointed(t *testing.T) {

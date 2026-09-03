@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"strconv"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
@@ -112,6 +114,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	}
 	addLabelAndPopup(content, i18n.Text("Frequency of Appearance"), "", frequency.Rolls, &e.editorData.Frequency)
 	var ancestryPopup *unison.PopupMenu[string]
+	var slotsField *IntegerField
 	if e.target.Container() {
 		addLabelAndPopup(content, i18n.Text("Container Type"), "", container.Types,
 			&e.editorData.ContainerType)
@@ -123,6 +126,10 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		}
 		ancestryPopup = addLabelAndPopup(content, i18n.Text("Ancestry"), "", choices, &e.editorData.Ancestry)
 		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != container.Ancestry)
+		slotsField = addLabelAndIntegerField(content, nil, "", i18n.Text("Alternative Slots"),
+			i18n.Text("How many of this container's children may be active at once; that many of the most expensive children are billed at full cost and the rest at 20%"),
+			&e.editorData.AlternativeSlots, 1, 20)
+		adjustFieldBlank(slotsField, e.editorData.ContainerType != container.AlternativeAbilities)
 	}
 	addChoices(e, content, true)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
@@ -172,6 +179,19 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 				}
 			} else {
 				adjustPopupBlank(ancestryPopup, true)
+			}
+		}
+		if slotsField != nil {
+			if e.editorData.ContainerType == container.AlternativeAbilities {
+				if !slotsField.Enabled() {
+					adjustFieldBlank(slotsField, false)
+					if e.editorData.AlternativeSlots < 1 {
+						e.editorData.AlternativeSlots = 1
+					}
+					slotsField.SetText(strconv.Itoa(e.editorData.AlternativeSlots))
+				}
+			} else {
+				adjustFieldBlank(slotsField, true)
 			}
 		}
 	}
