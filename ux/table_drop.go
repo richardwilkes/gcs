@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -24,11 +26,42 @@ import (
 // TableProviderClientKey is the key used to store the table provider with the table.
 const TableProviderClientKey = "table-provider"
 
-// AltDropSupport holds handlers for supporting an alternate drop type that drops onto a specific row, rather than
-// moving or adding rows.
+// AltDropSupport holds handlers for supporting an alternate drop type that drops onto specific rows, rather than moving
+// or adding rows. The row indexes handed to Drop are those of the rows the drop is to be applied to, in the order they
+// appear in the table (see altDropTargets). They are raw indexes into the table the drop landed in, and it is up to
+// each Drop implementation to resolve them to rows before it changes anything about that table -- in particular before
+// rebuilding the table's owner, which replaces the table and leaves the indexes pointing into an orphan.
 type AltDropSupport struct {
 	DragKey *uti.DataType
-	Drop    func(rowIndex int, data any)
+	Drop    func(rowIndexes []int, data any)
+}
+
+// altDropTargets returns the rows that an alternate drop released over the row at the given index applies to. Releasing
+// over one of several selected rows applies the drop to all of them, so that a modifier can be attached to a whole
+// batch of traits or equipment in one go; releasing anywhere else -- over a row that isn't part of the selection, or
+// with at most one row selected -- applies it to just the row it landed on, as it always has.
+//
+// Only rows that are explicitly selected count. unison paints the descendants of a selected container as indirectly
+// selected rather than putting them into the selection itself, and dropping onto a container attaches the modifiers to
+// the container alone, so a container's children are no more a target here than they are when one is dropped onto
+// directly. The scan runs over the disclosed rows rather than the selection map, which is also what leaves out any
+// selected row currently tucked inside a closed container: a row that can't be highlighted while dragging shouldn't be
+// quietly modified by the drop either.
+func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int) []int {
+	if hovered == -1 {
+		return nil
+	}
+	var selected []int
+	rowCount := table.LastRowIndex() + 1
+	for i := range rowCount {
+		if table.IsRowSelected(i) {
+			selected = append(selected, i)
+		}
+	}
+	if len(selected) > 1 && slices.Contains(selected, hovered) {
+		return selected
+	}
+	return []int{hovered}
 }
 
 // InstallTableDropSupport installs our standard drop support on a table.
@@ -57,7 +90,7 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 		altDataType := altDropSupport.DragKey
 		originalDragCallbacks := table.Callbacks
 		originalDrawOverCallback := table.DrawOverCallback
-		altDropRowIndex := -1
+		var altDropTargetIndexes []int
 		table.CanAcceptDropCallback = func(di drag.Info) bool {
 			if table.Enabled() && !table.IsFiltered() && di.HasDataType(altDataType.UTI) {
 				return true
@@ -67,10 +100,10 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 		dragEnterOrUpdate := func(di drag.Info, where geom.Point) (drag.Op, bool) {
 			if di.HasDataType(altDataType.UTI) {
 				op := drag.None
-				if altDropRowIndex = table.OverRow(where.Y); altDropRowIndex != -1 {
+				if altDropTargetIndexes = altDropTargets(table, table.OverRow(where.Y)); len(altDropTargetIndexes) != 0 {
 					op = drag.Copy
 				}
-				// Redraw and flush whether over a row or not, so the highlight appears while a row is targeted and is
+				// Redraw and flush whether over a row or not, so the highlight appears while rows are targeted and is
 				// erased as soon as the drag moves off of the rows.
 				flushDragFeedback(table.AsPanel())
 				return op, true
@@ -90,8 +123,8 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 			return originalDragCallbacks.DragUpdatedCallback(di, where, mods)
 		}
 		table.DragExitedCallback = func() {
-			if altDropRowIndex != -1 {
-				altDropRowIndex = -1
+			if len(altDropTargetIndexes) != 0 {
+				altDropTargetIndexes = nil
 				flushDragFeedback(table.AsPanel())
 			}
 			originalDragCallbacks.DragExitedCallback()
@@ -99,15 +132,15 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 		table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
 			if di.HasDataType(altDataType.UTI) {
 				handled := false
-				if altDropRowIndex != -1 {
+				if len(altDropTargetIndexes) != 0 {
 					undo := willDropCallback(nil, table, false)
-					altDropSupport.Drop(altDropRowIndex, draggedTableData)
+					altDropSupport.Drop(altDropTargetIndexes, draggedTableData)
 					// Notify the table the same way unison does for a normal drop. The providers' drop handlers only
 					// rebuild when the data owner has an owning entity, so without this the dockable holding a
 					// template or a traits/equipment list would go on showing itself as unmodified.
 					unison.SafeCall(table.DropOccurredCallback)
 					finishDidDrop(undo, nil, table, false)
-					altDropRowIndex = -1
+					altDropTargetIndexes = nil
 					flushDragFeedback(table.AsPanel())
 					handled = true
 				}
@@ -117,11 +150,32 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 		}
 		table.DrawOverCallback = func(gc *unison.Canvas, rect geom.Rect) {
 			originalDrawOverCallback(gc, rect)
-			if altDropRowIndex > -1 && altDropRowIndex <= table.LastRowIndex() {
-				frame := table.RowFrame(altDropRowIndex)
-				paint := unison.ThemeWarning.Paint(gc, frame, paintstyle.Fill)
-				paint.SetColorFilter(unison.Alpha30Filter())
-				gc.DrawRect(frame, paint)
+			if len(altDropTargetIndexes) == 0 {
+				return
+			}
+			// Every row the drop will be applied to is highlighted, so that the user can see the whole extent of what
+			// is about to happen before letting go. This is drawn afresh on every drag-update event, and the targets
+			// can be a selection of hundreds of rows with most of them scrolled out of view, so the work is confined
+			// to the rows the dirty rect reaches: RowFrame sums the heights of every row above the one asked for, so
+			// it is only called for the targets among those rows -- the indexes are in table order (see
+			// altDropTargets), so the scan stops at the first one past them -- and a single paint serves them all.
+			first := max(table.OverRow(rect.Y), 0)
+			last := table.OverRow(rect.Bottom())
+			if last == -1 {
+				last = table.LastRowIndex()
+			}
+			paint := unison.ThemeWarning.Paint(gc, rect, paintstyle.Fill)
+			paint.SetColorFilter(unison.Alpha30Filter())
+			for _, rowIndex := range altDropTargetIndexes {
+				if rowIndex < first {
+					continue
+				}
+				if rowIndex > last {
+					break
+				}
+				if frame := table.RowFrame(rowIndex); frame.Intersects(rect) {
+					gc.DrawRect(frame, paint)
+				}
 			}
 		}
 	}

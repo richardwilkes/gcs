@@ -104,7 +104,7 @@ func TestAltDropOnTraitPromptsForTargetModifiers(t *testing.T) {
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
 	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
-	provider.AltDropSupport().Drop(0, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+	provider.AltDropSupport().Drop([]int{0}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
 		Table: modTable,
 		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
 	})
@@ -138,7 +138,7 @@ func TestAltDropOnEquipmentPromptsForTargetModifiers(t *testing.T) {
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
 	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
-	provider.AltDropSupport().Drop(0, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
+	provider.AltDropSupport().Drop([]int{0}, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
 		Table: modTable,
 		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
 	})
@@ -147,6 +147,187 @@ func TestAltDropOnEquipmentPromptsForTargetModifiers(t *testing.T) {
 	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target equipment")
 	c.Equal([]modifierPrompt{{title: "Target Equipment", modifiers: []string{"Existing", "Dropped"}}}, *prompts,
 		"the drop must prompt for the target equipment's modifiers")
+}
+
+// TestAltDropOnSeveralTraitsGivesEachItsOwnCopy verifies that dropping a trait modifier onto several selected traits
+// attaches a separate copy to each of them and prompts for each in turn. A single shared modifier would tie the traits
+// together, so that enabling it on one would enable it on all and renaming it would rename it everywhere.
+func TestAltDropOnSeveralTraitsGivesEachItsOwnCopy(t *testing.T) {
+	c := check.New(t)
+	prompts := captureModifierPrompts(t)
+	entity := gurps.NewEntity()
+
+	first := gurps.NewTrait(entity, nil, false)
+	first.Name = "First Trait"
+	second := gurps.NewTrait(entity, nil, false)
+	second.Name = "Second Trait"
+	entity.Traits = []*gurps.Trait{first, second}
+
+	provider, ok := NewTraitsProvider(entity, false).(*traitsProvider)
+	c.True(ok, "the traits provider must be a *traitsProvider")
+	table := unison.NewTable(provider)
+	provider.SetTable(table)
+	table.SetRootRows(provider.RootRows())
+
+	dropped := gurps.NewTraitModifier(entity, nil, false)
+	dropped.Name = "Dropped"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
+	})
+
+	c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first trait")
+	c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second trait")
+	c.Equal("Dropped", first.Modifiers[0].Name, "the first trait must get the dropped modifier")
+	c.Equal("Dropped", second.Modifiers[0].Name, "the second trait must get the dropped modifier")
+	c.NotEqual(first.Modifiers[0].ID(), second.Modifiers[0].ID(), "each trait must get a copy of its own")
+	c.NotEqual(dropped.ID(), first.Modifiers[0].ID(), "the dragged modifier itself must not be attached")
+	c.Equal([]modifierPrompt{
+		{title: "First Trait", modifiers: []string{"Dropped"}},
+		{title: "Second Trait", modifiers: []string{"Dropped"}},
+	}, *prompts, "each trait must be prompted for its own modifiers")
+}
+
+// TestAltDropOnSeveralEquipmentItemsGivesEachItsOwnCopy verifies the same for dropping equipment modifiers onto several
+// selected equipment items.
+func TestAltDropOnSeveralEquipmentItemsGivesEachItsOwnCopy(t *testing.T) {
+	c := check.New(t)
+	prompts := captureModifierPrompts(t)
+	entity := gurps.NewEntity()
+
+	first := gurps.NewEquipment(entity, nil, false)
+	first.Name = "First Item"
+	second := gurps.NewEquipment(entity, nil, false)
+	second.Name = "Second Item"
+	entity.CarriedEquipment = []*gurps.Equipment{first, second}
+
+	provider, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
+	c.True(ok, "the equipment provider must be an *equipmentProvider")
+	table := unison.NewTable(provider)
+	provider.SetTable(table)
+	table.SetRootRows(provider.RootRows())
+
+	dropped := gurps.NewEquipmentModifier(entity, nil, false)
+	dropped.Name = "Dropped"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
+	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
+	})
+
+	c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first item")
+	c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second item")
+	c.NotEqual(first.Modifiers[0].ID(), second.Modifiers[0].ID(), "each item must get a copy of its own")
+	c.NotEqual(dropped.ID(), first.Modifiers[0].ID(), "the dragged modifier itself must not be attached")
+	c.Equal([]modifierPrompt{
+		{title: "First Item", modifiers: []string{"Dropped"}},
+		{title: "Second Item", modifiers: []string{"Dropped"}},
+	}, *prompts, "each item must be prompted for its own modifiers")
+}
+
+// TestAltDropOnAContainerAndItsChildPromptsTheChildOnce verifies that a selection holding both a container and one of
+// its own descendants doesn't ask about that descendant twice. ProcessModifiers walks everything below each row it is
+// handed, so the child is already covered by its container being in the list and must be dropped from it, the same
+// reduction the selection-driven callers get from SelectedRows(true).
+func TestAltDropOnAContainerAndItsChildPromptsTheChildOnce(t *testing.T) {
+	c := check.New(t)
+	prompts := captureModifierPrompts(t)
+	entity := gurps.NewEntity()
+
+	container := gurps.NewTrait(entity, nil, true)
+	container.Name = "Container Trait"
+	child := gurps.NewTrait(entity, container, false)
+	child.Name = "Child Trait"
+	container.Children = []*gurps.Trait{child}
+	entity.Traits = []*gurps.Trait{container}
+
+	provider, ok := NewTraitsProvider(entity, false).(*traitsProvider)
+	c.True(ok, "the traits provider must be a *traitsProvider")
+	table := unison.NewTable(provider)
+	provider.SetTable(table)
+	table.SetRootRows(provider.RootRows())
+	c.Equal(1, table.LastRowIndex(), "the container's child must be disclosed")
+
+	dropped := gurps.NewTraitModifier(entity, nil, false)
+	dropped.Name = "Dropped"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
+	})
+
+	c.Equal(1, len(container.Modifiers), "the container must still receive the dropped modifier")
+	c.Equal(1, len(child.Modifiers), "the child must still receive its own copy of the dropped modifier")
+	c.Equal([]modifierPrompt{
+		{title: "Container Trait", modifiers: []string{"Dropped"}},
+		{title: "Child Trait", modifiers: []string{"Dropped"}},
+	}, *prompts, "the child must be prompted for once, by way of its container")
+}
+
+// TestAltDropOnAMissingTraitRowIsANoOp verifies that a row index which resolves to nothing is quietly left out of a
+// drop, and that a drop none of whose indexes resolve does nothing at all: nothing is attached and no prompt goes up.
+// The indexes come from the table the drop landed in, so none should ever miss, but one that does must not take the
+// handler down.
+func TestAltDropOnAMissingTraitRowIsANoOp(t *testing.T) {
+	c := check.New(t)
+	prompts := captureModifierPrompts(t)
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Trait"
+	entity.Traits = []*gurps.Trait{trait}
+	provider, ok := NewTraitsProvider(entity, false).(*traitsProvider)
+	c.True(ok, "the traits provider must be a *traitsProvider")
+	table := unison.NewTable(provider)
+	provider.SetTable(table)
+	table.SetRootRows(provider.RootRows())
+	dropped := gurps.NewTraitModifier(entity, nil, false)
+	dropped.Name = "Dropped"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	data := &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
+	}
+
+	provider.AltDropSupport().Drop([]int{99}, data)
+	c.Equal(0, len(trait.Modifiers), "a drop with no resolvable target must attach nothing")
+	c.Equal(0, len(*prompts), "a drop with no resolvable target must not prompt")
+
+	provider.AltDropSupport().Drop([]int{99, 0}, data)
+	c.Equal(1, len(trait.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
+	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Dropped"}}}, *prompts,
+		"only the target that resolved may be prompted for")
+}
+
+// TestAltDropOnAMissingEquipmentRowIsANoOp verifies the same for the equipment drop handler.
+func TestAltDropOnAMissingEquipmentRowIsANoOp(t *testing.T) {
+	c := check.New(t)
+	prompts := captureModifierPrompts(t)
+	entity := gurps.NewEntity()
+	item := gurps.NewEquipment(entity, nil, false)
+	item.Name = "Item"
+	entity.CarriedEquipment = []*gurps.Equipment{item}
+	provider, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
+	c.True(ok, "the equipment provider must be an *equipmentProvider")
+	table := unison.NewTable(provider)
+	provider.SetTable(table)
+	table.SetRootRows(provider.RootRows())
+	dropped := gurps.NewEquipmentModifier(entity, nil, false)
+	dropped.Name = "Dropped"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
+	data := &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
+	}
+
+	provider.AltDropSupport().Drop([]int{99}, data)
+	c.Equal(0, len(item.Modifiers), "a drop with no resolvable target must attach nothing")
+	c.Equal(0, len(*prompts), "a drop with no resolvable target must not prompt")
+
+	provider.AltDropSupport().Drop([]int{99, 0}, data)
+	c.Equal(1, len(item.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
+	c.Equal([]modifierPrompt{{title: "Item", modifiers: []string{"Dropped"}}}, *prompts,
+		"only the target that resolved may be prompted for")
 }
 
 // TestProcessModifiersRebuildsThroughAReplacedTable verifies that answering a modifier prompt still rebuilds the sheet

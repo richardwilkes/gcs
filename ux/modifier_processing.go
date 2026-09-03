@@ -13,7 +13,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xmath"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -71,6 +73,35 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 			return false
 		}, false, false, row)
 	}
+}
+
+// minimalNodes returns the given rows with any row that is a descendant of another of them left out. ProcessModifiers
+// walks everything below each row it is handed, so a container and one of its own descendants both being present would
+// prompt for that descendant twice. This is the same reduction the selection-driven callers get for free from
+// SelectedRows(true); a caller that assembles its own list of rows -- the alternate drop handlers -- has to make it for
+// itself.
+func minimalNodes[T gurps.Node[T]](rows []T) []T {
+	if len(rows) < 2 {
+		return rows
+	}
+	present := make(map[tid.TID]bool, len(rows))
+	for _, row := range rows {
+		present[row.ID()] = true
+	}
+	minimal := make([]T, 0, len(rows))
+	for _, row := range rows {
+		descendant := false
+		for parent := row.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
+			if present[parent.ID()] {
+				descendant = true
+				break
+			}
+		}
+		if !descendant {
+			minimal = append(minimal, row)
+		}
+	}
+	return minimal
 }
 
 func processModifiers[T gurps.Node[T]](title string, modifiers []T) bool {

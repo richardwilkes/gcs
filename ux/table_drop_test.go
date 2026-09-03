@@ -46,7 +46,7 @@ func (f *fakeDragInfo) Data(_ string) []byte             { return nil }
 // (dropping a modifier onto a row) in a headless test. Only the methods that path touches do anything.
 type fakeAltDropProvider struct {
 	unison.SimpleTableModel[*Node[*gurps.Trait]]
-	altDrops []int
+	altDrops [][]int
 }
 
 func (p *fakeAltDropProvider) DataOwner() gurps.DataOwner                    { return nil }
@@ -79,17 +79,46 @@ func (p *fakeAltDropProvider) CreateItem(_ Rebuildable, _ *unison.Table[*Node[*g
 func (p *fakeAltDropProvider) AltDropSupport() *AltDropSupport {
 	return &AltDropSupport{
 		DragKey: traitModifierDragKey,
-		Drop:    func(rowIndex int, _ any) { p.altDrops = append(p.altDrops, rowIndex) },
+		Drop:    func(rowIndexes []int, _ any) { p.altDrops = append(p.altDrops, rowIndexes) },
 	}
 }
 
-// newAltDropTestTable returns a table with drop support installed and a single root row, whose height is the table's
-// MinimumRowHeight since no columns are configured, so points with a small Y are over the row and large Y values miss.
-func newAltDropTestTable(provider *fakeAltDropProvider) *unison.Table[*Node[*gurps.Trait]] {
+// newAltDropTestTable returns a table with drop support installed, holding the given root traits, or a single plain
+// trait when none are given. No columns are configured, so every row's height is the table's MinimumRowHeight and any
+// Y beyond the rows misses them all.
+func newAltDropTestTable(provider *fakeAltDropProvider, roots ...*gurps.Trait) *unison.Table[*Node[*gurps.Trait]] {
 	table := unison.NewTable(provider)
 	InstallTableDropSupport(table, provider)
-	table.SetRootRows([]*Node[*gurps.Trait]{NewNode(table, nil, gurps.NewTrait(nil, nil, false), false)})
+	if len(roots) == 0 {
+		roots = []*gurps.Trait{gurps.NewTrait(nil, nil, false)}
+	}
+	rows := make([]*Node[*gurps.Trait], 0, len(roots))
+	for _, root := range roots {
+		rows = append(rows, NewNode(table, nil, root, false))
+	}
+	table.SetRootRows(rows)
 	return table
+}
+
+// newAltDropTestTraits returns the traits used for the multiple-row cases: two plain traits with an open container
+// holding one child between them, so that the disclosed rows are (0) a plain trait, (1) the container, (2) the
+// container's child and (3) another plain trait.
+func newAltDropTestTraits() []*gurps.Trait {
+	first := gurps.NewTrait(nil, nil, false)
+	first.Name = "First"
+	container := gurps.NewTrait(nil, nil, true)
+	container.Name = "Container"
+	child := gurps.NewTrait(nil, container, false)
+	child.Name = "Child"
+	container.Children = []*gurps.Trait{child}
+	last := gurps.NewTrait(nil, nil, false)
+	last.Name = "Last"
+	return []*gurps.Trait{first, container, last}
+}
+
+// altDropPoint returns a point within the row at the given index, for driving the drag and drop callbacks over it.
+func altDropPoint(table *unison.Table[*Node[*gurps.Trait]], rowIndex int) geom.Point {
+	return geom.Point{X: 1, Y: table.RowFrame(rowIndex).CenterY()}
 }
 
 // TestAltDropDragFeedbackFlushed verifies that dragging a modifier over a table row immediately flushes the drawing,
@@ -104,7 +133,7 @@ func TestAltDropDragFeedbackFlushed(t *testing.T) {
 
 	provider := &fakeAltDropProvider{}
 	table := newAltDropTestTable(provider)
-	overRow := geom.Point{X: 1, Y: table.MinimumRowHeight / 2}
+	overRow := altDropPoint(table, 0)
 	offRows := geom.Point{X: 1, Y: 10000}
 	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
 
@@ -149,18 +178,127 @@ func TestAltDropDeliversRowIndex(t *testing.T) {
 
 	provider := &fakeAltDropProvider{}
 	table := newAltDropTestTable(provider)
-	overRow := geom.Point{X: 1, Y: table.MinimumRowHeight / 2}
+	overRow := altDropPoint(table, 0)
 	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
 
 	c.Equal(drag.Copy, table.DragEnteredCallback(di, overRow, mod.None), "enter over row")
 	flushes = 0
 	c.True(table.DropCallback(di, overRow, mod.None), "drop over row must be handled")
-	c.Equal([]int{0}, provider.altDrops, "drop must deliver the row index")
+	c.Equal([][]int{{0}}, provider.altDrops, "drop must deliver the row index")
 	c.Equal(1, flushes, "drop must flush to erase the highlight")
 
 	// With no row targeted, the drop must be declined and the handler left uncalled.
 	c.False(table.DropCallback(di, overRow, mod.None), "drop without a targeted row must be declined")
-	c.Equal([]int{0}, provider.altDrops, "declined drop must not invoke the handler")
+	c.Equal([][]int{{0}}, provider.altDrops, "declined drop must not invoke the handler")
+}
+
+// TestAltDropAppliesToTheWholeSelection verifies that a modifier released over one of several selected rows is handed
+// to the provider for every one of them, so that a modifier can be attached to a batch of traits or equipment in a
+// single drag, while a release anywhere else still affects only the row it landed on.
+func TestAltDropAppliesToTheWholeSelection(t *testing.T) {
+	c := check.New(t)
+	original := flushDragFeedback
+	flushDragFeedback = func(_ *unison.Panel) {}
+	defer func() { flushDragFeedback = original }()
+
+	provider := &fakeAltDropProvider{}
+	table := newAltDropTestTable(provider, newAltDropTestTraits()...)
+	c.Equal(3, table.LastRowIndex(), "the container's child must be disclosed, giving four rows")
+	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+	dropOnRow := func(rowIndex int) {
+		where := altDropPoint(table, rowIndex)
+		c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None), "enter over row")
+		c.True(table.DropCallback(di, where, mod.None), "drop over row must be handled")
+	}
+
+	// With several rows selected, a drop onto one of them reaches all of them, in the order they appear in the table.
+	table.SelectByIndex(0, 3)
+	dropOnRow(3)
+	c.Equal([][]int{{0, 3}}, provider.altDrops, "a drop onto a selected row must reach the whole selection")
+
+	// A drop onto a row outside the selection is aimed at that row alone: the user is pointing at something they
+	// haven't selected, so the selection has nothing to do with it.
+	provider.altDrops = nil
+	dropOnRow(1)
+	c.Equal([][]int{{1}}, provider.altDrops, "a drop onto an unselected row must reach only that row")
+
+	// A single selected row is no batch, so a drop onto it is the ordinary single-row drop.
+	provider.altDrops = nil
+	table.ClearSelection()
+	table.SelectByIndex(0)
+	dropOnRow(0)
+	c.Equal([][]int{{0}}, provider.altDrops, "a drop with only one row selected must reach only that row")
+}
+
+// TestAltDropIgnoresIndirectlySelectedRows verifies that the children of a selected container are not targets of a
+// drop. unison paints them as indirectly selected rather than putting them into the selection, and dropping onto a
+// container attaches the modifiers to the container alone, so a container's children stay out of the batch -- and a
+// drop onto one of those children is a drop onto an unselected row, reaching just that child.
+func TestAltDropIgnoresIndirectlySelectedRows(t *testing.T) {
+	c := check.New(t)
+	original := flushDragFeedback
+	flushDragFeedback = func(_ *unison.Panel) {}
+	defer func() { flushDragFeedback = original }()
+
+	provider := &fakeAltDropProvider{}
+	table := newAltDropTestTable(provider, newAltDropTestTraits()...)
+	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+	dropOnRow := func(rowIndex int) {
+		where := altDropPoint(table, rowIndex)
+		c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None), "enter over row")
+		c.True(table.DropCallback(di, where, mod.None), "drop over row must be handled")
+	}
+
+	// Rows 0 and 1 are selected; row 2 is the selected container's child, which unison shows as indirectly selected.
+	table.SelectByIndex(0, 1)
+	c.False(table.IsRowSelected(2), "a container's child must not be part of the selection itself")
+	c.True(table.IsRowOrAnyParentSelected(2), "a selected container's child must be shown as indirectly selected")
+
+	dropOnRow(1)
+	c.Equal([][]int{{0, 1}}, provider.altDrops, "the batch must not pick up the selected container's child")
+
+	provider.altDrops = nil
+	dropOnRow(2)
+	c.Equal([][]int{{2}}, provider.altDrops, "a drop onto an indirectly selected child must reach only that child")
+}
+
+// TestAltDropLeavesOutSelectedRowsInAClosedContainer verifies that a selected row hidden by closing its container is
+// not a target. The selection holds on to the hidden row until it is pruned, but the targets are taken from the
+// disclosed rows, so a row that can't be highlighted while dragging isn't quietly modified by the drop either -- and its
+// container, which isn't selected, isn't taken in its stead.
+func TestAltDropLeavesOutSelectedRowsInAClosedContainer(t *testing.T) {
+	c := check.New(t)
+	original := flushDragFeedback
+	flushDragFeedback = func(_ *unison.Panel) {}
+	defer func() { flushDragFeedback = original }()
+
+	provider := &fakeAltDropProvider{}
+	table := newAltDropTestTable(provider, newAltDropTestTraits()...)
+	table.SelectByIndex(0, 2, 3) // The first trait, the container's child and the last trait.
+	table.RowFromIndex(1).SetOpen(false)
+	c.Equal(2, table.LastRowIndex(), "closing the container must hide its child, leaving three rows")
+	c.False(table.IsRowSelected(1), "the container itself must not be selected")
+
+	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+	where := altDropPoint(table, 2)
+	c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None), "enter over row")
+	c.True(table.DropCallback(di, where, mod.None), "drop over row must be handled")
+	c.Equal([][]int{{0, 2}}, provider.altDrops, "the hidden child must be left out of the batch")
+
+	// The child was left out because it isn't disclosed, not because the selection had let go of it.
+	table.RowFromIndex(1).SetOpen(true)
+	c.True(table.IsRowSelected(2), "the selection must still hold the child once it is disclosed again")
+}
+
+// TestAltDropTargetsWithNothingHovered verifies that a release that isn't over any row targets nothing at all, no
+// matter what is selected. Without a row under the pointer there is nothing to aim the drop at, and letting the
+// selection stand in for it would attach modifiers to rows the user never pointed at.
+func TestAltDropTargetsWithNothingHovered(t *testing.T) {
+	c := check.New(t)
+	provider := &fakeAltDropProvider{}
+	table := newAltDropTestTable(provider, newAltDropTestTraits()...)
+	table.SelectByIndex(0, 3)
+	c.Equal(0, len(altDropTargets(table, -1)), "nothing may be targeted when the pointer isn't over a row")
 }
 
 // TestAltDropNotifiesTheTable verifies that an alternate drop reports the change through the table's
@@ -178,7 +316,7 @@ func TestAltDropNotifiesTheTable(t *testing.T) {
 	c.NotNil(table.DropOccurredCallback, "drop support must install a drop notification")
 	notified := 0
 	table.DropOccurredCallback = func() { notified++ }
-	overRow := geom.Point{X: 1, Y: table.MinimumRowHeight / 2}
+	overRow := altDropPoint(table, 0)
 	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
 
 	c.Equal(drag.Copy, table.DragEnteredCallback(di, overRow, mod.None), "enter over row")

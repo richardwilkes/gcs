@@ -15,8 +15,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // TestUndoOfDeleteSurvivesSwitchColumnDisappearing verifies that deleting the only switchable row -- which drops the
@@ -517,4 +520,71 @@ func TestUndoRestoresAConditionallyPresentList(t *testing.T) {
 	c.Equal(0, len(entity.Traits), "redo must remove the trait from the entity again")
 	c.False(listAttachedToSheet(sheet, sheet.MeleeWeapons),
 		"redo must take the melee weapons list back off the page")
+}
+
+// TestAltDropOntoASelectionIsASingleUndoableEdit drives the whole alternate drop path with several rows selected: a
+// trait modifier released over one of two selected traits must be attached to both, and one undo must take it back off
+// both. The drop is recorded as a single snapshot of the entire table, so nothing has to be done per row for that to
+// hold -- but the drop is also what the undo edit is collected around, so a handler that rebuilt the sheet between the
+// two rows would leave the edit pointed at a table that no longer holds either of them. Since one undo of a whole-table
+// snapshot would clear both traits even if the handler had pushed an edit per row, the undo stack is checked to be
+// exhausted by that one undo, and the redo stack by the one redo.
+func TestAltDropOntoASelectionIsASingleUndoableEdit(t *testing.T) {
+	c := check.New(t)
+	captureModifierPrompts(t) // The drop prompts for the targets' modifiers and must not put up a real dialog.
+	original := flushDragFeedback
+	flushDragFeedback = func(_ *unison.Panel) {}
+	t.Cleanup(func() { flushDragFeedback = original })
+	savedDragData := draggedTableData
+	t.Cleanup(func() { draggedTableData = savedDragData })
+
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	first := gurps.NewTrait(entity, nil, false)
+	first.Name = "Claws"
+	second := gurps.NewTrait(entity, nil, false)
+	second.Name = "Fangs"
+	entity.Traits = []*gurps.Trait{first, second}
+	sheet.Rebuild(true)
+	table := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c.False(mgr.CanUndo(), "the sheet must start out with nothing to undo")
+	c.Equal(1, table.LastRowIndex(), "the sheet must show both traits")
+
+	// Stand in for the drag out of a trait modifiers table, which is the only thing that ever fills this in.
+	dropped := gurps.NewTraitModifier(nil, nil, false)
+	dropped.Name = "Dropped"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	draggedTableData = &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
+	}
+
+	table.SelectByIndex(0, 1)
+	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+	where := geom.Point{X: 1, Y: table.RowFrame(0).CenterY()}
+	c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None),
+		"entering over a selected row must offer to copy the modifier")
+	c.True(table.DropCallback(di, where, mod.None), "the drop must be handled")
+
+	c.Equal(2, len(entity.Traits), "the drop must not add or remove any traits")
+	for _, trait := range entity.Traits {
+		c.Equal(1, len(trait.Modifiers), "every selected trait must receive the dropped modifier: "+trait.Name)
+	}
+	c.True(mgr.CanUndo(), "the drop must have registered an undo edit")
+
+	mgr.Undo()
+	c.Equal(2, len(entity.Traits), "undo must leave the traits themselves alone")
+	for _, trait := range entity.Traits {
+		c.Equal(0, len(trait.Modifiers), "a single undo must take the modifier off every trait: "+trait.Name)
+	}
+	c.False(mgr.CanUndo(), "one undo must exhaust the drop's edits, since it was recorded as a single edit")
+
+	c.True(mgr.CanRedo(), "the drop must be redoable")
+	mgr.Redo()
+	for _, trait := range entity.Traits {
+		c.Equal(1, len(trait.Modifiers), "a single redo must put the modifier back on every trait: "+trait.Name)
+	}
+	c.False(mgr.CanRedo(), "one redo must exhaust the drop's edits, since it was recorded as a single edit")
 }

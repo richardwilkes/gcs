@@ -14,6 +14,10 @@
 - A skill with points in it keeps using the default it has been using rather than silently switching to another one,
   but that no longer applies across a change to its list of defaults: editing them, or syncing them from the library,
   now picks the best default afresh.
+- Dropping a modifier onto one of several selected traits or equipment items now adds it to all of them. Every item
+  that will receive it is highlighted while you drag, and a single undo removes it from all of them again. If the
+  modifier has substitutions to fill in, the prompt says which item each copy belongs to. Dropping onto an item that
+  isn't part of the selection still affects only that item. (#1096)
 
 ## Bug Fixes
 

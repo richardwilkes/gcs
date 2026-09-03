@@ -38,31 +38,53 @@ var promptForNameables = ShowNameablesDialog
 
 // ProcessNameables processes the rows and their children for any nameables.
 func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
+	ProcessNameableGroups(owner, []NameableGroup[T]{{Rows: rows}})
+}
+
+// NameableGroup is a set of rows whose entries in the nameables prompt are all headed by the same label. An entry is
+// normally titled with the row's own name, which is enough while every row in the prompt is a different thing; with a
+// label the title becomes "label: name", which is what tells apart rows that are otherwise identical -- the copies of
+// one modifier that a single drop attached to several traits or equipment items, say, which each need an answer of
+// their own. An empty label leaves the row's own name to stand alone.
+type NameableGroup[T gurps.Node[T]] struct {
+	Label string
+	Rows  []T
+}
+
+// ProcessNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
+// that covers all of the groups.
+func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []NameableGroup[T]) {
 	var data []T
 	var titles []string
 	var nameables []map[string]string
 	var visibleKeys [][]string
-	for _, row := range rows {
-		gurps.Traverse(func(row T) bool {
-			m := make(map[string]string)
-			row.FillWithNameableKeys(m, nil)
-			if len(m) == 0 {
-				return false
-			}
-			var keys []string
-			if gurps.IsNodePreconfigured(row) {
-				// Only prompt for keys that don't already have a replacement recorded; the rest were already
-				// resolved and shouldn't be asked about again.
-				if keys = missingNameableKeys(row, m); len(keys) == 0 {
+	for _, group := range groups {
+		for _, row := range group.Rows {
+			gurps.Traverse(func(row T) bool {
+				m := make(map[string]string)
+				row.FillWithNameableKeys(m, nil)
+				if len(m) == 0 {
 					return false
 				}
-			}
-			data = append(data, row)
-			titles = append(titles, row.String())
-			nameables = append(nameables, m)
-			visibleKeys = append(visibleKeys, keys) // nil means "show all keys"
-			return false
-		}, false, false, row)
+				var keys []string
+				if gurps.IsNodePreconfigured(row) {
+					// Only prompt for keys that don't already have a replacement recorded; the rest were already
+					// resolved and shouldn't be asked about again.
+					if keys = missingNameableKeys(row, m); len(keys) == 0 {
+						return false
+					}
+				}
+				title := row.String()
+				if group.Label != "" {
+					title = group.Label + ": " + title
+				}
+				data = append(data, row)
+				titles = append(titles, title)
+				nameables = append(nameables, m)
+				visibleKeys = append(visibleKeys, keys) // nil means "show all keys"
+				return false
+			}, false, false, row)
+		}
 	}
 	if len(data) > 0 {
 		if promptForNameables(titles, nameables, visibleKeys) {

@@ -17,18 +17,18 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// stubNameablesPrompt substitutes a non-interactive nameables prompt that hands the substitution maps it was asked to
-// fill to the given responder and reports back whatever the responder returns, letting a test drive the rebuild that
-// answering the prompt triggers. The count of prompts actually shown is returned, and the real prompt is restored when
-// the test finishes.
-func stubNameablesPrompt(t *testing.T, respond func(nameables []map[string]string) bool) *int {
+// stubNameablesPrompt substitutes a non-interactive nameables prompt that hands the section titles and the substitution
+// maps it was asked to fill to the given responder and reports back whatever the responder returns, letting a test drive
+// the rebuild that answering the prompt triggers. The count of prompts actually shown is returned, and the real prompt
+// is restored when the test finishes.
+func stubNameablesPrompt(t *testing.T, respond func(titles []string, nameables []map[string]string) bool) *int {
 	t.Helper()
 	original := promptForNameables
 	t.Cleanup(func() { promptForNameables = original })
 	shown := 0
-	promptForNameables = func(_ []string, nameables []map[string]string, _ [][]string) bool {
+	promptForNameables = func(titles []string, nameables []map[string]string, _ [][]string) bool {
 		shown++
-		return respond(nameables)
+		return respond(titles, nameables)
 	}
 	return &shown
 }
@@ -60,7 +60,7 @@ func TestProcessNameablesRebuildsThroughAReplacedTable(t *testing.T) {
 	c.Nil(stale.Ancestor[Rebuildable](), "an orphaned table must have no rebuildable above it")
 
 	counter := installSyncCounter(sheet)
-	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {
+	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
 		for _, one := range nameables {
 			one["Adjective"] = "Sharp"
 		}
@@ -101,7 +101,7 @@ func TestProcessNameablesRebuildsThroughAReplacedTableForModifierRows(t *testing
 	c.Nil(stale.Ancestor[Rebuildable](), "an orphaned table must have no rebuildable above it")
 
 	counter := installSyncCounter(sheet)
-	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {
+	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
 		for _, one := range nameables {
 			one["Material"] = "Steel"
 		}
@@ -139,7 +139,7 @@ func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
 	counter := installSyncCounter(sheet)
 	syncsWhenAsked := -1
-	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {
+	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
 		syncsWhenAsked = counter.count
 		for _, one := range nameables {
 			one["Material"] = "Steel"
@@ -147,7 +147,7 @@ func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 		return true
 	})
 
-	provider.AltDropSupport().Drop(0, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+	provider.AltDropSupport().Drop([]int{0}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
 		Table: modTable,
 		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
 	})
@@ -162,6 +162,103 @@ func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 		"the dropped modifier's switchable feature must bring the switch column into view")
 	c.True(counter.count > syncsWhenAsked,
 		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
+}
+
+// TestAltDropOnSeveralTraitsPromptsForEachCopy verifies that dropping a modifier whose name needs filling in
+// onto several selected traits asks about every copy separately, in one prompt. Each target has a copy of its own, so
+// each gets its own entry in the prompt and its own answer, letting the same modifier be named differently on each
+// trait it was attached to. The copies are otherwise identical, so the entries have to be headed by the trait each
+// belongs to, or the user has no way of telling which answer goes where.
+func TestAltDropOnSeveralTraitsPromptsForEachCopy(t *testing.T) {
+	c := check.New(t)
+	captureModifierPrompts(t) // The modifier prompt comes first and must not try to put up a real dialog.
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	first := gurps.NewTrait(entity, nil, false)
+	first.Name = "Claws"
+	second := gurps.NewTrait(entity, nil, false)
+	second.Name = "Fangs"
+	entity.Traits = []*gurps.Trait{first, second}
+	sheet.Rebuild(true)
+	provider := sheet.Traits.provider
+	table := sheet.Traits.Table
+	c.Equal(1, table.LastRowIndex(), "the sheet must show both traits")
+	// The answers are handed out by position, so the targets have to be taken in the order the drop will visit them.
+	targets := []*gurps.Trait{table.RowFromIndex(0).Data(), table.RowFromIndex(1).Data()}
+
+	dropped := gurps.NewTraitModifier(nil, nil, false)
+	dropped.Name = "@Material@ Coating"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	materials := []string{"Steel", "Silver"}
+	var headings []string
+	shown := stubNameablesPrompt(t, func(titles []string, nameables []map[string]string) bool {
+		headings = titles
+		for i, one := range nameables {
+			one["Material"] = materials[i%len(materials)]
+		}
+		return true
+	})
+
+	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
+	})
+
+	c.Equal(1, *shown, "the whole drop must be covered by a single prompt")
+	c.Equal([]string{"Claws: @Material@ Coating", "Fangs: @Material@ Coating"}, headings,
+		"the prompt must hold an entry for each copy of the dropped modifier, headed by the trait it belongs to")
+	c.Equal(1, len(targets[0].Modifiers), "the first trait must receive a copy of the dropped modifier")
+	c.Equal(1, len(targets[1].Modifiers), "the second trait must receive a copy of the dropped modifier")
+	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
+		"the first copy must get the first answer")
+	c.Equal("Silver Coating", targets[1].Modifiers[0].NameWithReplacements(),
+		"the second copy must get its own answer rather than the first one's")
+}
+
+// TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy verifies the same for dropping an equipment modifier onto several
+// selected equipment items.
+func TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy(t *testing.T) {
+	c := check.New(t)
+	captureModifierPrompts(t) // The modifier prompt comes first and must not try to put up a real dialog.
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	first := gurps.NewEquipment(entity, nil, false)
+	first.Name = "Sword"
+	second := gurps.NewEquipment(entity, nil, false)
+	second.Name = "Shield"
+	entity.CarriedEquipment = []*gurps.Equipment{first, second}
+	sheet.Rebuild(true)
+	provider := sheet.CarriedEquipment.provider
+	table := sheet.CarriedEquipment.Table
+	c.Equal(1, table.LastRowIndex(), "the sheet must show both items")
+	// The answers are handed out by position, so the targets have to be taken in the order the drop will visit them.
+	targets := []*gurps.Equipment{table.RowFromIndex(0).Data(), table.RowFromIndex(1).Data()}
+
+	dropped := gurps.NewEquipmentModifier(nil, nil, false)
+	dropped.Name = "@Material@ Coating"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
+	materials := []string{"Steel", "Silver"}
+	var headings []string
+	shown := stubNameablesPrompt(t, func(titles []string, nameables []map[string]string) bool {
+		headings = titles
+		for i, one := range nameables {
+			one["Material"] = materials[i%len(materials)]
+		}
+		return true
+	})
+
+	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
+	})
+
+	c.Equal(1, *shown, "the whole drop must be covered by a single prompt")
+	c.Equal([]string{"Sword: @Material@ Coating", "Shield: @Material@ Coating"}, headings,
+		"the prompt must hold an entry for each copy of the dropped modifier, headed by the item it belongs to")
+	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
+		"the first copy must get the first answer")
+	c.Equal("Silver Coating", targets[1].Modifiers[0].NameWithReplacements(),
+		"the second copy must get its own answer rather than the first one's")
 }
 
 // TestAltDropOnEquipmentAppliesNameablesToTheLiveList verifies the same for dropping equipment modifiers onto an
@@ -186,7 +283,7 @@ func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
 	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
 	counter := installSyncCounter(sheet)
 	syncsWhenAsked := -1
-	shown := stubNameablesPrompt(t, func(nameables []map[string]string) bool {
+	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
 		syncsWhenAsked = counter.count
 		for _, one := range nameables {
 			one["Material"] = "Steel"
@@ -194,7 +291,7 @@ func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
 		return true
 	})
 
-	provider.AltDropSupport().Drop(0, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
+	provider.AltDropSupport().Drop([]int{0}, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
 		Table: modTable,
 		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
 	})
