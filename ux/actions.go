@@ -36,6 +36,7 @@ var (
 	cloneSheetAction               *unison.Action
 	closeTabAction                 *unison.Action
 	colorSettingsAction            *unison.Action
+	combineRulesetsAction          *unison.Action
 	convertToContainerAction       *unison.Action
 	convertToNonContainerAction    *unison.Action
 	copyToSheetAction              *unison.Action
@@ -187,6 +188,11 @@ func registerActions() {
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: mod.Option | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	combineRulesetsAction = registerKeyBindableAction("combine.rulesets", &unison.Action{
+		ID:              CombineRulesetsItemID,
+		Title:           i18n.Text("Create Combined Ruleset…"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { combineRulesets() },
 	})
 	downloadRulesFileAction = registerKeyBindableAction("download.rules.file", &unison.Action{
 		ID:              DownloadRulesFileItemID,
