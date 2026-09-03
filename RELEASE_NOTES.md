@@ -21,6 +21,8 @@
   equipment modifiers already were.
 - The tooltip for a per-level weapon bonus attached to a trait modifier now reports the same amount the weapon actually
   receives, rather than an amount based on the trait's level.
+- Copying items from a template to a character is now correctly triggering modifier and nameable configuration. Applying
+  templates was not affected by this bug. (#1126)
 - Dialogs now open focused and ready for the keyboard. On Windows, a dialog opened from a menu or a toolbar button,
   such as when applying a template to a character sheet, could come up without the keyboard focus, so Enter and Escape
   did nothing until it had been clicked on first. macOS could show the same problem in some cases. (#1124)

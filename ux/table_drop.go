@@ -166,10 +166,8 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		from = liveTable(from)
 		to = liveTable(to)
 	}
-	if shouldProcessModifiersAndNameables(to) {
-		// Only process modifiers and nameables when the drop comes from something besides a character, loot sheet
-		// or template; rows already on one of those have had these resolved.
-		if !shouldProcessModifiersAndNameables(from) {
+	if shouldProcessModifiersAndNameablesTo(to) {
+		if shouldProcessModifiersAndNameablesFrom(from) {
 			// Answering the modifier prompt rebuilds the owner all over again, and that rebuild can replace the tables
 			// just as the one above did: only the modifiers that are enabled count toward a row having switchable
 			// features, so turning one on or off can add or take away the switch column, and a list can only change its
@@ -223,7 +221,21 @@ func dropRebuilder(table unison.Paneler) Rebuildable {
 	return unison.Ancestor[Rebuildable](table)
 }
 
-func shouldProcessModifiersAndNameables(panel unison.Paneler) bool {
+// shouldProcessModifiersAndNameablesFrom checks if the copy source should process modifiers and nameables
+func shouldProcessModifiersAndNameablesFrom(panel unison.Paneler) bool {
+	if xreflect.IsNil(panel) {
+		return false
+	}
+	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
+	case *Sheet, *LootSheet:
+		return false
+	default:
+		return true
+	}
+}
+
+// shouldProcessModifiersAndNameablesFrom checks if the copy destination should process modifiers and nameables
+func shouldProcessModifiersAndNameablesTo(panel unison.Paneler) bool {
 	if xreflect.IsNil(panel) {
 		return false
 	}
