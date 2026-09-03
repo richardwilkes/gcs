@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
@@ -133,9 +134,9 @@ type TraitNonContainerSyncData struct {
 
 // TraitContainerSyncData holds the Trait sync data that is only applicable to traits that are containers.
 type TraitContainerSyncData struct {
-	Ancestry       string          `json:"ancestry,omitzero"`
-	TemplatePicker *TemplatePicker `json:"template_picker,omitzero"`
-	ContainerType  container.Type  `json:"container_type,omitzero"`
+	Ancestry       string         `json:"ancestry,omitzero"`
+	TemplatePicker TemplatePicker `json:"template_picker,omitzero"`
+	ContainerType  container.Type `json:"container_type,omitzero"`
 }
 
 type traitListData struct {
@@ -174,9 +175,6 @@ func NewTrait(owner DataOwner, parent *Trait, isContainer bool) *Trait {
 	t.parent = parent
 	t.owner = owner
 	t.Name = t.Kind()
-	if t.Container() {
-		t.TemplatePicker = &TemplatePicker{}
-	}
 	t.SetOpen(isContainer)
 	return &t
 }
@@ -361,14 +359,9 @@ func (t *Trait) EffectivelyDisabled() bool {
 	return false
 }
 
-// TemplatePickerData returns the TemplatePicker data, if any.
-func (t *TraitContainerSyncData) TemplatePickerData() *TemplatePicker {
-	return t.TemplatePicker
-}
-
-// SetTemplatePickerData sets the TemplatePicker data.
-func (t *TraitContainerSyncData) SetTemplatePickerData(tp *TemplatePicker) {
-	t.TemplatePicker = tp
+// TemplatePickerData implements TemplatePickerProvider.
+func (t *TraitContainerSyncData) TemplatePickerData() ([]picker.Type, *TemplatePicker) {
+	return picker.TypesForTraits, &t.TemplatePicker
 }
 
 // TraitsHeaderData returns the header data information for the given trait column.
@@ -1064,9 +1057,6 @@ func (t *Trait) Kind() string {
 func (t *Trait) ClearUnusedFieldsForType() {
 	if t.Container() {
 		t.TraitNonContainerOnlyEditData = TraitNonContainerOnlyEditData{}
-		if t.TemplatePicker == nil {
-			t.TemplatePicker = &TemplatePicker{}
-		}
 	} else {
 		t.TraitContainerSyncData = TraitContainerSyncData{}
 		t.Children = nil
@@ -1098,7 +1088,6 @@ func (t *Trait) SyncWithSource() {
 				t.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 				if t.Container() {
 					t.TraitContainerSyncData = other.TraitContainerSyncData
-					t.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
 					t.TraitNonContainerSyncData = other.TraitNonContainerSyncData
 					t.Weapons = CloneWeapons(other.Weapons, t, Reference)
@@ -1210,7 +1199,6 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 			t.Study[i] = other.Study[i].Clone()
 		}
 	}
-	t.TemplatePicker = t.TemplatePicker.Clone()
 }
 
 // CanPreconfigureContainer implements Preconfigurable.

@@ -20,10 +20,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// TemplatePickerProvider defines the methods a TemplatePicker provider has.
+// TemplatePickerProvider provides the method used to get a list of valid picker type and to access the picker data
 type TemplatePickerProvider interface {
-	TemplatePickerData() *TemplatePicker
-	SetTemplatePickerData(*TemplatePicker)
+	// TemplatePickerData returns a list of valid picker types and valid, non-nil, pointer to a TemplatePicker struct
+	TemplatePickerData() ([]picker.Type, *TemplatePicker)
 }
 
 // TemplatePicker holds the data necessary to allow a template choice to be made.
@@ -32,21 +32,12 @@ type TemplatePicker struct {
 	Qualifier criteria.Number `json:"qualifier,omitzero"`
 }
 
-// Clone creates a copy of the TemplatePicker.
-func (t *TemplatePicker) Clone() *TemplatePicker {
-	if t.IsZero() {
-		return &TemplatePicker{}
-	}
-	p := *t
-	return &p
-}
-
 // IsZero implements json.isZero.
-func (t *TemplatePicker) IsZero() bool {
-	return t == nil || t.Type == picker.NotApplicable
+func (t TemplatePicker) IsZero() bool {
+	return t.Type == picker.NotApplicable
 }
 
-func (t *TemplatePicker) String() string {
+func (t TemplatePicker) String() string {
 	if t.IsZero() {
 		return ""
 	}
@@ -65,7 +56,9 @@ func (t *TemplatePicker) String() string {
 }
 
 // Hash writes this object's contents into the hasher.
-func (t *TemplatePicker) Hash(h hash.Hash) {
+func (t TemplatePicker) Hash(h hash.Hash) {
 	xhash.Num8(h, t.Type)
-	t.Qualifier.Hash(h)
+	if t.Type.EnsureValid() != picker.NotApplicable {
+		t.Qualifier.Hash(h)
+	}
 }

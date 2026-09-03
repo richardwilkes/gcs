@@ -264,7 +264,6 @@ func TestOrganizeTraitsSetsParentsAndOwner(t *testing.T) {
 	for _, one := range organized {
 		c.True(one.Container(), "every top-level entry is a container")
 		c.Nil(one.Parent(), "a top-level container has no parent")
-		c.NotNil(one.TemplatePicker, "a created container has a template picker")
 		c.True(e == one.DataOwner(), "a created container belongs to the owner passed in")
 		for _, child := range one.Children {
 			c.True(one == child.Parent(), "a filed trait points at its container")

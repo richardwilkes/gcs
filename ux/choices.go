@@ -32,20 +32,17 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 		return typePopup, comparisonPopup, field
 	}
 
+	var types []picker.Type
 	var tp *gurps.TemplatePicker
 	if pickable, ok := any(e.editorData).(gurps.TemplatePickerProvider); ok {
-		tp = pickable.TemplatePickerData()
+		types, tp = pickable.TemplatePickerData()
 	} else {
 		return typePopup, comparisonPopup, field
 	}
 
-	if tp == nil {
-		tp = &gurps.TemplatePicker{}
-	}
-
 	last := tp.Type
 	wrapper := addFlowWrapper(parent, i18n.Text("Choices"), 3)
-	typePopup = addPopup(wrapper, picker.Types, &tp.Type)
+	typePopup = addPopup(wrapper, types, &tp.Type)
 	text := i18n.Text("Choice Quantifier")
 	comparisonPopup, field = addNumericCriteriaPanel(wrapper, nil, "", "", text, &tp.Qualifier, fxp.Min, fxp.Max, 1, false, false)
 
@@ -60,11 +57,12 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 	}
 
 	typePopup.SelectionChangedCallback = func(p *unison.PopupMenu[picker.Type]) {
-		if item, ok := p.Selected(); ok {
+		if item, selected := p.Selected(); selected {
 			tp.Type = item
 			if last == picker.NotApplicable && item != picker.NotApplicable {
 				tp.Qualifier.Qualifier = fxp.One
-				if syncer, ok2 := field.(Syncer); ok2 {
+				comparisonPopup.SelectIndex(criteria.ExtractNumericComparisonIndex(string(criteria.AnyNumber)))
+				if syncer, ok := field.(Syncer); ok {
 					syncer.Sync()
 				}
 			}

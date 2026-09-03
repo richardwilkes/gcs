@@ -802,9 +802,10 @@ func rawPoints[T gurps.Node[T]](child T) fxp.Int {
 	}
 	if child.Container() {
 		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
-			tp := pickable.TemplatePickerData()
-			if tp != nil && tp.Type == picker.Points && tp.Qualifier.Compare == criteria.EqualsNumber {
-				return tp.Qualifier.Qualifier
+			if _, tp := pickable.TemplatePickerData(); tp.Type == picker.Points {
+				if tp.Qualifier.Compare == criteria.EqualsNumber {
+					return tp.Qualifier.Qualifier
+				}
 			}
 		}
 	}

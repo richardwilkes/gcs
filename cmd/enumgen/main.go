@@ -1003,9 +1003,9 @@ var allEnums = []*enumInfo{
 		Name: "type",
 		Desc: "holds the type of template picker",
 		Values: []*enumValue{
-			{Key: "not_applicable"},
-			{Key: "count"},
-			{Key: "points"},
+			{Key: "not_applicable", Groups: []string{"*"}},
+			{Key: "count", Groups: []string{"*"}},
+			{Key: "points", Groups: []string{"traits", "skills", "spells"}},
 		},
 	},
 	{
