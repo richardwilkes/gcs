@@ -19,6 +19,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -73,15 +74,29 @@ func (d *DRBonus) Normalize() {
 		}
 		d.Locations[i] = loc
 	}
-	s := strings.TrimSpace(d.Specialization)
+	d.Specialization = normalizeDRSpecialization(d.Specialization)
+}
+
+// normalizeDRSpecialization returns the preferred representation of a DR bonus specialization: surrounding whitespace
+// is removed and an empty value or any casing of "all" becomes AllID.
+func normalizeDRSpecialization(specialization string) string {
+	s := strings.TrimSpace(specialization)
 	if s == "" || strings.EqualFold(s, AllID) {
-		s = AllID
+		return AllID
 	}
-	d.Specialization = s
+	return s
 }
 
 // FillWithNameableKeys implements Feature.
-func (d *DRBonus) FillWithNameableKeys(_, _ map[string]string) {
+func (d *DRBonus) FillWithNameableKeys(m, existing map[string]string) {
+	nameable.Extract(m, existing, d.Specialization)
+}
+
+// SpecializationWithReplacements returns the damage type this bonus applies against, with the owning item's nameable
+// replacements applied and normalized the same way the stored value is. An unresolved marker is left standing (as
+// "@Label@") so that an unanswered substitution shows up visibly rather than silently becoming DR against everything.
+func (d *DRBonus) SpecializationWithReplacements() string {
+	return normalizeDRSpecialization(nameable.Apply(d.Specialization, bonusReplacements(d)))
 }
 
 // SetLeveledOwner implements Bonus.
@@ -92,8 +107,8 @@ func (d *DRBonus) SetLeveledOwner(owner LeveledOwner) {
 // AddToTooltip implements Bonus.
 func (d *DRBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
-		d.Normalize()
-		fmt.Fprintf(buffer, i18n.Text("\n- %s [%s against %s attacks]"), d.parentName(), d.Format(), d.Specialization)
+		fmt.Fprintf(buffer, i18n.Text("\n- %s [%s against %s attacks]"), d.parentName(), d.Format(),
+			d.SpecializationWithReplacements())
 	}
 }
 

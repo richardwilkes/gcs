@@ -109,6 +109,7 @@ type TraitModifierSyncData struct {
 type TraitModifierNonContainerSyncData struct {
 	CostAdj           string         `json:"cost_adj,omitzero"`
 	UseLevelFromTrait bool           `json:"use_level_from_trait,omitzero"`
+	CostIgnoresLevel  bool           `json:"cost_ignores_level,omitzero"`
 	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitzero"`
 	Affects           affects.Option `json:"affects,omitzero"`
 	Features          Features       `json:"features,omitempty"`
@@ -427,22 +428,46 @@ func (t *TraitModifier) CostModifierType() emweight.Value {
 
 // CostModifier returns the total cost modifier.
 func (t *TraitModifier) CostModifier() fxp.Fraction {
-	return t.costModifierForTrait(t.trait)
+	return t.CostModifierForTrait(t.trait)
 }
 
-// costModifierForTrait returns the total cost modifier as applied to the given trait, which is used in place of the
+// CostModifierForTrait returns the total cost modifier as applied to the given trait, which is used in place of the
 // modifier's own owning trait when resolving a "use level from trait" modifier. This allows a modifier inherited from a
 // parent container (or one held only by an editor's working copy) to be costed against the trait it is being applied
-// to without re-pointing the modifier at that trait.
-func (t *TraitModifier) costModifierForTrait(trait *Trait) fxp.Fraction {
-	f := t.CostModifierType().ExtractFraction(t.CostAdj)
-	multiplier := fxp.One
-	if t.isLeveledForTrait(trait) {
-		multiplier = CostMultiplierForTraitModifier(t.Levels, trait, t.UseLevelFromTrait)
+// to without re-pointing the modifier at that trait. Containers have no cost modifier and always yield zero. When
+// CostIgnoresLevel is set, the adjustment is not multiplied by the level here, which lets a modifier drive per-level
+// features from the trait's level without its own price being scaled by that level as well. A point adder whose
+// Affects is "levels only" is still charged for each of the trait's levels either way, since AdjustedPoints folds it
+// into the trait's cost per level.
+func (t *TraitModifier) CostModifierForTrait(trait *Trait) fxp.Fraction {
+	if t.Container() {
+		return fxp.Fraction{Denominator: fxp.One}
 	}
-	f.Numerator = f.Numerator.Mul(multiplier)
+	f := t.CostModifierType().ExtractFraction(t.CostAdj)
+	if !t.CostIgnoresLevel && t.isLeveledForTrait(trait) {
+		f.Numerator = f.Numerator.Mul(t.costLevelsForTrait(trait))
+	}
 	f.Normalize()
 	return f
+}
+
+// costLevelsForTrait returns the number of levels the cost adjustment is multiplied by when applied to the given
+// trait. A "use level from owner" modifier is costed against the trait's purchased levels rather than its current
+// level: bonus-granted levels are free, so they must not attract enhancement or limitation percentages. This matches
+// Trait.AdjustedPoints, which derives the leveled base cost from those same purchased levels.
+func (t *TraitModifier) costLevelsForTrait(trait *Trait) fxp.Int {
+	var levels fxp.Int
+	if t.UseLevelFromTrait {
+		if trait != nil && trait.IsLeveled() {
+			levels = trait.Levels
+		}
+	} else {
+		levels = t.Levels
+	}
+	if levels <= 0 {
+		levels = fxp.One
+	}
+	return levels
 }
 
 // IsLeveled returns true if this TraitModifier is leveled.
@@ -450,6 +475,8 @@ func (t *TraitModifier) IsLeveled() bool {
 	return t.isLeveledForTrait(t.trait)
 }
 
+// isLeveledForTrait returns true if this TraitModifier is leveled when applied to the given trait, which stands in for
+// the modifier's own owning trait when resolving a "use level from trait" modifier.
 func (t *TraitModifier) isLeveledForTrait(trait *Trait) bool {
 	if t.Container() {
 		return false
@@ -473,37 +500,10 @@ func (t *TraitModifier) RawCurrentLevel() fxp.Int {
 	return level
 }
 
-// CostMultiplier returns the amount to multiply the cost by.
-func (t *TraitModifier) CostMultiplier() fxp.Int {
-	if !t.IsLeveled() {
-		return fxp.One
-	}
-	return CostMultiplierForTraitModifier(t.Levels, t.trait, t.UseLevelFromTrait)
-}
-
-// CostMultiplierForTraitModifier returns the amount to multiply the cost by. A "use level from owner" modifier is
-// costed against the trait's purchased levels rather than its current level: bonus-granted levels are free, so they
-// must not attract enhancement or limitation percentages. This matches Trait.AdjustedPoints, which derives the leveled
-// base cost from those same purchased levels.
-func CostMultiplierForTraitModifier(baseLevels fxp.Int, trait *Trait, useLevelFromTrait bool) fxp.Int {
-	var multiplier fxp.Int
-	if useLevelFromTrait {
-		if trait != nil && trait.IsLeveled() {
-			multiplier = trait.Levels
-		}
-	} else {
-		multiplier = baseLevels
-	}
-	if multiplier <= 0 {
-		multiplier = fxp.One
-	}
-	return multiplier
-}
-
 // CurrentLevel returns the current level of the modifier or zero if it is not leveled. Minimum of 1 will be returned
-// if it has levels at all. Unlike CostMultiplier, a "use level from owner" modifier reports the trait's current level,
-// bonus-granted levels included, since this drives the per-level features the modifier carries and how it displays,
-// neither of which is a matter of what was paid for.
+// if it has levels at all. Unlike the levels the cost is computed from, a "use level from owner" modifier reports the
+// trait's current level, bonus-granted levels included, since this drives the per-level features the modifier carries
+// and how it displays, neither of which is a matter of what was paid for.
 func (t *TraitModifier) CurrentLevel() fxp.Int {
 	if t.Enabled() && t.IsLeveled() {
 		return t.RawCurrentLevel().Max(fxp.One)
@@ -561,7 +561,7 @@ func (t *TraitModifier) CostDescription() string {
 	if t.Container() {
 		return ""
 	}
-	base := t.CostModifierType().Format(t.CostModifier())
+	base := t.CostModifierType().Format(t.CostModifier().Simplify())
 	if desc := t.Affects.AltString(); desc != "" {
 		base += " " + desc
 	}
@@ -696,6 +696,7 @@ func (t *TraitModifierSyncData) hash(h hash.Hash) {
 func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, t.CostAdj)
 	xhash.Bool(h, t.UseLevelFromTrait)
+	xhash.Bool(h, t.CostIgnoresLevel)
 	xhash.Bool(h, t.ShowNotesOnWeapon)
 	xhash.Num8(h, t.Affects)
 	xhash.Num64(h, len(t.Features))

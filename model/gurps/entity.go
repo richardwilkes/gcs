@@ -935,7 +935,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 	for _, one := range e.features.drBonuses {
 		for _, loc := range one.Locations {
 			if (loc == AllID && isTopLevel) || strings.EqualFold(loc, locationID) {
-				drMap[strings.ToLower(one.Specialization)] += one.AdjustedAmount().AsInteger[int]()
+				drMap[strings.ToLower(one.SpecializationWithReplacements())] += one.AdjustedAmount().AsInteger[int]()
 				one.AddToTooltip(tooltip)
 				break
 			}

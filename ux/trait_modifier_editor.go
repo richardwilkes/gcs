@@ -52,20 +52,21 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		wrapper.AddChild(field)
 		affectsPopup := addPopup(wrapper, affects.Options, &e.editorData.Affects)
 		levelLabel := i18n.Text("Level")
-		wrapper = addFlowWrapper(content, levelLabel, 2)
+		wrapper = addFlowWrapper(content, levelLabel, 3)
 		levels := addDecimalField(wrapper, nil, "", levelLabel, "", &e.editorData.Levels, 0, fxp.Thousand)
 		box := addCheckBox(wrapper, i18n.Text("Use level from owner"), &e.editorData.UseLevelFromTrait)
 		box.OnSet = func() { adjustFieldBlank(levels, e.editorData.UseLevelFromTrait) }
 		adjustFieldBlank(levels, e.editorData.UseLevelFromTrait)
+		multiplyBox := addInvertedCheckBox(wrapper, i18n.Text("Multiply cost by level"), &e.editorData.CostIgnoresLevel)
+		multiplyBox.Tooltip = newWrappedTooltip(i18n.Text("When checked, a leveled modifier's cost adjustment is multiplied by its level. For a modifier that takes its level from its owner, that is the owner's purchased level, not counting any levels granted by bonuses. Uncheck it to leave the cost adjustment unmultiplied, while any per-level features the modifier carries still scale with the level. Either way, a point adjustment that affects levels only is added to the owner's cost per level, so it is still charged for each of the owner's levels."))
 		total := NewNonEditableField(func(field *NonEditableField) {
-			costMultiplier := gurps.CostMultiplierForTraitModifier(e.editorData.Levels, e.target.OwningTrait(),
-				e.editorData.UseLevelFromTrait)
 			v := emweight.ValueFromString(e.editorData.CostAdj)
-			f := v.ExtractFraction(e.editorData.CostAdj)
-			f.Numerator = f.Numerator.Mul(costMultiplier)
-			f.Normalize()
-			f = f.Simplify()
-			field.SetTitle(v.Format(f))
+			modifier := traitModifierWithOverlay(e.target, e.editorData)
+			field.SetTitle(v.Format(modifier.CostModifierForTrait(owningTraitWithPendingEdits(e.owner, e.target)).Simplify()))
+			// The option only means something for a leveled modifier. A "use level from owner" modifier counts as
+			// leveled even when it has no owner yet, as in a library list, since it takes its level from whichever
+			// trait it is eventually attached to.
+			multiplyBox.SetEnabled(e.editorData.UseLevelFromTrait || e.editorData.Levels > 0)
 			enabled := v != emweight.Multiplier && v != emweight.PercentageMultiplier
 			if !enabled {
 				affectsPopup.Select(affects.Total)
@@ -88,4 +89,26 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, false))
 	}
 	return nil
+}
+
+// traitModifierWithOverlay returns a copy of the modifier with the editor's working data applied, so that cost
+// computations reflect what has been entered rather than what was last applied.
+func traitModifierWithOverlay(t *gurps.TraitModifier, overlay *gurps.TraitModifierEditData) *gurps.TraitModifier {
+	clone := *t
+	clone.TraitModifierEditData = *overlay
+	return &clone
+}
+
+// owningTraitWithPendingEdits returns the trait the modifier belongs to. When the modifier is being edited from within
+// that trait's own editor, the trait is returned as it currently stands in that editor, so that a level change which
+// has not yet been applied is still reflected in the modifier's cost.
+func owningTraitWithPendingEdits(owner Rebuildable, modifier *gurps.TraitModifier) *gurps.Trait {
+	trait := modifier.OwningTrait()
+	if trait == nil {
+		return nil
+	}
+	if traitEditor, ok := owner.(*editor[*gurps.Trait, *gurps.TraitEditData]); ok && traitEditor.target == trait {
+		return cloneTraitWithOverlay(trait, traitEditor.editorData)
+	}
+	return trait
 }

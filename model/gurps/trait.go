@@ -953,7 +953,7 @@ func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, lev
 		Denominator: fxp.One,
 	}
 	Traverse(func(mod *TraitModifier) bool {
-		modifier := mod.costModifierForTrait(trait)
+		modifier := mod.CostModifierForTrait(trait)
 		switch mod.CostModifierType() {
 		case emweight.Addition:
 			if mod.Affects == affects.LevelsOnly {
