@@ -114,7 +114,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the gender using the current ancestry"), func() {
 			d.entity.Profile.Gender = d.entity.Ancestry().RandomGender(d.entity.Profile.Gender)
-			SetTextAndMarkModified(genderField.Field, d.entity.Profile.Gender)
+			SetTextAndMarkModified(genderField, d.entity.Profile.Gender)
 		}))
 	genderField.ClientData()[SkipDeepSync] = true
 	column.AddChild(genderField)
@@ -127,7 +127,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 		i18n.Text("Randomize the age using the current ancestry"), func() {
 			age, _ := strconv.Atoi(d.entity.Profile.Age) //nolint:errcheck // A default of 0 is ok here on error
 			d.entity.Profile.Age = strconv.Itoa(d.entity.Ancestry().RandomAge(d.entity, d.entity.Profile.Gender, age))
-			SetTextAndMarkModified(ageField.Field, d.entity.Profile.Age)
+			SetTextAndMarkModified(ageField, d.entity.Profile.Age)
 		}))
 	ageField.ClientData()[SkipDeepSync] = true
 	column.AddChild(ageField)
@@ -140,7 +140,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 		i18n.Text("Randomize the birthday using the current calendar"), func() {
 			global := gurps.GlobalSettings()
 			d.entity.Profile.Birthday = global.General.CalendarRef(global.Libraries).RandomBirthday(d.entity.Profile.Birthday)
-			SetTextAndMarkModified(birthdayField.Field, d.entity.Profile.Birthday)
+			SetTextAndMarkModified(birthdayField, d.entity.Profile.Birthday)
 		}))
 	birthdayField.ClientData()[SkipDeepSync] = true
 	column.AddChild(birthdayField)
@@ -166,7 +166,7 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the height using the current ancestry"), func() {
 			d.entity.Profile.Height = d.entity.Ancestry().RandomHeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Height)
-			SetTextAndMarkModified(heightField.Field, d.entity.Profile.Height.String())
+			SetTextAndMarkModified(heightField, heightField.Format(d.entity.Profile.Height))
 		}))
 	heightField.ClientData()[SkipDeepSync] = true
 	column.AddChild(heightField)
@@ -178,7 +178,7 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the weight using the current ancestry"), func() {
 			d.entity.Profile.Weight = d.entity.Ancestry().RandomWeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Weight)
-			SetTextAndMarkModified(weightField.Field, d.entity.Profile.Weight.String())
+			SetTextAndMarkModified(weightField, weightField.Format(d.entity.Profile.Weight))
 		}))
 	weightField.ClientData()[SkipDeepSync] = true
 	column.AddChild(weightField)
@@ -212,7 +212,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the hair using the current ancestry"), func() {
 			d.entity.Profile.Hair = d.entity.Ancestry().RandomHair(d.entity.Profile.Gender, d.entity.Profile.Hair)
-			SetTextAndMarkModified(hairField.Field, d.entity.Profile.Hair)
+			SetTextAndMarkModified(hairField, d.entity.Profile.Hair)
 		}))
 	hairField.ClientData()[SkipDeepSync] = true
 	column.AddChild(hairField)
@@ -224,7 +224,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the eyes using the current ancestry"), func() {
 			d.entity.Profile.Eyes = d.entity.Ancestry().RandomEyes(d.entity.Profile.Gender, d.entity.Profile.Eyes)
-			SetTextAndMarkModified(eyesField.Field, d.entity.Profile.Eyes)
+			SetTextAndMarkModified(eyesField, d.entity.Profile.Eyes)
 		}))
 	eyesField.ClientData()[SkipDeepSync] = true
 	column.AddChild(eyesField)
@@ -236,7 +236,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the skin using the current ancestry"), func() {
 			d.entity.Profile.Skin = d.entity.Ancestry().RandomSkin(d.entity.Profile.Gender, d.entity.Profile.Skin)
-			SetTextAndMarkModified(skinField.Field, d.entity.Profile.Skin)
+			SetTextAndMarkModified(skinField, d.entity.Profile.Skin)
 		}))
 	skinField.ClientData()[SkipDeepSync] = true
 	column.AddChild(skinField)
@@ -248,7 +248,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the handedness using the current ancestry"), func() {
 			d.entity.Profile.Handedness = d.entity.Ancestry().RandomHandedness(d.entity.Profile.Gender, d.entity.Profile.Handedness)
-			SetTextAndMarkModified(handField.Field, d.entity.Profile.Handedness)
+			SetTextAndMarkModified(handField, d.entity.Profile.Handedness)
 		}))
 	handField.ClientData()[SkipDeepSync] = true
 	column.AddChild(handField)

@@ -28,15 +28,33 @@ var lengthUnitsBySuffixLen = func() []LengthUnit {
 	return units
 }()
 
-// Format the length for this LengthUnit.
+// Format the length for this LengthUnit, showing as many decimal places as the value has.
 func (enum LengthUnit) Format(length Length) string {
+	return enum.FormatWith(length, NumberFormat{})
+}
+
+// FormatWith formats the length for this LengthUnit, rendering the number according to the given NumberFormat. This is
+// for display only: the rounding the NumberFormat may perform is lossy, so the result must never be parsed back into a
+// stored value.
+//
+// For FeetAndInches, the rounding is applied to the total inches before they are split into feet and inches, so that a
+// remainder which rounds up to a whole foot carries into the feet (e.g. 71.6 inches at zero places is `6'`, not
+// `5'12"`). The NumberFormat's padding applies to the inches part when one is shown; a zero inches remainder is still
+// omitted, just as it is for Format.
+func (enum LengthUnit) FormatWith(length Length, format NumberFormat) string {
 	inches := Int(length)
 	switch enum {
 	case FeetAndInches:
+		inches = format.Round(inches)
+		// The feet and the inches remainder are split off while the value still carries its sign, and each is then
+		// negated on its own. Both are small enough for that, but the value as a whole may not be: Min has no positive
+		// counterpart, so Abs() leaves it as it is, and taking the magnitude first rendered it as just "-", which
+		// cannot be parsed back.
 		negative := inches < 0
-		inches = inches.Abs()
-		feet := inches.Div(Twelve).Floor()
+		feet := inches.Div(Twelve).Trunc()
 		inches -= feet.Mul(Twelve)
+		feet = feet.Abs()
+		inches = inches.Abs()
 		if feet == 0 && inches == 0 {
 			return "0'"
 		}
@@ -49,13 +67,13 @@ func (enum LengthUnit) Format(length Length) string {
 			buffer.WriteByte('\'')
 		}
 		if inches > 0 {
-			buffer.WriteString(inches.String())
+			buffer.WriteString(format.Format(inches))
 			buffer.WriteByte('"')
 		}
 		return buffer.String()
 
 	default:
-		return enum.FromInches(inches).Comma() + " " + enum.String()
+		return format.Format(enum.FromInches(inches)) + " " + enum.String()
 	}
 }
 

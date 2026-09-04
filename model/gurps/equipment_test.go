@@ -188,3 +188,147 @@ func TestEquipmentEditDataCapturesMigratedReplacements(t *testing.T) {
 	}
 	c.Equal("Steel plating", eqp.Modifiers[0].NameWithReplacements())
 }
+
+// TestEquipmentCellDataAppliesDisplayFormatsOnPagesOnly verifies that the sheet's equipment weight and value display
+// formats are applied only when the cell is being displayed on a page, with the exact value offered as a tooltip, and
+// that the same equipment renders exactly everywhere else (editors, library lists, and sort requests). The value format
+// pads with zeros and the values are chosen to need that padding, so that dropping the padding from the value path
+// would be caught.
+func TestEquipmentCellDataAppliesDisplayFormatsOnPagesOnly(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	entity.SheetSettings.EquipmentWeightFormat = fxp.NumberFormat{Places: fxp.TwoPlaces}
+	entity.SheetSettings.EquipmentValueFormat = fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}
+	equipment := NewEquipment(entity, nil, false)
+	equipment.BaseWeight = "7.5127 lb"
+	equipment.BaseValue = "1234.5"
+	equipment.Quantity = fxp.Two
+	entity.CarriedEquipment = append(entity.CarriedEquipment, equipment)
+
+	for _, d := range []struct {
+		column      int
+		exact       string
+		forPageText string
+		forPageTip  string
+		description string
+	}{
+		{EquipmentWeightColumn, "7.5127 lb", "7.51 lb", "7.5127 lb", "weight"},
+		{EquipmentExtendedWeightColumn, "15.0254 lb", "15.03 lb", "15.0254 lb", "extended weight"},
+		{EquipmentCostColumn, "1,234.5", "1,234.50", "1,234.5", "value"},
+		{EquipmentExtendedCostColumn, "2,469", "2,469.00", "2,469", "extended value"},
+	} {
+		var data CellData
+		equipment.CellData(d.column, &data)
+		c.Equal(d.exact, data.Primary, "%s off the page", d.description)
+		c.Equal("", data.Tooltip, "%s off the page has no tooltip", d.description)
+		data = CellData{ForPage: true}
+		equipment.CellData(d.column, &data)
+		c.Equal(d.forPageText, data.Primary, "%s on the page", d.description)
+		c.Equal(d.forPageTip, data.Tooltip, "%s on the page offers the exact value", d.description)
+		c.True(data.ForPage, "%s leaves the input flag alone", d.description)
+	}
+
+	// A value that rounds to itself needs no tooltip.
+	equipment.BaseWeight = "7.5 lb"
+	data := CellData{ForPage: true}
+	equipment.CellData(EquipmentWeightColumn, &data)
+	c.Equal("7.5 lb", data.Primary)
+	c.Equal("", data.Tooltip)
+	entity.SheetSettings.EquipmentWeightFormat.PadWithZeros = true
+	data = CellData{ForPage: true}
+	equipment.CellData(EquipmentWeightColumn, &data)
+	c.Equal("7.50 lb", data.Primary)
+	c.Equal("7.5 lb", data.Tooltip)
+}
+
+// TestEquipmentHeaderDataAppliesDisplayFormats verifies that the totals in the carried and other equipment headers on
+// a page use the sheet's equipment weight and value display formats, and that whenever those formats change how a
+// total reads, the exact totals are offered as the header's tooltip. The totals are chosen so that the padding, not
+// just the rounding, is what changes them.
+func TestEquipmentHeaderDataAppliesDisplayFormats(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	carried := NewEquipment(entity, nil, false)
+	carried.BaseWeight = "8 lb"
+	carried.BaseValue = "1234.5678"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, carried)
+	other := NewEquipment(entity, nil, false)
+	other.BaseWeight = "0.5 lb"
+	other.BaseValue = "0.5"
+	entity.OtherEquipment = append(entity.OtherEquipment, other)
+
+	header := EquipmentHeaderData(EquipmentDescriptionColumn, entity, true, true)
+	c.Equal("Carried Equipment (8 lb; $1,234.5678)", header.Title)
+	c.Equal("", header.Detail, "with no display preference, the title already holds the exact totals")
+	header = EquipmentHeaderData(EquipmentDescriptionColumn, entity, false, true)
+	c.Equal("Other Equipment (0.5 lb; $0.5)", header.Title)
+	c.Equal("", header.Detail)
+
+	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
+	entity.SheetSettings.EquipmentWeightFormat = fxp.NumberFormat{Places: fxp.OnePlace, PadWithZeros: true}
+	entity.SheetSettings.EquipmentValueFormat = fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}
+	header = EquipmentHeaderData(EquipmentDescriptionColumn, entity, true, true)
+	c.Equal("Carried Equipment (4.0 kg; $1,234.57)", header.Title)
+	c.Equal("4 kg; $1,234.5678", header.Detail, "the exact totals are offered when the formats change them")
+	header = EquipmentHeaderData(EquipmentDescriptionColumn, entity, false, true)
+	c.Equal("Other Equipment (0.3 kg; $0.50)", header.Title)
+	c.Equal("0.25 kg; $0.5", header.Detail)
+
+	// Totals the formats leave as they are need no tooltip, even with formats in effect.
+	entity.SheetSettings.DefaultWeightUnits = fxp.Pound
+	carried.BaseWeight = "4.5 lb"
+	carried.BaseValue = "1234.56"
+	header = EquipmentHeaderData(EquipmentDescriptionColumn, entity, true, true)
+	c.Equal("Carried Equipment (4.5 lb; $1,234.56)", header.Title)
+	c.Equal("", header.Detail)
+
+	c.Equal("Equipment", EquipmentHeaderData(EquipmentDescriptionColumn, entity, true, false).Title,
+		"off the page, the header carries no totals")
+	c.Equal("", EquipmentHeaderData(EquipmentDescriptionColumn, entity, true, false).Detail)
+}
+
+// TestEquipmentDisplayFormatsWithoutEntityUseDefaultSheetSettings verifies that equipment which belongs to no entity
+// -- the rows of a template or a loot sheet -- takes its display formats from the default sheet settings, both for its
+// cells and for the page header totals, since that is where those pages' weight units come from as well.
+func TestEquipmentDisplayFormatsWithoutEntityUseDefaultSheetSettings(t *testing.T) {
+	c := check.New(t)
+	global := GlobalSettings().Sheet
+	savedUnits := global.DefaultWeightUnits
+	savedWeightFormat := global.EquipmentWeightFormat
+	savedValueFormat := global.EquipmentValueFormat
+	t.Cleanup(func() {
+		global.DefaultWeightUnits = savedUnits
+		global.EquipmentWeightFormat = savedWeightFormat
+		global.EquipmentValueFormat = savedValueFormat
+	})
+	global.DefaultWeightUnits = fxp.Pound
+	global.EquipmentWeightFormat = fxp.NumberFormat{Places: fxp.OnePlace, PadWithZeros: true}
+	global.EquipmentValueFormat = fxp.NumberFormat{Places: fxp.ZeroPlaces}
+
+	equipment := NewEquipment(nil, nil, false)
+	equipment.BaseWeight = "8 lb"
+	equipment.BaseValue = "1234.5678"
+	data := CellData{ForPage: true}
+	equipment.CellData(EquipmentWeightColumn, &data)
+	c.Equal("8.0 lb", data.Primary)
+	c.Equal("8 lb", data.Tooltip)
+	data = CellData{ForPage: true}
+	equipment.CellData(EquipmentCostColumn, &data)
+	c.Equal("1,235", data.Primary)
+	c.Equal("1,234.5678", data.Tooltip)
+	data = CellData{}
+	equipment.CellData(EquipmentCostColumn, &data)
+	c.Equal("1,234.5678", data.Primary, "off the page, the default formats do not apply either")
+
+	template := NewTemplate()
+	template.Equipment = []*Equipment{equipment}
+	header := EquipmentHeaderData(EquipmentDescriptionColumn, template, true, true)
+	c.Equal("Equipment (8.0 lb; $1,235)", header.Title)
+	c.Equal("8 lb; $1,234.5678", header.Detail)
+
+	loot := NewLoot()
+	loot.Equipment = []*Equipment{equipment}
+	header = EquipmentHeaderData(EquipmentDescriptionColumn, loot, false, true)
+	c.Equal("Equipment (8.0 lb; $1,235)", header.Title)
+	c.Equal("8 lb; $1,234.5678", header.Detail)
+}

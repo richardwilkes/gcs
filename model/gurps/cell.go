@@ -41,17 +41,23 @@ type HeaderData struct {
 // CellData holds data for creating a cell's visual representation.
 type CellData struct {
 	Self              any
-	Type              cell.Type
-	Disabled          bool
-	Dim               bool
-	Checked           bool
-	Alignment         align.Enum
 	Primary           string
 	Secondary         string
 	Tooltip           string
 	UnsatisfiedReason string
 	TemplateInfo      string
 	InlineTag         string
+	Type              cell.Type
+	Disabled          bool
+	Dim               bool
+	Checked           bool
+	Alignment         align.Enum
+	// ForPage is the one input in this struct: the caller sets it before invoking a node's CellData method, and it
+	// is left untouched by that method. It is true when the cell is being displayed on a sheet, template or loot
+	// page, as opposed to an editor, a library list, or a request made only to sort the rows. Display preferences
+	// that belong to the sheet alone, such as the number of decimal places shown for equipment weights, are applied
+	// only when it is set, so that the same node renders exactly elsewhere.
+	ForPage bool
 }
 
 // Values used by ForSort to represent the state of a toggle or switch cell.

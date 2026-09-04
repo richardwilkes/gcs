@@ -206,8 +206,11 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 	if p.forPage {
 		if i := p.table.ColumnIndexForID(gurps.EquipmentDescriptionColumn); i != -1 {
 			if header, ok := headers[i].(*PageTableColumnHeader[*gurps.Equipment]); ok {
-				header.Text = unison.NewSmallCapsText(gurps.EquipmentHeaderData(gurps.EquipmentDescriptionColumn,
-					p.provider, p.carried, p.forPage).Title, &header.TextDecoration)
+				// The totals in the title change as the equipment and the display formats do, and with them whether
+				// there are exact totals to offer as the tooltip, so both are refreshed here.
+				data := gurps.EquipmentHeaderData(gurps.EquipmentDescriptionColumn, p.provider, p.carried, p.forPage)
+				header.Text = unison.NewSmallCapsText(data.Title, &header.TextDecoration)
+				header.SetTooltipText(data.Detail)
 			}
 		}
 	}

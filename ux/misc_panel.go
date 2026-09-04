@@ -83,11 +83,22 @@ func (m *MiscPanel) UpdateModified() {
 	m.entity.ModifiedOn = jio.Now()
 }
 
+// SelectableTextField is a field whose text can be replaced wholesale and then selected. Both *unison.Field and the
+// fields built on top of it, such as *NumericField, satisfy it. It exists so that SetTextAndMarkModified can be handed
+// the outer field rather than the *unison.Field embedded within it, since the outer field may do work of its own when
+// its text is replaced.
+type SelectableTextField interface {
+	unison.Paneler
+	SetText(text string)
+	SelectAll()
+}
+
 // SetTextAndMarkModified sets the field to the given text, selects it, requests focus, then calls MarkModified().
-func SetTextAndMarkModified(field *unison.Field, text string) {
+func SetTextAndMarkModified(field SelectableTextField, text string) {
 	field.SetText(text)
 	field.SelectAll()
-	field.RequestFocus()
-	field.Parent().MarkForLayoutAndRedraw()
+	panel := field.AsPanel()
+	panel.RequestFocus()
+	panel.Parent().MarkForLayoutAndRedraw()
 	MarkModified(field)
 }

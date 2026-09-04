@@ -423,6 +423,48 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
+		Pkg:  "model/fxp",
+		Name: "decimal_place",
+		Desc: "holds the number of decimal places to display for a value. AsNeeded shows as many as the value has (up to the fixed-point maximum) with trailing zeros removed, while the explicit choices round to that many places",
+		Values: []*enumValue{
+			{
+				Name:   "AsNeeded",
+				Key:    "as_needed",
+				String: "As Needed",
+			},
+			{
+				Name:       "ZeroPlaces",
+				Key:        "0",
+				String:     "0",
+				NoLocalize: true,
+			},
+			{
+				Name:       "OnePlace",
+				Key:        "1",
+				String:     "1",
+				NoLocalize: true,
+			},
+			{
+				Name:       "TwoPlaces",
+				Key:        "2",
+				String:     "2",
+				NoLocalize: true,
+			},
+			{
+				Name:       "ThreePlaces",
+				Key:        "3",
+				String:     "3",
+				NoLocalize: true,
+			},
+			{
+				Name:       "FourPlaces",
+				Key:        "4",
+				String:     "4",
+				NoLocalize: true,
+			},
+		},
+	},
+	{
 		Pkg:  "model/gurps/enums/affects",
 		Name: "option",
 		Desc: "describes how a TraitModifier affects the point cost",

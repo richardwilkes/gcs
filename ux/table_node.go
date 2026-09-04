@@ -138,10 +138,21 @@ func (n *Node[T]) RefreshChildren() {
 	n.children = nil
 }
 
+// cellData returns the cell data for the given column of this row. forDisplay says whether the data is wanted for
+// something the user will actually see, which is what decides if the page-only display preferences (such as the number
+// of decimal places shown for equipment weights) get applied to it: they are, but only for a row that is on a page.
+// Sorting asks with forDisplay false, because the rounding those preferences perform is lossy, and sorting the rows by
+// the rounded text would tie rows whose real values differ, leaving them in an arbitrary order. Searching asks both
+// ways (see columnContains), so that a row is found by the value the user can see as well as by the exact value.
+func (n *Node[T]) cellData(col int, forDisplay bool) gurps.CellData {
+	data := gurps.CellData{ForPage: n.forPage && forDisplay}
+	n.data.CellData(n.table.Columns[col].ID, &data)
+	return data
+}
+
 // CellDataForSort implements unison.TableRowData.
 func (n *Node[T]) CellDataForSort(index int) string {
-	var data gurps.CellData
-	n.data.CellData(n.table.Columns[index].ID, &data)
+	data := n.cellData(index, false)
 	s := data.ForSort()
 	if gurps.GlobalSettings().General.GroupContainersOnSort && n.data.Container() {
 		return containerMarker + s
@@ -151,8 +162,7 @@ func (n *Node[T]) CellDataForSort(index int) string {
 
 // ColumnCell implements unison.TableRowData.
 func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, selected, indirectlySelected, _ bool) unison.Paneler {
-	var cellData gurps.CellData
-	n.data.CellData(n.table.Columns[col].ID, &cellData)
+	cellData := n.cellData(col, true)
 	width := n.table.CellWidth(row, col)
 	if n.cellCache[col].Matches(width, &cellData) {
 		applyInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground, background, selected || indirectlySelected)
@@ -248,12 +258,8 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 	}
 	text = strings.ToLower(text)
 	for i := range n.table.Columns {
-		var data gurps.CellData
-		n.data.CellData(n.table.Columns[i].ID, &data)
-		if data.Type != cell.Tags {
-			if strings.Contains(strings.ToLower(data.ForSort()), text) {
-				return true
-			}
+		if n.columnContains(i, text, true) {
+			return true
 		}
 	}
 	return false
@@ -264,12 +270,32 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 func (n *Node[T]) Match(text string) bool {
 	if text != "" {
 		for i := range n.table.Columns {
-			if strings.Contains(strings.ToLower(n.CellDataForSort(i)), text) {
+			if n.columnContains(i, text, false) {
 				return true
 			}
 		}
 	}
 	return false
+}
+
+// columnContains returns true if the lowercased text is present in the given column's text, or, when exceptTags is
+// set, if it is present there and the column is not the tags column. On a page, both the exact text and the display
+// rendering are checked, so that a user can find a row by the rounded value they can see on the page as well as by the
+// exact value behind it, which is what the cell's tooltip shows. Off a page the two are the same, so the display
+// rendering is not computed a second time.
+func (n *Node[T]) columnContains(col int, text string, exceptTags bool) bool {
+	data := n.cellData(col, false)
+	if exceptTags && data.Type == cell.Tags {
+		return false
+	}
+	if strings.Contains(strings.ToLower(data.ForSort()), text) {
+		return true
+	}
+	if !n.forPage {
+		return false
+	}
+	data = n.cellData(col, true)
+	return strings.Contains(strings.ToLower(data.ForSort()), text)
 }
 
 // CellFromCellData creates a new panel for the given cell data.
@@ -750,8 +776,7 @@ func pageRefSeparatorWidth(font unison.Font) float32 {
 // row. It returns -1 if the column isn't a page reference column. This is used to let page reference columns claim
 // excess width (up to the point where all references are visible) before the remainder goes to the excess-width column.
 func (n *Node[T]) pageRefColumnFullWidth(col int) float32 {
-	var c gurps.CellData
-	n.data.CellData(n.table.Columns[col].ID, &c)
+	c := n.cellData(col, true)
 	if c.Type != cell.PageRef {
 		return -1
 	}
@@ -777,8 +802,7 @@ func (n *Node[T]) pageRefColumnFullWidth(col int) float32 {
 // column isn't a text column. This is used to reserve enough room for the primary column before handing leftover space
 // to page reference columns.
 func (n *Node[T]) excessColumnCollapsedWidth(col int) float32 {
-	var c gurps.CellData
-	n.data.CellData(n.table.Columns[col].ID, &c)
+	c := n.cellData(col, true)
 	if c.Type != cell.Text {
 		return -1
 	}

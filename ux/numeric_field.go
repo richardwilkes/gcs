@@ -22,13 +22,18 @@ import (
 // NumericField holds a numeric value that can be edited.
 type NumericField[T xmath.Integer | xmath.Float] struct {
 	*unison.Field
-	targetMgr         *TargetMgr
-	targetKey         string
-	undoTitle         string
-	getPrototypes     func(minValue, maxValue T) []T
-	get               func() T
-	set               func(T)
-	Format            func(T) string
+	targetMgr     *TargetMgr
+	targetKey     string
+	undoTitle     string
+	getPrototypes func(minValue, maxValue T) []T
+	get           func() T
+	set           func(T)
+	Format        func(T) string
+	// DisplayFormat, if not nil, provides the text to show while the field does not have the keyboard focus. That text
+	// is never parsed back into the value, since it may be a rounded, lossy rendering of it: the moment the field gains
+	// the focus, or is handed new text by SetText, the text is replaced by Format's exact rendering, so that the user
+	// always sees and edits the exact value.
+	DisplayFormat     func(T) string
 	extract           func(s string) (T, error)
 	validationTooltip *unison.Panel
 	savedTooltip      *unison.Panel
@@ -39,6 +44,12 @@ type NumericField[T xmath.Integer | xmath.Float] struct {
 	hasException      bool
 	useGet            bool
 	marksModified     bool
+	// hasFocus records whether the field holds the keyboard focus, as reported by its own focus callbacks.
+	// Panel.Focused() is not used for this because it also requires the window to be active, and a field keeps the
+	// focus -- and receives the next keystroke -- across its window being deactivated and reactivated, with no focus
+	// callbacks fired in between.
+	hasFocus           bool
+	showingDisplayText bool
 }
 
 // NewNumericField creates a new field that formats its content.
@@ -79,6 +90,7 @@ func newBaseNumericField[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, ta
 	}
 	f.Self = f
 	unison.UninstallFocusBorders(f, f)
+	f.GainedFocusCallback = f.gainedFocus
 	f.LostFocusCallback = f.lostFocus
 	unison.InstallDefaultFieldBorder(f, f)
 	f.RuneTypedCallback = f.runeTyped
@@ -90,9 +102,67 @@ func newBaseNumericField[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, ta
 	return f
 }
 
+// showDisplayText replaces the field's text with the display rendering of the current value. Nothing is done when no
+// DisplayFormat has been supplied, in which case the exact text is always what shows.
+func (f *NumericField[T]) showDisplayText() {
+	if f.DisplayFormat == nil {
+		return
+	}
+	f.replaceText(f.DisplayFormat(f.get()))
+	f.lastValue = f.get()
+	f.showingDisplayText = true
+}
+
+// replaceText puts the given text into the field without reporting a modification, so that text which must never be
+// parsed back into the value can be shown. The field state is applied directly, rather than going through SetText, for
+// that reason. Since nothing else will ask for one, a layout is requested when the text actually changes: the field is
+// sized to its text, and the display rendering and the exact text will usually differ in width.
+func (f *NumericField[T]) replaceText(text string) {
+	state := f.GetFieldState()
+	if state.Text == text {
+		return
+	}
+	state.Text = text
+	f.ApplyFieldState(state)
+	MarkForLayoutWithinDockable(f)
+}
+
+// restoreExactText puts the exact rendering of the value the field is showing back into it, if display text is
+// showing. This must be called before anything that will parse the field's text or capture it as an undo state, so
+// that the lossy display rendering never becomes the value.
+//
+// The value restored is lastValue, which showDisplayText recorded as it rendered, rather than whatever the model holds
+// at this moment. The two are the same except when the model has been changed behind the field's back and the field is
+// then told its new text -- which is exactly what the Description block's height and weight randomizers do. Rendering
+// the model's new value here would leave the field already holding the text it is about to be given, so the assignment
+// would be a no-op, no modification would be reported, and the randomization would go unrecorded and thus be
+// impossible to undo.
+func (f *NumericField[T]) restoreExactText() {
+	if !f.showingDisplayText {
+		return
+	}
+	f.showingDisplayText = false
+	f.replaceText(f.Format(f.lastValue))
+}
+
+// SetText sets the content of the field. The exact text is restored first, so that the "before" state the resulting
+// modification records for undo holds the exact value rather than a rounded display rendering of it.
+func (f *NumericField[T]) SetText(text string) {
+	f.restoreExactText()
+	f.Field.SetText(text)
+}
+
+func (f *NumericField[T]) gainedFocus() {
+	f.hasFocus = true
+	f.restoreExactText()
+	f.DefaultFocusGained()
+}
+
 func (f *NumericField[T]) lostFocus() {
+	f.hasFocus = false
 	f.useGet = true
 	f.SetText(f.Format(f.mustExtract(f.Text())))
+	f.showDisplayText()
 	f.DefaultFocusLost()
 }
 
@@ -214,6 +284,9 @@ func (f *NumericField[T]) adjustForText() {
 
 func (f *NumericField[T]) setWithoutUndo(state *unison.FieldState, focus bool) {
 	f.ApplyFieldState(state)
+	// Whatever is now showing is exact text meant to be parsed: it came from the user, from an undo, or from the model
+	// by way of getData, never from DisplayFormat.
+	f.showingDisplayText = false
 	f.adjustForText()
 	if focus {
 		f.RequestFocus()
@@ -221,10 +294,21 @@ func (f *NumericField[T]) setWithoutUndo(state *unison.FieldState, focus bool) {
 	f.Validate()
 }
 
-// Sync the field to the current value.
+// Sync the field to the current value. While the field has the focus, the text in it is what the user is working on,
+// so it is re-parsed rather than replaced.
 func (f *NumericField[T]) Sync() {
-	if !f.Focused() {
+	if !f.hasFocus {
 		f.useGet = true
+		if f.DisplayFormat != nil {
+			// The value is to come from the model and the field isn't being edited, so show the display rendering of
+			// it rather than the exact text. No modification can be reported for it, so there is nothing else to do.
+			// useGet is cleared for the same reason getData clears it: a Sync that runs while the field has the focus
+			// must re-parse the field's text rather than fetch the value again.
+			f.useGet = false
+			f.showDisplayText()
+			f.Validate()
+			return
+		}
 	}
 	state := f.GetFieldState()
 	state.Text = f.getData()

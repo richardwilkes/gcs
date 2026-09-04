@@ -323,6 +323,10 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 // EquipmentHeaderData returns the header data information for the given equipment column.
 func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, forPage bool) HeaderData {
 	var data HeaderData
+	// Templates and loot sheets have no entity, so this resolves to the default sheet settings for them, which is where
+	// their WeightUnit() comes from as well. It is the one source of the weight units here, so that the totals and the
+	// column sort order cannot come to use different units.
+	settings := SheetSettingsFor(provider.DataOwner().OwningEntity())
 	switch columnID {
 	case EquipmentEquippedColumn:
 		data.Title = HeaderCheckmark
@@ -335,29 +339,18 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 	case EquipmentDescriptionColumn:
 		data.Title = i18n.Text("Equipment")
 		if forPage {
-			var weight fxp.Weight
-			var value fxp.Int
-			units := provider.DataOwner().WeightUnit()
 			if carried {
 				title := i18n.Text("Carried Equipment")
 				if _, ok := provider.(*Template); ok {
 					title = i18n.Text("Equipment")
 				}
-				for _, one := range provider.CarriedEquipmentList() {
-					weight += one.ExtendedWeight(false, units)
-					value += one.ExtendedValue()
-				}
-				data.Title = fmt.Sprintf(i18n.Text("%s (%s; $%s)"), title, units.Format(weight), value.Comma())
+				data.Title, data.Detail = equipmentTotalsTitle(title, provider.CarriedEquipmentList(), settings)
 			} else {
 				title := i18n.Text("Other Equipment")
 				if _, ok := provider.(*Loot); ok {
 					title = i18n.Text("Equipment")
 				}
-				for _, one := range provider.OtherEquipmentList() {
-					weight += one.ExtendedWeight(false, units)
-					value += one.ExtendedValue()
-				}
-				data.Title = fmt.Sprintf(i18n.Text("%s (%s; $%s)"), title, units.Format(weight), value.Comma())
+				data.Title, data.Detail = equipmentTotalsTitle(title, provider.OtherEquipmentList(), settings)
 			}
 		}
 		data.Primary = true
@@ -381,12 +374,12 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 		data.Title = HeaderWeight
 		data.TitleIsImageKey = true
 		data.Detail = i18n.Text("The weight of one of these pieces of equipment")
-		data.Less = fxp.WeightLessFromStringFunc(provider.DataOwner().WeightUnit())
+		data.Less = fxp.WeightLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentExtendedWeightColumn:
 		data.Title = HeaderStackedWeight
 		data.TitleIsImageKey = true
 		data.Detail = i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment")
-		data.Less = fxp.WeightLessFromStringFunc(provider.DataOwner().WeightUnit())
+		data.Less = fxp.WeightLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentTagsColumn:
 		data.Title = i18n.Text("Tags")
 	case EquipmentReferenceColumn:
@@ -403,6 +396,59 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 		data.Detail = SwitchHeaderTooltip()
 	}
 	return data
+}
+
+// equipmentTotalsTitle returns the header title for an equipment list on a page, with the list's total weight and
+// value appended using the sheet's display formats. When those formats change the rendering of either total, the
+// exact totals are returned as well, for the header's tooltip: a total is rounded once after summing, so what shows
+// need not match either the exact total or the sum of the rounded rows, and the tooltip is where the exact figure is
+// found for the rows themselves.
+func equipmentTotalsTitle(title string, list []*Equipment, settings *SheetSettings) (fullTitle, exactTotals string) {
+	var weight fxp.Weight
+	var value fxp.Int
+	for _, one := range list {
+		weight += one.ExtendedWeight(false, settings.DefaultWeightUnits)
+		value += one.ExtendedValue()
+	}
+	shownWeight := settings.FormatEquipmentWeight(weight)
+	shownValue := settings.FormatEquipmentValue(value)
+	exactWeight := settings.DefaultWeightUnits.Format(weight)
+	exactValue := value.Comma()
+	fullTitle = fmt.Sprintf(i18n.Text("%s (%s; $%s)"), title, shownWeight, shownValue)
+	if shownWeight != exactWeight || shownValue != exactValue {
+		exactTotals = fmt.Sprintf(i18n.Text("%s; $%s"), exactWeight, exactValue)
+	}
+	return fullTitle, exactTotals
+}
+
+// valueCellData fills in the cell data for a monetary value. On a sheet page, the value is shown using the sheet's
+// equipment value display format, with the exact value available as a tooltip whenever the two differ.
+func (e *Equipment) valueCellData(data *CellData, value fxp.Int) {
+	data.Type = cell.Text
+	data.Alignment = align.End
+	data.Primary = value.Comma()
+	if data.ForPage {
+		if text := SheetSettingsFor(EntityFromNode(e)).FormatEquipmentValue(value); text != data.Primary {
+			data.Tooltip = data.Primary
+			data.Primary = text
+		}
+	}
+}
+
+// weightCellData fills in the cell data for a weight. On a sheet page, the weight is shown using the sheet's equipment
+// weight display format, with the exact weight available as a tooltip whenever the two differ.
+func (e *Equipment) weightCellData(data *CellData, weigh func(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight) {
+	data.Type = cell.Text
+	data.Alignment = align.End
+	settings := SheetSettingsFor(EntityFromNode(e))
+	weight := weigh(false, settings.DefaultWeightUnits)
+	data.Primary = settings.DefaultWeightUnits.Format(weight)
+	if data.ForPage {
+		if text := settings.FormatEquipmentWeight(weight); text != data.Primary {
+			data.Tooltip = data.Primary
+			data.Primary = text
+		}
+	}
 }
 
 // CellData returns the cell data information for the given column.
@@ -442,23 +488,13 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Primary = e.LegalityClass
 		data.Alignment = align.End
 	case EquipmentCostColumn:
-		data.Type = cell.Text
-		data.Primary = e.AdjustedValue().Comma()
-		data.Alignment = align.End
+		e.valueCellData(data, e.AdjustedValue())
 	case EquipmentExtendedCostColumn:
-		data.Type = cell.Text
-		data.Primary = e.ExtendedValue().Comma()
-		data.Alignment = align.End
+		e.valueCellData(data, e.ExtendedValue())
 	case EquipmentWeightColumn:
-		data.Type = cell.Text
-		units := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
-		data.Primary = units.Format(e.AdjustedWeight(false, units))
-		data.Alignment = align.End
+		e.weightCellData(data, e.AdjustedWeight)
 	case EquipmentExtendedWeightColumn:
-		data.Type = cell.Text
-		units := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
-		data.Primary = units.Format(e.ExtendedWeight(false, units))
-		data.Alignment = align.End
+		e.weightCellData(data, e.ExtendedWeight)
 	case EquipmentTagsColumn:
 		data.Type = cell.Tags
 		data.Primary = CombineTags(e.Tags)

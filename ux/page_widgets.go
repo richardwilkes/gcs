@@ -143,22 +143,30 @@ func installPageFieldFontAndFocusBorders(field *unison.Field) {
 // NewHeightPageField creates a new height entry field for a sheet page.
 func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Length, set func(fxp.Length), minValue, maxValue fxp.Length, noMinWidth bool) *LengthField {
 	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
+	field.DisplayFormat = func(v fxp.Length) string { return gurps.SheetSettingsFor(entity).FormatHeight(v) }
 	installPageFieldFontAndFocusBorders(field.Field)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
+	// The field was synced with the exact text when it was created, before the display format was installed, so sync it
+	// again to pick that up.
+	field.Sync()
 	return field
 }
 
 // NewWeightPageField creates a new weight entry field for a sheet page.
 func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Weight, set func(fxp.Weight), minValue, maxValue fxp.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
+	field.DisplayFormat = func(v fxp.Weight) string { return gurps.SheetSettingsFor(entity).FormatBodyWeight(v) }
 	installPageFieldFontAndFocusBorders(field.Field)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
+	// The field was synced with the exact text when it was created, before the display format was installed, so sync it
+	// again to pick that up.
+	field.Sync()
 	return field
 }
 

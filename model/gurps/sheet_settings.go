@@ -60,6 +60,10 @@ type SheetSettingsData struct {
 	ShowLiftingSTDamage           bool               `json:"show_lifting_st_damage,omitzero"`
 	ShowIQBasedDamage             bool               `json:"show_iq_based_damage,omitzero"`
 	HideZeroValueConditionalMods  bool               `json:"hide_zero_value_conditional_modifiers,omitzero"`
+	HeightFormat                  fxp.NumberFormat   `json:"height_format,omitzero"`
+	BodyWeightFormat              fxp.NumberFormat   `json:"body_weight_format,omitzero"`
+	EquipmentWeightFormat         fxp.NumberFormat   `json:"equipment_weight_format,omitzero"`
+	EquipmentValueFormat          fxp.NumberFormat   `json:"equipment_value_format,omitzero"`
 }
 
 // SheetSettings holds sheet settings.
@@ -146,6 +150,34 @@ func (s *SheetSettings) EnsureValidity() {
 	s.ModifiersDisplay = s.ModifiersDisplay.EnsureValid()
 	s.NotesDisplay = s.NotesDisplay.EnsureValid()
 	s.SkillLevelAdjDisplay = s.SkillLevelAdjDisplay.EnsureValid()
+	s.HeightFormat = s.HeightFormat.EnsureValid()
+	s.BodyWeightFormat = s.BodyWeightFormat.EnsureValid()
+	s.EquipmentWeightFormat = s.EquipmentWeightFormat.EnsureValid()
+	s.EquipmentValueFormat = s.EquipmentValueFormat.EnsureValid()
+}
+
+// FormatHeight formats a height for display on the sheet, using the default length units and the height display
+// format. The result is for display only and must not be parsed back into a stored value.
+func (s *SheetSettings) FormatHeight(height fxp.Length) string {
+	return s.DefaultLengthUnits.FormatWith(height, s.HeightFormat)
+}
+
+// FormatBodyWeight formats a character's weight for display on the sheet, using the default weight units and the body
+// weight display format. The result is for display only and must not be parsed back into a stored value.
+func (s *SheetSettings) FormatBodyWeight(weight fxp.Weight) string {
+	return s.DefaultWeightUnits.FormatWith(weight, s.BodyWeightFormat)
+}
+
+// FormatEquipmentWeight formats an equipment weight for display on the sheet, using the default weight units and the
+// equipment weight display format. The result is for display only and must not be parsed back into a stored value.
+func (s *SheetSettings) FormatEquipmentWeight(weight fxp.Weight) string {
+	return s.DefaultWeightUnits.FormatWith(weight, s.EquipmentWeightFormat)
+}
+
+// FormatEquipmentValue formats an equipment value for display on the sheet, using the equipment value display format.
+// The result is for display only and must not be parsed back into a stored value.
+func (s *SheetSettings) FormatEquipmentValue(value fxp.Int) string {
+	return s.EquipmentValueFormat.Format(value)
 }
 
 // MarshalJSONTo implements json.MarshalerTo.

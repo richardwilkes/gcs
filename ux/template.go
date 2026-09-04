@@ -521,7 +521,7 @@ func updateLengthField(sheet *Sheet, refKey string, value fxp.Length) {
 		if f, ok := panel.Self.(*LengthField); ok {
 			saved := sheet.undoMgr
 			sheet.undoMgr = nil
-			f.SetText(value.String())
+			f.SetText(f.Format(value))
 			sheet.undoMgr = saved
 		}
 	}
@@ -532,7 +532,7 @@ func updateWeightField(sheet *Sheet, refKey string, value fxp.Weight) {
 		if f, ok := panel.Self.(*WeightField); ok {
 			saved := sheet.undoMgr
 			sheet.undoMgr = nil
-			f.SetText(value.String())
+			f.SetText(f.Format(value))
 			sheet.undoMgr = saved
 		}
 	}

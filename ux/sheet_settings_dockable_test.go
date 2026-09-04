@@ -14,11 +14,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
+	uncheck "github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/side"
 )
 
@@ -111,6 +113,12 @@ func flipCheckboxOptions(s *gurps.SheetSettings) {
 	s.UseHalfStatDefaults = !s.UseHalfStatDefaults
 	s.UseModifyingDicePlusAdds = !s.UseModifyingDicePlusAdds
 	s.ExcludeUnspentPointsFromTotal = !s.ExcludeUnspentPointsFromTotal
+	// Only the padding flags are flipped for the number formats: the decimal place choices are popup-backed, so
+	// changing them here would make sync() alter a popup's selection and fire its callback.
+	s.HeightFormat.PadWithZeros = !s.HeightFormat.PadWithZeros
+	s.BodyWeightFormat.PadWithZeros = !s.BodyWeightFormat.PadWithZeros
+	s.EquipmentWeightFormat.PadWithZeros = !s.EquipmentWeightFormat.PadWithZeros
+	s.EquipmentValueFormat.PadWithZeros = !s.EquipmentValueFormat.PadWithZeros
 }
 
 // TestSheetSettingsResetNotifiesSheets verifies that resetting the sheet settings tells the open sheets to rebuild.
@@ -164,6 +172,83 @@ func TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks(t *testing.T) {
 	d.sync()
 
 	c.Equal(0, len(recorder.updates), "sync() alone must not be relied upon to notify the sheets")
+}
+
+// numberFormatWidgets pairs one of the sheet's display formats with the popup and checkbox the dockable builds for it.
+type numberFormatWidgets struct {
+	name   string
+	popup  *unison.PopupMenu[fxp.DecimalPlace]
+	pad    *unison.CheckBox
+	format *fxp.NumberFormat
+}
+
+// allNumberFormatWidgets returns the widgets for each of the four display formats in the given settings.
+func allNumberFormatWidgets(d *sheetSettingsDockable, s *gurps.SheetSettings) []numberFormatWidgets {
+	return []numberFormatWidgets{
+		{name: "height", popup: d.heightPlacesPopup, pad: d.heightPadWithZeros, format: &s.HeightFormat},
+		{name: "body weight", popup: d.bodyWeightPlacesPopup, pad: d.bodyWeightPadWithZeros, format: &s.BodyWeightFormat},
+		{name: "equipment weight", popup: d.equipmentWeightPlacesPopup, pad: d.equipmentWeightPadWithZeros, format: &s.EquipmentWeightFormat},
+		{name: "equipment value", popup: d.equipmentValuePlacesPopup, pad: d.equipmentValuePadWithZeros, format: &s.EquipmentValueFormat},
+	}
+}
+
+// TestSheetSettingsSyncSelectsNumberFormats verifies that sync() pushes each of the four number format settings into
+// its own decimal places popup and padding checkbox, so that loading a settings file or resetting to the defaults
+// leaves the widgets showing what is actually in effect. Every format is given a different choice, so that a widget
+// reading from the wrong format is caught.
+func TestSheetSettingsSyncSelectsNumberFormats(t *testing.T) {
+	c := check.New(t)
+	owner := newEntityPanelWithFlaggedSettings()
+	d, _ := newTestSheetSettingsDockable(t, owner)
+	widgets := allNumberFormatWidgets(d, owner.entity.SheetSettings)
+	for i, w := range widgets {
+		*w.format = fxp.NumberFormat{Places: fxp.DecimalPlace(i + 1), PadWithZeros: i%2 == 0}
+	}
+	d.sync()
+	for i, w := range widgets {
+		selected, ok := w.popup.Selected()
+		c.True(ok, "the %s popup must have a selection", w.name)
+		c.Equal(fxp.DecimalPlace(i+1), selected, "the %s popup must show its setting's decimal places", w.name)
+		c.Equal(uncheck.FromBool(i%2 == 0), w.pad.State, "the %s padding checkbox must show its setting", w.name)
+	}
+}
+
+// TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting verifies the other direction: that each decimal places popup
+// and padding checkbox writes to its own format and to no other, and that each change notifies the open sheets. The
+// four blocks that build these widgets are near-identical, which makes a copy-paste slip between them the most likely
+// error, and nothing less specific than this would notice one.
+func TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting(t *testing.T) {
+	c := check.New(t)
+	owner := newEntityPanelWithFlaggedSettings()
+	d, recorder := newTestSheetSettingsDockable(t, owner)
+	widgets := allNumberFormatWidgets(d, owner.entity.SheetSettings)
+	for i, w := range widgets {
+		before := make([]fxp.NumberFormat, len(widgets))
+		for j, other := range widgets {
+			before[j] = *other.format
+		}
+		updates := len(recorder.updates)
+
+		// A choice the popup does not already show, so that selecting it fires the popup's callback.
+		places := fxp.DecimalPlace(i + 1)
+		if places == before[i].Places {
+			places++
+		}
+		w.popup.Select(places)
+		c.Equal(places, w.format.Places, "the %s popup must write the %s format", w.name, w.name)
+
+		w.pad.State = uncheck.FromBool(!before[i].PadWithZeros)
+		w.pad.ClickCallback()
+		c.Equal(!before[i].PadWithZeros, w.format.PadWithZeros, "the %s checkbox must write the %s format", w.name,
+			w.name)
+
+		for j, other := range widgets {
+			if j != i {
+				c.Equal(before[j], *other.format, "the %s widgets must not touch the %s format", w.name, other.name)
+			}
+		}
+		c.Equal(updates+2, len(recorder.updates), "each %s change must notify the open sheets", w.name)
+	}
 }
 
 // TestSheetSettingsTabTitle verifies that the character name is substituted into the tab title rather than being built

@@ -66,7 +66,7 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 			p.entity.Profile.Name = p.entity.Ancestry().RandomName(
 				gurps.AvailableNameGenerators(gurps.GlobalSettings().Libraries), p.entity.Profile.Gender,
 			)
-			SetTextAndMarkModified(nameField.Field, p.entity.Profile.Name)
+			SetTextAndMarkModified(nameField, p.entity.Profile.Name)
 		}))
 	nameField.ClientData()[SkipDeepSync] = true
 	p.AddChild(nameField)

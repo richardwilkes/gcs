@@ -58,6 +58,14 @@ type sheetSettingsDockable struct {
 	hideZeroValueConditionalMods       *unison.CheckBox
 	lengthUnitsPopup                   *unison.PopupMenu[fxp.LengthUnit]
 	weightUnitsPopup                   *unison.PopupMenu[fxp.WeightUnit]
+	heightPlacesPopup                  *unison.PopupMenu[fxp.DecimalPlace]
+	heightPadWithZeros                 *unison.CheckBox
+	bodyWeightPlacesPopup              *unison.PopupMenu[fxp.DecimalPlace]
+	bodyWeightPadWithZeros             *unison.CheckBox
+	equipmentWeightPlacesPopup         *unison.PopupMenu[fxp.DecimalPlace]
+	equipmentWeightPadWithZeros        *unison.CheckBox
+	equipmentValuePlacesPopup          *unison.PopupMenu[fxp.DecimalPlace]
+	equipmentValuePadWithZeros         *unison.CheckBox
 	userDescDisplayPopup               *unison.PopupMenu[display.Option]
 	modifiersDisplayPopup              *unison.PopupMenu[display.Option]
 	notesDisplayPopup                  *unison.PopupMenu[display.Option]
@@ -129,6 +137,7 @@ func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
 	d.createDamageProgression(content)
 	d.createOptions(content)
 	d.createUnitsOfMeasurement(content)
+	d.createDecimalPlaces(content)
 	d.createWhereToDisplay(content)
 	d.createPageSettings(content)
 }
@@ -299,6 +308,64 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 		s.DefaultLengthUnits, func(item fxp.LengthUnit) { d.settings().DefaultLengthUnits = item })
 	d.weightUnitsPopup = d.createSettingPopup(panel, i18n.Text("Weight Units"), fxp.WeightUnits,
 		s.DefaultWeightUnits, func(item fxp.WeightUnit) { d.settings().DefaultWeightUnits = item })
+	content.AddChild(panel)
+}
+
+// createDecimalPlaces adds the section that controls how many decimal places the sheet rounds various numbers to for
+// display. These affect only what is shown: the values themselves are always stored, and edited, at full precision.
+func (d *sheetSettingsDockable) createDecimalPlaces(content *unison.Panel) {
+	s := d.settings()
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  3,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
+	d.createHeader(panel, i18n.Text("Decimal Places"), 3)
+	padTitle := i18n.Text("Pad with zeros")
+	padTooltip := i18n.Text(`Show trailing zeros out to the number of decimal places chosen, e.g. "7.50" rather than "7.5" at 2 decimal places. Has no effect when "As Needed" or "0" is chosen.`)
+
+	d.heightPlacesPopup = d.createSettingPopup(panel, i18n.Text("Height"), fxp.DecimalPlaces,
+		s.HeightFormat.Places,
+		func(item fxp.DecimalPlace) { d.settings().HeightFormat.Places = item })
+	d.heightPlacesPopup.Tooltip = newWrappedTooltip(i18n.Text(`How many decimal places the height in the Description block on the sheet is rounded to for display. "As Needed" shows every decimal place the value has.`))
+	d.heightPadWithZeros = d.addCheckBox(panel, padTitle, s.HeightFormat.PadWithZeros, func() {
+		d.settings().HeightFormat.PadWithZeros = d.heightPadWithZeros.State == check.On
+		d.syncSheet(false)
+	})
+	d.heightPadWithZeros.Tooltip = newWrappedTooltip(padTooltip)
+
+	d.bodyWeightPlacesPopup = d.createSettingPopup(panel, i18n.Text("Body Weight"), fxp.DecimalPlaces,
+		s.BodyWeightFormat.Places,
+		func(item fxp.DecimalPlace) { d.settings().BodyWeightFormat.Places = item })
+	d.bodyWeightPlacesPopup.Tooltip = newWrappedTooltip(i18n.Text("How many decimal places the character's weight in the Description block on the sheet is rounded to for display"))
+	d.bodyWeightPadWithZeros = d.addCheckBox(panel, padTitle, s.BodyWeightFormat.PadWithZeros, func() {
+		d.settings().BodyWeightFormat.PadWithZeros = d.bodyWeightPadWithZeros.State == check.On
+		d.syncSheet(false)
+	})
+	d.bodyWeightPadWithZeros.Tooltip = newWrappedTooltip(padTooltip)
+
+	d.equipmentWeightPlacesPopup = d.createSettingPopup(panel, i18n.Text("Equipment Weight"), fxp.DecimalPlaces,
+		s.EquipmentWeightFormat.Places,
+		func(item fxp.DecimalPlace) { d.settings().EquipmentWeightFormat.Places = item })
+	d.equipmentWeightPlacesPopup.Tooltip = newWrappedTooltip(i18n.Text("How many decimal places the weight columns and the carried & other equipment totals on the sheet are rounded to for display"))
+	d.equipmentWeightPadWithZeros = d.addCheckBox(panel, padTitle, s.EquipmentWeightFormat.PadWithZeros, func() {
+		d.settings().EquipmentWeightFormat.PadWithZeros = d.equipmentWeightPadWithZeros.State == check.On
+		d.syncSheet(false)
+	})
+	d.equipmentWeightPadWithZeros.Tooltip = newWrappedTooltip(padTooltip)
+
+	d.equipmentValuePlacesPopup = d.createSettingPopup(panel, i18n.Text("Equipment Value"), fxp.DecimalPlaces,
+		s.EquipmentValueFormat.Places,
+		func(item fxp.DecimalPlace) { d.settings().EquipmentValueFormat.Places = item })
+	d.equipmentValuePlacesPopup.Tooltip = newWrappedTooltip(i18n.Text("How many decimal places the value columns and the carried & other equipment totals on the sheet are rounded to for display"))
+	d.equipmentValuePadWithZeros = d.addCheckBox(panel, padTitle, s.EquipmentValueFormat.PadWithZeros, func() {
+		d.settings().EquipmentValueFormat.PadWithZeros = d.equipmentValuePadWithZeros.State == check.On
+		d.syncSheet(false)
+	})
+	d.equipmentValuePadWithZeros.Tooltip = newWrappedTooltip(padTooltip)
+
 	content.AddChild(panel)
 }
 
@@ -480,6 +547,14 @@ func (d *sheetSettingsDockable) sync() {
 	d.excludeUnspentPointsFromTotal.State = check.FromBool(s.ExcludeUnspentPointsFromTotal)
 	d.lengthUnitsPopup.Select(s.DefaultLengthUnits)
 	d.weightUnitsPopup.Select(s.DefaultWeightUnits)
+	d.heightPlacesPopup.Select(s.HeightFormat.Places)
+	d.heightPadWithZeros.State = check.FromBool(s.HeightFormat.PadWithZeros)
+	d.bodyWeightPlacesPopup.Select(s.BodyWeightFormat.Places)
+	d.bodyWeightPadWithZeros.State = check.FromBool(s.BodyWeightFormat.PadWithZeros)
+	d.equipmentWeightPlacesPopup.Select(s.EquipmentWeightFormat.Places)
+	d.equipmentWeightPadWithZeros.State = check.FromBool(s.EquipmentWeightFormat.PadWithZeros)
+	d.equipmentValuePlacesPopup.Select(s.EquipmentValueFormat.Places)
+	d.equipmentValuePadWithZeros.State = check.FromBool(s.EquipmentValueFormat.PadWithZeros)
 	d.userDescDisplayPopup.Select(s.UserDescriptionDisplay)
 	d.modifiersDisplayPopup.Select(s.ModifiersDisplay)
 	d.notesDisplayPopup.Select(s.NotesDisplay)

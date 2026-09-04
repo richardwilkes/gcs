@@ -128,8 +128,9 @@ var _ unison.TableColumnHeader[*Node[*gurps.Trait]] = &PageTableColumnHeader[*gu
 // PageTableColumnHeader provides a default page table column header panel.
 type PageTableColumnHeader[T gurps.Node[T]] struct {
 	*unison.Label
-	less      func(a, b string) bool
-	sortState unison.SortState
+	less        func(a, b string) bool
+	sortState   unison.SortState
+	tooltipText string
 }
 
 // NewPageTableColumnHeader creates a new page table column header panel with the given title.
@@ -149,10 +150,27 @@ func NewPageTableColumnHeader[T gurps.Node[T]](title, tooltip string, less func(
 	h.SetSizer(h.DefaultSizes)
 	h.DrawCallback = h.DefaultDraw
 	h.MouseUpCallback = h.DefaultMouseUp
-	if tooltip != "" {
-		h.Tooltip = newWrappedTooltip(tooltip)
-	}
+	h.SetTooltipText(tooltip)
 	return h
+}
+
+// TooltipText returns the text of the header's tooltip, or an empty string if it has none.
+func (h *PageTableColumnHeader[T]) TooltipText() string {
+	return h.tooltipText
+}
+
+// SetTooltipText sets the text of the header's tooltip, removing the tooltip entirely when the text is empty. The
+// tooltip panel is only rebuilt when the text actually changes.
+func (h *PageTableColumnHeader[T]) SetTooltipText(text string) {
+	if h.tooltipText == text {
+		return
+	}
+	h.tooltipText = text
+	if text == "" {
+		h.Tooltip = nil
+	} else {
+		h.Tooltip = newWrappedTooltip(text)
+	}
 }
 
 // DefaultSizes provides the default sizing.

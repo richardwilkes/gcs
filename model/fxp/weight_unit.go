@@ -33,21 +33,33 @@ func TrailingWeightUnitFromString(s string, defUnits WeightUnit) WeightUnit {
 	return defUnits
 }
 
-// Format the weight for this WeightUnit.
+// Format the weight for this WeightUnit, showing as many decimal places as the value has.
 func (enum WeightUnit) Format(weight Weight) string {
+	return enum.FormatWith(weight, NumberFormat{})
+}
+
+// FormatWith formats the weight for this WeightUnit, rendering the number according to the given NumberFormat. This is
+// for display only: the rounding the NumberFormat may perform is lossy, so the result must never be parsed back into a
+// stored value.
+func (enum WeightUnit) FormatWith(weight Weight, format NumberFormat) string {
+	return format.Format(enum.FromPounds(Int(weight))) + " " + enum.Key()
+}
+
+// FromPounds converts a weight in pounds to this WeightUnit.
+func (enum WeightUnit) FromPounds(weight Int) Int {
 	switch enum {
 	case Pound, PoundAlt:
-		return Int(weight).Comma() + " " + enum.Key()
+		return weight
 	case Ounce:
-		return Int(weight).Mul(Sixteen).Comma() + " " + enum.Key()
+		return weight.Mul(Sixteen)
 	case Ton, TonAlt:
-		return Int(weight).Div(TwoThousand).Comma() + " " + enum.Key()
+		return weight.Div(TwoThousand)
 	case Kilogram:
-		return Int(weight).Div(Two).Comma() + " " + enum.Key()
+		return weight.Div(Two)
 	case Gram:
-		return Int(weight).Mul(FiveHundred).Comma() + " " + enum.Key()
+		return weight.Mul(FiveHundred)
 	default:
-		return Pound.Format(weight)
+		return Pound.FromPounds(weight)
 	}
 }
 
