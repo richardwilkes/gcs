@@ -68,6 +68,9 @@ func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int)
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
 	table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
+	// The keyboard repositioning commands are the equivalents of a drag within the table, so they belong on exactly
+	// the tables that accept one.
+	InstallMoveSelectionHandlers(table)
 	// No DragRemovedRowsCallback is installed. It would only ever fire for a move between two different tables, and
 	// the providers only allow that within a single dockable (see their DropShouldMoveData), so the report made for
 	// the table the rows landed in covers the one they left as well; a separate report for the source would just

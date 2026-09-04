@@ -22,6 +22,14 @@
   to turn them on or off, or any number of melee or ranged weapons to hide or show them, and the whole selection is
   changed at once and taken back with a single undo. The command is also available from the right-click menu of those
   lists. (#1074)
+- Items in any list that can be rearranged by dragging can now be rearranged from the keyboard as well. Move Up and Move
+  Down shift the selected items one place among their neighbors, Move Out of Container lifts them out of the container
+  they are in to sit just above it, and Move Into Container drops them into the container directly below them as its
+  first items, opening it if it was closed. Each selected item moves on its own, so a selection spread across several
+  containers moves within each of them, and items selected together keep their order. The commands are in the Edit menu
+  and the right-click menu, bound to Shift-Command-Up, Shift-Command-Down, Shift-Command-Left and Shift-Command-Right on
+  macOS and Shift-Ctrl-Up, Shift-Ctrl-Down, Shift-Ctrl-Left and Shift-Ctrl-Right elsewhere, and can be rebound in the
+  Menu Keys settings. (#1076)
 
 ## Bug Fixes
 

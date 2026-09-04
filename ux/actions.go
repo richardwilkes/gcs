@@ -66,8 +66,12 @@ var (
 	incrementAction                *unison.Action
 	jumpToSearchFilterAction       *unison.Action
 	menuKeySettingsAction          *unison.Action
+	moveDownAction                 *unison.Action
+	moveIntoContainerAction        *unison.Action
+	moveOutOfContainerAction       *unison.Action
 	moveToCarriedEquipmentAction   *unison.Action
 	moveToOtherEquipmentAction     *unison.Action
+	moveUpAction                   *unison.Action
 	// TODO: Re-enable Campaign files
 	// newCampaignAction                   *unison.Action
 	newCarriedEquipmentAction           *unison.Action
@@ -428,6 +432,36 @@ func registerActions() {
 		ID:              MenuKeySettingsItemID,
 		Title:           i18n.Text("Menu Keys…"),
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowMenuKeySettings() },
+	})
+	// The plain command-key arrows already belong to Increase Uses and Decrease Uses, so the repositioning commands
+	// take the shifted ones.
+	moveUpAction = registerKeyBindableAction("move.up", &unison.Action{
+		ID:              MoveUpItemID,
+		Title:           MoveUp.Title(),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyUp, Modifiers: mod.Shift | mod.OSMenuCommand()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	moveDownAction = registerKeyBindableAction("move.down", &unison.Action{
+		ID:              MoveDownItemID,
+		Title:           MoveDown.Title(),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyDown, Modifiers: mod.Shift | mod.OSMenuCommand()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	moveOutOfContainerAction = registerKeyBindableAction("move.out", &unison.Action{
+		ID:              MoveOutOfContainerItemID,
+		Title:           MoveOutOfContainer.Title(),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyLeft, Modifiers: mod.Shift | mod.OSMenuCommand()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	moveIntoContainerAction = registerKeyBindableAction("move.in", &unison.Action{
+		ID:              MoveIntoContainerItemID,
+		Title:           MoveIntoContainer.Title(),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyRight, Modifiers: mod.Shift | mod.OSMenuCommand()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	moveToCarriedEquipmentAction = registerKeyBindableAction("move.to.carried", &unison.Action{
 		ID:              MoveToCarriedEquipmentItemID,

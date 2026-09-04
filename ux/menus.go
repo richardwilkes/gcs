@@ -77,6 +77,10 @@ const (
 	SwapDefaultsItemID
 	MoveToOtherEquipmentItemID
 	MoveToCarriedEquipmentItemID
+	MoveUpItemID
+	MoveDownItemID
+	MoveOutOfContainerItemID
+	MoveIntoContainerItemID
 	ItemMenuID
 	AddNaturalAttacksItemID
 	OrganizeTraitsItemID
@@ -258,6 +262,12 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, newSheetFromTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, cloneSheetAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, organizeTraitsAction.NewMenuItem(f))
+
+	i = s.insertMenuSeparator(m, i)
+	i = s.insertMenuItem(m, i, moveUpAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, moveDownAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, moveOutOfContainerAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, moveIntoContainerAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, incrementAction.NewMenuItem(f))
@@ -512,6 +522,11 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		ContextMenuItem{"", -1},
 		ContextMenuItem{duplicateAction.Title, DuplicateItemID},
 		ContextMenuItem{unison.DeleteAction().Title, unison.DeleteItemID},
+		ContextMenuItem{"", -1},
+		ContextMenuItem{moveUpAction.Title, MoveUpItemID},
+		ContextMenuItem{moveDownAction.Title, MoveDownItemID},
+		ContextMenuItem{moveOutOfContainerAction.Title, MoveOutOfContainerItemID},
+		ContextMenuItem{moveIntoContainerAction.Title, MoveIntoContainerItemID},
 		ContextMenuItem{"", -1},
 		ContextMenuItem{moveToCarriedEquipmentAction.Title, MoveToCarriedEquipmentItemID},
 		ContextMenuItem{moveToOtherEquipmentAction.Title, MoveToOtherEquipmentItemID},

@@ -3,7 +3,7 @@ module github.com/richardwilkes/gcs/v5
 go 1.27.0
 
 require (
-	github.com/dop251/goja v0.0.0-20260901132549-43234fa61381
+	github.com/dop251/goja v0.0.0-20260903201622-f87b40ad7341
 	github.com/go-git/go-billy/v6 v6.0.0-alpha.2
 	github.com/go-git/go-git/v6 v6.0.0-alpha.5
 	github.com/google/uuid v1.6.0
@@ -11,7 +11,7 @@ require (
 	github.com/richardwilkes/pdfview v0.8.0
 	github.com/richardwilkes/rpgtools v1.14.0
 	github.com/richardwilkes/toolbox/v2 v2.19.0
-	github.com/richardwilkes/unison v0.102.1-0.20260903011444-f356023e8c00
+	github.com/richardwilkes/unison v0.103.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.6
