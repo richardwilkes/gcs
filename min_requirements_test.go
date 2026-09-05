@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -27,10 +28,7 @@ const minRequirementsPath = "cmd/min_requirements.sh"
 // `set -euo pipefail`, so a failing mount must not take the entire analysis down with it.
 func TestExtractArchivesSurvivesUnmountableDMG(t *testing.T) {
 	c := check.New(t)
-	bash, err := exec.LookPath("bash")
-	if err != nil {
-		t.Skip("bash is not available")
-	}
+	bash := shellHarnessBash(t)
 	dir := t.TempDir()
 	c.NoError(os.WriteFile(filepath.Join(dir, "corrupt.dmg"), []byte("not a disk image"), 0o600))
 	out, err := runExtractArchives(c, bash, dir, "exit 1")
@@ -44,10 +42,7 @@ func TestExtractArchivesSurvivesUnmountableDMG(t *testing.T) {
 // disk images attached.
 func TestExtractArchivesDetachesMountedDMG(t *testing.T) {
 	c := check.New(t)
-	bash, err := exec.LookPath("bash")
-	if err != nil {
-		t.Skip("bash is not available")
-	}
+	bash := shellHarnessBash(t)
 	dir := t.TempDir()
 	c.NoError(os.WriteFile(filepath.Join(dir, "good.dmg"), []byte("disk image"), 0o600))
 	out, err := runExtractArchives(c, bash, dir,
@@ -58,6 +53,23 @@ func TestExtractArchivesDetachesMountedDMG(t *testing.T) {
 	log, err = os.ReadFile(filepath.Join(dir, "hdiutil.log"))
 	c.NoError(err)
 	c.Contains(string(log), "detach -quiet /Volumes/GCS")
+}
+
+// shellHarnessBash returns the bash to run the shell harness with, skipping the test when there isn't a usable one.
+// Git for Windows has no native ARM64 POSIX runtime: its ARM64 installer ships x64 bash and msys-2.0.dll, which run
+// under Windows' x64 emulator, and Cygwin's fork and signal machinery intermittently crashes there with
+// STATUS_SINGLE_STEP (exit status 0x80000004) before the script prints anything. The script only ever runs on macOS
+// and the other builders still verify the logic, so the emulated runtime is skipped rather than retried.
+func shellHarnessBash(t *testing.T) string {
+	t.Helper()
+	if runtime.GOOS == "windows" && runtime.GOARCH == "arm64" {
+		t.Skip("bash on windows/arm64 runs under x64 emulation and intermittently crashes")
+	}
+	bash, err := exec.LookPath("bash")
+	if err != nil {
+		t.Skip("bash is not available")
+	}
+	return bash
 }
 
 // runExtractArchives runs the committed extract_archives function against dir with a stand-in for hdiutil whose
