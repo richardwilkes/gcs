@@ -48,7 +48,7 @@ func TestEquipmentModifierSyncHashIncludesPerLevelAndPerPoundFlags(t *testing.T)
 }
 
 // TestEquipmentModifierCloneDoesNotShareReplacements verifies that a copy of a modifier still carrying the legacy
-// replacements map gets its own map. setEquipment() installs a modifier's replacements directly into the equipment it
+// replacements map gets its own map. SetTargetNode() installs a modifier's replacements directly into the equipment it
 // is attached to when that equipment has none of its own, so sharing the map let a later merge into the equipment's map
 // write into the library row the copy came from.
 func TestEquipmentModifierCloneDoesNotShareReplacements(t *testing.T) {

@@ -19,7 +19,7 @@ import (
 )
 
 // TestTraitModifierCloneDoesNotShareReplacements verifies that a copy of a modifier still carrying the legacy
-// replacements map gets its own map. setTrait() installs a modifier's replacements directly into the trait it is
+// replacements map gets its own map. SetTargetNode() installs a modifier's replacements directly into the trait it is
 // attached to when that trait has none of its own, so sharing the map let a later merge into the trait's map write into
 // the library row the copy came from.
 func TestTraitModifierCloneDoesNotShareReplacements(t *testing.T) {
