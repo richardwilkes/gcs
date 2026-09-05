@@ -808,62 +808,126 @@ func drBonusCoversLocation(features Features, switchedOn bool, locID string) boo
 	return false
 }
 
+// legacyNodeKeys supplies what processLegacyNodeKey needs from a node beyond the methods every Node has. A nil func
+// marks a key family the node type does not support, leaving those keys to be reported as unidentified.
+type legacyNodeKeys struct {
+	// containerType is what the TYPE key emits for a container node, defaulting to "GROUP" when empty.
+	containerType string
+	// pageRef is the node's page reference, emitted by the REF key.
+	pageRef string
+	// satisfied returns whether the node's prerequisites are satisfied. Nil for node types without prerequisites, which
+	// have no SATISFIED key and are never flagged by STYLE_INDENT_WARNING.
+	satisfied func() bool
+	// notes returns the node's notes, used by the DESCRIPTION* keys.
+	notes func() string
+	// modifierNotes returns the node's modifier notes, used by the DESCRIPTION and DESCRIPTION_MODIFIER_NOTES* keys.
+	modifierNotes func() string
+	// modifierNotesFor returns the local notes of the node's active modifier with the given name, used by the
+	// MODIFIER_NOTES_FOR_* keys.
+	modifierNotesFor func(name string) string
+}
+
+// legacyExportNode is the subset of node behavior processLegacyNodeKey needs beyond what Node provides.
+type legacyExportNode[T Node[T]] interface {
+	Node[T]
+	Depth() int
+}
+
+// processLegacyNodeKey handles the export keys shared by the trait, skill, spell, equipment and note loops, returning
+// false if the key is not one of them.
+func processLegacyNodeKey[T legacyExportNode[T]](ex *legacyExporter, key string, node T, keys *legacyNodeKeys) bool {
+	switch key {
+	case idExportKey:
+		ex.writeEncodedText(string(node.ID()))
+	case parentIDExportKey:
+		var zero T
+		if parent := node.Parent(); parent != zero {
+			ex.writeEncodedText(string(parent.ID()))
+		}
+	case typeExportKey:
+		switch {
+		case !node.Container():
+			ex.writeEncodedText("ITEM")
+		case keys.containerType != "":
+			ex.writeEncodedText(keys.containerType)
+		default:
+			ex.writeEncodedText("GROUP")
+		}
+	case descriptionExportKey:
+		if keys.notes == nil {
+			return false
+		}
+		ex.writeEncodedText(node.String())
+		if keys.modifierNotes != nil {
+			ex.writeNote(keys.modifierNotes())
+		}
+		ex.writeNote(keys.notes())
+	case descriptionPrimaryExportKey:
+		if keys.notes == nil {
+			return false
+		}
+		ex.writeEncodedText(node.String())
+	case refExportKey:
+		ex.writeEncodedText(keys.pageRef)
+	case styleIndentWarningExportKey:
+		ex.handleStyleIndentWarning(node.Depth(), keys.satisfied == nil || keys.satisfied())
+	case satisfiedExportKey:
+		if keys.satisfied == nil {
+			return false
+		}
+		ex.handleSatisfied(keys.satisfied())
+	default:
+		switch {
+		case strings.HasPrefix(key, "DESCRIPTION_MODIFIER_NOTES"):
+			if keys.modifierNotes == nil {
+				return false
+			}
+			ex.writeWithOptionalParens(key, keys.modifierNotes())
+		case strings.HasPrefix(key, "DESCRIPTION_NOTES"):
+			if keys.notes == nil {
+				return false
+			}
+			ex.writeWithOptionalParens(key, keys.notes())
+		case strings.HasPrefix(key, "MODIFIER_NOTES_FOR_"):
+			if keys.modifierNotesFor == nil {
+				return false
+			}
+			ex.writeEncodedText(keys.modifierNotesFor(key[len("MODIFIER_NOTES_FOR_"):]))
+		case strings.HasPrefix(key, "DEPTHx"):
+			ex.handlePrefixDepth(key, node.Depth())
+		default:
+			return false
+		}
+	}
+	return true
+}
+
 func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 	Traverse(func(t *Trait) bool {
 		if f(t) {
+			keys := legacyNodeKeys{
+				containerType: strings.ToUpper(t.ContainerType.Key()),
+				pageRef:       t.PageRef,
+				satisfied:     func() bool { return t.UnsatisfiedReason == "" },
+				notes:         t.Notes,
+				modifierNotes: t.ModifierNotes,
+				modifierNotesFor: func(name string) string {
+					if mod := t.ActiveModifierFor(name); mod != nil {
+						return mod.LocalNotesWithReplacements()
+					}
+					return ""
+				},
+			}
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
-				case idExportKey:
-					ex.writeEncodedText(string(t.TID))
-				case parentIDExportKey:
-					parent := t.Parent()
-					if parent != nil {
-						ex.writeEncodedText(string(parent.TID))
-					}
-				case typeExportKey:
-					if t.Container() {
-						ex.writeEncodedText(strings.ToUpper(t.ContainerType.Key()))
-					} else {
-						ex.writeEncodedText("ITEM")
-					}
 				case pointsExportKey:
 					ex.writeEncodedText(t.AdjustedPoints().String())
-				case descriptionExportKey:
-					ex.writeEncodedText(t.String())
-					ex.writeNote(t.ModifierNotes())
-					ex.writeNote(t.Notes())
-				case descriptionPrimaryExportKey:
-					ex.writeEncodedText(t.String())
 				case "DESCRIPTION_USER":
 					ex.writeEncodedText(t.UserDescWithReplacements())
 				case "DESCRIPTION_USER_FORMATTED":
-					userDesc := t.UserDescWithReplacements()
-					if userDesc != "" {
-						for one := range strings.SplitSeq(userDesc, "\n") {
-							ex.out.WriteString("<p>")
-							ex.writeEncodedText(one)
-							ex.out.WriteString("</p>\n")
-						}
-					}
-				case refExportKey:
-					ex.writeEncodedText(t.PageRef)
-				case styleIndentWarningExportKey:
-					ex.handleStyleIndentWarning(t.Depth(), t.UnsatisfiedReason == "")
-				case satisfiedExportKey:
-					ex.handleSatisfied(t.UnsatisfiedReason == "")
+					ex.writeParagraphs(t.UserDescWithReplacements())
 				default:
-					switch {
-					case strings.HasPrefix(key, "DESCRIPTION_MODIFIER_NOTES"):
-						ex.writeWithOptionalParens(key, t.ModifierNotes())
-					case strings.HasPrefix(key, "DESCRIPTION_NOTES"):
-						ex.writeWithOptionalParens(key, t.Notes())
-					case strings.HasPrefix(key, "MODIFIER_NOTES_FOR_"):
-						if mod := t.ActiveModifierFor(key[len("MODIFIER_NOTES_FOR_"):]); mod != nil {
-							ex.writeEncodedText(mod.LocalNotesWithReplacements())
-						}
-					case strings.HasPrefix(key, "DEPTHx"):
-						ex.handlePrefixDepth(key, t.Depth())
-					default:
+					if !processLegacyNodeKey(ex, key, t, &keys) {
 						ex.unidentifiedKey(key)
 					}
 				}
@@ -878,29 +942,16 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 
 func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 	Traverse(func(s *Skill) bool {
+		keys := legacyNodeKeys{
+			pageRef:       s.PageRef,
+			satisfied:     func() bool { return s.UnsatisfiedReason == "" },
+			notes:         s.Notes,
+			modifierNotes: s.ModifierNotes,
+		}
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
-			case idExportKey:
-				ex.writeEncodedText(string(s.TID))
-			case parentIDExportKey:
-				parent := s.Parent()
-				if parent != nil {
-					ex.writeEncodedText(string(parent.TID))
-				}
-			case typeExportKey:
-				if s.Container() {
-					ex.writeEncodedText("GROUP")
-				} else {
-					ex.writeEncodedText("ITEM")
-				}
 			case pointsExportKey:
 				ex.writeEncodedText(s.AdjustedPoints(nil).String())
-			case descriptionExportKey:
-				ex.writeEncodedText(s.String())
-				ex.writeNote(s.ModifierNotes())
-				ex.writeNote(s.Notes())
-			case descriptionPrimaryExportKey:
-				ex.writeEncodedText(s.String())
 			case "SL":
 				ex.writeEncodedText(s.CalculateLevel(nil).LevelAsString(s.Container()))
 			case "RSL":
@@ -909,21 +960,8 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 				if !s.Container() {
 					ex.writeEncodedText(s.Difficulty.Description(EntityFromNode(s)))
 				}
-			case refExportKey:
-				ex.writeEncodedText(s.PageRef)
-			case styleIndentWarningExportKey:
-				ex.handleStyleIndentWarning(s.Depth(), s.UnsatisfiedReason == "")
-			case satisfiedExportKey:
-				ex.handleSatisfied(s.UnsatisfiedReason == "")
 			default:
-				switch {
-				case strings.HasPrefix(key, "DESCRIPTION_MODIFIER_NOTES"):
-					ex.writeWithOptionalParens(key, s.ModifierNotes())
-				case strings.HasPrefix(key, "DESCRIPTION_NOTES"):
-					ex.writeWithOptionalParens(key, s.Notes())
-				case strings.HasPrefix(key, "DEPTHx"):
-					ex.handlePrefixDepth(key, s.Depth())
-				default:
+				if !processLegacyNodeKey(ex, key, s, &keys) {
 					ex.unidentifiedKey(key)
 				}
 			}
@@ -935,29 +973,28 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 
 func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 	Traverse(func(s *Spell) bool {
+		keys := legacyNodeKeys{
+			pageRef:   s.PageRef,
+			satisfied: func() bool { return s.UnsatisfiedReason == "" },
+			notes: func() string {
+				notes := s.Notes()
+				if rituals := s.Rituals(); rituals != "" {
+					if strings.TrimSpace(notes) != "" {
+						notes += "; "
+					}
+					notes += rituals
+				}
+				return notes
+			},
+		}
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
-			case idExportKey:
-				ex.writeEncodedText(string(s.TID))
-			case parentIDExportKey:
-				parent := s.Parent()
-				if parent != nil {
-					ex.writeEncodedText(string(parent.TID))
-				}
-			case typeExportKey:
-				if s.Container() {
-					ex.writeEncodedText("GROUP")
-				} else {
-					ex.writeEncodedText("ITEM")
-				}
 			case pointsExportKey:
 				ex.writeEncodedText(s.AdjustedPoints(nil).String())
 			case descriptionExportKey:
 				ex.writeEncodedText(s.String())
 				ex.writeNote(s.Notes())
 				ex.writeNote(s.Rituals())
-			case descriptionPrimaryExportKey:
-				ex.writeEncodedText(s.String())
 			case "SL":
 				ex.writeEncodedText(s.CalculateLevel().LevelAsString(s.Container()))
 			case "RSL":
@@ -980,29 +1017,11 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 				ex.writeEncodedText(s.DurationWithReplacements())
 			case "RESIST":
 				ex.writeEncodedText(s.ResistWithReplacements())
-			case refExportKey:
-				ex.writeEncodedText(s.PageRef)
-			case styleIndentWarningExportKey:
-				ex.handleStyleIndentWarning(s.Depth(), s.UnsatisfiedReason == "")
-			case satisfiedExportKey:
-				ex.handleSatisfied(s.UnsatisfiedReason == "")
 			default:
 				switch {
 				case strings.HasPrefix(key, "DESCRIPTION_MODIFIER_NOTES"):
 					// Here for legacy reasons. Spells have never had these notes.
-				case strings.HasPrefix(key, "DESCRIPTION_NOTES"):
-					notes := s.Notes()
-					rituals := s.Rituals()
-					if rituals != "" {
-						if strings.TrimSpace(notes) != "" {
-							notes += "; "
-						}
-						notes += rituals
-					}
-					ex.writeWithOptionalParens(key, notes)
-				case strings.HasPrefix(key, "DEPTHx"):
-					ex.handlePrefixDepth(key, s.Depth())
-				default:
+				case !processLegacyNodeKey(ex, key, s, &keys):
 					ex.unidentifiedKey(key)
 				}
 			}
@@ -1021,33 +1040,20 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 	}
 	Traverse(func(eqp *Equipment) bool {
 		if ex.includeByTags(eqp.Tags) {
+			keys := legacyNodeKeys{
+				pageRef:       eqp.PageRef,
+				satisfied:     func() bool { return eqp.UnsatisfiedReason == "" },
+				notes:         eqp.Notes,
+				modifierNotes: eqp.ModifierNotes,
+				modifierNotesFor: func(name string) string {
+					if mod := eqp.ActiveModifierFor(name); mod != nil {
+						return mod.LocalNotesWithReplacements()
+					}
+					return ""
+				},
+			}
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
-				case idExportKey:
-					ex.writeEncodedText(string(eqp.TID))
-				case parentIDExportKey:
-					parent := eqp.Parent()
-					if parent != nil {
-						ex.writeEncodedText(string(parent.TID))
-					}
-				case typeExportKey:
-					if eqp.Container() {
-						ex.writeEncodedText("GROUP")
-					} else {
-						ex.writeEncodedText("ITEM")
-					}
-				case descriptionExportKey:
-					ex.writeEncodedText(eqp.String())
-					ex.writeNote(eqp.ModifierNotes())
-					ex.writeNote(eqp.Notes())
-				case descriptionPrimaryExportKey:
-					ex.writeEncodedText(eqp.String())
-				case refExportKey:
-					ex.writeEncodedText(eqp.PageRef)
-				case styleIndentWarningExportKey:
-					ex.handleStyleIndentWarning(eqp.Depth(), eqp.UnsatisfiedReason == "")
-				case satisfiedExportKey:
-					ex.handleSatisfied(eqp.UnsatisfiedReason == "")
 				case "STATE":
 					switch {
 					case !carried:
@@ -1108,18 +1114,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 				case "MAX_USES":
 					ex.writeEncodedText(strconv.Itoa(eqp.ResolvedMaxUses()))
 				default:
-					switch {
-					case strings.HasPrefix(key, "DESCRIPTION_MODIFIER_NOTES"):
-						ex.writeWithOptionalParens(key, eqp.ModifierNotes())
-					case strings.HasPrefix(key, "DESCRIPTION_NOTES"):
-						ex.writeWithOptionalParens(key, eqp.Notes())
-					case strings.HasPrefix(key, "MODIFIER_NOTES_FOR_"):
-						if mod := eqp.ActiveModifierFor(key[len("MODIFIER_NOTES_FOR_"):]); mod != nil {
-							ex.writeEncodedText(mod.LocalNotesWithReplacements())
-						}
-					case strings.HasPrefix(key, "DEPTHx"):
-						ex.handlePrefixDepth(key, eqp.Depth())
-					default:
+					if !processLegacyNodeKey(ex, key, eqp, &keys) {
 						ex.unidentifiedKey(key)
 					}
 				}
@@ -1134,41 +1129,17 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 
 func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 	Traverse(func(n *Note) bool {
+		keys := legacyNodeKeys{
+			pageRef: n.PageRef,
+		}
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
-			case idExportKey:
-				ex.writeEncodedText(string(n.TID))
-			case parentIDExportKey:
-				parent := n.Parent()
-				if parent != nil {
-					ex.writeEncodedText(string(parent.TID))
-				}
-			case typeExportKey:
-				if n.Container() {
-					ex.writeEncodedText("GROUP")
-				} else {
-					ex.writeEncodedText("ITEM")
-				}
-			case refExportKey:
-				ex.writeEncodedText(n.PageRef)
 			case "NOTE":
 				ex.writeEncodedText(n.String())
 			case "NOTE_FORMATTED":
-				s := n.String()
-				if strings.TrimSpace(s) != "" {
-					for one := range strings.SplitSeq(s, "\n") {
-						ex.out.WriteString("<p>")
-						ex.writeEncodedText(one)
-						ex.out.WriteString("</p>\n")
-					}
-				}
-			case styleIndentWarningExportKey:
-				ex.handleStyleIndentWarning(n.Depth(), true)
+				ex.writeParagraphs(n.String())
 			default:
-				switch {
-				case strings.HasPrefix(key, "DEPTHx"):
-					ex.handlePrefixDepth(key, n.Depth())
-				default:
+				if !processLegacyNodeKey(ex, key, n, &keys) {
 					ex.unidentifiedKey(key)
 				}
 			}
@@ -1475,6 +1446,17 @@ func (ex *legacyExporter) handlePrefixDepth(key string, depth int) {
 		ex.unidentifiedKey(key)
 	} else {
 		ex.writeEncodedText(strconv.Itoa(amt * depth))
+	}
+}
+
+// writeParagraphs writes each line of the text as its own HTML paragraph, or nothing if the text is blank.
+func (ex *legacyExporter) writeParagraphs(text string) {
+	if strings.TrimSpace(text) != "" {
+		for one := range strings.SplitSeq(text, "\n") {
+			ex.out.WriteString("<p>")
+			ex.writeEncodedText(one)
+			ex.out.WriteString("</p>\n")
+		}
 	}
 }
 

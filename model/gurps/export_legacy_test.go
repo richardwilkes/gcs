@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -298,4 +299,85 @@ func newTestDRBonusModifier(owner DataOwner, name string, bonus *DRBonus) *Equip
 	mod.Name = name
 	mod.Features = Features{bonus}
 	return mod
+}
+
+// TestLegacyExportSharedNodeKeys verifies that the keys shared by the trait, skill, spell, equipment and note loops
+// behave identically across those loops while each loop's deliberate differences are preserved.
+func TestLegacyExportSharedNodeKeys(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	group := NewTrait(e, nil, true)
+	group.Name = "Group"
+	group.ContainerType = container.AlternativeAbilities
+	group.PageRef = "B1"
+	trait := newTraitNeedingMissingTrait(e, "Greed")
+	trait.SetParent(group)
+	group.Children = append(group.Children, trait)
+	mod := NewTraitModifier(e, nil, false)
+	mod.Name = "Mitigator"
+	mod.LocalNotes = "mod note"
+	trait.Modifiers = append(trait.Modifiers, mod)
+	e.Traits = []*Trait{group}
+
+	skill := NewSkill(e, nil, false)
+	skill.Name = "Brawling"
+	skill.PageRef = "B2"
+	e.Skills = append(e.Skills, skill)
+
+	spell := NewSpell(e, nil, false)
+	spell.Name = "Fireball"
+	spell.LocalNotes = "spell note"
+	e.Spells = append(e.Spells, spell)
+
+	eqp := NewEquipment(e, nil, false)
+	eqp.Name = "Rock"
+	eqpMod := NewEquipmentModifier(e, nil, false)
+	eqpMod.Name = "Sharp"
+	eqpMod.LocalNotes = "eqp mod note"
+	eqp.Modifiers = append(eqp.Modifiers, eqpMod)
+	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+
+	noteGroup := NewNote(e, nil, true)
+	noteGroup.MarkDown = "Notes"
+	note := NewNote(e, noteGroup, false)
+	note.MarkDown = "Note1"
+	note.PageRef = "B3"
+	noteGroup.Children = append(noteGroup.Children, note)
+	e.Notes = append(e.Notes, noteGroup)
+
+	// Traits: TYPE emits the container type, PARENT_ID is empty for top-level nodes, the prereq failure shows up in
+	// both SATISFIED and STYLE_INDENT_WARNING, and MODIFIER_NOTES_FOR_ resolves the active modifier.
+	c.Equal("ALTERNATIVE_ABILITIES|"+string(group.ID())+"||B1|Y||0|\n"+
+		"ITEM|"+string(trait.ID())+"|"+string(group.ID())+"||N| style=\"padding-left: 12px;color: red;\" |3|mod note\n",
+		runLegacyExport(t, c, e, "@ADVANTAGES_LOOP_START@TYPE|@ID|@PARENT_ID|@REF|@SATISFIED|"+
+			"@STYLE_INDENT_WARNING|@DEPTHx3|@MODIFIER_NOTES_FOR_Mitigator\n@ADVANTAGES_LOOP_END"))
+
+	// Skills: the same keys use GROUP for containers, but skills have no MODIFIER_NOTES_FOR_ key.
+	c.Equal("ITEM|"+string(skill.ID())+"|B2|Y|Brawling|Unidentified key: &quot;MODIFIER_NOTES_FOR_X&quot;",
+		runLegacyExport(t, c, e, "@SKILLS_LOOP_START@TYPE|@ID|@REF|@SATISFIED|@DESCRIPTION_PRIMARY|"+
+			"@MODIFIER_NOTES_FOR_X@SKILLS_LOOP_END"))
+
+	// Spells: DESCRIPTION writes the notes and rituals as separate notes, DESCRIPTION_NOTES merges them, and
+	// DESCRIPTION_MODIFIER_NOTES is silent rather than unidentified.
+	rituals := spell.Rituals()
+	c.NotEqual("", rituals)
+	c.Equal("Fireball<div class=\"note\">spell note</div><div class=\"note\">"+rituals+"</div>| (spell note; "+
+		rituals+")||Fireball",
+		runLegacyExport(t, c, e, "@SPELLS_LOOP_START@DESCRIPTION|@DESCRIPTION_NOTES_PAREN|"+
+			"@DESCRIPTION_MODIFIER_NOTES_PAREN|@DESCRIPTION_PRIMARY@SPELLS_LOOP_END"))
+
+	// Equipment: MODIFIER_NOTES_FOR_ resolves the active modifier and DESCRIPTION includes the modifier notes.
+	c.Equal("eqp mod note|Rock<div class=\"note\">Sharp (eqp mod note)</div>",
+		runLegacyExport(t, c, e, "@EQUIPMENT_LOOP_START@MODIFIER_NOTES_FOR_Sharp|@DESCRIPTION@EQUIPMENT_LOOP_END"))
+
+	// Notes: the identity and depth keys work, but there are no description or prerequisite keys and the indent
+	// warning is never red.
+	c.Equal("GROUP|"+string(noteGroup.ID())+"||||0\n"+
+		"ITEM|"+string(note.ID())+"|"+string(noteGroup.ID())+"|B3| style=\"padding-left: 12px;\" |2\n",
+		runLegacyExport(t, c, e, "@NOTES_LOOP_START@TYPE|@ID|@PARENT_ID|@REF|@STYLE_INDENT_WARNING|@DEPTHx2\n"+
+			"@NOTES_LOOP_END"))
+	c.Equal(strings.Repeat("Unidentified key: &quot;DESCRIPTION&quot;|Unidentified key: &quot;SATISFIED&quot;|"+
+		"Unidentified key: &quot;DESCRIPTION_NOTES&quot;\n", 2),
+		runLegacyExport(t, c, e, "@NOTES_LOOP_START@DESCRIPTION|@SATISFIED|@DESCRIPTION_NOTES\n@NOTES_LOOP_END"))
 }
