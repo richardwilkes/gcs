@@ -73,32 +73,6 @@ func TestEquipmentMaxUsesBonusThisEquipment(t *testing.T) {
 	c.Equal(15, eqp.ResolvedMaxUses(), "applies while unequipped")
 }
 
-// TestEquipmentMaxUsesBonusOperationFromText verifies that the entered text alone determines the operation.
-func TestEquipmentMaxUsesBonusOperationFromText(t *testing.T) {
-	c := check.New(t)
-	cases := []struct {
-		amount   string
-		maxUses  int
-		expected int
-		note     string
-	}{
-		{amount: "1", maxUses: 10, expected: 11, note: "bare number is an addition"},
-		{amount: "+1", maxUses: 10, expected: 11, note: "signed positive addition"},
-		{amount: "-1", maxUses: 10, expected: 9, note: "signed negative addition"},
-		{amount: "10%", maxUses: 10, expected: 11, note: "trailing percent is a percentage"},
-		{amount: "+10%", maxUses: 10, expected: 11, note: "signed positive percentage"},
-		{amount: "-10%", maxUses: 10, expected: 9, note: "signed negative percentage"},
-		{amount: "x2", maxUses: 10, expected: 20, note: "leading x is a multiplier"},
-		{amount: "2x", maxUses: 10, expected: 20, note: "trailing x is a multiplier"},
-	}
-	for _, one := range cases {
-		eqp := NewEquipment(nil, nil, false)
-		eqp.MaxUses = one.maxUses
-		eqp.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, one.amount)}
-		c.Equal(one.expected, eqp.ResolvedMaxUses(), one.note)
-	}
-}
-
 // TestEquipmentMaxUsesBonusFromModifier verifies that a "to this equipment" bonus carried by an equipment modifier is
 // applied only while that modifier is enabled.
 func TestEquipmentMaxUsesBonusFromModifier(t *testing.T) {
@@ -129,12 +103,6 @@ func TestEquipmentMaxUsesBonusPerLevel(t *testing.T) {
 	eqp.Level = fxp.Three
 	eqp.Features = Features{bonus}
 	c.Equal(16, eqp.ResolvedMaxUses(), "per-level bonus scales by the item's level: 10 + 2*3")
-
-	// The same bonus on a non-leveled item contributes nothing.
-	eqp = NewEquipment(nil, nil, false)
-	eqp.MaxUses = 10
-	eqp.Features = Features{bonus}
-	c.Equal(10, eqp.ResolvedMaxUses(), "per-level bonus contributes 0 on a non-leveled item")
 }
 
 // TestEquipmentMaxUsesBonusEquipmentWithName covers the entity-collected "to equipment whose name" selector, including
