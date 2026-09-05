@@ -37,6 +37,7 @@ import (
 
 var (
 	_ = assertNode[*TraitModifier]
+	_ = assertModifierNode[*TraitModifier]
 	_ = assertEditorData[*TraitModifierEditData]
 
 	_ GeneralModifier = &TraitModifier{}
@@ -52,16 +53,6 @@ const (
 	TraitModifierReferenceColumn
 	TraitModifierLibSrcColumn
 )
-
-// GeneralModifier is used for common access to modifiers.
-type GeneralModifier interface {
-	Container() bool
-	Depth() int
-	FullDescription() string
-	FullCostDescription() string
-	Enabled() bool
-	SetEnabled(enabled bool)
-}
 
 // TraitModifier holds a modifier to an Trait.
 type TraitModifier struct {
@@ -380,8 +371,8 @@ func (t *TraitModifier) Depth() int {
 	return count
 }
 
-// OwningTrait returns the owning trait.
-func (t *TraitModifier) OwningTrait() *Trait {
+// Target returns the trait being targeted for modification
+func (t *TraitModifier) Target() *Trait {
 	return t.trait
 }
 
@@ -390,17 +381,25 @@ func (t *TraitModifier) DataOwner() DataOwner {
 	return t.owner
 }
 
-func (t *TraitModifier) setTrait(trait *Trait) {
-	t.trait = trait
-	if trait != nil && len(t.Replacements) != 0 {
-		trait.Replacements = mergeReplacements(trait.Replacements, t.Replacements)
+// SetTarget sets the trait being targeted for modification and configures any sub-components as needed.
+func (t *TraitModifier) SetTarget(target *Trait) *TraitModifier {
+	// Set the target node for this modifier
+	t.trait = target
+
+	// COMPAT: Promote replacements from this node up to the target node
+	if target != nil && len(t.Replacements) != 0 {
+		target.Replacements = mergeReplacements(target.Replacements, t.Replacements)
 		t.Replacements = nil
 	}
+
+	// Cascade the operation
 	if t.Container() {
 		for _, child := range t.Children {
-			child.setTrait(trait)
+			child.SetTarget(target)
 		}
 	}
+
+	return t
 }
 
 // SetDataOwner sets the data owner and configures any sub-components as needed.

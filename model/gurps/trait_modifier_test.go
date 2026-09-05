@@ -19,7 +19,7 @@ import (
 )
 
 // TestTraitModifierCloneDoesNotShareReplacements verifies that a copy of a modifier still carrying the legacy
-// replacements map gets its own map. setTrait() installs a modifier's replacements directly into the trait it is
+// replacements map gets its own map. SetTarget() installs a modifier's replacements directly into the trait it is
 // attached to when that trait has none of its own, so sharing the map let a later merge into the trait's map write into
 // the library row the copy came from.
 func TestTraitModifierCloneDoesNotShareReplacements(t *testing.T) {
@@ -36,15 +36,15 @@ func TestTraitModifierCloneDoesNotShareReplacements(t *testing.T) {
 
 	// ...and the next attachment pass migrates the copy's map into the trait, which has none of its own.
 	trait := NewTrait(nil, nil, false)
-	dup.setTrait(trait)
+	dup.SetTarget(trait)
 	c.Nil(dup.Replacements, "the copy hands its map off to the trait")
 	c.Equal(map[string]string{"Element": "Fire"}, trait.Replacements, "the trait picks up the replacements")
 
-	// A second modifier attaching to the same trait takes setTrait's merge branch, writing into the map the trait now
+	// A second modifier attaching to the same trait takes SetTarget's merge branch, writing into the map the trait now
 	// holds. That must not reach back into the library row.
 	second := NewTraitModifier(nil, nil, false)
 	second.Replacements = map[string]string{"Aspect": "Heat"}
-	second.setTrait(trait)
+	second.SetTarget(trait)
 	c.Equal(map[string]string{"Element": "Fire", "Aspect": "Heat"}, trait.Replacements,
 		"the trait merges in the second modifier's replacements")
 	c.Equal(map[string]string{"Element": "Fire"}, library.Replacements, "the library row is left untouched")

@@ -16,6 +16,70 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
+// assertModifiableNode is used at compile time to check a *constraint*
+func assertModifiableNode[T ModifiableNode[T, M], M ModifierNode[M, T]]() {}
+
+// ModifiableNode is a narrowed constraint for a Node
+// The narrowed constraint enforces the Node[T] constraint is satisfied.
+// The narrowed constraint enforces that ModifierList, SetModifiers, and AddModifier functions are satisfied.
+type ModifiableNode[T ModifiableNode[T, M], M ModifierNode[M, T]] interface {
+	Node[T]
+	ModifierList() []M
+	SetModifiers([]M)
+	AddModifier(M)
+}
+
+// GeneralModifier is used for common access to modifiers.
+type GeneralModifier interface {
+	Container() bool
+	Depth() int
+	FullDescription() string
+	FullCostDescription() string
+	Enabled() bool
+	SetEnabled(enabled bool)
+}
+
+// assertModifierNode is used at compile time to check a *constraint*
+func assertModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]]() {}
+
+// ModifierNode is a narrowed constraint for a Node
+// The narrowed constraint enforces the Node[M] constraint is satisfied.
+// The narrowed constraint enforces that Target and SetTarget functions are satisfied.
+// The narrowed constraint enforces the GeneralModifier interface is satisfied.
+type ModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]] interface {
+	Node[M]
+	Target() T
+	SetTarget(T) M
+	GeneralModifier
+}
+
+// modifiable is a default implementation that satisfies the Modifiable constraint
+type modifiable[T ModifiableNode[T, M], M ModifierNode[M, T]] struct {
+	Modifiers []M `json:"modifiers,omitempty"`
+}
+
+// ModifierList returns the list of modifiers
+func (m *modifiable[T, M]) ModifierList() []M {
+	return m.Modifiers
+}
+
+// SetModifiers sets the list of modifiers
+func (m *modifiable[T, M]) SetModifiers(all []M) {
+	m.Modifiers = all
+}
+
+// AddModifier adds a modifier to the list
+func (m *modifiable[T, M]) AddModifier(mod M) {
+	m.Modifiers = append(m.Modifiers, mod)
+}
+
+// SetModifiersTarget calls SetTarget on each modifier.
+func (m *modifiable[T, M]) SetModifiersTarget(target T) {
+	for _, one := range m.Modifiers {
+		one.SetTarget(target)
+	}
+}
+
 // mergeReplacements folds src into dst, keeping whatever value dst already holds for a key, and returns the result. A
 // nil dst simply takes src.
 func mergeReplacements(dst, src map[string]string) map[string]string {

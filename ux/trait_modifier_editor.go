@@ -103,7 +103,7 @@ func traitModifierWithOverlay(t *gurps.TraitModifier, overlay *gurps.TraitModifi
 // that trait's own editor, the trait is returned as it currently stands in that editor, so that a level change which
 // has not yet been applied is still reflected in the modifier's cost.
 func owningTraitWithPendingEdits(owner Rebuildable, modifier *gurps.TraitModifier) *gurps.Trait {
-	trait := modifier.OwningTrait()
+	trait := modifier.Target()
 	if trait == nil {
 		return nil
 	}

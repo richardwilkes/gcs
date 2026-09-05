@@ -37,6 +37,7 @@ import (
 
 var (
 	_ = assertNode[*EquipmentModifier]
+	_ = assertModifierNode[*EquipmentModifier]
 	_ = assertEditorData[*EquipmentModifierEditData]
 
 	_ GeneralModifier = &EquipmentModifier{}
@@ -377,8 +378,8 @@ func (e *EquipmentModifier) Depth() int {
 	return count
 }
 
-// OwningEquipment returns the owning equipment.
-func (e *EquipmentModifier) OwningEquipment() *Equipment {
+// Target returns the equipment being targeted for modification
+func (e *EquipmentModifier) Target() *Equipment {
 	return e.equipment
 }
 
@@ -387,17 +388,25 @@ func (e *EquipmentModifier) DataOwner() DataOwner {
 	return e.owner
 }
 
-func (e *EquipmentModifier) setEquipment(equipment *Equipment) {
-	e.equipment = equipment
-	if equipment != nil && len(e.Replacements) != 0 {
-		equipment.Replacements = mergeReplacements(equipment.Replacements, e.Replacements)
+// SetTarget sets the equipment being targeted for modification and configures any sub-components as needed
+func (e *EquipmentModifier) SetTarget(target *Equipment) *EquipmentModifier {
+	// Set the target node for this modifier
+	e.equipment = target
+
+	// COMPAT: Promote replacements from this node up to the target node
+	if target != nil && len(e.Replacements) != 0 {
+		target.Replacements = mergeReplacements(target.Replacements, e.Replacements)
 		e.Replacements = nil
 	}
+
+	// Cascade the operation
 	if e.Container() {
 		for _, child := range e.Children {
-			child.setEquipment(equipment)
+			child.SetTarget(target)
 		}
 	}
+
+	return e
 }
 
 // SetDataOwner sets the data owner and configures any sub-components as needed.

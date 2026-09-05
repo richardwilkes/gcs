@@ -284,7 +284,7 @@ func TestInheritedModifiersAreNotRepointed(t *testing.T) {
 	c.Equal(fxp.FromInteger(16), first.AdjustedPoints(), "the first child's cost is unaffected by the second's")
 
 	// The container's modifier still belongs to the container, so the container's display of it is unchanged.
-	c.Equal(parent, mod.OwningTrait(), "the inherited modifier still belongs to the container")
+	c.Equal(parent, mod.Target(), "the inherited modifier still belongs to the container")
 	c.Equal("Fire Attack", mod.NameWithReplacements(),
 		"the inherited modifier still resolves against the container's replacements")
 }
@@ -308,7 +308,7 @@ func TestTraitEditDataCopyLinksModifiers(t *testing.T) {
 	var data TraitEditData
 	data.CopyFrom(trait)
 	c.Equal(1, len(data.Modifiers), "the modifier was copied")
-	c.Equal(trait, data.Modifiers[0].OwningTrait(), "the copied modifier knows its trait")
+	c.Equal(trait, data.Modifiers[0].Target(), "the copied modifier knows its trait")
 	c.Equal(fxp.Three, data.Modifiers[0].CurrentLevel(), "the copied modifier resolves its level from the trait")
 	c.Equal(fxp.FromInteger(16), AdjustedPoints(nil, trait, data.CanLevel, data.BasePoints, data.Levels,
 		data.PointsPerLevel, data.SelfControl, data.Frequency, data.Modifiers, data.RoundCostDown), "10 + 2*3")
@@ -339,8 +339,8 @@ func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
 	clone := source.Clone(LibraryFile{}, nil, nil, Reference)
 	c.Equal(1, len(clone.Modifiers), "the modifier was copied")
 	// Compared as pointers: the two traits are equal by value at this point, so only identity distinguishes them.
-	c.True(clone.Modifiers[0].OwningTrait() == clone, "the copy belongs to the clone, not the trait cloned from")
-	c.True(mod.OwningTrait() == source, "the original's modifier still belongs to the original")
+	c.True(clone.Modifiers[0].Target() == clone, "the copy belongs to the clone, not the trait cloned from")
+	c.True(mod.Target() == source, "the original's modifier still belongs to the original")
 
 	// Diverging the clone must not be read through the original, and vice versa.
 	clone.Replacements["element"] = "Ice"
@@ -362,5 +362,5 @@ func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
 	clonedContainer := parent.Clone(LibraryFile{}, nil, nil, Reference)
 	c.Equal(1, len(clonedContainer.Children), "the child was cloned")
 	clonedChild := clonedContainer.Children[0]
-	c.True(clonedChild.Modifiers[0].OwningTrait() == clonedChild, "a cloned child's modifier belongs to that child")
+	c.True(clonedChild.Modifiers[0].Target() == clonedChild, "a cloned child's modifier belongs to that child")
 }
