@@ -389,7 +389,7 @@ func (e *EquipmentModifier) DataOwner() DataOwner {
 }
 
 // SetTarget sets the equipment being targeted for modification and configures any sub-components as needed
-func (e *EquipmentModifier) SetTarget(target *Equipment) {
+func (e *EquipmentModifier) SetTarget(target *Equipment) *EquipmentModifier {
 	// Set the target node for this modifier
 	e.equipment = target
 
@@ -405,6 +405,8 @@ func (e *EquipmentModifier) SetTarget(target *Equipment) {
 			child.SetTarget(target)
 		}
 	}
+
+	return e
 }
 
 // SetDataOwner sets the data owner and configures any sub-components as needed.

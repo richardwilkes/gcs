@@ -49,7 +49,7 @@ func assertModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]]() {}
 type ModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]] interface {
 	Node[M]
 	Target() T
-	SetTarget(T)
+	SetTarget(T) M
 	GeneralModifier
 }
 

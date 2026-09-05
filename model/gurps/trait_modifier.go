@@ -382,7 +382,7 @@ func (t *TraitModifier) DataOwner() DataOwner {
 }
 
 // SetTarget sets the trait being targeted for modification and configures any sub-components as needed.
-func (t *TraitModifier) SetTarget(target *Trait) {
+func (t *TraitModifier) SetTarget(target *Trait) *TraitModifier {
 	// Set the target node for this modifier
 	t.trait = target
 
@@ -398,6 +398,8 @@ func (t *TraitModifier) SetTarget(target *Trait) {
 			child.SetTarget(target)
 		}
 	}
+
+	return t
 }
 
 // SetDataOwner sets the data owner and configures any sub-components as needed.
