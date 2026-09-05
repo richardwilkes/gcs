@@ -257,16 +257,7 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 			st = entity.ResolveAttributeCurrent(StrengthID).Max(0).Floor()
 		}
 	}
-	var percentMin fxp.Int
-	for _, bonus := range w.Owner.collectWeaponBonuses(oneDieCount, nil, feature.WeaponEffectiveSTBonus) {
-		amt := bonus.AdjustedAmountForWeapon(w.Owner)
-		if bonus.Percent {
-			percentMin += amt
-		} else {
-			st += amt
-		}
-	}
-	st = max(addWeaponPercentBonus(st, percentMin), 0)
+	st = max(w.Owner.weaponAdjustment(oneDieCount, nil, feature.WeaponEffectiveSTBonus).applyTo(st), 0)
 	if maxST > 0 && maxST < st {
 		st = maxST
 	}

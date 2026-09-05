@@ -39,6 +39,42 @@ func addWeaponPercentBonus(value, percent fxp.Int) fxp.Int {
 	return value + value.Mul(percent).Div(fxp.Hundred).Floor()
 }
 
+// weaponAdjustment accumulates the weapon bonuses of one feature type, keeping the flat amounts apart from the
+// percentages so that they can be applied in the standard order: the flat amounts first, then the percentage of the
+// adjusted value. The zero value is no adjustment.
+type weaponAdjustment struct {
+	flat    fxp.Int
+	percent fxp.Int
+}
+
+// applyTo returns value with this adjustment applied.
+func (a weaponAdjustment) applyTo(value fxp.Int) fxp.Int {
+	return addWeaponPercentBonus(value+a.flat, a.percent)
+}
+
+// weaponAdjustments collects the weapon bonuses of the given feature types in a single pass and accumulates them into
+// one weaponAdjustment per type. A type with no matching bonus is absent from the map, which reads as the zero
+// weaponAdjustment and so applies no change.
+func (w *Weapon) weaponAdjustments(dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, types ...feature.Type) map[feature.Type]weaponAdjustment {
+	adjustments := make(map[feature.Type]weaponAdjustment, len(types))
+	for _, bonus := range w.collectWeaponBonuses(dieCount, tooltip, types...) {
+		amt := bonus.AdjustedAmountForWeapon(w)
+		adj := adjustments[bonus.Type]
+		if bonus.Percent {
+			adj.percent += amt
+		} else {
+			adj.flat += amt
+		}
+		adjustments[bonus.Type] = adj
+	}
+	return adjustments
+}
+
+// weaponAdjustment is weaponAdjustments for a single feature type.
+func (w *Weapon) weaponAdjustment(dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, featureType feature.Type) weaponAdjustment {
+	return w.weaponAdjustments(dieCount, tooltip, featureType)[featureType]
+}
+
 // WeaponBonus holds the data for an adjustment to weapon stats.
 type WeaponBonus struct {
 	WeaponBonusData

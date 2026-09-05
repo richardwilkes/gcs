@@ -129,16 +129,7 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 				}
 			}
 		}
-		var percentMin fxp.Int
-		for _, bonus := range w.collectWeaponBonuses(oneDieCount, modifiersTooltip, feature.WeaponEffectiveSTBonus) {
-			amt := bonus.AdjustedAmountForWeapon(w)
-			if bonus.Percent {
-				percentMin += amt
-			} else {
-				st += amt
-			}
-		}
-		st = max(addWeaponPercentBonus(st, percentMin), 0)
+		st = max(w.weaponAdjustment(oneDieCount, modifiersTooltip, feature.WeaponEffectiveSTBonus).applyTo(st), 0)
 		if maxST > 0 && maxST < st {
 			st = maxST
 		}
@@ -148,35 +139,11 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 			result.Max = result.Max.Mul(st).Floor().Max(0)
 		}
 	}
-	var percentHalfDamage, percentMin, percentMax fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponHalfDamageRangeBonus,
-		feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus) {
-		amt := bonus.AdjustedAmountForWeapon(w)
-		switch bonus.Type {
-		case feature.WeaponHalfDamageRangeBonus:
-			if bonus.Percent {
-				percentHalfDamage += amt
-			} else {
-				result.HalfDamage += amt
-			}
-		case feature.WeaponMinRangeBonus:
-			if bonus.Percent {
-				percentMin += amt
-			} else {
-				result.Min += amt
-			}
-		case feature.WeaponMaxRangeBonus:
-			if bonus.Percent {
-				percentMax += amt
-			} else {
-				result.Max += amt
-			}
-		default:
-		}
-	}
-	result.HalfDamage = addWeaponPercentBonus(result.HalfDamage, percentHalfDamage)
-	result.Min = addWeaponPercentBonus(result.Min, percentMin)
-	result.Max = addWeaponPercentBonus(result.Max, percentMax)
+	adj := w.weaponAdjustments(w.baseDamageDieCount, modifiersTooltip, feature.WeaponHalfDamageRangeBonus,
+		feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus)
+	result.HalfDamage = adj[feature.WeaponHalfDamageRangeBonus].applyTo(result.HalfDamage)
+	result.Min = adj[feature.WeaponMinRangeBonus].applyTo(result.Min)
+	result.Max = adj[feature.WeaponMaxRangeBonus].applyTo(result.Max)
 	result.Validate()
 	return result
 }

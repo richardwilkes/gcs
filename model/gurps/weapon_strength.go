@@ -89,16 +89,7 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffe
 	result.MusketRest = w.ResolveBoolFlag(wswitch.MusketRest, result.MusketRest)
 	result.TwoHanded = w.ResolveBoolFlag(wswitch.TwoHanded, result.TwoHanded)
 	result.TwoHandedUnready = w.ResolveBoolFlag(wswitch.TwoHandedAndUnreadyAfterAttack, result.TwoHandedUnready)
-	var percentMin fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(oneDieCount, modifiersTooltip, feature.WeaponMinSTBonus) {
-		amt := bonus.AdjustedAmountForWeapon(w)
-		if bonus.Percent {
-			percentMin += amt
-		} else {
-			result.Min += amt
-		}
-	}
-	result.Min = addWeaponPercentBonus(result.Min, percentMin)
+	result.Min = w.weaponAdjustment(oneDieCount, modifiersTooltip, feature.WeaponMinSTBonus).applyTo(result.Min)
 	result.Validate()
 	return result
 }

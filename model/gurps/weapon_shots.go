@@ -99,42 +99,12 @@ func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 	result := ws
 	result.ReloadTimeIsPerShot = w.ResolveBoolFlag(wswitch.ReloadTimeIsPerShot, result.ReloadTimeIsPerShot)
 	result.Thrown = w.ResolveBoolFlag(wswitch.Thrown, result.Thrown)
-	var percentCount, percentInChamber, percentDuration, percentReloadTime fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponNonChamberShotsBonus,
-		feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus) {
-		amt := bonus.AdjustedAmountForWeapon(w)
-		switch bonus.Type {
-		case feature.WeaponNonChamberShotsBonus:
-			if bonus.Percent {
-				percentCount += amt
-			} else {
-				result.Count += amt
-			}
-		case feature.WeaponChamberShotsBonus:
-			if bonus.Percent {
-				percentInChamber += amt
-			} else {
-				result.InChamber += amt
-			}
-		case feature.WeaponShotDurationBonus:
-			if bonus.Percent {
-				percentDuration += amt
-			} else {
-				result.Duration += amt
-			}
-		case feature.WeaponReloadTimeBonus:
-			if bonus.Percent {
-				percentReloadTime += amt
-			} else {
-				result.ReloadTime += amt
-			}
-		default:
-		}
-	}
-	result.Count = addWeaponPercentBonus(result.Count, percentCount)
-	result.InChamber = addWeaponPercentBonus(result.InChamber, percentInChamber)
-	result.Duration = addWeaponPercentBonus(result.Duration, percentDuration)
-	result.ReloadTime = addWeaponPercentBonus(result.ReloadTime, percentReloadTime)
+	adj := w.weaponAdjustments(w.baseDamageDieCount, modifiersTooltip, feature.WeaponNonChamberShotsBonus,
+		feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus)
+	result.Count = adj[feature.WeaponNonChamberShotsBonus].applyTo(result.Count)
+	result.InChamber = adj[feature.WeaponChamberShotsBonus].applyTo(result.InChamber)
+	result.Duration = adj[feature.WeaponShotDurationBonus].applyTo(result.Duration)
+	result.ReloadTime = adj[feature.WeaponReloadTimeBonus].applyTo(result.ReloadTime)
 	result.Validate()
 	return result
 }

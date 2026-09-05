@@ -112,17 +112,8 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
 				result.Modifier += best
 				AppendStringOntoNewLine(modifiersTooltip, entity.BlockBonusTooltip)
-				var percentModifier fxp.Int
-				for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponBlockBonus) {
-					amt := bonus.AdjustedAmountForWeapon(w)
-					if bonus.Percent {
-						percentModifier += amt
-					} else {
-						result.Modifier += amt
-					}
-				}
-				result.Modifier = addWeaponPercentBonus(result.Modifier, percentModifier)
-				result.Modifier = result.Modifier.Max(0).Floor()
+				adj := w.weaponAdjustment(w.baseDamageDieCount, modifiersTooltip, feature.WeaponBlockBonus)
+				result.Modifier = adj.applyTo(result.Modifier).Max(0).Floor()
 			} else {
 				result.Modifier = 0
 			}

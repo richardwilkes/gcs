@@ -78,22 +78,10 @@ func (wb WeaponBulk) Hash(h hash.Hash) {
 func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponBulk {
 	result := wb
 	result.RetractingStock = w.ResolveBoolFlag(wswitch.RetractingStock, result.RetractingStock)
-	var percent fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, feature.WeaponBulkBonus) {
-		amt := bonus.AdjustedAmountForWeapon(w)
-		if bonus.Percent {
-			percent += amt
-		} else {
-			result.Normal += amt
-			result.Giant += amt
-		}
-	}
-	result.Normal = addWeaponPercentBonus(result.Normal, percent)
-	if wb.Giant == 0 {
-		// 0 means there is no separate giant bulk, so don't let the bonuses materialize one.
-		result.Giant = 0
-	} else {
-		result.Giant = addWeaponPercentBonus(result.Giant, percent)
+	adj := w.weaponAdjustment(w.baseDamageDieCount, modifiersTooltip, feature.WeaponBulkBonus)
+	result.Normal = adj.applyTo(result.Normal)
+	if wb.Giant != 0 { // 0 means there is no separate giant bulk, so don't let the bonuses materialize one.
+		result.Giant = adj.applyTo(result.Giant)
 	}
 	result.Validate()
 	return result

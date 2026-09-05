@@ -76,26 +76,9 @@ func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer
 		result.FullAutoOnly = w.ResolveBoolFlag(wswitch.FullAuto2, wr.FullAutoOnly)
 		result.HighCyclicControlledBursts = w.ResolveBoolFlag(wswitch.ControlledBursts2, wr.HighCyclicControlledBursts)
 	}
-	var percentSPA, percentSP fxp.Int
-	for _, bonus := range w.collectWeaponBonuses(w.baseDamageDieCount, modifiersTooltip, shotsFeature, secondaryFeature) {
-		amt := bonus.AdjustedAmountForWeapon(w)
-		switch bonus.Type {
-		case shotsFeature:
-			if bonus.Percent {
-				percentSPA += amt
-			} else {
-				result.ShotsPerAttack += amt
-			}
-		case secondaryFeature:
-			if bonus.Percent {
-				percentSP += amt
-			} else {
-				result.SecondaryProjectiles += amt
-			}
-		}
-	}
-	result.ShotsPerAttack = addWeaponPercentBonus(result.ShotsPerAttack, percentSPA)
-	result.SecondaryProjectiles = addWeaponPercentBonus(result.SecondaryProjectiles, percentSP)
+	adj := w.weaponAdjustments(w.baseDamageDieCount, modifiersTooltip, shotsFeature, secondaryFeature)
+	result.ShotsPerAttack = adj[shotsFeature].applyTo(result.ShotsPerAttack)
+	result.SecondaryProjectiles = adj[secondaryFeature].applyTo(result.SecondaryProjectiles)
 	result.Validate()
 	return result
 }
