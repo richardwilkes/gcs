@@ -42,6 +42,7 @@ import (
 var (
 	_ = assertNode[*Equipment]
 	_ = assertEditorData[*EquipmentEditData]
+	_ = assertModifiable[*EquipmentEditData]
 
 	_ WeaponOwner       = &Equipment{}
 	_ LeveledOwner      = &Equipment{}
@@ -89,14 +90,18 @@ type EquipmentData struct {
 // EquipmentEditData holds the Equipment data that can be edited by the UI detail editor.
 type EquipmentEditData struct {
 	EquipmentSyncData
-	VTTNotes     string               `json:"vtt_notes,omitzero"`
-	Replacements map[string]string    `json:"replacements,omitempty"`
-	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
-	RatedST      fxp.Int              `json:"rated_strength,omitzero"`
-	Quantity     fxp.Int              `json:"quantity"`
-	Level        fxp.Int              `json:"level,omitzero"`
-	Uses         int                  `json:"uses,omitzero"`
-	Equipped     bool                 `json:"equipped,omitzero"`
+	VTTNotes     string            `json:"vtt_notes,omitzero"`
+	Replacements map[string]string `json:"replacements,omitempty"`
+
+	// Leverage a default generic implementation of the Modifiable constraint that makes this a ModifiableNode
+	modifiable[*EquipmentModifier, *Equipment]
+
+	RatedST  fxp.Int `json:"rated_strength,omitzero"`
+	Quantity fxp.Int `json:"quantity"`
+	Level    fxp.Int `json:"level,omitzero"`
+	Uses     int     `json:"uses,omitzero"`
+	Equipped bool    `json:"equipped,omitzero"`
+
 	ItemSwitch
 	preconfigurable
 }
@@ -623,7 +628,7 @@ func (e *Equipment) SetDataOwner(owner DataOwner) {
 		}
 	}
 	for _, m := range e.Modifiers {
-		m.setEquipment(e)
+		m.SetTargetNode(e)
 		m.SetDataOwner(owner)
 	}
 }
@@ -883,7 +888,7 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 		}
 	}
 	Traverse(func(mod *EquipmentModifier) bool {
-		mod.setEquipment(equipment)
+		mod.SetTargetNode(equipment)
 		for _, f := range mod.Features.Active(switchedOn) {
 			if cwr, ok := f.(*ContainedWeightReduction); ok {
 				if cwr.IsPercentageReduction() {
@@ -1225,10 +1230,10 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 			// Point the copy at the equipment it belongs to, so that its nameable placeholders can be resolved with
 			// that equipment's replacements. Without this, the copies held in an editor show their raw placeholders
 			// (e.g. "@Material@"), since the accessors fall back to the unsubstituted text when there is no equipment.
-			cloned.setEquipment(equipment)
+			cloned.SetTargetNode(equipment)
 			e.Modifiers = append(e.Modifiers, cloned)
 		}
-		// setEquipment() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't
+		// SetTargetNode() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't
 		// the holder of this data when an editor is being populated, so pick up anything it added. This is a no-op
 		// when this data is the equipment's own, since both maps are then the same one.
 		for k, v := range equipment.Replacements {

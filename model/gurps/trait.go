@@ -49,6 +49,7 @@ import (
 var (
 	_ = assertNode[*Trait]
 	_ = assertEditorData[*TraitEditData]
+	_ = assertModifiable[*TraitEditData]
 
 	_ WeaponOwner            = &Trait{}
 	_ TemplatePickerProvider = &Trait{}
@@ -93,10 +94,14 @@ type TraitEditData struct {
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	UserDesc     string            `json:"userdesc,omitzero"`
 	Replacements map[string]string `json:"replacements,omitempty"`
-	Modifiers    []*TraitModifier  `json:"modifiers,omitempty"`
-	SelfControl  selfctrl.Roll     `json:"cr,omitzero"`
-	Frequency    frequency.Roll    `json:"frequency,omitzero"`
-	Disabled     bool              `json:"disabled,omitzero"`
+
+	// Leverage a default generic implementation of the Modifiable constraint that makes this a ModifiableNode
+	modifiable[*TraitModifier, *Trait]
+
+	SelfControl selfctrl.Roll  `json:"cr,omitzero"`
+	Frequency   frequency.Roll `json:"frequency,omitzero"`
+	Disabled    bool           `json:"disabled,omitzero"`
+
 	ItemSwitch
 	preconfigurable
 	TraitNonContainerOnlyEditData
@@ -527,7 +532,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 		}
 	}
 	for _, m := range t.Modifiers {
-		m.setTrait(t)
+		m.SetTargetNode(t)
 		m.SetDataOwner(owner)
 	}
 }
@@ -1200,7 +1205,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 			// Point the copy at the trait it belongs to, so that a "use level from owner" modifier can resolve its
 			// level. Prior to this, the copies held in an editor only acquired their trait as a side effect of a point
 			// cost computation.
-			cloned.setTrait(trait)
+			cloned.SetTargetNode(trait)
 			t.Modifiers = append(t.Modifiers, cloned)
 		}
 	}

@@ -55,14 +55,14 @@ func TestModifierWithoutOwnerKeepsMarkersIntact(t *testing.T) {
 
 	// Once attached, the owner's replacements are applied and anything still unresolved is shown in compact form.
 	trait := NewTrait(nil, nil, false)
-	tm.setTrait(trait)
+	tm.SetTargetNode(trait)
 	c.Equal("A @Element@ spell", tm.NameWithReplacements(), "an owner without replacements yields the compact form")
 	trait.Replacements = map[string]string{"Element|Fire|Water": "Fire"}
 	c.Equal("A Fire spell", tm.NameWithReplacements())
 	c.Equal("A Fire spell", tm.LocalNotesWithReplacements())
 
 	equipment := NewEquipment(nil, nil, false)
-	em.setEquipment(equipment)
+	em.SetTargetNode(equipment)
 	c.Equal("A @Element@ spell", em.NameWithReplacements(), "an owner without replacements yields the compact form")
 	equipment.Replacements = map[string]string{"Element|Fire|Water": "Water"}
 	c.Equal("A Water spell", em.NameWithReplacements())

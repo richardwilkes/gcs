@@ -16,6 +16,66 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
+// assertModifiable is used at compile time to check a *constraint*
+func assertModifiable[N Modifiable[MN, TN], MN ModifierNode[MN, TN], TN Node[TN]]() {}
+
+// Modifiable represents an interface for an object that accepts modifier nodes
+type Modifiable[T ModifierNode[T, TN], TN Node[TN]] interface {
+	ModifierList() []T
+	SetModifiers([]T)
+	AddModifier(T)
+}
+
+// GeneralModifier is used for common access to modifiers.
+type GeneralModifier interface {
+	Container() bool
+	Depth() int
+	FullDescription() string
+	FullCostDescription() string
+	Enabled() bool
+	SetEnabled(enabled bool)
+}
+
+// assertModifierNode is used at compile time to check a *constraint*
+func assertModifierNode[T ModifierNode[T, TN], TN Node[TN]]() {}
+
+// ModifierNode is a narrowed constraint for a Node
+// The narrowed constraint enforces that TargetNode and SetTargetNode functions are satisfied.
+// The narrowed constraint enforces the GeneralModifier interface is satisfied.
+type ModifierNode[N Node[N], TN Node[TN]] interface {
+	Node[N]
+	TargetNode() TN
+	SetTargetNode(TN)
+	GeneralModifier
+}
+
+// modifiable is a default implementation that satisfies the Modifiable constraint
+type modifiable[T ModifierNode[T, TN], TN Node[TN]] struct {
+	Modifiers []T `json:"modifiers,omitempty"`
+}
+
+// ModifierList returns the list of modifiers
+func (m *modifiable[T, TN]) ModifierList() []T {
+	return m.Modifiers
+}
+
+// SetModifiers sets the list of modifiers
+func (m *modifiable[T, TN]) SetModifiers(all []T) {
+	m.Modifiers = all
+}
+
+// AddModifier adds a modifier to the list
+func (m *modifiable[T, TN]) AddModifier(mod T) {
+	m.Modifiers = append(m.Modifiers, mod)
+}
+
+// SetTargetNode calls SetTargetNode on each modifier.
+func (m *modifiable[T, TN]) SetTargetNode(target TN) {
+	for _, one := range m.Modifiers {
+		one.SetTargetNode(target)
+	}
+}
+
 // mergeReplacements folds src into dst, keeping whatever value dst already holds for a key, and returns the result. A
 // nil dst simply takes src.
 func mergeReplacements(dst, src map[string]string) map[string]string {

@@ -65,15 +65,15 @@ func TestEquipmentModifierCloneDoesNotShareReplacements(t *testing.T) {
 
 	// ...and the next attachment pass migrates the copy's map into the equipment, which has none of its own.
 	equipment := NewEquipment(nil, nil, false)
-	dup.setEquipment(equipment)
+	dup.SetTargetNode(equipment)
 	c.Nil(dup.Replacements, "the copy hands its map off to the equipment")
 	c.Equal(map[string]string{"Material": "Steel"}, equipment.Replacements, "the equipment picks up the replacements")
 
-	// A second modifier attaching to the same equipment takes setEquipment's merge branch, writing into the map the
+	// A second modifier attaching to the same equipment takes SetTargetNode's merge branch, writing into the map the
 	// equipment now holds. That must not reach back into the library row.
 	second := NewEquipmentModifier(nil, nil, false)
 	second.Replacements = map[string]string{"Finish": "Blued"}
-	second.setEquipment(equipment)
+	second.SetTargetNode(equipment)
 	c.Equal(map[string]string{"Material": "Steel", "Finish": "Blued"}, equipment.Replacements,
 		"the equipment merges in the second modifier's replacements")
 	c.Equal(map[string]string{"Material": "Steel"}, library.Replacements, "the library row is left untouched")
