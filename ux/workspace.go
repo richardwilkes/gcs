@@ -296,10 +296,13 @@ func workspaceWillClose() {
 // AllDockables returns all Dockables, whether in the workspace or in a separate window.
 func AllDockables() []unison.Dockable {
 	var all []unison.Dockable
-	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		all = append(all, dc.Dockables()...)
-		return false
-	})
+	// There is no dock until the workspace has been set up, and there are no dockables in one that does not exist.
+	if Workspace.DocumentDock != nil {
+		Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+			all = append(all, dc.Dockables()...)
+			return false
+		})
+	}
 	for _, wnd := range unison.Windows() {
 		if wnd != Workspace.Window {
 			if d := dockableFromWindow(wnd); d != nil {
@@ -704,12 +707,20 @@ func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUn
 
 // SaveDockableAs attempts to save the contents of the dockable, prompting for a new path.
 func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath string) error, setUnmodifiedAndNewPath func(filePath string)) bool {
+	return saveDockableAs(d, extension, func() string { return gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey) },
+		gurps.DefaultLastDirKey, saver, setUnmodifiedAndNewPath)
+}
+
+// saveDockableAs is SaveDockableAs with the directory the dialog starts in when the dockable has no file on disk yet,
+// and the last-directory key that records where the user saved, chosen by the caller. The directory is asked for only
+// when it is needed, since finding it may have side effects, such as creating it.
+func saveDockableAs(d FileBackedDockable, extension string, fallbackDir func() string, lastDirKey string, saver func(filePath string) error, setUnmodifiedAndNewPath func(filePath string)) bool {
 	dialog := unison.NewSaveDialog()
 	existingPath := d.BackingFilePath()
 	if !strings.HasPrefix(existingPath, markdownContentOnlyPrefix) && xos.FileExists(existingPath) {
 		dialog.SetInitialDirectory(filepath.Dir(existingPath))
 	} else {
-		dialog.SetInitialDirectory(gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey))
+		dialog.SetInitialDirectory(fallbackDir())
 	}
 	dialog.SetAllowedExtensions(extension)
 	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(existingPath)))
@@ -718,7 +729,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 		if !ok {
 			return false
 		}
-		gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
+		gurps.GlobalSettings().SetLastDir(lastDirKey, filepath.Dir(filePath))
 		if err := saver(filePath); err != nil {
 			Workspace.ErrorHandler(i18n.Text("Unable to save as ")+xfilepath.BaseName(filePath), err)
 			return false

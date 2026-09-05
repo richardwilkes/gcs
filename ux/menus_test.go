@@ -12,6 +12,7 @@ package ux
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -39,7 +40,7 @@ func useTestLibraries(t *testing.T, c check.Checker) (master, user *gurps.Librar
 // addOutputTemplates creates the library's "Output Templates" directory and populates it with the named files. Passing
 // no names leaves the directory empty.
 func addOutputTemplates(c check.Checker, lib *gurps.Library, names ...string) {
-	dir := filepath.Join(lib.Path(), "Output Templates")
+	dir := filepath.Join(lib.Path(), gurps.OutputTemplatesDirName)
 	c.NoError(os.MkdirAll(dir, 0o750))
 	for _, name := range names {
 		c.NoError(os.WriteFile(filepath.Join(dir, name), []byte("template"), 0o640))
@@ -133,4 +134,24 @@ func TestExportToMenuRepopulates(t *testing.T) {
 	c.Equal([]string{"No export templates available"}, exportToMenuTitles(c, menu), "before any template exists")
 	addOutputTemplates(c, master, "Sheet.gcs")
 	c.Equal([]string{master.Data().Title, "    Sheet"}, exportToMenuTitles(c, menu), "after a template is added")
+}
+
+// TestFileMenuNewAncestryFollowsNewMarkdownFile verifies that "New Ancestry" and then "New Name Generator" sit directly
+// after "New Markdown File" in the File menu, at the end of the group of new-document items and before the separator
+// that ends it.
+func TestFileMenuNewAncestryFollowsNewMarkdownFile(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	f := unison.NewInWindowMenuFactory()
+	bar := f.NewMenu(0, "", nil)
+	bar.InsertMenu(-1, unison.NewFileMenu(f, nil))
+	var s menuBarScope
+	s.setupFileMenu(bar)
+	titles := menuItemTitles(bar.Menu(unison.FileMenuID))
+	i := slices.Index(titles, "New Markdown File")
+	c.True(i != -1, "the File menu must contain New Markdown File; got %v", titles)
+	c.True(i+3 < len(titles), "there must be items after New Markdown File; got %v", titles)
+	c.Equal("New Ancestry", titles[i+1], "New Ancestry follows New Markdown File")
+	c.Equal("New Name Generator", titles[i+2], "New Name Generator follows New Ancestry")
+	c.Equal("---", titles[i+3], "New Name Generator ends the group of new-document items")
 }

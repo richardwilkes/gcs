@@ -17,6 +17,23 @@
   features the modifier carries still scale with the level. That lets a "Limited, -40%" limitation on Damage
   Resistance 3 remove the DR against everything and grant DR against a chosen damage type instead, with the -40%
   charged once rather than once per level, so the trait costs 9 points rather than 3. (#1017)
+- Added an ancestry editor, opened from File → New Ancestry, for building the ancestry files that drive the random name,
+  gender, age, height, weight, hair, eye, skin and handedness choices on a character sheet. Give the ancestry a name,
+  fill in the common options, and add gender-specific overrides; everything is undoable. Each ancestry opens in an
+  editor of its own, so several can be open at once, and an ancestry that is already open is brought forward rather than
+  opened twice. The toolbar menu opens any ancestry from your libraries, or one from a file elsewhere. Save writes back
+  to the file you opened, while for a new ancestry it opens a save dialog that starts in your User Library's
+  Settings/Ancestries folder, and Save As writes a copy elsewhere. Ancestry and name generator files can also be opened
+  with File → Open, from the recent files list, or by dropping them onto the window. As before, an ancestry in your User
+  Library takes precedence over one of the same name from the Master Library or built into GCS. (#607)
+- Added a name generator editor, opened from File → New Name Generator, for the .names files that ancestries draw
+  their random names from. Choose how names are generated (a training name picked at random, new names built letter by
+  letter or from runs of vowels and consonants, or several generators combined with a separator), whether training
+  names are lowercased and results capitalized, and the training names themselves with optional weights; a button
+  imports names from a text file, one per line, and rows can be selected with click, shift-click and command-click
+  and removed together. Sample names from the current definition are shown as you edit. Saving, opening from your
+  libraries, having several open at once, and undo work as in the ancestry editor, and each name generator row in the
+  ancestry editor has a button that opens that generator for editing. (#607)
 
 ## Bug Fixes
 

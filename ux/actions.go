@@ -72,6 +72,7 @@ var (
 	moveToCarriedEquipmentAction   *unison.Action
 	moveToOtherEquipmentAction     *unison.Action
 	moveUpAction                   *unison.Action
+	newAncestryAction              *unison.Action
 	// TODO: Re-enable Campaign files
 	// newCampaignAction                   *unison.Action
 	newCarriedEquipmentAction           *unison.Action
@@ -85,6 +86,7 @@ var (
 	newEquipmentModifiersLibraryAction  *unison.Action
 	newMarkdownFileAction               *unison.Action
 	newMeleeWeaponAction                *unison.Action
+	newNameGeneratorAction              *unison.Action
 	newNoteAction                       *unison.Action
 	newNoteContainerAction              *unison.Action
 	newNotesLibraryAction               *unison.Action
@@ -475,6 +477,11 @@ func registerActions() {
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
+	newAncestryAction = registerKeyBindableAction("new.ancestry", &unison.Action{
+		ID:              NewAncestryItemID,
+		Title:           i18n.Text("New Ancestry"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { newAncestryDocument() },
+	})
 	newCarriedEquipmentAction = registerKeyBindableAction("new.eqp", &unison.Action{
 		ID:              NewCarriedEquipmentItemID,
 		Title:           i18n.Text("New Carried Equipment"),
@@ -566,6 +573,11 @@ func registerActions() {
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Shift | mod.OSMenuCommand()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	newNameGeneratorAction = registerKeyBindableAction("new.names", &unison.Action{
+		ID:              NewNameGeneratorItemID,
+		Title:           i18n.Text("New Name Generator"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { newNameGeneratorDocument() },
 	})
 	newNoteAction = registerKeyBindableAction("new.not", &unison.Action{
 		ID:              NewNoteItemID,

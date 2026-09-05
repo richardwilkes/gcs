@@ -239,6 +239,28 @@ file_info:
       - not
     mime_types:
       - application/x-gcs-not
+  - name: GCS Ancestry
+    icon: pkgicons/ancestry_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.ancestry
+    conforms_to:
+      - public.json
+    extensions:
+      - ancestry
+    mime_types:
+      - application/x-gcs-ancestry
+  - name: GCS Name Generator
+    icon: pkgicons/names_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.names
+    conforms_to:
+      - public.json
+    extensions:
+      - names
+    mime_types:
+      - application/x-gcs-names
 mac:
   finder_app_name: GCS
   app_id: com.trollworks.gcs

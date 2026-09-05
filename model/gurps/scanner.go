@@ -13,6 +13,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -23,9 +24,14 @@ import (
 
 // NamedFileRef holds a reference to a file.
 type NamedFileRef struct {
-	Name       string
+	// Name is the file's name with its extension removed.
+	Name string
+	// FileSystem is the file system that holds the file.
 	FileSystem fs.FS
-	FilePath   string
+	// FilePath is the slash-separated path of the file, relative to FileSystem.
+	FilePath string
+	// DiskPath is the absolute path of the file on disk, or "" when the file is embedded and has no disk location.
+	DiskPath string
 }
 
 func (n *NamedFileRef) String() string {
@@ -43,7 +49,8 @@ func ScanForNamedFileSets(builtIn fs.FS, builtInDir string, omitDuplicateNames b
 	set := make(map[string]bool)
 	list := make([]*NamedFileSet, 0)
 	for _, lib := range libraries.List() {
-		if refs := scanForNamedFileSets(os.DirFS(lib.Path()), "Settings", extensions, omitDuplicateNames, set); len(refs) != 0 {
+		libPath := lib.Path()
+		if refs := scanForNamedFileSets(os.DirFS(libPath), SettingsDirName, libPath, extensions, omitDuplicateNames, set); len(refs) != 0 {
 			list = append(list, &NamedFileSet{
 				Name: lib.Data().Title,
 				List: refs,
@@ -51,7 +58,7 @@ func ScanForNamedFileSets(builtIn fs.FS, builtInDir string, omitDuplicateNames b
 		}
 	}
 	if builtIn != nil {
-		if refs := scanForNamedFileSets(builtIn, builtInDir, extensions, omitDuplicateNames, set); len(refs) != 0 {
+		if refs := scanForNamedFileSets(builtIn, builtInDir, "", extensions, omitDuplicateNames, set); len(refs) != 0 {
 			list = append(list, &NamedFileSet{
 				Name: i18n.Text("Built-in"),
 				List: refs,
@@ -61,7 +68,10 @@ func ScanForNamedFileSets(builtIn fs.FS, builtInDir string, omitDuplicateNames b
 	return list
 }
 
-func scanForNamedFileSets(fileSystem fs.FS, dirPath string, extensions []string, omitDuplicateNames bool, set map[string]bool) []*NamedFileRef {
+// scanForNamedFileSets collects the files under dirPath within fileSystem that have one of the extensions. When
+// rootDiskPath is not empty, fileSystem is rooted at that directory on disk and each reference records where the file
+// lives there; when it is empty, the files are embedded and have no disk location.
+func scanForNamedFileSets(fileSystem fs.FS, dirPath, rootDiskPath string, extensions []string, omitDuplicateNames bool, set map[string]bool) []*NamedFileRef {
 	extMap := make(map[string]bool, len(extensions))
 	for _, ext := range extensions {
 		extMap[strings.ToLower(ext)] = true
@@ -82,11 +92,15 @@ func scanForNamedFileSets(fileSystem fs.FS, dirPath string, extensions []string,
 			shortName := xfilepath.TrimExtension(name)
 			if shortLowerName := strings.ToLower(shortName); !omitDuplicateNames || !set[shortLowerName] {
 				set[shortLowerName] = true
-				list = append(list, &NamedFileRef{
+				ref := &NamedFileRef{
 					Name:       shortName,
 					FileSystem: fileSystem,
 					FilePath:   p,
-				})
+				}
+				if rootDiskPath != "" {
+					ref.DiskPath = filepath.Join(rootDiskPath, filepath.FromSlash(p))
+				}
+				list = append(list, ref)
 			}
 		}
 		return nil

@@ -20,6 +20,10 @@ import (
 
 // Pre-defined SVG images used by GCS.
 var (
+	//go:embed ancestry.svg
+	ancestryData string
+	Ancestry     = unison.MustSVGFromContentString(ancestryData)
+
 	//go:embed app_icon.svg
 	appIconData string
 	AppIcon     = unison.MustSVGFromContentString(appIconData)
@@ -243,6 +247,14 @@ var (
 	//go:embed reset.svg
 	resetData string
 	Reset     = unison.MustSVGFromContentString(resetData)
+
+	//go:embed save.svg
+	saveData string
+	Save     = unison.MustSVGFromContentString(saveData)
+
+	//go:embed save_as.svg
+	saveAsData string
+	SaveAs     = unison.MustSVGFromContentString(saveAsData)
 
 	//go:embed script.svg
 	scriptData string

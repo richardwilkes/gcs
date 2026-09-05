@@ -34,6 +34,7 @@ var (
 	rangedWeaponDragKey        = unison.CreatePrivateDataType("gcs.ranged-weapon")
 	attributeSettingsDragKey   = unison.CreatePrivateDataType("gcs.attr")
 	hitLocationDragKey         = unison.CreatePrivateDataType("gcs.body")
+	editorRowDragKey           = unison.CreatePrivateDataType("gcs.editor-row")
 )
 
 var (
@@ -62,6 +63,7 @@ var allDragDataTypes = []*uti.DataType{
 	rangedWeaponDragKey,
 	attributeSettingsDragKey,
 	hitLocationDragKey,
+	editorRowDragKey,
 }
 
 // registerWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: all of

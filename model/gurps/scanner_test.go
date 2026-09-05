@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"testing/fstest"
 
@@ -28,10 +30,46 @@ func TestScanForNamedFileSetsIgnoresExtensionCase(t *testing.T) {
 		"Settings/Dwarf.Ancestry": {Data: []byte("{}")},
 		"Settings/Notes.txt":      {Data: []byte("{}")},
 	}
-	refs := scanForNamedFileSets(fileSystem, "Settings", []string{AncestryExt}, true, make(map[string]bool))
+	refs := scanForNamedFileSets(fileSystem, "Settings", "", []string{AncestryExt}, true, make(map[string]bool))
 	names := make([]string, 0, len(refs))
 	for _, ref := range refs {
 		names = append(names, ref.Name)
 	}
 	c.Equal([]string{"Dwarf", "Elf", "Human"}, names, "extensions match without regard to case")
+}
+
+// TestScanForNamedFileSetsRecordsDiskPath verifies that a file found in a library carries the absolute path of the file
+// on disk, so that an editor can save back to where the file came from, while a built-in file, which is embedded in the
+// application and has no disk location, leaves it empty.
+func TestScanForNamedFileSetsRecordsDiskPath(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	libs := NewLibraries()
+	c.NoError(libs.Master().SetPath(filepath.Join(dir, "master")))
+	userPath := filepath.Join(dir, "user")
+	c.NoError(libs.User().SetPath(userPath))
+	ancestriesDir := filepath.Join(userPath, SettingsDirName, AncestriesDirName)
+	c.NoError(os.MkdirAll(ancestriesDir, 0o750))
+	c.NoError(os.WriteFile(filepath.Join(ancestriesDir, "Elf.ancestry"), []byte(`{"version":5,"name":"Elf"}`), 0o640))
+	var userRef, builtInRef *NamedFileRef
+	for _, set := range ScanForNamedFileSets(embeddedFS, "embedded_data", true, libs, AncestryExt) {
+		for _, ref := range set.List {
+			switch {
+			case set.Name == libs.User().Data().Title && ref.Name == "Elf":
+				userRef = ref
+			case set.Name == "Built-in" && ref.Name == DefaultAncestry:
+				builtInRef = ref
+			}
+		}
+	}
+	c.NotNil(userRef, "the user library's ancestry was found")
+	if userRef != nil {
+		c.Equal("Elf", userRef.Name)
+		c.Equal("Settings/Ancestries/Elf.ancestry", userRef.FilePath)
+		c.Equal(filepath.Join(userPath, SettingsDirName, AncestriesDirName, "Elf.ancestry"), userRef.DiskPath)
+	}
+	c.NotNil(builtInRef, "the built-in ancestry was found")
+	if builtInRef != nil {
+		c.Equal("", builtInRef.DiskPath, "embedded files have no disk location")
+	}
 }

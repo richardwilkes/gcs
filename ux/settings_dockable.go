@@ -12,7 +12,6 @@ package ux
 import (
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -42,10 +41,17 @@ var (
 // SettingsDockable holds common settings dockable data.
 type SettingsDockable struct {
 	unison.Panel
-	TabTitle          string
-	TabIcon           *unison.SVG
-	Extensions        []string
-	Loader            func(fileSystem fs.FS, filePath string) error
+	TabTitle   string
+	TabIcon    *unison.SVG
+	Extensions []string
+	Loader     func(fileSystem fs.FS, filePath string) error
+	// RefLoader is an alternative to Loader for dockables that need to know where the file lives on disk. When set, it
+	// is used in preference to Loader for both the library list and the toolbar menu's item that loads a chosen file.
+	RefLoader func(ref *gurps.NamedFileRef) error
+	// LoadItemTitle is the title of the toolbar menu's item that loads a file chosen in a dialog. When empty, it is
+	// Import…, which suits a dockable that takes the file's contents into itself; the file editors, which open the chosen
+	// file in an editor of its own, call it Open… instead.
+	LoadItemTitle     string
 	Saver             func(filePath string) error
 	Resetter          func()
 	ModifiedCallback  func() bool
@@ -145,7 +151,7 @@ func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func
 		b.ClickCallback = d.handleReset
 		toolbar.AddChild(b)
 	}
-	if d.Loader != nil || d.Saver != nil {
+	if d.canLoad() || d.Saver != nil {
 		b := unison.NewSVGButton(svg.Menu)
 		b.Tooltip = newWrappedTooltip(i18n.Text("Menu"))
 		b.ClickCallback = func() { d.showMenu(b) }
@@ -174,15 +180,15 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 	id := unison.ContextMenuIDFlag
 	m := f.NewMenu(id, "", nil)
 	id++
-	if d.Loader != nil {
-		m.InsertItem(-1, f.NewItem(id, i18n.Text("Import…"), unison.KeyBinding{}, nil, d.handleImport))
+	if d.canLoad() {
+		m.InsertItem(-1, f.NewItem(id, d.loadItemTitle(), unison.KeyBinding{}, nil, d.handleImport))
 		id++
 	}
 	if d.Saver != nil {
 		m.InsertItem(-1, f.NewItem(id, i18n.Text("Export…"), unison.KeyBinding{}, nil, d.handleExport))
 		id++
 	}
-	if d.Loader != nil {
+	if d.canLoad() {
 		libraries := gurps.GlobalSettings().Libraries
 		sets := gurps.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
 		if len(sets) != 0 {
@@ -203,12 +209,33 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 
 func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *gurps.NamedFileRef) {
 	m.InsertItem(-1, m.Factory().NewItem(id, "    "+ref.Name, unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
-		d.doLoad(ref.FileSystem, ref.FilePath)
+		d.doLoad(ref)
 	}))
 }
 
-func (d *SettingsDockable) doLoad(fileSystem fs.FS, filePath string) {
-	if err := d.Loader(fileSystem, filePath); err != nil {
+// loadItemTitle returns LoadItemTitle, or Import… when none was given.
+func (d *SettingsDockable) loadItemTitle() string {
+	if d.LoadItemTitle != "" {
+		return d.LoadItemTitle
+	}
+	return i18n.Text("Import…")
+}
+
+// canLoad reports whether the dockable has a way to load a settings file, whichever form of loader it was given.
+func (d *SettingsDockable) canLoad() bool {
+	return d.Loader != nil || d.RefLoader != nil
+}
+
+// doLoad hands the file reference to RefLoader when one is set, since it wants the whole reference, and otherwise to
+// Loader, which only cares about the file system and path. A failure is reported through the workspace's error handler.
+func (d *SettingsDockable) doLoad(ref *gurps.NamedFileRef) {
+	var err error
+	if d.RefLoader != nil {
+		err = d.RefLoader(ref)
+	} else {
+		err = d.Loader(ref.FileSystem, ref.FilePath)
+	}
+	if err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to load ")+d.TabTitle, err)
 	}
 }
@@ -223,10 +250,9 @@ func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
 	global := gurps.GlobalSettings()
 	dialog.SetInitialDirectory(global.LastDir(gurps.SettingsLastDirKey))
 	if dialog.RunModal() {
-		p := dialog.Path()
-		dir := filepath.Dir(p)
-		global.SetLastDir(gurps.SettingsLastDirKey, dir)
-		d.doLoad(os.DirFS(dir), filepath.Base(p))
+		ref := diskFileRef(dialog.Path())
+		global.SetLastDir(gurps.SettingsLastDirKey, filepath.Dir(ref.DiskPath))
+		d.doLoad(ref)
 	}
 }
 

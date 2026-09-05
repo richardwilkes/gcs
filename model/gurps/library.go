@@ -40,6 +40,15 @@ import (
 
 const releaseFile = "release.txt"
 
+// SettingsDirName is the directory within a library that holds its settings files, AncestriesDirName is the
+// sub-directory of that which, by convention, holds ancestries and their name generators, and OutputTemplatesDirName is
+// the directory within a library that holds its output templates.
+const (
+	SettingsDirName        = "Settings"
+	AncestriesDirName      = "Ancestries"
+	OutputTemplatesDirName = "Output Templates"
+)
+
 // defaultDownloadSizeEstimate scales the download portion of the progress bar the first time a library is updated,
 // before a real size has been recorded for it. A guess that is too small shows as a bar that pauses just short of the
 // end of the download; one that is too large, as a bar that jumps to it. Being a little over the size of the Master
@@ -296,6 +305,15 @@ func (l *Library) Path() string {
 	l.lock.RLock()
 	p := l.data.PathOnDisk
 	l.lock.RUnlock()
+	if err := os.MkdirAll(p, 0o750); err != nil {
+		errs.Log(err, "path", p)
+	}
+	return p
+}
+
+// AncestriesPath returns the path on disk to this Library's ancestries directory, creating it if necessary.
+func (l *Library) AncestriesPath() string {
+	p := filepath.Join(l.Path(), SettingsDirName, AncestriesDirName)
 	if err := os.MkdirAll(p, 0o750); err != nil {
 		errs.Log(err, "path", p)
 	}
@@ -769,8 +787,8 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 		var written int64
 		report(LibraryUpdateInstalling, 0)
 		for _, entry := range entries {
-			// Unpacking is the half of the update the context would otherwise have no say over, and it is long enough to
-			// be worth interrupting, so each file is a chance to stop.
+			// Unpacking is the half of the update the context would otherwise have no say over, and it is long enough
+			// to be worth interrupting, so each file is a chance to stop.
 			if err = ctx.Err(); err != nil {
 				return errs.Wrap(err)
 			}

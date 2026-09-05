@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"hash"
 	"io/fs"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -20,6 +22,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 )
 
+var _ Hashable = &Ancestry{}
+
 // DefaultAncestry holds the name of the default ancestry.
 const DefaultAncestry = "Human"
 
@@ -28,6 +32,9 @@ type Ancestry struct {
 	Name          string                     `json:"name,omitzero"`
 	CommonOptions *AncestryOptions           `json:"common_options,omitzero"`
 	GenderOptions []*WeightedAncestryOptions `json:"gender_options,omitempty"`
+	// KeyPrefix is a runtime-only key the editor uses to give the ancestry's widgets a stable identity. It is never
+	// written to disk.
+	KeyPrefix string `json:"-"`
 }
 
 type ancestryData struct {
@@ -56,6 +63,19 @@ func LookupAncestry(name string, libraries *Libraries) *Ancestry {
 	return nil
 }
 
+// NewAncestry returns a new ancestry with the customary scaffolding: no name, an empty set of common options, and two
+// equally weighted genders with no overrides of their own. The gender names are data matched against Profile.Gender,
+// so they are not localized.
+func NewAncestry() *Ancestry {
+	return &Ancestry{
+		CommonOptions: &AncestryOptions{},
+		GenderOptions: []*WeightedAncestryOptions{
+			{Weight: 1, Value: &AncestryOptions{Name: "Male"}},
+			{Weight: 1, Value: &AncestryOptions{Name: "Female"}},
+		},
+	}
+}
+
 // NewAncestryFromFile creates a new Ancestry from a file.
 func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 	var ancestry ancestryData
@@ -80,6 +100,67 @@ func (a *Ancestry) Save(filePath string) error {
 		Version:  jio.CurrentDataVersion,
 		Ancestry: *a,
 	})
+}
+
+// Clone returns a deep copy of this ancestry, or nil if this ancestry is nil. The runtime-only KeyPrefix fields are
+// copied along with everything else. Nil entries within the lists are preserved as nil, so the copy is faithful to the
+// original; Normalize is what removes them.
+func (a *Ancestry) Clone() *Ancestry {
+	if a == nil {
+		return nil
+	}
+	clone := *a
+	clone.CommonOptions = a.CommonOptions.Clone()
+	if a.GenderOptions != nil {
+		clone.GenderOptions = make([]*WeightedAncestryOptions, len(a.GenderOptions))
+		for i, one := range a.GenderOptions {
+			clone.GenderOptions[i] = one.Clone()
+		}
+	}
+	return &clone
+}
+
+// Hash writes this object's contents into the hasher. The hash is of the ancestry's own JSON content, without the
+// version wrapper that Save adds around it, so it answers exactly "has the file content changed", and the runtime-only
+// KeyPrefix fields never take part.
+func (a *Ancestry) Hash(h hash.Hash) {
+	HashJSON(h, a)
+}
+
+// ResetTargetKeyPrefixes assigns new key prefixes for all data within this Ancestry. Nil entries are skipped.
+func (a *Ancestry) ResetTargetKeyPrefixes(prefixProvider func() string) {
+	a.KeyPrefix = prefixProvider()
+	if a.CommonOptions != nil {
+		a.CommonOptions.ResetTargetKeyPrefixes(prefixProvider)
+	}
+	for _, one := range a.GenderOptions {
+		if one != nil {
+			one.KeyPrefix = prefixProvider()
+			if one.Value != nil {
+				one.Value.ResetTargetKeyPrefixes(prefixProvider)
+			}
+		}
+	}
+}
+
+// Normalize makes the ancestry safe to edit: it drops the null entries a hand-written file may contain, gives the
+// ancestry a common options block if it has none, and gives every gender option a value if it lacks one. The
+// randomizers tolerate all of those, but an editor needs every pointer it renders to be non-nil. This is deliberately
+// not called when loading a file, so that the load path keeps tolerating such files as-is.
+func (a *Ancestry) Normalize() {
+	a.GenderOptions = slices.DeleteFunc(a.GenderOptions, func(o *WeightedAncestryOptions) bool { return o == nil })
+	for _, one := range a.GenderOptions {
+		if one.Value == nil {
+			one.Value = &AncestryOptions{}
+		}
+	}
+	if a.CommonOptions == nil {
+		a.CommonOptions = &AncestryOptions{}
+	}
+	a.CommonOptions.Normalize()
+	for _, one := range a.GenderOptions {
+		one.Value.Normalize()
+	}
 }
 
 // RandomGender returns a randomized gender.

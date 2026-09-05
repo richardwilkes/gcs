@@ -15,6 +15,18 @@ import "github.com/richardwilkes/toolbox/v2/xrand"
 type WeightedStringOption struct {
 	Weight int    `json:"weight"`
 	Value  string `json:"value"`
+	// KeyPrefix is a runtime-only key the editor uses to give each option's widgets a stable identity. It is never
+	// written to disk.
+	KeyPrefix string `json:"-"`
+}
+
+// Clone returns a deep copy of this option, or nil if this option is nil.
+func (o *WeightedStringOption) Clone() *WeightedStringOption {
+	if o == nil {
+		return nil
+	}
+	clone := *o
+	return &clone
 }
 
 // Valid returns true if this option has a valid weight. A file may contain a null entry, so this must be checked before

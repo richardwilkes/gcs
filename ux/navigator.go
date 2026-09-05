@@ -1565,8 +1565,14 @@ func OpenFiles(filePaths []string) {
 	}
 }
 
-// DisplayNewDockable adds the Dockable to the dock and gives it the focus.
+// DisplayNewDockable adds the Dockable to the dock and gives it the focus. A Dockable that is already on display -- the
+// ancestry and name generator editors place themselves in the dock as they are shown, so opening one of their files
+// hands back an editor already in the dock -- is activated where it is.
 func DisplayNewDockable(dockable unison.Dockable) {
+	if p := dockable.AsPanel(); p.Parent() != nil || p.Window() != nil {
+		ActivateDockable(dockable)
+		return
+	}
 	InstallDockUndockCmd(dockable)
 	defer func() {
 		if children := dockable.AsPanel().Children(); len(children) > 1 {

@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 	"testing/fstest"
 
@@ -208,4 +211,286 @@ func TestAncestryWithNullStringOptions(t *testing.T) {
 	c.Equal(defaultEye, only.RandomEye(""), "a nil plus weightless eye list falls back to the default")
 	c.Equal(defaultSkin, only.RandomSkin(""), "a nil-only skin list falls back to the default")
 	c.Equal(defaultHandedness, only.RandomHandedness(""), "a nil-only handedness list falls back to the default")
+}
+
+// populatedAncestry returns an ancestry with every level filled in -- common options with all four weighted lists and
+// name generators, plus two genders that carry options of their own -- for the tests that need to reach each of them.
+func populatedAncestry() *Ancestry {
+	return &Ancestry{
+		Name: "Elf",
+		CommonOptions: &AncestryOptions{
+			HeightScript:      "60 + 6",
+			WeightScript:      "100 + 20",
+			AgeScript:         "18 + 100",
+			HairOptions:       []*WeightedStringOption{entry(3, "Blond"), entry(1, "Silver")},
+			EyeOptions:        []*WeightedStringOption{entry(2, "Green"), entry(1, "Violet")},
+			SkinOptions:       []*WeightedStringOption{entry(1, "Fair")},
+			HandednessOptions: []*WeightedStringOption{entry(9, "Right"), entry(1, "Left")},
+			NameGenerators:    []string{"Elf First", "Elf Last"},
+		},
+		GenderOptions: []*WeightedAncestryOptions{
+			{Weight: 1, Value: &AncestryOptions{Name: "Male", EyeOptions: []*WeightedStringOption{entry(1, "Gray")}}},
+			{Weight: 1, Value: &AncestryOptions{Name: "Female", HairOptions: []*WeightedStringOption{entry(1, "Red")}}},
+		},
+	}
+}
+
+// keyPrefixCounter returns a prefix provider that hands out "p<n>" for successive n, starting after start, along with a
+// pointer to the count of prefixes it has produced.
+func keyPrefixCounter(start int) (provider func() string, count *int) {
+	n := 0
+	return func() string {
+		n++
+		return fmt.Sprintf("p%d", start+n)
+	}, &n
+}
+
+// collectKeyPrefixes walks the ancestry in a fixed order and returns the KeyPrefix of every non-nil node: the ancestry,
+// the common options and each of their list entries, then each gender entry, its value, and that value's list entries.
+func collectKeyPrefixes(a *Ancestry) []string {
+	var prefixes []string
+	options := func(o *AncestryOptions) {
+		if o == nil {
+			return
+		}
+		prefixes = append(prefixes, o.KeyPrefix)
+		for _, list := range [][]*WeightedStringOption{o.HairOptions, o.EyeOptions, o.SkinOptions, o.HandednessOptions} {
+			for _, one := range list {
+				if one != nil {
+					prefixes = append(prefixes, one.KeyPrefix)
+				}
+			}
+		}
+	}
+	prefixes = append(prefixes, a.KeyPrefix)
+	options(a.CommonOptions)
+	for _, one := range a.GenderOptions {
+		if one != nil {
+			prefixes = append(prefixes, one.KeyPrefix)
+			options(one.Value)
+		}
+	}
+	return prefixes
+}
+
+// TestNewAncestryDefaults verifies that a freshly created ancestry carries the scaffolding an editor expects, and that
+// it is already in normalized form.
+func TestNewAncestryDefaults(t *testing.T) {
+	c := check.New(t)
+
+	a := NewAncestry()
+	c.Equal("", a.Name, "a new ancestry has no name")
+	c.NotNil(a.CommonOptions, "a new ancestry has a common options block")
+	c.Equal(2, len(a.GenderOptions), "a new ancestry has two genders")
+	c.NotNil(a.GenderOptions[0].Value, "the first gender has a value")
+	c.NotNil(a.GenderOptions[1].Value, "the second gender has a value")
+	c.Equal("Male", a.GenderOptions[0].Value.Name, "the first gender is Male")
+	c.Equal("Female", a.GenderOptions[1].Value.Name, "the second gender is Female")
+	c.Equal(1, a.GenderOptions[0].Weight, "the first gender has a weight of 1")
+	c.Equal(1, a.GenderOptions[1].Weight, "the second gender has a weight of 1")
+
+	before := Hash64(a)
+	a.Normalize()
+	c.Equal(before, Hash64(a), "normalizing a new ancestry changes nothing")
+}
+
+// TestAncestryCloneIsDeep verifies that Clone copies every level of the ancestry, so that editing the clone leaves the
+// original untouched, while still carrying the runtime-only key prefixes across and faithfully preserving nil entries.
+func TestAncestryCloneIsDeep(t *testing.T) {
+	c := check.New(t)
+
+	original := populatedAncestry()
+	provider, _ := keyPrefixCounter(0)
+	original.ResetTargetKeyPrefixes(provider)
+	clone := original.Clone()
+	c.Equal(Hash64(original), Hash64(clone), "the clone has the same content as the original")
+	c.Equal(collectKeyPrefixes(original), collectKeyPrefixes(clone), "the clone carries the same key prefixes")
+
+	// Mutate every level of the clone.
+	clone.Name = "Dwarf"
+	clone.CommonOptions.HairOptions[0].Value = "Black"
+	clone.CommonOptions.NameGenerators[0] = "Dwarf First"
+	clone.GenderOptions[0].Weight = 7
+	clone.GenderOptions[0].Value.Name = "Other"
+	clone.GenderOptions[0].Value.EyeOptions[0].Weight = 5
+
+	// None of it reached the original.
+	c.Equal("Elf", original.Name, "the original's name is unchanged")
+	c.Equal("Blond", original.CommonOptions.HairOptions[0].Value, "the original's hair option is unchanged")
+	c.Equal("Elf First", original.CommonOptions.NameGenerators[0], "the original's name generator is unchanged")
+	c.Equal(1, original.GenderOptions[0].Weight, "the original's gender weight is unchanged")
+	c.Equal("Male", original.GenderOptions[0].Value.Name, "the original's gender name is unchanged")
+	c.Equal(1, original.GenderOptions[0].Value.EyeOptions[0].Weight, "the original's gender eye option is unchanged")
+	c.Equal(Hash64(populatedAncestry()), Hash64(original), "the original hashes the same as a fresh copy")
+
+	// Mutating the clone did not disturb its key prefixes either.
+	c.Equal(collectKeyPrefixes(original), collectKeyPrefixes(clone), "key prefixes survive editing the clone")
+
+	c.Nil((*Ancestry)(nil).Clone(), "cloning a nil ancestry yields nil")
+
+	// Nil entries and nil lists are preserved as-is rather than being dropped or materialized.
+	sparse := &Ancestry{
+		CommonOptions: &AncestryOptions{
+			HairOptions: []*WeightedStringOption{nil, {Weight: 1, Value: "Green"}},
+		},
+		GenderOptions: []*WeightedAncestryOptions{nil, {Weight: 1}},
+	}
+	sparseClone := sparse.Clone()
+	c.Equal(2, len(sparseClone.CommonOptions.HairOptions), "the hair list keeps its length")
+	c.Nil(sparseClone.CommonOptions.HairOptions[0], "a nil hair entry stays nil")
+	c.Equal("Green", sparseClone.CommonOptions.HairOptions[1].Value, "the real hair entry is copied")
+	c.Nil(sparseClone.CommonOptions.EyeOptions, "a nil eye list stays nil")
+	c.Nil(sparseClone.CommonOptions.NameGenerators, "a nil name generator list stays nil")
+	c.Equal(2, len(sparseClone.GenderOptions), "the gender list keeps its length")
+	c.Nil(sparseClone.GenderOptions[0], "a nil gender entry stays nil")
+	c.Nil(sparseClone.GenderOptions[1].Value, "a valueless gender entry stays valueless")
+	c.Nil((&Ancestry{}).Clone().CommonOptions, "nil common options stay nil")
+	c.Nil((&Ancestry{}).Clone().GenderOptions, "a nil gender list stays nil")
+}
+
+// TestAncestryHashIgnoresKeyPrefixAndTracksContent verifies that the hash is a function of the file content alone: the
+// runtime-only key prefixes never affect it, while a change at any level of the data does.
+func TestAncestryHashIgnoresKeyPrefixAndTracksContent(t *testing.T) {
+	c := check.New(t)
+
+	a := populatedAncestry()
+	base := Hash64(a)
+	c.Equal(base, Hash64(a.Clone()), "a clone hashes the same as the original")
+
+	provider, _ := keyPrefixCounter(1000)
+	a.ResetTargetKeyPrefixes(provider)
+	c.Equal(base, Hash64(a), "assigning key prefixes does not change the hash")
+	provider, _ = keyPrefixCounter(5000)
+	a.ResetTargetKeyPrefixes(provider)
+	c.Equal(base, Hash64(a), "assigning different key prefixes does not change the hash")
+
+	changes := []struct {
+		name   string
+		mutate func(*Ancestry)
+	}{
+		{"name", func(a *Ancestry) { a.Name = "Dwarf" }},
+		{"common hair weight", func(a *Ancestry) { a.CommonOptions.HairOptions[0].Weight++ }},
+		{"nested value string", func(a *Ancestry) { a.GenderOptions[0].Value.EyeOptions[0].Value = "Amber" }},
+		{"gender name", func(a *Ancestry) { a.GenderOptions[1].Value.Name = "Other" }},
+		{"name generator", func(a *Ancestry) {
+			a.CommonOptions.NameGenerators = append(a.CommonOptions.NameGenerators, "Elf Title")
+		}},
+	}
+	for _, one := range changes {
+		edited := a.Clone()
+		one.mutate(edited)
+		c.NotEqual(base, Hash64(edited), "changing the %s changes the hash", one.name)
+	}
+}
+
+// TestAncestryResetTargetKeyPrefixesAreUnique verifies that every node in the ancestry receives its own prefix from the
+// provider, exactly once each, and that nil entries are skipped rather than dereferenced.
+func TestAncestryResetTargetKeyPrefixesAreUnique(t *testing.T) {
+	c := check.New(t)
+
+	a := populatedAncestry()
+	a.CommonOptions.HairOptions = append(a.CommonOptions.HairOptions, nil)
+	a.GenderOptions = append(a.GenderOptions, nil)
+
+	provider, count := keyPrefixCounter(0)
+	c.NotPanics(func() { a.ResetTargetKeyPrefixes(provider) }, "nil entries are skipped without panicking")
+
+	prefixes := collectKeyPrefixes(a)
+	// The ancestry, its common options with 2+2+1+2 entries, and two genders each with a value holding 1 entry.
+	const nodeCount = 1 + (1 + 7) + 2*(1+1+1)
+	c.Equal(nodeCount, len(prefixes), "every non-nil node was visited")
+	c.Equal(nodeCount, *count, "the provider was called exactly once per node")
+	set := make(map[string]bool, len(prefixes))
+	for _, one := range prefixes {
+		c.NotEqual("", one, "every node received a prefix")
+		set[one] = true
+	}
+	c.Equal(nodeCount, len(set), "every node received a distinct prefix")
+	c.Nil(a.CommonOptions.HairOptions[2], "the nil hair entry is still nil")
+	c.Nil(a.GenderOptions[2], "the nil gender entry is still nil")
+}
+
+// TestAncestryNormalize verifies that Normalize turns a hand-written file's tolerated gaps -- null list entries, a
+// gender without a value, a missing common options block -- into the fully populated structure an editor requires,
+// without discarding any real data.
+func TestAncestryNormalize(t *testing.T) {
+	c := check.New(t)
+
+	const data = `{
+	"type": "ancestry",
+	"version": 5,
+	"name": "Human",
+	"gender_options": [
+		{ "weight": 3 },
+		null,
+		{
+			"weight": 1,
+			"value": {
+				"name": "Female",
+				"hair_options": [ null, { "weight": 1, "value": "Green" }, null ],
+				"eye_options": [ null ]
+			}
+		}
+	]
+}`
+	fileSystem := fstest.MapFS{"Human.ancestry": {Data: []byte(data)}}
+	a, err := NewAncestryFromFile(fileSystem, "Human.ancestry")
+	c.NoError(err, "ancestry file should load")
+
+	// Loading alone leaves the gaps in place; the load path must keep tolerating such files as-is.
+	c.Nil(a.CommonOptions, "loading does not add common options")
+	c.Equal(3, len(a.GenderOptions), "loading keeps the null gender entry")
+	c.Nil(a.GenderOptions[1], "the null gender entry is nil")
+	c.Nil(a.GenderOptions[0].Value, "the valueless gender entry has no value")
+
+	a.Normalize()
+	c.NotNil(a.CommonOptions, "normalizing adds a common options block")
+	c.Equal(2, len(a.GenderOptions), "normalizing drops exactly the null gender entry")
+	for i, one := range a.GenderOptions {
+		c.NotNil(one, "gender entry %d is present", i)
+		c.NotNil(one.Value, "gender entry %d has a value", i)
+	}
+	c.Equal(3, a.GenderOptions[0].Weight, "the valueless gender keeps its weight")
+	c.Equal("", a.GenderOptions[0].Value.Name, "the valueless gender gains an empty value")
+	female := a.GenderOptions[1].Value
+	c.Equal("Female", female.Name, "the valued gender keeps its data")
+	c.Equal(1, len(female.HairOptions), "the null hair entries are dropped")
+	c.Equal("Green", female.HairOptions[0].Value, "the real hair entry is kept")
+	c.Equal(0, len(female.EyeOptions), "a list of only nulls becomes empty")
+	for _, list := range [][]*WeightedStringOption{
+		female.HairOptions, female.EyeOptions, female.SkinOptions, female.HandednessOptions,
+	} {
+		for _, one := range list {
+			c.NotNil(one, "no nil entries remain")
+		}
+	}
+
+	// Normalizing again is a no-op.
+	before := Hash64(a)
+	a.Normalize()
+	c.Equal(before, Hash64(a), "normalizing is idempotent")
+}
+
+// TestAncestrySaveLoadRoundTrip verifies that an ancestry written by Save reads back with identical content, and that
+// the file carries the current data version but none of the runtime-only key prefixes.
+func TestAncestrySaveLoadRoundTrip(t *testing.T) {
+	c := check.New(t)
+
+	a := populatedAncestry()
+	provider, _ := keyPrefixCounter(0)
+	a.ResetTargetKeyPrefixes(provider)
+	dir := t.TempDir()
+	path := filepath.Join(dir, "Elf.ancestry")
+	c.NoError(a.Save(path), "saving the ancestry succeeds")
+
+	data, err := os.ReadFile(path)
+	c.NoError(err, "the saved file can be read")
+	c.Contains(string(data), `"version": 5`, "the file carries the current data version")
+	c.NotContains(string(data), "KeyPrefix", "the runtime-only key prefixes are not written")
+	c.NotContains(string(data), "p1", "no key prefix value leaks into the file")
+
+	loaded, err := NewAncestryFromFile(os.DirFS(dir), "Elf.ancestry")
+	c.NoError(err, "the saved file loads")
+	c.Equal(Hash64(a), Hash64(loaded), "the loaded ancestry has the same content")
+	c.Equal("", loaded.KeyPrefix, "a loaded ancestry has no key prefix")
 }

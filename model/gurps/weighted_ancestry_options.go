@@ -11,10 +11,23 @@ package gurps
 
 import "github.com/richardwilkes/toolbox/v2/xrand"
 
-// WeightedAncestryOptions is a string that has a weight associated with it.
+// WeightedAncestryOptions is a set of AncestryOptions that has a weight associated with it.
 type WeightedAncestryOptions struct {
 	Weight int              `json:"weight"`
 	Value  *AncestryOptions `json:"value"`
+	// KeyPrefix is a runtime-only key the editor uses to give each entry's widgets a stable identity. It is never
+	// written to disk.
+	KeyPrefix string `json:"-"`
+}
+
+// Clone returns a deep copy of this entry, or nil if this entry is nil.
+func (o *WeightedAncestryOptions) Clone() *WeightedAncestryOptions {
+	if o == nil {
+		return nil
+	}
+	clone := *o
+	clone.Value = o.Value.Clone()
+	return &clone
 }
 
 // Valid returns true if this option has a valid weight and value. A file may omit the value entirely, so this must be

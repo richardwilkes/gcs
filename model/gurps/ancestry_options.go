@@ -12,6 +12,7 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -32,6 +33,9 @@ const (
 // AncestryOptions holds options that may be randomized for an Entity's ancestry.
 type AncestryOptions struct {
 	AncestryOptionsData
+	// KeyPrefix is a runtime-only key the editor uses to give this block's widgets a stable identity. It is never
+	// written to disk: MarshalJSONTo serializes only the AncestryOptionsData.
+	KeyPrefix string `json:"-"`
 }
 
 // AncestryOptionsData holds the data that will be serialized for the AncestryOptions.
@@ -75,6 +79,58 @@ func (o *AncestryOptions) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		o.AgeScript = ExprToScript(legacy.AgeFormula)
 	}
 	return nil
+}
+
+// Clone returns a deep copy of these options, or nil if these options are nil. Nil entries within the option lists are
+// preserved as nil, so the copy is faithful to the original; Normalize is what removes them.
+func (o *AncestryOptions) Clone() *AncestryOptions {
+	if o == nil {
+		return nil
+	}
+	clone := *o
+	clone.HairOptions = cloneWeightedStringOptions(o.HairOptions)
+	clone.EyeOptions = cloneWeightedStringOptions(o.EyeOptions)
+	clone.SkinOptions = cloneWeightedStringOptions(o.SkinOptions)
+	clone.HandednessOptions = cloneWeightedStringOptions(o.HandednessOptions)
+	clone.NameGenerators = slices.Clone(o.NameGenerators)
+	return &clone
+}
+
+// cloneWeightedStringOptions returns a deep copy of the list. A nil list stays nil and nil entries stay nil.
+func cloneWeightedStringOptions(list []*WeightedStringOption) []*WeightedStringOption {
+	if list == nil {
+		return nil
+	}
+	clone := make([]*WeightedStringOption, len(list))
+	for i, one := range list {
+		clone[i] = one.Clone()
+	}
+	return clone
+}
+
+// ResetTargetKeyPrefixes assigns new key prefixes for all data within these options.
+func (o *AncestryOptions) ResetTargetKeyPrefixes(prefixProvider func() string) {
+	o.KeyPrefix = prefixProvider()
+	for _, list := range [][]*WeightedStringOption{o.HairOptions, o.EyeOptions, o.SkinOptions, o.HandednessOptions} {
+		for _, one := range list {
+			if one != nil {
+				one.KeyPrefix = prefixProvider()
+			}
+		}
+	}
+}
+
+// Normalize drops the null entries a hand-written file may contain from each of the weighted option lists. The
+// randomizers tolerate them, but an editor needs every pointer it renders to be non-nil.
+func (o *AncestryOptions) Normalize() {
+	o.HairOptions = dropNilWeightedStringOptions(o.HairOptions)
+	o.EyeOptions = dropNilWeightedStringOptions(o.EyeOptions)
+	o.SkinOptions = dropNilWeightedStringOptions(o.SkinOptions)
+	o.HandednessOptions = dropNilWeightedStringOptions(o.HandednessOptions)
+}
+
+func dropNilWeightedStringOptions(list []*WeightedStringOption) []*WeightedStringOption {
+	return slices.DeleteFunc(list, func(o *WeightedStringOption) bool { return o == nil })
 }
 
 // RandomHeight returns a randomized height.

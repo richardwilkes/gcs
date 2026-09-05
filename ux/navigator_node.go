@@ -404,7 +404,7 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 				}
 			}
 			if isDir {
-				if !strings.EqualFold(p, "Settings") && !strings.EqualFold(p, "Output Templates") {
+				if !strings.EqualFold(p, gurps.SettingsDirName) && !strings.EqualFold(p, gurps.OutputTemplatesDirName) {
 					dirNode := NewDirectoryNode(n.nav, n.library, p, parent)
 					children = append(children, dirNode)
 				}

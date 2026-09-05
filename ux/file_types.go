@@ -144,6 +144,31 @@ func RegisterGCSFileTypes() {
 	registerGCSFileInfo("GCS Skills", gurps.SkillsExt, groupWith, svg.GCSSkills, NewSkillTableDockableFromFile)
 	registerGCSFileInfo("GCS Spells", gurps.SpellsExt, groupWith, svg.GCSSpells, NewSpellTableDockableFromFile)
 	registerGCSFileInfo("GCS Notes", gurps.NotesExt, groupWith, svg.GCSNotes, NewNoteTableDockableFromFile)
+	settingsGroupWith := []string{gurps.AncestryExt, gurps.NamesExt}
+	registerGCSSettingsFileInfo("GCS Ancestry", gurps.AncestryExt, settingsGroupWith, svg.Ancestry, openAncestryFile)
+	registerGCSSettingsFileInfo("GCS Name Generator", gurps.NamesExt, settingsGroupWith, svg.Naming,
+		openNameGeneratorFile)
+}
+
+// registerGCSSettingsFileInfo registers a settings file type that has an editor of its own, so that such a file can be
+// opened from the File menu, the recent files list, the command line or a drop onto the window. Unlike the library
+// files, these are not deep searchable: they hold settings, not content.
+func registerGCSSettingsFileInfo(name, ext string, groupWith []string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
+	dt := uti.Register(&uti.DataType{
+		UTI:        xos.AppIdentifier + ext,
+		Parents:    []*uti.DataType{uti.JSON},
+		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
+		Extensions: []string{ext},
+	})
+	fi := gurps.FileInfo{
+		Name:      name,
+		UTI:       dt,
+		GroupWith: groupWith,
+		SVG:       icon,
+		Load:      func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) },
+		IsGCSData: true,
+	}
+	fi.Register()
 }
 
 func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {

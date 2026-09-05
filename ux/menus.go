@@ -40,6 +40,8 @@ const (
 	NewSkillsLibraryItemID
 	NewSpellsLibraryItemID
 	NewMarkdownFileItemID
+	NewAncestryItemID
+	NewNameGeneratorItemID
 	OpenItemID
 	CloseTabID
 	RecentFilesMenuID
@@ -204,6 +206,8 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	// TODO: Re-enable Campaign files
 	// i = s.insertMenuItem(m, i, newCampaignAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newMarkdownFileAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, newAncestryAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, newNameGeneratorAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, newTraitsLibraryAction.NewMenuItem(f))
@@ -425,7 +429,6 @@ func (s menuBarScope) createOpenRecentFileAction(index int, path, title string) 
 }
 
 func (s menuBarScope) exportToUpdater(menu unison.Menu) {
-	const outputTemplatesDirName = "Output Templates"
 	menu.RemoveAll()
 	factory := menu.Factory()
 	menu.InsertItem(-1, exportAsPDFAction.NewMenuItem(factory))
@@ -436,7 +439,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 	index := 0
 	for _, lib := range gurps.GlobalSettings().Libraries.List() {
 		dir := lib.Path()
-		entries, err := fs.ReadDir(os.DirFS(dir), outputTemplatesDirName)
+		entries, err := fs.ReadDir(os.DirFS(dir), gurps.OutputTemplatesDirName)
 		if err != nil {
 			if !errors.Is(err, fs.ErrNotExist) {
 				errs.Log(err, "dir", dir)
@@ -446,7 +449,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 		list := make([]string, 0, len(entries))
 		for _, entry := range entries {
 			name := entry.Name()
-			fullPath := filepath.Join(dir, outputTemplatesDirName, name)
+			fullPath := filepath.Join(dir, gurps.OutputTemplatesDirName, name)
 			if !strings.HasPrefix(name, ".") && xos.FileExists(fullPath) {
 				list = append(list, fullPath)
 			}

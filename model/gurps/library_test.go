@@ -33,6 +33,19 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
+// TestLibraryAncestriesPath verifies that AncestriesPath() names the conventional Settings/Ancestries directory within
+// the library and creates it on demand, so that an editor can save a new ancestry there without checking first.
+func TestLibraryAncestriesPath(t *testing.T) {
+	c := check.New(t)
+	libPath := filepath.Join(t.TempDir(), "lib")
+	lib := NewLibrary("Test", "someone", "", "repo", libPath)
+	p := lib.AncestriesPath()
+	c.Equal(filepath.Join(libPath, SettingsDirName, AncestriesDirName), p)
+	info, err := os.Stat(p)
+	c.NoError(err)
+	c.True(err == nil && info.IsDir(), "ancestries directory was created")
+}
+
 // TestLibraryConcurrentAccess verifies that the mutable state of a Library can be read from background goroutines (as
 // the update checks do) while the UI thread modifies it. Prior to the accessors being added, these fields were plain
 // exported fields with no synchronization at all, which the race detector flags.
@@ -616,10 +629,10 @@ func TestCheckForAvailableUpgradeStaysQuietForLocalLibrary(t *testing.T) {
 	c.Equal(0, len(releases))
 }
 
-// TestNeedsUpgradeCheck verifies what the Library Explorer relies on to keep its update buttons usable when the periodic
-// checks are turned off: a library with a repository behind it reports that it needs a check until one completes, a
-// check that couldn't reach the repository leaves it needing one so that it can be tried again, and a library with no
-// repository never needs one, since there is nothing to ask.
+// TestNeedsUpgradeCheck verifies what the Library Explorer relies on to keep its update buttons usable when the
+// periodic checks are turned off: a library with a repository behind it reports that it needs a check until one
+// completes, a check that couldn't reach the repository leaves it needing one so that it can be tried again, and a
+// library with no repository never needs one, since there is nothing to ask.
 func TestNeedsUpgradeCheck(t *testing.T) {
 	c := check.New(t)
 	resetLibraryChangeNotification()
@@ -677,11 +690,11 @@ func TestCheckForAvailableUpgradeNotifiesWhenReleaseAppears(t *testing.T) {
 	c.Equal(2, len(releases))
 }
 
-// TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears verifies that a check which finds an update that was on offer
-// no longer is -- the release having been withdrawn, or the library having been brought up to date outside of the app
-// -- notifies, so that the Library Explorer's indicator and buttons don't go on offering it. The rule that keeps a
-// repeated check quiet used to keep this one quiet too, leaving the stale indicator up until something else happened
-// to reload the tree.
+// TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears verifies that a check which finds an update that was on
+// offer no longer is -- the release having been withdrawn, or the library having been brought up to date outside of the
+// app -- notifies, so that the Library Explorer's indicator and buttons don't go on offering it. The rule that keeps a
+// repeated check quiet used to keep this one quiet too, leaving the stale indicator up until something else happened to
+// reload the tree.
 func TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears(t *testing.T) {
 	c := check.New(t)
 	resetLibraryChangeNotification()
