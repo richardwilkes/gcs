@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
@@ -342,6 +343,169 @@ func newDefenseTestDefault(defaultType string) *gurps.SkillDefault {
 			TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Cloak"},
 		},
 	}
+}
+
+// defenseUnderTest describes one of the two weapon defenses for runDefenseResolveTests, which exercises the parts of
+// the parry and block calculations that are the same for both.
+type defenseUnderTest struct {
+	name          string
+	ownID         string // the default type that resolves directly to this defense
+	otherID       string // the default type of the other defense
+	distinctBonus int    // the bonus newDefenseTestWeaponWithBonuses(c, 2, 1) gives this defense
+	resolve       func(w *gurps.Weapon) string
+	setModifier   func(w *gurps.Weapon, modifier fxp.Int)
+}
+
+var (
+	parryUnderTest = defenseUnderTest{
+		name:          "parry",
+		ownID:         gurps.ParryID,
+		otherID:       gurps.BlockID,
+		distinctBonus: 2,
+		resolve:       func(w *gurps.Weapon) string { return w.Parry.Resolve(w, nil).String() },
+		setModifier:   func(w *gurps.Weapon, modifier fxp.Int) { w.Parry.Modifier = modifier },
+	}
+	blockUnderTest = defenseUnderTest{
+		name:          "block",
+		ownID:         gurps.BlockID,
+		otherID:       gurps.ParryID,
+		distinctBonus: 1,
+		resolve:       func(w *gurps.Weapon) string { return w.Block.Resolve(w, nil).String() },
+		setModifier:   func(w *gurps.Weapon, modifier fxp.Int) { w.Block.Modifier = modifier },
+	}
+)
+
+// runDefenseResolveTests runs the Resolve() regression tests shared by the parry and block calculations against the
+// given defense.
+func runDefenseResolveTests(t *testing.T, d defenseUnderTest) {
+	t.Helper()
+	allDefaultTypes := []string{gurps.SkillID, d.ownID, d.otherID}
+
+	// A default of the defense's own type must not have the +3 and the entity's defense bonus applied to it twice.
+	// SkillLevelFast() already turns such a default into a defense level, so a weapon defaulting to "Cloak Parry" must
+	// resolve to the same value as one defaulting to the "Cloak" skill itself.
+	t.Run("OwnTypeDefault", func(t *testing.T) {
+		c := check.New(t)
+		w := newDefenseTestWeapon(c)
+
+		// A skill-type default halves the skill level, then adds the +3 and the entity's defense bonus: 14/2 + 3 + 1.
+		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(gurps.SkillID)}
+		c.Equal("11", d.resolve(w), "skill-type default")
+
+		// A default of the defense's own type has already been through that conversion, so it must yield the same
+		// value, not 15.
+		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.ownID)}
+		c.Equal("11", d.resolve(w), "%s-type default", d.name)
+
+		// Both kinds of default together still resolve to the same value.
+		w.Defaults = []*gurps.SkillDefault{
+			newDefenseTestDefault(gurps.SkillID),
+			newDefenseTestDefault(d.ownID),
+		}
+		c.Equal("11", d.resolve(w), "both defaults")
+
+		// The weapon's own modifier and the default's modifier still apply on top.
+		d.setModifier(w, fxp.Two)
+		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.ownID)}
+		w.Defaults[0].Modifier = -fxp.One
+		c.Equal("12", d.resolve(w), "%s-type default with modifiers", d.name)
+	})
+
+	// A default of the other defense's type contributes what a plain skill default to the same skill would. A weapon's
+	// Defaults list feeds the parry and block calculations alike, so a parry-type default reaches the block calculation
+	// and vice versa; converting the defense level it already carries into the other defense halved the skill a second
+	// time and folded the wrong bonus in.
+	t.Run("OtherTypeDefault", func(t *testing.T) {
+		c := check.New(t)
+		w := newDefenseTestWeapon(c)
+
+		// The other defense's default must yield the same value as the skill-type default it is derived from:
+		// 14/2 + 3 + 1.
+		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.otherID)}
+		c.Equal("11", d.resolve(w), "%s-type default", d.otherID)
+
+		// Mixing it with a skill-type default changes nothing, since both resolve to the same value.
+		w.Defaults = []*gurps.SkillDefault{
+			newDefenseTestDefault(gurps.SkillID),
+			newDefenseTestDefault(d.otherID),
+		}
+		c.Equal("11", d.resolve(w), "both defaults")
+
+		// The weapon's own modifier and the default's modifier still apply on top: 11 - 1 + 2.
+		d.setModifier(w, fxp.Two)
+		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.otherID)}
+		w.Defaults[0].Modifier = -fxp.One
+		c.Equal("12", d.resolve(w), "%s-type default with modifiers", d.otherID)
+	})
+
+	// A skill-level adjustment -- here the penalty for wielding a weapon whose minimum ST exceeds the character's -- is
+	// folded into the skill level before it is halved into a defense, whichever kind of default the defense resolves
+	// from. A defense-type default arrives already converted, so adding the adjustment to it counted the adjustment at
+	// twice the weight the skill-type path gives it.
+	t.Run("MinSTPenaltyAtSkillScale", func(t *testing.T) {
+		c := check.New(t)
+		w := newDefenseTestWeapon(c)
+		w.Strength = gurps.WeaponStrength{Min: fxp.FromInteger(12)} // -2 to skill for the ST 10 character
+
+		// (14 - 2)/2 + 3 + 1, not (14/2 + 3 + 1) - 2.
+		for _, defaultType := range allDefaultTypes {
+			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
+			c.Equal("10", d.resolve(w), "%q default", defaultType)
+		}
+	})
+
+	// The same with an odd skill level and an odd penalty, where merely halving the adjustment before applying it to an
+	// already-converted default would still lose a point that the skill-type path keeps.
+	t.Run("OddMinSTPenaltyAtSkillScale", func(t *testing.T) {
+		c := check.New(t)
+		w := newDefenseTestWeapon(c)
+		e := w.Entity()
+		e.Skills[0].Points = fxp.FromInteger(20) // DX+5, i.e. level 15
+		e.Recalculate()
+		c.Equal(fxp.FromInteger(15), e.Skills[0].LevelData.Level, "the Cloak skill should be at level 15")
+		w.Strength = gurps.WeaponStrength{Min: fxp.FromInteger(11)} // -1 to skill for the ST 10 character
+
+		// (15 - 1)/2 + 3 + 1, which the odd skill level rounds up to the same 7 as 15/2 does.
+		for _, defaultType := range allDefaultTypes {
+			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
+			c.Equal("11", d.resolve(w), "%q default", defaultType)
+		}
+	})
+
+	// The same for a skill bonus aimed at this weapon, the other half of the base adjustment. This is the layout the
+	// High Tech library's Tonfa uses -- a skill default paired with a matching parry-type default -- so an over-weighted
+	// adjustment on the defense-type default won the max in Resolve() and inflated the displayed defense.
+	t.Run("ThisWeaponSkillBonusAtSkillScale", func(t *testing.T) {
+		c := check.New(t)
+		w := newDefenseTestWeapon(c)
+		owner, ok := w.Owner.(*gurps.Trait)
+		c.True(ok, "the test weapon should be owned by a trait")
+		bonus := gurps.NewSkillBonus()
+		bonus.SelectionType = skillsel.ThisWeapon
+		bonus.Amount = fxp.One
+		owner.Features = append(owner.Features, bonus)
+		w.Defaults = []*gurps.SkillDefault{
+			newDefenseTestDefault(gurps.SkillID),
+			newDefenseTestDefault(d.ownID),
+		}
+
+		// (14 + 1)/2 + 3 + 1 for both defaults, so neither can out-bid the other: 11, not 12.
+		c.Equal("11", d.resolve(w), "a this-weapon skill bonus must not count double")
+	})
+
+	// The calculation applies the entity's bonus for this defense and not the other one's, whichever kind of default it
+	// resolves from. The two bonuses are equal in the default fixture, so this uses one where they differ.
+	t.Run("AppliesOwnBonus", func(t *testing.T) {
+		c := check.New(t)
+		w := newDefenseTestWeaponWithBonuses(c, 2, 1) // +2 parry, +1 block
+
+		// Every kind of default resolves to the same value, built from this defense's bonus alone: 14/2 + 3 + bonus.
+		expected := fxp.FromInteger(14/2 + 3 + d.distinctBonus).String()
+		for _, defaultType := range allDefaultTypes {
+			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
+			c.Equal(expected, d.resolve(w), "%q default uses the %s bonus", defaultType, d.name)
+		}
+	})
 }
 
 // TestTboneProgressionSTDamageContribution verifies that a Tbone damage progression still contributes its ST-based

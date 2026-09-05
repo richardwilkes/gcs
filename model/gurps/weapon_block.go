@@ -74,49 +74,8 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 	result.CanBlock = w.ResolveBoolFlag(wswitch.CanBlock, result.CanBlock)
 	if result.CanBlock {
 		if entity := w.Entity(); entity != nil {
-			var primaryTooltip *xbytes.InsertBuffer
-			if modifiersTooltip != nil {
-				primaryTooltip = &xbytes.InsertBuffer{}
-			}
-			preAdj := w.skillLevelBaseAdjustment(entity, primaryTooltip)
-			postAdj := w.skillLevelPostAdjustment(entity, primaryTooltip)
-			replacements := w.NameableReplacements()
-			best := fxp.Min
-			for _, def := range w.Defaults {
-				// A parry-type default names a skill, not a block basis, so resolve it as a block-type one.
-				def = def.asDefense(BlockID)
-				var level fxp.Int
-				if def.Type() == BlockID {
-					// A block-type default names the skill whose block is wanted, so the skill-level adjustment has
-					// to be folded in before the conversion to a block level, exactly as it is on the other path.
-					// SkillLevelFast() would hand back an already-converted level, and adding the adjustment to that
-					// would weight it twice.
-					level = def.defenseLevelFast(entity, replacements, preAdj, entity.BlockBonus)
-					if level == fxp.Min {
-						continue
-					}
-				} else {
-					level = def.SkillLevelFast(entity, replacements, false, nil, true)
-					if level == fxp.Min {
-						continue
-					}
-					// Convert the skill level into a block level.
-					level = (level + preAdj).Div(fxp.Two).Floor() + fxp.Three + entity.BlockBonus
-				}
-				level += postAdj
-				if best < level {
-					best = level
-				}
-			}
-			if best != fxp.Min {
-				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
-				result.Modifier += best
-				AppendStringOntoNewLine(modifiersTooltip, entity.BlockBonusTooltip)
-				adj := w.weaponAdjustment(w.baseDamageDieCount, modifiersTooltip, feature.WeaponBlockBonus)
-				result.Modifier = adj.applyTo(result.Modifier).Max(0).Floor()
-			} else {
-				result.Modifier = 0
-			}
+			result.Modifier = w.resolveDefenseModifier(entity, modifiersTooltip, result.Modifier, BlockID,
+				feature.WeaponBlockBonus, entity.BlockBonus, entity.BlockBonusTooltip)
 		}
 	}
 	result.Validate()

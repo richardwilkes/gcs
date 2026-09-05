@@ -604,6 +604,54 @@ func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 	return 0
 }
 
+// resolveDefenseModifier resolves the modifier of one of this weapon's defenses -- parry or block, as named by
+// defenseID -- from the weapon's defaults, starting from the weapon's own modifier in current and applying the
+// entity's defenseBonus (whose explanation is defenseBonusTooltip) and the weapon bonuses of bonusType. It returns 0
+// when no default resolves.
+func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes.InsertBuffer, current fxp.Int, defenseID string, bonusType feature.Type, defenseBonus fxp.Int, defenseBonusTooltip string) fxp.Int {
+	var primaryTooltip *xbytes.InsertBuffer
+	if modifiersTooltip != nil {
+		primaryTooltip = &xbytes.InsertBuffer{}
+	}
+	preAdj := w.skillLevelBaseAdjustment(entity, primaryTooltip)
+	postAdj := w.skillLevelPostAdjustment(entity, primaryTooltip)
+	replacements := w.NameableReplacements()
+	best := fxp.Min
+	for _, def := range w.Defaults {
+		// A default of the other defense type names a skill, not a basis for this defense, so resolve it as one of
+		// this defense's type.
+		def = def.asDefense(defenseID)
+		var level fxp.Int
+		if def.Type() == defenseID {
+			// A defense-type default names the skill whose defense is wanted, so the skill-level adjustment has to be
+			// folded in before the conversion to a defense level, exactly as it is on the other path. SkillLevelFast()
+			// would hand back an already-converted level, and adding the adjustment to that would weight it twice.
+			level = def.defenseLevelFast(entity, replacements, preAdj, defenseBonus)
+			if level == fxp.Min {
+				continue
+			}
+		} else {
+			level = def.SkillLevelFast(entity, replacements, false, nil, true)
+			if level == fxp.Min {
+				continue
+			}
+			// Convert the skill level into a defense level.
+			level = (level + preAdj).Div(fxp.Two).Floor() + fxp.Three + defenseBonus
+		}
+		level += postAdj
+		if best < level {
+			best = level
+		}
+	}
+	if best == fxp.Min {
+		return 0
+	}
+	AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
+	AppendStringOntoNewLine(modifiersTooltip, defenseBonusTooltip)
+	adj := w.weaponAdjustment(w.baseDamageDieCount, modifiersTooltip, bonusType)
+	return adj.applyTo(current + best).Max(0).Floor()
+}
+
 // EncumbrancePenalty returns the current encumbrance penalty.
 func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if e == nil {
