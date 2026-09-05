@@ -10,12 +10,10 @@
 package gurps
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
 func deferredNewScriptEquipment(item *Equipment) ScriptSelfProvider {
@@ -30,19 +28,7 @@ func deferredNewScriptEquipment(item *Equipment) ScriptSelfProvider {
 
 func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(string(item.TID)) }
-	m["parentID"] = func() goja.Value {
-		if item.parent == nil {
-			return goja.Undefined()
-		}
-		return r.ToValue(string(item.parent.TID))
-	}
-	m["parent"] = func() goja.Value {
-		if item.parent == nil {
-			return goja.Undefined()
-		}
-		return newScriptEquipment(r, item.parent)
-	}
+	addScriptNodeIdentity(r, m, item, item.Tags, newScriptEquipment)
 	m["name"] = func() goja.Value { return r.ToValue(item.NameWithReplacements()) }
 	m["techLevel"] = func() goja.Value { return r.ToValue(item.TechLevel) }
 	m["legalityClass"] = func() goja.Value { return r.ToValue(item.LegalityClass) }
@@ -67,12 +53,8 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	// equipped: the character collects nothing from that list, and the equipped flag is meaningless there, since
 	// nothing clears it when an item is created in or moved to it.
 	m["equipped"] = func() goja.Value { return r.ToValue(item.IsCarried() && item.ReallyEquipped()) }
-	m["container"] = func() goja.Value { return r.ToValue(item.Container()) }
 	m["switchedOn"] = func() goja.Value { return r.ToValue(item.SwitchedOn) }
-	m["notes"] = func() goja.Value {
-		return r.ToValue(item.SecondaryText(func(_ display.Option) bool { return true }))
-	}
-	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(item.Tags)) }
+	m["notes"] = scriptNotes(r, item)
 	m["find"] = func() goja.Value {
 		return r.ToValue(func(call goja.FunctionCall) goja.Value {
 			name := callArgAsString(call, 0)

@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/dop251/goja"
@@ -28,22 +27,8 @@ func deferredNewScriptNote(note *Note) ScriptSelfProvider {
 
 func newScriptNote(r *goja.Runtime, note *Note) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(string(note.TID)) }
-	m["parentID"] = func() goja.Value {
-		if note.parent == nil {
-			return goja.Undefined()
-		}
-		return r.ToValue(string(note.parent.TID))
-	}
-	m["parent"] = func() goja.Value {
-		if note.parent == nil {
-			return goja.Undefined()
-		}
-		return newScriptNote(r, note.parent)
-	}
+	addScriptNodeIdentity(r, m, note, note.Tags, newScriptNote)
 	m["description"] = func() goja.Value { return r.ToValue(note.TextWithReplacements()) }
-	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(note.Tags)) }
-	m["container"] = func() goja.Value { return r.ToValue(note.Container()) }
 	if note.Container() {
 		m["children"] = func() goja.Value {
 			children := make([]*goja.Object, 0, len(note.Children))

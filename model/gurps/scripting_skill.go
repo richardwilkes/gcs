@@ -10,11 +10,9 @@
 package gurps
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
 func deferredNewScriptSkill(skill *Skill) ScriptSelfProvider {
@@ -29,25 +27,9 @@ func deferredNewScriptSkill(skill *Skill) ScriptSelfProvider {
 
 func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(string(skill.TID)) }
-	m["parentID"] = func() goja.Value {
-		if skill.parent == nil {
-			return goja.Undefined()
-		}
-		return r.ToValue(string(skill.parent.TID))
-	}
-	m["parent"] = func() goja.Value {
-		if skill.parent == nil {
-			return goja.Undefined()
-		}
-		return newScriptSkill(r, skill.parent)
-	}
+	addScriptNodeIdentity(r, m, skill, skill.Tags, newScriptSkill)
 	m["name"] = func() goja.Value { return r.ToValue(skill.NameWithReplacements()) }
-	m["notes"] = func() goja.Value {
-		return r.ToValue(skill.SecondaryText(func(_ display.Option) bool { return true }))
-	}
-	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(skill.Tags)) }
-	m["container"] = func() goja.Value { return r.ToValue(skill.Container()) }
+	m["notes"] = scriptNotes(r, skill)
 	if skill.Container() {
 		m["children"] = func() goja.Value {
 			children := make([]*goja.Object, 0, len(skill.Children))

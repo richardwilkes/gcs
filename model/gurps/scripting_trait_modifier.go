@@ -13,7 +13,6 @@ import (
 	"slices"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
 func deferredNewScriptTraitModifier(mod *TraitModifier) ScriptSelfProvider {
@@ -43,8 +42,6 @@ func newScriptTraitModifier(r *goja.Runtime, mod *TraitModifier) *goja.Object {
 		return goja.Undefined()
 	}
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(mod.Tags)) }
-	m["notes"] = func() goja.Value {
-		return r.ToValue(mod.SecondaryText(func(_ display.Option) bool { return true }))
-	}
+	m["notes"] = scriptNotes(r, mod)
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

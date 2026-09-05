@@ -14,6 +14,8 @@ import (
 	"slices"
 
 	"github.com/dop251/goja"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 var _ goja.DynamicObject = &ScriptObject{}
@@ -101,4 +103,51 @@ func (s *ScriptObject) Delete(_ string) bool {
 // Keys implements goja.DynamicObject.
 func (s *ScriptObject) Keys() []string {
 	return s.keys
+}
+
+// scriptNode is the part of a node's behavior that the identity properties shared by every node script wrapper rely
+// on. It is a constraint of its own rather than Node because Node's method set has neither ID nor Container, and the
+// wrappers need nothing else from it.
+type scriptNode[T any] interface {
+	comparable
+	ID() tid.TID
+	Parent() T
+	Container() bool
+}
+
+// addScriptNodeIdentity installs the properties every node script wrapper shares: id, parentID, parent, container and
+// tags. parentID and parent are undefined for a top-level node. parent is built on demand with ctor, which is the
+// wrapper's own constructor, so an ancestor chain is only materialized as far as a script actually walks it.
+func addScriptNodeIdentity[T scriptNode[T]](r *goja.Runtime, m map[string]func() goja.Value, node T, tags []string,
+	ctor func(*goja.Runtime, T) *goja.Object,
+) {
+	var zero T
+	m["id"] = func() goja.Value { return r.ToValue(string(node.ID())) }
+	m["parentID"] = func() goja.Value {
+		if parent := node.Parent(); parent != zero {
+			return r.ToValue(string(parent.ID()))
+		}
+		return goja.Undefined()
+	}
+	m["parent"] = func() goja.Value {
+		if parent := node.Parent(); parent != zero {
+			return ctor(r, parent)
+		}
+		return goja.Undefined()
+	}
+	m["container"] = func() goja.Value { return r.ToValue(node.Container()) }
+	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(tags)) }
+}
+
+// secondaryTextProvider is implemented by the nodes whose script wrappers expose their secondary text as notes.
+type secondaryTextProvider interface {
+	SecondaryText(optionChecker func(display.Option) bool) string
+}
+
+// scriptNotes returns the property a script sees as a node's notes: its secondary text with every display option
+// enabled, so nothing the sheet might be configured to hide is withheld from the script.
+func scriptNotes(r *goja.Runtime, node secondaryTextProvider) func() goja.Value {
+	return func() goja.Value {
+		return r.ToValue(node.SecondaryText(func(_ display.Option) bool { return true }))
+	}
 }

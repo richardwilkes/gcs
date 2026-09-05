@@ -13,7 +13,6 @@ import (
 	"slices"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
 func deferredNewScriptEquipmentModifier(mod *EquipmentModifier) ScriptSelfProvider {
@@ -38,8 +37,6 @@ func newScriptEquipmentModifier(r *goja.Runtime, mod *EquipmentModifier) *goja.O
 	m["name"] = func() goja.Value { return r.ToValue(mod.NameWithReplacements()) }
 	m["techLevel"] = func() goja.Value { return r.ToValue(mod.TechLevel) }
 	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(mod.Tags)) }
-	m["notes"] = func() goja.Value {
-		return r.ToValue(mod.SecondaryText(func(_ display.Option) bool { return true }))
-	}
+	m["notes"] = scriptNotes(r, mod)
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

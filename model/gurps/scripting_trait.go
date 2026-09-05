@@ -10,11 +10,9 @@
 package gurps
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/dop251/goja"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 )
 
 func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
@@ -29,25 +27,9 @@ func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
 
 func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	m := make(map[string]func() goja.Value)
-	m["id"] = func() goja.Value { return r.ToValue(string(trait.TID)) }
-	m["parentID"] = func() goja.Value {
-		if trait.parent == nil {
-			return goja.Undefined()
-		}
-		return r.ToValue(string(trait.parent.TID))
-	}
-	m["parent"] = func() goja.Value {
-		if trait.parent == nil {
-			return goja.Undefined()
-		}
-		return newScriptTrait(r, trait.parent)
-	}
+	addScriptNodeIdentity(r, m, trait, trait.Tags, newScriptTrait)
 	m["name"] = func() goja.Value { return r.ToValue(trait.NameWithReplacements()) }
-	m["notes"] = func() goja.Value {
-		return r.ToValue(trait.SecondaryText(func(_ display.Option) bool { return true }))
-	}
-	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(trait.Tags)) }
-	m["container"] = func() goja.Value { return r.ToValue(trait.Container()) }
+	m["notes"] = scriptNotes(r, trait)
 	m["switchedOn"] = func() goja.Value { return r.ToValue(trait.SwitchedOn) }
 	m["points"] = func() goja.Value { return r.ToValue(trait.AdjustedPoints().AsFloat[float64]()) }
 	m["selfControl"] = func() goja.Value { return r.ToValue(trait.ResolvedSelfControl(nil).Number()) }
