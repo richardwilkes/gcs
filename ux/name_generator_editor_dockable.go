@@ -12,6 +12,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -103,6 +104,7 @@ func newNameGeneratorEditorDockable() *nameGeneratorEditorDockable {
 
 // buildContent fills the content with the sample names and the editor for the generator.
 func (d *nameGeneratorEditorDockable) buildContent() {
+	d.content.SetBorder(unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing*2, unison.StdHSpacing*2)))
 	d.samples = newNameGeneratorSamplesPanel(d)
 	d.content.AddChild(d.samples)
 	d.content.AddChild(newNameGeneratorPanel(d, d.model, nil))

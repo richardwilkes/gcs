@@ -30,12 +30,7 @@ type ancestryEditorPanel struct {
 func newAncestryEditorPanel(d *ancestryEditorDockable) *ancestryEditorPanel {
 	p := &ancestryEditorPanel{dockable: d}
 	p.Self = p
-	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
-		Top:    unison.StdVSpacing,
-		Left:   unison.StdHSpacing,
-		Bottom: unison.StdVSpacing,
-		Right:  unison.StdHSpacing * 2,
-	}))
+	p.SetBorder(unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing*2, unison.StdHSpacing*2)))
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,

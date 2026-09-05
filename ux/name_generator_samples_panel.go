@@ -18,8 +18,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // sampleNameCount is how many sample names the name generator editor shows at a time.
@@ -40,20 +42,24 @@ type nameGeneratorSamplesPanel struct {
 func newNameGeneratorSamplesPanel(d *nameGeneratorEditorDockable) *nameGeneratorSamplesPanel {
 	p := &nameGeneratorSamplesPanel{dockable: d}
 	p.Self = p
-	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
-		Top:   unison.StdVSpacing,
-		Left:  unison.StdHSpacing,
-		Right: unison.StdHSpacing * 2,
-	}))
+	p.SetBorder(unison.NewEmptyBorder(geom.Insets{Bottom: unison.StdVSpacing * 2}))
 	p.SetLayout(&unison.FlexLayout{Columns: 1, VSpacing: unison.StdVSpacing})
 	p.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	button := unison.NewSVGButton(svg.Randomize)
 	button.Tooltip = newWrappedTooltip(i18n.Text("Generate new sample names"))
 	button.ClickCallback = p.refresh
 	p.AddChild(newEditorSectionHeader(i18n.Text("Sample Names"),
-		i18n.Text("Names generated from the current definition, so changes can be checked as they are made"), button))
+		i18n.Text("Names generated from the current definition,\nso changes can be checked as they are made"), button))
 	p.label = newWrappingLabel()
+	p.label.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
+		geom.NewUniformInsets(1), false),
+		unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing, unison.StdVSpacing))))
 	p.label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	originalDraw := p.label.DrawCallback
+	p.label.DrawCallback = func(c *unison.Canvas, r geom.Rect) {
+		c.DrawRect(r, unison.ThemeAboveSurface.Paint(c, r, paintstyle.Fill))
+		originalDraw(c, r)
+	}
 	p.AddChild(p.label)
 	p.refresh()
 	return p
@@ -65,7 +71,7 @@ func (p *nameGeneratorSamplesPanel) refresh() {
 	p.shownHash = gurps.Hash64(p.dockable.model)
 	names, err := p.dockable.model.SampleNames(sampleNameCount)
 	if err != nil {
-		p.label.setText(errorMessage(err), unison.ThemeError)
+		p.label.setText(xstrings.FirstToUpper(errorMessage(err)), unison.ThemeWarning)
 		return
 	}
 	p.label.setText(strings.Join(names, ", "), unison.DefaultLabelTheme.OnBackgroundInk)
