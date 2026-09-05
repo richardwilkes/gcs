@@ -820,7 +820,7 @@ func (t *Trait) FillWithNameableKeys(m, existing map[string]string) {
 	Traverse(func(mod *TraitModifier) bool {
 		mod.FillWithNameableKeys(m, existing)
 		return false
-	}, true, true, t.Modifiers...)
+	}, true, false, t.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -1087,22 +1087,18 @@ func (t *Trait) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (t *Trait) SyncWithSource() {
-	if !xreflect.IsNil(t.owner) {
-		if state, data := t.owner.SourceMatcher().Match(t); state == srcstate.Mismatched {
-			if other, ok := data.(*Trait); ok {
-				t.TraitSyncData = other.TraitSyncData
-				t.Tags = slices.Clone(other.Tags)
-				t.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-				if t.Container() {
-					t.TraitContainerSyncData = other.TraitContainerSyncData
-				} else {
-					t.TraitNonContainerSyncData = other.TraitNonContainerSyncData
-					t.Weapons = CloneWeapons(other.Weapons, t, Reference)
-					t.Features = other.Features.Clone()
-				}
-			}
+	syncFromSource(t, func(other *Trait) {
+		t.TraitSyncData = other.TraitSyncData
+		t.Tags = slices.Clone(other.Tags)
+		t.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+		if t.Container() {
+			t.TraitContainerSyncData = other.TraitContainerSyncData
+		} else {
+			t.TraitNonContainerSyncData = other.TraitNonContainerSyncData
+			t.Weapons = CloneWeapons(other.Weapons, t, Reference)
+			t.Features = other.Features.Clone()
 		}
-	}
+	})
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be

@@ -1447,47 +1447,43 @@ func (s *Skill) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (s *Skill) SyncWithSource() {
-	if !xreflect.IsNil(s.owner) {
-		if state, data := s.owner.SourceMatcher().Match(s); state == srcstate.Mismatched {
-			if other, ok := data.(*Skill); ok {
-				s.SkillSyncData = other.SkillSyncData
-				s.Tags = slices.Clone(other.Tags)
-				if s.Container() {
-					s.SkillContainerOnlySyncData = other.SkillContainerOnlySyncData
-				} else {
-					// As in SkillEditData.ApplyTo: a recorded default is only kept while the declared defaults it was
-					// chosen from stay the same.
-					if defaultsHash(s.Defaults) != defaultsHash(other.Defaults) {
-						s.DefaultedFrom = nil
-					}
-					s.SkillNonContainerOnlySyncData = other.SkillNonContainerOnlySyncData
-					if len(other.Defaults) != 0 {
-						s.Defaults = make([]*SkillDefault, len(other.Defaults))
-						for i, def := range other.Defaults {
-							def2 := *def
-							s.Defaults[i] = &def2
-						}
-					}
-					if other.TechniqueDefault != nil {
-						def := *other.TechniqueDefault
-						s.TechniqueDefault = &def
-						if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-							s.TechniqueDefault.Name = criteria.Text{}
-							s.TechniqueDefault.Specialization = criteria.Text{}
-							s.TechniqueDefault.Tags = criteria.Text{}
-						}
-					}
-					if other.TechniqueLimitModifier != nil {
-						mod := *other.TechniqueLimitModifier
-						s.TechniqueLimitModifier = &mod
-					}
-					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-					s.Weapons = CloneWeapons(other.Weapons, s, Reference)
-					s.Features = other.Features.Clone()
-				}
+	syncFromSource(s, func(other *Skill) {
+		s.SkillSyncData = other.SkillSyncData
+		s.Tags = slices.Clone(other.Tags)
+		if s.Container() {
+			s.SkillContainerOnlySyncData = other.SkillContainerOnlySyncData
+			return
+		}
+		// As in SkillEditData.ApplyTo: a recorded default is only kept while the declared defaults it was chosen from
+		// stay the same.
+		if defaultsHash(s.Defaults) != defaultsHash(other.Defaults) {
+			s.DefaultedFrom = nil
+		}
+		s.SkillNonContainerOnlySyncData = other.SkillNonContainerOnlySyncData
+		if len(other.Defaults) != 0 {
+			s.Defaults = make([]*SkillDefault, len(other.Defaults))
+			for i, def := range other.Defaults {
+				def2 := *def
+				s.Defaults[i] = &def2
 			}
 		}
-	}
+		if other.TechniqueDefault != nil {
+			def := *other.TechniqueDefault
+			s.TechniqueDefault = &def
+			if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
+				s.TechniqueDefault.Name = criteria.Text{}
+				s.TechniqueDefault.Specialization = criteria.Text{}
+				s.TechniqueDefault.Tags = criteria.Text{}
+			}
+		}
+		if other.TechniqueLimitModifier != nil {
+			mod := *other.TechniqueLimitModifier
+			s.TechniqueLimitModifier = &mod
+		}
+		s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+		s.Weapons = CloneWeapons(other.Weapons, s, Reference)
+		s.Features = other.Features.Clone()
+	})
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be

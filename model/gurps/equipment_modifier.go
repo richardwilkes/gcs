@@ -390,15 +390,7 @@ func (e *EquipmentModifier) DataOwner() DataOwner {
 func (e *EquipmentModifier) setEquipment(equipment *Equipment) {
 	e.equipment = equipment
 	if equipment != nil && len(e.Replacements) != 0 {
-		if e.equipment.Replacements == nil {
-			e.equipment.Replacements = e.Replacements
-		} else {
-			for k, v := range e.Replacements {
-				if _, exists := e.equipment.Replacements[k]; !exists {
-					e.equipment.Replacements[k] = v
-				}
-			}
-		}
+		equipment.Replacements = mergeReplacements(equipment.Replacements, e.Replacements)
 		e.Replacements = nil
 	}
 	if e.Container() {
@@ -427,12 +419,9 @@ func (e *EquipmentModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(e), deferredNewScriptEquipmentModifier(e), e.LocalNotesWithReplacements())
 }
 
-// SecondaryText returns the "secondary" text: the text display below an Trait.
+// SecondaryText returns the "secondary" text: the text displayed below the modifier.
 func (e *EquipmentModifier) SecondaryText(optionChecker func(display.Option) bool) string {
-	if !optionChecker(SheetSettingsFor(EntityFromNode(e)).NotesDisplay) {
-		return ""
-	}
-	return e.ResolveLocalNotes()
+	return modifierSecondaryText(e, optionChecker)
 }
 
 // FullDescription returns a full description.
@@ -522,25 +511,20 @@ func (e *EquipmentModifier) NameableReplacements() map[string]string {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (e *EquipmentModifier) NameWithReplacements() string {
-	if e.equipment == nil {
-		return e.Name
-	}
-	return nameable.Apply(e.Name, e.equipment.Replacements)
+	return applyOwnerReplacements(e.Name, e.equipment)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (e *EquipmentModifier) LocalNotesWithReplacements() string {
-	if e.equipment == nil {
-		return e.LocalNotes
-	}
-	return nameable.Apply(e.LocalNotes, e.equipment.Replacements)
+	return applyOwnerReplacements(e.LocalNotes, e.equipment)
 }
 
-// FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.
+// FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map. Containers take
+// part too, since their name and notes are displayed with replacements applied just as a leaf modifier's are.
 func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) {
 	if e.Enabled() {
-		if existing == nil && e.equipment != nil {
-			existing = e.equipment.Replacements
+		if existing == nil {
+			existing = e.NameableReplacements()
 		}
 		nameable.Extract(
 			m, existing,
@@ -746,25 +730,24 @@ func (e *EquipmentModifier) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (e *EquipmentModifier) SyncWithSource() {
-	if !xreflect.IsNil(e.owner) {
-		if state, data := e.owner.SourceMatcher().Match(e); state == srcstate.Mismatched {
-			if other, ok := data.(*EquipmentModifier); ok {
-				e.EquipmentModifierSyncData = other.EquipmentModifierSyncData
-				e.Tags = slices.Clone(other.Tags)
-				if !e.Container() {
-					e.EquipmentModifierNonContainerSyncData = other.EquipmentModifierNonContainerSyncData
-					e.Features = other.Features.Clone()
-				}
-			}
+	syncFromSource(e, func(other *EquipmentModifier) {
+		e.EquipmentModifierSyncData = other.EquipmentModifierSyncData
+		e.Tags = slices.Clone(other.Tags)
+		if !e.Container() {
+			e.EquipmentModifierNonContainerSyncData = other.EquipmentModifierNonContainerSyncData
+			e.Features = other.Features.Clone()
 		}
-	}
+	})
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *EquipmentModifier) Hash(h hash.Hash) {
 	e.hash(h)
-	if !e.Container() {
+	if e.Container() {
+		// Containers carry no further sync data, so mark them the same way a nil value is marked elsewhere
+		xhash.Num8(h, uint8(255))
+	} else {
 		e.EquipmentModifierNonContainerSyncData.hash(h)
 	}
 }

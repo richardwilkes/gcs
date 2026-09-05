@@ -407,14 +407,10 @@ func (n *Note) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (n *Note) SyncWithSource() {
-	if !xreflect.IsNil(n.owner) {
-		if state, data := n.owner.SourceMatcher().Match(n); state == srcstate.Mismatched {
-			if other, ok := data.(*Note); ok {
-				n.NoteSyncData = other.NoteSyncData
-				n.Tags = slices.Clone(other.Tags)
-			}
-		}
-	}
+	syncFromSource(n, func(other *Note) {
+		n.NoteSyncData = other.NoteSyncData
+		n.Tags = slices.Clone(other.Tags)
+	})
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be

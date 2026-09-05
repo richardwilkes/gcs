@@ -1221,23 +1221,19 @@ func (s *Spell) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (s *Spell) SyncWithSource() {
-	if !xreflect.IsNil(s.owner) {
-		if state, data := s.owner.SourceMatcher().Match(s); state == srcstate.Mismatched {
-			if other, ok := data.(*Spell); ok {
-				s.SpellSyncData = other.SpellSyncData
-				s.Tags = slices.Clone(other.Tags)
-				if s.Container() {
-					s.SpellContainerOnlySyncData = other.SpellContainerOnlySyncData
-				} else {
-					s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
-					s.College = slices.Clone(s.College)
-					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-					s.Weapons = CloneWeapons(other.Weapons, s, Reference)
-					s.Features = other.Features.Clone()
-				}
-			}
+	syncFromSource(s, func(other *Spell) {
+		s.SpellSyncData = other.SpellSyncData
+		s.Tags = slices.Clone(other.Tags)
+		if s.Container() {
+			s.SpellContainerOnlySyncData = other.SpellContainerOnlySyncData
+		} else {
+			s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
+			s.College = slices.Clone(other.College)
+			s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+			s.Weapons = CloneWeapons(other.Weapons, s, Reference)
+			s.Features = other.Features.Clone()
 		}
-	}
+	})
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be

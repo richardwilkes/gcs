@@ -393,15 +393,7 @@ func (t *TraitModifier) DataOwner() DataOwner {
 func (t *TraitModifier) setTrait(trait *Trait) {
 	t.trait = trait
 	if trait != nil && len(t.Replacements) != 0 {
-		if t.trait.Replacements == nil {
-			t.trait.Replacements = t.Replacements
-		} else {
-			for k, v := range t.Replacements {
-				if _, exists := t.trait.Replacements[k]; !exists {
-					t.trait.Replacements[k] = v
-				}
-			}
-		}
+		trait.Replacements = mergeReplacements(trait.Replacements, t.Replacements)
 		t.Replacements = nil
 	}
 	if t.Container() {
@@ -526,12 +518,9 @@ func (t *TraitModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(t), deferredNewScriptTraitModifier(t), t.LocalNotesWithReplacements())
 }
 
-// SecondaryText returns the "secondary" text: the text display below an Trait.
+// SecondaryText returns the "secondary" text: the text displayed below the modifier.
 func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
-	if !optionChecker(SheetSettingsFor(EntityFromNode(t)).NotesDisplay) {
-		return ""
-	}
-	return t.ResolveLocalNotes()
+	return modifierSecondaryText(t, optionChecker)
 }
 
 // FullDescription returns a full description.
@@ -570,18 +559,12 @@ func (t *TraitModifier) CostDescription() string {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (t *TraitModifier) NameWithReplacements() string {
-	if t.trait == nil {
-		return t.Name
-	}
-	return nameable.Apply(t.Name, t.trait.Replacements)
+	return applyOwnerReplacements(t.Name, t.trait)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (t *TraitModifier) LocalNotesWithReplacements() string {
-	if t.trait == nil {
-		return t.LocalNotes
-	}
-	return nameable.Apply(t.LocalNotes, t.trait.Replacements)
+	return applyOwnerReplacements(t.LocalNotes, t.trait)
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.
@@ -592,11 +575,12 @@ func (t *TraitModifier) NameableReplacements() map[string]string {
 	return t.trait.Replacements
 }
 
-// FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map.
+// FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map. Containers take part
+// too, since their name and notes are displayed with replacements applied just as a leaf modifier's are.
 func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
-	if !t.Container() && t.Enabled() {
-		if existing == nil && t.trait != nil {
-			existing = t.trait.Replacements
+	if t.Enabled() {
+		if existing == nil {
+			existing = t.NameableReplacements()
 		}
 		nameable.Extract(
 			m, existing,
@@ -657,18 +641,14 @@ func (t *TraitModifier) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (t *TraitModifier) SyncWithSource() {
-	if !xreflect.IsNil(t.owner) {
-		if state, data := t.owner.SourceMatcher().Match(t); state == srcstate.Mismatched {
-			if other, ok := data.(*TraitModifier); ok {
-				t.TraitModifierSyncData = other.TraitModifierSyncData
-				t.Tags = slices.Clone(other.Tags)
-				if !t.Container() {
-					t.TraitModifierNonContainerSyncData = other.TraitModifierNonContainerSyncData
-					t.Features = other.Features.Clone()
-				}
-			}
+	syncFromSource(t, func(other *TraitModifier) {
+		t.TraitModifierSyncData = other.TraitModifierSyncData
+		t.Tags = slices.Clone(other.Tags)
+		if !t.Container() {
+			t.TraitModifierNonContainerSyncData = other.TraitModifierNonContainerSyncData
+			t.Features = other.Features.Clone()
 		}
-	}
+	})
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
@@ -676,6 +656,7 @@ func (t *TraitModifier) SyncWithSource() {
 func (t *TraitModifier) Hash(h hash.Hash) {
 	t.hash(h)
 	if t.Container() {
+		// Containers carry no further sync data, so mark them the same way a nil value is marked elsewhere
 		xhash.Num8(h, uint8(255))
 	} else {
 		t.TraitModifierNonContainerSyncData.hash(h)

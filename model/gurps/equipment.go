@@ -1025,7 +1025,7 @@ func (e *Equipment) FillWithNameableKeys(m, existing map[string]string) {
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.FillWithNameableKeys(m, existing)
 		return false
-	}, true, true, e.Modifiers...)
+	}, true, false, e.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -1142,17 +1142,13 @@ func (e *Equipment) ClearSource() {
 
 // SyncWithSource synchronizes this data with the source.
 func (e *Equipment) SyncWithSource() {
-	if !xreflect.IsNil(e.owner) {
-		if state, data := e.owner.SourceMatcher().Match(e); state == srcstate.Mismatched {
-			if other, ok := data.(*Equipment); ok {
-				e.EquipmentSyncData = other.EquipmentSyncData
-				e.Tags = slices.Clone(other.Tags)
-				e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
-				e.Weapons = CloneWeapons(other.Weapons, e, Reference)
-				e.Features = other.Features.Clone()
-			}
-		}
-	}
+	syncFromSource(e, func(other *Equipment) {
+		e.EquipmentSyncData = other.EquipmentSyncData
+		e.Tags = slices.Clone(other.Tags)
+		e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+		e.Weapons = CloneWeapons(other.Weapons, e, Reference)
+		e.Features = other.Features.Clone()
+	})
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
