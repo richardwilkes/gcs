@@ -69,8 +69,8 @@ func (m *modifiable[T, TN]) AddModifier(mod T) {
 	m.Modifiers = append(m.Modifiers, mod)
 }
 
-// SetTargetNode calls SetTargetNode on each modifier.
-func (m *modifiable[T, TN]) SetTargetNode(target TN) {
+// SetModifiersTargetNode calls SetTargetNode on each modifier.
+func (m *modifiable[T, TN]) SetModifiersTargetNode(target TN) {
 	for _, one := range m.Modifiers {
 		one.SetTargetNode(target)
 	}
