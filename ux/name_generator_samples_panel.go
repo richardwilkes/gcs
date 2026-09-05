@@ -71,7 +71,7 @@ func (p *nameGeneratorSamplesPanel) refresh() {
 	p.shownHash = gurps.Hash64(p.dockable.model)
 	names, err := p.dockable.model.SampleNames(sampleNameCount)
 	if err != nil {
-		p.label.setText(xstrings.FirstToUpper(errorMessage(err)), unison.ThemeWarning)
+		p.label.setText(errorMessage(err), unison.ThemeWarning)
 		return
 	}
 	p.label.setText(strings.Join(names, ", "), unison.DefaultLabelTheme.OnBackgroundInk)
@@ -88,8 +88,11 @@ func (p *nameGeneratorSamplesPanel) Sync() {
 // errorMessage returns the message of the error without the call stack an errs.Error would otherwise include, since
 // the message is meant to be read by the user.
 func errorMessage(err error) string {
+	var msg string
 	if detailed, ok := errors.AsType[*errs.Error](err); ok {
-		return detailed.Message()
+		msg = detailed.Message()
+	} else {
+		msg = err.Error()
 	}
-	return err.Error()
+	return xstrings.FirstToUpper(msg)
 }

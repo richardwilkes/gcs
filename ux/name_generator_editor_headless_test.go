@@ -49,7 +49,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	var d *nameGeneratorEditorDockable
 	var editors int
 	var title, samplesText, expectedMessage string
-	var modified, saveEnabled, inWorkspace, samplesInError bool
+	var modified, saveEnabled, inWorkspace, samplesInWarning bool
 	screen.Do(func() {
 		matches := AllMatchingDockables(isNameGeneratorEditor)
 		editors = len(matches)
@@ -65,7 +65,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 		saveEnabled = d.saveButton.Enabled()
 		inWorkspace = d.Window() == wnd
 		samplesText = d.samples.label.text
-		samplesInError = d.samples.label.ink == unison.ThemeError
+		samplesInWarning = d.samples.label.ink == unison.ThemeWarning
 		if _, err := d.model.SampleNames(sampleNameCount); err != nil {
 			expectedMessage = errorMessage(err)
 		}
@@ -79,7 +79,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c.True(inWorkspace, "the editor opens in the workspace window")
 	c.NotEqual("", expectedMessage, "an empty generator cannot generate names")
 	c.Equal(expectedMessage, samplesText, "the samples show why no names can be generated")
-	c.True(samplesInError, "the reason is drawn as an error")
+	c.True(samplesInWarning, "the reason is drawn as a warning")
 
 	// Choosing the item again opens a second editor, which stands on its own: the first is left as it was, and closing
 	// the second, which is untouched, prompts for nothing and leaves the first in place.
@@ -271,8 +271,8 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 
 	// Import training names from a text file through the pure-Go open dialog. The dialog opens in the directory last
 	// used for files, which is pointed at the directory holding the file so that the file is the one row in its list;
-	// startHeadlessWorkspace puts the directory back afterwards. The file repeats a name already in the list and has a
-	// blank line, neither of which adds anything.
+	// startHeadlessWorkspace puts the directory back afterwards. The file repeats a name already in the list, whose
+	// weight is added to the existing entry rather than making a second one, and has a blank line, which adds nothing.
 	importDir := t.TempDir()
 	importPath := filepath.Join(importDir, "names.txt")
 	if err := os.WriteFile(importPath, []byte("Carol\n\nDave: 4\nAlice\n"), 0o640); err != nil {
@@ -323,7 +323,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	}
 	screen.Click(screen.PanelCenter(openButton))
 	imported := []*gurps.WeightedStringOption{
-		{Weight: 1, Value: "Alice"},
+		{Weight: 2, Value: "Alice"},
 		{Weight: 3, Value: "Bob"},
 		{Weight: 1, Value: "Carol"},
 		{Weight: 4, Value: "Dave"},
@@ -336,7 +336,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 		canUndo = d.undoMgr.CanUndo()
 	})
 	c.Equal(1, windows, "the open dialog has been dismissed")
-	c.Equal(imported, names, "the new names are appended with their weights, skipping the duplicate and the blank line")
+	c.Equal(imported, names, "the new names are appended with their weights, the duplicate adds its weight to Alice, and the blank line is skipped")
 	c.True(canUndo, "the import is undoable")
 
 	// The import is a single edit: one undo takes every imported name away and one redo brings them all back. The keys
@@ -350,7 +350,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	screen.Click(screen.PanelCenter(aliceField))
 	screen.KeyPress(unison.KeyZ, mod.OSMenuCommand())
 	screen.Do(func() { names = plainEntries(d.model.Entries) })
-	c.Equal(typed, names, "undo removes every imported name at once")
+	c.Equal(typed, names, "undo removes every imported name and Alice's added weight at once")
 	screen.KeyPress(unison.KeyY, mod.OSMenuCommand())
 	screen.Do(func() { names = plainEntries(d.model.Entries) })
 	c.Equal(imported, names, "redo restores them all")
@@ -374,7 +374,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	})
 	c.Equal([]*gurps.WeightedStringOption{
 		{Weight: 4, Value: "Dave"},
-		{Weight: 1, Value: "Alice"},
+		{Weight: 2, Value: "Alice"},
 		{Weight: 3, Value: "Bob"},
 		{Weight: 1, Value: "Carol"},
 	}, names, "dropping on the upper half of the first row moves the name to the front")
@@ -419,7 +419,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c.True(removeEnabled, "a selection enables the button")
 	screen.Click(screen.PanelCenter(removeSelected))
 	screen.Do(func() { names = plainEntries(d.model.Entries) })
-	c.Equal(typed, names, "the button removes the selected names")
+	c.Equal(imported[:2], names, "the button removes the selected names")
 	screen.Do(func() { aliceField = d.targetMgr.Find(d.model.Entries[0].KeyPrefix + "value") })
 	if aliceField == nil {
 		t.Fatal("the first training name has no Value field")

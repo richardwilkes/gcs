@@ -311,8 +311,8 @@ func TestParseTrainingNames(t *testing.T) {
 }
 
 // TestNameGeneratorPanelImportDedupes verifies that imported names are added after the existing ones in a single undo
-// edit, that a name already present or repeated within the import is added once, and that an import with nothing new
-// posts nothing.
+// edit, that a name already present or repeated within the import is added once with the weights combined, and that an
+// import with no names posts nothing.
 func TestNameGeneratorPanelImportDedupes(t *testing.T) {
 	c := check.New(t)
 	g := simpleNameGenerator("Alice")
@@ -320,7 +320,8 @@ func TestNameGeneratorPanelImportDedupes(t *testing.T) {
 	root := rootNameGeneratorPanel(t, d)
 	root.addTrainingNames(parseTrainingNames("Bob: 2\nAlice\nCarol\nBob\n"))
 	c.Equal([]string{"Alice", "Bob", "Carol"}, optionValues(d.model.Entries))
-	c.Equal(2, d.model.Entries[1].Weight, "the first occurrence's weight is kept")
+	c.Equal(2, d.model.Entries[0].Weight, "the repeat of an existing name adds its weight to the entry")
+	c.Equal(3, d.model.Entries[1].Weight, "the repeat within the import adds its weight to the first occurrence")
 	for _, one := range d.model.Entries {
 		c.NotEqual("", one.KeyPrefix, "every entry has a key prefix")
 	}
@@ -329,10 +330,19 @@ func TestNameGeneratorPanelImportDedupes(t *testing.T) {
 
 	rootNameGeneratorPanel(t, d).addTrainingNames(parseTrainingNames("Alice\nCarol"))
 	c.Equal([]string{"Alice", "Bob", "Carol"}, optionValues(d.model.Entries), "nothing new is added")
+	c.Equal(3, d.model.Entries[0].Weight, "but the weights of the names already present go up")
+	c.Equal(2, d.model.Entries[2].Weight)
+
+	rootNameGeneratorPanel(t, d).addTrainingNames(nil)
+	c.Equal(3, d.model.Entries[0].Weight, "an import with no names changes nothing")
 
 	d.undoMgr.Undo()
-	c.Equal([]string{"Alice"}, optionValues(d.model.Entries), "the import is a single edit")
-	c.False(d.undoMgr.CanUndo(), "and an import with nothing new posted none")
+	c.Equal(2, d.model.Entries[0].Weight, "the second import is a single edit that undoes to the earlier weights")
+	c.Equal(1, d.model.Entries[2].Weight)
+	d.undoMgr.Undo()
+	c.Equal([]string{"Alice"}, optionValues(d.model.Entries), "the first import is a single edit")
+	c.Equal(1, d.model.Entries[0].Weight, "that undoes the added weight too")
+	c.False(d.undoMgr.CanUndo(), "and an import with no names posted none")
 }
 
 // TestNameGeneratorSamplesPanel verifies that the samples panel shows ten names from a working definition, the reason
@@ -345,8 +355,8 @@ func TestNameGeneratorSamplesPanel(t *testing.T) {
 	c.Equal(unison.DefaultLabelTheme.OnBackgroundInk, d.samples.label.ink, "names are drawn normally")
 
 	trainingNamesPanel(d, d.model).removeOption(d.model.Entries[0])
-	c.Contains(d.samples.label.text, "no training data has been provided", "the rebuilt samples say what is missing")
-	c.Equal(unison.ThemeError, d.samples.label.ink, "the reason is drawn as an error")
+	c.Contains(d.samples.label.text, "No training data has been provided", "the rebuilt samples say what is missing")
+	c.Equal(unison.ThemeWarning, d.samples.label.ink, "the reason is drawn as a warning")
 
 	d.undoMgr.Undo()
 	c.Equal(strings.Repeat("Alice, ", 9)+"Alice", d.samples.label.text, "undo brings the names back")

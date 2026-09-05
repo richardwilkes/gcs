@@ -246,28 +246,30 @@ func confirmLargeImport(filePath string, count int) bool {
 			largeTrainingNameCount), 100)) == unison.ModalResponseOK
 }
 
-// addTrainingNames appends the names that are not already in the list, in a single undo edit. A name that appears more
-// than once among the new names is added once. Nothing is posted when there is nothing new.
+// addTrainingNames adds the names to the list in a single undo edit. A name already in the list, or repeated among the
+// new names, is not added again: its weight is added to the entry already there. Nothing is posted when there are no
+// names.
 func (p *nameGeneratorPanel) addTrainingNames(names []*gurps.WeightedStringOption) {
-	d := p.dockable
-	g := p.generator
-	present := make(map[string]bool, len(g.Entries)+len(names))
-	for _, one := range g.Entries {
-		present[one.Value] = true
-	}
-	var added []*gurps.WeightedStringOption
-	for _, one := range names {
-		if present[one.Value] {
-			continue
-		}
-		present[one.Value] = true
-		one.KeyPrefix = d.targetMgr.NextPrefix()
-		added = append(added, one)
-	}
-	if len(added) == 0 {
+	if len(names) == 0 {
 		return
 	}
-	d.editStructure(i18n.Text("Import Training Names"), func() { g.Entries = append(g.Entries, added...) }, "")
+	d := p.dockable
+	g := p.generator
+	d.editStructure(i18n.Text("Import Training Names"), func() {
+		present := make(map[string]*gurps.WeightedStringOption, len(g.Entries)+len(names))
+		for _, one := range g.Entries {
+			present[one.Value] = one
+		}
+		for _, one := range names {
+			if existing, ok := present[one.Value]; ok {
+				existing.Weight += one.Weight
+				continue
+			}
+			present[one.Value] = one
+			one.KeyPrefix = d.targetMgr.NextPrefix()
+			g.Entries = append(g.Entries, one)
+		}
+	}, "")
 }
 
 // parseTrainingNames extracts training names from text, one per line. Blank lines and the whitespace around a name are
