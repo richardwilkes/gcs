@@ -378,8 +378,8 @@ func (e *EquipmentModifier) Depth() int {
 	return count
 }
 
-// TargetNode returns the equipment being targeted for modification
-func (e *EquipmentModifier) TargetNode() *Equipment {
+// Target returns the equipment being targeted for modification
+func (e *EquipmentModifier) Target() *Equipment {
 	return e.equipment
 }
 
@@ -388,8 +388,8 @@ func (e *EquipmentModifier) DataOwner() DataOwner {
 	return e.owner
 }
 
-// SetTargetNode sets the equipment being targeted for modification and configures any sub-components as needed
-func (e *EquipmentModifier) SetTargetNode(target *Equipment) {
+// SetTarget sets the equipment being targeted for modification and configures any sub-components as needed
+func (e *EquipmentModifier) SetTarget(target *Equipment) {
 	// Set the target node for this modifier
 	e.equipment = target
 
@@ -402,7 +402,7 @@ func (e *EquipmentModifier) SetTargetNode(target *Equipment) {
 	// Cascade the operation
 	if e.Container() {
 		for _, child := range e.Children {
-			child.SetTargetNode(target)
+			child.SetTarget(target)
 		}
 	}
 }

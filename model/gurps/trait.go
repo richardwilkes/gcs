@@ -48,8 +48,8 @@ import (
 
 var (
 	_ = assertNode[*Trait]
+	_ = assertModifiableNode[*Trait]
 	_ = assertEditorData[*TraitEditData]
-	_ = assertModifiable[*TraitEditData]
 
 	_ WeaponOwner            = &Trait{}
 	_ TemplatePickerProvider = &Trait{}
@@ -96,7 +96,7 @@ type TraitEditData struct {
 	Replacements map[string]string `json:"replacements,omitempty"`
 
 	// Leverage a default generic implementation of the Modifiable constraint
-	modifiable[*TraitModifier, *Trait]
+	modifiable[*Trait, *TraitModifier]
 
 	SelfControl selfctrl.Roll  `json:"cr,omitzero"`
 	Frequency   frequency.Roll `json:"frequency,omitzero"`
@@ -532,7 +532,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 		}
 	}
 	for _, m := range t.Modifiers {
-		m.SetTargetNode(t)
+		m.SetTarget(t)
 		m.SetDataOwner(owner)
 	}
 }
@@ -1205,7 +1205,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 			// Point the copy at the trait it belongs to, so that a "use level from owner" modifier can resolve its
 			// level. Prior to this, the copies held in an editor only acquired their trait as a side effect of a point
 			// cost computation.
-			cloned.SetTargetNode(trait)
+			cloned.SetTarget(trait)
 			t.Modifiers = append(t.Modifiers, cloned)
 		}
 	}

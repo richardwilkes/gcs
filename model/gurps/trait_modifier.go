@@ -371,8 +371,8 @@ func (t *TraitModifier) Depth() int {
 	return count
 }
 
-// TargetNode returns the trait being targeted for modification
-func (t *TraitModifier) TargetNode() *Trait {
+// Target returns the trait being targeted for modification
+func (t *TraitModifier) Target() *Trait {
 	return t.trait
 }
 
@@ -381,8 +381,8 @@ func (t *TraitModifier) DataOwner() DataOwner {
 	return t.owner
 }
 
-// SetTargetNode sets the trait being targeted for modification and configures any sub-components as needed.
-func (t *TraitModifier) SetTargetNode(target *Trait) {
+// SetTarget sets the trait being targeted for modification and configures any sub-components as needed.
+func (t *TraitModifier) SetTarget(target *Trait) {
 	// Set the target node for this modifier
 	t.trait = target
 
@@ -395,7 +395,7 @@ func (t *TraitModifier) SetTargetNode(target *Trait) {
 	// Cascade the operation
 	if t.Container() {
 		for _, child := range t.Children {
-			child.SetTargetNode(target)
+			child.SetTarget(target)
 		}
 	}
 }

@@ -86,7 +86,7 @@ func TestEquipmentEditDataResolvesModifierNameables(t *testing.T) {
 	var edit EquipmentEditData
 	edit.CopyFrom(eqp)
 	c.Equal(1, len(edit.Modifiers))
-	c.True(eqp == edit.Modifiers[0].TargetNode(), "the copy points at the equipment being edited")
+	c.True(eqp == edit.Modifiers[0].Target(), "the copy points at the equipment being edited")
 	c.Equal("Steel plating", edit.Modifiers[0].NameWithReplacements())
 	c.Equal("Forged from Steel", edit.Modifiers[0].LocalNotesWithReplacements())
 
@@ -98,7 +98,7 @@ func TestEquipmentEditDataResolvesModifierNameables(t *testing.T) {
 	target := NewEquipment(entity, nil, false)
 	edit.ApplyTo(target)
 	c.Equal(1, len(target.Modifiers))
-	c.True(target == target.Modifiers[0].TargetNode(), "the applied copy points at the equipment it was applied to")
+	c.True(target == target.Modifiers[0].Target(), "the applied copy points at the equipment it was applied to")
 	c.Equal("Steel mesh", target.Modifiers[0].NameWithReplacements())
 }
 
@@ -125,8 +125,8 @@ func TestEquipmentCloneAttachesModifiersToTheClone(t *testing.T) {
 	if len(clone.Modifiers) != 1 || len(clone.Modifiers[0].Children) != 1 {
 		return
 	}
-	c.True(clone == clone.Modifiers[0].TargetNode(), "the clone's modifier points at the clone")
-	c.True(clone == clone.Modifiers[0].Children[0].TargetNode(), "the clone's child modifier points at the clone")
+	c.True(clone == clone.Modifiers[0].Target(), "the clone's modifier points at the clone")
+	c.True(clone == clone.Modifiers[0].Children[0].Target(), "the clone's child modifier points at the clone")
 
 	// Diverging the clone's replacements must move the clone's modifiers only.
 	clone.Replacements["Material"] = "Bronze"

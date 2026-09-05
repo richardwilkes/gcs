@@ -16,14 +16,17 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
-// assertModifiable is used at compile time to check a *constraint*
-func assertModifiable[N Modifiable[MN, TN], MN ModifierNode[MN, TN], TN Node[TN]]() {}
+// assertModifiableNode is used at compile time to check a *constraint*
+func assertModifiableNode[T ModifiableNode[T, M], M ModifierNode[M, T]]() {}
 
-// Modifiable represents an interface for an object that accepts modifier nodes
-type Modifiable[T ModifierNode[T, TN], TN Node[TN]] interface {
-	ModifierList() []T
-	SetModifiers([]T)
-	AddModifier(T)
+// ModifiableNode is a narrowed constraint for a Node
+// The narrowed constraint enforces the Node[T] constraint is satisfied.
+// The narrowed constraint enforces that ModifierList, SetModifiers, and AddModifier functions are satisfied.
+type ModifiableNode[T ModifiableNode[T, M], M ModifierNode[M, T]] interface {
+	Node[T]
+	ModifierList() []M
+	SetModifiers([]M)
+	AddModifier(M)
 }
 
 // GeneralModifier is used for common access to modifiers.
@@ -37,42 +40,43 @@ type GeneralModifier interface {
 }
 
 // assertModifierNode is used at compile time to check a *constraint*
-func assertModifierNode[T ModifierNode[T, TN], TN Node[TN]]() {}
+func assertModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]]() {}
 
 // ModifierNode is a narrowed constraint for a Node
-// The narrowed constraint enforces that TargetNode and SetTargetNode functions are satisfied.
+// The narrowed constraint enforces the Node[M] constraint is satisfied.
+// The narrowed constraint enforces that Target and SetTarget functions are satisfied.
 // The narrowed constraint enforces the GeneralModifier interface is satisfied.
-type ModifierNode[N Node[N], TN Node[TN]] interface {
-	Node[N]
-	TargetNode() TN
-	SetTargetNode(TN)
+type ModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]] interface {
+	Node[M]
+	Target() T
+	SetTarget(T)
 	GeneralModifier
 }
 
 // modifiable is a default implementation that satisfies the Modifiable constraint
-type modifiable[T ModifierNode[T, TN], TN Node[TN]] struct {
-	Modifiers []T `json:"modifiers,omitempty"`
+type modifiable[T ModifiableNode[T, M], M ModifierNode[M, T]] struct {
+	Modifiers []M `json:"modifiers,omitempty"`
 }
 
 // ModifierList returns the list of modifiers
-func (m *modifiable[T, TN]) ModifierList() []T {
+func (m *modifiable[T, M]) ModifierList() []M {
 	return m.Modifiers
 }
 
 // SetModifiers sets the list of modifiers
-func (m *modifiable[T, TN]) SetModifiers(all []T) {
+func (m *modifiable[T, M]) SetModifiers(all []M) {
 	m.Modifiers = all
 }
 
 // AddModifier adds a modifier to the list
-func (m *modifiable[T, TN]) AddModifier(mod T) {
+func (m *modifiable[T, M]) AddModifier(mod M) {
 	m.Modifiers = append(m.Modifiers, mod)
 }
 
-// SetModifiersTargetNode calls SetTargetNode on each modifier.
-func (m *modifiable[T, TN]) SetModifiersTargetNode(target TN) {
+// SetModifiersTarget calls SetTarget on each modifier.
+func (m *modifiable[T, M]) SetModifiersTarget(target T) {
 	for _, one := range m.Modifiers {
-		one.SetTargetNode(target)
+		one.SetTarget(target)
 	}
 }
 
