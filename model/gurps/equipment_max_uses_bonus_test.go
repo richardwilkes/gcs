@@ -77,7 +77,7 @@ func TestEquipmentMaxUsesBonusFromModifier(t *testing.T) {
 	eqp.MaxUses = 10
 	mod := NewEquipmentModifier(nil, nil, false)
 	mod.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, "+3")}
-	eqp.Modifiers = []*EquipmentModifier{mod}
+	eqp.AddModifiers(mod.SetTarget(eqp))
 
 	mod.Disabled = false
 	c.Equal(13, eqp.ResolvedMaxUses(), "enabled modifier bonus applies")

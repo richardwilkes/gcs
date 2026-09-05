@@ -43,6 +43,7 @@ import (
 
 var (
 	_ = assertNode[*Trait]
+	_ = assertModifiableNode[*Trait]
 	_ = assertTemplatePickerNode[*Trait]
 	_ = assertEditorData[*TraitEditData]
 
@@ -106,6 +107,7 @@ type TraitEditData struct {
 	SelfControl  selfctrl.Roll     `json:"cr,omitzero"`
 	Frequency    frequency.Roll    `json:"frequency,omitzero"`
 	Disabled     bool              `json:"disabled,omitzero"`
+
 	ItemSwitch
 	preconfigurable
 	TraitNonContainerOnlyEditData
@@ -522,7 +524,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 		}
 	}
 	for _, m := range t.Modifiers {
-		m.setTrait(t)
+		m.SetTarget(t)
 		m.SetDataOwner(owner)
 	}
 }
@@ -1207,8 +1209,8 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
 	// Each copy is pointed at the trait it belongs to, so that a "use level from owner" modifier can resolve its level.
-	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode, func(m *TraitModifier) { m.setTrait(trait) })
-	// setTrait() migrates a modifier's legacy replacements into the trait it was pointed at, which isn't the holder of
+	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode, func(m *TraitModifier) { m.SetTarget(trait) })
+	// SetTarget() migrates a modifier's legacy replacements into the trait it was pointed at, which isn't the holder of
 	// this data when an editor is being populated, so pick up anything it added. This is a no-op when this data is the
 	// trait's own, since both maps are then the same one.
 	t.Replacements = mergeReplacements(t.Replacements, trait.Replacements)
@@ -1221,4 +1223,27 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 // CanPreconfigureContainer implements Preconfigurable.
 func (t *TraitEditData) CanPreconfigureContainer() bool {
 	return true
+}
+
+// ModifierList returns the list of modifiers
+func (t *Trait) ModifierList() []*TraitModifier {
+	return t.Modifiers
+}
+
+// SetModifiers sets the list of modifiers
+func (t *Trait) SetModifiers(all []*TraitModifier) {
+	for _, m := range all {
+		m.SetDataOwner(t.owner)
+		m.SetTarget(t)
+	}
+	t.Modifiers = all
+}
+
+// AddModifiers adds a modifier to the list
+func (t *Trait) AddModifiers(mods ...*TraitModifier) {
+	for _, m := range mods {
+		m.SetDataOwner(t.owner)
+		m.SetTarget(t)
+	}
+	t.Modifiers = append(t.Modifiers, mods...)
 }

@@ -18,6 +18,48 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
+// assertModifiableNode is used at compile time to check a *constraint*
+func assertModifiableNode[T ModifiableNode[T, M], M ModifierNode[M, T]]() {}
+
+// ModifiableNode is a Node constraint, narrowed for the Modifiable interface
+type ModifiableNode[T ModifiableNode[T, M], M ModifierNode[M, T]] interface {
+	Node[T]
+	Modifiable[T, M]
+}
+
+// Modifiable is an interface for a type designed to have a matching Modifier
+type Modifiable[T Modifiable[T, M], M Modifier[M, T]] interface {
+	ModifierList() []M
+	SetModifiers([]M)
+	AddModifiers(...M)
+}
+
+// GeneralModifier is used for common access to modifiers.
+type GeneralModifier interface {
+	Container() bool
+	Depth() int
+	FullDescription() string
+	FullCostDescription() string
+	Enabled() bool
+	SetEnabled(enabled bool)
+}
+
+// assertModifierNode is used at compile time to check a *constraint*
+func assertModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]]() {}
+
+// ModifierNode is Node constraint, narrowed for the Modifier interface
+type ModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]] interface {
+	Node[M]
+	Modifier[M, T]
+}
+
+// Modifier is an interface for a type designed to have a matching Modifiable
+type Modifier[M Modifier[M, T], T Modifiable[T, M]] interface {
+	Target() T
+	SetTarget(T) M
+	GeneralModifier
+}
+
 // mergeReplacements folds src into dst, keeping whatever value dst already holds for a key, and returns the result. A
 // nil dst takes a copy of src rather than src itself, so that the result never shares storage with src.
 func mergeReplacements(dst, src map[string]string) map[string]string {
