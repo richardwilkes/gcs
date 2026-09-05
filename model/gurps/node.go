@@ -70,13 +70,6 @@ type RawPointsAdjuster interface {
 	SetRawPoints(points fxp.Int) bool
 }
 
-// SkillAdjustmentProvider interface for objects that can have their skill level adjusted.
-type SkillAdjustmentProvider interface {
-	RawPointsAdjuster
-	IncrementSkillLevel()
-	DecrementSkillLevel()
-}
-
 // EditorData defines the methods required of editor data.
 type EditorData[T Node[T]] interface {
 	// CopyFrom copies the corresponding data from the node into this editor data.

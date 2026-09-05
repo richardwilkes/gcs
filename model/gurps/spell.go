@@ -49,6 +49,7 @@ var (
 	_ TemplatePickerProvider  = &Spell{}
 	_ FeatureSwitcher         = &Spell{}
 	_ LeveledOwner            = &Spell{}
+	_ SkillLevelStepper       = &Spell{}
 
 	_ TemplatePickerProvider = &SpellData{}
 	_ TemplatePickerProvider = &SpellEditData{}
@@ -691,52 +692,25 @@ func (s *Spell) CalculateLevel() Level {
 // IncrementSkillLevel adds enough points to increment the skill level to the next level.
 func (s *Spell) IncrementSkillLevel() {
 	if !s.Container() {
-		basePoints := s.Points.Floor() + fxp.One
-		maxPoints := basePoints
-		if s.Difficulty.Difficulty == difficulty.Wildcard {
-			maxPoints += fxp.Twelve
-		} else {
-			maxPoints += fxp.Four
-		}
-		oldLevel := s.CalculateLevel().Level
-		for points := basePoints; points < maxPoints; points += fxp.One {
-			s.SetRawPoints(points)
-			if s.CalculateLevel().Level > oldLevel {
-				break
-			}
-		}
+		incrementSkillLevel(s)
 	}
 }
 
 // DecrementSkillLevel removes enough points to decrement the skill level to the previous level.
 func (s *Spell) DecrementSkillLevel() {
-	if !s.Container() && s.Points > 0 {
-		basePoints := s.Points.Floor()
-		minPoints := basePoints
-		if s.Difficulty.Difficulty == difficulty.Wildcard {
-			minPoints -= fxp.Twelve
-		} else {
-			minPoints -= fxp.Four
-		}
-		minPoints = minPoints.Max(0)
-		oldLevel := s.CalculateLevel().Level
-		for points := basePoints; points >= minPoints; points -= fxp.One {
-			s.SetRawPoints(points)
-			if s.CalculateLevel().Level < oldLevel {
-				break
-			}
-		}
-		if s.Points > 0 {
-			oldLevel = s.CalculateLevel().Level
-			for s.Points > 0 {
-				s.SetRawPoints((s.Points - fxp.One).Max(0))
-				if s.CalculateLevel().Level != oldLevel {
-					s.Points += fxp.One
-					break
-				}
-			}
-		}
+	if !s.Container() {
+		decrementSkillLevel(s)
 	}
+}
+
+// WildcardDifficulty implements SkillLevelStepper.
+func (s *Spell) WildcardDifficulty() bool {
+	return s.Difficulty.Difficulty == difficulty.Wildcard
+}
+
+// CurrentCalculatedLevel implements SkillLevelStepper.
+func (s *Spell) CurrentCalculatedLevel() fxp.Int {
+	return s.CalculateLevel().Level
 }
 
 // CalculateSpellLevel returns the calculated spell level.
