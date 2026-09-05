@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -33,6 +34,28 @@ func preserveLiveTheme(t *testing.T) {
 	})
 }
 
+// colorsOf builds a Colors that defines just the given colors, as loading a partially specified .colors file would.
+func colorsOf(t *testing.T, m map[string]unison.ThemeColor) *Colors {
+	t.Helper()
+	c := check.New(t)
+	data, err := jio.Marshal(m)
+	c.NoError(err)
+	var result Colors
+	c.NoError(jio.Unmarshal(data, &result))
+	return &result
+}
+
+// stored returns what the Colors would write.
+func stored(t *testing.T, colors *Colors) map[string]unison.ThemeColor {
+	t.Helper()
+	c := check.New(t)
+	data, err := jio.Marshal(colors)
+	c.NoError(err)
+	var m map[string]unison.ThemeColor
+	c.NoError(jio.Unmarshal(data, &m))
+	return m
+}
+
 // TestSaveWritesReceiverRatherThanLiveTheme covers the `gcs --convert` path: a .colors file is loaded and written back
 // out, and must keep its own colors instead of being overwritten with whatever theme the app is currently running.
 func TestSaveWritesReceiverRatherThanLiveTheme(t *testing.T) {
@@ -45,7 +68,7 @@ func TestSaveWritesReceiverRatherThanLiveTheme(t *testing.T) {
 	// A theme file whose surface color is red.
 	dir := t.TempDir()
 	p := filepath.Join(dir, "test.colors")
-	c.NoError((&Colors{data: map[string]*unison.ThemeColor{"surface": {Light: red, Dark: red}}}).Save(p))
+	c.NoError(colorsOf(t, map[string]unison.ThemeColor{"surface": {Light: red, Dark: red}}).Save(p))
 
 	// The running app's theme is something else entirely.
 	for _, one := range Current() {
@@ -55,19 +78,19 @@ func TestSaveWritesReceiverRatherThanLiveTheme(t *testing.T) {
 
 	loaded, err := NewFromFS(os.DirFS(dir), "test.colors")
 	c.NoError(err)
-	c.Equal(red, loaded.data["surface"].Light, "the file's color is loaded, not the live one")
+	c.Equal(red, stored(t, loaded)["surface"].Light, "the file's color is loaded, not the live one")
 
 	// This is what --convert does: load the file, then write it back to the same path.
 	c.NoError(loaded.Save(p))
 
 	reloaded, err := NewFromFS(os.DirFS(dir), "test.colors")
 	c.NoError(err)
-	c.Equal(red, reloaded.data["surface"].Light, "converting preserves the file's light color")
-	c.Equal(red, reloaded.data["surface"].Dark, "converting preserves the file's dark color")
+	m := stored(t, reloaded)
+	c.Equal(red, m["surface"].Light, "converting preserves the file's light color")
+	c.Equal(red, m["surface"].Dark, "converting preserves the file's dark color")
 
 	// Colors the file never mentioned fall back to the factory values, not the live theme.
-	c.Equal(Factory()[1].Color.Light, reloaded.data[Factory()[1].ID].Light,
-		"an unspecified color is written as its factory value")
+	c.Equal(Factory()[1].Color.Light, m[Factory()[1].ID].Light, "an unspecified color is written as its factory value")
 }
 
 // TestCaptureCurrentRecordsLiveEdits verifies the other half of the contract: the settings UI edits the live
@@ -82,12 +105,11 @@ func TestCaptureCurrentRecordsLiveEdits(t *testing.T) {
 
 	var saved Colors // A zero value, as first-run settings hold.
 	saved.CaptureCurrent()
-	c.Equal(blue, saved.data[id].Light, "capturing records the live edit")
-	c.Equal(len(Current()), len(saved.data), "capturing records every color")
+	c.Equal(blue, stored(t, &saved)[id].Light, "capturing records the live edit")
 
 	// The captured value is a copy, so later live edits don't retroactively change what will be written.
 	Current()[0].Color.Light = unison.RGB(1, 2, 3)
-	c.Equal(blue, saved.data[id].Light, "the captured color is a copy, not an alias of the live color")
+	c.Equal(blue, stored(t, &saved)[id].Light, "the captured color is a copy, not an alias of the live color")
 
 	// And a capture survives the round trip to disk.
 	dir := t.TempDir()
@@ -95,21 +117,36 @@ func TestCaptureCurrentRecordsLiveEdits(t *testing.T) {
 	c.NoError(saved.Save(p))
 	reloaded, err := NewFromFS(os.DirFS(dir), "captured.colors")
 	c.NoError(err)
-	c.Equal(blue, reloaded.data[id].Light, "the captured edit round-trips through a save")
+	c.Equal(blue, stored(t, reloaded)[id].Light, "the captured edit round-trips through a save")
 }
 
-// TestCaptureCurrentOverwritesStaleData verifies that capturing replaces previously loaded values rather than only
-// filling in absent ones.
-func TestCaptureCurrentOverwritesStaleData(t *testing.T) {
+// TestMakeCurrentAppliesToLiveTheme verifies that loaded colors reach the live ThemeColors the UI draws with.
+func TestMakeCurrentAppliesToLiveTheme(t *testing.T) {
 	c := check.New(t)
 	preserveLiveTheme(t)
 
-	id := Current()[0].ID
-	stale := unison.RGB(9, 9, 9)
-	live := unison.RGB(7, 7, 7)
-	loaded := Colors{data: map[string]*unison.ThemeColor{id: {Light: stale, Dark: stale}}}
-	Current()[0].Color.Light = live
+	purple := unison.RGB(128, 0, 128)
+	orange := unison.RGB(255, 128, 0)
+	first := Current()[0]
+	second := Current()[1]
+	second.Color.Light = orange // A live edit that the file, which doesn't mention this color, will replace.
+	loaded := colorsOf(t, map[string]unison.ThemeColor{first.ID: {Light: purple, Dark: purple}})
+	loaded.MakeCurrent()
+	c.Equal(purple, first.Color.Light, "the loaded light color is applied")
+	c.Equal(purple, first.Color.Dark, "the loaded dark color is applied")
+	c.Equal(*Factory()[1].Color, *second.Color, "colors the file didn't mention are set to their factory values")
+}
 
-	loaded.CaptureCurrent()
-	c.Equal(live, loaded.data[id].Light, "capturing replaces the stale loaded color with the live one")
+// TestNewFromFSRefusesOldFormats verifies that theme color files from before the theme rework are refused rather than
+// silently loaded as a mostly factory theme.
+func TestNewFromFSRefusesOldFormats(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	c.NoError(os.WriteFile(filepath.Join(dir, "old.colors"), []byte(`{"version":4,"colors":{}}`), 0o600))
+	_, err := NewFromFS(os.DirFS(dir), "old.colors")
+	c.HasError(err)
+
+	c.NoError(os.WriteFile(filepath.Join(dir, "new.colors"), []byte(`{"version":5,"colors":{}}`), 0o600))
+	_, err = NewFromFS(os.DirFS(dir), "new.colors")
+	c.NoError(err)
 }

@@ -10,22 +10,23 @@
 package colors
 
 import (
-	"encoding/json/jsontext"
-	"encoding/json/v2"
 	"io/fs"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/themeset"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
-const (
-	minimumVersion = 5
-	currentVersion = 5
-)
+// minimumVersion is the oldest theme color data that can be loaded. Files from before the theme rework hold a different
+// set of colors, so they are refused rather than silently loaded as a mostly factory theme.
+const minimumVersion = 5
 
 var (
+	_       themeset.Entry[unison.ThemeColor]                  = &ThemedColor{}
+	_       themeset.Provider[unison.ThemeColor, *ThemedColor] = provider{}
 	once    sync.Once
 	current []*ThemedColor
 	factory []*ThemedColor
@@ -66,9 +67,39 @@ type ThemedColor struct {
 	Color *unison.ThemeColor
 }
 
+// Key implements themeset.Entry.
+func (t *ThemedColor) Key() string {
+	return t.ID
+}
+
+// Value implements themeset.Entry.
+func (t *ThemedColor) Value() unison.ThemeColor {
+	return *t.Color
+}
+
+// SetValue implements themeset.Entry.
+func (t *ThemedColor) SetValue(v unison.ThemeColor) {
+	*t.Color = v
+}
+
 // Colors holds a set of themed colors.
 type Colors struct {
-	data map[string]*unison.ThemeColor // Just here for serialization
+	themeset.Set[unison.ThemeColor, *ThemedColor, provider]
+}
+
+// provider connects a Colors to the live and factory theme colors.
+type provider struct{}
+
+func (provider) Current() []*ThemedColor {
+	return Current()
+}
+
+func (provider) Factory() []*ThemedColor {
+	return Factory()
+}
+
+func (provider) Applied() {
+	unison.ThemeChanged()
 }
 
 type fileData struct {
@@ -90,37 +121,37 @@ func Factory() []*ThemedColor {
 
 func initialize() {
 	current = []*ThemedColor{
-		{ID: "surface", Title: "Surface", Color: unison.ThemeSurface},
-		{ID: "header", Title: "Header", Color: Header},
-		{ID: "banding", Title: "Banding", Color: unison.ThemeBanding},
-		{ID: "focus", Title: "Focus", Color: unison.ThemeFocus},
-		{ID: "tooltip", Title: "Tooltip", Color: unison.ThemeTooltip},
-		{ID: "error", Title: "Error", Color: unison.ThemeError},
-		{ID: "warning", Title: "Warning", Color: unison.ThemeWarning},
-		{ID: "cursor_fg", Title: "Cursor Foreground", Color: unison.ThemeCursorForeground},
-		{ID: "cursor_bg", Title: "Cursor Background", Color: unison.ThemeCursorBackground},
-		{ID: "tint_portrait", Title: "Portrait", Color: TintPortrait},
-		{ID: "tint_identity", Title: "Identity", Color: TintIdentity},
-		{ID: "tint_misc", Title: "Miscellaneous", Color: TintMisc},
-		{ID: "tint_points", Title: "Points", Color: TintPoints},
-		{ID: "tint_description", Title: "Description", Color: TintDescription},
-		{ID: "tint_primary_attributes", Title: "Primary Attributes", Color: TintPrimaryAttributes},
-		{ID: "tint_secondary_attributes", Title: "Secondary Attributes", Color: TintSecondaryAttributes},
-		{ID: "tint_body", Title: "Body Type", Color: TintBody},
-		{ID: "tint_encumbrance", Title: "Encumbrance, Move & Dodge", Color: TintEncumbrance},
-		{ID: "tint_lifting", Title: "Lifting & Moving Things", Color: TintLifting},
-		{ID: "tint_damage", Title: "Basic Damage", Color: TintDamage},
-		{ID: "tint_pools", Title: "Point Pools", Color: TintPools},
-		{ID: "tint_reactions", Title: "Reactions", Color: TintReactions},
-		{ID: "tint_conditions", Title: "Conditions", Color: TintConditions},
-		{ID: "tint_melee", Title: "Melee Weapons", Color: TintMelee},
-		{ID: "tint_ranged", Title: "Ranged Weapons", Color: TintRanged},
-		{ID: "tint_traits", Title: "Traits", Color: TintTraits},
-		{ID: "tint_skills", Title: "Skills", Color: TintSkills},
-		{ID: "tint_spells", Title: "Spells", Color: TintSpells},
-		{ID: "tint_carried_equipment", Title: "Carried Equipment", Color: TintCarriedEquipment},
-		{ID: "tint_other_equipment", Title: "Other Equipment", Color: TintOtherEquipment},
-		{ID: "tint_notes", Title: "Notes", Color: TintNotes},
+		{ID: "surface", Title: i18n.Text("Surface"), Color: unison.ThemeSurface},
+		{ID: "header", Title: i18n.Text("Header"), Color: Header},
+		{ID: "banding", Title: i18n.Text("Banding"), Color: unison.ThemeBanding},
+		{ID: "focus", Title: i18n.Text("Focus"), Color: unison.ThemeFocus},
+		{ID: "tooltip", Title: i18n.Text("Tooltip"), Color: unison.ThemeTooltip},
+		{ID: "error", Title: i18n.Text("Error"), Color: unison.ThemeError},
+		{ID: "warning", Title: i18n.Text("Warning"), Color: unison.ThemeWarning},
+		{ID: "cursor_fg", Title: i18n.Text("Cursor Foreground"), Color: unison.ThemeCursorForeground},
+		{ID: "cursor_bg", Title: i18n.Text("Cursor Background"), Color: unison.ThemeCursorBackground},
+		{ID: "tint_portrait", Title: i18n.Text("Portrait"), Color: TintPortrait},
+		{ID: "tint_identity", Title: i18n.Text("Identity"), Color: TintIdentity},
+		{ID: "tint_misc", Title: i18n.Text("Miscellaneous"), Color: TintMisc},
+		{ID: "tint_points", Title: i18n.Text("Points"), Color: TintPoints},
+		{ID: "tint_description", Title: i18n.Text("Description"), Color: TintDescription},
+		{ID: "tint_primary_attributes", Title: i18n.Text("Primary Attributes"), Color: TintPrimaryAttributes},
+		{ID: "tint_secondary_attributes", Title: i18n.Text("Secondary Attributes"), Color: TintSecondaryAttributes},
+		{ID: "tint_body", Title: i18n.Text("Body Type"), Color: TintBody},
+		{ID: "tint_encumbrance", Title: i18n.Text("Encumbrance, Move & Dodge"), Color: TintEncumbrance},
+		{ID: "tint_lifting", Title: i18n.Text("Lifting & Moving Things"), Color: TintLifting},
+		{ID: "tint_damage", Title: i18n.Text("Basic Damage"), Color: TintDamage},
+		{ID: "tint_pools", Title: i18n.Text("Point Pools"), Color: TintPools},
+		{ID: "tint_reactions", Title: i18n.Text("Reactions"), Color: TintReactions},
+		{ID: "tint_conditions", Title: i18n.Text("Conditions"), Color: TintConditions},
+		{ID: "tint_melee", Title: i18n.Text("Melee Weapons"), Color: TintMelee},
+		{ID: "tint_ranged", Title: i18n.Text("Ranged Weapons"), Color: TintRanged},
+		{ID: "tint_traits", Title: i18n.Text("Traits"), Color: TintTraits},
+		{ID: "tint_skills", Title: i18n.Text("Skills"), Color: TintSkills},
+		{ID: "tint_spells", Title: i18n.Text("Spells"), Color: TintSpells},
+		{ID: "tint_carried_equipment", Title: i18n.Text("Carried Equipment"), Color: TintCarriedEquipment},
+		{ID: "tint_other_equipment", Title: i18n.Text("Other Equipment"), Color: TintOtherEquipment},
+		{ID: "tint_notes", Title: i18n.Text("Notes"), Color: TintNotes},
 	}
 	factory = make([]*ThemedColor, len(current))
 	for i, c := range current {
@@ -141,11 +172,8 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	if data.Version < minimumVersion {
-		return nil, errs.New("The theme color data is too old to be used")
-	}
-	if data.Version > currentVersion {
-		return nil, errs.New("The theme color data is too new to be used")
+	if err := jio.CheckVersionWithMinimum(data.Version, minimumVersion); err != nil {
+		return nil, err
 	}
 	return &data.Colors, nil
 }
@@ -153,116 +181,7 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 // Save writes the Colors to the file as JSON.
 func (c *Colors) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &fileData{
-		Version: currentVersion,
+		Version: jio.CurrentDataVersion,
 		Colors:  *c,
 	})
-}
-
-// MarshalJSONTo implements json.MarshalerTo. This writes the receiver's own colors, not the live theme. Callers that
-// hold the live theme -- the global settings and the color settings dockable, since the UI edits the live ThemeColors
-// in place rather than this object -- must call CaptureCurrent first. The factory list drives the iteration so that the
-// keys are written in a stable, meaningful order; a color the receiver doesn't define falls back to the factory value,
-// matching what UnmarshalJSONFrom fills in for a missing key.
-func (c *Colors) MarshalJSONTo(enc *jsontext.Encoder) error {
-	if err := enc.WriteToken(jsontext.BeginObject); err != nil {
-		return err
-	}
-	for _, one := range Factory() {
-		if err := enc.WriteToken(jsontext.String(one.ID)); err != nil {
-			return err
-		}
-		clr, ok := c.data[one.ID]
-		if !ok {
-			clr = one.Color
-		}
-		if err := json.MarshalEncode(enc, clr); err != nil {
-			return err
-		}
-	}
-	return enc.WriteToken(jsontext.EndObject)
-}
-
-// CaptureCurrent copies the live theme into this object so that a subsequent save writes it. The settings UI mutates
-// the live ThemeColors in place and never touches this object, so anything that represents the live theme has to call
-// this before saving or those edits are lost.
-func (c *Colors) CaptureCurrent() {
-	cc := Current()
-	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(cc))
-	}
-	for _, one := range cc {
-		if v, ok := c.data[one.ID]; ok {
-			*v = *one.Color
-		} else {
-			clr := *one.Color
-			c.data[one.ID] = &clr
-		}
-	}
-}
-
-// UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (c *Colors) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	defer func() {
-		f := Factory()
-		if c.data == nil {
-			c.data = make(map[string]*unison.ThemeColor, len(f))
-		}
-		for _, one := range f {
-			if _, ok := c.data[one.ID]; !ok {
-				clr := *one.Color
-				c.data[one.ID] = &clr
-			}
-		}
-	}()
-	c.data = nil
-	if err := json.UnmarshalDecode(dec, &c.data); err != nil {
-		c.data = nil
-		return err
-	}
-	return nil
-}
-
-// MakeCurrent applies these colors to the current theme color set and updates all windows.
-func (c *Colors) MakeCurrent() {
-	for _, one := range Current() {
-		if v, ok := c.data[one.ID]; ok {
-			*one.Color = *v
-		}
-	}
-	unison.ThemeChanged()
-}
-
-// Reset to factory defaults.
-func (c *Colors) Reset() {
-	f := Factory()
-	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(f))
-	}
-	for _, one := range f {
-		if v, ok := c.data[one.ID]; ok {
-			*v = *one.Color
-		} else {
-			clr := *one.Color
-			c.data[one.ID] = &clr
-		}
-	}
-}
-
-// ResetOne resets one color by ID to factory defaults.
-func (c *Colors) ResetOne(id string) {
-	f := Factory()
-	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(f))
-	}
-	for _, one := range f {
-		if one.ID == id {
-			if v, ok := c.data[id]; ok {
-				*v = *one.Color
-			} else {
-				clr := *one.Color
-				c.data[id] = &clr
-			}
-			break
-		}
-	}
 }

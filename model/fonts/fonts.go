@@ -10,12 +10,11 @@
 package fonts
 
 import (
-	"encoding/json/jsontext"
-	"encoding/json/v2"
 	"io/fs"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/themeset"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -25,22 +24,30 @@ import (
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
-// Additional fonts over and above what unison provides by default.
 var (
-	FieldSecondary      = &unison.IndirectFont{Font: unison.FieldFont.Face().Font(unison.FieldFont.Size() - 1)}
-	PageFieldPrimary    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Medium, spacing.Standard, slant.Upright).Font(7)}
-	PageFieldSecondary  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(6)}
-	PageLabelPrimary    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(7)}
-	PageLabelSecondary  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(6)}
-	PageFooterPrimary   = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Medium, spacing.Standard, slant.Upright).Font(6)}
-	PageFooterSecondary = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(5)}
-	BaseMarkdown        = &unison.IndirectFont{Font: unison.LabelFont.Face().Font(unison.LabelFont.Size())}
-)
-
-var (
+	_       themeset.Entry[unison.FontDescriptor]                 = &ThemedFont{}
+	_       themeset.Provider[unison.FontDescriptor, *ThemedFont] = provider{}
 	once    sync.Once
 	current []*ThemedFont
 	factory []*ThemedFont
+)
+
+// Additional fonts over and above what unison provides by default.
+var (
+	FieldSecondary   = &unison.IndirectFont{Font: unison.FieldFont.Face().Font(unison.FieldFont.Size() - 1)}
+	PageFieldPrimary = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName,
+		weight.Medium, spacing.Standard, slant.Upright).Font(7)}
+	PageFieldSecondary = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName,
+		weight.Regular, spacing.Standard, slant.Upright).Font(6)}
+	PageLabelPrimary = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName,
+		weight.Regular, spacing.Standard, slant.Upright).Font(7)}
+	PageLabelSecondary = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName,
+		weight.Regular, spacing.Standard, slant.Upright).Font(6)}
+	PageFooterPrimary = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName,
+		weight.Medium, spacing.Standard, slant.Upright).Font(6)}
+	PageFooterSecondary = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName,
+		weight.Regular, spacing.Standard, slant.Upright).Font(5)}
+	BaseMarkdown = &unison.IndirectFont{Font: unison.LabelFont.Face().Font(unison.LabelFont.Size())}
 )
 
 // ThemedFont holds a themed font.
@@ -50,9 +57,44 @@ type ThemedFont struct {
 	Font  *unison.IndirectFont
 }
 
+// Key implements themeset.Entry.
+func (t *ThemedFont) Key() string {
+	return t.ID
+}
+
+// Value implements themeset.Entry.
+func (t *ThemedFont) Value() unison.FontDescriptor {
+	return t.Font.Descriptor()
+}
+
+// SetValue implements themeset.Entry.
+func (t *ThemedFont) SetValue(v unison.FontDescriptor) {
+	t.Font.Font = v.Font()
+}
+
 // Fonts holds a set of themed fonts.
 type Fonts struct {
-	data map[string]unison.FontDescriptor // Just here for serialization
+	themeset.Set[unison.FontDescriptor, *ThemedFont, provider]
+}
+
+// provider connects a Fonts to the live and factory theme fonts.
+type provider struct{}
+
+func (provider) Current() []*ThemedFont {
+	return CurrentFonts()
+}
+
+func (provider) Factory() []*ThemedFont {
+	return FactoryFonts()
+}
+
+// Applied re-lays out every window, since a font change alters the size of nearly everything.
+func (provider) Applied() {
+	unison.ThemeChanged()
+	for _, wnd := range unison.Windows() {
+		wnd.Content().MarkForLayoutRecursively()
+		wnd.ValidateLayout()
+	}
 }
 
 type fileData struct {
@@ -124,101 +166,4 @@ func (f *Fonts) Save(filePath string) error {
 		Version: jio.CurrentDataVersion,
 		Fonts:   *f,
 	})
-}
-
-// MarshalJSONTo implements json.MarshalerTo. This writes the receiver's own fonts, not the live theme. Callers that
-// hold the live theme -- the global settings and the font settings dockable, since the UI edits the live IndirectFonts
-// in place rather than this object -- must call CaptureCurrent first. The factory list drives the iteration so that the
-// keys are written in a stable, meaningful order; a font the receiver doesn't define falls back to the factory value,
-// matching what UnmarshalJSONFrom fills in for a missing key.
-func (f *Fonts) MarshalJSONTo(enc *jsontext.Encoder) error {
-	if err := enc.WriteToken(jsontext.BeginObject); err != nil {
-		return err
-	}
-	for _, one := range FactoryFonts() {
-		if err := enc.WriteToken(jsontext.String(one.ID)); err != nil {
-			return err
-		}
-		fd, ok := f.data[one.ID]
-		if !ok {
-			fd = one.Font.Descriptor()
-		}
-		if err := json.MarshalEncode(enc, fd); err != nil {
-			return err
-		}
-	}
-	return enc.WriteToken(jsontext.EndObject)
-}
-
-// CaptureCurrent copies the live theme into this object so that a subsequent save writes it. The settings UI mutates
-// the live IndirectFonts in place and never touches this object, so anything that represents the live theme has to call
-// this before saving or those edits are lost.
-func (f *Fonts) CaptureCurrent() {
-	cf := CurrentFonts()
-	if f.data == nil {
-		f.data = make(map[string]unison.FontDescriptor, len(cf))
-	}
-	for _, one := range cf {
-		f.data[one.ID] = one.Font.Descriptor()
-	}
-}
-
-// UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (f *Fonts) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	defer func() {
-		ff := FactoryFonts()
-		if f.data == nil {
-			f.data = make(map[string]unison.FontDescriptor, len(ff))
-		}
-		for _, one := range ff {
-			if _, ok := f.data[one.ID]; !ok {
-				f.data[one.ID] = one.Font.Descriptor()
-			}
-		}
-	}()
-	f.data = nil
-	if err := json.UnmarshalDecode(dec, &f.data); err != nil {
-		f.data = nil
-		return err
-	}
-	return nil
-}
-
-// MakeCurrent applies these fonts to the current theme font set and updates all windows.
-func (f *Fonts) MakeCurrent() {
-	for _, one := range CurrentFonts() {
-		if v, ok := f.data[one.ID]; ok {
-			one.Font.Font = v.Font()
-		}
-	}
-	unison.ThemeChanged()
-	for _, wnd := range unison.Windows() {
-		wnd.Content().MarkForLayoutRecursively()
-		wnd.ValidateLayout()
-	}
-}
-
-// Reset to factory defaults.
-func (f *Fonts) Reset() {
-	ff := FactoryFonts()
-	if f.data == nil {
-		f.data = make(map[string]unison.FontDescriptor, len(ff))
-	}
-	for _, one := range ff {
-		f.data[one.ID] = one.Font.Descriptor()
-	}
-}
-
-// ResetOne resets one font by ID to factory defaults.
-func (f *Fonts) ResetOne(id string) {
-	ff := FactoryFonts()
-	for _, v := range ff {
-		if v.ID == id {
-			if f.data == nil {
-				f.data = make(map[string]unison.FontDescriptor, len(ff))
-			}
-			f.data[id] = v.Font.Descriptor()
-			break
-		}
-	}
 }
