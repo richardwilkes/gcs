@@ -93,7 +93,7 @@ type EquipmentEditData struct {
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitempty"`
 
-	// Leverage a default generic implementation of the Modifiable constraint that makes this a ModifiableNode
+	// Leverage a default generic implementation of the Modifiable constraint
 	modifiable[*EquipmentModifier, *Equipment]
 
 	RatedST  fxp.Int `json:"rated_strength,omitzero"`

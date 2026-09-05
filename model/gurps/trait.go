@@ -95,7 +95,7 @@ type TraitEditData struct {
 	UserDesc     string            `json:"userdesc,omitzero"`
 	Replacements map[string]string `json:"replacements,omitempty"`
 
-	// Leverage a default generic implementation of the Modifiable constraint that makes this a ModifiableNode
+	// Leverage a default generic implementation of the Modifiable constraint
 	modifiable[*TraitModifier, *Trait]
 
 	SelfControl selfctrl.Roll  `json:"cr,omitzero"`
