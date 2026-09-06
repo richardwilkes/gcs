@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -60,12 +61,7 @@ func (wa WeaponAccuracy) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (wa *WeaponAccuracy) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var s string
-	if err := json.UnmarshalDecode(dec, &s); err != nil {
-		return err
-	}
-	*wa = ParseWeaponAccuracy(s)
-	return nil
+	return jio.UnmarshalStringFromInfallible(dec, wa, ParseWeaponAccuracy)
 }
 
 // Hash writes this object's contents into the hasher.

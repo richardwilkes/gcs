@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 )
@@ -118,11 +119,5 @@ func (l Length) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (l *Length) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var s string
-	if err := json.UnmarshalDecode(dec, &s); err != nil {
-		return err
-	}
-	var err error
-	*l, err = LengthFromString(s, Inch)
-	return err
+	return jio.UnmarshalStringFrom(dec, l, func(s string) (Length, error) { return LengthFromString(s, Inch) })
 }

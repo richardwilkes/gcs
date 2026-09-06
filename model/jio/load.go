@@ -12,6 +12,7 @@ package jio
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"io"
 	"io/fs"
@@ -64,4 +65,24 @@ func Unmarshal(data []byte, result any, opts ...json.Options) error {
 func UnmarshalRead(r io.Reader, result any, opts ...json.Options) error {
 	opts = append([]json.Options{}, opts...)
 	return errs.Wrap(json.UnmarshalRead(r, result, opts...))
+}
+
+// UnmarshalStringFrom decodes a JSON string from dec, hands it to parse and stores the result in dst. dst is left
+// untouched if either the decode or the parse fails.
+func UnmarshalStringFrom[T any](dec *jsontext.Decoder, dst *T, parse func(string) (T, error)) error {
+	var s string
+	if err := json.UnmarshalDecode(dec, &s); err != nil {
+		return err
+	}
+	v, err := parse(s)
+	if err != nil {
+		return err
+	}
+	*dst = v
+	return nil
+}
+
+// UnmarshalStringFromInfallible is UnmarshalStringFrom for parse functions that cannot fail.
+func UnmarshalStringFromInfallible[T any](dec *jsontext.Decoder, dst *T, parse func(string) T) error {
+	return UnmarshalStringFrom(dec, dst, func(s string) (T, error) { return parse(s), nil })
 }

@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
@@ -54,20 +55,22 @@ func (a *AttributeDifficulty) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (a *AttributeDifficulty) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var s string
-	if err := json.UnmarshalDecode(dec, &s); err != nil {
-		return err
-	}
+	return jio.UnmarshalStringFromInfallible(dec, a, a.parse)
+}
+
+// parse returns a copy of this AttributeDifficulty with its Attribute and Difficulty replaced by those encoded in s.
+func (a *AttributeDifficulty) parse(s string) AttributeDifficulty {
+	result := *a
 	parts := strings.SplitN(s, "/", 2)
 	if len(parts) == 1 {
 		s = parts[0]
-		a.Attribute = ""
+		result.Attribute = ""
 	} else {
 		s = parts[1]
-		a.Attribute = strings.TrimSpace(parts[0])
+		result.Attribute = strings.TrimSpace(parts[0])
 	}
-	a.Difficulty = difficulty.ExtractLevel(strings.TrimSpace(s))
-	return nil
+	result.Difficulty = difficulty.ExtractLevel(strings.TrimSpace(s))
+	return result
 }
 
 // Normalize the data. Should be called after loading from disk or the user.

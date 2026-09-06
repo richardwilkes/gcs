@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -71,12 +72,7 @@ func (ws WeaponShots) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (ws *WeaponShots) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var s string
-	if err := json.UnmarshalDecode(dec, &s); err != nil {
-		return err
-	}
-	*ws = ParseWeaponShots(s)
-	return nil
+	return jio.UnmarshalStringFromInfallible(dec, ws, ParseWeaponShots)
 }
 
 // IsZero implements json.isZero.

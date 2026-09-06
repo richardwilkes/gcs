@@ -56,14 +56,5 @@ func (e Time) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (e *Time) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var s string
-	if err := json.UnmarshalDecode(dec, &s); err != nil {
-		return err
-	}
-	t, err := NewTimeFrom(s)
-	if err != nil {
-		return err
-	}
-	*e = t
-	return nil
+	return UnmarshalStringFrom(dec, e, NewTimeFrom)
 }

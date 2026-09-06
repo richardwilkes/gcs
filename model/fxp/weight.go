@@ -14,6 +14,7 @@ import (
 	"encoding/json/v2"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 )
 
@@ -72,13 +73,7 @@ func (w Weight) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (w *Weight) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var s string
-	if err := json.UnmarshalDecode(dec, &s); err != nil {
-		return err
-	}
-	var err error
-	*w, err = WeightFromString(s, Pound)
-	return err
+	return jio.UnmarshalStringFrom(dec, w, func(s string) (Weight, error) { return WeightFromString(s, Pound) })
 }
 
 // WeightLessFromStringFunc returns a func to compare two strings as Weights.

@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
@@ -83,15 +84,7 @@ func (l Length) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (l *Length) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var s string
-	if err := json.UnmarshalDecode(dec, &s); err != nil {
-		return err
-	}
-	var err error
-	if *l, err = ParseLengthFromString(s); err != nil {
-		return err
-	}
-	return nil
+	return jio.UnmarshalStringFrom(dec, l, ParseLengthFromString)
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
