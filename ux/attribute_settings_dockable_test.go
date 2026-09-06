@@ -289,6 +289,57 @@ func TestPoolThresholdDragDropReorders(t *testing.T) {
 	c.False(d.undoMgr.CanUndo(), "the drop is a single edit")
 }
 
+// TestPoolThresholdAddAndDeleteAreUndoable verifies that adding a threshold to a pool and deleting one from it are each
+// recorded as a single undo edit of the whole set of definitions, that the rows are rebuilt to match after each step,
+// and that the guard against deleting the last threshold follows the count.
+func TestPoolThresholdAddAndDeleteAreUndoable(t *testing.T) {
+	c := check.New(t)
+	defs := testAttrDefs("st", "hp")
+	pool := defs.Set["hp"]
+	pool.Type = attribute.Pool
+	pool.Thresholds = []*gurps.PoolThreshold{{State: "Reeling", KeyPrefix: "r"}}
+	d := newTestAttributeSettingsDockableFor(defs)
+	initTestSettingsContent(&d.undoableSettingsDockable)
+	rows := panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	c.Equal(1, len(rows))
+	c.False(rows[0].deleteButton.Enabled(), "the last threshold may not be deleted")
+
+	rows[0].pool.addThreshold()
+	c.Equal(2, len(d.model.Set["hp"].Thresholds), "the threshold is added to the pool")
+	c.Equal("Undo Add Pool Threshold", d.undoMgr.UndoTitle())
+	rows = panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	c.Equal(2, len(rows), "the rows are rebuilt")
+	c.True(rows[0].deleteButton.Enabled(), "with two thresholds, either may be deleted")
+	c.True(rows[1].deleteButton.Enabled(), "with two thresholds, either may be deleted")
+	c.NotEqual("", rows[1].threshold.KeyPrefix, "the added threshold is given a target key prefix")
+	c.NotNil(d.targetMgr.Find(rows[1].threshold.KeyPrefix+"state"), "the added threshold's state field is registered")
+
+	d.undoMgr.Undo()
+	c.Equal([]string{"Reeling"}, thresholdStates(d.model.Set["hp"]), "undo removes the added threshold")
+	c.False(d.undoMgr.CanUndo(), "the add is a single edit")
+	rows = panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	c.Equal(1, len(rows))
+	c.False(rows[0].deleteButton.Enabled(), "undoing back to one threshold restores the guard")
+
+	d.undoMgr.Redo()
+	c.Equal(2, len(d.model.Set["hp"].Thresholds), "redo adds it back")
+	rows = panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	c.Equal(2, len(rows))
+
+	rows[0].pool.deleteThreshold(rows[0])
+	c.Equal(1, len(d.model.Set["hp"].Thresholds), "the threshold is deleted")
+	c.Equal("", d.model.Set["hp"].Thresholds[0].State, "the first threshold is the one deleted")
+	c.Equal("Undo Delete Pool Threshold", d.undoMgr.UndoTitle())
+	rows = panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	c.Equal(1, len(rows))
+	c.False(rows[0].deleteButton.Enabled(), "deleting down to one threshold restores the guard")
+
+	d.undoMgr.Undo()
+	c.Equal(2, len(d.model.Set["hp"].Thresholds), "undo restores the deleted threshold")
+	c.Equal("Reeling", d.model.Set["hp"].Thresholds[0].State, "in its original position")
+	c.Equal([]string{"st", "hp"}, attrDefIDs(d.model), "the definitions are untouched throughout")
+}
+
 // testAttrDefs returns a set of integer attribute definitions with the given IDs, in that order.
 func testAttrDefs(ids ...string) *gurps.AttributeDefs {
 	defs := &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}

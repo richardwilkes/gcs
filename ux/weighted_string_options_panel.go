@@ -190,7 +190,7 @@ func newWeightedStringOptionPanel(list *weightedStringOptionsPanel, option *gurp
 		option: option,
 	}
 	p.Self = p
-	configureEditorRow(p.AsPanel(), 4)
+	configureEditorRow(p.AsPanel(), 4, false)
 	d := list.dockable
 	spec := list.spec
 	p.Tooltip = newWrappedTooltip(rowSelectionTooltip())

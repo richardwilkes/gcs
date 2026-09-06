@@ -45,23 +45,15 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 		entity:    entity,
 		targetMgr: targetMgr,
 	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  8,
-		HSpacing: 4,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-	})
 	locations := gurps.SheetSettingsFor(entity).BodyType
 	p.hash = gurps.Hash64(locations)
 	p.titledBorder = &TitledBorder{Title: locations.Name}
-	p.SetBorder(unison.NewCompoundBorder(p.titledBorder, unison.NewEmptyBorder(geom.Insets{
+	// There is no top inset, since the header row that comes first should touch the border.
+	initPagePanel(p, unison.NewCompoundBorder(p.titledBorder, unison.NewEmptyBorder(geom.Insets{
 		Left:   2,
 		Bottom: 1,
 		Right:  2,
-	})))
+	})), 8, false, colors.TintBody)
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 		r := p.Children()[0].FrameRect()
@@ -82,7 +74,6 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 		}
 	}
 	p.addContent(locations)
-	InstallTintFunc(p, colors.TintBody)
 	return p
 }
 
@@ -188,10 +179,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			p.row = append(p.row, name)
 			p.AddChild(name)
 		}
-		penalty := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-			f.SetTitle(fmt.Sprintf("%+d", location.HitPenalty))
-			MarkForLayoutWithinDockable(f)
-		})
+		penalty := NewNonEditablePageFieldEndFor(func() string { return fmt.Sprintf("%+d", location.HitPenalty) })
 		penalty.SetLayoutData(&unison.FlexLayoutData{})
 		p.AddChild(penalty)
 
@@ -201,13 +189,12 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 
 		dr := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
 			var tooltip xbytes.InsertBuffer
-			f.SetTitle(location.DisplayDR(p.entity, &tooltip))
+			f.SetTitleIfChanged(location.DisplayDR(p.entity, &tooltip))
 			tip := fmt.Sprintf(i18n.Text("The DR covering the **%s** hit location"), location.TableName)
 			if detail := tooltip.String(); detail != "" {
 				tip += ":" + detail
 			}
 			f.Tooltip = newMarkdownTooltip(tip, "")
-			MarkForLayoutWithinDockable(f)
 		})
 		dr.SetLayoutData(&unison.FlexLayoutData{})
 		p.AddChild(dr)

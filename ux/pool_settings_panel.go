@@ -47,73 +47,18 @@ func newPoolSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Attrib
 	return p
 }
 
+// addThreshold appends a new threshold to the pool, undoably, and gives its state field the focus.
 func (p *poolSettingsPanel) addThreshold() {
-	undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
-		ID:       unison.NextUndoID(),
-		EditName: i18n.Text("Add Pool Threshold"),
-		UndoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
-			p.applyThresholds(e.BeforeData)
-		},
-		RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
-			p.applyThresholds(e.AfterData)
-		},
-		AbsorbFunc: func(_ *unison.UndoEdit[[]*gurps.PoolThreshold], _ unison.Undoable) bool { return false },
-	}
-	undo.BeforeData = clonePoolThresholds(p.def.Thresholds)
 	threshold := &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()}
-	p.def.Thresholds = append(p.def.Thresholds, threshold)
-	newThreshold := newThresholdSettingsPanel(p, threshold)
-	p.AddChild(newThreshold)
-	if children := p.Children(); len(children) == 2 {
-		if panel, ok := children[0].Self.(*thresholdSettingsPanel); ok {
-			panel.deleteButton.SetEnabled(true)
-		}
-	}
-	undo.AfterData = clonePoolThresholds(p.def.Thresholds)
-	p.dockable.UndoManager().Add(undo)
-	p.dockable.MarkModified(nil)
-	p.MarkForLayoutRecursivelyUpward()
-	p.dockable.ValidateLayout()
-	focus := newThreshold.Children()[2]
-	focus.RequestFocus()
-	focus.ScrollIntoView()
+	p.dockable.editStructure(i18n.Text("Add Pool Threshold"),
+		func() { p.def.Thresholds = append(p.def.Thresholds, threshold) }, threshold.KeyPrefix+"state")
 }
 
+// deleteThreshold removes the threshold the given row edits from the pool, undoably.
 func (p *poolSettingsPanel) deleteThreshold(target *thresholdSettingsPanel) {
-	i := p.IndexOfChild(target)
-	target.RemoveFromParent()
-	if children := p.Children(); len(children) == 1 {
-		if panel, ok := children[0].Self.(*thresholdSettingsPanel); ok {
-			panel.deleteButton.SetEnabled(false)
+	p.dockable.editStructure(i18n.Text("Delete Pool Threshold"), func() {
+		if i := slices.Index(p.def.Thresholds, target.threshold); i != -1 {
+			p.def.Thresholds = slices.Delete(p.def.Thresholds, i, i+1)
 		}
-	}
-	undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
-		ID:       unison.NextUndoID(),
-		EditName: i18n.Text("Delete Pool Threshold"),
-		UndoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
-			p.applyThresholds(e.BeforeData)
-		},
-		RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
-			p.applyThresholds(e.AfterData)
-		},
-		AbsorbFunc: func(_ *unison.UndoEdit[[]*gurps.PoolThreshold], _ unison.Undoable) bool { return false },
-	}
-	undo.BeforeData = clonePoolThresholds(p.def.Thresholds)
-	p.def.Thresholds = slices.Delete(p.def.Thresholds, i, i+1)
-	undo.AfterData = clonePoolThresholds(p.def.Thresholds)
-	p.dockable.UndoManager().Add(undo)
-	p.dockable.MarkModified(nil)
-}
-
-func (p *poolSettingsPanel) applyThresholds(thresholds []*gurps.PoolThreshold) {
-	p.def.Thresholds = clonePoolThresholds(thresholds)
-	p.dockable.sync()
-}
-
-func clonePoolThresholds(in []*gurps.PoolThreshold) []*gurps.PoolThreshold {
-	thresholds := make([]*gurps.PoolThreshold, len(in))
-	for i, one := range in {
-		thresholds[i] = one.Clone()
-	}
-	return thresholds
+	}, "")
 }

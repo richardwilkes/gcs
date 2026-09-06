@@ -13,11 +13,9 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 const (
@@ -39,28 +37,7 @@ func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitL
 		loc:      loc,
 	}
 	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
-		Top:    unison.StdVSpacing,
-		Left:   unison.StdHSpacing,
-		Bottom: unison.StdVSpacing,
-		Right:  unison.StdHSpacing,
-	}))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		var ink unison.Ink
-		if p.Parent().IndexOfChild(p)%2 == 1 {
-			ink = unison.ThemeSurface
-		} else {
-			ink = unison.ThemeBelowSurface
-		}
-		gc.DrawRect(rect, ink.Paint(gc, rect, paintstyle.Fill))
-	}
-
+	configureEditorRow(p.AsPanel(), 3, false)
 	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
 		editor: dockable,
 		row:    p.AsPanel(),
@@ -74,27 +51,17 @@ func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitL
 }
 
 func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
-	buttons := unison.NewPanel()
-	buttons.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
-
 	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = p.removeHitLocation
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove hit location"))
 	owningTable := p.loc.OwningTable()
 	p.deleteButton.SetEnabled(owningTable != nil && len(owningTable.Locations) > 1)
-	buttons.AddChild(p.deleteButton)
 
 	p.addButton = unison.NewSVGButton(unison.CircledAddSVG)
 	p.addButton.ClickCallback = p.addSubTable
 	p.addButton.Tooltip = newWrappedTooltip(i18n.Text("Add sub-table"))
 	p.addButton.SetEnabled(p.loc.SubTable == nil)
-	buttons.AddChild(p.addButton)
-	return buttons
+	return newEditorRowButtonColumn(p.deleteButton, p.addButton)
 }
 
 func (p *hitLocationSettingsPanel) addSubTable() {

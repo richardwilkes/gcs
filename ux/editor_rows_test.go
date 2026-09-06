@@ -22,6 +22,49 @@ import (
 // TestMoveEntry verifies the insertion-index semantics of moveEntry: the target is a position in the list before the
 // entry is removed, so a target beyond the entry is adjusted down by one, out-of-range indexes and no-op moves are
 // refused, and a refused move leaves the list alone.
+// TestConfigureEditorRow verifies the shared row setup: the standard insets, widened on the right for a row at the
+// outermost level so that the overlaid scrollbar doesn't cover its content, the requested number of columns, and a
+// layout that fills the width of the list; and that a button column stacks its buttons in the order given.
+func TestConfigureEditorRow(t *testing.T) {
+	c := check.New(t)
+	nested := unison.NewPanel()
+	configureEditorRow(nested, 3, false)
+	c.Equal(geom.Insets{
+		Top:    unison.StdVSpacing,
+		Left:   unison.StdHSpacing,
+		Bottom: unison.StdVSpacing,
+		Right:  unison.StdHSpacing,
+	}, nested.Border().Insets())
+	layout, ok := nested.Layout().(*unison.FlexLayout)
+	c.True(ok, "the row is laid out as a grid")
+	c.Equal(3, layout.Columns)
+	data, ok := nested.LayoutData().(*unison.FlexLayoutData)
+	c.True(ok, "the row has flex layout data")
+	c.Equal(align.Fill, data.HAlign)
+	c.True(data.HGrab, "the row fills the width of the list")
+	c.NotNil(nested.DrawCallback, "the row draws its alternating background")
+
+	outermost := unison.NewPanel()
+	configureEditorRow(outermost, 4, true)
+	c.Equal(float32(unison.StdHSpacing*2), outermost.Border().Insets().Right,
+		"an outermost row keeps clear of the scrollbar")
+	c.Equal(float32(unison.StdHSpacing), outermost.Border().Insets().Left)
+
+	first := unison.NewSVGButton(unison.TrashSVG)
+	second := unison.NewSVGButton(unison.CircledAddSVG)
+	column := newEditorRowButtonColumn(first, second)
+	children := column.Children()
+	c.Equal(2, len(children))
+	c.Equal(first.AsPanel(), children[0])
+	c.Equal(second.AsPanel(), children[1])
+	layout, ok = column.Layout().(*unison.FlexLayout)
+	c.True(ok, "the buttons are stacked in a grid")
+	c.Equal(1, layout.Columns)
+	data, ok = column.LayoutData().(*unison.FlexLayoutData)
+	c.True(ok, "the column has flex layout data")
+	c.Equal(align.Middle, data.HAlign)
+}
+
 func TestMoveEntry(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {

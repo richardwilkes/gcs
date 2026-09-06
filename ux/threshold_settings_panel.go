@@ -14,12 +14,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 type thresholdSettingsPanel struct {
@@ -35,31 +33,7 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, thresh *gurps.PoolThresh
 		threshold: thresh,
 	}
 	p.Self = p
-	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
-		Top:    unison.StdVSpacing,
-		Left:   unison.StdHSpacing,
-		Bottom: unison.StdVSpacing,
-		Right:  unison.StdHSpacing,
-	}))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		var ink unison.Ink
-		if p.Parent().IndexOfChild(p)%2 == 1 {
-			ink = unison.ThemeSurface
-		} else {
-			ink = unison.ThemeBelowSurface
-		}
-		gc.DrawRect(rect, ink.Paint(gc, rect, paintstyle.Fill))
-	}
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-
+	configureEditorRow(p.AsPanel(), 3, false)
 	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
 		editor: pool.dockable,
 		row:    p.AsPanel(),
@@ -74,20 +48,11 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, thresh *gurps.PoolThresh
 }
 
 func (p *thresholdSettingsPanel) createButtons() *unison.Panel {
-	buttons := unison.NewPanel()
-	buttons.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
-
 	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = func() { p.pool.deleteThreshold(p) }
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove pool threshold"))
 	p.deleteButton.SetEnabled(len(p.pool.def.Thresholds) > 1)
-	buttons.AddChild(p.deleteButton)
-	return buttons
+	return newEditorRowButtonColumn(p.deleteButton)
 }
 
 func (p *thresholdSettingsPanel) createContent() *unison.Panel {

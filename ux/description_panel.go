@@ -50,26 +50,12 @@ func NewDescriptionPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Descriptio
 		targetMgr: targetMgr,
 		prefix:    descriptionPanelFieldPrefix,
 	}
-	d.Self = d
-	d.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: 4,
-	})
-	d.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	d.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Description")}, unison.NewEmptyBorder(geom.Insets{
-		Top:    1,
-		Left:   2,
-		Bottom: 1,
-		Right:  2,
-	})))
+	_, layoutData := initTitledPagePanel(d, i18n.Text("Description"), 3, false, colors.TintDescription)
+	layoutData.HGrab = true
 	d.DrawCallback = d.drawSelf
 	d.AddChild(d.createColumn1())
 	d.AddChild(d.createColumn2())
 	d.AddChild(d.createColumn3())
-	InstallTintFunc(d, colors.TintDescription)
 	return d
 }
 

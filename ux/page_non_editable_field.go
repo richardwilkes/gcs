@@ -34,6 +34,18 @@ func NewNonEditablePageFieldEnd(syncer func(*NonEditablePageField)) *NonEditable
 	return newNonEditablePageField(syncer, align.End)
 }
 
+// NewNonEditablePageFieldFor creates a new start-aligned non-editable field that shows the text the given function
+// returns, re-reading it on every sync.
+func NewNonEditablePageFieldFor(text func() string) *NonEditablePageField {
+	return NewNonEditablePageField(syncTitleFrom(text))
+}
+
+// NewNonEditablePageFieldEndFor creates a new end-aligned non-editable field that shows the text the given function
+// returns, re-reading it on every sync.
+func NewNonEditablePageFieldEndFor(text func() string) *NonEditablePageField {
+	return NewNonEditablePageFieldEnd(syncTitleFrom(text))
+}
+
 // NewNonEditablePageFieldCenter creates a new center-aligned non-editable field that uses the same font and size as the
 // page field.
 func NewNonEditablePageFieldCenter(syncer func(*NonEditablePageField)) *NonEditablePageField {
@@ -61,7 +73,23 @@ func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign align.En
 	return f
 }
 
+// syncTitleFrom returns a syncer that makes the field show the text the given function returns.
+func syncTitleFrom(text func() string) func(*NonEditablePageField) {
+	return func(f *NonEditablePageField) { f.SetTitleIfChanged(text()) }
+}
+
 // Sync the field to the current value.
 func (f *NonEditablePageField) Sync() {
 	f.syncer(f)
+}
+
+// SetTitleIfChanged makes the field show the given text and marks it for layout within its dockable, unless that is
+// already the text it shows. It returns true if the text was changed.
+func (f *NonEditablePageField) SetTitleIfChanged(text string) bool {
+	if text == f.Text.String() {
+		return false
+	}
+	f.SetTitle(text)
+	MarkForLayoutWithinDockable(f)
+	return true
 }

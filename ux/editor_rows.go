@@ -181,16 +181,28 @@ func newEditorSectionHeader(title, tooltip string, buttons ...*unison.Button) *u
 	return header
 }
 
-// configureEditorRow sets up a panel as one row of an editor list: the standard row insets, a background that
-// alternates with the row's position among its siblings so that adjacent rows can be told apart, the given number of
-// columns, and a layout that fills the width of the list.
-func configureEditorRow(row *unison.Panel, columns int) {
-	row.SetBorder(unison.NewEmptyBorder(geom.Insets{
+// editorRowInsets returns the insets of an editor row. The scrollbar is drawn over the content, so a row at the
+// outermost level of an editor, which sits directly under the bar, is given twice the right inset to keep the bar from
+// obscuring the right edge of its content.
+func editorRowInsets(outermost bool) geom.Insets {
+	insets := geom.Insets{
 		Top:    unison.StdVSpacing,
 		Left:   unison.StdHSpacing,
 		Bottom: unison.StdVSpacing,
 		Right:  unison.StdHSpacing,
-	}))
+	}
+	if outermost {
+		insets.Right *= 2
+	}
+	return insets
+}
+
+// configureEditorRow sets up a panel as one row of an editor list: the standard row insets, a background that
+// alternates with the row's position among its siblings so that adjacent rows can be told apart, the given number of
+// columns, and a layout that fills the width of the list. A row at the outermost level of the editor gets the wider
+// right inset described by editorRowInsets.
+func configureEditorRow(row *unison.Panel, columns int, outermost bool) {
+	row.SetBorder(unison.NewEmptyBorder(editorRowInsets(outermost)))
 	row.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		var ink unison.Ink
 		if row.Parent().IndexOfChild(row)%2 == 1 {
@@ -206,4 +218,20 @@ func configureEditorRow(row *unison.Panel, columns int) {
 		VSpacing: unison.StdVSpacing,
 	})
 	row.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+}
+
+// newEditorRowButtonColumn returns the column of buttons that follows the drag handle in an editor row, holding the
+// given buttons stacked in the order given.
+func newEditorRowButtonColumn(buttons ...*unison.Button) *unison.Panel {
+	column := unison.NewPanel()
+	column.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	column.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
+	for _, button := range buttons {
+		column.AddChild(button)
+	}
+	return column
 }

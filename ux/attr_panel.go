@@ -85,15 +85,6 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 		prefix:    targetMgr.NextPrefix(),
 		kind:      kind,
 	}
-	a.Self = a
-	a.SetLayout(&unison.FlexLayout{
-		Columns:  a.columns(),
-		HSpacing: 4,
-	})
-	a.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-	})
 	var title string
 	switch kind {
 	case gurps.PrimaryAttrKind:
@@ -105,8 +96,7 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 	default:
 		a.fatalKind()
 	}
-	a.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: title},
-		unison.NewEmptyBorder(geom.NewSymmetricInsets(2, 1))))
+	initTitledPagePanel(a, title, a.columns(), false, nil)
 	a.DrawCallback = a.drawSelf
 	attrs := gurps.SheetSettingsFor(a.entity).Attributes
 	a.hash = a.computeHash(attrs)
@@ -281,9 +271,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 								currentField.Sync()
 							}, fxp.Min, fxp.Max, true)
 					} else {
-						maximumField = NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
-							field.SetTitle(attr.Maximum().String())
-						})
+						maximumField = NewNonEditablePageFieldEndFor(func() string { return attr.Maximum().String() })
 					}
 					a.AddChild(maximumField)
 					a.valueFields[def.ID()] = maximumField
@@ -300,9 +288,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 				} else {
 					var valueField unison.Paneler
 					if def.Type == attribute.IntegerRef || def.Type == attribute.DecimalRef {
-						field := NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
-							field.SetTitle(attr.Maximum().String())
-						})
+						field := NewNonEditablePageFieldEndFor(func() string { return attr.Maximum().String() })
 						field.SetLayoutData(&unison.FlexLayoutData{
 							HSpan:  2,
 							HAlign: align.Fill,
@@ -341,10 +327,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 
 func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := "[" + attr.PointCost().String() + "]"; text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f.AsPanel())
-		}
+		f.SetTitleIfChanged("[" + attr.PointCost().String() + "]")
 		if def := attr.AttributeDef(); def != nil {
 			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
 		}

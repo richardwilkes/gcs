@@ -13,7 +13,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -28,26 +27,10 @@ type LiftingPanel struct {
 // NewLiftingPanel creates a new lifting panel.
 func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 	p := &LiftingPanel{entity: entity}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: 4,
-		HAlign:   align.Middle,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	p.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Lifting & Moving Things")}, unison.NewEmptyBorder(geom.Insets{
-		Top:    1,
-		Left:   2,
-		Bottom: 1,
-		Right:  2,
-	})))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
-	InstallTintFunc(p, colors.TintLifting)
+	layout, layoutData := initTitledPagePanel(p, i18n.Text("Lifting & Moving Things"), 2, true, colors.TintLifting)
+	layout.HAlign = align.Middle
+	layoutData.HGrab = true
+	layoutData.VGrab = true
 	for _, one := range []struct {
 		get     func() fxp.Weight
 		title   string
@@ -89,11 +72,8 @@ func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 			tooltip: i18n.Text("The weight that can be shifted slightly on a floor"),
 		},
 	} {
-		p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-			if text := p.entity.SheetSettings.DefaultWeightUnits.Format(one.get()); text != f.Text.String() {
-				f.SetTitle(text)
-				MarkForLayoutWithinDockable(f)
-			}
+		p.addFieldAndLabel(NewNonEditablePageFieldEndFor(func() string {
+			return p.entity.SheetSettings.DefaultWeightUnits.Format(one.get())
 		}), one.title, one.tooltip)
 	}
 	return p

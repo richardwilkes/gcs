@@ -306,7 +306,7 @@ func newCompoundGeneratorPanel(d *nameGeneratorEditorDockable, parent, child *gu
 		generator: child,
 	}
 	p.Self = p
-	configureEditorRow(p.AsPanel(), 3)
+	configureEditorRow(p.AsPanel(), 3, false)
 	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
 		editor: d,
 		row:    p.AsPanel(),

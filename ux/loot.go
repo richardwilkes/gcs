@@ -180,22 +180,8 @@ const (
 func createLootTopBlock(loot *gurps.Loot, targetMgr *TargetMgr) *Page {
 	page := NewPage(loot)
 	top := unison.NewPanel()
-	top.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: 4,
-	})
-	top.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-	})
-	top.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Loot")},
-		unison.NewEmptyBorder(geom.Insets{
-			Top:    1,
-			Left:   2,
-			Bottom: 1,
-			Right:  2,
-		})))
+	_, layoutData := initTitledPagePanel(top, i18n.Text("Loot"), 2, false, nil)
+	layoutData.HGrab = true
 	addLootTextField(top, targetMgr, i18n.Text("Name"), lootPanelNameFieldRefKey, &loot.Name)
 	addLootTextField(top, targetMgr, i18n.Text("Location"), lootPanelLocationFieldRefKey, &loot.Location)
 	addLootTextField(top, targetMgr, i18n.Text("Session"), lootPanelSessionFieldRefKey, &loot.Session)

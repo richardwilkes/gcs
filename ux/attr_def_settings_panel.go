@@ -15,11 +15,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 type attrDefSettingsPanel struct {
@@ -37,31 +35,7 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 		def:      def,
 	}
 	p.Self = p
-	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
-		Top:    unison.StdVSpacing,
-		Left:   unison.StdHSpacing,
-		Bottom: unison.StdVSpacing,
-		Right:  unison.StdHSpacing * 2,
-	}))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		var ink unison.Ink
-		if p.Parent().IndexOfChild(p)%2 == 1 {
-			ink = unison.ThemeSurface
-		} else {
-			ink = unison.ThemeBelowSurface
-		}
-		gc.DrawRect(rect, ink.Paint(gc, rect, paintstyle.Fill))
-	}
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-
+	configureEditorRow(p.AsPanel(), 3, true)
 	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
 		editor: dockable,
 		row:    p.AsPanel(),
@@ -74,25 +48,15 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 }
 
 func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
-	buttons := unison.NewPanel()
-	buttons.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
-
 	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = p.deleteAttrDef
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove attribute"))
-	buttons.AddChild(p.deleteButton)
 
 	p.addThresholdButton = unison.NewSVGButton(unison.CircledAddSVG)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
 	p.addThresholdButton.Tooltip = newWrappedTooltip(i18n.Text("Add pool threshold"))
 	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef)
-	buttons.AddChild(p.addThresholdButton)
-	return buttons
+	return newEditorRowButtonColumn(p.deleteButton, p.addThresholdButton)
 }
 
 func (p *attrDefSettingsPanel) deleteAttrDef() {

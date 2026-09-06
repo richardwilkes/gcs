@@ -99,29 +99,16 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	p.AddChild(hdr)
 
 	p.ptsList = unison.NewPanel()
-	p.ptsList.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: 4,
-	})
-	p.ptsList.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
+	_, layoutData := initPagePanel(p.ptsList, unison.NewCompoundBorder(unison.NewLineBorder(colors.Header, geom.Size{},
+		geom.Insets{
+			Top:    0,
+			Left:   1,
+			Bottom: 1,
+			Right:  1,
+		}, false), unison.NewEmptyBorder(titledPagePanelInsets)), 2, false, nil)
+	layoutData.HGrab = true
+	layoutData.VGrab = true
 	p.AddChild(p.ptsList)
-
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(colors.Header, geom.Size{}, geom.Insets{
-		Top:    0,
-		Left:   1,
-		Bottom: 1,
-		Right:  1,
-	}, false), unison.NewEmptyBorder(geom.Insets{
-		Top:    1,
-		Left:   2,
-		Bottom: 1,
-		Right:  2,
-	})))
 	p.ptsList.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		drawBandedBackground(p.ptsList, gc, rect, 0, 2, func(rowIndex int, ink unison.Ink) unison.Ink {
 			if rowIndex == 0 && p.overSpent == -1 {
@@ -132,10 +119,8 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	}
 
 	p.unspentField = NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.UnspentPoints().String(); text != f.Text.String() {
-			f.SetTitle(text)
+		if f.SetTitleIfChanged(p.entity.UnspentPoints().String()) {
 			p.adjustUnspent()
-			MarkForLayoutWithinDockable(f)
 		}
 	})
 	p.unspentLabel = p.addPointsField(p.unspentField, i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
@@ -180,11 +165,8 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 			tooltip: i18n.Text("Total points spent on spells"),
 		},
 	} {
-		p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-			if text := one.get(p.entity.PointsBreakdown()).String(); text != f.Text.String() {
-				f.SetTitle(text)
-				MarkForLayoutWithinDockable(f)
-			}
+		p.addPointsField(NewNonEditablePageFieldEndFor(func() string {
+			return one.get(p.entity.PointsBreakdown()).String()
 		}), one.title, one.tooltip)
 	}
 	p.adjustUnspent()

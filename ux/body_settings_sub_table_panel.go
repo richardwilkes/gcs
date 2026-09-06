@@ -48,24 +48,14 @@ func newBodySettingsSubTablePanel(d *bodySettingsDockable, body *gurps.Body) *bo
 }
 
 func (p *bodySettingsSubTablePanel) createButtons() *unison.Panel {
-	buttons := unison.NewPanel()
-	buttons.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
-
 	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = p.removeSubTable
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove sub-table"))
-	buttons.AddChild(p.deleteButton)
 
 	p.addButton = unison.NewSVGButton(unison.CircledAddSVG)
 	p.addButton.ClickCallback = p.addHitLocation
 	p.addButton.Tooltip = newWrappedTooltip(i18n.Text("Add hit location"))
-	buttons.AddChild(p.addButton)
-	return buttons
+	return newEditorRowButtonColumn(p.deleteButton, p.addButton)
 }
 
 func (p *bodySettingsSubTablePanel) addHitLocation() {

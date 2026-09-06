@@ -12,10 +12,8 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 const (
@@ -38,24 +36,8 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 		targetMgr: targetMgr,
 		prefix:    identityPanelFieldPrefix,
 	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: 4,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-	})
-	p.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Identity")}, unison.NewEmptyBorder(geom.Insets{
-		Top:    1,
-		Left:   2,
-		Bottom: 1,
-		Right:  2,
-	})))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
-	InstallTintFunc(p, colors.TintIdentity)
+	_, layoutData := initTitledPagePanel(p, i18n.Text("Identity"), 2, true, colors.TintIdentity)
+	layoutData.HGrab = true
 
 	title := i18n.Text("Name")
 	nameField := NewStringPageField(p.targetMgr, identityPanelNameFieldRefKey, title,

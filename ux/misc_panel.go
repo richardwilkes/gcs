@@ -13,10 +13,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 // MiscPanel holds the contents of the miscellaneous block on the sheet.
@@ -34,39 +32,13 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 		targetMgr: targetMgr,
 		prefix:    targetMgr.NextPrefix(),
 	}
-	m.Self = m
-	m.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: 4,
-	})
-	m.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-	})
-	m.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Miscellaneous")},
-		unison.NewEmptyBorder(geom.Insets{
-			Top:    1,
-			Left:   2,
-			Bottom: 1,
-			Right:  2,
-		})))
-	m.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) { drawBandedBackground(m, gc, rect, 0, 2, nil) }
+	initTitledPagePanel(m, i18n.Text("Miscellaneous"), 2, true, colors.TintMisc)
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Created")))
-	m.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {
-		if text := m.entity.CreatedOn.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}))
+	m.AddChild(NewNonEditablePageFieldFor(func() string { return m.entity.CreatedOn.String() }))
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Modified")))
-	m.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {
-		if text := m.entity.ModifiedOn.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}))
+	m.AddChild(NewNonEditablePageFieldFor(func() string { return m.entity.ModifiedOn.String() }))
 
 	title := i18n.Text("Player")
 	m.AddChild(NewPageLabelEnd(title))
@@ -74,7 +46,6 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 		func() string { return m.entity.Profile.PlayerName },
 		func(s string) { m.entity.Profile.PlayerName = s }))
 
-	InstallTintFunc(m, colors.TintMisc)
 	return m
 }
 

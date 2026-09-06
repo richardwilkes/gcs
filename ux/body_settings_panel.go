@@ -27,12 +27,7 @@ func newBodySettingsPanel(d *bodySettingsDockable) *bodySettingsPanel {
 		dockable: d,
 	}
 	p.Self = p
-	p.SetBorder(unison.NewEmptyBorder(geom.Insets{
-		Top:    unison.StdVSpacing,
-		Left:   unison.StdHSpacing,
-		Bottom: unison.StdVSpacing,
-		Right:  unison.StdHSpacing * 2,
-	}))
+	p.SetBorder(unison.NewEmptyBorder(editorRowInsets(true)))
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
@@ -47,19 +42,10 @@ func newBodySettingsPanel(d *bodySettingsDockable) *bodySettingsPanel {
 }
 
 func (p *bodySettingsPanel) createButtons() *unison.Panel {
-	buttons := unison.NewPanel()
-	buttons.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
-
 	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addButton.ClickCallback = p.addHitLocation
 	addButton.Tooltip = newWrappedTooltip(i18n.Text("Add hit location"))
-	buttons.AddChild(addButton)
-	return buttons
+	return newEditorRowButtonColumn(addButton)
 }
 
 func (p *bodySettingsPanel) addHitLocation() {

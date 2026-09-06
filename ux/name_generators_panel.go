@@ -117,7 +117,7 @@ func newNameGeneratorRefPanel(list *nameGeneratorsPanel, index int) *nameGenerat
 		index: index,
 	}
 	p.Self = p
-	configureEditorRow(p.AsPanel(), 4)
+	configureEditorRow(p.AsPanel(), 4, false)
 	d := list.dockable
 	options := list.options
 	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{

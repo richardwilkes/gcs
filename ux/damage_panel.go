@@ -12,7 +12,6 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -34,24 +33,8 @@ func NewDamagePanel(entity *gurps.Entity, targetMgr *TargetMgr) *DamagePanel {
 		entity:    entity,
 		targetMgr: targetMgr,
 	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: 4,
-		HAlign:   align.Middle,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-	})
-	p.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Basic Damage")}, unison.NewEmptyBorder(geom.Insets{
-		Top:    1,
-		Left:   2,
-		Bottom: 1,
-		Right:  2,
-	})))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
-	InstallTintFunc(p, colors.TintDamage)
+	layout, _ := initTitledPagePanel(p, i18n.Text("Basic Damage"), 2, true, colors.TintDamage)
+	layout.HAlign = align.Middle
 	p.rebuild()
 	return p
 }
@@ -87,10 +70,7 @@ func (p *DamagePanel) rebuild() {
 }
 
 func (p *DamagePanel) addDamageField(title string, f func() string) {
-	p.AddChild(NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
-		field.SetTitle(f())
-		MarkForLayoutWithinDockable(field)
-	}))
+	p.AddChild(NewNonEditablePageFieldEndFor(f))
 	p.AddChild(NewPageLabel(title))
 }
 

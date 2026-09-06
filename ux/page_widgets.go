@@ -21,6 +21,48 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
+// titledPagePanelInsets are the insets between the border of a sheet page block and its content.
+var titledPagePanelInsets = geom.Insets{Top: 1, Left: 2, Bottom: 1, Right: 2}
+
+// newTitledPageBorder returns the border of a titled sheet page block: the titled border with the standard insets
+// inside it.
+func newTitledPageBorder(title string) unison.Border {
+	return unison.NewCompoundBorder(&TitledBorder{Title: title}, unison.NewEmptyBorder(titledPagePanelInsets))
+}
+
+// initTitledPagePanel sets up a panel as a sheet page block with the given title. See initPagePanel for the rest.
+func initTitledPagePanel(p unison.Paneler, title string, columns int, banded bool, tint *unison.ThemeColor) (*unison.FlexLayout, *unison.FlexLayoutData) {
+	return initPagePanel(p, newTitledPageBorder(title), columns, banded, tint)
+}
+
+// initPagePanel sets up a panel as a block of a sheet page: it becomes its own Self and is given the border, a grid of
+// the given number of columns with the standard page spacing, and layout data that fills its cell. When banded is
+// true, its rows, each of which pairs a label with a field, are drawn with alternating backgrounds. A tint that is not
+// nil is installed as the block's tint. The layout and layout data are returned so that a block can adjust them,
+// such as to grab extra space or to center its rows.
+func initPagePanel(p unison.Paneler, border unison.Border, columns int, banded bool, tint *unison.ThemeColor) (*unison.FlexLayout, *unison.FlexLayoutData) {
+	panel := p.AsPanel()
+	panel.Self = p
+	layout := &unison.FlexLayout{
+		Columns:  columns,
+		HSpacing: 4,
+	}
+	panel.SetLayout(layout)
+	layoutData := &unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Fill,
+	}
+	panel.SetLayoutData(layoutData)
+	panel.SetBorder(border)
+	if banded {
+		panel.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) { drawBandedBackground(panel, gc, rect, 0, 2, nil) }
+	}
+	if tint != nil {
+		InstallTintFunc(panel, tint)
+	}
+	return layout, layoutData
+}
+
 // NewPageHeader creates a new center-aligned header for a sheet page.
 func NewPageHeader(title string, hSpan int) *unison.Label {
 	label := unison.NewLabel()

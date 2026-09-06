@@ -29,7 +29,7 @@ type genderOptionsPanel struct {
 func newGenderOptionsPanel(d *ancestryEditorDockable, gender *gurps.WeightedAncestryOptions) *genderOptionsPanel {
 	p := &genderOptionsPanel{dockable: d, gender: gender}
 	p.Self = p
-	configureEditorRow(p.AsPanel(), 3)
+	configureEditorRow(p.AsPanel(), 3, false)
 	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
 		editor: d,
 		row:    p.AsPanel(),

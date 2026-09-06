@@ -39,17 +39,10 @@ type EncumbrancePanel struct {
 // NewEncumbrancePanel creates a new encumbrance panel.
 func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	p := &EncumbrancePanel{entity: entity}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  9,
-		HSpacing: 4,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-	})
-	p.SetBorder(&TitledBorder{Title: i18n.Text("Encumbrance, Move & Dodge")})
+	// There are no insets, since the header row that comes first should touch the border.
+	_, layoutData := initPagePanel(p, &TitledBorder{Title: i18n.Text("Encumbrance, Move & Dodge")}, 9, false,
+		colors.TintEncumbrance)
+	layoutData.HGrab = true
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
@@ -114,8 +107,6 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		}
 		p.AddChild(p.createDodgeField(enc, rowColor))
 	}
-
-	InstallTintFunc(p, colors.TintEncumbrance)
 	return p
 }
 
@@ -153,11 +144,8 @@ func (p *EncumbrancePanel) createLevelField(enc encumbrance.Level, rowColor *enc
 }
 
 func (p *EncumbrancePanel) createMaxCarryField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
-	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.MaximumCarry(enc)); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
+	field := NewNonEditablePageFieldEndFor(func() string {
+		return p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.MaximumCarry(enc))
 	})
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The maximum load that can be carried and still remain within the %s encumbrance level"), enc.String()))
@@ -166,12 +154,7 @@ func (p *EncumbrancePanel) createMaxCarryField(enc encumbrance.Level, rowColor *
 }
 
 func (p *EncumbrancePanel) createMoveField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
-	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := strconv.Itoa(p.entity.Move(enc)); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	})
+	field := NewNonEditablePageFieldEndFor(func() string { return strconv.Itoa(p.entity.Move(enc)) })
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The ground movement rate for the %s encumbrance level"), enc.String()))
 	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
@@ -179,12 +162,7 @@ func (p *EncumbrancePanel) createMoveField(enc encumbrance.Level, rowColor *encR
 }
 
 func (p *EncumbrancePanel) createDodgeField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
-	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := strconv.Itoa(p.entity.Dodge(enc)); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	})
+	field := NewNonEditablePageFieldEndFor(func() string { return strconv.Itoa(p.entity.Dodge(enc)) })
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The dodge for the %s encumbrance level"), enc.String()))
 	field.SetBorder(unison.NewEmptyBorder(geom.Insets{Right: 4}))
