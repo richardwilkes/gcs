@@ -40,11 +40,9 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 	m.AddChild(NewPageLabelEnd(i18n.Text("Modified")))
 	m.AddChild(NewNonEditablePageFieldFor(func() string { return m.entity.ModifiedOn.String() }))
 
-	title := i18n.Text("Player")
-	m.AddChild(NewPageLabelEnd(title))
-	m.AddChild(NewStringPageField(m.targetMgr, m.prefix+"player", title,
+	addLabeledStringPageField(m, m.targetMgr, m.prefix+"player", i18n.Text("Player"), NewPageLabelEnd,
 		func() string { return m.entity.Profile.PlayerName },
-		func(s string) { m.entity.Profile.PlayerName = s }))
+		func(s string) { m.entity.Profile.PlayerName = s })
 
 	return m
 }

@@ -173,6 +173,39 @@ func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 	return field
 }
 
+// addLabeledStringPageField adds a label, built by newLabel, and a text entry field for a sheet page to parent, in that
+// order, and returns the field. newLabel is typically NewPageLabel or NewPageLabelEnd.
+func addLabeledStringPageField(parent unison.Paneler, targetMgr *TargetMgr, targetKey, title string, newLabel func(string) *unison.Label, get func() string, set func(string)) *StringField {
+	p := parent.AsPanel()
+	p.AddChild(newLabel(title))
+	field := NewStringPageField(targetMgr, targetKey, title, get, set)
+	p.AddChild(field)
+	return field
+}
+
+// addRandomizedStringPageField adds a label with a randomization button and a text entry field for a sheet page to
+// parent, in that order, and returns the field. Clicking the button stores the value random returns via set, then shows
+// it in the field and marks the sheet modified.
+func addRandomizedStringPageField(parent unison.Paneler, targetMgr *TargetMgr, targetKey, title, tooltip string, get func() string, set func(string), random func() string) *StringField {
+	return addRandomizedPageField(parent, NewStringPageField(targetMgr, targetKey, title, get, set), title, tooltip,
+		func() string {
+			set(random())
+			return get()
+		})
+}
+
+// addRandomizedPageField adds a label with a randomization button and field to parent, in that order, and returns the
+// field. Clicking the button calls randomize, which is expected to store the new value and return the text to show for
+// it, then shows that text in the field and marks the sheet modified. The field is flagged SkipDeepSync, since the
+// values these fields hold have no bearing on the rest of the sheet.
+func addRandomizedPageField[F SelectableTextField](parent unison.Paneler, field F, title, tooltip string, randomize func() string) F {
+	p := parent.AsPanel()
+	p.AddChild(NewPageLabelWithRandomizer(title, tooltip, func() { SetTextAndMarkModified(field, randomize()) }))
+	field.AsPanel().ClientData()[SkipDeepSync] = true
+	p.AddChild(field)
+	return field
+}
+
 func installPageFieldFontAndFocusBorders(field *unison.Field) {
 	field.Font = fonts.PageFieldPrimary
 	unison.InstallFocusBorders(

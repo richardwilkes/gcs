@@ -93,51 +93,35 @@ func createColumn() *unison.Panel {
 func (d *DescriptionPanel) createColumn1() *unison.Panel {
 	column := createColumn()
 
-	title := i18n.Text("Gender")
-	genderField := NewStringPageField(d.targetMgr, descriptionPanelGenderFieldRefKey, title,
+	addRandomizedStringPageField(column, d.targetMgr, descriptionPanelGenderFieldRefKey, i18n.Text("Gender"),
+		i18n.Text("Randomize the gender using the current ancestry"),
 		func() string { return d.entity.Profile.Gender },
-		func(s string) { d.entity.Profile.Gender = s })
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the gender using the current ancestry"), func() {
-			d.entity.Profile.Gender = d.entity.Ancestry().RandomGender(d.entity.Profile.Gender)
-			SetTextAndMarkModified(genderField, d.entity.Profile.Gender)
-		}))
-	genderField.ClientData()[SkipDeepSync] = true
-	column.AddChild(genderField)
+		func(s string) { d.entity.Profile.Gender = s },
+		func() string { return d.entity.Ancestry().RandomGender(d.entity.Profile.Gender) })
 
-	title = i18n.Text("Age")
-	ageField := NewStringPageField(d.targetMgr, descriptionPanelAgeFieldRefKey, title,
+	addRandomizedStringPageField(column, d.targetMgr, descriptionPanelAgeFieldRefKey, i18n.Text("Age"),
+		i18n.Text("Randomize the age using the current ancestry"),
 		func() string { return d.entity.Profile.Age },
-		func(s string) { d.entity.Profile.Age = s })
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the age using the current ancestry"), func() {
+		func(s string) { d.entity.Profile.Age = s },
+		func() string {
 			age, _ := strconv.Atoi(d.entity.Profile.Age) //nolint:errcheck // A default of 0 is ok here on error
-			d.entity.Profile.Age = strconv.Itoa(d.entity.Ancestry().RandomAge(d.entity, d.entity.Profile.Gender, age))
-			SetTextAndMarkModified(ageField, d.entity.Profile.Age)
-		}))
-	ageField.ClientData()[SkipDeepSync] = true
-	column.AddChild(ageField)
+			return strconv.Itoa(d.entity.Ancestry().RandomAge(d.entity, d.entity.Profile.Gender, age))
+		})
 
-	title = i18n.Text("Birthday")
-	birthdayField := NewStringPageField(d.targetMgr, descriptionPanelBirthdayFieldRefKey, title,
+	addRandomizedStringPageField(column, d.targetMgr, descriptionPanelBirthdayFieldRefKey, i18n.Text("Birthday"),
+		i18n.Text("Randomize the birthday using the current calendar"),
 		func() string { return d.entity.Profile.Birthday },
-		func(s string) { d.entity.Profile.Birthday = s })
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the birthday using the current calendar"), func() {
+		func(s string) { d.entity.Profile.Birthday = s },
+		func() string {
 			global := gurps.GlobalSettings()
-			d.entity.Profile.Birthday = global.General.CalendarRef(global.Libraries).RandomBirthday(d.entity.Profile.Birthday)
-			SetTextAndMarkModified(birthdayField, d.entity.Profile.Birthday)
-		}))
-	birthdayField.ClientData()[SkipDeepSync] = true
-	column.AddChild(birthdayField)
+			return global.General.CalendarRef(global.Libraries).RandomBirthday(d.entity.Profile.Birthday)
+		})
 
-	title = i18n.Text("Religion")
-	column.AddChild(NewPageLabelEnd(title))
-	religionField := NewStringPageField(d.targetMgr, d.prefix+"religion", title,
+	religionField := addLabeledStringPageField(column, d.targetMgr, d.prefix+"religion", i18n.Text("Religion"),
+		NewPageLabelEnd,
 		func() string { return d.entity.Profile.Religion },
 		func(s string) { d.entity.Profile.Religion = s })
 	religionField.ClientData()[SkipDeepSync] = true
-	column.AddChild(religionField)
 
 	return column
 }
@@ -149,25 +133,21 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 	heightField := NewHeightPageField(d.targetMgr, descriptionPanelHeightFieldRefKey, title, d.entity,
 		func() fxp.Length { return d.entity.Profile.Height },
 		func(v fxp.Length) { d.entity.Profile.Height = v }, 0, fxp.Length(fxp.Max), true)
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the height using the current ancestry"), func() {
+	addRandomizedPageField(column, heightField, title, i18n.Text("Randomize the height using the current ancestry"),
+		func() string {
 			d.entity.Profile.Height = d.entity.Ancestry().RandomHeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Height)
-			SetTextAndMarkModified(heightField, heightField.Format(d.entity.Profile.Height))
-		}))
-	heightField.ClientData()[SkipDeepSync] = true
-	column.AddChild(heightField)
+			return heightField.Format(d.entity.Profile.Height)
+		})
 
 	title = i18n.Text("Weight")
 	weightField := NewWeightPageField(d.targetMgr, descriptionPanelWeightFieldRefKey, title, d.entity,
 		func() fxp.Weight { return d.entity.Profile.Weight },
 		func(v fxp.Weight) { d.entity.Profile.Weight = v }, 0, fxp.Weight(fxp.Max), true)
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the weight using the current ancestry"), func() {
+	addRandomizedPageField(column, weightField, title, i18n.Text("Randomize the weight using the current ancestry"),
+		func() string {
 			d.entity.Profile.Weight = d.entity.Ancestry().RandomWeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Weight)
-			SetTextAndMarkModified(weightField, weightField.Format(d.entity.Profile.Weight))
-		}))
-	weightField.ClientData()[SkipDeepSync] = true
-	column.AddChild(weightField)
+			return weightField.Format(d.entity.Profile.Weight)
+		})
 
 	title = i18n.Text("Size")
 	column.AddChild(NewPageLabelEnd(title))
@@ -177,13 +157,10 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 	field.HAlign = align.Start
 	column.AddChild(field)
 
-	title = i18n.Text("TL")
-	column.AddChild(NewPageLabelEnd(title))
-	tlField := NewStringPageField(d.targetMgr, d.prefix+"tl", title,
+	tlField := addLabeledStringPageField(column, d.targetMgr, d.prefix+"tl", i18n.Text("TL"), NewPageLabelEnd,
 		func() string { return d.entity.Profile.TechLevel },
 		func(s string) { d.entity.Profile.TechLevel = s })
 	tlField.Tooltip = newWrappedTooltip(gurps.TechLevelInfo())
-	column.AddChild(tlField)
 
 	return column
 }
@@ -191,53 +168,31 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column := createColumn()
 
-	title := i18n.Text("Hair")
-	hairField := NewStringPageField(d.targetMgr, descriptionPanelHairFieldRefKey, title,
+	addRandomizedStringPageField(column, d.targetMgr, descriptionPanelHairFieldRefKey, i18n.Text("Hair"),
+		i18n.Text("Randomize the hair using the current ancestry"),
 		func() string { return d.entity.Profile.Hair },
-		func(s string) { d.entity.Profile.Hair = s })
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the hair using the current ancestry"), func() {
-			d.entity.Profile.Hair = d.entity.Ancestry().RandomHair(d.entity.Profile.Gender, d.entity.Profile.Hair)
-			SetTextAndMarkModified(hairField, d.entity.Profile.Hair)
-		}))
-	hairField.ClientData()[SkipDeepSync] = true
-	column.AddChild(hairField)
+		func(s string) { d.entity.Profile.Hair = s },
+		func() string { return d.entity.Ancestry().RandomHair(d.entity.Profile.Gender, d.entity.Profile.Hair) })
 
-	title = i18n.Text("Eyes")
-	eyesField := NewStringPageField(d.targetMgr, descriptionPanelEyesFieldRefKey, title,
+	addRandomizedStringPageField(column, d.targetMgr, descriptionPanelEyesFieldRefKey, i18n.Text("Eyes"),
+		i18n.Text("Randomize the eyes using the current ancestry"),
 		func() string { return d.entity.Profile.Eyes },
-		func(s string) { d.entity.Profile.Eyes = s })
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the eyes using the current ancestry"), func() {
-			d.entity.Profile.Eyes = d.entity.Ancestry().RandomEyes(d.entity.Profile.Gender, d.entity.Profile.Eyes)
-			SetTextAndMarkModified(eyesField, d.entity.Profile.Eyes)
-		}))
-	eyesField.ClientData()[SkipDeepSync] = true
-	column.AddChild(eyesField)
+		func(s string) { d.entity.Profile.Eyes = s },
+		func() string { return d.entity.Ancestry().RandomEyes(d.entity.Profile.Gender, d.entity.Profile.Eyes) })
 
-	title = i18n.Text("Skin")
-	skinField := NewStringPageField(d.targetMgr, descriptionPanelSkinFieldRefKey, title,
+	addRandomizedStringPageField(column, d.targetMgr, descriptionPanelSkinFieldRefKey, i18n.Text("Skin"),
+		i18n.Text("Randomize the skin using the current ancestry"),
 		func() string { return d.entity.Profile.Skin },
-		func(s string) { d.entity.Profile.Skin = s })
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the skin using the current ancestry"), func() {
-			d.entity.Profile.Skin = d.entity.Ancestry().RandomSkin(d.entity.Profile.Gender, d.entity.Profile.Skin)
-			SetTextAndMarkModified(skinField, d.entity.Profile.Skin)
-		}))
-	skinField.ClientData()[SkipDeepSync] = true
-	column.AddChild(skinField)
+		func(s string) { d.entity.Profile.Skin = s },
+		func() string { return d.entity.Ancestry().RandomSkin(d.entity.Profile.Gender, d.entity.Profile.Skin) })
 
-	title = i18n.Text("Hand")
-	handField := NewStringPageField(d.targetMgr, descriptionPanelHandednessFieldRefKey, title,
+	addRandomizedStringPageField(column, d.targetMgr, descriptionPanelHandednessFieldRefKey, i18n.Text("Hand"),
+		i18n.Text("Randomize the handedness using the current ancestry"),
 		func() string { return d.entity.Profile.Handedness },
-		func(s string) { d.entity.Profile.Handedness = s })
-	column.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the handedness using the current ancestry"), func() {
-			d.entity.Profile.Handedness = d.entity.Ancestry().RandomHandedness(d.entity.Profile.Gender, d.entity.Profile.Handedness)
-			SetTextAndMarkModified(handField, d.entity.Profile.Handedness)
-		}))
-	handField.ClientData()[SkipDeepSync] = true
-	column.AddChild(handField)
+		func(s string) { d.entity.Profile.Handedness = s },
+		func() string {
+			return d.entity.Ancestry().RandomHandedness(d.entity.Profile.Gender, d.entity.Profile.Handedness)
+		})
 
 	return column
 }

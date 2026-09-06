@@ -33,6 +33,8 @@ const (
 type pageUndoRoot struct {
 	unison.Panel
 	mgr *unison.UndoManager
+	// modifiedBy records, in order, each source handed to MarkModified.
+	modifiedBy []unison.Paneler
 }
 
 func newPageUndoRoot() *pageUndoRoot {
@@ -45,6 +47,7 @@ func (r *pageUndoRoot) UndoManager() *unison.UndoManager { return r.mgr }
 
 // MarkModified implements ModifiableRoot.
 func (r *pageUndoRoot) MarkModified(src unison.Paneler) {
+	r.modifiedBy = append(r.modifiedBy, src)
 	if _, skip := src.AsPanel().ClientData()[SkipDeepSync]; !skip {
 		DeepSync(r)
 	}

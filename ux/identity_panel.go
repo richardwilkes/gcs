@@ -39,34 +39,23 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 	_, layoutData := initTitledPagePanel(p, i18n.Text("Identity"), 2, true, colors.TintIdentity)
 	layoutData.HGrab = true
 
-	title := i18n.Text("Name")
-	nameField := NewStringPageField(p.targetMgr, identityPanelNameFieldRefKey, title,
+	addRandomizedStringPageField(p, p.targetMgr, identityPanelNameFieldRefKey, i18n.Text("Name"),
+		i18n.Text("Randomize the name using the current ancestry"),
 		func() string { return p.entity.Profile.Name },
-		func(s string) { p.entity.Profile.Name = s })
-	p.AddChild(NewPageLabelWithRandomizer(title,
-		i18n.Text("Randomize the name using the current ancestry"), func() {
-			p.entity.Profile.Name = p.entity.Ancestry().RandomName(
-				gurps.AvailableNameGenerators(gurps.GlobalSettings().Libraries), p.entity.Profile.Gender,
-			)
-			SetTextAndMarkModified(nameField, p.entity.Profile.Name)
-		}))
-	nameField.ClientData()[SkipDeepSync] = true
-	p.AddChild(nameField)
+		func(s string) { p.entity.Profile.Name = s },
+		func() string {
+			return p.entity.Ancestry().RandomName(gurps.AvailableNameGenerators(gurps.GlobalSettings().Libraries),
+				p.entity.Profile.Gender)
+		})
 
-	title = i18n.Text("Title")
-	p.AddChild(NewPageLabelEnd(title))
-	titleField := NewStringPageField(p.targetMgr, p.prefix+"title", title,
+	titleField := addLabeledStringPageField(p, p.targetMgr, p.prefix+"title", i18n.Text("Title"), NewPageLabelEnd,
 		func() string { return p.entity.Profile.Title },
 		func(s string) { p.entity.Profile.Title = s })
 	titleField.ClientData()[SkipDeepSync] = true
-	p.AddChild(titleField)
 
-	title = i18n.Text("Organization")
-	p.AddChild(NewPageLabelEnd(title))
-	orgField := NewStringPageField(p.targetMgr, p.prefix+"org", title,
+	orgField := addLabeledStringPageField(p, p.targetMgr, p.prefix+"org", i18n.Text("Organization"), NewPageLabelEnd,
 		func() string { return p.entity.Profile.Organization },
 		func(s string) { p.entity.Profile.Organization = s })
 	orgField.ClientData()[SkipDeepSync] = true
-	p.AddChild(orgField)
 	return p
 }

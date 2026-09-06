@@ -162,18 +162,17 @@ func createLootTopBlock(loot *gurps.Loot, targetMgr *TargetMgr) *Page {
 	top := unison.NewPanel()
 	_, layoutData := initTitledPagePanel(top, i18n.Text("Loot"), 2, false, nil)
 	layoutData.HGrab = true
-	addLootTextField(top, targetMgr, i18n.Text("Name"), lootPanelNameFieldRefKey, &loot.Name)
-	addLootTextField(top, targetMgr, i18n.Text("Location"), lootPanelLocationFieldRefKey, &loot.Location)
-	addLootTextField(top, targetMgr, i18n.Text("Session"), lootPanelSessionFieldRefKey, &loot.Session)
+	addLootTextField(top, targetMgr, lootPanelNameFieldRefKey, i18n.Text("Name"), &loot.Name)
+	addLootTextField(top, targetMgr, lootPanelLocationFieldRefKey, i18n.Text("Location"), &loot.Location)
+	addLootTextField(top, targetMgr, lootPanelSessionFieldRefKey, i18n.Text("Session"), &loot.Session)
 	page.AddChild(top)
 	return page
 }
 
-func addLootTextField(parent *unison.Panel, targetMgr *TargetMgr, title, fieldRefKey string, field *string) {
-	parent.AddChild(NewPageLabel(title))
-	parent.AddChild(NewStringPageField(targetMgr, fieldRefKey, title,
+func addLootTextField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, title string, field *string) {
+	addLabeledStringPageField(parent, targetMgr, targetKey, title, NewPageLabel,
 		func() string { return *field },
-		func(s string) { *field = s }))
+		func(s string) { *field = s })
 }
 
 // installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the loot
