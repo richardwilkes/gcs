@@ -26,17 +26,119 @@ type searchRef struct {
 	row   any
 }
 
+// matchStepper holds the controls and state the search toolbars share for stepping through matches: the back and
+// forward buttons, the search field, the label showing the position within the matches, the matches themselves and the
+// index of the current one. A searchIndex of -1 means no match is current yet, which the label shows as "- of N".
+type matchStepper[T any] struct {
+	backButton    *unison.Button
+	forwardButton *unison.Button
+	searchField   *unison.Field
+	matchesLabel  *unison.Label
+	showMatch     func(match T)
+	searchResult  []T
+	searchIndex   int
+}
+
+// setupControls creates the controls: the back and forward buttons, disabled until there is somewhere to step, the
+// search field, whose RETURN and SHIFT-RETURN step to the next and previous match, and the matches label.
+// searchModified is called when the search field's text changes and showMatch is called to select and reveal the
+// current match. Nothing is added to a parent; see addControlsTo and installJumpToSearchHandlers.
+func (m *matchStepper[T]) setupControls(searchModified func(before, after *unison.FieldState), showMatch func(match T)) {
+	m.showMatch = showMatch
+
+	m.backButton = unison.NewSVGButton(svg.Back)
+	m.backButton.Tooltip = newWrappedTooltip(i18n.Text("Previous Match"))
+	m.backButton.ClickCallback = m.previousMatch
+	m.backButton.SetEnabled(false)
+
+	m.forwardButton = unison.NewSVGButton(svg.Forward)
+	m.forwardButton.Tooltip = newWrappedTooltip(i18n.Text("Next Match"))
+	m.forwardButton.ClickCallback = m.nextMatch
+	m.forwardButton.SetEnabled(false)
+
+	searchText := i18n.Text("Search")
+	m.searchField = NewSearchField(searchText, searchModified)
+	m.searchField.Tooltip = newWrappedTooltipWithSecondaryText(searchText, i18n.Text("Press RETURN to select the next match\nPress SHIFT-RETURN to select the previous match"))
+	m.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
+			if mods.ShiftDown() {
+				m.previousMatch()
+			} else {
+				m.nextMatch()
+			}
+			return true
+		}
+		return m.searchField.DefaultKeyDown(keyCode, mods, repeat)
+	}
+
+	m.matchesLabel = unison.NewLabel()
+	m.matchesLabel.SetTitle("-")
+	m.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
+}
+
+// addControlsTo adds the controls to the given panel, in order.
+func (m *matchStepper[T]) addControlsTo(panel *unison.Panel) {
+	panel.AddChild(m.backButton)
+	panel.AddChild(m.forwardButton)
+	panel.AddChild(m.searchField)
+	panel.AddChild(m.matchesLabel)
+}
+
+// installJumpToSearchHandlers installs the handlers for the jump-to-search command on the given panel, so that the
+// command moves the focus to the search field.
+func (m *matchStepper[T]) installJumpToSearchHandlers(panel *unison.Panel) {
+	panel.InstallCmdHandlers(JumpToSearchFilterItemID,
+		func(any) bool { return !m.searchField.Focused() },
+		func(any) { m.searchField.RequestFocus() })
+}
+
+func (m *matchStepper[T]) previousMatch() {
+	if m.searchIndex > 0 {
+		m.searchIndex--
+		m.adjustForMatch()
+	}
+}
+
+func (m *matchStepper[T]) nextMatch() {
+	if m.searchIndex < len(m.searchResult)-1 {
+		m.searchIndex++
+		m.adjustForMatch()
+	}
+}
+
+// adjustForMatch updates the controls and, when a match is current, shows it. Only direct user actions (typing in the
+// search field, stepping between matches) should call this; asynchronous paths that merely refresh the results must
+// use updateMatchControls instead, since grabbing the selection while the user may have moved on to other rows would
+// discard their place.
+func (m *matchStepper[T]) adjustForMatch() {
+	m.updateMatchControls()
+	if m.searchIndex >= 0 && m.searchIndex < len(m.searchResult) {
+		m.showMatch(m.searchResult[m.searchIndex])
+	}
+}
+
+// updateMatchControls updates the back and forward buttons and the matches label for the current search results
+// without touching any selection or scroll position.
+func (m *matchStepper[T]) updateMatchControls() {
+	m.backButton.SetEnabled(m.searchIndex > 0)
+	m.forwardButton.SetEnabled(len(m.searchResult) != 0 && m.searchIndex != len(m.searchResult)-1)
+	switch {
+	case len(m.searchResult) == 0:
+		m.matchesLabel.SetTitle("-")
+	case m.searchIndex < 0:
+		m.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("- of %d"), len(m.searchResult)))
+	default:
+		m.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), m.searchIndex+1, len(m.searchResult)))
+	}
+	m.matchesLabel.Parent().MarkForLayoutAndRedraw()
+}
+
 // SearchTracker provides controls for searching.
 type SearchTracker struct {
+	matchStepper[*searchRef]
 	clearTableSelections func()
 	findMatches          func(refList *[]*searchRef, text string, namesOnly bool)
-	backButton           *unison.Button
-	forwardButton        *unison.Button
-	matchesLabel         *unison.Label
-	searchField          *unison.Field
 	namesOnlyCheckBox    *unison.CheckBox
-	searchResult         []*searchRef
-	searchIndex          int
 }
 
 // InstallSearchTracker creates a search tracker in the given toolbar.
@@ -45,48 +147,18 @@ func InstallSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 		clearTableSelections: clearTableSelections,
 		findMatches:          findMatches,
 	}
-	s.backButton = unison.NewSVGButton(svg.Back)
-	s.backButton.Tooltip = newWrappedTooltip(i18n.Text("Previous Match"))
-	s.backButton.ClickCallback = s.previousMatch
-	s.backButton.SetEnabled(false)
-
-	s.forwardButton = unison.NewSVGButton(svg.Forward)
-	s.forwardButton.Tooltip = newWrappedTooltip(i18n.Text("Next Match"))
-	s.forwardButton.ClickCallback = s.nextMatch
-	s.forwardButton.SetEnabled(false)
-
-	searchText := i18n.Text("Search")
-	s.searchField = NewSearchField(searchText, s.searchModified)
-	s.searchField.Tooltip = newWrappedTooltipWithSecondaryText(searchText, i18n.Text("Press RETURN to select the next match\nPress SHIFT-RETURN to select the previous match"))
-	s.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
-		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
-			if mods.ShiftDown() {
-				s.previousMatch()
-			} else {
-				s.nextMatch()
-			}
-			return true
-		}
-		return s.searchField.DefaultKeyDown(keyCode, mods, repeat)
-	}
+	s.setupControls(s.searchModified, func(ref *searchRef) {
+		clearTableSelections()
+		showSearchRef(ref)
+	})
 
 	s.namesOnlyCheckBox = unison.NewCheckBox()
 	s.namesOnlyCheckBox.SetTitle(i18n.Text("Names Only"))
 	s.namesOnlyCheckBox.ClickCallback = func() { s.doSearch(s.searchField.Text()) }
 
-	s.matchesLabel = unison.NewLabel()
-	s.matchesLabel.SetTitle(i18n.Text("0 of 0"))
-	s.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
-
-	toolbar.AddChild(s.backButton)
-	toolbar.AddChild(s.forwardButton)
-	toolbar.AddChild(s.searchField)
-	toolbar.AddChild(s.matchesLabel)
+	s.addControlsTo(toolbar)
 	toolbar.AddChild(s.namesOnlyCheckBox)
-
-	toolbar.Parent().InstallCmdHandlers(JumpToSearchFilterItemID,
-		func(any) bool { return !s.searchField.Focused() },
-		func(any) { s.searchField.RequestFocus() })
+	s.installJumpToSearchHandlers(toolbar.Parent())
 	return s
 }
 
@@ -95,17 +167,20 @@ func (s *SearchTracker) Refresh() {
 	s.searchResult = nil
 	s.findMatches(&s.searchResult, strings.ToLower(s.searchField.Text()), s.namesOnlyCheckBox.State == check.On)
 	s.searchIndex = max(min(s.searchIndex, len(s.searchResult)-1), 0)
-	s.adjustButtonsAndLabels()
+	s.updateMatchControls()
 }
 
 func (s *SearchTracker) searchModified(_, after *unison.FieldState) {
 	s.doSearch(after.Text)
 }
 
+// doSearch runs a fresh search and shows its first match. The selections are cleared even when nothing matches, so
+// that clearing the search field deselects the last match.
 func (s *SearchTracker) doSearch(text string) {
 	s.searchIndex = 0
 	s.searchResult = nil
 	s.findMatches(&s.searchResult, strings.ToLower(text), s.namesOnlyCheckBox.State == check.On)
+	s.clearTableSelections()
 	s.adjustForMatch()
 }
 
@@ -159,39 +234,6 @@ func searchSheetTableRows[T gurps.Node[T]](refList *[]*searchRef, text string, n
 			searchSheetTableRows(refList, text, namesOnly, table, child)
 		}
 	}
-}
-
-func (s *SearchTracker) previousMatch() {
-	if s.searchIndex > 0 {
-		s.searchIndex--
-		s.adjustForMatch()
-	}
-}
-
-func (s *SearchTracker) nextMatch() {
-	if s.searchIndex < len(s.searchResult)-1 {
-		s.searchIndex++
-		s.adjustForMatch()
-	}
-}
-
-func (s *SearchTracker) adjustForMatch() {
-	s.clearTableSelections()
-	s.adjustButtonsAndLabels()
-	if len(s.searchResult) != 0 {
-		showSearchRef(s.searchResult[s.searchIndex])
-	}
-}
-
-func (s *SearchTracker) adjustButtonsAndLabels() {
-	s.backButton.SetEnabled(s.searchIndex != 0)
-	s.forwardButton.SetEnabled(len(s.searchResult) != 0 && s.searchIndex != len(s.searchResult)-1)
-	if len(s.searchResult) != 0 {
-		s.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), s.searchIndex+1, len(s.searchResult)))
-	} else {
-		s.matchesLabel.SetTitle(i18n.Text("0 of 0"))
-	}
-	s.matchesLabel.Parent().MarkForLayoutAndRedraw()
 }
 
 func showSearchRef(ref *searchRef) {

@@ -55,12 +55,9 @@ var (
 // Navigator holds the workspace navigation panel.
 type Navigator struct {
 	unison.Panel
+	matchStepper[*NavigatorNode]
 	toolbar                   *unison.Panel
 	buttonRow                 *unison.Panel // The toolbar row the update button is added to when there is an update
-	backButton                *unison.Button
-	forwardButton             *unison.Button
-	searchField               *unison.Field
-	matchesLabel              *unison.Label
 	deleteButton              *unison.Button
 	renameButton              *unison.Button
 	newFolderButton           *unison.Button
@@ -72,14 +69,12 @@ type Navigator struct {
 	scroll                    *unison.ScrollPanel
 	table                     *unison.Table[*NavigatorNode]
 	tokens                    []*gurps.MonitorToken
-	searchResult              []*NavigatorNode
 	deepSearch                map[string]bool
 	contentCache              map[string]*contentCacheEntry
 	lastBuild                 *contentCacheBuild
 	invalidatedPaths          map[string]bool
 	appUpdatePulse            appUpdatePulse
 	cacheGeneration           atomic.Int64
-	searchIndex               int
 	prewarmSuspensions        int
 	needReload                bool
 	prewarmPending            bool
@@ -135,9 +130,7 @@ func newNavigator() *Navigator {
 	n.table.SelectionChangedCallback = n.selectionChanged
 	n.table.KeyDownCallback = n.tableKeyDown
 
-	n.InstallCmdHandlers(JumpToSearchFilterItemID,
-		func(any) bool { return !n.searchField.Focused() },
-		func(any) { n.searchField.RequestFocus() })
+	n.installJumpToSearchHandlers(n.AsPanel())
 
 	n.selectionChanged()
 	// The launch-time update check can finish before the Library Explorer exists, in which case the notification that
@@ -236,32 +229,13 @@ func (n *Navigator) setupToolBar() {
 		HGrab:  true,
 	})
 
-	n.backButton = unison.NewSVGButton(svg.Back)
-	n.backButton.Tooltip = newWrappedTooltip(i18n.Text("Previous Match"))
-	n.backButton.ClickCallback = n.previousMatch
-	n.backButton.SetEnabled(false)
-
-	n.forwardButton = unison.NewSVGButton(svg.Forward)
-	n.forwardButton.Tooltip = newWrappedTooltip(i18n.Text("Next Match"))
-	n.forwardButton.ClickCallback = n.nextMatch
-	n.forwardButton.SetEnabled(false)
-
-	n.searchField = NewSearchField(i18n.Text("Search"), n.searchModified)
-	n.searchField.KeyDownCallback = n.searchKeydown
-
-	n.matchesLabel = unison.NewLabel()
-	n.matchesLabel.SetTitle("-")
-	n.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
-
+	n.setupControls(n.searchModified, n.showMatch)
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	second.AddChild(n.backButton)
-	second.AddChild(n.forwardButton)
-	second.AddChild(n.searchField)
-	second.AddChild(n.matchesLabel)
+	n.addControlsTo(second)
 	second.SetLayout(&unison.FlexLayout{
 		Columns:  len(second.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -456,64 +430,81 @@ func newFolderPath(parentDir, name string) string {
 	return filepath.Join(parentDir, strings.TrimSpace(name))
 }
 
+// promptForFileSystemName asks the user for a file or folder name and returns the path it produces, along with whether
+// the user accepted it. currentName, when not empty, is shown in a disabled "Current Name" row above the entry, which
+// is labeled with label and starts out holding initial. targetPath returns the path a name produces; the OK button is
+// only enabled while the trimmed name is valid and nothing exists at that path yet.
+func promptForFileSystemName(currentName, label, initial string, targetPath func(name string) string) (path string, ok bool) {
+	name := initial
+	field := NewStringField(nil, "", "", func() string { return name }, func(s string) { name = s })
+	field.SetMinimumTextWidthUsing(minTextWidthCandidate)
+
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	if currentName != "" {
+		currentField := NewStringField(nil, "", "", func() string { return currentName }, func(_ string) {})
+		currentField.SetEnabled(false)
+		panel.AddChild(NewFieldLeadingLabel(i18n.Text("Current Name"), false))
+		panel.AddChild(currentField)
+	}
+	panel.AddChild(NewFieldLeadingLabel(label, false))
+	panel.AddChild(field)
+
+	dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
+		unison.DefaultDialogTheme.QuestionIconInk, panel,
+		[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
+	if err != nil {
+		Workspace.ErrorHandler(i18n.Text("Unable to create name dialog"), err)
+		return "", false
+	}
+	field.ValidateCallback = func() bool {
+		_, valid := trimmedNameIsValid(name)
+		if valid {
+			if _, statErr := os.Stat(targetPath(name)); statErr == nil {
+				valid = false
+			}
+		}
+		dialog.Button(unison.ModalResponseOK).SetEnabled(valid)
+		return valid
+	}
+	field.Validate() // Here to update the OK button
+	if dialog.RunModal() != unison.ModalResponseOK {
+		return "", false
+	}
+	return targetPath(name), true
+}
+
+// reloadAndSelect reloads the tree and selects the row at the given path.
+func (n *Navigator) reloadAndSelect(path string) {
+	n.Reload()
+	n.ApplySelectedPaths([]string{path})
+	n.MarkForRedraw()
+}
+
 func (n *Navigator) renameSelection() {
 	if n.table.SelectionCount() == 1 {
 		row := n.table.SelectedRows(false)[0]
 		if row.IsLibrary() {
 			return
 		}
-
+		oldPath := row.Path()
 		oldName := row.primaryColumnText()
-		newName := oldName
-
-		oldField := NewStringField(nil, "", "", func() string { return oldName }, func(_ string) {})
-		oldField.SetEnabled(false)
-
-		newField := NewStringField(nil, "", "", func() string { return newName }, func(s string) { newName = s })
-		newField.SetMinimumTextWidthUsing(minTextWidthCandidate)
-
-		panel := unison.NewPanel()
-		panel.SetLayout(&unison.FlexLayout{
-			Columns:  2,
-			HSpacing: unison.StdHSpacing,
-			VSpacing: unison.StdVSpacing,
-		})
-		panel.AddChild(NewFieldLeadingLabel(i18n.Text("Current Name"), false))
-		panel.AddChild(oldField)
-		panel.AddChild(NewFieldLeadingLabel(i18n.Text("New Name"), false))
-		panel.AddChild(newField)
-
-		dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
-			unison.DefaultDialogTheme.QuestionIconInk, panel,
-			[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
-		if err != nil {
-			Workspace.ErrorHandler(i18n.Text("Unable to create rename dialog"), err)
+		newPath, ok := promptForFileSystemName(oldName, i18n.Text("New Name"), oldName,
+			func(name string) string { return renamedPath(oldPath, name) })
+		if !ok {
 			return
 		}
-		newField.ValidateCallback = func() bool {
-			_, valid := trimmedNameIsValid(newName)
-			if valid {
-				if _, err = os.Stat(renamedPath(row.Path(), newName)); err == nil {
-					valid = false
-				}
-			}
-			dialog.Button(unison.ModalResponseOK).SetEnabled(valid)
-			return valid
+		if err := os.Rename(oldPath, newPath); err != nil {
+			Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to rename:\n%s"), oldPath), err)
+			return
 		}
-		newField.Validate() // Here to update the OK button
-		if dialog.RunModal() == unison.ModalResponseOK {
-			oldPath := row.Path()
-			newPath := renamedPath(oldPath, newName)
-			if err = os.Rename(oldPath, newPath); err != nil {
-				Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to rename:\n%s"), oldPath), err)
-			} else {
-				n.fixupFavoritePath(row, oldPath, newPath)
-				n.adjustBackingFilePath(row, oldPath, newPath)
-				n.Reload()
-				n.ApplySelectedPaths([]string{newPath})
-				n.MarkForRedraw()
-			}
-		}
+		n.fixupFavoritePath(row, oldPath, newPath)
+		n.adjustBackingFilePath(row, oldPath, newPath)
+		n.reloadAndSelect(newPath)
 	}
 }
 
@@ -620,18 +611,6 @@ func (n *Navigator) configureSelection() {
 			ShowLibrarySettings(row.library)
 		}
 	}
-}
-
-func (n *Navigator) searchKeydown(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
-	if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
-		if mods.ShiftDown() {
-			n.previousMatch()
-		} else {
-			n.nextMatch()
-		}
-		return true
-	}
-	return n.searchField.DefaultKeyDown(keyCode, mods, repeat)
 }
 
 func (n *Navigator) tableKeyDown(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
@@ -1420,52 +1399,15 @@ func buildContentCache(paths map[string]bool, previous map[string]*contentCacheE
 	return fresh
 }
 
-func (n *Navigator) previousMatch() {
-	if n.searchIndex > 0 {
-		n.searchIndex--
-		n.adjustForMatch()
-	}
-}
-
-func (n *Navigator) nextMatch() {
-	if n.searchIndex < len(n.searchResult)-1 {
-		n.searchIndex++
-		n.adjustForMatch()
-	}
-}
-
-// adjustForMatch updates the search toolbar and, when a match is current, selects it and scrolls it into view. Only
-// direct user actions (typing in the search field, stepping between matches) should call this; asynchronous paths that
-// merely refresh the results must use updateMatchControls instead, since grabbing the selection while the user may
-// have moved on to other rows would discard their place.
-func (n *Navigator) adjustForMatch() {
-	n.updateMatchControls()
-	if n.searchIndex >= 0 && n.searchIndex < len(n.searchResult) {
-		row := n.searchResult[n.searchIndex]
-		n.table.DiscloseRow(row, false)
-		n.table.ClearSelection()
-		i := n.table.RowToIndex(row)
-		n.table.SelectByIndex(i)
-		n.ValidateLayout()
-		n.table.ScrollRowIntoView(i)
-	}
-}
-
-// updateMatchControls updates the back/forward buttons and the matches label for the current search results without
-// touching the table's selection or scroll position.
-func (n *Navigator) updateMatchControls() {
-	n.backButton.SetEnabled(n.searchIndex > 0)
-	n.forwardButton.SetEnabled(len(n.searchResult) != 0 && n.searchIndex != len(n.searchResult)-1)
-	if len(n.searchResult) != 0 {
-		if n.searchIndex < 0 {
-			n.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("- of %d"), len(n.searchResult)))
-		} else {
-			n.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), n.searchIndex+1, len(n.searchResult)))
-		}
-	} else {
-		n.matchesLabel.SetTitle("-")
-	}
-	n.matchesLabel.Parent().MarkForLayoutAndRedraw()
+// showMatch selects the row and scrolls it into view, disclosing its ancestors as needed. The layout is validated
+// first, since disclosing may have changed the row positions the scroll relies on.
+func (n *Navigator) showMatch(row *NavigatorNode) {
+	n.table.DiscloseRow(row, false)
+	n.table.ClearSelection()
+	i := n.table.RowToIndex(row)
+	n.table.SelectByIndex(i)
+	n.ValidateLayout()
+	n.table.ScrollRowIntoView(i)
 }
 
 // DisclosedPaths returns a list of paths that are currently disclosed.
@@ -1649,49 +1591,18 @@ func (n *Navigator) newFolder() {
 		if row.IsFile() {
 			parentDir = filepath.Dir(parentDir)
 		}
-		name := ""
-		field := NewStringField(nil, "", "", func() string { return name }, func(s string) { name = s })
-		field.SetMinimumTextWidthUsing(minTextWidthCandidate)
-
-		panel := unison.NewPanel()
-		panel.SetLayout(&unison.FlexLayout{
-			Columns:  2,
-			HSpacing: unison.StdHSpacing,
-			VSpacing: unison.StdVSpacing,
-		})
-		panel.AddChild(NewFieldLeadingLabel(i18n.Text("Folder Name"), false))
-		panel.AddChild(field)
-
-		dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
-			unison.DefaultDialogTheme.QuestionIconInk, panel,
-			[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
-		if err != nil {
-			Workspace.ErrorHandler(i18n.Text("Unable to create new folder dialog"), err)
+		dirPath, ok := promptForFileSystemName("", i18n.Text("Folder Name"), "",
+			func(name string) string { return newFolderPath(parentDir, name) })
+		if !ok {
 			return
 		}
-		field.ValidateCallback = func() bool {
-			_, valid := trimmedNameIsValid(name)
-			if valid {
-				if _, err = os.Stat(newFolderPath(parentDir, name)); err == nil {
-					valid = false
-				}
-			}
-			dialog.Button(unison.ModalResponseOK).SetEnabled(valid)
-			return valid
+		if err := os.Mkdir(dirPath, 0o750); err != nil {
+			Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
+			return
 		}
-		field.Validate() // Here to update the OK button
-		if dialog.RunModal() == unison.ModalResponseOK {
-			dirPath := newFolderPath(parentDir, name)
-			if err = os.Mkdir(dirPath, 0o750); err != nil {
-				Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
-			} else {
-				if !row.IsFile() && !row.IsOpen() {
-					row.SetOpen(true)
-				}
-				n.Reload()
-				n.ApplySelectedPaths([]string{dirPath})
-				n.MarkForRedraw()
-			}
+		if !row.IsFile() && !row.IsOpen() {
+			row.SetOpen(true)
 		}
+		n.reloadAndSelect(dirPath)
 	}
 }

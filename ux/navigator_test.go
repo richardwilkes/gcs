@@ -25,6 +25,58 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
+// newDeepSearchNavigator returns a navigator with deep search enabled for the given extensions and, as a freshly
+// created navigator has, no match current. It registers the known file types, which the deep search resolves each
+// file's extension through. Only the search state is populated; a test that needs the table or the search toolbar
+// adds them with installTestTable and installTestSearchControls.
+func newDeepSearchNavigator(exts ...string) *Navigator {
+	RegisterKnownFileTypes()
+	n := &Navigator{searchIndex: -1, deepSearch: make(map[string]bool, len(exts))}
+	for _, ext := range exts {
+		n.deepSearch[ext] = true
+	}
+	return n
+}
+
+// installTestTable gives the navigator a real table holding the given rows.
+func installTestTable(n *Navigator, rows ...*NavigatorNode) {
+	n.table = unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{})
+	n.table.Columns = make([]unison.ColumnInfo, 1)
+	n.table.SetRootRows(rows)
+}
+
+// installTestSearchControls gives the navigator its search toolbar controls, placed in a panel of their own so that
+// refreshing the matches label has a parent to mark for layout.
+func installTestSearchControls(n *Navigator) {
+	n.setupControls(n.searchModified, n.showMatch)
+	n.addControlsTo(unison.NewPanel())
+}
+
+// newTestLibrary returns a library rooted in a fresh temporary directory.
+func newTestLibrary(t *testing.T) *gurps.Library {
+	return gurps.NewLibrary("Test", "test", "", "test", t.TempDir())
+}
+
+// writeTestLibraryFile writes the data to the named file in the library's directory and returns the file's node.
+func writeTestLibraryFile(c check.Checker, lib *gurps.Library, fileName string, data []byte) *NavigatorNode {
+	c.NoError(os.WriteFile(filepath.Join(lib.Path(), fileName), data, 0o600))
+	return NewFileNode(lib, fileName, nil)
+}
+
+// newTestCharacter returns a character with the given name.
+func newTestCharacter(name string) *gurps.Entity {
+	entity := gurps.NewEntity()
+	entity.Profile.Name = name
+	return entity
+}
+
+// saveTestSheet saves the character as a sheet in the named file in the library's directory and returns the file's
+// node.
+func saveTestSheet(c check.Checker, lib *gurps.Library, fileName string, entity *gurps.Entity) *NavigatorNode {
+	c.NoError(entity.Save(filepath.Join(lib.Path(), fileName)))
+	return NewFileNode(lib, fileName, nil)
+}
+
 // TestPrepareProfileForContentCache verifies that every profile field placed into the deep search content cache is
 // lowercased, since the search text is lowercased before the comparison is made.
 func TestPrepareProfileForContentCache(t *testing.T) {
@@ -66,21 +118,11 @@ func TestPrepareProfileForContentCache(t *testing.T) {
 // found when searching for "conan", even though the file name doesn't match.
 func TestDeepSearchOfSheetProfileIsCaseInsensitive(t *testing.T) {
 	c := check.New(t)
-	RegisterGCSFileTypes() // The deep search resolves the file's extension through the file type registry.
-	dir := t.TempDir()
-	entity := gurps.NewEntity()
-	entity.Profile.Name = "Conan"
+	entity := newTestCharacter("Conan")
 	entity.Profile.PlayerName = "Robert"
 	entity.Profile.Organization = "The Black Dragons"
-	fileName := "sheet1" + gurps.SheetExt
-	c.NoError(entity.Save(filepath.Join(dir, fileName)))
-
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
-	n := &Navigator{
-		searchIndex: -1,
-		deepSearch:  map[string]bool{gurps.SheetExt: true},
-	}
-	node := NewFileNode(lib, fileName, nil)
+	node := saveTestSheet(c, newTestLibrary(t), "sheet1"+gurps.SheetExt, entity)
+	n := newDeepSearchNavigator(gurps.SheetExt)
 	for _, one := range []struct {
 		name string
 		text string
@@ -106,19 +148,12 @@ func TestDeepSearchOfSheetProfileIsCaseInsensitive(t *testing.T) {
 // that subsequent searches consult that entry rather than the file.
 func TestDeepSearchCachesMarkdownContent(t *testing.T) {
 	c := check.New(t)
-	RegisterKnownFileTypes() // The deep search resolves the file's extension through the file type registry.
 	ext := uti.Markdown.Extensions[0]
-	dir := t.TempDir()
+	lib := newTestLibrary(t)
 	fileName := "notes" + ext
-	p := filepath.Join(dir, fileName)
-	c.NoError(os.WriteFile(p, []byte("# Conan The Barbarian\n"), 0o600))
-
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
-	n := &Navigator{
-		searchIndex: -1,
-		deepSearch:  map[string]bool{ext: true},
-	}
-	node := NewFileNode(lib, fileName, nil)
+	p := filepath.Join(lib.Path(), fileName)
+	node := writeTestLibraryFile(c, lib, fileName, []byte("# Conan The Barbarian\n"))
+	n := newDeepSearchNavigator(ext)
 	n.search("barbarian", []*NavigatorNode{node})
 	c.Equal(1, len(n.searchResult))
 
@@ -140,19 +175,12 @@ func TestDeepSearchCachesMarkdownContent(t *testing.T) {
 // than match on its previous contents.
 func TestDeepSearchServesCacheHitsUntilInvalidated(t *testing.T) {
 	c := check.New(t)
-	RegisterKnownFileTypes() // The deep search resolves the file's extension through the file type registry.
 	ext := uti.Markdown.Extensions[0]
-	dir := t.TempDir()
+	lib := newTestLibrary(t)
 	fileName := "notes" + ext
-	p := filepath.Join(dir, fileName)
-	c.NoError(os.WriteFile(p, []byte("alpha\n"), 0o600))
-
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
-	n := &Navigator{
-		searchIndex: -1,
-		deepSearch:  map[string]bool{ext: true},
-	}
-	node := NewFileNode(lib, fileName, nil)
+	p := filepath.Join(lib.Path(), fileName)
+	node := writeTestLibraryFile(c, lib, fileName, []byte("alpha\n"))
+	n := newDeepSearchNavigator(ext)
 	n.search("alpha", []*NavigatorNode{node})
 	c.Equal(1, len(n.searchResult), "the original content must match and populate the cache")
 
@@ -213,7 +241,7 @@ func TestInvalidationReachesInFlightCacheBuild(t *testing.T) {
 
 	// Starting a build consumes the invalidations made before it, since it starts from a cache that already lacks
 	// those entries. The table is real but empty, so the prewarm runs without spawning a background build.
-	n.table = unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{})
+	installTestTable(n)
 	n.invalidateContentCacheEntry("c")
 	n.prewarmContentCache()
 	c.Equal(0, len(n.invalidatedPaths), "a build's start must consume the invalidations made before it")
@@ -224,21 +252,13 @@ func TestInvalidationReachesInFlightCacheBuild(t *testing.T) {
 // has walked to match 5 of 12 back to the start; the position only resets when the row they were on no longer matches.
 func TestRerunSearchPreservesPosition(t *testing.T) {
 	c := check.New(t)
-	RegisterGCSFileTypes() // The deep search resolves the file's extension through the file type registry.
-	dir := t.TempDir()
-	entity := gurps.NewEntity()
-	entity.Profile.Name = "Conan"
+	lib := newTestLibrary(t)
+	sheetName := func(i int) string { return "sheet" + string(rune('1'+i)) + gurps.SheetExt }
 	nodes := make([]*NavigatorNode, 3)
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
 	for i := range nodes {
-		fileName := "sheet" + string(rune('1'+i)) + gurps.SheetExt
-		c.NoError(entity.Save(filepath.Join(dir, fileName)))
-		nodes[i] = NewFileNode(lib, fileName, nil)
+		nodes[i] = saveTestSheet(c, lib, sheetName(i), newTestCharacter("Conan"))
 	}
-	n := &Navigator{
-		searchIndex: -1,
-		deepSearch:  map[string]bool{gurps.SheetExt: true},
-	}
+	n := newDeepSearchNavigator(gurps.SheetExt)
 	n.search("conan", nodes)
 	c.Equal(3, len(n.searchResult))
 
@@ -271,7 +291,7 @@ func TestRerunSearchPreservesPosition(t *testing.T) {
 	current = n.searchResult[1]
 	fresh := make([]*NavigatorNode, len(nodes))
 	for i := range fresh {
-		fresh[i] = NewFileNode(lib, "sheet"+string(rune('1'+i))+gurps.SheetExt, nil)
+		fresh[i] = NewFileNode(lib, sheetName(i), nil)
 	}
 	n.rerunSearch("conan", fresh)
 	c.Equal(3, len(n.searchResult))
@@ -286,23 +306,17 @@ func TestRerunSearchPreservesPosition(t *testing.T) {
 // whatever the user has clicked on since; the user-driven adjustForMatch must still select the current match.
 func TestUpdateMatchControlsLeavesSelectionAlone(t *testing.T) {
 	c := check.New(t)
-	lib := gurps.NewLibrary("Test", "test", "", "test", t.TempDir())
+	lib := newTestLibrary(t)
 	rows := []*NavigatorNode{
 		NewFileNode(lib, "one"+gurps.NotesExt, nil),
 		NewFileNode(lib, "two"+gurps.NotesExt, nil),
 		NewFileNode(lib, "three"+gurps.NotesExt, nil),
 	}
-	n := &Navigator{
-		table:         unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
-		backButton:    unison.NewButton(),
-		forwardButton: unison.NewButton(),
-		matchesLabel:  unison.NewLabel(),
-		searchIndex:   1,
-		searchResult:  rows,
-	}
-	unison.NewPanel().AddChild(n.matchesLabel) // The label's refresh marks its parent for layout.
-	n.table.Columns = make([]unison.ColumnInfo, 1)
-	n.table.SetRootRows(rows)
+	n := newDeepSearchNavigator()
+	installTestTable(n, rows...)
+	installTestSearchControls(n)
+	n.searchIndex = 1
+	n.searchResult = rows
 
 	// The user has clicked away from the match to the first row.
 	n.table.SelectByIndex(0)
@@ -339,20 +353,11 @@ func TestUpdateMatchControlsLeavesSelectionAlone(t *testing.T) {
 // change, so the search must gate on the deep search setting before consulting the cache, not after.
 func TestDeepSearchDisabledTypeIgnoresCache(t *testing.T) {
 	c := check.New(t)
-	RegisterGCSFileTypes() // The deep search resolves the file's extension through the file type registry.
-	dir := t.TempDir()
-	entity := gurps.NewEntity()
-	entity.Profile.Name = "Conan"
+	lib := newTestLibrary(t)
 	fileName := "sheet1" + gurps.SheetExt
-	p := filepath.Join(dir, fileName)
-	c.NoError(entity.Save(p))
-
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
-	n := &Navigator{
-		searchIndex: -1,
-		deepSearch:  map[string]bool{gurps.SheetExt: true},
-	}
-	node := NewFileNode(lib, fileName, nil)
+	p := filepath.Join(lib.Path(), fileName)
+	node := saveTestSheet(c, lib, fileName, newTestCharacter("Conan"))
+	n := newDeepSearchNavigator(gurps.SheetExt)
 	n.search("conan", []*NavigatorNode{node})
 	c.Equal(1, len(n.searchResult))
 	_, ok := n.contentCache[p]
@@ -420,19 +425,12 @@ func TestBuildContentCacheReuseAndFailureCaching(t *testing.T) {
 // re-panic — on every subsequent keystroke.
 func TestDeepSearchCachesFileWhoseParsePanics(t *testing.T) {
 	c := check.New(t)
-	RegisterKnownFileTypes() // The deep search resolves the file's extension through the file type registry.
-	dir := t.TempDir()
+	lib := newTestLibrary(t)
 	fileName := "panics" + gurps.SkillsExt
-	p := filepath.Join(dir, fileName)
+	p := filepath.Join(lib.Path(), fileName)
 	// A null row is valid JSON, so this gets past parsing and panics when the nil skill is traversed.
-	c.NoError(os.WriteFile(p, []byte(`{"version":5,"rows":[null]}`), 0o600))
-
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
-	n := &Navigator{
-		searchIndex: -1,
-		deepSearch:  map[string]bool{gurps.SkillsExt: true},
-	}
-	node := NewFileNode(lib, fileName, nil)
+	node := writeTestLibraryFile(c, lib, fileName, []byte(`{"version":5,"rows":[null]}`))
+	n := newDeepSearchNavigator(gurps.SkillsExt)
 	n.search("anything", []*NavigatorNode{node})
 	c.Equal(0, len(n.searchResult))
 	entry, ok := n.contentCache[p]
@@ -472,25 +470,17 @@ func TestApplyPrewarmedContentCache(t *testing.T) {
 // here pumps unison's task queue, so the results are read from the build records directly.
 func TestSupersededCacheBuildHandsEntriesToItsSuccessor(t *testing.T) {
 	c := check.New(t)
-	RegisterKnownFileTypes() // The path collection resolves each file's extension through the file type registry.
 	ext := uti.Markdown.Extensions[0]
-	dir := t.TempDir()
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
+	lib := newTestLibrary(t)
 	names := []string{"a" + ext, "b" + ext, "c" + ext}
 	paths := make([]string, len(names))
 	nodes := make([]*NavigatorNode, len(names))
 	for i, name := range names {
-		paths[i] = filepath.Join(dir, name)
-		c.NoError(os.WriteFile(paths[i], []byte("content "+name+"\n"), 0o600))
-		nodes[i] = NewFileNode(lib, name, nil)
+		paths[i] = filepath.Join(lib.Path(), name)
+		nodes[i] = writeTestLibraryFile(c, lib, name, []byte("content "+name+"\n"))
 	}
-	n := &Navigator{
-		table:       unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
-		searchIndex: -1,
-		deepSearch:  map[string]bool{ext: true},
-	}
-	n.table.Columns = make([]unison.ColumnInfo, 1)
-	n.table.SetRootRows(nodes)
+	n := newDeepSearchNavigator(ext)
+	installTestTable(n, nodes...)
 
 	// The synthetic prior build holds a current entry for each file. The live cache holds its own entry for the
 	// second, and the third's change is reported after the prior build began.
@@ -540,11 +530,9 @@ func TestSupersededCacheBuildHandsEntriesToItsSuccessor(t *testing.T) {
 // that files whose types aren't enabled for deep search are excluded.
 func TestCollectDeepSearchPaths(t *testing.T) {
 	c := check.New(t)
-	RegisterKnownFileTypes() // The path collection resolves each file's extension through the file type registry.
 	ext := uti.Markdown.Extensions[0]
-	dir := t.TempDir()
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
-	n := &Navigator{deepSearch: map[string]bool{ext: true}}
+	lib := newTestLibrary(t)
+	n := newDeepSearchNavigator(ext)
 	shared := "notes" + ext
 	nested := filepath.Join("sub", "extra"+ext)
 	// The container nodes are built by hand rather than through the constructors, which read the filesystem and the
@@ -570,8 +558,8 @@ func TestCollectDeepSearchPaths(t *testing.T) {
 	paths := make(map[string]bool)
 	n.collectDeepSearchPaths([]*NavigatorNode{favorites, library}, paths)
 	c.Equal(2, len(paths))
-	c.True(paths[filepath.Join(dir, shared)], "the file favorites repeats must be collected exactly once")
-	c.True(paths[filepath.Join(dir, nested)], "the file nested in a subdirectory must be reached by recursion")
+	c.True(paths[filepath.Join(lib.Path(), shared)], "the file favorites repeats must be collected exactly once")
+	c.True(paths[filepath.Join(lib.Path(), nested)], "the file nested in a subdirectory must be reached by recursion")
 }
 
 // TestContentCachePrewarmSuspension verifies the hold a library update places on the background cache rebuilds:
@@ -585,7 +573,8 @@ func TestContentCachePrewarmSuspension(t *testing.T) {
 	// The table is real but empty, so a prewarm request that gets past the suspension guard would advance the
 	// generation (and then find nothing to build) rather than bail out at the nil-table guard, leaving the suspension
 	// as the only thing that keeps the generation still.
-	n := &Navigator{table: unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{})}
+	n := &Navigator{}
+	installTestTable(n)
 	gen := n.cacheGeneration.Load()
 
 	c.False(n.liftContentCachePrewarmSuspension(), "a lift with no suspension in force must be harmless")
@@ -623,31 +612,15 @@ func TestContentCachePrewarmSuspension(t *testing.T) {
 // than leaving them — and the match position and label — pointing at stale hits until the next keystroke.
 func TestPrewarmWithNoDeepSearchPathsRerunsSearch(t *testing.T) {
 	c := check.New(t)
-	RegisterGCSFileTypes() // The deep search resolves the file's extension through the file type registry.
-	dir := t.TempDir()
-	entity := gurps.NewEntity()
-	entity.Profile.Name = "Conan"
-	fileName := "sheet1" + gurps.SheetExt
-	c.NoError(entity.Save(filepath.Join(dir, fileName)))
+	n := newDeepSearchNavigator(gurps.SheetExt)
+	installTestTable(n, saveTestSheet(c, newTestLibrary(t), "sheet1"+gurps.SheetExt, newTestCharacter("Conan")))
+	installTestSearchControls(n)
 
-	lib := gurps.NewLibrary("Test", "test", "", "test", dir)
-	n := &Navigator{
-		table:         unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
-		searchField:   unison.NewField(),
-		backButton:    unison.NewButton(),
-		forwardButton: unison.NewButton(),
-		matchesLabel:  unison.NewLabel(),
-		searchIndex:   -1,
-		deepSearch:    map[string]bool{gurps.SheetExt: true},
-	}
-	unison.NewPanel().AddChild(n.matchesLabel) // The label's refresh marks its parent for layout.
-	n.table.Columns = make([]unison.ColumnInfo, 1)
-	n.table.SetRootRows([]*NavigatorNode{NewFileNode(lib, fileName, nil)})
-	n.searchField.SetText("conan")
-
-	n.search("conan", n.table.RootRows())
+	n.searchField.SetText("conan") // Runs the search, as typing does.
 	c.Equal(1, len(n.searchResult), "the sheet must match by content while its type is deep-searched")
-	n.searchIndex = 0
+	n.nextMatch() // The user steps to the first match.
+	c.Equal(0, n.searchIndex)
+	c.Equal("1 of 1", n.matchesLabel.String())
 
 	// Unchecking the last deep-search type leaves nothing to build; the prewarm itself must clear the stale results.
 	n.deepSearch = make(map[string]bool)
