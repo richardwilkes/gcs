@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 // ProcessNameablesForSelection processes the selected rows and their children for any nameables.
@@ -184,29 +183,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 			list.AddChild(createNameableField(&marker, nameables[i]))
 		}
 	}
-	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
-	scroll.SetContent(list, behavior.Fill, behavior.Fill)
-	scroll.BackgroundInk = unison.ThemeSurface
-	scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-		HAlign:   align.Fill,
-		VAlign:   align.Fill,
-	})
-	label := unison.NewLabel()
-	label.SetTitle(i18n.Text("Provide substitutions:"))
-	panel.AddChild(label)
-	panel.AddChild(scroll)
-	return unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK
+	return showListQuestionDialog(i18n.Text("Provide substitutions:"), list)
 }
 
 // createNameableField builds the widget used to edit the replacement value for the marker.

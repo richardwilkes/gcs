@@ -221,14 +221,13 @@ func newEquipmentTable(t *testing.T, forPage bool) (node *Node[*gurps.Equipment]
 	entity.CarriedEquipment = []*gurps.Equipment{e}
 
 	provider := NewEquipmentProvider(entity, true, forPage)
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
+	table := newProviderTable(provider)
 	ids := provider.ColumnIDs()
 	table.Columns = make([]unison.ColumnInfo, len(ids))
 	for i, id := range ids {
 		table.Columns[i].ID = id
 	}
-	rows := provider.RootRows()
+	rows := table.RootRows()
 	c.Equal(1, len(rows), "the table must hold the single piece of equipment")
 	weightCol = slices.Index(ids, gurps.EquipmentWeightColumn)
 	c.True(weightCol != -1, "the table must have a weight column")
@@ -285,8 +284,7 @@ func TestEquipmentPageHeaderSyncRefreshesTotalsTooltip(t *testing.T) {
 	e.BaseWeight = exactWeightText
 	entity.CarriedEquipment = []*gurps.Equipment{e}
 	provider := NewEquipmentProvider(entity, true, true)
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
+	table := newProviderTable(provider)
 	ids := provider.ColumnIDs()
 	table.Columns = make([]unison.ColumnInfo, len(ids))
 	for i, id := range ids {

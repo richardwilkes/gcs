@@ -89,19 +89,12 @@ func TestAltDropOnTraitPromptsForTargetModifiers(t *testing.T) {
 	target.Modifiers = []*gurps.TraitModifier{existing}
 	entity.Traits = []*gurps.Trait{target}
 
-	provider, ok := NewTraitsProvider(entity, false).(*traitsProvider)
-	c.True(ok, "the traits provider must be a *traitsProvider")
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
-	table.SetRootRows(provider.RootRows())
+	provider := NewTraitsProvider(entity, false)
+	newProviderTable(provider)
 
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
-	provider.AltDropSupport().Drop([]int{0}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0}, dropped)
 
 	c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target trait")
 	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target trait")
@@ -123,19 +116,12 @@ func TestAltDropOnEquipmentPromptsForTargetModifiers(t *testing.T) {
 	target.Modifiers = []*gurps.EquipmentModifier{existing}
 	entity.CarriedEquipment = []*gurps.Equipment{target}
 
-	provider, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
-	c.True(ok, "the equipment provider must be an *equipmentProvider")
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
-	table.SetRootRows(provider.RootRows())
+	provider := NewEquipmentProvider(entity, true, false)
+	newProviderTable(provider)
 
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
-	provider.AltDropSupport().Drop([]int{0}, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0}, dropped)
 
 	c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target equipment")
 	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target equipment")
@@ -157,19 +143,12 @@ func TestAltDropOnSeveralTraitsGivesEachItsOwnCopy(t *testing.T) {
 	second.Name = "Second Trait"
 	entity.Traits = []*gurps.Trait{first, second}
 
-	provider, ok := NewTraitsProvider(entity, false).(*traitsProvider)
-	c.True(ok, "the traits provider must be a *traitsProvider")
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
-	table.SetRootRows(provider.RootRows())
+	provider := NewTraitsProvider(entity, false)
+	newProviderTable(provider)
 
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
-	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
 
 	c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first trait")
 	c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second trait")
@@ -196,19 +175,12 @@ func TestAltDropOnSeveralEquipmentItemsGivesEachItsOwnCopy(t *testing.T) {
 	second.Name = "Second Item"
 	entity.CarriedEquipment = []*gurps.Equipment{first, second}
 
-	provider, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
-	c.True(ok, "the equipment provider must be an *equipmentProvider")
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
-	table.SetRootRows(provider.RootRows())
+	provider := NewEquipmentProvider(entity, true, false)
+	newProviderTable(provider)
 
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
-	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
 
 	c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first item")
 	c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second item")
@@ -236,20 +208,13 @@ func TestAltDropOnAContainerAndItsChildPromptsTheChildOnce(t *testing.T) {
 	container.Children = []*gurps.Trait{child}
 	entity.Traits = []*gurps.Trait{container}
 
-	provider, ok := NewTraitsProvider(entity, false).(*traitsProvider)
-	c.True(ok, "the traits provider must be a *traitsProvider")
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
-	table.SetRootRows(provider.RootRows())
+	provider := NewTraitsProvider(entity, false)
+	table := newProviderTable(provider)
 	c.Equal(1, table.LastRowIndex(), "the container's child must be disclosed")
 
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
-	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
 
 	c.Equal(1, len(container.Modifiers), "the container must still receive the dropped modifier")
 	c.Equal(1, len(child.Modifiers), "the child must still receive its own copy of the dropped modifier")
@@ -270,18 +235,11 @@ func TestAltDropOnAMissingTraitRowIsANoOp(t *testing.T) {
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Trait"
 	entity.Traits = []*gurps.Trait{trait}
-	provider, ok := NewTraitsProvider(entity, false).(*traitsProvider)
-	c.True(ok, "the traits provider must be a *traitsProvider")
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
-	table.SetRootRows(provider.RootRows())
+	provider := NewTraitsProvider(entity, false)
+	newProviderTable(provider)
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
-	data := &unison.TableDragData[*Node[*gurps.TraitModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
-	}
+	data := newDragData(dropped)
 
 	provider.AltDropSupport().Drop([]int{99}, data)
 	c.Equal(0, len(trait.Modifiers), "a drop with no resolvable target must attach nothing")
@@ -301,18 +259,11 @@ func TestAltDropOnAMissingEquipmentRowIsANoOp(t *testing.T) {
 	item := gurps.NewEquipment(entity, nil, false)
 	item.Name = "Item"
 	entity.CarriedEquipment = []*gurps.Equipment{item}
-	provider, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
-	c.True(ok, "the equipment provider must be an *equipmentProvider")
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
-	table.SetRootRows(provider.RootRows())
+	provider := NewEquipmentProvider(entity, true, false)
+	newProviderTable(provider)
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
-	data := &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
-	}
+	data := newDragData(dropped)
 
 	provider.AltDropSupport().Drop([]int{99}, data)
 	c.Equal(0, len(item.Modifiers), "a drop with no resolvable target must attach nothing")
@@ -339,31 +290,17 @@ func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
 	item.Name = "Item"
 	entity.CarriedEquipment = []*gurps.Equipment{item}
 
-	traitsProv, ok := NewTraitsProvider(entity, false).(*traitsProvider)
-	c.True(ok, "the traits provider must be a *traitsProvider")
-	traitsTable := unison.NewTable(traitsProv)
-	traitsProv.SetTable(traitsTable)
-	traitsTable.SetRootRows(traitsProv.RootRows())
-	equipmentProv, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
-	c.True(ok, "the equipment provider must be an *equipmentProvider")
-	equipmentTable := unison.NewTable(equipmentProv)
-	equipmentProv.SetTable(equipmentTable)
-	equipmentTable.SetRootRows(equipmentProv.RootRows())
+	traitsProv := NewTraitsProvider(entity, false)
+	newProviderTable(traitsProv)
+	equipmentProv := NewEquipmentProvider(entity, true, false)
+	newProviderTable(equipmentProv)
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
-	traitModTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
-	traitModData := &unison.TableDragData[*Node[*gurps.TraitModifier]]{
-		Table: traitModTable,
-		Rows:  []*Node[*gurps.TraitModifier]{NewNode(traitModTable, nil, traitMod, false)},
-	}
+	traitModData := newDragData(traitMod)
 	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
 	equipmentMod.Name = "Equipment Modifier"
-	equipmentModTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
-	equipmentModData := &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
-		Table: equipmentModTable,
-		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(equipmentModTable, nil, equipmentMod, false)},
-	}
+	equipmentModData := newDragData(equipmentMod)
 
 	traitsProv.AltDropSupport().Drop([]int{0}, equipmentModData)
 	equipmentProv.AltDropSupport().Drop([]int{0}, traitModData)

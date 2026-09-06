@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -177,33 +176,10 @@ func processModifiers[T gurps.Node[T]](title string, modifiers []T) bool {
 		insets.Bottom = 0
 		children[len(children)-1].SetBorder(unison.NewEmptyBorder(insets))
 	}
-	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
-	scroll.SetContent(list, behavior.Fill, behavior.Fill)
-	scroll.BackgroundInk = unison.ThemeSurface
-	scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-		HAlign:   align.Fill,
-		VAlign:   align.Fill,
-	})
 	label := unison.NewLabel()
-	label.SetTitle(i18n.Text("Select Modifiers for:"))
-	panel.AddChild(label)
-	label = unison.NewLabel()
 	label.Font = unison.SystemFont
 	label.SetTitle(title)
-	panel.AddChild(label)
-	panel.AddChild(scroll)
-	if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {
+	if showListQuestionDialog(i18n.Text("Select Modifiers for:"), list, label) {
 		changed := false
 		for cb, gm := range tracker {
 			if on := cb.State == check.On; gm.Enabled() != on {

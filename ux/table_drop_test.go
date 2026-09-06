@@ -446,10 +446,8 @@ func newLibraryStyleTraitsTable(traits ...*gurps.Trait) *unison.Table[*Node[*gur
 	data := gurps.NewTemplate()
 	data.SetTraitList(traits)
 	provider := NewTraitsProvider(data, false)
-	table := unison.NewTable(provider)
-	provider.SetTable(table)
+	table := newProviderTable(provider)
 	table.ClientData()[TableProviderClientKey] = provider
-	table.SetRootRows(provider.RootRows())
 	return table
 }
 

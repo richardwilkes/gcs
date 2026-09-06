@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
@@ -29,7 +28,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/side"
 )
 
@@ -751,28 +749,7 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 		}
 	}
 	list.Append(choices...)
-	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
-	scroll.SetContent(list, behavior.Fill, behavior.Fill)
-	scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-		HAlign:   align.Fill,
-		VAlign:   align.Fill,
-	})
-	label := unison.NewLabel()
-	label.SetTitle(i18n.Text("Choose one or more destinations:"))
-	panel.AddChild(label)
-	panel.AddChild(scroll)
-	if unison.QuestionDialogWithPanel(panel) != unison.ModalResponseOK || list.Selection.Count() == 0 {
+	if !showListQuestionDialog(i18n.Text("Choose one or more destinations:"), list) || list.Selection.Count() == 0 {
 		return nil
 	}
 	result := make([]T, 0, list.Selection.Count())

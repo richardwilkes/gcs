@@ -14,7 +14,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/unison"
 )
 
 // stubNameablesPrompt substitutes a non-interactive nameables prompt that hands the section titles and the substitution
@@ -134,7 +133,6 @@ func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 	// necessary, and its name needs a substitution.
 	dropped := newSwitchableTraitModifier("@Material@ Coating")
 	dropped.Disabled = false
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
 	counter := installSyncCounter(sheet)
 	syncsWhenAsked := -1
 	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
@@ -145,10 +143,7 @@ func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 		return true
 	})
 
-	provider.AltDropSupport().Drop([]int{0}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0}, dropped)
 
 	c.Equal(1, *shown, "the drop must prompt for the dropped modifier's nameable keys")
 	c.Equal(1, len(target.Modifiers), "the dropped modifier must be added to the target trait")
@@ -186,7 +181,6 @@ func TestAltDropOnSeveralTraitsPromptsForEachCopy(t *testing.T) {
 
 	dropped := gurps.NewTraitModifier(nil, nil, false)
 	dropped.Name = "@Material@ Coating"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
 	materials := []string{"Steel", "Silver"}
 	var headings []string
 	shown := stubNameablesPrompt(t, func(titles []string, nameables []map[string]string) bool {
@@ -197,10 +191,7 @@ func TestAltDropOnSeveralTraitsPromptsForEachCopy(t *testing.T) {
 		return true
 	})
 
-	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.TraitModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
 
 	c.Equal(1, *shown, "the whole drop must be covered by a single prompt")
 	c.Equal([]string{"Claws: @Material@ Coating", "Fangs: @Material@ Coating"}, headings,
@@ -234,7 +225,6 @@ func TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy(t *testing.T) {
 
 	dropped := gurps.NewEquipmentModifier(nil, nil, false)
 	dropped.Name = "@Material@ Coating"
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
 	materials := []string{"Steel", "Silver"}
 	var headings []string
 	shown := stubNameablesPrompt(t, func(titles []string, nameables []map[string]string) bool {
@@ -245,10 +235,7 @@ func TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy(t *testing.T) {
 		return true
 	})
 
-	provider.AltDropSupport().Drop([]int{0, 1}, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
 
 	c.Equal(1, *shown, "the whole drop must be covered by a single prompt")
 	c.Equal([]string{"Sword: @Material@ Coating", "Shield: @Material@ Coating"}, headings,
@@ -278,7 +265,6 @@ func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
 	dropped := gurps.NewEquipmentModifier(nil, nil, false)
 	dropped.Name = "@Material@ Coating"
 	dropped.Features = gurps.Features{switchableSTBonus(nil)}
-	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
 	counter := installSyncCounter(sheet)
 	syncsWhenAsked := -1
 	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
@@ -289,10 +275,7 @@ func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
 		return true
 	})
 
-	provider.AltDropSupport().Drop([]int{0}, &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
-		Table: modTable,
-		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(modTable, nil, dropped, false)},
-	})
+	altDrop(provider.AltDropSupport(), []int{0}, dropped)
 
 	c.Equal(1, *shown, "the drop must prompt for the dropped modifier's nameable keys")
 	c.Equal(1, len(target.Modifiers), "the dropped modifier must be added to the target equipment")
