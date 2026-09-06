@@ -381,3 +381,25 @@ func TestLegacyExportSharedNodeKeys(t *testing.T) {
 		"Unidentified key: &quot;DESCRIPTION_NOTES&quot;\n", 2),
 		runLegacyExport(t, c, e, "@NOTES_LOOP_START@DESCRIPTION|@SATISFIED|@DESCRIPTION_NOTES\n@NOTES_LOOP_END"))
 }
+
+// TestLegacyExportAttributeLoops verifies that the primary, secondary and point pool loops (and their counts) classify
+// attributes by their resolved kind: an explicit placement overrides the base-derived classification, and a hidden pool
+// is omitted just as it is from the Go-template export.
+func TestLegacyExportAttributeLoops(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addDef := func(def *AttributeDef) {
+		def.Order = len(e.SheetSettings.Attributes.Set)
+		e.SheetSettings.Attributes.Set[def.DefID] = def
+		e.Attributes.Set[def.DefID] = NewAttribute(e, def.DefID, len(e.Attributes.Set))
+	}
+	addDef(&AttributeDef{DefID: "forced", Type: attribute.Integer, Name: "Forced", Base: "$iq", Placement: attribute.Primary})
+	addDef(&AttributeDef{DefID: "mana", Type: attribute.Pool, Name: "Mana", Base: "10", Placement: attribute.Hidden})
+	c.Equal("5|<st=10><dx=10><iq=10><ht=10><forced=10>|"+
+		"9|<will><fright_check><per><vision><hearing><taste_smell><touch><basic_speed><basic_move>|"+
+		"2|<fp:10/10><hp:10/10>",
+		runLegacyExport(t, c, e, "@PRIMARY_ATTRIBUTE_LOOP_COUNT|"+
+			"@PRIMARY_ATTRIBUTE_LOOP_START<@ID=@VALUE>@PRIMARY_ATTRIBUTE_LOOP_END|"+
+			"@SECONDARY_ATTRIBUTE_LOOP_COUNT|@SECONDARY_ATTRIBUTE_LOOP_START<@ID>@SECONDARY_ATTRIBUTE_LOOP_END|"+
+			"@POINT_POOL_LOOP_COUNT|@POINT_POOL_LOOP_START<@ID:@CURRENT/@MAXIMUM>@POINT_POOL_LOOP_END"))
+}

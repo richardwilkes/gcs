@@ -17,6 +17,7 @@ import (
 	"text/template"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -150,4 +151,34 @@ func TestExportModifierNotesLineBreaks(t *testing.T) {
 	// htmlLines turns that newline into a real line break, while still escaping the text around it.
 	c.Contains(out, "|B|Self-Control Roll (CR): 12 or less (Resist quite often)<br>\nMitigator")
 	c.Contains(out, "&lt;&#34;&amp;&#34;&gt;|C|")
+}
+
+// TestExportAttributeKinds verifies that the Go-template export sorts attributes into the primary, secondary and pool
+// lists by their resolved kind: an explicit placement overrides the base-derived classification, and a hidden pool is
+// omitted.
+func TestExportAttributeKinds(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	addDef := func(def *AttributeDef) {
+		def.Order = len(entity.SheetSettings.Attributes.Set)
+		entity.SheetSettings.Attributes.Set[def.DefID] = def
+		entity.Attributes.Set[def.DefID] = NewAttribute(entity, def.DefID, len(entity.Attributes.Set))
+	}
+	addDef(&AttributeDef{DefID: "forced", Type: attribute.Integer, Name: "Forced", Base: "$iq", Placement: attribute.Primary})
+	addDef(&AttributeDef{DefID: "mana", Type: attribute.Pool, Name: "Mana", Base: "10", Placement: attribute.Hidden})
+	entity.Recalculate()
+
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.txt")
+	const tmpl = "GCS Text Template v1\n" +
+		"{{range .Attributes.Primary}}<{{.ID}}>{{end}}|{{range .Attributes.Secondary}}<{{.ID}}>{{end}}|" +
+		"{{range .Attributes.Pools}}<{{.ID}}:{{.Current}}/{{.Maximum}}>{{end}}"
+	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
+	outPath := filepath.Join(dir, "out.txt")
+	c.NoError(Export(entity, tmplPath, outPath))
+	data, err := os.ReadFile(outPath)
+	c.NoError(err)
+	c.Equal("<st><dx><iq><ht><forced>|"+
+		"<will><fright_check><per><vision><hearing><taste_smell><touch><basic_speed><basic_move>|"+
+		"<fp:10/10><hp:10/10>", string(data))
 }

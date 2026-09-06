@@ -170,3 +170,47 @@ func TestAttributesWithNullRows(t *testing.T) {
 	c.Equal("dx", list[1].ID(), "second surviving attribute")
 	c.Equal(1, list[1].Order, "orders remain sequential with no gap for the dropped entry")
 }
+
+// TestAttributeDefKindByTypeAndPlacement pins down the classification for every combination of attribute type,
+// placement and base kind, and checks that Primary, Secondary and Pool agree with Kind.
+func TestAttributeDefKindByTypeAndPlacement(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	bases := map[string]bool{"10": true, "$iq": false} // base -> numeric?
+	for _, typ := range attribute.Types {
+		for _, placement := range attribute.Placements {
+			for base, numeric := range bases {
+				def := &AttributeDef{DefID: "x", Type: typ, Base: base, Placement: placement}
+				var expected int
+				switch typ {
+				case attribute.PrimarySeparator:
+					expected = PrimaryAttrKind
+				case attribute.SecondarySeparator:
+					expected = SecondaryAttrKind
+				case attribute.PoolSeparator:
+					expected = PoolAttrKind
+				case attribute.Pool, attribute.PoolRef:
+					expected = -1
+					if placement == attribute.Automatic {
+						expected = PoolAttrKind
+					}
+				default:
+					switch {
+					case placement == attribute.Primary, placement != attribute.Secondary && numeric:
+						expected = PrimaryAttrKind
+					default:
+						expected = SecondaryAttrKind
+					}
+				}
+				desc := typ.String() + "/" + placement.String() + "/" + base
+				c.Equal(expected, def.Kind(e), desc)
+				c.Equal(expected == PrimaryAttrKind, def.Primary(e), desc+" primary")
+				c.Equal(expected == SecondaryAttrKind, def.Secondary(e), desc+" secondary")
+				c.Equal(expected == PoolAttrKind, def.Pool(e), desc+" pool")
+				for _, kind := range []int{PrimaryAttrKind, SecondaryAttrKind, PoolAttrKind} {
+					c.Equal(kind == expected && placement != attribute.Hidden, def.Relevant(e, kind), desc+" relevant")
+				}
+			}
+		}
+	}
+}

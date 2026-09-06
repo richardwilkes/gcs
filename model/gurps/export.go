@@ -495,16 +495,16 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	data.Attributes.PoolsByID = make(map[string]*exportedPool)
 	for _, def := range entity.SheetSettings.Attributes.List(true) {
 		if attr, ok := entity.Attributes.Set[def.DefID]; ok {
-			switch {
-			case def.Primary(entity):
+			switch def.Kind(entity) {
+			case PrimaryAttrKind:
 				a := newExportedAttribute(def, attr)
 				data.Attributes.Primary = append(data.Attributes.Primary, a)
 				data.Attributes.PrimaryByID[def.DefID] = a
-			case def.Secondary(entity):
+			case SecondaryAttrKind:
 				a := newExportedAttribute(def, attr)
 				data.Attributes.Secondary = append(data.Attributes.Secondary, a)
 				data.Attributes.SecondaryByID[def.DefID] = a
-			case def.Pool(entity):
+			case PoolAttrKind:
 				p := &exportedPool{
 					exportedAttribute: newExportedAttribute(def, attr),
 					Current:           attr.Current(),

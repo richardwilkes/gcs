@@ -24,7 +24,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -481,39 +480,15 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "CONDITIONAL_MODIFIERS_LOOP_START":
 		ex.processConditionalModifiersLoop(ex.entity.ConditionalModifiers(), ex.extractUpToMarker("CONDITIONAL_MODIFIERS_LOOP_END"))
 	case "PRIMARY_ATTRIBUTE_LOOP_COUNT":
-		count := 0
-		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if (def.Type != attribute.Pool && def.Type != attribute.PoolRef) && def.Primary(ex.entity) {
-				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
-					count++
-				}
-			}
-		}
-		ex.writeEncodedText(strconv.Itoa(count))
+		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(PrimaryAttrKind))))
 	case "PRIMARY_ATTRIBUTE_LOOP_START":
-		ex.processAttributesLoop(ex.extractUpToMarker("PRIMARY_ATTRIBUTE_LOOP_END"), true)
+		ex.processAttributesLoop(ex.extractUpToMarker("PRIMARY_ATTRIBUTE_LOOP_END"), PrimaryAttrKind)
 	case "SECONDARY_ATTRIBUTE_LOOP_COUNT":
-		count := 0
-		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if (def.Type != attribute.Pool && def.Type != attribute.PoolRef) && !def.Primary(ex.entity) {
-				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
-					count++
-				}
-			}
-		}
-		ex.writeEncodedText(strconv.Itoa(count))
+		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(SecondaryAttrKind))))
 	case "SECONDARY_ATTRIBUTE_LOOP_START":
-		ex.processAttributesLoop(ex.extractUpToMarker("SECONDARY_ATTRIBUTE_LOOP_END"), false)
+		ex.processAttributesLoop(ex.extractUpToMarker("SECONDARY_ATTRIBUTE_LOOP_END"), SecondaryAttrKind)
 	case "POINT_POOL_LOOP_COUNT":
-		count := 0
-		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type == attribute.Pool || def.Type == attribute.PoolRef {
-				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
-					count++
-				}
-			}
-		}
-		ex.writeEncodedText(strconv.Itoa(count))
+		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(PoolAttrKind))))
 	case "POINT_POOL_LOOP_START":
 		ex.processPointPoolLoop(ex.extractUpToMarker("POINT_POOL_LOOP_END"))
 	case "CONTINUE_ID", "CAMPAIGN", "OPTIONS_CODE":
@@ -1167,61 +1142,71 @@ func (ex *legacyExporter) processConditionalModifiersLoop(list []*ConditionalMod
 	}
 }
 
-func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
+// attributeDefsOfKind returns the attribute definitions (excluding separators) that resolve to the given kind and have
+// a corresponding attribute on the entity, in sheet order.
+func (ex *legacyExporter) attributeDefsOfKind(kind int) []*AttributeDef {
+	var defs []*AttributeDef
 	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-		if (def.Type != attribute.Pool && def.Type != attribute.PoolRef) && def.Primary(ex.entity) == primary {
-			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
-				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
-					switch key {
-					case idExportKey:
-						ex.writeEncodedText(def.DefID)
-					case nameExportKey:
-						ex.writeEncodedText(def.Name)
-					case "FULL_NAME":
-						ex.writeEncodedText(def.ResolveFullName())
-					case "COMBINED_NAME":
-						ex.writeEncodedText(def.CombinedName())
-					case "VALUE":
-						ex.writeEncodedText(attr.Maximum().String())
-					case "POINTS":
-						ex.writeEncodedText(attr.PointCost().String())
-					default:
-						ex.unidentifiedKey(key)
-					}
-					return index
-				})
+		if def.Kind(ex.entity) == kind {
+			if _, ok := ex.entity.Attributes.Set[def.DefID]; ok {
+				defs = append(defs, def)
 			}
 		}
+	}
+	return defs
+}
+
+// processAttributeKey handles the keys shared by the primary, secondary and point pool attribute loops, returning false
+// if the key was not one of them.
+func (ex *legacyExporter) processAttributeKey(key string, def *AttributeDef, attr *Attribute) bool {
+	switch key {
+	case idExportKey:
+		ex.writeEncodedText(def.DefID)
+	case nameExportKey:
+		ex.writeEncodedText(def.Name)
+	case "FULL_NAME":
+		ex.writeEncodedText(def.ResolveFullName())
+	case "COMBINED_NAME":
+		ex.writeEncodedText(def.CombinedName())
+	case "POINTS":
+		ex.writeEncodedText(attr.PointCost().String())
+	default:
+		return false
+	}
+	return true
+}
+
+func (ex *legacyExporter) processAttributesLoop(buffer []byte, kind int) {
+	for _, def := range ex.attributeDefsOfKind(kind) {
+		attr := ex.entity.Attributes.Set[def.DefID]
+		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
+			switch {
+			case ex.processAttributeKey(key, def, attr):
+			case key == "VALUE":
+				ex.writeEncodedText(attr.Maximum().String())
+			default:
+				ex.unidentifiedKey(key)
+			}
+			return index
+		})
 	}
 }
 
 func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
-	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-		if def.Type == attribute.Pool || def.Type == attribute.PoolRef {
-			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
-				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
-					switch key {
-					case idExportKey:
-						ex.writeEncodedText(def.DefID)
-					case nameExportKey:
-						ex.writeEncodedText(def.Name)
-					case "FULL_NAME":
-						ex.writeEncodedText(def.ResolveFullName())
-					case "COMBINED_NAME":
-						ex.writeEncodedText(def.CombinedName())
-					case "CURRENT":
-						ex.writeEncodedText(attr.Current().String())
-					case "MAXIMUM":
-						ex.writeEncodedText(attr.Maximum().String())
-					case "POINTS":
-						ex.writeEncodedText(attr.PointCost().String())
-					default:
-						ex.unidentifiedKey(key)
-					}
-					return index
-				})
+	for _, def := range ex.attributeDefsOfKind(PoolAttrKind) {
+		attr := ex.entity.Attributes.Set[def.DefID]
+		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
+			switch {
+			case ex.processAttributeKey(key, def, attr):
+			case key == "CURRENT":
+				ex.writeEncodedText(attr.Current().String())
+			case key == "MAXIMUM":
+				ex.writeEncodedText(attr.Maximum().String())
+			default:
+				ex.unidentifiedKey(key)
 			}
-		}
+			return index
+		})
 	}
 }
 
