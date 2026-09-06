@@ -21,24 +21,6 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// switchableSTBonus returns an attribute bonus of +1 ST that only applies while its owner's switch is on.
-func switchableSTBonus(owner *gurps.Trait) *gurps.AttributeBonus {
-	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
-	bonus.SetSwitchable(true)
-	if owner != nil {
-		bonus.SetOwner(owner)
-	}
-	return bonus
-}
-
-// newSwitchableTrait returns a non-container trait carrying a single switchable +1 ST bonus.
-func newSwitchableTrait(entity *gurps.Entity, name string) *gurps.Trait {
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Name = name
-	trait.Features = gurps.Features{switchableSTBonus(trait)}
-	return trait
-}
-
 // stBonusFor returns the total ST bonus the entity currently receives.
 func stBonusFor(entity *gurps.Entity) fxp.Int {
 	return entity.AttributeBonusFor(gurps.StrengthID, stlimit.None, nil)
@@ -162,86 +144,77 @@ func TestShowSwitchColumnFindsNestedRows(t *testing.T) {
 // TestSheetShowsSwitchColumnWhenNeeded verifies that each of the sheet's page lists gains its switch column -- in the
 // expected position -- as soon as one of its rows has switchable features, and doesn't have it before that.
 func TestSheetShowsSwitchColumnWhenNeeded(t *testing.T) {
-	t.Run("traits", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		entity := sheet.Entity()
-		c.Equal(gurps.TraitDescriptionColumn, sheet.Traits.Table.Columns[0].ID,
-			"without switchable features, the description comes first")
+	for _, tc := range []struct {
+		name         string
+		add          func(entity *gurps.Entity)
+		columns      func(sheet *Sheet) []unison.ColumnInfo
+		switchColumn int // The list's switch column.
+		before       int // The column that holds the switch column's slot until the switch column is needed.
+		switchAt     int // Where the switch column lands; 1 for carried equipment, whose equipped column stays first.
+	}{
+		{
+			name:         "traits",
+			add:          func(entity *gurps.Entity) { entity.Traits = []*gurps.Trait{newSwitchableTrait(entity, "Claws")} },
+			columns:      func(sheet *Sheet) []unison.ColumnInfo { return sheet.Traits.Table.Columns },
+			switchColumn: gurps.TraitSwitchColumn,
+			before:       gurps.TraitDescriptionColumn,
+		},
+		{
+			name:         "skills",
+			add:          func(entity *gurps.Entity) { entity.Skills = []*gurps.Skill{newSwitchableSkill(entity, "Brawling")} },
+			columns:      func(sheet *Sheet) []unison.ColumnInfo { return sheet.Skills.Table.Columns },
+			switchColumn: gurps.SkillSwitchColumn,
+			before:       gurps.SkillDescriptionColumn,
+		},
+		{
+			name:         "spells",
+			add:          func(entity *gurps.Entity) { entity.Spells = []*gurps.Spell{newSwitchableSpell(entity, "Fireball")} },
+			columns:      func(sheet *Sheet) []unison.ColumnInfo { return sheet.Spells.Table.Columns },
+			switchColumn: gurps.SpellSwitchColumn,
+			before:       gurps.SpellDescriptionForPageColumn,
+		},
+		{
+			name: "carried equipment",
+			add: func(entity *gurps.Entity) {
+				entity.CarriedEquipment = []*gurps.Equipment{newSwitchableEquipment(entity, "Powered Armor")}
+			},
+			columns:      func(sheet *Sheet) []unison.ColumnInfo { return sheet.CarriedEquipment.Table.Columns },
+			switchColumn: gurps.EquipmentSwitchColumn,
+			before:       gurps.EquipmentQuantityColumn,
+			switchAt:     1,
+		},
+		{
+			name: "other equipment",
+			add: func(entity *gurps.Entity) {
+				entity.OtherEquipment = []*gurps.Equipment{newSwitchableEquipment(entity, "Powered Armor")}
+			},
+			columns:      func(sheet *Sheet) []unison.ColumnInfo { return sheet.OtherEquipment.Table.Columns },
+			switchColumn: gurps.EquipmentSwitchColumn,
+			before:       gurps.EquipmentQuantityColumn,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			columns := tc.columns(sheet)
+			c.Equal(-1, switchColumnIndex(columns, tc.switchColumn),
+				"without switchable features, there is no switch column")
+			c.Equal(tc.before, columns[tc.switchAt].ID,
+				"without switchable features, another column holds the switch column's slot")
+			first := columns[0].ID
 
-		entity.Traits = []*gurps.Trait{newSwitchableTrait(entity, "Claws")}
-		sheet.Rebuild(true)
-		c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
-			"the switch column must come first once a trait has switchable features")
-	})
-
-	t.Run("skills", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		entity := sheet.Entity()
-		c.Equal(gurps.SkillDescriptionColumn, sheet.Skills.Table.Columns[0].ID,
-			"without switchable features, the description comes first")
-
-		skill := gurps.NewSkill(entity, nil, false)
-		skill.Name = "Brawling"
-		skill.Features = gurps.Features{switchableSTBonus(nil)}
-		entity.Skills = []*gurps.Skill{skill}
-		sheet.Rebuild(true)
-		c.Equal(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
-			"the switch column must come first once a skill has switchable features")
-	})
-
-	t.Run("spells", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		entity := sheet.Entity()
-		c.Equal(gurps.SpellDescriptionForPageColumn, sheet.Spells.Table.Columns[0].ID,
-			"without switchable features, the description comes first")
-
-		spell := gurps.NewSpell(entity, nil, false)
-		spell.Name = "Fireball"
-		spell.Features = gurps.Features{switchableSTBonus(nil)}
-		entity.Spells = []*gurps.Spell{spell}
-		sheet.Rebuild(true)
-		c.Equal(gurps.SpellSwitchColumn, sheet.Spells.Table.Columns[0].ID,
-			"the switch column must come first once a spell has switchable features")
-	})
-
-	t.Run("carried equipment", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		entity := sheet.Entity()
-		c.Equal(gurps.EquipmentEquippedColumn, sheet.CarriedEquipment.Table.Columns[0].ID,
-			"the equipped column always comes first for carried equipment")
-		c.NotEqual(gurps.EquipmentSwitchColumn, sheet.CarriedEquipment.Table.Columns[1].ID,
-			"without switchable features, there is no switch column")
-
-		eqp := gurps.NewEquipment(entity, nil, false)
-		eqp.Name = "Powered Armor"
-		eqp.Features = gurps.Features{switchableSTBonus(nil)}
-		entity.CarriedEquipment = []*gurps.Equipment{eqp}
-		sheet.Rebuild(true)
-		c.Equal(gurps.EquipmentEquippedColumn, sheet.CarriedEquipment.Table.Columns[0].ID,
-			"the equipped column still comes first")
-		c.Equal(gurps.EquipmentSwitchColumn, sheet.CarriedEquipment.Table.Columns[1].ID,
-			"the switch column must follow the equipped column")
-	})
-
-	t.Run("other equipment", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		entity := sheet.Entity()
-		c.NotEqual(gurps.EquipmentSwitchColumn, sheet.OtherEquipment.Table.Columns[0].ID,
-			"without switchable features, there is no switch column")
-
-		eqp := gurps.NewEquipment(entity, nil, false)
-		eqp.Name = "Powered Armor"
-		eqp.Features = gurps.Features{switchableSTBonus(nil)}
-		entity.OtherEquipment = []*gurps.Equipment{eqp}
-		sheet.Rebuild(true)
-		c.Equal(gurps.EquipmentSwitchColumn, sheet.OtherEquipment.Table.Columns[0].ID,
-			"the switch column must come first for other equipment, which has no equipped column")
-	})
+			tc.add(sheet.Entity())
+			sheet.Rebuild(true)
+			columns = tc.columns(sheet)
+			c.Equal(tc.switchAt, switchColumnIndex(columns, tc.switchColumn),
+				"the switch column must take its slot once a row has switchable features")
+			c.Equal(tc.before, columns[tc.switchAt+1].ID,
+				"the switch column must push the column that held its slot along by one")
+			if tc.switchAt > 0 {
+				c.Equal(first, columns[0].ID, "the column ahead of the switch column must stay first")
+			}
+		})
+	}
 }
 
 // newSheetWithSwitchableTrait returns a sheet whose entity holds exactly one trait, carrying a switchable +1 ST bonus

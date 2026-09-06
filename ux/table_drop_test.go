@@ -453,16 +453,6 @@ func newLibraryStyleTraitsTable(traits ...*gurps.Trait) *unison.Table[*Node[*gur
 	return table
 }
 
-// newSwitchableTraitModifier returns a disabled trait modifier carrying a switchable +1 ST bonus, so that enabling it
-// is what gives its owner switchable features.
-func newSwitchableTraitModifier(name string) *gurps.TraitModifier {
-	modifier := gurps.NewTraitModifier(nil, nil, false)
-	modifier.Name = name
-	modifier.Disabled = true
-	modifier.Features = gurps.Features{switchableSTBonus(nil)}
-	return modifier
-}
-
 // stubTraitModifierPrompt substitutes a non-interactive trait modifier prompt that hands the modifiers it was asked to
 // show to the given responder and reports back whatever the responder returns, letting a test drive the rebuild that
 // answering the prompt triggers. The count of prompts actually shown is returned, and the real prompt is restored when

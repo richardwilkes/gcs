@@ -15,11 +15,15 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -376,16 +380,17 @@ func findPopups[T comparable](p *unison.Panel) []*unison.PopupMenu[T] {
 	return popups
 }
 
-// checkMaxAdjustmentSelectionRows drives the selection-type popup of a maximum uses / maximum level adjustment row and
-// verifies that the criteria rows follow it: the "this item" choice blanks the name criteria and shows no tag row,
-// while the "with name" choice enables the name criteria and adds the tag row.
-func checkMaxAdjustmentSelectionRows[E comparable](t *testing.T, f gurps.Feature, selection *E, this, withName E) {
+// checkSelectionCriteriaRow drives the selection-type popup of a feature row built on addSelectionCriteriaRow and
+// verifies that the criteria rows follow it: the "this item" choice blanks the name criteria and leaves the row with
+// thisRows criteria rows, while the other choice enables the name criteria and leaves it with otherRows of them.
+func checkSelectionCriteriaRow[E comparable](t *testing.T, f gurps.Feature, selection *E, this E, thisRows int, other E, otherRows int) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	if bonus, ok := f.(gurps.Bonus); ok {
 		bonus.SetOwner(owner)
 	}
+	*selection = this
 	features := gurps.Features{f}
 	panel := newFeaturesPanel(entity, owner, &features, false)
 	c.Equal(2, len(panel.Children()), "expected add button + one feature row")
@@ -397,47 +402,115 @@ func checkMaxAdjustmentSelectionRows[E comparable](t *testing.T, f gurps.Feature
 		return
 	}
 	selPopup := popups[0]
-	c.Equal(this, *selection, "the feature starts out targeting this item")
-	criteria := findPopups[string](row)
-	c.Equal(1, len(criteria), "only the name criteria row is present for the 'this item' choice")
-	if len(criteria) != 1 {
-		return
+	checkRows := func(want int, blank bool, when string) {
+		criteriaPopups := findPopups[string](row)
+		c.Equal(want, len(criteriaPopups), "the criteria rows present %s", when)
+		if len(criteriaPopups) == 0 {
+			return
+		}
+		c.Equal(!blank, criteriaPopups[0].Enabled(), "the name criteria popup is blanked %s", when)
+		c.Equal(!blank, nameCriteriaField(criteriaPopups[0]).Enabled(), "the name criteria field is blanked %s", when)
 	}
-	c.False(criteria[0].Enabled(), "the name criteria popup is blanked for the 'this item' choice")
+	choose := func(item E) {
+		index := selPopup.IndexOfItem(item)
+		c.True(index >= 0, "the choice must be present in the selector")
+		selPopup.ChoiceMadeCallback(selPopup, index, item)
+		c.Equal(item, *selection, "the choice must be stored on the feature")
+	}
+	checkRows(thisRows, true, "for the 'this item' choice")
 
-	index := selPopup.IndexOfItem(withName)
-	c.True(index >= 0, "the 'with name' choice must be present in the selector")
-	selPopup.ChoiceMadeCallback(selPopup, index, withName)
-	c.Equal(withName, *selection, "choosing 'with name' must be stored on the feature")
-	criteria = findPopups[string](row)
-	c.Equal(2, len(criteria), "the tag criteria row is added for the 'with name' choice")
-	if len(criteria) != 2 {
-		return
-	}
-	c.True(criteria[0].Enabled(), "the name criteria popup is enabled for the 'with name' choice")
+	choose(other)
+	checkRows(otherRows, false, "for the other choice")
 
-	index = selPopup.IndexOfItem(this)
-	c.True(index >= 0, "the 'this item' choice must be present in the selector")
-	selPopup.ChoiceMadeCallback(selPopup, index, this)
-	c.Equal(this, *selection, "choosing 'this item' must be stored on the feature")
-	criteria = findPopups[string](row)
-	c.Equal(1, len(criteria), "the tag criteria row is removed again for the 'this item' choice")
-	if len(criteria) != 1 {
-		return
-	}
-	c.False(criteria[0].Enabled(), "the name criteria popup is blanked again for the 'this item' choice")
+	choose(this)
+	checkRows(thisRows, true, "for the 'this item' choice again")
+}
+
+// nameCriteriaField returns the qualifier field that sits beside the given criteria comparison popup.
+func nameCriteriaField(popup *unison.PopupMenu[string]) *unison.Panel {
+	return popup.Parent().Children()[1]
 }
 
 // TestFeaturesPanelEquipmentMaxUsesSelectionRows verifies the equipment maximum uses row rebuilds its criteria rows
-// as the selection type changes.
+// as the selection type changes: "this equipment" needs only the blanked name row, while "equipment with name" adds
+// the tag row.
 func TestFeaturesPanelEquipmentMaxUsesSelectionRows(t *testing.T) {
 	f := gurps.NewEquipmentMaxUsesBonus()
-	checkMaxAdjustmentSelectionRows(t, f, &f.SelectionType, equipmentsel.ThisEquipment, equipmentsel.EquipmentWithName)
+	checkSelectionCriteriaRow(t, f, &f.SelectionType, equipmentsel.ThisEquipment, 1, equipmentsel.EquipmentWithName, 2)
 }
 
 // TestFeaturesPanelTraitMaxLevelSelectionRows verifies the trait maximum level row rebuilds its criteria rows as the
-// selection type changes.
+// selection type changes: "this trait" needs only the blanked name row, while "trait with name" adds the tag row.
 func TestFeaturesPanelTraitMaxLevelSelectionRows(t *testing.T) {
 	f := gurps.NewTraitMaxLevelBonus()
-	checkMaxAdjustmentSelectionRows(t, f, &f.SelectionType, traitsel.ThisTrait, traitsel.TraitWithName)
+	checkSelectionCriteriaRow(t, f, &f.SelectionType, traitsel.ThisTrait, 1, traitsel.TraitWithName, 2)
+}
+
+// TestFeaturesPanelSkillBonusSelectionRows verifies the skill bonus row rebuilds its criteria rows as the selection
+// type changes: "this weapon" has the blanked name row plus the usage row, while "skills with name" has the name,
+// specialization and tag rows.
+func TestFeaturesPanelSkillBonusSelectionRows(t *testing.T) {
+	f := gurps.NewSkillBonus()
+	checkSelectionCriteriaRow(t, f, &f.SelectionType, skillsel.ThisWeapon, 2, skillsel.Name, 3)
+}
+
+// TestFeaturesPanelWeaponBonusSelectionRows verifies the weapon bonus row rebuilds its criteria rows as the selection
+// type changes: "this weapon" has the blanked name row plus the usage row, while "weapons with required skill" has the
+// name, specialization, usage, tag and relative skill level rows.
+func TestFeaturesPanelWeaponBonusSelectionRows(t *testing.T) {
+	f := gurps.NewWeaponBonus(feature.WeaponBonus)
+	checkSelectionCriteriaRow(t, f, &f.SelectionType, wsel.ThisWeapon, 2, wsel.WithRequiredSkill, 5)
+}
+
+// TestFeaturesPanelSpellBonusSelectionRows verifies the spell bonus row keeps its name and tag rows across match type
+// changes, blanking the name row only for "all colleges".
+func TestFeaturesPanelSpellBonusSelectionRows(t *testing.T) {
+	f := gurps.NewSpellBonus()
+	checkSelectionCriteriaRow(t, f, &f.SpellMatchType, spellmatch.AllColleges, 2, spellmatch.Name, 2)
+}
+
+// TestFeaturesPanelSpellPointBonusSelectionRows verifies the spell point bonus row keeps its name and tag rows across
+// match type changes, blanking the name row only for "all colleges".
+func TestFeaturesPanelSpellPointBonusSelectionRows(t *testing.T) {
+	f := gurps.NewSpellPointBonus()
+	checkSelectionCriteriaRow(t, f, &f.SpellMatchType, spellmatch.AllColleges, 2, spellmatch.Name, 2)
+}
+
+// TestFeaturesPanelSelectionRowBlanksNameFieldForAnyComparison verifies that the name qualifier field is blanked
+// while the name comparison accepts anything, even though the selection type calls for a name, and that the
+// comparison popup itself stays enabled so the user can pick a comparison that needs a qualifier.
+func TestFeaturesPanelSelectionRowBlanksNameFieldForAnyComparison(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	f := gurps.NewSkillBonus()
+	f.SetOwner(owner)
+	f.SelectionType = skillsel.Name
+	f.NameCriteria.Compare = criteria.AnyText
+	features := gurps.Features{f}
+	panel := newFeaturesPanel(entity, owner, &features, false)
+	row := panel.Children()[1]
+	criteriaPopups := findPopups[string](row)
+	c.True(len(criteriaPopups) > 0, "expected the name criteria row")
+	if len(criteriaPopups) == 0 {
+		return
+	}
+	namePopup := criteriaPopups[0]
+	c.True(namePopup.Enabled(), "the name comparison popup stays enabled when a name is called for")
+	c.False(nameCriteriaField(namePopup).Enabled(), "the name field is blanked while the comparison accepts anything")
+
+	selPopup := findPopups[skillsel.Type](row)[0]
+	selPopup.ChoiceMadeCallback(selPopup, selPopup.IndexOfItem(skillsel.ThisWeapon), skillsel.ThisWeapon)
+	c.False(namePopup.Enabled(), "the name comparison popup is blanked for 'this weapon'")
+	c.False(nameCriteriaField(namePopup).Enabled(), "the name field is blanked for 'this weapon'")
+
+	selPopup.ChoiceMadeCallback(selPopup, selPopup.IndexOfItem(skillsel.Name), skillsel.Name)
+	c.True(namePopup.Enabled(), "the name comparison popup is enabled again once a name is called for")
+	c.False(nameCriteriaField(namePopup).Enabled(),
+		"the name field stays blanked while the comparison still accepts anything")
+
+	namePopup.SelectIndex(int(criteria.IsText))
+	namePopup.SelectionChangedCallback(namePopup)
+	c.Equal(criteria.IsText, f.NameCriteria.Compare, "picking a comparison must be stored on the feature")
+	c.True(nameCriteriaField(namePopup).Enabled(), "the name field is enabled once the comparison needs a qualifier")
 }

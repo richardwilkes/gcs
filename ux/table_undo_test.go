@@ -273,18 +273,6 @@ func TestUndoOfOrdinaryEditBumpsTheModificationTimestamp(t *testing.T) {
 		"an undo that leaves the columns alone must bump the modification timestamp, too")
 }
 
-// newSwitchableSkill returns a non-container skill carrying a single switchable +1 ST bonus, so that a sheet's skills
-// list needs the switch column while the skill is in it.
-func newSwitchableSkill(entity *gurps.Entity, name string) *gurps.Skill {
-	skill := gurps.NewSkill(entity, nil, false)
-	skill.Name = name
-	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
-	bonus.SetSwitchable(true)
-	bonus.SetOwner(skill)
-	skill.Features = gurps.Features{bonus}
-	return skill
-}
-
 // librarySyncerFunc adapts a function to the librarySyncer interface, standing in for a document's model so that a test
 // can decide what "syncing with the library sources" does to the document.
 type librarySyncerFunc func()
@@ -426,15 +414,6 @@ func TestSyncWithAllSourcesIsOneUndoableEditOnEveryDocumentKind(t *testing.T) {
 			c.True(mgr.CanRedo(), "the sync must be redoable")
 		})
 	}
-}
-
-// newSwitchableEquipment returns a non-container piece of equipment carrying a single switchable +1 ST bonus, so that
-// the sheet's list holding it needs the switch column while it is there.
-func newSwitchableEquipment(entity *gurps.Entity, name string) *gurps.Equipment {
-	eqp := gurps.NewEquipment(entity, nil, false)
-	eqp.Name = name
-	eqp.Features = gurps.Features{switchableSTBonus(nil)}
-	return eqp
 }
 
 // TestUndoOfMoveBetweenEquipmentListsSyncsTheSheetOnlyOnce verifies that undoing a move of rows from one of a sheet's

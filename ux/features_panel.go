@@ -393,32 +393,51 @@ func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) (main *
 	return panel, focus
 }
 
-func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+// addSelectionCriteriaRow adds the row shared by the bonuses that pick their targets by a selection type: a popup
+// offering the types, followed by the name criteria. The name criteria are blanked while the chosen type needs no name
+// (blank reports that, e.g. for a "this weapon" choice that targets the owner itself), and the name field is also
+// blanked while its comparison accepts anything. When secondary is non-nil, it is called to add the rows that depend on
+// the chosen type after the selection row, and those rows are torn down and rebuilt whenever the choice changes. This
+// is a plain function rather than a method because methods cannot have type parameters.
+func addSelectionCriteriaRow[E comparable](p *featuresPanel, panel *unison.Panel, types []E, sel *E, blank func(E) bool, nameCriteria *criteria.Text, secondary func(parent *unison.Panel, index int)) {
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, skillsel.Types, &f.SelectionType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[skillsel.Type], index int, item skillsel.Type) {
+	adjust := func() {
+		noName := blank(*sel)
+		adjustPopupBlank(criteriaPopup, noName)
+		adjustFieldBlank(criteriaField, noName || nameCriteria.IsZero())
+	}
+	popup := addPopup(wrapper, types, sel)
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[E], index int, item E) {
 		pop.SelectIndex(index)
-		f.SelectionType = item
-		adjustPopupBlank(criteriaPopup, f.SelectionType == skillsel.ThisWeapon)
-		adjustFieldBlank(criteriaField, f.SelectionType == skillsel.ThisWeapon)
-		i := panel.IndexOfChild(wrapper) + 1
-		for j := len(panel.Children()) - 1; j >= i; j-- {
-			panel.RemoveChildAtIndex(j)
+		*sel = item
+		adjust()
+		if secondary != nil {
+			i := panel.IndexOfChild(wrapper) + 1
+			for j := len(panel.Children()) - 1; j >= i; j-- {
+				panel.RemoveChildAtIndex(j)
+			}
+			secondary(panel, i)
+			MarkRootAncestorForLayoutRecursively(p)
 		}
-		p.createSecondarySkillPanels(panel, i, f)
-		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
+	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), nameCriteria, 1, false)
 	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	adjustPopupBlank(criteriaPopup, f.SelectionType == skillsel.ThisWeapon)
-	adjustFieldBlank(criteriaField, f.SelectionType == skillsel.ThisWeapon)
-	p.createSecondarySkillPanels(panel, len(panel.Children()), f)
+	adjust()
+	if secondary != nil {
+		secondary(panel, len(panel.Children()))
+	}
+}
+
+func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) (main *unison.Panel, focus unison.Paneler) {
+	panel := p.createBasePanel(f)
+	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	addSelectionCriteriaRow(p, panel, skillsel.Types, &f.SelectionType,
+		func(t skillsel.Type) bool { return t == skillsel.ThisWeapon }, &f.NameCriteria,
+		func(parent *unison.Panel, index int) { p.createSecondarySkillPanels(parent, index, f) })
 	return panel, focus
 }
 
@@ -490,29 +509,8 @@ func (p *featuresPanel) createTraitMaxLevelBonusPanel(f *gurps.TraitMaxLevelBonu
 func createMaxAdjustmentBonusPanel[E comparable](p *featuresPanel, spec maxAdjustmentBonusSpec[E]) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(spec.feature)
 	focus = p.addMaxAdjustmentModifierLine(panel, spec.feature, spec.amount, spec.amountLabel)
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
-	var criteriaPopup *unison.PopupMenu[string]
-	var criteriaField *StringField
-	popup := addPopup(wrapper, spec.types, spec.selection)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[E], index int, item E) {
-		pop.SelectIndex(index)
-		*spec.selection = item
-		adjustPopupBlank(criteriaPopup, item == spec.this)
-		adjustFieldBlank(criteriaField, item == spec.this)
-		i := panel.IndexOfChild(wrapper) + 1
-		for j := len(panel.Children()) - 1; j >= i; j-- {
-			panel.RemoveChildAtIndex(j)
-		}
-		createSecondaryMaxAdjustmentPanels(p, panel, i, spec)
-		MarkRootAncestorForLayoutRecursively(p)
-		MarkModified(p)
-	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), spec.name, 1, false)
-	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	adjustPopupBlank(criteriaPopup, *spec.selection == spec.this)
-	adjustFieldBlank(criteriaField, *spec.selection == spec.this)
-	createSecondaryMaxAdjustmentPanels(p, panel, len(panel.Children()), spec)
+	addSelectionCriteriaRow(p, panel, spec.types, spec.selection, func(t E) bool { return t == spec.this }, spec.name,
+		func(parent *unison.Panel, index int) { createSecondaryMaxAdjustmentPanels(p, parent, index, spec) })
 	return panel, focus
 }
 
@@ -563,47 +561,21 @@ func (p *featuresPanel) createSkillPointBonusPanel(f *gurps.SkillPointBonus) (ma
 }
 
 func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
-	var criteriaPopup *unison.PopupMenu[string]
-	var criteriaField *StringField
-	popup := addPopup(wrapper, spellmatch.Types, &f.SpellMatchType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[spellmatch.Type], index int, item spellmatch.Type) {
-		pop.SelectIndex(index)
-		f.SpellMatchType = item
-		adjustPopupBlank(criteriaPopup, f.SpellMatchType == spellmatch.AllColleges)
-		adjustFieldBlank(criteriaField, f.SpellMatchType == spellmatch.AllColleges)
-		MarkModified(p)
-	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
-	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	adjustPopupBlank(criteriaPopup, f.SpellMatchType == spellmatch.AllColleges)
-	adjustFieldBlank(criteriaField, f.SpellMatchType == spellmatch.AllColleges)
-	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
-	return panel, focus
+	return p.createSpellMatchBonusPanel(f, &f.SpellMatchType, &f.NameCriteria, &f.TagsCriteria, &f.LeveledAmount)
 }
 
 func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) (main *unison.Panel, focus unison.Paneler) {
+	return p.createSpellMatchBonusPanel(f, &f.SpellMatchType, &f.NameCriteria, &f.TagsCriteria, &f.LeveledAmount)
+}
+
+// createSpellMatchBonusPanel builds the panel shared by the spell bonus and the spell point bonus, which pick the spells
+// they apply to the same way: by a match type, a name to match against it and the spells' tags.
+func (p *featuresPanel) createSpellMatchBonusPanel(f gurps.Feature, matchType *spellmatch.Type, name, tags *criteria.Text, amount *gurps.LeveledAmount) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	wrapper, _ := p.prepareNewWrapper(panel, -1)
-	var criteriaPopup *unison.PopupMenu[string]
-	var criteriaField *StringField
-	popup := addPopup(wrapper, spellmatch.Types, &f.SpellMatchType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[spellmatch.Type], index int, item spellmatch.Type) {
-		pop.SelectIndex(index)
-		f.SpellMatchType = item
-		adjustPopupBlank(criteriaPopup, f.SpellMatchType == spellmatch.AllColleges)
-		adjustFieldBlank(criteriaField, f.SpellMatchType == spellmatch.AllColleges)
-		MarkModified(p)
-	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
-	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	adjustPopupBlank(criteriaPopup, f.SpellMatchType == spellmatch.AllColleges)
-	adjustFieldBlank(criteriaField, f.SpellMatchType == spellmatch.AllColleges)
-	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
+	focus = p.addLeveledModifierLine(panel, f, amount)
+	addSelectionCriteriaRow(p, panel, spellmatch.Types, matchType,
+		func(t spellmatch.Type) bool { return t == spellmatch.AllColleges }, name, nil)
+	addTagCriteriaPanel(panel, tags, 1, true)
 	return panel, focus
 }
 
@@ -619,37 +591,10 @@ func (p *featuresPanel) createTraitBonusPanel(f *gurps.TraitBonus) (main *unison
 func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	_, focus = p.addWeaponLeveledModifierLine(panel, f)
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
-	var criteriaPopup *unison.PopupMenu[string]
-	var criteriaField *StringField
-	popup := addPopup(wrapper, wsel.Types, &f.SelectionType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[wsel.Type], index int, item wsel.Type) {
-		pop.SelectIndex(index)
-		f.SelectionType = item
-		p.adjustCriteriaPopupAndField(f, criteriaPopup, criteriaField)
-		i := panel.IndexOfChild(wrapper) + 1
-		for j := len(panel.Children()) - 1; j >= i; j-- {
-			panel.RemoveChildAtIndex(j)
-		}
-		p.createSecondaryWeaponPanels(panel, i, f)
-		MarkRootAncestorForLayoutRecursively(p)
-		MarkModified(p)
-	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
-	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	p.adjustCriteriaPopupAndField(f, criteriaPopup, criteriaField)
-	p.createSecondaryWeaponPanels(panel, len(panel.Children()), f)
+	addSelectionCriteriaRow(p, panel, wsel.Types, &f.SelectionType,
+		func(t wsel.Type) bool { return t == wsel.ThisWeapon }, &f.NameCriteria,
+		func(parent *unison.Panel, index int) { p.createSecondaryWeaponPanels(parent, index, f) })
 	return panel, focus
-}
-
-func (p *featuresPanel) adjustCriteriaPopupAndField(f *gurps.WeaponBonus, criteriaPopup *unison.PopupMenu[string], criteriaField *StringField) {
-	blank := f.SelectionType == wsel.ThisWeapon
-	if !blank {
-		blank = criteria.StringComparisons[criteriaPopup.SelectedIndex()] == criteria.AnyText
-	}
-	adjustPopupBlank(criteriaPopup, f.SelectionType == wsel.ThisWeapon)
-	adjustFieldBlank(criteriaField, blank)
 }
 
 func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index int, f *gurps.WeaponBonus) {
