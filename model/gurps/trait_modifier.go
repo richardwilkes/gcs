@@ -92,13 +92,7 @@ type TraitModifierEditDataNonContainerOnly struct {
 }
 
 // TraitModifierSyncData holds the TraitModifier sync data that is common to both containers and non-containers.
-type TraitModifierSyncData struct {
-	Name             string   `json:"name,omitzero"`
-	PageRef          string   `json:"reference,omitzero"`
-	PageRefHighlight string   `json:"reference_highlight,omitzero"`
-	LocalNotes       string   `json:"local_notes,omitzero"`
-	Tags             []string `json:"tags,omitempty"`
-}
+type TraitModifierSyncData = NodeSyncData
 
 // TraitModifierNonContainerSyncData holds the TraitModifier sync data that is only applicable to TraitModifiers that
 // aren't containers.
@@ -606,27 +600,13 @@ func (t *TraitModifier) Hash(h hash.Hash) {
 	}
 }
 
-func (t *TraitModifierSyncData) hash(h hash.Hash) {
-	xhash.StringWithLen(h, t.Name)
-	xhash.StringWithLen(h, t.PageRef)
-	xhash.StringWithLen(h, t.PageRefHighlight)
-	xhash.StringWithLen(h, t.LocalNotes)
-	xhash.Num64(h, len(t.Tags))
-	for _, tag := range t.Tags {
-		xhash.StringWithLen(h, tag)
-	}
-}
-
 func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, t.CostAdj)
 	xhash.Bool(h, t.UseLevelFromTrait)
 	xhash.Bool(h, t.CostIgnoresLevel)
 	xhash.Bool(h, t.ShowNotesOnWeapon)
 	xhash.Num8(h, t.Affects)
-	xhash.Num64(h, len(t.Features))
-	for _, feature := range t.Features {
-		feature.Hash(h)
-	}
+	hashList(h, t.Features)
 }
 
 // CopyFrom implements node.EditorData.

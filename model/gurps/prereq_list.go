@@ -153,8 +153,5 @@ func (p *PrereqList) Hash(h hash.Hash) {
 	xhash.Num8(h, p.Type)
 	xhash.Bool(h, p.All)
 	p.WhenTL.Hash(h)
-	xhash.Num64(h, len(p.Prereqs))
-	for _, one := range p.Prereqs {
-		one.Hash(h)
-	}
+	hashList(h, p.Prereqs)
 }

@@ -148,10 +148,7 @@ func (d *DRBonus) Hash(h hash.Hash) {
 	}
 	xhash.Num8(h, d.Type)
 	xhash.Bool(h, d.Switchable)
-	xhash.Num64(h, len(d.Locations))
-	for _, loc := range d.Locations {
-		xhash.StringWithLen(h, loc)
-	}
+	hashStrings(h, d.Locations)
 	xhash.StringWithLen(h, d.Specialization)
 	d.LeveledAmount.Hash(h)
 }

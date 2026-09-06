@@ -125,13 +125,7 @@ type SkillNonContainerOnlyEditData struct {
 }
 
 // SkillSyncData holds the skill sync data that is common to both containers and non-containers.
-type SkillSyncData struct {
-	Name             string   `json:"name,omitzero"`
-	PageRef          string   `json:"reference,omitzero"`
-	PageRefHighlight string   `json:"reference_highlight,omitzero"`
-	LocalNotes       string   `json:"local_notes,omitzero"`
-	Tags             []string `json:"tags,omitempty"`
-}
+type SkillSyncData = NodeSyncData
 
 // SkillNonContainerOnlySyncData holds the Skill sync data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlySyncData struct {
@@ -1476,17 +1470,6 @@ func (s *Skill) Hash(h hash.Hash) {
 	}
 }
 
-func (s *SkillSyncData) hash(h hash.Hash) {
-	xhash.StringWithLen(h, s.Name)
-	xhash.StringWithLen(h, s.PageRef)
-	xhash.StringWithLen(h, s.PageRefHighlight)
-	xhash.StringWithLen(h, s.LocalNotes)
-	xhash.Num64(h, len(s.Tags))
-	for _, tag := range s.Tags {
-		xhash.StringWithLen(h, tag)
-	}
-}
-
 func (s *SkillContainerOnlySyncData) hash(h hash.Hash) {
 	s.TemplatePicker.Hash(h)
 }
@@ -1495,10 +1478,7 @@ func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.Specialization)
 	s.Difficulty.Hash(h)
 	xhash.Num64(h, s.EncumbrancePenaltyMultiplier)
-	xhash.Num64(h, len(s.Defaults))
-	for _, one := range s.Defaults {
-		one.Hash(h)
-	}
+	hashList(h, s.Defaults)
 	if s.TechniqueDefault != nil {
 		s.TechniqueDefault.Hash(h)
 	} else {
@@ -1510,14 +1490,8 @@ func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 		xhash.Num8(h, uint8(255))
 	}
 	s.Prereq.Hash(h)
-	xhash.Num64(h, len(s.Weapons))
-	for _, weapon := range s.Weapons {
-		weapon.Hash(h)
-	}
-	xhash.Num64(h, len(s.Features))
-	for _, feature := range s.Features {
-		feature.Hash(h)
-	}
+	hashList(h, s.Weapons)
+	hashList(h, s.Features)
 }
 
 // CopyFrom implements node.EditorData.

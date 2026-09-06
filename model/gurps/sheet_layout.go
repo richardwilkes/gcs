@@ -236,10 +236,7 @@ func (n *SheetLayoutNode) Hash(h hash.Hash) {
 	xhash.Float64(h, n.MinHeight.Length)
 	xhash.Num8(h, n.MinHeight.Units)
 	xhash.Bool(h, n.Square)
-	xhash.Num64(h, len(n.Children))
-	for _, child := range n.Children {
-		child.Hash(h)
-	}
+	hashList(h, n.Children)
 }
 
 // SheetLayout holds the arrangement of the blocks on a sheet. Root is always a non-nil Column whose children are the
@@ -423,10 +420,7 @@ func (l *SheetLayout) Hash(h hash.Hash) {
 		return
 	}
 	l.Root.Hash(h)
-	xhash.Num64(h, len(l.Hidden))
-	for _, key := range l.Hidden {
-		xhash.StringWithLen(h, key)
-	}
+	hashStrings(h, l.Hidden)
 }
 
 // Reset returns the layout to the factory defaults.

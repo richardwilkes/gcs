@@ -210,10 +210,7 @@ func (b *Body) LookupLocationByID(entity *Entity, idStr string) *HitLocation {
 func (b *Body) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, b.Name)
 	b.Roll.Hash(h)
-	xhash.Num64(h, len(b.Locations))
-	for _, one := range b.Locations {
-		one.Hash(h)
-	}
+	hashList(h, b.Locations)
 }
 
 // ResetTargetKeyPrefixes assigns new key prefixes for all data within this Body.

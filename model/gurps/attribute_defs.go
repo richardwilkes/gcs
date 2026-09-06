@@ -18,7 +18,6 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
@@ -153,10 +152,7 @@ func (a *AttributeDefs) List(omitSeparators bool) []*AttributeDef {
 
 // Hash writes this object's contents into the hasher.
 func (a *AttributeDefs) Hash(h hash.Hash) {
-	xhash.Num64(h, len(a.Set))
-	for _, one := range a.List(false) {
-		one.Hash(h)
-	}
+	hashList(h, a.List(false))
 }
 
 // ResetTargetKeyPrefixes assigns new key prefixes for all data within these AttributeDefs.

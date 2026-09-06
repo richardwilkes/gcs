@@ -241,10 +241,7 @@ func (a *AttributeDef) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, a.Base)
 	xhash.Num64(h, a.CostPerPoint)
 	xhash.Num64(h, a.CostAdjPercentPerSM)
-	xhash.Num64(h, len(a.Thresholds))
-	for _, one := range a.Thresholds {
-		one.Hash(h)
-	}
+	hashList(h, a.Thresholds)
 }
 
 // IsOpen returns true if this attribute is a separator and it is open.

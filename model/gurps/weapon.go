@@ -270,10 +270,7 @@ func (w *WeaponData) Hash(h hash.Hash) {
 	w.Shots.Hash(h)
 	w.Bulk.Hash(h)
 	w.Recoil.Hash(h)
-	xhash.Num64(h, len(w.Defaults))
-	for _, one := range w.Defaults {
-		one.Hash(h)
-	}
+	hashList(h, w.Defaults)
 }
 
 // MarshalJSONTo implements json.MarshalerTo.

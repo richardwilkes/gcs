@@ -117,13 +117,7 @@ type SpellContainerOnlySyncData struct {
 }
 
 // SpellSyncData holds the spell sync data that is common to both containers and non-containers.
-type SpellSyncData struct {
-	Name             string   `json:"name,omitzero"`
-	PageRef          string   `json:"reference,omitzero"`
-	PageRefHighlight string   `json:"reference_highlight,omitzero"`
-	LocalNotes       string   `json:"local_notes,omitzero"`
-	Tags             []string `json:"tags,omitempty"`
-}
+type SpellSyncData = NodeSyncData
 
 // SpellNonContainerOnlySyncData holds the spell sync data that is only applicable to traits that aren't containers.
 type SpellNonContainerOnlySyncData struct {
@@ -1159,27 +1153,13 @@ func (s *Spell) Hash(h hash.Hash) {
 	}
 }
 
-func (s *SpellSyncData) hash(h hash.Hash) {
-	xhash.StringWithLen(h, s.Name)
-	xhash.StringWithLen(h, s.PageRef)
-	xhash.StringWithLen(h, s.PageRefHighlight)
-	xhash.StringWithLen(h, s.LocalNotes)
-	xhash.Num64(h, len(s.Tags))
-	for _, tag := range s.Tags {
-		xhash.StringWithLen(h, tag)
-	}
-}
-
 func (s *SpellContainerOnlySyncData) hash(h hash.Hash) {
 	s.TemplatePicker.Hash(h)
 }
 
 func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	s.Difficulty.Hash(h)
-	xhash.Num64(h, len(s.College))
-	for _, college := range s.College {
-		xhash.StringWithLen(h, college)
-	}
+	hashStrings(h, s.College)
 	xhash.StringWithLen(h, s.PowerSource)
 	xhash.StringWithLen(h, s.Class)
 	xhash.StringWithLen(h, s.Resist)
@@ -1191,14 +1171,8 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.RitualSkillName)
 	xhash.Num64(h, s.PrereqCount)
 	s.Prereq.Hash(h)
-	xhash.Num64(h, len(s.Weapons))
-	for _, weapon := range s.Weapons {
-		weapon.Hash(h)
-	}
-	xhash.Num64(h, len(s.Features))
-	for _, feature := range s.Features {
-		feature.Hash(h)
-	}
+	hashList(h, s.Weapons)
+	hashList(h, s.Features)
 }
 
 // CopyFrom implements node.EditorData.

@@ -109,13 +109,9 @@ type TraitNonContainerOnlyEditData struct {
 
 // TraitSyncData holds the Trait sync data that is common to both containers and non-containers.
 type TraitSyncData struct {
-	Name             string              `json:"name,omitzero"`
-	PageRef          string              `json:"reference,omitzero"`
-	PageRefHighlight string              `json:"reference_highlight,omitzero"`
-	LocalNotes       string              `json:"local_notes,omitzero"`
-	Tags             []string            `json:"tags,omitempty"`
-	Prereq           *PrereqList         `json:"prereqs,omitzero"`
-	SelfControlAdj   selfctrl.Adjustment `json:"cr_adj,omitzero"`
+	NodeSyncData
+	Prereq         *PrereqList         `json:"prereqs,omitzero"`
+	SelfControlAdj selfctrl.Adjustment `json:"cr_adj,omitzero"`
 }
 
 // TraitNonContainerSyncData holds the Trait sync data that is only applicable to traits that aren't containers.
@@ -1052,14 +1048,7 @@ func (t *Trait) Hash(h hash.Hash) {
 }
 
 func (t *TraitSyncData) hash(h hash.Hash) {
-	xhash.StringWithLen(h, t.Name)
-	xhash.StringWithLen(h, t.PageRef)
-	xhash.StringWithLen(h, t.PageRefHighlight)
-	xhash.StringWithLen(h, t.LocalNotes)
-	xhash.Num64(h, len(t.Tags))
-	for _, tag := range t.Tags {
-		xhash.StringWithLen(h, tag)
-	}
+	t.NodeSyncData.hash(h)
 	xhash.Num8(h, t.SelfControlAdj)
 	t.Prereq.Hash(h)
 }
@@ -1068,14 +1057,8 @@ func (t *TraitNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Num64(h, t.BasePoints)
 	xhash.Num64(h, t.PointsPerLevel)
 	xhash.StringWithLen(h, t.MaxLevels)
-	xhash.Num64(h, len(t.Weapons))
-	for _, one := range t.Weapons {
-		one.Hash(h)
-	}
-	xhash.Num64(h, len(t.Features))
-	for _, one := range t.Features {
-		one.Hash(h)
-	}
+	hashList(h, t.Weapons)
+	hashList(h, t.Features)
 	xhash.Bool(h, t.RoundCostDown)
 	xhash.Bool(h, t.CanLevel)
 }

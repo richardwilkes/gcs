@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"fmt"
+	"hash"
 	"io/fs"
 	"slices"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
@@ -65,6 +67,25 @@ type Node[T Node[T]] interface {
 }
 
 func assertNode[T Node[T]]() {}
+
+// NodeSyncData holds the sync data that every named node shares: the fields a library copy is expected to keep in step
+// with its source. The per-type SyncData types are either aliases of it or structs that embed it, which json/v2
+// inlines, so the on-disk format is the same as if each declared the fields itself.
+type NodeSyncData struct {
+	Name             string   `json:"name,omitzero"`
+	PageRef          string   `json:"reference,omitzero"`
+	PageRefHighlight string   `json:"reference_highlight,omitzero"`
+	LocalNotes       string   `json:"local_notes,omitzero"`
+	Tags             []string `json:"tags,omitempty"`
+}
+
+func (n *NodeSyncData) hash(h hash.Hash) {
+	xhash.StringWithLen(h, n.Name)
+	xhash.StringWithLen(h, n.PageRef)
+	xhash.StringWithLen(h, n.PageRefHighlight)
+	xhash.StringWithLen(h, n.LocalNotes)
+	hashStrings(h, n.Tags)
+}
 
 // RawPointsAdjuster interface for objects that can have their raw points adjusted.
 type RawPointsAdjuster interface {

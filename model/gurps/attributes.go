@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Hashable = &Attributes{}
@@ -78,10 +77,7 @@ func (a *Attributes) List() []*Attribute {
 
 // Hash writes this object's contents into the hasher.
 func (a *Attributes) Hash(h hash.Hash) {
-	xhash.Num64(h, len(a.Set))
-	for _, one := range a.List() {
-		one.Hash(h)
-	}
+	hashList(h, a.List())
 }
 
 // Find resolves the given ID or name to an Attribute, or nil if not found.

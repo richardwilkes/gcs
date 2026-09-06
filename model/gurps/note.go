@@ -363,10 +363,7 @@ func (n *NoteSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, n.MarkDown)
 	xhash.StringWithLen(h, n.PageRef)
 	xhash.StringWithLen(h, n.PageRefHighlight)
-	xhash.Num64(h, len(n.Tags))
-	for _, tag := range n.Tags {
-		xhash.StringWithLen(h, tag)
-	}
+	hashStrings(h, n.Tags)
 }
 
 // CopyFrom implements node.EditorData.

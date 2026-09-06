@@ -82,13 +82,7 @@ type EquipmentModifierEditDataNonContainerOnly struct {
 }
 
 // EquipmentModifierSyncData holds the EquipmentModifier sync data that is common to both containers and non-containers.
-type EquipmentModifierSyncData struct {
-	Name             string   `json:"name,omitzero"`
-	PageRef          string   `json:"reference,omitzero"`
-	PageRefHighlight string   `json:"reference_highlight,omitzero"`
-	LocalNotes       string   `json:"local_notes,omitzero"`
-	Tags             []string `json:"tags,omitempty"`
-}
+type EquipmentModifierSyncData = NodeSyncData
 
 // EquipmentModifierNonContainerSyncData holds the EquipmentModifier sync data that is only applicable to Equipment
 // Modifiers that aren't containers.
@@ -695,17 +689,6 @@ func (e *EquipmentModifier) Hash(h hash.Hash) {
 	}
 }
 
-func (e *EquipmentModifierSyncData) hash(h hash.Hash) {
-	xhash.StringWithLen(h, e.Name)
-	xhash.StringWithLen(h, e.PageRef)
-	xhash.StringWithLen(h, e.PageRefHighlight)
-	xhash.StringWithLen(h, e.LocalNotes)
-	xhash.Num64(h, len(e.Tags))
-	for _, tag := range e.Tags {
-		xhash.StringWithLen(h, tag)
-	}
-}
-
 func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Num8(h, e.CostType)
 	xhash.Bool(h, e.CostIsPerLevel)
@@ -716,10 +699,7 @@ func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, e.TechLevel)
 	xhash.StringWithLen(h, e.CostAmount)
 	xhash.StringWithLen(h, e.WeightAmount)
-	xhash.Num64(h, len(e.Features))
-	for _, feature := range e.Features {
-		feature.Hash(h)
-	}
+	hashList(h, e.Features)
 }
 
 // CopyFrom implements node.EditorData.

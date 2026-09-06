@@ -1095,22 +1095,13 @@ func (e *EquipmentSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, e.LocalNotes)
 	xhash.StringWithLen(h, e.TechLevel)
 	xhash.StringWithLen(h, e.LegalityClass)
-	xhash.Num64(h, len(e.Tags))
-	for _, tag := range e.Tags {
-		xhash.StringWithLen(h, tag)
-	}
+	hashStrings(h, e.Tags)
 	xhash.StringWithLen(h, e.BaseValue)
 	xhash.StringWithLen(h, e.BaseWeight)
 	xhash.Num64(h, e.MaxUses)
 	e.Prereq.Hash(h)
-	xhash.Num64(h, len(e.Weapons))
-	for _, weapon := range e.Weapons {
-		weapon.Hash(h)
-	}
-	xhash.Num64(h, len(e.Features))
-	for _, feature := range e.Features {
-		feature.Hash(h)
-	}
+	hashList(h, e.Weapons)
+	hashList(h, e.Features)
 	xhash.Bool(h, e.WeightIgnoredForSkills)
 }
 

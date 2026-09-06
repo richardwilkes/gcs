@@ -102,10 +102,7 @@ func (c *ConditionalModifier) Hash(h hash.Hash) {
 	for _, amt := range c.Amounts {
 		xhash.Num64(h, amt)
 	}
-	xhash.Num64(h, len(c.Sources))
-	for _, src := range c.Sources {
-		xhash.StringWithLen(h, src)
-	}
+	hashStrings(h, c.Sources)
 }
 
 // Clone implements Node.

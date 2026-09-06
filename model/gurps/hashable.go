@@ -59,6 +59,22 @@ type Hashable interface {
 	Hash(hash.Hash)
 }
 
+// hashList writes a length-prefixed list of Hashable objects into the hasher.
+func hashList[T Hashable](h hash.Hash, list []T) {
+	xhash.Num64(h, len(list))
+	for _, one := range list {
+		one.Hash(h)
+	}
+}
+
+// hashStrings writes a length-prefixed list of strings into the hasher.
+func hashStrings[T ~string](h hash.Hash, list []T) {
+	xhash.Num64(h, len(list))
+	for _, one := range list {
+		xhash.StringWithLen(h, one)
+	}
+}
+
 // HashAndData is a combination of a hash and some data.
 type HashAndData struct {
 	Hash uint64
