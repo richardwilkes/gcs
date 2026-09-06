@@ -320,6 +320,104 @@ func wrapComment(in string, cols int) string {
 
 var allEnums = []*enumInfo{
 	{
+		Pkg:  "model/criteria",
+		Name: "numeric_comparison",
+		Desc: "holds the type for a numeric comparison",
+		Values: []*enumValue{
+			{
+				Name:   "AnyNumber",
+				Key:    "",
+				String: "is anything",
+				Alt:    "anything",
+			},
+			{
+				Name:          "EqualsNumber",
+				Key:           "is",
+				String:        "is",
+				NoLocalizeAlt: true,
+			},
+			{
+				Name:   "NotEqualsNumber",
+				Key:    "is_not",
+				String: "is not",
+				Alt:    "not",
+			},
+			{
+				Name:   "AtLeastNumber",
+				Key:    "at_least",
+				String: "is at least",
+				Alt:    "at least",
+			},
+			{
+				Name:   "AtMostNumber",
+				Key:    "at_most",
+				String: "is at most",
+				Alt:    "at most",
+			},
+		},
+	},
+	{
+		Pkg:  "model/criteria",
+		Name: "string_comparison",
+		Desc: "holds the type for a string comparison. The alternate string is the plural form, which only differs for the \"not\" cases",
+		Values: []*enumValue{
+			{
+				Name:   "AnyText",
+				Key:    "",
+				String: "is anything",
+				Alt:    "is anything",
+			},
+			{
+				Name:   "IsText",
+				Key:    "is",
+				String: "is",
+				Alt:    "is",
+			},
+			{
+				Name:   "IsNotText",
+				Key:    "is_not",
+				String: "is not",
+				Alt:    "are not",
+			},
+			{
+				Name:   "ContainsText",
+				Key:    "contains",
+				String: "contains",
+				Alt:    "contains",
+			},
+			{
+				Name:   "DoesNotContainText",
+				Key:    "does_not_contain",
+				String: "does not contain",
+				Alt:    "do not contain",
+			},
+			{
+				Name:   "StartsWithText",
+				Key:    "starts_with",
+				String: "starts with",
+				Alt:    "starts with",
+			},
+			{
+				Name:   "DoesNotStartWithText",
+				Key:    "does_not_start_with",
+				String: "does not start with",
+				Alt:    "do not start with",
+			},
+			{
+				Name:   "EndsWithText",
+				Key:    "ends_with",
+				String: "ends with",
+				Alt:    "ends with",
+			},
+			{
+				Name:   "DoesNotEndWithText",
+				Key:    "does_not_end_with",
+				String: "does not end with",
+				Alt:    "do not end with",
+			},
+		},
+	},
+	{
 		Pkg:  "model/fxp",
 		Name: "length_unit",
 		Desc: "holds the length unit type. Note that conversions to/from metric are done using the simplified GURPS metric conversion of 1 yd = 1 meter. For consistency, all metric lengths are converted to meters, then to yards, rather than the variations at different lengths that the GURPS rules suggest",

@@ -107,6 +107,6 @@ func (t Text) Hash(h hash.Hash) {
 		xhash.Num8(h, uint8(255))
 		return
 	}
-	xhash.StringWithLen(h, t.Compare)
+	xhash.StringWithLen(h, t.Compare.Key())
 	xhash.StringWithLen(h, t.Qualifier)
 }

@@ -9,103 +9,32 @@
 
 package criteria
 
-import (
-	"slices"
-	"strings"
+import "github.com/richardwilkes/gcs/v5/model/fxp"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/v2/i18n"
-)
-
-// Possible NumericComparison values.
-const (
-	AnyNumber       = NumericComparison("")
-	EqualsNumber    = NumericComparison("is")
-	NotEqualsNumber = NumericComparison("is_not")
-	AtLeastNumber   = NumericComparison("at_least")
-	AtMostNumber    = NumericComparison("at_most")
-)
-
-// AllNumericComparisons is the complete set of NumericComparison values.
-var AllNumericComparisons = []NumericComparison{
-	AnyNumber,
-	EqualsNumber,
-	NotEqualsNumber,
-	AtLeastNumber,
-	AtMostNumber,
+// Describe returns a description of this NumericComparison using a qualifier.
+func (enum NumericComparison) Describe(qualifier fxp.Int) string {
+	return enum.DescribeWith(qualifier.String())
 }
 
-// NumericComparison holds the type for a numeric comparison.
-type NumericComparison string
-
-// EnsureValid ensures this is of a known value.
-func (n NumericComparison) EnsureValid() NumericComparison {
-	if slices.Contains(AllNumericComparisons, n) {
-		return n
-	}
-	return AllNumericComparisons[0]
-}
-
-// AltString returns an alternate string for this.
-func (n NumericComparison) AltString() string {
-	switch n {
-	case AnyNumber:
-		return i18n.Text("anything")
-	case EqualsNumber:
-		return ""
-	case NotEqualsNumber:
-		return i18n.Text("not")
-	case AtLeastNumber:
-		return i18n.Text("at least")
-	case AtMostNumber:
-		return i18n.Text("at most")
-	default:
-		return AnyNumber.String()
-	}
-}
-
-// String implements fmt.Stringer.
-func (n NumericComparison) String() string {
-	switch n {
-	case AnyNumber:
-		return i18n.Text("is anything")
-	case EqualsNumber:
-		return i18n.Text("is")
-	case NotEqualsNumber:
-		return i18n.Text("is not")
-	case AtLeastNumber:
-		return i18n.Text("is at least")
-	case AtMostNumber:
-		return i18n.Text("is at most")
-	default:
-		return AnyNumber.String()
-	}
-}
-
-// Describe returns a description of this NumericCompareType using a qualifier.
-func (n NumericComparison) Describe(qualifier fxp.Int) string {
-	return n.DescribeWith(qualifier.String())
-}
-
-// DescribeWith returns a description of this NumericCompareType using an already-formatted qualifier. Use this for a
+// DescribeWith returns a description of this NumericComparison using an already-formatted qualifier. Use this for a
 // qualifier that carries more than a bare number, such as a weight with its units.
-func (n NumericComparison) DescribeWith(qualifier string) string {
-	v := n.EnsureValid()
+func (enum NumericComparison) DescribeWith(qualifier string) string {
+	v := enum.EnsureValid()
 	if v == AnyNumber {
 		return v.String()
 	}
 	return v.String() + " " + qualifier
 }
 
-// AltDescribe returns an alternate description of this NumericCompareType using a qualifier.
-func (n NumericComparison) AltDescribe(qualifier fxp.Int) string {
-	return n.AltDescribeWith(qualifier.String())
+// AltDescribe returns an alternate description of this NumericComparison using a qualifier.
+func (enum NumericComparison) AltDescribe(qualifier fxp.Int) string {
+	return enum.AltDescribeWith(qualifier.String())
 }
 
-// AltDescribeWith returns an alternate description of this NumericCompareType using an already-formatted qualifier.
+// AltDescribeWith returns an alternate description of this NumericComparison using an already-formatted qualifier.
 // Use this for a qualifier that carries more than a bare number, such as a weight with its units.
-func (n NumericComparison) AltDescribeWith(qualifier string) string {
-	v := n.EnsureValid()
+func (enum NumericComparison) AltDescribeWith(qualifier string) string {
+	v := enum.EnsureValid()
 	result := v.AltString()
 	if v == AnyNumber {
 		return result
@@ -117,8 +46,8 @@ func (n NumericComparison) AltDescribeWith(qualifier string) string {
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (n NumericComparison) Matches(qualifier, data fxp.Int) bool {
-	switch n {
+func (enum NumericComparison) Matches(qualifier, data fxp.Int) bool {
+	switch enum {
 	case AnyNumber:
 		return true
 	case EqualsNumber:
@@ -134,20 +63,10 @@ func (n NumericComparison) Matches(qualifier, data fxp.Int) bool {
 	}
 }
 
-// ExtractNumericComparisonIndex extracts the index from a string.
-func ExtractNumericComparisonIndex(str string) int {
-	for i, one := range AllNumericComparisons {
-		if strings.EqualFold(string(one), str) {
-			return i
-		}
-	}
-	return 0
-}
-
 // PrefixedNumericComparisonChoices returns the set of NumericComparison choices as strings with a prefix.
 func PrefixedNumericComparisonChoices(prefix string) []string {
-	choices := make([]string, len(AllNumericComparisons))
-	for i, choice := range AllNumericComparisons {
+	choices := make([]string, len(NumericComparisons))
+	for i, choice := range NumericComparisons {
 		choices[i] = prefix + " " + choice.String()
 	}
 	return choices

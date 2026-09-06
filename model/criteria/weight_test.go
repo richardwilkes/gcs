@@ -43,8 +43,8 @@ func TestWeightDescriptionHasUnits(t *testing.T) {
 	c.Equal("anything", weight(criteria.AnyNumber, fivePounds).AltString())
 
 	// An invalid comparison is treated as "any", just as it is when matching.
-	c.Equal("is anything", weight(criteria.NumericComparison("bogus"), fivePounds).String())
-	c.Equal("anything", weight(criteria.NumericComparison("bogus"), fivePounds).AltString())
+	c.Equal("is anything", weight(criteria.LastNumericComparison+1, fivePounds).String())
+	c.Equal("anything", weight(criteria.LastNumericComparison+1, fivePounds).AltString())
 }
 
 // TestWeightDescriptionUsesRequestedUnits verifies that a weight criteria can be described in the units the user has
@@ -77,7 +77,7 @@ func TestWeightHashIgnoresQualifierWhenAny(t *testing.T) {
 	c.Equal(none, hashOf(criteria.Weight{}))
 
 	// An invalid comparison is treated as "any" everywhere else, so it must hash as "any", too.
-	c.Equal(none, hashOf(weight(criteria.NumericComparison("bogus"), fivePounds)))
+	c.Equal(none, hashOf(weight(criteria.LastNumericComparison+1, fivePounds)))
 
 	// A real comparison still contributes both the comparison and its qualifier.
 	five := hashOf(weight(criteria.AtMostNumber, fivePounds))

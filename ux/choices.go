@@ -61,7 +61,7 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 			tp.Type = item
 			if last == picker.NotApplicable && item != picker.NotApplicable {
 				tp.Qualifier.Qualifier = fxp.One
-				comparisonPopup.SelectIndex(criteria.ExtractNumericComparisonIndex(string(criteria.AnyNumber)))
+				comparisonPopup.SelectIndex(int(criteria.AnyNumber))
 				if syncer, ok := field.(Syncer); ok {
 					syncer.Sync()
 				}

@@ -9,106 +9,22 @@
 
 package criteria
 
-import (
-	"slices"
-	"strings"
+import "strings"
 
-	"github.com/richardwilkes/toolbox/v2/i18n"
-)
-
-// Possible StringComparison values.
-const (
-	AnyText              = StringComparison("")
-	IsText               = StringComparison("is")
-	IsNotText            = StringComparison("is_not")
-	ContainsText         = StringComparison("contains")
-	DoesNotContainText   = StringComparison("does_not_contain")
-	StartsWithText       = StringComparison("starts_with")
-	DoesNotStartWithText = StringComparison("does_not_start_with")
-	EndsWithText         = StringComparison("ends_with")
-	DoesNotEndWithText   = StringComparison("does_not_end_with")
-)
-
-// AllStringComparisons is the complete set of StringComparison values.
-var AllStringComparisons = []StringComparison{
-	AnyText,
-	IsText,
-	IsNotText,
-	ContainsText,
-	DoesNotContainText,
-	StartsWithText,
-	DoesNotStartWithText,
-	EndsWithText,
-	DoesNotEndWithText,
-}
-
-// StringComparison holds the type for a string comparison.
-type StringComparison string
-
-// EnsureValid ensures this is of a known value.
-func (s StringComparison) EnsureValid() StringComparison {
-	if slices.Contains(AllStringComparisons, s) {
-		return s
-	}
-	return AllStringComparisons[0]
-}
-
-// String implements fmt.Stringer.
-func (s StringComparison) String() string {
-	switch s {
-	case AnyText:
-		return i18n.Text("is anything")
-	case IsText:
-		return i18n.Text("is")
-	case IsNotText:
-		return i18n.Text("is not")
-	case ContainsText:
-		return i18n.Text("contains")
-	case DoesNotContainText:
-		return i18n.Text("does not contain")
-	case StartsWithText:
-		return i18n.Text("starts with")
-	case DoesNotStartWithText:
-		return i18n.Text("does not start with")
-	case EndsWithText:
-		return i18n.Text("ends with")
-	case DoesNotEndWithText:
-		return i18n.Text("does not end with")
-	default:
-		return AnyText.String()
-	}
-}
-
-// AltString provides a variant of String() for the not cases.
-func (s StringComparison) AltString() string {
-	switch s {
-	case IsNotText:
-		return i18n.Text("are not")
-	case DoesNotContainText:
-		return i18n.Text("do not contain")
-	case DoesNotStartWithText:
-		return i18n.Text("do not start with")
-	case DoesNotEndWithText:
-		return i18n.Text("do not end with")
-	default:
-		return s.String()
-	}
-}
-
-// Describe returns a description of this StringCompareType using a qualifier.
-func (s StringComparison) Describe(qualifier string) string {
-	v := s.EnsureValid()
+// Describe returns a description of this StringComparison using a qualifier.
+func (enum StringComparison) Describe(qualifier string) string {
+	v := enum.EnsureValid()
 	if v == AnyText {
 		return v.String()
 	}
 	return v.String() + ` "` + qualifier + `"`
 }
 
-// DescribeWithPrefix returns a description of this StringCompareType using a qualifier and prefix.
-func (s StringComparison) DescribeWithPrefix(prefix, notPrefix, qualifier string) string {
-	v := s.EnsureValid()
+// DescribeWithPrefix returns a description of this StringComparison using a qualifier and prefix.
+func (enum StringComparison) DescribeWithPrefix(prefix, notPrefix, qualifier string) string {
+	v := enum.EnsureValid()
 	var info string
-	if prefix == notPrefix || !s.IsNotType() {
+	if prefix == notPrefix || !v.IsNotType() {
 		info = prefix + " " + v.String()
 	} else {
 		info = notPrefix + " " + v.AltString()
@@ -120,8 +36,8 @@ func (s StringComparison) DescribeWithPrefix(prefix, notPrefix, qualifier string
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (s StringComparison) Matches(qualifier, data string) bool {
-	switch s {
+func (enum StringComparison) Matches(qualifier, data string) bool {
+	switch enum {
 	case AnyText:
 		return true
 	case IsText:
@@ -146,24 +62,14 @@ func (s StringComparison) Matches(qualifier, data string) bool {
 }
 
 // IsNotType returns true if this is a "not" type.
-func (s StringComparison) IsNotType() bool {
-	return s == IsNotText || s == DoesNotContainText || s == DoesNotStartWithText || s == DoesNotEndWithText
+func (enum StringComparison) IsNotType() bool {
+	return enum == IsNotText || enum == DoesNotContainText || enum == DoesNotStartWithText || enum == DoesNotEndWithText
 }
 
-// ExtractStringComparisonIndex extracts the index from a string.
-func ExtractStringComparisonIndex(str string) int {
-	for i, one := range AllStringComparisons {
-		if strings.EqualFold(string(one), str) {
-			return i
-		}
-	}
-	return 0
-}
-
-// PrefixedStringComparisonChoices returns the set of StringCompareType choices as strings with a prefix.
+// PrefixedStringComparisonChoices returns the set of StringComparison choices as strings with a prefix.
 func PrefixedStringComparisonChoices(prefix, notPrefix string) []string {
-	choices := make([]string, len(AllStringComparisons))
-	for i, choice := range AllStringComparisons {
+	choices := make([]string, len(StringComparisons))
+	for i, choice := range StringComparisons {
 		if prefix == notPrefix || !choice.IsNotType() {
 			choices[i] = prefix + " " + choice.String()
 		} else {

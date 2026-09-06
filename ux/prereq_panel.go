@@ -591,7 +591,7 @@ func (p *prereqPanel) addPowerSourceCriteriaPanel(parent *unison.Panel, pr *gurp
 			if p.ownerIsSpell && i > samePowerSourceIndex {
 				i--
 			}
-			pr.PowerSourceCriteria.Compare = criteria.AllStringComparisons[i]
+			pr.PowerSourceCriteria.Compare = criteria.StringComparisons[i]
 		}
 		adjustFieldBlank(criteriaField, pr.SamePowerSource || pr.PowerSourceCriteria.Compare == criteria.AnyText)
 		MarkModified(panel)
@@ -608,7 +608,7 @@ func (p *prereqPanel) powerSourceComparisonIndex(pr *gurps.SpellPrereq) int {
 	if p.ownerIsSpell && pr.SamePowerSource {
 		return samePowerSourceIndex
 	}
-	i := criteria.ExtractStringComparisonIndex(string(pr.PowerSourceCriteria.Compare))
+	i := int(pr.PowerSourceCriteria.Compare.EnsureValid())
 	if p.ownerIsSpell && i >= samePowerSourceIndex {
 		i++
 	}

@@ -646,7 +646,7 @@ func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) (main *unis
 func (p *featuresPanel) adjustCriteriaPopupAndField(f *gurps.WeaponBonus, criteriaPopup *unison.PopupMenu[string], criteriaField *StringField) {
 	blank := f.SelectionType == wsel.ThisWeapon
 	if !blank {
-		blank = criteria.AllStringComparisons[criteriaPopup.SelectedIndex()] == criteria.AnyText
+		blank = criteria.StringComparisons[criteriaPopup.SelectedIndex()] == criteria.AnyText
 	}
 	adjustPopupBlank(criteriaPopup, f.SelectionType == wsel.ThisWeapon)
 	adjustFieldBlank(criteriaField, blank)

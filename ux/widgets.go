@@ -630,9 +630,9 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 	for _, one := range criteria.PrefixedStringComparisonChoices(prefix, notPrefix) {
 		popup.AddItem(one)
 	}
-	popup.SelectIndex(criteria.ExtractStringComparisonIndex(string(strCriteria.Compare)))
+	popup.SelectIndex(int(strCriteria.Compare.EnsureValid()))
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		strCriteria.Compare = criteria.AllStringComparisons[p.SelectedIndex()]
+		strCriteria.Compare = criteria.StringComparisons[p.SelectedIndex()]
 		adjustFieldBlank(criteriaField, strCriteria.IsZero())
 		MarkModified(panel)
 	}
@@ -668,9 +668,9 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 	for _, one := range criteria.PrefixedNumericComparisonChoices(prefix) {
 		popup.AddItem(one)
 	}
-	popup.SelectIndex(criteria.ExtractNumericComparisonIndex(string(numCriteria.Compare)))
+	popup.SelectIndex(int(numCriteria.Compare.EnsureValid()))
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		numCriteria.Compare = criteria.AllNumericComparisons[p.SelectedIndex()]
+		numCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
 		adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
 		MarkModified(panel)
 	}
@@ -696,12 +696,12 @@ func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKe
 	for _, one := range criteria.PrefixedNumericComparisonChoices(i18n.Text("which")) {
 		popup.AddItem(one)
 	}
-	popup.SelectIndex(criteria.ExtractNumericComparisonIndex(string(weightCriteria.Compare)))
+	popup.SelectIndex(int(weightCriteria.Compare.EnsureValid()))
 	parent.AddChild(popup)
 	field = addWeightField(parent, targetMgr, targetKey, i18n.Text("Weight Qualifier"), "", entity,
 		&weightCriteria.Qualifier, false)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		weightCriteria.Compare = criteria.AllNumericComparisons[p.SelectedIndex()]
+		weightCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
 		adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
 		MarkModified(parent)
 	}

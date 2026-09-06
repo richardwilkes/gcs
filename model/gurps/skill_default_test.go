@@ -608,7 +608,7 @@ func TestSkillDefaultTagEquivalent(t *testing.T) {
 	leftover := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
 	leftover.Tags = textCriteria(criteria.AnyText, "Combat")
 	unknown := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
-	unknown.Tags = textCriteria("any", "Combat")
+	unknown.Tags = textCriteria(criteria.LastStringComparison+1, "Combat")
 	for _, other := range []*SkillDefault{leftover, unknown} {
 		c.True(plain.Equivalent(nil, other), "an \"is anything\" tag criteria of %q is the same as none at all",
 			other.Tags.Compare)

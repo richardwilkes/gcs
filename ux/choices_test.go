@@ -73,7 +73,7 @@ func TestChoicesFollowTheTypeSelection(t *testing.T) {
 	c.True(comparison.Enabled(), "putting the picker to use must offer a comparison")
 	c.False(field.AsPanel().Enabled(), "a freshly enabled picker has no comparison yet, so no qualifier to offer")
 
-	comparison.SelectIndex(criteria.ExtractNumericComparisonIndex(string(criteria.EqualsNumber)))
+	comparison.SelectIndex(int(criteria.EqualsNumber))
 	c.True(field.AsPanel().Enabled(), "choosing a comparison that takes a qualifier must offer one")
 
 	typePopup.Select(picker.NotApplicable)

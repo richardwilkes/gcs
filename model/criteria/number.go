@@ -61,6 +61,6 @@ func (n Number) Hash(h hash.Hash) {
 		xhash.Num8(h, uint8(255))
 		return
 	}
-	xhash.StringWithLen(h, n.Compare)
+	xhash.StringWithLen(h, n.Compare.Key())
 	xhash.Num64(h, n.Qualifier)
 }

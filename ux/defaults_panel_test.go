@@ -124,7 +124,7 @@ func TestDefaultsPanelSkillDefaultHasTagRow(t *testing.T) {
 
 	// Picking "is" must land on the default's own Tags criteria, proving the row is bound to it rather than to a
 	// throwaway.
-	index := slices.Index(criteria.AllStringComparisons, criteria.IsText)
+	index := slices.Index(criteria.StringComparisons, criteria.IsText)
 	c.True(index >= 0, "the \"is\" comparison must be present in the comparison list")
 	selectPopupIndex(popup, index)
 	c.Equal(criteria.IsText, def.Tags.Compare, "selecting \"is\" must set the default's tag comparison")
@@ -165,7 +165,7 @@ func TestDefaultsPanelUnknownComparisonBlanksQualifier(t *testing.T) {
 		blank   bool
 	}{
 		{compare: criteria.AnyText, blank: true},
-		{compare: "any", blank: true},
+		{compare: criteria.LastStringComparison + 1, blank: true},
 		{compare: criteria.IsText, blank: false},
 	} {
 		def := &gurps.SkillDefault{

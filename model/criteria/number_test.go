@@ -44,7 +44,7 @@ func TestNumberHashIgnoresQualifierWhenAny(t *testing.T) {
 	c.Equal(none, hashOf(criteria.Number{}))
 
 	// An invalid comparison is treated as "any" everywhere else, so it must hash as "any", too.
-	c.Equal(none, hashOf(number(criteria.NumericComparison("bogus"), fxp.FromInteger(10))))
+	c.Equal(none, hashOf(number(criteria.LastNumericComparison+1, fxp.FromInteger(10))))
 
 	// A real comparison still contributes both the comparison and its qualifier.
 	ten := hashOf(number(criteria.AtLeastNumber, fxp.FromInteger(10)))
