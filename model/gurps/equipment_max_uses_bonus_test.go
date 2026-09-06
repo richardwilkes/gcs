@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -177,14 +176,5 @@ func TestEquipmentMaxUsesBonusRoundTrip(t *testing.T) {
 	byName.NameCriteria.Qualifier = "Potion"
 	byName.TagsCriteria.Compare = criteria.IsText
 	byName.TagsCriteria.Qualifier = "Consumable"
-	original := Features{this, byName}
-
-	data, err := jio.Marshal(original)
-	c.NoError(err)
-	var restored Features
-	c.NoError(jio.Unmarshal(data, &restored))
-	c.Equal(len(original), len(restored), "feature count preserved")
-	again, err := jio.Marshal(restored)
-	c.NoError(err)
-	c.Equal(string(data), string(again), "re-marshaled JSON is stable across a round-trip")
+	checkFeaturesJSONRoundTrip(c, Features{this, byName})
 }

@@ -9,6 +9,25 @@
 
 package gurps
 
+import (
+	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/toolbox/v2/check"
+)
+
+// checkFeaturesJSONRoundTrip verifies that the features survive a JSON round-trip: they marshal, unmarshal back into
+// the same number of features, and re-marshal to byte-identical JSON.
+func checkFeaturesJSONRoundTrip(c check.Checker, original Features) {
+	c.Helper()
+	data, err := jio.Marshal(original)
+	c.NoError(err)
+	var restored Features
+	c.NoError(jio.Unmarshal(data, &restored))
+	c.Equal(len(original), len(restored), "feature count preserved")
+	again, err := jio.Marshal(restored)
+	c.NoError(err)
+	c.Equal(string(data), string(again), "re-marshaled JSON is stable across a round-trip")
+}
+
 // addTraitWithFeatures creates a non-container trait with the given name and features, appends it to the entity's
 // traits, and returns it. Callers that need more (levels, replacements, modifiers, weapons) set those on the result;
 // the entity is not recalculated here.
