@@ -16,17 +16,12 @@ import (
 	"regexp"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
-	"github.com/richardwilkes/unison/enums/mod"
 )
 
 var (
@@ -40,16 +35,8 @@ var (
 )
 
 type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
-	unison.Panel
-	owner                Rebuildable
+	editorShell
 	target               N
-	previousDockable     unison.Dockable
-	previousFocusKey     string
-	svg                  *unison.SVG
-	undoMgr              *unison.UndoManager
-	scroll               *unison.ScrollPanel
-	applyButton          *unison.Button
-	cancelButton         *unison.Button
 	nameablesButton      *unison.Button
 	meleeWeapons         *weaponsPanel
 	rangedWeapons        *weaponsPanel
@@ -60,7 +47,6 @@ type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	modificationCallback func()
 	preApplyCallback     func(D)
 	scale                int
-	promptForSave        bool
 }
 
 func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, target N, icon *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) *editor[N, D] {
@@ -79,22 +65,12 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	}
 	e := &editor[N, D]{
 		owner:            owner,
+		icon:             icon,
 		target:           target,
-		svg:              icon,
 		scale:            gurps.GlobalSettings().General.InitialEditorUIScale,
 		preApplyCallback: preApplyCallback,
 	}
 	e.Self = e
-
-	if defDC := DefaultDockContainer(); defDC != nil {
-		if e.previousDockable = defDC.CurrentDockable(); !xreflect.IsNil(e.previousDockable) {
-			if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
-				if focus.Ancestor[unison.Dockable]() == e.previousDockable {
-					e.previousFocusKey = focus.RefKey
-				}
-			}
-		}
-	}
 
 	reflect.ValueOf(&e.beforeData).Elem().Set(reflect.New(reflect.TypeOf(e.beforeData).Elem()))
 	e.beforeData.CopyFrom(target)
@@ -102,58 +78,11 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	reflect.ValueOf(&e.editorData).Elem().Set(reflect.New(reflect.TypeOf(e.editorData).Elem()))
 	e.editorData.CopyFrom(target)
 
-	e.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
-	e.SetLayout(&unison.FlexLayout{Columns: 1})
-
-	content := unison.NewPanel()
-	content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
-	content.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	content.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
-		switch {
-		case mods.OSMenuCommandDown() && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter):
-			if e.applyButton.Enabled() {
-				e.applyButton.Click()
-			}
-			return true
-		case noModifiersDown(mods) && keyCode == unison.KeyEscape:
-			if e.cancelButton.Enabled() {
-				e.cancelButton.Click()
-			}
-			return true
-		default:
-			return false
-		}
-	}
-
-	e.scroll = unison.NewScrollPanel()
-	e.scroll.SetContent(content, behavior.HintedFill, behavior.Fill)
-	e.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-
+	content := e.setUp(2)
 	e.AddChild(e.createToolbar(helpMD, initToolbar))
 	e.AddChild(e.scroll)
 	e.modificationCallback = initContent(e, content)
-	e.ClientData()[AssociatedIDKey] = target.ID()
-	e.promptForSave = true
-	e.scroll.Content().AsPanel().ValidateScrollRoot()
-	group := dgroup.Editors
-	p := owner.AsPanel()
-	for p != nil {
-		if _, exists := p.ClientData()[AssociatedIDKey]; exists {
-			group = dgroup.SubEditors
-			break
-		}
-		p = p.Parent()
-	}
-	PlaceInDock(e, group, false)
+	e.placeInDock(target.ID())
 	content.RequestFocus()
 	return e
 }
@@ -163,24 +92,13 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 	toolbar.AddChild(NewDefaultInfoPop())
 
 	if helpMD != "" {
-		helpButton := unison.NewSVGButton(svg.Help)
-		helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-		helpButton.ClickCallback = func() { HandleLink(nil, helpMD) }
-		toolbar.AddChild(helpButton)
+		addHelpButton(toolbar, helpMD)
 	}
 
 	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
 		func() int { return e.scale }, func(scale int) { e.scale = scale }, false, e.scroll)
 
-	e.applyButton, e.cancelButton = newApplyCancelButtons(toolbar, true,
-		func() bool {
-			e.apply()
-			return true
-		},
-		func() {
-			e.promptForSave = false
-			e.AttemptClose()
-		})
+	e.addApplyAndCancelButtons(toolbar, e.apply)
 
 	target := any(e.target)
 	if _, ok := target.(*gurps.Weapon); !ok {
@@ -225,23 +143,8 @@ func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string
 	return tmpNode, m
 }
 
-func (e *editor[N, D]) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  e.svg,
-		Size: suggestedSize,
-	}
-}
-
 func (e *editor[N, D]) Title() string {
 	return fmt.Sprintf(i18n.Text("%s Editor for %s"), e.target.Kind(), e.owner.String())
-}
-
-func (e *editor[N, D]) String() string {
-	return e.Title()
-}
-
-func (e *editor[N, D]) Tooltip() string {
-	return ""
 }
 
 func (e *editor[N, D]) Owner() Rebuildable {
@@ -273,9 +176,7 @@ func (e *editor[N, D]) isModified() bool {
 }
 
 func (e *editor[N, D]) Modified() bool {
-	modified := e.isModified()
-	e.applyButton.SetEnabled(modified)
-	e.cancelButton.SetEnabled(modified)
+	modified := e.enableApplyAndCancel(e.isModified())
 	if e.nameablesButton != nil {
 		e.nameablesButton.SetEnabled(e.hasNameableKeys())
 	}
@@ -328,70 +229,16 @@ func (e *editor[N, D]) Rebuild(_ bool) {
 	e.MarkForLayoutRecursively()
 }
 
-func (e *editor[N, D]) CloseWithGroup(other unison.Paneler) bool {
-	return e.owner != nil && e.owner == other
-}
-
-func (e *editor[N, D]) MayAttemptClose() bool {
-	return MayAttemptCloseOfGroup(e)
-}
-
 func (e *editor[N, D]) AttemptClose() bool {
-	if !CloseGroup(e) {
+	if !CloseGroup(e) || !e.confirmClose(e.isModified, e.apply) {
 		return false
 	}
-	if e.promptForSave && e.isModified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			e.apply()
-		default:
-			return false
-		}
-	}
-	if p := showPreviousDockable(e.previousDockable, e.previousFocusKey); p != nil {
-		restoreFocus(p)
+	if p := e.returnToPrevious(); p != nil {
 		if table, ok := p.Self.(*unison.Table[*Node[N]]); ok {
 			revealRowForData(table, e.target)
 		}
 	}
 	return AttemptCloseForDockable(e)
-}
-
-// showPreviousDockable makes the dockable that was current when an editor was opened current again and returns the
-// panel within it, identified by its RefKey, that held the keyboard focus at that time. It returns nil when there is no
-// such dockable or panel.
-func showPreviousDockable(previous unison.Dockable, focusKey string) *unison.Panel {
-	if xreflect.IsNil(previous) {
-		return nil
-	}
-	dc := unison.Ancestor[*unison.DockContainer](previous)
-	if dc == nil {
-		return nil
-	}
-	dc.SetCurrentDockable(previous)
-	if focusKey == "" {
-		return nil
-	}
-	return previous.AsPanel().FindRefKey(focusKey)
-}
-
-// focusWithoutScroller is implemented by panels, such as tables, that can take the keyboard focus without performing
-// their default focus-gained scrolling.
-type focusWithoutScroller interface {
-	RequestFocusWithoutScroll()
-}
-
-// restoreFocus gives the keyboard focus back to a panel that held it before an editor was opened. A table's default
-// focus handling scrolls the entire table into view, which moves the surrounding content even when the row the user was
-// working with is still visible, so tables are focused without that. Callers that know which row matters can follow up
-// with revealRowForData, which only scrolls if that row is actually out of view.
-func restoreFocus(p *unison.Panel) {
-	if f, ok := p.Self.(focusWithoutScroller); ok {
-		f.RequestFocusWithoutScroll()
-		return
-	}
-	p.RequestFocus()
 }
 
 // revealRowForData scrolls the table's row holding data into view, but only if the table currently displays such a row
@@ -412,10 +259,6 @@ func rowIndexForData[T gurps.Node[T]](table *unison.Table[*Node[T]], data T) int
 		}
 	}
 	return -1
-}
-
-func (e *editor[N, D]) UndoManager() *unison.UndoManager {
-	return e.undoMgr
 }
 
 func (e *editor[N, D]) apply() {

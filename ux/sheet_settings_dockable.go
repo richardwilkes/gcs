@@ -111,10 +111,7 @@ func sheetSettingsTabTitle(owner EntityPanel) string {
 }
 
 func (d *sheetSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
-	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Sheet%20Settings") }
-	toolbar.AddChild(helpButton)
+	addHelpButton(toolbar, "md:User%20Guide/Sheet%20Settings")
 }
 
 func (d *sheetSettingsDockable) CloseWithGroup(other unison.Paneler) bool {

@@ -13,7 +13,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -103,10 +102,7 @@ func (d *undoableSettingsDockable[T]) willClose() bool {
 func (d *undoableSettingsDockable[T]) addToStartToolbar(toolbar *unison.Panel) {
 	d.toolbar = toolbar
 
-	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, d.spec.helpLink) }
-	toolbar.AddChild(helpButton)
+	addHelpButton(toolbar, d.spec.helpLink)
 
 	d.applyButton, d.cancelButton = newApplyCancelButtons(toolbar, false,
 		func() bool {

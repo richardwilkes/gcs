@@ -218,10 +218,7 @@ func (t *Template) createToolbar() {
 	t.AddChild(t.toolbar)
 	t.toolbar.AddChild(NewDefaultInfoPop())
 
-	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Character%20Templates") }
-	t.toolbar.AddChild(helpButton)
+	addHelpButton(t.toolbar, "md:User%20Guide/Character%20Templates")
 
 	addUIScaleField(t.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
 		func() int { return t.scale }, func(scale int) { t.scale = scale }, true, t.scroll)

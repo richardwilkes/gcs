@@ -16,17 +16,11 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
-	"github.com/richardwilkes/unison/enums/mod"
 )
 
 var (
@@ -39,18 +33,11 @@ var (
 )
 
 type pointsEditor struct {
-	unison.Panel
-	owner            Rebuildable
-	entity           *gurps.Entity
-	previousDockable unison.Dockable
-	previousFocusKey string
-	undoMgr          *unison.UndoManager
-	applyButton      *unison.Button
-	cancelButton     *unison.Button
-	content          *unison.Panel
-	before           []*gurps.PointsRecord
-	current          []*gurps.PointsRecord
-	promptForSave    bool
+	editorShell
+	entity  *gurps.Entity
+	content *unison.Panel
+	before  []*gurps.PointsRecord
+	current []*gurps.PointsRecord
 }
 
 // newPointsEditor returns an editor holding the two copies of the entity's points record list, without building any of
@@ -59,6 +46,7 @@ type pointsEditor struct {
 func newPointsEditor(owner Rebuildable, entity *gurps.Entity) *pointsEditor {
 	e := &pointsEditor{
 		owner:   owner,
+		icon:    svg.Edit,
 		entity:  entity,
 		before:  gurps.ClonePointsRecordList(entity.PointsRecord),
 		current: gurps.ClonePointsRecordList(entity.PointsRecord),
@@ -79,57 +67,11 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 		return
 	}
 	e := newPointsEditor(owner, entity)
-
-	if defDC := DefaultDockContainer(); defDC != nil {
-		if e.previousDockable = defDC.CurrentDockable(); !xreflect.IsNil(e.previousDockable) {
-			if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
-				if focus.Ancestor[unison.Dockable]() == e.previousDockable {
-					e.previousFocusKey = focus.RefKey
-				}
-			}
-		}
-	}
-
-	e.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
-	e.SetLayout(&unison.FlexLayout{Columns: 1})
+	e.content = e.setUp(5)
 	e.AddChild(e.createToolbar())
-	e.content = unison.NewPanel()
-	e.content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
-	e.content.SetLayout(&unison.FlexLayout{
-		Columns:  5,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	e.content.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
-		switch {
-		case mods.OSMenuCommandDown() && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter):
-			if e.applyButton.Enabled() {
-				e.applyButton.Click()
-			}
-			return true
-		case noModifiersDown(mods) && keyCode == unison.KeyEscape:
-			if e.cancelButton.Enabled() {
-				e.cancelButton.Click()
-			}
-			return true
-		default:
-			return false
-		}
-	}
+	e.AddChild(e.scroll)
 	e.initContent()
-	scroller := unison.NewScrollPanel()
-	scroller.SetContent(e.content, behavior.HintedFill, behavior.Fill)
-	scroller.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	e.AddChild(scroller)
-	e.ClientData()[AssociatedIDKey] = e.entity.ID
-	e.promptForSave = true
-	scroller.Content().AsPanel().ValidateScrollRoot()
-	PlaceInDock(e, dgroup.Editors, false)
+	e.placeInDock(entity.ID)
 	if children := e.content.Children(); len(children) != 0 {
 		children[3].RequestFocus()
 	}
@@ -137,22 +79,8 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 
 func (e *pointsEditor) createToolbar() unison.Paneler {
 	toolbar := newToolbar()
-
-	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Character%20Points") }
-	toolbar.AddChild(helpButton)
-
-	e.applyButton, e.cancelButton = newApplyCancelButtons(toolbar, true,
-		func() bool {
-			e.apply()
-			return true
-		},
-		func() {
-			e.promptForSave = false
-			e.AttemptClose()
-		})
-
+	addHelpButton(toolbar, "md:User%20Guide/Character%20Points")
+	e.addApplyAndCancelButtons(toolbar, e.apply)
 	toolbar.AddChild(NewToolbarSeparator())
 
 	addButton := unison.NewSVGButton(unison.CircledAddSVG)
@@ -296,30 +224,12 @@ func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 	}
 }
 
-func (e *pointsEditor) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  svg.Edit,
-		Size: suggestedSize,
-	}
-}
-
 func (e *pointsEditor) Title() string {
 	return fmt.Sprintf(i18n.Text("Points Record for %s"), e.owner.String())
 }
 
-func (e *pointsEditor) String() string {
-	return e.Title()
-}
-
-func (e *pointsEditor) Tooltip() string {
-	return ""
-}
-
 func (e *pointsEditor) Modified() bool {
-	modified := e.isModified()
-	e.applyButton.SetEnabled(modified)
-	e.cancelButton.SetEnabled(modified)
-	return modified
+	return e.enableApplyAndCancel(e.isModified())
 }
 
 func (e *pointsEditor) isModified() bool {
@@ -338,39 +248,16 @@ func (e *pointsEditor) Rebuild(_ bool) {
 	e.MarkForRedraw()
 }
 
-func (e *pointsEditor) CloseWithGroup(other unison.Paneler) bool {
-	return e.owner != nil && e.owner == other
-}
-
-func (e *pointsEditor) MayAttemptClose() bool {
-	return MayAttemptCloseOfGroup(e)
-}
-
 func (e *pointsEditor) AttemptClose() bool {
-	if !CloseGroup(e) {
+	if !CloseGroup(e) || !e.confirmClose(e.isModified, e.apply) {
 		return false
-	}
-	if e.promptForSave && e.isModified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			e.apply()
-		default:
-			return false
-		}
 	}
 	if dc := e.Ancestor[*unison.DockContainer](); dc != nil {
 		dc.Close(e)
-		if p := showPreviousDockable(e.previousDockable, e.previousFocusKey); p != nil {
-			restoreFocus(p)
-		}
+		e.returnToPrevious()
 		return true
 	}
 	return e.Window().AttemptClose()
-}
-
-func (e *pointsEditor) UndoManager() *unison.UndoManager {
-	return e.undoMgr
 }
 
 func (e *pointsEditor) apply() {

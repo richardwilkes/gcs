@@ -11,7 +11,9 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -37,6 +39,15 @@ func finishToolbarLayout(toolbar *unison.Panel) {
 		Columns:  len(toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
 	})
+}
+
+// addHelpButton adds the standard Help button, which opens the given link (see HandleLink), to the toolbar.
+func addHelpButton(toolbar *unison.Panel, link string) *unison.Button {
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, link) }
+	toolbar.AddChild(helpButton)
+	return helpButton
 }
 
 // addUIScaleField adds the standard UI scale field, bounded by gurps.InitialUIScaleMin and gurps.InitialUIScaleMax,
