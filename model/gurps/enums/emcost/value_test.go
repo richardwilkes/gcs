@@ -44,7 +44,7 @@ func TestValueExtractionMatchesClassification(t *testing.T) {
 		{"+2 CF", emcost.CostFactor, "+2 CF"},
 		{"+2 cf", emcost.CostFactor, "+2 CF"},
 	} {
-		v := emcost.Addition.FromString(one.input)
+		v := emcost.ValueFromString(one.input)
 		c.Equal(one.expected, v, "test %d: %q", i, one.input)
 		c.Equal(one.formatted, v.Format(v.ExtractValue(one.input)), "test %d: %q", i, one.input)
 	}

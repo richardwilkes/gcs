@@ -40,7 +40,7 @@ func ParseWeaponRoFMode(s string) WeaponRoFMode {
 	s = strings.ReplaceAll(s, "!", "")
 	wr.HighCyclicControlledBursts = strings.Contains(s, "#")
 	s = strings.ReplaceAll(s, "#", "")
-	s = strings.ReplaceAll(s, "×", "x")
+	s = strings.ReplaceAll(s, fxp.MultiplicationSign, "x")
 	if strings.HasPrefix(s, "x") {
 		s = "1" + s
 	}

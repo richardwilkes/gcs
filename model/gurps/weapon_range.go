@@ -38,7 +38,7 @@ func ParseWeaponRange(s string) WeaponRange {
 	var wr WeaponRange
 	s = strings.ToLower(s)
 	s = strings.ReplaceAll(s, " ", "")
-	s = strings.ReplaceAll(s, "×", "x")
+	s = strings.ReplaceAll(s, fxp.MultiplicationSign, "x")
 	if !strings.Contains(s, "sight") &&
 		!strings.Contains(s, "spec") &&
 		!strings.Contains(s, "skill") &&

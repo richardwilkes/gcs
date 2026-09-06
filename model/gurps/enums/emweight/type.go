@@ -29,25 +29,24 @@ func (enum Type) Permitted() []Value {
 	return []Value{Addition, PercentageMultiplier, Multiplier}
 }
 
-// DetermineModifierWeightValueTypeFromString examines a string to determine what type it is, but restricts the result
-// to those allowed for this Type.
-func (enum Type) DetermineModifierWeightValueTypeFromString(s string) Value {
-	mvt := ValueFromString(s)
+// FromString examines a string to determine what Value it is, but restricts the result to those allowed for this
+// Type.
+func (enum Type) FromString(s string) Value {
 	permitted := enum.Permitted()
-	if slices.Contains(permitted, mvt) {
-		return mvt
+	if v := ValueFromString(s); slices.Contains(permitted, v) {
+		return v
 	}
 	return permitted[0]
 }
 
 // ExtractFraction from the string.
 func (enum Type) ExtractFraction(s string) fxp.Fraction {
-	return enum.DetermineModifierWeightValueTypeFromString(s).ExtractFraction(s)
+	return enum.FromString(s).ExtractFraction(s)
 }
 
 // Format returns a formatted version of the value.
 func (enum Type) Format(s string, defUnits fxp.WeightUnit) string {
-	t := enum.DetermineModifierWeightValueTypeFromString(s)
+	t := enum.FromString(s)
 	result := t.Format(t.ExtractFraction(s))
 	if t == Addition {
 		result += " " + fxp.TrailingWeightUnitFromString(s, defUnits).String()

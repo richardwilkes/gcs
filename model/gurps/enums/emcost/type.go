@@ -32,10 +32,9 @@ func (enum Type) Permitted() []Value {
 // FromString examines a string to determine what Value it is, but restricts the result to those allowed for this
 // Type.
 func (enum Type) FromString(s string) Value {
-	cvt := Addition.FromString(s)
 	permitted := enum.Permitted()
-	if slices.Contains(permitted, cvt) {
-		return cvt
+	if v := ValueFromString(s); slices.Contains(permitted, v) {
+		return v
 	}
 	return permitted[0]
 }

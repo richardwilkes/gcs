@@ -645,7 +645,7 @@ func WeightAdjustedForModifiers(equipment *Equipment, weight fxp.Weight, modifie
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.equipment = equipment
 		if mod.WeightType == emweight.Original {
-			t := emweight.Original.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
+			t := emweight.Original.FromString(mod.WeightAmount)
 			f := t.ExtractFraction(mod.WeightAmount)
 			f.Normalize()
 			f.Numerator = f.Numerator.Mul(mod.WeightMultiplier())
@@ -679,7 +679,7 @@ func processMultiplyAddWeightStep(equipment *Equipment, weightType emweight.Type
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.equipment = equipment
 		if mod.WeightType == weightType {
-			t := weightType.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
+			t := weightType.FromString(mod.WeightAmount)
 			f := t.ExtractFraction(mod.WeightAmount)
 			f.Normalize()
 			f.Numerator = f.Numerator.Mul(mod.WeightMultiplier())

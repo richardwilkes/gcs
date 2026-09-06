@@ -9,29 +9,15 @@
 
 package maxusesmod
 
-import (
-	"strings"
-
-	"github.com/richardwilkes/gcs/v5/model/fxp"
-)
-
-const (
-	// multiplicationSign is the Unicode multiplication sign, which users may type in place of the ASCII "x".
-	multiplicationSign = "×"
-	// multiplierLeaders holds every rune that may lead a multiplier value. FromString lowercases before classifying
-	// and also accepts the Unicode multiplication sign, so extraction must strip all of these forms.
-	multiplierLeaders = "xX" + multiplicationSign
-)
+import "github.com/richardwilkes/gcs/v5/model/fxp"
 
 // FromString examines a string to determine which Type of adjustment it represents. A trailing "%" indicates a
 // percentage, a leading or trailing "x" (or "×") indicates a multiplier, and anything else is a plain addition.
 func FromString(s string) Type {
-	s = strings.ToLower(strings.TrimSpace(s))
 	switch {
-	case strings.HasSuffix(s, Percentage.Key()):
+	case fxp.HasPercentSuffix(s):
 		return Percentage
-	case strings.HasPrefix(s, Multiplier.Key()) || strings.HasSuffix(s, Multiplier.Key()) ||
-		strings.HasPrefix(s, multiplicationSign) || strings.HasSuffix(s, multiplicationSign):
+	case fxp.HasMultiplierMarker(s):
 		return Multiplier
 	default:
 		return Addition
@@ -41,11 +27,7 @@ func FromString(s string) Type {
 // ExtractValue extracts the numeric value from the string, interpreting it according to this Type. A non-positive
 // multiplier is treated as 1.
 func (enum Type) ExtractValue(s string) fxp.Int {
-	v, _ := fxp.Extract(strings.TrimLeft(strings.TrimSpace(s), multiplierLeaders))
-	if enum.EnsureValid() == Multiplier && v <= 0 {
-		v = fxp.One
-	}
-	return v
+	return fxp.ExtractModifierValue(s, enum.EnsureValid() == Multiplier)
 }
 
 // Format returns a normalized string representation of the given value for this Type.
