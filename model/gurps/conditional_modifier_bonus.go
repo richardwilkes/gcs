@@ -14,30 +14,26 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-var _ Bonus = &ConditionalModifierBonus{}
+var _ situationKeyed = &ConditionalModifierBonus{}
 
 // ConditionalModifierBonus holds the data for a conditional modifier bonus.
 type ConditionalModifierBonus struct {
 	Type feature.Type `json:"type"`
 	FeatureSwitch
-	Situation string `json:"situation,omitzero"`
-	LeveledAmount
-	BonusOwner `json:"-"`
+	situationBonus
 }
 
 // NewConditionalModifierBonus creates a new ConditionalModifierBonus.
 func NewConditionalModifierBonus() *ConditionalModifierBonus {
-	return &ConditionalModifierBonus{
-		Type:      feature.ConditionalModifier,
-		Situation: i18n.Text("triggering condition"),
-		Amount:    fxp.One,
-	}
+	var c ConditionalModifierBonus
+	c.Type = feature.ConditionalModifier
+	c.Situation = i18n.Text("triggering condition")
+	c.Amount = fxp.One
+	return &c
 }
 
 // FeatureType implements Feature.
@@ -51,21 +47,6 @@ func (c *ConditionalModifierBonus) Clone() Feature {
 	return &other
 }
 
-// FillWithNameableKeys implements Feature.
-func (c *ConditionalModifierBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(m, existing, c.Situation)
-}
-
-// SetLeveledOwner implements Bonus.
-func (c *ConditionalModifierBonus) SetLeveledOwner(owner LeveledOwner) {
-	c.LeveledOwner = owner
-}
-
-// AddToTooltip implements Bonus.
-func (c *ConditionalModifierBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
-	c.basicAddToTooltip(&c.LeveledAmount, buffer)
-}
-
 // Hash writes this object's contents into the hasher.
 func (c *ConditionalModifierBonus) Hash(h hash.Hash) {
 	if c == nil {
@@ -74,6 +55,5 @@ func (c *ConditionalModifierBonus) Hash(h hash.Hash) {
 	}
 	xhash.Num8(h, c.Type)
 	xhash.Bool(h, c.Switchable)
-	xhash.StringWithLen(h, c.Situation)
-	c.LeveledAmount.Hash(h)
+	c.hashSituation(h)
 }

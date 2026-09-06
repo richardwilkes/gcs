@@ -39,7 +39,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -1583,63 +1582,24 @@ func (e *Entity) gatherConditionalModifiers(
 
 // Reactions returns the current set of reactions.
 func (e *Entity) Reactions() []*ConditionalModifier {
-	return e.gatherConditionalModifiers(e.reactionsFromFeatureList,
+	return e.gatherConditionalModifiers(situationModifiersFromFeatureList[*ReactionBonus],
 		func(source string, t *Trait, m map[string]*ConditionalModifier) {
 			resolvedSelfControl := t.ResolvedSelfControl(nil)
 			if resolvedSelfControl != selfctrl.None && t.ResolvedSelfControlAdjustment(nil) == selfctrl.ReactionPenalty {
-				amt := fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(resolvedSelfControl))
-				situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String())
-				if r, exists := m[situation]; exists {
-					r.Add(source, amt)
-				} else {
-					m[situation] = NewConditionalModifier(source, situation, amt)
-				}
+				addSituationModifier(m, source, fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String()),
+					fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(resolvedSelfControl)))
 			}
 		})
-}
-
-func (e *Entity) reactionsFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {
-	for _, f := range features {
-		bonus, ok := f.(*ReactionBonus)
-		if !ok {
-			continue
-		}
-		amt := bonus.AdjustedAmount()
-		replacements := bonusReplacements(bonus)
-		situation := nameable.Apply(bonus.Situation, replacements)
-		if r, exists := m[situation]; exists {
-			r.Add(source, amt)
-		} else {
-			m[situation] = NewConditionalModifier(source, situation, amt)
-		}
-	}
 }
 
 // ConditionalModifiers returns the current set of conditional modifiers. If the sheet settings have
 // HideZeroValueConditionalMods enabled, modifiers whose amounts total to zero are omitted.
 func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
-	list := e.gatherConditionalModifiers(e.conditionalModifiersFromFeatureList, nil)
+	list := e.gatherConditionalModifiers(situationModifiersFromFeatureList[*ConditionalModifierBonus], nil)
 	if SheetSettingsFor(e).HideZeroValueConditionalMods {
 		list = slices.DeleteFunc(list, func(c *ConditionalModifier) bool { return c.Total() == 0 })
 	}
 	return list
-}
-
-func (e *Entity) conditionalModifiersFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {
-	for _, f := range features {
-		bonus, ok := f.(*ConditionalModifierBonus)
-		if !ok {
-			continue
-		}
-		amt := bonus.AdjustedAmount()
-		replacements := bonusReplacements(bonus)
-		situation := nameable.Apply(bonus.Situation, replacements)
-		if r, exists := m[situation]; exists {
-			r.Add(source, amt)
-		} else {
-			m[situation] = NewConditionalModifier(source, situation, amt)
-		}
-	}
 }
 
 // TraitList implements ListProvider

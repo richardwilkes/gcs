@@ -14,30 +14,26 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-var _ Bonus = &ReactionBonus{}
+var _ situationKeyed = &ReactionBonus{}
 
 // ReactionBonus holds a modifier due to a reaction.
 type ReactionBonus struct {
 	Type feature.Type `json:"type"`
 	FeatureSwitch
-	Situation string `json:"situation,omitzero"`
-	LeveledAmount
-	BonusOwner `json:"-"`
+	situationBonus
 }
 
 // NewReactionBonus creates a new ReactionBonus.
 func NewReactionBonus() *ReactionBonus {
-	return &ReactionBonus{
-		Type:      feature.ReactionBonus,
-		Situation: i18n.Text("from others"),
-		Amount:    fxp.One,
-	}
+	var r ReactionBonus
+	r.Type = feature.ReactionBonus
+	r.Situation = i18n.Text("from others")
+	r.Amount = fxp.One
+	return &r
 }
 
 // FeatureType implements Feature.
@@ -51,21 +47,6 @@ func (r *ReactionBonus) Clone() Feature {
 	return &other
 }
 
-// FillWithNameableKeys implements Feature.
-func (r *ReactionBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(m, existing, r.Situation)
-}
-
-// SetLeveledOwner implements Bonus.
-func (r *ReactionBonus) SetLeveledOwner(owner LeveledOwner) {
-	r.LeveledOwner = owner
-}
-
-// AddToTooltip implements Bonus.
-func (r *ReactionBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
-	r.basicAddToTooltip(&r.LeveledAmount, buffer)
-}
-
 // Hash writes this object's contents into the hasher.
 func (r *ReactionBonus) Hash(h hash.Hash) {
 	if r == nil {
@@ -74,6 +55,5 @@ func (r *ReactionBonus) Hash(h hash.Hash) {
 	}
 	xhash.Num8(h, r.Type)
 	xhash.Bool(h, r.Switchable)
-	xhash.StringWithLen(h, r.Situation)
-	r.LeveledAmount.Hash(h)
+	r.hashSituation(h)
 }
