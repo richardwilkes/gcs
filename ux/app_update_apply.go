@@ -18,12 +18,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/updater"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 // stageTimeout bounds the whole prepare step. It is generous because the download is tens of megabytes and some
@@ -122,66 +120,27 @@ func InitiateAppUpdate(plan *updater.Plan) {
 // stageAppUpdate runs the download and verification behind a progress window, returning the prepared update. It reports
 // its own failures, so the caller only needs to know whether to carry on.
 func stageAppUpdate(plan *updater.Plan) (*updater.Staged, bool) {
-	wnd, err := unison.NewWindow(i18n.Text("Updating…"), unison.FloatingWindowOption(),
-		unison.NotResizableWindowOption(), unison.UndecoratedWindowOption(), unison.TransientWindowOption())
+	ctx, cancel := context.WithTimeout(context.Background(), stageTimeout)
+	defer cancel()
+	progress := unison.NewProgressBar(progressResolution)
+	wnd, label, err := newProgressWindow(i18n.Text("Updating…"), phaseTitle(updater.PhaseDownloading, plan.ToVersion),
+		progress, cancel)
 	if err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to prepare the update"), err)
 		return nil, false
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), stageTimeout)
-	defer cancel()
-
-	label := unison.NewLabel()
-	label.SetTitle(phaseTitle(updater.PhaseDownloading, plan.ToVersion))
-	progress := unison.NewProgressBar(progressResolution)
-	progress.SetLayoutData(&unison.FlexLayoutData{
-		MinSize: geom.Size{Width: 500},
-		HAlign:  align.Fill,
-		HGrab:   true,
-	})
-	cancelButton := unison.NewButton()
-	cancelButton.SetTitle(i18n.Text("Cancel"))
-	cancelButton.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
-	cancelButton.ClickCallback = func() {
-		cancelButton.SetEnabled(false)
-		label.SetTitle(i18n.Text("Canceling…"))
-		cancel()
-	}
-
-	content := unison.NewPanel()
-	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.NewUniformInsets(2*unison.StdHSpacing))))
-	content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		VSpacing: unison.StdVSpacing,
-	})
-	content.AddChild(label)
-	content.AddChild(progress)
-	content.AddChild(cancelButton)
-	wnd.SetContent(content)
-	wnd.Pack()
-
-	frame := windowPlacementFrame()
-	wndFrame := wnd.FrameRect()
-	frame.Y += (frame.Height - wndFrame.Height) / 3
-	frame.Height = wndFrame.Height
-	frame.X += (frame.Width - wndFrame.Width) / 2
-	frame.Width = wndFrame.Width
-	frame = frame.Align()
-	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
-	wnd.ToFront()
-
 	// The channel must be buffered, and the result read only after RunModal has returned. The background goroutine
 	// sends before it asks for the modal loop to stop, and the UI thread is inside RunModal until then, so nothing is
 	// there to receive at the moment of the send. Reading a shared variable instead would let a failed preparation be
-	// observed as a success. This mirrors the reasoning spelled out in library_update.go.
+	// observed as a success. See runInBackground.
 	resultChan := make(chan stageResult, 1)
-	go runAppUpdateStage(resultChan,
-		func() (*updater.Staged, error) {
-			return plan.Stage(ctx, &http.Client{}, throttledProgress(progress), func(phase updater.Phase) {
+	runInBackground(resultChan,
+		func() stageResult {
+			staged, stageErr := plan.Stage(ctx, &http.Client{}, throttledProgress(progress), func(phase updater.Phase) {
 				unison.InvokeTask(func() { label.SetTitle(phaseTitle(phase, plan.ToVersion)) })
 			})
+			return stageResult{staged: staged, err: stageErr}
 		},
 		func() { unison.InvokeTask(func() { wnd.StopModal(unison.ModalResponseOK) }) })
 	wnd.RunModal()
@@ -202,19 +161,6 @@ func stageAppUpdate(plan *updater.Plan) (*updater.Staged, bool) {
 type stageResult struct {
 	staged *updater.Staged
 	err    error
-}
-
-// runAppUpdateStage performs the preparation on a background goroutine while the UI thread waits inside RunModal, hands
-// the result over through resultChan, and only then calls finish, which is what eventually stops the modal loop. The
-// ordering is what makes the hand-off safe: the caller receives from resultChan only after RunModal has returned, so
-// the send is guaranteed to have completed first.
-func runAppUpdateStage(resultChan chan<- stageResult, stage func() (*updater.Staged, error), finish func()) {
-	var result stageResult
-	defer func() {
-		resultChan <- result
-		finish()
-	}()
-	result.staged, result.err = stage()
 }
 
 // throttledProgress returns a progress reporter that only posts to the UI thread when the bar would actually move.

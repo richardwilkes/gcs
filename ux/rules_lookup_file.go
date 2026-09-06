@@ -20,14 +20,12 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhttp"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 type rule struct {
@@ -38,26 +36,12 @@ type rule struct {
 	Link     string
 }
 
-// rulesLookupResult is the outcome of the download, handed from the download goroutine to the UI thread as a unit.
+// rulesLookupResult is the outcome of the download, handed from the download goroutine to the UI thread as a unit. A
+// failed download must reach the UI thread as a failure (see runInBackground): observing it as a success would silently
+// write an empty notes file rather than reporting the error.
 type rulesLookupResult struct {
 	rules map[string][]*rule
 	err   error
-}
-
-// runRulesLookupDownload performs the download on a background goroutine while the UI thread waits inside RunModal(),
-// hands the result to that thread through resultChan and only then calls finish, which is what eventually stops the
-// modal loop. resultChan must be buffered so that the send can never block, since nothing can receive from it until
-// the modal loop has been stopped. The ordering is what makes the hand-off safe: downloadRulesLookupFile receives from
-// resultChan only after RunModal() has returned, so the send is guaranteed to have completed first. Letting the
-// goroutine write variables shared with the UI thread instead would allow a failed download to be observed as a
-// success, silently writing an empty notes file rather than reporting the error.
-func runRulesLookupDownload(resultChan chan<- rulesLookupResult, download func() (map[string][]*rule, error), finish func()) {
-	var result rulesLookupResult
-	defer func() {
-		resultChan <- result
-		finish()
-	}()
-	result.rules, result.err = download()
 }
 
 // retrieveRulesLookupData downloads the GURPS Rules Lookup data and returns its rules grouped by book.
@@ -91,44 +75,17 @@ func parseRulesLookupData(data []byte) (map[string][]*rule, error) {
 
 func downloadRulesLookupFile() {
 	unableMsg := i18n.Text("Unable to download the GURPS Rules Lookup data.")
-	frame := windowPlacementFrame()
-	wnd, err := unison.NewWindow(i18n.Text("Downloading…"), unison.FloatingWindowOption(),
-		unison.NotResizableWindowOption(), unison.UndecoratedWindowOption(), unison.TransientWindowOption())
+	wnd, _, err := newProgressWindow(i18n.Text("Downloading…"), i18n.Text("Downloading the GURPS Rules Lookup data…"),
+		unison.NewProgressBar(0), nil)
 	if err != nil {
 		Workspace.ErrorHandler(unableMsg, err)
 		return
 	}
-	content := unison.NewPanel()
-	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.NewUniformInsets(2*unison.StdHSpacing))))
-	content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		VSpacing: unison.StdVSpacing,
-	})
-	label := unison.NewLabel()
-	label.SetTitle(i18n.Text("Downloading the GURPS Rules Lookup data…"))
-	content.AddChild(label)
-	progress := unison.NewProgressBar(0)
-	progress.SetLayoutData(&unison.FlexLayoutData{
-		MinSize: geom.Size{Width: 500},
-		HAlign:  align.Fill,
-		HGrab:   true,
-	})
-	content.AddChild(progress)
-	wnd.SetContent(content)
-	wnd.Pack()
-	wndFrame := wnd.FrameRect()
-	frame.Y += (frame.Height - wndFrame.Height) / 3
-	frame.Height = wndFrame.Height
-	frame.X += (frame.Width - wndFrame.Width) / 2
-	frame.Width = wndFrame.Width
-	frame = frame.Align()
-	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
-	wnd.ToFront()
 	resultChan := make(chan rulesLookupResult, 1)
-	go runRulesLookupDownload(resultChan, retrieveRulesLookupData, func() {
-		unison.InvokeTask(func() { wnd.StopModal(unison.ModalResponseOK) })
-	})
+	runInBackground(resultChan, func() rulesLookupResult {
+		rules, retrieveErr := retrieveRulesLookupData()
+		return rulesLookupResult{rules: rules, err: retrieveErr}
+	}, func() { unison.InvokeTask(func() { wnd.StopModal(unison.ModalResponseOK) }) })
 	wnd.RunModal()
 	result := <-resultChan
 	if result.err != nil {

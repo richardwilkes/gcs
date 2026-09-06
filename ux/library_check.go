@@ -57,7 +57,7 @@ func checkLibraryReleases(libs []*gurps.Library) bool {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), libraryCheckTimeout)
 	defer cancel()
-	wnd, _, err := newLibraryProgressWindow(i18n.Text("Checking…"), libraryCheckTitle(pending),
+	wnd, _, err := newProgressWindow(i18n.Text("Checking…"), libraryCheckTitle(pending),
 		unison.NewProgressBar(0), cancel)
 	if err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to check for library updates"), err)
