@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -110,4 +112,52 @@ func TestNumericFieldValidationPreservesTooltip(t *testing.T) {
 		f.SetText("-1")
 		c.True(tooltip == f.Tooltip, "the exception value is valid, so the creator's tooltip is restored")
 	})
+}
+
+// TestFixedPointPrototypes verifies the values a fixed-point field is sized to fit, which the decimal, length and
+// weight fields now share: explicit bounds are widened to fill every decimal place of their integer part, while the
+// unbounded extremes are stood in for by -1 and 1 rather than rendered, since a field sized to fxp.Min and fxp.Max
+// would be enormous. The length and weight variants must agree exactly with the decimal one, since the conversions to
+// and from fxp.Int inside the helper are the only thing that differs.
+func TestFixedPointPrototypes(t *testing.T) {
+	c := check.New(t)
+	widest := fxp.Two - 1 // 1.9999
+	c.Equal([]fxp.Int{fxp.FromInteger(-2) - 1, widest, fxp.FromInteger(13) - 1},
+		fixedPointPrototypes(fxp.FromStringForced("-2.5"), fxp.FromStringForced("12.7")),
+		"explicit bounds are floored and then filled out to the last decimal place")
+	c.Equal([]fxp.Int{-1, widest, widest}, fixedPointPrototypes(fxp.Min, fxp.Max),
+		"the unbounded extremes are replaced by -1 and 1 before being widened")
+	c.Equal([]fxp.Int{fxp.FromInteger(6) - 1, widest, widest}, fixedPointPrototypes(fxp.FromInteger(5), fxp.Max),
+		"a bound that is already integral is still filled out to the last decimal place")
+
+	want := fixedPointPrototypes(fxp.Min, fxp.FromStringForced("500.25"))
+	c.Equal(len(want), 3)
+	gotLength := fixedPointPrototypes(fxp.Length(fxp.Min), fxp.Length(fxp.FromStringForced("500.25")))
+	gotWeight := fixedPointPrototypes(fxp.Weight(fxp.Min), fxp.Weight(fxp.FromStringForced("500.25")))
+	for i, v := range want {
+		c.Equal(fxp.Length(v), gotLength[i], "length prototypes match the decimal ones")
+		c.Equal(fxp.Weight(v), gotWeight[i], "weight prototypes match the decimal ones")
+	}
+}
+
+// TestUnitsFieldAcceptsUnitsBeingTyped verifies that a units field lets a units suffix be typed after the number, one
+// character at a time, rather than beeping and rejecting the keystroke when the partially typed suffix fails to parse.
+// The other numeric fields validate each keystroke by parsing the text it would produce, which is exactly wrong here.
+func TestUnitsFieldAcceptsUnitsBeingTyped(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	stored := fxp.Weight(fxp.Ten)
+	f := NewWeightField(nil, "", "Weight", entity,
+		func() fxp.Weight { return stored },
+		func(v fxp.Weight) { stored = v },
+		0, fxp.Weight(fxp.Max), true)
+	f.gainedFocus()
+	f.SetText("7 ")
+	c.Equal("7 ", f.Text())
+	for _, ch := range "kg" {
+		c.True(f.RuneTypedCallback(ch), "typing %q into a units field is accepted", ch)
+	}
+	c.Equal("7 kg", f.Text(), "the suffix was typed into the field")
+	f.lostFocus()
+	c.Equal("7 kg", fxp.Kilogram.Format(stored), "the typed value and units were committed")
 }

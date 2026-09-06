@@ -18,17 +18,7 @@ type DecimalField = NumericField[fxp.Int]
 func NewDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() fxp.Int, set func(fxp.Int), minValue, maxValue fxp.Int, forceSign, noMinWidth bool) *DecimalField {
 	var getPrototypes func(minValue, maxValue fxp.Int) []fxp.Int
 	if !noMinWidth {
-		getPrototypes = func(minValue, maxValue fxp.Int) []fxp.Int {
-			if minValue == fxp.Min {
-				minValue = -fxp.One
-			}
-			minValue = minValue.Floor() + fxp.One - 1
-			if maxValue == fxp.Max {
-				maxValue = fxp.One
-			}
-			maxValue = maxValue.Floor() + fxp.One - 1
-			return []fxp.Int{minValue, fxp.Two - 1, maxValue}
-		}
+		getPrototypes = fixedPointPrototypes[fxp.Int]
 	}
 	format := func(value fxp.Int) string {
 		if forceSign {

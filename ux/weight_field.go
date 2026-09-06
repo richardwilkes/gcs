@@ -17,29 +17,11 @@ import (
 // WeightField is field that holds a weight value.
 type WeightField = NumericField[fxp.Weight]
 
-// NewWeightField creates a new field that holds a fixed-point number.
+// NewWeightField creates a new field that holds a weight value, shown in the entity's default weight units.
 func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Weight, set func(fxp.Weight), minValue, maxValue fxp.Weight, noMinWidth bool) *WeightField {
-	var getPrototypes func(minValue, maxValue fxp.Weight) []fxp.Weight
-	if !noMinWidth {
-		getPrototypes = func(minValue, maxValue fxp.Weight) []fxp.Weight {
-			if minValue == fxp.Weight(fxp.Min) {
-				minValue = fxp.Weight(-fxp.One)
-			}
-			minValue = fxp.Weight(fxp.Int(minValue).Floor() + fxp.One - 1)
-			if maxValue == fxp.Weight(fxp.Max) {
-				maxValue = fxp.Weight(fxp.One)
-			}
-			maxValue = fxp.Weight(fxp.Int(maxValue).Floor() + fxp.One - 1)
-			return []fxp.Weight{minValue, fxp.Weight(fxp.Two - 1), maxValue}
-		}
-	}
-	format := func(value fxp.Weight) string {
-		return gurps.SheetSettingsFor(entity).DefaultWeightUnits.Format(value)
-	}
-	extract := func(s string) (fxp.Weight, error) {
-		return fxp.WeightFromString(s, gurps.SheetSettingsFor(entity).DefaultWeightUnits)
-	}
-	f := NewNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
-	f.RuneTypedCallback = f.DefaultRuneTyped
-	return f
+	return newUnitsField(targetMgr, targetKey, undoTitle, get, set,
+		func(value fxp.Weight) string { return gurps.SheetSettingsFor(entity).DefaultWeightUnits.Format(value) },
+		func(s string) (fxp.Weight, error) {
+			return fxp.WeightFromString(s, gurps.SheetSettingsFor(entity).DefaultWeightUnits)
+		}, minValue, maxValue, noMinWidth)
 }

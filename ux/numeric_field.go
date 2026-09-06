@@ -14,6 +14,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
@@ -69,6 +70,35 @@ func NewNumericFieldWithException[T xmath.Integer | xmath.Float](targetMgr *Targ
 	f.adjustMinimumTextWidth()
 	f.Sync()
 	return f
+}
+
+// newUnitsField creates a new field that holds a fixed-point value carrying units, such as a length or a weight. The
+// format and extract functions are expected to render and parse the value in the units the entity is using. Unlike the
+// other numeric fields, keystrokes are not validated by parsing the text as it is typed: the extractor accepts the
+// text once a number has been typed, but not while a units suffix is being typed after it.
+func newUnitsField[T ~int64](targetMgr *TargetMgr, targetKey, undoTitle string, get func() T, set func(T), format func(T) string, extract func(string) (T, error), minValue, maxValue T, noMinWidth bool) *NumericField[T] {
+	var getPrototypes func(minValue, maxValue T) []T
+	if !noMinWidth {
+		getPrototypes = fixedPointPrototypes[T]
+	}
+	f := NewNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
+	f.RuneTypedCallback = f.DefaultRuneTyped
+	return f
+}
+
+// fixedPointPrototypes returns the values whose renderings a fixed-point field is sized to fit: the minimum and maximum
+// with every decimal place filled in, and the widest single-digit value. The unbounded fxp.Min and fxp.Max are treated
+// as -1 and 1, since a field wide enough to show them would be enormous.
+func fixedPointPrototypes[T ~int64](minValue, maxValue T) []T {
+	if minValue == T(fxp.Min) {
+		minValue = T(-fxp.One)
+	}
+	minValue = T(fxp.Int(minValue).Floor() + fxp.One - 1)
+	if maxValue == T(fxp.Max) {
+		maxValue = T(fxp.One)
+	}
+	maxValue = T(fxp.Int(maxValue).Floor() + fxp.One - 1)
+	return []T{minValue, T(fxp.Two - 1), maxValue}
 }
 
 func newBaseNumericField[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue T) *NumericField[T] {

@@ -184,23 +184,20 @@ func installPageFieldFontAndFocusBorders(field *unison.Field) {
 
 // NewHeightPageField creates a new height entry field for a sheet page.
 func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Length, set func(fxp.Length), minValue, maxValue fxp.Length, noMinWidth bool) *LengthField {
-	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
-	field.DisplayFormat = func(v fxp.Length) string { return gurps.SheetSettingsFor(entity).FormatHeight(v) }
-	installPageFieldFontAndFocusBorders(field.Field)
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Middle,
-	})
-	// The field was synced with the exact text when it was created, before the display format was installed, so sync it
-	// again to pick that up.
-	field.Sync()
-	return field
+	return newUnitsPageField(NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth),
+		func(v fxp.Length) string { return gurps.SheetSettingsFor(entity).FormatHeight(v) })
 }
 
 // NewWeightPageField creates a new weight entry field for a sheet page.
 func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Weight, set func(fxp.Weight), minValue, maxValue fxp.Weight, noMinWidth bool) *WeightField {
-	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
-	field.DisplayFormat = func(v fxp.Weight) string { return gurps.SheetSettingsFor(entity).FormatBodyWeight(v) }
+	return newUnitsPageField(NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth),
+		func(v fxp.Weight) string { return gurps.SheetSettingsFor(entity).FormatBodyWeight(v) })
+}
+
+// newUnitsPageField dresses a units field for a sheet page and installs the rendering to show while the field is not
+// being edited.
+func newUnitsPageField[T ~int64](field *NumericField[T], displayFormat func(T) string) *NumericField[T] {
+	field.DisplayFormat = displayFormat
 	installPageFieldFontAndFocusBorders(field.Field)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
