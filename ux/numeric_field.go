@@ -96,9 +96,7 @@ func newBaseNumericField[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, ta
 	f.RuneTypedCallback = f.runeTyped
 	f.ModifiedCallback = f.modified
 	f.ValidateCallback = f.validate
-	if targetMgr != nil && targetKey != "" {
-		f.RefKey = targetKey
-	}
+	setTargetRefKey(f, targetMgr, targetKey)
 	return f
 }
 
@@ -252,22 +250,8 @@ func (f *NumericField[T]) runeTyped(ch rune) bool {
 }
 
 func (f *NumericField[T]) modified(before, after *unison.FieldState) {
-	if f.CurrentUndoID() != unison.NoUndoID {
-		if mgr := unison.UndoManagerFor(f); mgr != nil {
-			undo := NewTargetUndo(f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(),
-				func(target *unison.Panel, data *unison.FieldState) {
-					self := f
-					if target != nil {
-						if field, ok := target.Self.(*NumericField[T]); ok {
-							self = field
-						}
-					}
-					self.setWithoutUndo(data, true)
-				}, before)
-			undo.AfterData = after
-			mgr.Add(undo)
-		}
-	}
+	recordTargetUndo(f, f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(), before, after,
+		func(self *NumericField[T], data *unison.FieldState) { self.setWithoutUndo(data, true) })
 	f.adjustForText()
 }
 

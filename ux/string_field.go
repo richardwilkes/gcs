@@ -57,9 +57,7 @@ func newStringField(field *unison.Field, targetMgr *TargetMgr, targetKey, undoTi
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	if targetMgr != nil && targetKey != "" {
-		f.RefKey = targetKey
-	}
+	setTargetRefKey(f, targetMgr, targetKey)
 	return f
 }
 
@@ -78,22 +76,8 @@ func (f *StringField) getData() string {
 }
 
 func (f *StringField) modified(before, after *unison.FieldState) {
-	if f.CurrentUndoID() != unison.NoUndoID {
-		if mgr := unison.UndoManagerFor(f); mgr != nil {
-			undo := NewTargetUndo(f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(),
-				func(target *unison.Panel, data *unison.FieldState) {
-					self := f
-					if target != nil {
-						if field, ok := target.Self.(*StringField); ok {
-							self = field
-						}
-					}
-					self.setWithoutUndo(data, true)
-				}, before)
-			undo.AfterData = after
-			mgr.Add(undo)
-		}
-	}
+	recordTargetUndo(f, f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(), before, after,
+		func(self *StringField, data *unison.FieldState) { self.setWithoutUndo(data, true) })
 	f.adjustForText()
 }
 

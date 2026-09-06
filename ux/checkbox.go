@@ -42,14 +42,8 @@ func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() check
 	c.ClickCallback = func() {
 		if c.last != c.State {
 			c.last = c.State
-			if mgr := unison.UndoManagerFor(c); mgr != nil {
-				undo := NewTargetUndo(c.targetMgr, c.targetKey, c.Text.String(), c.undoID, func(target *unison.Panel, data check.Enum) {
-					self := c
-					if target != nil {
-						if field, ok := target.Self.(*CheckBox); ok {
-							self = field
-						}
-					}
+			recordTargetUndo(c, c.targetMgr, c.targetKey, c.Text.String(), c.undoID, c.get(), c.State,
+				func(self *CheckBox, data check.Enum) {
 					self.State = data
 					self.set(data)
 					self.MarkForRedraw()
@@ -57,10 +51,7 @@ func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() check
 						self.OnSet()
 					}
 					MarkModified(self)
-				}, c.get())
-				undo.AfterData = c.State
-				mgr.Add(undo)
-			}
+				})
 			c.set(c.State)
 			if c.OnSet != nil {
 				c.OnSet()
@@ -68,9 +59,7 @@ func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() check
 			MarkModified(c)
 		}
 	}
-	if targetMgr != nil && targetKey != "" {
-		c.RefKey = targetKey
-	}
+	setTargetRefKey(c, targetMgr, targetKey)
 	return c
 }
 

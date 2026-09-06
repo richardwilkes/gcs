@@ -50,3 +50,36 @@ func (t *TargetUndo[T]) apply(data T) {
 	}
 	t.callback(target, data)
 }
+
+// recordTargetUndo adds an edit for a change to a widget to the undo manager the widget can find, if any. Undoing or
+// redoing the edit hands apply the panel that holds the widget's target key at that moment, when the target manager
+// can locate one, and the widget itself otherwise, so that a widget which has been swapped out by a rebuild in the
+// meantime still routes the change to its replacement. An undo ID of unison.NoUndoID records nothing.
+func recordTargetUndo[W unison.Paneler, D any](w W, targetMgr *TargetMgr, targetKey, title string, undoID int64, before, after D, apply func(self W, data D)) {
+	if undoID == unison.NoUndoID {
+		return
+	}
+	mgr := unison.UndoManagerFor(w)
+	if mgr == nil {
+		return
+	}
+	undo := NewTargetUndo(targetMgr, targetKey, title, undoID, func(target *unison.Panel, data D) {
+		self := w
+		if target != nil {
+			if t, ok := target.Self.(W); ok {
+				self = t
+			}
+		}
+		apply(self, data)
+	}, before)
+	undo.AfterData = after
+	mgr.Add(undo)
+}
+
+// setTargetRefKey makes the target key the panel's RefKey, so that the target manager can find the panel, when there
+// is both a target manager and a key.
+func setTargetRefKey(p unison.Paneler, targetMgr *TargetMgr, targetKey string) {
+	if targetMgr != nil && targetKey != "" {
+		p.AsPanel().RefKey = targetKey
+	}
+}

@@ -44,28 +44,14 @@ func NewPopup[T comparable](targetMgr *TargetMgr, targetKey, undoTitle string, g
 		if item, ok := popup.Selected(); ok {
 			if p.last != item {
 				p.last = item
-				if mgr := unison.UndoManagerFor(p); mgr != nil {
-					undo := NewTargetUndo(p.targetMgr, p.targetKey, p.undoTitle, p.undoID, func(target *unison.Panel, data T) {
-						self := p
-						if target != nil {
-							var field *Popup[T]
-							if field, ok = target.Self.(*Popup[T]); ok {
-								self = field
-							}
-						}
-						self.setWithoutUndo(data)
-					}, p.get())
-					undo.AfterData, _ = p.Selected()
-					mgr.Add(undo)
-				}
+				recordTargetUndo(p, p.targetMgr, p.targetKey, p.undoTitle, p.undoID, p.get(), item,
+					func(self *Popup[T], data T) { self.setWithoutUndo(data) })
 			}
 			p.set(item)
 			MarkModified(p)
 		}
 	}
-	if targetMgr != nil && targetKey != "" {
-		p.RefKey = targetKey
-	}
+	setTargetRefKey(p, targetMgr, targetKey)
 	return p
 }
 
