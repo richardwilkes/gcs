@@ -40,17 +40,13 @@ var (
 // LootSheet holds the view for a loot sheet.
 type LootSheet struct {
 	fileBackedPanel
-	targetMgr      *TargetMgr
-	undoMgr        *unison.UndoManager
-	toolbar        *unison.Panel
-	scroll         *unison.ScrollPanel
-	content        *unison.Panel
-	loot           *gurps.Loot
-	Equipment      *PageList[*gurps.Equipment]
-	Notes          *PageList[*gurps.Note]
-	searchTracker  *SearchTracker
-	scale          int
-	awaitingUpdate bool
+	pageView
+	undoMgr   *unison.UndoManager
+	content   *unison.Panel
+	loot      *gurps.Loot
+	Equipment *PageList[*gurps.Equipment]
+	Notes     *PageList[*gurps.Note]
+	scale     int
 }
 
 // OpenLootSheets returns the currently open loot sheets.
@@ -73,11 +69,11 @@ func NewLootSheetFromFile(filePath string) (unison.Dockable, error) {
 func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	l := &LootSheet{
 		undoMgr: unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		scroll:  unison.NewScrollPanel(),
 		content: unison.NewPanel(),
 		loot:    loot,
 		scale:   gurps.GlobalSettings().General.InitialSheetUIScale,
 	}
+	l.scroll = unison.NewScrollPanel()
 	l.Self = l
 	l.initFileEditor(l, filePath, gurps.LootExt, loot.Save, loot)
 	l.targetMgr = NewTargetMgr(l)
@@ -108,9 +104,9 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 
 	l.InstallCmdHandlers(SaveItemID, func(_ any) bool { return l.Modified() }, func(_ any) { l.save(false) })
 	l.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { l.save(true) })
-	l.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
+	installNewItemCmdHandlers(l, NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
 		func() itemCreator { return l.Equipment })
-	l.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return l.Notes })
+	installNewItemCmdHandlers(l, NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return l.Notes })
 	InstallExportCmdHandlers(l)
 
 	l.loot.EnsureAttachments()
@@ -175,22 +171,6 @@ func addLootTextField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, tit
 		func(s string) { *field = s })
 }
 
-// installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the loot
-// sheet's lists. As on a character sheet, the list is looked up through the getter each time a command is invoked
-// rather than captured here, since a list whose set of columns has to change can only do so by being replaced outright
-// and a captured list would then be an orphan nobody is looking at. See Sheet.installNewItemCmdHandlers for what goes
-// wrong when that happens.
-func (l *LootSheet) installNewItemCmdHandlers(itemID, containerID int, creator func() itemCreator) {
-	variant := NoItemVariant
-	if containerID == -1 {
-		variant = AlternateItemVariant
-	} else {
-		l.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator().CreateItem(l, ContainerItemVariant) })
-	}
-	l.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(l, variant) })
-}
-
 func (l *LootSheet) keyToPanel(key *uti.DataType) *unison.Panel {
 	var p unison.Paneler
 	switch key {
@@ -229,18 +209,7 @@ func (l *LootSheet) BackingFilePath() string {
 
 // MarkModified implements widget.ModifiableRoot.
 func (l *LootSheet) MarkModified(_ unison.Paneler) {
-	if !l.awaitingUpdate {
-		l.awaitingUpdate = true
-		h, v := l.scroll.Position()
-		focusRefKey := l.targetMgr.CurrentFocusRef()
-		l.bumpModificationTimestamp()
-		DeepSync(l)
-		UpdateTitleForDockable(l)
-		l.awaitingUpdate = false
-		l.searchTracker.Refresh()
-		l.targetMgr.ReacquireFocus(focusRefKey, l.toolbar, l.scroll.Content())
-		l.scroll.SetPosition(h, v)
-	}
+	l.markModified(l, l.bumpModificationTimestamp)
 }
 
 // bumpModificationTimestamp implements modificationTimestampBumper.
@@ -257,17 +226,12 @@ func (l *LootSheet) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
 	l.loot.EnsureAttachments()
 	l.loot.SourceMatcher().PrepareHashes(l.loot)
-	h, v := l.scroll.Position()
-	focusRefKey := l.targetMgr.CurrentFocusRef()
+	state := l.captureViewState()
 	if full {
 		defer preserveSelections(l.lists)()
 		l.createLists()
 	}
-	DeepSync(l)
-	UpdateTitleForDockable(l)
-	l.searchTracker.Refresh()
-	l.targetMgr.ReacquireFocus(focusRefKey, l.toolbar, l.scroll.Content())
-	l.scroll.SetPosition(h, v)
+	l.resync(l, state)
 }
 
 func (l *LootSheet) createLists() {
@@ -323,39 +287,14 @@ func (l *LootSheet) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool)
 }
 
 func (l *LootSheet) toggleHierarchy() {
-	tables := l.lists()
-	var open, exists bool
-	for _, table := range tables {
-		if open, exists = table.FirstDisclosureState(); exists {
-			break
-		}
-	}
-	open = !open
-	for _, table := range tables {
-		table.SetDisclosureState(open)
-	}
+	toggleHierarchy(l.lists()...)
 	l.Rebuild(true)
 }
 
 func (l *LootSheet) toggleNotes() {
-	tables := l.lists()
-	state := 0
-	for _, table := range tables {
-		if state = table.FirstNoteState(); state != 0 {
-			break
-		}
+	if toggleNotes(l.lists()...) {
+		l.Rebuild(true)
 	}
-	if state == 0 {
-		return
-	}
-	var closed bool
-	if state == 1 {
-		closed = true
-	}
-	for _, table := range tables {
-		table.ApplyNoteState(closed)
-	}
-	l.Rebuild(true)
 }
 
 func (l *LootSheet) generateTreasure() {

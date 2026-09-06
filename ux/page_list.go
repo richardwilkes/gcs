@@ -35,14 +35,38 @@ var (
 // first being put together.
 type sheetList interface {
 	unison.Paneler
+	hierarchyDiscloser
+	noteDiscloser
 	clearSelection()
 	search(refList *[]*searchRef, text string, namesOnly bool)
 	RecordSelection() map[tid.TID]bool
 	ApplySelection(selection map[tid.TID]bool)
-	FirstDisclosureState() (open, exists bool)
-	SetDisclosureState(open bool)
-	FirstNoteState() int
-	ApplyNoteState(closed bool)
+}
+
+// itemCreator is what the "New ..." commands ask of the list they add an item to.
+type itemCreator interface {
+	CreateItem(Rebuildable, ItemVariant)
+}
+
+// installNewItemCmdHandlers installs on the owner the handlers for the "New ..." commands that add an item to one of
+// its lists: the plain item, and -- unless the container ID is -1, in which case the item is the alternate kind (a
+// technique, a ritual magic spell) -- the container as well. The list is looked up through the getter each time a
+// command is invoked rather than captured here, since a list whose set of columns has to change can only do so by
+// being replaced outright (a table's columns are fixed at creation -- see PageList.needReconstruction), which leaves
+// the list that was captured orphaned. Creating an item in an orphaned list still updates the model, but everything
+// that goes with it is aimed at a table nobody is looking at: the undo edit can't even find the undo manager, so the
+// insertion isn't undoable and the user's next undo silently takes back the edit before it, and the new row is neither
+// selected nor scrolled into view in the list that is actually on screen.
+func installNewItemCmdHandlers(owner Rebuildable, itemID, containerID int, creator func() itemCreator) {
+	p := owner.AsPanel()
+	variant := NoItemVariant
+	if containerID == -1 {
+		variant = AlternateItemVariant
+	} else {
+		p.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
+			func(_ any) { creator().CreateItem(owner, ContainerItemVariant) })
+	}
+	p.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(owner, variant) })
 }
 
 // listsForKeys returns the lists for the block keys the predicate accepts, in the canonical block order (see
@@ -61,7 +85,7 @@ func listsForKeys(list func(key string) sheetList, accept func(key string) bool)
 // longer match the ones it has -- or when it doesn't exist yet -- since a table's columns are fixed at creation. The
 // result is stored back through the pointer given, so that the caller's field always names the list that is on
 // screen, and is returned as well. Anything that captured the old list has to allow for it having been replaced; see
-// Sheet.installNewItemCmdHandlers for what goes wrong when it doesn't.
+// installNewItemCmdHandlers for what goes wrong when it doesn't.
 func syncOrRebuildList[T gurps.Node[T]](list **PageList[T], build func() *PageList[T]) *PageList[T] {
 	if (*list).needReconstruction() {
 		*list = build()
@@ -432,51 +456,24 @@ func (p *PageList[T]) ApplySelection(selection map[tid.TID]bool) {
 	}
 }
 
-// FirstDisclosureState returns the open state of the first row that can be opened.
+// FirstDisclosureState implements hierarchyDiscloser.
 func (p *PageList[T]) FirstDisclosureState() (open, exists bool) {
-	for _, row := range p.Table.RootRows() {
-		if row.CanHaveChildren() {
-			return row.IsOpen(), true
-		}
-	}
-	return false, false
+	return firstTableDisclosureState(p.Table)
 }
 
-// SetDisclosureState sets the open state of all rows that can be opened.
+// SetDisclosureState implements hierarchyDiscloser.
 func (p *PageList[T]) SetDisclosureState(open bool) {
-	for _, row := range p.Table.RootRows() {
-		if row.CanHaveChildren() {
-			p.setRowOpen(row, open)
-		}
-	}
+	setTableDisclosureState(p.Table, open)
 }
 
-func (p *PageList[T]) setRowOpen(row *Node[T], open bool) {
-	row.SetOpen(open)
-	for _, child := range row.Children() {
-		if child.CanHaveChildren() {
-			p.setRowOpen(child, open)
-		}
-	}
-}
-
-// FirstNoteState returns the state of the first note in the list. -1 is closed, 1 is open, 0 is none found.
+// FirstNoteState implements noteDiscloser.
 func (p *PageList[T]) FirstNoteState() int {
-	state := 0
-	for _, row := range p.Table.RootRows() {
-		discoverNoteState(row, &state)
-		if state != 0 {
-			break
-		}
-	}
-	return state
+	return firstTableNoteState(p.Table)
 }
 
-// ApplyNoteState sets the state of all notes in the list.
+// ApplyNoteState implements noteDiscloser.
 func (p *PageList[T]) ApplyNoteState(closed bool) {
-	for _, row := range p.Table.RootRows() {
-		applyNoteState(row, closed)
-	}
+	applyTableNoteState(p.Table, closed)
 }
 
 // Sync the underlying data.

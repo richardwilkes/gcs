@@ -392,7 +392,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		button.Font = n.primaryFieldFont()
 		baseline := button.Font.Baseline()
 		size := max(baseline-2, 6)
-		key := "N:" + string(n.ID())
+		key := n.noteKey()
 		isClosed := gurps.IsClosed(key)
 		var s *unison.SVG
 		if isClosed {

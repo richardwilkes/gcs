@@ -45,21 +45,17 @@ var (
 // Template holds the view for a GURPS character template.
 type Template struct {
 	fileBackedPanel
-	targetMgr      *TargetMgr
-	undoMgr        *unison.UndoManager
-	toolbar        *unison.Panel
-	scroll         *unison.ScrollPanel
-	template       *gurps.Template
-	content        *templateContent
-	Traits         *PageList[*gurps.Trait]
-	Skills         *PageList[*gurps.Skill]
-	Spells         *PageList[*gurps.Spell]
-	Equipment      *PageList[*gurps.Equipment]
-	Notes          *PageList[*gurps.Note]
-	lastBody       *gurps.Body
-	searchTracker  *SearchTracker
-	scale          int
-	awaitingUpdate bool
+	pageView
+	undoMgr   *unison.UndoManager
+	template  *gurps.Template
+	content   *templateContent
+	Traits    *PageList[*gurps.Trait]
+	Skills    *PageList[*gurps.Skill]
+	Spells    *PageList[*gurps.Spell]
+	Equipment *PageList[*gurps.Equipment]
+	Notes     *PageList[*gurps.Note]
+	lastBody  *gurps.Body
+	scale     int
 }
 
 // OpenTemplates returns the currently open templates.
@@ -82,7 +78,6 @@ func NewTemplateFromFile(filePath string) (unison.Dockable, error) {
 func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t := &Template{
 		undoMgr:  unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		scroll:   unison.NewScrollPanel(),
 		template: template,
 		lastBody: template.BodyType,
 		scale:    gurps.GlobalSettings().General.InitialSheetUIScale,
@@ -90,6 +85,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	if t.lastBody == nil {
 		t.lastBody = gurps.FactoryBody()
 	}
+	t.scroll = unison.NewScrollPanel()
 	t.Self = t
 	t.initFileEditor(t, filePath, gurps.TemplatesExt, template.Save, template)
 	t.targetMgr = NewTargetMgr(t)
@@ -113,14 +109,14 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 
 	t.InstallCmdHandlers(SaveItemID, func(_ any) bool { return t.Modified() }, func(_ any) { t.save(false) })
 	t.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { t.save(true) })
-	t.installNewItemCmdHandlers(NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return t.Traits })
-	t.installNewItemCmdHandlers(NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return t.Skills })
-	t.installNewItemCmdHandlers(NewTechniqueItemID, -1, func() itemCreator { return t.Skills })
-	t.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return t.Spells })
-	t.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, func() itemCreator { return t.Spells })
-	t.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
+	installNewItemCmdHandlers(t, NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return t.Traits })
+	installNewItemCmdHandlers(t, NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return t.Skills })
+	installNewItemCmdHandlers(t, NewTechniqueItemID, -1, func() itemCreator { return t.Skills })
+	installNewItemCmdHandlers(t, NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return t.Spells })
+	installNewItemCmdHandlers(t, NewRitualMagicSpellItemID, -1, func() itemCreator { return t.Spells })
+	installNewItemCmdHandlers(t, NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
 		func() itemCreator { return t.Equipment })
-	t.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return t.Notes })
+	installNewItemCmdHandlers(t, NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return t.Notes })
 	t.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
 		InsertItems(t, t.Traits.Table, t.template.TraitList, t.template.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
@@ -670,24 +666,6 @@ func rawPoints[T gurps.Node[T]](child T) fxp.Int {
 	return 0
 }
 
-// installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the template's
-// lists. As on a character sheet, the list is looked up through the getter each time a command is invoked rather than
-// captured here, since a list whose set of columns has to change can only do so by being replaced outright (a table's
-// columns are fixed at creation -- see PageList.needReconstruction). A template's lists never grow the switch column,
-// which is reserved for character sheets (see showSwitchColumn), but the equipment list's TL and LC columns follow the
-// global sheet settings, which the user can change while the template is open. See Sheet.installNewItemCmdHandlers for
-// what goes wrong when a captured list is left orphaned by such a replacement.
-func (t *Template) installNewItemCmdHandlers(itemID, containerID int, creator func() itemCreator) {
-	variant := NoItemVariant
-	if containerID == -1 {
-		variant = AlternateItemVariant
-	} else {
-		t.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator().CreateItem(t, ContainerItemVariant) })
-	}
-	t.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(t, variant) })
-}
-
 // Entity implements gurps.EntityProvider
 func (t *Template) Entity() *gurps.Entity {
 	return nil
@@ -705,17 +683,7 @@ func (t *Template) UndoManager() *unison.UndoManager {
 
 // MarkModified implements widget.ModifiableRoot.
 func (t *Template) MarkModified(_ unison.Paneler) {
-	if !t.awaitingUpdate {
-		t.awaitingUpdate = true
-		h, v := t.scroll.Position()
-		focusRefKey := t.targetMgr.CurrentFocusRef()
-		DeepSync(t)
-		UpdateTitleForDockable(t)
-		t.awaitingUpdate = false
-		t.searchTracker.Refresh()
-		t.targetMgr.ReacquireFocus(focusRefKey, t.toolbar, t.scroll.Content())
-		t.scroll.SetPosition(h, v)
-	}
+	t.markModified(t, nil)
 }
 
 func (t *Template) createContent() unison.Paneler {
@@ -728,9 +696,9 @@ func (t *Template) createContent() unison.Paneler {
 // only built anew when the columns it has to show no longer match the ones it has, since a table's columns are fixed
 // at creation; otherwise the existing list is kept and synced (see syncOrRebuildList). Anything that captured a list
 // has to allow for it being replaced -- see installNewItemCmdHandlers. Taking the page apart takes the focus away from
-// whichever table held it; Rebuild puts it back by the table's reference key, which a replacement table shares.
+// whichever table held it and moves the scroll position; Rebuild puts both back, the focus by the table's reference
+// key, which a replacement table shares.
 func (t *Template) createLists() {
-	h, v := t.scroll.Position()
 	// The lists are detached first, so that a list the layout doesn't place is left without a parent. Removing the
 	// content's children only detaches the bands, which would leave a list nested inside one still pointing at a band
 	// nobody can see, and a list's parent is how the search tells one that is on the page from one that isn't.
@@ -785,7 +753,6 @@ func (t *Template) createLists() {
 	t.content.AddChild(panel)
 
 	t.content.ApplyPreferredSize()
-	t.scroll.SetPosition(h, v)
 }
 
 // layoutLeaf returns the panel to show for the block with the given key, or nil if a template has no such block.
@@ -846,17 +813,12 @@ func (t *Template) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
 	t.template.EnsureAttachments()
 	t.template.SourceMatcher().PrepareHashes(t.template)
-	h, v := t.scroll.Position()
-	focusRefKey := t.targetMgr.CurrentFocusRef()
+	state := t.captureViewState()
 	if full {
 		defer preserveSelections(t.lists)()
 		t.createLists()
 	}
-	DeepSync(t)
-	UpdateTitleForDockable(t)
-	t.searchTracker.Refresh()
-	t.targetMgr.ReacquireFocus(focusRefKey, t.toolbar, t.scroll.Content())
-	t.scroll.SetPosition(h, v)
+	t.resync(t, state)
 }
 
 func (t *Template) syncWithAllSources() {
@@ -884,37 +846,12 @@ func (t *Template) SetBodySettings(body *gurps.Body) {
 }
 
 func (t *Template) toggleHierarchy() {
-	tables := t.lists()
-	var open, exists bool
-	for _, table := range tables {
-		if open, exists = table.FirstDisclosureState(); exists {
-			break
-		}
-	}
-	open = !open
-	for _, table := range tables {
-		table.SetDisclosureState(open)
-	}
+	toggleHierarchy(t.lists()...)
 	t.Rebuild(true)
 }
 
 func (t *Template) toggleNotes() {
-	tables := t.lists()
-	state := 0
-	for _, table := range tables {
-		if state = table.FirstNoteState(); state != 0 {
-			break
-		}
+	if toggleNotes(t.lists()...) {
+		t.Rebuild(true)
 	}
-	if state == 0 {
-		return
-	}
-	var closed bool
-	if state == 1 {
-		closed = true
-	}
-	for _, table := range tables {
-		table.ApplyNoteState(closed)
-	}
-	t.Rebuild(true)
 }

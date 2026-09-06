@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -205,89 +204,34 @@ func (d *TableDockable[T]) preserveColumns() {
 	gurps.GlobalSettings().ColumnSizing[d.BackingFilePath()] = m
 }
 
-func (d *TableDockable[T]) toggleHierarchy() {
-	first := true
-	open := false
-	for _, row := range d.table.RootRows() {
-		if row.CanHaveChildren() {
-			if first {
-				first = false
-				open = !row.IsOpen()
-			}
-			setTableDockableRowOpen(row, open)
-		}
-	}
-	d.table.SyncToModel()
+// FirstDisclosureState implements hierarchyDiscloser.
+func (d *TableDockable[T]) FirstDisclosureState() (open, exists bool) {
+	return firstTableDisclosureState(d.table)
 }
 
-func setTableDockableRowOpen[T gurps.Node[T]](row *Node[T], open bool) {
-	row.SetOpen(open)
-	for _, child := range row.Children() {
-		if child.CanHaveChildren() {
-			setTableDockableRowOpen(child, open)
-		}
-	}
+// SetDisclosureState implements hierarchyDiscloser.
+func (d *TableDockable[T]) SetDisclosureState(open bool) {
+	setTableDisclosureState(d.table, open)
+}
+
+// FirstNoteState implements noteDiscloser.
+func (d *TableDockable[T]) FirstNoteState() int {
+	return firstTableNoteState(d.table)
+}
+
+// ApplyNoteState implements noteDiscloser.
+func (d *TableDockable[T]) ApplyNoteState(closed bool) {
+	applyTableNoteState(d.table, closed)
+}
+
+func (d *TableDockable[T]) toggleHierarchy() {
+	toggleHierarchy(d)
+	d.table.SyncToModel()
 }
 
 func (d *TableDockable[T]) toggleNotes() {
-	state := 0
-	for _, row := range d.table.RootRows() {
-		discoverNoteState(row, &state)
-		if state != 0 {
-			break
-		}
-	}
-	if state == 0 {
-		return
-	}
-	var closed bool
-	if state == 1 {
-		closed = true
-	}
-	for _, row := range d.table.RootRows() {
-		applyNoteState(row, closed)
-	}
-	d.table.SyncToModel()
-}
-
-func discoverNoteState[T gurps.Node[T]](n *Node[T], state *int) {
-	for i := range n.table.Columns {
-		var data gurps.CellData
-		n.data.CellData(n.table.Columns[i].ID, &data)
-		if data.Type == cell.Text && data.Secondary != "" {
-			if gurps.IsClosed("N:" + string(n.ID())) {
-				*state = -1
-			} else {
-				*state = 1
-			}
-			return
-		}
-	}
-	if n.CanHaveChildren() {
-		for _, child := range n.Children() {
-			discoverNoteState(child, state)
-			if *state != 0 {
-				return
-			}
-		}
-	}
-}
-
-func applyNoteState[T gurps.Node[T]](n *Node[T], closed bool) {
-	for i := range n.table.Columns {
-		var data gurps.CellData
-		n.data.CellData(n.table.Columns[i].ID, &data)
-		if data.Type == cell.Text && data.Secondary != "" {
-			id := "N:" + string(n.ID())
-			if gurps.IsClosed(id) != closed {
-				gurps.SetClosedState(id, closed)
-			}
-		}
-	}
-	if n.CanHaveChildren() {
-		for _, child := range n.Children() {
-			applyNoteState(child, closed)
-		}
+	if toggleNotes(d) {
+		d.table.SyncToModel()
 	}
 }
 

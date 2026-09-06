@@ -57,17 +57,11 @@ var (
 	}
 )
 
-type itemCreator interface {
-	CreateItem(Rebuildable, ItemVariant)
-}
-
 // Sheet holds the view for a GURPS character sheet.
 type Sheet struct {
 	fileBackedPanel
-	targetMgr            *TargetMgr
+	pageView
 	undoMgr              *unison.UndoManager
-	toolbar              *unison.Panel
-	scroll               *unison.ScrollPanel
 	entity               *gurps.Entity
 	content              *unison.Panel
 	contentLayout        *overlayStackLayout
@@ -86,9 +80,7 @@ type Sheet struct {
 	CarriedEquipment     *PageList[*gurps.Equipment]
 	OtherEquipment       *PageList[*gurps.Equipment]
 	Notes                *PageList[*gurps.Note]
-	searchTracker        *SearchTracker
 	scale                int
-	awaitingUpdate       bool
 }
 
 // ActiveSheet returns the currently active sheet.
@@ -123,11 +115,11 @@ func NewSheetFromFile(filePath string) (unison.Dockable, error) {
 func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s := &Sheet{
 		undoMgr: unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		scroll:  unison.NewScrollPanel(),
 		entity:  entity,
 		scale:   gurps.GlobalSettings().General.InitialSheetUIScale,
 		content: unison.NewPanel(),
 	}
+	s.scroll = unison.NewScrollPanel()
 	s.Self = s
 	s.initFileEditor(s, filePath, gurps.SheetExt, entity.Save, entity)
 	s.targetMgr = NewTargetMgr(s)
@@ -168,16 +160,16 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 
 	s.InstallCmdHandlers(SaveItemID, func(_ any) bool { return s.Modified() }, func(_ any) { s.save(false) })
 	s.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { s.save(true) })
-	s.installNewItemCmdHandlers(NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return s.Traits })
-	s.installNewItemCmdHandlers(NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return s.Skills })
-	s.installNewItemCmdHandlers(NewTechniqueItemID, -1, func() itemCreator { return s.Skills })
-	s.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return s.Spells })
-	s.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, func() itemCreator { return s.Spells })
-	s.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
+	installNewItemCmdHandlers(s, NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return s.Traits })
+	installNewItemCmdHandlers(s, NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return s.Skills })
+	installNewItemCmdHandlers(s, NewTechniqueItemID, -1, func() itemCreator { return s.Skills })
+	installNewItemCmdHandlers(s, NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return s.Spells })
+	installNewItemCmdHandlers(s, NewRitualMagicSpellItemID, -1, func() itemCreator { return s.Spells })
+	installNewItemCmdHandlers(s, NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
 		func() itemCreator { return s.CarriedEquipment })
-	s.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
+	installNewItemCmdHandlers(s, NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
 		func() itemCreator { return s.OtherEquipment })
-	s.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return s.Notes })
+	installNewItemCmdHandlers(s, NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return s.Notes })
 	s.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
 		InsertItems(s, s.Traits.Table, s.entity.TraitList, s.entity.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
@@ -379,25 +371,6 @@ func (s *Sheet) keyToPanel(key *uti.DataType) *unison.Panel {
 	return p.AsPanel()
 }
 
-// installNewItemCmdHandlers installs the handlers for the "New ..." commands that add an item to one of the sheet's
-// lists. The list is looked up through the getter each time a command is invoked rather than captured here, since a
-// list whose set of columns has to change can only do so by being replaced outright (a table's columns are fixed at
-// creation -- see PageList.needReconstruction), which leaves the list that was captured orphaned. Creating an item in
-// an orphaned list still updates the model, but everything that goes with it is aimed at a table nobody is looking at:
-// the undo edit can't even find the undo manager, so the insertion isn't undoable and the user's next undo silently
-// takes back the edit before it, and the new row is neither selected nor scrolled into view in the list that is
-// actually on screen.
-func (s *Sheet) installNewItemCmdHandlers(itemID, containerID int, creator func() itemCreator) {
-	variant := NoItemVariant
-	if containerID == -1 {
-		variant = AlternateItemVariant
-	} else {
-		s.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator().CreateItem(s, ContainerItemVariant) })
-	}
-	s.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(s, variant) })
-}
-
 // DockableKind implements widget.DockableKind
 func (s *Sheet) DockableKind() string {
 	return SheetDockableKind
@@ -421,42 +394,39 @@ func (s *Sheet) BackingFilePath() string {
 	return s.path
 }
 
-// MarkModified implements widget.ModifiableRoot.
+// MarkModified implements widget.ModifiableRoot. A sheet does more than the shared pageView.markModified: its entity
+// has to be recalculated first, its calculator brought up to date last, and a source that asks for it (see
+// SkipDeepSync) is spared the sync in between.
 func (s *Sheet) MarkModified(src unison.Paneler) {
-	if !s.awaitingUpdate {
-		s.awaitingUpdate = true
-		// Everything below reads the derived state -- the panels, the tables, and the calculator all display skill
-		// levels, points and the like -- so the entity is brought up to date first. This used to happen by accident,
-		// as a side effect of the tab asking whether the sheet had unsaved changes, which recalculated the entity on
-		// its way to hashing it.
-		s.entity.Recalculate()
-		s.bumpModificationTimestamp()
-		UpdateTitleForDockable(s)
-		skipDeepSync := false
-		if !xreflect.IsNil(src) {
-			_, skipDeepSync = src.AsPanel().ClientData()[SkipDeepSync]
-		}
-		if skipDeepSync {
-			// The deep sync is what rebuilds the tables, and it is also the only thing here that can disturb the
-			// focus and scroll position or change which rows match the active search. When it is skipped (e.g. while
-			// typing into a simple field such as the name or title), saving and restoring the focus and scroll
-			// position and refreshing the search results is just wasted work, and that overhead is enough to make
-			// interactive typing stutter on slower platforms. So none of it is done in that case.
-			s.awaitingUpdate = false
-		} else {
-			h, v := s.scroll.Position()
-			focusRefKey := s.targetMgr.CurrentFocusRef()
-			// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
-			//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way
-			//       to determine that the content of a table doesn't need to be refreshed.
-			DeepSync(s)
-			s.awaitingUpdate = false
-			s.searchTracker.Refresh()
-			s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
-			s.scroll.SetPosition(h, v)
-		}
-		UpdateCalculator(s)
+	if s.awaitingUpdate {
+		return
 	}
+	s.awaitingUpdate = true
+	// Everything below reads the derived state -- the panels, the tables, and the calculator all display skill levels,
+	// points and the like -- so the entity is brought up to date first. This used to happen by accident, as a side
+	// effect of the tab asking whether the sheet had unsaved changes, which recalculated the entity on its way to
+	// hashing it.
+	s.entity.Recalculate()
+	s.bumpModificationTimestamp()
+	skipDeepSync := false
+	if !xreflect.IsNil(src) {
+		_, skipDeepSync = src.AsPanel().ClientData()[SkipDeepSync]
+	}
+	if skipDeepSync {
+		// The deep sync is what rebuilds the tables, and it is also the only thing here that can disturb the focus and
+		// scroll position or change which rows match the active search. When it is skipped (e.g. while typing into a
+		// simple field such as the name or title), saving and restoring the focus and scroll position and refreshing
+		// the search results is just wasted work, and that overhead is enough to make interactive typing stutter on
+		// slower platforms. So none of it is done in that case.
+		UpdateTitleForDockable(s)
+		s.awaitingUpdate = false
+	} else {
+		// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
+		//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way
+		//       to determine that the content of a table doesn't need to be refreshed.
+		s.resync(s, s.captureViewState())
+	}
+	UpdateCalculator(s)
 }
 
 // bumpModificationTimestamp implements modificationTimestampBumper.
@@ -873,18 +843,13 @@ func (s *Sheet) syncWithAllSources() {
 // Rebuild implements widget.Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
-	h, v := s.scroll.Position()
-	focusRefKey := s.targetMgr.CurrentFocusRef()
+	state := s.captureViewState()
 	s.entity.Recalculate()
 	if full {
 		defer preserveSelections(s.lists)()
 		s.buildLayout()
 	}
-	DeepSync(s)
-	UpdateTitleForDockable(s)
-	s.searchTracker.Refresh()
-	s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
-	s.scroll.SetPosition(h, v)
+	s.resync(s, state)
 	if s.layoutEditing() {
 		// Reacquiring the focus just took it back to whichever field held it before the overlay went up, so the overlay
 		// has to ask for it again. Everything it drew is stale, too, since the page has been rebuilt underneath it.
@@ -943,46 +908,43 @@ func (s *Sheet) SetBodySettings(body *gurps.Body) {
 	}
 }
 
+// attributesDiscloser adapts an entity's attributes to hierarchyDiscloser, which their own methods fall short of only
+// by needing the entity handed to them.
+type attributesDiscloser struct {
+	entity *gurps.Entity
+}
+
+// FirstDisclosureState implements hierarchyDiscloser.
+func (a attributesDiscloser) FirstDisclosureState() (open, exists bool) {
+	return a.entity.Attributes.FirstDisclosureState(a.entity)
+}
+
+// SetDisclosureState implements hierarchyDiscloser.
+func (a attributesDiscloser) SetDisclosureState(open bool) {
+	a.entity.Attributes.SetDisclosureState(a.entity, open)
+}
+
+// hierarchyDisclosers returns everything on the sheet with containers to open and close -- the attributes, the body
+// type and the lists -- in the order in which the current state is looked for when they are toggled as a group.
+func (s *Sheet) hierarchyDisclosers() []hierarchyDiscloser {
+	lists := s.lists()
+	disclosers := make([]hierarchyDiscloser, 0, 2+len(lists))
+	disclosers = append(disclosers, attributesDiscloser{entity: s.entity}, s.entity.SheetSettings.BodyType)
+	for _, list := range lists {
+		disclosers = append(disclosers, list)
+	}
+	return disclosers
+}
+
 func (s *Sheet) toggleHierarchy() {
-	tables := s.lists()
-	open, exists := s.entity.Attributes.FirstDisclosureState(s.entity)
-	if !exists {
-		if open, exists = s.entity.SheetSettings.BodyType.FirstDisclosureState(); !exists {
-			for _, table := range tables {
-				if open, exists = table.FirstDisclosureState(); exists {
-					break
-				}
-			}
-		}
-	}
-	open = !open
-	s.entity.Attributes.SetDisclosureState(s.entity, open)
-	s.entity.SheetSettings.BodyType.SetDisclosureState(open)
-	for _, table := range tables {
-		table.SetDisclosureState(open)
-	}
+	toggleHierarchy(s.hierarchyDisclosers()...)
 	s.syncDisclosure()
 	s.Rebuild(true)
 }
 
 func (s *Sheet) toggleNotes() {
-	tables := s.lists()
-	state := 0
-	for _, table := range tables {
-		if state = table.FirstNoteState(); state != 0 {
-			break
-		}
+	if toggleNotes(s.lists()...) {
+		s.syncDisclosure()
+		s.Rebuild(true)
 	}
-	if state == 0 {
-		return
-	}
-	var closed bool
-	if state == 1 {
-		closed = true
-	}
-	for _, table := range tables {
-		table.ApplyNoteState(closed)
-	}
-	s.syncDisclosure()
-	s.Rebuild(true)
 }

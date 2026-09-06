@@ -92,3 +92,55 @@ func TestListsForKeysFollowTheCanonicalBlockOrder(t *testing.T) {
 	c.Equal(expected, keys, "the keys the predicate accepts, in canonical order")
 	c.Equal(len(expected), len(lists), "one list per accepted key")
 }
+
+// stubRebuildable is the least a panel can be and still own the "New ..." commands.
+type stubRebuildable struct {
+	unison.Panel
+}
+
+func (s *stubRebuildable) String() string { return "stub" }
+func (s *stubRebuildable) Rebuild(_ bool) {}
+
+// recordingItemCreator records the items it is asked to create.
+type recordingItemCreator struct {
+	owners   []Rebuildable
+	variants []ItemVariant
+}
+
+func (r *recordingItemCreator) CreateItem(owner Rebuildable, variant ItemVariant) {
+	r.owners = append(r.owners, owner)
+	r.variants = append(r.variants, variant)
+}
+
+// TestInstallNewItemCmdHandlers verifies that the "New ..." command handlers create the plain item and the container
+// on the list the getter names at the time the command is invoked rather than the one it named when the handlers were
+// installed, that a command with no container counterpart creates the alternate kind of item instead, and that the
+// owner the handlers were installed on is the one handed to the list.
+func TestInstallNewItemCmdHandlers(t *testing.T) {
+	c := check.New(t)
+	owner := &stubRebuildable{}
+	owner.Self = owner
+	const itemID, containerID, alternateID = 9001, 9002, 9003
+	current := &recordingItemCreator{}
+	installNewItemCmdHandlers(owner, itemID, containerID, func() itemCreator { return current })
+	installNewItemCmdHandlers(owner, alternateID, -1, func() itemCreator { return current })
+
+	c.True(owner.CanPerformCmd(nil, itemID), "the item command must be installed")
+	c.True(owner.CanPerformCmd(nil, containerID), "the container command must be installed")
+	c.True(owner.CanPerformCmd(nil, alternateID), "the alternate item command must be installed")
+
+	owner.PerformCmd(nil, itemID)
+	owner.PerformCmd(nil, containerID)
+	owner.PerformCmd(nil, alternateID)
+	c.Equal([]ItemVariant{NoItemVariant, ContainerItemVariant, AlternateItemVariant}, current.variants,
+		"each command must ask for its own kind of item")
+	for _, one := range current.owners {
+		c.Equal(Rebuildable(owner), one, "the owner the handlers were installed on must be handed to the list")
+	}
+
+	replacement := &recordingItemCreator{}
+	current = replacement
+	owner.PerformCmd(nil, itemID)
+	c.Equal([]ItemVariant{NoItemVariant}, replacement.variants,
+		"the list must be looked up when the command is invoked, not when the handler was installed")
+}
