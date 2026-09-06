@@ -43,8 +43,7 @@ func (r *ReactionBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (r *ReactionBonus) Clone() Feature {
-	other := *r
-	return &other
+	return clonePtr(r)
 }
 
 // Hash writes this object's contents into the hasher.

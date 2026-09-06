@@ -53,8 +53,7 @@ func (e *EquipmentMaxUsesBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (e *EquipmentMaxUsesBonus) Clone() Feature {
-	other := *e
-	return &other
+	return clonePtr(e)
 }
 
 // FillWithNameableKeys implements Feature.

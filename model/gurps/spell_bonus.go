@@ -59,8 +59,7 @@ func (s *SpellBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (s *SpellBonus) Clone() Feature {
-	other := *s
-	return &other
+	return clonePtr(s)
 }
 
 // FillWithNameableKeys implements Feature.

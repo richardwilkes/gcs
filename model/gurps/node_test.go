@@ -200,3 +200,16 @@ func TestSharedCellAndHeaderData(t *testing.T) {
 	c.NotEqual("", data.Primary, "the source state is shown")
 	c.NotContains(data.Tooltip, "\n", "custom data has no source details to show")
 }
+
+// TestClonePtr verifies the generic pointer copy used for the optional tech level, technique limit modifier and
+// recorded default: nil stays nil, and a value is copied to a distinct object.
+func TestClonePtr(t *testing.T) {
+	c := check.New(t)
+	c.Nil(clonePtr[string](nil), "nil clones to nil")
+	tl := "3"
+	clone := clonePtr(&tl)
+	c.True(&tl != clone, "the clone is a distinct object")
+	c.Equal("3", *clone, "the clone holds the same value")
+	*clone = "4"
+	c.Equal("3", tl, "editing the clone leaves the source alone")
+}

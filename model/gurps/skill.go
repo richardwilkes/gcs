@@ -296,42 +296,13 @@ func (s *Skill) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if omitCalc(enc) {
 		return json.MarshalEncode(enc, &s.SkillData)
 	}
-	type calcNoLevel struct {
-		ResolvedNotes     string `json:"resolved_notes,omitzero"`
-		UnsatisfiedReason string `json:"unsatisfied_reason,omitzero"`
-	}
-	cnl := calcNoLevel{UnsatisfiedReason: s.UnsatisfiedReason}
-	notes := s.ResolveLocalNotes()
-	if notes != s.LocalNotes {
-		cnl.ResolvedNotes = notes
-	}
-	if s.Container() || s.LevelData.Level <= 0 {
-		value := &struct {
-			SkillData
-			Calc *calcNoLevel `json:"calc,omitzero"`
-		}{
-			SkillData: s.SkillData,
-		}
-		if cnl != (calcNoLevel{}) {
-			value.Calc = &cnl
-		}
-		return json.MarshalEncode(enc, value)
-	}
-	type calc struct {
-		Level              fxp.Int `json:"level"`
-		RelativeSkillLevel string  `json:"rsl"`
-		calcNoLevel
-	}
 	return json.MarshalEncode(enc, &struct {
 		SkillData
-		Calc calc `json:"calc"`
+		Calc *leveledCalc `json:"calc,omitzero"`
 	}{
 		SkillData: s.SkillData,
-		Calc: calc{
-			Level:              s.LevelData.Level,
-			RelativeSkillLevel: s.RelativeLevel(),
-			calcNoLevel:        cnl,
-		},
+		Calc: newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
+			s.ResolveLocalNotes(), s.LocalNotes),
 	})
 }
 
@@ -1433,26 +1404,9 @@ func (s *Skill) SyncWithSource() {
 			s.DefaultedFrom = nil
 		}
 		s.SkillNonContainerOnlySyncData = other.SkillNonContainerOnlySyncData
-		if len(other.Defaults) != 0 {
-			s.Defaults = make([]*SkillDefault, len(other.Defaults))
-			for i, def := range other.Defaults {
-				def2 := *def
-				s.Defaults[i] = &def2
-			}
-		}
-		if other.TechniqueDefault != nil {
-			def := *other.TechniqueDefault
-			s.TechniqueDefault = &def
-			if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-				s.TechniqueDefault.Name = criteria.Text{}
-				s.TechniqueDefault.Specialization = criteria.Text{}
-				s.TechniqueDefault.Tags = criteria.Text{}
-			}
-		}
-		if other.TechniqueLimitModifier != nil {
-			mod := *other.TechniqueLimitModifier
-			s.TechniqueLimitModifier = &mod
-		}
+		s.Defaults = cloneSkillDefaults(other.Defaults)
+		s.TechniqueDefault = cloneTechniqueDefault(other.TechniqueDefault)
+		s.TechniqueLimitModifier = clonePtr(other.TechniqueLimitModifier)
 		s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 		s.Weapons = CloneWeapons(other.Weapons, s, Reference)
 		s.Features = other.Features.Clone()
@@ -1543,47 +1497,19 @@ func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
-	if other.TechLevel != nil {
-		tl := *other.TechLevel
-		s.TechLevel = &tl
-	}
-	if other.DefaultedFrom != nil {
-		def := *other.DefaultedFrom
-		s.DefaultedFrom = &def
-	}
+	s.TechLevel = clonePtr(other.TechLevel)
+	s.DefaultedFrom = clonePtr(other.DefaultedFrom)
 	s.Defaults = nil
 	s.TechniqueDefault = nil
 	s.TechniqueLimitModifier = nil
 	if isTechnique {
-		if other.TechniqueDefault != nil {
-			def := *other.TechniqueDefault
-			s.TechniqueDefault = &def
-			if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-				// As in SyncWithSource: the criteria are neither shown nor consulted for such a default, but would
-				// still be written to disk and hashed, so nothing of them is kept.
-				s.TechniqueDefault.Name = criteria.Text{}
-				s.TechniqueDefault.Specialization = criteria.Text{}
-				s.TechniqueDefault.Tags = criteria.Text{}
-			}
-		}
-		if other.TechniqueLimitModifier != nil {
-			mod := *other.TechniqueLimitModifier
-			s.TechniqueLimitModifier = &mod
-		}
-	} else if len(other.Defaults) != 0 {
-		s.Defaults = make([]*SkillDefault, len(other.Defaults))
-		for i, def := range other.Defaults {
-			def2 := *def
-			s.Defaults[i] = &def2
-		}
+		s.TechniqueDefault = cloneTechniqueDefault(other.TechniqueDefault)
+		s.TechniqueLimitModifier = clonePtr(other.TechniqueLimitModifier)
+	} else {
+		s.Defaults = cloneSkillDefaults(other.Defaults)
 	}
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	s.Weapons = CloneWeapons(other.Weapons, skill, mode)
 	s.Features = other.Features.Clone()
-	if len(other.Study) != 0 {
-		s.Study = make([]*Study, len(other.Study))
-		for i := range other.Study {
-			s.Study[i] = other.Study[i].Clone()
-		}
-	}
+	s.Study = cloneStudyList(other.Study)
 }

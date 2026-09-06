@@ -22,11 +22,7 @@ type WeightedStringOption struct {
 
 // Clone returns a deep copy of this option, or nil if this option is nil.
 func (o *WeightedStringOption) Clone() *WeightedStringOption {
-	if o == nil {
-		return nil
-	}
-	clone := *o
-	return &clone
+	return clonePtr(o)
 }
 
 // Valid returns true if this option has a valid weight. A file may contain a null entry, so this must be checked before

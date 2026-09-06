@@ -24,10 +24,21 @@ type Study struct {
 	Note  string     `json:"note,omitzero"`
 }
 
-// Clone creates a copy of the TemplatePicker.
+// Clone creates a copy of the Study.
 func (s *Study) Clone() *Study {
-	clone := *s
-	return &clone
+	return clonePtr(s)
+}
+
+// cloneStudyList creates a deep copy of the provided Study list, or nil when it is empty.
+func cloneStudyList(list []*Study) []*Study {
+	if len(list) == 0 {
+		return nil
+	}
+	clone := make([]*Study, len(list))
+	for i, one := range list {
+		clone[i] = one.Clone()
+	}
+	return clone
 }
 
 // ResolveStudyHours returns the resolved total study hours.

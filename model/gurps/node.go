@@ -87,6 +87,42 @@ func (n *NodeSyncData) hash(h hash.Hash) {
 	hashStrings(h, n.Tags)
 }
 
+// leveledCalc is the "calc" object a skill or spell writes alongside its data: the unsatisfied reason, the resolved
+// notes when they differ from the raw local notes, and, for a non-container with a positive level, the level and
+// relative skill level.
+type leveledCalc struct {
+	Level              fxp.Int `json:"level,omitzero"`
+	RelativeSkillLevel string  `json:"rsl,omitzero"`
+	ResolvedNotes      string  `json:"resolved_notes,omitzero"`
+	UnsatisfiedReason  string  `json:"unsatisfied_reason,omitzero"`
+}
+
+// newLeveledCalc builds the "calc" object for a skill or spell, or returns nil when there is nothing to record so the
+// caller's omitzero field drops it.
+func newLeveledCalc(container bool, level fxp.Int, rsl, unsatisfiedReason, resolvedNotes, localNotes string) *leveledCalc {
+	calc := leveledCalc{UnsatisfiedReason: unsatisfiedReason}
+	if resolvedNotes != localNotes {
+		calc.ResolvedNotes = resolvedNotes
+	}
+	if !container && level > 0 {
+		calc.Level = level
+		calc.RelativeSkillLevel = rsl
+	}
+	if calc == (leveledCalc{}) {
+		return nil
+	}
+	return &calc
+}
+
+// clonePtr returns a pointer to a copy of the value p points at, or nil when p is nil.
+func clonePtr[T any](p *T) *T {
+	if p == nil {
+		return nil
+	}
+	clone := *p
+	return &clone
+}
+
 // RawPointsAdjuster interface for objects that can have their raw points adjusted.
 type RawPointsAdjuster interface {
 	Container() bool

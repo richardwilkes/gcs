@@ -198,14 +198,7 @@ func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, mode CloneMode) *W
 		other.ClonedFromTID = w.TID
 	}
 	other.Damage = *w.Damage.Clone(&other)
-	other.Defaults = nil
-	if len(w.Defaults) != 0 {
-		other.Defaults = make([]*SkillDefault, len(w.Defaults))
-		for i, one := range w.Defaults {
-			d := *one
-			other.Defaults[i] = &d
-		}
-	}
+	other.Defaults = cloneSkillDefaults(w.Defaults)
 	return &other
 }
 

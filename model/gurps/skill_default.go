@@ -76,6 +76,35 @@ func normalizeDefaultType(skillDefaultType string) string {
 	return strings.ToLower(strings.TrimSpace(skillDefaultType))
 }
 
+// cloneSkillDefaults creates a deep copy of the provided SkillDefault list, or nil when it is empty. A nil entry is
+// carried over as is, since the walkers over a default list already skip them.
+func cloneSkillDefaults(list []*SkillDefault) []*SkillDefault {
+	if len(list) == 0 {
+		return nil
+	}
+	clone := make([]*SkillDefault, len(list))
+	for i, one := range list {
+		clone[i] = clonePtr(one)
+	}
+	return clone
+}
+
+// cloneTechniqueDefault creates a copy of a technique's default, or nil when there is none. The criteria of a default
+// that isn't skill-based are neither shown nor consulted, but would still be written to disk and hashed, so nothing of
+// them is kept.
+func cloneTechniqueDefault(def *SkillDefault) *SkillDefault {
+	if def == nil {
+		return nil
+	}
+	clone := *def
+	if !DefaultTypeIsSkillBased(clone.DefaultType) {
+		clone.Name = criteria.Text{}
+		clone.Specialization = criteria.Text{}
+		clone.Tags = criteria.Text{}
+	}
+	return &clone
+}
+
 // CloneWithoutLevelOrPoints creates a copy, but without the level or points set.
 func (s *SkillDefault) CloneWithoutLevelOrPoints() *SkillDefault {
 	clone := *s

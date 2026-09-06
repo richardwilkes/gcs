@@ -53,8 +53,7 @@ func (t *TraitMaxLevelBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (t *TraitMaxLevelBonus) Clone() Feature {
-	other := *t
-	return &other
+	return clonePtr(t)
 }
 
 // FillWithNameableKeys implements Feature.

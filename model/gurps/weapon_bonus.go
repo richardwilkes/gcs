@@ -124,8 +124,7 @@ func (w *WeaponBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (w *WeaponBonus) Clone() Feature {
-	other := *w
-	return &other
+	return clonePtr(w)
 }
 
 // AdjustedAmountForWeapon returns the adjusted amount for the given weapon.

@@ -920,3 +920,44 @@ func TestSkillDefaultRechosenWhenSyncedWithSource(t *testing.T) {
 	c.Equal("Broadsword", local.DefaultedFrom.NameWithReplacements(nil),
 		"syncing changed defaults must re-choose the default rather than keep the one recorded before the sync")
 }
+
+// TestCloneSkillDefaultHelpers verifies the shared deep-copy helpers: cloneSkillDefaults copies each default so the
+// clone can be edited without touching the source, carries nil entries over and turns an empty list into nil, and
+// cloneTechniqueDefault drops the criteria of a default that isn't skill-based while keeping those of one that is.
+func TestCloneSkillDefaultHelpers(t *testing.T) {
+	c := check.New(t)
+	c.Nil(cloneSkillDefaults(nil), "an absent list clones to nil")
+	c.Nil(cloneSkillDefaults([]*SkillDefault{}), "an empty list clones to nil")
+
+	first := &SkillDefault{DefaultType: SkillID, Name: textCriteria(criteria.IsText, "Broadsword"), Modifier: -fxp.Two}
+	list := []*SkillDefault{first, nil}
+	clone := cloneSkillDefaults(list)
+	c.Equal(2, len(clone), "every entry is carried over")
+	c.Nil(clone[1], "a nil entry stays nil")
+	c.True(first != clone[0], "the clone is a distinct object")
+	c.Equal(*first, *clone[0], "the clone holds the same data")
+	clone[0].Modifier = fxp.One
+	c.Equal(-fxp.Two, first.Modifier, "editing the clone leaves the source alone")
+
+	c.Nil(cloneTechniqueDefault(nil), "no technique default clones to nil")
+	skillBased := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.IsText, "Karate"),
+		Specialization: textCriteria(criteria.IsText, "Sport"),
+		Tags:           textCriteria(criteria.IsText, "Combat"),
+		Modifier:       -fxp.Three,
+	}
+	techClone := cloneTechniqueDefault(skillBased)
+	c.True(skillBased != techClone, "the clone is a distinct object")
+	c.Equal(*skillBased, *techClone, "a skill-based default keeps its criteria")
+
+	attrBased := *skillBased
+	attrBased.DefaultType = DexterityID
+	techClone = cloneTechniqueDefault(&attrBased)
+	c.Equal(DexterityID, techClone.DefaultType, "the type is kept")
+	c.Equal(-fxp.Three, techClone.Modifier, "the modifier is kept")
+	c.True(techClone.Name.IsZero(), "the name criteria of an attribute default is dropped")
+	c.True(techClone.Specialization.IsZero(), "the specialization criteria of an attribute default is dropped")
+	c.True(techClone.Tags.IsZero(), "the tags criteria of an attribute default is dropped")
+	c.False(attrBased.Name.IsZero(), "the source keeps its criteria")
+}

@@ -61,8 +61,7 @@ func (s *SkillPointBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (s *SkillPointBonus) Clone() Feature {
-	other := *s
-	return &other
+	return clonePtr(s)
 }
 
 // FillWithNameableKeys implements Feature.

@@ -124,8 +124,7 @@ func (p *PageSettings) EnsureValidity() {
 
 // Clone a copy of this.
 func (p *PageSettings) Clone() *PageSettings {
-	clone := *p
-	return &clone
+	return clonePtr(p)
 }
 
 // EnsurePageSizeIsValid ensures the given page size is valid and returns the corrected value if not.

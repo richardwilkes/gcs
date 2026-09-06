@@ -89,8 +89,7 @@ func (p *PageRefs) Set(pageRef *PageRef) {
 	if p.data == nil {
 		p.data = make(map[string]*PageRef)
 	}
-	r := *pageRef
-	p.data[pageRef.ID] = &r
+	p.data[pageRef.ID] = clonePtr(pageRef)
 }
 
 // Remove the PageRef for the ID.

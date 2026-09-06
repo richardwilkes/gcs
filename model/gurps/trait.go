@@ -1114,12 +1114,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	t.Prereq = t.Prereq.CloneResolvingEmpty(false, isApply)
 	t.Weapons = CloneWeapons(other.Weapons, trait, mode)
 	t.Features = other.Features.Clone()
-	if len(other.Study) != 0 {
-		t.Study = make([]*Study, len(other.Study))
-		for i := range other.Study {
-			t.Study[i] = other.Study[i].Clone()
-		}
-	}
+	t.Study = cloneStudyList(other.Study)
 }
 
 // CanPreconfigureContainer implements Preconfigurable.

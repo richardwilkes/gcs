@@ -276,44 +276,14 @@ func (s *Spell) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if omitCalc(enc) {
 		return json.MarshalEncode(enc, &s.SpellData)
 	}
-	type calcNoLevel struct {
-		ResolvedNotes     string `json:"resolved_notes,omitzero"`
-		UnsatisfiedReason string `json:"unsatisfied_reason,omitzero"`
-	}
-	cnl := calcNoLevel{UnsatisfiedReason: s.UnsatisfiedReason}
-	notes := s.ResolveLocalNotes()
-	if notes != s.LocalNotes {
-		cnl.ResolvedNotes = notes
-	}
-	if s.Container() || s.LevelData.Level <= 0 {
-		value := &struct {
-			SpellData
-			Calc *calcNoLevel `json:"calc,omitzero"`
-		}{
-			SpellData: s.SpellData,
-		}
-		if cnl != (calcNoLevel{}) {
-			value.Calc = &cnl
-		}
-		return json.MarshalEncode(enc, value)
-	}
-	type calc struct {
-		Level              fxp.Int `json:"level"`
-		RelativeSkillLevel string  `json:"rsl"`
-		calcNoLevel
-	}
-	data := struct {
+	return json.MarshalEncode(enc, &struct {
 		SpellData
-		Calc calc `json:"calc"`
+		Calc *leveledCalc `json:"calc,omitzero"`
 	}{
 		SpellData: s.SpellData,
-		Calc: calc{
-			Level:              s.LevelData.Level,
-			RelativeSkillLevel: s.RelativeLevel(),
-			calcNoLevel:        cnl,
-		},
-	}
-	return json.MarshalEncode(enc, &data)
+		Calc: newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
+			s.ResolveLocalNotes(), s.LocalNotes),
+	})
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
@@ -1198,18 +1168,10 @@ func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
-	if other.TechLevel != nil {
-		tl := *other.TechLevel
-		s.TechLevel = &tl
-	}
+	s.TechLevel = clonePtr(other.TechLevel)
 	s.College = slices.Clone(other.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	s.Weapons = CloneWeapons(other.Weapons, spell, mode)
 	s.Features = other.Features.Clone()
-	if len(other.Study) != 0 {
-		s.Study = make([]*Study, len(other.Study))
-		for i := range other.Study {
-			s.Study[i] = other.Study[i].Clone()
-		}
-	}
+	s.Study = cloneStudyList(other.Study)
 }

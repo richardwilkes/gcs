@@ -197,3 +197,47 @@ func TestSkillWithNullDefaultEntry(t *testing.T) {
 	c.Equal(1, len(sk.resolveToSpecificDefaults()), "a nil default is not passed along")
 	c.NotPanics(e.Recalculate, "recalculating still must not panic")
 }
+
+// TestSkillMarshalCalc verifies the "calc" object Skill writes through the marshaling shared with Spell: a container
+// with nothing to report omits it, a skill without a resolvable level records only the reason and resolved notes, a
+// leveled skill adds the level and relative skill level, and the data fields keep preceding "calc".
+func TestSkillMarshalCalc(t *testing.T) {
+	c := check.New(t)
+	marshaled := func(s *Skill) string {
+		data, err := jio.Marshal(s)
+		c.NoError(err)
+		return string(data)
+	}
+
+	container := NewSkill(nil, nil, true)
+	container.Name = "Melee"
+	c.False(strings.Contains(marshaled(container), `"calc"`), "a container with nothing to report has no calc")
+
+	noLevel := NewSkill(nil, nil, false)
+	noLevel.Name = "Shortsword"
+	noLevel.LocalNotes = "Favors @weapon@"
+	noLevel.Replacements = map[string]string{"weapon": "the sabre"}
+	c.True(noLevel.LevelData.Level <= 0, "precondition: the skill must have no resolvable level")
+	c.False(strings.Contains(marshaled(noLevel), `"unsatisfied_reason"`), "no reason means no field")
+	noLevel.UnsatisfiedReason = "Requires Broadsword"
+	out := marshaled(noLevel)
+	c.True(strings.Contains(out, `"calc":{"resolved_notes":"Favors the sabre","unsatisfied_reason":"Requires Broadsword"}`),
+		"an unleveled skill records the resolved notes and reason, and nothing else: %s", out)
+	c.True(strings.Index(out, `"name"`) < strings.Index(out, `"calc"`), "the data fields precede calc: %s", out)
+	var restored Skill
+	c.NoError(jio.Unmarshal([]byte(out), &restored))
+	c.Equal(noLevel.Name, restored.Name, "the data fields survive a round-trip")
+	c.Equal(noLevel.Replacements, restored.Replacements, "the replacements survive a round-trip")
+	noLevel.Replacements = nil
+	noLevel.LocalNotes = "Plain"
+	c.False(strings.Contains(marshaled(noLevel), `"resolved_notes"`), "notes that resolve to themselves are not repeated")
+
+	e := NewEntity()
+	leveled := addTestSkill(e, "Shortsword", "", "", fxp.Four)
+	e.Recalculate()
+	c.True(leveled.LevelData.Level > 0, "precondition: the skill must have a positive level")
+	leveled.UnsatisfiedReason = "Requires Broadsword"
+	out = marshaled(leveled)
+	c.True(strings.Contains(out, `"calc":{"level":`+leveled.LevelData.Level.String()+`,"rsl":"`+leveled.RelativeLevel()+
+		`","unsatisfied_reason":"Requires Broadsword"}`), "a leveled skill records its level, rsl and reason: %s", out)
+}

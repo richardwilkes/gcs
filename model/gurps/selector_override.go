@@ -84,8 +84,7 @@ func (o *SelectorOverride) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (o *SelectorOverride) Clone() Feature {
-	other := *o
-	return &other
+	return clonePtr(o)
 }
 
 // FillWithNameableKeys implements Feature.

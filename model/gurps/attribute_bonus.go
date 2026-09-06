@@ -57,8 +57,7 @@ func (a *AttributeBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (a *AttributeBonus) Clone() Feature {
-	other := *a
-	return &other
+	return clonePtr(a)
 }
 
 // FillWithNameableKeys implements Feature.

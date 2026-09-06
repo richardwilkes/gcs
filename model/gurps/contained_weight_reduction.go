@@ -42,8 +42,7 @@ func (c *ContainedWeightReduction) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (c *ContainedWeightReduction) Clone() Feature {
-	other := *c
-	return &other
+	return clonePtr(c)
 }
 
 // FillWithNameableKeys implements Feature.

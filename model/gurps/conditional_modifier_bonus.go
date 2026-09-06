@@ -43,8 +43,7 @@ func (c *ConditionalModifierBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (c *ConditionalModifierBonus) Clone() Feature {
-	other := *c
-	return &other
+	return clonePtr(c)
 }
 
 // Hash writes this object's contents into the hasher.

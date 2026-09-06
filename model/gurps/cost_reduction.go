@@ -43,8 +43,7 @@ func (c *CostReduction) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (c *CostReduction) Clone() Feature {
-	other := *c
-	return &other
+	return clonePtr(c)
 }
 
 // FillWithNameableKeys implements Feature.
