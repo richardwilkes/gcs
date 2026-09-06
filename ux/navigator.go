@@ -96,7 +96,7 @@ type Navigator struct {
 
 func newNavigator() *Navigator {
 	n := &Navigator{
-		toolbar:     unison.NewPanel(),
+		toolbar:     newToolbar(),
 		scroll:      unison.NewScrollPanel(),
 		table:       unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
 		deepSearch:  make(map[string]bool),
@@ -217,19 +217,9 @@ func (n *Navigator) setupToolBar() {
 	first := unison.NewPanel()
 	first.AddChild(NewDefaultInfoPop())
 	first.AddChild(helpButton)
-	first.AddChild(
-		NewScaleField(
-			gurps.InitialUIScaleMin,
-			gurps.InitialUIScaleMax,
-			func() int { return gurps.InitialNavigatorUIScaleDef },
-			func() int { return gurps.GlobalSettings().General.NavigatorUIScale },
-			func(scale int) { gurps.GlobalSettings().General.NavigatorUIScale = scale },
-			nil,
-			false,
-			false,
-			n.scroll,
-		),
-	)
+	addUIScaleField(first, func() int { return gurps.InitialNavigatorUIScaleDef },
+		func() int { return gurps.GlobalSettings().General.NavigatorUIScale },
+		func(scale int) { gurps.GlobalSettings().General.NavigatorUIScale = scale }, false, n.scroll)
 	first.AddChild(hierarchyButton)
 	first.AddChild(NewToolbarSeparator())
 	first.AddChild(addLibraryButton)
@@ -285,15 +275,9 @@ func (n *Navigator) setupToolBar() {
 		HSpacing: unison.StdHSpacing,
 	})
 
-	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	n.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		VSpacing: unison.StdVSpacing,
-	})
-	n.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
 	})
 	n.toolbar.AddChild(first)
 	n.toolbar.AddChild(second)

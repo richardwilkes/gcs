@@ -188,37 +188,17 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	d.namesOnlyCheckBox.SetTitle(i18n.Text("Names Only"))
 	d.namesOnlyCheckBox.ClickCallback = func() { d.ApplyFilter(SelectedTags(filterPopup)) }
 
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
+	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(
-		NewScaleField(
-			gurps.InitialUIScaleMin,
-			gurps.InitialUIScaleMax,
-			func() int { return gurps.GlobalSettings().General.InitialListUIScale },
-			func() int { return d.scale },
-			func(scale int) { d.scale = scale },
-			nil,
-			false,
-			false,
-			d.scroll,
-		),
-	)
+	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialListUIScale },
+		func() int { return d.scale }, func(scale int) { d.scale = scale }, false, d.scroll)
 	toolbar.AddChild(hierarchyButton)
 	toolbar.AddChild(noteToggleButton)
 	toolbar.AddChild(sizeToFitButton)
 	toolbar.AddChild(d.filterField)
 	toolbar.AddChild(d.namesOnlyCheckBox)
 	toolbar.AddChild(filterPopup)
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	finishToolbarLayout(toolbar)
 	return toolbar
 }
 

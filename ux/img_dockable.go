@@ -117,13 +117,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	sizeLabel.Font = unison.DefaultFieldTheme.Font
 	sizeLabel.SetTitle(fmt.Sprintf("%d x %d pixels", int(size.Width), int(size.Height)))
 
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
+	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(
 		NewScaleField(
@@ -140,10 +134,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	)
 	toolbar.AddChild(typeLabel)
 	toolbar.AddChild(sizeLabel)
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	finishToolbarLayout(toolbar)
 
 	d.AddChild(toolbar)
 	d.AddChild(d.scroll)

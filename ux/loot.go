@@ -196,29 +196,11 @@ func (l *LootSheet) DockKey() string {
 }
 
 func (l *LootSheet) createToolbar() {
-	l.toolbar = unison.NewPanel()
+	l.toolbar = newToolbar()
 	l.AddChild(l.toolbar)
-	l.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
-	l.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
 	l.toolbar.AddChild(NewDefaultInfoPop())
-
-	l.toolbar.AddChild(
-		NewScaleField(
-			gurps.InitialUIScaleMin,
-			gurps.InitialUIScaleMax,
-			func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
-			func() int { return l.scale },
-			func(scale int) { l.scale = scale },
-			nil,
-			false,
-			true,
-			l.scroll,
-		),
-	)
+	addUIScaleField(l.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
+		func() int { return l.scale }, func(scale int) { l.scale = scale }, true, l.scroll)
 
 	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
 	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
@@ -248,10 +230,7 @@ func (l *LootSheet) createToolbar() {
 		searchSheetTable(refList, text, namesOnly, l.Notes)
 	})
 
-	l.toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(l.toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	finishToolbarLayout(l.toolbar)
 }
 
 const (

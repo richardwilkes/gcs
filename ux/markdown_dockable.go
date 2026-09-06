@@ -156,13 +156,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		d.scroller.SetContent(d.markdown, behavior.Fill, behavior.Fill)
 	}
 
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
+	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(NewMarkdownGuideButton())
 	toolbar.AddChild(
@@ -202,10 +196,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		toolbar.AddChild(editToggle)
 	}
 
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	finishToolbarLayout(toolbar)
 
 	d.AddChild(toolbar)
 	d.AddChild(d.scroller)

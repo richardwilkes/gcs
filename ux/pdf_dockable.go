@@ -325,13 +325,7 @@ func (d *PDFDockable) DockKey() string {
 }
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
-	outer := unison.NewPanel()
-	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
-	outer.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
+	outer := newToolbar()
 
 	first := unison.NewPanel()
 	first.SetLayoutData(&unison.FlexLayoutData{

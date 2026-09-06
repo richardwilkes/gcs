@@ -209,34 +209,11 @@ func UpdateCalculator(sheet *Sheet) {
 }
 
 func (c *Calculator) createToolbar() *unison.Panel {
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
-
+	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(
-		NewScaleField(
-			gurps.InitialUIScaleMin,
-			gurps.InitialUIScaleMax,
-			func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
-			func() int { return c.scale },
-			func(scale int) { c.scale = scale },
-			nil,
-			false,
-			false,
-			c.scroll,
-		),
-	)
-
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
+		func() int { return c.scale }, func(scale int) { c.scale = scale }, false, c.scroll)
+	finishToolbarLayout(toolbar)
 	return toolbar
 }
 

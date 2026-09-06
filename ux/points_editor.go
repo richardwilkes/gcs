@@ -136,13 +136,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 }
 
 func (e *pointsEditor) createToolbar() unison.Paneler {
-	toolbar := unison.NewPanel()
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
+	toolbar := newToolbar()
 
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
@@ -166,10 +160,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 	addButton.ClickCallback = e.addEntry
 	toolbar.AddChild(addButton)
 
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	finishToolbarLayout(toolbar)
 	return toolbar
 }
 

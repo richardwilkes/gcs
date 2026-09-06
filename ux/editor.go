@@ -159,10 +159,7 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 }
 
 func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
-
+	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
 
 	if helpMD != "" {
@@ -172,19 +169,8 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 		toolbar.AddChild(helpButton)
 	}
 
-	toolbar.AddChild(
-		NewScaleField(
-			gurps.InitialUIScaleMin,
-			gurps.InitialUIScaleMax,
-			func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
-			func() int { return e.scale },
-			func(scale int) { e.scale = scale },
-			nil,
-			false,
-			false,
-			e.scroll,
-		),
-	)
+	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
+		func() int { return e.scale }, func(scale int) { e.scale = scale }, false, e.scroll)
 
 	e.applyButton, e.cancelButton = newApplyCancelButtons(toolbar, true,
 		func() bool {
@@ -227,14 +213,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 		initToolbar(e, toolbar)
 	}
 
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	finishToolbarLayout(toolbar)
 	return toolbar
 }
 

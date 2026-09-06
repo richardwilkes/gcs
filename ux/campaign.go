@@ -80,31 +80,11 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 		VGrab:  true,
 	})
 
-	c.toolbar = unison.NewPanel()
-	c.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
-	c.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
+	c.toolbar = newToolbar()
 	c.toolbar.AddChild(NewDefaultInfoPop())
-	c.toolbar.AddChild(
-		NewScaleField(
-			gurps.InitialUIScaleMin,
-			gurps.InitialUIScaleMax,
-			func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
-			func() int { return c.scale },
-			func(scale int) { c.scale = scale },
-			nil,
-			false,
-			false,
-			c.scroll,
-		),
-	)
-	c.toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(c.toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	addUIScaleField(c.toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
+		func() int { return c.scale }, func(scale int) { c.scale = scale }, false, c.scroll)
+	finishToolbarLayout(c.toolbar)
 
 	c.AddChild(c.toolbar)
 	c.AddChild(c.scroll)

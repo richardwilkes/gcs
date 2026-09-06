@@ -131,13 +131,7 @@ func (d *SettingsDockable) AttemptClose() bool {
 }
 
 func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func(*unison.Panel)) *unison.Panel {
-	toolbar := unison.NewPanel()
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
+	toolbar := newToolbar()
 	if addToStartToolbar != nil {
 		addToStartToolbar(toolbar)
 	}
@@ -162,10 +156,7 @@ func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func
 		spacer.SetLayoutData(&unison.FlexLayoutData{HGrab: true})
 		toolbar.AddChildAtIndex(spacer, index)
 	}
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	finishToolbarLayout(toolbar)
 	return toolbar
 }
 

@@ -214,14 +214,8 @@ func (t *Template) DockKey() string {
 }
 
 func (t *Template) createToolbar() {
-	t.toolbar = unison.NewPanel()
+	t.toolbar = newToolbar()
 	t.AddChild(t.toolbar)
-	t.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
-	t.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
 	t.toolbar.AddChild(NewDefaultInfoPop())
 
 	helpButton := unison.NewSVGButton(svg.Help)
@@ -229,19 +223,8 @@ func (t *Template) createToolbar() {
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Character%20Templates") }
 	t.toolbar.AddChild(helpButton)
 
-	t.toolbar.AddChild(
-		NewScaleField(
-			gurps.InitialUIScaleMin,
-			gurps.InitialUIScaleMax,
-			func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
-			func() int { return t.scale },
-			func(scale int) { t.scale = scale },
-			nil,
-			false,
-			true,
-			t.scroll,
-		),
-	)
+	addUIScaleField(t.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
+		func() int { return t.scale }, func(scale int) { t.scale = scale }, true, t.scroll)
 
 	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
 	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
@@ -281,10 +264,7 @@ func (t *Template) createToolbar() {
 		searchSheetTable(refList, text, namesOnly, t.Notes)
 	})
 
-	t.toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(t.toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	finishToolbarLayout(t.toolbar)
 }
 
 func (t *Template) keyToPanel(key *uti.DataType) *unison.Panel {
