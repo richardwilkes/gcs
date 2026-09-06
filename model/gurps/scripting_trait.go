@@ -16,13 +16,7 @@ import (
 )
 
 func deferredNewScriptTrait(trait *Trait) ScriptSelfProvider {
-	if trait == nil {
-		return ScriptSelfProvider{}
-	}
-	return ScriptSelfProvider{
-		ID:       string(trait.TID),
-		Provider: func(r *goja.Runtime) any { return newScriptTrait(r, trait) },
-	}
+	return deferredScriptSelf(trait, newScriptTrait)
 }
 
 func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
@@ -39,72 +33,27 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	m["frequency"] = func() goja.Value { return r.ToValue(trait.ResolvedFrequency(nil).Number()) }
 	if trait.Container() {
 		m["kind"] = func() goja.Value { return r.ToValue(strings.ReplaceAll(trait.ContainerType.Key(), "_", " ")) }
-		m["children"] = func() goja.Value {
-			children := make([]*goja.Object, 0, len(trait.Children))
-			for _, child := range trait.Children {
-				if child.Enabled() {
-					children = append(children, newScriptTrait(r, child))
-				}
-			}
-			return r.ToValue(children)
-		}
-		m["find"] = func() goja.Value {
-			return r.ToValue(func(call goja.FunctionCall) goja.Value {
-				name := callArgAsString(call, 0)
-				tag := callArgAsString(call, 1)
-				return findScriptTraits(r, name, tag, trait.Children...)
-			})
-		}
+		m["children"] = func() goja.Value { return scriptObjects(r, trait.Children, (*Trait).Enabled, newScriptTrait) }
+		m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
+			return findScriptTraits(r, name, tag, trait.Children...)
+		})
 	} else {
 		if trait.CanLevel {
 			m["level"] = func() goja.Value {
 				return r.ToValue(trait.CurrentLevel().AsFloat[float64]())
 			}
 		}
-		m["weapons"] = func() goja.Value {
-			weapons := make([]*goja.Object, 0, len(trait.Weapons))
-			for _, w := range trait.Weapons {
-				weapons = append(weapons, newScriptWeapon(r, w))
-			}
-			return r.ToValue(weapons)
-		}
-		m["findWeapons"] = func() goja.Value {
-			return r.ToValue(func(call goja.FunctionCall) goja.Value {
-				melee := call.Argument(0).ToBoolean()
-				name := callArgAsString(call, 1)
-				usage := callArgAsString(call, 2)
-				return matchWeapons(r, trait.Weapons, name, usage, melee)
-			})
-		}
+		addScriptWeapons(r, m, func() []*Weapon { return trait.Weapons })
 	}
-	m["findActiveModifier"] = func() goja.Value {
-		return r.ToValue(func(call goja.FunctionCall) goja.Value {
-			name := callArgAsString(call, 0)
-			mod := trait.ActiveModifierFor(name)
-			if mod == nil {
-				return goja.Null()
-			}
-			return newScriptTraitModifier(r, mod)
-		})
-	}
-	m["activeModifiers"] = func() goja.Value {
-		mods := make([]*goja.Object, 0, len(trait.Modifiers))
-		Traverse(func(mod *TraitModifier) bool {
-			mods = append(mods, newScriptTraitModifier(r, mod))
-			return false
-		}, true, true, trait.Modifiers...)
-		return r.ToValue(mods)
-	}
+	addScriptActiveModifiers(r, m, trait.ActiveModifierFor, func() []*TraitModifier { return trait.Modifiers },
+		newScriptTraitModifier)
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
 
 func findScriptTraits(r *goja.Runtime, name, tag string, topLevelTraits ...*Trait) goja.Value {
-	var traits []*goja.Object
-	Traverse(func(trait *Trait) bool {
-		if (name == "" || strings.EqualFold(trait.NameWithReplacements(), name)) && matchTag(tag, trait.Tags) {
-			traits = append(traits, newScriptTrait(r, trait))
-		}
-		return false
-	}, true, false, topLevelTraits...)
-	return r.ToValue(traits)
+	return findScriptNodes(r, name, tag, scriptNodeKind[*Trait]{
+		ctor:   newScriptTrait,
+		nameOf: (*Trait).NameWithReplacements,
+		tagsOf: func(trait *Trait) []string { return trait.Tags },
+	}, nil, topLevelTraits...)
 }

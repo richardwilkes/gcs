@@ -16,13 +16,7 @@ import (
 )
 
 func deferredNewScriptSkill(skill *Skill) ScriptSelfProvider {
-	if skill == nil {
-		return ScriptSelfProvider{}
-	}
-	return ScriptSelfProvider{
-		ID:       string(skill.TID),
-		Provider: func(r *goja.Runtime) any { return newScriptSkill(r, skill) },
-	}
+	return deferredScriptSelf(skill, newScriptSkill)
 }
 
 func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
@@ -31,15 +25,7 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(skill.NameWithReplacements()) }
 	m["notes"] = scriptNotes(r, skill)
 	if skill.Container() {
-		m["children"] = func() goja.Value {
-			children := make([]*goja.Object, 0, len(skill.Children))
-			for _, child := range skill.Children {
-				if child.Enabled() {
-					children = append(children, newScriptSkill(r, child))
-				}
-			}
-			return r.ToValue(children)
-		}
+		m["children"] = func() goja.Value { return scriptObjects(r, skill.Children, nil, newScriptSkill) }
 		m["find"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
 				name := callArgAsString(call, 0)
@@ -85,21 +71,7 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			updateSkillLevelForScript(entity, skill)
 			return r.ToValue(scriptRelativeLevel(skill.LevelData))
 		}
-		m["weapons"] = func() goja.Value {
-			weapons := make([]*goja.Object, 0, len(skill.Weapons))
-			for _, w := range skill.Weapons {
-				weapons = append(weapons, newScriptWeapon(r, w))
-			}
-			return r.ToValue(weapons)
-		}
-		m["findWeapons"] = func() goja.Value {
-			return r.ToValue(func(call goja.FunctionCall) goja.Value {
-				melee := call.Argument(0).ToBoolean()
-				name := callArgAsString(call, 1)
-				usage := callArgAsString(call, 2)
-				return matchWeapons(r, skill.Weapons, name, usage, melee)
-			})
-		}
+		addScriptWeapons(r, m, func() []*Weapon { return skill.Weapons })
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
@@ -119,16 +91,15 @@ func updateSkillLevelForScript(entity *Entity, skill *Skill) {
 	skill.UpdateLevel()
 }
 
+// findScriptSkills is findScriptNodes for skills, which additionally match on a specialization: a skill's required or
+// optional specialization must equal the one asked for, unless none was.
 func findScriptSkills(r *goja.Runtime, name, specialization, tag string, topLevelSkills ...*Skill) goja.Value {
-	var skills []*goja.Object
-	Traverse(func(skill *Skill) bool {
-		if (name == "" || strings.EqualFold(skill.NameWithReplacements(), name)) &&
-			(specialization == "" || strings.EqualFold(skill.SpecializationWithReplacements(), specialization) ||
-				strings.EqualFold(skill.OptionalSpecializationWithReplacements(), specialization)) &&
-			matchTag(tag, skill.Tags) {
-			skills = append(skills, newScriptSkill(r, skill))
-		}
-		return false
-	}, true, false, topLevelSkills...)
-	return r.ToValue(skills)
+	return findScriptNodes(r, name, tag, scriptNodeKind[*Skill]{
+		ctor:   newScriptSkill,
+		nameOf: (*Skill).NameWithReplacements,
+		tagsOf: func(skill *Skill) []string { return skill.Tags },
+	}, func(skill *Skill) bool {
+		return specialization == "" || strings.EqualFold(skill.SpecializationWithReplacements(), specialization) ||
+			strings.EqualFold(skill.OptionalSpecializationWithReplacements(), specialization)
+	}, topLevelSkills...)
 }

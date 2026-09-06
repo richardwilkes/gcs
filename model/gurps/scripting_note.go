@@ -10,19 +10,11 @@
 package gurps
 
 import (
-	"strings"
-
 	"github.com/dop251/goja"
 )
 
 func deferredNewScriptNote(note *Note) ScriptSelfProvider {
-	if note == nil {
-		return ScriptSelfProvider{}
-	}
-	return ScriptSelfProvider{
-		ID:       string(note.TID),
-		Provider: func(r *goja.Runtime) any { return newScriptNote(r, note) },
-	}
+	return deferredScriptSelf(note, newScriptNote)
 }
 
 func newScriptNote(r *goja.Runtime, note *Note) *goja.Object {
@@ -30,31 +22,18 @@ func newScriptNote(r *goja.Runtime, note *Note) *goja.Object {
 	addScriptNodeIdentity(r, m, note, note.Tags, newScriptNote)
 	m["description"] = func() goja.Value { return r.ToValue(note.TextWithReplacements()) }
 	if note.Container() {
-		m["children"] = func() goja.Value {
-			children := make([]*goja.Object, 0, len(note.Children))
-			for _, child := range note.Children {
-				children = append(children, newScriptNote(r, child))
-			}
-			return r.ToValue(children)
-		}
-		m["find"] = func() goja.Value {
-			return r.ToValue(func(call goja.FunctionCall) goja.Value {
-				name := callArgAsString(call, 0)
-				tag := callArgAsString(call, 1)
-				return findScriptNotes(r, name, tag, note.Children...)
-			})
-		}
+		m["children"] = func() goja.Value { return scriptObjects(r, note.Children, nil, newScriptNote) }
+		m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
+			return findScriptNotes(r, name, tag, note.Children...)
+		})
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
 
 func findScriptNotes(r *goja.Runtime, name, tag string, topLevelNotes ...*Note) goja.Value {
-	var notes []*goja.Object
-	Traverse(func(note *Note) bool {
-		if (name == "" || strings.EqualFold(note.TextWithReplacements(), name)) && matchTag(tag, note.Tags) {
-			notes = append(notes, newScriptNote(r, note))
-		}
-		return false
-	}, true, false, topLevelNotes...)
-	return r.ToValue(notes)
+	return findScriptNodes(r, name, tag, scriptNodeKind[*Note]{
+		ctor:   newScriptNote,
+		nameOf: (*Note).TextWithReplacements,
+		tagsOf: func(note *Note) []string { return note.Tags },
+	}, nil, topLevelNotes...)
 }

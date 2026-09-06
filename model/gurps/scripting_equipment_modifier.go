@@ -16,13 +16,7 @@ import (
 )
 
 func deferredNewScriptEquipmentModifier(mod *EquipmentModifier) ScriptSelfProvider {
-	if mod == nil {
-		return ScriptSelfProvider{}
-	}
-	return ScriptSelfProvider{
-		ID:       string(mod.TID),
-		Provider: func(r *goja.Runtime) any { return newScriptEquipmentModifier(r, mod) },
-	}
+	return deferredScriptSelf(mod, newScriptEquipmentModifier)
 }
 
 func newScriptEquipmentModifier(r *goja.Runtime, mod *EquipmentModifier) *goja.Object {

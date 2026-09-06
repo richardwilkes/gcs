@@ -82,3 +82,28 @@ func TestScriptDiceFromIsArchitectureIndependent(t *testing.T) {
 func diceOf(count, sides, modifier, multiplier int) dice.Dice {
 	return dice.Dice{Count: count, Sides: sides, Modifier: modifier, Multiplier: multiplier}
 }
+
+// TestScriptDiceAddSubtract verifies that dice.add and dice.subtract combine two specifications term by term after
+// flattening each one's multiplier, that subtraction never yields a negative count, and that specifications with
+// differing sides are refused.
+func TestScriptDiceAddSubtract(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		expr string
+		want string
+	}{
+		{expr: `dice.add("1d6+1", "2d6-3")`, want: Roller.Format(diceOf(3, 6, -2, 1))},
+		{expr: `dice.add("1d6+1x2", "1d6x3")`, want: Roller.Format(diceOf(5, 6, 2, 1))},
+		{expr: `dice.subtract("3d6+2", "1d6+3")`, want: Roller.Format(diceOf(2, 6, -1, 1))},
+		{expr: `dice.subtract("1d6x2", "3d6")`, want: Roller.Format(diceOf(0, 6, 0, 1))},
+		{expr: `dice.subtract("2d6", "1d6x3")`, want: Roller.Format(diceOf(0, 6, 0, 1))},
+	} {
+		v, err := runScript(0, tc.expr)
+		c.NoError(err, "expr %q", tc.expr)
+		c.Equal(tc.want, v, "expr %q", tc.expr)
+	}
+	for _, expr := range []string{`dice.add("1d6", "1d8")`, `dice.subtract("1d6", "1d8")`} {
+		_, err := runScript(0, expr)
+		c.HasError(err, "expr %q", expr)
+	}
+}

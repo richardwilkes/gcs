@@ -144,3 +144,40 @@ func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 	c.True(inFlight.IsCarried(), "an item in neither list is carried")
 	c.Equal(fxp.FromInteger(100), baseValue(inFlight), "an item in neither list resolves as equipped")
 }
+
+// TestScriptEquipmentWithoutQuantityIsHidden verifies that equipment with no quantity is left out of every list a
+// script can reach: the entity's equipment, a container's children, and the name-and-tag searches, which also skip
+// anything inside a container that itself has no quantity, and match tags regardless of case.
+func TestScriptEquipmentWithoutQuantityIsHidden(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	named := func(name string, parent *Equipment, container bool, quantity fxp.Int) *Equipment {
+		eqp := NewEquipment(e, parent, container)
+		eqp.Name = name
+		eqp.Quantity = quantity
+		return eqp
+	}
+	sword := named("Sword", nil, false, fxp.One)
+	ghost := named("Ghost", nil, false, 0)
+	bag := named("Bag", nil, true, fxp.One)
+	coin := named("Coin", bag, false, fxp.Two)
+	coin.Tags = []string{"Money"}
+	empty := named("Empty", bag, false, 0)
+	bag.Children = []*Equipment{coin, empty}
+	voidBag := named("Void Bag", nil, true, 0)
+	trapped := named("Trapped", voidBag, false, fxp.One)
+	voidBag.Children = []*Equipment{trapped}
+	e.CarriedEquipment = []*Equipment{sword, ghost, bag, voidBag}
+	e.Recalculate()
+
+	names := func(expr string) string {
+		return ResolveScript(e, ScriptSelfProvider{}, expr+".map(x => x.name).join()")
+	}
+	c.Equal("Sword,Bag", names("entity.equipment"))
+	c.Equal("Sword,Bag,Coin", names(`entity.findEquipment("", "")`))
+	c.Equal("Coin", names(`entity.findEquipment("", "money")`))
+	c.Equal("Coin", names(`entity.findEquipment("coin", "MONEY")`))
+	c.Equal("", names(`entity.findEquipment("Trapped", "")`))
+	c.Equal("Coin", names(`entity.findEquipment("Bag", "")[0].children`))
+	c.Equal("Coin", names(`entity.findEquipment("Bag", "")[0].find("", "")`))
+}

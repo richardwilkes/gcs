@@ -57,24 +57,8 @@ func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 		}
 		return goja.Undefined()
 	}
-	m["maximum"] = func() goja.Value {
-		return maximumValueOfAttribute(r, attr)
-	}
-	m["current"] = func() goja.Value {
-		if attr.Entity != nil {
-			id := attr.AttrID + ".current"
-			s := attr.Entity.ResolveVariable(id)
-			v, err := fxp.FromString(s)
-			if err != nil {
-				if !scriptResolveErrorLoggingSuppressed() {
-					slog.Error("failed to resolve attribute to number", "attr", id, "value", s)
-				}
-				return goja.Undefined()
-			}
-			return r.ToValue(v.AsFloat[float64]())
-		}
-		return goja.Undefined()
-	}
+	m["maximum"] = func() goja.Value { return resolveAttributeForScript(r, attr, attr.AttrID) }
+	m["current"] = func() goja.Value { return resolveAttributeForScript(r, attr, attr.AttrID+".current") }
 	m["isDecimal"] = func() goja.Value {
 		if def := attr.AttributeDef(); def != nil {
 			return r.ToValue(def.AllowsDecimal())
@@ -83,23 +67,26 @@ func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 	}
 	m["valueOf"] = func() goja.Value {
 		return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-			return maximumValueOfAttribute(r, attr)
+			return resolveAttributeForScript(r, attr, attr.AttrID)
 		})
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
 
-func maximumValueOfAttribute(r *goja.Runtime, attr *Attribute) goja.Value {
-	if attr.Entity != nil {
-		s := attr.Entity.ResolveVariable(attr.AttrID)
-		v, err := fxp.FromString(s)
-		if err != nil {
-			if !scriptResolveErrorLoggingSuppressed() {
-				slog.Error("failed to resolve attribute to number", "attr", attr.AttrID, "value", s)
-			}
-			return goja.Undefined()
-		}
-		return r.ToValue(v.AsFloat[float64]())
+// resolveAttributeForScript resolves the variable id -- the attribute's own ID for its maximum, or that ID with a
+// ".current" suffix for its current value -- against the attribute's entity and hands the number to the script, or
+// undefined when there is no entity or the variable does not resolve to a number.
+func resolveAttributeForScript(r *goja.Runtime, attr *Attribute, id string) goja.Value {
+	if attr.Entity == nil {
+		return goja.Undefined()
 	}
-	return goja.Undefined()
+	s := attr.Entity.ResolveVariable(id)
+	v, err := fxp.FromString(s)
+	if err != nil {
+		if !scriptResolveErrorLoggingSuppressed() {
+			slog.Error("failed to resolve attribute to number", "attr", id, "value", s)
+		}
+		return goja.Undefined()
+	}
+	return r.ToValue(v.AsFloat[float64]())
 }

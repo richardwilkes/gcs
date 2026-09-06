@@ -10,19 +10,11 @@
 package gurps
 
 import (
-	"strings"
-
 	"github.com/dop251/goja"
 )
 
 func deferredNewScriptSpell(spell *Spell) ScriptSelfProvider {
-	if spell == nil {
-		return ScriptSelfProvider{}
-	}
-	return ScriptSelfProvider{
-		ID:       string(spell.TID),
-		Provider: func(r *goja.Runtime) any { return newScriptSpell(r, spell) },
-	}
+	return deferredScriptSelf(spell, newScriptSpell)
 }
 
 func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
@@ -31,20 +23,10 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(spell.NameWithReplacements()) }
 	m["notes"] = scriptNotes(r, spell)
 	if spell.Container() {
-		m["children"] = func() goja.Value {
-			children := make([]*goja.Object, 0, len(spell.Children))
-			for _, child := range spell.Children {
-				children = append(children, newScriptSpell(r, child))
-			}
-			return r.ToValue(children)
-		}
-		m["find"] = func() goja.Value {
-			return r.ToValue(func(call goja.FunctionCall) goja.Value {
-				name := callArgAsString(call, 0)
-				tag := callArgAsString(call, 1)
-				return findScriptSpells(r, name, tag, spell.Children...)
-			})
-		}
+		m["children"] = func() goja.Value { return scriptObjects(r, spell.Children, nil, newScriptSpell) }
+		m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
+			return findScriptSpells(r, name, tag, spell.Children...)
+		})
 	} else {
 		m["switchedOn"] = func() goja.Value { return r.ToValue(spell.SwitchedOn) }
 		m["techLevel"] = func() goja.Value {
@@ -81,32 +63,15 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 			spell.UpdateLevel()
 			return r.ToValue(scriptRelativeLevel(spell.LevelData))
 		}
-		m["weapons"] = func() goja.Value {
-			weapons := make([]*goja.Object, 0, len(spell.Weapons))
-			for _, w := range spell.Weapons {
-				weapons = append(weapons, newScriptWeapon(r, w))
-			}
-			return r.ToValue(weapons)
-		}
-		m["findWeapons"] = func() goja.Value {
-			return r.ToValue(func(call goja.FunctionCall) goja.Value {
-				melee := call.Argument(0).ToBoolean()
-				name := callArgAsString(call, 1)
-				usage := callArgAsString(call, 2)
-				return matchWeapons(r, spell.Weapons, name, usage, melee)
-			})
-		}
+		addScriptWeapons(r, m, func() []*Weapon { return spell.Weapons })
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
 
 func findScriptSpells(r *goja.Runtime, name, tag string, topLevelSpells ...*Spell) goja.Value {
-	var spells []*goja.Object
-	Traverse(func(spell *Spell) bool {
-		if (name == "" || strings.EqualFold(spell.NameWithReplacements(), name)) && matchTag(tag, spell.Tags) {
-			spells = append(spells, newScriptSpell(r, spell))
-		}
-		return false
-	}, true, false, topLevelSpells...)
-	return r.ToValue(spells)
+	return findScriptNodes(r, name, tag, scriptNodeKind[*Spell]{
+		ctor:   newScriptSpell,
+		nameOf: (*Spell).NameWithReplacements,
+		tagsOf: func(spell *Spell) []string { return spell.Tags },
+	}, nil, topLevelSpells...)
 }

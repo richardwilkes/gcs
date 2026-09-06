@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
@@ -289,6 +290,22 @@ func (s ScriptSelfProvider) ResolveID() string {
 	return s.ID
 }
 
+// deferredScriptSelf returns the provider that presents item to a script as "self": its ID is the item's, and its
+// wrapper is built by ctor only when a script actually runs. A nil item yields the empty provider, which has no self.
+func deferredScriptSelf[T interface {
+	comparable
+	ID() tid.TID
+}](item T, ctor func(*goja.Runtime, T) *goja.Object) ScriptSelfProvider {
+	var zero T
+	if item == zero {
+		return ScriptSelfProvider{}
+	}
+	return ScriptSelfProvider{
+		ID:       string(item.ID()),
+		Provider: func(r *goja.Runtime) any { return ctor(r, item) },
+	}
+}
+
 type scriptResolveKey struct {
 	id   string
 	text string
@@ -429,44 +446,41 @@ func ResolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) s
 // otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a number. If
 // this fails, a value of 0 will be returned.
 func ResolveToNumber(entity *Entity, selfProvider ScriptSelfProvider, text string) fxp.Int {
-	trimmed := strings.TrimSpace(text)
-	if trimmed == "" {
-		return 0
-	}
-	if v, err := fxp.FromString(trimmed); err == nil {
-		return v
-	}
-	result := ResolveScript(entity, selfProvider, text)
-	value, err := fxp.FromString(result)
-	if err != nil {
-		if !scriptResolveErrorLoggingSuppressed() {
-			slog.Error("unable to resolve script result to a number", "result", result, "script", text)
-		}
-		return 0
-	}
-	return value
+	return resolveScriptAs(entity, selfProvider, text, fxp.FromString, "number")
 }
 
 // ResolveToWeight resolves the text to a weight. If the text is just a weight, that weight is returned,
 // otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a weight. If
 // this fails, a weight of 0 will be returned.
 func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text string, defUnits fxp.WeightUnit) fxp.Weight {
+	return resolveScriptAs(entity, selfProvider, text,
+		func(s string) (fxp.Weight, error) { return fxp.WeightFromString(s, defUnits) }, "weight")
+}
+
+// resolveScriptAs resolves the text to a T. Text that parse accepts as it stands is returned directly; otherwise it is
+// evaluated as Javascript and the result handed to parse. Empty text and a result that parse rejects yield the zero T,
+// the latter with an error logged unless logging is suppressed (see SuppressScriptResolveErrorLogging). kind names T
+// in that log message.
+func resolveScriptAs[T any](entity *Entity, selfProvider ScriptSelfProvider, text string, parse func(string) (T, error),
+	kind string,
+) T {
+	var zero T
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
-		return 0
+		return zero
 	}
-	if w, err := fxp.WeightFromString(trimmed, defUnits); err == nil {
-		return w
+	if v, err := parse(trimmed); err == nil {
+		return v
 	}
 	result := ResolveScript(entity, selfProvider, text)
-	w, err := fxp.WeightFromString(result, defUnits)
+	v, err := parse(result)
 	if err != nil {
 		if !scriptResolveErrorLoggingSuppressed() {
-			slog.Error("unable to resolve script result to a weight", "result", result, "script", text)
+			slog.Error("unable to resolve script result to a "+kind, "result", result, "script", text)
 		}
-		return 0
+		return zero
 	}
-	return w
+	return v
 }
 
 const maximumAllowedResolvingDepth = 20

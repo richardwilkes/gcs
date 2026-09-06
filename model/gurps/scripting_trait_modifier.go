@@ -16,13 +16,7 @@ import (
 )
 
 func deferredNewScriptTraitModifier(mod *TraitModifier) ScriptSelfProvider {
-	if mod == nil {
-		return ScriptSelfProvider{}
-	}
-	return ScriptSelfProvider{
-		ID:       string(mod.TID),
-		Provider: func(r *goja.Runtime) any { return newScriptTraitModifier(r, mod) },
-	}
+	return deferredScriptSelf(mod, newScriptTraitModifier)
 }
 
 func newScriptTraitModifier(r *goja.Runtime, mod *TraitModifier) *goja.Object {

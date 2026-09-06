@@ -49,20 +49,9 @@ func (d scriptDice) From(count, sides, modifier, multiplier *float64) string {
 }
 
 func (d scriptDice) Add(left, right string) (string, error) {
-	d1 := Roller.Parse(left)
-	d2 := Roller.Parse(right)
-	if d1.Sides != d2.Sides {
-		return "", errors.New("dice sides must match")
-	}
-	if d1.Multiplier > 0 {
-		d1.Count *= d1.Multiplier
-		d1.Modifier *= d1.Multiplier
-		d1.Multiplier = 1
-	}
-	if d2.Multiplier > 0 {
-		d2.Count *= d2.Multiplier
-		d2.Modifier *= d2.Multiplier
-		d2.Multiplier = 1
+	d1, d2, err := parseMatchingDice(left, right)
+	if err != nil {
+		return "", err
 	}
 	d1.Count += d2.Count
 	d1.Modifier += d2.Modifier
@@ -70,25 +59,35 @@ func (d scriptDice) Add(left, right string) (string, error) {
 }
 
 func (d scriptDice) Subtract(left, right string) (string, error) {
-	d1 := Roller.Parse(left)
-	d2 := Roller.Parse(right)
-	if d1.Sides != d2.Sides {
-		return "", errors.New("dice sides must match")
+	d1, d2, err := parseMatchingDice(left, right)
+	if err != nil {
+		return "", err
 	}
-	if d1.Multiplier > 0 {
-		d1.Count *= d1.Multiplier
-		d1.Modifier *= d1.Multiplier
-		d1.Multiplier = 1
-	}
-	if d2.Multiplier > 0 {
-		d2.Count *= d2.Multiplier
-		d2.Modifier *= d2.Multiplier
-		d2.Multiplier = 1
-	}
-	d1.Count -= d2.Count
-	d1.Count = max(d1.Count, 0)
+	d1.Count = max(d1.Count-d2.Count, 0)
 	d1.Modifier -= d2.Modifier
 	return Roller.Format(d1), nil
+}
+
+// parseMatchingDice parses two dice specifications that are about to be combined, rejecting a pair whose sides differ,
+// and flattens each one's multiplier so that the two can be combined term by term.
+func parseMatchingDice(left, right string) (d1, d2 dice.Dice, err error) {
+	d1 = Roller.Parse(left)
+	d2 = Roller.Parse(right)
+	if d1.Sides != d2.Sides {
+		return dice.Dice{}, dice.Dice{}, errors.New("dice sides must match")
+	}
+	flattenMultiplier(&d1)
+	flattenMultiplier(&d2)
+	return d1, d2, nil
+}
+
+// flattenMultiplier folds a positive multiplier into the count and modifier, leaving a multiplier of 1.
+func flattenMultiplier(d *dice.Dice) {
+	if d.Multiplier > 0 {
+		d.Count *= d.Multiplier
+		d.Modifier *= d.Multiplier
+		d.Multiplier = 1
+	}
 }
 
 func (d scriptDice) Count(diceSpec string) int {

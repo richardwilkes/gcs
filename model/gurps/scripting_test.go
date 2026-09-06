@@ -857,3 +857,86 @@ func TestScriptEvalSemantics(t *testing.T) {
 	c.HasError(err)
 	c.Contains(err.Error(), "Illegal return statement")
 }
+
+// TestResolveToNumberAndWeight verifies the shared resolution path: text the parser accepts is returned as it stands,
+// anything else is run as a script and its result parsed, and empty text or an unparseable result yields zero.
+func TestResolveToNumberAndWeight(t *testing.T) {
+	c := check.New(t)
+	SuppressScriptResolveErrorLogging(func() {
+		c.Equal(fxp.FromInteger(42), ResolveToNumber(nil, ScriptSelfProvider{}, " 42 "), "a plain number")
+		c.Equal(fxp.FromInteger(42), ResolveToNumber(nil, ScriptSelfProvider{}, "6 * 7"), "a script result")
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "  "), "empty text")
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'"), "an unparseable result")
+
+		threeLb, err := fxp.WeightFromString("3 lb", fxp.Pound)
+		c.NoError(err)
+		c.Equal(threeLb, ResolveToWeight(nil, ScriptSelfProvider{}, " 3 lb ", fxp.Pound), "a plain weight")
+		c.Equal(threeLb, ResolveToWeight(nil, ScriptSelfProvider{}, "1 + 2", fxp.Pound), "a script result")
+		c.Equal(fxp.Weight(0), ResolveToWeight(nil, ScriptSelfProvider{}, "", fxp.Pound), "empty text")
+		c.Equal(fxp.Weight(0), ResolveToWeight(nil, ScriptSelfProvider{}, "'not a weight'", fxp.Pound),
+			"an unparseable result")
+	})
+}
+
+// TestScriptAttributeMaximumAndCurrent verifies that an attribute's maximum, current value and valueOf all resolve
+// through the entity, and that an attribute with no entity reports undefined for each.
+func TestScriptAttributeMaximumAndCurrent(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	hp := e.Attributes.Find("hp")
+	c.NotNil(hp)
+	hp.Damage = fxp.Three
+	e.Recalculate()
+
+	c.Equal(hp.Maximum().String(), ResolveScript(e, ScriptSelfProvider{}, `entity.attribute("hp").maximum`))
+	c.Equal(hp.Current().String(), ResolveScript(e, ScriptSelfProvider{}, `entity.attribute("hp").current`))
+	c.Equal(hp.Maximum().String(), ResolveScript(e, ScriptSelfProvider{}, `entity.attribute("hp") + 0`),
+		"valueOf reports the maximum")
+	c.Equal("true", ResolveScript(e, ScriptSelfProvider{},
+		`entity.attribute("hp").maximum - entity.attribute("hp").current === 3`))
+
+	orphan := deferredNewScriptAttribute(&Attribute{AttrID: "hp"})
+	c.Equal("undefined", ResolveScript(nil, orphan, "typeof self.maximum"))
+	c.Equal("undefined", ResolveScript(nil, orphan, "typeof self.current"))
+	c.Equal("undefined", ResolveScript(nil, orphan, "typeof self.valueOf()"))
+}
+
+// TestScriptFindActiveModifier verifies that findActiveModifier on both traits and equipment ignores the case of and
+// surrounding whitespace in the name, as the entity's own name lookups do, answers null for a modifier that is not
+// present, and that activeModifiers leaves disabled modifiers out.
+func TestScriptFindActiveModifier(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	trait := NewTrait(e, nil, false)
+	trait.Name = "Trait"
+	traitMod := NewTraitModifier(e, nil, false)
+	traitMod.Name = "Trait Mod"
+	disabledTraitMod := NewTraitModifier(e, nil, false)
+	disabledTraitMod.Name = "Off"
+	disabledTraitMod.Disabled = true
+	trait.Modifiers = []*TraitModifier{traitMod, disabledTraitMod}
+	e.Traits = []*Trait{trait}
+
+	item := NewEquipment(e, nil, false)
+	item.Name = "Gear"
+	itemMod := NewEquipmentModifier(e, nil, false)
+	itemMod.Name = "Gear Mod"
+	disabledItemMod := NewEquipmentModifier(e, nil, false)
+	disabledItemMod.Name = "Off"
+	disabledItemMod.Disabled = true
+	item.Modifiers = []*EquipmentModifier{itemMod, disabledItemMod}
+	e.CarriedEquipment = []*Equipment{item}
+	e.Recalculate()
+
+	resolve := func(expr string) string { return ResolveScript(e, ScriptSelfProvider{}, expr) }
+	const scriptTrait = `entity.findTraits("Trait", "")[0]`
+	const scriptItem = `entity.findEquipment("Gear", "")[0]`
+	c.Equal(string(traitMod.TID), resolve(scriptTrait+`.findActiveModifier(" trait MOD ").id`))
+	c.Equal(string(itemMod.TID), resolve(scriptItem+`.findActiveModifier(" gear MOD ").id`))
+	c.Equal("null", resolve(scriptTrait+`.findActiveModifier("Off")`))
+	c.Equal("null", resolve(scriptItem+`.findActiveModifier("Off")`))
+	c.Equal("null", resolve(scriptTrait+`.findActiveModifier("Missing")`))
+	c.Equal("Trait Mod", resolve(scriptTrait+`.activeModifiers.map(m => m.name).join()`))
+	c.Equal("Gear Mod", resolve(scriptItem+`.activeModifiers.map(m => m.name).join()`))
+}

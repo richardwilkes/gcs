@@ -10,20 +10,12 @@
 package gurps
 
 import (
-	"strings"
-
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
 func deferredNewScriptEquipment(item *Equipment) ScriptSelfProvider {
-	if item == nil {
-		return ScriptSelfProvider{}
-	}
-	return ScriptSelfProvider{
-		ID:       string(item.TID),
-		Provider: func(r *goja.Runtime) any { return newScriptEquipment(r, item) },
-	}
+	return deferredScriptSelf(item, newScriptEquipment)
 }
 
 func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
@@ -55,88 +47,39 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	m["equipped"] = func() goja.Value { return r.ToValue(item.IsCarried() && item.ReallyEquipped()) }
 	m["switchedOn"] = func() goja.Value { return r.ToValue(item.SwitchedOn) }
 	m["notes"] = scriptNotes(r, item)
-	m["find"] = func() goja.Value {
-		return r.ToValue(func(call goja.FunctionCall) goja.Value {
-			name := callArgAsString(call, 0)
-			tag := callArgAsString(call, 1)
-			return findScriptEquipment(r, name, tag, item.Children...)
-		})
-	}
-	m["weapons"] = func() goja.Value {
-		weapons := make([]*goja.Object, 0, len(item.Weapons))
-		for _, w := range item.Weapons {
-			weapons = append(weapons, newScriptWeapon(r, w))
-		}
-		return r.ToValue(weapons)
-	}
-	m["findWeapons"] = func() goja.Value {
-		return r.ToValue(func(call goja.FunctionCall) goja.Value {
-			melee := call.Argument(0).ToBoolean()
-			name := callArgAsString(call, 1)
-			usage := callArgAsString(call, 2)
-			return matchWeapons(r, item.Weapons, name, usage, melee)
-		})
-	}
-	m["findActiveModifier"] = func() goja.Value {
-		return r.ToValue(func(call goja.FunctionCall) goja.Value {
-			name := callArgAsTrimmedString(call, 0)
-			mod := item.ActiveModifierFor(name)
-			if mod == nil {
-				return goja.Null()
-			}
-			return newScriptEquipmentModifier(r, mod)
-		})
-	}
-	m["activeModifiers"] = func() goja.Value {
-		mods := make([]*goja.Object, 0, len(item.Modifiers))
-		Traverse(func(mod *EquipmentModifier) bool {
-			mods = append(mods, newScriptEquipmentModifier(r, mod))
-			return false
-		}, true, true, item.Modifiers...)
-		return r.ToValue(mods)
-	}
+	m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
+		return findScriptEquipment(r, name, tag, item.Children...)
+	})
+	addScriptWeapons(r, m, func() []*Weapon { return item.Weapons })
+	addScriptActiveModifiers(r, m, item.ActiveModifierFor, func() []*EquipmentModifier { return item.Modifiers },
+		newScriptEquipmentModifier)
 	if item.Container() {
-		m["children"] = func() goja.Value {
-			children := make([]*goja.Object, 0, len(item.Children))
-			for _, child := range item.Children {
-				if child.Quantity > 0 {
-					children = append(children, newScriptEquipment(r, child))
-				}
-			}
-			return r.ToValue(children)
-		}
+		m["children"] = func() goja.Value { return scriptObjects(r, item.Children, hasQuantity, newScriptEquipment) }
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
 
-func findScriptEquipment(r *goja.Runtime, name, tag string, topLevelItems ...*Equipment) goja.Value {
-	var items []*goja.Object
-	Traverse(func(item *Equipment) bool {
-		if item.Quantity > 0 {
-			parent := item.parent
-			for parent != nil {
-				if parent.Quantity <= 0 {
-					return false
-				}
-				parent = parent.parent
-			}
-			if (name == "" || strings.EqualFold(item.NameWithReplacements(), name)) && matchTag(tag, item.Tags) {
-				items = append(items, newScriptEquipment(r, item))
-			}
-		}
-		return false
-	}, true, false, topLevelItems...)
-	return r.ToValue(items)
+// hasQuantity reports whether the item has a positive quantity, which is what makes it present as far as a script is
+// concerned.
+func hasQuantity(item *Equipment) bool {
+	return item.Quantity > 0
 }
 
-func matchTag(tag string, tags []string) bool {
-	if tag == "" {
-		return true
-	}
-	for _, t := range tags {
-		if strings.EqualFold(t, tag) {
-			return true
+// hasQuantityThroughAncestors reports whether the item and every container it sits in have a positive quantity.
+// Traverse descends into a container regardless of its quantity, so a search has to check the chain itself.
+func hasQuantityThroughAncestors(item *Equipment) bool {
+	for ; item != nil; item = item.parent {
+		if !hasQuantity(item) {
+			return false
 		}
 	}
-	return false
+	return true
+}
+
+func findScriptEquipment(r *goja.Runtime, name, tag string, topLevelItems ...*Equipment) goja.Value {
+	return findScriptNodes(r, name, tag, scriptNodeKind[*Equipment]{
+		ctor:   newScriptEquipment,
+		nameOf: (*Equipment).NameWithReplacements,
+		tagsOf: func(item *Equipment) []string { return item.Tags },
+	}, hasQuantityThroughAncestors, topLevelItems...)
 }

@@ -17,13 +17,7 @@ import (
 )
 
 func deferredNewScriptWeapon(w *Weapon) ScriptSelfProvider {
-	if w == nil {
-		return ScriptSelfProvider{}
-	}
-	return ScriptSelfProvider{
-		ID:       string(w.TID),
-		Provider: func(r *goja.Runtime) any { return newScriptWeapon(r, w) },
-	}
+	return deferredScriptSelf(w, newScriptWeapon)
 }
 
 func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
@@ -66,14 +60,23 @@ func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
 
-func matchWeapons(r *goja.Runtime, weapons []*Weapon, name, usage string, melee bool) goja.Value {
-	var result []*goja.Object
-	for _, w := range weapons {
-		if melee == w.IsMelee() &&
-			(name == "" || strings.EqualFold(w.String(), name)) &&
-			(usage == "" || strings.EqualFold(w.UsageWithReplacements(), usage)) {
-			result = append(result, newScriptWeapon(r, w))
-		}
+// addScriptWeapons installs the weapons and findWeapons properties on a wrapper: weapons lists every weapon the
+// supplied function yields, and findWeapons(melee, name, usage) narrows them to those of the given kind whose name and
+// usage match, either of which may be omitted.
+func addScriptWeapons(r *goja.Runtime, m map[string]func() goja.Value, weapons func() []*Weapon) {
+	m["weapons"] = func() goja.Value { return scriptObjects(r, weapons(), nil, newScriptWeapon) }
+	m["findWeapons"] = func() goja.Value {
+		return r.ToValue(func(call goja.FunctionCall) goja.Value {
+			melee := call.Argument(0).ToBoolean()
+			return matchWeapons(r, weapons(), callArgAsString(call, 1), callArgAsString(call, 2), melee)
+		})
 	}
-	return r.ToValue(result)
+}
+
+func matchWeapons(r *goja.Runtime, weapons []*Weapon, name, usage string, melee bool) goja.Value {
+	return scriptObjects(r, weapons, func(w *Weapon) bool {
+		return melee == w.IsMelee() &&
+			(name == "" || strings.EqualFold(w.String(), name)) &&
+			(usage == "" || strings.EqualFold(w.UsageWithReplacements(), usage))
+	}, newScriptWeapon)
 }
