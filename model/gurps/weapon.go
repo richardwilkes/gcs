@@ -596,9 +596,10 @@ func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 
 // resolveDefenseModifier resolves the modifier of one of this weapon's defenses -- parry or block, as named by
 // defenseID -- from the weapon's defaults, starting from the weapon's own modifier in current and applying the
-// entity's defenseBonus (whose explanation is defenseBonusTooltip) and the weapon bonuses of bonusType. It returns 0
-// when no default resolves.
-func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes.InsertBuffer, current fxp.Int, defenseID string, bonusType feature.Type, defenseBonus fxp.Int, defenseBonusTooltip string) fxp.Int {
+// entity's bonus to that defense (whose explanation is defenseBonusTooltip) and the weapon bonuses of bonusType. It
+// returns 0 when no default resolves.
+func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes.InsertBuffer, current fxp.Int, defenseID string, bonusType feature.Type, defenseBonusTooltip string) fxp.Int {
+	defenseBonus := entity.defenseBonus(defenseID)
 	var primaryTooltip *xbytes.InsertBuffer
 	if modifiersTooltip != nil {
 		primaryTooltip = &xbytes.InsertBuffer{}
@@ -626,7 +627,7 @@ func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes
 				continue
 			}
 			// Convert the skill level into a defense level.
-			level = (level + preAdj).Div(fxp.Two).Floor() + fxp.Three + defenseBonus
+			level = defenseLevelFromSkill(level+preAdj, defenseBonus)
 		}
 		level += postAdj
 		if best < level {

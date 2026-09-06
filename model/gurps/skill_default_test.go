@@ -961,3 +961,59 @@ func TestCloneSkillDefaultHelpers(t *testing.T) {
 	c.True(techClone.Tags.IsZero(), "the tags criteria of an attribute default is dropped")
 	c.False(attrBased.Name.IsZero(), "the source keeps its criteria")
 }
+
+// TestDefenseLevelFromSkill verifies the conversion of a skill level into a defense level: half the skill level,
+// rounded down, plus three, plus the defense bonus.
+func TestDefenseLevelFromSkill(t *testing.T) {
+	c := check.New(t)
+	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Twelve, 0), "12 / 2 + 3")
+	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Thirteen, 0), "an odd skill level rounds down")
+	c.Equal(fxp.Eleven, defenseLevelFromSkill(fxp.Thirteen, fxp.Two), "the defense bonus is added after the halving")
+	c.Equal(fxp.Six, defenseLevelFromSkill(fxp.Nine, -fxp.One), "a negative defense bonus is applied as well")
+}
+
+// TestEntityDefenseBonus verifies that the entity hands back the bonus for the named defense and nothing for any
+// other ID.
+func TestEntityDefenseBonus(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.ParryBonus = fxp.Two
+	e.BlockBonus = fxp.Three
+	c.Equal(fxp.Two, e.defenseBonus(ParryID), "parry")
+	c.Equal(fxp.Three, e.defenseBonus(BlockID), "block")
+	c.Equal(fxp.Int(0), e.defenseBonus(DodgeID), "dodge is not a skill-derived defense")
+	c.Equal(fxp.Int(0), e.defenseBonus(SkillID), "a skill default has no defense bonus")
+}
+
+// TestSkillDefaultDefenseLevels verifies that parry and block defaults convert the best matching skill's level into a
+// defense level using the entity's bonus to that defense, on both the full and the fast paths, and that they resolve
+// to nothing when no skill matches.
+func TestSkillDefaultDefenseLevels(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	sk := addTestSkill(e, "Broadsword", "", "", fxp.Four)
+	e.Recalculate()
+	level := sk.CalculateLevel(nil).Level
+	c.NotEqual(fxp.Min, level, "the skill must have a level")
+	// Recalculate() derives these from the entity's features, so they are set afterwards.
+	e.ParryBonus = fxp.One
+	e.BlockBonus = fxp.Two
+
+	parry := newSkillDefaultTo("Broadsword", "", false, fxp.Two)
+	parry.DefaultType = ParryID
+	block := newSkillDefaultTo("Broadsword", "", false, fxp.Two)
+	block.DefaultType = BlockID
+	c.Equal(defenseLevelFromSkill(level, fxp.One)+fxp.Two, parry.SkillLevel(e, nil, false, nil, false),
+		"parry applies the parry bonus and then the default's modifier")
+	c.Equal(defenseLevelFromSkill(level, fxp.Two)+fxp.Two, block.SkillLevel(e, nil, false, nil, false),
+		"block applies the block bonus and then the default's modifier")
+	c.Equal(parry.SkillLevel(e, nil, false, nil, false), parry.SkillLevelFast(e, nil, false, nil, false),
+		"the fast parry path agrees with the full one")
+	c.Equal(block.SkillLevel(e, nil, false, nil, false), block.SkillLevelFast(e, nil, false, nil, false),
+		"the fast block path agrees with the full one")
+
+	missing := newSkillDefaultTo("Shield", "", false, fxp.Two)
+	missing.DefaultType = BlockID
+	c.Equal(fxp.Min, missing.SkillLevel(e, nil, false, nil, false), "no matching skill means no block")
+	c.Equal(fxp.Min, missing.SkillLevelFast(e, nil, false, nil, false), "no matching skill means no fast block either")
+}

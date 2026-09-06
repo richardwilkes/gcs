@@ -70,7 +70,7 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 	if result.CanBlock {
 		if entity := w.Entity(); entity != nil {
 			result.Modifier = w.resolveDefenseModifier(entity, modifiersTooltip, result.Modifier, BlockID,
-				feature.WeaponBlockBonus, entity.BlockBonus, entity.BlockBonusTooltip)
+				feature.WeaponBlockBonus, entity.BlockBonusTooltip)
 		}
 	}
 	result.Validate()

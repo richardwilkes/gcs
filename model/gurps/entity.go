@@ -489,6 +489,19 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 	}
 }
 
+// defenseBonus returns the entity's bonus to the defense with the given ID, ParryID or BlockID, and zero for any other
+// ID.
+func (e *Entity) defenseBonus(defenseID string) fxp.Int {
+	switch defenseID {
+	case ParryID:
+		return e.ParryBonus
+	case BlockID:
+		return e.BlockBonus
+	default:
+		return 0
+	}
+}
+
 // expandThisArmorDRBonus handles a DR bonus that specifies no locations (a "this armor" bonus). Such a bonus applies to
 // whatever locations the owning piece of equipment already grants DR to, so we resolve those locations by scanning the
 // equipment's other DR bonuses and emitting a single copy of the bonus, carrying the original's specialization, that

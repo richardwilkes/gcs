@@ -10,12 +10,15 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"hash"
 	"io/fs"
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -210,6 +213,32 @@ func finishNodeUnmarshal[T Node[T]](node T, tags *[]string, legacyCategories []s
 	if open {
 		SetNodeOpen(node, true)
 	}
+}
+
+// unmarshalWithLegacyTags decodes a bonus's persisted data from dec and, when the tags criteria it holds comes back
+// empty, adopts the one an older file stored under the "category" name instead, if there is one. tags must point into
+// data so that it reflects what was decoded.
+func unmarshalWithLegacyTags(dec *jsontext.Decoder, data any, tags *criteria.Text) error {
+	var raw jsontext.Value
+	if err := json.UnmarshalDecode(dec, &raw); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw, data, dec.Options()); err != nil {
+		return err
+	}
+	if !tags.IsZero() {
+		return nil
+	}
+	var legacy struct {
+		Category criteria.Text `json:"category"`
+	}
+	if err := json.Unmarshal(raw, &legacy, dec.Options()); err != nil {
+		return err
+	}
+	if !legacy.Category.IsZero() {
+		*tags = legacy.Category
+	}
+	return nil
 }
 
 func convertOldCategoriesToTags(tags, categories []string) []string {

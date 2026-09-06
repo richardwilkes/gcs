@@ -277,16 +277,10 @@ func (s *SkillDefault) SkillBased() bool {
 // SkillLevel returns the base skill level for this SkillDefault.
 func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
 	switch s.Type() {
-	case ParryID:
+	case ParryID, BlockID:
 		best := s.best(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
-			best = best.Div(fxp.Two).Floor() + fxp.Three + entity.ParryBonus
-		}
-		return s.finalLevel(best)
-	case BlockID:
-		best := s.best(entity, replacements, requirePoints, excludes)
-		if best != fxp.Min {
-			best = best.Div(fxp.Two).Floor() + fxp.Three + entity.BlockBonus
+			best = defenseLevelFromSkill(best, entity.defenseBonus(s.Type()))
 		}
 		return s.finalLevel(best)
 	case SkillID:
@@ -386,16 +380,10 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 			level = 20
 		}
 		return s.finalLevel(fxp.FromInteger(level))
-	case ParryID:
+	case ParryID, BlockID:
 		best := s.bestFast(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
-			best = best.Div(fxp.Two).Floor() + fxp.Three + entity.ParryBonus
-		}
-		return s.finalLevel(best)
-	case BlockID:
-		best := s.bestFast(entity, replacements, requirePoints, excludes)
-		if best != fxp.Min {
-			best = best.Div(fxp.Two).Floor() + fxp.Three + entity.BlockBonus
+			best = defenseLevelFromSkill(best, entity.defenseBonus(s.Type()))
 		}
 		return s.finalLevel(best)
 	case SkillID:
@@ -446,7 +434,13 @@ func (s *SkillDefault) defenseLevelFast(entity *Entity, replacements map[string]
 	if best == fxp.Min {
 		return fxp.Min
 	}
-	return s.finalLevel((best + skillAdj).Div(fxp.Two).Floor() + fxp.Three + defenseBonus)
+	return s.finalLevel(defenseLevelFromSkill(best+skillAdj, defenseBonus))
+}
+
+// defenseLevelFromSkill converts a skill level into the level of the parry or block that skill provides: half the
+// skill level, rounded down, plus three, plus the entity's bonus to that defense.
+func defenseLevelFromSkill(skillLevel, defenseBonus fxp.Int) fxp.Int {
+	return skillLevel.Div(fxp.Two).Floor() + fxp.Three + defenseBonus
 }
 
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {

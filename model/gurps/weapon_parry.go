@@ -80,7 +80,7 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 		result.Unbalanced = w.ResolveBoolFlag(wswitch.Unbalanced, result.Unbalanced)
 		if entity := w.Entity(); entity != nil {
 			result.Modifier = w.resolveDefenseModifier(entity, modifiersTooltip, result.Modifier, ParryID,
-				feature.WeaponParryBonus, entity.ParryBonus, entity.ParryBonusTooltip)
+				feature.WeaponParryBonus, entity.ParryBonusTooltip)
 		}
 	}
 	result.Validate()

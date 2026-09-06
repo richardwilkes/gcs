@@ -315,18 +315,14 @@ func (w *WeaponBonus) MarshalJSONTo(enc *jsontext.Encoder) error {
 func (w *WeaponBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content struct {
 		WeaponBonusData
-		OldTagsCriteria criteria.Text `json:"category"`
-		OldPerDie       bool          `json:"per_level"`
+		OldPerDie bool `json:"per_level"`
 	}
-	if err := json.UnmarshalDecode(dec, &content); err != nil {
+	if err := unmarshalWithLegacyTags(dec, &content, &content.TagsCriteria); err != nil {
 		return err
 	}
 	w.WeaponBonusData = content.WeaponBonusData
 	if !w.PerDie && content.OldPerDie {
 		w.PerDie = true
-	}
-	if w.TagsCriteria.IsZero() && !content.OldTagsCriteria.IsZero() {
-		w.TagsCriteria = content.OldTagsCriteria
 	}
 	return nil
 }

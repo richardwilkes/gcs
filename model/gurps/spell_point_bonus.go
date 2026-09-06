@@ -14,12 +14,7 @@ import (
 	"encoding/json/v2"
 	"hash"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
@@ -27,64 +22,17 @@ var _ Bonus = &SpellPointBonus{}
 
 // SpellPointBonus holds an adjustment to a spell's points.
 type SpellPointBonus struct {
-	SpellPointBonusData
-}
-
-// SpellPointBonusData holds an adjustment to a spell's points which is persisted.
-type SpellPointBonusData struct {
-	Type feature.Type `json:"type"`
-	FeatureSwitch
-	SpellMatchType spellmatch.Type `json:"match"`
-	NameCriteria   criteria.Text   `json:"name,omitzero"`
-	TagsCriteria   criteria.Text   `json:"tags,omitzero"`
-	LeveledAmount
-	BonusOwner `json:"-"`
+	SpellBonusData
 }
 
 // NewSpellPointBonus creates a new SpellPointBonus.
 func NewSpellPointBonus() *SpellPointBonus {
-	var s SpellPointBonus
-	s.Type = feature.SpellPointBonus
-	s.SpellMatchType = spellmatch.AllColleges
-	s.NameCriteria.Compare = criteria.IsText
-	s.TagsCriteria.Compare = criteria.AnyText
-	s.Amount = fxp.One
-	return &s
-}
-
-// FeatureType implements Feature.
-func (s *SpellPointBonus) FeatureType() feature.Type {
-	return s.Type
+	return &SpellPointBonus{SpellBonusData: newSpellBonusData(feature.SpellPointBonus)}
 }
 
 // Clone implements Feature.
 func (s *SpellPointBonus) Clone() Feature {
 	return clonePtr(s)
-}
-
-// FillWithNameableKeys implements Feature.
-func (s *SpellPointBonus) FillWithNameableKeys(m, existing map[string]string) {
-	if s.SpellMatchType != spellmatch.AllColleges {
-		nameable.Extract(m, existing, s.NameCriteria.Qualifier)
-	}
-	nameable.Extract(m, existing, s.TagsCriteria.Qualifier)
-}
-
-// SetLeveledOwner implements Bonus.
-func (s *SpellPointBonus) SetLeveledOwner(owner LeveledOwner) {
-	s.LeveledOwner = owner
-}
-
-// AddToTooltip implements Bonus.
-func (s *SpellPointBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
-	s.basicAddToTooltip(&s.LeveledAmount, buffer)
-}
-
-// MatchesSpell returns true if this bonus applies to the spell with the given name, power source, colleges and
-// tags, according to its match type.
-func (s *SpellPointBonus) MatchesSpell(replacements map[string]string, name, powerSource string, colleges, tags []string) bool {
-	return s.TagsCriteria.MatchesList(replacements, tags...) &&
-		s.SpellMatchType.MatchForType(s.NameCriteria, replacements, name, powerSource, colleges)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -93,31 +41,15 @@ func (s *SpellPointBonus) Hash(h hash.Hash) {
 		xhash.Num8(h, uint8(255))
 		return
 	}
-	xhash.Num8(h, s.Type)
-	xhash.Bool(h, s.Switchable)
-	xhash.Num8(h, s.SpellMatchType)
-	s.NameCriteria.Hash(h)
-	s.TagsCriteria.Hash(h)
-	s.LeveledAmount.Hash(h)
+	s.SpellBonusData.Hash(h)
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
 func (s *SpellPointBonus) MarshalJSONTo(enc *jsontext.Encoder) error {
-	return json.MarshalEncode(enc, &s.SpellPointBonusData)
+	return json.MarshalEncode(enc, &s.SpellBonusData)
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (s *SpellPointBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var content struct {
-		SpellPointBonusData
-		OldTagsCriteria criteria.Text `json:"category"`
-	}
-	if err := json.UnmarshalDecode(dec, &content); err != nil {
-		return err
-	}
-	s.SpellPointBonusData = content.SpellPointBonusData
-	if s.TagsCriteria.IsZero() && !content.OldTagsCriteria.IsZero() {
-		s.TagsCriteria = content.OldTagsCriteria
-	}
-	return nil
+	return unmarshalWithLegacyTags(dec, &s.SpellBonusData, &s.TagsCriteria)
 }

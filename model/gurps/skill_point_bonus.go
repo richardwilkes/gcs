@@ -117,16 +117,5 @@ func (s *SkillPointBonus) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (s *SkillPointBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var content struct {
-		SkillPointBonusData
-		OldTagsCriteria criteria.Text `json:"category"`
-	}
-	if err := json.UnmarshalDecode(dec, &content); err != nil {
-		return err
-	}
-	s.SkillPointBonusData = content.SkillPointBonusData
-	if s.TagsCriteria.IsZero() && !content.OldTagsCriteria.IsZero() {
-		s.TagsCriteria = content.OldTagsCriteria
-	}
-	return nil
+	return unmarshalWithLegacyTags(dec, &s.SkillPointBonusData, &s.TagsCriteria)
 }
