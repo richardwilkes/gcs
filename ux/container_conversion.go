@@ -72,73 +72,72 @@ func InstallContainerConversionHandlers[T gurps.Node[T]](paneler unison.Paneler,
 
 // CanConvertToContainer returns true if the table's current selection has a row that can be converted to a container.
 func CanConvertToContainer[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
-	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && !data.Container() {
-			return true
-		}
-	}
-	return false
+	return canConvertContainers(table, true)
 }
 
 // CanConvertToNonContainer returns true if the table's current selection has a row that can be converted to a
 // non-container.
 func CanConvertToNonContainer[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
-	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && data.Container() {
-			return true
-		}
-	}
-	return false
+	return canConvertContainers(table, false)
 }
 
 // ConvertToContainer converts any selected rows to containers, if possible.
 func ConvertToContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]]) {
-	before := &containerConversionList{Owner: owner}
-	after := &containerConversionList{Owner: owner}
-	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && !data.Container() {
-			before.List = append(before.List, newContainerConversion(data, false))
-			after.List = append(after.List, newContainerConversion(data, true))
-			data.ConvertToContainer()
-		}
-	}
-	if len(before.List) > 0 {
-		if mgr := unison.UndoManagerFor(table); mgr != nil {
-			mgr.Add(&unison.UndoEdit[*containerConversionList]{
-				ID:         unison.NextUndoID(),
-				EditName:   convertToContainerAction.Title,
-				UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.BeforeData.Apply() },
-				RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.AfterData.Apply() },
-				BeforeData: before,
-				AfterData:  after,
-			})
-		}
-		rebuildAsModified(owner, true)
-	}
+	convertContainers(owner, table, true)
 }
 
 // ConvertToNonContainer converts any selected rows to non-containers, if possible.
 func ConvertToNonContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]]) {
+	convertContainers(owner, table, false)
+}
+
+// convertibleSelection returns the selected rows' data that can be converted in the given direction: to a container
+// when toContainer is true, to a non-container otherwise.
+func convertibleSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], toContainer bool) []ConvertableContainer {
+	var list []ConvertableContainer
+	for _, row := range table.SelectedRows(false) {
+		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) &&
+			data.CanConvertToFromContainer() && data.Container() != toContainer {
+			list = append(list, data)
+		}
+	}
+	return list
+}
+
+// canConvertContainers returns true if the table's current selection has a row that can be converted in the given
+// direction.
+func canConvertContainers[T gurps.Node[T]](table *unison.Table[*Node[T]], toContainer bool) bool {
+	return len(convertibleSelection(table, toContainer)) > 0
+}
+
+// convertContainers converts any selected rows in the given direction, if possible, recording a single undo edit for
+// the whole selection.
+func convertContainers[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], toContainer bool) {
+	targets := convertibleSelection(table, toContainer)
+	if len(targets) == 0 {
+		return
+	}
 	before := &containerConversionList{Owner: owner}
 	after := &containerConversionList{Owner: owner}
-	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) && data.CanConvertToFromContainer() && data.Container() {
-			before.List = append(before.List, newContainerConversion(data, true))
-			after.List = append(after.List, newContainerConversion(data, false))
-			data.ConvertToNonContainer()
-		}
+	for _, data := range targets {
+		conv := newContainerConversion(data, toContainer)
+		before.List = append(before.List, newContainerConversion(data, !toContainer))
+		after.List = append(after.List, conv)
+		conv.Apply()
 	}
-	if len(before.List) > 0 {
-		if mgr := unison.UndoManagerFor(table); mgr != nil {
-			mgr.Add(&unison.UndoEdit[*containerConversionList]{
-				ID:         unison.NextUndoID(),
-				EditName:   convertToNonContainerAction.Title,
-				UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.BeforeData.Apply() },
-				RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.AfterData.Apply() },
-				BeforeData: before,
-				AfterData:  after,
-			})
+	if mgr := unison.UndoManagerFor(table); mgr != nil {
+		action := convertToNonContainerAction
+		if toContainer {
+			action = convertToContainerAction
 		}
-		rebuildAsModified(owner, true)
+		mgr.Add(&unison.UndoEdit[*containerConversionList]{
+			ID:         unison.NextUndoID(),
+			EditName:   action.Title,
+			UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.BeforeData.Apply() },
+			RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList]) { edit.AfterData.Apply() },
+			BeforeData: before,
+			AfterData:  after,
+		})
 	}
+	rebuildAsModified(owner, true)
 }
