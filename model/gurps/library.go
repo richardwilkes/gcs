@@ -26,6 +26,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/go-git/go-billy/v6"
 	"github.com/go-git/go-billy/v6/memfs"
 	"github.com/go-git/go-billy/v6/util"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -707,70 +708,19 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 		return errs.NewWithCause("unable to create directory "+p, err)
 	}
 	root := filepath.Clean(p)
-	rootWithTrailingSep := root
-	if !strings.HasSuffix(rootWithTrailingSep, string(filepath.Separator)) {
-		rootWithTrailingSep += string(filepath.Separator)
-	}
+	var entries []libraryInstallEntry
+	var total int64
 	if libData.UseLatest {
-		mfs := memfs.New()
+		clone := memfs.New()
 		var hash string
 		if hash, err = downloadLatestCommit(ctx,
 			"https://github.com/"+libData.GitHubAccountName+"/"+libData.RepoName+".git",
-			libData.AccessToken, mfs, countReceived); err != nil {
+			libData.AccessToken, clone, countReceived); err != nil {
 			return err
 		}
 		// use hash that was actually downloaded, in case a commit occurred between our original check and the download
 		release.Version = hash
-		// The clone lives in memory, so the pass that totals up the work costs nothing worth avoiding, and having the
-		// total is what lets the second pass report real progress rather than a count of files against nothing.
-		var total int64
-		if err = util.Walk(mfs, "Library", func(_ string, info os.FileInfo, walkErr error) error {
-			if walkErr != nil {
-				return walkErr
-			}
-			if !info.IsDir() {
-				total += info.Size()
-			}
-			return nil
-		}); err != nil {
-			return err
-		}
-		var written int64
-		report(LibraryUpdateInstalling, 0)
-		if err = util.Walk(mfs, "Library", func(path string, info os.FileInfo, walkErr error) error {
-			if walkErr != nil {
-				return walkErr
-			}
-			// Writing the content out is the half of the update the context would otherwise have no say over, and it is
-			// long enough to be worth interrupting, so each file is a chance to stop.
-			if ctxErr := ctx.Err(); ctxErr != nil {
-				return errs.Wrap(ctxErr)
-			}
-			parts := strings.SplitN(filepath.ToSlash(path), "/", 2)
-			if len(parts) != 2 {
-				return nil
-			}
-			if !strings.EqualFold("Library", parts[0]) {
-				return nil
-			}
-			fullPath := filepath.Join(p, parts[1])
-			if !strings.HasPrefix(fullPath, rootWithTrailingSep) {
-				return errs.Newf("path outside of destination directory is not permitted: %s", fullPath)
-			}
-			if info.IsDir() {
-				return os.Mkdir(fullPath, 0o750)
-			}
-			var data []byte
-			if data, walkErr = util.ReadFile(mfs, path); walkErr != nil {
-				return errs.NewWithCause("unable to read "+fullPath, walkErr)
-			}
-			if walkErr = os.WriteFile(fullPath, data, 0o640); walkErr != nil {
-				return errs.NewWithCause("unable to write "+fullPath, walkErr)
-			}
-			written += info.Size()
-			report(LibraryUpdateInstalling, exactFraction(written, total))
-			return nil
-		}); err != nil {
+		if entries, total, err = libraryCloneContent(clone); err != nil {
 			return err
 		}
 	} else {
@@ -783,34 +733,11 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 		if zr, err = zip.NewReader(bytes.NewReader(data), int64(len(data))); err != nil {
 			return errs.NewWithCause("unable to open archive "+release.ZipFileURL, err)
 		}
-		entries, total := libraryArchiveContent(zr)
-		var written int64
-		report(LibraryUpdateInstalling, 0)
-		for _, entry := range entries {
-			// Unpacking is the half of the update the context would otherwise have no say over, and it is long enough
-			// to be worth interrupting, so each file is a chance to stop.
-			if err = ctx.Err(); err != nil {
-				return errs.Wrap(err)
-			}
-			fullPath := filepath.Join(root, entry.path)
-			if !strings.HasPrefix(fullPath, rootWithTrailingSep) {
-				return errs.Newf("path outside of destination directory is not permitted: %s", fullPath)
-			}
-			parent := filepath.Dir(fullPath)
-			if err = os.MkdirAll(parent, 0o750); err != nil {
-				return errs.NewWithCause("unable to create directory "+parent, err)
-			}
-			if err = l.extractFile(entry.file, fullPath); err != nil {
-				return errs.NewWithCause("unable to create file "+fullPath, err)
-			}
-			written += int64(entry.file.UncompressedSize64)
-			report(LibraryUpdateInstalling, exactFraction(written, total))
-		}
+		entries, total = libraryArchiveContent(zr)
 	}
-	// Both paths above report their progress as they go, but neither can be relied upon to have finished on a whole
-	// number of anything -- an archive holding no library content reports nothing at all -- so the phase is closed out
-	// here rather than leaving a bar that stops short of its end.
-	report(LibraryUpdateInstalling, 1)
+	if err = installLibraryContent(ctx, root, entries, total, report); err != nil {
+		return err
+	}
 	// The size of what was transferred is recorded with the version so that the next update has something better than a
 	// guess to scale its progress bar against. It goes on a second line, which both VersionOnDisk() and versions of GCS
 	// that predate it ignore, since they read only the first.
@@ -822,48 +749,115 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 	return nil
 }
 
-func (l *Library) extractFile(f *zip.File, dst string) (err error) {
+// libraryInstallEntry is one file of a downloaded library's content, waiting to be written to disk: its path relative
+// to the library's directory, its size, and the means to read it.
+type libraryInstallEntry struct {
+	path string
+	size int64
+	open func() (io.ReadCloser, error)
+}
+
+// write copies the entry's content into a new file at dst. Library content is data the application reads, never
+// something it runs, so the mode is fixed rather than taken from the download.
+func (e *libraryInstallEntry) write(dst string) (err error) {
 	var r io.ReadCloser
-	if r, err = f.Open(); err != nil {
+	if r, err = e.open(); err != nil {
 		return errs.Wrap(err)
 	}
 	defer xio.CloseIgnoringErrors(r)
-	var file *os.File
-	if file, err = os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.FileInfo().Mode().Perm()&0o750); err != nil {
+	var f *os.File
+	if f, err = os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o640); err != nil {
 		return errs.Wrap(err)
 	}
-	if _, err = io.Copy(file, r); err != nil {
+	if _, err = io.Copy(f, r); err != nil {
 		err = errs.Wrap(err)
 	}
-	if closeErr := file.Close(); closeErr != nil && err == nil {
+	if closeErr := f.Close(); closeErr != nil && err == nil {
 		err = errs.Wrap(closeErr)
 	}
 	return err
 }
 
-// libraryArchiveEntry is a file from a downloaded archive that belongs to the library, paired with its path relative to
-// the library's directory.
-type libraryArchiveEntry struct {
-	file *zip.File
-	path string
+// installLibraryContent writes the entries out below root, reporting the install phase as it goes and closing that
+// phase out at its end. Only an entry that lands below root is written, since the paths come from a download.
+func installLibraryContent(ctx context.Context, root string, entries []libraryInstallEntry, total int64, report LibraryUpdateProgress) error {
+	rootWithTrailingSep := root
+	if !strings.HasSuffix(rootWithTrailingSep, string(filepath.Separator)) {
+		rootWithTrailingSep += string(filepath.Separator)
+	}
+	var written int64
+	report(LibraryUpdateInstalling, 0)
+	for _, entry := range entries {
+		// Writing the content out is the half of the update the context would otherwise have no say over, and it is
+		// long enough to be worth interrupting, so each file is a chance to stop.
+		if err := ctx.Err(); err != nil {
+			return errs.Wrap(err)
+		}
+		fullPath := filepath.Join(root, entry.path)
+		if !strings.HasPrefix(fullPath, rootWithTrailingSep) {
+			return errs.Newf("path outside of destination directory is not permitted: %s", fullPath)
+		}
+		parent := filepath.Dir(fullPath)
+		if err := os.MkdirAll(parent, 0o750); err != nil {
+			return errs.NewWithCause("unable to create directory "+parent, err)
+		}
+		if err := entry.write(fullPath); err != nil {
+			return errs.NewWithCause("unable to create file "+fullPath, err)
+		}
+		written += entry.size
+		report(LibraryUpdateInstalling, exactFraction(written, total))
+	}
+	// The loop reports its progress as it goes, but it can't be relied upon to have finished on a whole number of
+	// anything -- a download holding no library content reports nothing at all -- so the phase is closed out here
+	// rather than leaving a bar that stops short of its end.
+	report(LibraryUpdateInstalling, 1)
+	return nil
 }
 
 // libraryArchiveContent picks out the files in the archive that make up the library's content and totals the space they
 // will take up once expanded. GitHub's source archives hold everything beneath a single top-level directory named for
 // the repository and the commit, so what is wanted is the normal files below that directory's "Library" folder.
-func libraryArchiveContent(zr *zip.Reader) (entries []libraryArchiveEntry, total int64) {
+func libraryArchiveContent(zr *zip.Reader) (entries []libraryInstallEntry, total int64) {
 	for _, f := range zr.File {
-		if f.FileInfo().Mode()&os.ModeType != 0 { // normal files only
+		if !f.FileInfo().Mode().IsRegular() {
 			continue
 		}
 		parts := strings.SplitN(filepath.ToSlash(f.Name), "/", 3)
 		if len(parts) != 3 || !strings.EqualFold("Library", parts[1]) {
 			continue
 		}
-		entries = append(entries, libraryArchiveEntry{file: f, path: parts[2]})
-		total += int64(f.UncompressedSize64)
+		size := int64(f.UncompressedSize64)
+		entries = append(entries, libraryInstallEntry{path: parts[2], size: size, open: f.Open})
+		total += size
 	}
 	return entries, total
+}
+
+// libraryCloneContent picks out the files in a checked-out clone that make up the library's content, which is the
+// normal files below its "Library" folder, and totals their sizes. The clone lives in memory, so the pass costs nothing
+// worth avoiding, and having the total is what lets the install report real progress rather than a count of files
+// against nothing.
+func libraryCloneContent(clone billy.Filesystem) (entries []libraryInstallEntry, total int64, err error) {
+	err = util.Walk(clone, "Library", func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+		parts := strings.SplitN(filepath.ToSlash(path), "/", 2)
+		if len(parts) != 2 || !strings.EqualFold("Library", parts[0]) {
+			return nil
+		}
+		entries = append(entries, libraryInstallEntry{
+			path: parts[1],
+			size: info.Size(),
+			open: func() (io.ReadCloser, error) { return clone.Open(path) },
+		})
+		total += info.Size()
+		return nil
+	})
+	return entries, total, err
 }
 
 // recordedDownloadSize returns the number of bytes the last download of this library transferred, or 0 if that isn't
@@ -889,21 +883,11 @@ func (l *Library) recordedDownloadSize() int64 {
 }
 
 func (l *Library) downloadRelease(ctx context.Context, client *http.Client, release *Release, received func(n int64)) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, release.ZipFileURL, http.NoBody)
+	rsp, err := gitHubGet(ctx, client, release.ZipFileURL, l.Data().AccessToken)
 	if err != nil {
-		return nil, errs.NewWithCause("unable to create request for "+release.ZipFileURL, err)
-	}
-	if accessToken := l.Data().AccessToken; accessToken != "" {
-		req.Header.Set("Authorization", "Bearer "+accessToken)
-	}
-	var rsp *http.Response
-	if rsp, err = client.Do(req); err != nil {
-		return nil, errs.NewWithCause("unable to connect to "+release.ZipFileURL, err)
+		return nil, err
 	}
 	defer xio.DiscardAndCloseIgnoringErrors(rsp.Body)
-	if rsp.StatusCode < 200 || rsp.StatusCode > 299 {
-		return nil, errs.New("unexpected response code from " + release.ZipFileURL + " -> " + rsp.Status)
-	}
 	// The body is read through a counter rather than with io.ReadAll() so that the caller can follow the download as it
 	// arrives. GitHub generates these archives on the fly and sends them without a Content-Length, so counting what has
 	// turned up is all there is to go on.

@@ -233,8 +233,7 @@ func TestLibrariesMasterAndUserCreateOnce(t *testing.T) {
 // process rather than merely being flagged by the race detector.
 func TestPerformUpdateChecksSnapshotsTheSet(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
+	isolateLibraryChangeNotification(t)
 
 	// An empty GitHub account name short-circuits LoadReleases, so the checks below never reach the network.
 	libs := &Libraries{m: make(map[string]*Library)}

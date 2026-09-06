@@ -67,6 +67,28 @@ func (r *Release) HasReleaseNotes() bool {
 	return !r.CheckFailed && r.Notes != ""
 }
 
+// gitHubGet issues a GET for the url, presenting the access token as a bearer token when one is given, and hands back
+// the response only if it succeeded. The caller owns the body of a response that is returned; one that failed its
+// status check has already been drained and closed.
+func gitHubGet(ctx context.Context, client *http.Client, url, accessToken string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
+	if err != nil {
+		return nil, errs.NewWithCause("unable to create request for "+url, err)
+	}
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	var rsp *http.Response
+	if rsp, err = client.Do(req); err != nil {
+		return nil, errs.NewWithCause("unable to connect to "+url, err)
+	}
+	if rsp.StatusCode < 200 || rsp.StatusCode > 299 {
+		xio.DiscardAndCloseIgnoringErrors(rsp.Body)
+		return nil, errs.New("unexpected response code from " + url + " -> " + rsp.Status)
+	}
+	return rsp, nil
+}
+
 // LoadReleases loads the list of releases available from a given GitHub repo.
 func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, accessToken, repoName, currentVersion string, filter func(version, notes string) bool, useLatest bool) ([]Release, error) {
 	if githubAccountName == "" || repoName == "" {
@@ -87,21 +109,11 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 	}
 	var versions []Release
 	uri := "https://api.github.com/repos/" + githubAccountName + "/" + repoName + "/releases"
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, http.NoBody)
+	rsp, err := gitHubGet(ctx, client, uri, accessToken)
 	if err != nil {
-		return nil, errs.NewWithCause("unable to create GitHub API request "+uri, err)
-	}
-	if accessToken != "" {
-		req.Header.Set("Authorization", "Bearer "+accessToken)
-	}
-	var rsp *http.Response
-	if rsp, err = client.Do(req); err != nil {
-		return nil, errs.NewWithCause("GitHub API request failed "+uri, err)
+		return nil, err
 	}
 	defer xio.DiscardAndCloseIgnoringErrors(rsp.Body)
-	if rsp.StatusCode < 200 || rsp.StatusCode > 299 {
-		return nil, errs.New("unexpected response code from GitHub API " + uri + " -> " + rsp.Status)
-	}
 	var releases []struct {
 		TagName    string `json:"tag_name"`
 		Body       string `json:"body"`

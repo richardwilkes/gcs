@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xhttp"
 	"github.com/richardwilkes/toolbox/v2/xio"
 )
 
@@ -38,21 +39,11 @@ func Download(ctx context.Context, client *http.Client, asset Asset, dstPath str
 	if asset.SHA256 == "" {
 		return errs.New("refusing to download " + asset.Name + " without a checksum")
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, asset.URL, http.NoBody)
-	if err != nil {
-		return errs.NewWithCause("unable to request "+asset.Name, err)
-	}
-	if client == nil {
-		client = &http.Client{}
-	}
-	rsp, err := client.Do(req)
+	body, err := xhttp.StreamData(ctx, client, asset.URL)
 	if err != nil {
 		return errs.NewWithCause("unable to download "+asset.Name, err)
 	}
-	defer xio.DiscardAndCloseIgnoringErrors(rsp.Body)
-	if rsp.StatusCode < 200 || rsp.StatusCode > 299 {
-		return errs.New("unexpected response downloading " + asset.Name + " -> " + rsp.Status)
-	}
+	defer xio.DiscardAndCloseIgnoringErrors(body)
 
 	f, err := os.OpenFile(dstPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|os.O_EXCL, 0o600)
 	if err != nil {
@@ -71,7 +62,7 @@ func Download(ctx context.Context, client *http.Client, asset Asset, dstPath str
 	counter := &progressWriter{progress: progress}
 	// Allowing exactly one byte past the expected size is what makes "longer than advertised" detectable: without it, a
 	// body of exactly the limit and one that overruns it look identical.
-	n, err := io.Copy(io.MultiWriter(f, hash, counter), io.LimitReader(rsp.Body, asset.Size+1))
+	n, err := io.Copy(io.MultiWriter(f, hash, counter), io.LimitReader(body, asset.Size+1))
 	if err != nil {
 		return errs.NewWithCause("unable to download "+asset.Name, err)
 	}

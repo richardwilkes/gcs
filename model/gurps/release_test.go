@@ -11,12 +11,54 @@ package gurps
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xio"
 )
+
+// TestGitHubGetPresentsTokenAsBearer verifies that an access token travels as a bearer token and that its absence sends
+// no authorization at all, since GitHub answers a malformed header with a 401 that reads like a bad token. It also
+// verifies that a failed request hands back no response, so a caller can't be left holding a body it must close.
+func TestGitHubGetPresentsTokenAsBearer(t *testing.T) {
+	c := check.New(t)
+	var status atomic.Int64
+	status.Store(http.StatusOK)
+	var authorization atomic.Pointer[string]
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := r.Header.Get("Authorization")
+		authorization.Store(&h)
+		w.WriteHeader(int(status.Load()))
+		fmt.Fprint(w, "ok")
+	}))
+	defer srv.Close()
+
+	for _, token := range []string{"", "secret"} {
+		rsp, err := gitHubGet(t.Context(), srv.Client(), srv.URL, token)
+		c.NoError(err, "token %q", token)
+		if err != nil {
+			continue
+		}
+		data, err := io.ReadAll(rsp.Body)
+		xio.CloseIgnoringErrors(rsp.Body)
+		c.NoError(err, "token %q", token)
+		c.Equal("ok", string(data), "token %q", token)
+		want := ""
+		if token != "" {
+			want = "Bearer " + token
+		}
+		c.Equal(want, *authorization.Load(), "token %q", token)
+	}
+
+	status.Store(http.StatusUnauthorized)
+	rsp, err := gitHubGet(t.Context(), srv.Client(), srv.URL, "secret")
+	c.HasError(err)
+	c.Nil(rsp)
+}
 
 // loadReleasesFrom runs LoadReleases against a test server serving the given GitHub API response body, rather than
 // against the real api.github.com host baked into it.

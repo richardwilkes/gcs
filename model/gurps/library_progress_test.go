@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -21,6 +22,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-git/go-billy/v6/memfs"
+	"github.com/go-git/go-billy/v6/util"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -130,6 +133,64 @@ func TestLibraryDownloadReportsProgress(t *testing.T) {
 	}
 	c.True(seenInstalling, "the install phase must be reported")
 	c.Equal(1.0, lastFraction(*steps, LibraryUpdateInstalling), "the install phase must finish at its end")
+}
+
+// TestLibraryCloneContentInstalls verifies that a clone's content is installed the way an archive's is: only what lies
+// below its "Library" folder, laid out relative to the library's directory, with the install phase reported through to
+// its end. The clone path used to have a loop of its own, which had drifted from the archive's.
+func TestLibraryCloneContentInstalls(t *testing.T) {
+	c := check.New(t)
+	clone := memfs.New()
+	files := map[string]string{
+		"README.md":                 "ignored, since it isn't under Library",
+		"Library/one.gct":           strings.Repeat("a", 4096),
+		"Library/sub/two.gct":       strings.Repeat("b", 8192),
+		"Elsewhere/three.gct":       "ignored, since it isn't under Library",
+		"Library/sub/deep/four.gct": strings.Repeat("c", 2048),
+	}
+	for name, content := range files {
+		c.NoError(util.WriteFile(clone, name, []byte(content), 0o644), name)
+	}
+	c.NoError(clone.MkdirAll("Library/empty", 0o755))
+
+	entries, total, err := libraryCloneContent(clone)
+	c.NoError(err)
+	c.Equal(3, len(entries))
+	c.Equal(int64(4096+8192+2048), total)
+
+	dir := filepath.Join(t.TempDir(), "lib")
+	c.NoError(os.MkdirAll(dir, 0o750))
+	progress, steps := recordProgress()
+	c.NoError(installLibraryContent(t.Context(), dir, entries, total, progress))
+	for _, name := range []string{"one.gct", "sub/two.gct", "sub/deep/four.gct"} {
+		var data []byte
+		data, err = os.ReadFile(filepath.Join(dir, filepath.FromSlash(name)))
+		c.NoError(err, name)
+		c.Equal(files["Library/"+name], string(data), name)
+	}
+	for _, name := range []string{"README.md", "Elsewhere", "Library", "empty"} {
+		_, err = os.Stat(filepath.Join(dir, name))
+		c.True(os.IsNotExist(err), "%s does not belong in the library", name)
+	}
+	c.Equal(0.0, (*steps)[0].fraction, "the install phase must start at its beginning")
+	c.Equal(1.0, lastFraction(*steps, LibraryUpdateInstalling), "the install phase must finish at its end")
+}
+
+// TestInstallLibraryContentRefusesEscapingPaths verifies that an entry whose path would land outside the library's
+// directory is refused rather than written, since the paths come from a download.
+func TestInstallLibraryContentRefusesEscapingPaths(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	entries := []libraryInstallEntry{{
+		path: "../escaped.gct",
+		size: 1,
+		open: func() (io.ReadCloser, error) { return io.NopCloser(strings.NewReader("x")), nil },
+	}}
+	err := installLibraryContent(t.Context(), filepath.Join(dir, "lib"), entries, 1,
+		func(LibraryUpdatePhase, float64) {})
+	c.HasError(err)
+	_, err = os.Stat(filepath.Join(dir, "escaped.gct"))
+	c.True(os.IsNotExist(err), "nothing may be written outside the library")
 }
 
 // TestLibraryDownloadRecordsSize verifies that a download records how much it transferred and that the next one scales

@@ -536,8 +536,7 @@ func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
 // silently dropped, leaving no "update available" indicator until some unrelated reload happened to occur.
 func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	defer resetLibraryChangeNotification()
+	isolateLibraryChangeNotification(t)
 
 	client, setReleases := newReleasesServer(t, "5")
 
@@ -579,13 +578,9 @@ func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
 // progress, over and over, for as long as an update went uninstalled.
 func TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
-
 	// The function is installed before the first check, so nothing can be latched as a pending notification instead of
 	// being counted here.
-	var calls atomic.Int64
-	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	calls := countLibraryChangeNotifications(t)
 
 	client, _ := newReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -611,11 +606,7 @@ func TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges(t *testing.T) {
 // update that doesn't exist -- which, with periodic checks, would reload the library tree on every one of them.
 func TestCheckForAvailableUpgradeStaysQuietForLocalLibrary(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
-
-	var calls atomic.Int64
-	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	calls := countLibraryChangeNotifications(t)
 
 	// An empty GitHub account name means there is nothing to ask about, so the nil client is never touched. Should that
 	// ever cease to be true, the test fails loudly rather than reaching out to the network.
@@ -635,8 +626,7 @@ func TestCheckForAvailableUpgradeStaysQuietForLocalLibrary(t *testing.T) {
 // library with no repository never needs one, since there is nothing to ask.
 func TestNeedsUpgradeCheck(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
+	isolateLibraryChangeNotification(t)
 
 	local := NewLibrary("Local", "", "", "local", t.TempDir())
 	c.False(local.NeedsUpgradeCheck(), "a library without a repository has nothing to check")
@@ -664,11 +654,7 @@ func TestNeedsUpgradeCheck(t *testing.T) {
 // didn't have does notify, which is the entire point of checking more than once.
 func TestCheckForAvailableUpgradeNotifiesWhenReleaseAppears(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
-
-	var calls atomic.Int64
-	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	calls := countLibraryChangeNotifications(t)
 
 	client, setReleases := newReleasesServer(t)
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -697,11 +683,7 @@ func TestCheckForAvailableUpgradeNotifiesWhenReleaseAppears(t *testing.T) {
 // reload the tree.
 func TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
-
-	var calls atomic.Int64
-	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	calls := countLibraryChangeNotifications(t)
 
 	client, setReleases := newReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -744,8 +726,7 @@ func TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears(t *testing.T) {
 // change.
 func TestConfigureDiscardsChecksOfTheOldRepository(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
+	isolateLibraryChangeNotification(t)
 
 	client, _ := newReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -810,8 +791,7 @@ func TestConfigureDiscardsChecksOfTheOldRepository(t *testing.T) {
 // unauthenticated rate limit -- for one answer.
 func TestCheckForAvailableUpgradeJoinsACheckInFlight(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
+	isolateLibraryChangeNotification(t)
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -857,8 +837,7 @@ func TestCheckForAvailableUpgradeJoinsACheckInFlight(t *testing.T) {
 // and neither must be held up by the five minutes the background check allows itself.
 func TestCheckForAvailableUpgradeWaiterHonorsItsContext(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
+	isolateLibraryChangeNotification(t)
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -884,11 +863,7 @@ func TestCheckForAvailableUpgradeWaiterHonorsItsContext(t *testing.T) {
 // configuration would put the old repository's releases back on display and mark the library as checked.
 func TestConfigureDiscardsACheckInFlight(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
-
-	var calls atomic.Int64
-	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	calls := countLibraryChangeNotifications(t)
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -927,8 +902,7 @@ func TestConfigureDiscardsACheckInFlight(t *testing.T) {
 // libraries that have never been checked, but it is exported, and nothing keeps it from being called on one that has.
 func TestConfigureForKeyDiscardsChecksOfTheOldRepository(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
+	isolateLibraryChangeNotification(t)
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -997,11 +971,7 @@ func TestConfigureForKeyDiscardsChecksOfTheOldRepository(t *testing.T) {
 // put it right.
 func TestSetPathDiscardsACheckInFlight(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
-
-	var calls atomic.Int64
-	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	calls := countLibraryChangeNotifications(t)
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	oldDir := t.TempDir()
@@ -1054,11 +1024,7 @@ func TestSetPathDiscardsACheckInFlight(t *testing.T) {
 // up to date. The update flow waits on that check once the download is over, and would have been told it was served.
 func TestDownloadDiscardsACheckInFlight(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
-
-	var calls atomic.Int64
-	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	calls := countLibraryChangeNotifications(t)
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	dir := t.TempDir()
@@ -1127,11 +1093,7 @@ func TestDownloadDiscardsACheckInFlight(t *testing.T) {
 // it, see it discarded, and return with nothing, leaving the library unchecked until the next scheduled check.
 func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
-
-	var calls atomic.Int64
-	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	calls := countLibraryChangeNotifications(t)
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -1182,8 +1144,7 @@ func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded(t *testi
 // again.
 func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsCanceled(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	t.Cleanup(resetLibraryChangeNotification)
+	isolateLibraryChangeNotification(t)
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -1266,8 +1227,7 @@ func (t *blockingFailingTransport) RoundTrip(req *http.Request) (*http.Response,
 // and read by the update-check goroutines, which the race detector flags.
 func TestNotifyOfLibraryChangeConcurrent(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	defer resetLibraryChangeNotification()
+	isolateLibraryChangeNotification(t)
 
 	stop := make(chan struct{})
 	var wg sync.WaitGroup
@@ -1306,8 +1266,7 @@ func TestNotifyOfLibraryChangeConcurrent(t *testing.T) {
 // notification that hasn't been delivered yet.
 func TestNotifyOfLibraryChangePendingSurvivesRemoval(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	defer resetLibraryChangeNotification()
+	isolateLibraryChangeNotification(t)
 
 	NotifyOfLibraryChange()
 	SetNotifyOfLibraryChangeFunc(nil)
@@ -1320,8 +1279,7 @@ func TestNotifyOfLibraryChangePendingSurvivesRemoval(t *testing.T) {
 // background goroutine down with it.
 func TestNotifyOfLibraryChangeSurvivesPanic(t *testing.T) {
 	c := check.New(t)
-	resetLibraryChangeNotification()
-	defer resetLibraryChangeNotification()
+	isolateLibraryChangeNotification(t)
 
 	SetNotifyOfLibraryChangeFunc(func() { panic("boom") })
 	c.NotPanics(NotifyOfLibraryChange)
@@ -1334,6 +1292,24 @@ func resetLibraryChangeNotification() {
 	notifyOfLibraryChange = nil
 	pendingLibraryChange = false
 	libraryChangeLock.Unlock()
+}
+
+// isolateLibraryChangeNotification resets the package-level library change notification state for the test and again
+// once it finishes, so that what the test installs doesn't leak into the tests that follow it.
+func isolateLibraryChangeNotification(t *testing.T) {
+	t.Helper()
+	resetLibraryChangeNotification()
+	t.Cleanup(resetLibraryChangeNotification)
+}
+
+// countLibraryChangeNotifications isolates the library change notification state for the test and installs a
+// notification function that counts what it is told, returning the counter.
+func countLibraryChangeNotifications(t *testing.T) *atomic.Int64 {
+	t.Helper()
+	isolateLibraryChangeNotification(t)
+	var calls atomic.Int64
+	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+	return &calls
 }
 
 // newReleasesServer starts a stand-in for the GitHub releases API. It returns a client that reaches it in place of the
