@@ -10,9 +10,6 @@
 package ux
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -36,13 +33,7 @@ func (p *traitModifierListProvider) SetTraitModifierList(list []*gurps.TraitModi
 // NewTraitModifierTableDockableFromFile loads a list of trait modifiers from a file and creates a new
 // unison.Dockable for them.
 func NewTraitModifierTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	modifiers, err := gurps.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	d := NewTraitModifierTableDockable(filePath, modifiers)
-	d.needsSaveAsPrompt = false
-	return d, nil
+	return openDockableFromFile(filePath, gurps.NewTraitModifiersFromFile, NewTraitModifierTableDockable)
 }
 
 // NewTraitModifierTableDockable creates a new unison.Dockable for trait modifier list files.

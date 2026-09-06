@@ -10,9 +10,6 @@
 package ux
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
@@ -59,13 +56,7 @@ func (p *equipmentListProvider) SetOtherEquipmentList(list []*gurps.Equipment) {
 
 // NewEquipmentTableDockableFromFile loads a list of equipment from a file and creates a new unison.Dockable for them.
 func NewEquipmentTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	equipment, err := gurps.NewEquipmentFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	d := NewEquipmentTableDockable(filePath, equipment)
-	d.needsSaveAsPrompt = false
-	return d, nil
+	return openDockableFromFile(filePath, gurps.NewEquipmentFromFile, NewEquipmentTableDockable)
 }
 
 // NewEquipmentTableDockable creates a new unison.Dockable for equipment list files.

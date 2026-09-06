@@ -10,9 +10,6 @@
 package ux
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -36,13 +33,7 @@ func (p *equipmentModifierListProvider) SetEquipmentModifierList(list []*gurps.E
 // NewEquipmentModifierTableDockableFromFile loads a list of equipment modifiers from a file and creates a new
 // unison.Dockable for them.
 func NewEquipmentModifierTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	modifiers, err := gurps.NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	d := NewEquipmentModifierTableDockable(filePath, modifiers)
-	d.needsSaveAsPrompt = false
-	return d, nil
+	return openDockableFromFile(filePath, gurps.NewEquipmentModifiersFromFile, NewEquipmentModifierTableDockable)
 }
 
 // NewEquipmentModifierTableDockable creates a new unison.Dockable for equipment modifier list files.

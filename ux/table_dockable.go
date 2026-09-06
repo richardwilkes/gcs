@@ -18,9 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -40,40 +38,32 @@ var (
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
 type TableDockable[T gurps.Node[T]] struct {
-	unison.Panel
-	path              string
-	extension         string
+	fileBackedPanel
 	undoMgr           *unison.UndoManager
 	provider          TableProvider[T]
-	saver             func(path string) error
 	canCreateIDs      map[int]bool
 	filterField       *unison.Field
 	namesOnlyCheckBox *unison.CheckBox
 	scroll            *unison.ScrollPanel
 	tableHeader       *unison.TableHeader[*Node[T]]
 	table             *unison.Table[*Node[T]]
-	hash              uint64
 	scale             int
-	needsSaveAsPrompt bool
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
 func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
 	header, table := NewNodeTable(provider, nil)
 	d := &TableDockable[T]{
-		path:              filePath,
-		extension:         extension,
-		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		provider:          provider,
-		saver:             saver,
-		canCreateIDs:      make(map[int]bool),
-		scroll:            unison.NewScrollPanel(),
-		tableHeader:       header,
-		table:             table,
-		scale:             gurps.GlobalSettings().General.InitialListUIScale,
-		needsSaveAsPrompt: true,
+		undoMgr:      unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
+		provider:     provider,
+		canCreateIDs: make(map[int]bool),
+		scroll:       unison.NewScrollPanel(),
+		tableHeader:  header,
+		table:        table,
+		scale:        gurps.GlobalSettings().General.InitialListUIScale,
 	}
 	d.Self = d
+	d.initFileEditor(d, filePath, extension, saver, d)
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	for _, id := range canCreateIDs {
@@ -156,13 +146,7 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 				func(_ any) { d.provider.CreateItem(d, d.table, variant) })
 		}
 	}
-	d.hash = gurps.Hash64(d)
 	return d
-}
-
-// DockKey implements KeyedDockable
-func (d *TableDockable[T]) DockKey() string {
-	return filePrefix + d.path
 }
 
 func (d *TableDockable[T]) createToolbar() *unison.Panel {
@@ -217,77 +201,19 @@ func (d *TableDockable[T]) DockableKind() string {
 	return ListDockableKind
 }
 
-// TitleIcon implements ux.FileBackedDockable
-func (d *TableDockable[T]) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  gurps.FileInfoFor(d.path).SVG,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements ux.FileBackedDockable
-func (d *TableDockable[T]) Title() string {
-	return xfilepath.BaseName(d.path)
-}
-
-func (d *TableDockable[T]) String() string {
-	return d.Title()
-}
-
-// Tooltip implements ux.FileBackedDockable
-func (d *TableDockable[T]) Tooltip() string {
-	return d.path
-}
-
-// BackingFilePath implements ux.FileBackedDockable
-func (d *TableDockable[T]) BackingFilePath() string {
-	return d.path
-}
-
-// SetBackingFilePath implements ux.FileBackedDockable
-func (d *TableDockable[T]) SetBackingFilePath(p string) {
-	d.path = p
-	UpdateTitleForDockable(d)
-}
-
-// Modified implements ux.FileBackedDockable
-func (d *TableDockable[T]) Modified() bool {
-	return d.hash != gurps.Hash64(d)
-}
-
 // MarkModified implements widget.ModifiableRoot.
 func (d *TableDockable[T]) MarkModified(_ unison.Paneler) {
 	UpdateTitleForDockable(d)
 }
 
-// MayAttemptClose implements unison.TabCloser
-func (d *TableDockable[T]) MayAttemptClose() bool {
-	return MayAttemptCloseOfGroup(d)
-}
-
-// AttemptClose implements unison.TabCloser
+// AttemptClose implements unison.TabCloser. The column widths are preserved as the table goes away, so that the file
+// can be opened again with the same ones.
 func (d *TableDockable[T]) AttemptClose() bool {
 	if AttemptSaveForDockable(d) {
 		d.preserveColumns()
 		return AttemptCloseForDockable(d)
 	}
 	return false
-}
-
-func (d *TableDockable[T]) save(forceSaveAs bool) bool {
-	success := false
-	if forceSaveAs || d.needsSaveAsPrompt {
-		success = SaveDockableAs(d, d.extension, d.saver, func(path string) {
-			d.hash = gurps.Hash64(d)
-			d.path = path
-		})
-	} else {
-		success = SaveDockable(d, d.saver, func() { d.hash = gurps.Hash64(d) })
-	}
-	if success {
-		d.needsSaveAsPrompt = false
-	}
-	return success
 }
 
 func (d *TableDockable[T]) preserveColumns() {

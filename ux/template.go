@@ -12,8 +12,6 @@ package ux
 import (
 	"fmt"
 	"maps"
-	"os"
-	"path/filepath"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -27,7 +25,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -47,25 +44,22 @@ var (
 
 // Template holds the view for a GURPS character template.
 type Template struct {
-	unison.Panel
-	path              string
-	targetMgr         *TargetMgr
-	undoMgr           *unison.UndoManager
-	toolbar           *unison.Panel
-	scroll            *unison.ScrollPanel
-	template          *gurps.Template
-	hash              uint64
-	content           *templateContent
-	Traits            *PageList[*gurps.Trait]
-	Skills            *PageList[*gurps.Skill]
-	Spells            *PageList[*gurps.Spell]
-	Equipment         *PageList[*gurps.Equipment]
-	Notes             *PageList[*gurps.Note]
-	lastBody          *gurps.Body
-	searchTracker     *SearchTracker
-	scale             int
-	awaitingUpdate    bool
-	needsSaveAsPrompt bool
+	fileBackedPanel
+	targetMgr      *TargetMgr
+	undoMgr        *unison.UndoManager
+	toolbar        *unison.Panel
+	scroll         *unison.ScrollPanel
+	template       *gurps.Template
+	content        *templateContent
+	Traits         *PageList[*gurps.Trait]
+	Skills         *PageList[*gurps.Skill]
+	Spells         *PageList[*gurps.Spell]
+	Equipment      *PageList[*gurps.Equipment]
+	Notes          *PageList[*gurps.Note]
+	lastBody       *gurps.Body
+	searchTracker  *SearchTracker
+	scale          int
+	awaitingUpdate bool
 }
 
 // OpenTemplates returns the currently open templates.
@@ -81,31 +75,23 @@ func OpenTemplates(exclude *Template) []*Template {
 
 // NewTemplateFromFile loads a GURPS template file and creates a new unison.Dockable for it.
 func NewTemplateFromFile(filePath string) (unison.Dockable, error) {
-	template, err := gurps.NewTemplateFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	t := NewTemplate(filePath, template)
-	t.needsSaveAsPrompt = false
-	return t, nil
+	return openDockableFromFile(filePath, gurps.NewTemplateFromFile, NewTemplate)
 }
 
 // NewTemplate creates a new unison.Dockable for GURPS template files.
 func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t := &Template{
-		path:              filePath,
-		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		scroll:            unison.NewScrollPanel(),
-		template:          template,
-		lastBody:          template.BodyType,
-		scale:             gurps.GlobalSettings().General.InitialSheetUIScale,
-		hash:              gurps.Hash64(template),
-		needsSaveAsPrompt: true,
+		undoMgr:  unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
+		scroll:   unison.NewScrollPanel(),
+		template: template,
+		lastBody: template.BodyType,
+		scale:    gurps.GlobalSettings().General.InitialSheetUIScale,
 	}
 	if t.lastBody == nil {
 		t.lastBody = gurps.FactoryBody()
 	}
 	t.Self = t
+	t.initFileEditor(t, filePath, gurps.TemplatesExt, template.Save, template)
 	t.targetMgr = NewTargetMgr(t)
 	t.SetLayout(&unison.FlexLayout{
 		Columns: 1,
@@ -154,11 +140,6 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 // PageInfoProvider returns the page info provider for this template.
 func (t *Template) PageInfoProvider() gurps.PageInfoProvider {
 	return t.template
-}
-
-// DockKey implements KeyedDockable.
-func (t *Template) DockKey() string {
-	return filePrefix + t.path
 }
 
 func (t *Template) createToolbar() {
@@ -722,44 +703,6 @@ func (t *Template) UndoManager() *unison.UndoManager {
 	return t.undoMgr
 }
 
-// TitleIcon implements ux.FileBackedDockable
-func (t *Template) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  gurps.FileInfoFor(t.path).SVG,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements ux.FileBackedDockable
-func (t *Template) Title() string {
-	return xfilepath.BaseName(t.path)
-}
-
-func (t *Template) String() string {
-	return t.Title()
-}
-
-// Tooltip implements ux.FileBackedDockable
-func (t *Template) Tooltip() string {
-	return t.path
-}
-
-// BackingFilePath implements ux.FileBackedDockable
-func (t *Template) BackingFilePath() string {
-	return t.path
-}
-
-// SetBackingFilePath implements ux.FileBackedDockable
-func (t *Template) SetBackingFilePath(p string) {
-	t.path = p
-	UpdateTitleForDockable(t)
-}
-
-// Modified implements ux.FileBackedDockable
-func (t *Template) Modified() bool {
-	return t.hash != gurps.Hash64(t.template)
-}
-
 // MarkModified implements widget.ModifiableRoot.
 func (t *Template) MarkModified(_ unison.Paneler) {
 	if !t.awaitingUpdate {
@@ -775,39 +718,10 @@ func (t *Template) MarkModified(_ unison.Paneler) {
 	}
 }
 
-// MayAttemptClose implements unison.TabCloser
-func (t *Template) MayAttemptClose() bool {
-	return MayAttemptCloseOfGroup(t)
-}
-
-// AttemptClose implements unison.TabCloser
-func (t *Template) AttemptClose() bool {
-	if AttemptSaveForDockable(t) {
-		return AttemptCloseForDockable(t)
-	}
-	return false
-}
-
 func (t *Template) createContent() unison.Paneler {
 	t.content = newTemplateContent()
 	t.createLists()
 	return t.content
-}
-
-func (t *Template) save(forceSaveAs bool) bool {
-	success := false
-	if forceSaveAs || t.needsSaveAsPrompt {
-		success = SaveDockableAs(t, gurps.TemplatesExt, t.template.Save, func(path string) {
-			t.hash = gurps.Hash64(t.template)
-			t.path = path
-		})
-	} else {
-		success = SaveDockable(t, t.template.Save, func() { t.hash = gurps.Hash64(t.template) })
-	}
-	if success {
-		t.needsSaveAsPrompt = false
-	}
-	return success
 }
 
 // createLists (re)creates the page's lists from the default block layout, which is the one templates follow. A list is

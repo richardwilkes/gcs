@@ -10,9 +10,6 @@
 package ux
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -36,13 +33,7 @@ func (p *noteListProvider) SetNoteList(list []*gurps.Note) {
 
 // NewNoteTableDockableFromFile loads a list of notes from a file and creates a new unison.Dockable for them.
 func NewNoteTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	notes, err := gurps.NewNotesFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	d := NewNoteTableDockable(filePath, notes)
-	d.needsSaveAsPrompt = false
-	return d, nil
+	return openDockableFromFile(filePath, gurps.NewNotesFromFile, NewNoteTableDockable)
 }
 
 // NewNoteTableDockable creates a new unison.Dockable for note list files.

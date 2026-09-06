@@ -10,12 +10,8 @@
 package ux
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -30,39 +26,28 @@ var (
 
 // Campaign holds the view for a GURPS campaign.
 type Campaign struct {
-	unison.Panel
-	path              string
-	toolbar           *unison.Panel
-	scroll            *unison.ScrollPanel
-	content           *unison.Panel
-	campaign          *gurps.Campaign
-	hash              uint64
-	scale             int
-	needsSaveAsPrompt bool
+	fileBackedPanel
+	toolbar  *unison.Panel
+	scroll   *unison.ScrollPanel
+	content  *unison.Panel
+	campaign *gurps.Campaign
+	scale    int
 }
 
 // NewCampaignFromFile loads a GURPS campaign file and creates a new unison.Dockable for it.
 func NewCampaignFromFile(filePath string) (unison.Dockable, error) {
-	campaign, err := gurps.NewCampaignFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	t := NewCampaign(filePath, campaign)
-	t.needsSaveAsPrompt = false
-	return t, nil
+	return openDockableFromFile(filePath, gurps.NewCampaignFromFile, NewCampaign)
 }
 
 // NewCampaign creates a new unison.Dockable for GURPS campaign files.
 func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 	c := &Campaign{
-		path:              filePath,
-		scroll:            unison.NewScrollPanel(),
-		campaign:          campaign,
-		hash:              gurps.Hash64(campaign),
-		scale:             gurps.GlobalSettings().General.InitialEditorUIScale,
-		needsSaveAsPrompt: true,
+		scroll:   unison.NewScrollPanel(),
+		campaign: campaign,
+		scale:    gurps.GlobalSettings().General.InitialEditorUIScale,
 	}
 	c.Self = c
+	c.initFileEditor(c, filePath, gurps.CampaignExt, campaign.Save, campaign)
 	c.SetLayout(&unison.FlexLayout{
 		Columns: 1,
 		HAlign:  align.Fill,
@@ -91,79 +76,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 	return c
 }
 
-// DockKey implements KeyedDockable.
-func (c *Campaign) DockKey() string {
-	return filePrefix + c.path
-}
-
 func (c *Campaign) createContent() unison.Paneler {
 	c.content = unison.NewPanel()
 	return c.content
-}
-
-// TitleIcon implements ux.FileBackedDockable
-func (c *Campaign) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  gurps.FileInfoFor(c.path).SVG,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements ux.FileBackedDockable
-func (c *Campaign) Title() string {
-	return xfilepath.BaseName(c.path)
-}
-
-func (c *Campaign) String() string {
-	return c.Title()
-}
-
-// Tooltip implements ux.FileBackedDockable
-func (c *Campaign) Tooltip() string {
-	return c.path
-}
-
-// Modified implements ux.FileBackedDockable
-func (c *Campaign) Modified() bool {
-	return c.hash != gurps.Hash64(c.campaign)
-}
-
-// MayAttemptClose implements unison.TabCloser
-func (c *Campaign) MayAttemptClose() bool {
-	return MayAttemptCloseOfGroup(c)
-}
-
-// AttemptClose implements unison.TabCloser
-func (c *Campaign) AttemptClose() bool {
-	if AttemptSaveForDockable(c) {
-		return AttemptCloseForDockable(c)
-	}
-	return false
-}
-
-// BackingFilePath implements ux.FileBackedDockable
-func (c *Campaign) BackingFilePath() string {
-	return c.path
-}
-
-// SetBackingFilePath implements ux.FileBackedDockable
-func (c *Campaign) SetBackingFilePath(p string) {
-	c.path = p
-	UpdateTitleForDockable(c)
-}
-
-func (c *Campaign) save(forceSaveAs bool) bool {
-	success := false
-	if forceSaveAs || c.needsSaveAsPrompt {
-		success = SaveDockableAs(c, gurps.CampaignExt, c.campaign.Save, func(path string) {
-			c.hash = gurps.Hash64(c.campaign)
-			c.path = path
-		})
-	} else {
-		success = SaveDockable(c, c.campaign.Save, func() { c.hash = gurps.Hash64(c.campaign) })
-	}
-	if success {
-		c.needsSaveAsPrompt = false
-	}
-	return success
 }

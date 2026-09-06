@@ -364,12 +364,7 @@ func registerActions() {
 		ID:    NewMarkdownFileItemID,
 		Title: i18n.Text("New Markdown File"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			d, err := NewMarkdownDockableWithContent("untitled.md", "", true, true)
-			if err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to create new markdown file"), err)
-			} else {
-				DisplayNewDockable(d)
-			}
+			DisplayNewDockable(NewMarkdownDockableWithContent("untitled.md", "", true, true))
 		},
 	})
 	newMeleeWeaponAction = registerFocusAction("new.melee", NewMeleeWeaponItemID, i18n.Text("New Melee Weapon"),

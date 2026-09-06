@@ -10,9 +10,6 @@
 package ux
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -36,13 +33,7 @@ func (p *skillListProvider) SetSkillList(list []*gurps.Skill) {
 
 // NewSkillTableDockableFromFile loads a list of skills from a file and creates a new unison.Dockable for them.
 func NewSkillTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	skills, err := gurps.NewSkillsFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	d := NewSkillTableDockable(filePath, skills)
-	d.needsSaveAsPrompt = false
-	return d, nil
+	return openDockableFromFile(filePath, gurps.NewSkillsFromFile, NewSkillTableDockable)
 }
 
 // NewSkillTableDockable creates a new unison.Dockable for skill list files.

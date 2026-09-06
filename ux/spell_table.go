@@ -10,9 +10,6 @@
 package ux
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -36,13 +33,7 @@ func (p *spellListProvider) SetSpellList(list []*gurps.Spell) {
 
 // NewSpellTableDockableFromFile loads a list of spells from a file and creates a new unison.Dockable for them.
 func NewSpellTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	spells, err := gurps.NewSpellsFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	d := NewSpellTableDockable(filePath, spells)
-	d.needsSaveAsPrompt = false
-	return d, nil
+	return openDockableFromFile(filePath, gurps.NewSpellsFromFile, NewSpellTableDockable)
 }
 
 // NewSpellTableDockable creates a new unison.Dockable for spell list files.

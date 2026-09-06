@@ -36,7 +36,7 @@ func TestMarkdownDockableNotModifiedWhenOpened(t *testing.T) {
 	} {
 		p := filepath.Join(t.TempDir(), "notes.md")
 		c.NoError(os.WriteFile(p, []byte(tc.data), 0o600), tc.name)
-		d, err := newMarkdownDockable(p, "", true, false)
+		d, err := NewMarkdownDockable(p, true, false)
 		c.NoError(err, tc.name)
 		c.False(d.Modified(), "%s: a freshly opened markdown file must not be reported as modified", tc.name)
 	}
@@ -54,10 +54,7 @@ func TestMarkdownDockableWithContentNotModifiedWhenOpened(t *testing.T) {
 		{name: "CRLF", content: "# Title\r\n\r\nSome text.\r\n"},
 		{name: "CR", content: "# Title\r\rSome text.\r"},
 	} {
-		dockable, err := NewMarkdownDockableWithContent(tc.name, tc.content, true, false)
-		c.NoError(err, tc.name)
-		d, ok := dockable.(*MarkdownDockable)
-		c.True(ok, tc.name)
+		d := NewMarkdownDockableWithContent(tc.name, tc.content, true, false)
 		c.False(d.Modified(), "%s: a freshly opened markdown dockable must not be reported as modified", tc.name)
 	}
 }
@@ -68,8 +65,10 @@ func TestMarkdownDockableModifiedAfterEdit(t *testing.T) {
 	c := check.New(t)
 	p := filepath.Join(t.TempDir(), "notes.md")
 	c.NoError(os.WriteFile(p, []byte("# Title\r\n\r\nSome text.\r\n"), 0o600))
-	d, err := newMarkdownDockable(p, "", true, false)
+	dockable, err := NewMarkdownDockable(p, true, false)
 	c.NoError(err)
+	d, ok := dockable.(*MarkdownDockable)
+	c.True(ok)
 	c.False(d.Modified())
 	d.content += "More text.\n"
 	c.True(d.Modified(), "an edited markdown file must be reported as modified")

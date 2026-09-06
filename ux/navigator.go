@@ -52,14 +52,6 @@ var (
 	_ KeyedDockable   = &Navigator{}
 )
 
-// FileBackedDockable defines methods a Dockable that is based on a file should implement.
-type FileBackedDockable interface {
-	unison.Dockable
-	unison.TabCloser
-	BackingFilePath() string
-	SetBackingFilePath(p string)
-}
-
 // Navigator holds the workspace navigation panel.
 type Navigator struct {
 	unison.Panel

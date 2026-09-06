@@ -24,7 +24,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -42,12 +41,12 @@ const (
 var (
 	_ FileBackedDockable = &ImageDockable{}
 	_ unison.TabCloser   = &ImageDockable{}
+	_ KeyedDockable      = &ImageDockable{}
 )
 
 // ImageDockable holds the view for an image file.
 type ImageDockable struct {
-	unison.Panel
-	path          string
+	fileBackedPanel
 	drawable      unison.Drawable
 	drawablePanel *unison.Panel
 	scroll        *unison.ScrollPanel
@@ -84,11 +83,11 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		kind = imgfmt.ForPath(filePath).String()
 	}
 	d := &ImageDockable{
-		path:     filePath,
 		drawable: drawable,
 		scale:    gurps.GlobalSettings().General.InitialImageUIScale,
 	}
 	d.Self = d
+	d.initFileViewer(d, filePath)
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.drawablePanel = unison.NewPanel()
@@ -206,48 +205,4 @@ func (d *ImageDockable) imageSizer(_ geom.Size) (minSize, prefSize, maxSize geom
 func (d *ImageDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 	gc.DrawRect(dirty, unison.ThemeSurface.Paint(gc, dirty, paintstyle.Fill))
 	d.drawable.DrawInRect(gc, geom.Rect{Size: d.drawable.LogicalSize()}, nil, nil)
-}
-
-// TitleIcon implements ux.FileBackedDockable
-func (d *ImageDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  gurps.FileInfoFor(d.path).SVG,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements ux.FileBackedDockable
-func (d *ImageDockable) Title() string {
-	return xfilepath.BaseName(d.path)
-}
-
-// Tooltip implements ux.FileBackedDockable
-func (d *ImageDockable) Tooltip() string {
-	return d.path
-}
-
-// BackingFilePath implements ux.FileBackedDockable
-func (d *ImageDockable) BackingFilePath() string {
-	return d.path
-}
-
-// SetBackingFilePath implements ux.FileBackedDockable
-func (d *ImageDockable) SetBackingFilePath(p string) {
-	d.path = p
-	UpdateTitleForDockable(d)
-}
-
-// Modified implements ux.FileBackedDockable
-func (d *ImageDockable) Modified() bool {
-	return false
-}
-
-// MayAttemptClose implements unison.TabCloser
-func (d *ImageDockable) MayAttemptClose() bool {
-	return true
-}
-
-// AttemptClose implements unison.TabCloser
-func (d *ImageDockable) AttemptClose() bool {
-	return AttemptCloseForDockable(d)
 }

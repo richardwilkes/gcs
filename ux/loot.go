@@ -11,9 +11,6 @@ package ux
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -23,7 +20,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xrand"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -43,21 +39,18 @@ var (
 
 // LootSheet holds the view for a loot sheet.
 type LootSheet struct {
-	unison.Panel
-	path              string
-	targetMgr         *TargetMgr
-	undoMgr           *unison.UndoManager
-	toolbar           *unison.Panel
-	scroll            *unison.ScrollPanel
-	content           *unison.Panel
-	loot              *gurps.Loot
-	hash              uint64
-	Equipment         *PageList[*gurps.Equipment]
-	Notes             *PageList[*gurps.Note]
-	searchTracker     *SearchTracker
-	scale             int
-	awaitingUpdate    bool
-	needsSaveAsPrompt bool
+	fileBackedPanel
+	targetMgr      *TargetMgr
+	undoMgr        *unison.UndoManager
+	toolbar        *unison.Panel
+	scroll         *unison.ScrollPanel
+	content        *unison.Panel
+	loot           *gurps.Loot
+	Equipment      *PageList[*gurps.Equipment]
+	Notes          *PageList[*gurps.Note]
+	searchTracker  *SearchTracker
+	scale          int
+	awaitingUpdate bool
 }
 
 // OpenLootSheets returns the currently open loot sheets.
@@ -73,28 +66,20 @@ func OpenLootSheets(exclude *LootSheet) []*LootSheet {
 
 // NewLootSheetFromFile loads a loot sheet file and creates a new unison.Dockable for it.
 func NewLootSheetFromFile(filePath string) (unison.Dockable, error) {
-	loot, err := gurps.NewLootFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	l := NewLootSheet(filePath, loot)
-	l.needsSaveAsPrompt = false
-	return l, nil
+	return openDockableFromFile(filePath, gurps.NewLootFromFile, NewLootSheet)
 }
 
 // NewLootSheet creates a new unison.Dockable for loot sheet files.
 func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	l := &LootSheet{
-		path:              filePath,
-		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		scroll:            unison.NewScrollPanel(),
-		content:           unison.NewPanel(),
-		loot:              loot,
-		scale:             gurps.GlobalSettings().General.InitialSheetUIScale,
-		hash:              gurps.Hash64(loot),
-		needsSaveAsPrompt: true,
+		undoMgr: unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
+		scroll:  unison.NewScrollPanel(),
+		content: unison.NewPanel(),
+		loot:    loot,
+		scale:   gurps.GlobalSettings().General.InitialSheetUIScale,
 	}
 	l.Self = l
+	l.initFileEditor(l, filePath, gurps.LootExt, loot.Save, loot)
 	l.targetMgr = NewTargetMgr(l)
 	l.SetLayout(&unison.FlexLayout{
 		Columns: 1,
@@ -131,11 +116,6 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	l.loot.EnsureAttachments()
 	l.loot.SourceMatcher().PrepareHashes(l.loot)
 	return l
-}
-
-// DockKey implements KeyedDockable.
-func (l *LootSheet) DockKey() string {
-	return filePrefix + l.path
 }
 
 func (l *LootSheet) createToolbar() {
@@ -240,49 +220,12 @@ func (l *LootSheet) UndoManager() *unison.UndoManager {
 	return l.undoMgr
 }
 
-// TitleIcon implements ux.FileBackedDockable
-func (l *LootSheet) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  gurps.FileInfoFor(l.path).SVG,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements ux.FileBackedDockable
-func (l *LootSheet) Title() string {
-	return xfilepath.BaseName(l.path)
-}
-
-func (l *LootSheet) String() string {
-	return l.Title()
-}
-
-// Tooltip implements ux.FileBackedDockable
-func (l *LootSheet) Tooltip() string {
-	return l.path
-}
-
-// BackingFilePath implements ux.FileBackedDockable
+// BackingFilePath implements FileBackedDockable. A loot sheet that has never been saved goes by its name.
 func (l *LootSheet) BackingFilePath() string {
 	if l.needsSaveAsPrompt {
-		name := strings.TrimSpace(l.loot.Name)
-		if name == "" {
-			name = i18n.Text("Unnamed Loot")
-		}
-		return name + gurps.LootExt
+		return unsavedFileName(l.loot.Name, i18n.Text("Unnamed Loot"), gurps.LootExt)
 	}
 	return l.path
-}
-
-// SetBackingFilePath implements ux.FileBackedDockable
-func (l *LootSheet) SetBackingFilePath(p string) {
-	l.path = p
-	UpdateTitleForDockable(l)
-}
-
-// Modified implements ux.FileBackedDockable
-func (l *LootSheet) Modified() bool {
-	return l.hash != gurps.Hash64(l.loot)
 }
 
 // MarkModified implements widget.ModifiableRoot.
@@ -304,35 +247,6 @@ func (l *LootSheet) MarkModified(_ unison.Paneler) {
 // bumpModificationTimestamp implements modificationTimestampBumper.
 func (l *LootSheet) bumpModificationTimestamp() {
 	l.loot.ModifiedOn = jio.Now()
-}
-
-// MayAttemptClose implements unison.TabCloser.
-func (l *LootSheet) MayAttemptClose() bool {
-	return MayAttemptCloseOfGroup(l)
-}
-
-// AttemptClose implements unison.TabCloser.
-func (l *LootSheet) AttemptClose() bool {
-	if AttemptSaveForDockable(l) {
-		return AttemptCloseForDockable(l)
-	}
-	return false
-}
-
-func (l *LootSheet) save(forceSaveAs bool) bool {
-	success := false
-	if forceSaveAs || l.needsSaveAsPrompt {
-		success = SaveDockableAs(l, gurps.LootExt, l.loot.Save, func(path string) {
-			l.hash = gurps.Hash64(l.loot)
-			l.path = path
-		})
-	} else {
-		success = SaveDockable(l, l.loot.Save, func() { l.hash = gurps.Hash64(l.loot) })
-	}
-	if success {
-		l.needsSaveAsPrompt = false
-	}
-	return success
 }
 
 func (l *LootSheet) syncWithAllSources() {

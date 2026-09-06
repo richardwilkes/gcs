@@ -10,9 +10,6 @@
 package ux
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -36,13 +33,7 @@ func (p *traitListProvider) SetTraitList(list []*gurps.Trait) {
 
 // NewTraitTableDockableFromFile loads a list of traits from a file and creates a new unison.Dockable for them.
 func NewTraitTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	traits, err := gurps.NewTraitsFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	d := NewTraitTableDockable(filePath, traits)
-	d.needsSaveAsPrompt = false
-	return d, nil
+	return openDockableFromFile(filePath, gurps.NewTraitsFromFile, NewTraitTableDockable)
 }
 
 // NewTraitTableDockable creates a new unison.Dockable for trait list files.

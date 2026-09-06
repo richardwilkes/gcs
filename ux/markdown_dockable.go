@@ -10,8 +10,9 @@
 package ux
 
 import (
-	"fmt"
+	"hash"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,7 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
@@ -37,26 +38,24 @@ var (
 	_ unison.TabCloser   = &MarkdownDockable{}
 	_ ModifiableRoot     = &MarkdownDockable{}
 	_ KeyedDockable      = &MarkdownDockable{}
+	_ gurps.Hashable     = &MarkdownDockable{}
 )
 
 // MarkdownDockable holds the view for an image file.
 type MarkdownDockable struct {
-	unison.Panel
-	path              string
-	original          string
-	content           string
-	undoMgr           *unison.UndoManager
-	scroller          *unison.ScrollPanel
-	markdown          *unison.Markdown
-	editor            *StringField
-	scale             int
-	dragStart         geom.Point
-	dragOrigin        geom.Point
-	savedScrollX      float32
-	savedScrollY      float32
-	inDrag            bool
-	allowEditing      bool
-	needsSaveAsPrompt bool
+	fileBackedPanel
+	content      string
+	undoMgr      *unison.UndoManager
+	scroller     *unison.ScrollPanel
+	markdown     *unison.Markdown
+	editor       *StringField
+	scale        int
+	dragStart    geom.Point
+	dragOrigin   geom.Point
+	savedScrollX float32
+	savedScrollY float32
+	inDrag       bool
+	allowEditing bool
 }
 
 // ShowReadOnlyMarkdown attempts to show the given markdown content in a dockable.
@@ -65,36 +64,34 @@ func ShowReadOnlyMarkdown(title, content string) {
 		ActivateDockable(d)
 		return
 	}
-	d, err := NewMarkdownDockableWithContent(title, content, false, false)
-	if err != nil {
-		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to open %s"), title), err)
-		return
-	}
-	DisplayNewDockable(d)
+	DisplayNewDockable(NewMarkdownDockableWithContent(title, content, false, false))
 }
 
 // NewMarkdownDockable creates a new unison.Dockable for markdown files.
 func NewMarkdownDockable(filePath string, allowEditing, startInEditMode bool) (unison.Dockable, error) {
-	d, err := newMarkdownDockable(filePath, "", allowEditing, startInEditMode)
-	if err != nil {
-		return nil, err
-	}
-	d.needsSaveAsPrompt = false
-	return d, nil
+	return openDockableFromFile(filePath, readMarkdownFile, func(filePath, content string) *MarkdownDockable {
+		return newMarkdownDockable(filePath, content, allowEditing, startInEditMode)
+	})
 }
 
-// NewMarkdownDockableWithContent creates a new unison.Dockable for markdown content.
-func NewMarkdownDockableWithContent(title, content string, allowEditing, startInEditMode bool) (unison.Dockable, error) {
+func readMarkdownFile(fileSystem fs.FS, filePath string) (string, error) {
+	data, err := fs.ReadFile(fileSystem, filePath)
+	if err != nil {
+		return "", errs.Wrap(err)
+	}
+	return string(data), nil
+}
+
+// NewMarkdownDockableWithContent creates a new unison.Dockable for markdown content that is not in a file.
+func NewMarkdownDockableWithContent(title, content string, allowEditing, startInEditMode bool) unison.Dockable {
 	return newMarkdownDockable(markdownContentOnlyPrefix+title, content, allowEditing, startInEditMode)
 }
 
-func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode bool) (*MarkdownDockable, error) {
+func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode bool) *MarkdownDockable {
 	d := &MarkdownDockable{
-		path:              filePath,
-		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		scale:             gurps.GlobalSettings().General.InitialMarkdownUIScale,
-		allowEditing:      allowEditing,
-		needsSaveAsPrompt: true,
+		undoMgr:      unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
+		scale:        gurps.GlobalSettings().General.InitialMarkdownUIScale,
+		allowEditing: allowEditing,
 	}
 	d.Self = d
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -108,20 +105,17 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	d.markdown.MouseUpCallback = d.mouseUp
 	d.markdown.UpdateCursorCallback = d.updateCursor
 	d.markdown.SetFocusable(true)
-	d.original = content
-	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
-		data, err := os.ReadFile(d.BackingFilePath())
-		if err != nil {
-			return nil, err
-		}
-		d.original = string(data)
-	}
-	// Normalize the original as well, since that is what the content is compared against to determine whether the
-	// dockable has been modified. Without this, a file stored with CRLF (or CR) line endings would be reported as
-	// modified the moment it was opened.
-	d.original = xstrings.NormalizeLineEndings(d.original)
-	d.content = d.original
+	// The content is normalized before it is hashed, since the editor produces LF line endings and that hash is what
+	// the content is compared against to determine whether the dockable has been modified. Without this, a file stored
+	// with CRLF (or CR) line endings would be reported as modified the moment it was opened.
+	d.content = xstrings.NormalizeLineEndings(content)
 	d.markdown.SetContent(d.content, 0)
+	if allowEditing {
+		d.initFileEditor(d, filePath, "md", d.saveData, d)
+	} else {
+		// Content that can't be edited can't have unsaved changes either, so the dockable is only a viewer of it.
+		d.initFileViewer(d, filePath)
+	}
 
 	d.editor = NewMultiLineStringField(nil, "", "",
 		func() string { return d.content },
@@ -204,12 +198,13 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	d.InstallCmdHandlers(SaveItemID, func(_ any) bool { return d.Modified() }, func(_ any) { d.save(false) })
 	d.InstallCmdHandlers(SaveAsItemID, func(_ any) bool { return d.allowEditing }, func(_ any) { d.save(true) })
 
-	return d, nil
+	return d
 }
 
-// DockKey implements KeyedDockable.
-func (d *MarkdownDockable) DockKey() string {
-	return filePrefix + d.path
+// Hash implements gurps.Hashable, so that the dockable can tell whether its content has changed since it was opened or
+// last saved.
+func (d *MarkdownDockable) Hash(h hash.Hash) {
+	xhash.StringWithLen(h, d.content)
 }
 
 // ScrollToAnchor scrolls the heading associated with the given anchor into view. Has no effect if the markdown is
@@ -252,7 +247,7 @@ func (d *MarkdownDockable) UndoManager() *unison.UndoManager {
 	return d.undoMgr
 }
 
-// TitleIcon implements ux.FileBackedDockable
+// TitleIcon implements unison.Dockable. Content that is not in a file has no file type to take an icon from.
 func (d *MarkdownDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	if strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		return &unison.DrawableSVG{
@@ -260,73 +255,20 @@ func (d *MarkdownDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 			Size: suggestedSize,
 		}
 	}
-	return &unison.DrawableSVG{
-		SVG:  gurps.FileInfoFor(d.BackingFilePath()).SVG,
-		Size: suggestedSize,
-	}
+	return d.fileBackedPanel.TitleIcon(suggestedSize)
 }
 
-// Title implements ux.FileBackedDockable
-func (d *MarkdownDockable) Title() string {
-	return xfilepath.BaseName(d.path)
-}
-
-// Tooltip implements ux.FileBackedDockable
+// Tooltip implements unison.Dockable. Content that is not in a file has no path to show.
 func (d *MarkdownDockable) Tooltip() string {
 	if strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		return ""
 	}
-	return d.BackingFilePath()
-}
-
-// BackingFilePath implements ux.FileBackedDockable
-func (d *MarkdownDockable) BackingFilePath() string {
-	return d.path
-}
-
-// SetBackingFilePath implements ux.FileBackedDockable
-func (d *MarkdownDockable) SetBackingFilePath(p string) {
-	d.path = p
-	UpdateTitleForDockable(d)
-}
-
-// Modified implements ux.FileBackedDockable
-func (d *MarkdownDockable) Modified() bool {
-	return d.allowEditing && d.original != d.content
+	return d.fileBackedPanel.Tooltip()
 }
 
 // MarkModified implements ModifiableRoot.
 func (d *MarkdownDockable) MarkModified(_ unison.Paneler) {
 	UpdateTitleForDockable(d)
-}
-
-// MayAttemptClose implements unison.TabCloser
-func (d *MarkdownDockable) MayAttemptClose() bool {
-	return true
-}
-
-// AttemptClose implements unison.TabCloser
-func (d *MarkdownDockable) AttemptClose() bool {
-	if AttemptSaveForDockable(d) {
-		return AttemptCloseForDockable(d)
-	}
-	return false
-}
-
-func (d *MarkdownDockable) save(forceSaveAs bool) bool {
-	success := false
-	if forceSaveAs || d.needsSaveAsPrompt {
-		success = SaveDockableAs(d, "md", d.saveData, func(path string) {
-			d.path = path
-			d.original = d.content
-		})
-	} else {
-		success = SaveDockable(d, d.saveData, func() { d.original = d.content })
-	}
-	if success {
-		d.needsSaveAsPrompt = false
-	}
-	return success
 }
 
 func (d *MarkdownDockable) saveData(filePath string) error {

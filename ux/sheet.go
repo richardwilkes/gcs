@@ -11,9 +11,7 @@ package ux
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -65,14 +63,12 @@ type itemCreator interface {
 
 // Sheet holds the view for a GURPS character sheet.
 type Sheet struct {
-	unison.Panel
-	path                 string
+	fileBackedPanel
 	targetMgr            *TargetMgr
 	undoMgr              *unison.UndoManager
 	toolbar              *unison.Panel
 	scroll               *unison.ScrollPanel
 	entity               *gurps.Entity
-	hash                 uint64
 	content              *unison.Panel
 	contentLayout        *overlayStackLayout
 	page                 *Page
@@ -93,7 +89,6 @@ type Sheet struct {
 	searchTracker        *SearchTracker
 	scale                int
 	awaitingUpdate       bool
-	needsSaveAsPrompt    bool
 }
 
 // ActiveSheet returns the currently active sheet.
@@ -121,28 +116,20 @@ func OpenSheets(exclude *Sheet) []*Sheet {
 
 // NewSheetFromFile loads a GURPS character sheet file and creates a new unison.Dockable for it.
 func NewSheetFromFile(filePath string) (unison.Dockable, error) {
-	entity, err := gurps.NewEntityFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	s := NewSheet(filePath, entity)
-	s.needsSaveAsPrompt = false
-	return s, nil
+	return openDockableFromFile(filePath, gurps.NewEntityFromFile, NewSheet)
 }
 
 // NewSheet creates a new unison.Dockable for GURPS character sheet files.
 func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s := &Sheet{
-		path:              filePath,
-		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		scroll:            unison.NewScrollPanel(),
-		entity:            entity,
-		hash:              gurps.Hash64(entity),
-		scale:             gurps.GlobalSettings().General.InitialSheetUIScale,
-		content:           unison.NewPanel(),
-		needsSaveAsPrompt: true,
+		undoMgr: unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
+		scroll:  unison.NewScrollPanel(),
+		entity:  entity,
+		scale:   gurps.GlobalSettings().General.InitialSheetUIScale,
+		content: unison.NewPanel(),
 	}
 	s.Self = s
+	s.initFileEditor(s, filePath, gurps.SheetExt, entity.Save, entity)
 	s.targetMgr = NewTargetMgr(s)
 	s.SetLayout(&unison.FlexLayout{
 		Columns: 1,
@@ -244,11 +231,6 @@ func (s *Sheet) cloneSheet() {
 	DisplayNewDockable(sheet)
 	sheet.undoMgr.Clear()
 	sheet.hash = 0
-}
-
-// DockKey implements KeyedDockable.
-func (s *Sheet) DockKey() string {
-	return filePrefix + s.path
 }
 
 func (s *Sheet) createToolbar() {
@@ -431,49 +413,12 @@ func (s *Sheet) UndoManager() *unison.UndoManager {
 	return s.undoMgr
 }
 
-// TitleIcon implements ux.FileBackedDockable
-func (s *Sheet) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  gurps.FileInfoFor(s.path).SVG,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements ux.FileBackedDockable
-func (s *Sheet) Title() string {
-	return xfilepath.BaseName(s.BackingFilePath())
-}
-
-func (s *Sheet) String() string {
-	return s.Title()
-}
-
-// Tooltip implements ux.FileBackedDockable
-func (s *Sheet) Tooltip() string {
-	return s.BackingFilePath()
-}
-
-// BackingFilePath implements ux.FileBackedDockable
+// BackingFilePath implements FileBackedDockable. A sheet that has never been saved goes by its character's name.
 func (s *Sheet) BackingFilePath() string {
 	if s.needsSaveAsPrompt {
-		name := strings.TrimSpace(s.entity.Profile.Name)
-		if name == "" {
-			name = i18n.Text("Unnamed Character")
-		}
-		return name + gurps.SheetExt
+		return unsavedFileName(s.entity.Profile.Name, i18n.Text("Unnamed Character"), gurps.SheetExt)
 	}
 	return s.path
-}
-
-// SetBackingFilePath implements ux.FileBackedDockable
-func (s *Sheet) SetBackingFilePath(p string) {
-	s.path = p
-	UpdateTitleForDockable(s)
-}
-
-// Modified implements ux.FileBackedDockable
-func (s *Sheet) Modified() bool {
-	return s.hash != gurps.Hash64(s.entity)
 }
 
 // MarkModified implements widget.ModifiableRoot.
@@ -519,35 +464,6 @@ func (s *Sheet) bumpModificationTimestamp() {
 	if miscPanel, ok := s.blocks[gurps.BlockMiscellaneousKey].(*MiscPanel); ok {
 		miscPanel.UpdateModified()
 	}
-}
-
-// MayAttemptClose implements unison.TabCloser
-func (s *Sheet) MayAttemptClose() bool {
-	return MayAttemptCloseOfGroup(s)
-}
-
-// AttemptClose implements unison.TabCloser
-func (s *Sheet) AttemptClose() bool {
-	if AttemptSaveForDockable(s) {
-		return AttemptCloseForDockable(s)
-	}
-	return false
-}
-
-func (s *Sheet) save(forceSaveAs bool) bool {
-	success := false
-	if forceSaveAs || s.needsSaveAsPrompt {
-		success = SaveDockableAs(s, gurps.SheetExt, s.entity.Save, func(path string) {
-			s.hash = gurps.Hash64(s.entity)
-			s.path = path
-		})
-	} else {
-		success = SaveDockable(s, s.entity.Save, func() { s.hash = gurps.Hash64(s.entity) })
-	}
-	if success {
-		s.needsSaveAsPrompt = false
-	}
-	return success
 }
 
 // buildLayout (re)builds the page from the sheet's block layout tree. The panels themselves are not rebuilt: the

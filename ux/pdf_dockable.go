@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
@@ -55,8 +54,7 @@ var (
 
 // PDFDockable holds the view for a PDFRenderer file.
 type PDFDockable struct {
-	unison.Panel
-	path                   string
+	fileBackedPanel
 	pdf                    *PDFRenderer
 	content                *unison.Panel
 	docScroll              *unison.ScrollPanel
@@ -158,7 +156,6 @@ type pdfPendingSelPoint struct {
 func NewPDFDockable(filePath string, initialPageInfo gurps.PageInfo) (unison.Dockable, error) {
 	generalSettings := gurps.GlobalSettings().General
 	d := &PDFDockable{
-		path:              filePath,
 		initialPageInfo:   initialPageInfo,
 		scale:             generalSettings.InitialPDFUIScale,
 		autoScaling:       generalSettings.PDFAutoScaling,
@@ -168,6 +165,7 @@ func NewPDFDockable(filePath string, initialPageInfo gurps.PageInfo) (unison.Doc
 		loadStarted:       time.Now(),
 	}
 	d.Self = d
+	d.initFileViewer(d, filePath)
 	d.KeyDownCallback = d.keyDown
 	d.FocusChangeInHierarchyCallback = d.focusChangeInHierarchy
 	d.GainedFocusCallback = d.requestRenderPriority
@@ -317,11 +315,6 @@ func (d *PDFDockable) pageLabel(pageNum int) string {
 		return ""
 	}
 	return d.pageLabels[pageNum]
-}
-
-// DockKey implements KeyedDockable.
-func (d *PDFDockable) DockKey() string {
-	return filePrefix + d.path
 }
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
@@ -1488,48 +1481,10 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty geom.Rect, msg str
 	text.Draw(gc, geom.NewPoint(x, r.Y+(r.Height-height)/2+baseline))
 }
 
-// TitleIcon implements ux.FileBackedDockable
-func (d *PDFDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  gurps.FileInfoFor(d.path).SVG,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements ux.FileBackedDockable
-func (d *PDFDockable) Title() string {
-	return xfilepath.BaseName(d.path)
-}
-
-// Tooltip implements ux.FileBackedDockable
-func (d *PDFDockable) Tooltip() string {
-	return d.path
-}
-
-// BackingFilePath implements ux.FileBackedDockable
-func (d *PDFDockable) BackingFilePath() string {
-	return d.path
-}
-
-// SetBackingFilePath implements ux.FileBackedDockable
-func (d *PDFDockable) SetBackingFilePath(p string) {
-	d.path = p
-	UpdateTitleForDockable(d)
-}
-
-// Modified implements ux.FileBackedDockable
-func (d *PDFDockable) Modified() bool {
-	return false
-}
-
-// MayAttemptClose implements unison.TabCloser
-func (d *PDFDockable) MayAttemptClose() bool {
-	return true
-}
-
-// AttemptClose implements unison.TabCloser
+// AttemptClose implements unison.TabCloser. Once the dockable is gone, everything it was still doing with the
+// document is stopped and the document released.
 func (d *PDFDockable) AttemptClose() bool {
-	if !AttemptCloseForDockable(d) {
+	if !d.fileBackedPanel.AttemptClose() {
 		return false
 	}
 	// This flag needs no synchronization, even though the load runs on a background goroutine: it is only ever written
