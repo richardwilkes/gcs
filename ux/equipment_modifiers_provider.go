@@ -10,15 +10,10 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -27,65 +22,25 @@ const equipmentModifierRefKey = "equipment_modifier"
 var _ TableProvider[*gurps.EquipmentModifier] = &eqpModProvider{}
 
 type eqpModProvider struct {
-	table     *unison.Table[*Node[*gurps.EquipmentModifier]]
-	provider  gurps.EquipmentModifierListProvider
+	listProvider[*gurps.EquipmentModifier]
 	forEditor bool
 }
 
 // NewEquipmentModifiersProvider creates a new table provider for equipment modifiers.
 func NewEquipmentModifiersProvider(provider gurps.EquipmentModifierListProvider, forEditor bool) TableProvider[*gurps.EquipmentModifier] {
-	return &eqpModProvider{
-		provider:  provider,
-		forEditor: forEditor,
+	p := &eqpModProvider{forEditor: forEditor}
+	p.listProvider = listProvider[*gurps.EquipmentModifier]{
+		dataOwner:  provider,
+		list:       provider.EquipmentModifierList,
+		setList:    provider.SetEquipmentModifierList,
+		columnIDs:  p.ColumnIDs,
+		headerData: gurps.EquipmentModifierHeaderData,
 	}
+	return p
 }
 
 func (p *eqpModProvider) RefKey() string {
 	return equipmentModifierRefKey
-}
-
-func (p *eqpModProvider) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(modifier *gurps.EquipmentModifier) bool {
-		for _, tag := range modifier.Tags {
-			set[tag] = struct{}{}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
-}
-
-func (p *eqpModProvider) SetTable(table *unison.Table[*Node[*gurps.EquipmentModifier]]) {
-	p.table = table
-}
-
-func (p *eqpModProvider) RootRowCount() int {
-	return len(p.provider.EquipmentModifierList())
-}
-
-func (p *eqpModProvider) RootRows() []*Node[*gurps.EquipmentModifier] {
-	data := p.provider.EquipmentModifierList()
-	rows := make([]*Node[*gurps.EquipmentModifier], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, false))
-	}
-	return rows
-}
-
-func (p *eqpModProvider) SetRootRows(rows []*Node[*gurps.EquipmentModifier]) {
-	p.provider.SetEquipmentModifierList(ExtractNodeDataFromList(rows))
-}
-
-func (p *eqpModProvider) RootData() []*gurps.EquipmentModifier {
-	return p.provider.EquipmentModifierList()
-}
-
-func (p *eqpModProvider) SetRootData(data []*gurps.EquipmentModifier) {
-	p.provider.SetEquipmentModifierList(data)
-}
-
-func (p *eqpModProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
 }
 
 func (p *eqpModProvider) DragKey() *uti.DataType {
@@ -96,31 +51,8 @@ func (p *eqpModProvider) DragSVG() *unison.SVG {
 	return svg.GCSEquipmentModifiers
 }
 
-func (p *eqpModProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.EquipmentModifier]]) bool {
-	return from == to
-}
-
-func (p *eqpModProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.EquipmentModifier]]) {
-}
-
-func (p *eqpModProvider) AltDropSupport() *AltDropSupport {
-	return nil
-}
-
 func (p *eqpModProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Equipment Modifier"), i18n.Text("Equipment Modifiers")
-}
-
-func (p *eqpModProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.EquipmentModifier]] {
-	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.EquipmentModifier]], 0, len(ids))
-	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.EquipmentModifier](gurps.EquipmentModifierHeaderData(id), false))
-	}
-	return headers
-}
-
-func (p *eqpModProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.EquipmentModifier]]) {
 }
 
 func (p *eqpModProvider) ColumnIDs() []int {
@@ -159,25 +91,8 @@ func (p *eqpModProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node
 
 func (p *eqpModProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.EquipmentModifier]], variant ItemVariant) {
 	item := gurps.NewEquipmentModifier(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems(owner, table, p.provider.EquipmentModifierList,
-		p.provider.SetEquipmentModifierList,
-		func(_ *unison.Table[*Node[*gurps.EquipmentModifier]]) []*Node[*gurps.EquipmentModifier] {
-			return p.RootRows()
-		}, item)
+	p.insertItems(owner, table, item)
 	EditEquipmentModifier(owner, item)
-}
-
-func (p *eqpModProvider) Serialize() ([]byte, error) {
-	return jio.SerializeAndCompress(p.provider.EquipmentModifierList())
-}
-
-func (p *eqpModProvider) Deserialize(data []byte) error {
-	var rows []*gurps.EquipmentModifier
-	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
-		return err
-	}
-	p.provider.SetEquipmentModifierList(rows)
-	return nil
 }
 
 func (p *eqpModProvider) ContextMenuItems() []ContextMenuItem {

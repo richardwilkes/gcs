@@ -10,15 +10,10 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -27,65 +22,25 @@ const traitModifierRefKey = "trait_modifier"
 var _ TableProvider[*gurps.TraitModifier] = &traitModifiersProvider{}
 
 type traitModifiersProvider struct {
-	table     *unison.Table[*Node[*gurps.TraitModifier]]
-	provider  gurps.TraitModifierListProvider
+	listProvider[*gurps.TraitModifier]
 	forEditor bool
 }
 
 // NewTraitModifiersProvider creates a new table provider for trait modifiers.
 func NewTraitModifiersProvider(provider gurps.TraitModifierListProvider, forEditor bool) TableProvider[*gurps.TraitModifier] {
-	return &traitModifiersProvider{
-		provider:  provider,
-		forEditor: forEditor,
+	p := &traitModifiersProvider{forEditor: forEditor}
+	p.listProvider = listProvider[*gurps.TraitModifier]{
+		dataOwner:  provider,
+		list:       provider.TraitModifierList,
+		setList:    provider.SetTraitModifierList,
+		columnIDs:  p.ColumnIDs,
+		headerData: gurps.TraitModifierHeaderData,
 	}
+	return p
 }
 
 func (p *traitModifiersProvider) RefKey() string {
 	return traitModifierRefKey
-}
-
-func (p *traitModifiersProvider) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(modifier *gurps.TraitModifier) bool {
-		for _, tag := range modifier.Tags {
-			set[tag] = struct{}{}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
-}
-
-func (p *traitModifiersProvider) SetTable(table *unison.Table[*Node[*gurps.TraitModifier]]) {
-	p.table = table
-}
-
-func (p *traitModifiersProvider) RootRowCount() int {
-	return len(p.provider.TraitModifierList())
-}
-
-func (p *traitModifiersProvider) RootRows() []*Node[*gurps.TraitModifier] {
-	data := p.provider.TraitModifierList()
-	rows := make([]*Node[*gurps.TraitModifier], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, false))
-	}
-	return rows
-}
-
-func (p *traitModifiersProvider) SetRootRows(rows []*Node[*gurps.TraitModifier]) {
-	p.provider.SetTraitModifierList(ExtractNodeDataFromList(rows))
-}
-
-func (p *traitModifiersProvider) RootData() []*gurps.TraitModifier {
-	return p.provider.TraitModifierList()
-}
-
-func (p *traitModifiersProvider) SetRootData(data []*gurps.TraitModifier) {
-	p.provider.SetTraitModifierList(data)
-}
-
-func (p *traitModifiersProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
 }
 
 func (p *traitModifiersProvider) DragKey() *uti.DataType {
@@ -96,31 +51,8 @@ func (p *traitModifiersProvider) DragSVG() *unison.SVG {
 	return svg.GCSTraitModifiers
 }
 
-func (p *traitModifiersProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.TraitModifier]]) bool {
-	return from == to
-}
-
-func (p *traitModifiersProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.TraitModifier]]) {
-}
-
-func (p *traitModifiersProvider) AltDropSupport() *AltDropSupport {
-	return nil
-}
-
 func (p *traitModifiersProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Trait Modifier"), i18n.Text("Trait Modifiers")
-}
-
-func (p *traitModifiersProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.TraitModifier]] {
-	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.TraitModifier]], 0, len(ids))
-	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.TraitModifier](gurps.TraitModifierHeaderData(id), false))
-	}
-	return headers
-}
-
-func (p *traitModifiersProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.TraitModifier]]) {
 }
 
 func (p *traitModifiersProvider) ColumnIDs() []int {
@@ -157,24 +89,8 @@ func (p *traitModifiersProvider) OpenEditor(owner Rebuildable, table *unison.Tab
 
 func (p *traitModifiersProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]], variant ItemVariant) {
 	item := gurps.NewTraitModifier(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems(owner, table, p.provider.TraitModifierList, p.provider.SetTraitModifierList,
-		func(_ *unison.Table[*Node[*gurps.TraitModifier]]) []*Node[*gurps.TraitModifier] {
-			return p.RootRows()
-		}, item)
+	p.insertItems(owner, table, item)
 	EditTraitModifier(owner, item)
-}
-
-func (p *traitModifiersProvider) Serialize() ([]byte, error) {
-	return jio.SerializeAndCompress(p.provider.TraitModifierList())
-}
-
-func (p *traitModifiersProvider) Deserialize(data []byte) error {
-	var rows []*gurps.TraitModifier
-	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
-		return err
-	}
-	p.provider.SetTraitModifierList(rows)
-	return nil
 }
 
 func (p *traitModifiersProvider) ContextMenuItems() []ContextMenuItem {

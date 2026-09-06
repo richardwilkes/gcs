@@ -1,0 +1,198 @@
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, version 2.0. If a copy of the MPL was not distributed with
+// this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, version 2.0.
+
+package ux
+
+import (
+	"testing"
+
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
+)
+
+// listsForTest is a bare set of the lists the providers under test are built on, so the tests can see exactly what
+// each provider reads and writes.
+type listsForTest struct {
+	traits  []*gurps.Trait
+	notes   []*gurps.Note
+	carried []*gurps.Equipment
+	other   []*gurps.Equipment
+	melee   []*gurps.Weapon
+	ranged  []*gurps.Weapon
+}
+
+func (l *listsForTest) DataOwner() gurps.DataOwner                      { return nil }
+func (l *listsForTest) TraitList() []*gurps.Trait                       { return l.traits }
+func (l *listsForTest) SetTraitList(list []*gurps.Trait)                { l.traits = list }
+func (l *listsForTest) NoteList() []*gurps.Note                         { return l.notes }
+func (l *listsForTest) SetNoteList(list []*gurps.Note)                  { l.notes = list }
+func (l *listsForTest) CarriedEquipmentList() []*gurps.Equipment        { return l.carried }
+func (l *listsForTest) SetCarriedEquipmentList(list []*gurps.Equipment) { l.carried = list }
+func (l *listsForTest) OtherEquipmentList() []*gurps.Equipment          { return l.other }
+func (l *listsForTest) SetOtherEquipmentList(list []*gurps.Equipment)   { l.other = list }
+func (l *listsForTest) WeaponOwner() gurps.WeaponOwner                  { return nil }
+
+func (l *listsForTest) Weapons(melee, _, _ bool) []*gurps.Weapon {
+	if melee {
+		return l.melee
+	}
+	return l.ranged
+}
+
+func (l *listsForTest) SetWeapons(melee bool, list []*gurps.Weapon) {
+	if melee {
+		l.melee = list
+	} else {
+		l.ranged = list
+	}
+}
+
+func newTraitForTest(name string, parent *gurps.Trait, tags ...string) *gurps.Trait {
+	t := gurps.NewTrait(nil, parent, false)
+	t.Name = name
+	t.Tags = tags
+	return t
+}
+
+func TestListProviderAllTagsSpansContainersAndDedupes(t *testing.T) {
+	c := check.New(t)
+	container := gurps.NewTrait(nil, nil, true)
+	container.Tags = []string{"Zeta", "b10"}
+	container.Children = []*gurps.Trait{
+		newTraitForTest("child", container, "b2", "alpha"),
+		newTraitForTest("dup", container, "Zeta", "b10", "alpha"),
+	}
+	lists := &listsForTest{traits: []*gurps.Trait{container, newTraitForTest("top", nil, "B3")}}
+	p := NewTraitsProvider(lists, false)
+	c.Equal([]string{"alpha", "b2", "B3", "b10", "Zeta"}, p.AllTags(),
+		"tags must be gathered from every depth, deduplicated and naturally sorted, ignoring case")
+	lists.traits = nil
+	c.Nil(p.AllTags(), "an empty list must have no tags")
+	c.Nil(NewWeaponsProvider(lists, true, false).AllTags(), "a node type without tags must have no tags")
+}
+
+func TestListProviderRowsMirrorTheList(t *testing.T) {
+	c := check.New(t)
+	notes := []*gurps.Note{gurps.NewNote(nil, nil, false), gurps.NewNote(nil, nil, true)}
+	for _, forPage := range []bool{false, true} {
+		// A provider for a page asks its owner for the entity, so the page case is given a real one.
+		var owner gurps.NoteListProvider = &listsForTest{notes: notes}
+		if forPage {
+			entity := gurps.NewEntity()
+			entity.Notes = notes
+			owner = entity
+		}
+		p := NewNotesProvider(owner, forPage)
+		table := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Note]]{})
+		p.SetTable(table)
+		c.Equal(2, p.RootRowCount())
+		c.Equal(notes, p.RootData())
+		rows := p.RootRows()
+		c.Equal(2, len(rows))
+		for i, row := range rows {
+			c.True(notes[i] == row.Data(), "row %d must wrap the note in the same position", i)
+			c.True(table == row.table, "row %d must belong to the provider's table", i)
+			c.Equal(forPage, row.forPage, "row %d must be built for the same context as the provider", i)
+		}
+		headers := p.Headers()
+		c.Equal(len(p.ColumnIDs()), len(headers))
+		for i, header := range headers {
+			_, isPageHeader := header.(*PageTableColumnHeader[*gurps.Note])
+			c.Equal(forPage, isPageHeader, "header %d must be built for the same context as the provider", i)
+		}
+	}
+	lists := &listsForTest{notes: notes}
+	p := NewNotesProvider(lists, false)
+	p.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Note]]{}))
+	replacement := []*gurps.Note{gurps.NewNote(nil, nil, false)}
+	p.SetRootData(replacement)
+	c.Equal(replacement, lists.notes, "SetRootData must write through to the list")
+	rows := p.RootRows()
+	p.SetRootRows(rows[:0])
+	c.Equal(0, len(lists.notes), "SetRootRows must write the rows' data through to the list")
+}
+
+func TestListProviderSerializationRoundTrips(t *testing.T) {
+	c := check.New(t)
+	source := &listsForTest{traits: []*gurps.Trait{newTraitForTest("one", nil, "x"), newTraitForTest("two", nil)}}
+	data, err := NewTraitsProvider(source, false).Serialize()
+	c.NoError(err)
+	target := &listsForTest{}
+	c.NoError(NewTraitsProvider(target, false).Deserialize(data))
+	c.Equal(2, len(target.traits))
+	for i, trait := range target.traits {
+		c.Equal(source.traits[i].Name, trait.Name)
+		c.Equal(source.traits[i].Tags, trait.Tags)
+	}
+	c.HasError(NewTraitsProvider(target, false).Deserialize([]byte("not compressed json")))
+}
+
+func TestEquipmentProviderUsesTheCarriedOrOtherList(t *testing.T) {
+	c := check.New(t)
+	lists := &listsForTest{
+		carried: []*gurps.Equipment{gurps.NewEquipment(nil, nil, false), gurps.NewEquipment(nil, nil, false)},
+		other:   []*gurps.Equipment{gurps.NewEquipment(nil, nil, false)},
+	}
+	carried := NewEquipmentProvider(lists, true, true)
+	other := NewEquipmentProvider(lists, false, true)
+	c.Equal(lists.carried, carried.RootData())
+	c.Equal(lists.other, other.RootData())
+	c.Equal(gurps.BlockEquipmentKey, carried.RefKey())
+	c.Equal(gurps.BlockOtherEquipmentKey, other.RefKey())
+	other.SetRootData(nil)
+	c.Equal(0, len(lists.other), "the other provider must write to the other list")
+	c.Equal(2, len(lists.carried), "the other provider must leave the carried list alone")
+	carried.SetRootData(nil)
+	c.Equal(0, len(lists.carried), "the carried provider must write to the carried list")
+}
+
+func TestWeaponsProviderOnlyEditsOffThePage(t *testing.T) {
+	c := check.New(t)
+	lists := &listsForTest{
+		melee:  []*gurps.Weapon{gurps.NewWeapon(nil, true)},
+		ranged: []*gurps.Weapon{gurps.NewWeapon(nil, false), gurps.NewWeapon(nil, false)},
+	}
+	c.Equal(lists.melee, NewWeaponsProvider(lists, true, false).RootData())
+	c.Equal(lists.ranged, NewWeaponsProvider(lists, false, false).RootData())
+
+	onPage := NewWeaponsProvider(lists, false, true)
+	onPage.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Weapon]]{}))
+	_, err := onPage.Serialize()
+	c.HasError(err, "the weapons on a page are not the list's own, so they must not be copied")
+	c.HasError(onPage.Deserialize(nil), "the weapons on a page are not the list's own, so they must not be pasted")
+	for i, header := range onPage.Headers() {
+		c.False(header.SortState().Sortable, "weapon header %d must not be sortable", i)
+	}
+
+	inEditor := NewWeaponsProvider(lists, false, false)
+	data, err := inEditor.Serialize()
+	c.NoError(err)
+	target := &listsForTest{}
+	c.NoError(NewWeaponsProvider(target, false, false).Deserialize(data))
+	c.Equal(2, len(target.ranged), "the ranged weapons must be pasted into the ranged list")
+	c.Equal(0, len(target.melee), "the melee list must be left alone")
+}
+
+func TestCondModProviderIsReadOnly(t *testing.T) {
+	c := check.New(t)
+	lists := &condModListsForTest{conditional: []*gurps.ConditionalModifier{gurps.NewConditionalModifier("one", "", 0)}}
+	p := NewConditionalModifiersProvider(lists)
+	p.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.ConditionalModifier]]{}))
+	p.SetRootData(nil)
+	p.SetRootRows(nil)
+	c.Equal(1, len(lists.conditional), "the computed rows must not be replaceable")
+	c.Nil(p.AllTags())
+	_, err := p.Serialize()
+	c.HasError(err)
+	c.HasError(p.Deserialize(nil))
+	for i, header := range p.Headers() {
+		c.False(header.SortState().Sortable, "conditional modifier header %d must not be sortable", i)
+	}
+}

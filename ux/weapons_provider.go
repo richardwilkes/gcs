@@ -14,7 +14,6 @@ import (
 	"reflect"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
@@ -30,19 +29,25 @@ const (
 var _ TableProvider[*gurps.Weapon] = &weaponsProvider{}
 
 type weaponsProvider struct {
-	table    *unison.Table[*Node[*gurps.Weapon]]
+	listProvider[*gurps.Weapon]
 	provider gurps.WeaponListProvider
 	melee    bool
-	forPage  bool
 }
 
 // NewWeaponsProvider creates a new table provider for weapons.
 func NewWeaponsProvider(provider gurps.WeaponListProvider, melee, forPage bool) TableProvider[*gurps.Weapon] {
-	return &weaponsProvider{
-		provider: provider,
-		melee:    melee,
-		forPage:  forPage,
+	p := &weaponsProvider{provider: provider, melee: melee}
+	p.listProvider = listProvider[*gurps.Weapon]{
+		dataOwner: provider,
+		list:      func() []*gurps.Weapon { return provider.Weapons(melee, p.showAllWeapons(), forPage) },
+		setList:   func(list []*gurps.Weapon) { provider.SetWeapons(melee, list) },
+		columnIDs: p.ColumnIDs,
+		headerData: func(columnID int) gurps.HeaderData {
+			return gurps.WeaponHeaderData(columnID, melee, forPage)
+		},
+		forPage: forPage,
 	}
+	return p
 }
 
 func (p *weaponsProvider) RefKey() string {
@@ -50,14 +55,6 @@ func (p *weaponsProvider) RefKey() string {
 		return meleeWeaponRefKey
 	}
 	return rangedWeaponRefKey
-}
-
-func (p *weaponsProvider) AllTags() []string {
-	return nil
-}
-
-func (p *weaponsProvider) SetTable(table *unison.Table[*Node[*gurps.Weapon]]) {
-	p.table = table
 }
 
 func (p *weaponsProvider) showAllWeapons() bool {
@@ -84,35 +81,6 @@ func (p *weaponsProvider) hideUnusedColumns() bool {
 	return entity.SheetSettings.HideUnusedWeaponColumns
 }
 
-func (p *weaponsProvider) RootRowCount() int {
-	return len(p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage))
-}
-
-func (p *weaponsProvider) RootRows() []*Node[*gurps.Weapon] {
-	data := p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage)
-	rows := make([]*Node[*gurps.Weapon], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
-	}
-	return rows
-}
-
-func (p *weaponsProvider) SetRootRows(rows []*Node[*gurps.Weapon]) {
-	p.provider.SetWeapons(p.melee, ExtractNodeDataFromList(rows))
-}
-
-func (p *weaponsProvider) RootData() []*gurps.Weapon {
-	return p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage)
-}
-
-func (p *weaponsProvider) SetRootData(data []*gurps.Weapon) {
-	p.provider.SetWeapons(p.melee, data)
-}
-
-func (p *weaponsProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
-}
-
 func (p *weaponsProvider) DragKey() *uti.DataType {
 	if p.melee {
 		return meleeWeaponDragKey
@@ -124,17 +92,6 @@ func (p *weaponsProvider) DragSVG() *unison.SVG {
 	return gurps.WeaponSVG(p.melee)
 }
 
-func (p *weaponsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Weapon]]) bool {
-	return from == to
-}
-
-func (p *weaponsProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.Weapon]]) {
-}
-
-func (p *weaponsProvider) AltDropSupport() *AltDropSupport {
-	return nil
-}
-
 func (p *weaponsProvider) ItemNames() (singular, plural string) {
 	if p.melee {
 		return i18n.Text("Melee Weapon"), i18n.Text("Melee Weapons")
@@ -143,15 +100,7 @@ func (p *weaponsProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Weapon]] {
-	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.Weapon]], 0, len(ids))
-	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Weapon](gurps.WeaponHeaderData(id, p.melee, p.forPage), p.forPage))
-	}
-	return DisableSorting(headers)
-}
-
-func (p *weaponsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Weapon]]) {
+	return DisableSorting(p.listProvider.Headers())
 }
 
 func (p *weaponsProvider) ColumnIDs() []int {
@@ -196,7 +145,7 @@ func (p *weaponsProvider) ColumnIDs() []int {
 // removeUnusedColumns removes any columns from the provided list that have no meaningful data in any of the weapons
 // that will be displayed.
 func (p *weaponsProvider) removeUnusedColumns(columnIDs []int) []int {
-	weapons := p.provider.Weapons(p.melee, p.showAllWeapons(), p.forPage)
+	weapons := p.RootData()
 	if len(weapons) == 0 {
 		return columnIDs
 	}
@@ -315,10 +264,7 @@ func searchSheetTableRowsFor[T gurps.Node[T]](table *unison.Table[*Node[T]], row
 func (p *weaponsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Weapon]], _ ItemVariant) {
 	if !p.forPage {
 		w := gurps.NewWeapon(p.provider.WeaponOwner(), p.melee)
-		InsertItems(owner, table,
-			func() []*gurps.Weapon { return p.provider.Weapons(p.melee, p.showAllWeapons(), false) },
-			func(list []*gurps.Weapon) { p.provider.SetWeapons(p.melee, list) },
-			func(_ *unison.Table[*Node[*gurps.Weapon]]) []*Node[*gurps.Weapon] { return p.RootRows() }, w)
+		p.insertItems(owner, table, w)
 		EditWeapon(owner, w)
 	}
 }
@@ -327,19 +273,14 @@ func (p *weaponsProvider) Serialize() ([]byte, error) {
 	if p.forPage {
 		return nil, errs.New("not allowed")
 	}
-	return jio.SerializeAndCompress(p.provider.Weapons(p.melee, p.showAllWeapons(), false))
+	return p.listProvider.Serialize()
 }
 
 func (p *weaponsProvider) Deserialize(data []byte) error {
 	if p.forPage {
 		return errs.New("not allowed")
 	}
-	var rows []*gurps.Weapon
-	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
-		return err
-	}
-	p.provider.SetWeapons(p.melee, rows)
-	return nil
+	return p.listProvider.Deserialize(data)
 }
 
 func (p *weaponsProvider) ContextMenuItems() []ContextMenuItem {

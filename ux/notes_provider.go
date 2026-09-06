@@ -10,80 +10,35 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
 var _ TableProvider[*gurps.Note] = &notesProvider{}
 
 type notesProvider struct {
-	table    *unison.Table[*Node[*gurps.Note]]
-	provider gurps.NoteListProvider
-	forPage  bool
+	listProvider[*gurps.Note]
 }
 
 // NewNotesProvider creates a new table provider for notes.
 func NewNotesProvider(provider gurps.NoteListProvider, forPage bool) TableProvider[*gurps.Note] {
-	return &notesProvider{
-		provider: provider,
-		forPage:  forPage,
+	p := &notesProvider{}
+	p.listProvider = listProvider[*gurps.Note]{
+		dataOwner:  provider,
+		list:       provider.NoteList,
+		setList:    provider.SetNoteList,
+		columnIDs:  p.ColumnIDs,
+		headerData: gurps.NotesHeaderData,
+		forPage:    forPage,
 	}
+	return p
 }
 
 func (p *notesProvider) RefKey() string {
 	return gurps.BlockNotesKey
-}
-
-func (p *notesProvider) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(note *gurps.Note) bool {
-		for _, tag := range note.Tags {
-			set[tag] = struct{}{}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
-}
-
-func (p *notesProvider) SetTable(table *unison.Table[*Node[*gurps.Note]]) {
-	p.table = table
-}
-
-func (p *notesProvider) RootRowCount() int {
-	return len(p.provider.NoteList())
-}
-
-func (p *notesProvider) RootRows() []*Node[*gurps.Note] {
-	data := p.provider.NoteList()
-	rows := make([]*Node[*gurps.Note], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
-	}
-	return rows
-}
-
-func (p *notesProvider) SetRootRows(rows []*Node[*gurps.Note]) {
-	p.provider.SetNoteList(ExtractNodeDataFromList(rows))
-}
-
-func (p *notesProvider) RootData() []*gurps.Note {
-	return p.provider.NoteList()
-}
-
-func (p *notesProvider) SetRootData(data []*gurps.Note) {
-	p.provider.SetNoteList(data)
-}
-
-func (p *notesProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
 }
 
 func (p *notesProvider) DragKey() *uti.DataType {
@@ -94,31 +49,8 @@ func (p *notesProvider) DragSVG() *unison.SVG {
 	return svg.GCSNotes
 }
 
-func (p *notesProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Note]]) bool {
-	return from == to
-}
-
-func (p *notesProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.Note]]) {
-}
-
-func (p *notesProvider) AltDropSupport() *AltDropSupport {
-	return nil
-}
-
 func (p *notesProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Note"), i18n.Text("Notes")
-}
-
-func (p *notesProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Note]] {
-	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.Note]], 0, len(ids))
-	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Note](gurps.NotesHeaderData(id), p.forPage))
-	}
-	return headers
-}
-
-func (p *notesProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Note]]) {
 }
 
 func (p *notesProvider) ColumnIDs() []int {
@@ -156,22 +88,8 @@ func (p *notesProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[
 
 func (p *notesProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Note]], variant ItemVariant) {
 	item := gurps.NewNote(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems(owner, table, p.provider.NoteList, p.provider.SetNoteList,
-		func(_ *unison.Table[*Node[*gurps.Note]]) []*Node[*gurps.Note] { return p.RootRows() }, item)
+	p.insertItems(owner, table, item)
 	EditNote(owner, item)
-}
-
-func (p *notesProvider) Serialize() ([]byte, error) {
-	return jio.SerializeAndCompress(p.provider.NoteList())
-}
-
-func (p *notesProvider) Deserialize(data []byte) error {
-	var rows []*gurps.Note
-	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
-		return err
-	}
-	p.provider.SetNoteList(rows)
-	return nil
 }
 
 func (p *notesProvider) ContextMenuItems() []ContextMenuItem {

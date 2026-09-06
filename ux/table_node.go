@@ -240,7 +240,7 @@ func (n *Node[T]) HasTag(tag string) bool {
 	if tag == "" {
 		return true
 	}
-	if tagListable, ok := any(n.Data()).(interface{ TagList() []string }); ok {
+	if tagListable, ok := any(n.Data()).(tagLister); ok {
 		for _, one := range tagListable.TagList() {
 			if strings.EqualFold(tag, one) {
 				return true

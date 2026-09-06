@@ -10,35 +10,40 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
 var _ TableProvider[*gurps.Equipment] = &equipmentProvider{}
 
 type equipmentProvider struct {
-	table    *unison.Table[*Node[*gurps.Equipment]]
+	listProvider[*gurps.Equipment]
 	provider gurps.EquipmentListProvider
-	forPage  bool
 	carried  bool
 }
 
 // NewEquipmentProvider creates a new table provider for equipment. 'carried' is only relevant if 'forPage' is true.
 func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage bool) TableProvider[*gurps.Equipment] {
-	return &equipmentProvider{
-		provider: provider,
-		forPage:  forPage,
-		carried:  carried,
+	p := &equipmentProvider{provider: provider, carried: carried}
+	list, setList := provider.OtherEquipmentList, provider.SetOtherEquipmentList
+	if carried {
+		list, setList = provider.CarriedEquipmentList, provider.SetCarriedEquipmentList
 	}
+	p.listProvider = listProvider[*gurps.Equipment]{
+		dataOwner: provider,
+		list:      list,
+		setList:   setList,
+		columnIDs: p.ColumnIDs,
+		headerData: func(columnID int) gurps.HeaderData {
+			return gurps.EquipmentHeaderData(columnID, provider, carried, forPage)
+		},
+		forPage: forPage,
+	}
+	return p
 }
 
 func (p *equipmentProvider) RefKey() string {
@@ -46,50 +51,6 @@ func (p *equipmentProvider) RefKey() string {
 		return gurps.BlockEquipmentKey
 	}
 	return gurps.BlockOtherEquipmentKey
-}
-
-func (p *equipmentProvider) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(modifier *gurps.Equipment) bool {
-		for _, tag := range modifier.Tags {
-			set[tag] = struct{}{}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
-}
-
-func (p *equipmentProvider) SetTable(table *unison.Table[*Node[*gurps.Equipment]]) {
-	p.table = table
-}
-
-func (p *equipmentProvider) RootRowCount() int {
-	return len(p.equipmentList())
-}
-
-func (p *equipmentProvider) RootRows() []*Node[*gurps.Equipment] {
-	data := p.equipmentList()
-	rows := make([]*Node[*gurps.Equipment], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
-	}
-	return rows
-}
-
-func (p *equipmentProvider) SetRootRows(rows []*Node[*gurps.Equipment]) {
-	p.setEquipmentList(ExtractNodeDataFromList(rows))
-}
-
-func (p *equipmentProvider) RootData() []*gurps.Equipment {
-	return p.equipmentList()
-}
-
-func (p *equipmentProvider) SetRootData(data []*gurps.Equipment) {
-	p.setEquipmentList(data)
-}
-
-func (p *equipmentProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
 }
 
 func (p *equipmentProvider) DragKey() *uti.DataType {
@@ -116,12 +77,10 @@ func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gur
 func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*Node[*gurps.Equipment]]) {
 	if p.carried && from != to {
 		for _, row := range to.SelectedRows(true) {
-			if equipmentRow, ok := any(row).(*Node[*gurps.Equipment]); ok {
-				gurps.Traverse(func(e *gurps.Equipment) bool {
-					e.Equipped = true
-					return false
-				}, false, false, equipmentRow.Data())
-			}
+			gurps.Traverse(func(e *gurps.Equipment) bool {
+				e.Equipped = true
+				return false
+			}, false, false, row.Data())
 		}
 	}
 }
@@ -192,23 +151,13 @@ func (p *equipmentProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Equipment Item"), i18n.Text("Equipment Items")
 }
 
-func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Equipment]] {
-	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.Equipment]], 0, len(ids))
-	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Equipment](gurps.EquipmentHeaderData(id, p.provider, p.carried,
-			p.forPage), p.forPage))
-	}
-	return headers
-}
-
 func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[*gurps.Equipment]]) {
 	if p.forPage {
 		if i := p.table.ColumnIndexForID(gurps.EquipmentDescriptionColumn); i != -1 {
 			if header, ok := headers[i].(*PageTableColumnHeader[*gurps.Equipment]); ok {
 				// The totals in the title change as the equipment and the display formats do, and with them whether
 				// there are exact totals to offer as the tooltip, so both are refreshed here.
-				data := gurps.EquipmentHeaderData(gurps.EquipmentDescriptionColumn, p.provider, p.carried, p.forPage)
+				data := p.headerData(gurps.EquipmentDescriptionColumn)
 				header.Text = unison.NewSmallCapsText(data.Title, &header.TextDecoration)
 				header.SetTooltipText(data.Detail)
 			}
@@ -289,46 +238,9 @@ func (p *equipmentProvider) OpenEditor(owner Rebuildable, table *unison.Table[*N
 }
 
 func (p *equipmentProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]], variant ItemVariant) {
-	topListFunc := p.provider.OtherEquipmentList
-	setTopListFunc := p.provider.SetOtherEquipmentList
-	if p.carried {
-		topListFunc = p.provider.CarriedEquipmentList
-		setTopListFunc = p.provider.SetCarriedEquipmentList
-	}
 	item := gurps.NewEquipment(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems(owner, table, topListFunc, setTopListFunc,
-		func(_ *unison.Table[*Node[*gurps.Equipment]]) []*Node[*gurps.Equipment] {
-			return p.RootRows()
-		}, item)
+	p.insertItems(owner, table, item)
 	EditEquipment(owner, item, p.carried)
-}
-
-func (p *equipmentProvider) equipmentList() []*gurps.Equipment {
-	if p.carried {
-		return p.provider.CarriedEquipmentList()
-	}
-	return p.provider.OtherEquipmentList()
-}
-
-func (p *equipmentProvider) setEquipmentList(list []*gurps.Equipment) {
-	if p.carried {
-		p.provider.SetCarriedEquipmentList(list)
-	} else {
-		p.provider.SetOtherEquipmentList(list)
-	}
-}
-
-func (p *equipmentProvider) Serialize() ([]byte, error) {
-	return jio.SerializeAndCompress(p.equipmentList())
-}
-
-func (p *equipmentProvider) Deserialize(data []byte) error {
-	var rows []*gurps.Equipment
-	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
-		return err
-	}
-	p.setEquipmentList(rows)
-	return nil
 }
 
 func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {

@@ -10,81 +10,37 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
 var _ TableProvider[*gurps.Trait] = &traitsProvider{}
 
 type traitsProvider struct {
-	table    *unison.Table[*Node[*gurps.Trait]]
+	listProvider[*gurps.Trait]
 	provider gurps.TraitListProvider
-	forPage  bool
 }
 
 // NewTraitsProvider creates a new table provider for traits.
 func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) TableProvider[*gurps.Trait] {
-	return &traitsProvider{
-		provider: provider,
-		forPage:  forPage,
+	p := &traitsProvider{provider: provider}
+	p.listProvider = listProvider[*gurps.Trait]{
+		dataOwner:  provider,
+		list:       provider.TraitList,
+		setList:    provider.SetTraitList,
+		columnIDs:  p.ColumnIDs,
+		headerData: gurps.TraitsHeaderData,
+		forPage:    forPage,
 	}
+	return p
 }
 
 func (p *traitsProvider) RefKey() string {
 	return gurps.BlockTraitsKey
-}
-
-func (p *traitsProvider) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(trait *gurps.Trait) bool {
-		for _, tag := range trait.Tags {
-			set[tag] = struct{}{}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
-}
-
-func (p *traitsProvider) SetTable(table *unison.Table[*Node[*gurps.Trait]]) {
-	p.table = table
-}
-
-func (p *traitsProvider) RootRowCount() int {
-	return len(p.provider.TraitList())
-}
-
-func (p *traitsProvider) RootRows() []*Node[*gurps.Trait] {
-	data := p.provider.TraitList()
-	rows := make([]*Node[*gurps.Trait], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
-	}
-	return rows
-}
-
-func (p *traitsProvider) SetRootRows(rows []*Node[*gurps.Trait]) {
-	p.provider.SetTraitList(ExtractNodeDataFromList(rows))
-}
-
-func (p *traitsProvider) RootData() []*gurps.Trait {
-	return p.provider.TraitList()
-}
-
-func (p *traitsProvider) SetRootData(data []*gurps.Trait) {
-	p.provider.SetTraitList(data)
-}
-
-func (p *traitsProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
 }
 
 func (p *traitsProvider) DragKey() *uti.DataType {
@@ -93,13 +49,6 @@ func (p *traitsProvider) DragKey() *uti.DataType {
 
 func (p *traitsProvider) DragSVG() *unison.SVG {
 	return svg.GCSTraits
-}
-
-func (p *traitsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Trait]]) bool {
-	return from == to
-}
-
-func (p *traitsProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.Trait]]) {
 }
 
 func (p *traitsProvider) AltDropSupport() *AltDropSupport {
@@ -168,18 +117,6 @@ func (p *traitsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Trait"), i18n.Text("Traits")
 }
 
-func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Trait]] {
-	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.Trait]], 0, len(ids))
-	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Trait](gurps.TraitsHeaderData(id), p.forPage))
-	}
-	return headers
-}
-
-func (p *traitsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Trait]]) {
-}
-
 func (p *traitsProvider) ColumnIDs() []int {
 	columnIDs := make([]int, 0, 5)
 	if showSwitchColumn(p.forPage, p.provider, p.RootData()) {
@@ -228,22 +165,8 @@ func (p *traitsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node
 
 func (p *traitsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]], variant ItemVariant) {
 	item := gurps.NewTrait(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems(owner, table, p.provider.TraitList, p.provider.SetTraitList,
-		func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] { return p.RootRows() }, item)
+	p.insertItems(owner, table, item)
 	EditTrait(owner, item)
-}
-
-func (p *traitsProvider) Serialize() ([]byte, error) {
-	return jio.SerializeAndCompress(p.provider.TraitList())
-}
-
-func (p *traitsProvider) Deserialize(data []byte) error {
-	var rows []*gurps.Trait
-	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
-		return err
-	}
-	p.provider.SetTraitList(rows)
-	return nil
 }
 
 func (p *traitsProvider) ContextMenuItems() []ContextMenuItem {

@@ -10,82 +10,38 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
 var _ TableProvider[*gurps.Skill] = &skillsProvider{}
 
 type skillsProvider struct {
-	table    *unison.Table[*Node[*gurps.Skill]]
+	listProvider[*gurps.Skill]
 	provider gurps.SkillListProvider
-	forPage  bool
 }
 
 // NewSkillsProvider creates a new table provider for skills.
 func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) TableProvider[*gurps.Skill] {
-	return &skillsProvider{
-		provider: provider,
-		forPage:  forPage,
+	p := &skillsProvider{provider: provider}
+	p.listProvider = listProvider[*gurps.Skill]{
+		dataOwner:  provider,
+		list:       provider.SkillList,
+		setList:    provider.SetSkillList,
+		columnIDs:  p.ColumnIDs,
+		headerData: gurps.SkillsHeaderData,
+		forPage:    forPage,
 	}
+	return p
 }
 
 func (p *skillsProvider) RefKey() string {
 	return gurps.BlockSkillsKey
-}
-
-func (p *skillsProvider) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(modifier *gurps.Skill) bool {
-		for _, tag := range modifier.Tags {
-			set[tag] = struct{}{}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
-}
-
-func (p *skillsProvider) SetTable(table *unison.Table[*Node[*gurps.Skill]]) {
-	p.table = table
-}
-
-func (p *skillsProvider) RootRowCount() int {
-	return len(p.provider.SkillList())
-}
-
-func (p *skillsProvider) RootRows() []*Node[*gurps.Skill] {
-	data := p.provider.SkillList()
-	rows := make([]*Node[*gurps.Skill], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
-	}
-	return rows
-}
-
-func (p *skillsProvider) SetRootRows(rows []*Node[*gurps.Skill]) {
-	p.provider.SetSkillList(ExtractNodeDataFromList(rows))
-}
-
-func (p *skillsProvider) RootData() []*gurps.Skill {
-	return p.provider.SkillList()
-}
-
-func (p *skillsProvider) SetRootData(data []*gurps.Skill) {
-	p.provider.SetSkillList(data)
-}
-
-func (p *skillsProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
 }
 
 func (p *skillsProvider) DragKey() *uti.DataType {
@@ -94,10 +50,6 @@ func (p *skillsProvider) DragKey() *uti.DataType {
 
 func (p *skillsProvider) DragSVG() *unison.SVG {
 	return svg.GCSSkills
-}
-
-func (p *skillsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Skill]]) bool {
-	return from == to
 }
 
 func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Skill]]) {
@@ -119,24 +71,8 @@ func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Skill]
 	}
 }
 
-func (p *skillsProvider) AltDropSupport() *AltDropSupport {
-	return nil
-}
-
 func (p *skillsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Skill"), i18n.Text("Skills")
-}
-
-func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Skill]] {
-	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.Skill]], 0, len(ids))
-	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Skill](gurps.SkillsHeaderData(id), p.forPage))
-	}
-	return headers
-}
-
-func (p *skillsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Skill]]) {
 }
 
 func (p *skillsProvider) ColumnIDs() []int {
@@ -207,22 +143,8 @@ func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
 		return
 	}
-	InsertItems(owner, table, p.provider.SkillList, p.provider.SetSkillList,
-		func(_ *unison.Table[*Node[*gurps.Skill]]) []*Node[*gurps.Skill] { return p.RootRows() }, item)
+	p.insertItems(owner, table, item)
 	EditSkill(owner, item)
-}
-
-func (p *skillsProvider) Serialize() ([]byte, error) {
-	return jio.SerializeAndCompress(p.provider.SkillList())
-}
-
-func (p *skillsProvider) Deserialize(data []byte) error {
-	var rows []*gurps.Skill
-	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
-		return err
-	}
-	p.provider.SetSkillList(rows)
-	return nil
 }
 
 func (p *skillsProvider) ContextMenuItems() []ContextMenuItem {

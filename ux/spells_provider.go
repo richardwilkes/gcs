@@ -10,82 +10,38 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
 var _ TableProvider[*gurps.Spell] = &spellsProvider{}
 
 type spellsProvider struct {
-	table    *unison.Table[*Node[*gurps.Spell]]
+	listProvider[*gurps.Spell]
 	provider gurps.SpellListProvider
-	forPage  bool
 }
 
 // NewSpellsProvider creates a new table provider for spells.
 func NewSpellsProvider(provider gurps.SpellListProvider, forPage bool) TableProvider[*gurps.Spell] {
-	return &spellsProvider{
-		provider: provider,
-		forPage:  forPage,
+	p := &spellsProvider{provider: provider}
+	p.listProvider = listProvider[*gurps.Spell]{
+		dataOwner:  provider,
+		list:       provider.SpellList,
+		setList:    provider.SetSpellList,
+		columnIDs:  p.ColumnIDs,
+		headerData: gurps.SpellsHeaderData,
+		forPage:    forPage,
 	}
+	return p
 }
 
 func (p *spellsProvider) RefKey() string {
 	return gurps.BlockSpellsKey
-}
-
-func (p *spellsProvider) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(modifier *gurps.Spell) bool {
-		for _, tag := range modifier.Tags {
-			set[tag] = struct{}{}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
-}
-
-func (p *spellsProvider) SetTable(table *unison.Table[*Node[*gurps.Spell]]) {
-	p.table = table
-}
-
-func (p *spellsProvider) RootRowCount() int {
-	return len(p.provider.SpellList())
-}
-
-func (p *spellsProvider) RootRows() []*Node[*gurps.Spell] {
-	data := p.provider.SpellList()
-	rows := make([]*Node[*gurps.Spell], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
-	}
-	return rows
-}
-
-func (p *spellsProvider) SetRootRows(rows []*Node[*gurps.Spell]) {
-	p.provider.SetSpellList(ExtractNodeDataFromList(rows))
-}
-
-func (p *spellsProvider) RootData() []*gurps.Spell {
-	return p.provider.SpellList()
-}
-
-func (p *spellsProvider) SetRootData(data []*gurps.Spell) {
-	p.provider.SetSpellList(data)
-}
-
-func (p *spellsProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
 }
 
 func (p *spellsProvider) DragKey() *uti.DataType {
@@ -94,10 +50,6 @@ func (p *spellsProvider) DragKey() *uti.DataType {
 
 func (p *spellsProvider) DragSVG() *unison.SVG {
 	return svg.GCSSpells
-}
-
-func (p *spellsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Spell]]) bool {
-	return from == to
 }
 
 func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Spell]]) {
@@ -118,24 +70,8 @@ func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Spell]
 	}
 }
 
-func (p *spellsProvider) AltDropSupport() *AltDropSupport {
-	return nil
-}
-
 func (p *spellsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Spell"), i18n.Text("Spells")
-}
-
-func (p *spellsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Spell]] {
-	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.Spell]], 0, len(ids))
-	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Spell](gurps.SpellsHeaderData(id), p.forPage))
-	}
-	return headers
-}
-
-func (p *spellsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Spell]]) {
 }
 
 func (p *spellsProvider) ColumnIDs() []int {
@@ -225,22 +161,8 @@ func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
 		return
 	}
-	InsertItems(owner, table, p.provider.SpellList, p.provider.SetSpellList,
-		func(_ *unison.Table[*Node[*gurps.Spell]]) []*Node[*gurps.Spell] { return p.RootRows() }, item)
+	p.insertItems(owner, table, item)
 	EditSpell(owner, item)
-}
-
-func (p *spellsProvider) Serialize() ([]byte, error) {
-	return jio.SerializeAndCompress(p.provider.SpellList())
-}
-
-func (p *spellsProvider) Deserialize(data []byte) error {
-	var rows []*gurps.Spell
-	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
-		return err
-	}
-	p.provider.SetSpellList(rows)
-	return nil
 }
 
 func (p *spellsProvider) ContextMenuItems() []ContextMenuItem {
