@@ -27,11 +27,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
-	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/printing"
 )
@@ -92,7 +90,6 @@ type Sheet struct {
 	CarriedEquipment     *PageList[*gurps.Equipment]
 	OtherEquipment       *PageList[*gurps.Equipment]
 	Notes                *PageList[*gurps.Note]
-	dragReroutePanel     *unison.Panel
 	searchTracker        *SearchTracker
 	scale                int
 	awaitingUpdate       bool
@@ -153,53 +150,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		VAlign:  align.Fill,
 	})
 
-	s.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
-		s.RequestFocus()
-		return false
-	}
-	dragUpdate := func(di drag.Info, _ geom.Point, mods mod.Modifiers) drag.Op {
-		s.dragReroutePanel = nil
-		for _, key := range dropKeys {
-			if di.HasDataType(key.UTI) {
-				if s.dragReroutePanel = s.keyToPanel(key); s.dragReroutePanel != nil {
-					return s.dragReroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
-				}
-				break
-			}
-		}
-		return drag.None
-	}
-	s.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataType(di, dropKeys...) }
-	s.DragEnteredCallback = dragUpdate
-	s.DragUpdatedCallback = dragUpdate
-	s.DragExitedCallback = func() {
-		if s.dragReroutePanel != nil {
-			panel := s.dragReroutePanel
-			s.dragReroutePanel = nil
-			if panel.DragExitedCallback != nil {
-				panel.DragExitedCallback()
-			}
-		}
-	}
-	s.DropCallback = func(di drag.Info, _ geom.Point, mods mod.Modifiers) bool {
-		handled := false
-		if s.dragReroutePanel != nil {
-			panel := s.dragReroutePanel
-			s.dragReroutePanel = nil
-			if panel.DropCallback != nil {
-				handled = panel.DropCallback(di, geom.Point{Y: 100000000}, mods)
-			}
-		}
-		return handled
-	}
-	s.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		if s.dragReroutePanel != nil {
-			r := s.RectFromRoot(s.dragReroutePanel.RectToRoot(s.dragReroutePanel.ContentRect(true)))
-			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
-			paint.SetColorFilter(unison.Alpha30Filter())
-			gc.DrawRect(r, paint)
-		}
-	}
+	installDropRerouting(s.AsPanel(), dropKeys, s.keyToPanel)
 
 	s.page = NewPage(s.entity)
 	// The page is the only thing the content has ever held. The stacking layout adds the ability to put the layout

@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/imgfmt"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // Drag & drop data types for the in-app drag payloads GCS supports. Each is a private data type, unique to this
@@ -128,4 +129,60 @@ func hasAnyDragDataType(di drag.Info, dataTypes ...*uti.DataType) bool {
 		}
 	}
 	return false
+}
+
+// installDropRerouting makes a dockable's root panel accept drags for the supplied in-app drag data types and reroute
+// the drag callbacks to the panel keyToPanel resolves the payload's data type to (typically the list that would hold a
+// dropped item), so that a drop anywhere on the dockable lands in the right list. keyToPanel is consulted afresh for
+// each drag update, since the lists may be rebuilt at any time; returning nil declines the drag. While a reroute is in
+// progress, the target panel is highlighted with a translucent warning tint drawn over the root panel.
+func installDropRerouting(panel *unison.Panel, keys []*uti.DataType, keyToPanel func(*uti.DataType) *unison.Panel) {
+	var reroutePanel *unison.Panel
+	panel.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
+		panel.RequestFocus()
+		return false
+	}
+	dragUpdate := func(di drag.Info, _ geom.Point, mods mod.Modifiers) drag.Op {
+		reroutePanel = nil
+		for _, key := range keys {
+			if di.HasDataType(key.UTI) {
+				if reroutePanel = keyToPanel(key); reroutePanel != nil {
+					return reroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
+				}
+				break
+			}
+		}
+		return drag.None
+	}
+	panel.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataType(di, keys...) }
+	panel.DragEnteredCallback = dragUpdate
+	panel.DragUpdatedCallback = dragUpdate
+	panel.DragExitedCallback = func() {
+		if reroutePanel != nil {
+			target := reroutePanel
+			reroutePanel = nil
+			if target.DragExitedCallback != nil {
+				target.DragExitedCallback()
+			}
+		}
+	}
+	panel.DropCallback = func(di drag.Info, _ geom.Point, mods mod.Modifiers) bool {
+		handled := false
+		if reroutePanel != nil {
+			target := reroutePanel
+			reroutePanel = nil
+			if target.DropCallback != nil {
+				handled = target.DropCallback(di, geom.Point{Y: 100000000}, mods)
+			}
+		}
+		return handled
+	}
+	panel.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		if reroutePanel != nil {
+			r := panel.RectFromRoot(reroutePanel.RectToRoot(reroutePanel.ContentRect(true)))
+			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
+			paint.SetColorFilter(unison.Alpha30Filter())
+			gc.DrawRect(r, paint)
+		}
+	}
 }

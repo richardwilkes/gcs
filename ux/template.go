@@ -30,12 +30,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
-	"github.com/richardwilkes/unison/enums/mod"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var (
@@ -66,7 +63,6 @@ type Template struct {
 	Notes             *PageList[*gurps.Note]
 	refocusOnKey      string
 	refocusOn         unison.Paneler
-	dragReroutePanel  *unison.Panel
 	lastBody          *gurps.Body
 	searchTracker     *SearchTracker
 	scale             int
@@ -119,53 +115,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		VAlign:  align.Fill,
 	})
 
-	t.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
-		t.RequestFocus()
-		return false
-	}
-	dragUpdate := func(di drag.Info, _ geom.Point, mods mod.Modifiers) drag.Op {
-		t.dragReroutePanel = nil
-		for _, key := range dropKeys {
-			if di.HasDataType(key.UTI) {
-				if t.dragReroutePanel = t.keyToPanel(key); t.dragReroutePanel != nil {
-					return t.dragReroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
-				}
-				break
-			}
-		}
-		return drag.None
-	}
-	t.CanAcceptDropCallback = func(di drag.Info) bool { return hasAnyDragDataType(di, dropKeys...) }
-	t.DragEnteredCallback = dragUpdate
-	t.DragUpdatedCallback = dragUpdate
-	t.DragExitedCallback = func() {
-		if t.dragReroutePanel != nil {
-			panel := t.dragReroutePanel
-			t.dragReroutePanel = nil
-			if panel.DragExitedCallback != nil {
-				panel.DragExitedCallback()
-			}
-		}
-	}
-	t.DropCallback = func(di drag.Info, _ geom.Point, mods mod.Modifiers) bool {
-		handled := false
-		if t.dragReroutePanel != nil {
-			panel := t.dragReroutePanel
-			t.dragReroutePanel = nil
-			if panel.DropCallback != nil {
-				handled = panel.DropCallback(di, geom.Point{Y: 100000000}, mods)
-			}
-		}
-		return handled
-	}
-	t.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		if t.dragReroutePanel != nil {
-			r := t.RectFromRoot(t.dragReroutePanel.RectToRoot(t.dragReroutePanel.ContentRect(true)))
-			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
-			paint.SetColorFilter(unison.Alpha30Filter())
-			gc.DrawRect(r, paint)
-		}
-	}
+	installDropRerouting(t.AsPanel(), dropKeys, t.keyToPanel)
 
 	t.scroll.SetContent(t.createContent(), behavior.Unmodified, behavior.Unmodified)
 	t.scroll.SetLayoutData(&unison.FlexLayoutData{
