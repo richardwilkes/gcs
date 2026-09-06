@@ -110,33 +110,39 @@ type linkSpec struct {
 // Calculator provides calculations for various physical tasks, such as jumping.
 type Calculator struct {
 	unison.Panel
-	sheet                      *Sheet
-	undoMgr                    *unison.UndoManager
-	content                    *unison.Panel
-	scroll                     *unison.ScrollPanel
-	jumpingLabel               *unison.Label
-	highJumpResult             *unison.Label
-	broadJumpResult            *unison.Label
-	throwingDistanceResult     *unison.Label
-	throwingDamageResult       *unison.Label
-	hikingResult               *unison.Label
-	hikingDistanceLabel        *unison.Label
-	hikingTimeLabel            *unison.Label
-	scale                      int
-	jumpingRunningStartYards   fxp.Int
-	throwingObjectWeight       fxp.Weight
-	jumpingExtraEffortPenalty  int
-	throwingExtraEffortPenalty int
-	hikingExtraEffortPenalty   int
-	terrainIndex               int
-	weatherIndex               int
-	hikingIntensityIndex       int
-	hikingHours                fxp.Int
-	hikingDistance             fxp.Int
-	usingSkis                  bool
-	usingSkates                bool
-	roadsAreCleared            bool
-	successfulHikingRoll       bool
+	sheet                        *Sheet
+	undoMgr                      *unison.UndoManager
+	content                      *unison.Panel
+	scroll                       *unison.ScrollPanel
+	jumpingLabel                 *unison.Label
+	highJumpResult               *unison.Label
+	broadJumpResult              *unison.Label
+	throwingDistanceResult       *unison.Label
+	throwingDamageResult         *unison.Label
+	hikingResult                 *unison.Label
+	hikingDistanceLabel          *unison.Label
+	hikingTimeLabel              *unison.Label
+	hikingHoursField             *DecimalField
+	hikingExtraEffortField       *IntegerField
+	roadsAreClearedCheckBox      *unison.CheckBox
+	usingSkisCheckBox            *unison.CheckBox
+	usingSkatesCheckBox          *unison.CheckBox
+	successfulHikingRollCheckBox *unison.CheckBox
+	scale                        int
+	jumpingRunningStartYards     fxp.Int
+	throwingObjectWeight         fxp.Weight
+	jumpingExtraEffortPenalty    int
+	throwingExtraEffortPenalty   int
+	hikingExtraEffortPenalty     int
+	terrainIndex                 int
+	weatherIndex                 int
+	hikingIntensityIndex         int
+	hikingHours                  fxp.Int
+	hikingDistance               fxp.Int
+	usingSkis                    bool
+	usingSkates                  bool
+	roadsAreCleared              bool
+	successfulHikingRoll         bool
 }
 
 // DisplayCalculator displays the calculator for the given Sheet.
@@ -232,346 +238,179 @@ func (c *Calculator) createContent() {
 
 func (c *Calculator) addJumpingSection() {
 	c.content.AddChild(c.createHeader(i18n.Text("Jumping"), []linkSpec{{pageRef: "BX352", highlight: "Jumping"}}, 0))
-
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	field := NewDecimalField(nil, "", i18n.Text("Jump Running Start"),
+	c.jumpingLabel = c.addFieldRow(NewDecimalField(nil, "", i18n.Text("Jump Running Start"),
 		func() fxp.Int { return c.jumpingRunningStartYards },
 		func(v fxp.Int) {
 			c.jumpingRunningStartYards = v
 			c.updateJumpingResult()
 		},
-		0, fxp.Max, false, false)
-	wrapper.AddChild(field)
-	c.jumpingLabel = unison.NewLabel()
-	wrapper.AddChild(c.jumpingLabel)
-	c.content.AddChild(wrapper)
-
-	wrapper = unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	wrapper.AddChild(NewIntegerField(nil, "", i18n.Text("Jumping Extra Effort Penalty"),
+		0, fxp.Max, false, false), "")
+	c.addFieldRow(NewIntegerField(nil, "", i18n.Text("Jumping Extra Effort Penalty"),
 		func() int { return c.jumpingExtraEffortPenalty },
 		func(v int) {
 			c.jumpingExtraEffortPenalty = v
 			c.updateJumpingResult()
 		},
-		-100, 0, false, false))
-	label := unison.NewLabel()
-	label.SetTitle(i18n.Text("penalty for extra effort"))
-	wrapper.AddChild(label)
-	c.content.AddChild(wrapper)
-
-	wrapper = unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
-	divider.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	wrapper.AddChild(divider)
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("High Jump:"))
-	wrapper.AddChild(label)
-	c.highJumpResult = c.createResultLabel()
-	wrapper.AddChild(c.highJumpResult)
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("Broad Jump:"))
-	wrapper.AddChild(label)
-	c.broadJumpResult = c.createResultLabel()
+		-100, 0, false, false), i18n.Text("penalty for extra effort"))
+	row := c.addResultRow()
+	addPlainLabel(row, i18n.Text("High Jump:"))
+	c.highJumpResult = addResultLabel(row)
+	addPlainLabel(row, i18n.Text("Broad Jump:"))
+	c.broadJumpResult = addResultLabel(row)
 	c.updateJumpingResult()
-	wrapper.AddChild(c.broadJumpResult)
-	c.content.AddChild(wrapper)
 }
 
 func (c *Calculator) addThrowingSection() {
 	c.content.AddChild(c.createHeader(i18n.Text("Throwing"), []linkSpec{{pageRef: "BX355", highlight: "Throwing"}}, unison.StdVSpacing*3))
-
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	wrapper.AddChild(NewWeightField(nil, "", i18n.Text("Object Weight"),
+	c.addFieldRow(NewWeightField(nil, "", i18n.Text("Object Weight"),
 		c.sheet.Entity(),
 		func() fxp.Weight { return c.throwingObjectWeight },
 		func(v fxp.Weight) {
 			c.throwingObjectWeight = v
 			c.updateThrowingResult()
 		},
-		0, fxp.Weight(fxp.Max), false))
-	label := unison.NewLabel()
-	label.SetTitle(i18n.Text("object"))
-	wrapper.AddChild(label)
-	c.content.AddChild(wrapper)
-
-	wrapper = unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	wrapper.AddChild(NewIntegerField(nil, "", i18n.Text("Throwing Extra Effort Penalty"),
+		0, fxp.Weight(fxp.Max), false), i18n.Text("object"))
+	c.addFieldRow(NewIntegerField(nil, "", i18n.Text("Throwing Extra Effort Penalty"),
 		func() int { return c.throwingExtraEffortPenalty },
 		func(v int) {
 			c.throwingExtraEffortPenalty = v
 			c.updateThrowingResult()
 		},
-		-100, 0, false, false))
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("penalty for extra effort"))
-	wrapper.AddChild(label)
-	c.content.AddChild(wrapper)
-
-	wrapper = unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
-	divider.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	wrapper.AddChild(divider)
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("Distance:"))
-	wrapper.AddChild(label)
-	c.throwingDistanceResult = c.createResultLabel()
-	wrapper.AddChild(c.throwingDistanceResult)
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("Damage:"))
-	wrapper.AddChild(label)
-	c.throwingDamageResult = c.createResultLabel()
-	wrapper.AddChild(c.throwingDamageResult)
+		-100, 0, false, false), i18n.Text("penalty for extra effort"))
+	row := c.addResultRow()
+	addPlainLabel(row, i18n.Text("Distance:"))
+	c.throwingDistanceResult = addResultLabel(row)
+	addPlainLabel(row, i18n.Text("Damage:"))
+	c.throwingDamageResult = addResultLabel(row)
 	c.updateThrowingResult()
-	c.content.AddChild(wrapper)
 }
 
 func (c *Calculator) addHikingSection() {
 	c.content.AddChild(c.createHeader(i18n.Text("Hiking"),
 		[]linkSpec{
-			{
-				pageRef:   "BX351",
-				highlight: "Hiking",
-			},
-			{
-				pageRef:   "HT55",
-				highlight: "Hiking",
-			},
+			{pageRef: "BX351", highlight: "Hiking"},
+			{pageRef: "HT55", highlight: "Hiking"},
 		},
 		unison.StdVSpacing*3))
 
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
+	row := c.addRow(2)
+	addPlainLabel(row, i18n.Text("Terrain:"))
+	addIndexPopup(row, terrain, &c.terrainIndex, c.hikingChanged)
+	addPlainLabel(row, i18n.Text("Weather:"))
+	addIndexPopup(row, weather, &c.weatherIndex, c.hikingChanged)
+	addPlainLabel(row, i18n.Text("Intensity:"))
+	addIndexPopup(row, hikingIntensity, &c.hikingIntensityIndex, c.hikingChanged)
 
-	terrainPopup := unison.NewPopupMenu[terrainModifier]()
-	roadsAreClearedCheckbox := unison.NewCheckBox()
-	usingSkisCheckbox := unison.NewCheckBox()
-	usingSkatesCheckbox := unison.NewCheckBox()
-	successfulHikingRollCheckbox := unison.NewCheckBox()
-	hikingHoursField := NewDecimalField(nil, "", i18n.Text("Traveling Hours per Day"),
+	c.roadsAreClearedCheckBox = c.addCheckBox(i18n.Text("Roads are cleared"), &c.roadsAreCleared, c.updateHikingResult)
+	c.usingSkisCheckBox = c.addCheckBox(i18n.Text("Using skis"), &c.usingSkis, c.hikingChanged)
+	c.usingSkatesCheckBox = c.addCheckBox(i18n.Text("Using skates"), &c.usingSkates, c.hikingChanged)
+	// The title names the skill the roll is against, which depends on the mode of travel, so adjustHikingControls
+	// sets it.
+	c.successfulHikingRollCheckBox = c.addCheckBox("", &c.successfulHikingRoll, c.hikingChanged)
+
+	c.hikingHoursField = NewDecimalField(nil, "", i18n.Text("Traveling Hours per Day"),
 		func() fxp.Int { return c.hikingHours },
 		func(v fxp.Int) {
 			c.hikingHours = v
 			c.updateHikingResult()
 		},
 		0, fxp.TwentyFour, false, false)
-	distanceToCoverField := NewDecimalField(nil, "", i18n.Text("Distance to Cover"),
-		func() fxp.Int { return c.hikingDistance },
-		func(v fxp.Int) {
-			c.hikingDistance = v
-			c.updateHikingResult()
-		},
-		0, fxp.Max, false, false)
-	extraEffortPenaltyField := NewIntegerField(nil, "", i18n.Text("Hiking Extra Effort Penalty"),
+	c.addFieldRow(c.hikingHoursField, i18n.Text("hours of hiking per day"))
+	c.hikingExtraEffortField = NewIntegerField(nil, "", i18n.Text("Hiking Extra Effort Penalty"),
 		func() int { return c.hikingExtraEffortPenalty },
 		func(v int) {
 			c.hikingExtraEffortPenalty = v
 			c.updateHikingResult()
 		},
 		-100, 0, false, false)
-	hikingAdjuster := func() {
-		switch {
-		case c.usingSkis:
-			successfulHikingRollCheckbox.SetTitle(i18n.Text("Made a successful Skiing (B221) roll"))
-			usingSkatesCheckbox.SetEnabled(false)
-		case c.usingSkates:
-			successfulHikingRollCheckbox.SetTitle(i18n.Text("Made a successful Skating (B220) roll"))
-			usingSkisCheckbox.SetEnabled(false)
-		default:
-			successfulHikingRollCheckbox.SetTitle(i18n.Text("Made a successful Hiking (B200) roll"))
-			usingSkatesCheckbox.SetEnabled(true)
-			usingSkisCheckbox.SetEnabled(true)
-		}
+	c.addFieldRow(c.hikingExtraEffortField, i18n.Text("penalty for extra effort"))
+	c.hikingDistanceLabel = c.addFieldRow(NewDecimalField(nil, "", i18n.Text("Distance to Cover"),
+		func() fxp.Int { return c.hikingDistance },
+		func(v fxp.Int) {
+			c.hikingDistance = v
+			c.updateHikingResult()
+		},
+		0, fxp.Max, false, false), "")
 
-		i := hikingIntensity[c.hikingIntensityIndex]
-		hikingHoursField.SetEnabled(true)
-		if !i.IsCustom {
-			c.hikingHours = i.HoursHiking
-			hikingHoursField.Sync()
-			hikingHoursField.SetEnabled(false)
-		}
+	row = c.addResultRow()
+	c.hikingResult = addResultLabel(row)
+	addPlainLabel(row, i18n.Text(" per day"))
+	c.hikingTimeLabel = addResultLabel(row)
+	addPlainLabel(row, i18n.Text(" to hike"))
+	c.hikingChanged()
+}
 
-		w := weather[c.weatherIndex]
-		roadsAreClearedCheckbox.SetEnabled(terrain[c.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
-		extraEffortPenaltyField.SetEnabled(c.successfulHikingRoll)
-		c.content.MarkForLayoutRecursively()
-		c.content.MarkForLayoutRecursivelyUpward()
-		c.content.MarkForRedraw()
+// hikingChanged is what a hiking control runs once it has stored its value: it brings the controls that depend on the
+// selections into line, then recomputes the result.
+func (c *Calculator) hikingChanged() {
+	c.adjustHikingControls()
+	c.updateHikingResult()
+}
+
+// adjustHikingControls enables, disables and retitles the hiking controls to match the current selections: skis and
+// skates exclude one another and decide which skill the roll is against, the hours are only editable for a custom
+// intensity, roads can only be cleared of snow or ice, and extra effort needs a successful roll.
+func (c *Calculator) adjustHikingControls() {
+	switch {
+	case c.usingSkis:
+		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Skiing (B221) roll"))
+		c.usingSkatesCheckBox.SetEnabled(false)
+	case c.usingSkates:
+		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Skating (B220) roll"))
+		c.usingSkisCheckBox.SetEnabled(false)
+	default:
+		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Hiking (B200) roll"))
+		c.usingSkatesCheckBox.SetEnabled(true)
+		c.usingSkisCheckBox.SetEnabled(true)
 	}
 
-	label := unison.NewLabel()
-	label.SetTitle(i18n.Text("Terrain:"))
-	wrapper.AddChild(label)
-
-	terrainPopup.AddItem(terrain...)
-	terrainPopup.SelectIndex(c.terrainIndex)
-	terrainPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[terrainModifier]) {
-		c.terrainIndex = popup.SelectedIndex()
-		hikingAdjuster()
-		c.updateHikingResult()
+	i := hikingIntensity[c.hikingIntensityIndex]
+	c.hikingHoursField.SetEnabled(true)
+	if !i.IsCustom {
+		c.hikingHours = i.HoursHiking
+		c.hikingHoursField.Sync()
+		c.hikingHoursField.SetEnabled(false)
 	}
-	wrapper.AddChild(terrainPopup)
 
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("Weather:"))
-	wrapper.AddChild(label)
+	w := weather[c.weatherIndex]
+	c.roadsAreClearedCheckBox.SetEnabled(terrain[c.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
+	c.hikingExtraEffortField.SetEnabled(c.successfulHikingRoll)
+	c.content.MarkForLayoutRecursively()
+	c.content.MarkForLayoutRecursivelyUpward()
+	c.content.MarkForRedraw()
+}
 
-	weatherPopup := unison.NewPopupMenu[terrainModifier]()
-	weatherPopup.AddItem(weather...)
-	weatherPopup.SelectIndex(c.weatherIndex)
-	weatherPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[terrainModifier]) {
-		c.weatherIndex = popup.SelectedIndex()
-		hikingAdjuster()
-		c.updateHikingResult()
-	}
-	wrapper.AddChild(weatherPopup)
+// newSectionIndent returns the border that sets a section's controls in from its header.
+func newSectionIndent() unison.Border {
+	return unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2})
+}
 
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("Intensity:"))
-	wrapper.AddChild(label)
-
-	hikingIntensityPopup := unison.NewPopupMenu[hikingIntensityHours]()
-	hikingIntensityPopup.AddItem(hikingIntensity...)
-	hikingIntensityPopup.SelectIndex(c.hikingIntensityIndex)
-	hikingIntensityPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[hikingIntensityHours]) {
-		c.hikingIntensityIndex = popup.SelectedIndex()
-		hikingAdjuster()
-		c.updateHikingResult()
-	}
-	wrapper.AddChild(hikingIntensityPopup)
-
-	c.content.AddChild(wrapper)
-
-	roadsAreClearedCheckbox.SetTitle(i18n.Text("Roads are cleared"))
-	roadsAreClearedCheckbox.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	roadsAreClearedCheckbox.ClickCallback = func() {
-		c.roadsAreCleared = roadsAreClearedCheckbox.State == check.On
-		c.updateHikingResult()
-	}
-	c.content.AddChild(roadsAreClearedCheckbox)
-
-	usingSkisCheckbox.SetTitle(i18n.Text("Using skis"))
-	usingSkisCheckbox.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	usingSkisCheckbox.ClickCallback = func() {
-		c.usingSkis = usingSkisCheckbox.State == check.On
-		hikingAdjuster()
-		c.updateHikingResult()
-	}
-	c.content.AddChild(usingSkisCheckbox)
-
-	usingSkatesCheckbox.SetTitle(i18n.Text("Using skates"))
-	usingSkatesCheckbox.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	usingSkatesCheckbox.ClickCallback = func() {
-		c.usingSkates = usingSkatesCheckbox.State == check.On
-		hikingAdjuster()
-		c.updateHikingResult()
-	}
-	c.content.AddChild(usingSkatesCheckbox)
-
-	hikingAdjuster()
-	successfulHikingRollCheckbox.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	successfulHikingRollCheckbox.ClickCallback = func() {
-		c.successfulHikingRoll = successfulHikingRollCheckbox.State == check.On
-		hikingAdjuster()
-		c.updateHikingResult()
-	}
-	c.content.AddChild(successfulHikingRollCheckbox)
-
-	wrapper = unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
+// addRow adds a row of controls with the given number of columns to the content, indented beneath its section's
+// header, and returns it.
+func (c *Calculator) addRow(columns int) *unison.Panel {
+	row := unison.NewPanel()
+	row.SetLayout(&unison.FlexLayout{
+		Columns:  columns,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	wrapper.AddChild(hikingHoursField)
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("hours of hiking per day"))
-	wrapper.AddChild(label)
-	c.content.AddChild(wrapper)
+	row.SetBorder(newSectionIndent())
+	c.content.AddChild(row)
+	return row
+}
 
-	wrapper = unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	wrapper.AddChild(extraEffortPenaltyField)
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text("penalty for extra effort."))
-	wrapper.AddChild(label)
-	c.content.AddChild(wrapper)
+// addFieldRow adds a row holding the field followed by a label with the given text, and returns the label so that a
+// caller passing no text can fill it in later.
+func (c *Calculator) addFieldRow(field unison.Paneler, trailing string) *unison.Label {
+	row := c.addRow(2)
+	row.AddChild(field)
+	return addPlainLabel(row, trailing)
+}
 
-	wrapper = unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	c.hikingDistanceLabel = unison.NewLabel()
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	wrapper.AddChild(distanceToCoverField)
-	wrapper.AddChild(c.hikingDistanceLabel)
-	c.content.AddChild(wrapper)
-
-	wrapper = unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
+// addResultRow adds a two-column row for a section's results, set off from the inputs above it by a divider, and
+// returns it.
+func (c *Calculator) addResultRow() *unison.Panel {
+	row := c.addRow(2)
 	divider := unison.NewSeparator()
 	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
 	divider.SetLayoutData(&unison.FlexLayoutData{
@@ -579,24 +418,47 @@ func (c *Calculator) addHikingSection() {
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-
-	c.hikingResult = c.createResultLabel()
-	c.hikingTimeLabel = c.createResultLabel()
-	c.updateHikingResult()
-
-	wrapper.AddChild(divider)
-	wrapper.AddChild(c.hikingResult)
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text(" per day"))
-	wrapper.AddChild(label)
-	wrapper.AddChild(c.hikingTimeLabel)
-	label = unison.NewLabel()
-	label.SetTitle(i18n.Text(" to hike"))
-	wrapper.AddChild(label)
-	c.content.AddChild(wrapper)
+	row.AddChild(divider)
+	return row
 }
 
-func (c *Calculator) createResultLabel() *unison.Label {
+// addCheckBox adds an indented checkbox with the given title to the content. Clicking it stores whether it is now
+// checked in *flag, then runs changed.
+func (c *Calculator) addCheckBox(title string, flag *bool, changed func()) *unison.CheckBox {
+	cb := unison.NewCheckBox()
+	cb.SetTitle(title)
+	cb.SetBorder(newSectionIndent())
+	cb.ClickCallback = func() {
+		*flag = cb.State == check.On
+		changed()
+	}
+	c.content.AddChild(cb)
+	return cb
+}
+
+// addIndexPopup adds a popup offering the items to the parent, with the one at *index selected. Choosing an item
+// stores its position in *index, then runs changed.
+func addIndexPopup[T comparable](parent *unison.Panel, items []T, index *int, changed func()) {
+	popup := unison.NewPopupMenu[T]()
+	popup.AddItem(items...)
+	popup.SelectIndex(*index)
+	popup.SelectionChangedCallback = func(_ *unison.PopupMenu[T]) {
+		*index = popup.SelectedIndex()
+		changed()
+	}
+	parent.AddChild(popup)
+}
+
+// addPlainLabel adds a plain label with the given text to the parent and returns it.
+func addPlainLabel(parent *unison.Panel, text string) *unison.Label {
+	label := unison.NewLabel()
+	label.SetTitle(text)
+	parent.AddChild(label)
+	return label
+}
+
+// addResultLabel adds a bold label for showing a result to the parent and returns it.
+func addResultLabel(parent *unison.Panel) *unison.Label {
 	label := unison.NewLabel()
 	label.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
@@ -605,6 +467,7 @@ func (c *Calculator) createResultLabel() *unison.Label {
 			return desc
 		},
 	}
+	parent.AddChild(label)
 	return label
 }
 
