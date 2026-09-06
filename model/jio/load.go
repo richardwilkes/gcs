@@ -19,8 +19,14 @@ import (
 	"os"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xio"
 )
+
+// InvalidFileData returns a message indicating that the file contains invalid data.
+func InvalidFileData() string {
+	return i18n.Text("Invalid file data.")
+}
 
 // LoadFromFile JSON data from the specified filesystem path. 'fileSystem' may be nil, in which case os.Open() is used instead.
 func LoadFromFile(fileSystem fs.FS, path string, result any) error {
@@ -40,6 +46,26 @@ func LoadFromFile(fileSystem fs.FS, path string, result any) error {
 		return err
 	}
 	return UnmarshalRead(r, result)
+}
+
+// LoadNew allocates a new T, loads the JSON file at path from fileSystem into it and returns it. As with LoadFromFile,
+// 'fileSystem' may be nil to read from the local disk.
+func LoadNew[T any](fileSystem fs.FS, path string) (*T, error) {
+	var result T
+	if err := LoadFromFile(fileSystem, path, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// LoadVersionedFile loads the JSON file at path from fileSystem into data, reporting any failure to open or decode it
+// as InvalidFileData(), then checks that the data version it carries is one this release can load. 'version' must
+// point at the version field inside data, so that the check sees the value that was just read.
+func LoadVersionedFile(fileSystem fs.FS, path string, data any, version *int) error {
+	if err := LoadFromFile(fileSystem, path, data); err != nil {
+		return errs.NewWithCause(InvalidFileData(), err)
+	}
+	return CheckVersion(*version)
 }
 
 // DecompressAndDeserialize decompresses the buffer, then loads JSON data from it.

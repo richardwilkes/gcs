@@ -121,11 +121,7 @@ func NewNameGeneratorFromFS(fileSystem fs.FS, filePath string) (*NameGenerator, 
 // may contain are preserved as-is; an editor should call it before binding to the data. Use SampleNames to try the
 // definition out, or NewNameGeneratorFromFS to load a generator for use.
 func ReadNameGeneratorFromFS(fileSystem fs.FS, filePath string) (*NameGenerator, error) {
-	var generator NameGenerator
-	if err := jio.LoadFromFile(fileSystem, filePath, &generator); err != nil {
-		return nil, err
-	}
-	return &generator, nil
+	return jio.LoadNew[NameGenerator](fileSystem, filePath)
 }
 
 // Save writes the NameGenerator to the file as JSON. Matching the existing files, there is no version wrapper.

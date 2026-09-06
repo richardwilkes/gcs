@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
@@ -51,10 +50,7 @@ type TemplateData struct {
 // NewTemplateFromFile loads a Template from a file.
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var t Template
-	if err := jio.LoadFromFile(fileSystem, filePath, &t); err != nil {
-		return nil, errs.NewWithCause(InvalidFileData(), err)
-	}
-	if err := jio.CheckVersion(t.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &t, &t.Version); err != nil {
 		return nil, err
 	}
 	return &t, nil

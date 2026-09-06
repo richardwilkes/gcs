@@ -11,11 +11,6 @@ package gurps
 
 import "github.com/richardwilkes/toolbox/v2/i18n"
 
-// InvalidFileData returns a message indicating that the file contains invalid data.
-func InvalidFileData() string {
-	return i18n.Text("Invalid file data.")
-}
-
 // NoAdditionalModifiers returns a message indicating that there are no additional modifiers.
 func NoAdditionalModifiers() string {
 	return i18n.Text("No additional modifiers")

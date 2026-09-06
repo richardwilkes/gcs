@@ -19,7 +19,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -68,10 +67,7 @@ func FactoryBody() *Body {
 // NewBodyFromFile loads a Body from a file.
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data standaloneBodyData
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileData(), err)
-	}
-	if err := jio.CheckVersion(data.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
 		return nil, err
 	}
 	var body Body

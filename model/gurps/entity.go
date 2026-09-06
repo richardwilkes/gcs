@@ -134,10 +134,7 @@ type Entity struct {
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var e Entity
 	e.DiscardCaches()
-	if err := jio.LoadFromFile(fileSystem, filePath, &e); err != nil {
-		return nil, errs.NewWithCause(InvalidFileData(), err)
-	}
-	if err := jio.CheckVersion(e.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &e, &e.Version); err != nil {
 		return nil, err
 	}
 	return &e, nil

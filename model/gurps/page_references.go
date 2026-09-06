@@ -35,11 +35,7 @@ type PageRef struct {
 
 // NewPageRefsFromFS creates a new set of page references from a file.
 func NewPageRefsFromFS(fileSystem fs.FS, filePath string) (*PageRefs, error) {
-	var p PageRefs
-	if err := jio.LoadFromFile(fileSystem, filePath, &p); err != nil {
-		return nil, err
-	}
-	return &p, nil
+	return jio.LoadNew[PageRefs](fileSystem, filePath)
 }
 
 // Save writes the PageRefs to the file as JSON.

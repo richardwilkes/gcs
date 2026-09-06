@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
@@ -50,10 +49,7 @@ type LootData struct {
 // NewLootFromFile loads Loot from a file.
 func NewLootFromFile(fileSystem fs.FS, filePath string) (*Loot, error) {
 	var l Loot
-	if err := jio.LoadFromFile(fileSystem, filePath, &l); err != nil {
-		return nil, errs.NewWithCause(InvalidFileData(), err)
-	}
-	if err := jio.CheckVersion(l.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &l, &l.Version); err != nil {
 		return nil, err
 	}
 	return &l, nil

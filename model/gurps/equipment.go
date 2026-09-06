@@ -30,7 +30,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -127,10 +126,7 @@ type equipmentListData struct {
 // NewEquipmentFromFile loads an Equipment list from a file.
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
 	var data equipmentListData
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileData(), err)
-	}
-	if err := jio.CheckVersion(data.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
 		return nil, err
 	}
 	// SetDataOwner recurses into children on its own, so only the top-level rows need to be visited. Containers must

@@ -31,7 +31,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -156,10 +155,7 @@ type spellListData struct {
 // NewSpellsFromFile loads an Spell list from a file.
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 	var data spellListData
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileData(), err)
-	}
-	if err := jio.CheckVersion(data.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
 		return nil, err
 	}
 	Traverse(func(spell *Spell) bool {

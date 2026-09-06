@@ -71,11 +71,7 @@ func CurrentBindings() []*Binding {
 // NewKeyBindingsFromFS creates a new set of key bindings from a file. Any missing values will be filled in with
 // defaults.
 func NewKeyBindingsFromFS(fileSystem fs.FS, filePath string) (*KeyBindings, error) {
-	var b KeyBindings
-	if err := jio.LoadFromFile(fileSystem, filePath, &b); err != nil {
-		return nil, err
-	}
-	return &b, nil
+	return jio.LoadNew[KeyBindings](fileSystem, filePath)
 }
 
 // IsZero implements json.isZero.

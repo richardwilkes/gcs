@@ -18,7 +18,6 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
@@ -83,10 +82,7 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 		OldRows   *AttributeDefs `json:"attributes"`
 		OldestKey *AttributeDefs `json:"attribute_settings"`
 	}
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileData(), err)
-	}
-	if err := jio.CheckVersion(data.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
 		return nil, err
 	}
 	if data.Rows == nil && data.OldRows != nil {
