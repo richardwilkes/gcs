@@ -144,16 +144,8 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 		func() int { return gurps.GlobalSettings().General.InitialPDFUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialPDFUIScale = v },
 		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
-	d.autoScalingPopup = unison.NewPopupMenu[autoscale.Option]()
-	for _, mode := range autoscale.Options {
-		d.autoScalingPopup.AddItem(mode)
-	}
-	d.autoScalingPopup.Select(gurps.GlobalSettings().General.PDFAutoScaling)
-	d.autoScalingPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[autoscale.Option]) {
-		if mode, ok := popup.Selected(); ok {
-			gurps.GlobalSettings().General.PDFAutoScaling = mode
-		}
-	}
+	d.autoScalingPopup = newPopupMenu(autoscale.Options, gurps.GlobalSettings().General.PDFAutoScaling,
+		func(mode autoscale.Option) { gurps.GlobalSettings().General.PDFAutoScaling = mode })
 	content.AddChild(WrapWithSpan(2, d.initialPDFScaleField, d.autoScalingPopup))
 
 	initialMarkdownScaleTitle := i18n.Text("Initial Markdown Scale")
@@ -295,18 +287,12 @@ func newUpdateCheckPopup(content *unison.Panel, title, tooltip string, get func(
 	set func(updatecheck.Option),
 ) *unison.PopupMenu[updatecheck.Option] {
 	content.AddChild(NewFieldLeadingLabel(title, false))
-	popup := unison.NewPopupMenu[updatecheck.Option]()
-	popup.AddItem(updatecheck.Options...)
-	// The initial selection must be made before the callback is installed, since selecting an item calls it.
-	popup.Select(get())
+	popup := newPopupMenu(updatecheck.Options, get(), func(option updatecheck.Option) {
+		set(option)
+		ApplyUpdateCheckSettings()
+	})
 	popup.Tooltip = newWrappedTooltip(tooltip)
 	popup.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[updatecheck.Option]) {
-		if option, ok := p.Selected(); ok {
-			set(option)
-			ApplyUpdateCheckSettings()
-		}
-	}
 	content.AddChild(popup)
 	return popup
 }
@@ -344,13 +330,9 @@ func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
 			d.calendarPopup.AddItem(one.Name)
 		}
 	}
-	d.calendarPopup.Select(gurps.GlobalSettings().General.CalendarRef(libraries).Name)
+	installPopupSelection(d.calendarPopup, gurps.GlobalSettings().General.CalendarRef(libraries).Name,
+		func(name string) { gurps.GlobalSettings().General.CalendarName = name })
 	d.calendarPopup.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	d.calendarPopup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		if item, ok := p.Selected(); ok {
-			gurps.GlobalSettings().General.CalendarName = item
-		}
-	}
 	content.AddChild(d.calendarPopup)
 }
 

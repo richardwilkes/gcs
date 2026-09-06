@@ -362,19 +362,12 @@ the page instead.`), mod.Option.String()))
 	d.scaleField.SetEnabled(false)
 	first.AddChild(d.scaleField)
 
-	d.autoScalingPopup = unison.NewPopupMenu[autoscale.Option]()
-	for _, mode := range autoscale.Options {
-		d.autoScalingPopup.AddItem(mode)
-	}
-	d.autoScalingPopup.Select(d.autoScaling)
-	d.autoScalingPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[autoscale.Option]) {
-		if mode, ok := popup.Selected(); ok {
-			d.autoScaling = mode
-			d.scaleField.SetEnabled(d.autoScaling == autoscale.No)
-			d.docScroll.MarkForRedraw()
-			d.scheduleViewSync()
-		}
-	}
+	d.autoScalingPopup = newPopupMenu(autoscale.Options, d.autoScaling, func(mode autoscale.Option) {
+		d.autoScaling = mode
+		d.scaleField.SetEnabled(d.autoScaling == autoscale.No)
+		d.docScroll.MarkForRedraw()
+		d.scheduleViewSync()
+	})
 	first.AddChild(d.autoScalingPopup)
 
 	pageLabel := unison.NewLabel()

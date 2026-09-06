@@ -107,3 +107,60 @@ func TestNewApplyCancelButtons(t *testing.T) {
 	c.Equal(2, len(applyButton.Tooltip.Children()), "with shortcuts, the tooltip gains a second line")
 	c.Equal(2, len(cancelButton.Tooltip.Children()))
 }
+
+// TestNewPopupMenuOffersItemsAndReportsChoices verifies that newPopupMenu offers the items in order, starts out showing
+// the current value without reporting it as a choice, and hands each later selection to onSelect. Every settings popup
+// is built through this helper, so a callback that fired during construction would clobber settings on open.
+func TestNewPopupMenuOffersItemsAndReportsChoices(t *testing.T) {
+	c := check.New(t)
+	var chosen []string
+	popup := newPopupMenu([]string{"one", "two", "three"}, "two", func(item string) { chosen = append(chosen, item) })
+	c.Equal(3, popup.ItemCount(), "all items should be offered")
+	for i, want := range []string{"one", "two", "three"} {
+		item, ok := popup.ItemAt(i)
+		c.True(ok, "item %d should exist", i)
+		c.Equal(want, item, "items should keep their order")
+	}
+	selected, ok := popup.Selected()
+	c.True(ok, "the current value should be selected")
+	c.Equal("two", selected, "the current value should be selected")
+	c.Nil(chosen, "building the popup must not report the initial selection")
+
+	popup.Select("three")
+	c.Equal([]string{"three"}, chosen, "selecting an item should report it")
+	popup.Select("three")
+	c.Equal([]string{"three"}, chosen, "re-selecting the same item must not report it again")
+	popup.Select("one")
+	c.Equal([]string{"three", "one"}, chosen, "each new selection should be reported")
+}
+
+// TestNewPopupMenuWithUnknownCurrentValue verifies that a current value that is not among the items leaves the popup
+// with no selection rather than picking something arbitrary, and that onSelect is not called until the user chooses.
+func TestNewPopupMenuWithUnknownCurrentValue(t *testing.T) {
+	c := check.New(t)
+	calls := 0
+	popup := newPopupMenu([]int{1, 2, 3}, 42, func(int) { calls++ })
+	_, ok := popup.Selected()
+	c.False(ok, "an unknown current value should leave nothing selected")
+	c.Equal(0, calls, "an unknown current value must not be reported")
+	popup.SelectIndex(1)
+	c.Equal(1, calls, "choosing an item should be reported")
+}
+
+// TestInstallPopupSelectionOnHandBuiltMenu verifies the wiring the calendar popup uses on a menu it fills itself, with
+// disabled library headings among the items: the current value is selected and later choices are reported.
+func TestInstallPopupSelectionOnHandBuiltMenu(t *testing.T) {
+	c := check.New(t)
+	popup := unison.NewPopupMenu[string]()
+	popup.AddDisabledItem("Library")
+	popup.AddItem("Gregorian", "Imperial")
+	var got string
+	installPopupSelection(popup, "Imperial", func(item string) { got = item })
+	selected, ok := popup.Selected()
+	c.True(ok, "the current value should be selected")
+	c.Equal("Imperial", selected, "the current value should be selected")
+	c.Equal("", got, "installing the selection must not report it")
+
+	popup.Select("Gregorian")
+	c.Equal("Gregorian", got, "choosing an enabled item should be reported")
+}

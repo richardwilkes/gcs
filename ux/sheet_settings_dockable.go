@@ -479,17 +479,10 @@ func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, titl
 
 func (d *sheetSettingsDockable) createSettingPopup[T comparable](panel *unison.Panel, title string, choices []T, current T, set func(option T)) *unison.PopupMenu[T] {
 	panel.AddChild(NewFieldLeadingLabel(title, false))
-	popup := unison.NewPopupMenu[T]()
-	for _, one := range choices {
-		popup.AddItem(one)
-	}
-	popup.Select(current)
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[T]) {
-		if item, ok := p.Selected(); ok {
-			set(item)
-			d.syncSheet(false)
-		}
-	}
+	popup := newPopupMenu(choices, current, func(item T) {
+		set(item)
+		d.syncSheet(false)
+	})
 	panel.AddChild(popup)
 	return popup
 }

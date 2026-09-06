@@ -512,19 +512,32 @@ func addPopup[T comparable](parent *unison.Panel, choices []T, fieldData *T) *un
 	if fieldData != nil && len(choices) > 0 && !slices.Contains(choices, *fieldData) {
 		*fieldData = choices[0]
 	}
-	popup := unison.NewPopupMenu[T]()
-	for _, one := range choices {
-		popup.AddItem(one)
-	}
-	popup.Select(*fieldData)
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[T]) {
-		if item, ok := p.Selected(); ok {
-			*fieldData = item
-			MarkModified(parent)
-		}
-	}
+	popup := newPopupMenu(choices, *fieldData, func(item T) {
+		*fieldData = item
+		MarkModified(parent)
+	})
 	parent.AddChild(popup)
 	return popup
+}
+
+// newPopupMenu creates a popup menu offering the items, with current selected, that hands each choice the user makes to
+// onSelect. Selecting current does not call onSelect.
+func newPopupMenu[T comparable](items []T, current T, onSelect func(T)) *unison.PopupMenu[T] {
+	popup := unison.NewPopupMenu[T]()
+	popup.AddItem(items...)
+	installPopupSelection(popup, current, onSelect)
+	return popup
+}
+
+// installPopupSelection selects current in the popup, then installs a selection callback that hands each choice the
+// user makes to onSelect. The selection is made before the callback is installed, since selecting an item calls it.
+func installPopupSelection[T comparable](popup *unison.PopupMenu[T], current T, onSelect func(T)) {
+	popup.Select(current)
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[T]) {
+		if item, ok := p.Selected(); ok {
+			onSelect(item)
+		}
+	}
 }
 
 func addBoolPopup(parent *unison.Panel, trueChoice, falseChoice string, fieldData *bool) *unison.PopupMenu[string] {
