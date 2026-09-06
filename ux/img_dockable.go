@@ -50,10 +50,8 @@ type ImageDockable struct {
 	drawable      unison.Drawable
 	drawablePanel *unison.Panel
 	scroll        *unison.ScrollPanel
+	pan           scrollPanDrag
 	scale         int
-	dragStart     geom.Point
-	dragOrigin    geom.Point
-	inDrag        bool
 }
 
 // NewImageDockable creates a new unison.Dockable for image files.
@@ -107,6 +105,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		VGrab:  true,
 	})
 	d.scroll.SetContent(d.drawablePanel, behavior.Fill, behavior.Fill)
+	d.pan = scrollPanDrag{scroll: d.scroll, content: d.drawablePanel}
 
 	typeLabel := unison.NewLabel()
 	typeLabel.Font = unison.DefaultFieldTheme.Font
@@ -170,29 +169,23 @@ func loadSVGFromFile(filePath string) (*unison.SVG, error) {
 }
 
 func (d *ImageDockable) updateCursor(_ geom.Point) *unison.Cursor {
-	if d.inDrag {
-		return unison.MoveCursor()
-	}
-	return unison.ArrowCursor()
+	return d.pan.cursor()
 }
 
 func (d *ImageDockable) mouseDown(where geom.Point, _, _ int, _ mod.Modifiers) bool {
-	d.dragStart = d.drawablePanel.PointToRoot(where)
-	d.dragOrigin.X, d.dragOrigin.Y = d.scroll.Position()
-	d.inDrag = true
+	d.pan.begin(where)
 	d.RequestFocus()
 	d.UpdateCursorNow()
 	return true
 }
 
 func (d *ImageDockable) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
-	pt := d.dragStart.Sub(d.drawablePanel.PointToRoot(where)).Add(d.dragOrigin)
-	d.scroll.SetPosition(pt.X, pt.Y)
+	d.pan.drag(where)
 	return true
 }
 
 func (d *ImageDockable) mouseUp(_ geom.Point, _ int, _ mod.Modifiers) bool {
-	d.inDrag = false
+	d.pan.end()
 	d.UpdateCursorNow()
 	return true
 }

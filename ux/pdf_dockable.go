@@ -95,8 +95,7 @@ type PDFDockable struct {
 	docSize                geom.Size
 	provisionalDocSize     geom.Size
 	rolloverRect           geom.Rect
-	dragStart              geom.Point
-	dragOrigin             geom.Point
+	pan                    scrollPanDrag
 	pressRoot              geom.Point
 	lastDragRoot           geom.Point
 	autoScrollDelta        geom.Point
@@ -107,7 +106,6 @@ type PDFDockable struct {
 	autoScaling            autoscale.Option
 	lastMods               mod.Modifiers
 	dragMode               pdfSelectMode
-	inDrag                 bool
 	hasSelection           bool
 	selAnchorSet           bool
 	selExtentSet           bool
@@ -556,6 +554,7 @@ func (d *PDFDockable) createContent() {
 	})
 	d.docScroll.SetContent(d.docPanel, behavior.Fill, behavior.Fill)
 	d.docScroll.SetLayout(&pdfScrollLayout{d: d})
+	d.pan = scrollPanDrag{scroll: d.docScroll, content: d.docPanel}
 	cv := d.docScroll.ContentView()
 	cv.DrawOverCallback = d.drawOverlay
 	cv.FrameChangeCallback = d.scheduleViewSync
@@ -903,7 +902,7 @@ func (d *PDFDockable) checkForLinkAt(where geom.Point) bool {
 }
 
 func (d *PDFDockable) updateCursor(pt geom.Point) *unison.Cursor {
-	if d.inDrag {
+	if d.pan.active {
 		return unison.MoveCursor()
 	}
 	if d.lastMods.OptionDown() {
@@ -920,21 +919,19 @@ func (d *PDFDockable) updateCursor(pt geom.Point) *unison.Cursor {
 
 func (d *PDFDockable) mouseDown(where geom.Point, button, clickCount int, mods mod.Modifiers) bool {
 	d.docPanel.RequestFocus()
-	d.dragStart = d.docPanel.PointToRoot(where)
-	d.dragOrigin.X, d.dragOrigin.Y = d.docScroll.Position()
 	d.lastMods = mods
-	d.inDrag = false
+	d.pan.end()
 	d.selecting = false
 	d.maybeSelecting = false
 	if button != unison.ButtonLeft || mods.OptionDown() {
-		d.inDrag = true
+		d.pan.begin(where)
 		d.UpdateCursorNow()
 		return true
 	}
 	overLink := d.checkForLinkAt(where)
 	d.clearSelection()
 	if !overLink {
-		d.pressRoot = d.dragStart
+		d.pressRoot = d.docPanel.PointToRoot(where)
 		d.maybeSelecting = true
 		switch {
 		case clickCount == 2:
@@ -953,9 +950,8 @@ func (d *PDFDockable) mouseDown(where geom.Point, button, clickCount int, mods m
 }
 
 func (d *PDFDockable) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
-	if d.inDrag {
-		pt := d.dragStart.Sub(d.docPanel.PointToRoot(where)).Add(d.dragOrigin)
-		d.docScroll.SetPosition(pt.X, pt.Y)
+	if d.pan.active {
+		d.pan.drag(where)
 		return true
 	}
 	if !d.maybeSelecting {
@@ -989,8 +985,8 @@ func (d *PDFDockable) mouseMove(where geom.Point, mods mod.Modifiers) bool {
 
 func (d *PDFDockable) mouseUp(where geom.Point, button int, _ mod.Modifiers) bool {
 	switch {
-	case d.inDrag:
-		d.inDrag = false
+	case d.pan.active:
+		d.pan.end()
 		d.UpdateCursorNow()
 	case d.selecting:
 		d.selecting = false

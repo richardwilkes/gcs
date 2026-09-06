@@ -49,12 +49,10 @@ type MarkdownDockable struct {
 	scroller     *unison.ScrollPanel
 	markdown     *unison.Markdown
 	editor       *StringField
+	pan          scrollPanDrag
 	scale        int
-	dragStart    geom.Point
-	dragOrigin   geom.Point
 	savedScrollX float32
 	savedScrollY float32
-	inDrag       bool
 	allowEditing bool
 }
 
@@ -215,29 +213,23 @@ func (d *MarkdownDockable) ScrollToAnchor(anchor string) {
 }
 
 func (d *MarkdownDockable) updateCursor(_ geom.Point) *unison.Cursor {
-	if d.inDrag {
-		return unison.MoveCursor()
-	}
-	return unison.ArrowCursor()
+	return d.pan.cursor()
 }
 
 func (d *MarkdownDockable) mouseDown(where geom.Point, _, _ int, _ mod.Modifiers) bool {
-	d.dragStart = d.markdown.PointToRoot(where)
-	d.dragOrigin.X, d.dragOrigin.Y = d.scroller.Position()
-	d.inDrag = true
+	d.pan.begin(where)
 	d.markdown.RequestFocus()
 	d.UpdateCursorNow()
 	return true
 }
 
 func (d *MarkdownDockable) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
-	pt := d.dragStart.Sub(d.markdown.PointToRoot(where)).Add(d.dragOrigin)
-	d.scroller.SetPosition(pt.X, pt.Y)
+	d.pan.drag(where)
 	return true
 }
 
 func (d *MarkdownDockable) mouseUp(_ geom.Point, _ int, _ mod.Modifiers) bool {
-	d.inDrag = false
+	d.pan.end()
 	d.UpdateCursorNow()
 	return true
 }
