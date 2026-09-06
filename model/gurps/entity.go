@@ -309,7 +309,7 @@ func (e *Entity) Recalculate() {
 	if e == nil {
 		return
 	}
-	e.ensureAttachments()
+	e.EnsureAttachments()
 	e.DiscardCaches()
 	e.SourceMatcher().PrepareHashes(e)
 	e.UpdateSkills()
@@ -330,7 +330,8 @@ func (e *Entity) Recalculate() {
 	}
 }
 
-func (e *Entity) ensureAttachments() {
+// EnsureAttachments ensures that all attachments have their owning entity set to the Entity.
+func (e *Entity) EnsureAttachments() {
 	e.SheetSettings.SetOwningEntity(e)
 	for _, attr := range e.Attributes.Set {
 		attr.Entity = e

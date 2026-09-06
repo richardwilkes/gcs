@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"fmt"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -31,48 +32,26 @@ func SyncToLibraryData(paths ...string) error {
 		return err
 	}
 	pathSet := make(map[string]struct{})
-	f := convertWalker(pathSet, xslices.Set([]string{SheetExt, TemplatesExt, LootExt}))
+	f := convertWalker(pathSet, xslices.Set(slices.Collect(maps.Keys(librarySyncers))))
 	for _, p := range paths {
 		_ = filepath.WalkDir(p, f) //nolint:errcheck // We want to continue on even if there was an error
 	}
 	list := slices.SortedFunc(maps.Keys(pathSet), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
 	for _, p := range list {
 		fmt.Printf(i18n.Text("Processing %s\n"), p)
-		switch strings.ToLower(filepath.Ext(p)) {
-		case TemplatesExt:
-			var tmpl *Template
-			if tmpl, err = NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			tmpl.EnsureAttachments()
-			tmpl.SourceMatcher().PrepareHashes(tmpl)
-			tmpl.SyncWithLibrarySources()
-			if err = tmpl.Save(p); err != nil {
-				return err
-			}
-		case LootExt:
-			var loot *Loot
-			if loot, err = NewLootFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			loot.EnsureAttachments()
-			loot.SourceMatcher().PrepareHashes(loot)
-			loot.SyncWithLibrarySources()
-			if err = loot.Save(p); err != nil {
-				return err
-			}
-		case SheetExt:
-			var entity *Entity
-			if entity, err = NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			entity.ensureAttachments()
-			entity.SourceMatcher().PrepareHashes(entity)
-			entity.SyncWithLibrarySources()
-			entity.Recalculate()
-			if err = entity.Save(p); err != nil {
-				return err
-			}
+		load, ok := librarySyncers[strings.ToLower(filepath.Ext(p))]
+		if !ok {
+			continue // The walker only collects the extensions in the table, so this should never happen
+		}
+		var data librarySyncable
+		if data, err = load(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			return err
+		}
+		data.EnsureAttachments()
+		data.SourceMatcher().PrepareHashes(data)
+		data.SyncWithLibrarySources()
+		if err = data.Save(p); err != nil {
+			return err
 		}
 	}
 	if len(list) == 1 {
@@ -81,4 +60,32 @@ func SyncToLibraryData(paths ...string) error {
 		fmt.Printf(i18n.Text("Processed %d files\n"), len(list))
 	}
 	return nil
+}
+
+// librarySyncable is implemented by the file types whose contents can be synced with their source libraries.
+type librarySyncable interface {
+	ListProvider
+	EnsureAttachments()
+	SourceMatcher() *SrcMatcher
+	SyncWithLibrarySources()
+	Save(filePath string) error
+}
+
+// librarySyncers maps each GCS file extension, in lowercase, whose contents can be synced with their source libraries
+// to the function that loads a file of that type. The walker only collects files whose extensions are in this set.
+var librarySyncers = map[string]func(fs.FS, string) (librarySyncable, error){
+	LootExt:      loadLibrarySyncable(NewLootFromFile),
+	SheetExt:     loadLibrarySyncable(NewEntityFromFile),
+	TemplatesExt: loadLibrarySyncable(NewTemplateFromFile),
+}
+
+// loadLibrarySyncable adapts a typed file loader to one that returns the loaded data as a librarySyncable.
+func loadLibrarySyncable[T librarySyncable](load func(fs.FS, string) (T, error)) func(fs.FS, string) (librarySyncable, error) {
+	return func(fileSystem fs.FS, filePath string) (librarySyncable, error) {
+		data, err := load(fileSystem, filePath)
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
+	}
 }
