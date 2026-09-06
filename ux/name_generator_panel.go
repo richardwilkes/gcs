@@ -210,18 +210,10 @@ func (p *nameGeneratorPanel) trainingNamesSpec() *weightedStringListSpec {
 // importTrainingNames asks for a text file and adds the names it holds to the training names. Any file may be chosen,
 // since name lists come in whatever form they were found in.
 func (p *nameGeneratorPanel) importTrainingNames() {
-	dialog := unison.NewOpenDialog()
-	dialog.SetAllowsMultipleSelection(false)
-	dialog.SetResolvesAliases(true)
-	dialog.SetCanChooseDirectories(false)
-	dialog.SetCanChooseFiles(true)
-	global := gurps.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(gurps.DefaultLastDirKey))
-	if !dialog.RunModal() {
+	filePath, ok := chooseFileToOpen(gurps.DefaultLastDirKey)
+	if !ok {
 		return
 	}
-	filePath := dialog.Path()
-	global.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to import training names"), errs.Wrap(err))

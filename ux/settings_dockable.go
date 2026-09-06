@@ -232,18 +232,8 @@ func (d *SettingsDockable) doLoad(ref *gurps.NamedFileRef) {
 }
 
 func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
-	dialog := unison.NewOpenDialog()
-	dialog.SetAllowsMultipleSelection(false)
-	dialog.SetResolvesAliases(true)
-	dialog.SetAllowedExtensions(d.Extensions...)
-	dialog.SetCanChooseDirectories(false)
-	dialog.SetCanChooseFiles(true)
-	global := gurps.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(gurps.SettingsLastDirKey))
-	if dialog.RunModal() {
-		ref := diskFileRef(dialog.Path())
-		global.SetLastDir(gurps.SettingsLastDirKey, filepath.Dir(ref.DiskPath))
-		d.doLoad(ref)
+	if filePath, ok := chooseFileToOpen(gurps.SettingsLastDirKey, d.Extensions...); ok {
+		d.doLoad(diskFileRef(filePath))
 	}
 }
 

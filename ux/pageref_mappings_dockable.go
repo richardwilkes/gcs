@@ -236,19 +236,10 @@ func openExternalPDF(filePath, highlight string, pageInfo gurps.PageInfo) {
 }
 
 func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
-	dialog := unison.NewOpenDialog()
-	dialog.SetAllowsMultipleSelection(false)
-	dialog.SetResolvesAliases(true)
-	dialog.SetAllowedExtensions("pdf")
-	dialog.SetCanChooseDirectories(false)
-	dialog.SetCanChooseFiles(true)
-	global := gurps.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(gurps.DefaultLastDirKey))
-	if !dialog.RunModal() {
+	p, ok := chooseFileToOpen(gurps.DefaultLastDirKey, "pdf")
+	if !ok {
 		return nil
 	}
-	p := dialog.Path()
-	global.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(p))
 	pageRef := &gurps.PageRef{
 		ID:     key,
 		Path:   p,

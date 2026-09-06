@@ -277,29 +277,14 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	}
 	screen.Click(screen.PanelCenter(importButton))
 	dialogWnd, dialog := modalDialog(t, screen, wnd)
-	var fileList fileListPanel
-	var dialogTitle string
-	var rowCount int
-	var openEnabled bool
-	screen.Do(func() {
-		dialogTitle = dialogWnd.Title()
-		if lists := panelsOfType[fileListPanel](dialogWnd.Content()); len(lists) == 1 {
-			fileList = lists[0]
-			rowCount = fileList.Count()
-		}
-		openEnabled = dialog.Button(unison.ModalResponseOK).Enabled()
-	})
-	c.Equal("Open…", dialogTitle)
-	if fileList == nil || rowCount != 1 {
+	fileList, rowCount := openDialogFileList(t, screen, dialogWnd)
+	if rowCount != 1 {
 		t.Fatalf("expected the open dialog to list the one file in %s, found %d rows", importDir, rowCount)
 	}
+	var openEnabled bool
+	screen.Do(func() { openEnabled = dialog.Button(unison.ModalResponseOK).Enabled() })
 	c.False(openEnabled, "nothing is selected yet, so Open is disabled")
-	var rowPoint geom.Point
-	screen.Do(func() {
-		list := fileList.AsPanel()
-		rowPoint = screenPoint(dialogWnd, list.PointToRoot(fileList.RowRect(0).Center()))
-	})
-	screen.Click(rowPoint)
+	screen.Click(fileListRowPoint(screen, dialogWnd, fileList, 0))
 	var openButton *unison.Button
 	screen.Do(func() {
 		openButton = dialog.Button(unison.ModalResponseOK)

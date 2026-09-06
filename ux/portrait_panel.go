@@ -145,17 +145,7 @@ func (p *PortraitPanel) Sync() {
 
 func (p *PortraitPanel) mouseDown(_ geom.Point, button, clickCount int, _ mod.Modifiers) bool {
 	if button == unison.ButtonLeft && clickCount == 2 {
-		d := unison.NewOpenDialog()
-		d.SetAllowsMultipleSelection(false)
-		d.SetResolvesAliases(true)
-		d.SetAllowedExtensions(imgfmt.AllReadableExtensions()...)
-		d.SetCanChooseDirectories(false)
-		d.SetCanChooseFiles(true)
-		global := gurps.GlobalSettings()
-		d.SetInitialDirectory(global.LastDir(gurps.ImagesLastDirKey))
-		if d.RunModal() {
-			file := d.Path()
-			global.SetLastDir(gurps.ImagesLastDirKey, filepath.Dir(file))
+		if file, ok := chooseFileToOpen(gurps.ImagesLastDirKey, imgfmt.AllReadableExtensions()...); ok {
 			p.fileDrop([]string{file})
 		}
 	}

@@ -12,7 +12,6 @@ package ux
 import (
 	_ "embed"
 	"fmt"
-	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -434,17 +433,7 @@ func registerActions() {
 		Title:      i18n.Text("Open…"),
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyO, Modifiers: mod.OSMenuCommand()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			dialog := unison.NewOpenDialog()
-			dialog.SetAllowsMultipleSelection(true)
-			dialog.SetResolvesAliases(true)
-			dialog.SetAllowedExtensions(gurps.AcceptableExtensions()...)
-			dialog.SetCanChooseDirectories(false)
-			dialog.SetCanChooseFiles(true)
-			global := gurps.GlobalSettings()
-			dialog.SetInitialDirectory(global.LastDir(gurps.DefaultLastDirKey))
-			if dialog.RunModal() {
-				paths := dialog.Paths()
-				global.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(paths[0]))
+			if paths, ok := chooseFilesToOpen(gurps.DefaultLastDirKey, true, gurps.AcceptableExtensions()...); ok {
 				OpenFiles(paths)
 			}
 		},
