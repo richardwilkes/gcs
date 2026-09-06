@@ -602,11 +602,8 @@ func TestUndoRestoresAConditionallyPresentList(t *testing.T) {
 func TestAltDropOntoASelectionIsASingleUndoableEdit(t *testing.T) {
 	c := check.New(t)
 	captureModifierPrompts(t) // The drop prompts for the targets' modifiers and must not put up a real dialog.
-	original := flushDragFeedback
-	flushDragFeedback = func(_ *unison.Panel) {}
-	t.Cleanup(func() { flushDragFeedback = original })
-	savedDragData := draggedTableData
-	t.Cleanup(func() { draggedTableData = savedDragData })
+	swapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
+	swapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
 
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()

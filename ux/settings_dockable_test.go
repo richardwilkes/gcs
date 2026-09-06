@@ -65,14 +65,12 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 	c.Equal(ref.FilePath, gotPath)
 
 	// A failing loader is reported through the workspace's error handler.
-	savedHandler := Workspace.ErrorHandler
-	t.Cleanup(func() { Workspace.ErrorHandler = savedHandler })
 	var gotMsg string
 	var gotErr error
-	Workspace.ErrorHandler = func(msg string, err error) {
+	swapForTest(t, &Workspace.ErrorHandler, func(msg string, err error) {
 		gotMsg = msg
 		gotErr = err
-	}
+	})
 	boom := errors.New("boom")
 	d.RefLoader = func(_ *gurps.NamedFileRef) error { return boom }
 	d.doLoad(ref)

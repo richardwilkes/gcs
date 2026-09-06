@@ -23,13 +23,11 @@ import (
 // is restored when the test finishes.
 func stubNameablesPrompt(t *testing.T, respond func(titles []string, nameables []map[string]string) bool) *int {
 	t.Helper()
-	original := promptForNameables
-	t.Cleanup(func() { promptForNameables = original })
 	shown := 0
-	promptForNameables = func(titles []string, nameables []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, func(titles []string, nameables []map[string]string, _ [][]string) bool {
 		shown++
 		return respond(titles, nameables)
-	}
+	})
 	return &shown
 }
 

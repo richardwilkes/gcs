@@ -26,9 +26,7 @@ import (
 func useTestLibraries(t *testing.T, c check.Checker) (master, user *gurps.Library) {
 	t.Helper()
 	global := gurps.GlobalSettings()
-	saved := global.Libraries
-	t.Cleanup(func() { global.Libraries = saved })
-	global.Libraries = gurps.NewLibraries()
+	swapForTest(t, &global.Libraries, gurps.NewLibraries())
 	dir := t.TempDir()
 	master = global.Libraries.Master()
 	c.NoError(master.SetPath(filepath.Join(dir, "master")))

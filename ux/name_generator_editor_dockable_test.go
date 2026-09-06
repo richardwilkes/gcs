@@ -139,8 +139,6 @@ func TestNameGeneratorEditorLoad(t *testing.T) {
 func TestOpenNameGeneratorInEditorIgnoresUnknownName(t *testing.T) {
 	c := check.New(t)
 	useTestLibraries(t, c)
-	saved := Workspace
-	t.Cleanup(func() { Workspace = saved })
-	Workspace.DocumentDock = nil
+	swapForTest(t, &Workspace.DocumentDock, nil)
 	c.NotPanics(func() { OpenNameGeneratorInEditor("No Such Generator") })
 }

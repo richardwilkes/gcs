@@ -29,29 +29,23 @@ type modifierPrompt struct {
 // returning the accumulator they append to. The real prompts are restored when the test finishes.
 func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 	t.Helper()
-	origTrait := promptForTraitModifiers
-	origEquipment := promptForEquipmentModifiers
-	t.Cleanup(func() {
-		promptForTraitModifiers = origTrait
-		promptForEquipmentModifiers = origEquipment
-	})
 	var prompts []modifierPrompt
-	promptForTraitModifiers = func(title string, modifiers []*gurps.TraitModifier) bool {
+	swapForTest(t, &promptForTraitModifiers, func(title string, modifiers []*gurps.TraitModifier) bool {
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
 			p.modifiers = append(p.modifiers, one.Name)
 		}
 		prompts = append(prompts, p)
 		return false
-	}
-	promptForEquipmentModifiers = func(title string, modifiers []*gurps.EquipmentModifier) bool {
+	})
+	swapForTest(t, &promptForEquipmentModifiers, func(title string, modifiers []*gurps.EquipmentModifier) bool {
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
 			p.modifiers = append(p.modifiers, one.Name)
 		}
 		prompts = append(prompts, p)
 		return false
-	}
+	})
 	return &prompts
 }
 

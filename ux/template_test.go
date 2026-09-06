@@ -354,9 +354,7 @@ func TestMergeAddedRows(t *testing.T) {
 func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c := check.New(t)
 	settings := gurps.GlobalSettings().SheetSettings()
-	saved := settings.HideTLColumn
-	t.Cleanup(func() { settings.HideTLColumn = saved })
-	settings.HideTLColumn = false
+	swapForTest(t, &settings.HideTLColumn, false)
 
 	data := gurps.NewTemplate()
 	template := newTestTemplateDockable("My Template", data)
@@ -434,9 +432,7 @@ func TestTemplateRebuildKeepsTheFocusInAReplacedList(t *testing.T) {
 func TestTemplateSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {
 	c := check.New(t)
 	sheetSettings := gurps.GlobalSettings().Sheet
-	saved := sheetSettings.Layout
-	t.Cleanup(func() { sheetSettings.Layout = saved })
-	sheetSettings.Layout = saved.Clone()
+	swapForTest(t, &sheetSettings.Layout, sheetSettings.Layout.Clone())
 
 	data := gurps.NewTemplate()
 	trait := gurps.NewTrait(nil, nil, false)

@@ -57,10 +57,8 @@ func TestFinishToolbarLayout(t *testing.T) {
 // sheet-like views ask for.
 func TestAddUIScaleField(t *testing.T) {
 	c := check.New(t)
-	general := gurps.GlobalSettings().General
-	savedResolution := general.MonitorResolution
-	general.MonitorResolution = 144 // twice the 72 PPI baseline, so the adjusted scale is easy to predict
-	t.Cleanup(func() { general.MonitorResolution = savedResolution })
+	// Twice the 72 PPI baseline, so the adjusted scale is easy to predict.
+	swapForTest(t, &gurps.GlobalSettings().General.MonitorResolution, 144)
 
 	for _, one := range []struct {
 		name          string

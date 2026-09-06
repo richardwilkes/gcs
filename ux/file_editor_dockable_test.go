@@ -161,9 +161,7 @@ func TestFileEditorRecognizersTellTheEditorsApart(t *testing.T) {
 // the test.
 func failOnWorkspaceError(t *testing.T) {
 	t.Helper()
-	saved := Workspace.ErrorHandler
-	t.Cleanup(func() { Workspace.ErrorHandler = saved })
-	Workspace.ErrorHandler = func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) }
+	swapForTest(t, &Workspace.ErrorHandler, func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) })
 }
 
 // builtInAncestryRef returns a reference to an ancestry file that, like one built into the application, has no path on
@@ -232,9 +230,7 @@ func TestFileEditorBuiltInFileKeepsItsName(t *testing.T) {
 // so returning quietly is the proof that none was shown.
 func TestOpenFileEditorBrokenFileOpensNothing(t *testing.T) {
 	c := check.New(t)
-	saved := Workspace
-	t.Cleanup(func() { Workspace = saved })
-	Workspace.DocumentDock = nil
+	swapForTest(t, &Workspace.DocumentDock, nil)
 	ref := ancestryFileRef(t, c, "Broken", "this is not an ancestry")
 	var d *ancestryEditorDockable
 	var err error

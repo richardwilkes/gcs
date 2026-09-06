@@ -42,15 +42,9 @@ import (
 // mutable globals while they run, so a test using this must not call t.Parallel.
 func startHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScreen, *unison.Window) {
 	t.Helper()
-	savedWorkspace := Workspace
-	t.Cleanup(func() { Workspace = savedWorkspace })
-	savedSettingsPath := gurps.SettingsPath
-	gurps.SettingsPath = filepath.Join(t.TempDir(), "settings.json")
-	t.Cleanup(func() { gurps.SettingsPath = savedSettingsPath })
-	general := gurps.GlobalSettings().General
-	savedRestore := general.RestoreWorkspaceOnStart
-	general.RestoreWorkspaceOnStart = false
-	t.Cleanup(func() { general.RestoreWorkspaceOnStart = savedRestore })
+	swapForTest(t, &Workspace, Workspace) // The session replaces most of the workspace; put all of it back.
+	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+	swapForTest(t, &gurps.GlobalSettings().General.RestoreWorkspaceOnStart, false)
 	useTestLibraries(t, c)
 	preserveRecentFilesAndLastDirs(t)
 	// main registers the file types before starting the UI; the navigator looks its folder icons up in that registry.

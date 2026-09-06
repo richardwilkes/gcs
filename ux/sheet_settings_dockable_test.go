@@ -68,9 +68,7 @@ func (p *entityPanelForTest) Entity() *gurps.Entity { return p.entity }
 // with a recorder docked where syncSheet will find it. The document dock is restored when the test finishes.
 func newTestSheetSettingsDockable(t *testing.T, owner EntityPanel) (*sheetSettingsDockable, *sheetSettingsRecorder) {
 	t.Helper()
-	saved := Workspace.DocumentDock
-	t.Cleanup(func() { Workspace.DocumentDock = saved })
-	Workspace.DocumentDock = NewDocumentDock()
+	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	recorder := &sheetSettingsRecorder{}
 	recorder.Self = recorder
 	Workspace.DocumentDock.DockTo(recorder, nil, side.Left)

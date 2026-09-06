@@ -22,9 +22,7 @@ import (
 func newTestSheetForTemplate(t *testing.T) *Sheet {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	saved := Workspace.DocumentDock
-	t.Cleanup(func() { Workspace.DocumentDock = saved })
-	Workspace.DocumentDock = NewDocumentDock()
+	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	return NewSheet("test"+gurps.SheetExt, gurps.NewEntity())
 }
 

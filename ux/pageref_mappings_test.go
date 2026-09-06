@@ -72,9 +72,7 @@ func TestAsPageRefMappingsDockable(t *testing.T) {
 func TestPageRefMappingsSyncReflectsChangedPath(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
-	saved := global.PageRefs
-	t.Cleanup(func() { global.PageRefs = saved })
-	global.PageRefs = gurps.PageRefs{}
+	swapForTest(t, &global.PageRefs, gurps.PageRefs{})
 	global.PageRefs.Set(&gurps.PageRef{ID: "B", Path: filepath.Join("pdfs", "Basic Set.pdf"), Offset: 2})
 
 	d := &pageRefMappingsDockable{}
@@ -96,9 +94,7 @@ func TestPageRefMappingsSyncReflectsChangedPath(t *testing.T) {
 func TestPageRefMappingsInitialFocus(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
-	saved := global.PageRefs
-	t.Cleanup(func() { global.PageRefs = saved })
-	global.PageRefs = gurps.PageRefs{}
+	swapForTest(t, &global.PageRefs, gurps.PageRefs{})
 	global.PageRefs.Set(&gurps.PageRef{ID: "B", Path: filepath.Join("pdfs", "Basic Set.pdf"), Offset: 2})
 
 	d := &pageRefMappingsDockable{}
@@ -123,9 +119,7 @@ func TestPageRefMappingsInitialFocus(t *testing.T) {
 func TestPageRefMappingsInitialFocusWithNoMappings(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
-	saved := global.PageRefs
-	t.Cleanup(func() { global.PageRefs = saved })
-	global.PageRefs = gurps.PageRefs{}
+	swapForTest(t, &global.PageRefs, gurps.PageRefs{})
 
 	d := &pageRefMappingsDockable{}
 	d.Self = d

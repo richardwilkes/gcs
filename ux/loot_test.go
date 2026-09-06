@@ -76,9 +76,7 @@ func TestTreasureGenPanelValidateOKWithoutDialog(t *testing.T) {
 func newTestLootSheet(t *testing.T) *LootSheet {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	saved := Workspace.DocumentDock
-	t.Cleanup(func() { Workspace.DocumentDock = saved })
-	Workspace.DocumentDock = NewDocumentDock()
+	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	return NewLootSheet("test"+gurps.LootExt, gurps.NewLoot())
 }
 

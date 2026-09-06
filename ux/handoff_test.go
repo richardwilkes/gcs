@@ -114,9 +114,7 @@ func TestReadHandoffPathsAcceptsMaximumSizedPayload(t *testing.T) {
 // so it is empty in the test binary, and the handoff handshake exchanges it before anything else.
 func useTestAppIdentifier(t *testing.T) {
 	t.Helper()
-	saved := xos.AppIdentifier
-	t.Cleanup(func() { xos.AppIdentifier = saved })
-	xos.AppIdentifier = "com.trollworks.gcs"
+	swapForTest(t, &xos.AppIdentifier, "com.trollworks.gcs")
 }
 
 // TestHandoffRefusesOversizedPayload verifies the sending side applies the same bound, so it reports the problem

@@ -17,6 +17,16 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
+// swapForTest assigns value to the variable target points at for the duration of the test, putting back whatever it
+// held when the test finishes. Package-level state and fields of the global settings are process-wide, so a test that
+// alters one has to restore it or every test that runs afterwards sees the change.
+func swapForTest[T any](t *testing.T, target *T, value T) {
+	t.Helper()
+	saved := *target
+	t.Cleanup(func() { *target = saved })
+	*target = value
+}
+
 // panelsOfType returns every panel of the given type within the subtree rooted at root, in pre-order.
 func panelsOfType[T any](root *unison.Panel) []T {
 	var found []T
@@ -54,6 +64,18 @@ func panelsMatching(root *unison.Panel, keep func(*unison.Panel) bool) []*unison
 		return false
 	})
 	return found
+}
+
+// TestSwapForTest verifies the swap is visible for the duration of the test that asked for it and undone once that
+// test finishes, so a test can rely on the helper to keep its changes to process-wide state from reaching other tests.
+func TestSwapForTest(t *testing.T) {
+	c := check.New(t)
+	value := "original"
+	t.Run("swapped", func(t *testing.T) {
+		swapForTest(t, &value, "swapped")
+		check.New(t).Equal("swapped", value, "the new value is in place while the test runs")
+	})
+	c.Equal("original", value, "the prior value is back once the test finishes")
 }
 
 func TestNoModifiersDown(t *testing.T) {

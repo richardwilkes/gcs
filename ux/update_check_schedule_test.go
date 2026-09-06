@@ -207,10 +207,8 @@ func TestPeriodicCheckRunsAtOnceWhenTurnedOn(t *testing.T) {
 func TestAppUpdateCheckFrequencyForDevelopmentBuilds(t *testing.T) {
 	c := check.New(t)
 	gs, _ := prepareUpdateCheckSettings(t)
-	savedVersion := xos.AppVersion
-	t.Cleanup(func() { xos.AppVersion = savedVersion })
 
-	xos.AppVersion = "0.0"
+	swapForTest(t, &xos.AppVersion, "0.0")
 	for option, want := range map[updatecheck.Option]updatecheck.Option{
 		updatecheck.Never:    updatecheck.Never,
 		updatecheck.AtLaunch: updatecheck.AtLaunch,
