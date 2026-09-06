@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
@@ -243,7 +244,7 @@ func TestEveryWeaponSwitchIsResolved(t *testing.T) {
 	for _, switchType := range wswitch.Types[1:] {
 		wired := false
 		for _, melee := range []bool{true, false} {
-			sw := gurps.NewWeaponSwitchBonus()
+			sw := gurps.NewWeaponBonus(feature.WeaponSwitch)
 			sw.SwitchType = switchType
 			sw.SwitchTypeValue = true
 			w := newSwitchProbeWeapon(melee, sw)
@@ -624,9 +625,9 @@ func TestWeaponEditorPreservesID(t *testing.T) {
 func TestWeaponPerDieBonusTooltip(t *testing.T) {
 	c := check.New(t)
 
-	acc := gurps.NewWeaponAccBonus()
+	acc := gurps.NewWeaponBonus(feature.WeaponAccBonus)
 	acc.PerDie = true
-	bulk := gurps.NewWeaponBulkBonus()
+	bulk := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
 	bulk.PerDie = true
 	bulk.Amount = fxp.NegOne
 	w := newWeaponWithBonuses(false, acc, bulk)
@@ -650,7 +651,7 @@ func TestWeaponPerDieBonusTooltip(t *testing.T) {
 func TestWeaponPerDieSTBonusTooltip(t *testing.T) {
 	c := check.New(t)
 
-	minST := gurps.NewWeaponMinSTBonus()
+	minST := gurps.NewWeaponBonus(feature.WeaponMinSTBonus)
 	minST.PerDie = true
 	w := newWeaponWithBonuses(false, minST)
 	w.Damage.Base = "3d"
@@ -673,7 +674,7 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 	trait.Name = "Innate Attack"
 	trait.CanLevel = true
 	trait.Levels = fxp.Three
-	acc := gurps.NewWeaponAccBonus()
+	acc := gurps.NewWeaponBonus(feature.WeaponAccBonus)
 	acc.SelectionType = wsel.ThisWeapon
 	acc.PerLevel = true
 	mod := gurps.NewTraitModifier(e, nil, false)
@@ -726,7 +727,7 @@ func newTagDefaultTestWeapon(c check.Checker, def *gurps.SkillDefault) *gurps.We
 
 	master := gurps.NewTrait(e, nil, false)
 	master.Name = "Weapon Master"
-	bonus := gurps.NewWeaponDamageBonus()
+	bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
 	bonus.SelectionType = wsel.WithRequiredSkill
 	bonus.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Broadsword"}
 	bonus.Amount = fxp.Two

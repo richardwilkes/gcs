@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -60,7 +61,7 @@ func TestWeaponRecoil(t *testing.T) {
 func TestWeaponPercentBonusFloorsIncrement(t *testing.T) {
 	c := check.New(t)
 
-	bonus := gurps.NewWeaponRecoilBonus()
+	bonus := gurps.NewWeaponBonus(feature.WeaponRecoilBonus)
 	bonus.Percent = true
 	bonus.Amount = fxp.FromInteger(-50)
 	w := newWeaponWithBonuses(false, bonus)

@@ -30,3 +30,37 @@ func init() {
 		}
 	}
 }
+
+// IsWeaponBonus returns true if the type is one of the weapon bonuses, all of which are represented by the same
+// WeaponBonus feature and differ only in which weapon stat they adjust.
+func (enum Type) IsWeaponBonus() bool {
+	switch enum {
+	case WeaponBonus,
+		WeaponAccBonus,
+		WeaponScopeAccBonus,
+		WeaponDRDivisorBonus,
+		WeaponEffectiveSTBonus,
+		WeaponMinSTBonus,
+		WeaponMinReachBonus,
+		WeaponMaxReachBonus,
+		WeaponHalfDamageRangeBonus,
+		WeaponMinRangeBonus,
+		WeaponMaxRangeBonus,
+		WeaponRecoilBonus,
+		WeaponBulkBonus,
+		WeaponParryBonus,
+		WeaponBlockBonus,
+		WeaponRofMode1ShotsBonus,
+		WeaponRofMode1SecondaryBonus,
+		WeaponRofMode2ShotsBonus,
+		WeaponRofMode2SecondaryBonus,
+		WeaponNonChamberShotsBonus,
+		WeaponChamberShotsBonus,
+		WeaponShotDurationBonus,
+		WeaponReloadTimeBonus,
+		WeaponSwitch:
+		return true
+	default:
+		return false
+	}
+}

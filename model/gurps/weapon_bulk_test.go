@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -50,7 +51,7 @@ func TestWeaponBulk(t *testing.T) {
 func TestWeaponBulkBonusResolution(t *testing.T) {
 	c := check.New(t)
 
-	bonus := gurps.NewWeaponBulkBonus()
+	bonus := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
 	bonus.Amount = fxp.NegOne
 	w := newWeaponWithBonuses(false, bonus)
 
@@ -69,7 +70,7 @@ func TestWeaponBulkBonusResolution(t *testing.T) {
 func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 	c := check.New(t)
 
-	sw := gurps.NewWeaponSwitchBonus()
+	sw := gurps.NewWeaponBonus(feature.WeaponSwitch)
 	sw.SwitchType = wswitch.RetractingStock
 	sw.SwitchTypeValue = true
 	w := newWeaponWithBonuses(false, sw)
@@ -94,7 +95,7 @@ func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 	c.Equal("-3", w.Bulk.Resolve(w, nil).String(), "a weapon that has none is unchanged")
 
 	// A bulk bonus still applies alongside the switch.
-	bonus := gurps.NewWeaponBulkBonus()
+	bonus := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
 	bonus.Amount = fxp.NegOne
 	sw.SwitchTypeValue = true
 	w = newWeaponWithBonuses(false, sw, bonus)
@@ -107,7 +108,7 @@ func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 func TestWeaponBulkPercentBonusResolution(t *testing.T) {
 	c := check.New(t)
 
-	bonus := gurps.NewWeaponBulkBonus()
+	bonus := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
 	bonus.Percent = true
 	bonus.Amount = fxp.FromInteger(50)
 	w := newWeaponWithBonuses(false, bonus)

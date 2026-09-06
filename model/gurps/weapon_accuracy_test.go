@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -55,12 +56,12 @@ func TestWeaponAccuracy(t *testing.T) {
 func TestWeaponAccuracyMixedBonusResolution(t *testing.T) {
 	c := check.New(t)
 
-	flatAcc := gurps.NewWeaponAccBonus()
+	flatAcc := gurps.NewWeaponBonus(feature.WeaponAccBonus)
 	flatAcc.Amount = fxp.Two
-	percentAcc := gurps.NewWeaponAccBonus()
+	percentAcc := gurps.NewWeaponBonus(feature.WeaponAccBonus)
 	percentAcc.Percent = true
 	percentAcc.Amount = fxp.FromInteger(50)
-	percentScope := gurps.NewWeaponScopeAccBonus()
+	percentScope := gurps.NewWeaponBonus(feature.WeaponScopeAccBonus)
 	percentScope.Percent = true
 	percentScope.Amount = fxp.Hundred
 	w := newWeaponWithBonuses(false, flatAcc, percentAcc, percentScope)

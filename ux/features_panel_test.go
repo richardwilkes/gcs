@@ -267,7 +267,7 @@ func TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast(t *testing.T) {
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 
-	bonus := gurps.NewWeaponSwitchBonus()
+	bonus := gurps.NewWeaponBonus(feature.WeaponSwitch)
 	bonus.SetOwner(owner)
 	features := gurps.Features{bonus}
 
@@ -304,6 +304,33 @@ func TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast(t *testing.T) {
 	c.Equal(len(line.Children()), lineLayout.Columns, "the line's column count must match its child count")
 }
 
+// TestFeaturesPanelCreatesEverySelectableType verifies that the editor can create a feature for every type the user
+// can pick, that the result carries that type and, for bonuses, has its owner set. In particular, the weapon bonuses
+// share one constructor keyed by type, so a weapon type missing from feature.Type.IsWeaponBonus would fall through to
+// the "unknown feature type" arm and yield nil here.
+func TestFeaturesPanelCreatesEverySelectableType(t *testing.T) {
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	var features gurps.Features
+	panel := newFeaturesPanel(entity, trait, &features, false)
+	for _, one := range feature.SelectableTypes {
+		t.Run(one.Key(), func(t *testing.T) {
+			c := check.New(t)
+			f := panel.createFeatureForType(one)
+			c.NotNil(f)
+			if f == nil {
+				return
+			}
+			c.Equal(one, f.FeatureType())
+			if bonus, ok := f.(gurps.Bonus); ok {
+				c.Equal(trait, bonus.Owner(), "owner")
+			}
+			_, isWeaponBonus := f.(*gurps.WeaponBonus)
+			c.Equal(one.IsWeaponBonus(), isWeaponBonus, "weapon bonus")
+		})
+	}
+}
+
 // TestFeaturesPanelSwitchableCheckBoxOnEveryRowType verifies that every feature type that builds its own first row --
 // rather than going through the shared leveled-amount line -- gets exactly one switchable checkbox, and that the
 // checkbox is wired to that feature.
@@ -316,8 +343,8 @@ func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
 		owner   fmt.Stringer
 		feature gurps.Feature
 	}{
-		{name: "weapon switch bonus", owner: trait, feature: gurps.NewWeaponSwitchBonus()},
-		{name: "weapon damage bonus", owner: trait, feature: gurps.NewWeaponDamageBonus()},
+		{name: "weapon switch bonus", owner: trait, feature: gurps.NewWeaponBonus(feature.WeaponSwitch)},
+		{name: "weapon damage bonus", owner: trait, feature: gurps.NewWeaponBonus(feature.WeaponBonus)},
 		{name: "contained weight reduction", owner: equipmentContainer, feature: gurps.NewContainedWeightReduction()},
 		{name: "cost reduction", owner: trait, feature: gurps.NewCostReduction(gurps.StrengthID)},
 		{name: "selector override", owner: trait, feature: gurps.NewSelectorOverride(selector.WeaponDamageType)},

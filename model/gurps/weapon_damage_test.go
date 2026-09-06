@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -36,7 +37,7 @@ func TestWeaponDRDivisorBonus(t *testing.T) {
 		{amount: fxp.Hundred, percent: true, divisor: fxp.Half, expected: "1d cr"},
 		{amount: fxp.FromInteger(10), percent: true, divisor: fxp.Half, expected: "1d(0.55) cr"},
 	} {
-		bonus := gurps.NewWeaponDRDivisorBonus()
+		bonus := gurps.NewWeaponBonus(feature.WeaponDRDivisorBonus)
 		bonus.Amount = one.amount
 		bonus.Percent = one.percent
 		w := newWeaponWithBonuses(false, bonus)

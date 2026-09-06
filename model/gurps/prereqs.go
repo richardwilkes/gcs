@@ -11,10 +11,8 @@ package gurps
 
 import (
 	"encoding/json/jsontext"
-	"encoding/json/v2"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
-	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 // Prereqs holds a list of prerequisites.
@@ -22,56 +20,37 @@ type Prereqs []Prereq
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (p *Prereqs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var v []jsontext.Value
-	if err := json.UnmarshalDecode(dec, &v); err != nil {
-		return errs.Wrap(err)
+	list, err := unmarshalTypedList(dec, prereq.ExtractKnownType, allocPrereq,
+		func(kind string, raw jsontext.Value) Prereq { return NewUnknownPrereq(kind, raw) })
+	if err != nil {
+		return err
 	}
-	*p = make([]Prereq, len(v))
-	for i, one := range v {
-		var typeData struct {
-			Type string `json:"type"`
-		}
-		if err := json.Unmarshal(one, &typeData, dec.Options()); err != nil {
-			return errs.Wrap(err)
-		}
-		// Note that the type is extracted as a string and resolved with ExtractKnownType rather than being unmarshaled
-		// directly into a prereq.Type: the enum's UnmarshalText maps anything it doesn't recognize onto the first
-		// value, which would turn a prerequisite written by a newer version of GCS into an empty, always-satisfied
-		// PrereqList.
-		prereqType, known := prereq.ExtractKnownType(typeData.Type)
-		if !known {
-			(*p)[i] = NewUnknownPrereq(typeData.Type, one)
-			continue
-		}
-		var pr Prereq
-		switch prereqType {
-		case prereq.List:
-			pr = &PrereqList{}
-		case prereq.Trait:
-			pr = &TraitPrereq{}
-		case prereq.Attribute:
-			pr = &AttributePrereq{}
-		case prereq.ContainedQuantity:
-			pr = &ContainedQuantityPrereq{}
-		case prereq.ContainedWeight:
-			pr = &ContainedWeightPrereq{}
-		case prereq.EquippedEquipment:
-			pr = &EquippedEquipmentPrereq{}
-		case prereq.Skill:
-			pr = &SkillPrereq{}
-		case prereq.Spell:
-			pr = &SpellPrereq{}
-		case prereq.Script:
-			pr = &ScriptPrereq{}
-		default:
-			// A known type that has no case above, or the Unknown type itself. Preserve rather than discard.
-			(*p)[i] = NewUnknownPrereq(typeData.Type, one)
-			continue
-		}
-		if err := json.Unmarshal(one, &pr, dec.Options()); err != nil {
-			return errs.Wrap(err)
-		}
-		(*p)[i] = pr
-	}
+	*p = list
 	return nil
+}
+
+// allocPrereq returns an empty Prereq of the concrete type that represents prereqType, or nil if there is none.
+func allocPrereq(prereqType prereq.Type) Prereq {
+	switch prereqType {
+	case prereq.List:
+		return &PrereqList{}
+	case prereq.Trait:
+		return &TraitPrereq{}
+	case prereq.Attribute:
+		return &AttributePrereq{}
+	case prereq.ContainedQuantity:
+		return &ContainedQuantityPrereq{}
+	case prereq.ContainedWeight:
+		return &ContainedWeightPrereq{}
+	case prereq.EquippedEquipment:
+		return &EquippedEquipmentPrereq{}
+	case prereq.Skill:
+		return &SkillPrereq{}
+	case prereq.Spell:
+		return &SpellPrereq{}
+	case prereq.Script:
+		return &ScriptPrereq{}
+	default:
+		return nil
+	}
 }

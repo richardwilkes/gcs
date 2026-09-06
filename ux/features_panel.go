@@ -1014,6 +1014,11 @@ func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) *
 }
 
 func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Feature {
+	if featureType.IsWeaponBonus() {
+		bonus := gurps.NewWeaponBonus(featureType)
+		bonus.SetOwner(p.owner)
+		return bonus
+	}
 	var bonus gurps.Bonus
 	switch featureType {
 	case feature.AttributeBonus:
@@ -1042,54 +1047,6 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		bonus = gurps.NewTraitBonus()
 	case feature.TraitMaxLevelBonus:
 		bonus = gurps.NewTraitMaxLevelBonus()
-	case feature.WeaponBonus:
-		bonus = gurps.NewWeaponDamageBonus()
-	case feature.WeaponAccBonus:
-		bonus = gurps.NewWeaponAccBonus()
-	case feature.WeaponScopeAccBonus:
-		bonus = gurps.NewWeaponScopeAccBonus()
-	case feature.WeaponDRDivisorBonus:
-		bonus = gurps.NewWeaponDRDivisorBonus()
-	case feature.WeaponEffectiveSTBonus:
-		bonus = gurps.NewWeaponEffectiveSTBonus()
-	case feature.WeaponMinSTBonus:
-		bonus = gurps.NewWeaponMinSTBonus()
-	case feature.WeaponMinReachBonus:
-		bonus = gurps.NewWeaponMinReachBonus()
-	case feature.WeaponMaxReachBonus:
-		bonus = gurps.NewWeaponMaxReachBonus()
-	case feature.WeaponHalfDamageRangeBonus:
-		bonus = gurps.NewWeaponHalfDamageRangeBonus()
-	case feature.WeaponMinRangeBonus:
-		bonus = gurps.NewWeaponMinRangeBonus()
-	case feature.WeaponMaxRangeBonus:
-		bonus = gurps.NewWeaponMaxRangeBonus()
-	case feature.WeaponBulkBonus:
-		bonus = gurps.NewWeaponBulkBonus()
-	case feature.WeaponRecoilBonus:
-		bonus = gurps.NewWeaponRecoilBonus()
-	case feature.WeaponParryBonus:
-		bonus = gurps.NewWeaponParryBonus()
-	case feature.WeaponBlockBonus:
-		bonus = gurps.NewWeaponBlockBonus()
-	case feature.WeaponRofMode1ShotsBonus:
-		bonus = gurps.NewWeaponRofMode1ShotsBonus()
-	case feature.WeaponRofMode1SecondaryBonus:
-		bonus = gurps.NewWeaponRofMode1SecondaryBonus()
-	case feature.WeaponRofMode2ShotsBonus:
-		bonus = gurps.NewWeaponRofMode2ShotsBonus()
-	case feature.WeaponRofMode2SecondaryBonus:
-		bonus = gurps.NewWeaponRofMode2SecondaryBonus()
-	case feature.WeaponNonChamberShotsBonus:
-		bonus = gurps.NewWeaponNonChamberShotsBonus()
-	case feature.WeaponChamberShotsBonus:
-		bonus = gurps.NewWeaponChamberShotsBonus()
-	case feature.WeaponShotDurationBonus:
-		bonus = gurps.NewWeaponShotDurationBonus()
-	case feature.WeaponReloadTimeBonus:
-		bonus = gurps.NewWeaponReloadTimeBonus()
-	case feature.WeaponSwitch:
-		bonus = gurps.NewWeaponSwitchBonus()
 	case feature.SelectorOverride:
 		override := gurps.NewSelectorOverride(lastSelectorFieldUsed)
 		override.SetOwner(p.owner)

@@ -664,7 +664,7 @@ func TestSwitchableWeaponLocalBonuses(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	accBonus := NewWeaponAccBonus()
+	accBonus := NewWeaponBonus(feature.WeaponAccBonus)
 	accBonus.SelectionType = wsel.ThisWeapon
 	accBonus.Amount = fxp.Two
 	accBonus.Switchable = true
@@ -696,7 +696,7 @@ func TestSwitchableWeaponBonusFromModifier(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	accBonus := NewWeaponAccBonus()
+	accBonus := NewWeaponBonus(feature.WeaponAccBonus)
 	accBonus.SelectionType = wsel.ThisWeapon
 	accBonus.Amount = fxp.Two
 	accBonus.Switchable = true
@@ -1020,7 +1020,7 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 		return bonus
 	}
 	weaponAccBonus := func(sel wsel.Type) Feature {
-		bonus := NewWeaponAccBonus()
+		bonus := NewWeaponBonus(feature.WeaponAccBonus)
 		bonus.SelectionType = sel
 		bonus.Amount = fxp.Two
 		bonus.Switchable = true

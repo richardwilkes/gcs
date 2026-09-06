@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
@@ -260,7 +261,7 @@ func TestSpellWeaponBonusFromSpellFeatures(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	accBonus := NewWeaponAccBonus()
+	accBonus := NewWeaponBonus(feature.WeaponAccBonus)
 	accBonus.SelectionType = wsel.ThisWeapon
 	accBonus.Amount = fxp.Two
 
