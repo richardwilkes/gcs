@@ -100,33 +100,24 @@ func FileInfoFor(filePath string) *FileInfo {
 
 // AcceptableExtensions returns the file extensions that we should be able to open.
 func AcceptableExtensions() []string {
-	list := make([]string, 0, len(fileTypeRegistry))
-	for k, v := range fileTypeRegistry {
-		if !v.IsSpecial {
-			list = append(list, k)
-		}
-	}
-	xstrings.SortStringsNaturalAscending(list)
-	return list
+	return registeredExtensions(func(info *FileInfo) bool { return !info.IsSpecial })
 }
 
 // DeepSearchableExtensions returns the file extensions that are deep searchable by the navigator.
 func DeepSearchableExtensions() []string {
-	list := make([]string, 0, len(fileTypeRegistry))
-	for k, v := range fileTypeRegistry {
-		if v.IsDeepSearchable {
-			list = append(list, k)
-		}
-	}
-	xstrings.SortStringsNaturalAscending(list)
-	return list
+	return registeredExtensions(func(info *FileInfo) bool { return info.IsDeepSearchable })
 }
 
 // GCSExtensions returns the file extensions that are owned by GCS.
 func GCSExtensions() []string {
+	return registeredExtensions(func(info *FileInfo) bool { return info.IsGCSData })
+}
+
+// registeredExtensions returns the registered file extensions whose FileInfo satisfies keep, in natural sort order.
+func registeredExtensions(keep func(*FileInfo) bool) []string {
 	list := make([]string, 0, len(fileTypeRegistry))
 	for k, v := range fileTypeRegistry {
-		if v.IsGCSData {
+		if keep(v) {
 			list = append(list, k)
 		}
 	}
