@@ -622,7 +622,10 @@ func addNotesCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSp
 		includeEmptyFiller)
 }
 
-func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle string, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
+// newCriteriaPanel adds a two-column panel to the parent for a criteria's comparison popup and qualifier field,
+// spanning hSpan of the parent's columns and growing to fill them. When includeEmptyFiller is true, an empty panel is
+// added ahead of it to occupy the parent's first column.
+func newCriteriaPanel(parent *unison.Panel, hSpan int, includeEmptyFiller bool) *unison.Panel {
 	if includeEmptyFiller {
 		parent.AddChild(unison.NewPanel())
 	}
@@ -638,12 +641,25 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	var criteriaField *StringField
+	parent.AddChild(panel)
+	return panel
+}
+
+// newComparisonPopup creates the popup menu for a criteria's comparison, offering the choices in order with the one at
+// selectedIndex chosen. No selection callback is installed, since installing one first would have it called by the
+// initial selection; the caller adds its own afterwards.
+func newComparisonPopup(choices []string, selectedIndex int) *unison.PopupMenu[string] {
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range criteria.PrefixedStringComparisonChoices(prefix, notPrefix) {
-		popup.AddItem(one)
-	}
-	popup.SelectIndex(int(strCriteria.Compare.EnsureValid()))
+	popup.AddItem(choices...)
+	popup.SelectIndex(selectedIndex)
+	return popup
+}
+
+func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle string, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
+	panel := newCriteriaPanel(parent, hSpan, includeEmptyFiller)
+	var criteriaField *StringField
+	popup := newComparisonPopup(criteria.PrefixedStringComparisonChoices(prefix, notPrefix),
+		int(strCriteria.Compare.EnsureValid()))
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		strCriteria.Compare = criteria.StringComparisons[p.SelectedIndex()]
 		adjustFieldBlank(criteriaField, strCriteria.IsZero())
@@ -652,7 +668,6 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 	panel.AddChild(popup)
 	criteriaField = addStringField(panel, undoTitle, "", &strCriteria.Qualifier)
 	adjustFieldBlank(criteriaField, strCriteria.IsZero())
-	parent.AddChild(panel)
 	return popup, criteriaField
 }
 
@@ -662,26 +677,8 @@ func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey
 }
 
 func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, undoTitle string, numCriteria *criteria.Number, minValue, maxValue fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
-	if includeEmptyFiller {
-		parent.AddChild(unison.NewPanel())
-	}
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-		VAlign:   align.Middle,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  hSpan,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	popup = unison.NewPopupMenu[string]()
-	for _, one := range criteria.PrefixedNumericComparisonChoices(prefix) {
-		popup.AddItem(one)
-	}
-	popup.SelectIndex(int(numCriteria.Compare.EnsureValid()))
+	panel := newCriteriaPanel(parent, hSpan, includeEmptyFiller)
+	popup = newComparisonPopup(criteria.PrefixedNumericComparisonChoices(prefix), int(numCriteria.Compare.EnsureValid()))
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		numCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
 		adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
@@ -700,16 +697,14 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue)
 	}
 	adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
-	parent.AddChild(panel)
 	return popup, field
 }
 
+// addWeightCriteriaPanel adds a weight criteria's comparison popup and qualifier field directly to the parent, which is
+// expected to lay them out itself.
 func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, entity *gurps.Entity, weightCriteria *criteria.Weight) (popup *unison.PopupMenu[string], field *WeightField) {
-	popup = unison.NewPopupMenu[string]()
-	for _, one := range criteria.PrefixedNumericComparisonChoices(i18n.Text("which")) {
-		popup.AddItem(one)
-	}
-	popup.SelectIndex(int(weightCriteria.Compare.EnsureValid()))
+	popup = newComparisonPopup(criteria.PrefixedNumericComparisonChoices(i18n.Text("which")),
+		int(weightCriteria.Compare.EnsureValid()))
 	parent.AddChild(popup)
 	field = addWeightField(parent, targetMgr, targetKey, i18n.Text("Weight Qualifier"), "", entity,
 		&weightCriteria.Qualifier, false)
@@ -719,11 +714,6 @@ func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKe
 		MarkModified(parent)
 	}
 	adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
-	parent.SetLayout(&unison.FlexLayout{
-		Columns:  len(parent.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
 	return popup, field
 }
 
@@ -733,20 +723,14 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 		i18n.Text("at least"),
 		i18n.Text("at most"),
 	}
-	var numType string
+	selectedIndex := 0
 	switch numCriteria.Compare {
 	case criteria.AtLeastNumber:
-		numType = choices[1]
+		selectedIndex = 1
 	case criteria.AtMostNumber:
-		numType = choices[2]
-	default:
-		numType = choices[0]
+		selectedIndex = 2
 	}
-	popup = unison.NewPopupMenu[string]()
-	for _, one := range choices {
-		popup.AddItem(one)
-	}
-	popup.Select(numType)
+	popup = newComparisonPopup(choices, selectedIndex)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		switch p.SelectedIndex() {
 		case 0:

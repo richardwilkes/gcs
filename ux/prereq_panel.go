@@ -77,38 +77,24 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 }
 
 func (p *prereqPanel) createPrereqListPanel(depth int, list *gurps.PrereqList) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, list)
-	inFront := andOrText(list) != noAndOr
-	if inFront {
-		p.addAndOr(panel, list)
-	}
-	_, focus = addNumericCriteriaPanel(panel, nil, "", i18n.Text("When the Tech Level"), i18n.Text("When Tech Level"),
+	row := p.beginPrereqRow(depth, list, nil)
+	_, focus = addNumericCriteriaPanel(row.panel, nil, "", i18n.Text("When the Tech Level"), i18n.Text("When Tech Level"),
 		&list.WhenTL, 0, fxp.Twelve, 1, true, true)
-	popup := addBoolPopup(panel, i18n.Text("requires all of:"), i18n.Text("requires at least one of:"), &list.All)
+	popup := addBoolPopup(row.panel, i18n.Text("requires all of:"), i18n.Text("requires at least one of:"), &list.All)
 	callback := popup.SelectionChangedCallback
 	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
 		callback(pop)
 		p.adjustAndOrForList(list)
 	}
-	if !inFront {
-		p.addAndOr(panel, list)
-	}
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HAlign:   align.Fill,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
+	row.finish()
+	row.panel.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	for _, child := range list.Prereqs {
-		p.addToList(panel, depth+1, -1, child)
+		p.addToList(row.panel, depth+1, -1, child)
 	}
-	return panel, focus
+	return row.panel, focus
 }
 
 func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gurps.Prereq) {
@@ -161,25 +147,13 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 // visible and it can be deleted deliberately. Note that no type switcher is present, as switching the type would throw
 // away the original data.
 func (p *prereqPanel) createUnknownPrereqPanel(depth int, pr *gurps.UnknownPrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
-	}
+	row := p.beginPrereqRow(depth, pr, nil)
 	label := NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Unknown prerequisite type %q; it will be preserved, but is never satisfied"),
 		pr.Kind), false)
 	label.Tooltip = newWrappedTooltip(i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved."))
-	panel.AddChild(label)
-	if !inFront {
-		p.addAndOr(panel, pr)
-	}
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  len(panel.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	return panel, panel
+	row.panel.AddChild(label)
+	row.finish()
+	return row.panel, row.panel
 }
 
 func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data gurps.Prereq) {
@@ -339,213 +313,164 @@ func (p *prereqPanel) createPrereqForType(prereqType prereq.Type, parentList *gu
 	}
 }
 
-func (p *prereqPanel) createTraitPrereqPanel(depth int, pr *gurps.TraitPrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
+// prereqRow is the leading row of a prerequisite panel while it is being assembled. beginPrereqRow adds the parts every
+// row starts with, the caller adds those particular to the prerequisite type, and finish adds the trailing and/or
+// label and sets the layout.
+type prereqRow struct {
+	panel   *unison.Panel
+	owner   *prereqPanel
+	pr      gurps.Prereq
+	depth   int
+	inFront bool
+}
+
+// beginPrereqRow starts the leading row of a prerequisite panel with the buttons, the and/or label when it has text,
+// and the "has" popup when has is not nil. An and/or label without text is instead added at the end of the row by
+// finish, from where adjustAndOr moves it to the front should it gain text later.
+func (p *prereqPanel) beginPrereqRow(depth int, pr gurps.Prereq, has *bool) *prereqRow {
+	row := &prereqRow{
+		panel:   unison.NewPanel(),
+		owner:   p,
+		pr:      pr,
+		depth:   depth,
+		inFront: andOrText(pr) != noAndOr,
 	}
-	addHasPopup(panel, &pr.Has)
-	p.addPrereqTypeSwitcher(panel, depth, pr)
-	if !inFront {
-		p.addAndOr(panel, pr)
+	p.createButtonsPanel(row.panel, depth, pr)
+	if row.inFront {
+		p.addAndOr(row.panel, pr)
 	}
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
+	if has != nil {
+		addHasPopup(row.panel, has)
+	}
+	return row
+}
+
+// addTypeSwitcher adds the popup that switches the prerequisite to a different type.
+func (r *prereqRow) addTypeSwitcher() {
+	r.owner.addPrereqTypeSwitcher(r.panel, r.depth, r.pr)
+}
+
+// finish adds the and/or label if it was not placed in front, sets the row's layout to one column per child and returns
+// that column count, so that callers can span subsequent rows across the columns after the buttons.
+func (r *prereqRow) finish() (columns int) {
+	if !r.inFront {
+		r.owner.addAndOr(r.panel, r.pr)
+	}
+	columns = len(r.panel.Children())
+	r.panel.SetLayout(&unison.FlexLayout{
 		Columns:  columns,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	_, focus = addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
-	addNotesCriteriaPanel(panel, &pr.NotesCriteria, columns-1, true)
-	addLevelCriteriaPanel(panel, nil, "", &pr.LevelCriteria, columns-1, true)
-	return panel, focus
+	return columns
+}
+
+// addIndentedSubRow adds a row beneath the leading row of a prerequisite panel that is indented past the buttons column
+// and spans the remaining columns, calls populate to fill it in, then sets its layout to one column per child. When
+// fill is true, the sub-row stretches to the width of the panel so that a field within it can grow.
+func addIndentedSubRow(parent *unison.Panel, columns int, fill bool, populate func(subRow *unison.Panel)) {
+	parent.AddChild(unison.NewPanel())
+	subRow := unison.NewPanel()
+	data := &unison.FlexLayoutData{HSpan: columns - 1}
+	if fill {
+		data.HAlign = align.Fill
+		data.HGrab = true
+	}
+	subRow.SetLayoutData(data)
+	parent.AddChild(subRow)
+	populate(subRow)
+	subRow.SetLayout(&unison.FlexLayout{
+		Columns:  len(subRow.Children()),
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+}
+
+func (p *prereqPanel) createTraitPrereqPanel(depth int, pr *gurps.TraitPrereq) (main, focus unison.Paneler) {
+	row := p.beginPrereqRow(depth, pr, &pr.Has)
+	row.addTypeSwitcher()
+	columns := row.finish()
+	_, focus = addNameCriteriaPanel(row.panel, &pr.NameCriteria, columns-1, true)
+	addNotesCriteriaPanel(row.panel, &pr.NotesCriteria, columns-1, true)
+	addLevelCriteriaPanel(row.panel, nil, "", &pr.LevelCriteria, columns-1, true)
+	return row.panel, focus
 }
 
 func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributePrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
-	}
-	addHasPopup(panel, &pr.Has)
-	p.addPrereqTypeSwitcher(panel, depth, pr)
-	if !inFront {
-		p.addAndOr(panel, pr)
-	}
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
+	row := p.beginPrereqRow(depth, pr, &pr.Has)
+	row.addTypeSwitcher()
+	addIndentedSubRow(row.panel, row.finish(), false, func(subRow *unison.Panel) {
+		extra := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
+		addAttributeChoicePopup(subRow, p.entity, noAndOr, &pr.Which, extra)
+		addAttributeChoicePopup(subRow, p.entity, i18n.Text("combined with"), &pr.CombinedWith, extra|gurps.BlankFlag)
+		_, focus = addNumericCriteriaPanel(subRow, nil, "", i18n.Text("which"), i18n.Text("Attribute Qualifier"),
+			&pr.QualifierCriteria, fxp.Min, fxp.Max, 1, false, false)
 	})
-	second := unison.NewPanel()
-	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
-	extra := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
-	addAttributeChoicePopup(second, p.entity, noAndOr, &pr.Which, extra)
-	addAttributeChoicePopup(second, p.entity, i18n.Text("combined with"), &pr.CombinedWith, extra|gurps.BlankFlag)
-	_, focus = addNumericCriteriaPanel(second, nil, "", i18n.Text("which"), i18n.Text("Attribute Qualifier"),
-		&pr.QualifierCriteria, fxp.Min, fxp.Max, 1, false, false)
-	second.SetLayout(&unison.FlexLayout{
-		Columns:  len(second.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.AddChild(unison.NewPanel())
-	panel.AddChild(second)
-	return panel, focus
+	return row.panel, focus
 }
 
 func (p *prereqPanel) createContainedQuantityPrereqPanel(depth int, pr *gurps.ContainedQuantityPrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
-	}
-	addHasPopup(panel, &pr.Has)
-	p.addPrereqTypeSwitcher(panel, depth, pr)
-	_, focus = addQuantityCriteriaPanel(panel, nil, "", &pr.QualifierCriteria)
-	if !inFront {
-		p.addAndOr(panel, pr)
-	}
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	return panel, focus
+	row := p.beginPrereqRow(depth, pr, &pr.Has)
+	row.addTypeSwitcher()
+	_, focus = addQuantityCriteriaPanel(row.panel, nil, "", &pr.QualifierCriteria)
+	row.finish()
+	return row.panel, focus
 }
 
 func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.ContainedWeightPrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
-	}
-	addHasPopup(panel, &pr.Has)
-	p.addPrereqTypeSwitcher(panel, depth, pr)
-	if !inFront {
-		p.addAndOr(panel, pr)
-	}
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
+	row := p.beginPrereqRow(depth, pr, &pr.Has)
+	row.addTypeSwitcher()
+	addIndentedSubRow(row.panel, row.finish(), false, func(subRow *unison.Panel) {
+		_, focus = addWeightCriteriaPanel(subRow, nil, "", p.entity, &pr.WeightCriteria)
 	})
-	second := unison.NewPanel()
-	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
-	_, focus = addWeightCriteriaPanel(second, nil, "", p.entity, &pr.WeightCriteria)
-	second.SetLayout(&unison.FlexLayout{
-		Columns:  len(second.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.AddChild(unison.NewPanel())
-	panel.AddChild(second)
-	return panel, focus
+	return row.panel, focus
 }
 
 func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.EquippedEquipmentPrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
-	}
-	p.addPrereqTypeSwitcher(panel, depth, pr)
-	if !inFront {
-		p.addAndOr(panel, pr)
-	}
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	_, focus = addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
-	addTagCriteriaPanel(panel, &pr.TagsCriteria, columns-1, true)
-	return panel, focus
+	row := p.beginPrereqRow(depth, pr, nil)
+	row.addTypeSwitcher()
+	columns := row.finish()
+	_, focus = addNameCriteriaPanel(row.panel, &pr.NameCriteria, columns-1, true)
+	addTagCriteriaPanel(row.panel, &pr.TagsCriteria, columns-1, true)
+	return row.panel, focus
 }
 
 func (p *prereqPanel) createSkillPrereqPanel(depth int, pr *gurps.SkillPrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
-	}
-	addHasPopup(panel, &pr.Has)
-	p.addPrereqTypeSwitcher(panel, depth, pr)
-	if !inFront {
-		p.addAndOr(panel, pr)
-	}
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	_, focus = addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
-	addSpecializationCriteriaPanel(panel, &pr.SpecializationCriteria, columns-1, true)
-	addLevelCriteriaPanel(panel, nil, "", &pr.LevelCriteria, columns-1, true)
-	return panel, focus
+	row := p.beginPrereqRow(depth, pr, &pr.Has)
+	row.addTypeSwitcher()
+	columns := row.finish()
+	_, focus = addNameCriteriaPanel(row.panel, &pr.NameCriteria, columns-1, true)
+	addSpecializationCriteriaPanel(row.panel, &pr.SpecializationCriteria, columns-1, true)
+	addLevelCriteriaPanel(row.panel, nil, "", &pr.LevelCriteria, columns-1, true)
+	return row.panel, focus
 }
 
 func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
-	}
-	addHasPopup(panel, &pr.Has)
-	_, focus = addQuantityCriteriaPanel(panel, nil, "", &pr.QuantityCriteria)
-	p.addPrereqTypeSwitcher(panel, depth, pr)
-	if !inFront {
-		p.addAndOr(panel, pr)
-	}
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
+	row := p.beginPrereqRow(depth, pr, &pr.Has)
+	_, focus = addQuantityCriteriaPanel(row.panel, nil, "", &pr.QuantityCriteria)
+	row.addTypeSwitcher()
+	columns := row.finish()
+	addIndentedSubRow(row.panel, columns, true, func(subRow *unison.Panel) {
+		subTypePopup := addPopup(subRow, spellcmp.Types, &pr.SubType)
+		popup, field := addStringCriteriaPanel(subRow, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
+		// Neither "any" nor a college count has a qualifier to match against.
+		adjustQualifier := func() {
+			blank := pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount
+			adjustPopupBlank(popup, blank)
+			adjustFieldBlank(field, blank)
+		}
+		savedCallback := subTypePopup.SelectionChangedCallback
+		subTypePopup.SelectionChangedCallback = func(pop *unison.PopupMenu[spellcmp.Type]) {
+			savedCallback(pop)
+			adjustQualifier()
+		}
+		adjustQualifier()
+		if field.Enabled() {
+			focus = field
+		}
 	})
-	second := unison.NewPanel()
-	second.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  columns - 1,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	subTypePopup := addPopup(second, spellcmp.Types, &pr.SubType)
-	popup, field := addStringCriteriaPanel(second, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
-	savedCallback := subTypePopup.SelectionChangedCallback
-	subTypePopup.SelectionChangedCallback = func(pop *unison.PopupMenu[spellcmp.Type]) {
-		savedCallback(pop)
-		blank := pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount
-		adjustPopupBlank(popup, blank)
-		adjustFieldBlank(field, blank)
-	}
-	adjustPopupBlank(popup, pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount)
-	adjustFieldBlank(field, pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount)
-	if field.Enabled() {
-		focus = field
-	}
-	second.SetLayout(&unison.FlexLayout{
-		Columns:  len(second.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-		HAlign:   align.Fill,
-	})
-	panel.AddChild(unison.NewPanel())
-	panel.AddChild(second)
-	p.addPowerSourceCriteriaPanel(panel, pr, columns-1)
-	return panel, focus
+	p.addPowerSourceCriteriaPanel(row.panel, pr, columns-1)
+	return row.panel, focus
 }
 
 // addPowerSourceCriteriaPanel adds the row that restricts which power sources may satisfy a spell prerequisite. When
@@ -558,30 +483,14 @@ func (p *prereqPanel) addPowerSourceCriteriaPanel(parent *unison.Panel, pr *gurp
 	if pr.SamePowerSource {
 		pr.PowerSourceCriteria.Compare = criteria.AnyText
 	}
-	parent.AddChild(unison.NewPanel())
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-		VAlign:   align.Middle,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  hSpan,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
+	panel := newCriteriaPanel(parent, hSpan, true)
 	prefix := i18n.Text("and whose power source")
 	choices := criteria.PrefixedStringComparisonChoices(prefix, prefix)
 	if p.ownerIsSpell {
 		choices = slices.Insert(choices, samePowerSourceIndex, prefix+" "+i18n.Text("is the same as this spell's"))
 	}
 	var criteriaField *StringField
-	popup := unison.NewPopupMenu[string]()
-	for _, one := range choices {
-		popup.AddItem(one)
-	}
-	popup.SelectIndex(p.powerSourceComparisonIndex(pr))
+	popup := newComparisonPopup(choices, p.powerSourceComparisonIndex(pr))
 	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
 		i := pop.SelectedIndex()
 		pr.SamePowerSource = p.ownerIsSpell && i == samePowerSourceIndex
@@ -599,7 +508,6 @@ func (p *prereqPanel) addPowerSourceCriteriaPanel(parent *unison.Panel, pr *gurp
 	panel.AddChild(popup)
 	criteriaField = addStringField(panel, i18n.Text("Power Source Qualifier"), "", &pr.PowerSourceCriteria.Qualifier)
 	adjustFieldBlank(criteriaField, pr.SamePowerSource || pr.PowerSourceCriteria.Compare == criteria.AnyText)
-	parent.AddChild(panel)
 }
 
 // powerSourceComparisonIndex returns the index of the power source popup choice that reflects the prerequisite's
@@ -616,24 +524,11 @@ func (p *prereqPanel) powerSourceComparisonIndex(pr *gurps.SpellPrereq) int {
 }
 
 func (p *prereqPanel) createScriptPrereqPanel(depth int, pr *gurps.ScriptPrereq) (main, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	p.createButtonsPanel(panel, depth, pr)
-	inFront := andOrText(pr) != noAndOr
-	if inFront {
-		p.addAndOr(panel, pr)
-	}
-	p.addPrereqTypeSwitcher(panel, depth, pr)
-	if !inFront {
-		p.addAndOr(panel, pr)
-	}
-	focus = addScriptField(panel, nil, "", i18n.Text("Prereq Script"),
+	row := p.beginPrereqRow(depth, pr, nil)
+	row.addTypeSwitcher()
+	focus = addScriptField(row.panel, nil, "", i18n.Text("Prereq Script"),
 		i18n.Text("The script should return text describing the missing prerequisite or an empty string if the prerequisite has been met"),
 		func() string { return pr.Script }, func(text string) { pr.Script = text }, true)
-	columns := len(panel.Children())
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	return panel, focus
+	row.finish()
+	return row.panel, focus
 }

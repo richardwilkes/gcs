@@ -164,3 +164,43 @@ func TestInstallPopupSelectionOnHandBuiltMenu(t *testing.T) {
 	popup.Select("Gregorian")
 	c.Equal("Gregorian", got, "choosing an enabled item should be reported")
 }
+
+// TestNewCriteriaPanel verifies the container every criteria editor shares: a two-column panel added to the parent,
+// spanning the requested columns and growing to fill them, behind an empty filler only when asked for one.
+func TestNewCriteriaPanel(t *testing.T) {
+	c := check.New(t)
+	parent := unison.NewPanel()
+	panel := newCriteriaPanel(parent, 3, true)
+	c.Equal(2, len(parent.Children()), "a filler and the panel are added")
+	c.Equal(0, len(parent.Children()[0].Children()), "the filler is empty")
+	c.Equal(panel, parent.Children()[1], "the panel follows the filler")
+	layout, ok := panel.Layout().(*unison.FlexLayout)
+	c.True(ok, "the panel uses a flex layout")
+	c.Equal(2, layout.Columns, "one column for the popup and one for the field")
+	data, ok := panel.LayoutData().(*unison.FlexLayoutData)
+	c.True(ok, "the panel has flex layout data")
+	c.Equal(3, data.HSpan, "the panel spans the requested columns")
+	c.True(data.HGrab, "the panel grows to fill them")
+
+	parent = unison.NewPanel()
+	panel = newCriteriaPanel(parent, 1, false)
+	c.Equal(1, len(parent.Children()), "no filler is added unless asked for")
+	c.Equal(panel, parent.Children()[0])
+}
+
+// TestNewComparisonPopup verifies that newComparisonPopup offers the choices in order with the requested one selected
+// and leaves the selection callback for the caller to install, so that installing it cannot report the initial
+// selection as a change.
+func TestNewComparisonPopup(t *testing.T) {
+	c := check.New(t)
+	choices := []string{"is anything", "is", "starts with"}
+	popup := newComparisonPopup(choices, 2)
+	c.Equal(len(choices), popup.ItemCount(), "all choices should be offered")
+	for i, want := range choices {
+		item, ok := popup.ItemAt(i)
+		c.True(ok, "choice %d should exist", i)
+		c.Equal(want, item, "choices should keep their order")
+	}
+	c.Equal(2, popup.SelectedIndex(), "the requested choice should be selected")
+	c.Nil(popup.SelectionChangedCallback, "no selection callback should be installed")
+}
