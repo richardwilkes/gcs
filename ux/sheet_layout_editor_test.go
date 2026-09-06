@@ -12,7 +12,6 @@ package ux
 import (
 	"fmt"
 	"slices"
-	"strings"
 	"testing"
 	"time"
 
@@ -885,22 +884,6 @@ func TestMoveBlockByDragging(t *testing.T) {
 	c.Equal(1, undoEditCount(mgr), "moving a block must be one undoable edit")
 }
 
-// layoutTreeStringOf renders a layout node and everything below it as a compact string, so that a test can state the
-// shape it expects in one readable line.
-func layoutTreeStringOf(node *gurps.SheetLayoutNode) string {
-	if node == nil {
-		return "<nil>"
-	}
-	if node.Type == layoutnode.Block {
-		return node.Key
-	}
-	parts := make([]string, 0, len(node.Children))
-	for _, child := range node.Children {
-		parts = append(parts, layoutTreeStringOf(child))
-	}
-	return node.Type.Key() + "[" + strings.Join(parts, " ") + "]"
-}
-
 // TestMoveBlockBesideAColumn verifies that a block dropped a step inside the left edge of the primary attributes block
 // lands beside the whole of the column that block is in, spanning everything in it, since that column's left edge is
 // the edge the pointer is on. The band's own left edge is in the same place, so the column is the second rung of the
@@ -929,7 +912,7 @@ func TestMoveBlockBesideAColumn(t *testing.T) {
 	editor.endBlockDrag(where)
 	c.Equal("row[body column[row[column[primary_attributes damage] secondary_attributes] point_pools] "+
 		"column[encumbrance lifting]]",
-		layoutTreeStringOf(sheet.Entity().SheetSettings.Layout.Root.Children[1]),
+		sheet.Entity().SheetSettings.Layout.Root.Children[1].String(),
 		"the block must stand beside the whole column")
 }
 
@@ -960,10 +943,10 @@ func TestMoveBlockBesideARow(t *testing.T) {
 	editor.beginBlockDrag(gurps.BlockLiftingKey, lifting.rect.Center())
 	editor.endBlockDrag(where)
 	c.Equal("column[row[identity miscellaneous] lifting description]",
-		layoutTreeStringOf(sheet.Entity().SheetSettings.Layout.Root.Children[0].Children[1]),
+		sheet.Entity().SheetSettings.Layout.Root.Children[0].Children[1].String(),
 		"the block must span the full width of the row it was dropped below")
 	c.Equal("row[column[row[column[primary_attributes damage] secondary_attributes] point_pools] body encumbrance]",
-		layoutTreeStringOf(sheet.Entity().SheetSettings.Layout.Root.Children[1]),
+		sheet.Entity().SheetSettings.Layout.Root.Children[1].String(),
 		"the column the block came out of must collapse onto what is left of it")
 }
 
@@ -1282,9 +1265,9 @@ func dragBlockTo(t *testing.T, editor *sheetLayoutEditor, key string, where geom
 	editor.endBlockDrag(where)
 }
 
-// layoutTreeOf returns the sheet's block layout tree in the form layoutTreeStringOf renders.
+// layoutTreeOf returns the sheet's block layout tree in the form gurps.SheetLayoutNode.String renders.
 func layoutTreeOf(sheet *Sheet) string {
-	return layoutTreeStringOf(sheet.Entity().SheetSettings.Layout.Root)
+	return sheet.Entity().SheetSettings.Layout.Root.String()
 }
 
 // TestDropDeepInsideABandStacksTheTwoIntoOneBand verifies that a block dropped on the half of a full-width band that is

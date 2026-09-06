@@ -224,6 +224,24 @@ func (n *SheetLayoutNode) Clone() *SheetLayoutNode {
 	return &clone
 }
 
+// String renders this node and everything below it as a compact string: "<nil>" for a nil node, the block key for a
+// Block, and otherwise the container's type followed by its children in square brackets, such as
+// "column[row[traits skills] notes]". It is meant for tests and diagnostics, where the shape of a tree needs stating in
+// one readable line.
+func (n *SheetLayoutNode) String() string {
+	if n == nil {
+		return "<nil>"
+	}
+	if n.Type == layoutnode.Block {
+		return n.Key
+	}
+	parts := make([]string, 0, len(n.Children))
+	for _, child := range n.Children {
+		parts = append(parts, child.String())
+	}
+	return n.Type.Key() + "[" + strings.Join(parts, " ") + "]"
+}
+
 // Hash writes this object's contents into the hasher.
 func (n *SheetLayoutNode) Hash(h hash.Hash) {
 	if n == nil {

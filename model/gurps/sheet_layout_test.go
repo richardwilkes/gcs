@@ -22,7 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// factoryLayoutTree is the tree FactorySheetLayout produces, in the form layoutTreeString renders.
+// factoryLayoutTree is the tree FactorySheetLayout produces, in the form SheetLayoutNode.String renders.
 const factoryLayoutTree = "column[" +
 	"row[portrait column[row[identity miscellaneous] description] points] " +
 	"row[column[row[column[primary_attributes damage] secondary_attributes] point_pools] " +
@@ -41,20 +41,19 @@ const oldDefaultGridTemplate = `"reactions conditional_modifiers"
 "notes notes"
 `
 
-// layoutTreeString renders a layout node and everything below it as a compact string, so that a test can state the
-// shape it expects in one readable line.
-func layoutTreeString(node *SheetLayoutNode) string {
-	if node == nil {
-		return "<nil>"
-	}
-	if node.Type == layoutnode.Block {
-		return node.Key
-	}
-	parts := make([]string, 0, len(node.Children))
-	for _, child := range node.Children {
-		parts = append(parts, layoutTreeString(child))
-	}
-	return node.Type.Key() + "[" + strings.Join(parts, " ") + "]"
+// TestSheetLayoutNodeString verifies the compact rendering the other tests in this file and in the layout editor's
+// tests state their expected tree shapes in.
+func TestSheetLayoutNodeString(t *testing.T) {
+	c := check.New(t)
+	var node *SheetLayoutNode
+	c.Equal("<nil>", node.String())
+	c.Equal(BlockNotesKey, blockNode(BlockNotesKey).String())
+	c.Equal("row[]", containerNode(layoutnode.Row, fxp.One).String())
+	c.Equal("column[row[traits skills] notes]",
+		containerNode(layoutnode.Column, fxp.One,
+			containerNode(layoutnode.Row, fxp.One, blockNode(BlockTraitsKey), blockNode(BlockSkillsKey)),
+			blockNode(BlockNotesKey),
+		).String())
 }
 
 // newTestLayout builds a validated layout from the given root bands, with every block the bands don't mention marked as
@@ -88,11 +87,11 @@ func weightsOf(node *SheetLayoutNode) []fxp.Int {
 func TestFactorySheetLayout(t *testing.T) {
 	c := check.New(t)
 	layout := FactorySheetLayout()
-	c.Equal(factoryLayoutTree, layoutTreeString(layout.Root))
+	c.Equal(factoryLayoutTree, layout.Root.String())
 	c.Equal(AllBlockKeys, sortedKeys(layout.VisibleKeys()))
 	c.Equal(0, len(layout.HiddenKeys()))
 	layout.EnsureValidity()
-	c.Equal(factoryLayoutTree, layoutTreeString(layout.Root), "validating the factory layout must not change it")
+	c.Equal(factoryLayoutTree, layout.Root.String(), "validating the factory layout must not change it")
 
 	portrait, _, _ := layout.Find(BlockPortraitKey)
 	c.NotNil(portrait)
@@ -125,7 +124,7 @@ func TestSheetLayoutClone(t *testing.T) {
 	layout := FactorySheetLayout()
 	c.True(layout.Hide(BlockNotesKey))
 	clone := layout.Clone()
-	c.Equal(layoutTreeString(layout.Root), layoutTreeString(clone.Root))
+	c.Equal(layout.Root.String(), clone.Root.String())
 	c.Equal(layout.HiddenKeys(), clone.HiddenKeys())
 	c.True(clone.Hide(BlockSpellsKey))
 	c.True(layout.Contains(BlockSpellsKey), "altering the clone must not alter the original")
@@ -146,7 +145,7 @@ func TestSheetLayoutJSONRoundTrip(t *testing.T) {
 	c.Contains(string(data), `"square":true`)
 	var restored SheetLayout
 	c.NoError(jio.Unmarshal(data, &restored))
-	c.Equal(layoutTreeString(layout.Root), layoutTreeString(restored.Root))
+	c.Equal(layout.Root.String(), restored.Root.String())
 	c.Equal(layout.HiddenKeys(), restored.HiddenKeys())
 	node, _, _ := restored.Find(BlockNotesKey)
 	c.NotNil(node)
@@ -175,7 +174,7 @@ func TestNewSheetLayoutFromLegacyRows(t *testing.T) {
 			"other_equipment",
 			"notes",
 		})
-		c.Equal(factoryLayoutTree, layoutTreeString(layout.Root))
+		c.Equal(factoryLayoutTree, layout.Root.String())
 	})
 	t.Run("advantages is mapped onto traits", func(t *testing.T) {
 		c := check.New(t)
@@ -227,7 +226,7 @@ func TestSheetLayoutEnsureValidityRoot(t *testing.T) {
 			Hidden: allKeysExcept(BlockTraitsKey, BlockSkillsKey),
 		}
 		layout.EnsureValidity()
-		c.Equal("column[row[traits skills]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[traits skills]]", layout.Root.String())
 	})
 	t.Run("root is a Block", func(t *testing.T) {
 		c := check.New(t)
@@ -236,7 +235,7 @@ func TestSheetLayoutEnsureValidityRoot(t *testing.T) {
 			Hidden: allKeysExcept(BlockNotesKey),
 		}
 		layout.EnsureValidity()
-		c.Equal("column[notes]", layoutTreeString(layout.Root))
+		c.Equal("column[notes]", layout.Root.String())
 	})
 	t.Run("root keeps its identity as a Column", func(t *testing.T) {
 		c := check.New(t)
@@ -246,7 +245,7 @@ func TestSheetLayoutEnsureValidityRoot(t *testing.T) {
 		}
 		layout.Root.Key = BlockTraitsKey
 		layout.EnsureValidity()
-		c.Equal("column[notes spells]", layoutTreeString(layout.Root))
+		c.Equal("column[notes spells]", layout.Root.String())
 		c.Equal("", layout.Root.Key)
 	})
 }
@@ -267,7 +266,7 @@ func TestSheetLayoutEnsureValidityNodes(t *testing.T) {
 	t.Run("unknown keys are dropped", func(t *testing.T) {
 		c := check.New(t)
 		layout := newTestLayout(blockNode("bogus"), blockNode(BlockNotesKey))
-		c.Equal("column[notes]", layoutTreeString(layout.Root))
+		c.Equal("column[notes]", layout.Root.String())
 	})
 	t.Run("duplicate keys keep the first", func(t *testing.T) {
 		c := check.New(t)
@@ -275,14 +274,14 @@ func TestSheetLayoutEnsureValidityNodes(t *testing.T) {
 			containerNode(layoutnode.Row, fxp.One, blockNode(BlockNotesKey), blockNode(BlockSpellsKey)),
 			blockNode(BlockNotesKey),
 		)
-		c.Equal("column[row[notes spells]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[notes spells]]", layout.Root.String())
 	})
 	t.Run("a Block drops its children", func(t *testing.T) {
 		c := check.New(t)
 		node := blockNode(BlockNotesKey)
 		node.Children = []*SheetLayoutNode{blockNode(BlockSpellsKey)}
 		layout := newTestLayout(node, blockNode(BlockSpellsKey))
-		c.Equal("column[notes spells]", layoutTreeString(layout.Root))
+		c.Equal("column[notes spells]", layout.Root.String())
 		found, _, _ := layout.Find(BlockNotesKey)
 		c.Equal(0, len(found.Children))
 	})
@@ -291,7 +290,7 @@ func TestSheetLayoutEnsureValidityNodes(t *testing.T) {
 		row := containerNode(layoutnode.Row, fxp.One, blockNode(BlockNotesKey), blockNode(BlockSpellsKey))
 		row.Key = BlockTraitsKey
 		layout := newTestLayout(row)
-		c.Equal("column[row[notes spells]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[notes spells]]", layout.Root.String())
 		c.Equal("", layout.Root.Children[0].Key)
 	})
 	t.Run("empty containers are dropped", func(t *testing.T) {
@@ -301,7 +300,7 @@ func TestSheetLayoutEnsureValidityNodes(t *testing.T) {
 			blockNode(BlockNotesKey),
 			containerNode(layoutnode.Column, fxp.One, containerNode(layoutnode.Row, fxp.One)),
 		)
-		c.Equal("column[notes]", layoutTreeString(layout.Root))
+		c.Equal("column[notes]", layout.Root.String())
 	})
 	t.Run("a single-child container is replaced by its child", func(t *testing.T) {
 		c := check.New(t)
@@ -310,7 +309,7 @@ func TestSheetLayoutEnsureValidityNodes(t *testing.T) {
 		layout := newTestLayout(
 			containerNode(layoutnode.Row, fxp.One, row, blockNode(BlockSpellsKey)),
 		)
-		c.Equal("column[row[notes spells]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[notes spells]]", layout.Root.String())
 		notes, _, _ := layout.Find(BlockNotesKey)
 		c.Equal(fxp.Four, notes.Weight, "the child must inherit the container's weight")
 		c.Equal(paper.Length{Length: 2, Units: paper.Inch}, notes.MinHeight,
@@ -332,7 +331,7 @@ func TestSheetLayoutEnsureValidityNodes(t *testing.T) {
 			blockNode(BlockNotesKey),
 			containerNode(layoutnode.Row, fxp.One, blockNode(BlockSpellsKey), blockNode(BlockTraitsKey)),
 		))
-		c.Equal("column[row[notes spells traits]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[notes spells traits]]", layout.Root.String())
 	})
 	t.Run("a container drops the square flag", func(t *testing.T) {
 		c := check.New(t)
@@ -341,7 +340,7 @@ func TestSheetLayoutEnsureValidityNodes(t *testing.T) {
 		column := containerNode(layoutnode.Column, fxp.One, row, blockNode(BlockTraitsKey))
 		column.Square = true
 		layout := newTestLayout(column)
-		c.Equal("column[column[row[notes spells] traits]]", layoutTreeString(layout.Root))
+		c.Equal("column[column[row[notes spells] traits]]", layout.Root.String())
 		c.False(layout.Root.Square, "the root is a container and can't be square")
 		c.False(layout.Root.Children[0].Square, "a Column can't be square")
 		c.False(layout.Root.Children[0].Children[0].Square, "a Row can't be square")
@@ -375,7 +374,7 @@ func TestSheetLayoutBandGroup(t *testing.T) {
 			containerNode(layoutnode.Column, fxp.One, blockNode(BlockTraitsKey), blockNode(BlockSkillsKey)),
 			blockNode(BlockNotesKey),
 		)
-		c.Equal("column[column[traits skills] notes]", layoutTreeString(layout.Root),
+		c.Equal("column[column[traits skills] notes]", layout.Root.String(),
 			"a Column band must stay a band of its own rather than being spliced into the root")
 	})
 	t.Run("a Column band holding a single block is replaced by it", func(t *testing.T) {
@@ -384,7 +383,7 @@ func TestSheetLayoutBandGroup(t *testing.T) {
 			containerNode(layoutnode.Column, fxp.Four, blockNode(BlockTraitsKey)),
 			blockNode(BlockNotesKey),
 		)
-		c.Equal("column[traits notes]", layoutTreeString(layout.Root))
+		c.Equal("column[traits notes]", layout.Root.String())
 		traits, _, _ := layout.Find(BlockTraitsKey)
 		c.Equal(fxp.Four, traits.Weight, "the block must inherit the band's weight")
 	})
@@ -394,7 +393,7 @@ func TestSheetLayoutBandGroup(t *testing.T) {
 			blockNode(BlockTraitsKey),
 			containerNode(layoutnode.Column, fxp.One, blockNode(BlockSkillsKey), blockNode(BlockNotesKey)),
 		))
-		c.Equal("column[column[traits skills notes]]", layoutTreeString(layout.Root),
+		c.Equal("column[column[traits skills notes]]", layout.Root.String(),
 			"only a band of the root may be a Column within a Column")
 	})
 	t.Run("a Row within a band group stays", func(t *testing.T) {
@@ -403,7 +402,7 @@ func TestSheetLayoutBandGroup(t *testing.T) {
 			blockNode(BlockNotesKey),
 			containerNode(layoutnode.Row, fxp.One, blockNode(BlockTraitsKey), blockNode(BlockSkillsKey)),
 		))
-		c.Equal("column[column[notes row[traits skills]]]", layoutTreeString(layout.Root))
+		c.Equal("column[column[notes row[traits skills]]]", layout.Root.String())
 	})
 	t.Run("a band group survives a JSON round trip", func(t *testing.T) {
 		c := check.New(t)
@@ -415,7 +414,7 @@ func TestSheetLayoutBandGroup(t *testing.T) {
 		c.NoError(err)
 		var restored SheetLayout
 		c.NoError(jio.Unmarshal(data, &restored))
-		c.Equal("column[column[traits skills] notes]", layoutTreeString(restored.Root))
+		c.Equal("column[column[traits skills] notes]", restored.Root.String())
 		c.Equal(layout.HiddenKeys(), restored.HiddenKeys())
 	})
 	t.Run("a group of two lists is two lines of the grid template", func(t *testing.T) {
@@ -484,7 +483,7 @@ func TestSheetLayoutHideShow(t *testing.T) {
 	c.False(layout.Show(BlockMeleeKey), "showing a visible block changes nothing")
 
 	layout = FactorySheetLayout()
-	c.Equal("row[traits skills]", layoutTreeString(layout.Root.Children[5]))
+	c.Equal("row[traits skills]", layout.Root.Children[5].String())
 	c.True(layout.Hide(BlockTraitsKey))
 	c.Equal(BlockSkillsKey, layout.Root.Children[5].Key,
 		"the row the hidden block was in must collapse onto its remaining child")
@@ -500,7 +499,7 @@ func TestSheetLayoutMove(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.Move(BlockNotesKey, BlockSkillsKey, layoutedge.Left))
-		c.Equal("column[row[traits notes skills]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[traits notes skills]]", layout.Root.String())
 		c.Equal([]fxp.Int{fxp.Three, fxp.Two, fxp.One}, weightsOf(layout.Root.Children[0]),
 			"the inserted block's weight must be the mean of the row's weights")
 	})
@@ -511,7 +510,7 @@ func TestSheetLayoutMove(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.Move(BlockNotesKey, BlockTraitsKey, layoutedge.Right))
-		c.Equal("column[row[traits notes skills]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[traits notes skills]]", layout.Root.String())
 	})
 	t.Run("wrapping a lone target into a row", func(t *testing.T) {
 		c := check.New(t)
@@ -521,7 +520,7 @@ func TestSheetLayoutMove(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.Move(BlockNotesKey, BlockSpellsKey, layoutedge.Right))
-		c.Equal("column[row[spells notes] traits]", layoutTreeString(layout.Root))
+		c.Equal("column[row[spells notes] traits]", layout.Root.String())
 		c.Equal(fxp.Four, layout.Root.Children[0].Weight, "the new row must inherit the target's weight")
 		c.Equal([]fxp.Int{fxp.One, fxp.One}, weightsOf(layout.Root.Children[0]))
 	})
@@ -532,7 +531,7 @@ func TestSheetLayoutMove(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.Move(BlockNotesKey, BlockSkillsKey, layoutedge.Bottom))
-		c.Equal("column[row[traits column[skills notes]]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[traits column[skills notes]]]", layout.Root.String())
 	})
 	t.Run("above a root band groups the two of them into one band", func(t *testing.T) {
 		c := check.New(t)
@@ -542,7 +541,7 @@ func TestSheetLayoutMove(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.Move(BlockNotesKey, BlockSkillsKey, layoutedge.Top))
-		c.Equal("column[traits column[notes skills]]", layoutTreeString(layout.Root),
+		c.Equal("column[traits column[notes skills]]", layout.Root.String(),
 			"stacking onto a band groups the two of them rather than adding a band to the page")
 	})
 	t.Run("below a root band groups the two of them into one band", func(t *testing.T) {
@@ -553,7 +552,7 @@ func TestSheetLayoutMove(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.Move(BlockTraitsKey, BlockSkillsKey, layoutedge.Bottom))
-		c.Equal("column[column[skills traits] notes]", layoutTreeString(layout.Root))
+		c.Equal("column[column[skills traits] notes]", layout.Root.String())
 		c.Equal(fxp.Four, layout.Root.Children[0].Weight, "the group must inherit the target's weight")
 		c.Equal([]fxp.Int{fxp.One, fxp.One}, weightsOf(layout.Root.Children[0]))
 	})
@@ -565,7 +564,7 @@ func TestSheetLayoutMove(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.Move(BlockNotesKey, BlockSkillsKey, layoutedge.Left))
-		c.Equal("column[traits row[notes skills]]", layoutTreeString(layout.Root))
+		c.Equal("column[traits row[notes skills]]", layout.Root.String())
 	})
 	t.Run("stacking onto a block within a band group joins that group", func(t *testing.T) {
 		c := check.New(t)
@@ -573,9 +572,9 @@ func TestSheetLayoutMove(t *testing.T) {
 			containerNode(layoutnode.Column, fxp.One, blockNode(BlockTraitsKey), blockNode(BlockSkillsKey)),
 			blockNode(BlockNotesKey),
 		)
-		c.Equal("column[column[traits skills] notes]", layoutTreeString(layout.Root))
+		c.Equal("column[column[traits skills] notes]", layout.Root.String())
 		c.True(layout.Move(BlockNotesKey, BlockTraitsKey, layoutedge.Bottom))
-		c.Equal("column[column[traits notes skills]]", layoutTreeString(layout.Root),
+		c.Equal("column[column[traits notes skills]]", layout.Root.String(),
 			"the block joins the group the target is in rather than wrapping the target again")
 	})
 	t.Run("moving the only remaining child collapses its container", func(t *testing.T) {
@@ -585,13 +584,13 @@ func TestSheetLayoutMove(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.Move(BlockTraitsKey, BlockNotesKey, layoutedge.Right))
-		c.Equal("column[skills row[notes traits]]", layoutTreeString(layout.Root))
+		c.Equal("column[skills row[notes traits]]", layout.Root.String())
 	})
 	t.Run("onto itself is a no-op", func(t *testing.T) {
 		c := check.New(t)
 		layout := newTestLayout(blockNode(BlockTraitsKey), blockNode(BlockNotesKey))
 		c.False(layout.Move(BlockNotesKey, BlockNotesKey, layoutedge.Left))
-		c.Equal("column[traits notes]", layoutTreeString(layout.Root))
+		c.Equal("column[traits notes]", layout.Root.String())
 	})
 	t.Run("unknown and hidden blocks are refused", func(t *testing.T) {
 		c := check.New(t)
@@ -600,7 +599,7 @@ func TestSheetLayoutMove(t *testing.T) {
 		c.False(layout.Move(BlockNotesKey, "bogus", layoutedge.Left))
 		c.False(layout.Move(BlockSpellsKey, BlockNotesKey, layoutedge.Left), "spells is hidden")
 		c.False(layout.Move(BlockNotesKey, BlockSpellsKey, layoutedge.Left), "spells is hidden")
-		c.Equal("column[traits notes]", layoutTreeString(layout.Root))
+		c.Equal("column[traits notes]", layout.Root.String())
 	})
 }
 
@@ -615,7 +614,7 @@ func TestSheetLayoutMoveBeside(t *testing.T) {
 		)
 		row := layout.Root.Children[0]
 		c.True(layout.MoveBeside(BlockNotesKey, row, layoutedge.Left))
-		c.Equal("column[row[notes traits skills]]", layoutTreeString(layout.Root),
+		c.Equal("column[row[notes traits skills]]", layout.Root.String(),
 			"the row wrapped around the row is spliced back into one row, so the block stands beside the whole of it")
 	})
 	t.Run("below a row band groups the two of them into one band", func(t *testing.T) {
@@ -627,7 +626,7 @@ func TestSheetLayoutMoveBeside(t *testing.T) {
 		)
 		row := layout.Root.Children[0]
 		c.True(layout.MoveBeside(BlockSpellsKey, row, layoutedge.Bottom))
-		c.Equal("column[column[row[traits skills] spells] notes]", layoutTreeString(layout.Root),
+		c.Equal("column[column[row[traits skills] spells] notes]", layout.Root.String(),
 			"the block spans the full width below the row, and the two of them become one band")
 	})
 	t.Run("beside a column within a row joins that row", func(t *testing.T) {
@@ -641,7 +640,7 @@ func TestSheetLayoutMoveBeside(t *testing.T) {
 		)
 		column := layout.Root.Children[0].Children[0]
 		c.True(layout.MoveBeside(BlockSpellsKey, column, layoutedge.Right))
-		c.Equal("column[row[column[traits skills] spells notes]]", layoutTreeString(layout.Root),
+		c.Equal("column[row[column[traits skills] spells notes]]", layout.Root.String(),
 			"the block stands beside the whole column")
 		c.Equal([]fxp.Int{fxp.Three, fxp.Two, fxp.One}, weightsOf(layout.Root.Children[0]),
 			"the inserted block's weight must be the mean of the row's weights")
@@ -656,7 +655,7 @@ func TestSheetLayoutMoveBeside(t *testing.T) {
 		)
 		column := layout.Root.Children[0].Children[0]
 		c.True(layout.MoveBeside(BlockTraitsKey, column, layoutedge.Left))
-		c.Equal("column[row[traits skills notes]]", layoutTreeString(layout.Root),
+		c.Equal("column[row[traits skills notes]]", layout.Root.String(),
 			"the column the block was in is left with one child and collapses onto it")
 	})
 	t.Run("above a column within a row wraps that column", func(t *testing.T) {
@@ -670,7 +669,7 @@ func TestSheetLayoutMoveBeside(t *testing.T) {
 		)
 		column := layout.Root.Children[0].Children[0]
 		c.True(layout.MoveBeside(BlockSpellsKey, column, layoutedge.Top))
-		c.Equal("column[row[column[spells traits skills] notes]]", layoutTreeString(layout.Root),
+		c.Equal("column[row[column[spells traits skills] notes]]", layout.Root.String(),
 			"the column wrapped around the column is spliced back into one column")
 	})
 	t.Run("a target that can't be used is refused", func(t *testing.T) {
@@ -687,7 +686,7 @@ func TestSheetLayoutMoveBeside(t *testing.T) {
 			"a node that isn't in the tree can't be moved beside")
 		c.False(layout.MoveBeside("bogus", layout.Root.Children[0], layoutedge.Left), "there is no such block")
 		c.False(layout.MoveBeside(BlockSpellsKey, layout.Root.Children[0], layoutedge.Left), "spells is hidden")
-		c.Equal("column[row[traits skills] notes]", layoutTreeString(layout.Root), "nothing may have changed")
+		c.Equal("column[row[traits skills] notes]", layout.Root.String(), "nothing may have changed")
 	})
 }
 
@@ -700,7 +699,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 		traits, _, _ := layout.Find(BlockTraitsKey)
 		skills, _, _ := layout.Find(BlockSkillsKey)
 		c.True(layout.Straddle(BlockNotesKey, traits, skills, layoutedge.Left))
-		c.Equal("column[row[notes column[traits skills]]]", layoutTreeString(layout.Root),
+		c.Equal("column[row[notes column[traits skills]]]", layout.Root.String(),
 			"the two bands must have become one group with the block beside it")
 	})
 	t.Run("beside two stacked bands on the right", func(t *testing.T) {
@@ -710,7 +709,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 		skills, _, _ := layout.Find(BlockSkillsKey)
 		c.True(layout.Straddle(BlockNotesKey, skills, traits, layoutedge.Right),
 			"the two nodes may be given in either order")
-		c.Equal("column[row[column[traits skills] notes]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[column[traits skills] notes]]", layout.Root.String())
 	})
 	t.Run("above two blocks side by side", func(t *testing.T) {
 		c := check.New(t)
@@ -725,7 +724,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 		traits, _, _ := layout.Find(BlockTraitsKey)
 		skills, _, _ := layout.Find(BlockSkillsKey)
 		c.True(layout.Straddle(BlockNotesKey, traits, skills, layoutedge.Top))
-		c.Equal("column[row[column[notes row[traits skills]] spells]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[column[notes row[traits skills]] spells]]", layout.Root.String())
 		band := layout.Root.Children[0]
 		c.Equal([]fxp.Int{fxp.Three, fxp.One}, weightsOf(band),
 			"the group must keep the share of the width the pair had between them")
@@ -745,7 +744,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 		traits, _, _ := layout.Find(BlockTraitsKey)
 		skills, _, _ := layout.Find(BlockSkillsKey)
 		c.True(layout.Straddle(BlockNotesKey, traits, skills, layoutedge.Bottom))
-		c.Equal("column[row[column[row[traits skills] notes] spells]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[column[row[traits skills] notes] spells]]", layout.Root.String())
 		c.Equal([]fxp.Int{fxp.Three, fxp.One}, weightsOf(layout.Root.Children[0]))
 	})
 	t.Run("a band lying between the two is swept in with them", func(t *testing.T) {
@@ -755,7 +754,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 		traits, _, _ := layout.Find(BlockTraitsKey)
 		skills, _, _ := layout.Find(BlockSkillsKey)
 		c.True(layout.Straddle(BlockNotesKey, traits, skills, layoutedge.Left))
-		c.Equal("column[row[notes column[traits melee skills]]]", layoutTreeString(layout.Root),
+		c.Equal("column[row[notes column[traits melee skills]]]", layout.Root.String(),
 			"the whole range from the first to the second must be grouped")
 	})
 	t.Run("the block being moved may come from inside the range", func(t *testing.T) {
@@ -767,7 +766,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 		band := layout.Root.Children[0]
 		notes, _, _ := layout.Find(BlockNotesKey)
 		c.True(layout.Straddle(BlockSkillsKey, band, notes, layoutedge.Left))
-		c.Equal("column[row[skills column[traits notes]]]", layoutTreeString(layout.Root),
+		c.Equal("column[row[skills column[traits notes]]]", layout.Root.String(),
 			"what the block left behind is what gets grouped")
 	})
 	t.Run("beside a range within a row inserts the block into it", func(t *testing.T) {
@@ -780,7 +779,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 		traits, _, _ := layout.Find(BlockTraitsKey)
 		skills, _, _ := layout.Find(BlockSkillsKey)
 		c.True(layout.Straddle(BlockNotesKey, traits, skills, layoutedge.Left))
-		c.Equal("column[row[notes traits skills spells]]", layoutTreeString(layout.Root),
+		c.Equal("column[row[notes traits skills spells]]", layout.Root.String(),
 			"a Row within a Row is spliced away, so the block simply lands beside the range")
 	})
 	t.Run("after a range within a row inserts the block into it", func(t *testing.T) {
@@ -793,7 +792,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 		traits, _, _ := layout.Find(BlockTraitsKey)
 		skills, _, _ := layout.Find(BlockSkillsKey)
 		c.True(layout.Straddle(BlockNotesKey, traits, skills, layoutedge.Right))
-		c.Equal("column[row[traits skills notes spells]]", layoutTreeString(layout.Root))
+		c.Equal("column[row[traits skills notes spells]]", layout.Root.String())
 	})
 	t.Run("a pair that can't be used is refused", func(t *testing.T) {
 		c := check.New(t)
@@ -818,7 +817,7 @@ func TestSheetLayoutStraddle(t *testing.T) {
 			"a node that isn't in the tree can't be straddled")
 		c.False(layout.Straddle("bogus", traits, skills, layoutedge.Left), "there is no such block")
 		c.False(layout.Straddle(BlockSpellsKey, traits, skills, layoutedge.Left), "spells is hidden")
-		c.Equal("column[row[traits skills] notes]", layoutTreeString(layout.Root), "nothing may have changed")
+		c.Equal("column[row[traits skills] notes]", layout.Root.String(), "nothing may have changed")
 	})
 }
 
@@ -833,13 +832,13 @@ func TestSheetLayoutMoveToBand(t *testing.T) {
 			blockNode(BlockSpellsKey),
 		)
 		c.True(layout.MoveToBand(BlockMeleeKey, 2))
-		c.Equal("column[ranged melee notes spells]", layoutTreeString(layout.Root))
+		c.Equal("column[ranged melee notes spells]", layout.Root.String())
 	})
 	t.Run("moving down within the bands", func(t *testing.T) {
 		c := check.New(t)
 		layout := newTestLayout(blockNode(BlockMeleeKey), blockNode(BlockRangedKey), blockNode(BlockNotesKey))
 		c.True(layout.MoveToBand(BlockMeleeKey, 3))
-		c.Equal("column[ranged notes melee]", layoutTreeString(layout.Root))
+		c.Equal("column[ranged notes melee]", layout.Root.String())
 	})
 	t.Run("out of a container collapses it", func(t *testing.T) {
 		c := check.New(t)
@@ -848,15 +847,15 @@ func TestSheetLayoutMoveToBand(t *testing.T) {
 			blockNode(BlockNotesKey),
 		)
 		c.True(layout.MoveToBand(BlockTraitsKey, 2))
-		c.Equal("column[skills notes traits]", layoutTreeString(layout.Root))
+		c.Equal("column[skills notes traits]", layout.Root.String())
 	})
 	t.Run("out of range indexes are clamped", func(t *testing.T) {
 		c := check.New(t)
 		layout := newTestLayout(blockNode(BlockMeleeKey), blockNode(BlockRangedKey))
 		c.True(layout.MoveToBand(BlockRangedKey, -5))
-		c.Equal("column[ranged melee]", layoutTreeString(layout.Root))
+		c.Equal("column[ranged melee]", layout.Root.String())
 		c.True(layout.MoveToBand(BlockRangedKey, 99))
-		c.Equal("column[melee ranged]", layoutTreeString(layout.Root))
+		c.Equal("column[melee ranged]", layout.Root.String())
 	})
 	t.Run("unknown blocks are refused", func(t *testing.T) {
 		c := check.New(t)
@@ -890,11 +889,11 @@ func TestSheetLayoutSetWeightsAndMinHeight(t *testing.T) {
 func TestSheetLayoutFiltered(t *testing.T) {
 	c := check.New(t)
 	filtered := FactorySheetLayout().Filtered(IsTemplateBlockKey)
-	c.Equal("column[row[traits skills] spells equipment notes]", layoutTreeString(filtered.Root))
+	c.Equal("column[row[traits skills] spells equipment notes]", filtered.Root.String())
 	c.Equal(allKeysExcept(BlockTraitsKey, BlockSkillsKey, BlockSpellsKey, BlockEquipmentKey, BlockNotesKey),
 		filtered.HiddenKeys())
 	filtered.EnsureValidity()
-	c.Equal("column[row[traits skills] spells equipment notes]", layoutTreeString(filtered.Root))
+	c.Equal("column[row[traits skills] spells equipment notes]", filtered.Root.String())
 }
 
 // TestSheetLayoutListBands verifies the projection the sheet, the template and the exporter build their content from.
