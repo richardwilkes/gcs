@@ -1034,60 +1034,8 @@ func (t *Template) Rebuild(full bool) {
 	t.scroll.SetPosition(h, v)
 }
 
-type templateTablesUndoData struct {
-	traits    *TableUndoEditData[*gurps.Trait]
-	skills    *TableUndoEditData[*gurps.Skill]
-	spells    *TableUndoEditData[*gurps.Spell]
-	equipment *TableUndoEditData[*gurps.Equipment]
-	notes     *TableUndoEditData[*gurps.Note]
-}
-
-func newTemplateTablesUndoData(t *Template) *templateTablesUndoData {
-	return &templateTablesUndoData{
-		traits:    NewTableUndoEditData(t.Traits.Table),
-		skills:    NewTableUndoEditData(t.Skills.Table),
-		spells:    NewTableUndoEditData(t.Spells.Table),
-		equipment: NewTableUndoEditData(t.Equipment.Table),
-		notes:     NewTableUndoEditData(t.Notes.Table),
-	}
-}
-
-func (t *templateTablesUndoData) Apply() {
-	// Every list is put back before any of them is reported, so that the undo updates the template once rather than
-	// once per table. See restoredTables for why the reporting can't be done until all of the data is in place.
-	var restored restoredTables
-	restored.add(t.traits.restore())
-	restored.add(t.skills.restore())
-	restored.add(t.spells.restore())
-	restored.add(t.equipment.restore())
-	restored.add(t.notes.restore())
-	restored.report()
-}
-
 func (t *Template) syncWithAllSources() {
-	var undo *unison.UndoEdit[*templateTablesUndoData]
-	mgr := unison.UndoManagerFor(t)
-	if mgr != nil {
-		undo = &unison.UndoEdit[*templateTablesUndoData]{
-			ID:         unison.NextUndoID(),
-			EditName:   syncWithSourceAction.Title,
-			UndoFunc:   func(e *unison.UndoEdit[*templateTablesUndoData]) { e.BeforeData.Apply() },
-			RedoFunc:   func(e *unison.UndoEdit[*templateTablesUndoData]) { e.AfterData.Apply() },
-			AbsorbFunc: func(_ *unison.UndoEdit[*templateTablesUndoData], _ unison.Undoable) bool { return false },
-			BeforeData: newTemplateTablesUndoData(t),
-		}
-	}
-	t.template.SyncWithLibrarySources()
-	t.Traits.Table.SyncToModel()
-	t.Skills.Table.SyncToModel()
-	t.Spells.Table.SyncToModel()
-	t.Equipment.Table.SyncToModel()
-	t.Notes.Table.SyncToModel()
-	if mgr != nil && undo != nil {
-		undo.AfterData = newTemplateTablesUndoData(t)
-		mgr.Add(undo)
-	}
-	rebuildAsModified(t, true)
+	syncWithAllSources(t, t.template, t.Traits, t.Skills, t.Spells, t.Equipment, t.Notes)
 }
 
 // BodySettingsTitle implements BodySettingsOwner.

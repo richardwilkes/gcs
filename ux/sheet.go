@@ -1018,66 +1018,8 @@ func nextLayoutMenuItemID(id *int) int {
 	return next
 }
 
-type sheetTablesUndoData struct {
-	traits           *TableUndoEditData[*gurps.Trait]
-	skills           *TableUndoEditData[*gurps.Skill]
-	spells           *TableUndoEditData[*gurps.Spell]
-	carriedEquipment *TableUndoEditData[*gurps.Equipment]
-	otherEquipment   *TableUndoEditData[*gurps.Equipment]
-	notes            *TableUndoEditData[*gurps.Note]
-}
-
-func newSheetTablesUndoData(sheet *Sheet) *sheetTablesUndoData {
-	return &sheetTablesUndoData{
-		traits:           NewTableUndoEditData(sheet.Traits.Table),
-		skills:           NewTableUndoEditData(sheet.Skills.Table),
-		spells:           NewTableUndoEditData(sheet.Spells.Table),
-		carriedEquipment: NewTableUndoEditData(sheet.CarriedEquipment.Table),
-		otherEquipment:   NewTableUndoEditData(sheet.OtherEquipment.Table),
-		notes:            NewTableUndoEditData(sheet.Notes.Table),
-	}
-}
-
-func (s *sheetTablesUndoData) Apply() {
-	// Every list is put back before any of them is reported, so that the undo updates the sheet once rather than once
-	// per table: a single rebuild of the sheet brings all six lists back into line, while reporting each one as it was
-	// restored would recalculate the entity and re-sync every table on the sheet up to six times over for the one
-	// undo. See restoredTables for the rest of the reasoning.
-	var restored restoredTables
-	restored.add(s.traits.restore())
-	restored.add(s.skills.restore())
-	restored.add(s.spells.restore())
-	restored.add(s.carriedEquipment.restore())
-	restored.add(s.otherEquipment.restore())
-	restored.add(s.notes.restore())
-	restored.report()
-}
-
 func (s *Sheet) syncWithAllSources() {
-	var undo *unison.UndoEdit[*sheetTablesUndoData]
-	mgr := unison.UndoManagerFor(s)
-	if mgr != nil {
-		undo = &unison.UndoEdit[*sheetTablesUndoData]{
-			ID:         unison.NextUndoID(),
-			EditName:   syncWithSourceAction.Title,
-			UndoFunc:   func(e *unison.UndoEdit[*sheetTablesUndoData]) { e.BeforeData.Apply() },
-			RedoFunc:   func(e *unison.UndoEdit[*sheetTablesUndoData]) { e.AfterData.Apply() },
-			AbsorbFunc: func(_ *unison.UndoEdit[*sheetTablesUndoData], _ unison.Undoable) bool { return false },
-			BeforeData: newSheetTablesUndoData(s),
-		}
-	}
-	s.entity.SyncWithLibrarySources()
-	s.Traits.Table.SyncToModel()
-	s.Skills.Table.SyncToModel()
-	s.Spells.Table.SyncToModel()
-	s.CarriedEquipment.Table.SyncToModel()
-	s.OtherEquipment.Table.SyncToModel()
-	s.Notes.Table.SyncToModel()
-	if mgr != nil && undo != nil {
-		undo.AfterData = newSheetTablesUndoData(s)
-		mgr.Add(undo)
-	}
-	rebuildAsModified(s, true)
+	syncWithAllSources(s, s.entity, s.Traits, s.Skills, s.Spells, s.CarriedEquipment, s.OtherEquipment, s.Notes)
 }
 
 // Rebuild implements widget.Rebuildable.

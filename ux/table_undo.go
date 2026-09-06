@@ -49,8 +49,10 @@ func (t *TableUndoEditData[T]) Apply() {
 // still points at it, but the selection would not, because the rebuild that follows records and re-applies the
 // selection of the table on screen and would discard one restored into an orphan. Nothing is returned if there was
 // nothing to restore or the restore failed. The reporting is left to restoredTables, so that an undo spanning several
-// tables can do it just once for all of them.
-func (t *TableUndoEditData[T]) restore() (*unison.Table[*Node[T]], Rebuildable) {
+// tables can do it just once for all of them. The table comes back as a plain Paneler, which is all restoredTables
+// needs and what lets an undo spanning tables of different row types hold their data behind one interface (see
+// tableRestorer).
+func (t *TableUndoEditData[T]) restore() (unison.Paneler, Rebuildable) {
 	if t == nil {
 		return nil, nil
 	}
@@ -64,6 +66,86 @@ func (t *TableUndoEditData[T]) restore() (*unison.Table[*Node[T]], Rebuildable) 
 		return table, nil
 	}
 	return table, owner
+}
+
+// tableRestorer is what tablesUndoData needs of each table's undo data: TableUndoEditData.restore(), stripped of the
+// row type so that the data for tables of different row types can be held together.
+type tableRestorer interface {
+	restore() (unison.Paneler, Rebuildable)
+}
+
+// syncableList is what "Sync With All Sources" needs of a page list, independent of the list's row type: undo data for
+// its table and a way to bring the table up to date with its model. Every *PageList[T] provides both.
+type syncableList interface {
+	undoData() tableRestorer
+	syncToModel()
+}
+
+// librarySyncer is the model behind a sheet, template or loot sheet, which knows how to sync everything it holds with
+// the library sources the items came from.
+type librarySyncer interface {
+	SyncWithLibrarySources()
+}
+
+// tablesUndoData holds the undo data for an edit that spans several page lists at once, such as "Sync With All
+// Sources", which can alter every sourced list a document has.
+type tablesUndoData struct {
+	restorers []tableRestorer
+}
+
+// newTablesUndoData collects the undo edit data for each of the given lists. A list whose data can't be collected
+// contributes nothing, just as it would to a single-table edit (see NewTableUndoEditData).
+func newTablesUndoData(lists []syncableList) *tablesUndoData {
+	data := &tablesUndoData{restorers: make([]tableRestorer, 0, len(lists))}
+	for _, list := range lists {
+		if restorer := list.undoData(); restorer != nil {
+			data.restorers = append(data.restorers, restorer)
+		}
+	}
+	return data
+}
+
+// Apply the undo edit data to the tables.
+func (d *tablesUndoData) Apply() {
+	// Every list is put back before any of them is reported, so that the undo updates the document once rather than
+	// once per table: a single rebuild brings all of the lists back into line, while reporting each one as it was
+	// restored would recalculate the entity and re-sync every table on the sheet once per list for the one undo. See
+	// restoredTables for the rest of the reasoning.
+	var restored restoredTables
+	for _, restorer := range d.restorers {
+		restored.add(restorer.restore())
+	}
+	restored.report()
+}
+
+// syncWithAllSources syncs a document's model with the library sources its items came from and records the change as
+// a single undoable edit spanning the given lists, which are the ones the sync can alter. One edit rather than one per
+// list is what lets an undo put every list back and update the document just once (see tablesUndoData.Apply). The
+// owner is rebuilt afterwards, which is what reports the change (see rebuildAsModified). Building the "before" data
+// as part of the edit, right before the sync, is safe here because syncing alters items in place and moves nothing;
+// see organizeTraits for an edit that has to take its snapshot with more care.
+func syncWithAllSources(owner Rebuildable, model librarySyncer, lists ...syncableList) {
+	var undo *unison.UndoEdit[*tablesUndoData]
+	mgr := unison.UndoManagerFor(owner)
+	if mgr != nil {
+		undo = &unison.UndoEdit[*tablesUndoData]{
+			ID:         unison.NextUndoID(),
+			EditName:   syncWithSourceAction.Title,
+			UndoFunc:   func(e *unison.UndoEdit[*tablesUndoData]) { e.BeforeData.Apply() },
+			RedoFunc:   func(e *unison.UndoEdit[*tablesUndoData]) { e.AfterData.Apply() },
+			AbsorbFunc: func(_ *unison.UndoEdit[*tablesUndoData], _ unison.Undoable) bool { return false },
+			BeforeData: newTablesUndoData(lists),
+		}
+	}
+	model.SyncWithLibrarySources()
+	for _, list := range lists {
+		list.syncToModel()
+	}
+	if undo != nil {
+		undo.AfterData = newTablesUndoData(lists)
+		mgr.Add(undo)
+	}
+	rebuildAsModified(owner, true)
 }
 
 // restoredTables accumulates the results of restoring one or more tables, so that the undo they belong to reports the

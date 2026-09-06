@@ -25,7 +25,7 @@ func organizeTraits(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]])
 	}
 	// The "before" snapshot has to be taken while the list is still the one the user is looking at. Organizing
 	// reparents traits into containers that are themselves still in the old top-level slice, so a snapshot taken
-	// afterwards -- the way Sheet.syncWithAllSources builds its edit inline (ux/sheet.go) -- would walk each moved
+	// afterwards -- the way syncWithAllSources builds its edit inline (ux/table_undo.go) -- would walk each moved
 	// trait twice, once where it still sits at the top level and once inside the container it was just filed into,
 	// and the undo would put two copies of every moved row back. syncWithAllSources gets away with building its
 	// "before" data after the fact only because syncing alters traits in place and moves nothing.

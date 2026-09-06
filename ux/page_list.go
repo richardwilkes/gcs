@@ -182,6 +182,30 @@ func (p *PageList[T]) needReconstruction() bool {
 	return p == nil || columnsOutOfSync(p.provider.ColumnIDs(), p.Table.Columns)
 }
 
+// undoData collects the undo edit data for the list's table, stripped of the row type so that an edit spanning lists
+// of different row types can hold it (see tablesUndoData). Nothing comes back for a list that doesn't exist or whose
+// data couldn't be collected.
+func (p *PageList[T]) undoData() tableRestorer {
+	if p == nil {
+		return nil
+	}
+	data := NewTableUndoEditData(p.Table)
+	if data == nil {
+		// Returned as an untyped nil, so that the caller's nil check sees it: a nil *TableUndoEditData wrapped in the
+		// interface would not be nil.
+		return nil
+	}
+	return data
+}
+
+// syncToModel brings the list's table up to date with its model. A list that doesn't exist has nothing to bring up to
+// date.
+func (p *PageList[T]) syncToModel() {
+	if p != nil {
+		p.Table.SyncToModel()
+	}
+}
+
 // columnsOutOfSync returns true if the columns a table is currently showing no longer match the column IDs its provider
 // wants, which means the table has to be built anew, since a table's columns are fixed at creation.
 func columnsOutOfSync(ids []int, columns []unison.ColumnInfo) bool {

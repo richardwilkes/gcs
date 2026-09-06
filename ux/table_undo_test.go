@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -284,36 +285,56 @@ func newSwitchableSkill(entity *gurps.Entity, name string) *gurps.Skill {
 	return skill
 }
 
-// TestUndoSpanningEveryListSyncsTheSheetOnlyOnce verifies that an undo that puts every one of a sheet's lists back at
-// once -- what "Sync With All Sources" registers -- updates the sheet a single time, even when more than one of those
-// lists has to gain or lose its switch column. Restoring each list and reporting it right away would recalculate the
-// entity and re-sync every table on the sheet up to six times over for the one undo.
+// librarySyncerFunc adapts a function to the librarySyncer interface, standing in for a document's model so that a test
+// can decide what "syncing with the library sources" does to the document.
+type librarySyncerFunc func()
+
+// SyncWithLibrarySources implements librarySyncer.
+func (f librarySyncerFunc) SyncWithLibrarySources() { f() }
+
+// sheetSourcedLists returns the lists a character sheet syncs with the library sources, as Sheet.syncWithAllSources
+// passes them.
+func sheetSourcedLists(sheet *Sheet) []syncableList {
+	return []syncableList{
+		sheet.Traits, sheet.Skills, sheet.Spells, sheet.CarriedEquipment, sheet.OtherEquipment, sheet.Notes,
+	}
+}
+
+// TestUndoSpanningEveryListSyncsTheSheetOnlyOnce verifies that "Sync With All Sources" registers a single edit whose
+// undo puts every one of a sheet's lists back at once and updates the sheet a single time, even when more than one of
+// those lists has to gain or lose its switch column. Restoring each list and reporting it right away would recalculate
+// the entity and re-sync every table on the sheet up to six times over for the one undo. The sync itself is stood in
+// for by one that pulls a switchable trait and a switchable skill into the sheet, the way a library source could.
 func TestUndoSpanningEveryListSyncsTheSheetOnlyOnce(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
+	mgr := unison.UndoManagerFor(sheet)
+	c.NotNil(mgr, "the sheet must have an undo manager")
 	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
 		"the traits switch column must start out absent")
 	c.NotEqual(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
 		"the skills switch column must start out absent")
-
 	traitCount := len(entity.Traits)
 	skillCount := len(entity.Skills)
-	before := newSheetTablesUndoData(sheet)
-	entity.Traits = append(entity.Traits, newSwitchableTrait(entity, "Claws"))
-	entity.Skills = append(entity.Skills, newSwitchableSkill(entity, "Body Sense"))
-	sheet.Traits.Table.SyncToModel()
-	sheet.Skills.Table.SyncToModel()
-	sheet.Rebuild(true)
+	counter := installSyncCounter(sheet)
+
+	syncWithAllSources(sheet, librarySyncerFunc(func() {
+		entity.Traits = append(entity.Traits, newSwitchableTrait(entity, "Claws"))
+		entity.Skills = append(entity.Skills, newSwitchableSkill(entity, "Body Sense"))
+	}), sheetSourcedLists(sheet)...)
+	c.Equal(traitCount+1, len(entity.Traits), "the sync must have added the trait to the entity")
+	c.Equal(skillCount+1, len(entity.Skills), "the sync must have added the skill to the entity")
+	c.Equal(1, counter.count, "the sync must update the sheet exactly once")
 	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
 		"the switchable trait must bring in the traits switch column")
 	c.Equal(gurps.SkillSwitchColumn, sheet.Skills.Table.Columns[0].ID,
 		"the switchable skill must bring in the skills switch column")
-	after := newSheetTablesUndoData(sheet)
-	counter := installSyncCounter(sheet)
+	c.True(mgr.CanUndo(), "the sync must be undoable")
+	c.True(strings.Contains(mgr.UndoTitle(), syncWithSourceAction.Title), "the undo must be named for the sync")
 
 	counter.count = 0
-	before.Apply()
+	mgr.Undo()
 	c.Equal(traitCount, len(entity.Traits), "undo must take the trait back out of the entity")
 	c.Equal(skillCount, len(entity.Skills), "undo must take the skill back out of the entity")
 	c.Equal(1, counter.count, "an undo spanning every list must sync the sheet exactly once")
@@ -323,9 +344,10 @@ func TestUndoSpanningEveryListSyncsTheSheetOnlyOnce(t *testing.T) {
 		"undo must take the skills switch column away again")
 	c.True(columnsMatchProvider(sheet.Traits.Table), "the traits table's columns must match its provider after undo")
 	c.True(columnsMatchProvider(sheet.Skills.Table), "the skills table's columns must match its provider after undo")
+	c.True(mgr.CanRedo(), "the sync must be redoable")
 
 	counter.count = 0
-	after.Apply()
+	mgr.Redo()
 	c.Equal(traitCount+1, len(entity.Traits), "redo must put the trait back into the entity")
 	c.Equal(skillCount+1, len(entity.Skills), "redo must put the skill back into the entity")
 	c.Equal(1, counter.count, "a redo spanning every list must sync the sheet exactly once")
@@ -335,6 +357,75 @@ func TestUndoSpanningEveryListSyncsTheSheetOnlyOnce(t *testing.T) {
 		"redo must bring the skills switch column back")
 	c.True(columnsMatchProvider(sheet.Traits.Table), "the traits table's columns must match its provider after redo")
 	c.True(columnsMatchProvider(sheet.Skills.Table), "the skills table's columns must match its provider after redo")
+}
+
+// TestUndoSpanningSeveralListsRestoresTheSelectionOfEachOne verifies that the one edit "Sync With All Sources"
+// registers brings back the selection in every list it spans, not just the first: each list's restore has to reach the
+// table that is on screen, and the single rebuild that reports the whole undo must not discard what the others put
+// back.
+func TestUndoSpanningSeveralListsRestoresTheSelectionOfEachOne(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	mgr := unison.UndoManagerFor(sheet)
+	c.NotNil(mgr, "the sheet must have an undo manager")
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Plain"
+	entity.Traits = []*gurps.Trait{trait}
+	skill := gurps.NewSkill(entity, nil, false)
+	skill.Name = "Plain"
+	entity.Skills = []*gurps.Skill{skill}
+	sheet.Rebuild(true)
+	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{skill.ID(): true})
+
+	syncWithAllSources(sheet, librarySyncerFunc(func() {
+		entity.Traits = nil
+		entity.Skills = nil
+	}), sheetSourcedLists(sheet)...)
+	c.Equal(0, len(entity.Traits), "the sync must have removed the trait")
+	c.Equal(0, len(entity.Skills), "the sync must have removed the skill")
+	c.Equal(-1, sheet.Traits.Table.LastRowIndex(), "the trait row must be gone from the traits table")
+	c.Equal(-1, sheet.Skills.Table.LastRowIndex(), "the skill row must be gone from the skills table")
+
+	mgr.Undo()
+	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
+	c.Equal(1, len(entity.Skills), "undo must put the skill back into the entity")
+	c.True(sheet.Traits.Table.CopySelectionMap()[trait.ID()], "undo must restore the selection in the traits table")
+	c.True(sheet.Skills.Table.CopySelectionMap()[skill.ID()], "undo must restore the selection in the skills table")
+}
+
+// TestSyncWithAllSourcesIsOneUndoableEditOnEveryDocumentKind verifies that each kind of document offering "Sync With
+// All Sources" -- character sheet, template and loot sheet -- records the sync as a single undoable edit with its own
+// undo manager and reports it by marking the document as modified, now that all three share one implementation.
+func TestSyncWithAllSourcesIsOneUndoableEditOnEveryDocumentKind(t *testing.T) {
+	sheet := newTestSheetForTemplate(t)
+	template := newTestTemplateDockable("Sync", gurps.NewTemplate())
+	loot := newTestLootSheet(t)
+	for _, one := range []struct {
+		name string
+		doc  interface {
+			unison.Paneler
+			syncWithAllSources()
+		}
+	}{
+		{name: "character sheet", doc: sheet},
+		{name: "template", doc: template},
+		{name: "loot sheet", doc: loot},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			mgr := unison.UndoManagerFor(one.doc)
+			c.NotNil(mgr, "the document must have an undo manager")
+			c.False(mgr.CanUndo(), "nothing has been done yet")
+			one.doc.syncWithAllSources()
+			c.True(mgr.CanUndo(), "the sync must be undoable")
+			c.True(strings.Contains(mgr.UndoTitle(), syncWithSourceAction.Title), "the undo must be named for the sync")
+			mgr.Undo()
+			c.False(mgr.CanUndo(), "the sync must be a single edit")
+			c.True(mgr.CanRedo(), "the sync must be redoable")
+		})
+	}
 }
 
 // newSwitchableEquipment returns a non-container piece of equipment carrying a single switchable +1 ST bonus, so that

@@ -362,48 +362,8 @@ func (l *LootSheet) save(forceSaveAs bool) bool {
 	return success
 }
 
-type lootTablesUndoData struct {
-	equipment *TableUndoEditData[*gurps.Equipment]
-	notes     *TableUndoEditData[*gurps.Note]
-}
-
-func newLootTablesUndoData(l *LootSheet) *lootTablesUndoData {
-	return &lootTablesUndoData{
-		equipment: NewTableUndoEditData(l.Equipment.Table),
-		notes:     NewTableUndoEditData(l.Notes.Table),
-	}
-}
-
-func (l *lootTablesUndoData) Apply() {
-	// Both lists are put back before either is reported, so that the undo updates the sheet once rather than once per
-	// table. See restoredTables for why the reporting can't be done until all of the data is in place.
-	var restored restoredTables
-	restored.add(l.equipment.restore())
-	restored.add(l.notes.restore())
-	restored.report()
-}
-
 func (l *LootSheet) syncWithAllSources() {
-	var undo *unison.UndoEdit[*lootTablesUndoData]
-	mgr := unison.UndoManagerFor(l)
-	if mgr != nil {
-		undo = &unison.UndoEdit[*lootTablesUndoData]{
-			ID:         unison.NextUndoID(),
-			EditName:   syncWithSourceAction.Title,
-			UndoFunc:   func(e *unison.UndoEdit[*lootTablesUndoData]) { e.BeforeData.Apply() },
-			RedoFunc:   func(e *unison.UndoEdit[*lootTablesUndoData]) { e.AfterData.Apply() },
-			AbsorbFunc: func(_ *unison.UndoEdit[*lootTablesUndoData], _ unison.Undoable) bool { return false },
-			BeforeData: newLootTablesUndoData(l),
-		}
-	}
-	l.loot.SyncWithLibrarySources()
-	l.Equipment.Table.SyncToModel()
-	l.Notes.Table.SyncToModel()
-	if mgr != nil && undo != nil {
-		undo.AfterData = newLootTablesUndoData(l)
-		mgr.Add(undo)
-	}
-	rebuildAsModified(l, true)
+	syncWithAllSources(l, l.loot, l.Equipment, l.Notes)
 }
 
 // Rebuild implements widget.Rebuildable.
