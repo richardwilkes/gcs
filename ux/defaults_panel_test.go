@@ -24,14 +24,7 @@ import (
 // default carries exactly one, so collecting them all lets a test count the rows without depending on where within the
 // row's nested panels each one happens to sit.
 func stringPopupsIn(p *unison.Panel) []*unison.PopupMenu[string] {
-	if popup, ok := p.Self.(*unison.PopupMenu[string]); ok {
-		return []*unison.PopupMenu[string]{popup}
-	}
-	var popups []*unison.PopupMenu[string]
-	for _, child := range p.Children() {
-		popups = append(popups, stringPopupsIn(child)...)
-	}
-	return popups
+	return panelsOfType[*unison.PopupMenu[string]](p)
 }
 
 // popupItems returns the text of every entry a string popup offers, which is what distinguishes one criteria row's
@@ -67,15 +60,8 @@ func findTagCriteriaPopup(c check.Checker, p *unison.Panel) *unison.PopupMenu[st
 // findAttributeChoicePopup returns the first default-type switcher popup found anywhere beneath the given panel, or nil
 // if there is none. It is used by the tests to change a default's type the same way a user's popup selection would.
 func findAttributeChoicePopup(p *unison.Panel) *unison.PopupMenu[*gurps.AttributeChoice] {
-	if popup, ok := p.Self.(*unison.PopupMenu[*gurps.AttributeChoice]); ok {
-		return popup
-	}
-	for _, child := range p.Children() {
-		if popup := findAttributeChoicePopup(child); popup != nil {
-			return popup
-		}
-	}
-	return nil
+	popup, _ := firstPanelOfType[*unison.PopupMenu[*gurps.AttributeChoice]](p)
+	return popup
 }
 
 // selectPopupIndex selects the given index and then runs the popup's selection callback once, mirroring what happens

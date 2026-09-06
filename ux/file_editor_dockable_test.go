@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,8 +20,142 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// The file editor base is exercised through the ancestry editor, since it needs a real model and content to work on;
-// nothing here depends on what the content is.
+// The file editor base needs a real model and content to work on. What every kind of editor must do is checked by
+// checkFileEditorContract, which each kind's tests call with a description of it; the tests here that use the ancestry
+// editor depend on nothing about its content.
+
+// fileEditorContract describes one kind of file editor to checkFileEditorContract: how to make one, and what
+// distinguishes it from the other kinds.
+type fileEditorContract[T fileEditorModel[T]] struct {
+	// newEditor makes an editor as its constructor does: holding a blank model, with no content built yet. The checks
+	// finish it with wireTestFileEditor or loadTestFileEditor.
+	newEditor func() *fileEditorDockable[T]
+	// titlePrefix is what the title starts with, such as "Ancestry".
+	titlePrefix string
+	// ext is the extension of the files the editor edits.
+	ext string
+	// fileName is the name, without extension, that the checks give the files they write and load.
+	fileName string
+	// validJSON is the content of a file that loads into something other than a blank model.
+	validJSON string
+	// newModel returns a blank model, as the editor's constructor gives it.
+	newModel func() T
+	// read reads a file of the editor's kind, as opening one does.
+	read func(fileSystem fs.FS, filePath string) (T, error)
+	// edit makes one change to the model through the editor's widgets, as a user would, failing the test if they are
+	// not there. What the change is does not matter, but it must survive being saved and loaded.
+	edit func(t *testing.T, d *fileEditorDockable[T])
+}
+
+// checkFileEditorContract runs, as subtests, the checks every kind of file editor must pass: those of the behavior the
+// base provides, which the ancestry and name generator editors share.
+func checkFileEditorContract[T fileEditorModel[T]](t *testing.T, contract fileEditorContract[T]) {
+	t.Helper()
+	untitled := contract.titlePrefix + ": Untitled"
+	fileName := contract.fileName + contract.ext
+	newEditor := func() *fileEditorDockable[T] {
+		d := contract.newEditor()
+		wireTestFileEditor(d, contract.newModel())
+		return d
+	}
+
+	// A freshly created editor shows as untitled, is unmodified, has no file, and has nothing to undo.
+	t.Run("StartsUntitled", func(t *testing.T) {
+		c := check.New(t)
+		d := newEditor()
+		c.Equal(untitled, d.Title())
+		c.False(d.Modified(), "a new model is unmodified")
+		c.Equal("Untitled"+contract.ext, d.BackingFilePath())
+		c.Equal("", d.Tooltip(), "with no file there is no path to show")
+		c.False(d.undoMgr.CanUndo(), "nothing to undo")
+	})
+
+	// The toolbar's Save button is enabled exactly while there are unsaved changes.
+	t.Run("SaveButtonTracksModified", func(t *testing.T) {
+		c := check.New(t)
+		d := newEditor()
+		d.addToStartToolbar(unison.NewPanel())
+		c.False(d.saveButton.Enabled(), "nothing to save yet")
+		contract.edit(t, d)
+		c.True(d.Modified(), "the edit is a modification")
+		c.True(d.saveButton.Enabled(), "a change enables Save")
+		d.markSaved()
+		c.False(d.saveButton.Enabled(), "saving disables it again")
+	})
+
+	// A file that fails to load leaves the editor exactly as it was made: holding a new, untitled model with no file.
+	t.Run("LoadInvalidFileChangesNothing", func(t *testing.T) {
+		c := check.New(t)
+		d := contract.newEditor()
+		before := gurps.Hash64(d.model)
+		c.HasError(d.load(testFileRef(t, c, "Broken", contract.ext, "this is not a file the editor can load")))
+		c.Equal(before, gurps.Hash64(d.model), "the model is untouched")
+		c.Equal("", d.path, "no path is recorded")
+		c.Equal(untitled, d.Title())
+		c.False(d.Modified())
+	})
+
+	// Reset replaces the model with a new one while the editor keeps its file, so that it shows as modified until saved,
+	// and rebuilds the content around the new model; undoing brings back the previous model.
+	t.Run("Reset", func(t *testing.T) {
+		c := check.New(t)
+		ref := testFileRef(t, c, contract.fileName, contract.ext, contract.validJSON)
+		d := contract.newEditor()
+		loadTestFileEditor(t, c, d, ref)
+		loadedHash := gurps.Hash64(d.model)
+		blankHash := gurps.Hash64(contract.newModel())
+		c.NotEqual(blankHash, loadedHash, "precondition: the file holds something other than a new model")
+
+		d.reset()
+		c.Equal(ref.DiskPath, d.path, "reset keeps the file")
+		c.Equal(contract.titlePrefix+": "+contract.fileName, d.Title(), "so the editor is still known by it")
+		c.Equal(blankHash, gurps.Hash64(d.model), "reset returns to a new model")
+		c.True(d.Modified(), "which is not what the file holds")
+		c.True(d.undoMgr.CanUndo(), "the reset is undoable")
+		contract.edit(t, d)
+		c.NotEqual(blankHash, gurps.Hash64(d.model), "the content is rebuilt around the new model, so an edit reaches it")
+
+		for d.undoMgr.CanUndo() {
+			d.undoMgr.Undo()
+		}
+		c.Equal(loadedHash, gurps.Hash64(d.model), "undoing everything restores the loaded model")
+		c.Equal(ref.DiskPath, d.path)
+		c.False(d.Modified(), "and the editor is back in step with its file")
+	})
+
+	// Save on a model that has a file writes the model to it and leaves the editor unmodified.
+	t.Run("SaveWritesFile", func(t *testing.T) {
+		c := check.New(t)
+		failOnWorkspaceError(t)
+		d := newEditor()
+		dir := t.TempDir()
+		d.path = filepath.Join(dir, fileName)
+		contract.edit(t, d)
+		c.True(d.Modified(), "precondition: there is something to save")
+
+		c.True(d.save(false), "save must succeed")
+		c.False(d.Modified(), "the saved model is unmodified")
+		loaded, err := contract.read(os.DirFS(dir), fileName)
+		c.NoError(err, "the written file must load")
+		c.Equal(gurps.Hash64(d.model), gurps.Hash64(loaded), "the file holds exactly what the editor holds")
+	})
+}
+
+// TestFileEditorRecognizersTellTheEditorsApart verifies that each kind of editor is recognized as itself and as nothing
+// else, and that an unrelated dockable is recognized as neither.
+func TestFileEditorRecognizersTellTheEditorsApart(t *testing.T) {
+	c := check.New(t)
+	ancestry := newTestAncestryEditorDockable(gurps.NewAncestry())
+	names := newTestNameGeneratorEditorDockable(gurps.NewNameGenerator())
+	recorder := &sheetSettingsRecorder{}
+	recorder.Self = recorder
+	c.True(isAncestryEditor(ancestry))
+	c.False(isAncestryEditor(names))
+	c.False(isAncestryEditor(recorder))
+	c.True(isNameGeneratorEditor(names))
+	c.False(isNameGeneratorEditor(ancestry))
+	c.False(isNameGeneratorEditor(recorder))
+}
 
 // failOnWorkspaceError makes any error the workspace would show in a dialog fail the test instead, for the duration of
 // the test.

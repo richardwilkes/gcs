@@ -39,7 +39,7 @@ func newTraitEditorWithModifiers(t *testing.T) (*editor[*gurps.Trait, *gurps.Tra
 	container.Name = "Variations"
 	trait.Modifiers = []*gurps.TraitModifier{modifier, container}
 	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := findPanel[*traitModifiersPanel](content)
+	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
 	c.True(ok, "expected a trait modifiers panel in the trait editor")
 	return e, panel.table, modifier
 }
@@ -60,7 +60,7 @@ func newEquipmentEditorWithModifiers(t *testing.T) (*editor[*gurps.Equipment, *g
 	container.Name = "Variations"
 	equipment.Modifiers = []*gurps.EquipmentModifier{modifier, container}
 	e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
-	panel, ok := findPanel[*equipmentModifiersPanel](content)
+	panel, ok := firstPanelOfType[*equipmentModifiersPanel](content)
 	c.True(ok, "expected an equipment modifiers panel in the equipment editor")
 	return e, panel.table, modifier
 }

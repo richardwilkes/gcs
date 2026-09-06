@@ -29,15 +29,8 @@ import (
 // findFeatureTypePopup returns the first feature-type switcher popup found anywhere beneath the given panel, or nil if
 // there is none. It is used by the tests to drive a type change the same way a user's popup selection would.
 func findFeatureTypePopup(p *unison.Panel) *unison.PopupMenu[feature.Type] {
-	if popup, ok := p.Self.(*unison.PopupMenu[feature.Type]); ok {
-		return popup
-	}
-	for _, child := range p.Children() {
-		if popup := findFeatureTypePopup(child); popup != nil {
-			return popup
-		}
-	}
-	return nil
+	popup, _ := firstPanelOfType[*unison.PopupMenu[feature.Type]](p)
+	return popup
 }
 
 // switchFeatureType finds the type switcher inside the given feature row and invokes its callback to switch to newType,
@@ -146,14 +139,7 @@ func TestFeaturesPanelSwitchMiddleFeature(t *testing.T) {
 // findFeatureTypePopup, it lets the tests reach a widget whose position within the row varies from one feature type to
 // the next, and returning all of them rather than just the first lets a test insist that a row has exactly one.
 func switchableCheckBoxes(p *unison.Panel) []*CheckBox {
-	if box, ok := p.Self.(*CheckBox); ok && box.Text.String() == i18n.Text("switchable") {
-		return []*CheckBox{box}
-	}
-	var boxes []*CheckBox
-	for _, child := range p.Children() {
-		boxes = append(boxes, switchableCheckBoxes(child)...)
-	}
-	return boxes
+	return checkBoxesTitled(p, i18n.Text("switchable"))
 }
 
 // findSwitchableCheckBox returns the sole "switchable" checkbox beneath the given panel, or nil if there is none. A row

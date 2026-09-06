@@ -87,39 +87,29 @@ func buildEditorContent[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildabl
 	return e, content
 }
 
+// checkBoxesTitled returns every checkbox bearing the given title found anywhere beneath the given panel.
+func checkBoxesTitled(p *unison.Panel, title string) []*CheckBox {
+	var boxes []*CheckBox
+	for _, box := range panelsOfType[*CheckBox](p) {
+		if box.Text.String() == title {
+			boxes = append(boxes, box)
+		}
+	}
+	return boxes
+}
+
 // findCheckBoxTitled returns the first checkbox bearing the given title found anywhere beneath the given panel, or nil
 // if there is none.
 func findCheckBoxTitled(p *unison.Panel, title string) *CheckBox {
-	if box, ok := p.Self.(*CheckBox); ok && box.Text.String() == title {
-		return box
-	}
-	for _, child := range p.Children() {
-		if box := findCheckBoxTitled(child, title); box != nil {
-			return box
-		}
+	if boxes := checkBoxesTitled(p, title); len(boxes) != 0 {
+		return boxes[0]
 	}
 	return nil
 }
 
-// findPanel returns the first panel of the requested type found in the given panel or anywhere beneath it. Editors
-// build their sub-panels several levels down and hand back no references to most of them, so a test that wants to
-// drive one has to go looking for it.
-func findPanel[T any](p *unison.Panel) (T, bool) {
-	if panel, ok := p.Self.(T); ok {
-		return panel, true
-	}
-	for _, child := range p.Children() {
-		if panel, ok := findPanel[T](child); ok {
-			return panel, true
-		}
-	}
-	var zero T
-	return zero, false
-}
-
 // findFeaturesPanel returns the first features panel found anywhere beneath the given panel, or nil if there is none.
 func findFeaturesPanel(p *unison.Panel) *featuresPanel {
-	panel, _ := findPanel[*featuresPanel](p)
+	panel, _ := firstPanelOfType[*featuresPanel](p)
 	return panel
 }
 

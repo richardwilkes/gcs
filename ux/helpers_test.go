@@ -17,6 +17,45 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
+// panelsOfType returns every panel of the given type within the subtree rooted at root, in pre-order.
+func panelsOfType[T any](root *unison.Panel) []T {
+	var found []T
+	root.HasInSelfOrDescendants(func(p *unison.Panel) bool {
+		if match, ok := p.Self.(T); ok {
+			found = append(found, match)
+		}
+		return false
+	})
+	return found
+}
+
+// firstPanelOfType returns the first panel of the given type within the subtree rooted at root, in pre-order. Editors
+// build their sub-panels several levels down and hand back no references to most of them, so a test that wants to
+// drive one has to go looking for it.
+func firstPanelOfType[T any](root *unison.Panel) (T, bool) {
+	var found T
+	ok := root.HasInSelfOrDescendants(func(p *unison.Panel) bool {
+		match, matched := p.Self.(T)
+		if matched {
+			found = match
+		}
+		return matched
+	})
+	return found, ok
+}
+
+// panelsMatching returns every panel within the subtree rooted at root that keep accepts, in pre-order.
+func panelsMatching(root *unison.Panel, keep func(*unison.Panel) bool) []*unison.Panel {
+	var found []*unison.Panel
+	root.HasInSelfOrDescendants(func(p *unison.Panel) bool {
+		if keep(p) {
+			found = append(found, p)
+		}
+		return false
+	})
+	return found
+}
+
 func TestNoModifiersDown(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {

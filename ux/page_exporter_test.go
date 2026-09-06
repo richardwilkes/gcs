@@ -580,14 +580,7 @@ func countBlockPanels(p *pageExporter, key string) int {
 
 // blockPanels returns the panels showing the block with the given key within the given panel.
 func blockPanels(panel *unison.Panel, key string) []*unison.Panel {
-	var found []*unison.Panel
-	if pageKeyOf(panel) == key {
-		found = append(found, panel)
-	}
-	for _, child := range panel.Children() {
-		found = append(found, blockPanels(child, key)...)
-	}
-	return found
+	return panelsMatching(panel, func(p *unison.Panel) bool { return pageKeyOf(p) == key })
 }
 
 // TestPageExporterSplitsBothListsOfARow verifies that the two lists standing side by side in a band are each split at

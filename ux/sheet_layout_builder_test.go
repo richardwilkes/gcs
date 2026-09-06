@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -400,25 +401,10 @@ func TestTemplateBuildsFromTheDefaultLayout(t *testing.T) {
 	for i, list := range lists {
 		c.NotNil(list.AsPanel().Parent(), "list %d must be placed", i)
 	}
-	found := 0
-	for _, child := range template.content.Children() {
-		found += countPlacedLists(child, lists)
-	}
-	c.Equal(len(lists), found, "the template shows exactly its five lists")
-}
-
-// countPlacedLists returns the number of the given lists that are the panel or one of its descendants.
-func countPlacedLists(panel *unison.Panel, lists []unison.Paneler) int {
-	count := 0
-	for _, list := range lists {
-		if list.AsPanel() == panel {
-			count++
-		}
-	}
-	for _, child := range panel.Children() {
-		count += countPlacedLists(child, lists)
-	}
-	return count
+	placed := panelsMatching(template.content.AsPanel(), func(p *unison.Panel) bool {
+		return slices.ContainsFunc(lists, func(list unison.Paneler) bool { return list.AsPanel() == p })
+	})
+	c.Equal(len(lists), len(placed), "the template shows exactly its five lists")
 }
 
 // TestBuildLayoutNodeRecordsTheContainerItWasBuiltFrom verifies that a container panel records the Row or Column node

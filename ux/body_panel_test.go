@@ -40,8 +40,12 @@ func TestBodyPanelNotesRefKeysAreUnique(t *testing.T) {
 	entity.SheetSettings.BodyType = body
 	panel := NewBodyPanel(entity, NewTargetMgr(unison.NewPanel()))
 
-	var keys []string
-	collectRefKeys(panel.AsPanel(), "body:", &keys)
+	isNotesField := func(p *unison.Panel) bool { return strings.HasPrefix(p.RefKey, "body:") }
+	fields := panelsMatching(panel.AsPanel(), isNotesField)
+	keys := make([]string, 0, len(fields))
+	for _, field := range fields {
+		keys = append(keys, field.RefKey)
+	}
 	c.Equal(countLocations(body), len(keys), "every hit location must contribute a notes field")
 	seen := make(map[string]bool, len(keys))
 	for _, key := range keys {
@@ -78,13 +82,4 @@ func countLocations(body *gurps.Body) int {
 		}
 	}
 	return count
-}
-
-func collectRefKeys(panel *unison.Panel, prefix string, keys *[]string) {
-	if strings.HasPrefix(panel.RefKey, prefix) {
-		*keys = append(*keys, panel.RefKey)
-	}
-	for _, child := range panel.Children() {
-		collectRefKeys(child, prefix, keys)
-	}
 }
