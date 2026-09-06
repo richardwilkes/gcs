@@ -35,28 +35,15 @@ func TestAncestryEditorHeadless(t *testing.T) {
 
 	// Open the editor from the File menu.
 	chooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
-	var d *ancestryEditorDockable
-	var editors int
+	d := soleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
 	var title string
 	var modified, saveEnabled, inWorkspace bool
 	screen.Do(func() {
-		matches := AllMatchingDockables(isAncestryEditor)
-		editors = len(matches)
-		if editors != 1 {
-			return
-		}
-		var ok bool
-		if d, ok = matches[0].AsPanel().Self.(*ancestryEditorDockable); !ok {
-			return
-		}
 		title = d.Title()
 		modified = d.Modified()
 		saveEnabled = d.saveButton.Enabled()
 		inWorkspace = d.Window() == wnd
 	})
-	if editors != 1 || d == nil {
-		t.Fatalf("expected exactly one ancestry editor after choosing New Ancestry, found %d", editors)
-	}
 	c.Equal("Ancestry: Untitled", title, "a new ancestry is untitled")
 	c.False(modified, "a new ancestry is unmodified")
 	c.False(saveEnabled, "there is nothing to save yet")
@@ -65,7 +52,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	// Choosing the item again opens a second editor, which stands on its own: the first is left as it was, and closing
 	// the second, which is untouched, prompts for nothing and leaves the first in place.
 	chooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
-	second := otherAncestryEditor(t, screen, d)
+	second := otherEditor(t, screen, d, isAncestryEditor)
 	var secondTitle string
 	screen.Do(func() { secondTitle = second.Title() })
 	c.Equal("Ancestry: Untitled", secondTitle, "the second editor holds a new ancestry of its own")
@@ -218,26 +205,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	c.True(saveEnabled, "the edited ancestry can be saved")
 	screen.Click(screen.PanelCenter(saveButton))
 	dialogWnd, _ := modalDialog(t, screen, wnd)
-	var fileNameField *unison.Field
-	var fileName, dirName, dialogTitle string
-	screen.Do(func() {
-		dialogTitle = dialogWnd.Title()
-		if fields := panelsOfType[*unison.Field](dialogWnd.Content()); len(fields) == 1 {
-			fileNameField = fields[0]
-			fileName = fileNameField.Text()
-		}
-		// The directory popup is a PopupMenu of an unexported item type, so it is found by the methods it has.
-		if popups := panelsOfType[interface {
-			Text() string
-			ItemCount() int
-		}](dialogWnd.Content()); len(popups) != 0 {
-			dirName = popups[0].Text()
-		}
-	})
-	c.Equal("Save…", dialogTitle)
-	if fileNameField == nil {
-		t.Fatal("the save dialog has no file name field")
-	}
+	fileNameField, fileName, dirName := saveDialogFields(t, screen, dialogWnd)
 	c.Equal("Elf", fileName, "the ancestry's name is offered as the file name")
 	c.Equal(gurps.AncestriesDirName, dirName, "the dialog opens in the user library's ancestries folder")
 	screen.Click(screen.PanelCenter(fileNameField))
@@ -261,7 +229,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	c.False(saveEnabled, "saving disables Save")
 	c.Equal("Ancestry: Elf", title)
 	c.Equal(savedPath, tooltip, "the tooltip shows the path")
-	loaded := loadSavedAncestry(t, c, savedPath)
+	loaded := loadSavedFile(t, c, savedPath, gurps.NewAncestryFromFile)
 	c.Equal("Elf", loaded.Name)
 
 	// Save As is always available and always prompts, opening in the directory of the current file with its name
@@ -276,14 +244,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	c.True(saveAsEnabled, "Save As is available even when the ancestry is unmodified")
 	screen.Click(screen.PanelCenter(saveAsButton))
 	dialogWnd, _ = modalDialog(t, screen, wnd)
-	screen.Do(func() {
-		dialogTitle = dialogWnd.Title()
-		fileName = ""
-		if fields := panelsOfType[*unison.Field](dialogWnd.Content()); len(fields) == 1 {
-			fileName = fields[0].Text()
-		}
-	})
-	c.Equal("Save…", dialogTitle)
+	_, fileName, _ = saveDialogFields(t, screen, dialogWnd)
 	c.Equal("Elf", fileName, "Save As offers the current file name")
 	screen.KeyPress(unison.KeyEscape, mod.None)
 	screen.Do(func() {
@@ -341,6 +302,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 			len(items))
 	}
 	screen.Click(screen.PanelCenter(items[4]))
+	var editors int
 	screen.Do(func() {
 		editors = len(AllMatchingDockables(isAncestryEditor))
 		name = d.model.Name
@@ -359,7 +321,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 		t.Fatalf("expected the toolbar menu to hold 5 items again, found %d", len(items))
 	}
 	screen.Click(screen.PanelCenter(items[3]))
-	dwarf := otherAncestryEditor(t, screen, d)
+	dwarf := otherEditor(t, screen, d, isAncestryEditor)
 	var dwarfName, dwarfPathShown, dwarfTitle string
 	var dwarfModified, dwarfCanUndo, dwarfCurrent bool
 	screen.Do(func() {
@@ -403,24 +365,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	})
 	c.Equal(0, editors, "discarding closes the editor")
 	c.Equal(1, windows, "the prompt has been dismissed")
-	c.Equal("Elf", loadSavedAncestry(t, c, savedPath).Name, "discarding leaves the file as it was saved")
-}
-
-// otherAncestryEditor returns the one ancestry editor open besides d, failing the test if there is not exactly one.
-func otherAncestryEditor(t *testing.T, screen *unison.HeadlessScreen, d *ancestryEditorDockable) *ancestryEditorDockable {
-	t.Helper()
-	var others []*ancestryEditorDockable
-	screen.Do(func() {
-		for _, match := range AllMatchingDockables(isAncestryEditor) {
-			if other, ok := match.AsPanel().Self.(*ancestryEditorDockable); ok && other != d {
-				others = append(others, other)
-			}
-		}
-	})
-	if len(others) != 1 {
-		t.Fatalf("expected exactly one other ancestry editor, found %d", len(others))
-	}
-	return others[0]
+	c.Equal("Elf", loadSavedFile(t, c, savedPath, gurps.NewAncestryFromFile).Name, "discarding leaves the file as it was saved")
 }
 
 // closeEditorWithoutPrompt closes a dockable that is expected to close without a prompt, and fails the test if it is
@@ -463,16 +408,4 @@ func dockTabTitle(d unison.Dockable) string {
 		}
 	}
 	return ""
-}
-
-// loadSavedAncestry reads the ancestry file at path, failing the test if it does not exist or does not parse.
-func loadSavedAncestry(t *testing.T, c check.Checker, path string) *gurps.Ancestry {
-	t.Helper()
-	_, err := os.Stat(path)
-	c.NoError(err, "the ancestry file must exist at %s", path)
-	loaded, err := gurps.NewAncestryFromFile(os.DirFS(filepath.Dir(path)), filepath.Base(path))
-	if err != nil {
-		t.Fatalf("the ancestry file at %s must parse: %v", path, err)
-	}
-	return loaded
 }

@@ -46,20 +46,10 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 
 	// Open the editor from the File menu. With no training data, the samples can only say why there are none.
 	chooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
-	var d *nameGeneratorEditorDockable
-	var editors int
+	d := soleEditor[*nameGeneratorEditorDockable](t, screen, isNameGeneratorEditor)
 	var title, samplesText, expectedMessage string
 	var modified, saveEnabled, inWorkspace, samplesInWarning bool
 	screen.Do(func() {
-		matches := AllMatchingDockables(isNameGeneratorEditor)
-		editors = len(matches)
-		if editors != 1 {
-			return
-		}
-		var ok bool
-		if d, ok = matches[0].AsPanel().Self.(*nameGeneratorEditorDockable); !ok {
-			return
-		}
 		title = d.Title()
 		modified = d.Modified()
 		saveEnabled = d.saveButton.Enabled()
@@ -70,9 +60,6 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 			expectedMessage = errorMessage(err)
 		}
 	})
-	if editors != 1 || d == nil {
-		t.Fatalf("expected exactly one name generator editor after choosing New Name Generator, found %d", editors)
-	}
 	c.Equal("Name Generator: Untitled", title, "a new generator is untitled")
 	c.False(modified, "a new generator is unmodified")
 	c.False(saveEnabled, "there is nothing to save yet")
@@ -84,7 +71,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	// Choosing the item again opens a second editor, which stands on its own: the first is left as it was, and closing
 	// the second, which is untouched, prompts for nothing and leaves the first in place.
 	chooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
-	second := otherNameGeneratorEditor(t, screen, d)
+	second := otherEditor(t, screen, d, isNameGeneratorEditor)
 	var secondTitle string
 	screen.Do(func() { secondTitle = second.Title() })
 	c.Equal("Name Generator: Untitled", secondTitle, "the second editor holds a new generator of its own")
@@ -442,26 +429,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c.True(saveEnabled, "the edited generator can be saved")
 	screen.Click(screen.PanelCenter(saveButton))
 	dialogWnd, _ = modalDialog(t, screen, wnd)
-	var fileNameField *unison.Field
-	var fileName, dirName string
-	screen.Do(func() {
-		dialogTitle = dialogWnd.Title()
-		if fields := panelsOfType[*unison.Field](dialogWnd.Content()); len(fields) == 1 {
-			fileNameField = fields[0]
-			fileName = fileNameField.Text()
-		}
-		// The directory popup is a PopupMenu of an unexported item type, so it is found by the methods it has.
-		if popups := panelsOfType[interface {
-			Text() string
-			ItemCount() int
-		}](dialogWnd.Content()); len(popups) != 0 {
-			dirName = popups[0].Text()
-		}
-	})
-	c.Equal("Save…", dialogTitle)
-	if fileNameField == nil {
-		t.Fatal("the save dialog has no file name field")
-	}
+	fileNameField, fileName, dirName := saveDialogFields(t, screen, dialogWnd)
 	c.Equal("Untitled", fileName, "a generator with no file is offered the placeholder name")
 	c.Equal(gurps.AncestriesDirName, dirName, "the dialog opens in the user library's ancestries folder")
 	screen.Click(screen.PanelCenter(fileNameField))
@@ -484,7 +452,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c.False(modified, "the saved generator is unmodified")
 	c.False(saveEnabled, "saving disables Save")
 	c.Equal("Name Generator: Test Names", title, "the title follows the file's base name")
-	loaded := loadSavedNameGenerator(t, c, savedPath)
+	loaded := loadSavedFile(t, c, savedPath, gurps.ReadNameGeneratorFromFS)
 	c.Equal(hash, gurps.Hash64(loaded), "the file holds exactly what the editor holds")
 	// The weighted form is a map, read back sorted by name, which for these names is also the order they were in.
 	c.Equal(imported, plainEntries(loaded.Entries), "the file holds the training names and their weights")
@@ -496,18 +464,10 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	// the ancestry editor's content is built, so it offers the generator just saved along with the built-in ones, and
 	// the row's edit button opens the chosen one in the name generator editor.
 	chooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
-	var anc *ancestryEditorDockable
+	anc := soleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
 	var choices []string
 	var addNameGenerator *unison.Button
 	screen.Do(func() {
-		matches := AllMatchingDockables(isAncestryEditor)
-		if len(matches) != 1 {
-			return
-		}
-		var ok bool
-		if anc, ok = matches[0].AsPanel().Self.(*ancestryEditorDockable); !ok {
-			return
-		}
 		choices = slices.Clone(anc.nameGeneratorChoices)
 		for _, p := range panelsOfType[*nameGeneratorsPanel](anc.AsPanel()) {
 			if p.options == anc.model.CommonOptions {
@@ -518,9 +478,6 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 			}
 		}
 	})
-	if anc == nil {
-		t.Fatal("expected exactly one ancestry editor after choosing New Ancestry")
-	}
 	if addNameGenerator == nil {
 		t.Fatal("the common options have no Add name generator button")
 	}
@@ -561,6 +518,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c.Equal([]string{"Test Names"}, generators, "choosing a generator writes the model")
 	c.True(editEnabled, "the saved generator can be edited")
 	screen.Click(screen.PanelCenter(editButton))
+	var editors int
 	var current bool
 	screen.Do(func() {
 		editors = len(AllMatchingDockables(isNameGeneratorEditor))
@@ -600,7 +558,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	})
 	c.True(editEnabled, "a built-in generator can be edited")
 	screen.Click(screen.PanelCenter(editButton))
-	builtInEditor := otherNameGeneratorEditor(t, screen, d)
+	builtInEditor := otherEditor(t, screen, d, isNameGeneratorEditor)
 	var builtInTitle, builtInPath, builtInName string
 	var builtInModified, builtInCanUndo, builtInCurrent bool
 	screen.Do(func() {
@@ -663,25 +621,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c.Equal(0, ancestryEditors, "discarding closes the ancestry editor")
 	c.Equal(0, editors, "an unmodified generator closes without a prompt")
 	c.Equal(1, windows, "no dialog is left open")
-	c.Equal(hash, gurps.Hash64(loadSavedNameGenerator(t, c, savedPath)), "closing leaves the file as it was saved")
-}
-
-// otherNameGeneratorEditor returns the one name generator editor open besides d, failing the test if there is not
-// exactly one.
-func otherNameGeneratorEditor(t *testing.T, screen *unison.HeadlessScreen, d *nameGeneratorEditorDockable) *nameGeneratorEditorDockable {
-	t.Helper()
-	var others []*nameGeneratorEditorDockable
-	screen.Do(func() {
-		for _, match := range AllMatchingDockables(isNameGeneratorEditor) {
-			if other, ok := match.AsPanel().Self.(*nameGeneratorEditorDockable); ok && other != d {
-				others = append(others, other)
-			}
-		}
-	})
-	if len(others) != 1 {
-		t.Fatalf("expected exactly one other name generator editor, found %d", len(others))
-	}
-	return others[0]
+	c.Equal(hash, gurps.Hash64(loadSavedFile(t, c, savedPath, gurps.ReadNameGeneratorFromFS)), "closing leaves the file as it was saved")
 }
 
 // buttonInView returns the button within root whose tooltip reads exactly text, scrolled into view so that it can be
@@ -728,17 +668,4 @@ func plainEntries(list []*gurps.WeightedStringOption) []*gurps.WeightedStringOpt
 		result = append(result, &gurps.WeightedStringOption{Weight: one.Weight, Value: one.Value})
 	}
 	return result
-}
-
-// loadSavedNameGenerator reads the name generator file at path, failing the test if it does not exist or does not
-// parse.
-func loadSavedNameGenerator(t *testing.T, c check.Checker, path string) *gurps.NameGenerator {
-	t.Helper()
-	_, err := os.Stat(path)
-	c.NoError(err, "the name generator file must exist at %s", path)
-	loaded, err := gurps.ReadNameGeneratorFromFS(os.DirFS(filepath.Dir(path)), filepath.Base(path))
-	if err != nil {
-		t.Fatalf("the name generator file at %s must parse: %v", path, err)
-	}
-	return loaded
 }

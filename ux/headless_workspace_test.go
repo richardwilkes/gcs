@@ -11,6 +11,7 @@ package ux
 
 import (
 	"image/png"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -334,6 +335,85 @@ func modalDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window
 		t.Fatal("no dialog is open")
 	}
 	return dialogWnd, dialog
+}
+
+// saveDialogFields returns the file name field of the pure-Go save dialog in dialogWnd, the name it offers and the
+// name of the directory its popup shows, failing the test if the window is not the save dialog or has no file name
+// field.
+func saveDialogFields(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *unison.Window) (field *unison.Field, fileName, dirName string) {
+	t.Helper()
+	var title string
+	screen.Do(func() {
+		title = dialogWnd.Title()
+		if fields := panelsOfType[*unison.Field](dialogWnd.Content()); len(fields) == 1 {
+			field = fields[0]
+			fileName = field.Text()
+		}
+		// The directory popup is a PopupMenu of an unexported item type, so it is found by the methods it has.
+		if popups := panelsOfType[interface {
+			Text() string
+			ItemCount() int
+		}](dialogWnd.Content()); len(popups) != 0 {
+			dirName = popups[0].Text()
+		}
+	})
+	if title != "Save…" {
+		t.Fatalf("expected the save dialog, found one titled %q", title)
+	}
+	if field == nil {
+		t.Fatal("the save dialog has no file name field")
+	}
+	return field, fileName, dirName
+}
+
+// soleEditor returns the one open dockable that match accepts, as a T, failing the test if there is not exactly one
+// or it is not a T. Only the lookup runs on the UI thread, so a caller reading anything from the editor does so in a
+// screen.Do of its own afterwards.
+func soleEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool) T {
+	t.Helper()
+	return onlyEditor[T](t, screen, match, nil)
+}
+
+// otherEditor returns the one open dockable that match accepts besides d, as a T, failing the test if there is not
+// exactly one or it is not a T; see soleEditor.
+func otherEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, d T, match func(unison.Dockable) bool) T {
+	t.Helper()
+	return onlyEditor[T](t, screen, match, d)
+}
+
+// onlyEditor is what soleEditor and otherEditor share: it returns the one open dockable that match accepts, other
+// than except when that is not nil, failing the test if there is not exactly one or it is not a T.
+func onlyEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool, except unison.Dockable) T {
+	t.Helper()
+	var editors []T
+	screen.Do(func() {
+		for _, one := range AllMatchingDockables(match) {
+			if editor, ok := one.AsPanel().Self.(T); ok && (except == nil || editor.AsPanel() != except.AsPanel()) {
+				editors = append(editors, editor)
+			}
+		}
+	})
+	if len(editors) != 1 {
+		var zero T
+		if except == nil {
+			t.Fatalf("expected exactly one %T, found %d", zero, len(editors))
+		}
+		t.Fatalf("expected exactly one other %T, found %d", zero, len(editors))
+	}
+	return editors[0]
+}
+
+// loadSavedFile reads the file at path with read, which is handed the file's directory and base name the way the
+// model's readers expect, failing the test if the file does not exist or does not parse.
+func loadSavedFile[T any](t *testing.T, c check.Checker, path string, read func(fs.FS, string) (T, error)) T {
+	t.Helper()
+	_, err := os.Stat(path)
+	c.NoError(err, "the file must exist at %s", path)
+	loaded, err := read(os.DirFS(filepath.Dir(path)), filepath.Base(path))
+	if err != nil {
+		t.Fatalf("the file at %s must parse: %v", path, err)
+	}
+	return loaded
 }
 
 // visibleRect returns the part of p's content area that is within view, in the root coordinate space of its window:
