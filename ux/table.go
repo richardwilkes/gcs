@@ -173,10 +173,12 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 		return stop
 	}
 
-	table.InstallCmdHandlers(CopyToSheetItemID, func(_ any) bool { return canCopySelectionToSheet(table) },
-		func(_ any) { copySelectionToSheet(table) })
-	table.InstallCmdHandlers(CopyToTemplateItemID, func(_ any) bool { return canCopySelectionToTemplate(table) },
-		func(_ any) { copySelectionToTemplate(table) })
+	table.InstallCmdHandlers(CopyToSheetItemID,
+		func(_ any) bool { return canCopySelectionTo(table, OpenSheets(table.Ancestor[*Sheet]())) },
+		func(_ any) { copySelectionTo(table, OpenSheets(table.Ancestor[*Sheet]())) })
+	table.InstallCmdHandlers(CopyToTemplateItemID,
+		func(_ any) bool { return canCopySelectionTo(table, OpenTemplates(table.Ancestor[*Template]())) },
+		func(_ any) { copySelectionTo(table, OpenTemplates(table.Ancestor[*Template]())) })
 	if t, ok := any(table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		t.InstallCmdHandlers(IncrementItemID,
 			func(_ any) bool { return canAdjustQuantity(t, true) },
@@ -274,23 +276,39 @@ func expandPageRefColumns[T gurps.Node[T]](table *unison.Table[*Node[T]], excess
 	return changed
 }
 
-func isAcceptableTypeForSheetOrTemplate(data any) bool {
+// copyDestination is what copySelectionTo asks of a sheet or template it copies rows onto: the page list for a block
+// key, so that the type of the rows being copied can pick the list they land in without the destination's fields being
+// named. Both *Sheet and *Template satisfy it.
+type copyDestination interface {
+	FileBackedDockable
+	list(key string) sheetList
+}
+
+// blockKeyForRow returns the key of the block that holds rows of the given type on a sheet or template, or "" when rows
+// of that type can't be copied onto one. Equipment goes to the carried list; a sheet's other-equipment list only takes
+// rows by drag and drop or by the move commands.
+func blockKeyForRow(data any) string {
 	switch data.(type) {
-	case *gurps.Equipment, *gurps.Note, *gurps.Skill, *gurps.Spell, *gurps.Trait:
-		return true
+	case *gurps.Trait:
+		return gurps.BlockTraitsKey
+	case *gurps.Skill:
+		return gurps.BlockSkillsKey
+	case *gurps.Spell:
+		return gurps.BlockSpellsKey
+	case *gurps.Equipment:
+		return gurps.BlockEquipmentKey
+	case *gurps.Note:
+		return gurps.BlockNotesKey
 	default:
-		return false
+		return ""
 	}
 }
 
-func canCopySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
+// canCopySelectionTo returns true if the table has a selection whose rows can be copied onto a sheet or template and
+// there is at least one destination to copy them to.
+func canCopySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*Node[T]], destinations []D) bool {
 	var t T
-	return table.HasSelection() && len(OpenSheets(table.Ancestor[*Sheet]())) > 0 && isAcceptableTypeForSheetOrTemplate(t)
-}
-
-func canCopySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
-	var t T
-	return table.HasSelection() && len(OpenTemplates(table.Ancestor[*Template]())) > 0 && isAcceptableTypeForSheetOrTemplate(t)
+	return table.HasSelection() && len(destinations) > 0 && blockKeyForRow(t) != ""
 }
 
 func libraryFileFromTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) gurps.LibraryFile {
@@ -309,92 +327,41 @@ func libraryFileFromTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) gurps.
 	return gurps.LibraryFile{}
 }
 
-func copySelectionToSheet[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	if table.HasSelection() {
-		if sheets := PromptForDestination(OpenSheets(table.Ancestor[*Sheet]())); len(sheets) > 0 {
-			sel := table.SelectedRows(true)
-			for _, s := range sheets {
-				var targetTable *unison.Table[*Node[T]]
-				var processDropData func()
-				switch any(sel[0].Data()).(type) {
-				case *gurps.Trait:
-					targetTable = convertTable[T](s.Traits.Table)
-					processDropData = func() { s.Traits.provider.ProcessDropData(nil, s.Traits.Table) }
-				case *gurps.Skill:
-					targetTable = convertTable[T](s.Skills.Table)
-					processDropData = func() { s.Skills.provider.ProcessDropData(nil, s.Skills.Table) }
-				case *gurps.Spell:
-					targetTable = convertTable[T](s.Spells.Table)
-					processDropData = func() { s.Spells.provider.ProcessDropData(nil, s.Spells.Table) }
-				case *gurps.Equipment:
-					targetTable = convertTable[T](s.CarriedEquipment.Table)
-					processDropData = func() { s.CarriedEquipment.provider.ProcessDropData(nil, s.CarriedEquipment.Table) }
-				case *gurps.Note:
-					targetTable = convertTable[T](s.Notes.Table)
-					processDropData = func() { s.Notes.provider.ProcessDropData(nil, s.Notes.Table) }
-				default:
-					continue
-				}
-				if targetTable != nil {
-					// All processing must happen inside the postProcessor so it is captured by the undo edit's
-					// after-state (CopyRowsTo records that after the postProcessor runs); otherwise redo would not
-					// restore the resolved tech levels, nameables, or the merged points.
-					CopyRowsTo(targetTable, sel, func(rows []*Node[T]) {
-						processDropData()
-						processCopiedRows(table, targetTable)
-						clearPreconfiguredFlag(targetTable, rows)
-					}, true)
-				}
-			}
+// copySelectionTo copies the table's selected rows onto each of the destinations the user picks from those given (see
+// PromptForDestination), landing them in the destination's list for the rows' type and resolving them the way a drop
+// onto a sheet would (see processCopiedRows).
+func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*Node[T]], destinations []D) {
+	if !table.HasSelection() {
+		return
+	}
+	destinations = PromptForDestination(destinations)
+	if len(destinations) == 0 {
+		return
+	}
+	sel := table.SelectedRows(true)
+	key := blockKeyForRow(sel[0].Data())
+	for _, d := range destinations {
+		// The assertion fails for a key that isn't a block key of this destination, since its list then comes back as
+		// an untyped nil, and for a destination that hasn't built the list yet, whose list is a typed nil.
+		target, ok := d.list(key).(*PageList[T])
+		if !ok || target == nil {
+			continue
 		}
+		// All processing must happen inside the postProcessor so it is captured by the undo edit's after-state
+		// (CopyRowsTo records that after the postProcessor runs); otherwise redo would not restore the resolved tech
+		// levels, nameables, or the merged points.
+		CopyRowsTo(target.Table, sel, func(rows []*Node[T]) {
+			target.provider.ProcessDropData(nil, target.Table)
+			processCopiedRows(table, target.Table)
+			clearPreconfiguredFlag(target.Table, rows)
+		}, true)
 	}
 }
 
-func copySelectionToTemplate[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	if table.HasSelection() {
-		if templates := PromptForDestination(OpenTemplates(table.Ancestor[*Template]())); len(templates) > 0 {
-			sel := table.SelectedRows(true)
-			for _, t := range templates {
-				var targetTable *unison.Table[*Node[T]]
-				var processDropData func()
-				switch any(sel[0].Data()).(type) {
-				case *gurps.Trait:
-					targetTable = convertTable[T](t.Traits.Table)
-					processDropData = func() { t.Traits.provider.ProcessDropData(nil, t.Traits.Table) }
-				case *gurps.Skill:
-					targetTable = convertTable[T](t.Skills.Table)
-					processDropData = func() { t.Skills.provider.ProcessDropData(nil, t.Skills.Table) }
-				case *gurps.Spell:
-					targetTable = convertTable[T](t.Spells.Table)
-					processDropData = func() { t.Spells.provider.ProcessDropData(nil, t.Spells.Table) }
-				case *gurps.Equipment:
-					targetTable = convertTable[T](t.Equipment.Table)
-					processDropData = func() { t.Equipment.provider.ProcessDropData(nil, t.Equipment.Table) }
-				case *gurps.Note:
-					targetTable = convertTable[T](t.Notes.Table)
-					processDropData = func() { t.Notes.provider.ProcessDropData(nil, t.Notes.Table) }
-				default:
-					continue
-				}
-				if targetTable != nil {
-					// All processing must happen inside the postProcessor so it is captured by the undo edit's
-					// after-state (CopyRowsTo records that after the postProcessor runs); otherwise redo would not
-					// restore the resolved tech levels, nameables, or the merged points.
-					CopyRowsTo(targetTable, sel, func(rows []*Node[T]) {
-						processDropData()
-						processCopiedRows(table, targetTable)
-						clearPreconfiguredFlag(targetTable, rows)
-					}, true)
-				}
-			}
-		}
-	}
-}
-
-// processCopiedRows resolves the just-copied, currently-selected rows of a sheet's table the same way a drop
-// onto a sheet does: prompting for the modifiers and nameables of rows that arrived from somewhere other than a sheet,
+// processCopiedRows resolves the just-copied, currently-selected rows of a sheet's or template's table the same way a
+// drop onto one does: prompting for the modifiers and nameables of rows that arrived from somewhere other than a sheet,
 // then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
-// destination isn't a character or loot sheet.
+// destination isn't a character sheet, loot sheet or template (see shouldProcessModifiersAndNameablesTo).
 func processCopiedRows[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
 	if shouldProcessModifiersAndNameablesTo(target) {
 		if shouldProcessModifiersAndNameablesFrom(source) {
@@ -413,14 +380,6 @@ func processCopiedRows[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) 
 		// when copying from another sheet.
 		MergeAddedRows(target)
 	}
-}
-
-func convertTable[T gurps.Node[T]](table any) *unison.Table[*Node[T]] {
-	// This is here just to get around limitations in the way Go generics behave
-	if t, ok := table.(*unison.Table[*Node[T]]); ok {
-		return t
-	}
-	return nil
 }
 
 // InsertCmdContextMenuItem inserts a context menu item for the given command.
