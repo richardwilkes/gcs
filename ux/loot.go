@@ -41,13 +41,6 @@ var (
 	_ KeyedDockable                = &LootSheet{}
 )
 
-type disclosureTables interface {
-	FirstDisclosureState() (open, exists bool)
-	SetDisclosureState(open bool)
-	FirstNoteState() int
-	ApplyNoteState(closed bool)
-}
-
 // LootSheet holds the view for a loot sheet.
 type LootSheet struct {
 	unison.Panel
@@ -172,13 +165,7 @@ func (l *LootSheet) createToolbar() {
 	treasureButton.ClickCallback = func() { l.generateTreasure() }
 	l.toolbar.AddChild(treasureButton)
 
-	l.searchTracker = InstallSearchTracker(l.toolbar, func() {
-		l.Equipment.Table.ClearSelection()
-		l.Notes.Table.ClearSelection()
-	}, func(refList *[]*searchRef, text string, namesOnly bool) {
-		searchSheetTable(refList, text, namesOnly, l.Equipment)
-		searchSheetTable(refList, text, namesOnly, l.Notes)
-	})
+	l.searchTracker = installListSearchTracker(l.toolbar, l.lists)
 
 	finishToolbarLayout(l.toolbar)
 }
@@ -374,12 +361,7 @@ func (l *LootSheet) Rebuild(full bool) {
 	h, v := l.scroll.Position()
 	focusRefKey := l.targetMgr.CurrentFocusRef()
 	if full {
-		equipmentSelMap := l.Equipment.RecordSelection()
-		notesSelMap := l.Notes.RecordSelection()
-		defer func() {
-			l.Equipment.ApplySelection(equipmentSelMap)
-			l.Notes.ApplySelection(notesSelMap)
-		}()
+		defer preserveSelections(l.lists)()
 		l.createLists()
 	}
 	DeepSync(l)
@@ -404,27 +386,23 @@ func (l *LootSheet) createLists() {
 	for i := len(children) - 1; i > 0; i-- {
 		page.RemoveChildAtIndex(i)
 	}
-	if l.Equipment.needReconstruction() {
-		l.Equipment = NewOtherEquipmentPageList(l, l.loot)
-	} else {
-		l.Equipment.Sync()
+	syncOrRebuildList(&l.Equipment, func() *PageList[*gurps.Equipment] { return NewOtherEquipmentPageList(l, l.loot) })
+	syncOrRebuildList(&l.Notes, func() *PageList[*gurps.Note] { return NewNotesPageList(l, l.loot) })
+	for _, list := range l.lists() {
+		p := list.AsPanel()
+		p.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: align.Fill,
+			HGrab:  true,
+		})
+		page.AddChild(p)
 	}
-	l.Equipment.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	page.AddChild(l.Equipment)
-	if l.Notes.needReconstruction() {
-		l.Notes = NewNotesPageList(l, l.loot)
-	} else {
-		l.Notes.Sync()
-	}
-	l.Notes.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	page.AddChild(l.Notes)
 	page.ApplyPreferredSize()
+}
+
+// lists returns the loot sheet's two lists, in the order they appear on the page. While the sheet is first being put
+// together, the lists it hasn't built yet are present but nil.
+func (l *LootSheet) lists() []sheetList {
+	return []sheetList{l.Equipment, l.Notes}
 }
 
 // PageInfoProvider returns the page info provider for this sheet.
@@ -445,15 +423,8 @@ func (l *LootSheet) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool)
 	}
 }
 
-func (l *LootSheet) disclosureTables() []disclosureTables {
-	return []disclosureTables{
-		l.Equipment,
-		l.Notes,
-	}
-}
-
 func (l *LootSheet) toggleHierarchy() {
-	tables := l.disclosureTables()
+	tables := l.lists()
 	var open, exists bool
 	for _, table := range tables {
 		if open, exists = table.FirstDisclosureState(); exists {
@@ -468,7 +439,7 @@ func (l *LootSheet) toggleHierarchy() {
 }
 
 func (l *LootSheet) toggleNotes() {
-	tables := l.disclosureTables()
+	tables := l.lists()
 	state := 0
 	for _, table := range tables {
 		if state = table.FirstNoteState(); state != 0 {

@@ -25,7 +25,71 @@ import (
 var (
 	_ Syncer     = &PageList[*gurps.Trait]{}
 	_ pageHelper = &PageList[*gurps.Trait]{}
+	_ sheetList  = &PageList[*gurps.Trait]{}
 )
+
+// sheetList is what a dockable that shows page lists asks of each of them without regard to the type of row a list
+// holds, so that its lists can be worked on as a group -- cleared, searched, disclosed and their selections carried
+// across a rebuild -- by looping over the dockable's lists() rather than by naming each one. Every method but the
+// disclosure ones tolerates a nil *PageList, since a dockable's lists() includes lists it hasn't built yet while it is
+// first being put together.
+type sheetList interface {
+	unison.Paneler
+	clearSelection()
+	search(refList *[]*searchRef, text string, namesOnly bool)
+	RecordSelection() map[tid.TID]bool
+	ApplySelection(selection map[tid.TID]bool)
+	FirstDisclosureState() (open, exists bool)
+	SetDisclosureState(open bool)
+	FirstNoteState() int
+	ApplyNoteState(closed bool)
+}
+
+// listsForKeys returns the lists for the block keys the predicate accepts, in the canonical block order (see
+// gurps.AllBlockKeys), each fetched with the given function.
+func listsForKeys(list func(key string) sheetList, accept func(key string) bool) []sheetList {
+	lists := make([]sheetList, 0, len(gurps.AllBlockKeys))
+	for _, key := range gurps.AllBlockKeys {
+		if accept(key) {
+			lists = append(lists, list(key))
+		}
+	}
+	return lists
+}
+
+// syncOrRebuildList brings a page list up to date with its model, building it anew when the columns it has to show no
+// longer match the ones it has -- or when it doesn't exist yet -- since a table's columns are fixed at creation. The
+// result is stored back through the pointer given, so that the caller's field always names the list that is on
+// screen, and is returned as well. Anything that captured the old list has to allow for it having been replaced; see
+// Sheet.installNewItemCmdHandlers for what goes wrong when it doesn't.
+func syncOrRebuildList[T gurps.Node[T]](list **PageList[T], build func() *PageList[T]) *PageList[T] {
+	if (*list).needReconstruction() {
+		*list = build()
+	} else {
+		(*list).Sync()
+	}
+	return *list
+}
+
+// preserveSelections records the selection of each of the lists the function returns and returns a function that puts
+// the selections back. The lists are fetched again when the selections are put back rather than held from when they
+// were recorded, since a rebuild replaces any list whose columns changed (see syncOrRebuildList) and the selection
+// belongs in the list that is on screen, not in the orphan it replaced. Both calls therefore have to yield the lists in
+// the same order.
+func preserveSelections(lists func() []sheetList) (restore func()) {
+	current := lists()
+	selections := make([]map[tid.TID]bool, len(current))
+	for i, list := range current {
+		selections[i] = list.RecordSelection()
+	}
+	return func() {
+		for i, list := range lists() {
+			if i < len(selections) {
+				list.ApplySelection(selections[i])
+			}
+		}
+	}
+}
 
 // PageList holds a list for a sheet page.
 type PageList[T gurps.Node[T]] struct {
@@ -365,6 +429,13 @@ func (p *PageList[T]) SelectedNodes(minimal bool) []*Node[T] {
 		return nil
 	}
 	return p.Table.SelectedRows(minimal)
+}
+
+// clearSelection deselects every row in the list. A list that doesn't exist has nothing to deselect.
+func (p *PageList[T]) clearSelection() {
+	if p != nil {
+		p.Table.ClearSelection()
+	}
 }
 
 // RecordSelection collects the currently selected row IDs.

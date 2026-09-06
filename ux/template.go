@@ -61,8 +61,6 @@ type Template struct {
 	Spells            *PageList[*gurps.Spell]
 	Equipment         *PageList[*gurps.Equipment]
 	Notes             *PageList[*gurps.Note]
-	refocusOnKey      string
-	refocusOn         unison.Paneler
 	lastBody          *gurps.Body
 	searchTracker     *SearchTracker
 	scale             int
@@ -197,19 +195,7 @@ func (t *Template) createToolbar() {
 	syncSourceButton.ClickCallback = func() { t.syncWithAllSources() }
 	t.toolbar.AddChild(syncSourceButton)
 
-	t.searchTracker = InstallSearchTracker(t.toolbar, func() {
-		t.Traits.Table.ClearSelection()
-		t.Skills.Table.ClearSelection()
-		t.Spells.Table.ClearSelection()
-		t.Equipment.Table.ClearSelection()
-		t.Notes.Table.ClearSelection()
-	}, func(refList *[]*searchRef, text string, namesOnly bool) {
-		searchSheetTable(refList, text, namesOnly, t.Traits)
-		searchSheetTable(refList, text, namesOnly, t.Skills)
-		searchSheetTable(refList, text, namesOnly, t.Spells)
-		searchSheetTable(refList, text, namesOnly, t.Equipment)
-		searchSheetTable(refList, text, namesOnly, t.Notes)
-	})
+	t.searchTracker = installListSearchTracker(t.toolbar, t.lists)
 
 	finishToolbarLayout(t.toolbar)
 }
@@ -871,29 +857,17 @@ func (t *Template) save(forceSaveAs bool) bool {
 
 // createLists (re)creates the page's lists from the default block layout, which is the one templates follow. A list is
 // only built anew when the columns it has to show no longer match the ones it has, since a table's columns are fixed
-// at creation; otherwise the existing list is kept and synced. Anything that captured a list has to allow for it being
-// replaced -- see installNewItemCmdHandlers.
+// at creation; otherwise the existing list is kept and synced (see syncOrRebuildList). Anything that captured a list
+// has to allow for it being replaced -- see installNewItemCmdHandlers. Taking the page apart takes the focus away from
+// whichever table held it; Rebuild puts it back by the table's reference key, which a replacement table shares.
 func (t *Template) createLists() {
 	h, v := t.scroll.Position()
-	t.refocusOnKey = ""
-	t.refocusOn = nil
-	if wnd := t.Window(); wnd != nil {
-		if focus := wnd.Focus(); focus != nil {
-			// For page lists, the focus will be the table, so we need to look up a level
-			if focus = focus.Parent(); focus != nil {
-				switch focus.Self {
-				case t.Traits:
-					t.refocusOnKey = gurps.BlockTraitsKey
-				case t.Skills:
-					t.refocusOnKey = gurps.BlockSkillsKey
-				case t.Spells:
-					t.refocusOnKey = gurps.BlockSpellsKey
-				case t.Equipment:
-					t.refocusOnKey = gurps.BlockEquipmentKey
-				case t.Notes:
-					t.refocusOnKey = gurps.BlockNotesKey
-				}
-			}
+	// The lists are detached first, so that a list the layout doesn't place is left without a parent. Removing the
+	// content's children only detaches the bands, which would leave a list nested inside one still pointing at a band
+	// nobody can see, and a list's parent is how the search tells one that is on the page from one that isn't.
+	for _, list := range t.lists() {
+		if !xreflect.IsNil(list) {
+			list.AsPanel().RemoveFromParent()
 		}
 	}
 	t.content.RemoveAllChildren()
@@ -942,60 +916,53 @@ func (t *Template) createLists() {
 	t.content.AddChild(panel)
 
 	t.content.ApplyPreferredSize()
-	if t.refocusOn != nil {
-		t.refocusOn.AsPanel().RequestFocus()
-	}
 	t.scroll.SetPosition(h, v)
 }
 
-// layoutLeaf returns the panel to show for the block with the given key, or nil if a template has no such block. The
-// list the focus was in when the page was taken apart is noted as it goes by, so that the focus can be put back into
-// it once the page has been rebuilt.
+// layoutLeaf returns the panel to show for the block with the given key, or nil if a template has no such block.
 func (t *Template) layoutLeaf(key string) unison.Paneler {
-	var list, table unison.Paneler
 	switch key {
 	case gurps.BlockTraitsKey:
-		if t.Traits.needReconstruction() {
-			t.Traits = NewTraitsPageList(t, t.template)
-		} else {
-			t.Traits.Sync()
-		}
-		list, table = t.Traits, t.Traits.Table
+		return syncOrRebuildList(&t.Traits, func() *PageList[*gurps.Trait] { return NewTraitsPageList(t, t.template) })
 	case gurps.BlockSkillsKey:
-		if t.Skills.needReconstruction() {
-			t.Skills = NewSkillsPageList(t, t.template)
-		} else {
-			t.Skills.Sync()
-		}
-		list, table = t.Skills, t.Skills.Table
+		return syncOrRebuildList(&t.Skills, func() *PageList[*gurps.Skill] { return NewSkillsPageList(t, t.template) })
 	case gurps.BlockSpellsKey:
-		if t.Spells.needReconstruction() {
-			t.Spells = NewSpellsPageList(t, t.template)
-		} else {
-			t.Spells.Sync()
-		}
-		list, table = t.Spells, t.Spells.Table
+		return syncOrRebuildList(&t.Spells, func() *PageList[*gurps.Spell] { return NewSpellsPageList(t, t.template) })
 	case gurps.BlockEquipmentKey:
-		if t.Equipment.needReconstruction() {
-			t.Equipment = NewCarriedEquipmentPageList(t, t.template)
-		} else {
-			t.Equipment.Sync()
-		}
-		list, table = t.Equipment, t.Equipment.Table
+		return syncOrRebuildList(&t.Equipment, func() *PageList[*gurps.Equipment] {
+			return NewCarriedEquipmentPageList(t, t.template)
+		})
 	case gurps.BlockNotesKey:
-		if t.Notes.needReconstruction() {
-			t.Notes = NewNotesPageList(t, t.template)
-		} else {
-			t.Notes.Sync()
-		}
-		list, table = t.Notes, t.Notes.Table
+		return syncOrRebuildList(&t.Notes, func() *PageList[*gurps.Note] { return NewNotesPageList(t, t.template) })
 	default:
 		return nil
 	}
-	if key == t.refocusOnKey {
-		t.refocusOn = table
+}
+
+// list returns the template's list for the given block key, or nil if the key isn't one of the five blocks a template
+// can show. A list the template hasn't built yet -- which is only the case while the template is first being put
+// together -- comes back as a nil *PageList inside the interface, which xreflect.IsNil sees through.
+func (t *Template) list(key string) sheetList {
+	switch key {
+	case gurps.BlockTraitsKey:
+		return t.Traits
+	case gurps.BlockSkillsKey:
+		return t.Skills
+	case gurps.BlockSpellsKey:
+		return t.Spells
+	case gurps.BlockEquipmentKey:
+		return t.Equipment
+	case gurps.BlockNotesKey:
+		return t.Notes
+	default:
+		return nil
 	}
-	return list
+}
+
+// lists returns the template's five lists, in the canonical block order (see gurps.AllBlockKeys). See list for what
+// comes back for a list the template hasn't built yet.
+func (t *Template) lists() []sheetList {
+	return listsForKeys(t.list, gurps.IsTemplateBlockKey)
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.
@@ -1013,18 +980,7 @@ func (t *Template) Rebuild(full bool) {
 	h, v := t.scroll.Position()
 	focusRefKey := t.targetMgr.CurrentFocusRef()
 	if full {
-		traitsSelMap := t.Traits.RecordSelection()
-		skillsSelMap := t.Skills.RecordSelection()
-		spellsSelMap := t.Spells.RecordSelection()
-		equipmentSelMap := t.Equipment.RecordSelection()
-		notesSelMap := t.Notes.RecordSelection()
-		defer func() {
-			t.Traits.ApplySelection(traitsSelMap)
-			t.Skills.ApplySelection(skillsSelMap)
-			t.Spells.ApplySelection(spellsSelMap)
-			t.Equipment.ApplySelection(equipmentSelMap)
-			t.Notes.ApplySelection(notesSelMap)
-		}()
+		defer preserveSelections(t.lists)()
 		t.createLists()
 	}
 	DeepSync(t)
@@ -1058,18 +1014,8 @@ func (t *Template) SetBodySettings(body *gurps.Body) {
 	rebuildAsModified(t, true)
 }
 
-func (t *Template) disclosureTables() []disclosureTables {
-	return []disclosureTables{
-		t.Traits,
-		t.Skills,
-		t.Spells,
-		t.Equipment,
-		t.Notes,
-	}
-}
-
 func (t *Template) toggleHierarchy() {
-	tables := t.disclosureTables()
+	tables := t.lists()
 	var open, exists bool
 	for _, table := range tables {
 		if open, exists = table.FirstDisclosureState(); exists {
@@ -1084,7 +1030,7 @@ func (t *Template) toggleHierarchy() {
 }
 
 func (t *Template) toggleNotes() {
-	tables := t.disclosureTables()
+	tables := t.lists()
 	state := 0
 	for _, table := range tables {
 		if state = table.FirstNoteState(); state != 0 {

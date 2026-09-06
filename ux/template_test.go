@@ -373,3 +373,68 @@ func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c.Equal(0, len(data.Equipment), "undo must take the new item back out of the template")
 	c.Equal(0, template.Equipment.Table.RootRowCount(), "undo must take the row back out of the list on screen")
 }
+
+// TestTemplateRebuildKeepsTheFocusInAReplacedList verifies that the table holding the keyboard focus still holds it
+// after a rebuild that had to replace its list. The template used to note which list the focus was in and put it back
+// by hand; the rebuild's ordinary focus restoration finds the replacement table by the reference key it shares with
+// the one it replaced, so that is no longer needed.
+func TestTemplateRebuildKeepsTheFocusInAReplacedList(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	settings := gurps.GlobalSettings().SheetSettings()
+	saved := settings.HideTLColumn
+	t.Cleanup(func() { screen.Do(func() { settings.HideTLColumn = saved }) })
+	screen.Do(func() { settings.HideTLColumn = false })
+	template, ok := openedByAction(t, screen, newCharacterTemplateAction).(*Template)
+	if !ok {
+		t.Fatal("New Character Template must open a template")
+	}
+
+	var stale *PageList[*gurps.Equipment]
+	var focused bool
+	screen.Do(func() {
+		stale = template.Equipment
+		stale.Table.RequestFocus()
+		focused = wnd.Focus() == stale.Table.AsPanel()
+	})
+	c.True(focused, "the equipment table takes the focus")
+
+	var replaced, refocused bool
+	screen.Do(func() {
+		settings.HideTLColumn = true
+		template.Rebuild(true)
+		replaced = template.Equipment != stale
+		refocused = wnd.Focus() == template.Equipment.Table.AsPanel()
+	})
+	c.True(replaced, "hiding the TL column must have replaced the equipment list")
+	c.True(refocused, "the focus must have moved into the replacement")
+}
+
+// TestTemplateSearchSkipsAListTheLayoutDoesNotShow verifies that a template's search, like a sheet's, only looks in
+// the lists that are on the page. A match in a list the layout hides could only be shown by scrolling a table nobody
+// is looking at into view.
+func TestTemplateSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {
+	c := check.New(t)
+	sheetSettings := gurps.GlobalSettings().Sheet
+	saved := sheetSettings.Layout
+	t.Cleanup(func() { sheetSettings.Layout = saved })
+	sheetSettings.Layout = saved.Clone()
+
+	data := gurps.NewTemplate()
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Findable"
+	data.Traits = []*gurps.Trait{trait}
+	data.Skills = []*gurps.Skill{newTestSkill("Findable", fxp.One, nil)}
+	template := newTestTemplateDockable("Search", data)
+	var refs []*searchRef
+	template.searchTracker.findMatches(&refs, "findable", true)
+	c.Equal(2, len(refs), "with every list on the page, both rows are found")
+
+	c.True(sheetSettings.Layout.Hide(gurps.BlockSkillsKey))
+	template.Rebuild(true)
+	c.Nil(template.Skills.AsPanel().Parent(), "the hidden skills list is not on the page")
+	refs = nil
+	template.searchTracker.findMatches(&refs, "findable", true)
+	c.Equal(1, len(refs), "only the row in the list that is on the page is found")
+	c.Equal(any(template.Traits.Table), refs[0].table, "and it is the trait")
+}

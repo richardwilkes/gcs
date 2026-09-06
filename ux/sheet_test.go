@@ -15,6 +15,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/unison"
 )
 
 // TestMarkModifiedRecalculates verifies that telling the sheet something changed brings the entity's derived state up
@@ -76,4 +78,58 @@ func TestNewItemCommandUsesTheLiveList(t *testing.T) {
 	c.Equal(1, len(entity.Traits), "undo must take the new trait back out of the entity")
 	c.Equal(claws.ID(), entity.Traits[0].ID(), "undo must leave the trait that was already there alone")
 	c.Equal(1, sheet.Traits.Table.RootRowCount(), "undo must take the row back out of the list that is on screen")
+}
+
+// TestSheetListsFollowTheCanonicalBlockOrder verifies that the sheet's lists come back in the canonical block order,
+// that the lookup by key the layout editor uses yields the same list for each, and that it yields nothing for a key
+// that isn't a list's.
+func TestSheetListsFollowTheCanonicalBlockOrder(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	expected := []unison.Paneler{
+		sheet.Reactions,
+		sheet.ConditionalModifiers,
+		sheet.MeleeWeapons,
+		sheet.RangedWeapons,
+		sheet.Traits,
+		sheet.Skills,
+		sheet.Spells,
+		sheet.CarriedEquipment,
+		sheet.OtherEquipment,
+		sheet.Notes,
+	}
+	lists := sheet.lists()
+	c.Equal(len(expected), len(lists), "every list is present")
+	i := 0
+	for _, key := range gurps.AllBlockKeys {
+		if !gurps.IsListBlockKey(key) {
+			c.Nil(sheet.list(key), "%s is not a list", key)
+			continue
+		}
+		c.Equal(expected[i].AsPanel(), lists[i].AsPanel(), "the list for %s is in its canonical place", key)
+		c.Equal(expected[i].AsPanel(), sheet.blockPanel(key).AsPanel(), "and is what the key maps to")
+		i++
+	}
+}
+
+// TestSheetRebuildCarriesTheSelectionToAReplacedList verifies that a row selected in a list is still selected after a
+// rebuild that had to replace the list, since the selection is put back into the list that is on screen rather than
+// the orphan it replaced.
+func TestSheetRebuildCarriesTheSelectionToAReplacedList(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	plain := gurps.NewTrait(entity, nil, false)
+	plain.Name = "Plain"
+	entity.Traits = []*gurps.Trait{plain}
+	sheet.Rebuild(true)
+	stale := sheet.Traits
+	stale.Table.SetSelectionMap(map[tid.TID]bool{plain.ID(): true})
+
+	// Giving the sheet its first switchable feature brings in the switch column, which replaces the traits list.
+	entity.Traits = append(entity.Traits, newSwitchableTrait(entity, "Claws"))
+	sheet.Rebuild(true)
+	c.NotEqual(stale, sheet.Traits, "gaining the switch column must have replaced the traits list")
+	c.True(sheet.Traits.Table.CopySelectionMap()[plain.ID()],
+		"the selection must have followed the row into the replacement")
 }

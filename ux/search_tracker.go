@@ -109,19 +109,31 @@ func (s *SearchTracker) doSearch(text string) {
 	s.adjustForMatch()
 }
 
-func searchSheetTable[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, pageList *PageList[T]) {
-	for _, row := range pageList.Table.RootRows() {
-		searchSheetTableRows(refList, text, namesOnly, pageList.Table, row)
+// search adds the rows of the list that match the text to the reference list, but only when the list is on the page.
+// A list the layout doesn't show has no parent (see Sheet.buildLayout), and a match found in one could only be shown
+// by scrolling a table nobody is looking at into view. A list that doesn't exist has nothing to search.
+func (p *PageList[T]) search(refList *[]*searchRef, text string, namesOnly bool) {
+	if p == nil || p.Parent() == nil {
+		return
+	}
+	for _, row := range p.Table.RootRows() {
+		searchSheetTableRows(refList, text, namesOnly, p.Table, row)
 	}
 }
 
-// searchPlacedSheetTable searches a sheet's list, but only when the layout has placed it on the page. A list that
-// isn't on the page has no parent (see Sheet.buildLayout), and a match found in one could only be shown by scrolling a
-// table nobody is looking at into view.
-func searchPlacedSheetTable[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, pageList *PageList[T]) {
-	if pageList != nil && pageList.AsPanel().Parent() != nil {
-		searchSheetTable(refList, text, namesOnly, pageList)
-	}
+// installListSearchTracker installs a search tracker on the toolbar that searches the lists the function returns and
+// clears their selections when the search is cleared. The lists are fetched afresh each time rather than captured,
+// since a rebuild can replace any of them (see syncOrRebuildList).
+func installListSearchTracker(toolbar *unison.Panel, lists func() []sheetList) *SearchTracker {
+	return InstallSearchTracker(toolbar, func() {
+		for _, list := range lists() {
+			list.clearSelection()
+		}
+	}, func(refList *[]*searchRef, text string, namesOnly bool) {
+		for _, list := range lists() {
+			list.search(refList, text, namesOnly)
+		}
+	})
 }
 
 func searchSheetTableRows[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, table *unison.Table[*Node[T]], row *Node[T]) {

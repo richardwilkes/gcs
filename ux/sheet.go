@@ -315,29 +315,7 @@ func (s *Sheet) createToolbar() {
 	calcButton.ClickCallback = func() { DisplayCalculator(s) }
 	s.toolbar.AddChild(calcButton)
 
-	s.searchTracker = InstallSearchTracker(s.toolbar, func() {
-		s.Reactions.Table.ClearSelection()
-		s.ConditionalModifiers.Table.ClearSelection()
-		s.MeleeWeapons.Table.ClearSelection()
-		s.RangedWeapons.Table.ClearSelection()
-		s.Traits.Table.ClearSelection()
-		s.Skills.Table.ClearSelection()
-		s.Spells.Table.ClearSelection()
-		s.CarriedEquipment.Table.ClearSelection()
-		s.OtherEquipment.Table.ClearSelection()
-		s.Notes.Table.ClearSelection()
-	}, func(refList *[]*searchRef, text string, namesOnly bool) {
-		searchPlacedSheetTable(refList, text, namesOnly, s.Reactions)
-		searchPlacedSheetTable(refList, text, namesOnly, s.ConditionalModifiers)
-		searchPlacedSheetTable(refList, text, namesOnly, s.MeleeWeapons)
-		searchPlacedSheetTable(refList, text, namesOnly, s.RangedWeapons)
-		searchPlacedSheetTable(refList, text, namesOnly, s.Traits)
-		searchPlacedSheetTable(refList, text, namesOnly, s.Skills)
-		searchPlacedSheetTable(refList, text, namesOnly, s.Spells)
-		searchPlacedSheetTable(refList, text, namesOnly, s.CarriedEquipment)
-		searchPlacedSheetTable(refList, text, namesOnly, s.OtherEquipment)
-		searchPlacedSheetTable(refList, text, namesOnly, s.Notes)
-	})
+	s.searchTracker = installListSearchTracker(s.toolbar, s.lists)
 
 	finishToolbarLayout(s.toolbar)
 }
@@ -583,8 +561,10 @@ func (s *Sheet) buildLayout() {
 	for _, block := range s.blocks {
 		block.AsPanel().RemoveFromParent()
 	}
-	for _, list := range s.pageLists() {
-		list.AsPanel().RemoveFromParent()
+	for _, list := range s.lists() {
+		if !xreflect.IsNil(list) {
+			list.AsPanel().RemoveFromParent()
+		}
 	}
 	s.page.RemoveAllChildren()
 	layout := s.entity.SheetSettings.Layout
@@ -612,91 +592,37 @@ func (s *Sheet) buildLayout() {
 func (s *Sheet) layoutLeaf(key string) unison.Paneler {
 	switch key {
 	case gurps.BlockReactionsKey:
-		if s.Reactions == nil {
-			s.Reactions = NewReactionsPageList(s.entity)
-		} else {
-			s.Reactions.Sync()
-		}
-		SetDataOwnerProvider(s.Reactions.Table, s)
-		if s.Reactions.Table.RootRowCount() == 0 {
-			return nil
-		}
-		return s.Reactions
+		return derivedListLeaf(s, &s.Reactions, func() *PageList[*gurps.ConditionalModifier] {
+			return NewReactionsPageList(s.entity)
+		})
 	case gurps.BlockConditionalModifiersKey:
-		if s.ConditionalModifiers == nil {
-			s.ConditionalModifiers = NewConditionalModifiersPageList(s.entity)
-		} else {
-			s.ConditionalModifiers.Sync()
-		}
-		SetDataOwnerProvider(s.ConditionalModifiers.Table, s)
-		if s.ConditionalModifiers.Table.RootRowCount() == 0 {
-			return nil
-		}
-		return s.ConditionalModifiers
+		return derivedListLeaf(s, &s.ConditionalModifiers, func() *PageList[*gurps.ConditionalModifier] {
+			return NewConditionalModifiersPageList(s.entity)
+		})
 	case gurps.BlockMeleeKey:
-		if s.MeleeWeapons.needReconstruction() {
-			s.MeleeWeapons = NewMeleeWeaponsPageList(s.entity)
-		} else {
-			s.MeleeWeapons.Sync()
-		}
-		SetDataOwnerProvider(s.MeleeWeapons.Table, s)
-		if s.MeleeWeapons.Table.RootRowCount() == 0 {
-			return nil
-		}
-		return s.MeleeWeapons
+		return derivedListLeaf(s, &s.MeleeWeapons, func() *PageList[*gurps.Weapon] {
+			return NewMeleeWeaponsPageList(s.entity)
+		})
 	case gurps.BlockRangedKey:
-		if s.RangedWeapons.needReconstruction() {
-			s.RangedWeapons = NewRangedWeaponsPageList(s.entity)
-		} else {
-			s.RangedWeapons.Sync()
-		}
-		SetDataOwnerProvider(s.RangedWeapons.Table, s)
-		if s.RangedWeapons.Table.RootRowCount() == 0 {
-			return nil
-		}
-		return s.RangedWeapons
+		return derivedListLeaf(s, &s.RangedWeapons, func() *PageList[*gurps.Weapon] {
+			return NewRangedWeaponsPageList(s.entity)
+		})
 	case gurps.BlockTraitsKey:
-		if s.Traits.needReconstruction() {
-			s.Traits = NewTraitsPageList(s, s.entity)
-		} else {
-			s.Traits.Sync()
-		}
-		return s.Traits
+		return syncOrRebuildList(&s.Traits, func() *PageList[*gurps.Trait] { return NewTraitsPageList(s, s.entity) })
 	case gurps.BlockSkillsKey:
-		if s.Skills.needReconstruction() {
-			s.Skills = NewSkillsPageList(s, s.entity)
-		} else {
-			s.Skills.Sync()
-		}
-		return s.Skills
+		return syncOrRebuildList(&s.Skills, func() *PageList[*gurps.Skill] { return NewSkillsPageList(s, s.entity) })
 	case gurps.BlockSpellsKey:
-		if s.Spells.needReconstruction() {
-			s.Spells = NewSpellsPageList(s, s.entity)
-		} else {
-			s.Spells.Sync()
-		}
-		return s.Spells
+		return syncOrRebuildList(&s.Spells, func() *PageList[*gurps.Spell] { return NewSpellsPageList(s, s.entity) })
 	case gurps.BlockEquipmentKey:
-		if s.CarriedEquipment.needReconstruction() {
-			s.CarriedEquipment = NewCarriedEquipmentPageList(s, s.entity)
-		} else {
-			s.CarriedEquipment.Sync()
-		}
-		return s.CarriedEquipment
+		return syncOrRebuildList(&s.CarriedEquipment, func() *PageList[*gurps.Equipment] {
+			return NewCarriedEquipmentPageList(s, s.entity)
+		})
 	case gurps.BlockOtherEquipmentKey:
-		if s.OtherEquipment.needReconstruction() {
-			s.OtherEquipment = NewOtherEquipmentPageList(s, s.entity)
-		} else {
-			s.OtherEquipment.Sync()
-		}
-		return s.OtherEquipment
+		return syncOrRebuildList(&s.OtherEquipment, func() *PageList[*gurps.Equipment] {
+			return NewOtherEquipmentPageList(s, s.entity)
+		})
 	case gurps.BlockNotesKey:
-		if s.Notes.needReconstruction() {
-			s.Notes = NewNotesPageList(s, s.entity)
-		} else {
-			s.Notes.Sync()
-		}
-		return s.Notes
+		return syncOrRebuildList(&s.Notes, func() *PageList[*gurps.Note] { return NewNotesPageList(s, s.entity) })
 	default:
 		block, exists := s.blocks[key]
 		if !exists {
@@ -709,10 +635,33 @@ func (s *Sheet) layoutLeaf(key string) unison.Paneler {
 	}
 }
 
+// derivedListLeaf syncs or rebuilds one of the sheet's four lists that are derived from the character rather than
+// edited directly (see syncOrRebuildList) and returns it as the panel to show for its block, or nil when it has no
+// rows, since an empty derived list is left off the page. These lists are built without an owner, so the sheet has to
+// be attached to their tables as the data owner provider by hand.
+func derivedListLeaf[T gurps.Node[T]](s *Sheet, list **PageList[T], build func() *PageList[T]) unison.Paneler {
+	l := syncOrRebuildList(list, build)
+	SetDataOwnerProvider(l.Table, s)
+	if l.Table.RootRowCount() == 0 {
+		return nil
+	}
+	return l
+}
+
 // blockPanel returns the panel the sheet uses for the block with the given key, or nil if it has none. Unlike
 // layoutLeaf, this neither creates nor synchronizes anything, so it is what the layout editor maps a panel it found on
 // the page back to a block key with.
 func (s *Sheet) blockPanel(key string) unison.Paneler {
+	if gurps.IsListBlockKey(key) {
+		return s.list(key)
+	}
+	return s.blocks[key]
+}
+
+// list returns the sheet's list for the given block key, or nil if the key isn't one of the ten list blocks. A list the
+// sheet hasn't built yet -- which is only the case while the sheet is first being put together -- comes back as a nil
+// *PageList inside the interface, which xreflect.IsNil sees through.
+func (s *Sheet) list(key string) sheetList {
 	switch key {
 	case gurps.BlockReactionsKey:
 		return s.Reactions
@@ -735,31 +684,14 @@ func (s *Sheet) blockPanel(key string) unison.Paneler {
 	case gurps.BlockNotesKey:
 		return s.Notes
 	default:
-		return s.blocks[key]
+		return nil
 	}
 }
 
-// pageLists returns the sheet's lists that have been built so far, in the order they are named in.
-func (s *Sheet) pageLists() []unison.Paneler {
-	all := []unison.Paneler{
-		s.Reactions,
-		s.ConditionalModifiers,
-		s.MeleeWeapons,
-		s.RangedWeapons,
-		s.Traits,
-		s.Skills,
-		s.Spells,
-		s.CarriedEquipment,
-		s.OtherEquipment,
-		s.Notes,
-	}
-	lists := make([]unison.Paneler, 0, len(all))
-	for _, one := range all {
-		if !xreflect.IsNil(one) {
-			lists = append(lists, one)
-		}
-	}
-	return lists
+// lists returns the sheet's ten lists, in the canonical block order (see gurps.AllBlockKeys). See list for what comes
+// back for a list the sheet hasn't built yet.
+func (s *Sheet) lists() []sheetList {
+	return listsForKeys(s.list, gurps.IsListBlockKey)
 }
 
 // syncDisclosure brings the blocks that show state which can be disclosed back into line with the model. The tables
@@ -1029,28 +961,7 @@ func (s *Sheet) Rebuild(full bool) {
 	focusRefKey := s.targetMgr.CurrentFocusRef()
 	s.entity.Recalculate()
 	if full {
-		reactionsSelMap := s.Reactions.RecordSelection()
-		conditionalModifiersSelMap := s.ConditionalModifiers.RecordSelection()
-		meleeWeaponsSelMap := s.MeleeWeapons.RecordSelection()
-		rangedWeaponsSelMap := s.RangedWeapons.RecordSelection()
-		traitsSelMap := s.Traits.RecordSelection()
-		skillsSelMap := s.Skills.RecordSelection()
-		spellsSelMap := s.Spells.RecordSelection()
-		carriedEquipmentSelMap := s.CarriedEquipment.RecordSelection()
-		otherEquipmentSelMap := s.OtherEquipment.RecordSelection()
-		notesSelMap := s.Notes.RecordSelection()
-		defer func() {
-			s.Reactions.ApplySelection(reactionsSelMap)
-			s.ConditionalModifiers.ApplySelection(conditionalModifiersSelMap)
-			s.MeleeWeapons.ApplySelection(meleeWeaponsSelMap)
-			s.RangedWeapons.ApplySelection(rangedWeaponsSelMap)
-			s.Traits.ApplySelection(traitsSelMap)
-			s.Skills.ApplySelection(skillsSelMap)
-			s.Spells.ApplySelection(spellsSelMap)
-			s.CarriedEquipment.ApplySelection(carriedEquipmentSelMap)
-			s.OtherEquipment.ApplySelection(otherEquipmentSelMap)
-			s.Notes.ApplySelection(notesSelMap)
-		}()
+		defer preserveSelections(s.lists)()
 		s.buildLayout()
 	}
 	DeepSync(s)
@@ -1116,23 +1027,8 @@ func (s *Sheet) SetBodySettings(body *gurps.Body) {
 	}
 }
 
-func (s *Sheet) disclosureTables() []disclosureTables {
-	return []disclosureTables{
-		s.Reactions,
-		s.ConditionalModifiers,
-		s.MeleeWeapons,
-		s.RangedWeapons,
-		s.Traits,
-		s.Skills,
-		s.Spells,
-		s.CarriedEquipment,
-		s.OtherEquipment,
-		s.Notes,
-	}
-}
-
 func (s *Sheet) toggleHierarchy() {
-	tables := s.disclosureTables()
+	tables := s.lists()
 	open, exists := s.entity.Attributes.FirstDisclosureState(s.entity)
 	if !exists {
 		if open, exists = s.entity.SheetSettings.BodyType.FirstDisclosureState(); !exists {
@@ -1154,7 +1050,7 @@ func (s *Sheet) toggleHierarchy() {
 }
 
 func (s *Sheet) toggleNotes() {
-	tables := s.disclosureTables()
+	tables := s.lists()
 	state := 0
 	for _, table := range tables {
 		if state = table.FirstNoteState(); state != 0 {
