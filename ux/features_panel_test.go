@@ -16,8 +16,10 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -347,4 +349,82 @@ func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
 			c.False(one.feature.IsSwitchable(), "clearing the box must mark this feature as not switchable")
 		})
 	}
+}
+
+// findPopups returns every popup of the given item type found anywhere beneath the given panel, in depth-first order.
+func findPopups[T comparable](p *unison.Panel) []*unison.PopupMenu[T] {
+	var popups []*unison.PopupMenu[T]
+	if popup, ok := p.Self.(*unison.PopupMenu[T]); ok {
+		popups = append(popups, popup)
+	}
+	for _, child := range p.Children() {
+		popups = append(popups, findPopups[T](child)...)
+	}
+	return popups
+}
+
+// checkMaxAdjustmentSelectionRows drives the selection-type popup of a maximum uses / maximum level adjustment row and
+// verifies that the criteria rows follow it: the "this item" choice blanks the name criteria and shows no tag row,
+// while the "with name" choice enables the name criteria and adds the tag row.
+func checkMaxAdjustmentSelectionRows[E comparable](t *testing.T, f gurps.Feature, selection *E, this, withName E) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	if bonus, ok := f.(gurps.Bonus); ok {
+		bonus.SetOwner(owner)
+	}
+	features := gurps.Features{f}
+	panel := newFeaturesPanel(entity, owner, &features, false)
+	c.Equal(2, len(panel.Children()), "expected add button + one feature row")
+	row := panel.Children()[1]
+
+	popups := findPopups[E](row)
+	c.Equal(1, len(popups), "expected exactly one selection-type popup in the row")
+	if len(popups) != 1 {
+		return
+	}
+	selPopup := popups[0]
+	c.Equal(this, *selection, "the feature starts out targeting this item")
+	criteria := findPopups[string](row)
+	c.Equal(1, len(criteria), "only the name criteria row is present for the 'this item' choice")
+	if len(criteria) != 1 {
+		return
+	}
+	c.False(criteria[0].Enabled(), "the name criteria popup is blanked for the 'this item' choice")
+
+	index := selPopup.IndexOfItem(withName)
+	c.True(index >= 0, "the 'with name' choice must be present in the selector")
+	selPopup.ChoiceMadeCallback(selPopup, index, withName)
+	c.Equal(withName, *selection, "choosing 'with name' must be stored on the feature")
+	criteria = findPopups[string](row)
+	c.Equal(2, len(criteria), "the tag criteria row is added for the 'with name' choice")
+	if len(criteria) != 2 {
+		return
+	}
+	c.True(criteria[0].Enabled(), "the name criteria popup is enabled for the 'with name' choice")
+
+	index = selPopup.IndexOfItem(this)
+	c.True(index >= 0, "the 'this item' choice must be present in the selector")
+	selPopup.ChoiceMadeCallback(selPopup, index, this)
+	c.Equal(this, *selection, "choosing 'this item' must be stored on the feature")
+	criteria = findPopups[string](row)
+	c.Equal(1, len(criteria), "the tag criteria row is removed again for the 'this item' choice")
+	if len(criteria) != 1 {
+		return
+	}
+	c.False(criteria[0].Enabled(), "the name criteria popup is blanked again for the 'this item' choice")
+}
+
+// TestFeaturesPanelEquipmentMaxUsesSelectionRows verifies the equipment maximum uses row rebuilds its criteria rows
+// as the selection type changes.
+func TestFeaturesPanelEquipmentMaxUsesSelectionRows(t *testing.T) {
+	f := gurps.NewEquipmentMaxUsesBonus()
+	checkMaxAdjustmentSelectionRows(t, f, &f.SelectionType, equipmentsel.ThisEquipment, equipmentsel.EquipmentWithName)
+}
+
+// TestFeaturesPanelTraitMaxLevelSelectionRows verifies the trait maximum level row rebuilds its criteria rows as the
+// selection type changes.
+func TestFeaturesPanelTraitMaxLevelSelectionRows(t *testing.T) {
+	f := gurps.NewTraitMaxLevelBonus()
+	checkMaxAdjustmentSelectionRows(t, f, &f.SelectionType, traitsel.ThisTrait, traitsel.TraitWithName)
 }

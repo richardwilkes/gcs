@@ -442,113 +442,93 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	}
 }
 
+// maxAdjustmentBonusSpec describes the parts of a maximum uses / maximum level adjustment bonus panel that differ
+// between the equipment and trait variants. Both features carry the same name and tag criteria and the same
+// MaxUsesModAmount; only the selection enum and the amount field's label vary.
+type maxAdjustmentBonusSpec[E comparable] struct {
+	feature     gurps.Feature
+	types       []E
+	selection   *E
+	this        E // The "this item" choice, which needs no criteria at all.
+	withName    E // The "items with name" choice, which adds the tag criteria row.
+	name        *criteria.Text
+	tags        *criteria.Text
+	amount      *gurps.MaxUsesModAmount
+	amountLabel string
+}
+
 func (p *featuresPanel) createEquipmentMaxUsesBonusPanel(f *gurps.EquipmentMaxUsesBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addEquipmentMaxUsesModifierLine(panel, f)
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
-	var criteriaPopup *unison.PopupMenu[string]
-	var criteriaField *StringField
-	popup := addPopup(wrapper, equipmentsel.Types, &f.SelectionType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[equipmentsel.Type], index int, item equipmentsel.Type) {
-		pop.SelectIndex(index)
-		f.SelectionType = item
-		adjustPopupBlank(criteriaPopup, f.SelectionType == equipmentsel.ThisEquipment)
-		adjustFieldBlank(criteriaField, f.SelectionType == equipmentsel.ThisEquipment)
-		i := panel.IndexOfChild(wrapper) + 1
-		for j := len(panel.Children()) - 1; j >= i; j-- {
-			panel.RemoveChildAtIndex(j)
-		}
-		p.createSecondaryEquipmentMaxUsesPanels(panel, i, f)
-		MarkRootAncestorForLayoutRecursively(p)
-		MarkModified(p)
-	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
-	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	adjustPopupBlank(criteriaPopup, f.SelectionType == equipmentsel.ThisEquipment)
-	adjustFieldBlank(criteriaField, f.SelectionType == equipmentsel.ThisEquipment)
-	p.createSecondaryEquipmentMaxUsesPanels(panel, len(panel.Children()), f)
-	return panel, focus
-}
-
-func (p *featuresPanel) addEquipmentMaxUsesModifierLine(parent *unison.Panel, f *gurps.EquipmentMaxUsesBonus) *StringField {
-	panel := unison.NewPanel()
-	p.addTypeSwitcher(panel, f)
-	field := NewStringField(nil, "", i18n.Text("Maximum Uses Adjustment"),
-		func() string { return f.Amount },
-		func(value string) {
-			f.Amount = maxusesmod.Normalize(value)
-			MarkModified(panel)
-		})
-	field.SetMinimumTextWidthUsing("-1,000,000")
-	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number, percentage or multiplier, e.g. "-1", "10%" or "x2"`))
-	panel.AddChild(field)
-	addCheckBox(panel, i18n.Text("per level"), &f.PerLevel)
-	addSwitchableCheckBox(panel, f)
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  len(panel.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
+	return createMaxAdjustmentBonusPanel(p, maxAdjustmentBonusSpec[equipmentsel.Type]{
+		feature:     f,
+		types:       equipmentsel.Types,
+		selection:   &f.SelectionType,
+		this:        equipmentsel.ThisEquipment,
+		withName:    equipmentsel.EquipmentWithName,
+		name:        &f.NameCriteria,
+		tags:        &f.TagsCriteria,
+		amount:      &f.MaxUsesModAmount,
+		amountLabel: i18n.Text("Maximum Uses Adjustment"),
 	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	parent.AddChild(panel)
-	return field
-}
-
-func (p *featuresPanel) createSecondaryEquipmentMaxUsesPanels(parent *unison.Panel, index int, f *gurps.EquipmentMaxUsesBonus) {
-	if f.SelectionType == equipmentsel.EquipmentWithName {
-		var wrapper *unison.Panel
-		wrapper, index = p.prepareNewWrapper(parent, index)
-		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
-		p.addWrapperAtIndex(parent, wrapper, index, false)
-	}
 }
 
 func (p *featuresPanel) createTraitMaxLevelBonusPanel(f *gurps.TraitMaxLevelBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addTraitMaxLevelModifierLine(panel, f)
+	return createMaxAdjustmentBonusPanel(p, maxAdjustmentBonusSpec[traitsel.Type]{
+		feature:     f,
+		types:       traitsel.Types,
+		selection:   &f.SelectionType,
+		this:        traitsel.ThisTrait,
+		withName:    traitsel.TraitWithName,
+		name:        &f.NameCriteria,
+		tags:        &f.TagsCriteria,
+		amount:      &f.MaxUsesModAmount,
+		amountLabel: i18n.Text("Maximum Level Adjustment"),
+	})
+}
+
+// createMaxAdjustmentBonusPanel builds the panel for a maximum uses / maximum level adjustment bonus. It is a plain
+// function rather than a method because methods cannot have type parameters.
+func createMaxAdjustmentBonusPanel[E comparable](p *featuresPanel, spec maxAdjustmentBonusSpec[E]) (main *unison.Panel, focus unison.Paneler) {
+	panel := p.createBasePanel(spec.feature)
+	focus = p.addMaxAdjustmentModifierLine(panel, spec.feature, spec.amount, spec.amountLabel)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, traitsel.Types, &f.SelectionType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[traitsel.Type], index int, item traitsel.Type) {
+	popup := addPopup(wrapper, spec.types, spec.selection)
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[E], index int, item E) {
 		pop.SelectIndex(index)
-		f.SelectionType = item
-		adjustPopupBlank(criteriaPopup, f.SelectionType == traitsel.ThisTrait)
-		adjustFieldBlank(criteriaField, f.SelectionType == traitsel.ThisTrait)
+		*spec.selection = item
+		adjustPopupBlank(criteriaPopup, item == spec.this)
+		adjustFieldBlank(criteriaField, item == spec.this)
 		i := panel.IndexOfChild(wrapper) + 1
 		for j := len(panel.Children()) - 1; j >= i; j-- {
 			panel.RemoveChildAtIndex(j)
 		}
-		p.createSecondaryTraitMaxLevelPanels(panel, i, f)
+		createSecondaryMaxAdjustmentPanels(p, panel, i, spec)
 		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
+	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), spec.name, 1, false)
 	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	adjustPopupBlank(criteriaPopup, f.SelectionType == traitsel.ThisTrait)
-	adjustFieldBlank(criteriaField, f.SelectionType == traitsel.ThisTrait)
-	p.createSecondaryTraitMaxLevelPanels(panel, len(panel.Children()), f)
+	adjustPopupBlank(criteriaPopup, *spec.selection == spec.this)
+	adjustFieldBlank(criteriaField, *spec.selection == spec.this)
+	createSecondaryMaxAdjustmentPanels(p, panel, len(panel.Children()), spec)
 	return panel, focus
 }
 
-func (p *featuresPanel) addTraitMaxLevelModifierLine(parent *unison.Panel, f *gurps.TraitMaxLevelBonus) *StringField {
+func (p *featuresPanel) addMaxAdjustmentModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.MaxUsesModAmount, label string) *StringField {
 	panel := unison.NewPanel()
 	p.addTypeSwitcher(panel, f)
-	field := NewStringField(nil, "", i18n.Text("Maximum Level Adjustment"),
-		func() string { return f.Amount },
+	field := NewStringField(nil, "", label,
+		func() string { return amount.Amount },
 		func(value string) {
-			f.Amount = maxusesmod.Normalize(value)
+			amount.Amount = maxusesmod.Normalize(value)
 			MarkModified(panel)
 		})
 	field.SetMinimumTextWidthUsing("-1,000,000")
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number, percentage or multiplier, e.g. "-1", "10%" or "x2"`))
 	panel.AddChild(field)
-	addCheckBox(panel, i18n.Text("per level"), &f.PerLevel)
+	addCheckBox(panel, i18n.Text("per level"), &amount.PerLevel)
 	addSwitchableCheckBox(panel, f)
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
@@ -563,11 +543,11 @@ func (p *featuresPanel) addTraitMaxLevelModifierLine(parent *unison.Panel, f *gu
 	return field
 }
 
-func (p *featuresPanel) createSecondaryTraitMaxLevelPanels(parent *unison.Panel, index int, f *gurps.TraitMaxLevelBonus) {
-	if f.SelectionType == traitsel.TraitWithName {
+func createSecondaryMaxAdjustmentPanels[E comparable](p *featuresPanel, parent *unison.Panel, index int, spec maxAdjustmentBonusSpec[E]) {
+	if *spec.selection == spec.withName {
 		var wrapper *unison.Panel
 		wrapper, index = p.prepareNewWrapper(parent, index)
-		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
+		addTagCriteriaPanel(wrapper, spec.tags, 1, false)
 		p.addWrapperAtIndex(parent, wrapper, index, false)
 	}
 }
