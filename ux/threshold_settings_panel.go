@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -58,10 +60,13 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, thresh *gurps.PoolThresh
 		HGrab:  true,
 	})
 
-	p.AddChild(NewDragHandle(attributeSettingsDragKey, &attributeSettingsDragData{
-		owner:     pool.dockable.Entity(),
-		def:       pool.def,
-		threshold: thresh,
+	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
+		editor: pool.dockable,
+		row:    p.AsPanel(),
+		title:  i18n.Text("Pool Threshold Drag"),
+		move: func(to int) bool {
+			return moveEntry(&pool.def.Thresholds, slices.Index(pool.def.Thresholds, thresh), to)
+		},
 	}))
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())

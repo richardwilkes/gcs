@@ -62,9 +62,11 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 		HGrab:  true,
 	})
 
-	p.AddChild(NewDragHandle(attributeSettingsDragKey, &attributeSettingsDragData{
-		owner: dockable.Entity(),
-		def:   def,
+	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
+		editor: dockable,
+		row:    p.AsPanel(),
+		title:  i18n.Text("Attribute Definition Drag"),
+		move:   func(to int) bool { return dockable.moveAttributeDef(def, to) },
 	}))
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())
@@ -96,17 +98,9 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 func (p *attrDefSettingsPanel) deleteAttrDef() {
 	p.RemoveFromParent()
 	p.dockable.adjustDeleteButtons()
-	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
-		ID:         unison.NextUndoID(),
-		EditName:   i18n.Text("Delete Attribute"),
-		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { p.dockable.applyAttrDefs(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { p.dockable.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
-	}
-	undo.BeforeData = p.dockable.defs.Clone()
-	delete(p.dockable.defs.Set, p.def.DefID)
-	undo.AfterData = p.dockable.defs.Clone()
-	p.dockable.UndoManager().Add(undo)
+	undo := p.dockable.prepareUndo(i18n.Text("Delete Attribute"))
+	delete(p.dockable.model.Set, p.def.DefID)
+	p.dockable.finishAndPostUndo(undo)
 	p.dockable.MarkModified(nil)
 }
 
@@ -128,9 +122,9 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.def.DefID },
 		func(s string) {
 			if p.validateAttrID(s) {
-				delete(p.dockable.defs.Set, p.def.DefID)
+				delete(p.dockable.model.Set, p.def.DefID)
 				p.def.DefID = strings.TrimSpace(strings.ToLower(s))
-				p.dockable.defs.Set[p.def.DefID] = p.def
+				p.dockable.model.Set[p.def.DefID] = p.def
 			}
 		})
 	field.ValidateCallback = func(field *StringField, _ *gurps.AttributeDef) func() bool {
@@ -284,7 +278,7 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 		if key == p.def.DefID {
 			return true
 		}
-		_, exists := p.dockable.defs.Set[key]
+		_, exists := p.dockable.model.Set[key]
 		return !exists
 	}
 	return false

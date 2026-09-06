@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
@@ -67,33 +66,29 @@ type fileEditorSpec[T fileEditorModel[T]] struct {
 // through an undo edit that captures the whole model, so that a structural change is as undoable as a typed one.
 type fileEditorDockable[T fileEditorModel[T]] struct {
 	SettingsDockable
-	spec      fileEditorSpec[T]
-	targetMgr *TargetMgr
-	undoMgr   *unison.UndoManager
-	model     T
+	structuralEditorBase[T]
+	spec fileEditorSpec[T]
 	// path is the absolute path the model was loaded from or last saved to, or "" when it is not on disk yet.
 	path string
 	// loadedName is the name of the file the model was loaded from when that file has no disk path, as a built-in one
 	// does not, so that the title and the Save As file name can still show which one it is. It is "" otherwise.
 	loadedName string
-	// originalHash is the hash of the model as it was loaded or last saved, which is what modified() compares against.
-	// It is deliberately not part of the undo state: undoing past a save must leave the editor showing as modified,
-	// since what it then holds is not what its file holds.
-	originalHash uint64
-	toolbar      *unison.Panel
-	saveButton   *unison.Button
-	rowDragState
+	saveButton *unison.Button
 }
 
-// init readies the editor to hold a new, blank model. The outer dockable calls it after setting Self; load may then
-// replace the blank model with a file's, before show builds the toolbar and content and places the editor in the dock.
+// init readies the editor to hold a new, blank model. The outer dockable calls it after setting Self, which is what
+// the rows name as their editor, so that a payload can be recognized as this editor's own; load may then replace the
+// blank model with a file's, before show builds the toolbar and content and places the editor in the dock.
 func (d *fileEditorDockable[T]) init(spec fileEditorSpec[T]) {
 	d.spec = spec
-	d.targetMgr = NewTargetMgr(d)
-	d.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
-	d.model = d.spec.newModel()
-	d.model.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	d.originalHash = gurps.Hash64(d.model)
+	editor, ok := d.Self.(rowDragEditor)
+	if !ok {
+		editor = d
+	}
+	d.initEditor(editor, func(model T) T { return model.Clone() }, spec.buildContent)
+	model := d.spec.newModel()
+	model.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
+	d.setModel(model)
 	d.TabTitle = spec.tabTitle
 	d.TabIcon = spec.icon
 	d.Extensions = []string{spec.ext}
@@ -109,10 +104,6 @@ func (d *fileEditorDockable[T]) init(spec fileEditorSpec[T]) {
 // edited is loaded first.
 func (d *fileEditorDockable[T]) show() {
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
-}
-
-func (d *fileEditorDockable[T]) UndoManager() *unison.UndoManager {
-	return d.undoMgr
 }
 
 // Title implements unison.Dockable. The dock resolves the embedded SettingsDockable to this dockable, so this, rather
@@ -178,7 +169,7 @@ func (d *fileEditorDockable[T]) AttemptClose() bool {
 }
 
 func (d *fileEditorDockable[T]) modified() bool {
-	modified := d.originalHash != gurps.Hash64(d.model)
+	modified := d.modelModified()
 	if d.saveButton != nil {
 		d.saveButton.SetEnabled(modified)
 	}
@@ -197,19 +188,6 @@ func (d *fileEditorDockable[T]) addToStartToolbar(toolbar *unison.Panel) {
 	saveAsButton.Tooltip = newWrappedTooltip(i18n.Text("Save As…"))
 	saveAsButton.ClickCallback = func() { d.save(true) }
 	toolbar.AddChild(saveAsButton)
-}
-
-// initContent readies the content panel and builds the content into it. The drag state is wired to the outer dockable,
-// which is what the rows name as their editor, so that a payload can be recognized as this editor's own.
-func (d *fileEditorDockable[T]) initContent(content *unison.Panel) {
-	content.SetBorder(nil)
-	content.SetLayout(&unison.FlexLayout{Columns: 1})
-	editor, ok := d.Self.(rowDragEditor)
-	if !ok {
-		editor = d
-	}
-	d.install(editor, content)
-	d.spec.buildContent()
 }
 
 // save writes the model to its file, prompting for one when it has none yet or when a Save As was asked for. A new
@@ -233,61 +211,13 @@ func (d *fileEditorDockable[T]) markSaved() {
 	d.modified() // refreshes the Save button
 }
 
-// prepareUndo starts an undo edit that captures the model as it stands. The file the editor holds is not part of it:
-// nothing undoable changes the file, since an editor holds one document for its whole life, and a Save As is no more
-// undoable here than it is for a sheet.
-func (d *fileEditorDockable[T]) prepareUndo(title string) *unison.UndoEdit[T] {
-	return &unison.UndoEdit[T]{
-		ID:         unison.NextUndoID(),
-		EditName:   title,
-		UndoFunc:   func(e *unison.UndoEdit[T]) { d.applyModel(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[T]) { d.applyModel(e.AfterData) },
-		AbsorbFunc: func(_ *unison.UndoEdit[T], _ unison.Undoable) bool { return false },
-		BeforeData: d.model.Clone(),
-	}
-}
-
-func (d *fileEditorDockable[T]) finishAndPostUndo(undo *unison.UndoEdit[T]) {
-	undo.AfterData = d.model.Clone()
-	d.UndoManager().Add(undo)
-}
-
-func (d *fileEditorDockable[T]) applyModel(model T) {
-	d.model = model.Clone()
-	d.sync()
-}
-
-// reorderRows implements rowDragEditor. The move is applied inside a single undo edit named title; a move that reports
-// no change posts no edit and leaves the content as it is.
-func (d *fileEditorDockable[T]) reorderRows(title string, move func() bool) {
-	undo := d.prepareUndo(title)
-	if move() {
-		d.finishAndPostUndo(undo)
-		d.sync()
-	}
-}
-
-// targetManager implements structuralEditor.
-func (d *fileEditorDockable[T]) targetManager() *TargetMgr {
-	return d.targetMgr
-}
-
-// editStructure implements structuralEditor.
-func (d *fileEditorDockable[T]) editStructure(title string, mutate func(), focusKey string) {
-	undo := d.prepareUndo(title)
-	mutate()
-	d.finishAndPostUndo(undo)
-	d.sync()
-	if focusKey != "" {
-		d.focusOn(focusKey)
-	}
-}
-
 // load fills the editor with the model in the file, in place of the blank one init gave it. It is for an editor that
 // has not been shown yet, so nothing is rebuilt and nothing is posted to the undo stack: the editor starts out holding
 // the file's model, unmodified, with nothing to undo, as a sheet opened from a file does. A file that fails to load
 // changes nothing. The path is where the file lives on disk, which is empty for a built-in file, so that Save on one of
-// those prompts for a location rather than trying to write into the application.
+// those prompts for a location rather than trying to write into the application. The file the editor holds is not part
+// of any undo edit: nothing undoable changes the file, since an editor holds one document for its whole life, and a
+// Save As is no more undoable here than it is for a sheet.
 func (d *fileEditorDockable[T]) load(ref *gurps.NamedFileRef) error {
 	model, err := d.spec.readModel(ref.FileSystem, ref.FilePath)
 	if err != nil {
@@ -295,14 +225,13 @@ func (d *fileEditorDockable[T]) load(ref *gurps.NamedFileRef) error {
 	}
 	model.Normalize()
 	model.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	d.model = model
+	d.setModel(model)
 	d.path = ref.DiskPath
 	if d.path == "" {
 		d.loadedName = ref.Name
 	} else {
 		d.loadedName = ""
 	}
-	d.originalHash = gurps.Hash64(d.model)
 	return nil
 }
 
@@ -323,31 +252,6 @@ func (d *fileEditorDockable[T]) reset() {
 		d.model = d.spec.newModel()
 		d.model.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	}, "")
-}
-
-// sync rebuilds the content from the model, preserving the keyboard focus and the scroll position across the rebuild.
-func (d *fileEditorDockable[T]) sync() {
-	focusRefKey := d.targetMgr.CurrentFocusRef()
-	scrollRoot := d.content.ScrollRoot()
-	h, v := scrollRoot.Position()
-	d.content.RemoveAllChildren()
-	d.spec.buildContent()
-	d.MarkForLayoutRecursively()
-	d.MarkForRedraw()
-	d.ValidateLayout()
-	d.MarkModified(nil)
-	d.targetMgr.ReacquireFocus(focusRefKey, d.toolbar, d.content)
-	scrollRoot.SetPosition(h, v)
-}
-
-// focusOn gives the keyboard focus to the widget with the given reference key and scrolls it into view. Panels call it
-// after sync() has returned, since sync() restores the scroll position as its last act and would otherwise undo the
-// scroll.
-func (d *fileEditorDockable[T]) focusOn(refKey string) {
-	if f := d.targetMgr.Find(refKey); f != nil {
-		f.RequestFocus()
-		f.ScrollIntoView()
-	}
 }
 
 // diskFileRef returns a reference to a file on disk of the kind a library scan produces, so that a file chosen by the

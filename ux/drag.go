@@ -32,8 +32,6 @@ var (
 	conditionalModifierDragKey = unison.CreatePrivateDataType("gcs.conditional-modifier")
 	meleeWeaponDragKey         = unison.CreatePrivateDataType("gcs.melee-weapon")
 	rangedWeaponDragKey        = unison.CreatePrivateDataType("gcs.ranged-weapon")
-	attributeSettingsDragKey   = unison.CreatePrivateDataType("gcs.attr")
-	hitLocationDragKey         = unison.CreatePrivateDataType("gcs.body")
 	editorRowDragKey           = unison.CreatePrivateDataType("gcs.editor-row")
 )
 
@@ -61,8 +59,6 @@ var allDragDataTypes = []*uti.DataType{
 	conditionalModifierDragKey,
 	meleeWeaponDragKey,
 	rangedWeaponDragKey,
-	attributeSettingsDragKey,
-	hitLocationDragKey,
 	editorRowDragKey,
 }
 

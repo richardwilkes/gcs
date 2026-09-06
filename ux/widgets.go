@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -827,4 +828,34 @@ func NewMarkdownGuideButton() *unison.Button {
 	button.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Markdown%20Guide") }
 	button.Tooltip = newWrappedTooltip(i18n.Text("Markdown Guide"))
 	return button
+}
+
+// newApplyCancelButtons adds the Apply Changes and Discard Changes buttons that every editor with a pending set of
+// changes has to the toolbar and returns them, disabled until there is something to apply. Clicking apply calls the
+// given function and, when it reports success, closes the editor without its usual prompt, which is also all that
+// cancel does. showKeys adds the keyboard shortcuts the editors bind to the buttons to their tooltips.
+func newApplyCancelButtons(toolbar *unison.Panel, showKeys bool, apply func() bool, closeWithoutPrompt func()) (applyButton, cancelButton *unison.Button) {
+	applyText := i18n.Text("Apply Changes")
+	cancelText := i18n.Text("Discard Changes")
+	applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
+	cancelButton = unison.NewSVGButton(svg.Not)
+	if showKeys {
+		applyButton.Tooltip = newWrappedTooltipWithSecondaryText(applyText, fmt.Sprintf(i18n.Text("%v%v or %v%v"),
+			mod.OSMenuCommand(), unison.KeyReturn, mod.OSMenuCommand(), unison.KeyNumPadEnter))
+		cancelButton.Tooltip = newWrappedTooltipWithSecondaryText(cancelText, unison.KeyEscape.String())
+	} else {
+		applyButton.Tooltip = newWrappedTooltip(applyText)
+		cancelButton.Tooltip = newWrappedTooltip(cancelText)
+	}
+	applyButton.SetEnabled(false)
+	applyButton.ClickCallback = func() {
+		if apply() {
+			closeWithoutPrompt()
+		}
+	}
+	toolbar.AddChild(applyButton)
+	cancelButton.SetEnabled(false)
+	cancelButton.ClickCallback = closeWithoutPrompt
+	toolbar.AddChild(cancelButton)
+	return applyButton, cancelButton
 }

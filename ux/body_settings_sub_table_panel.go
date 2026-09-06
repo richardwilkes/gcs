@@ -69,21 +69,11 @@ func (p *bodySettingsSubTablePanel) createButtons() *unison.Panel {
 }
 
 func (p *bodySettingsSubTablePanel) addHitLocation() {
-	undo := p.dockable.prepareUndo(i18n.Text("Add Hit Location"))
-	location := gurps.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix())
-	p.body.AddLocation(location)
-	p.dockable.finishAndPostUndo(undo)
-	p.dockable.sync()
-	if focus := p.dockable.targetMgr.Find(location.KeyPrefix + "id"); focus != nil {
-		focus.RequestFocus()
-	}
+	addHitLocationTo(p.dockable, p.body)
 }
 
 func (p *bodySettingsSubTablePanel) removeSubTable() {
-	undo := p.dockable.prepareUndo(i18n.Text("Remove Sub-Table"))
-	p.body.OwningLocation().SubTable = nil
-	p.dockable.finishAndPostUndo(undo)
-	p.dockable.sync()
+	p.dockable.editStructure(i18n.Text("Remove Sub-Table"), func() { p.body.OwningLocation().SubTable = nil }, "")
 }
 
 func (p *bodySettingsSubTablePanel) createContent() *unison.Panel {

@@ -10,11 +10,13 @@
 package ux
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -39,7 +41,7 @@ func TestAddAttributeDefAssignsUniqueKeyPrefix(t *testing.T) {
 	// The prefixes must also be distinct from those of every pre-existing definition and pool threshold, since all of
 	// their widgets live in the same dockable.
 	seen := make(map[string]string)
-	for _, def := range d.defs.List(false) {
+	for _, def := range d.model.List(false) {
 		c.NotEqual("", def.KeyPrefix, "attribute %q must have a target key prefix", def.DefID)
 		if other, exists := seen[def.KeyPrefix]; exists {
 			c.Equal("", def.KeyPrefix, "attributes %q and %q share the target key prefix %q", other, def.DefID,
@@ -62,7 +64,7 @@ func TestAddAttributeDefKeyPrefixSurvivesUndoData(t *testing.T) {
 	c := check.New(t)
 	d := newTestAttributeSettingsDockable()
 	added := d.addAttributeDef()
-	restored, exists := d.defs.Clone().Set[added.DefID]
+	restored, exists := d.model.Clone().Set[added.DefID]
 	c.True(exists, "the added attribute must be present in the clone")
 	c.Equal(added.KeyPrefix, restored.KeyPrefix, "cloning must preserve the target key prefix")
 }
@@ -73,11 +75,10 @@ func TestAddAttributeDefKeyPrefixSurvivesUndoData(t *testing.T) {
 // used to restore an enabled delete button to a lone attribute.
 func TestAttributeDeleteButtonEnablement(t *testing.T) {
 	c := check.New(t)
-	d := newTestAttributeSettingsDockable()
-	d.defs = &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}
+	d := newTestAttributeSettingsDockableFor(&gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)})
 	first := d.addAttributeDef()
 	second := d.addAttributeDef()
-	initTestAttributeContent(d)
+	initTestSettingsContent(&d.undoableSettingsDockable)
 	c.Equal(2, len(d.content.Children()), "both attributes should have a panel")
 	c.True(attrDeleteButtonEnabled(d, 0), "with two attributes, the first delete button is enabled")
 	c.True(attrDeleteButtonEnabled(d, 1), "with two attributes, the second delete button is enabled")
@@ -94,18 +95,17 @@ func TestAttributeDeleteButtonEnablement(t *testing.T) {
 	c.True(attrDeleteButtonEnabled(d, 1), "the added attribute may be deleted")
 
 	// A rebuild with a lone attribute must not hand back an enabled delete button.
-	delete(d.defs.Set, third.DefID)
-	delete(d.defs.Set, second.DefID)
+	delete(d.model.Set, third.DefID)
+	delete(d.model.Set, second.DefID)
 	d.sync()
 	c.Equal(1, len(d.content.Children()), "only the lone attribute should have a panel")
 	c.Equal(first.DefID, attrDefPanel(d, 0).def.DefID, "the lone attribute should be the one left in the set")
 	c.False(attrDeleteButtonEnabled(d, 0), "a rebuild with one attribute leaves its delete button disabled")
 
 	// A dockable opened with a single attribute starts with the guard in place.
-	d2 := newTestAttributeSettingsDockable()
-	d2.defs = &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}
+	d2 := newTestAttributeSettingsDockableFor(&gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)})
 	d2.addAttributeDef()
-	initTestAttributeContent(d2)
+	initTestSettingsContent(&d2.undoableSettingsDockable)
 	c.False(attrDeleteButtonEnabled(d2, 0), "a dockable opened with one attribute can't delete it")
 }
 
@@ -168,12 +168,14 @@ func testAttrDef(id, name string, order int) *gurps.AttributeDef {
 	return def
 }
 
-// initTestAttributeContent builds the dockable's content the way Setup does, inside a scroll panel, since sync() saves
-// and restores the scroll position.
-func initTestAttributeContent(d *attributeSettingsDockable) {
+// initTestSettingsContent builds a settings dockable's content the way Setup does, but with no dock and no window: the
+// content is wrapped in a scroll panel that is itself a child of the dockable, so that sync() can find a scroll root and
+// the target manager, which is rooted at the dockable, can find the widgets.
+func initTestSettingsContent[T undoableSettingsModel](d *undoableSettingsDockable[T]) {
 	content := unison.NewPanel()
 	scroller := unison.NewScrollPanel()
 	scroller.SetContent(content, behavior.Fill, behavior.Fill)
+	d.AddChild(scroller)
 	d.initContent(content)
 }
 
@@ -194,11 +196,133 @@ func attrDeleteButtonEnabled(d *attributeSettingsDockable, index int) bool {
 	return panel != nil && panel.deleteButton.Enabled()
 }
 
+// newTestAttributeSettingsDockable returns a dockable for the defaults that edits the factory attribute definitions, its
+// content not yet built; see initTestSettingsContent.
 func newTestAttributeSettingsDockable() *attributeSettingsDockable {
-	d := &attributeSettingsDockable{defs: gurps.FactoryAttributeDefs()}
-	d.Self = d
-	d.undoMgr = unison.NewUndoManager(100, func(_ error) {})
-	d.targetMgr = NewTargetMgr(d)
-	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
+	return newTestAttributeSettingsDockableFor(gurps.FactoryAttributeDefs())
+}
+
+// newTestAttributeSettingsDockableFor returns a dockable for the defaults that edits the given definitions, its content
+// not yet built. The undo manager is replaced by one that panics on an error, so that a test sees it.
+func newTestAttributeSettingsDockableFor(defs *gurps.AttributeDefs) *attributeSettingsDockable {
+	d := newAttributeSettingsDockable(nil, defs)
+	d.undoMgr = unison.NewUndoManager(100, func(err error) { panic(err) })
 	return d
+}
+
+// TestAttributeDefDragDropReorders verifies that dropping a dragged attribute definition moves it among the definitions,
+// renumbers them to match, posts a single undo edit, rebuilds the panels and clears the drag state; and that a payload
+// from another attribute editor, which is what a drag from another sheet's settings delivers, is ignored.
+func TestAttributeDefDragDropReorders(t *testing.T) {
+	c := check.New(t)
+	d := newTestAttributeSettingsDockableFor(testAttrDefs("st", "dx", "iq"))
+	initTestSettingsContent(&d.undoableSettingsDockable)
+	rows := d.content.Children()
+	c.Equal(3, len(rows))
+	dd := dragDataForRow(t, rows[0])
+	c.Equal("Attribute Definition Drag", dd.title)
+
+	beginDragOver(&d.rowDragState, d.content, 3)
+	d.dataDragDrop(geom.Point{}, dd)
+	c.Equal([]string{"dx", "iq", "st"}, attrDefIDs(d.model))
+	c.Equal([]int{0, 1, 2}, attrDefOrders(d.model), "the definitions are renumbered to match their new positions")
+	c.False(d.inDragOver, "the drag state is cleared")
+	c.Equal(-1, d.dragInsert)
+	c.Nil(d.dragTarget)
+	c.True(d.Modified())
+	c.Equal("dx", attrDefPanel(d, 0).def.DefID, "the panels are rebuilt in the new order")
+
+	d.undoMgr.Undo()
+	c.Equal([]string{"st", "dx", "iq"}, attrDefIDs(d.model), "undo restores the order")
+	c.False(d.undoMgr.CanUndo(), "the drop is a single edit")
+	d.undoMgr.Redo()
+	c.Equal([]string{"dx", "iq", "st"}, attrDefIDs(d.model))
+
+	// Dropping a definition just below itself leaves everything as it is.
+	beginDragOver(&d.rowDragState, d.content, 1)
+	d.dataDragDrop(geom.Point{}, dragDataForRow(t, d.content.Children()[0]))
+	c.Equal([]string{"dx", "iq", "st"}, attrDefIDs(d.model))
+	c.False(d.undoMgr.CanRedo(), "a drop is what was last done")
+	d.undoMgr.Undo()
+	c.Equal([]string{"st", "dx", "iq"}, attrDefIDs(d.model), "a no-op drop posted no edit, so undo reaches the real drop")
+
+	other := newTestAttributeSettingsDockableFor(testAttrDefs("st", "dx", "iq"))
+	initTestSettingsContent(&other.undoableSettingsDockable)
+	foreign := dragDataForRow(t, other.content.Children()[2])
+	beginDragOver(&d.rowDragState, d.content, 0)
+	d.dataDragDrop(geom.Point{}, foreign)
+	c.Equal([]string{"st", "dx", "iq"}, attrDefIDs(d.model), "another editor's payload is ignored")
+	c.Equal([]string{"st", "dx", "iq"}, attrDefIDs(other.model))
+	c.False(d.inDragOver)
+}
+
+// TestPoolThresholdDragDropReorders verifies that dropping a dragged pool threshold moves it within the thresholds of
+// the pool that owns it, undoably, leaving the definitions themselves in place.
+func TestPoolThresholdDragDropReorders(t *testing.T) {
+	c := check.New(t)
+	defs := testAttrDefs("st", "hp")
+	pool := defs.Set["hp"]
+	pool.Type = attribute.Pool
+	for _, state := range []string{"Reeling", "Collapse", "Dead"} {
+		pool.Thresholds = append(pool.Thresholds, &gurps.PoolThreshold{State: state})
+	}
+	d := newTestAttributeSettingsDockableFor(defs)
+	initTestSettingsContent(&d.undoableSettingsDockable)
+	pools := panelsOfType[*poolSettingsPanel](d.AsPanel())
+	c.Equal(1, len(pools), "only the pool attribute has a threshold list")
+	rows := pools[0].Children()
+	c.Equal(3, len(rows))
+	dd := dragDataForRow(t, rows[2])
+	c.Equal("Pool Threshold Drag", dd.title)
+
+	beginDragOver(&d.rowDragState, pools[0].AsPanel(), 0)
+	d.dataDragDrop(geom.Point{}, dd)
+	c.Equal([]string{"Dead", "Reeling", "Collapse"}, thresholdStates(d.model.Set["hp"]))
+	c.Equal([]string{"st", "hp"}, attrDefIDs(d.model), "the definitions keep their order")
+	c.False(d.inDragOver, "the drag state is cleared")
+	pools = panelsOfType[*poolSettingsPanel](d.AsPanel())
+	c.Equal(1, len(pools), "the panels are rebuilt")
+	c.Equal("Dead", panelsOfType[*thresholdSettingsPanel](pools[0].AsPanel())[0].threshold.State)
+
+	d.undoMgr.Undo()
+	c.Equal([]string{"Reeling", "Collapse", "Dead"}, thresholdStates(d.model.Set["hp"]), "undo restores the order")
+	c.False(d.undoMgr.CanUndo(), "the drop is a single edit")
+}
+
+// testAttrDefs returns a set of integer attribute definitions with the given IDs, in that order.
+func testAttrDefs(ids ...string) *gurps.AttributeDefs {
+	defs := &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}
+	for i, id := range ids {
+		defs.Set[id] = testAttrDef(id, strings.ToUpper(id), i+1)
+	}
+	return defs
+}
+
+// attrDefIDs returns the IDs of the definitions in order.
+func attrDefIDs(defs *gurps.AttributeDefs) []string {
+	list := defs.List(false)
+	ids := make([]string, len(list))
+	for i, def := range list {
+		ids[i] = def.DefID
+	}
+	return ids
+}
+
+// attrDefOrders returns the Order of the definitions in order.
+func attrDefOrders(defs *gurps.AttributeDefs) []int {
+	list := defs.List(false)
+	orders := make([]int, len(list))
+	for i, def := range list {
+		orders[i] = def.Order
+	}
+	return orders
+}
+
+// thresholdStates returns the states of the definition's thresholds in order.
+func thresholdStates(def *gurps.AttributeDef) []string {
+	states := make([]string, len(def.Thresholds))
+	for i, threshold := range def.Thresholds {
+		states[i] = threshold.State
+	}
+	return states
 }

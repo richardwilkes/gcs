@@ -87,25 +87,10 @@ func librarySettingsTitle(name string) string {
 
 func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	d.toolbar = toolbar
-	d.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
-	d.applyButton.Tooltip = newWrappedTooltip(i18n.Text("Apply Changes"))
-	d.applyButton.SetEnabled(false)
-	d.applyButton.ClickCallback = func() {
-		if d.apply() {
-			d.promptForSave = false
-			d.AttemptClose()
-		}
-	}
-	toolbar.AddChild(d.applyButton)
-
-	d.cancelButton = unison.NewSVGButton(svg.Not)
-	d.cancelButton.Tooltip = newWrappedTooltip(i18n.Text("Discard Changes"))
-	d.cancelButton.SetEnabled(false)
-	d.cancelButton.ClickCallback = func() {
+	d.applyButton, d.cancelButton = newApplyCancelButtons(toolbar, false, d.apply, func() {
 		d.promptForSave = false
 		d.AttemptClose()
-	}
-	toolbar.AddChild(d.cancelButton)
+	})
 }
 
 func (d *librarySettingsDockable) initContent(content *unison.Panel) {

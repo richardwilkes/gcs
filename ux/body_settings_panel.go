@@ -63,14 +63,13 @@ func (p *bodySettingsPanel) createButtons() *unison.Panel {
 }
 
 func (p *bodySettingsPanel) addHitLocation() {
-	undo := p.dockable.prepareUndo(i18n.Text("Add Hit Location"))
-	location := gurps.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix())
-	p.dockable.body.AddLocation(location)
-	p.dockable.finishAndPostUndo(undo)
-	p.dockable.sync()
-	if focus := p.dockable.targetMgr.Find(location.KeyPrefix + "id"); focus != nil {
-		focus.RequestFocus()
-	}
+	addHitLocationTo(p.dockable, p.dockable.model)
+}
+
+// addHitLocationTo adds a new hit location to the end of the table, undoably, and gives its ID field the focus.
+func addHitLocationTo(d *bodySettingsDockable, table *gurps.Body) {
+	location := gurps.NewHitLocation(d.Entity(), d.targetMgr.NextPrefix())
+	d.editStructure(i18n.Text("Add Hit Location"), func() { table.AddLocation(location) }, location.KeyPrefix+"id")
 }
 
 func (p *bodySettingsPanel) createContent() *unison.Panel {
@@ -84,18 +83,18 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 
 	text := i18n.Text("Name")
 	content.AddChild(NewFieldLeadingLabel(text, false))
-	field := NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"name", text,
-		func() string { return p.dockable.body.Name },
-		func(s string) { p.dockable.body.Name = s })
+	field := NewStringField(p.dockable.targetMgr, p.dockable.model.KeyPrefix+"name", text,
+		func() string { return p.dockable.model.Name },
+		func(s string) { p.dockable.model.Name = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
 	field.Tooltip = newWrappedTooltip(i18n.Text("The name of this body type"))
 	content.AddChild(field)
 
 	text = i18n.Text("Roll")
 	content.AddChild(NewFieldLeadingLabel(text, false))
-	field = NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"roll", text,
-		func() string { return gurps.Roller.Format(p.dockable.body.Roll) },
-		func(s string) { p.dockable.body.Roll = gurps.Roller.Parse(s) })
+	field = NewStringField(p.dockable.targetMgr, p.dockable.model.KeyPrefix+"roll", text,
+		func() string { return gurps.Roller.Format(p.dockable.model.Roll) },
+		func(s string) { p.dockable.model.Roll = gurps.Roller.Parse(s) })
 	field.SetMinimumTextWidthUsing("100d1000")
 	field.Tooltip = newWrappedTooltip(i18n.Text("The dice to roll on the table"))
 	content.AddChild(field)
@@ -109,7 +108,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 	wrapper.SetLayout(&unison.FlexLayout{Columns: 1})
 	content.AddChild(wrapper)
 
-	for _, loc := range p.dockable.body.Locations {
+	for _, loc := range p.dockable.model.Locations {
 		wrapper.AddChild(newHitLocationSettingsPanel(p.dockable, loc))
 	}
 	return content

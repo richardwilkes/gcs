@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 )
@@ -67,4 +68,42 @@ func TestMarkdownHardLineBreaksPreservesParagraphs(t *testing.T) {
 	rendered := renderTooltipMarkdown(c, markdownHardLineBreaks("first\n\nsecond"))
 	c.Equal(2, strings.Count(rendered, "<p>"), "paragraph break should be preserved as two paragraphs")
 	c.Equal(0, strings.Count(rendered, "<br>"), "a lone paragraph break should not introduce a hard line break")
+}
+
+// TestNewApplyCancelButtons verifies the behavior every editor with pending changes relies on: both buttons start out
+// disabled, apply closes the editor only when it reports success, cancel closes it without applying, and the keyboard
+// shortcuts are shown only when asked for.
+func TestNewApplyCancelButtons(t *testing.T) {
+	c := check.New(t)
+	toolbar := unison.NewPanel()
+	applied, closed := 0, 0
+	succeed := true
+	applyButton, cancelButton := newApplyCancelButtons(toolbar, false,
+		func() bool {
+			applied++
+			return succeed
+		},
+		func() { closed++ })
+	c.Equal([]*unison.Panel{applyButton.AsPanel(), cancelButton.AsPanel()}, toolbar.Children(),
+		"apply then cancel are added to the toolbar")
+	c.False(applyButton.Enabled(), "apply starts out disabled")
+	c.False(cancelButton.Enabled(), "cancel starts out disabled")
+
+	applyButton.ClickCallback()
+	c.Equal(1, applied)
+	c.Equal(1, closed, "a successful apply closes the editor")
+
+	succeed = false
+	applyButton.ClickCallback()
+	c.Equal(2, applied)
+	c.Equal(1, closed, "an apply that fails leaves the editor open")
+
+	cancelButton.ClickCallback()
+	c.Equal(2, applied, "cancel applies nothing")
+	c.Equal(2, closed, "and closes the editor")
+
+	c.Equal(1, len(applyButton.Tooltip.Children()), "without shortcuts, the tooltip is a single line")
+	applyButton, cancelButton = newApplyCancelButtons(unison.NewPanel(), true, func() bool { return true }, func() {})
+	c.Equal(2, len(applyButton.Tooltip.Children()), "with shortcuts, the tooltip gains a second line")
+	c.Equal(2, len(cancelButton.Tooltip.Children()))
 }

@@ -61,7 +61,12 @@ func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitL
 		gc.DrawRect(rect, ink.Paint(gc, rect, paintstyle.Fill))
 	}
 
-	p.AddChild(NewDragHandle(hitLocationDragKey, p))
+	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
+		editor: dockable,
+		row:    p.AsPanel(),
+		title:  i18n.Text("Hit Location Drag"),
+		move:   func(to int) bool { return dockable.moveHitLocation(loc, to) },
+	}))
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())
 
@@ -93,26 +98,20 @@ func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
 }
 
 func (p *hitLocationSettingsPanel) addSubTable() {
-	undo := p.dockable.prepareUndo(i18n.Text("Add Sub-Table"))
-	p.loc.SubTable = &gurps.Body{
-		Roll:      gurps.Roller.Parse("1d"),
-		KeyPrefix: p.dockable.targetMgr.NextPrefix(),
-	}
-	p.loc.SubTable.SetOwningLocation(p.loc)
-	p.loc.SubTable.Update(p.dockable.Entity())
-	p.loc.SubTable.AddLocation(gurps.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix()))
-	p.dockable.finishAndPostUndo(undo)
-	p.dockable.sync()
-	if focus := p.dockable.targetMgr.Find(p.loc.SubTable.KeyPrefix + "subroll"); focus != nil {
-		focus.RequestFocus()
-	}
+	keyPrefix := p.dockable.targetMgr.NextPrefix()
+	p.dockable.editStructure(i18n.Text("Add Sub-Table"), func() {
+		p.loc.SubTable = &gurps.Body{
+			Roll:      gurps.Roller.Parse("1d"),
+			KeyPrefix: keyPrefix,
+		}
+		p.loc.SubTable.SetOwningLocation(p.loc)
+		p.loc.SubTable.Update(p.dockable.Entity())
+		p.loc.SubTable.AddLocation(gurps.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix()))
+	}, keyPrefix+"subroll")
 }
 
 func (p *hitLocationSettingsPanel) removeHitLocation() {
-	undo := p.dockable.prepareUndo(i18n.Text("Remove Hit Location"))
-	p.loc.OwningTable().RemoveLocation(p.loc)
-	p.dockable.finishAndPostUndo(undo)
-	p.dockable.sync()
+	p.dockable.editStructure(i18n.Text("Remove Hit Location"), func() { p.loc.OwningTable().RemoveLocation(p.loc) }, "")
 }
 
 func (p *hitLocationSettingsPanel) createContent() *unison.Panel {

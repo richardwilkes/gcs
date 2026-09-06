@@ -186,26 +186,15 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 		),
 	)
 
-	e.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
-	e.applyButton.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Apply Changes"),
-		fmt.Sprintf(i18n.Text("%v%v or %v%v"), mod.OSMenuCommand(), unison.KeyReturn, mod.OSMenuCommand(),
-			unison.KeyNumPadEnter))
-	e.applyButton.SetEnabled(false)
-	e.applyButton.ClickCallback = func() {
-		e.apply()
-		e.promptForSave = false
-		e.AttemptClose()
-	}
-	toolbar.AddChild(e.applyButton)
-
-	e.cancelButton = unison.NewSVGButton(svg.Not)
-	e.cancelButton.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Discard Changes"), unison.KeyEscape.String())
-	e.cancelButton.SetEnabled(false)
-	e.cancelButton.ClickCallback = func() {
-		e.promptForSave = false
-		e.AttemptClose()
-	}
-	toolbar.AddChild(e.cancelButton)
+	e.applyButton, e.cancelButton = newApplyCancelButtons(toolbar, true,
+		func() bool {
+			e.apply()
+			return true
+		},
+		func() {
+			e.promptForSave = false
+			e.AttemptClose()
+		})
 
 	target := any(e.target)
 	if _, ok := target.(*gurps.Weapon); !ok {

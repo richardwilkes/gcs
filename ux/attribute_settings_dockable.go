@@ -15,39 +15,16 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var _ GroupedCloser = &attributeSettingsDockable{}
 
 type attributeSettingsDockable struct {
-	SettingsDockable
-	owner           EntityPanel
-	targetMgr       *TargetMgr
-	undoMgr         *unison.UndoManager
-	defs            *gurps.AttributeDefs
-	originalHash    uint64
-	toolbar         *unison.Panel
-	content         *unison.Panel
-	applyButton     *unison.Button
-	cancelButton    *unison.Button
-	dragTargetPool  *poolSettingsPanel
-	defInsert       int
-	thresholdInsert int
-	promptForSave   bool
-	inDragOver      bool
-}
-
-type attributeSettingsDragData struct {
-	owner     *gurps.Entity
-	def       *gurps.AttributeDef
-	threshold *gurps.PoolThreshold
+	undoableSettingsDockable[*gurps.AttributeDefs]
+	owner EntityPanel
 }
 
 // ShowAttributeSettings the Attribute Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
@@ -60,29 +37,34 @@ func ShowAttributeSettings(owner EntityPanel) {
 	}) {
 		return
 	}
-	d := &attributeSettingsDockable{
-		owner:         owner,
-		promptForSave: true,
-	}
-	d.Self = d
-	d.targetMgr = NewTargetMgr(d)
+	var defs *gurps.AttributeDefs
 	if owner != nil {
-		d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
+		defs = owner.Entity().SheetSettings.Attributes.Clone()
 	} else {
-		d.defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
+		defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
 	}
+	d := newAttributeSettingsDockable(owner, defs)
 	d.TabTitle = attributeSettingsTabTitle(owner)
 	d.TabIcon = svg.Attributes
-	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	d.originalHash = gurps.Hash64(d.defs)
 	d.Extensions = []string{gurps.AttributesExt, gurps.AttributesExtAlt1, gurps.AttributesExtAlt2}
-	d.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	d.Loader = d.load
-	d.Saver = d.save
 	d.Resetter = d.reset
-	d.ModifiedCallback = d.modified
-	d.WillCloseCallback = d.willClose
-	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.show()
+}
+
+// newAttributeSettingsDockable returns a dockable for the owner, which is nil for the defaults, that edits the given
+// attribute definitions in place, ready for its content to be built.
+func newAttributeSettingsDockable(owner EntityPanel, defs *gurps.AttributeDefs) *attributeSettingsDockable {
+	d := &attributeSettingsDockable{owner: owner}
+	d.Self = d
+	d.init(d, undoableSettingsSpec[*gurps.AttributeDefs]{
+		helpLink:     "md:User%20Guide/Attributes",
+		clone:        (*gurps.AttributeDefs).Clone,
+		buildContent: d.buildContent,
+		apply:        d.apply,
+		extraToolbar: d.addToToolbar,
+	}, defs)
+	return d
 }
 
 // attributeSettingsTabTitle returns the tab title to use for the attribute settings of the given owner, or for the
@@ -94,61 +76,12 @@ func attributeSettingsTabTitle(owner EntityPanel) string {
 	return fmt.Sprintf(i18n.Text("Attributes: %s"), owner.Entity().Profile.Name)
 }
 
-func (d *attributeSettingsDockable) UndoManager() *unison.UndoManager {
-	return d.undoMgr
-}
-
-func (d *attributeSettingsDockable) modified() bool {
-	modified := d.originalHash != gurps.Hash64(d.defs)
-	d.applyButton.SetEnabled(modified)
-	d.cancelButton.SetEnabled(modified)
-	return modified
-}
-
-func (d *attributeSettingsDockable) willClose() bool {
-	if d.promptForSave && d.originalHash != gurps.Hash64(d.defs) {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Apply changes made to\n%s?"), d.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			d.apply()
-		case unison.ModalResponseCancel:
-			return false
-		}
-	}
-	return true
-}
-
 func (d *attributeSettingsDockable) CloseWithGroup(other unison.Paneler) bool {
 	return d.owner != nil && d.owner == other
 }
 
-func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
-	d.toolbar = toolbar
-
-	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Attributes") }
-	toolbar.AddChild(helpButton)
-
-	d.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
-	d.applyButton.Tooltip = newWrappedTooltip(i18n.Text("Apply Changes"))
-	d.applyButton.SetEnabled(false)
-	d.applyButton.ClickCallback = func() {
-		d.apply()
-		d.promptForSave = false
-		d.AttemptClose()
-	}
-	toolbar.AddChild(d.applyButton)
-
-	d.cancelButton = unison.NewSVGButton(svg.Not)
-	d.cancelButton.Tooltip = newWrappedTooltip(i18n.Text("Discard Changes"))
-	d.cancelButton.SetEnabled(false)
-	d.cancelButton.ClickCallback = func() {
-		d.promptForSave = false
-		d.AttemptClose()
-	}
-	toolbar.AddChild(d.cancelButton)
-
+// addToToolbar adds the Add Attribute button after the standard buttons.
+func (d *attributeSettingsDockable) addToToolbar(toolbar *unison.Panel) {
 	toolbar.AddChild(NewToolbarSeparator())
 
 	addButton := unison.NewSVGButton(unison.CircledAddSVG)
@@ -166,19 +99,11 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 // addAttribute adds a new attribute definition, gives it a panel and records the undo edit, returning the new panel.
 func (d *attributeSettingsDockable) addAttribute(undoName string) *attrDefSettingsPanel {
-	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
-		ID:         unison.NextUndoID(),
-		EditName:   undoName,
-		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
-	}
-	undo.BeforeData = d.defs.Clone()
+	undo := d.prepareUndo(undoName)
 	p := newAttrDefSettingsPanel(d, d.addAttributeDef())
 	d.content.AddChild(p)
 	d.adjustDeleteButtons()
-	undo.AfterData = d.defs.Clone()
-	d.UndoManager().Add(undo)
+	d.finishAndPostUndo(undo)
 	d.MarkModified(nil)
 	return p
 }
@@ -193,7 +118,7 @@ func (d *attributeSettingsDockable) addAttributeDef() *gurps.AttributeDef {
 	for {
 		for v := 'a'; v <= 'z'; v++ {
 			attempt := fmt.Sprintf("%s%c", base, v)
-			if _, exists := d.defs.Set[attempt]; !exists {
+			if _, exists := d.model.Set[attempt]; !exists {
 				attrDef.DefID = attempt
 				break
 			}
@@ -203,23 +128,19 @@ func (d *attributeSettingsDockable) addAttributeDef() *gurps.AttributeDef {
 		}
 		base += "a"
 	}
-	for _, v := range d.defs.Set {
+	for _, v := range d.model.Set {
 		if attrDef.Order <= v.Order {
 			attrDef.Order = v.Order + 1
 		}
 	}
-	d.defs.Set[attrDef.DefID] = attrDef
+	d.model.Set[attrDef.DefID] = attrDef
 	return attrDef
 }
 
-func (d *attributeSettingsDockable) initContent(content *unison.Panel) {
-	d.content = content
-	installPanelDragDrop(d.content, attributeSettingsDragKey, d.dataDragOver, d.dataDragExit, d.dataDragDrop)
-	d.content.DrawOverCallback = d.drawOver
-	content.SetBorder(nil)
-	content.SetLayout(&unison.FlexLayout{Columns: 1})
-	for _, def := range d.defs.List(false) {
-		content.AddChild(newAttrDefSettingsPanel(d, def))
+// buildContent fills the content with a panel per attribute definition, in order.
+func (d *attributeSettingsDockable) buildContent() {
+	for _, def := range d.model.List(false) {
+		d.content.AddChild(newAttrDefSettingsPanel(d, def))
 	}
 	d.adjustDeleteButtons()
 }
@@ -244,45 +165,27 @@ func (d *attributeSettingsDockable) Entity() *gurps.Entity {
 	return nil
 }
 
-func (d *attributeSettingsDockable) applyAttrDefs(defs *gurps.AttributeDefs) {
-	d.defs = defs.Clone()
-	d.sync()
+// moveAttributeDef moves the definition to the given insertion position among the definitions, renumbering them to
+// match, and reports whether anything changed. It is what dropping a dragged definition does.
+func (d *attributeSettingsDockable) moveAttributeDef(def *gurps.AttributeDef, to int) bool {
+	list := d.model.List(false)
+	if !moveEntry(&list, slices.Index(list, def), to) {
+		return false
+	}
+	for i, one := range list {
+		one.Order = i
+	}
+	return true
 }
 
 func (d *attributeSettingsDockable) reset() {
-	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
-		ID:         unison.NextUndoID(),
-		EditName:   i18n.Text("Reset Attributes"),
-		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
-		BeforeData: d.defs.Clone(),
-	}
+	var defs *gurps.AttributeDefs
 	if d.owner != nil {
-		d.defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
+		defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
 	} else {
-		d.defs = gurps.FactoryAttributeDefs()
+		defs = gurps.FactoryAttributeDefs()
 	}
-	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	undo.AfterData = d.defs.Clone()
-	d.UndoManager().Add(undo)
-	d.sync()
-}
-
-func (d *attributeSettingsDockable) sync() {
-	focusRefKey := d.targetMgr.CurrentFocusRef()
-	scrollRoot := d.content.ScrollRoot()
-	h, v := scrollRoot.Position()
-	d.content.RemoveAllChildren()
-	for _, def := range d.defs.List(false) {
-		d.content.AddChild(newAttrDefSettingsPanel(d, def))
-	}
-	d.adjustDeleteButtons()
-	d.MarkForLayoutAndRedraw()
-	d.ValidateLayout()
-	d.MarkModified(nil)
-	d.targetMgr.ReacquireFocus(focusRefKey, d.toolbar, d.content)
-	scrollRoot.SetPosition(h, v)
+	d.replaceModel(i18n.Text("Reset Attributes"), defs)
 }
 
 func (d *attributeSettingsDockable) load(fileSystem fs.FS, filePath string) error {
@@ -295,21 +198,9 @@ func (d *attributeSettingsDockable) load(fileSystem fs.FS, filePath string) erro
 		return nil
 	}
 	if !replace {
-		replacements = mergeAttributeDefs(d.defs, replacements)
+		replacements = mergeAttributeDefs(d.model, replacements)
 	}
-	replacements.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
-		ID:         unison.NextUndoID(),
-		EditName:   i18n.Text("Load Attributes"),
-		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
-		BeforeData: d.defs.Clone(),
-	}
-	d.defs = replacements
-	undo.AfterData = replacements.Clone()
-	d.UndoManager().Add(undo)
-	d.sync()
+	d.replaceModel(i18n.Text("Load Attributes"), replacements)
 	return nil
 }
 
@@ -338,19 +229,15 @@ func mergeAttributeDefs(existing, incoming *gurps.AttributeDefs) *gurps.Attribut
 	return merged
 }
 
-func (d *attributeSettingsDockable) save(filePath string) error {
-	return d.defs.Save(filePath)
-}
-
 func (d *attributeSettingsDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
 	if d.owner == nil {
-		gurps.GlobalSettings().Sheet.Attributes = d.defs.Clone()
+		gurps.GlobalSettings().Sheet.Attributes = d.model.Clone()
 		gurps.SyncGlobalSheetSettings()
 		return
 	}
 	entity := d.owner.Entity()
-	entity.SheetSettings.Attributes = d.defs.Clone()
+	entity.SheetSettings.Attributes = d.model.Clone()
 	for attrID, def := range entity.SheetSettings.Attributes.Set {
 		if attr, exists := entity.Attributes.Set[attrID]; exists {
 			attr.Order = def.Order
@@ -359,158 +246,13 @@ func (d *attributeSettingsDockable) apply() {
 		}
 	}
 	for attrID := range entity.Attributes.Set {
-		if _, exists := d.defs.Set[attrID]; !exists {
+		if _, exists := d.model.Set[attrID]; !exists {
 			delete(entity.Attributes.Set, attrID)
 		}
 	}
 	for _, one := range AllDockables() {
 		if s, ok := one.(gurps.SheetSettingsResponder); ok {
 			s.SheetSettingsUpdated(entity, true)
-		}
-	}
-}
-
-func (d *attributeSettingsDockable) dataDragOver(where geom.Point, data any) bool {
-	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
-	d.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
-
-	prevInDragOver := d.inDragOver
-	prevDefInsert := d.defInsert
-	prevThresholdInsert := d.thresholdInsert
-	d.inDragOver = false
-	d.defInsert = -1
-	d.thresholdInsert = -1
-	d.dragTargetPool = nil
-	if dd, ok := data.(*attributeSettingsDragData); ok && dd.owner == d.Entity() {
-		children := d.content.Children()
-		rootPt := d.content.PointToRoot(where)
-		if dd.threshold == nil {
-			pt := d.content.PointFromRoot(rootPt)
-			for i, child := range children {
-				rect := child.FrameRect()
-				if pt.In(rect) {
-					if rect.CenterY() <= pt.Y {
-						d.defInsert = i + 1
-					} else {
-						d.defInsert = i
-					}
-					d.inDragOver = true
-					break
-				}
-			}
-		} else {
-			for i, def := range d.defs.List(false) {
-				if def != dd.def || (def.Type != attribute.Pool && def.Type != attribute.PoolRef) {
-					continue
-				}
-				pp, ok2 := children[i].Self.(*attrDefSettingsPanel)
-				if !ok2 {
-					continue
-				}
-				p := pp.poolPanel
-				pt := p.PointFromRoot(rootPt)
-				for j, child := range p.Children() {
-					rect := child.FrameRect()
-					if !pt.In(rect) {
-						continue
-					}
-					d.dragTargetPool = p
-					d.defInsert = i
-					if rect.CenterY() <= pt.Y {
-						d.thresholdInsert = j + 1
-					} else {
-						d.thresholdInsert = j
-					}
-					d.inDragOver = true
-					break
-				}
-				if d.inDragOver {
-					break
-				}
-			}
-		}
-	}
-	if prevInDragOver != d.inDragOver || prevDefInsert != d.defInsert || prevThresholdInsert != d.thresholdInsert {
-		d.MarkForRedraw()
-	}
-	return true
-}
-
-func (d *attributeSettingsDockable) dataDragExit() {
-	d.inDragOver = false
-	d.defInsert = -1
-	d.thresholdInsert = -1
-	d.dragTargetPool = nil
-	d.MarkForRedraw()
-}
-
-func (d *attributeSettingsDockable) dataDragDrop(_ geom.Point, data any) {
-	if d.inDragOver && d.defInsert != -1 {
-		if dd, ok := data.(*attributeSettingsDragData); ok {
-			undo := &unison.UndoEdit[*gurps.AttributeDefs]{
-				ID:         unison.NextUndoID(),
-				UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-				RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-				AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
-			}
-			undo.BeforeData = d.defs.Clone()
-			if d.thresholdInsert != -1 {
-				undo.EditName = i18n.Text("Pool Threshold Drag")
-				i := slices.Index(dd.def.Thresholds, dd.threshold)
-				dd.def.Thresholds = slices.Delete(dd.def.Thresholds, i, i+1)
-				if i < d.thresholdInsert {
-					d.thresholdInsert--
-				}
-				dd.def.Thresholds = slices.Insert(dd.def.Thresholds, d.thresholdInsert, dd.threshold)
-			} else {
-				undo.EditName = i18n.Text("Attribute Definition Drag")
-				list := d.defs.List(false)
-				i := slices.Index(list, dd.def)
-				list = slices.Delete(list, i, i+1)
-				if i < d.defInsert {
-					d.defInsert--
-				}
-				list = slices.Insert(list, d.defInsert, dd.def)
-				for j, def := range list {
-					def.Order = j
-				}
-			}
-			undo.AfterData = d.defs.Clone()
-			d.applyAttrDefs(undo.AfterData)
-			d.UndoManager().Add(undo)
-			d.MarkModified(nil)
-			d.MarkForLayoutAndRedraw()
-		}
-	}
-	d.dataDragExit()
-}
-
-func (d *attributeSettingsDockable) drawOver(gc *unison.Canvas, rect geom.Rect) {
-	if d.inDragOver {
-		if d.thresholdInsert != -1 {
-			children := d.dragTargetPool.Children()
-			var y float32
-			if d.thresholdInsert < len(children) {
-				y = children[d.thresholdInsert].FrameRect().Y
-			} else {
-				y = children[len(children)-1].FrameRect().Bottom()
-			}
-			pt := d.content.PointFromRoot(d.dragTargetPool.PointToRoot(geom.Point{Y: y}))
-			paint := unison.ThemeWarning.Paint(gc, rect, paintstyle.Stroke)
-			paint.SetStrokeWidth(2)
-			r := d.content.RectFromRoot(d.dragTargetPool.RectToRoot(d.dragTargetPool.ContentRect(false)))
-			gc.DrawLine(geom.NewPoint(r.X, pt.Y), geom.NewPoint(r.Right(), pt.Y), paint)
-		} else if d.defInsert != -1 {
-			children := d.content.Children()
-			var y float32
-			if d.defInsert < len(children) {
-				y = children[d.defInsert].FrameRect().Y
-			} else {
-				y = children[len(children)-1].FrameRect().Bottom()
-			}
-			paint := unison.ThemeWarning.Paint(gc, rect, paintstyle.Stroke)
-			paint.SetStrokeWidth(2)
-			gc.DrawLine(geom.NewPoint(rect.X, y), geom.NewPoint(rect.Right(), y), paint)
 		}
 	}
 }
