@@ -11,7 +11,7 @@ package gurps
 
 import (
 	"fmt"
-	iofs "io/fs"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -44,170 +44,8 @@ func Convert(paths ...string) error {
 	list := slices.SortedFunc(maps.Keys(pathSet), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
 	for _, p := range list {
 		fmt.Printf(i18n.Text("Processing %s\n"), p)
-		switch strings.ToLower(filepath.Ext(p)) {
-		case TraitsExt:
-			var data []*Trait
-			if data, err = NewTraitsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = SaveTraits(data, p); err != nil {
-				return err
-			}
-		case TraitModifiersExt:
-			var data []*TraitModifier
-			if data, err = NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = SaveTraitModifiers(data, p); err != nil {
-				return err
-			}
-		case EquipmentExt:
-			var data []*Equipment
-			if data, err = NewEquipmentFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = SaveEquipment(data, p); err != nil {
-				return err
-			}
-		case EquipmentModifiersExt:
-			var data []*EquipmentModifier
-			if data, err = NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = SaveEquipmentModifiers(data, p); err != nil {
-				return err
-			}
-		case LootExt:
-			var loot *Loot
-			if loot, err = NewLootFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = loot.Save(p); err != nil {
-				return err
-			}
-		case SkillsExt:
-			var data []*Skill
-			if data, err = NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = SaveSkills(data, p); err != nil {
-				return err
-			}
-		case SpellsExt:
-			var data []*Spell
-			if data, err = NewSpellsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = SaveSpells(data, p); err != nil {
-				return err
-			}
-		case NotesExt:
-			var data []*Note
-			if data, err = NewNotesFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = SaveNotes(data, p); err != nil {
-				return err
-			}
-		case TemplatesExt:
-			var tmpl *Template
-			if tmpl, err = NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = tmpl.Save(p); err != nil {
-				return err
-			}
-		// TODO: Re-enable Campaign files
-		// case CampaignExt:
-		// 	var campaign *Campaign
-		// 	if campaign, err = NewCampaignFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-		// 		return err
-		// 	}
-		// 	if err = campaign.Save(p); err != nil {
-		// 		return err
-		// 	}
-		case SheetExt:
-			var entity *Entity
-			if entity, err = NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = entity.Save(p); err != nil {
-				return err
-			}
-		case AncestryExt:
-			var data *Ancestry
-			if data, err = NewAncestryFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
-				return err
-			}
-		case AttributesExt, AttributesExtAlt1, AttributesExtAlt2:
-			var data *AttributeDefs
-			if data, err = NewAttributeDefsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
-				return err
-			}
-		case BodyExt, BodyExtAlt:
-			var data *Body
-			if data, err = NewBodyFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
-				return err
-			}
-		case CalendarExt:
-			// Currently have no version info, so nothing to update
-		case ColorSettingsExt:
-			var data *colors.Colors
-			if data, err = colors.NewFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
-				return err
-			}
-		case FontSettingsExt:
-			var data *fonts.Fonts
-			if data, err = fonts.NewFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
-				return err
-			}
-		case GeneralSettingsExt:
-			var data *GeneralSettings
-			if data, err = NewGeneralSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
-				return err
-			}
-		case KeySettingsExt:
-			var data *KeyBindings
-			if data, err = NewKeyBindingsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
-				return err
-			}
-		case NamesExt:
-			// Currently have no version info, so nothing to update
-		case PageRefSettingsExt:
-			var data *PageRefs
-			if data, err = NewPageRefsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
-				return err
-			}
-		case SheetSettingsExt:
-			var data *SheetSettings
-			if data, err = NewSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
-				return err
-			}
-			if err = data.Save(p); err != nil {
+		if convert := converters[strings.ToLower(filepath.Ext(p))]; convert != nil {
+			if err = convert(p); err != nil {
 				return err
 			}
 		}
@@ -220,10 +58,55 @@ func Convert(paths ...string) error {
 	return nil
 }
 
-func convertWalker(pathSet, extSet map[string]struct{}) func(path string, d iofs.DirEntry, err error) error {
-	var f func(path string, d iofs.DirEntry, err error) error
+// converters maps each GCS file extension, in lowercase, to the function that rewrites a file of that type in the
+// current file format. Extensions mapped to nil currently carry no version information, so there is nothing to update
+// for them. The walker only collects files whose extensions are in this set, so every entry here must have a
+// counterpart in GCSExtensions or GCSSecondaryExtensions.
+var converters = map[string]func(p string) error{
+	TraitsExt:             convertFile(NewTraitsFromFile, SaveTraits),
+	TraitModifiersExt:     convertFile(NewTraitModifiersFromFile, SaveTraitModifiers),
+	EquipmentExt:          convertFile(NewEquipmentFromFile, SaveEquipment),
+	EquipmentModifiersExt: convertFile(NewEquipmentModifiersFromFile, SaveEquipmentModifiers),
+	LootExt:               convertFile(NewLootFromFile, (*Loot).Save),
+	SkillsExt:             convertFile(NewSkillsFromFile, SaveSkills),
+	SpellsExt:             convertFile(NewSpellsFromFile, SaveSpells),
+	NotesExt:              convertFile(NewNotesFromFile, SaveNotes),
+	TemplatesExt:          convertFile(NewTemplateFromFile, (*Template).Save),
+	// TODO: Re-enable Campaign files
+	// CampaignExt:           convertFile(NewCampaignFromFile, (*Campaign).Save),
+	SheetExt:           convertFile(NewEntityFromFile, (*Entity).Save),
+	AncestryExt:        convertFile(NewAncestryFromFile, (*Ancestry).Save),
+	AttributesExt:      convertFile(NewAttributeDefsFromFile, (*AttributeDefs).Save),
+	AttributesExtAlt1:  convertFile(NewAttributeDefsFromFile, (*AttributeDefs).Save),
+	AttributesExtAlt2:  convertFile(NewAttributeDefsFromFile, (*AttributeDefs).Save),
+	BodyExt:            convertFile(NewBodyFromFile, (*Body).Save),
+	BodyExtAlt:         convertFile(NewBodyFromFile, (*Body).Save),
+	CalendarExt:        nil,
+	ColorSettingsExt:   convertFile(colors.NewFromFS, (*colors.Colors).Save),
+	FontSettingsExt:    convertFile(fonts.NewFromFS, (*fonts.Fonts).Save),
+	GeneralSettingsExt: convertFile(NewGeneralSettingsFromFile, (*GeneralSettings).Save),
+	KeySettingsExt:     convertFile(NewKeyBindingsFromFS, (*KeyBindings).Save),
+	NamesExt:           nil,
+	PageRefSettingsExt: convertFile(NewPageRefsFromFS, (*PageRefs).Save),
+	SheetSettingsExt:   convertFile(NewSheetSettingsFromFile, (*SheetSettings).Save),
+}
+
+// convertFile returns a function that loads the file at the path it is given with load and writes it back out with
+// save, which brings the file up to the current file format.
+func convertFile[T any](load func(fs.FS, string) (T, error), save func(T, string) error) func(p string) error {
+	return func(p string) error {
+		data, err := load(os.DirFS(filepath.Dir(p)), filepath.Base(p))
+		if err != nil {
+			return err
+		}
+		return save(data, p)
+	}
+}
+
+func convertWalker(pathSet, extSet map[string]struct{}) func(path string, d fs.DirEntry, err error) error {
+	var f func(path string, d fs.DirEntry, err error) error
 	visited := make(map[string]struct{})
-	f = func(path string, d iofs.DirEntry, err error) error {
+	f = func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return nil //nolint:nilerr // Continue on even if there was an error
 		}
@@ -237,7 +120,7 @@ func convertWalker(pathSet, extSet map[string]struct{}) func(path string, d iofs
 		if d.IsDir() {
 			visited[path] = struct{}{}
 		} else {
-			if d.Type() == iofs.ModeSymlink {
+			if d.Type() == fs.ModeSymlink {
 				if path, err = filepath.EvalSymlinks(path); err == nil {
 					if _, exists := visited[path]; !exists {
 						_ = filepath.WalkDir(path, f) //nolint:errcheck // Continue on even if there was an error

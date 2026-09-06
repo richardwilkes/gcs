@@ -16,6 +16,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -71,4 +72,73 @@ func TestConvertWalkerIgnoresExtensionCase(t *testing.T) {
 		c.True(exists, "%s is collected", name)
 	}
 	c.Equal(len(wanted), len(collected), "the file with an unrelated extension is not collected")
+}
+
+// TestConvertersCoverCollectedExtensions verifies that every extension the conversion walker collects has an entry in
+// the converters map, so that each file type GCS owns is either rewritten or deliberately left alone rather than
+// silently skipped because the map fell out of sync with the extension lists. The primary extensions are listed here
+// because the file type registry that GCSExtensions reads from is populated by the ux package.
+func TestConvertersCoverCollectedExtensions(t *testing.T) {
+	c := check.New(t)
+	primary := []string{
+		TraitsExt, TraitModifiersExt, EquipmentExt, EquipmentModifiersExt, LootExt, SkillsExt, SpellsExt, NotesExt,
+		TemplatesExt, SheetExt,
+	}
+	for _, ext := range append(primary, GCSSecondaryExtensions()...) {
+		_, exists := converters[ext]
+		c.True(exists, "%s has a converter entry", ext)
+	}
+	for ext := range converters {
+		c.Equal(strings.ToLower(ext), ext, "%s is keyed in lowercase, which is what the dispatch looks up", ext)
+	}
+}
+
+// TestConvertRewritesCollectedFiles verifies that Convert brings each collected file up to the current data version,
+// including files that use an alternate extension, and leaves files whose type carries no version information
+// untouched.
+func TestConvertRewritesCollectedFiles(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	oldVersion := jio.CurrentDataVersion - 1
+	bodyPath := filepath.Join(dir, "body"+BodyExtAlt)
+	c.NoError(jio.SaveToFile(bodyPath, &standaloneBodyData{Version: oldVersion, BodyData: FactoryBody().BodyData}))
+	attrPath := filepath.Join(dir, "attributes"+AttributesExtAlt1)
+	c.NoError(jio.SaveToFile(attrPath, &attributeDefsData{Version: oldVersion, Rows: FactoryAttributeDefs()}))
+	calendarPath := filepath.Join(dir, "calendar"+CalendarExt)
+	calendarData := []byte(`{"version":1}`)
+	c.NoError(os.WriteFile(calendarPath, calendarData, 0o600))
+
+	c.NoError(Convert(dir))
+
+	c.Equal(jio.CurrentDataVersion, fileVersion(c, bodyPath), "the body file is rewritten in the current format")
+	c.Equal(jio.CurrentDataVersion, fileVersion(c, attrPath), "the attributes file is rewritten in the current format")
+	data, err := os.ReadFile(calendarPath)
+	c.NoError(err)
+	c.Equal(calendarData, data, "a file type with no version information is left untouched")
+}
+
+// TestConvertFile verifies that the converter built for a list file type reloads the file and writes it back out
+// with the current data version, and that a file which cannot be loaded is reported rather than overwritten.
+func TestConvertFile(t *testing.T) {
+	c := check.New(t)
+	traitsPath := filepath.Join(t.TempDir(), "traits"+TraitsExt)
+	c.NoError(jio.SaveToFile(traitsPath, &traitListData{Version: jio.CurrentDataVersion - 1}))
+	c.NoError(converters[TraitsExt](traitsPath))
+	c.Equal(jio.CurrentDataVersion, fileVersion(c, traitsPath))
+
+	broken := []byte("not json")
+	c.NoError(os.WriteFile(traitsPath, broken, 0o600))
+	c.HasError(converters[TraitsExt](traitsPath), "a file that fails to load is reported")
+	data, err := os.ReadFile(traitsPath)
+	c.NoError(err)
+	c.Equal(broken, data, "a file that fails to load is not overwritten")
+}
+
+// fileVersion returns the data version recorded in the JSON file at the given path.
+func fileVersion(c check.Checker, p string) int {
+	var data struct {
+		Version int `json:"version"`
+	}
+	c.NoError(jio.LoadFromFile(nil, p, &data))
+	return data.Version
 }
