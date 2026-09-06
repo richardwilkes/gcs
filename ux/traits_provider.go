@@ -97,21 +97,9 @@ func (p *traitsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 
 func (p *traitsProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
-		{
-			Title: i18n.Text("New Trait"),
-			ID:    NewTraitItemID,
-		},
-		{
-			Title: i18n.Text("New Trait Container"),
-			ID:    NewTraitContainerItemID,
-		},
-		{
-			Title: i18n.Text("Add Natural Attacks"),
-			ID:    AddNaturalAttacksItemID,
-		},
-		{
-			Title: organizeTraitsAction.Title,
-			ID:    OrganizeTraitsItemID,
-		},
+		contextMenuItemFor(newTraitAction),
+		contextMenuItemFor(newTraitContainerAction),
+		contextMenuItemFor(addNaturalAttacksAction),
+		contextMenuItemFor(organizeTraitsAction),
 	})
 }

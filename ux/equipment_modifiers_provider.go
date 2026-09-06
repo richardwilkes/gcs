@@ -97,13 +97,7 @@ func (p *eqpModProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 
 func (p *eqpModProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
-		{
-			Title: i18n.Text("New Equipment Modifier"),
-			ID:    NewEquipmentModifierItemID,
-		},
-		{
-			Title: i18n.Text("New Equipment Modifier Container"),
-			ID:    NewEquipmentContainerModifierItemID,
-		},
+		contextMenuItemFor(newEquipmentModifierAction),
+		contextMenuItemFor(newEquipmentContainerModifierAction),
 	})
 }

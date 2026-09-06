@@ -307,16 +307,11 @@ func (s *Sheet) exportPortrait(_ any) {
 	if s.entity.Profile.CanExportPortrait() {
 		if ext := s.entity.Profile.PortraitExtension(); ext != "" {
 			s.Window().ShowCursor()
-			dialog := unison.NewSaveDialog()
 			backingFilePath := s.BackingFilePath()
-			dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-			dialog.SetAllowedExtensions(ext)
-			dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-			if dialog.RunModal() {
-				if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
-					if err := s.entity.Profile.ExportPortrait(filePath); err != nil {
-						Workspace.ErrorHandler(i18n.Text("Unable to export portrait"), err)
-					}
+			if filePath, ok := chooseFileToSave(filepath.Dir(backingFilePath), xfilepath.BaseName(backingFilePath), ext,
+				gurps.DefaultLastDirKey); ok {
+				if err := s.entity.Profile.ExportPortrait(filePath); err != nil {
+					Workspace.ErrorHandler(i18n.Text("Unable to export portrait"), err)
 				}
 			}
 		}

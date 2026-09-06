@@ -93,68 +93,63 @@ func downloadRulesLookupFile() {
 		return
 	}
 	rules := result.rules
-	dialog := unison.NewSaveDialog()
-	settings := gurps.GlobalSettings()
-	dialog.SetInitialDirectory(settings.LastDir(gurps.RulesLookupLastDirKey))
-	dialog.SetAllowedExtensions(gurps.NotesExt)
-	dialog.SetInitialFileName("GURPS Rules Lookup")
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), gurps.NotesExt, false); ok {
-			settings.SetLastDir(gurps.RulesLookupLastDirKey, filepath.Dir(filePath))
-			filePath = filepath.Clean(filePath)
-			for _, one := range AllDockables() {
-				if tc, ok2 := one.(unison.TabCloser); ok2 {
-					var fbd FileBackedDockable
-					if fbd, ok2 = one.(FileBackedDockable); ok2 {
-						if filepath.Clean(fbd.BackingFilePath()) == filePath {
-							if !tc.MayAttemptClose() || !tc.AttemptClose() {
-								unison.WarningDialogWithMessage(i18n.Text("Download canceled"),
-									i18n.Text("Cannot update the file while it is open."))
-								return
-							}
-							break
-						}
+	filePath, ok := chooseFileToSave(gurps.GlobalSettings().LastDir(gurps.RulesLookupLastDirKey), "GURPS Rules Lookup",
+		gurps.NotesExt, gurps.RulesLookupLastDirKey)
+	if !ok {
+		return
+	}
+	filePath = filepath.Clean(filePath)
+	for _, one := range AllDockables() {
+		if tc, ok2 := one.(unison.TabCloser); ok2 {
+			var fbd FileBackedDockable
+			if fbd, ok2 = one.(FileBackedDockable); ok2 {
+				if filepath.Clean(fbd.BackingFilePath()) == filePath {
+					if !tc.MayAttemptClose() || !tc.AttemptClose() {
+						unison.WarningDialogWithMessage(i18n.Text("Download canceled"),
+							i18n.Text("Cannot update the file while it is open."))
+						return
 					}
+					break
 				}
 			}
-			idMap := make(map[string]tid.TID)
-			var existing []*gurps.Note
-			if existing, err = gurps.NewNotesFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath)); err == nil {
-				for _, n := range existing {
-					if n.Container() {
-						idMap[n.MarkDown] = n.ID()
-					}
-				}
-			}
-			notes := make([]*gurps.Note, 0, len(rules))
-			for book, list := range rules {
-				parent := gurps.NewNote(nil, nil, true)
-				if id, ok2 := idMap[book]; ok2 {
-					parent.TID = id
-				}
-				parent.MarkDown = book
-				children := make([]*gurps.Note, 0, len(list))
-				for _, rule := range list {
-					note := gurps.NewNote(nil, parent, false)
-					note.MarkDown = rule.Rule
-					note.Tags = rule.Category
-					note.PageRef = rule.Link
-					slices.Sort(note.Tags)
-					children = append(children, note)
-				}
-				slices.SortFunc(children, func(a, b *gurps.Note) int {
-					return xstrings.NaturalCmp(a.MarkDown, b.MarkDown, true)
-				})
-				parent.Children = children
-				notes = append(notes, parent)
-			}
-			slices.SortFunc(notes, func(a, b *gurps.Note) int {
-				return xstrings.NaturalCmp(a.MarkDown, b.MarkDown, true)
-			})
-			if err = gurps.SaveNotes(notes, filePath); err != nil {
-				Workspace.ErrorHandler(unableMsg, err)
-			}
-			Workspace.Navigator.EventuallyReload()
 		}
 	}
+	idMap := make(map[string]tid.TID)
+	var existing []*gurps.Note
+	if existing, err = gurps.NewNotesFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath)); err == nil {
+		for _, n := range existing {
+			if n.Container() {
+				idMap[n.MarkDown] = n.ID()
+			}
+		}
+	}
+	notes := make([]*gurps.Note, 0, len(rules))
+	for book, list := range rules {
+		parent := gurps.NewNote(nil, nil, true)
+		if id, ok2 := idMap[book]; ok2 {
+			parent.TID = id
+		}
+		parent.MarkDown = book
+		children := make([]*gurps.Note, 0, len(list))
+		for _, rule := range list {
+			note := gurps.NewNote(nil, parent, false)
+			note.MarkDown = rule.Rule
+			note.Tags = rule.Category
+			note.PageRef = rule.Link
+			slices.Sort(note.Tags)
+			children = append(children, note)
+		}
+		slices.SortFunc(children, func(a, b *gurps.Note) int {
+			return xstrings.NaturalCmp(a.MarkDown, b.MarkDown, true)
+		})
+		parent.Children = children
+		notes = append(notes, parent)
+	}
+	slices.SortFunc(notes, func(a, b *gurps.Note) int {
+		return xstrings.NaturalCmp(a.MarkDown, b.MarkDown, true)
+	})
+	if err = gurps.SaveNotes(notes, filePath); err != nil {
+		Workspace.ErrorHandler(unableMsg, err)
+	}
+	Workspace.Navigator.EventuallyReload()
 }

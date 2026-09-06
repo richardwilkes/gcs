@@ -105,32 +105,28 @@ func doPrint(title string, printer *printing.Printer, jobAttributes *printing.Jo
 // ExportPage exports the given dockable to the specified file type, one of "pdf", "webp", "png", or "jpeg".
 func ExportPage(ext string, dockable ExportDockable) {
 	dockable.AsPanel().Window().ShowCursor()
-	dialog := unison.NewSaveDialog()
 	backingFilePath := dockable.BackingFilePath()
-	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
-	dialog.SetAllowedExtensions(ext)
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(backingFilePath)))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
-			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-			exporter := newPageExporter(pageInfoProviderFor(dockable))
-			var err error
-			switch ext {
-			case "pdf":
-				err = exporter.exportAsPDFFile(filePath)
-			case "webp":
-				err = exporter.exportAsWEBPs(filePath)
-			case "png":
-				err = exporter.exportAsPNGs(filePath)
-			case "jpeg":
-				err = exporter.exportAsJPEGs(filePath)
-			default:
-				err = errs.New("unsupported export format: " + ext)
-			}
-			if err != nil {
-				Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to export as %s!"), ext), err)
-			}
-		}
+	filePath, ok := chooseFileToSave(filepath.Dir(backingFilePath), xfilepath.BaseName(backingFilePath), ext,
+		gurps.DefaultLastDirKey)
+	if !ok {
+		return
+	}
+	exporter := newPageExporter(pageInfoProviderFor(dockable))
+	var err error
+	switch ext {
+	case "pdf":
+		err = exporter.exportAsPDFFile(filePath)
+	case "webp":
+		err = exporter.exportAsWEBPs(filePath)
+	case "png":
+		err = exporter.exportAsPNGs(filePath)
+	case "jpeg":
+		err = exporter.exportAsJPEGs(filePath)
+	default:
+		err = errs.New("unsupported export format: " + ext)
+	}
+	if err != nil {
+		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to export as %s!"), ext), err)
 	}
 }
 

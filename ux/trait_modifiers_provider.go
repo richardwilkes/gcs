@@ -95,13 +95,7 @@ func (p *traitModifiersProvider) CreateItem(owner Rebuildable, table *unison.Tab
 
 func (p *traitModifiersProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
-		{
-			Title: i18n.Text("New Trait Modifier"),
-			ID:    NewTraitModifierItemID,
-		},
-		{
-			Title: i18n.Text("New Trait Modifier Container"),
-			ID:    NewTraitContainerModifierItemID,
-		},
+		contextMenuItemFor(newTraitModifierAction),
+		contextMenuItemFor(newTraitContainerModifierAction),
 	})
 }

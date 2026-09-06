@@ -81,13 +81,7 @@ func (p *notesProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[
 
 func (p *notesProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
-		{
-			Title: i18n.Text("New Note"),
-			ID:    NewNoteItemID,
-		},
-		{
-			Title: i18n.Text("New Note Container"),
-			ID:    NewNoteContainerItemID,
-		},
+		contextMenuItemFor(newNoteAction),
+		contextMenuItemFor(newNoteContainerAction),
 	})
 }

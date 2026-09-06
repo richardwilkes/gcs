@@ -274,9 +274,9 @@ func (p *weaponsProvider) Deserialize(data []byte) error {
 func (p *weaponsProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	if p.melee {
-		list = append(list, ContextMenuItem{i18n.Text("New Melee Weapon"), NewMeleeWeaponItemID})
+		list = append(list, contextMenuItemFor(newMeleeWeaponAction))
 	} else {
-		list = append(list, ContextMenuItem{i18n.Text("New Ranged Weapon"), NewRangedWeaponItemID})
+		list = append(list, contextMenuItemFor(newRangedWeaponAction))
 	}
 	return AppendDefaultContextMenuItems(list)
 }

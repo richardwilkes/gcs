@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
 	"testing"
@@ -126,6 +127,88 @@ func TestChooseFilesToOpen(t *testing.T) {
 	c.True(returned, "the canceled call has returned")
 	c.False(chosenOK, "a canceled dialog reports that nothing was chosen")
 	c.Nil(paths, "and returns no paths")
+	c.False(recorded, "a canceled dialog records no directory")
+}
+
+// TestChooseFileToSave drives the shared save-file dialog inside a headless workspace: it opens in the directory it is
+// given offering the sanitized initial name, hands back the chosen path with the required extension on it and records
+// the directory under the caller's key, but records nothing when canceled or when given no key.
+func TestChooseFileToSave(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	const key = "choose-file-to-save-test"
+
+	// Accept the offered name as is. The name has a character no file name may hold, which the dialog is offered
+	// sanitized, and lacks the extension, which the returned path carries. The dialog runs a nested modal loop, so the
+	// call is posted rather than run through Do and its results are read once the dialog has been dismissed.
+	var chosen string
+	var chosenOK, returned bool
+	c.True(screen.Post(func() {
+		chosen, chosenOK = chooseFileToSave(dir, "Alpha: Beta", "txt", key)
+		returned = true
+	}))
+	screen.Sync()
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	fileNameField, fileName, dirName := saveDialogFields(t, screen, dialogWnd)
+	c.Equal("Alpha@6 Beta", fileName, "the initial name is offered sanitized for the file system")
+	c.Equal(filepath.Base(dir), dirName, "the dialog opens in the directory it was given")
+	screen.Click(screen.PanelCenter(fileNameField))
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	var windows int
+	var lastDir string
+	screen.Do(func() {
+		windows = len(unison.Windows())
+		lastDir = gurps.GlobalSettings().LastDir(key)
+	})
+	c.Equal(1, windows, "the dialog has been dismissed")
+	c.True(returned, "the choice has been made")
+	c.True(chosenOK, "a chosen file is reported as chosen")
+	c.Equal(filepath.Join(dir, "Alpha@6 Beta.txt"), chosen, "the chosen path carries the required extension")
+	c.Equal(dir, lastDir, "the chosen file's directory is recorded under the key")
+
+	// Choose again with no key: the choice is made, but nothing is recorded.
+	const unusedKey = "choose-file-to-save-test-unused"
+	returned = false
+	c.True(screen.Post(func() {
+		chosen, chosenOK = chooseFileToSave(dir, "Gamma", "txt", "")
+		returned = true
+	}))
+	screen.Sync()
+	dialogWnd, _ = modalDialog(t, screen, wnd)
+	fileNameField, _, _ = saveDialogFields(t, screen, dialogWnd)
+	screen.Click(screen.PanelCenter(fileNameField))
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	var lastDirs map[string]string
+	screen.Do(func() {
+		windows = len(unison.Windows())
+		lastDirs = maps.Clone(gurps.GlobalSettings().LastDirs)
+	})
+	c.Equal(1, windows, "the dialog has been dismissed")
+	c.True(returned, "the choice has been made")
+	c.True(chosenOK, "a chosen file is reported as chosen")
+	c.Equal(filepath.Join(dir, "Gamma.txt"), chosen)
+	c.Equal(dir, lastDirs[key], "the earlier key is untouched")
+	_, recorded := lastDirs[""]
+	c.False(recorded, "an empty key records nothing")
+
+	// Cancel a dialog opened under a key nothing has been recorded for: the key stays unrecorded.
+	returned = false
+	c.True(screen.Post(func() {
+		chosen, chosenOK = chooseFileToSave(dir, "Delta", "txt", unusedKey)
+		returned = true
+	}))
+	screen.Sync()
+	modalDialog(t, screen, wnd)
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	screen.Do(func() {
+		windows = len(unison.Windows())
+		_, recorded = gurps.GlobalSettings().LastDirs[unusedKey]
+	})
+	c.Equal(1, windows, "escape has dismissed the dialog")
+	c.True(returned, "the canceled call has returned")
+	c.False(chosenOK, "a canceled dialog reports that nothing was chosen")
+	c.Equal("", chosen, "and returns no path")
 	c.False(recorded, "a canceled dialog records no directory")
 }
 

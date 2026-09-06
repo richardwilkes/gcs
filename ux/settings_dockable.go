@@ -12,7 +12,6 @@ package ux
 import (
 	"fmt"
 	"io/fs"
-	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
@@ -238,17 +237,10 @@ func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
 }
 
 func (d *SettingsDockable) handleExport(_ unison.MenuItem) {
-	dialog := unison.NewSaveDialog()
-	dialog.SetAllowedExtensions(d.Extensions[0])
-	global := gurps.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(gurps.SettingsLastDirKey))
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(d.Title())))
-	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {
-			global.SetLastDir(gurps.SettingsLastDirKey, filepath.Dir(filePath))
-			if err := d.Saver(filePath); err != nil {
-				Workspace.ErrorHandler(i18n.Text("Unable to save ")+d.TabTitle, err)
-			}
+	if filePath, ok := chooseFileToSave(gurps.GlobalSettings().LastDir(gurps.SettingsLastDirKey),
+		xfilepath.BaseName(d.Title()), d.Extensions[0], gurps.SettingsLastDirKey); ok {
+		if err := d.Saver(filePath); err != nil {
+			Workspace.ErrorHandler(i18n.Text("Unable to save ")+d.TabTitle, err)
 		}
 	}
 }

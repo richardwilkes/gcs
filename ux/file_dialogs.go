@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -48,4 +49,27 @@ func chooseFileToOpen(lastDirKey string, extensions ...string) (string, bool) {
 		return "", false
 	}
 	return paths[0], true
+}
+
+// chooseFileToSave runs the save-file dialog and returns the file the user chose, or false if the dialog was canceled
+// or the user declined to overwrite an existing file (see unison.ValidateSaveFilePath, which also makes sure the
+// returned path ends in ext). The dialog opens in initialDir and offers initialName, sanitized for use as a file name,
+// as the name to save under. Once a choice is made, the directory holding the chosen file is recorded under lastDirKey
+// (see gurps.Settings.LastDir) for next time; pass an empty key to record nothing.
+func chooseFileToSave(initialDir, initialName, ext, lastDirKey string) (string, bool) {
+	dialog := unison.NewSaveDialog()
+	dialog.SetInitialDirectory(initialDir)
+	dialog.SetAllowedExtensions(ext)
+	dialog.SetInitialFileName(xfilepath.SanitizeName(initialName))
+	if !dialog.RunModal() {
+		return "", false
+	}
+	filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false)
+	if !ok {
+		return "", false
+	}
+	if lastDirKey != "" {
+		gurps.GlobalSettings().SetLastDir(lastDirKey, filepath.Dir(filePath))
+	}
+	return filePath, true
 }

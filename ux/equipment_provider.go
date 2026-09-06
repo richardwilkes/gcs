@@ -172,16 +172,14 @@ func (p *equipmentProvider) CreateItem(owner Rebuildable, table *unison.Table[*N
 func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	if p.carried {
-		list = append(
-			list,
-			ContextMenuItem{i18n.Text("New Carried Equipment"), NewCarriedEquipmentItemID},
-			ContextMenuItem{i18n.Text("New Carried Equipment Container"), NewCarriedEquipmentContainerItemID},
+		list = append(list,
+			contextMenuItemFor(newCarriedEquipmentAction),
+			contextMenuItemFor(newCarriedEquipmentContainerAction),
 		)
 	} else {
-		list = append(
-			list,
-			ContextMenuItem{i18n.Text("New Other Equipment"), NewOtherEquipmentItemID},
-			ContextMenuItem{i18n.Text("New Other Equipment Container"), NewOtherEquipmentContainerItemID},
+		list = append(list,
+			contextMenuItemFor(newOtherEquipmentAction),
+			contextMenuItemFor(newOtherEquipmentContainerAction),
 		)
 	}
 	return AppendDefaultContextMenuItems(list)

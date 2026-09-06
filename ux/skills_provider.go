@@ -128,17 +128,8 @@ func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 
 func (p *skillsProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
-		{
-			Title: i18n.Text("New Skill"),
-			ID:    NewSkillItemID,
-		},
-		{
-			Title: i18n.Text("New Skill Container"),
-			ID:    NewSkillContainerItemID,
-		},
-		{
-			Title: i18n.Text("New Technique"),
-			ID:    NewTechniqueItemID,
-		},
+		contextMenuItemFor(newSkillAction),
+		contextMenuItemFor(newSkillContainerAction),
+		contextMenuItemFor(newTechniqueAction),
 	})
 }

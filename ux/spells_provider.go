@@ -146,17 +146,8 @@ func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 
 func (p *spellsProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
-		{
-			Title: i18n.Text("New Spell"),
-			ID:    NewSpellItemID,
-		},
-		{
-			Title: i18n.Text("New Spell Container"),
-			ID:    NewSpellContainerItemID,
-		},
-		{
-			Title: i18n.Text("New Ritual Magic Spell"),
-			ID:    NewRitualMagicSpellItemID,
-		},
+		contextMenuItemFor(newSpellAction),
+		contextMenuItemFor(newSpellContainerAction),
+		contextMenuItemFor(newRitualMagicSpellAction),
 	})
 }

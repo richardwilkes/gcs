@@ -708,31 +708,25 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 // and the last-directory key that records where the user saved, chosen by the caller. The directory is asked for only
 // when it is needed, since finding it may have side effects, such as creating it.
 func saveDockableAs(d FileBackedDockable, extension string, fallbackDir func() string, lastDirKey string, saver func(filePath string) error, setUnmodifiedAndNewPath func(filePath string)) bool {
-	dialog := unison.NewSaveDialog()
 	existingPath := d.BackingFilePath()
+	var initialDir string
 	if !strings.HasPrefix(existingPath, markdownContentOnlyPrefix) && xos.FileExists(existingPath) {
-		dialog.SetInitialDirectory(filepath.Dir(existingPath))
+		initialDir = filepath.Dir(existingPath)
 	} else {
-		dialog.SetInitialDirectory(fallbackDir())
+		initialDir = fallbackDir()
 	}
-	dialog.SetAllowedExtensions(extension)
-	dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(existingPath)))
-	if dialog.RunModal() {
-		filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), extension, false)
-		if !ok {
-			return false
-		}
-		gurps.GlobalSettings().SetLastDir(lastDirKey, filepath.Dir(filePath))
-		if err := saver(filePath); err != nil {
-			Workspace.ErrorHandler(i18n.Text("Unable to save as ")+xfilepath.BaseName(filePath), err)
-			return false
-		}
-		setUnmodifiedAndNewPath(filePath)
-		gurps.GlobalSettings().AddRecentFile(filePath)
-		UpdateTitleForDockable(d)
-		return true
+	filePath, ok := chooseFileToSave(initialDir, xfilepath.BaseName(existingPath), extension, lastDirKey)
+	if !ok {
+		return false
 	}
-	return false
+	if err := saver(filePath); err != nil {
+		Workspace.ErrorHandler(i18n.Text("Unable to save as ")+xfilepath.BaseName(filePath), err)
+		return false
+	}
+	setUnmodifiedAndNewPath(filePath)
+	gurps.GlobalSettings().AddRecentFile(filePath)
+	UpdateTitleForDockable(d)
+	return true
 }
 
 // PromptForDestination puts up a modal dialog to choose one or more destinations if choices contains more than one

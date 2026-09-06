@@ -477,18 +477,10 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 		EnabledCallback: actionEnabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if sheet := ActiveSheet(); sheet != nil {
-				dialog := unison.NewSaveDialog()
-				ext := filepath.Ext(path)
-				settings := gurps.GlobalSettings()
-				dialog.SetInitialDirectory(settings.LastDir(gurps.DefaultLastDirKey))
-				dialog.SetAllowedExtensions(ext)
-				dialog.SetInitialFileName(xfilepath.SanitizeName(xfilepath.BaseName(sheet.BackingFilePath())))
-				if dialog.RunModal() {
-					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
-						settings.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-						if err := gurps.Export(sheet.Entity(), path, filePath); err != nil {
-							Workspace.ErrorHandler(i18n.Text("Export failed"), err)
-						}
+				if filePath, ok := chooseFileToSave(gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey),
+					xfilepath.BaseName(sheet.BackingFilePath()), filepath.Ext(path), gurps.DefaultLastDirKey); ok {
+					if err := gurps.Export(sheet.Entity(), path, filePath); err != nil {
+						Workspace.ErrorHandler(i18n.Text("Export failed"), err)
 					}
 				}
 			}
@@ -516,50 +508,57 @@ func (s menuBarScope) appendDisabledMenuItem(menu unison.Menu, title string) {
 	menu.InsertItem(-1, item)
 }
 
+// contextMenuItemFor returns the context menu item that invokes action, so that the menu shows the action's own title
+// and the two can never drift apart. The action must already have been registered (see registerActions), which
+// SetupMenuBar ensures before any window, and so any context menu, exists.
+func contextMenuItemFor(action *unison.Action) ContextMenuItem {
+	return ContextMenuItem{Title: action.Title, ID: action.ID}
+}
+
 // AppendDefaultContextMenuItems appends the default set of context menu items for lists.
 func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 	return append(
 		list,
 		ContextMenuItem{"", -1},
-		ContextMenuItem{openEditorAction.Title, OpenEditorItemID},
+		contextMenuItemFor(openEditorAction),
 		ContextMenuItem{"", -1},
-		ContextMenuItem{duplicateAction.Title, DuplicateItemID},
+		contextMenuItemFor(duplicateAction),
 		ContextMenuItem{unison.DeleteAction().Title, unison.DeleteItemID},
 		ContextMenuItem{"", -1},
-		ContextMenuItem{moveUpAction.Title, MoveUpItemID},
-		ContextMenuItem{moveDownAction.Title, MoveDownItemID},
-		ContextMenuItem{moveOutOfContainerAction.Title, MoveOutOfContainerItemID},
-		ContextMenuItem{moveIntoContainerAction.Title, MoveIntoContainerItemID},
+		contextMenuItemFor(moveUpAction),
+		contextMenuItemFor(moveDownAction),
+		contextMenuItemFor(moveOutOfContainerAction),
+		contextMenuItemFor(moveIntoContainerAction),
 		ContextMenuItem{"", -1},
-		ContextMenuItem{moveToCarriedEquipmentAction.Title, MoveToCarriedEquipmentItemID},
-		ContextMenuItem{moveToOtherEquipmentAction.Title, MoveToOtherEquipmentItemID},
-		ContextMenuItem{copyToSheetAction.Title, CopyToSheetItemID},
-		ContextMenuItem{copyToTemplateAction.Title, CopyToTemplateItemID},
-		ContextMenuItem{applyTemplateAction.Title, ApplyTemplateItemID},
-		ContextMenuItem{newSheetFromTemplateAction.Title, NewSheetFromTemplateItemID},
-		ContextMenuItem{cloneSheetAction.Title, CloneSheetItemID},
+		contextMenuItemFor(moveToCarriedEquipmentAction),
+		contextMenuItemFor(moveToOtherEquipmentAction),
+		contextMenuItemFor(copyToSheetAction),
+		contextMenuItemFor(copyToTemplateAction),
+		contextMenuItemFor(applyTemplateAction),
+		contextMenuItemFor(newSheetFromTemplateAction),
+		contextMenuItemFor(cloneSheetAction),
 		ContextMenuItem{"", -1},
-		ContextMenuItem{incrementAction.Title, IncrementItemID},
-		ContextMenuItem{decrementAction.Title, DecrementItemID},
-		ContextMenuItem{increaseUsesAction.Title, IncrementUsesItemID},
-		ContextMenuItem{decreaseUsesAction.Title, DecrementUsesItemID},
-		ContextMenuItem{resetUsesToMaxAction.Title, ResetUsesToMaxItemID},
-		ContextMenuItem{increaseSkillLevelAction.Title, IncrementSkillLevelItemID},
-		ContextMenuItem{decreaseSkillLevelAction.Title, DecrementSkillLevelItemID},
-		ContextMenuItem{increaseTechLevelAction.Title, IncrementTechLevelItemID},
-		ContextMenuItem{decreaseTechLevelAction.Title, DecrementTechLevelItemID},
-		ContextMenuItem{increaseEquipmentLevelAction.Title, IncrementEquipmentLevelItemID},
-		ContextMenuItem{decreaseEquipmentLevelAction.Title, DecrementEquipmentLevelItemID},
+		contextMenuItemFor(incrementAction),
+		contextMenuItemFor(decrementAction),
+		contextMenuItemFor(increaseUsesAction),
+		contextMenuItemFor(decreaseUsesAction),
+		contextMenuItemFor(resetUsesToMaxAction),
+		contextMenuItemFor(increaseSkillLevelAction),
+		contextMenuItemFor(decreaseSkillLevelAction),
+		contextMenuItemFor(increaseTechLevelAction),
+		contextMenuItemFor(decreaseTechLevelAction),
+		contextMenuItemFor(increaseEquipmentLevelAction),
+		contextMenuItemFor(decreaseEquipmentLevelAction),
 		ContextMenuItem{"", -1},
-		ContextMenuItem{toggleStateAction.Title, ToggleStateItemID},
-		ContextMenuItem{swapDefaultsAction.Title, SwapDefaultsItemID},
-		ContextMenuItem{convertToContainerAction.Title, ConvertToContainerItemID},
-		ContextMenuItem{convertToNonContainerAction.Title, ConvertToNonContainerItemID},
+		contextMenuItemFor(toggleStateAction),
+		contextMenuItemFor(swapDefaultsAction),
+		contextMenuItemFor(convertToContainerAction),
+		contextMenuItemFor(convertToNonContainerAction),
 		ContextMenuItem{"", -1},
-		ContextMenuItem{openOnePageReferenceAction.Title, OpenOnePageReferenceItemID},
-		ContextMenuItem{openEachPageReferenceAction.Title, OpenEachPageReferenceItemID},
+		contextMenuItemFor(openOnePageReferenceAction),
+		contextMenuItemFor(openEachPageReferenceAction),
 		ContextMenuItem{"", -1},
-		ContextMenuItem{syncWithSourceAction.Title, SyncWithSourceItemID},
-		ContextMenuItem{clearSourceAction.Title, ClearSourceItemID},
+		contextMenuItemFor(syncWithSourceAction),
+		contextMenuItemFor(clearSourceAction),
 	)
 }
