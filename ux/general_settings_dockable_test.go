@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -56,9 +55,7 @@ func TestOpenInWindowCheckboxLeavesDeepSearchAlone(t *testing.T) {
 	d.createOpenInWindowCheckboxes(unison.NewPanel())
 	c.True(len(d.openInWindowCheckbox) != 0, "expected at least one separate-window checkbox")
 
-	box := d.openInWindowCheckbox[0]
-	group, ok := box.ClientData()["group"].(dgroup.Group)
-	c.True(ok, "expected the checkbox to carry its group")
+	box, group := d.openInWindowCheckbox[0].box, d.openInWindowCheckbox[0].item
 
 	box.State = uncheck.On
 	box.ClickCallback()
@@ -232,13 +229,111 @@ func TestDeepSearchCheckboxRebuildsDeepSearch(t *testing.T) {
 	d.createDeepSearchCheckboxes(unison.NewPanel())
 	c.True(len(d.deepSearchableCheckbox) != 0, "expected at least one deep search checkbox")
 
-	box := d.deepSearchableCheckbox[0]
-	ext, ok := box.ClientData()["ext"].(string)
-	c.True(ok, "expected the checkbox to carry its extension")
+	box, ext := d.deepSearchableCheckbox[0].box, d.deepSearchableCheckbox[0].item
 
 	box.State = uncheck.On
 	box.ClickCallback()
 	c.True(slices.Contains(settings.DeepSearch, ext), "checking the box should record the extension")
 	c.True(nav.deepSearch[ext], "checking the box should add the extension to the deep search map")
 	c.True(!nav.deepSearch[sentinelDeepSearchKey], "the deep search map should have been rebuilt from scratch")
+}
+
+// newTestGeneralSettingsDockable returns a general settings dockable with its content built on a bare panel, the way
+// Setup would build it, but without a workspace to dock it in. The general settings, the interface locale setting and
+// the deep search and separate window lists that its widgets and its reset mutate are put back when the test ends, and
+// the update checks its popups drive are stubbed.
+func newTestGeneralSettingsDockable(t *testing.T) *generalSettingsDockable {
+	t.Helper()
+	prepareUpdateCheckSettings(t)
+	RegisterKnownFileTypes()
+	gs := gurps.GlobalSettings().General
+	saved := *gs
+	t.Cleanup(func() {
+		*gs = saved
+		gurps.SyncScriptExecTimeLimit()
+	})
+	swapForTest(t, &languageSetting, "")
+	d := &generalSettingsDockable{}
+	d.initContent(unison.NewPanel())
+	return d
+}
+
+// TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings verifies that every checkbox in the checkbox block and
+// every initial scale field edits its own field of the live general settings, and keeps doing so after a reset has
+// replaced the settings wholesale, which also has to bring each of them back into line. The widgets hold pointers into
+// the settings, which is only right because reset and load copy into the settings struct rather than swapping it out.
+func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T) {
+	c := check.New(t)
+	d := newTestGeneralSettingsDockable(t)
+	gs := gurps.GlobalSettings().General
+	c.Equal(6, len(d.checkBoxes), "expected one checkbox per general setting in the block")
+	c.Equal(6, len(d.initialScaleFields), "expected one initial scale field per document kind")
+
+	// Each checkbox must have its own field of the live settings, and show its value.
+	seenBools := make(map[*bool]bool)
+	for _, one := range d.checkBoxes {
+		title := one.box.Text.String()
+		c.True(!seenBools[one.value], "%q shares its setting with another checkbox", title)
+		seenBools[one.value] = true
+		c.Equal(uncheck.FromBool(*one.value), one.box.State, "%q should show its setting", title)
+		before := *gs
+		*one.value = !*one.value
+		c.True(before != *gs, "%q should edit the live settings", title)
+		*one.value = !*one.value
+	}
+
+	// Likewise for each initial scale field.
+	seenInts := make(map[*int]bool)
+	for _, one := range d.initialScaleFields {
+		title := one.field.undoTitle
+		c.True(!seenInts[one.value], "%q shares its setting with another field", title)
+		seenInts[one.value] = true
+		c.Equal(one.field.Format(*one.value), one.field.Text(), "%q should show its setting", title)
+		before := *gs
+		*one.value++
+		c.True(before != *gs, "%q should edit the live settings", title)
+		*one.value--
+	}
+
+	// Move a checkbox without a side effect and a scale field off their defaults through the widgets themselves. The
+	// checkboxes with side effects reach into a workspace this test does not have.
+	var box settingCheckBox
+	for _, one := range d.checkBoxes {
+		if one.box.OnSet == nil {
+			box = one
+			break
+		}
+	}
+	c.NotNil(box.box, "expected a checkbox without a side effect")
+	defaults := gurps.NewGeneralSettings()
+	*gs = *defaults
+	d.sync()
+	box.box.State = uncheck.FromBool(!*box.value)
+	box.box.ClickCallback()
+	c.True(*gs != *defaults, "clicking the checkbox should change the live settings")
+	c.Equal(box.box.State, uncheck.FromBool(*box.value), "clicking the checkbox should record its state")
+	field := d.initialScaleFields[0]
+	scale := gurps.InitialUIScaleMin
+	if *field.value == scale {
+		scale = gurps.InitialUIScaleMax
+	}
+	field.field.SetText(field.field.Format(scale))
+	c.Equal(scale, *field.value, "editing the field should record its value")
+
+	// The reset copies the defaults over the live settings and must bring every widget back into line.
+	d.reset()
+	c.Equal(*defaults, *gs, "the reset should restore the defaults")
+	for _, one := range d.checkBoxes {
+		c.Equal(uncheck.FromBool(*one.value), one.box.State, "%q should show the reset setting", one.box.Text.String())
+	}
+	for _, one := range d.initialScaleFields {
+		c.Equal(one.field.Format(*one.value), one.field.Text(), "%q should show the reset setting", one.field.undoTitle)
+	}
+
+	// The widgets must still be editing the live settings, not a copy the reset left behind.
+	box.box.State = uncheck.FromBool(!*box.value)
+	box.box.ClickCallback()
+	c.True(*gurps.GlobalSettings().General != *defaults, "clicking the checkbox after the reset should change the live settings")
+	field.field.SetText(field.field.Format(scale))
+	c.Equal(scale, *field.value, "editing the field after the reset should record its value")
 }
