@@ -107,13 +107,10 @@ func attachDMG(ctx context.Context, dmgPath, mountPoint string) error {
 func detachDMG(mountPoint string) {
 	ctx, cancel := context.WithTimeout(context.Background(), commandTimeout)
 	defer cancel()
-	for i := range detachAttempts {
-		if err := run(ctx, "/usr/bin/hdiutil", "detach", "-quiet", mountPoint); err == nil {
-			return
-		}
-		if i < detachAttempts-1 {
-			time.Sleep(detachDelay)
-		}
+	if retry(detachAttempts, detachDelay, func() error {
+		return run(ctx, "/usr/bin/hdiutil", "detach", "-quiet", mountPoint)
+	}) == nil {
+		return
 	}
 	if err := run(ctx, "/usr/bin/hdiutil", "detach", "-force", "-quiet", mountPoint); err != nil {
 		slog.Warn("unable to unmount the downloaded disk image", "mountPoint", mountPoint, "error", err)

@@ -182,16 +182,14 @@ func removeWithRetry(path string) {
 	if path == "" {
 		return
 	}
-	for i := range removeAttempts {
-		err := os.RemoveAll(path)
-		if err == nil || os.IsNotExist(err) {
-			return
+	err := retry(removeAttempts, removeDelay, func() error {
+		if err := os.RemoveAll(path); err != nil && !os.IsNotExist(err) {
+			return err
 		}
-		if i < removeAttempts-1 {
-			time.Sleep(removeDelay)
-		} else {
-			errs.Log(errs.NewWithCause("unable to remove a leftover from an update", err), "path", path)
-		}
+		return nil
+	})
+	if err != nil {
+		errs.Log(errs.NewWithCause("unable to remove a leftover from an update", err), "path", path)
 	}
 }
 

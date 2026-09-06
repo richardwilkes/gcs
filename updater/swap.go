@@ -106,14 +106,5 @@ func validateSwap(target, payload, backup string) error {
 
 // renameWithRetry renames a path, retrying briefly before giving up. See renameAttempts for why.
 func renameWithRetry(from, to string) error {
-	var err error
-	for i := range renameAttempts {
-		if err = renameFunc(from, to); err == nil {
-			return nil
-		}
-		if i < renameAttempts-1 {
-			time.Sleep(renameDelay)
-		}
-	}
-	return errs.Wrap(err)
+	return errs.Wrap(retry(renameAttempts, renameDelay, func() error { return renameFunc(from, to) }))
 }

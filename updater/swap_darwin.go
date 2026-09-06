@@ -12,7 +12,6 @@ package updater
 import (
 	"errors"
 	"log/slog"
-	"time"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"golang.org/x/sys/unix"
@@ -31,33 +30,46 @@ import (
 // Returns false if the exchange is not available on this filesystem, leaving the caller to fall back to the two-rename
 // form.
 func exchange(payload, target, backup string) (bool, error) {
-	var err error
-	for i := range renameAttempts {
-		if err = unix.RenamexNp(payload, target, unix.RENAME_SWAP); err == nil {
-			slog.Info("replacing the installed version", "target", target, "payload", payload, "backup", backup)
-			// The previous version is now where the staged copy was. Move it to the recorded backup path so that the
-			// startup sweep can find it, and so that it is not removed along with the staging directory.
-			if renameErr := renameWithRetry(payload, backup); renameErr != nil {
-				// The update itself succeeded; only the tidying did not. Say so and carry on rather than undoing a
-				// good installation over a misplaced backup.
-				slog.Warn("unable to move the previous version aside after the update", "error", renameErr)
-			}
-			return true, nil
+	err := retry(renameAttempts, renameDelay, func() error {
+		err := unix.RenamexNp(payload, target, unix.RENAME_SWAP)
+		if exchangeUnsupported(err) || exchangeRefused(err) {
+			// Neither will change on another try.
+			return stopRetrying(err)
 		}
-		switch {
-		case errors.Is(err, unix.ENOTSUP), errors.Is(err, unix.EINVAL):
-			// The filesystem does not support the exchange. Not an error worth reporting: the two-rename form below
-			// works everywhere.
-			return false, nil
-		case errors.Is(err, unix.EPERM), errors.Is(err, unix.EACCES):
-			// Refused rather than transiently unavailable, most likely because macOS wants explicit permission for one
-			// application to modify another. Retrying cannot help, and there is no way to ask from here.
-			return false, errs.NewWithCause("not allowed to replace the installed application", err)
+		return err
+	})
+	switch {
+	case err == nil:
+		slog.Info("replacing the installed version", "target", target, "payload", payload, "backup", backup)
+		// The previous version is now where the staged copy was. Move it to the recorded backup path so that the
+		// startup sweep can find it, and so that it is not removed along with the staging directory.
+		if renameErr := renameWithRetry(payload, backup); renameErr != nil {
+			// The update itself succeeded; only the tidying did not. Say so and carry on rather than undoing a good
+			// installation over a misplaced backup.
+			slog.Warn("unable to move the previous version aside after the update", "error", renameErr)
 		}
-		if i < renameAttempts-1 {
-			time.Sleep(renameDelay)
-		}
+		return true, nil
+	case exchangeUnsupported(err):
+		// The filesystem does not support the exchange. Not an error worth reporting: the two-rename form works
+		// everywhere.
+		return false, nil
+	case exchangeRefused(err):
+		// Refused rather than transiently unavailable, most likely because macOS wants explicit permission for one
+		// application to modify another. Retrying cannot help, and there is no way to ask from here.
+		return false, errs.NewWithCause("not allowed to replace the installed application", err)
+	default:
+		slog.Warn("unable to exchange the installed application atomically; falling back", "error", err)
+		return false, nil
 	}
-	slog.Warn("unable to exchange the installed application atomically; falling back", "error", err)
-	return false, nil
+}
+
+// exchangeUnsupported reports whether the error means the filesystem does not implement the exchange.
+func exchangeUnsupported(err error) bool {
+	return errors.Is(err, unix.ENOTSUP) || errors.Is(err, unix.EINVAL)
+}
+
+// exchangeRefused reports whether the error means the exchange was denied, rather than merely unavailable for the
+// moment.
+func exchangeRefused(err error) bool {
+	return errors.Is(err, unix.EPERM) || errors.Is(err, unix.EACCES)
 }
