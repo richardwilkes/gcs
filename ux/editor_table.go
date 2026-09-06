@@ -16,26 +16,8 @@ import (
 
 func newEditorTable[T gurps.Node[T]](parent *unison.Panel, provider TableProvider[T]) *unison.Table[*Node[T]] {
 	header, table := NewNodeTable(provider, unison.FieldFont)
-	table.InstallCmdHandlers(OpenEditorItemID, func(_ any) bool { return table.HasSelection() },
-		func(_ any) { provider.OpenEditor(table.AncestorOrSelf[Rebuildable](), table) })
-	table.InstallCmdHandlers(OpenOnePageReferenceItemID,
-		func(_ any) bool { return CanOpenPageRef(table) },
-		func(_ any) { OpenPageRef(table) })
-	table.InstallCmdHandlers(OpenEachPageReferenceItemID,
-		func(_ any) bool { return CanOpenPageRef(table) },
-		func(_ any) { OpenEachPageRef(table) })
-	table.InstallCmdHandlers(unison.DeleteItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
-		func(_ any) { DeleteSelection(table, true) })
-	table.InstallCmdHandlers(DuplicateItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
-		func(_ any) { DuplicateSelection(table) })
-	table.InstallCmdHandlers(SyncWithSourceItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
-		func(_ any) { SyncWithSourceForSelection(table) })
-	table.InstallCmdHandlers(ClearSourceItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
-		func(_ any) { ClearSourceFromSelection(table) })
+	installStandardTableCmdHandlers(parent, table, provider,
+		func() Rebuildable { return table.AncestorOrSelf[Rebuildable]() }, true)
 	// Toggle State belongs here rather than in NewNodeTable because the editor tables are the only ones that carry the
 	// checkmark columns it flips: the modifier tables show the enabled column only when built for an editor, and the
 	// weapon tables show the Hide column only when they aren't built for a page. Installing it any higher would offer

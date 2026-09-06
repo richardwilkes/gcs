@@ -200,6 +200,41 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 	return header, table
 }
 
+// installStandardTableCmdHandlers installs the commands every node table offers -- opening the editor, following the
+// page references, and, when the table is editable, deleting, duplicating, syncing with and clearing the source of the
+// selection -- on the panel that owns the table rather than on the table itself, so that they are reachable from
+// anywhere within that panel: in a list dockable that means the filter field as well as the table, so that the
+// commands keep acting on the selection while the user is typing in the filter. The owner is resolved through a
+// function rather than taken up front because the editor's list panels are built before they are attached to the
+// editor that owns them.
+func installStandardTableCmdHandlers[T gurps.Node[T]](target unison.Paneler, table *unison.Table[*Node[T]], provider TableProvider[T], owner func() Rebuildable, editable bool) {
+	panel := target.AsPanel()
+	panel.InstallCmdHandlers(OpenEditorItemID,
+		func(_ any) bool { return table.HasSelection() },
+		func(_ any) { provider.OpenEditor(owner(), table) })
+	panel.InstallCmdHandlers(OpenOnePageReferenceItemID,
+		func(_ any) bool { return CanOpenPageRef(table) },
+		func(_ any) { OpenPageRef(table) })
+	panel.InstallCmdHandlers(OpenEachPageReferenceItemID,
+		func(_ any) bool { return CanOpenPageRef(table) },
+		func(_ any) { OpenEachPageRef(table) })
+	if !editable {
+		return
+	}
+	panel.InstallCmdHandlers(unison.DeleteItemID,
+		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) { DeleteSelection(table, true) })
+	panel.InstallCmdHandlers(DuplicateItemID,
+		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) { DuplicateSelection(table) })
+	panel.InstallCmdHandlers(SyncWithSourceItemID,
+		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) { SyncWithSourceForSelection(table) })
+	panel.InstallCmdHandlers(ClearSourceItemID,
+		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) { ClearSourceFromSelection(table) })
+}
+
 // sizePageTableColumns sizes the columns of a fixed-width page table to fit, then, when the user can't resize columns
 // and the setting is enabled, lets any page reference columns claim leftover space so they can show more than one
 // reference before the rest goes to the excess column. This is run both when the table's frame changes and when it is

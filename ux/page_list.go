@@ -197,7 +197,8 @@ func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
 func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
 	header, table := NewNodeTable(provider, fonts.PageFieldPrimary)
 	table.ClientData()[WorkingDirKey] = WorkingDirProvider(owner)
-	if !xreflect.IsNil(owner) {
+	editable := !xreflect.IsNil(owner)
+	if editable {
 		table.ClientData()[TableOwnerClientKey] = owner
 	}
 	table.RefKey = provider.RefKey()
@@ -215,25 +216,12 @@ func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T]) 
 	p.Table.SyncToModel()
 	p.AddChild(p.tableHeader)
 	p.AddChild(p.Table)
-	p.InstallCmdHandlers(OpenEditorItemID,
-		func(_ any) bool { return p.Table.HasSelection() },
-		func(_ any) { p.provider.OpenEditor(owner, p.Table) })
-	if owner != nil {
+	// The read-only lists -- the weapons and the conditional and reaction modifiers, which are derived from the rest
+	// of the sheet -- have no owner and offer none of the editing commands.
+	installStandardTableCmdHandlers(p, p.Table, p.provider, func() Rebuildable { return owner }, editable)
+	if editable {
 		InstallTableDropSupport(p.Table, p.provider)
-		p.InstallCmdHandlers(unison.DeleteItemID,
-			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
-			func(_ any) { DeleteSelection(p.Table, true) })
-		p.InstallCmdHandlers(DuplicateItemID,
-			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
-			func(_ any) { DuplicateSelection(p.Table) })
-		table.InstallCmdHandlers(SyncWithSourceItemID,
-			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
-			func(_ any) { SyncWithSourceForSelection(p.Table) })
-		table.InstallCmdHandlers(ClearSourceItemID,
-			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
-			func(_ any) { ClearSourceFromSelection(p.Table) })
 	}
-	p.installOpenPageReferenceHandlers()
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,
@@ -330,15 +318,6 @@ func moveSelectedEquipment(sheet *Sheet, from, to *unison.Table[*Node[*gurps.Equ
 	undo.AfterData = NewTableDragUndoEditData(from, to)
 	mgr.Add(undo)
 	rebuildAsModified(sheet, true)
-}
-
-func (p *PageList[T]) installOpenPageReferenceHandlers() {
-	p.InstallCmdHandlers(OpenOnePageReferenceItemID,
-		func(_ any) bool { return CanOpenPageRef(p.Table) },
-		func(_ any) { OpenPageRef(p.Table) })
-	p.InstallCmdHandlers(OpenEachPageReferenceItemID,
-		func(_ any) bool { return CanOpenPageRef(p.Table) },
-		func(_ any) { OpenEachPageRef(p.Table) })
 }
 
 func (p *PageList[T]) installToggleDisabledHandler(owner Rebuildable) {

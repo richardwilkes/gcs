@@ -103,31 +103,11 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 	d.AddChild(d.createToolbar())
 	d.AddChild(d.scroll)
 
-	d.InstallCmdHandlers(OpenEditorItemID,
-		func(_ any) bool { return d.table.HasSelection() },
-		func(_ any) { d.provider.OpenEditor(d, d.table) })
-	d.InstallCmdHandlers(OpenOnePageReferenceItemID,
-		func(_ any) bool { return CanOpenPageRef(d.table) },
-		func(_ any) { OpenPageRef(d.table) })
-	d.InstallCmdHandlers(OpenEachPageReferenceItemID,
-		func(_ any) bool { return CanOpenPageRef(d.table) },
-		func(_ any) { OpenEachPageRef(d.table) })
+	installStandardTableCmdHandlers(d, d.table, d.provider, func() Rebuildable { return d }, true)
 	d.InstallCmdHandlers(SaveItemID,
 		func(_ any) bool { return d.Modified() },
 		func(_ any) { d.save(false) })
 	d.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { d.save(true) })
-	d.InstallCmdHandlers(unison.DeleteItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(d.table) },
-		func(_ any) { DeleteSelection(d.table, true) })
-	d.InstallCmdHandlers(DuplicateItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(d.table) },
-		func(_ any) { DuplicateSelection(d.table) })
-	table.InstallCmdHandlers(SyncWithSourceItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(d.table) },
-		func(_ any) { SyncWithSourceForSelection(d.table) })
-	table.InstallCmdHandlers(ClearSourceItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(d.table) },
-		func(_ any) { ClearSourceFromSelection(d.table) })
 	d.InstallCmdHandlers(JumpToSearchFilterItemID,
 		func(any) bool { return !d.filterField.Focused() },
 		func(any) { d.filterField.RequestFocus() })
