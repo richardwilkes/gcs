@@ -122,7 +122,7 @@ func TestConvertRewritesCollectedFiles(t *testing.T) {
 func TestConvertFile(t *testing.T) {
 	c := check.New(t)
 	traitsPath := filepath.Join(t.TempDir(), "traits"+TraitsExt)
-	c.NoError(jio.SaveToFile(traitsPath, &traitListData{Version: jio.CurrentDataVersion - 1}))
+	c.NoError(jio.SaveToFile(traitsPath, &listData[*Trait]{Version: jio.CurrentDataVersion - 1}))
 	c.NoError(converters[TraitsExt](traitsPath))
 	c.Equal(jio.CurrentDataVersion, fileVersion(c, traitsPath))
 

@@ -26,16 +26,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -147,30 +144,14 @@ type SpellNonContainerOnlySyncData struct {
 	Features        Features            `json:"features,omitempty"`
 }
 
-type spellListData struct {
-	Version int      `json:"version"`
-	Rows    []*Spell `json:"rows"`
-}
-
-// NewSpellsFromFile loads an Spell list from a file.
+// NewSpellsFromFile loads a Spell list from a file.
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
-	var data spellListData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
-		return nil, err
-	}
-	Traverse(func(spell *Spell) bool {
-		spell.SetDataOwner(nil)
-		return false
-	}, false, true, data.Rows...)
-	return data.Rows, nil
+	return loadRows[*Spell](fileSystem, filePath)
 }
 
 // SaveSpells writes the Spell list to the file as JSON.
 func SaveSpells(spells []*Spell, filePath string) error {
-	return jio.SaveToFile(filePath, &spellListData{
-		Version: jio.CurrentDataVersion,
-		Rows:    spells,
-	})
+	return saveRows(filePath, spells)
 }
 
 // NewSpell creates a new Spell.
@@ -354,34 +335,17 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	setOpen := false
-	if !tid.IsValid(localData.TID) {
-		// Fixup old data that used UUIDs instead of TIDs
-		var kind byte
+	open := fixupLegacyTID(&localData.TID, localData.Type, func(container bool) byte {
 		if localData.Type == "ritual_magic_spell" {
-			kind = kinds.RitualMagicSpell
-		} else {
-			kind = spellKind(strings.HasSuffix(localData.Type, containerKeyPostfix))
+			return kinds.RitualMagicSpell
 		}
-		localData.TID = tid.MustNewTID(kind)
-		setOpen = localData.IsOpen
-	}
+		return spellKind(container)
+	}) && localData.IsOpen
 	s.SpellData = localData.SpellData
 	s.Replacements = nameable.Normalize(s.Replacements)
-	if s.LocalNotes == "" && localData.ExprNotes != "" {
-		s.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
-	}
+	migrateLegacyText(&s.LocalNotes, localData.ExprNotes)
 	s.ClearUnusedFieldsForType()
-	s.Tags = convertOldCategoriesToTags(s.Tags, localData.Categories)
-	slices.Sort(s.Tags)
-	if s.Container() {
-		for _, one := range s.Children {
-			one.parent = s
-		}
-	}
-	if setOpen {
-		SetNodeOpen(s, true)
-	}
+	finishNodeUnmarshal(s, &s.Tags, localData.Categories, open)
 	return nil
 }
 
@@ -422,11 +386,9 @@ func SpellsHeaderData(columnID int) HeaderData {
 		data.Title = i18n.Text("P#")
 		data.Detail = i18n.Text("Prerequisite Count")
 	case SpellTagsColumn:
-		data.Title = i18n.Text("Tags")
+		data = tagsHeaderData()
 	case SpellReferenceColumn:
-		data.Title = HeaderBookmark
-		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltip()
+		data = pageRefHeaderData()
 	case SpellLevelColumn:
 		data.Title = i18n.Text("SL")
 		data.Detail = i18n.Text("Skill Level")
@@ -437,13 +399,9 @@ func SpellsHeaderData(columnID int) HeaderData {
 		data.Title = i18n.Text("Pts")
 		data.Detail = i18n.Text("Points")
 	case SpellLibSrcColumn:
-		data.Title = HeaderDatabase
-		data.TitleIsImageKey = true
-		data.Detail = LibSrcTooltip()
+		data = libSrcHeaderData()
 	case SpellSwitchColumn:
-		data.Title = HeaderSwitch
-		data.TitleIsImageKey = true
-		data.Detail = SwitchHeaderTooltip()
+		data = switchHeaderData()
 	}
 	return data
 }
@@ -508,16 +466,9 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			}
 		}
 	case SpellTagsColumn:
-		data.Type = cell.Tags
-		data.Primary = CombineTags(s.Tags)
+		fillTagsCell(data, s.Tags)
 	case SpellReferenceColumn, PageRefCellAlias:
-		data.Type = cell.PageRef
-		data.Primary = s.PageRef
-		if s.PageRefHighlight != "" {
-			data.Secondary = s.PageRefHighlight
-		} else {
-			data.Secondary = s.NameWithReplacements()
-		}
+		fillPageRefCell(data, s.PageRef, s.PageRefHighlight, s.NameWithReplacements)
 	case SpellLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
@@ -579,16 +530,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			}
 		}
 	case SpellLibSrcColumn:
-		data.Type = cell.Text
-		data.Alignment = align.Middle
-		if !xreflect.IsNil(s.owner) {
-			state, _ := s.owner.SourceMatcher().Match(s)
-			data.Primary = state.AltString()
-			data.Tooltip = state.String()
-			if state != srcstate.Custom {
-				data.Tooltip += "\n" + s.Source.String()
-			}
-		}
+		fillLibSrcCell(data, s.owner, s)
 	case SpellSwitchColumn:
 		// Only items that actually have something to switch get a cell; the rest are left blank.
 		if s.HasSwitchableFeatures() {

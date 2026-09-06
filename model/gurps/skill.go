@@ -26,16 +26,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/zeebo/xxh3"
 )
@@ -154,38 +151,26 @@ type SkillContainerOnlySyncData struct {
 	TemplatePicker TemplatePicker `json:"template_picker,omitzero"`
 }
 
-type skillListData struct {
-	Version int      `json:"version"`
-	Rows    []*Skill `json:"rows"`
-}
-
-// NewSkillsFromFile loads an Skill list from a file.
+// NewSkillsFromFile loads a Skill list from a file.
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
-	var data skillListData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+	rows, err := loadRows[*Skill](fileSystem, filePath)
+	if err != nil {
 		return nil, err
 	}
+	// Fix up some bad data in standalone skill lists where Hard techniques incorrectly had 1 point assigned to them
+	// instead of 2.
 	Traverse(func(skill *Skill) bool {
-		// Fix up some bad data in standalone skill lists where Hard techniques incorrectly had 1 point assigned to them
-		// instead of 2.
-		if skill.IsTechnique() &&
-			skill.Difficulty.Difficulty == difficulty.Hard &&
-			skill.Points == fxp.One {
+		if skill.IsTechnique() && skill.Difficulty.Difficulty == difficulty.Hard && skill.Points == fxp.One {
 			skill.Points = fxp.Two
 		}
-
-		skill.SetDataOwner(nil)
 		return false
-	}, false, true, data.Rows...)
-	return data.Rows, nil
+	}, false, true, rows...)
+	return rows, nil
 }
 
 // SaveSkills writes the Skill list to the file as JSON.
 func SaveSkills(skills []*Skill, filePath string) error {
-	return jio.SaveToFile(filePath, &skillListData{
-		Version: jio.CurrentDataVersion,
-		Rows:    skills,
-	})
+	return saveRows(filePath, skills)
 }
 
 // NewSkill creates a new Skill.
@@ -369,38 +354,21 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	setOpen := false
-	if !tid.IsValid(localData.TID) {
-		// Fixup old data that used UUIDs instead of TIDs
-		var kind byte
+	open := fixupLegacyTID(&localData.TID, localData.Type, func(container bool) byte {
 		if localData.Type == "technique" {
-			kind = kinds.Technique
-		} else {
-			kind = skillKind(strings.HasSuffix(localData.Type, containerKeyPostfix))
+			return kinds.Technique
 		}
-		localData.TID = tid.MustNewTID(kind)
-		setOpen = localData.IsOpen
-	}
+		return skillKind(container)
+	}) && localData.IsOpen
 	s.SkillData = localData.SkillData
 	s.Replacements = nameable.Normalize(s.Replacements)
 	s.Defaults = slices.DeleteFunc(s.Defaults, func(one *SkillDefault) bool { return one == nil })
 	if s.TechniqueDefault != nil {
 		s.TechniqueDefault.Name.Compare = criteria.IsText
 	}
-	if s.LocalNotes == "" && localData.ExprNotes != "" {
-		s.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
-	}
+	migrateLegacyText(&s.LocalNotes, localData.ExprNotes)
 	s.ClearUnusedFieldsForType()
-	s.Tags = convertOldCategoriesToTags(s.Tags, localData.Categories)
-	slices.Sort(s.Tags)
-	if s.Container() {
-		for _, one := range s.Children {
-			one.parent = s
-		}
-	}
-	if setOpen {
-		SetNodeOpen(s, true)
-	}
+	finishNodeUnmarshal(s, &s.Tags, localData.Categories, open)
 	return nil
 }
 
@@ -420,11 +388,9 @@ func SkillsHeaderData(columnID int) HeaderData {
 		data.Title = i18n.Text("Diff")
 		data.Detail = i18n.Text("Difficulty")
 	case SkillTagsColumn:
-		data.Title = i18n.Text("Tags")
+		data = tagsHeaderData()
 	case SkillReferenceColumn:
-		data.Title = HeaderBookmark
-		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltip()
+		data = pageRefHeaderData()
 	case SkillLevelColumn:
 		data.Title = i18n.Text("SL")
 		data.Detail = i18n.Text("Skill Level")
@@ -435,13 +401,9 @@ func SkillsHeaderData(columnID int) HeaderData {
 		data.Title = i18n.Text("Pts")
 		data.Detail = i18n.Text("Points")
 	case SkillLibSrcColumn:
-		data.Title = HeaderDatabase
-		data.TitleIsImageKey = true
-		data.Detail = LibSrcTooltip()
+		data = libSrcHeaderData()
 	case SkillSwitchColumn:
-		data.Title = HeaderSwitch
-		data.TitleIsImageKey = true
-		data.Detail = SwitchHeaderTooltip()
+		data = switchHeaderData()
 	}
 	return data
 }
@@ -464,16 +426,9 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 			data.Primary = diff.Description(EntityFromNode(s))
 		}
 	case SkillTagsColumn:
-		data.Type = cell.Tags
-		data.Primary = CombineTags(s.Tags)
+		fillTagsCell(data, s.Tags)
 	case SkillReferenceColumn, PageRefCellAlias:
-		data.Type = cell.PageRef
-		data.Primary = s.PageRef
-		if s.PageRefHighlight != "" {
-			data.Secondary = s.PageRefHighlight
-		} else {
-			data.Secondary = s.NameWithReplacements()
-		}
+		fillPageRefCell(data, s.PageRef, s.PageRefHighlight, s.NameWithReplacements)
 	case SkillLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
@@ -502,16 +457,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 			data.Tooltip = IncludesModifiersFrom() + ":" + tooltip.String()
 		}
 	case SkillLibSrcColumn:
-		data.Type = cell.Text
-		data.Alignment = align.Middle
-		if !xreflect.IsNil(s.owner) {
-			state, _ := s.owner.SourceMatcher().Match(s)
-			data.Primary = state.AltString()
-			data.Tooltip = state.String()
-			if state != srcstate.Custom {
-				data.Tooltip += "\n" + s.Source.String()
-			}
-		}
+		fillLibSrcCell(data, s.owner, s)
 	case SkillSwitchColumn:
 		// Only items that actually have something to switch get a cell; the rest are left blank.
 		if s.HasSwitchableFeatures() {

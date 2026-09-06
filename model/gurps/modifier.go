@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"maps"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -17,13 +19,13 @@ import (
 )
 
 // mergeReplacements folds src into dst, keeping whatever value dst already holds for a key, and returns the result. A
-// nil dst simply takes src.
+// nil dst takes a copy of src rather than src itself, so that the result never shares storage with src.
 func mergeReplacements(dst, src map[string]string) map[string]string {
 	if len(src) == 0 {
 		return dst
 	}
 	if dst == nil {
-		return src
+		return maps.Clone(src)
 	}
 	for k, v := range src {
 		if _, exists := dst[k]; !exists {

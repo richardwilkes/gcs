@@ -31,17 +31,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -140,30 +137,14 @@ type TraitContainerSyncData struct {
 	AlternativeSlots int            `json:"alternative_slots,omitzero"`
 }
 
-type traitListData struct {
-	Version int      `json:"version"`
-	Rows    []*Trait `json:"rows"`
-}
-
-// NewTraitsFromFile loads an Trait list from a file.
+// NewTraitsFromFile loads a Trait list from a file.
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
-	var data traitListData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
-		return nil, err
-	}
-	Traverse(func(trait *Trait) bool {
-		trait.SetDataOwner(nil)
-		return false
-	}, false, true, data.Rows...)
-	return data.Rows, nil
+	return loadRows[*Trait](fileSystem, filePath)
 }
 
 // SaveTraits writes the Trait list to the file as JSON.
 func SaveTraits(traits []*Trait, filePath string) error {
-	return jio.SaveToFile(filePath, &traitListData{
-		Version: jio.CurrentDataVersion,
-		Rows:    traits,
-	})
+	return saveRows(filePath, traits)
 }
 
 // NewTrait creates a new Trait.
@@ -297,17 +278,10 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	setOpen := false
-	if !tid.IsValid(localData.TID) {
-		// Fixup old data that used UUIDs instead of TIDs
-		localData.TID = tid.MustNewTID(traitKind(strings.HasSuffix(localData.Type, containerKeyPostfix)))
-		setOpen = localData.IsOpen
-	}
+	open := fixupLegacyTID(&localData.TID, localData.Type, traitKind) && localData.IsOpen
 	t.TraitData = localData.TraitData
 	t.Replacements = nameable.Normalize(t.Replacements)
-	if t.LocalNotes == "" && localData.ExprNotes != "" {
-		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
-	}
+	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
 	// Force the CanLevel flag, if needed
 	if !t.Container() {
 		if t.Levels < 0 {
@@ -323,16 +297,7 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	t.transferOldTypeFlagToTags(i18n.Text("Social"), localData.Social)
 	t.transferOldTypeFlagToTags(i18n.Text("Exotic"), localData.Exotic)
 	t.transferOldTypeFlagToTags(i18n.Text("Supernatural"), localData.Supernatural)
-	t.Tags = convertOldCategoriesToTags(t.Tags, localData.Categories)
-	slices.Sort(t.Tags)
-	if t.Container() {
-		for _, one := range t.Children {
-			one.parent = t
-		}
-	}
-	if setOpen {
-		SetNodeOpen(t, true)
-	}
+	finishNodeUnmarshal(t, &t.Tags, localData.Categories, open)
 	return nil
 }
 
@@ -374,19 +339,13 @@ func TraitsHeaderData(columnID int) HeaderData {
 		data.Detail = i18n.Text("Points")
 		data.Less = fxp.IntLessFromString
 	case TraitTagsColumn:
-		data.Title = i18n.Text("Tags")
+		data = tagsHeaderData()
 	case TraitReferenceColumn:
-		data.Title = HeaderBookmark
-		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltip()
+		data = pageRefHeaderData()
 	case TraitLibSrcColumn:
-		data.Title = HeaderDatabase
-		data.TitleIsImageKey = true
-		data.Detail = LibSrcTooltip()
+		data = libSrcHeaderData()
 	case TraitSwitchColumn:
-		data.Title = HeaderSwitch
-		data.TitleIsImageKey = true
-		data.Detail = SwitchHeaderTooltip()
+		data = switchHeaderData()
 	}
 	return data
 }
@@ -456,27 +415,11 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Primary = t.AdjustedPoints().String()
 		data.Alignment = align.End
 	case TraitTagsColumn:
-		data.Type = cell.Tags
-		data.Primary = CombineTags(t.Tags)
+		fillTagsCell(data, t.Tags)
 	case TraitReferenceColumn, PageRefCellAlias:
-		data.Type = cell.PageRef
-		data.Primary = t.PageRef
-		if t.PageRefHighlight != "" {
-			data.Secondary = t.PageRefHighlight
-		} else {
-			data.Secondary = t.NameWithReplacements()
-		}
+		fillPageRefCell(data, t.PageRef, t.PageRefHighlight, t.NameWithReplacements)
 	case TraitLibSrcColumn:
-		data.Type = cell.Text
-		data.Alignment = align.Middle
-		if !xreflect.IsNil(t.owner) {
-			state, _ := t.owner.SourceMatcher().Match(t)
-			data.Primary = state.AltString()
-			data.Tooltip = state.String()
-			if state != srcstate.Custom {
-				data.Tooltip += "\n" + t.Source.String()
-			}
-		}
+		fillLibSrcCell(data, t.owner, t)
 	case TraitSwitchColumn:
 		// Only items that actually have something to switch get a cell; the rest are left blank.
 		if t.HasSwitchableFeatures() {
@@ -1177,29 +1120,14 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	*t = *other
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
-	t.Modifiers = nil
-	if len(other.Modifiers) != 0 {
-		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
-		for _, one := range other.Modifiers {
-			// The LibraryFile for this clone must come from the parent trait rather than
-			// from `one`. This covers the case where the source data *is* the authoritative
-			// source and therefore carries no source information of its own. `one.Source.LibraryFile`
-			// is empty and `AdjustSource` won't set source data on the copy. `trait.Source.LibraryFile`
-			// holds the already-adjusted source for the trait copy, so it always has the
-			// correct library path.
-			//
-			// Background: when GCS clones an item from one library into another location (as
-			// opposed to duplicating in place), it passes the *source* library as the first
-			// argument to `Clone`. That path, combined with the IDs from the source nodes, is
-			// what builds the `source` values for the clone.
-			cloned := one.Clone(trait.Source.LibraryFile, trait.owner, nil, mode)
-			// Point the copy at the trait it belongs to, so that a "use level from owner" modifier can resolve its
-			// level. Prior to this, the copies held in an editor only acquired their trait as a side effect of a point
-			// cost computation.
-			cloned.setTrait(trait)
-			t.Modifiers = append(t.Modifiers, cloned)
-		}
-	}
+	// Each copy is pointed at the trait it belongs to, so that a "use level from owner" modifier can resolve its level.
+	// Prior to this, the copies held in an editor only acquired their trait as a side effect of a point cost
+	// computation.
+	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode, func(m *TraitModifier) { m.setTrait(trait) })
+	// setTrait() migrates a modifier's legacy replacements into the trait it was pointed at, which isn't the holder of
+	// this data when an editor is being populated, so pick up anything it added. This is a no-op when this data is the
+	// trait's own, since both maps are then the same one.
+	t.Replacements = mergeReplacements(t.Replacements, trait.Replacements)
 	t.Prereq = t.Prereq.CloneResolvingEmpty(false, isApply)
 	t.Weapons = CloneWeapons(other.Weapons, trait, mode)
 	t.Features = other.Features.Clone()

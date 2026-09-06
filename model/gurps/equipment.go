@@ -25,15 +25,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -118,32 +115,15 @@ type EquipmentSyncData struct {
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
 }
 
-type equipmentListData struct {
-	Version int          `json:"version"`
-	Rows    []*Equipment `json:"rows"`
-}
-
 // NewEquipmentFromFile loads an Equipment list from a file.
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
-	var data equipmentListData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
-		return nil, err
-	}
-	// SetDataOwner recurses into children on its own, so only the top-level rows need to be visited. Containers must
-	// not be skipped: they carry their own weapons and modifiers, which would otherwise never be attached.
-	for _, item := range data.Rows {
-		item.SetDataOwner(nil)
-	}
-	return data.Rows, nil
+	return loadRows[*Equipment](fileSystem, filePath)
 }
 
 // SaveEquipment writes the Equipment list to the file as JSON.
 func SaveEquipment(equipment []*Equipment, filePath string) error {
 	AdjustEquipmentUsesForSave(equipment)
-	return jio.SaveToFile(filePath, &equipmentListData{
-		Version: jio.CurrentDataVersion,
-		Rows:    equipment,
-	})
+	return saveRows(filePath, equipment)
 }
 
 // NewEquipment creates a new Equipment.
@@ -285,12 +265,7 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	setOpen := false
-	if !tid.IsValid(localData.TID) {
-		// Fixup old data that used UUIDs instead of TIDs
-		localData.TID = tid.MustNewTID(equipmentKind(strings.HasSuffix(localData.Type, containerKeyPostfix)))
-		setOpen = localData.IsOpen
-	}
+	open := fixupLegacyTID(&localData.TID, localData.Type, equipmentKind) && localData.IsOpen
 	e.EquipmentData = localData.EquipmentData
 	e.Replacements = nameable.Normalize(e.Replacements)
 	if e.BaseValue == "" && localData.Value != 0 {
@@ -299,20 +274,9 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if e.BaseWeight == "" && localData.Weight != 0 {
 		e.BaseWeight = fxp.Pound.Format(localData.Weight)
 	}
-	if e.LocalNotes == "" && localData.ExprNotes != "" {
-		e.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
-	}
+	migrateLegacyText(&e.LocalNotes, localData.ExprNotes)
 	e.ClearUnusedFieldsForType()
-	e.Tags = convertOldCategoriesToTags(e.Tags, localData.Categories)
-	slices.Sort(e.Tags)
-	if e.Container() {
-		for _, one := range e.Children {
-			one.parent = e
-		}
-	}
-	if setOpen {
-		SetNodeOpen(e, true)
-	}
+	finishNodeUnmarshal(e, &e.Tags, localData.Categories, open)
 	return nil
 }
 
@@ -325,9 +289,8 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 	settings := SheetSettingsFor(provider.DataOwner().OwningEntity())
 	switch columnID {
 	case EquipmentEquippedColumn:
-		data.Title = HeaderCheckmark
-		data.TitleIsImageKey = true
-		data.Detail = i18n.Text("Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character.")
+		data = imageHeaderData(HeaderCheckmark,
+			i18n.Text("Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character."))
 	case EquipmentQuantityColumn:
 		data.Title = i18n.Text("#")
 		data.Detail = i18n.Text("Quantity")
@@ -357,39 +320,27 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 		data.Title = i18n.Text("LC")
 		data.Detail = i18n.Text("Legality Class")
 	case EquipmentCostColumn:
-		data.Title = HeaderCoins
-		data.TitleIsImageKey = true
-		data.Detail = i18n.Text("The value of one of these pieces of equipment")
+		data = imageHeaderData(HeaderCoins, i18n.Text("The value of one of these pieces of equipment"))
 		data.Less = fxp.IntLessFromString
 	case EquipmentExtendedCostColumn:
-		data.Title = HeaderStackedCoins
-		data.TitleIsImageKey = true
-		data.Detail = i18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment")
+		data = imageHeaderData(HeaderStackedCoins,
+			i18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"))
 		data.Less = fxp.IntLessFromString
 	case EquipmentWeightColumn:
-		data.Title = HeaderWeight
-		data.TitleIsImageKey = true
-		data.Detail = i18n.Text("The weight of one of these pieces of equipment")
+		data = imageHeaderData(HeaderWeight, i18n.Text("The weight of one of these pieces of equipment"))
 		data.Less = fxp.WeightLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentExtendedWeightColumn:
-		data.Title = HeaderStackedWeight
-		data.TitleIsImageKey = true
-		data.Detail = i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment")
+		data = imageHeaderData(HeaderStackedWeight,
+			i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment"))
 		data.Less = fxp.WeightLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentTagsColumn:
-		data.Title = i18n.Text("Tags")
+		data = tagsHeaderData()
 	case EquipmentReferenceColumn:
-		data.Title = HeaderBookmark
-		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltip()
+		data = pageRefHeaderData()
 	case EquipmentLibSrcColumn:
-		data.Title = HeaderDatabase
-		data.TitleIsImageKey = true
-		data.Detail = LibSrcTooltip()
+		data = libSrcHeaderData()
 	case EquipmentSwitchColumn:
-		data.Title = HeaderSwitch
-		data.TitleIsImageKey = true
-		data.Detail = SwitchHeaderTooltip()
+		data = switchHeaderData()
 	}
 	return data
 }
@@ -492,27 +443,11 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	case EquipmentExtendedWeightColumn:
 		e.weightCellData(data, e.ExtendedWeight)
 	case EquipmentTagsColumn:
-		data.Type = cell.Tags
-		data.Primary = CombineTags(e.Tags)
+		fillTagsCell(data, e.Tags)
 	case EquipmentReferenceColumn, PageRefCellAlias:
-		data.Type = cell.PageRef
-		data.Primary = e.PageRef
-		if e.PageRefHighlight != "" {
-			data.Secondary = e.PageRefHighlight
-		} else {
-			data.Secondary = e.String()
-		}
+		fillPageRefCell(data, e.PageRef, e.PageRefHighlight, e.String)
 	case EquipmentLibSrcColumn:
-		data.Type = cell.Text
-		data.Alignment = align.Middle
-		if !xreflect.IsNil(e.owner) {
-			state, _ := e.owner.SourceMatcher().Match(e)
-			data.Primary = state.AltString()
-			data.Tooltip = state.String()
-			if state != srcstate.Custom {
-				data.Tooltip += "\n" + e.Source.String()
-			}
-		}
+		fillLibSrcCell(data, e.owner, e)
 	case EquipmentSwitchColumn:
 		// Only items that actually have something to switch get a cell; the rest are left blank.
 		if e.HasSwitchableFeatures() {
@@ -1202,40 +1137,15 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	*e = *other
 	e.Tags = slices.Clone(other.Tags)
 	e.Replacements = maps.Clone(other.Replacements)
-	e.Modifiers = nil
-	if len(other.Modifiers) != 0 {
-		e.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
-		for _, one := range other.Modifiers {
-			// The LibraryFile for this clone must come from the parent equipment rather than
-			// from `one`. This covers the case where the source data *is* the authoritative
-			// source and therefore carries no source information of its own. `one.Source.LibraryFile`
-			// is empty and `AdjustSource` won't set source data on the copy. `equipment.Source.LibraryFile`
-			// holds the already-adjusted source for the equipment copy, so it always has the
-			// correct library path.
-			//
-			// Background: when GCS clones an item from one library into another location (as
-			// opposed to duplicating in place), it passes the *source* library as the first
-			// argument to `Clone`. That path, combined with the IDs from the source nodes, is
-			// what builds the `source` values for the clone.
-			cloned := one.Clone(equipment.Source.LibraryFile, equipment.owner, nil, mode)
-			// Point the copy at the equipment it belongs to, so that its nameable placeholders can be resolved with
-			// that equipment's replacements. Without this, the copies held in an editor show their raw placeholders
-			// (e.g. "@Material@"), since the accessors fall back to the unsubstituted text when there is no equipment.
-			cloned.setEquipment(equipment)
-			e.Modifiers = append(e.Modifiers, cloned)
-		}
-		// setEquipment() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't
-		// the holder of this data when an editor is being populated, so pick up anything it added. This is a no-op
-		// when this data is the equipment's own, since both maps are then the same one.
-		for k, v := range equipment.Replacements {
-			if _, exists := e.Replacements[k]; !exists {
-				if e.Replacements == nil {
-					e.Replacements = make(map[string]string)
-				}
-				e.Replacements[k] = v
-			}
-		}
-	}
+	// Each copy is pointed at the equipment it belongs to, so that its nameable placeholders can be resolved with that
+	// equipment's replacements. Without this, the copies held in an editor show their raw placeholders (e.g.
+	// "@Material@"), since the accessors fall back to the unsubstituted text when there is no equipment.
+	e.Modifiers = cloneModifiers(other.Modifiers, equipment, mode,
+		func(m *EquipmentModifier) { m.setEquipment(equipment) })
+	// setEquipment() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't the
+	// holder of this data when an editor is being populated, so pick up anything it added. This is a no-op when this
+	// data is the equipment's own, since both maps are then the same one.
+	e.Replacements = mergeReplacements(e.Replacements, equipment.Replacements)
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
 	e.Weapons = CloneWeapons(other.Weapons, equipment, mode)
 	e.Features = other.Features.Clone()

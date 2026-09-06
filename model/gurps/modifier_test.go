@@ -21,9 +21,12 @@ import (
 func TestMergeReplacements(t *testing.T) {
 	c := check.New(t)
 
-	// A nil destination takes the source map as-is.
+	// A nil destination takes a copy of the source map, so that the two can then be changed independently.
 	src := map[string]string{"Element": "Fire"}
-	c.Equal(map[string]string{"Element": "Fire"}, mergeReplacements(nil, src))
+	merged := mergeReplacements(nil, src)
+	c.Equal(map[string]string{"Element": "Fire"}, merged)
+	merged["Element"] = "Water"
+	c.Equal("Fire", src["Element"], "the source map is not shared with the result")
 
 	// Values the destination already holds win; new keys are added.
 	dst := map[string]string{"Element": "Water"}

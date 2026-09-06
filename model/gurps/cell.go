@@ -11,6 +11,9 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -38,6 +41,37 @@ type HeaderData struct {
 	Primary         bool
 }
 
+// imageHeaderData returns the header data for a column whose title is one of the header image keys above, with detail
+// as its tooltip.
+func imageHeaderData(imageKey, detail string) HeaderData {
+	return HeaderData{Title: imageKey, Detail: detail, TitleIsImageKey: true}
+}
+
+// tagsHeaderData returns the header data for a tags column.
+func tagsHeaderData() HeaderData {
+	return HeaderData{Title: i18n.Text("Tags")}
+}
+
+// pageRefHeaderData returns the header data for a page reference column.
+func pageRefHeaderData() HeaderData {
+	return imageHeaderData(HeaderBookmark, PageRefTooltip())
+}
+
+// libSrcHeaderData returns the header data for a library source column.
+func libSrcHeaderData() HeaderData {
+	return imageHeaderData(HeaderDatabase, LibSrcTooltip())
+}
+
+// switchHeaderData returns the header data for a switch column.
+func switchHeaderData() HeaderData {
+	return imageHeaderData(HeaderSwitch, SwitchHeaderTooltip())
+}
+
+// enabledHeaderData returns the header data for a modifier's enabled column.
+func enabledHeaderData() HeaderData {
+	return imageHeaderData(HeaderCheckmark, ModifierEnabledTooltip())
+}
+
 // CellData holds data for creating a cell's visual representation.
 type CellData struct {
 	Self              any
@@ -58,6 +92,42 @@ type CellData struct {
 	// that belong to the sheet alone, such as the number of decimal places shown for equipment weights, are applied
 	// only when it is set, so that the same node renders exactly elsewhere.
 	ForPage bool
+}
+
+// fillTagsCell fills in the cell data for a tags column.
+func fillTagsCell(data *CellData, tags []string) {
+	data.Type = cell.Tags
+	data.Primary = CombineTags(tags)
+}
+
+// fillPageRefCell fills in the cell data for a page reference column: the reference itself, and the text to look for on
+// the page, which is highlight when the node has one and otherwise what fallback produces (normally the node's name).
+// fallback is only called when it is needed, since resolving a node's text can be costly and this runs for every row
+// on each sort and each keystroke of a search.
+func fillPageRefCell(data *CellData, pageRef, highlight string, fallback func() string) {
+	data.Type = cell.PageRef
+	data.Primary = pageRef
+	if highlight != "" {
+		data.Secondary = highlight
+	} else {
+		data.Secondary = fallback()
+	}
+}
+
+// fillLibSrcCell fills in the cell data for a library source column: how node compares to the library data it came
+// from, with the details in the tooltip. Only the cell type and alignment are filled in when there is no owner to ask.
+func fillLibSrcCell(data *CellData, owner DataOwner, node SrcProvider) {
+	data.Type = cell.Text
+	data.Alignment = align.Middle
+	if xreflect.IsNil(owner) {
+		return
+	}
+	state, _ := owner.SourceMatcher().Match(node)
+	data.Primary = state.AltString()
+	data.Tooltip = state.String()
+	if state != srcstate.Custom {
+		data.Tooltip += "\n" + node.GetSource().String()
+	}
 }
 
 // Values used by ForSort to represent the state of a toggle or switch cell.

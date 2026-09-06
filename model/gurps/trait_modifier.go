@@ -23,14 +23,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -114,26 +111,14 @@ type TraitModifierNonContainerSyncData struct {
 	Features          Features       `json:"features,omitempty"`
 }
 
-type traitModifierListData struct {
-	Version int              `json:"version"`
-	Rows    []*TraitModifier `json:"rows"`
-}
-
 // NewTraitModifiersFromFile loads a TraitModifier list from a file.
 func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModifier, error) {
-	var data traitModifierListData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
-		return nil, err
-	}
-	return data.Rows, nil
+	return loadRows[*TraitModifier](fileSystem, filePath)
 }
 
 // SaveTraitModifiers writes the TraitModifier list to the file as JSON.
 func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
-	return jio.SaveToFile(filePath, &traitModifierListData{
-		Version: jio.CurrentDataVersion,
-		Rows:    modifiers,
-	})
+	return saveRows(filePath, modifiers)
 }
 
 // NewTraitModifier creates a TraitModifier.
@@ -253,12 +238,7 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	setOpen := false
-	if !tid.IsValid(localData.TID) {
-		// Fixup old data that used UUIDs instead of TIDs
-		localData.TID = tid.MustNewTID(traitModifierKind(strings.HasSuffix(localData.Type, containerKeyPostfix)))
-		setOpen = localData.IsOpen
-	}
+	open := fixupLegacyTID(&localData.TID, localData.Type, traitModifierKind) && localData.IsOpen
 	if localData.CostAdj == "" && localData.Cost != 0 {
 		switch localData.CostType {
 		case "points":
@@ -271,20 +251,9 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	}
 	t.TraitModifierData = localData.TraitModifierData
 	t.Replacements = nameable.Normalize(t.Replacements)
-	if t.LocalNotes == "" && localData.ExprNotes != "" {
-		t.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
-	}
+	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
 	t.ClearUnusedFieldsForType()
-	t.Tags = convertOldCategoriesToTags(t.Tags, localData.Categories)
-	slices.Sort(t.Tags)
-	if t.Container() {
-		for _, one := range t.Children {
-			one.parent = t
-		}
-	}
-	if setOpen {
-		SetNodeOpen(t, true)
-	}
+	finishNodeUnmarshal(t, &t.Tags, localData.Categories, open)
 	return nil
 }
 
@@ -298,24 +267,18 @@ func TraitModifierHeaderData(columnID int) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case TraitModifierEnabledColumn:
-		data.Title = HeaderCheckmark
-		data.TitleIsImageKey = true
-		data.Detail = ModifierEnabledTooltip()
+		data = enabledHeaderData()
 	case TraitModifierDescriptionColumn:
 		data.Title = i18n.Text("Trait Modifier")
 		data.Primary = true
 	case TraitModifierCostColumn:
 		data.Title = i18n.Text("Cost Adjustment")
 	case TraitModifierTagsColumn:
-		data.Title = i18n.Text("Tags")
+		data = tagsHeaderData()
 	case TraitModifierReferenceColumn:
-		data.Title = HeaderBookmark
-		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltip()
+		data = pageRefHeaderData()
 	case TraitModifierLibSrcColumn:
-		data.Title = HeaderDatabase
-		data.TitleIsImageKey = true
-		data.Detail = LibSrcTooltip()
+		data = libSrcHeaderData()
 	}
 	return data
 }
@@ -341,27 +304,11 @@ func (t *TraitModifier) CellData(columnID int, data *CellData) {
 			data.Primary = t.CostDescription()
 		}
 	case TraitModifierTagsColumn:
-		data.Type = cell.Tags
-		data.Primary = CombineTags(t.Tags)
+		fillTagsCell(data, t.Tags)
 	case TraitModifierReferenceColumn, PageRefCellAlias:
-		data.Type = cell.PageRef
-		data.Primary = t.PageRef
-		if t.PageRefHighlight != "" {
-			data.Secondary = t.PageRefHighlight
-		} else {
-			data.Secondary = t.NameWithReplacements()
-		}
+		fillPageRefCell(data, t.PageRef, t.PageRefHighlight, t.NameWithReplacements)
 	case TraitModifierLibSrcColumn:
-		data.Type = cell.Text
-		data.Alignment = align.Middle
-		if !xreflect.IsNil(t.owner) {
-			state, _ := t.owner.SourceMatcher().Match(t)
-			data.Primary = state.AltString()
-			data.Tooltip = state.String()
-			if state != srcstate.Custom {
-				data.Tooltip += "\n" + t.Source.String()
-			}
-		}
+		fillLibSrcCell(data, t.owner, t)
 	}
 }
 

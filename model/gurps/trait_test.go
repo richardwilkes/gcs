@@ -303,6 +303,33 @@ func TestTraitEditDataCopyLinksModifiers(t *testing.T) {
 		data.PointsPerLevel, data.SelfControl, data.Frequency, data.Modifiers, data.RoundCostDown), "10 + 2*3")
 }
 
+// TestTraitEditDataCapturesMigratedReplacements verifies that populating an editor from a trait whose modifiers still
+// carry the legacy per-modifier replacements captures the migrated replacements in the editor's snapshot. Without that,
+// applying the editor's data back writes the pre-migration snapshot and silently drops them.
+func TestTraitEditDataCapturesMigratedReplacements(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.Name = "Resistance"
+	mod := NewTraitModifier(nil, nil, false)
+	mod.Name = "@element@ Only"
+	mod.Replacements = map[string]string{"element": "Fire"}
+	trait.Modifiers = []*TraitModifier{mod}
+
+	var edit TraitEditData
+	edit.CopyFrom(trait)
+	c.Equal("Fire", edit.Replacements["element"], "the editor's snapshot has the migrated replacements")
+	edit.Replacements["element"] = "Ice"
+	c.Equal("Fire", trait.Replacements["element"], "the editor's snapshot does not share the trait's map")
+
+	edit.ApplyTo(trait)
+	c.Equal("Ice", trait.Replacements["element"], "applying the editor's data writes the edited replacements")
+	c.Equal(1, len(trait.Modifiers))
+	if len(trait.Modifiers) != 1 {
+		return
+	}
+	c.Equal("Ice Only", trait.Modifiers[0].NameWithReplacements())
+}
+
 // TestTraitCloneModifiersBelongToTheClone verifies that duplicating a trait gives the copies of its modifiers to the
 // duplicate. Clone() routed through CopyFrom(), which exists for the editor and therefore points the modifier copies at
 // the trait handed to it -- the trait being cloned. The duplicate's modifiers then resolved their names against the

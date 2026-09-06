@@ -11,11 +11,14 @@ package gurps
 
 import (
 	"fmt"
+	"io/fs"
 	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
@@ -92,6 +95,66 @@ func EntityFromNode[T Node[T]](node T) *Entity {
 	return owner.OwningEntity()
 }
 
+// listData is the on-disk form of a standalone list file: the data version and the top-level rows.
+type listData[T any] struct {
+	Version int `json:"version"`
+	Rows    []T `json:"rows"`
+}
+
+// loadRows loads the rows of a standalone list file. Each top-level row is given a nil data owner, which is what
+// attaches the weapons and modifiers throughout the tree, since SetDataOwner recurses into the children on its own.
+// Containers must not be skipped along the way: they carry their own weapons and modifiers, which would otherwise never
+// be attached.
+func loadRows[T Node[T]](fileSystem fs.FS, filePath string) ([]T, error) {
+	var data listData[T]
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+		return nil, err
+	}
+	SetDataOwnerAll(nil, data.Rows)
+	return data.Rows, nil
+}
+
+// saveRows writes the rows to the file as a standalone list stamped with the current data version.
+func saveRows[T any](filePath string, rows []T) error {
+	return jio.SaveToFile(filePath, &listData[T]{Version: jio.CurrentDataVersion, Rows: rows})
+}
+
+// fixupLegacyTID gives a node written before TIDs existed -- its ID is a UUID, or missing altogether -- a fresh TID
+// whose kind is derived from the legacy "type" string, which was the kind's name with containerKeyPostfix appended for
+// a container. It returns true when a fixup was made, which is also the signal to carry over the legacy "open" flag:
+// the open state of a container is tracked by TID nowadays, so it could not have been stored for a node without one.
+func fixupLegacyTID(id *tid.TID, legacyType string, kindFor func(container bool) byte) bool {
+	if tid.IsValid(*id) {
+		return false
+	}
+	*id = tid.MustNewTID(kindFor(strings.HasSuffix(legacyType, containerKeyPostfix)))
+	return true
+}
+
+// migrateLegacyText fills in text from its legacy counterpart, which held embedded expressions rather than scripts, when
+// the node was written before the field text belongs to existed.
+func migrateLegacyText(text *string, legacy string) {
+	if *text == "" && legacy != "" {
+		*text = EmbeddedExprToScript(legacy)
+	}
+}
+
+// finishNodeUnmarshal applies the fix-ups every node type needs at the end of its UnmarshalJSONFrom: folding the legacy
+// categories into the tags and sorting them, pointing the children back at their parent, and opening the node when the
+// legacy "open" flag asked for it (see fixupLegacyTID).
+func finishNodeUnmarshal[T Node[T]](node T, tags *[]string, legacyCategories []string, open bool) {
+	*tags = convertOldCategoriesToTags(*tags, legacyCategories)
+	slices.Sort(*tags)
+	if node.Container() {
+		for _, child := range node.NodeChildren() {
+			child.SetParent(node)
+		}
+	}
+	if open {
+		SetNodeOpen(node, true)
+	}
+}
+
 func convertOldCategoriesToTags(tags, categories []string) []string {
 	if categories == nil {
 		return tags
@@ -106,6 +169,40 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 		}
 	}
 	return tags
+}
+
+// modifierHolder is what cloneModifiers needs from the trait or piece of equipment whose modifiers are being cloned.
+type modifierHolder interface {
+	DataOwnerProvider
+	GetSource() Source
+}
+
+// cloneModifiers clones the modifiers held by a trait or piece of equipment for a copy of that holder -- a clone of it,
+// or the editor data staged from or committed back to it -- and hands each copy to attach, which points it at the
+// holder. It returns nil when there is nothing to clone.
+//
+// The LibraryFile for each clone must come from the holder rather than from the modifier being cloned. This covers the
+// case where the source data *is* the authoritative source and therefore carries no source information of its own: the
+// modifier's Source.LibraryFile is empty and AdjustSource won't set source data on the copy, whereas the holder's
+// Source.LibraryFile holds the already-adjusted source for the holder's copy, so it always has the correct library path.
+//
+// Background: when GCS clones an item from one library into another location (as opposed to duplicating in place), it
+// passes the *source* library as the first argument to Clone. That path, combined with the IDs from the source nodes,
+// is what builds the `source` values for the clone.
+func cloneModifiers[M Node[M]](modifiers []M, holder modifierHolder, mode CloneMode, attach func(M)) []M {
+	if len(modifiers) == 0 {
+		return nil
+	}
+	from := holder.GetSource().LibraryFile
+	owner := holder.DataOwner()
+	var noParent M
+	result := make([]M, 0, len(modifiers))
+	for _, one := range modifiers {
+		cloned := one.Clone(from, owner, noParent, mode)
+		attach(cloned)
+		result = append(result, cloned)
+	}
+	return result
 }
 
 // PropagateNodeNoteClosedState propagates the note closed state from one node to another.

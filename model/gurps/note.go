@@ -16,18 +16,13 @@ import (
 	"io/fs"
 	"maps"
 	"slices"
-	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -73,30 +68,14 @@ type NoteSyncData struct {
 	Tags             []string `json:"tags,omitempty"`
 }
 
-type noteListData struct {
-	Version int     `json:"version"`
-	Rows    []*Note `json:"rows"`
-}
-
-// NewNotesFromFile loads an Note list from a file.
+// NewNotesFromFile loads a Note list from a file.
 func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
-	var data noteListData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
-		return nil, err
-	}
-	Traverse(func(note *Note) bool {
-		note.SetDataOwner(nil)
-		return false
-	}, false, true, data.Rows...)
-	return data.Rows, nil
+	return loadRows[*Note](fileSystem, filePath)
 }
 
 // SaveNotes writes the Note list to the file as JSON.
 func SaveNotes(notes []*Note, filePath string) error {
-	return jio.SaveToFile(filePath, &noteListData{
-		Version: jio.CurrentDataVersion,
-		Rows:    notes,
-	})
+	return saveRows(filePath, notes)
 }
 
 // NewNote creates a new Note.
@@ -212,27 +191,12 @@ func (n *Note) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	setOpen := false
-	if !tid.IsValid(localData.TID) {
-		// Fixup old data that used UUIDs instead of TIDs
-		localData.TID = tid.MustNewTID(noteKind(strings.HasSuffix(localData.Type, containerKeyPostfix)))
-		setOpen = localData.IsOpen
-	}
+	open := fixupLegacyTID(&localData.TID, localData.Type, noteKind) && localData.IsOpen
 	n.NoteData = localData.NoteData
 	n.Replacements = nameable.Normalize(n.Replacements)
-	if n.MarkDown == "" && localData.ExprText != "" {
-		n.MarkDown = EmbeddedExprToScript(localData.ExprText)
-	}
+	migrateLegacyText(&n.MarkDown, localData.ExprText)
 	n.ClearUnusedFieldsForType()
-	slices.Sort(n.Tags)
-	if n.Container() {
-		for _, one := range n.Children {
-			one.parent = n
-		}
-	}
-	if setOpen {
-		SetNodeOpen(n, true)
-	}
+	finishNodeUnmarshal(n, &n.Tags, nil, open)
 	return nil
 }
 
@@ -257,15 +221,11 @@ func NotesHeaderData(columnID int) HeaderData {
 		data.Title = i18n.Text("Note")
 		data.Primary = true
 	case NoteTagsColumn:
-		data.Title = i18n.Text("Tags")
+		data = tagsHeaderData()
 	case NoteReferenceColumn:
-		data.Title = HeaderBookmark
-		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltip()
+		data = pageRefHeaderData()
 	case NoteLibSrcColumn:
-		data.Title = HeaderDatabase
-		data.TitleIsImageKey = true
-		data.Detail = LibSrcTooltip()
+		data = libSrcHeaderData()
 	}
 	return data
 }
@@ -278,27 +238,11 @@ func (n *Note) CellData(columnID int, data *CellData) {
 		data.Type = cell.Markdown
 		data.Primary = n.resolveText()
 	case NoteTagsColumn:
-		data.Type = cell.Tags
-		data.Primary = CombineTags(n.Tags)
+		fillTagsCell(data, n.Tags)
 	case NoteReferenceColumn, PageRefCellAlias:
-		data.Type = cell.PageRef
-		data.Primary = n.PageRef
-		if n.PageRefHighlight != "" {
-			data.Secondary = n.PageRefHighlight
-		} else {
-			data.Secondary = n.resolveText()
-		}
+		fillPageRefCell(data, n.PageRef, n.PageRefHighlight, n.resolveText)
 	case NoteLibSrcColumn:
-		data.Type = cell.Text
-		data.Alignment = align.Middle
-		if !xreflect.IsNil(n.owner) {
-			state, _ := n.owner.SourceMatcher().Match(n)
-			data.Primary = state.AltString()
-			data.Tooltip = state.String()
-			if state != srcstate.Custom {
-				data.Tooltip += "\n" + n.Source.String()
-			}
-		}
+		fillLibSrcCell(data, n.owner, n)
 	}
 }
 

@@ -23,14 +23,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emcost"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -108,26 +105,14 @@ type EquipmentModifierNonContainerSyncData struct {
 	Features          Features      `json:"features,omitempty"`
 }
 
-type equipmentModifierListData struct {
-	Version int                  `json:"version"`
-	Rows    []*EquipmentModifier `json:"rows"`
-}
-
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
-	var data equipmentModifierListData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
-		return nil, err
-	}
-	return data.Rows, nil
+	return loadRows[*EquipmentModifier](fileSystem, filePath)
 }
 
 // SaveEquipmentModifiers writes the EquipmentModifier list to the file as JSON.
 func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) error {
-	return jio.SaveToFile(filePath, &equipmentModifierListData{
-		Version: jio.CurrentDataVersion,
-		Rows:    modifiers,
-	})
+	return saveRows(filePath, modifiers)
 }
 
 // NewEquipmentModifier creates an EquipmentModifier.
@@ -245,28 +230,12 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	setOpen := false
-	if !tid.IsValid(localData.TID) {
-		// Fixup old data that used UUIDs instead of TIDs
-		localData.TID = tid.MustNewTID(equipmentModifierKind(strings.HasSuffix(localData.Type, containerKeyPostfix)))
-		setOpen = localData.IsOpen
-	}
+	open := fixupLegacyTID(&localData.TID, localData.Type, equipmentModifierKind) && localData.IsOpen
 	e.EquipmentModifierData = localData.EquipmentModifierData
 	e.Replacements = nameable.Normalize(e.Replacements)
-	if e.LocalNotes == "" && localData.ExprNotes != "" {
-		e.LocalNotes = EmbeddedExprToScript(localData.ExprNotes)
-	}
+	migrateLegacyText(&e.LocalNotes, localData.ExprNotes)
 	e.ClearUnusedFieldsForType()
-	e.Tags = convertOldCategoriesToTags(e.Tags, localData.Categories)
-	slices.Sort(e.Tags)
-	if e.Container() {
-		for _, one := range e.Children {
-			one.parent = e
-		}
-	}
-	if setOpen {
-		SetNodeOpen(e, true)
-	}
+	finishNodeUnmarshal(e, &e.Tags, localData.Categories, open)
 	return nil
 }
 
@@ -280,9 +249,7 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case EquipmentModifierEnabledColumn:
-		data.Title = HeaderCheckmark
-		data.TitleIsImageKey = true
-		data.Detail = ModifierEnabledTooltip()
+		data = enabledHeaderData()
 	case EquipmentModifierDescriptionColumn:
 		data.Title = i18n.Text("Equipment Modifier")
 		data.Primary = true
@@ -294,15 +261,11 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 	case EquipmentModifierWeightColumn:
 		data.Title = i18n.Text("Weight Adjustment")
 	case EquipmentModifierTagsColumn:
-		data.Title = i18n.Text("Tags")
+		data = tagsHeaderData()
 	case EquipmentModifierReferenceColumn:
-		data.Title = HeaderBookmark
-		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltip()
+		data = pageRefHeaderData()
 	case EquipmentModifierLibSrcColumn:
-		data.Title = HeaderDatabase
-		data.TitleIsImageKey = true
-		data.Detail = LibSrcTooltip()
+		data = libSrcHeaderData()
 	}
 	return data
 }
@@ -338,27 +301,11 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 			data.Primary = e.WeightDescription()
 		}
 	case EquipmentModifierTagsColumn:
-		data.Type = cell.Tags
-		data.Primary = CombineTags(e.Tags)
+		fillTagsCell(data, e.Tags)
 	case EquipmentModifierReferenceColumn, PageRefCellAlias:
-		data.Type = cell.PageRef
-		data.Primary = e.PageRef
-		if e.PageRefHighlight != "" {
-			data.Secondary = e.PageRefHighlight
-		} else {
-			data.Secondary = e.NameWithReplacements()
-		}
+		fillPageRefCell(data, e.PageRef, e.PageRefHighlight, e.NameWithReplacements)
 	case EquipmentModifierLibSrcColumn:
-		data.Type = cell.Text
-		data.Alignment = align.Middle
-		if !xreflect.IsNil(e.owner) {
-			state, _ := e.owner.SourceMatcher().Match(e)
-			data.Primary = state.AltString()
-			data.Tooltip = state.String()
-			if state != srcstate.Custom {
-				data.Tooltip += "\n" + e.Source.String()
-			}
-		}
+		fillLibSrcCell(data, e.owner, e)
 	}
 }
 
