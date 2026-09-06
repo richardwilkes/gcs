@@ -19,18 +19,55 @@ import (
 
 var _ TableProvider[*gurps.ConditionalModifier] = &condModProvider{}
 
+// condModProviderSpec captures the few things that differ between the conditional modifier and reaction modifier
+// table providers. Both tables display read-only lists of gurps.ConditionalModifier rows.
+type condModProviderSpec struct {
+	refKey     string
+	dragKey    *uti.DataType
+	singular   string
+	plural     string
+	headerData func(columnID int) gurps.HeaderData
+	rows       func() []*gurps.ConditionalModifier
+}
+
 type condModProvider struct {
-	table    *unison.Table[*Node[*gurps.ConditionalModifier]]
-	provider gurps.ConditionalModifierListProvider
+	table *unison.Table[*Node[*gurps.ConditionalModifier]]
+	owner gurps.DataOwnerProvider
+	spec  condModProviderSpec
 }
 
 // NewConditionalModifiersProvider creates a new table provider for conditional modifiers.
 func NewConditionalModifiersProvider(provider gurps.ConditionalModifierListProvider) TableProvider[*gurps.ConditionalModifier] {
-	return &condModProvider{provider: provider}
+	return &condModProvider{
+		owner: provider,
+		spec: condModProviderSpec{
+			refKey:     gurps.BlockConditionalModifiersKey,
+			dragKey:    conditionalModifierDragKey,
+			singular:   i18n.Text("Conditional Modifier"),
+			plural:     i18n.Text("Conditional Modifiers"),
+			headerData: gurps.ConditionalModifiersHeaderData,
+			rows:       provider.ConditionalModifiers,
+		},
+	}
+}
+
+// NewReactionModifiersProvider creates a new table provider for reaction modifiers.
+func NewReactionModifiersProvider(provider gurps.ReactionModifierListProvider) TableProvider[*gurps.ConditionalModifier] {
+	return &condModProvider{
+		owner: provider,
+		spec: condModProviderSpec{
+			refKey:     gurps.BlockReactionsKey,
+			dragKey:    reactionModifierDragKey,
+			singular:   i18n.Text("Reaction Modifier"),
+			plural:     i18n.Text("Reaction Modifiers"),
+			headerData: gurps.ReactionModifiersHeaderData,
+			rows:       provider.Reactions,
+		},
+	}
 }
 
 func (p *condModProvider) RefKey() string {
-	return gurps.BlockConditionalModifiersKey
+	return p.spec.refKey
 }
 
 func (p *condModProvider) AllTags() []string {
@@ -42,11 +79,11 @@ func (p *condModProvider) SetTable(table *unison.Table[*Node[*gurps.ConditionalM
 }
 
 func (p *condModProvider) RootRowCount() int {
-	return len(p.provider.ConditionalModifiers())
+	return len(p.spec.rows())
 }
 
 func (p *condModProvider) RootRows() []*Node[*gurps.ConditionalModifier] {
-	data := p.provider.ConditionalModifiers()
+	data := p.spec.rows()
 	rows := make([]*Node[*gurps.ConditionalModifier], 0, len(data))
 	for _, one := range data {
 		rows = append(rows, NewNode(p.table, nil, one, true))
@@ -58,18 +95,18 @@ func (p *condModProvider) SetRootRows(_ []*Node[*gurps.ConditionalModifier]) {
 }
 
 func (p *condModProvider) RootData() []*gurps.ConditionalModifier {
-	return p.provider.ConditionalModifiers()
+	return p.spec.rows()
 }
 
 func (p *condModProvider) SetRootData(_ []*gurps.ConditionalModifier) {
 }
 
 func (p *condModProvider) DataOwner() gurps.DataOwner {
-	return p.provider.DataOwner()
+	return p.owner.DataOwner()
 }
 
 func (p *condModProvider) DragKey() *uti.DataType {
-	return conditionalModifierDragKey
+	return p.spec.dragKey
 }
 
 func (p *condModProvider) DragSVG() *unison.SVG {
@@ -89,14 +126,14 @@ func (p *condModProvider) AltDropSupport() *AltDropSupport {
 }
 
 func (p *condModProvider) ItemNames() (singular, plural string) {
-	return i18n.Text("Conditional Modifier"), i18n.Text("Conditional Modifiers")
+	return p.spec.singular, p.spec.plural
 }
 
 func (p *condModProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]] {
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]], 0, len(ids))
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.ConditionalModifier](gurps.ConditionalModifiersHeaderData(id), true))
+		headers = append(headers, headerFromData[*gurps.ConditionalModifier](p.spec.headerData(id), true))
 	}
 	return DisableSorting(headers)
 }
