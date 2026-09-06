@@ -713,6 +713,13 @@ func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 	}
 }
 
+// syncTablePreservingSelection re-syncs the table's rows with its model, keeping whatever was selected.
+func syncTablePreservingSelection[T unison.TableRowConstraint[T]](table *unison.Table[T]) {
+	sel := table.CopySelectionMap()
+	table.SyncToModel()
+	table.SetSelectionMap(sel)
+}
+
 // DisableSorting disables the sorting capability in the table headers.
 func DisableSorting[T unison.TableRowConstraint[T]](headers []unison.TableColumnHeader[T]) []unison.TableColumnHeader[T] {
 	for _, header := range headers {

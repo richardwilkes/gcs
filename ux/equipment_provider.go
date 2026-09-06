@@ -124,19 +124,11 @@ func (p *equipmentProvider) ColumnIDs() []int {
 		gurps.EquipmentQuantityColumn,
 		gurps.EquipmentDescriptionColumn,
 	)
-	var sheetSettings *gurps.SheetSettings
-	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity != nil {
-			sheetSettings = entity.SheetSettings
-		} else {
-			sheetSettings = gurps.GlobalSettings().SheetSettings()
-		}
-	}
-	if p.forPage && sheetSettings != nil {
-		if !sheetSettings.HideTLColumn {
+	if settings := p.pageSheetSettings(); settings != nil {
+		if !settings.HideTLColumn {
 			columnIDs = append(columnIDs, gurps.EquipmentTLColumn)
 		}
-		if !sheetSettings.HideLCColumn {
+		if !settings.HideLCColumn {
 			columnIDs = append(columnIDs, gurps.EquipmentLCColumn)
 		}
 	} else {
@@ -156,17 +148,7 @@ func (p *equipmentProvider) ColumnIDs() []int {
 	if !p.forPage {
 		columnIDs = append(columnIDs, gurps.EquipmentTagsColumn)
 	}
-	if p.forPage {
-		if sheetSettings == nil || !sheetSettings.HidePageRefColumn {
-			columnIDs = append(columnIDs, gurps.EquipmentReferenceColumn)
-		}
-		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
-			columnIDs = append(columnIDs, gurps.EquipmentLibSrcColumn)
-		}
-	} else {
-		columnIDs = append(columnIDs, gurps.EquipmentReferenceColumn)
-	}
-	return columnIDs
+	return p.appendReferenceColumns(columnIDs, gurps.EquipmentReferenceColumn, gurps.EquipmentLibSrcColumn)
 }
 
 func (p *equipmentProvider) HierarchyColumnID() int {

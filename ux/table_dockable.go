@@ -300,9 +300,7 @@ func (d *TableDockable[T]) sizeToFit() {
 func (d *TableDockable[T]) Rebuild(_ bool) {
 	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()
-	sel := d.table.CopySelectionMap()
-	d.table.SyncToModel()
-	d.table.SetSelectionMap(sel)
+	syncTablePreservingSelection(d.table)
 	UpdateTitleForDockable(d)
 	d.scroll.SetPosition(h, v)
 }

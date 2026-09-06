@@ -12,49 +12,24 @@ package ux
 import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/v2/geom"
-	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 type equipmentModifiersPanel struct {
-	unison.Panel
-	owner     gurps.DataOwner
-	modifiers *[]*gurps.EquipmentModifier
-	provider  TableProvider[*gurps.EquipmentModifier]
-	table     *unison.Table[*Node[*gurps.EquipmentModifier]]
+	editorListPanel[*gurps.EquipmentModifier]
 }
 
-func newEquipmentModifiersPanel(owner gurps.DataOwner, modifiers *[]*gurps.EquipmentModifier) *equipmentModifiersPanel {
-	p := &equipmentModifiersPanel{
-		owner:     owner,
-		modifiers: modifiers,
-	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, geom.Size{}, geom.NewUniformInsets(1), false))
-	p.provider = NewEquipmentModifiersProvider(p, true)
-	p.table = newEditorTable(p.AsPanel(), p.provider)
-	p.table.RefKey = "equipment-modifiers-" + uuid.New().String()
+func newEquipmentModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, modifiers *[]*gurps.EquipmentModifier) *equipmentModifiersPanel {
+	p := &equipmentModifiersPanel{}
+	p.init(p, owner, modifiers, NewEquipmentModifiersProvider(p, true), "equipment-modifiers-"+uuid.New().String())
+	p.installNewItemHandler(cmdRoot, NewEquipmentModifierItemID, NoItemVariant)
+	p.installNewItemHandler(cmdRoot, NewEquipmentContainerModifierItemID, ContainerItemVariant)
 	return p
 }
 
-func (p *equipmentModifiersPanel) DataOwner() gurps.DataOwner {
-	return p.owner
-}
-
 func (p *equipmentModifiersPanel) EquipmentModifierList() []*gurps.EquipmentModifier {
-	return *p.modifiers
+	return *p.list
 }
 
 func (p *equipmentModifiersPanel) SetEquipmentModifierList(list []*gurps.EquipmentModifier) {
-	*p.modifiers = list
-	sel := p.table.CopySelectionMap()
-	p.table.SyncToModel()
-	p.table.SetSelectionMap(sel)
+	p.setList(list)
 }

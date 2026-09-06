@@ -55,23 +55,10 @@ func (p *notesProvider) ItemNames() (singular, plural string) {
 
 func (p *notesProvider) ColumnIDs() []int {
 	columnIDs := []int{gurps.NoteTextColumn}
-	var sheetSettings *gurps.SheetSettings
-	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity != nil {
-			sheetSettings = entity.SheetSettings
-		} else {
-			sheetSettings = gurps.GlobalSettings().SheetSettings()
-		}
-		if sheetSettings == nil || !sheetSettings.HidePageRefColumn {
-			columnIDs = append(columnIDs, gurps.NoteReferenceColumn)
-		}
-		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
-			columnIDs = append(columnIDs, gurps.NoteLibSrcColumn)
-		}
-	} else {
-		columnIDs = append(columnIDs, gurps.NoteTagsColumn, gurps.NoteReferenceColumn)
+	if !p.forPage {
+		columnIDs = append(columnIDs, gurps.NoteTagsColumn)
 	}
-	return columnIDs
+	return p.appendReferenceColumns(columnIDs, gurps.NoteReferenceColumn, gurps.NoteLibSrcColumn)
 }
 
 func (p *notesProvider) HierarchyColumnID() int {

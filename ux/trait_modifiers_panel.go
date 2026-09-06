@@ -12,49 +12,24 @@ package ux
 import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/v2/geom"
-	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 type traitModifiersPanel struct {
-	unison.Panel
-	owner     gurps.DataOwner
-	modifiers *[]*gurps.TraitModifier
-	provider  TableProvider[*gurps.TraitModifier]
-	table     *unison.Table[*Node[*gurps.TraitModifier]]
+	editorListPanel[*gurps.TraitModifier]
 }
 
-func newTraitModifiersPanel(owner gurps.DataOwner, modifiers *[]*gurps.TraitModifier) *traitModifiersPanel {
-	p := &traitModifiersPanel{
-		owner:     owner,
-		modifiers: modifiers,
-	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, geom.Size{}, geom.NewUniformInsets(1), false))
-	p.provider = NewTraitModifiersProvider(p, true)
-	p.table = newEditorTable(p.AsPanel(), p.provider)
-	p.table.RefKey = "trait-modifiers-" + uuid.New().String()
+func newTraitModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, modifiers *[]*gurps.TraitModifier) *traitModifiersPanel {
+	p := &traitModifiersPanel{}
+	p.init(p, owner, modifiers, NewTraitModifiersProvider(p, true), "trait-modifiers-"+uuid.New().String())
+	p.installNewItemHandler(cmdRoot, NewTraitModifierItemID, NoItemVariant)
+	p.installNewItemHandler(cmdRoot, NewTraitContainerModifierItemID, ContainerItemVariant)
 	return p
 }
 
-func (p *traitModifiersPanel) DataOwner() gurps.DataOwner {
-	return p.owner
-}
-
 func (p *traitModifiersPanel) TraitModifierList() []*gurps.TraitModifier {
-	return *p.modifiers
+	return *p.list
 }
 
 func (p *traitModifiersPanel) SetTraitModifierList(list []*gurps.TraitModifier) {
-	*p.modifiers = list
-	sel := p.table.CopySelectionMap()
-	p.table.SyncToModel()
-	p.table.SetSelectionMap(sel)
+	p.setList(list)
 }

@@ -103,16 +103,11 @@ func initEquipmentEditor(carried bool) func(e *editor[*gurps.Equipment, *gurps.E
 		adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
-		modifiersPanel := newEquipmentModifiersPanel(entity, &e.editorData.Modifiers)
-		content.AddChild(modifiersPanel)
+		content.AddChild(newEquipmentModifiersPanel(e, entity, &e.editorData.Modifiers))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 		content.AddChild(e.meleeWeapons)
 		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
 		content.AddChild(e.rangedWeapons)
-		e.InstallCmdHandlers(NewEquipmentModifierItemID, unison.AlwaysEnabled,
-			func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, NoItemVariant) })
-		e.InstallCmdHandlers(NewEquipmentContainerModifierItemID, unison.AlwaysEnabled,
-			func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, ContainerItemVariant) })
 		return func() {
 			maxUses := resolvedMaxUses()
 			if e.editorData.Uses > maxUses {

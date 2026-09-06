@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -57,28 +56,17 @@ func (p *weaponsProvider) RefKey() string {
 	return rangedWeaponRefKey
 }
 
+// showAllWeapons reports whether a page lists every weapon rather than only those of carried, equipped items. Off a
+// page there is no such choice: an item's editor always shows all of its weapons.
 func (p *weaponsProvider) showAllWeapons() bool {
-	owner := p.provider.DataOwner()
-	if xreflect.IsNil(owner) {
-		return false
-	}
-	entity := owner.OwningEntity()
-	if entity == nil {
-		return false
-	}
-	return entity.SheetSettings.ShowAllWeapons
+	settings := p.pageSheetSettings()
+	return settings != nil && settings.ShowAllWeapons
 }
 
+// hideUnusedColumns reports whether a page drops the columns none of its weapons have data for.
 func (p *weaponsProvider) hideUnusedColumns() bool {
-	owner := p.provider.DataOwner()
-	if xreflect.IsNil(owner) {
-		return false
-	}
-	entity := owner.OwningEntity()
-	if entity == nil {
-		return false
-	}
-	return entity.SheetSettings.HideUnusedWeaponColumns
+	settings := p.pageSheetSettings()
+	return settings != nil && settings.HideUnusedWeaponColumns
 }
 
 func (p *weaponsProvider) DragKey() *uti.DataType {
@@ -136,7 +124,7 @@ func (p *weaponsProvider) ColumnIDs() []int {
 		)
 	}
 	columnIDs = append(columnIDs, gurps.WeaponSTColumn)
-	if p.forPage && p.hideUnusedColumns() {
+	if p.hideUnusedColumns() {
 		columnIDs = p.removeUnusedColumns(columnIDs)
 	}
 	return columnIDs

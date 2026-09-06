@@ -135,7 +135,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)
-	modifiersPanel := newTraitModifiersPanel(entity, &e.editorData.Modifiers)
+	modifiersPanel := newTraitModifiersPanel(e, entity, &e.editorData.Modifiers)
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
 	if e.target.Container() {
 		content.AddChild(modifiersPanel)
@@ -148,10 +148,6 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		content.AddChild(e.rangedWeapons)
 		content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
-	e.InstallCmdHandlers(NewTraitModifierItemID, unison.AlwaysEnabled,
-		func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, NoItemVariant) })
-	e.InstallCmdHandlers(NewTraitContainerModifierItemID, unison.AlwaysEnabled,
-		func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, ContainerItemVariant) })
 	return func() {
 		if perLevelField != nil {
 			adjustFieldBlank(perLevelField, !e.editorData.CanLevel)

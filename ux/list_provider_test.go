@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -194,5 +195,83 @@ func TestCondModProviderIsReadOnly(t *testing.T) {
 	c.HasError(p.Deserialize(nil))
 	for i, header := range p.Headers() {
 		c.False(header.SortState().Sortable, "conditional modifier header %d must not be sortable", i)
+	}
+}
+
+// referenceColumnsForTest names a provider's column list along with the reference and library source columns it may
+// show, so that the same checks can run over every kind of list.
+type referenceColumnsForTest struct {
+	name    string
+	columns func() []int
+	ref     int
+	src     int
+}
+
+func referenceColumnProvidersForTest(lists gurps.ListProvider, forPage bool) []referenceColumnsForTest {
+	return []referenceColumnsForTest{
+		{"traits", NewTraitsProvider(lists, forPage).ColumnIDs, gurps.TraitReferenceColumn, gurps.TraitLibSrcColumn},
+		{"skills", NewSkillsProvider(lists, forPage).ColumnIDs, gurps.SkillReferenceColumn, gurps.SkillLibSrcColumn},
+		{"spells", NewSpellsProvider(lists, forPage).ColumnIDs, gurps.SpellReferenceColumn, gurps.SpellLibSrcColumn},
+		{
+			"equipment", NewEquipmentProvider(lists, true, forPage).ColumnIDs,
+			gurps.EquipmentReferenceColumn, gurps.EquipmentLibSrcColumn,
+		},
+		{"notes", NewNotesProvider(lists, forPage).ColumnIDs, gurps.NoteReferenceColumn, gurps.NoteLibSrcColumn},
+	}
+}
+
+// TestProvidersFollowReferenceColumnSettings verifies that the reference and library source columns of every list on a
+// page come and go with the settings that hide them -- the entity's own on a sheet, the global ones on a template --
+// while off a page the reference column is always present and the source column never is.
+func TestProvidersFollowReferenceColumnSettings(t *testing.T) {
+	c := check.New(t)
+	global := gurps.GlobalSettings().SheetSettings()
+	savedRef, savedSrc := global.HidePageRefColumn, global.HideSourceMismatch
+	t.Cleanup(func() { global.HidePageRefColumn, global.HideSourceMismatch = savedRef, savedSrc })
+	entity := gurps.NewEntity()
+	template := gurps.NewTemplate()
+	for _, hideRef := range []bool{false, true} {
+		for _, hideSrc := range []bool{false, true} {
+			entity.SheetSettings.HidePageRefColumn = hideRef
+			entity.SheetSettings.HideSourceMismatch = hideSrc
+			// The global settings are set to the opposite, so a sheet that read them instead of its own would fail.
+			global.HidePageRefColumn = !hideRef
+			global.HideSourceMismatch = !hideSrc
+			for _, p := range referenceColumnProvidersForTest(entity, true) {
+				c.Equal(!hideRef, slices.Contains(p.columns(), p.ref),
+					"%s on a sheet: the reference column must follow the sheet's own setting (hide=%v)", p.name, hideRef)
+				c.Equal(!hideSrc, slices.Contains(p.columns(), p.src),
+					"%s on a sheet: the source column must follow the sheet's own setting (hide=%v)", p.name, hideSrc)
+			}
+			for _, p := range referenceColumnProvidersForTest(template, true) {
+				c.Equal(hideRef, slices.Contains(p.columns(), p.ref),
+					"%s on a template: the reference column must follow the global setting (hide=%v)", p.name, !hideRef)
+				c.Equal(hideSrc, slices.Contains(p.columns(), p.src),
+					"%s on a template: the source column must follow the global setting (hide=%v)", p.name, !hideSrc)
+			}
+			for _, p := range referenceColumnProvidersForTest(entity, false) {
+				c.True(slices.Contains(p.columns(), p.ref), "%s off a page must always show the reference column", p.name)
+				c.False(slices.Contains(p.columns(), p.src), "%s off a page must never show the source column", p.name)
+			}
+		}
+	}
+}
+
+// TestEquipmentProviderFollowsTLAndLCColumnSettings verifies that the equipment list's tech level and legality class
+// columns follow the sheet's settings on a page and are always present off one.
+func TestEquipmentProviderFollowsTLAndLCColumnSettings(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	onPage := NewEquipmentProvider(entity, true, true)
+	offPage := NewEquipmentProvider(entity, true, false)
+	for _, hide := range []bool{false, true} {
+		entity.SheetSettings.HideTLColumn = hide
+		entity.SheetSettings.HideLCColumn = !hide
+		c.Equal(!hide, slices.Contains(onPage.ColumnIDs(), gurps.EquipmentTLColumn),
+			"on a page the TL column must follow the sheet's setting (hide=%v)", hide)
+		c.Equal(hide, slices.Contains(onPage.ColumnIDs(), gurps.EquipmentLCColumn),
+			"on a page the LC column must follow the sheet's setting (hide=%v)", !hide)
+		c.True(slices.Contains(offPage.ColumnIDs(), gurps.EquipmentTLColumn), "off a page the TL column must be present")
+		c.True(slices.Contains(offPage.ColumnIDs(), gurps.EquipmentLCColumn), "off a page the LC column must be present")
 	}
 }

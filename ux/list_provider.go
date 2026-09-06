@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
@@ -85,6 +86,37 @@ func (p *listProvider[T]) SetRootData(data []T) {
 
 func (p *listProvider[T]) DataOwner() gurps.DataOwner {
 	return p.dataOwner.DataOwner()
+}
+
+// pageSheetSettings returns the sheet settings a table on a page takes its column choices from: the owning entity's,
+// or the global ones when the page has no entity (a template or loot sheet). Tables that are not on a page get nil,
+// since their columns are fixed. It tolerates a missing data owner.
+func (p *listProvider[T]) pageSheetSettings() *gurps.SheetSettings {
+	if !p.forPage {
+		return nil
+	}
+	var entity *gurps.Entity
+	if owner := p.DataOwner(); !xreflect.IsNil(owner) {
+		entity = owner.OwningEntity()
+	}
+	return gurps.SheetSettingsFor(entity)
+}
+
+// appendReferenceColumns appends the page reference column and, on a page, the library source column, omitting
+// whichever of the two the sheet settings hide. Off a page the reference column is always present and there is no
+// source column.
+func (p *listProvider[T]) appendReferenceColumns(columnIDs []int, refColumnID, libSrcColumnID int) []int {
+	settings := p.pageSheetSettings()
+	if settings == nil {
+		return append(columnIDs, refColumnID)
+	}
+	if !settings.HidePageRefColumn {
+		columnIDs = append(columnIDs, refColumnID)
+	}
+	if !settings.HideSourceMismatch {
+		columnIDs = append(columnIDs, libSrcColumnID)
+	}
+	return columnIDs
 }
 
 func (p *listProvider[T]) DropShouldMoveData(from, to *unison.Table[*Node[T]]) bool {

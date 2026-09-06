@@ -12,54 +12,34 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
-	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
+// weaponsPanel shows the melee or the ranged half of an item's weapons. Both halves share the one list in the editor's
+// data, so each panel splits it on the way in and merges its half back on the way out.
 type weaponsPanel struct {
-	unison.Panel
+	editorListPanel[*gurps.Weapon]
 	weaponOwner gurps.WeaponOwner
-	allWeapons  *[]*gurps.Weapon
-	weapons     []*gurps.Weapon
-	provider    TableProvider[*gurps.Weapon]
-	table       *unison.Table[*Node[*gurps.Weapon]]
 	melee       bool
 }
 
 func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, melee bool, weapons *[]*gurps.Weapon) *weaponsPanel {
 	p := &weaponsPanel{
 		weaponOwner: weaponOwner,
-		allWeapons:  weapons,
-		weapons:     gurps.ExtractWeaponsOfType(melee, false, *weapons),
 		melee:       melee,
 	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, geom.Size{}, geom.NewUniformInsets(1), false))
-	p.provider = NewWeaponsProvider(p, p.melee, false)
-	p.table = newEditorTable(p.AsPanel(), p.provider)
 	var id int
+	var refKey string
 	if melee {
 		id = NewMeleeWeaponItemID
-		p.table.RefKey = string(tid.MustNewTID(kinds.WeaponMelee))
+		refKey = string(tid.MustNewTID(kinds.WeaponMelee))
 	} else {
 		id = NewRangedWeaponItemID
-		p.table.RefKey = string(tid.MustNewTID(kinds.WeaponRanged))
+		refKey = string(tid.MustNewTID(kinds.WeaponRanged))
 	}
-	cmdRoot.AsPanel().InstallCmdHandlers(id, unison.AlwaysEnabled,
-		func(_ any) { p.provider.CreateItem(cmdRoot, p.table, NoItemVariant) })
+	p.init(p, weaponOwner.DataOwner(), weapons, NewWeaponsProvider(p, melee, false), refKey)
+	p.installNewItemHandler(cmdRoot, id, NoItemVariant)
 	return p
-}
-
-func (p *weaponsPanel) DataOwner() gurps.DataOwner {
-	return p.weaponOwner.DataOwner()
 }
 
 func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {
@@ -67,18 +47,15 @@ func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {
 }
 
 func (p *weaponsPanel) Weapons(melee, _, excludeHidden bool) []*gurps.Weapon {
-	return gurps.ExtractWeaponsOfType(melee, excludeHidden, *p.allWeapons)
+	return gurps.ExtractWeaponsOfType(melee, excludeHidden, *p.list)
 }
 
 func (p *weaponsPanel) SetWeapons(melee bool, list []*gurps.Weapon) {
-	m, r := gurps.SeparateWeapons(false, *p.allWeapons)
+	m, r := gurps.SeparateWeapons(false, *p.list)
 	if melee {
 		m = list
 	} else {
 		r = list
 	}
-	*p.allWeapons = append(append(make([]*gurps.Weapon, 0, len(m)+len(r)), m...), r...)
-	sel := p.table.CopySelectionMap()
-	p.table.SyncToModel()
-	p.table.SetSelectionMap(sel)
+	p.setList(append(append(make([]*gurps.Weapon, 0, len(m)+len(r)), m...), r...))
 }
