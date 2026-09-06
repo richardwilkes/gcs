@@ -92,3 +92,17 @@ func forEachSourcedNode(provider ListProvider, visit func(sourcedNode)) {
 func syncWithLibrarySources(provider ListProvider) {
 	forEachSourcedNode(provider, sourcedNode.SyncWithSource)
 }
+
+// countNodes returns the number of nodes in the list, descending into containers, that include accepts. A nil include
+// accepts every node. When onlyEnabled is true, disabled nodes and their descendants are skipped, as they are by
+// Traverse.
+func countNodes[T Node[T]](list []T, onlyEnabled bool, include func(T) bool) int {
+	count := 0
+	Traverse(func(node T) bool {
+		if include == nil || include(node) {
+			count++
+		}
+		return false
+	}, onlyEnabled, false, list...)
+	return count
+}

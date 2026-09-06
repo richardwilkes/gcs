@@ -97,39 +97,22 @@ func legacyTextExport(entity *Entity, tmpl []byte, exportPath string) (err error
 			err = errs.Wrap(closeErr)
 		}
 	}()
-	lookForKeyMarker := true
-	var keyBuffer bytes.Buffer
-	for ex.pos < len(ex.template) {
-		ch := ex.template[ex.pos]
-		ex.pos++
-		switch {
-		case lookForKeyMarker:
-			var next byte
-			if ex.pos < len(ex.template) {
-				next = ex.template[ex.pos]
-			}
-			if ch == '@' && (next < '0' || next > '9') {
-				lookForKeyMarker = false
-			} else {
-				ex.out.WriteByte(ch)
-			}
-		case ch == '_' || (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z'):
-			keyBuffer.WriteByte(ch)
-		default:
-			if !ex.enhancedKeyParsing || ch != '@' {
-				ex.pos--
-			}
-			if err = ex.emitKey(keyBuffer.String()); err != nil {
-				return err
-			}
-			keyBuffer.Reset()
-			lookForKeyMarker = true
+	pending := ex.processBuffer(ex.template, func(key string, _ []byte, index int) int {
+		// The top-level key handlers extract their loop bodies relative to ex.pos, so it has to track the scanner's
+		// position across each call and the scanner has to resume from wherever the handler left it.
+		ex.pos = index
+		if err = ex.emitKey(key); err != nil {
+			return len(ex.template) // Stop scanning; the error is returned below.
 		}
+		return ex.pos
+	})
+	if err != nil {
+		return err
 	}
-	if keyBuffer.Len() != 0 {
-		if err = ex.emitKey(keyBuffer.String()); err != nil {
-			return err
-		}
+	// Unlike a loop body, the top-level template emits a key that runs right up to the end of the text.
+	if pending != "" {
+		ex.pos = len(ex.template)
+		return ex.emitKey(pending)
 	}
 	return nil
 }
@@ -405,70 +388,41 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "CULTURAL_FAMILIARITIES_LOOP_START":
 		ex.processTraitLoop(ex.extractUpToMarker("CULTURAL_FAMILIARITIES_LOOP_END"), ex.includeCulturalFamiliarities)
 	case "SKILLS_LOOP_COUNT":
-		count := 0
-		Traverse(func(_ *Skill) bool {
-			count++
-			return false
-		}, false, false, ex.entity.Skills...)
-		ex.writeEncodedText(strconv.Itoa(count))
+		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.Skills, false, nil)))
 	case "SKILLS_LOOP_START":
 		ex.processSkillsLoop(ex.extractUpToMarker("SKILLS_LOOP_END"))
 	case "SPELLS_LOOP_COUNT":
-		count := 0
-		Traverse(func(_ *Spell) bool {
-			count++
-			return false
-		}, false, false, ex.entity.Spells...)
-		ex.writeEncodedText(strconv.Itoa(count))
+		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.Spells, false, nil)))
 	case "SPELLS_LOOP_START":
 		ex.processSpellsLoop(ex.extractUpToMarker("SPELLS_LOOP_END"))
 	case "MELEE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.Weapons(true, ex.entity.SheetSettings.ShowAllWeapons, true))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.weapons(true))))
 	case "HIERARCHICAL_MELEE_LOOP_COUNT":
 		list, _ := ex.hierarchicalWeapons(true)
 		ex.writeEncodedText(strconv.Itoa(len(list)))
 	case "MELEE_LOOP_START":
-		ex.processMeleeLoop(ex.extractUpToMarker("MELEE_LOOP_END"))
+		ex.processWeaponLoop(ex.extractUpToMarker("MELEE_LOOP_END"), true, false)
 	case "HIERARCHICAL_MELEE_LOOP_START":
-		ex.processHierarchicalMeleeLoop(ex.extractUpToMarker("HIERARCHICAL_MELEE_LOOP_END"))
+		ex.processWeaponLoop(ex.extractUpToMarker("HIERARCHICAL_MELEE_LOOP_END"), true, true)
 	case "RANGED_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.Weapons(false, ex.entity.SheetSettings.ShowAllWeapons, true))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.weapons(false))))
 	case "HIERARCHICAL_RANGED_LOOP_COUNT":
 		list, _ := ex.hierarchicalWeapons(false)
 		ex.writeEncodedText(strconv.Itoa(len(list)))
 	case "RANGED_LOOP_START":
-		ex.processRangedLoop(ex.extractUpToMarker("RANGED_LOOP_END"))
+		ex.processWeaponLoop(ex.extractUpToMarker("RANGED_LOOP_END"), false, false)
 	case "HIERARCHICAL_RANGED_LOOP_START":
-		ex.processHierarchicalRangedLoop(ex.extractUpToMarker("HIERARCHICAL_RANGED_LOOP_END"))
+		ex.processWeaponLoop(ex.extractUpToMarker("HIERARCHICAL_RANGED_LOOP_END"), false, true)
 	case "EQUIPMENT_LOOP_COUNT":
-		count := 0
-		Traverse(func(eqp *Equipment) bool {
-			if ex.includeByTags(eqp.Tags) {
-				count++
-			}
-			return false
-		}, false, false, ex.entity.CarriedEquipment...)
-		ex.writeEncodedText(strconv.Itoa(count))
+		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.CarriedEquipment, false, ex.includeByEquipmentTags)))
 	case "EQUIPMENT_LOOP_START":
 		ex.processEquipmentLoop(ex.extractUpToMarker("EQUIPMENT_LOOP_END"), true)
 	case "OTHER_EQUIPMENT_LOOP_COUNT":
-		count := 0
-		Traverse(func(eqp *Equipment) bool {
-			if ex.includeByTags(eqp.Tags) {
-				count++
-			}
-			return false
-		}, false, false, ex.entity.OtherEquipment...)
-		ex.writeEncodedText(strconv.Itoa(count))
+		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.OtherEquipment, false, ex.includeByEquipmentTags)))
 	case "OTHER_EQUIPMENT_LOOP_START":
 		ex.processEquipmentLoop(ex.extractUpToMarker("OTHER_EQUIPMENT_LOOP_END"), false)
 	case "NOTES_LOOP_COUNT":
-		count := 0
-		Traverse(func(_ *Note) bool {
-			count++
-			return false
-		}, false, false, ex.entity.Notes...)
-		ex.writeEncodedText(strconv.Itoa(count))
+		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.Notes, false, nil)))
 	case "NOTES_LOOP_START":
 		ex.processNotesLoop(ex.extractUpToMarker("NOTES_LOOP_END"))
 	case "REACTION_LOOP_COUNT":
@@ -546,18 +500,11 @@ func splitIntoMap(in, prefix string, m map[string]bool) {
 	}
 }
 
+// extractUpToMarker returns the top-level template text between the current position and the next occurrence of
+// marker, advancing the position past the marker.
 func (ex *legacyExporter) extractUpToMarker(marker string) []byte {
-	remaining := ex.template[ex.pos:]
-	i := bytes.Index(remaining, []byte(marker))
-	if i == -1 {
-		ex.pos = len(ex.template)
-		return remaining
-	}
-	buffer := ex.template[ex.pos : ex.pos+i]
-	ex.pos += i + len(marker)
-	if ex.enhancedKeyParsing && ex.pos < len(ex.template) && ex.template[ex.pos] == '@' {
-		ex.pos++
-	}
+	var buffer []byte
+	buffer, ex.pos = ex.subBufferExtractUpToMarker(marker, ex.template, ex.pos)
 	return buffer
 }
 
@@ -592,15 +539,10 @@ func (ex *legacyExporter) writeEncodedText(text string) {
 	}
 }
 
+// writeTraitLoopCount writes the number of traits the matching trait loop will visit: enabled traits, descending into
+// containers, that f accepts.
 func (ex *legacyExporter) writeTraitLoopCount(f func(*Trait) bool) {
-	count := 0
-	Traverse(func(t *Trait) bool {
-		if f(t) {
-			count++
-		}
-		return false
-	}, true, false, ex.entity.Traits...)
-	ex.writeEncodedText(strconv.Itoa(count))
+	ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.Traits, true, f)))
 }
 
 func (ex *legacyExporter) includeByTags(tags []string) bool {
@@ -622,6 +564,10 @@ func (ex *legacyExporter) includeByTags(tags []string) bool {
 
 func (ex *legacyExporter) includeByTraitTags(t *Trait) bool {
 	return ex.includeByTags(t.Tags)
+}
+
+func (ex *legacyExporter) includeByEquipmentTags(eqp *Equipment) bool {
+	return ex.includeByTags(eqp.Tags)
 }
 
 func (ex *legacyExporter) includeAdvantages(t *Trait) bool {
@@ -1014,7 +960,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 		eqpList = ex.entity.OtherEquipment
 	}
 	Traverse(func(eqp *Equipment) bool {
-		if ex.includeByTags(eqp.Tags) {
+		if ex.includeByEquipmentTags(eqp) {
 			keys := legacyNodeKeys{
 				pageRef:       eqp.PageRef,
 				satisfied:     func() bool { return eqp.UnsatisfiedReason == "" },
@@ -1210,10 +1156,39 @@ func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 	}
 }
 
-func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
-	for i, w := range ex.entity.Weapons(true, ex.entity.SheetSettings.ShowAllWeapons, true) {
+// weaponKeyFunc is the signature shared by the melee and ranged key handlers: it handles one key for the weapon at
+// currentID, whose attack modes (if the loop is hierarchical) are attackModes, and returns the index in buf to resume
+// scanning from.
+type weaponKeyFunc func(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int
+
+// weapons returns the melee or ranged weapons the flat loops iterate over, honoring the sheet's show-all-weapons
+// setting.
+func (ex *legacyExporter) weapons(melee bool) []*Weapon {
+	return ex.entity.Weapons(melee, ex.entity.SheetSettings.ShowAllWeapons, true)
+}
+
+// processWeaponLoop runs a loop body once per melee or ranged weapon. A hierarchical loop visits each distinct weapon
+// once and makes its attack modes available to the ATTACK_MODES_* keys; a flat loop visits every attack mode as its
+// own weapon.
+func (ex *legacyExporter) processWeaponLoop(buffer []byte, melee, hierarchical bool) {
+	keys := ex.processRangedKeys
+	if melee {
+		keys = ex.processMeleeKeys
+	}
+	var list []*Weapon
+	var attackModes map[string][]*Weapon
+	if hierarchical {
+		list, attackModes = ex.hierarchicalWeapons(melee)
+	} else {
+		list = ex.weapons(melee)
+	}
+	for i, w := range list {
+		var modes []*Weapon
+		if hierarchical {
+			modes = attackModes[w.String()]
+		}
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
-			return ex.processMeleeKeys(key, i, w, nil, buf, index)
+			return keys(key, i, w, modes, buf, index)
 		})
 	}
 }
@@ -1223,7 +1198,7 @@ func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
 // so the matching loop-count keys must report the length of this list rather than the total number of attack modes.
 func (ex *legacyExporter) hierarchicalWeapons(melee bool) (list []*Weapon, attackModes map[string][]*Weapon) {
 	attackModes = make(map[string][]*Weapon)
-	for _, w := range ex.entity.Weapons(melee, ex.entity.SheetSettings.ShowAllWeapons, true) {
+	for _, w := range ex.weapons(melee) {
 		key := w.String()
 		attackModes[key] = append(attackModes[key], w)
 	}
@@ -1235,30 +1210,29 @@ func (ex *legacyExporter) hierarchicalWeapons(melee bool) (list []*Weapon, attac
 	return list, attackModes
 }
 
-func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
-	list, m := ex.hierarchicalWeapons(true)
-	for i, w := range list {
-		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
-			return ex.processMeleeKeys(key, i, w, m[w.String()], buf, index)
-		})
+// processAttackModes handles the ATTACK_MODES_LOOP_COUNT and ATTACK_MODES_LOOP_START keys shared by the melee and
+// ranged key handlers, returning the index to resume scanning from and false if the key was not one of them. Each
+// attack mode's body is dispatched through keys, so that a melee weapon's modes see the melee keys and a ranged
+// weapon's the ranged ones.
+func (ex *legacyExporter) processAttackModes(key string, attackModes []*Weapon, buf []byte, index int, keys weaponKeyFunc) (int, bool) {
+	switch key {
+	case "ATTACK_MODES_LOOP_COUNT":
+		ex.writeEncodedText(strconv.Itoa(len(attackModes)))
+	case "ATTACK_MODES_LOOP_START":
+		if len(attackModes) == 0 {
+			ex.unidentifiedKey(key)
+			break
+		}
+		buf, index = ex.subBufferExtractUpToMarker("ATTACK_MODES_LOOP_END", buf, index)
+		for i, mode := range attackModes {
+			ex.processBuffer(buf, func(key string, innerBuf []byte, innerIndex int) int {
+				return keys(key, i, mode, nil, innerBuf, innerIndex)
+			})
+		}
+	default:
+		return index, false
 	}
-}
-
-func (ex *legacyExporter) processRangedLoop(buffer []byte) {
-	for i, w := range ex.entity.Weapons(false, ex.entity.SheetSettings.ShowAllWeapons, true) {
-		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
-			return ex.processRangedKeys(key, i, w, nil, buf, index)
-		})
-	}
-}
-
-func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
-	list, m := ex.hierarchicalWeapons(false)
-	for i, w := range list {
-		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
-			return ex.processRangedKeys(key, i, w, m[w.String()], buf, index)
-		})
-	}
+	return index, true
 }
 
 func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
@@ -1269,21 +1243,11 @@ func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon,
 		ex.writeEncodedText(w.Block.Resolve(w, nil).String())
 	case "REACH":
 		ex.writeEncodedText(w.Reach.Resolve(w, nil).String())
-	case "ATTACK_MODES_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(attackModes)))
-	case "ATTACK_MODES_LOOP_START":
-		if len(attackModes) != 0 {
-			buf, index = ex.subBufferExtractUpToMarker("ATTACK_MODES_LOOP_END", buf, index)
-			for i, mode := range attackModes {
-				ex.processBuffer(buf, func(key string, innerBuf []byte, innerIndex int) int {
-					return ex.processMeleeKeys(key, i, mode, nil, innerBuf, innerIndex)
-				})
-			}
-		} else {
-			ex.unidentifiedKey(key)
-		}
 	default:
-		ex.processWeaponKeys(key, currentID, w)
+		var handled bool
+		if index, handled = ex.processAttackModes(key, attackModes, buf, index, ex.processMeleeKeys); !handled {
+			ex.processWeaponKeys(key, currentID, w)
+		}
 	}
 	return index
 }
@@ -1302,21 +1266,11 @@ func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *Weapon
 		ex.writeEncodedText(w.Shots.Resolve(w, nil).String())
 	case "RECOIL":
 		ex.writeEncodedText(w.Recoil.Resolve(w, nil).String())
-	case "ATTACK_MODES_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(attackModes)))
-	case "ATTACK_MODES_LOOP_START":
-		if len(attackModes) != 0 {
-			buf, index = ex.subBufferExtractUpToMarker("ATTACK_MODES_LOOP_END", buf, index)
-			for i, mode := range attackModes {
-				ex.processBuffer(buf, func(key string, innerBuf []byte, innerIndex int) int {
-					return ex.processRangedKeys(key, i, mode, nil, innerBuf, innerIndex)
-				})
-			}
-		} else {
-			ex.unidentifiedKey(key)
-		}
 	default:
-		ex.processWeaponKeys(key, currentID, w)
+		var handled bool
+		if index, handled = ex.processAttackModes(key, attackModes, buf, index, ex.processRangedKeys); !handled {
+			ex.processWeaponKeys(key, currentID, w)
+		}
 	}
 	return index
 }
@@ -1473,7 +1427,13 @@ func (ex *legacyExporter) writeWithOptionalParens(key, text string) {
 	}
 }
 
-func (ex *legacyExporter) processBuffer(buffer []byte, f func(key string, buf []byte, index int) int) {
+// processBuffer runs the template scanner over buffer. Text is copied to the output until an '@' that is not followed
+// by a digit starts a key; the key is the run of [A-Za-z0-9_] bytes that follows, and the byte that ends it is scanned
+// again as text unless enhanced key parsing is on and it is a closing '@'. Each key is handed to f along with the buffer
+// and the index scanning would resume from, and f returns the index to actually resume from, so that a loop handler can
+// skip the body it consumed. A key that is still being accumulated when the buffer ends is returned as pending rather
+// than dispatched: loop bodies drop it, while the top-level template emits it.
+func (ex *legacyExporter) processBuffer(buffer []byte, f func(key string, buf []byte, index int) int) (pending string) {
 	var keyBuffer bytes.Buffer
 	lookForKeyMarker := true
 	i := 0
@@ -1502,8 +1462,12 @@ func (ex *legacyExporter) processBuffer(buffer []byte, f func(key string, buf []
 			lookForKeyMarker = true
 		}
 	}
+	return keyBuffer.String()
 }
 
+// subBufferExtractUpToMarker returns the text of buf between start and the next occurrence of marker, along with the
+// index just past the marker (and past a closing '@' when enhanced key parsing is on). If the marker is absent, the
+// rest of buf is returned and scanning ends.
 func (ex *legacyExporter) subBufferExtractUpToMarker(marker string, buf []byte, start int) (buffer []byte, newStart int) {
 	remaining := buf[start:]
 	i := bytes.Index(remaining, []byte(marker))

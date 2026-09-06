@@ -189,6 +189,54 @@ func newTestWeapon(owner WeaponOwner, melee bool, usage string) *Weapon {
 	return w
 }
 
+// TestLegacyExportWeaponLoops verifies that the flat and hierarchical weapon loops behave the same way for melee and
+// ranged weapons: the flat loops visit every attack mode as its own weapon and have no attack modes of their own, while
+// the hierarchical loops visit each distinct weapon once and run the ATTACK_MODES body for each of its modes using the
+// same melee or ranged key set as the enclosing loop.
+func TestLegacyExportWeaponLoops(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	karate := NewTrait(e, nil, false)
+	karate.Name = "Karate"
+	karate.Weapons = append(karate.Weapons, newTestWeapon(karate, true, "Punch"), newTestWeapon(karate, true, "Kick"),
+		newTestWeapon(karate, false, "Spit"), newTestWeapon(karate, false, "Sneeze"))
+	innate := NewTrait(e, nil, false)
+	innate.Name = "Innate Attack"
+	innate.Weapons = append(innate.Weapons, newTestWeapon(innate, false, "Bolt"))
+	e.Traits = append(e.Traits, karate, innate)
+	reach := karate.Weapons[0].Reach.Resolve(karate.Weapons[0], nil).String()
+	rof := karate.Weapons[2].RateOfFire.Resolve(karate.Weapons[2], nil).String()
+
+	// Flat loops number every attack mode in sorted order and reject the attack modes keys.
+	c.Equal("(0:Bolt)(1:Sneeze)(2:Spit)", runLegacyExport(t, c, e, "@RANGED_LOOP_START(@ID:@USAGE)@RANGED_LOOP_END"))
+	c.Equal(strings.Repeat("(0:Unidentified key: &quot;ATTACK_MODES_LOOP_START&quot;)", 3),
+		runLegacyExport(t, c, e, "@RANGED_LOOP_START(@ATTACK_MODES_LOOP_COUNT:@ATTACK_MODES_LOOP_START)@RANGED_LOOP_END"))
+
+	// Hierarchical loops number the modes within each weapon, and the modes of a ranged weapon see the ranged keys
+	// (ROF) but not the melee ones (REACH), and vice versa.
+	c.Equal("[Innate Attack:<0:Bolt:"+rof+":Unidentified key: &quot;REACH&quot;>]"+
+		"[Karate:<0:Sneeze:"+rof+":Unidentified key: &quot;REACH&quot;><1:Spit:"+rof+":Unidentified key: &quot;REACH&quot;>]",
+		runLegacyExport(t, c, e, "@HIERARCHICAL_RANGED_LOOP_START[@DESCRIPTION_PRIMARY:"+
+			"@ATTACK_MODES_LOOP_START<@ID:@USAGE:@ROF:@REACH>@ATTACK_MODES_LOOP_END]@HIERARCHICAL_RANGED_LOOP_END"))
+	c.Contains(runLegacyExport(t, c, e, "@HIERARCHICAL_MELEE_LOOP_START[@DESCRIPTION_PRIMARY:"+
+		"@ATTACK_MODES_LOOP_START<@ID:@USAGE:@REACH:@ROF>@ATTACK_MODES_LOOP_END]@HIERARCHICAL_MELEE_LOOP_END"),
+		"[Karate:<0:Kick:"+reach+":Unidentified key: &quot;ROF&quot;><1:Punch:"+reach+":Unidentified key: &quot;ROF&quot;>]")
+}
+
+// TestLegacyExportKeyScanner verifies that the top-level template and loop bodies are scanned by the same rules -- a
+// key ends at the first byte outside [A-Za-z0-9_], which is read again as text unless enhanced key parsing is on and it
+// is a closing '@' -- and that a key running up to the very end of the template is still emitted.
+func TestLegacyExportKeyScanner(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	n := NewNote(e, nil, false)
+	n.MarkDown = "Note1"
+	e.Notes = append(e.Notes, n)
+	c.Equal("10 x10", runLegacyExport(t, c, e, "@ST x@DX"))
+	c.Equal("\n10xNote1yz|10",
+		runLegacyExport(t, c, e, "@ENHANCED_KEY_PARSING\n@ST@x@NOTES_LOOP_START@@NOTE@y@NOTES_LOOP_END@z|@DX"))
+}
+
 // TestLegacyExportHitLocationEquipmentFromModifier verifies that armor whose DR for a location comes from one of its
 // modifiers is listed for that location, since the DR printed for the location already includes the modifier's
 // contribution.
