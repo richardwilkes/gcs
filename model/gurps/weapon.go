@@ -415,26 +415,38 @@ func (w *Weapon) String() string {
 // Notes returns the notes for this weapon.
 func (w *Weapon) Notes() string {
 	var buffer strings.Builder
-	if w.Owner != nil {
-		switch owner := w.Owner.(type) {
-		case *Equipment:
-			Traverse(func(mod *EquipmentModifier) bool {
-				if mod.ShowNotesOnWeapon {
-					AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.ResolveLocalNotes()))
-				}
-				return false
-			}, true, true, owner.Modifiers...)
-		case *Trait:
-			Traverse(func(mod *TraitModifier) bool {
-				if mod.ShowNotesOnWeapon {
-					AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.ResolveLocalNotes()))
-				}
-				return false
-			}, true, true, owner.Modifiers...)
+	w.forEachOwnerModifier(func(mod ownerModifier, _ Features) {
+		if mod.ShowsNotesOnWeapon() {
+			AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.ResolveLocalNotes()))
 		}
-	}
+	})
 	AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.ResolveUsageNotes()))
 	return buffer.String()
+}
+
+// ownerModifier is what a weapon needs from the modifiers of its owner. Both TraitModifier and EquipmentModifier
+// satisfy it.
+type ownerModifier interface {
+	fmt.Stringer
+	ShowsNotesOnWeapon() bool
+	ResolveLocalNotes() string
+}
+
+// forEachOwnerModifier calls visit for each enabled, non-container modifier of the weapon's owner, at any depth,
+// together with those of the modifier's features that currently take effect, i.e. excluding its switchable features
+// while the owner's switch is off. Only traits and equipment carry modifiers, so a weapon with any other owner, or no
+// owner at all, visits nothing.
+func (w *Weapon) forEachOwnerModifier(visit func(mod ownerModifier, active Features)) {
+	switch owner := w.Owner.(type) {
+	case *Trait:
+		visitEnabledModifiers(owner.Modifiers, owner.SwitchedOn,
+			func(mod *TraitModifier) Features { return mod.Features },
+			func(mod *TraitModifier, active Features) { visit(mod, active) })
+	case *Equipment:
+		visitEnabledModifiers(owner.Modifiers, owner.SwitchedOn,
+			func(mod *EquipmentModifier) Features { return mod.Features },
+			func(mod *EquipmentModifier, active Features) { visit(mod, active) })
+	}
 }
 
 // SetOwner sets the owner and ensures sub-components have their owners set.
@@ -475,6 +487,26 @@ func (w *Weapon) Entity() *Entity {
 		return nil
 	}
 	return owner.OwningEntity()
+}
+
+// effectiveStrength returns the ST the weapon is used at: the rated ST of its owner when the owner has one, otherwise
+// the entity's ST as chosen by defaultST (0 when there is no entity). The weapon's effective ST bonuses are then
+// applied, explained in tooltip when it is not nil, and the result is capped at three times the weapon's minimum ST.
+func (w *Weapon) effectiveStrength(defaultST func(entity *Entity) fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
+	var st fxp.Int
+	if w.Owner != nil {
+		st = w.Owner.RatedStrength()
+	}
+	if st == 0 {
+		if entity := w.Entity(); entity != nil {
+			st = defaultST(entity)
+		}
+	}
+	st = max(w.weaponAdjustment(oneDieCount, tooltip, feature.WeaponEffectiveSTBonus).applyTo(st), 0)
+	if maxST := w.Strength.Resolve(w, nil).Min.Mul(fxp.Three); maxST > 0 && maxST < st {
+		st = maxST
+	}
+	return st
 }
 
 // SkillLevel returns the resolved skill level.
@@ -565,22 +597,11 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 	for _, f := range w.Owner.ActiveFeatures() {
 		adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 	}
-	if t, ok := w.Owner.(*Trait); ok {
-		Traverse(func(mod *TraitModifier) bool {
-			for _, f := range mod.Features.Active(t.SwitchedOn) {
-				adj += w.extractSkillBonusForThisWeapon(f, tooltip)
-			}
-			return false
-		}, true, true, t.Modifiers...)
-	}
-	if eqp, ok := w.Owner.(*Equipment); ok {
-		Traverse(func(mod *EquipmentModifier) bool {
-			for _, f := range mod.Features.Active(eqp.SwitchedOn) {
-				adj += w.extractSkillBonusForThisWeapon(f, tooltip)
-			}
-			return false
-		}, true, true, eqp.Modifiers...)
-	}
+	w.forEachOwnerModifier(func(_ ownerModifier, active Features) {
+		for _, f := range active {
+			adj += w.extractSkillBonusForThisWeapon(f, tooltip)
+		}
+	})
 	return adj
 }
 
@@ -798,30 +819,14 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 	for _, f := range w.Owner.ActiveFeatures() {
 		w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
 	}
-	if t, ok := w.Owner.(*Trait); ok {
-		Traverse(func(mod *TraitModifier) bool {
-			var bonus Bonus
-			for _, f := range mod.Features.Active(t.SwitchedOn) {
-				if bonus, ok = f.(Bonus); ok {
-					bonus.SetSubOwner(mod)
-				}
-				w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
+	w.forEachOwnerModifier(func(mod ownerModifier, active Features) {
+		for _, f := range active {
+			if bonus, ok := f.(Bonus); ok {
+				bonus.SetSubOwner(mod)
 			}
-			return false
-		}, true, true, t.Modifiers...)
-	}
-	if eqp, ok := w.Owner.(*Equipment); ok {
-		Traverse(func(mod *EquipmentModifier) bool {
-			var bonus Bonus
-			for _, f := range mod.Features.Active(eqp.SwitchedOn) {
-				if bonus, ok = f.(Bonus); ok {
-					bonus.SetSubOwner(mod)
-				}
-				w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
-			}
-			return false
-		}, true, true, eqp.Modifiers...)
-	}
+			w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
+		}
+	})
 	if len(bonusSet) == 0 {
 		return nil
 	}

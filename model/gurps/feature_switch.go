@@ -65,6 +65,17 @@ func anyModifierSwitchable[T Node[T]](modifiers []T, features func(T) Features) 
 	return anyEnabledNonContainerModifier(modifiers, func(mod T) bool { return features(mod).AnySwitchable() })
 }
 
+// visitEnabledModifiers calls visit for each enabled, non-container modifier among the given ones, at any depth --
+// exactly the set Traverse(f, true, true, modifiers...) visits, in that order -- together with those of the modifier's
+// features that currently take effect given the state of the switch on the item the modifiers belong to (see
+// Features.Active).
+func visitEnabledModifiers[T Node[T]](modifiers []T, switchedOn bool, features func(T) Features, visit func(mod T, active Features)) {
+	Traverse(func(mod T) bool {
+		visit(mod, features(mod).Active(switchedOn))
+		return false
+	}, true, true, modifiers...)
+}
+
 // anyEnabledNonContainerModifier returns true if the given predicate holds for any enabled, non-container modifier
 // among the given ones, at any depth, descending only through enabled containers -- exactly the set of modifiers
 // Traverse(f, true, true, modifiers...) visits. It is written as a plain recursion rather than in terms of Traverse,

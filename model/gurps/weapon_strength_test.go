@@ -17,8 +17,8 @@ import (
 )
 
 func TestWeaponStrength(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{
+	parse := func(s string) string { return gurps.ParseWeaponStrength(s).String() }
+	same := []string{
 		"",
 		"10",
 		"125M",
@@ -36,14 +36,8 @@ func TestWeaponStrength(t *testing.T) {
 		"‡",
 		"12BMR†",
 		"12BMR‡",
-	} {
-		c.Equal(s, gurps.ParseWeaponStrength(s).String(), "test %d", i)
 	}
-
-	cases := []struct {
-		input    string
-		expected string
-	}{
+	adjusted := []parseCase{
 		{"-", ""},
 		{"–", ""},
 		{"—", ""},
@@ -55,7 +49,5 @@ func TestWeaponStrength(t *testing.T) {
 		{"   2 m b R † ", "2BMR†"},
 		{"spec", ""},
 	}
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponStrength(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }

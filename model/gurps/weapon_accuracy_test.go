@@ -19,21 +19,15 @@ import (
 )
 
 func TestWeaponAccuracy(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{
+	parse := func(s string) string { return gurps.ParseWeaponAccuracy(s).String() }
+	same := []string{
 		"0",
 		"1",
 		"1+3",
 		"0+3",
 		"Jet",
-	} {
-		c.Equal(s, gurps.ParseWeaponAccuracy(s).String(), "test %d", i)
 	}
-
-	cases := []struct {
-		input    string
-		expected string
-	}{
+	adjusted := []parseCase{
 		{"", "0"},
 		{"-", "0"},
 		{"?", "0"},
@@ -45,9 +39,7 @@ func TestWeaponAccuracy(t *testing.T) {
 		{"1+0", "1"},
 		{"51,", "51"},
 	}
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponAccuracy(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }
 
 // TestWeaponAccuracyMixedBonusResolution verifies that when several bonus types are collected in one pass, each

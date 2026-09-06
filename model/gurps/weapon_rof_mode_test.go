@@ -26,7 +26,7 @@ var rofModeSameTests = []string{
 	"9#",
 }
 
-var rofModeAdjustedTests = []rofAdjustedCase{
+var rofModeAdjustedTests = []parseCase{
 	{"-", ""},
 	{"0", ""},
 	{"1(5)", "1"},
@@ -36,21 +36,7 @@ var rofModeAdjustedTests = []rofAdjustedCase{
 	{"x100", "1x100"},
 }
 
-type rofAdjustedCase struct {
-	input    string
-	expected string
-}
-
-func TestWeaponRoFModeSame(t *testing.T) {
-	c := check.New(t)
-	for i, one := range rofModeSameTests {
-		c.Equal(one, gurps.ParseWeaponRoFMode(one).String(), "test %d", i)
-	}
-}
-
-func TestWeaponRoFModeAdjusted(t *testing.T) {
-	c := check.New(t)
-	for i, one := range rofModeAdjustedTests {
-		c.Equal(one.expected, gurps.ParseWeaponRoFMode(one.input).String(), "test %d", i)
-	}
+func TestWeaponRoFMode(t *testing.T) {
+	parse := func(s string) string { return gurps.ParseWeaponRoFMode(s).String() }
+	checkWeaponFieldParsing(check.New(t), parse, rofModeSameTests, rofModeAdjustedTests)
 }

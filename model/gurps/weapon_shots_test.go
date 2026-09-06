@@ -18,8 +18,8 @@ import (
 )
 
 func TestWeaponShots(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{
+	parse := func(s string) string { return gurps.ParseWeaponShots(s).String() }
+	same := []string{
 		"",
 		"1",
 		"1(1)",
@@ -37,14 +37,8 @@ func TestWeaponShots(t *testing.T) {
 		"3x3s(2)",
 		"T(1)",
 		"T(2i)",
-	} {
-		c.Equal(s, gurps.ParseWeaponShots(s).String(), "test %d", i)
 	}
-
-	cases := []struct {
-		input    string
-		expected string
-	}{
+	adjusted := []parseCase{
 		{"-", ""},
 		{"–", ""},
 		{"—", ""},
@@ -63,9 +57,7 @@ func TestWeaponShots(t *testing.T) {
 		{"T(spec)", "T"},
 		{"n/a", ""},
 	}
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponShots(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }
 
 // TestWeaponShotsReloadTimeParsing verifies that the reload time is recovered even when something separates it from

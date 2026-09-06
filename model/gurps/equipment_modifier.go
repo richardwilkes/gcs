@@ -356,6 +356,12 @@ func (e *EquipmentModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(e), deferredNewScriptEquipmentModifier(e), e.LocalNotesWithReplacements())
 }
 
+// ShowsNotesOnWeapon returns true if the modifier's notes are to be shown on the weapons of the equipment it belongs
+// to.
+func (e *EquipmentModifier) ShowsNotesOnWeapon() bool {
+	return e.ShowNotesOnWeapon
+}
+
 // SecondaryText returns the "secondary" text: the text displayed below the modifier.
 func (e *EquipmentModifier) SecondaryText(optionChecker func(display.Option) bool) string {
 	return modifierSecondaryText(e, optionChecker)

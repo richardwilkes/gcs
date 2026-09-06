@@ -455,6 +455,11 @@ func (t *TraitModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(t), deferredNewScriptTraitModifier(t), t.LocalNotesWithReplacements())
 }
 
+// ShowsNotesOnWeapon returns true if the modifier's notes are to be shown on the weapons of the trait it belongs to.
+func (t *TraitModifier) ShowsNotesOnWeapon() bool {
+	return t.ShowNotesOnWeapon
+}
+
 // SecondaryText returns the "secondary" text: the text displayed below the modifier.
 func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
 	return modifierSecondaryText(t, optionChecker)

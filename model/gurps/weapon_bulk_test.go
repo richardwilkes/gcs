@@ -20,30 +20,22 @@ import (
 )
 
 func TestWeaponBulk(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{
+	parse := func(s string) string { return gurps.ParseWeaponBulk(s).String() }
+	same := []string{
 		"",
 		"-1",
 		"-10",
 		"-11/-14",
 		"-3*",
-	} {
-		c.Equal(s, gurps.ParseWeaponBulk(s).String(), "test %d", i)
 	}
-
-	cases := []struct {
-		input    string
-		expected string
-	}{
+	adjusted := []parseCase{
 		{"-", ""},
 		{"–", ""},
 		{"—", ""},
 		{"?", ""},
 		{"0", ""},
 	}
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponBulk(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }
 
 // TestWeaponBulkBonusResolution verifies that a bulk bonus doesn't materialize a giant bulk on a weapon that doesn't

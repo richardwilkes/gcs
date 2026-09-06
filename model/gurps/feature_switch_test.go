@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -940,6 +941,43 @@ func TestAnyModifierSwitchable(t *testing.T) {
 		c.Equal(tc.expected, anyModifierSwitchable(tc.modifiers, func(mod *TraitModifier) Features {
 			return mod.Features
 		}), tc.name)
+	}
+}
+
+// TestVisitEnabledModifiers verifies that the visit reaches exactly the enabled, non-container modifiers, at any depth,
+// in traversal order, and hands each one only the features that take effect for the given switch state.
+func TestVisitEnabledModifiers(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	newMod := func(name string, container bool, switchable ...bool) *TraitModifier {
+		mod := NewTraitModifier(e, nil, container)
+		mod.Name = name
+		for _, one := range switchable {
+			bonus := NewAttributeBonus(StrengthID)
+			bonus.Switchable = one
+			mod.Features = append(mod.Features, bonus)
+		}
+		return mod
+	}
+	disabled := newMod("disabled", false, false)
+	disabled.Disabled = true
+	container := newMod("container", true, false) // A container's own features never apply.
+	container.Children = []*TraitModifier{newMod("nested", false, true, false), newMod("empty", false)}
+	modifiers := []*TraitModifier{newMod("mixed", false, false, true), disabled, container}
+
+	for _, tc := range []struct {
+		switchedOn bool
+		expected   []string
+	}{
+		{switchedOn: true, expected: []string{"mixed:2", "nested:2", "empty:0"}},
+		{switchedOn: false, expected: []string{"mixed:1", "nested:1", "empty:0"}},
+	} {
+		var visited []string
+		visitEnabledModifiers(modifiers, tc.switchedOn, func(mod *TraitModifier) Features { return mod.Features },
+			func(mod *TraitModifier, active Features) {
+				visited = append(visited, fmt.Sprintf("%s:%d", mod.Name, len(active)))
+			})
+		c.Equal(tc.expected, visited, "switched on: %v", tc.switchedOn)
 	}
 }
 

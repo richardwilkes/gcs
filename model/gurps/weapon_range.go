@@ -108,27 +108,16 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 	result.MusclePowered = w.ResolveBoolFlag(wswitch.MusclePowered, result.MusclePowered)
 	result.InMiles = w.ResolveBoolFlag(wswitch.RangeInMiles, result.InMiles)
 	if result.MusclePowered {
-		var st fxp.Int
-		maxST := w.Strength.Resolve(w, nil).Min.Mul(fxp.Three)
-		if w.Owner != nil {
-			st = w.Owner.RatedStrength()
-		}
-		if st == 0 {
-			if entity := w.Entity(); entity != nil {
-				switch w.Damage.resolvedStrengthType(nil) {
-				case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
-					st = entity.TelekineticStrength()
-				case stdmg.IQThrust, stdmg.IQSwing:
-					st = entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
-				default:
-					st = entity.ThrowingStrength()
-				}
+		st := w.effectiveStrength(func(entity *Entity) fxp.Int {
+			switch w.Damage.resolvedStrengthType(nil) {
+			case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
+				return entity.TelekineticStrength()
+			case stdmg.IQThrust, stdmg.IQSwing:
+				return entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
+			default:
+				return entity.ThrowingStrength()
 			}
-		}
-		st = max(w.weaponAdjustment(oneDieCount, modifiersTooltip, feature.WeaponEffectiveSTBonus).applyTo(st), 0)
-		if maxST > 0 && maxST < st {
-			st = maxST
-		}
+		}, modifiersTooltip)
 		if st > 0 {
 			result.HalfDamage = result.HalfDamage.Mul(st).Floor().Max(0)
 			result.Min = result.Min.Mul(st).Floor().Max(0)

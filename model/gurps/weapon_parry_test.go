@@ -17,8 +17,8 @@ import (
 )
 
 func TestWeaponParry(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{
+	parse := func(s string) string { return gurps.ParseWeaponParry(s).String() }
+	same := []string{
 		"0",
 		"-1",
 		"10",
@@ -32,14 +32,8 @@ func TestWeaponParry(t *testing.T) {
 		"-2FU",
 		"8FU",
 		"No",
-	} {
-		c.Equal(s, gurps.ParseWeaponParry(s).String(), "test %d", i)
 	}
-
-	cases := []struct {
-		input    string
-		expected string
-	}{
+	adjusted := []parseCase{
 		{"", "No"},
 		{"-", "No"},
 		{"+0", "0"},
@@ -49,9 +43,7 @@ func TestWeaponParry(t *testing.T) {
 		{"0U/ 0", "0U"},
 		{"13 (x5)", "13"},
 	}
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponParry(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }
 
 // TestWeaponParryResolve runs the Resolve() regression tests shared by both defenses against the parry.

@@ -237,30 +237,21 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	if entity == nil {
 		return dice.Dice{Sides: 6, Multiplier: 1}
 	}
-	maxST := w.Owner.Strength.Resolve(w.Owner, nil).Min.Mul(fxp.Three)
-	var st fxp.Int
-	if w.Owner.Owner != nil {
-		st = w.Owner.Owner.RatedStrength()
-	}
 	strengthType := w.resolvedStrengthType(nil)
-	if st == 0 {
+	st := w.Owner.effectiveStrength(func(entity *Entity) fxp.Int {
 		switch strengthType {
 		case stdmg.Thrust, stdmg.Swing:
-			st = entity.StrikingStrength()
+			return entity.StrikingStrength()
 		case stdmg.LiftingThrust, stdmg.LiftingSwing:
-			st = entity.LiftingStrength()
+			return entity.LiftingStrength()
 		case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
-			st = entity.TelekineticStrength()
+			return entity.TelekineticStrength()
 		case stdmg.IQThrust, stdmg.IQSwing:
-			st = entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
+			return entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
 		default:
-			st = entity.ResolveAttributeCurrent(StrengthID).Max(0).Floor()
+			return entity.ResolveAttributeCurrent(StrengthID).Max(0).Floor()
 		}
-	}
-	st = max(w.Owner.weaponAdjustment(oneDieCount, nil, feature.WeaponEffectiveSTBonus).applyTo(st), 0)
-	if maxST > 0 && maxST < st {
-		st = maxST
-	}
+	}, nil)
 	if strengthMultiplier := w.resolvedDamageNumeric(selector.WeaponDamageStrengthMultiplier, w.StrengthMultiplier, nil); strengthMultiplier > 0 { // Just in case it somehow got set to 0
 		st = st.Mul(strengthMultiplier)
 	}

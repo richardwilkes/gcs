@@ -20,8 +20,8 @@ import (
 )
 
 func TestWeaponReach(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{
+	parse := func(s string) string { return gurps.ParseWeaponReach(s).String() }
+	same := []string{
 		"",
 		"1",
 		"1*",
@@ -35,14 +35,8 @@ func TestWeaponReach(t *testing.T) {
 		"C,2-3",
 		"C,2-3*",
 		"C,5",
-	} {
-		c.Equal(s, gurps.ParseWeaponReach(s).String(), "test %d", i)
 	}
-
-	cases := []struct {
-		input    string
-		expected string
-	}{
+	adjusted := []parseCase{
 		{"-", ""},
 		{"1,2", "1-2"},
 		{"1,2*", "1-2*"},
@@ -59,9 +53,7 @@ func TestWeaponReach(t *testing.T) {
 		{"Special", ""},
 		{"  1 , 3 ", "1-3"},
 	}
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponReach(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }
 
 // TestWeaponReachRoundTripsThroughJSON verifies that a reach set in the editor survives being saved and reloaded. A

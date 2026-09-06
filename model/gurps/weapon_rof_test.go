@@ -10,36 +10,30 @@
 package gurps_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestWeaponRoFSame(t *testing.T) {
-	c := check.New(t)
-	for i, s := range rofModeSameTests {
-		c.Equal(s, gurps.ParseWeaponRoF(s).String(), "test %d", i)
-	}
-	c.Equal("Jet", gurps.ParseWeaponRoF("Jet").String())
+func parseRoF(s string) string {
+	return gurps.ParseWeaponRoF(s).String()
 }
 
-func TestWeaponRoFAdjusted(t *testing.T) {
-	c := check.New(t)
-
-	for i, one := range rofModeAdjustedTests {
-		c.Equal(one.expected, gurps.ParseWeaponRoF(one.input).String(), "test %d", i)
-	}
+// TestWeaponRoF verifies that a single-mode rate of fire parses exactly as a mode does, and accepts "Jet" besides.
+func TestWeaponRoF(t *testing.T) {
+	checkWeaponFieldParsing(check.New(t), parseRoF, append(slices.Clone(rofModeSameTests), "Jet"),
+		rofModeAdjustedTests)
 }
 
 func TestWeaponRoFMultiMode(t *testing.T) {
-	c := check.New(t)
-	cases := make([]rofAdjustedCase, 0, len(rofModeSameTests)*len(rofModeAdjustedTests))
+	cases := make([]parseCase, 0, len(rofModeSameTests)*len(rofModeAdjustedTests))
 	for _, c1 := range rofModeSameTests {
 		if c1 != "" {
 			for _, c2 := range rofModeAdjustedTests {
 				if c2.expected != "" {
-					cases = append(cases, rofAdjustedCase{
+					cases = append(cases, parseCase{
 						input:    c1 + "/" + c2.input,
 						expected: c1 + "/" + c2.expected,
 					})
@@ -49,16 +43,14 @@ func TestWeaponRoFMultiMode(t *testing.T) {
 	}
 	cases = append(
 		cases,
-		rofAdjustedCase{
+		parseCase{
 			input:    "1/",
 			expected: "1",
 		},
-		rofAdjustedCase{
+		parseCase{
 			input:    "/1",
 			expected: "1",
 		},
 	)
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponRoF(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parseRoF, nil, cases)
 }

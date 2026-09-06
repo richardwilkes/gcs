@@ -19,8 +19,8 @@ import (
 )
 
 func TestWeaponRecoil(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{
+	parse := func(s string) string { return gurps.ParseWeaponRecoil(s).String() }
+	same := []string{
 		"",
 		"1",
 		"1/3",
@@ -36,23 +36,15 @@ func TestWeaponRecoil(t *testing.T) {
 		"6",
 		"7",
 		"8",
-	} {
-		c.Equal(s, gurps.ParseWeaponRecoil(s).String(), "test %d", i)
 	}
-
-	cases := []struct {
-		input    string
-		expected string
-	}{
+	adjusted := []parseCase{
 		{"-", ""},
 		{"–", ""},
 		{"—", ""},
 		{"?", ""},
 		{"0", ""},
 	}
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponRecoil(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }
 
 // TestWeaponPercentBonusFloorsIncrement pins the documented rounding of weapon percentage bonuses: the increment is

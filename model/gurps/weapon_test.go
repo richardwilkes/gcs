@@ -182,6 +182,37 @@ func TestWeaponHideIsNotSourceData(t *testing.T) {
 	c.Equal(traitHash, gurps.Hash64(trait), "hiding a weapon should not alter its owner's source-data hash")
 }
 
+// parseCase pairs an input with the string a weapon field parsed from it is expected to render as.
+type parseCase struct {
+	input    string
+	expected string
+}
+
+// checkWeaponFieldParsing verifies parse, which parses one kind of weapon field and renders it back to a string: each
+// of the same strings must come back unchanged, and each adjusted input must come back as its expected string.
+func checkWeaponFieldParsing(c check.Checker, parse func(string) string, same []string, adjusted []parseCase) {
+	c.Helper()
+	for i, s := range same {
+		c.Equal(s, parse(s), "same[%d] %q", i, s)
+	}
+	for i, one := range adjusted {
+		c.Equal(one.expected, parse(one.input), "adjusted[%d] %q", i, one.input)
+	}
+}
+
+// addDXSkill adds a DX-based skill of the given difficulty, points and tags to the entity's skills and returns it. The
+// entity is not recalculated.
+func addDXSkill(e *gurps.Entity, name string, diff difficulty.Level, points fxp.Int, tags ...string) *gurps.Skill {
+	sk := gurps.NewSkill(e, nil, false)
+	sk.Name = name
+	sk.Tags = tags
+	sk.Difficulty.Attribute = gurps.DexterityID
+	sk.Difficulty.Difficulty = diff
+	sk.Points = points
+	e.Skills = append(e.Skills, sk)
+	return sk
+}
+
 // newWeaponWithBonuses builds an entity with a trait that owns a single weapon of the requested type and carries the
 // given weapon bonuses, each scoped to that weapon.
 func newWeaponWithBonuses(melee bool, bonuses ...*gurps.WeaponBonus) *gurps.Weapon {
@@ -270,12 +301,8 @@ func newDefenseTestWeapon(c check.Checker) *gurps.Weapon {
 func newDefenseTestWeaponWithBonuses(c check.Checker, parryBonus, blockBonus int) *gurps.Weapon {
 	e := gurps.NewEntity()
 
-	sk := gurps.NewSkill(e, nil, false)
-	sk.Name = "Cloak"
-	sk.Difficulty.Attribute = gurps.DexterityID
-	sk.Difficulty.Difficulty = difficulty.Average
-	sk.Points = fxp.FromInteger(16) // DX+4, i.e. level 14 with the default DX of 10
-	e.Skills = append(e.Skills, sk)
+	// DX+4, i.e. level 14 with the default DX of 10
+	sk := addDXSkill(e, "Cloak", difficulty.Average, fxp.FromInteger(16))
 
 	bonuses := gurps.NewTrait(e, nil, false)
 	bonuses.Name = "Improved Defenses"
@@ -316,12 +343,7 @@ func TestWeaponSkillLevelIgnoresDefenseTypeDefaults(t *testing.T) {
 
 	// Stand in for the Tonfa: a weaker skill the weapon really attacks with, alongside the strong Cloak-14 that the
 	// weapon only names for its parry.
-	tonfa := gurps.NewSkill(e, nil, false)
-	tonfa.Name = "Tonfa"
-	tonfa.Difficulty.Attribute = gurps.DexterityID
-	tonfa.Difficulty.Difficulty = difficulty.Average
-	tonfa.Points = fxp.FromInteger(12) // DX+3, i.e. level 13
-	e.Skills = append(e.Skills, tonfa)
+	addDXSkill(e, "Tonfa", difficulty.Average, fxp.FromInteger(12)) // DX+3, i.e. level 13
 	e.Recalculate()
 
 	tonfaDefault := newDefenseTestDefault(gurps.SkillID)
@@ -717,13 +739,8 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 func newTagDefaultTestWeapon(c check.Checker, def *gurps.SkillDefault) *gurps.Weapon {
 	e := gurps.NewEntity()
 
-	sk := gurps.NewSkill(e, nil, false)
-	sk.Name = "Broadsword"
-	sk.Tags = []string{"Combat"}
-	sk.Difficulty.Attribute = gurps.DexterityID
-	sk.Difficulty.Difficulty = difficulty.Average
-	sk.Points = fxp.Four // DX+1, i.e. level 11 with the default DX of 10
-	e.Skills = append(e.Skills, sk)
+	// DX+1, i.e. level 11 with the default DX of 10
+	sk := addDXSkill(e, "Broadsword", difficulty.Average, fxp.Four, "Combat")
 
 	master := gurps.NewTrait(e, nil, false)
 	master.Name = "Weapon Master"
@@ -781,13 +798,8 @@ func TestWeaponTagDefaultCollectsSkillBonuses(t *testing.T) {
 func newCrossbowTestWeapon(c check.Checker, def *gurps.SkillDefault) *gurps.Weapon {
 	e := gurps.NewEntity()
 
-	sk := gurps.NewSkill(e, nil, false)
-	sk.Name = "Crossbow"
-	sk.Tags = []string{"Missile Weapon"}
-	sk.Difficulty.Attribute = gurps.DexterityID
-	sk.Difficulty.Difficulty = difficulty.Easy
-	sk.Points = fxp.Four // DX+2, i.e. level 12 with the default DX of 10
-	e.Skills = append(e.Skills, sk)
+	// DX+2, i.e. level 12 with the default DX of 10
+	sk := addDXSkill(e, "Crossbow", difficulty.Easy, fxp.Four, "Missile Weapon")
 
 	lifter := gurps.NewTrait(e, nil, false)
 	lifter.Name = "Lifting ST 2"
@@ -837,13 +849,110 @@ func TestWeaponTagDefaultToCrossbowUsesLiftingST(t *testing.T) {
 		DefaultType: gurps.SkillID,
 		Tags:        criteria.Text{Compare: criteria.IsText, Qualifier: "Archery"},
 	})
-	bowSkill := gurps.NewSkill(bow.Entity(), nil, false)
-	bowSkill.Name = "Bow"
-	bowSkill.Tags = []string{"Archery"}
-	bowSkill.Difficulty.Attribute = gurps.DexterityID
-	bowSkill.Difficulty.Difficulty = difficulty.Easy
-	bowSkill.Points = fxp.Four
-	bow.Entity().Skills = append(bow.Entity().Skills, bowSkill)
+	addDXSkill(bow.Entity(), "Bow", difficulty.Easy, fxp.Four, "Archery")
 	bow.Entity().Recalculate()
 	c.Equal(fxp.Ten, bow.SkillLevel(nil), "a bow is drawn with striking ST 10, and is penalized 2 for its minimum ST")
+}
+
+// TestWeaponNotesFromOwnerModifiers verifies that a weapon's notes gather the notes of every enabled, non-container
+// modifier of its owner that asks to be shown on the weapon, at any depth, ahead of the weapon's own usage notes,
+// whether the owner is a trait or a piece of equipment.
+func TestWeaponNotesFromOwnerModifiers(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+
+	trait := gurps.NewTrait(e, nil, false)
+	trait.Name = "Claws"
+	shown := gurps.NewTraitModifier(e, nil, false)
+	shown.Name = "Sharp"
+	shown.LocalNotes = " Cutting damage "
+	shown.ShowNotesOnWeapon = true
+	hidden := gurps.NewTraitModifier(e, nil, false)
+	hidden.Name = "Long"
+	hidden.LocalNotes = "Reach 2"
+	disabled := gurps.NewTraitModifier(e, nil, false)
+	disabled.Name = "Poisoned"
+	disabled.LocalNotes = "Follow-up toxic"
+	disabled.ShowNotesOnWeapon = true
+	disabled.Disabled = true
+	nested := gurps.NewTraitModifier(e, nil, false)
+	nested.Name = "Retractable"
+	nested.LocalNotes = "Takes a Ready"
+	nested.ShowNotesOnWeapon = true
+	container := gurps.NewTraitModifier(e, nil, true)
+	container.Name = "Options"
+	container.LocalNotes = "Never shown: a container's own notes don't apply"
+	container.ShowNotesOnWeapon = true
+	container.Children = []*gurps.TraitModifier{nested}
+	trait.Modifiers = []*gurps.TraitModifier{shown, hidden, disabled, container}
+	claws := gurps.NewWeapon(trait, true)
+	claws.UsageNotes = "Usage"
+	trait.Weapons = []*gurps.Weapon{claws}
+	e.Traits = append(e.Traits, trait)
+	c.Equal("Cutting damage\nTakes a Ready\nUsage", claws.Notes())
+
+	eqp := gurps.NewEquipment(e, nil, false)
+	eqp.Name = "Sword"
+	fine := gurps.NewEquipmentModifier(e, nil, false)
+	fine.Name = "Fine"
+	fine.LocalNotes = "+1 damage"
+	fine.ShowNotesOnWeapon = true
+	silvered := gurps.NewEquipmentModifier(e, nil, false)
+	silvered.Name = "Silvered"
+	silvered.LocalNotes = "Hurts werewolves"
+	off := gurps.NewEquipmentModifier(e, nil, false)
+	off.Name = "Poisoned"
+	off.LocalNotes = "Follow-up toxic"
+	off.ShowNotesOnWeapon = true
+	off.Disabled = true
+	eqp.Modifiers = []*gurps.EquipmentModifier{fine, silvered, off}
+	sword := gurps.NewWeapon(eqp, true)
+	eqp.Weapons = []*gurps.Weapon{sword}
+	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	c.Equal("+1 damage", sword.Notes(), "a weapon without usage notes has just the modifier notes")
+
+	orphan := gurps.NewWeapon(nil, true)
+	orphan.UsageNotes = "Usage"
+	c.Equal("Usage", orphan.Notes(), "a weapon with no owner has just its usage notes")
+}
+
+// TestWeaponEffectiveStrength verifies the ST a weapon is used at, which its damage and its muscle-powered range
+// share: the entity's ST by default, the owner's rated ST instead when it has one, raised by any effective ST bonus
+// and capped at three times the weapon's minimum ST.
+func TestWeaponEffectiveStrength(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity() // ST 10
+	eqp := gurps.NewEquipment(e, nil, false)
+	eqp.Name = "Sling"
+	w := gurps.NewWeapon(eqp, false)
+	w.Damage.Base = "" // Just the ST-based damage, so the ST used is plain to see
+	w.Damage.StrengthType = stdmg.Thrust
+	w.Range = gurps.ParseWeaponRange("x1/x2")
+	eqp.Weapons = []*gurps.Weapon{w}
+	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	e.Recalculate()
+	c.True(w.Range.MusclePowered)
+
+	expect := func(expectedDamage, expectedRange, msg string) {
+		c.Helper()
+		c.Equal(expectedDamage, w.Damage.ResolvedDamage(nil), msg)
+		c.Equal(expectedRange, w.Range.Resolve(w, nil).String(true), msg)
+	}
+	expect("1d-2 cr", "10/20", "the entity's ST 10 is used when there is no rated ST")
+
+	eqp.RatedST = fxp.FromInteger(14)
+	expect("1d cr", "14/28", "the owner's rated ST replaces the entity's")
+
+	bonus := gurps.NewWeaponBonus(feature.WeaponEffectiveSTBonus)
+	bonus.SelectionType = wsel.ThisWeapon
+	bonus.Amount = fxp.Two
+	eqp.Features = gurps.Features{bonus}
+	expect("1d+1 cr", "16/32", "an effective ST bonus raises the rated ST")
+
+	w.Strength = gurps.ParseWeaponStrength("5")
+	expect("1d+1 cr", "15/30", "the effective ST is capped at three times the weapon's minimum ST")
+
+	var tooltip xbytes.InsertBuffer
+	w.Range.Resolve(w, &tooltip)
+	c.Contains(tooltip.String(), "+2 to effective ST", "range resolution explains the effective ST bonus")
 }

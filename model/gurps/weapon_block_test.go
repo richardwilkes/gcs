@@ -17,28 +17,20 @@ import (
 )
 
 func TestWeaponBlock(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{
+	parse := func(s string) string { return gurps.ParseWeaponBlock(s).String() }
+	same := []string{
 		"0",
 		"-1",
 		"10",
 		"No",
-	} {
-		c.Equal(s, gurps.ParseWeaponBlock(s).String(), "test %d", i)
 	}
-
-	cases := []struct {
-		input    string
-		expected string
-	}{
+	adjusted := []parseCase{
 		{"", "No"},
 		{"-", "No"},
 		{"+0", "0"},
 		{"+1", "1"},
 	}
-	for i, one := range cases {
-		c.Equal(one.expected, gurps.ParseWeaponBlock(one.input).String(), "test %d", i)
-	}
+	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }
 
 // TestWeaponBlockResolve runs the Resolve() regression tests shared by both defenses against the block.
