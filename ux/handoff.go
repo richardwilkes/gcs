@@ -49,12 +49,10 @@ const (
 func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, paths []string) {
 	address := net.JoinHostPort("127.0.0.1", strconv.Itoa(handoffPort))
 	var pathsBuffer []byte
-	slog.Info("starting handoff service")
 	now := time.Now()
 	for time.Since(now) < time.Minute {
 		// First, try to establish our port and become the primary GCS instance
 		if listener, err := net.Listen("tcp4", address); err == nil {
-			slog.Info("became primary instance")
 			go waitForReady(readyChan)
 			go acceptHandoff(listener, pathsChan)
 			return
@@ -133,7 +131,6 @@ func waitForReady(readyChan <-chan struct{}) {
 	select {
 	case <-readyChan:
 		elapsed := time.Since(started)
-		slog.Info("app is ready", "elapsed", elapsed.String())
 		if elapsed > 10*time.Second {
 			slog.Warn("app took an excessive amount of time" + driverNote)
 		}
@@ -160,7 +157,6 @@ func acceptHandoff(listener net.Listener, pathsChan chan<- []string) {
 			errs.Log(err)
 			break
 		}
-		slog.Info("handoff connection accepted")
 		go processHandoff(conn, pathsChan)
 	}
 }
