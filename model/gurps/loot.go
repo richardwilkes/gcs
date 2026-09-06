@@ -112,28 +112,13 @@ func (l *Loot) Hash(h hash.Hash) {
 
 // EnsureAttachments ensures that all attachments have their data owner set properly.
 func (l *Loot) EnsureAttachments() {
-	for _, one := range l.Equipment {
-		one.SetDataOwner(l)
-	}
-	for _, one := range l.Notes {
-		one.SetDataOwner(l)
-	}
+	SetDataOwnerAll(l, l.Equipment)
+	SetDataOwnerAll(l, l.Notes)
 }
 
 // SyncWithLibrarySources syncs the loot sheet with the library sources.
 func (l *Loot) SyncWithLibrarySources() {
-	Traverse(func(item *Equipment) bool {
-		item.SyncWithSource()
-		Traverse(func(modifier *EquipmentModifier) bool {
-			modifier.SyncWithSource()
-			return false
-		}, false, false, item.Modifiers...)
-		return false
-	}, false, false, l.Equipment...)
-	Traverse(func(note *Note) bool {
-		note.SyncWithSource()
-		return false
-	}, false, false, l.Notes...)
+	syncWithLibrarySources(l)
 }
 
 // DataOwner implements ListProvider.

@@ -718,18 +718,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 
 	// Adjust Basic Move for running
 	if c.jumpingRunningStartYards > 0 {
-		enhMove := -fxp.One
-		gurps.Traverse(func(t *gurps.Trait) bool {
-			if strings.EqualFold(t.NameWithReplacements(), "enhanced move (ground)") && t.IsLeveled() {
-				current := t.CurrentLevel()
-				if enhMove == -fxp.One {
-					enhMove = current
-				} else {
-					enhMove += current
-				}
-			}
-			return false
-		}, true, false, entity.Traits...)
+		enhMove, _ := entity.TraitLevels("enhanced move (ground)")
 		basicMove += c.jumpingRunningStartYards
 		if enhMove > 0 {
 			if adjusted := basicMoveWithoutRun.Mul(enhMove + fxp.One); adjusted > basicMove {
@@ -785,19 +774,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	distance = distance.Mul(fxp.One - fxp.FromInteger(int(entity.EncumbranceLevel(false))).Mul(fxp.Two).Div(fxp.Ten))
 
 	// Adjust for Super Jump
-	levels := -fxp.One
-	gurps.Traverse(func(t *gurps.Trait) bool {
-		if strings.EqualFold(t.NameWithReplacements(), "super jump") && t.IsLeveled() {
-			current := t.CurrentLevel()
-			if levels == -fxp.One {
-				levels = current
-			} else {
-				levels += current
-			}
-		}
-		return false
-	}, true, false, entity.Traits...)
-	if levels > 0 {
+	if levels, _ := entity.TraitLevels("super jump"); levels > 0 {
 		distance = distance.Mul(fxp.FromFloat(math.Pow(2, levels.AsFloat[float64]())))
 	}
 	if broad {
@@ -968,19 +945,7 @@ func (c *Calculator) updateHikingResult() {
 	distance = distance.Mul(c.hikingHours).Div(fxp.Sixteen)
 
 	// Adjust for enhanced move (ground), if any
-	enhMove := -fxp.One
-	gurps.Traverse(func(t *gurps.Trait) bool {
-		if strings.EqualFold(t.NameWithReplacements(), "enhanced move (ground)") && t.IsLeveled() {
-			current := t.CurrentLevel()
-			if enhMove == -fxp.One {
-				enhMove = current
-			} else {
-				enhMove += current
-			}
-		}
-		return false
-	}, true, false, entity.Traits...)
-	if enhMove > 0 {
+	if enhMove, _ := entity.TraitLevels("enhanced move (ground)"); enhMove > 0 {
 		distance = distance.Mul(fxp.One + enhMove)
 	}
 

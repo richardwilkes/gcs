@@ -102,42 +102,7 @@ func (l LibraryFile) String() string {
 // PrepareHashes for the given ListProvider.
 func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 	neededLibs := make(map[LibraryFile]struct{})
-	Traverse(func(t *Trait) bool {
-		t.Source.collectInto(neededLibs)
-		Traverse(func(mod *TraitModifier) bool {
-			mod.Source.collectInto(neededLibs)
-			return false
-		}, false, false, t.Modifiers...)
-		return false
-	}, false, false, provider.TraitList()...)
-	Traverse(func(s *Skill) bool {
-		s.Source.collectInto(neededLibs)
-		return false
-	}, false, false, provider.SkillList()...)
-	Traverse(func(s *Spell) bool {
-		s.Source.collectInto(neededLibs)
-		return false
-	}, false, false, provider.SpellList()...)
-	Traverse(func(e *Equipment) bool {
-		e.Source.collectInto(neededLibs)
-		Traverse(func(mod *EquipmentModifier) bool {
-			mod.Source.collectInto(neededLibs)
-			return false
-		}, false, false, e.Modifiers...)
-		return false
-	}, false, false, provider.CarriedEquipmentList()...)
-	Traverse(func(e *Equipment) bool {
-		e.Source.collectInto(neededLibs)
-		Traverse(func(mod *EquipmentModifier) bool {
-			mod.Source.collectInto(neededLibs)
-			return false
-		}, false, false, e.Modifiers...)
-		return false
-	}, false, false, provider.OtherEquipmentList()...)
-	Traverse(func(n *Note) bool {
-		n.Source.collectInto(neededLibs)
-		return false
-	}, false, false, provider.NoteList()...)
+	forEachSourcedNode(provider, func(node sourcedNode) { node.GetSource().collectInto(neededLibs) })
 	libs := GlobalSettings().Libraries
 	if sm.libHashes == nil {
 		sm.libHashes = make(map[LibraryFile]libSrcData)

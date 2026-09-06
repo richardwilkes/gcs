@@ -375,3 +375,48 @@ func newTraitSelectorOverride(field selector.Field, traitName, value string) *Se
 	override.NameCriteria.Qualifier = traitName
 	return override
 }
+
+// TestEntityTraitLevels verifies that TraitLevels sums the current levels of every enabled, leveled trait with the
+// given name, ignoring case, and reports whether any such trait exists. Disabled traits and containers contribute
+// nothing, while the leveled children of a container do, and the callers that need a "not found" sentinel (the
+// scripting traitLevel binding) and those that don't (TelekineticStrength) both derive from the same walk.
+func TestEntityTraitLevels(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	levels, found := e.TraitLevels("Telekinesis")
+	c.False(found, "no trait at all")
+	c.Equal(fxp.Int(0), levels, "no trait at all contributes no levels")
+	c.Equal("-1", ResolveScript(e, ScriptSelfProvider{}, `entity.traitLevel("Telekinesis")`),
+		"the script binding reports -1 when the trait is absent")
+
+	newLeveledTrait := func(name string, levels fxp.Int, parent *Trait) *Trait {
+		trait := NewTrait(e, parent, false)
+		trait.Name = name
+		trait.CanLevel = true
+		trait.Levels = levels
+		return trait
+	}
+	e.Traits = append(e.Traits, newLeveledTrait("Telekinesis", fxp.Three, nil))
+	container := NewTrait(e, nil, true)
+	container.Name = "Telekinesis"
+	container.Children = append(container.Children, newLeveledTrait("telekinesis", fxp.Two, container))
+	e.Traits = append(e.Traits, container)
+	disabled := newLeveledTrait("Telekinesis", fxp.Ten, nil)
+	disabled.Disabled = true
+	e.Traits = append(e.Traits, disabled)
+	unleveled := NewTrait(e, nil, false)
+	unleveled.Name = "Telekinesis"
+	e.Traits = append(e.Traits, unleveled)
+	e.Recalculate()
+
+	levels, found = e.TraitLevels("TELEKINESIS")
+	c.True(found, "a matching trait exists")
+	c.Equal(fxp.Five, levels, "levels sum across the enabled leveled traits, including a container's children")
+	c.Equal(fxp.Five, e.TelekineticStrength(), "TelekineticStrength reports the same sum")
+	c.Equal("5", ResolveScript(e, ScriptSelfProvider{}, `entity.traitLevel("Telekinesis")`),
+		"the script binding reports the same sum")
+
+	levels, found = e.TraitLevels("Telekinesis (Reach)")
+	c.False(found, "the name must match in full")
+	c.Equal(fxp.Int(0), levels, "a non-matching name contributes no levels")
+}

@@ -30,9 +30,7 @@ func (p *spellListProvider) SpellList() []*gurps.Spell {
 }
 
 func (p *spellListProvider) SetSpellList(list []*gurps.Spell) {
-	for _, one := range list {
-		one.SetDataOwner(nil)
-	}
+	gurps.SetDataOwnerAll(nil, list)
 	p.spells = list
 }
 

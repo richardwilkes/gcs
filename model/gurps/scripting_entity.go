@@ -214,21 +214,10 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 		}
 		m["traitLevel"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
-				name := callArgAsTrimmedString(call, 0)
-				level := -fxp.One
-				Traverse(func(t *Trait) bool {
-					if strings.EqualFold(t.NameWithReplacements(), name) {
-						if t.IsLeveled() {
-							current := t.CurrentLevel()
-							if level == -fxp.One {
-								level = current
-							} else {
-								level += current
-							}
-						}
-					}
-					return false
-				}, true, true, entity.Traits...)
+				level, found := entity.TraitLevels(callArgAsTrimmedString(call, 0))
+				if !found {
+					level = -fxp.One
+				}
 				return r.ToValue(level.AsFloat[float64]())
 			})
 		}

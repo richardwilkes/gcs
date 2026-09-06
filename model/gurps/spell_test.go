@@ -270,3 +270,22 @@ func TestSpellEquipmentPrereqPenaltyIsScopedToItsSpell(t *testing.T) {
 	c.Equal(baseline.LevelData.Level-fxp.Five, needsFocus.LevelData.Level,
 		"the spell with the unmet equipment prerequisite must be 5 levels lower")
 }
+
+// TestSpellEquipmentPrereqPenaltyWithTechLevel verifies that the penalty generated for a spell whose equipment
+// prerequisite is unmet is -10 rather than -5 when the spell has a tech level, matching the rule applied to skills.
+func TestSpellEquipmentPrereqPenaltyWithTechLevel(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	needsFocus := addTestSpell(e, "Fireball", fxp.Four)
+	techLevel := "8"
+	needsFocus.TechLevel = &techLevel
+	eqpPrereq := NewEquippedEquipmentPrereq()
+	eqpPrereq.NameCriteria.Qualifier = "Wizard's Focus"
+	needsFocus.Prereq = NewPrereqList()
+	needsFocus.Prereq.Prereqs = append(needsFocus.Prereq.Prereqs, eqpPrereq)
+	eqpPrereq.Parent = needsFocus.Prereq
+	e.Recalculate()
+	c.NotEqual("", needsFocus.UnsatisfiedReason, "precondition: the equipment prerequisite must be unsatisfied")
+	c.Equal(-fxp.Ten, e.SpellBonusFor(needsFocus.NameWithReplacements(), "", nil, nil, nil),
+		"a spell with a tech level takes the -10 penalty")
+}

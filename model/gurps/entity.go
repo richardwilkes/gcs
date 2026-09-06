@@ -335,83 +335,29 @@ func (e *Entity) ensureAttachments() {
 	for _, attr := range e.Attributes.Set {
 		attr.Entity = e
 	}
-	for _, one := range e.Traits {
-		one.SetDataOwner(e)
-	}
-	for _, one := range e.Skills {
-		one.SetDataOwner(e)
-	}
-	for _, one := range e.Spells {
-		one.SetDataOwner(e)
-	}
-	for _, one := range e.CarriedEquipment {
-		one.SetDataOwner(e)
-	}
-	for _, one := range e.OtherEquipment {
-		one.SetDataOwner(e)
-	}
-	for _, one := range e.Notes {
-		one.SetDataOwner(e)
-	}
+	SetDataOwnerAll(e, e.Traits)
+	SetDataOwnerAll(e, e.Skills)
+	SetDataOwnerAll(e, e.Spells)
+	SetDataOwnerAll(e, e.CarriedEquipment)
+	SetDataOwnerAll(e, e.OtherEquipment)
+	SetDataOwnerAll(e, e.Notes)
 }
 
 func (e *Entity) processFeatures() {
 	e.features = features{}
-	var selfControlTraits []*Trait
-	// Switchable features, whether on an item or on one of its modifiers, only take effect while the switch of the
-	// primary item (trait, skill, spell, or equipment) is on, which is what the .Active() calls below enforce.
+	e.forEachActiveFeatureList(func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features) {
+		for _, f := range list {
+			e.processFeature(owner, mod, f, leveled)
+		}
+	})
+	// Self-control-derived features are generated after the full walk, since resolving a trait's self-control roll
+	// and adjustment through a selector override requires every override to have been collected first.
 	Traverse(func(t *Trait) bool {
-		if !t.Container() {
-			for _, f := range t.ActiveFeatures() {
-				e.processFeature(t, nil, f, t)
-			}
-		}
-		// Self-control-derived features are generated after the full traversal, since resolving the trait's
-		// self-control roll and adjustment through a selector override requires every override to have been collected
-		// first.
-		selfControlTraits = append(selfControlTraits, t)
-		Traverse(func(mod *TraitModifier) bool {
-			for _, f := range mod.Features.Active(t.SwitchedOn) {
-				// The modifier is passed as both the sub-owner, so that tooltips name it alongside the trait, and as
-				// the leveled owner, since a per-level feature on a modifier scales with the modifier's level.
-				e.processFeature(t, mod, f, mod)
-			}
-			return false
-		}, true, true, t.Modifiers...)
-		return false
-	}, true, false, e.Traits...)
-	Traverse(func(s *Skill) bool {
-		for _, f := range s.ActiveFeatures() {
-			e.processFeature(s, nil, f, s)
-		}
-		return false
-	}, false, true, e.Skills...)
-	Traverse(func(s *Spell) bool {
-		for _, f := range s.ActiveFeatures() {
-			e.processFeature(s, nil, f, s)
-		}
-		return false
-	}, false, true, e.Spells...)
-	Traverse(func(eqp *Equipment) bool {
-		if !eqp.ReallyEquipped() {
-			return false
-		}
-		for _, f := range eqp.ActiveFeatures() {
-			e.processFeature(eqp, nil, f, eqp)
-		}
-		Traverse(func(mod *EquipmentModifier) bool {
-			for _, f := range mod.Features.Active(eqp.SwitchedOn) {
-				e.processFeature(eqp, mod, f, eqp)
-			}
-			return false
-		}, true, true, eqp.Modifiers...)
-		return false
-	}, false, false, e.CarriedEquipment...)
-	for _, t := range selfControlTraits {
 		for _, f := range FeaturesForSelfControlRoll(t.ResolvedSelfControl(nil), t.ResolvedSelfControlAdjustment(nil)) {
 			e.processFeature(t, nil, f, t)
 		}
-	}
+		return false
+	}, true, false, e.Traits...)
 	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.LiftingOnly, nil).Floor()
 	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.StrikingOnly, nil).Floor()
 	e.ThrowingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.ThrowingOnly, nil).Floor()
@@ -439,6 +385,55 @@ func (e *Entity) processFeatures() {
 	tooltip.Reset()
 	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, &tooltip).Floor()
 	e.BlockBonusTooltip = tooltip.String()
+}
+
+// forEachActiveFeatureList calls fn with each list of features that is currently in effect on the entity: those of
+// every enabled, non-container trait and of each enabled trait's enabled modifiers, those of every non-container skill
+// and spell, and those of every carried piece of equipment that is really equipped and of its enabled modifiers.
+// Switchable features, whether on an item or on one of its modifiers, only take effect while the switch of the primary
+// item is on, which is what the .Active() calls enforce. The owner is the primary item and mod is the modifier carrying
+// the list, or nil when the list is the item's own. The leveled owner is the node whose level drives a per-level
+// amount: the modifier itself for trait modifiers, which can have levels of their own, and the equipment for equipment
+// modifiers, which cannot. Everything that gathers features from the entity goes through this walk so that they all
+// agree on which features are in effect.
+func (e *Entity) forEachActiveFeatureList(fn func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features)) {
+	Traverse(func(t *Trait) bool {
+		if !t.Container() {
+			fn(t, nil, t, t.ActiveFeatures())
+		}
+		Traverse(func(mod *TraitModifier) bool {
+			fn(t, mod, mod, mod.Features.Active(t.SwitchedOn))
+			return false
+		}, true, true, t.Modifiers...)
+		return false
+	}, true, false, e.Traits...)
+	Traverse(func(s *Skill) bool {
+		fn(s, nil, s, s.ActiveFeatures())
+		return false
+	}, false, true, e.Skills...)
+	Traverse(func(s *Spell) bool {
+		fn(s, nil, s, s.ActiveFeatures())
+		return false
+	}, false, true, e.Spells...)
+	Traverse(func(eqp *Equipment) bool {
+		if eqp.ReallyEquipped() {
+			forEachActiveEquipmentFeatureList(eqp, func(mod fmt.Stringer, list Features) {
+				fn(eqp, mod, eqp, list)
+			})
+		}
+		return false
+	}, false, false, e.CarriedEquipment...)
+}
+
+// forEachActiveEquipmentFeatureList calls fn with the equipment's own active features and then with those of each of
+// its enabled modifiers, subject to the equipment's switch. mod is the modifier carrying the list, or nil for the
+// equipment's own. Whether the equipment is equipped is not consulted.
+func forEachActiveEquipmentFeatureList(eqp *Equipment, fn func(mod fmt.Stringer, list Features)) {
+	fn(nil, eqp.ActiveFeatures())
+	Traverse(func(mod *EquipmentModifier) bool {
+		fn(mod, mod.Features.Active(eqp.SwitchedOn))
+		return false
+	}, true, true, eqp.Modifiers...)
 }
 
 // processFeature collects a feature into the entity's feature lists. The owner is the primary item the feature came
@@ -511,8 +506,8 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 	// Keyed by the lowercased location, since location matching is case-insensitive, with the first spelling
 	// encountered as the value.
 	locations := make(map[string]string)
-	collect := func(features Features) {
-		for _, f := range features {
+	forEachActiveEquipmentFeatureList(eqp, func(_ fmt.Stringer, list Features) {
+		for _, f := range list {
 			drBonus, ok2 := f.(*DRBonus)
 			if !ok2 || len(drBonus.Locations) == 0 {
 				continue
@@ -524,12 +519,7 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 				}
 			}
 		}
-	}
-	collect(eqp.ActiveFeatures())
-	Traverse(func(mod *EquipmentModifier) bool {
-		collect(mod.Features.Active(eqp.SwitchedOn))
-		return false
-	}, true, true, eqp.Modifiers...)
+	})
 	if len(locations) == 0 {
 		return
 	}
@@ -549,9 +539,10 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 	e.features.drBonuses = append(e.features.drBonuses, bonus)
 }
 
+// unsatisfiedReasonPrefix separates the individual reasons within an UnsatisfiedReason.
+const unsatisfiedReasonPrefix = "\n- "
+
 func (e *Entity) processPrereqs() {
-	const prefix = "\n- "
-	notMetPrefix := i18n.Text("Prerequisites have not been met:")
 	// Traverse all traits, not just the enabled ones, so that a trait that becomes disabled has any previously
 	// recorded unsatisfied reason cleared. Prerequisites are only evaluated for enabled traits.
 	Traverse(func(t *Trait) bool {
@@ -559,99 +550,92 @@ func (e *Entity) processPrereqs() {
 		if !t.Enabled() {
 			return false
 		}
-		if t.Prereq != nil {
-			var tooltip xbytes.InsertBuffer
-			var eqpPenalty bool
-			if !t.Prereq.Satisfied(e, t, &tooltip, prefix, &eqpPenalty) {
-				t.UnsatisfiedReason = notMetPrefix + tooltip.String()
-			}
-		}
+		t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil, nil)
 		if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
 			reason := i18n.Text("Level exceeds the maximum of ") + maximum.String()
 			if t.UnsatisfiedReason == "" {
 				t.UnsatisfiedReason = reason
 			} else {
-				t.UnsatisfiedReason += prefix + reason
+				t.UnsatisfiedReason += unsatisfiedReasonPrefix + reason
 			}
 		}
 		return false
 	}, false, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
 		s.UnsatisfiedReason = ""
-		if !s.Container() {
-			var tooltip xbytes.InsertBuffer
-			satisfied := true
-			if s.Prereq != nil {
-				var eqpPenalty bool
-				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
-				if eqpPenalty {
-					penalty := NewSkillBonus()
-					penalty.NameCriteria.Qualifier = s.NameWithReplacements()
-					penalty.SpecializationCriteria.Compare = criteria.IsText
-					penalty.SpecializationCriteria.Qualifier = s.SpecializationWithReplacements()
-					penalty.OptionalSpecializationCriteria.Compare = criteria.IsText
-					penalty.OptionalSpecializationCriteria.Qualifier = s.OptionalSpecializationWithReplacements()
-					if s.TechLevel != nil && *s.TechLevel != "" {
-						penalty.Amount = -fxp.Ten
-					} else {
-						penalty.Amount = -fxp.Five
-					}
-					penalty.SetOwner(s)
-					e.features.skillBonuses = append(e.features.skillBonuses, penalty)
-				}
-			}
-			if satisfied && s.IsTechnique() {
-				satisfied = s.TechniqueSatisfied(&tooltip, prefix)
-			}
-			if !satisfied {
-				s.UnsatisfiedReason = notMetPrefix + tooltip.String()
-			}
+		if s.Container() {
+			return false
 		}
+		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, func() {
+			penalty := NewSkillBonus()
+			penalty.NameCriteria.Qualifier = s.NameWithReplacements()
+			penalty.SpecializationCriteria.Compare = criteria.IsText
+			penalty.SpecializationCriteria.Qualifier = s.SpecializationWithReplacements()
+			penalty.OptionalSpecializationCriteria.Compare = criteria.IsText
+			penalty.OptionalSpecializationCriteria.Qualifier = s.OptionalSpecializationWithReplacements()
+			penalty.Amount = missingEquipmentPenalty(s.TechLevel)
+			penalty.SetOwner(s)
+			e.features.skillBonuses = append(e.features.skillBonuses, penalty)
+		}, func(tooltip *xbytes.InsertBuffer) bool {
+			return !s.IsTechnique() || s.TechniqueSatisfied(tooltip, unsatisfiedReasonPrefix)
+		})
 		return false
 	}, false, false, e.Skills...)
 	Traverse(func(s *Spell) bool {
 		s.UnsatisfiedReason = ""
-		if !s.Container() {
-			var tooltip xbytes.InsertBuffer
-			satisfied := true
-			if s.Prereq != nil {
-				var eqpPenalty bool
-				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
-				if eqpPenalty {
-					penalty := NewSpellBonus()
-					penalty.SpellMatchType = spellmatch.Name
-					penalty.NameCriteria.Qualifier = s.NameWithReplacements()
-					if s.TechLevel != nil && *s.TechLevel != "" {
-						penalty.Amount = -fxp.Ten
-					} else {
-						penalty.Amount = -fxp.Five
-					}
-					penalty.SetOwner(s)
-					e.features.spellBonuses = append(e.features.spellBonuses, penalty)
-				}
-			}
-			if satisfied && s.IsRitualMagic() {
-				satisfied = s.RitualMagicSatisfied(&tooltip, prefix)
-			}
-			if !satisfied {
-				s.UnsatisfiedReason = notMetPrefix + tooltip.String()
-			}
+		if s.Container() {
+			return false
 		}
+		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, func() {
+			penalty := NewSpellBonus()
+			penalty.SpellMatchType = spellmatch.Name
+			penalty.NameCriteria.Qualifier = s.NameWithReplacements()
+			penalty.Amount = missingEquipmentPenalty(s.TechLevel)
+			penalty.SetOwner(s)
+			e.features.spellBonuses = append(e.features.spellBonuses, penalty)
+		}, func(tooltip *xbytes.InsertBuffer) bool {
+			return !s.IsRitualMagic() || s.RitualMagicSatisfied(tooltip, unsatisfiedReasonPrefix)
+		})
 		return false
 	}, false, false, e.Spells...)
 	equipmentFunc := func(eqp *Equipment) bool {
-		eqp.UnsatisfiedReason = ""
-		if eqp.Prereq != nil {
-			var tooltip xbytes.InsertBuffer
-			var eqpPenalty bool
-			if !eqp.Prereq.Satisfied(e, eqp, &tooltip, prefix, &eqpPenalty) {
-				eqp.UnsatisfiedReason = notMetPrefix + tooltip.String()
-			}
-		}
+		eqp.UnsatisfiedReason = e.evaluatePrereqs(eqp.Prereq, eqp, nil, nil)
 		return false
 	}
 	Traverse(equipmentFunc, false, false, e.CarriedEquipment...)
 	Traverse(equipmentFunc, false, false, e.OtherEquipment...)
+}
+
+// evaluatePrereqs evaluates the prerequisites, which may be nil, of the node given as exclude and returns the reason to
+// record when they are not met, or "" when they are. onEquipmentPenalty, if non-nil, is called when the prerequisites
+// ask for the missing-equipment penalty to be applied. extra, if non-nil, performs a further check that runs only while
+// the prerequisites are still satisfied, appending its reasons to the tooltip when it fails.
+func (e *Entity) evaluatePrereqs(prereq *PrereqList, exclude any, onEquipmentPenalty func(), extra func(tooltip *xbytes.InsertBuffer) bool) string {
+	var tooltip xbytes.InsertBuffer
+	satisfied := true
+	if prereq != nil {
+		var eqpPenalty bool
+		satisfied = prereq.Satisfied(e, exclude, &tooltip, unsatisfiedReasonPrefix, &eqpPenalty)
+		if eqpPenalty && onEquipmentPenalty != nil {
+			onEquipmentPenalty()
+		}
+	}
+	if satisfied && extra != nil {
+		satisfied = extra(&tooltip)
+	}
+	if satisfied {
+		return ""
+	}
+	return i18n.Text("Prerequisites have not been met:") + tooltip.String()
+}
+
+// missingEquipmentPenalty returns the penalty a skill or spell suffers when its equipment prerequisite is unmet: -10
+// when it has a tech level, since it depends on that equipment, and -5 otherwise.
+func missingEquipmentPenalty(techLevel *string) fxp.Int {
+	if techLevel != nil && *techLevel != "" {
+		return -fxp.Ten
+	}
+	return -fxp.Five
 }
 
 // UpdateSkills updates the levels of all skills.
@@ -761,52 +745,48 @@ func (e *Entity) WealthNotCarried() fxp.Int {
 
 // StrikingStrength returns the adjusted ST for striking purposes.
 func (e *Entity) StrikingStrength() fxp.Int {
-	var st fxp.Int
-	if e.ResolveAttribute(StrikingStrengthID) != nil {
-		st = e.ResolveAttributeCurrent(StrikingStrengthID)
-	} else {
-		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
-	}
-	st += e.StrikingStrengthBonus
-	return st.Floor()
+	return e.derivedStrength(StrikingStrengthID, e.StrikingStrengthBonus)
 }
 
 // LiftingStrength returns the adjusted ST for lifting purposes.
 func (e *Entity) LiftingStrength() fxp.Int {
-	var st fxp.Int
-	if e.ResolveAttribute(LiftingStrengthID) != nil {
-		st = e.ResolveAttributeCurrent(LiftingStrengthID)
-	} else {
-		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
-	}
-	st += e.LiftingStrengthBonus
-	return st.Floor()
+	return e.derivedStrength(LiftingStrengthID, e.LiftingStrengthBonus)
 }
 
 // ThrowingStrength returns the adjusted ST for throwing purposes.
 func (e *Entity) ThrowingStrength() fxp.Int {
+	return e.derivedStrength(ThrowingStrengthID, e.ThrowingStrengthBonus)
+}
+
+// derivedStrength returns the floored sum of the bonus and the current value of the dedicated strength attribute with
+// the given ID, or of ST (never less than 0) when the sheet doesn't define that attribute.
+func (e *Entity) derivedStrength(attrID string, bonus fxp.Int) fxp.Int {
 	var st fxp.Int
-	if e.ResolveAttribute(ThrowingStrengthID) != nil {
-		st = e.ResolveAttributeCurrent(ThrowingStrengthID)
+	if e.ResolveAttribute(attrID) != nil {
+		st = e.ResolveAttributeCurrent(attrID)
 	} else {
 		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
 	}
-	st += e.ThrowingStrengthBonus
-	return st.Floor()
+	return (st + bonus).Floor()
 }
 
 // TelekineticStrength returns the total telekinetic strength.
 func (e *Entity) TelekineticStrength() fxp.Int {
-	var levels fxp.Int
+	levels, _ := e.TraitLevels("telekinesis")
+	return levels.Floor()
+}
+
+// TraitLevels returns the sum of the current levels of every enabled, leveled trait whose name matches the given one,
+// ignoring case, along with whether any such trait exists.
+func (e *Entity) TraitLevels(name string) (levels fxp.Int, found bool) {
 	Traverse(func(t *Trait) bool {
-		if !t.Container() && t.IsLeveled() {
-			if strings.EqualFold(t.NameWithReplacements(), "telekinesis") {
-				levels += t.CurrentLevel()
-			}
+		if t.IsLeveled() && strings.EqualFold(t.NameWithReplacements(), name) {
+			levels += t.CurrentLevel()
+			found = true
 		}
 		return false
 	}, true, false, e.Traits...)
-	return levels.Floor()
+	return levels, found
 }
 
 // Thrust returns the thrust value for the current strength.
@@ -885,34 +865,50 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 	return total.Max(0)
 }
 
-// TraitMaxLevelBonusesFor returns the "traits whose name" max-level bonuses that match the given name and tags.
-func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*TraitMaxLevelBonus {
-	var result []*TraitMaxLevelBonus
-	for _, bonus := range e.features.traitMaxLevelBonuses {
-		if bonus.SelectionType == traitsel.TraitWithName {
-			replacements := bonusReplacements(bonus)
-			if bonus.NameCriteria.Matches(replacements, name) && bonus.TagsCriteria.MatchesList(replacements, tags...) {
-				result = append(result, bonus)
-				bonus.AddToTooltip(tooltip)
-			}
+// sumBonuses returns the total adjusted amount of the bonuses in the list that match, adding each of them to the
+// tooltip, which may be nil. match receives the bonus along with the nameable replacements of its owner.
+func sumBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) fxp.Int {
+	var total fxp.Int
+	for _, bonus := range list {
+		if match(bonus, bonusReplacements(bonus)) {
+			total += bonus.AdjustedAmount()
+			bonus.AddToTooltip(tooltip)
+		}
+	}
+	return total
+}
+
+// collectBonuses returns the bonuses in the list that match, adding each of them to the tooltip, which may be nil.
+// match receives the bonus along with the nameable replacements of its owner.
+func collectBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) []T {
+	var result []T
+	for _, bonus := range list {
+		if match(bonus, bonusReplacements(bonus)) {
+			result = append(result, bonus)
+			bonus.AddToTooltip(tooltip)
 		}
 	}
 	return result
 }
 
+// TraitMaxLevelBonusesFor returns the "traits whose name" max-level bonuses that match the given name and tags.
+func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*TraitMaxLevelBonus {
+	return collectBonuses(e.features.traitMaxLevelBonuses, tooltip,
+		func(bonus *TraitMaxLevelBonus, replacements map[string]string) bool {
+			return bonus.SelectionType == traitsel.TraitWithName &&
+				bonus.NameCriteria.Matches(replacements, name) &&
+				bonus.TagsCriteria.MatchesList(replacements, tags...)
+		})
+}
+
 // EquipmentMaxUsesBonusesFor returns the "equipment whose name" max-uses bonuses that match the given name and tags.
 func (e *Entity) EquipmentMaxUsesBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*EquipmentMaxUsesBonus {
-	var result []*EquipmentMaxUsesBonus
-	for _, bonus := range e.features.maxUsesBonuses {
-		if bonus.SelectionType == equipmentsel.EquipmentWithName {
-			replacements := bonusReplacements(bonus)
-			if bonus.NameCriteria.Matches(replacements, name) && bonus.TagsCriteria.MatchesList(replacements, tags...) {
-				result = append(result, bonus)
-				bonus.AddToTooltip(tooltip)
-			}
-		}
-	}
-	return result
+	return collectBonuses(e.features.maxUsesBonuses, tooltip,
+		func(bonus *EquipmentMaxUsesBonus, replacements map[string]string) bool {
+			return bonus.SelectionType == equipmentsel.EquipmentWithName &&
+				bonus.NameCriteria.Matches(replacements, name) &&
+				bonus.TagsCriteria.MatchesList(replacements, tags...)
+		})
 }
 
 // AddDRBonusesFor locates any active DR bonuses and adds them to the map. If 'drMap' is nil, it will be created. The
@@ -942,78 +938,56 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 
 // SkillBonusFor returns the total bonus for the matching skill bonuses.
 func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	var total fxp.Int
-	for _, bonus := range e.features.skillBonuses {
-		if bonus.SelectionType == skillsel.Name {
-			replacements := bonusReplacements(bonus)
-			if bonus.NameCriteria.Matches(replacements, name) &&
-				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
-				bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
-				bonus.TagsCriteria.MatchesList(replacements, tags...) {
-				total += bonus.AdjustedAmount()
-				bonus.AddToTooltip(tooltip)
-			}
-		}
-	}
-	return total
+	return sumBonuses(e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
+		return bonus.SelectionType == skillsel.Name &&
+			bonus.NameCriteria.Matches(replacements, name) &&
+			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
+			bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
+			bonus.TagsCriteria.MatchesList(replacements, tags...)
+	})
 }
 
 // SkillPointBonusFor returns the total point bonus for the matching skill point bonuses.
 func (e *Entity) SkillPointBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	var total fxp.Int
-	for _, bonus := range e.features.skillPointBonuses {
-		replacements := bonusReplacements(bonus)
-		if bonus.NameCriteria.Matches(replacements, name) &&
-			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
-			bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
-			bonus.TagsCriteria.MatchesList(replacements, tags...) {
-			total += bonus.AdjustedAmount()
-			bonus.AddToTooltip(tooltip)
-		}
-	}
-	return total
+	return sumBonuses(e.features.skillPointBonuses, tooltip,
+		func(bonus *SkillPointBonus, replacements map[string]string) bool {
+			return bonus.NameCriteria.Matches(replacements, name) &&
+				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
+				bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
+				bonus.TagsCriteria.MatchesList(replacements, tags...)
+		})
+}
+
+// spellMatcher is implemented by the bonuses that select spells by name, power source, college or tag.
+type spellMatcher interface {
+	Bonus
+	MatchesSpell(replacements map[string]string, name, powerSource string, colleges, tags []string) bool
+}
+
+// sumSpellBonuses returns the total adjusted amount of the bonuses in the list that match the given spell, adding each
+// of them to the tooltip, which may be nil.
+func sumSpellBonuses[T spellMatcher](list []T, name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
+	return sumBonuses(list, tooltip, func(bonus T, replacements map[string]string) bool {
+		return bonus.MatchesSpell(replacements, name, powerSource, colleges, tags)
+	})
 }
 
 // SpellBonusFor returns the total bonus for the matching spell bonuses.
 func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	var total fxp.Int
-	for _, bonus := range e.features.spellBonuses {
-		replacements := bonusReplacements(bonus)
-		if bonus.TagsCriteria.MatchesList(replacements, tags...) &&
-			bonus.MatchForType(replacements, name, powerSource, colleges) {
-			total += bonus.AdjustedAmount()
-			bonus.AddToTooltip(tooltip)
-		}
-	}
-	return total
+	return sumSpellBonuses(e.features.spellBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
 // SpellPointBonusFor returns the total point bonus for the matching spell point bonuses.
 func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	var total fxp.Int
-	for _, bonus := range e.features.spellPointBonuses {
-		replacements := bonusReplacements(bonus)
-		if bonus.TagsCriteria.MatchesList(replacements, tags...) &&
-			bonus.MatchForType(replacements, name, powerSource, colleges) {
-			total += bonus.AdjustedAmount()
-			bonus.AddToTooltip(tooltip)
-		}
-	}
-	return total
+	return sumSpellBonuses(e.features.spellPointBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
 // TraitBonusFor returns the total bonus for the matching trait bonuses.
 func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	var total fxp.Int
-	for _, bonus := range e.features.traitBonuses {
-		replacements := bonusReplacements(bonus)
-		if bonus.NameCriteria.Matches(replacements, name) &&
-			bonus.TagsCriteria.MatchesList(replacements, tags...) {
-			total += bonus.AdjustedAmount()
-			bonus.AddToTooltip(tooltip)
-		}
-	}
-	return total
+	return sumBonuses(e.features.traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
+		return bonus.NameCriteria.Matches(replacements, name) &&
+			bonus.TagsCriteria.MatchesList(replacements, tags...)
+	})
 }
 
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
@@ -1076,19 +1050,12 @@ func addWeaponBonusToMap(bonus *WeaponBonus, dieCount dieCountFunc, tooltip *xby
 
 // NamedWeaponSkillBonusesFor returns the bonuses for matching weapons.
 func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xbytes.InsertBuffer) []*SkillBonus {
-	var bonuses []*SkillBonus
-	for _, bonus := range e.features.skillBonuses {
-		if bonus.SelectionType == skillsel.WeaponsWithName {
-			replacements := bonusReplacements(bonus)
-			if bonus.NameCriteria.Matches(replacements, name) &&
-				bonus.SpecializationCriteria.Matches(replacements, usage) &&
-				bonus.TagsCriteria.MatchesList(replacements, tags...) {
-				bonuses = append(bonuses, bonus)
-				bonus.AddToTooltip(tooltip)
-			}
-		}
-	}
-	return bonuses
+	return collectBonuses(e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
+		return bonus.SelectionType == skillsel.WeaponsWithName &&
+			bonus.NameCriteria.Matches(replacements, name) &&
+			bonus.SpecializationCriteria.Matches(replacements, usage) &&
+			bonus.TagsCriteria.MatchesList(replacements, tags...)
+	})
 }
 
 // Move returns the current Move value for the given Encumbrance.
@@ -1530,54 +1497,47 @@ func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 	// Not permitted
 }
 
-// gatherConditionalModifiers walks the entity, collecting conditional modifiers (or reactions) into a sorted list.
-// collectFromList extracts the relevant bonuses from a feature list into the working map, and perTrait, if non-nil,
-// contributes any additional per-trait modifiers (used for self-control reaction penalties). Reactions and
-// ConditionalModifiers share this traversal so their selection of nodes and merge ordering stay identical.
+// gatherConditionalModifiers walks the entity's active features, collecting conditional modifiers (or reactions) into
+// a sorted list. collectFromList extracts the relevant bonuses from a feature list into the working map, and perTrait,
+// if non-nil, contributes any additional modifiers for each enabled trait (used for self-control reaction penalties).
+// Reactions and ConditionalModifiers share this so their selection of nodes and merge ordering stay identical.
 func (e *Entity) gatherConditionalModifiers(
 	collectFromList func(source string, features Features, m map[string]*ConditionalModifier),
 	perTrait func(source string, t *Trait, m map[string]*ConditionalModifier),
 ) []*ConditionalModifier {
 	m := make(map[string]*ConditionalModifier)
-	Traverse(func(t *Trait) bool {
-		source := i18n.Text("from trait ") + t.String()
-		if !t.Container() {
-			collectFromList(source, t.ActiveFeatures(), m)
-		}
-		Traverse(func(mod *TraitModifier) bool {
-			collectFromList(source, mod.Features.Active(t.SwitchedOn), m)
+	e.forEachActiveFeatureList(func(owner, _ fmt.Stringer, _ LeveledOwner, list Features) {
+		collectFromList(conditionalModifierSource(owner), list, m)
+	})
+	if perTrait != nil {
+		Traverse(func(t *Trait) bool {
+			perTrait(conditionalModifierSource(t), t, m)
 			return false
-		}, true, true, t.Modifiers...)
-		if perTrait != nil {
-			perTrait(source, t, m)
-		}
-		return false
-	}, true, false, e.Traits...)
-	Traverse(func(eqp *Equipment) bool {
-		if eqp.ReallyEquipped() {
-			source := i18n.Text("from equipment ") + eqp.NameWithReplacements()
-			collectFromList(source, eqp.ActiveFeatures(), m)
-			Traverse(func(mod *EquipmentModifier) bool {
-				collectFromList(source, mod.Features.Active(eqp.SwitchedOn), m)
-				return false
-			}, true, true, eqp.Modifiers...)
-		}
-		return false
-	}, false, false, e.CarriedEquipment...)
-	Traverse(func(sk *Skill) bool {
-		collectFromList(i18n.Text("from skill ")+sk.String(), sk.ActiveFeatures(), m)
-		return false
-	}, false, true, e.Skills...)
-	Traverse(func(sp *Spell) bool {
-		collectFromList(i18n.Text("from spell ")+sp.String(), sp.ActiveFeatures(), m)
-		return false
-	}, false, true, e.Spells...)
+		}, true, false, e.Traits...)
+	}
 	list := make([]*ConditionalModifier, 0, len(m))
 	for _, v := range m {
 		list = append(list, v)
 	}
 	slices.SortFunc(list, func(a, b *ConditionalModifier) int { return a.Compare(b) })
 	return list
+}
+
+// conditionalModifierSource returns the text that names the owner of a conditional modifier or reaction in the list
+// of sources that contributed to it.
+func conditionalModifierSource(owner fmt.Stringer) string {
+	switch actual := owner.(type) {
+	case *Trait:
+		return i18n.Text("from trait ") + actual.String()
+	case *Skill:
+		return i18n.Text("from skill ") + actual.String()
+	case *Spell:
+		return i18n.Text("from spell ") + actual.String()
+	case *Equipment:
+		return i18n.Text("from equipment ") + actual.NameWithReplacements()
+	default:
+		return i18n.Text("from ") + owner.String()
+	}
 }
 
 // Reactions returns the current set of reactions.
@@ -1631,9 +1591,7 @@ func (e *Entity) HasTraitNamed(name string) bool {
 
 // SetTraitList implements ListProvider
 func (e *Entity) SetTraitList(list []*Trait) {
-	for _, one := range list {
-		one.SetDataOwner(e)
-	}
+	SetDataOwnerAll(e, list)
 	e.Traits = list
 }
 
@@ -1644,9 +1602,7 @@ func (e *Entity) CarriedEquipmentList() []*Equipment {
 
 // SetCarriedEquipmentList implements ListProvider
 func (e *Entity) SetCarriedEquipmentList(list []*Equipment) {
-	for _, one := range list {
-		one.SetDataOwner(e)
-	}
+	SetDataOwnerAll(e, list)
 	e.CarriedEquipment = list
 }
 
@@ -1657,9 +1613,7 @@ func (e *Entity) OtherEquipmentList() []*Equipment {
 
 // SetOtherEquipmentList implements ListProvider
 func (e *Entity) SetOtherEquipmentList(list []*Equipment) {
-	for _, one := range list {
-		one.SetDataOwner(e)
-	}
+	SetDataOwnerAll(e, list)
 	e.OtherEquipment = list
 }
 
@@ -1670,9 +1624,7 @@ func (e *Entity) SkillList() []*Skill {
 
 // SetSkillList implements ListProvider
 func (e *Entity) SetSkillList(list []*Skill) {
-	for _, one := range list {
-		one.SetDataOwner(e)
-	}
+	SetDataOwnerAll(e, list)
 	e.Skills = list
 }
 
@@ -1683,9 +1635,7 @@ func (e *Entity) SpellList() []*Spell {
 
 // SetSpellList implements ListProvider
 func (e *Entity) SetSpellList(list []*Spell) {
-	for _, one := range list {
-		one.SetDataOwner(e)
-	}
+	SetDataOwnerAll(e, list)
 	e.Spells = list
 }
 
@@ -1696,9 +1646,7 @@ func (e *Entity) NoteList() []*Note {
 
 // SetNoteList implements ListProvider
 func (e *Entity) SetNoteList(list []*Note) {
-	for _, one := range list {
-		one.SetDataOwner(e)
-	}
+	SetDataOwnerAll(e, list)
 	e.Notes = list
 }
 
@@ -1722,42 +1670,7 @@ func (e *Entity) SetPointsRecord(record []*PointsRecord) {
 
 // SyncWithLibrarySources syncs the entity with the library sources.
 func (e *Entity) SyncWithLibrarySources() {
-	Traverse(func(trait *Trait) bool {
-		trait.SyncWithSource()
-		Traverse(func(traitModifier *TraitModifier) bool {
-			traitModifier.SyncWithSource()
-			return false
-		}, false, false, trait.Modifiers...)
-		return false
-	}, false, false, e.Traits...)
-	Traverse(func(skill *Skill) bool {
-		skill.SyncWithSource()
-		return false
-	}, false, false, e.Skills...)
-	Traverse(func(spell *Spell) bool {
-		spell.SyncWithSource()
-		return false
-	}, false, false, e.Spells...)
-	Traverse(func(equipment *Equipment) bool {
-		equipment.SyncWithSource()
-		Traverse(func(equipmentModifier *EquipmentModifier) bool {
-			equipmentModifier.SyncWithSource()
-			return false
-		}, false, false, equipment.Modifiers...)
-		return false
-	}, false, false, e.CarriedEquipment...)
-	Traverse(func(equipment *Equipment) bool {
-		equipment.SyncWithSource()
-		Traverse(func(equipmentModifier *EquipmentModifier) bool {
-			equipmentModifier.SyncWithSource()
-			return false
-		}, false, false, equipment.Modifiers...)
-		return false
-	}, false, false, e.OtherEquipment...)
-	Traverse(func(note *Note) bool {
-		note.SyncWithSource()
-		return false
-	}, false, false, e.Notes...)
+	syncWithLibrarySources(e)
 }
 
 // PageSettings implements PageInfoProvider.

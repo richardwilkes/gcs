@@ -205,51 +205,14 @@ func (t *Template) Hash(h hash.Hash) {
 
 // EnsureAttachments ensures that all attachments have their data owner set to the Template.
 func (t *Template) EnsureAttachments() {
-	for _, one := range t.Traits {
-		one.SetDataOwner(t)
-	}
-	for _, one := range t.Skills {
-		one.SetDataOwner(t)
-	}
-	for _, one := range t.Spells {
-		one.SetDataOwner(t)
-	}
-	for _, one := range t.Equipment {
-		one.SetDataOwner(t)
-	}
-	for _, one := range t.Notes {
-		one.SetDataOwner(t)
-	}
+	SetDataOwnerAll(t, t.Traits)
+	SetDataOwnerAll(t, t.Skills)
+	SetDataOwnerAll(t, t.Spells)
+	SetDataOwnerAll(t, t.Equipment)
+	SetDataOwnerAll(t, t.Notes)
 }
 
 // SyncWithLibrarySources syncs the template with the library sources.
 func (t *Template) SyncWithLibrarySources() {
-	Traverse(func(trait *Trait) bool {
-		trait.SyncWithSource()
-		Traverse(func(traitModifier *TraitModifier) bool {
-			traitModifier.SyncWithSource()
-			return false
-		}, false, false, trait.Modifiers...)
-		return false
-	}, false, false, t.Traits...)
-	Traverse(func(skill *Skill) bool {
-		skill.SyncWithSource()
-		return false
-	}, false, false, t.Skills...)
-	Traverse(func(spell *Spell) bool {
-		spell.SyncWithSource()
-		return false
-	}, false, false, t.Spells...)
-	Traverse(func(equipment *Equipment) bool {
-		equipment.SyncWithSource()
-		Traverse(func(equipmentModifier *EquipmentModifier) bool {
-			equipmentModifier.SyncWithSource()
-			return false
-		}, false, false, equipment.Modifiers...)
-		return false
-	}, false, false, t.Equipment...)
-	Traverse(func(note *Note) bool {
-		note.SyncWithSource()
-		return false
-	}, false, false, t.Notes...)
+	syncWithLibrarySources(t)
 }

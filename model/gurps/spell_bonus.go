@@ -81,9 +81,11 @@ func (s *SpellBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	s.basicAddToTooltip(&s.LeveledAmount, buffer)
 }
 
-// MatchForType returns true if this spell bonus matches the data for its match type.
-func (s *SpellBonus) MatchForType(replacements map[string]string, name, powerSource string, colleges []string) bool {
-	return s.SpellMatchType.MatchForType(s.NameCriteria, replacements, name, powerSource, colleges)
+// MatchesSpell returns true if this bonus applies to the spell with the given name, power source, colleges and
+// tags, according to its match type.
+func (s *SpellBonus) MatchesSpell(replacements map[string]string, name, powerSource string, colleges, tags []string) bool {
+	return s.TagsCriteria.MatchesList(replacements, tags...) &&
+		s.SpellMatchType.MatchForType(s.NameCriteria, replacements, name, powerSource, colleges)
 }
 
 // Hash writes this object's contents into the hasher.

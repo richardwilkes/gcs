@@ -44,3 +44,51 @@ func Traverse[T Node[T]](f func(T) bool, onlyEnabled, excludeContainers bool, in
 		}
 	}
 }
+
+// SetDataOwnerAll sets the data owner of each node in the list. Each node's SetDataOwner is responsible for reaching
+// its own children, modifiers and weapons, so the list is not traversed.
+func SetDataOwnerAll[T Node[T]](owner DataOwner, list []T) {
+	for _, one := range list {
+		one.SetDataOwner(owner)
+	}
+}
+
+// forEachNode calls visit for every node in each of the lists, recursively. Disabled nodes and containers are
+// included.
+func forEachNode[T Node[T]](visit func(T), lists ...[]T) {
+	for _, list := range lists {
+		Traverse(func(node T) bool {
+			visit(node)
+			return false
+		}, false, false, list...)
+	}
+}
+
+// sourcedNode is the subset of Node that source syncing and hashing need, so that one walk can serve every node type,
+// including the modifiers that hang off traits and equipment.
+type sourcedNode interface {
+	GetSource() Source
+	SyncWithSource()
+}
+
+// forEachSourcedNode calls visit for every node in the provider's lists, recursively, along with the modifiers of each
+// trait and piece of equipment. Disabled nodes and containers are included. Lists the provider doesn't have are nil
+// and contribute nothing.
+func forEachSourcedNode(provider ListProvider, visit func(sourcedNode)) {
+	forEachNode(func(t *Trait) {
+		visit(t)
+		forEachNode(func(mod *TraitModifier) { visit(mod) }, t.Modifiers)
+	}, provider.TraitList())
+	forEachNode(func(s *Skill) { visit(s) }, provider.SkillList())
+	forEachNode(func(s *Spell) { visit(s) }, provider.SpellList())
+	forEachNode(func(eqp *Equipment) {
+		visit(eqp)
+		forEachNode(func(mod *EquipmentModifier) { visit(mod) }, eqp.Modifiers)
+	}, provider.CarriedEquipmentList(), provider.OtherEquipmentList())
+	forEachNode(func(n *Note) { visit(n) }, provider.NoteList())
+}
+
+// syncWithLibrarySources syncs every node the provider holds with its library source.
+func syncWithLibrarySources(provider ListProvider) {
+	forEachSourcedNode(provider, sourcedNode.SyncWithSource)
+}
