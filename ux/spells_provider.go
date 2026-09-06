@@ -58,10 +58,7 @@ func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Spell]
 			if entity := dataOwner.OwningEntity(); entity != nil {
 				for _, row := range to.SelectedRows(true) {
 					gurps.Traverse(func(spell *gurps.Spell) bool {
-						if spell.TechLevel != nil && *spell.TechLevel == "" {
-							tl := entity.Profile.TechLevel
-							spell.TechLevel = &tl
-						}
+						resolveEmptyTechLevel(spell, entity.Profile.TechLevel)
 						return false
 					}, false, true, row.Data())
 				}

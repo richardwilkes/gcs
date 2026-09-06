@@ -464,21 +464,9 @@ func appendRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T])
 	orig := slices.Clone(table.RootRows())
 	switch t := any(table).(type) {
 	case *unison.Table[*Node[*gurps.Skill]]:
-		if skillNodes, ok2 := any(orig).([]*Node[*gurps.Skill]); ok2 {
-			if rowNodes, ok3 := any(rows).([]*Node[*gurps.Skill]); ok3 {
-				if newRows, ok4 := any(mergeSkillRows(t, skillNodes, rowNodes, selMap)).([]*Node[T]); ok4 {
-					rows = newRows
-				}
-			}
-		}
+		rows = mergeRowsFor(t, orig, rows, selMap)
 	case *unison.Table[*Node[*gurps.Spell]]:
-		if spellNodes, ok2 := any(orig).([]*Node[*gurps.Spell]); ok2 {
-			if rowNodes, ok3 := any(rows).([]*Node[*gurps.Spell]); ok3 {
-				if newRows, ok4 := any(mergeSpellRows(t, spellNodes, rowNodes, selMap)).([]*Node[T]); ok4 {
-					rows = newRows
-				}
-			}
-		}
+		rows = mergeRowsFor(t, orig, rows, selMap)
 	}
 	table.SetRootRows(append(orig, rows...))
 	for _, row := range rows {
@@ -506,141 +494,108 @@ func entityTechLevel[T gurps.Node[T]](table *unison.Table[*Node[T]]) string {
 	return ""
 }
 
-// sameTechLevel reports whether two tech level values match for merge purposes: both absent, or both present and equal.
-func sameTechLevel(a, b *string) bool {
-	if a == nil || b == nil {
-		return a == nil && b == nil
+// resolveEmptyTechLevel replaces an empty (but present) tech level with defaultTechLevel. This is the substitution
+// performed when a row is dropped onto a sheet and when a template's rows are merged into one, so both must agree.
+func resolveEmptyTechLevel(item gurps.TechLevelProvider, defaultTechLevel string) {
+	if item.RequiresTL() && item.TL() == "" {
+		item.SetTL(defaultTechLevel)
 	}
-	return *a == *b
 }
 
-func mergeSkillRows(skillTable *unison.Table[*Node[*gurps.Skill]], skillNodes, rows []*Node[*gurps.Skill], selMap map[tid.TID]bool) []*Node[*gurps.Skill] {
-	rowSkills := mergeSkillPoints(ExtractNodeDataFromList(skillNodes), ExtractNodeDataFromList(rows),
-		entityTechLevel(skillTable), selMap)
-	replacements := make([]*Node[*gurps.Skill], 0, len(rowSkills))
-	for _, skill := range rowSkills {
-		replacements = append(replacements, NewNode(skillTable, nil, skill, true))
+// sameTechLevel reports whether two rows' tech levels match for merge purposes: both absent, or both present and equal.
+func sameTechLevel(a, b gurps.TechLevelProvider) bool {
+	if a.RequiresTL() != b.RequiresTL() {
+		return false
+	}
+	return !a.RequiresTL() || a.TL() == b.TL()
+}
+
+// pointsMergeable is the set of row types whose identical rows are merged by folding their points together: skills and
+// spells.
+type pointsMergeable[T gurps.Node[T]] interface {
+	gurps.Node[T]
+	gurps.TechLevelProvider
+	RawPoints() fxp.Int
+	SetRawPoints(points fxp.Int) bool
+	NameableReplacements() map[string]string
+}
+
+// mergeRowsFor merges the incoming rows into the existing ones when the table holds a mergeable row type (see
+// mergeRows). It exists to bridge from a caller generic over any node type, which only knows the row type once it has
+// switched on the table's concrete type, to mergeRows, which needs that concrete type; the conversions cannot fail
+// once the switch has matched, but rows are returned untouched should one somehow not hold up.
+func mergeRowsFor[T pointsMergeable[T], U gurps.Node[U]](table *unison.Table[*Node[T]], existing, rows []*Node[U], selMap map[tid.TID]bool) []*Node[U] {
+	if existingNodes, ok := any(existing).([]*Node[T]); ok {
+		if rowNodes, ok2 := any(rows).([]*Node[T]); ok2 {
+			if merged, ok3 := any(mergeRows(table, existingNodes, rowNodes, selMap)).([]*Node[U]); ok3 {
+				return merged
+			}
+		}
+	}
+	return rows
+}
+
+// mergeRows folds the points of the incoming rows into matching existing rows (see mergePoints) and returns fresh
+// nodes for the incoming rows that survived, ready to be added to the table.
+func mergeRows[T pointsMergeable[T]](table *unison.Table[*Node[T]], existing, rows []*Node[T], selMap map[tid.TID]bool) []*Node[T] {
+	surviving := mergePoints(ExtractNodeDataFromList(existing), ExtractNodeDataFromList(rows), entityTechLevel(table),
+		selMap)
+	replacements := make([]*Node[T], 0, len(surviving))
+	for _, item := range surviving {
+		replacements = append(replacements, NewNode(table, nil, item, true))
 	}
 	return replacements
 }
 
-// mergeSkillPoints folds the points of each incoming skill into a matching skill, returning the incoming skills that
-// had no match (and should therefore be added as new rows). A match requires an identical hash, the same nameable
-// replacements, and the same tech level. Since neither the tech level nor the replacements are part of the hash,
-// several skills can share a hash, so all candidates for a hash are considered rather than just one. An incoming skill
-// can match either an existing skill or an earlier incoming skill, so a template that itself contains two identical
-// entries collapses them into one just as it merges into what is already on the sheet.
+// mergePoints folds the points of each incoming row into a matching row, returning the incoming rows that had no match
+// (and should therefore be added as new rows). A match requires an identical hash, the same nameable replacements, and
+// the same tech level. Since neither the tech level nor the replacements are part of the hash, several rows can share
+// a hash, so all candidates for a hash are considered rather than just one. An incoming row can match either an
+// existing row or an earlier incoming row, so a template that itself contains two identical entries collapses them
+// into one just as it merges into what is already on the sheet.
 //
-// An incoming skill with an empty (but non-nil) tech level has it resolved to defaultTechLevel first, mirroring the
-// substitution performed on drop by the skills provider. Without this, a template applied a second time would compare
-// the incoming empty tech level against the already-resolved tech level of the existing skill, fail to match, and add a
-// duplicate row instead of merging.
-func mergeSkillPoints(existing, incoming []*gurps.Skill, defaultTechLevel string, selMap map[tid.TID]bool) []*gurps.Skill {
-	skillMap := make(map[uint64][]*gurps.Skill)
-	gurps.Traverse(func(skill *gurps.Skill) bool {
-		hash := gurps.Hash64(skill)
-		skillMap[hash] = append(skillMap[hash], skill)
+// An incoming row with an empty (but non-nil) tech level has it resolved to defaultTechLevel first, mirroring the
+// substitution performed on drop by the skills and spells providers. Without this, a template applied a second time
+// would compare the incoming empty tech level against the already-resolved tech level of the existing row, fail to
+// match, and add a duplicate row instead of merging.
+//
+// Folding the points through SetRawPoints recomputes the level of the row merged into, which the caller's subsequent
+// rebuild does again; the extra pass is harmless and keeps this free of knowledge about how each type stores its points.
+func mergePoints[T pointsMergeable[T]](existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T {
+	byHash := make(map[uint64][]T)
+	gurps.Traverse(func(item T) bool {
+		hash := gurps.Hash64(item)
+		byHash[hash] = append(byHash[hash], item)
 		return false
 	}, true, true, existing...)
-	pruneMap := make(map[*gurps.Skill]bool)
-	gurps.Traverse(func(skill *gurps.Skill) bool {
-		if skill.TechLevel != nil && *skill.TechLevel == "" {
-			tl := defaultTechLevel
-			skill.TechLevel = &tl
-		}
-		hash := gurps.Hash64(skill)
+	pruneMap := make(map[T]bool)
+	gurps.Traverse(func(item T) bool {
+		resolveEmptyTechLevel(item, defaultTechLevel)
+		hash := gurps.Hash64(item)
 		matched := false
-		for _, s := range skillMap[hash] {
-			if !maps.Equal(s.Replacements, skill.Replacements) || !sameTechLevel(s.TechLevel, skill.TechLevel) {
+		for _, candidate := range byHash[hash] {
+			if !maps.Equal(candidate.NameableReplacements(), item.NameableReplacements()) ||
+				!sameTechLevel(candidate, item) {
 				continue
 			}
-			pruneMap[skill] = true
-			s.Points += skill.Points
-			selMap[s.ID()] = true
+			pruneMap[item] = true
+			candidate.SetRawPoints(candidate.RawPoints() + item.RawPoints())
+			selMap[candidate.ID()] = true
 			matched = true
 			break
 		}
 		if !matched {
-			// Register this surviving incoming skill so that any later identical incoming skill merges into it.
-			skillMap[hash] = append(skillMap[hash], skill)
+			// Register this surviving incoming row so that any later identical incoming row merges into it.
+			byHash[hash] = append(byHash[hash], item)
 		}
 		return false
 	}, true, true, incoming...)
-	for skill := range pruneMap {
-		parent := skill.Parent()
-		if parent == nil {
-			incoming = slices.DeleteFunc(incoming, func(s *gurps.Skill) bool {
-				return s == skill
-			})
+	for item := range pruneMap {
+		isItem := func(other T) bool { return other == item }
+		if parent := item.Parent(); xreflect.IsNil(parent) {
+			incoming = slices.DeleteFunc(incoming, isItem)
 		} else {
-			parent.Children = slices.DeleteFunc(parent.Children, func(s *gurps.Skill) bool {
-				return s == skill
-			})
-		}
-	}
-	return incoming
-}
-
-func mergeSpellRows(spellTable *unison.Table[*Node[*gurps.Spell]], spellNodes, rows []*Node[*gurps.Spell], selMap map[tid.TID]bool) []*Node[*gurps.Spell] {
-	rowSpells := mergeSpellPoints(ExtractNodeDataFromList(spellNodes), ExtractNodeDataFromList(rows),
-		entityTechLevel(spellTable), selMap)
-	replacements := make([]*Node[*gurps.Spell], 0, len(rowSpells))
-	for _, spell := range rowSpells {
-		replacements = append(replacements, NewNode(spellTable, nil, spell, true))
-	}
-	return replacements
-}
-
-// mergeSpellPoints folds the points of each incoming spell into a matching spell, returning the incoming spells that
-// had no match (and should therefore be added as new rows). A match requires an identical hash, the same nameable
-// replacements, and the same tech level. Since neither the tech level nor the replacements are part of the hash,
-// several spells can share a hash, so all candidates for a hash are considered rather than just one. An incoming spell
-// can match either an existing spell or an earlier incoming spell, so a template that itself contains two identical
-// entries collapses them into one just as it merges into what is already on the sheet.
-//
-// An incoming spell with an empty (but non-nil) tech level has it resolved to defaultTechLevel first, mirroring the
-// substitution performed on drop by the spells provider, so that re-applying a template merges rather than duplicating.
-func mergeSpellPoints(existing, incoming []*gurps.Spell, defaultTechLevel string, selMap map[tid.TID]bool) []*gurps.Spell {
-	spellMap := make(map[uint64][]*gurps.Spell)
-	gurps.Traverse(func(spell *gurps.Spell) bool {
-		hash := gurps.Hash64(spell)
-		spellMap[hash] = append(spellMap[hash], spell)
-		return false
-	}, true, true, existing...)
-	pruneMap := make(map[*gurps.Spell]bool)
-	gurps.Traverse(func(spell *gurps.Spell) bool {
-		if spell.TechLevel != nil && *spell.TechLevel == "" {
-			tl := defaultTechLevel
-			spell.TechLevel = &tl
-		}
-		hash := gurps.Hash64(spell)
-		matched := false
-		for _, s := range spellMap[hash] {
-			if !maps.Equal(s.Replacements, spell.Replacements) || !sameTechLevel(s.TechLevel, spell.TechLevel) {
-				continue
-			}
-			pruneMap[spell] = true
-			s.Points += spell.Points
-			selMap[s.ID()] = true
-			matched = true
-			break
-		}
-		if !matched {
-			// Register this surviving incoming spell so that any later identical incoming spell merges into it.
-			spellMap[hash] = append(spellMap[hash], spell)
-		}
-		return false
-	}, true, true, incoming...)
-	for spell := range pruneMap {
-		parent := spell.Parent()
-		if parent == nil {
-			incoming = slices.DeleteFunc(incoming, func(s *gurps.Spell) bool {
-				return s == spell
-			})
-		} else {
-			parent.Children = slices.DeleteFunc(parent.Children, func(s *gurps.Spell) bool {
-				return s == spell
-			})
+			parent.SetChildren(slices.DeleteFunc(parent.NodeChildren(), isItem))
 		}
 	}
 	return incoming
@@ -655,13 +610,13 @@ func mergeSpellPoints(existing, incoming []*gurps.Spell, defaultTechLevel string
 func MergeAddedRows[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	switch t := any(table).(type) {
 	case *unison.Table[*Node[*gurps.Skill]]:
-		mergeNewlySelectedRows(t, mergeSkillPoints)
+		mergeNewlySelectedRows(t)
 	case *unison.Table[*Node[*gurps.Spell]]:
-		mergeNewlySelectedRows(t, mergeSpellPoints)
+		mergeNewlySelectedRows(t)
 	}
 }
 
-func mergeNewlySelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], merge func(existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T) {
+func mergeNewlySelectedRows[T pointsMergeable[T]](table *unison.Table[*Node[T]]) {
 	sel := table.CopySelectionMap()
 	if len(sel) == 0 {
 		return
@@ -680,7 +635,7 @@ func mergeNewlySelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], merg
 		return
 	}
 	newSel := make(map[tid.TID]bool)
-	surviving := merge(existing, incoming, entityTechLevel(table), newSel)
+	surviving := mergePoints(existing, incoming, entityTechLevel(table), newSel)
 	if len(newSel) == 0 {
 		return // Nothing merged, so leave the table untouched.
 	}

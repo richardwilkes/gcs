@@ -36,6 +36,24 @@ func newTestSpell(name string, points fxp.Int, techLevel *string) *gurps.Spell {
 	return s
 }
 
+// TestResolveEmptyTechLevel verifies the tech level substitution shared by the drop handlers and the merge: only an
+// empty (but present) tech level is replaced, and one that is absent stays absent rather than being introduced.
+func TestResolveEmptyTechLevel(t *testing.T) {
+	c := check.New(t)
+
+	skill := newTestSkill("Guns", fxp.FromInteger(1), nil)
+	resolveEmptyTechLevel(skill, "3")
+	c.Nil(skill.TechLevel, "a skill without a TL must not gain one")
+
+	skill = newTestSkill("Guns", fxp.FromInteger(1), new(""))
+	resolveEmptyTechLevel(skill, "3")
+	c.Equal("3", *skill.TechLevel, "an empty TL must be replaced with the default")
+
+	spell := newTestSpell("Fireball", fxp.FromInteger(1), new("8"))
+	resolveEmptyTechLevel(spell, "3")
+	c.Equal("8", *spell.TechLevel, "a TL that is already set must be left alone")
+}
+
 // TestMergeSkillPoints verifies that applying a template's skills onto an existing set folds the points of identical
 // skills together, correctly distinguishing skills that differ only by tech level.
 func TestMergeSkillPoints(t *testing.T) {
@@ -45,7 +63,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Brawling", fxp.FromInteger(4), nil)}
 		incoming := []*gurps.Skill{newTestSkill("Brawling", fxp.FromInteger(2), nil)}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
 		c.Equal(fxp.FromInteger(6), existing[0].Points)
 		c.Equal(true, selMap[existing[0].ID()])
@@ -55,7 +73,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), new("8"))}
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("8"))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
 		c.Equal(fxp.FromInteger(6), existing[0].Points)
 	})
@@ -64,7 +82,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), new("8"))}
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("9"))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(1, len(remaining))
 		c.Equal(fxp.FromInteger(4), existing[0].Points)
 	})
@@ -75,7 +93,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), new("3"))}
 		incoming := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), new(""))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
 		c.Equal(fxp.FromInteger(2), existing[0].Points)
 		c.Equal(true, selMap[existing[0].ID()])
@@ -87,7 +105,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		var existing []*gurps.Skill
 		incoming := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), new(""))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(1, len(remaining))
 		c.Equal("3", *remaining[0].TechLevel)
 	})
@@ -102,7 +120,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		existing := []*gurps.Skill{existingTL9, existingTL8}
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("9"))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
 		c.Equal(fxp.FromInteger(4), existingTL8.Points)
 		c.Equal(fxp.FromInteger(3), existingTL9.Points)
@@ -115,7 +133,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), nil)}
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("8"))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(1, len(remaining))
 		c.Equal(fxp.FromInteger(4), existing[0].Points)
 	})
@@ -127,7 +145,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), nil)}
 		incoming[0].Replacements = map[string]string{"1": "Rifle"}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
 		c.Equal(fxp.FromInteger(6), existing[0].Points)
 	})
@@ -138,7 +156,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), nil)}
 		incoming[0].Replacements = map[string]string{"1": "Pistol"}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(1, len(remaining))
 		c.Equal(fxp.FromInteger(4), existing[0].Points)
 	})
@@ -151,7 +169,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		second := newTestSkill("Administration", fxp.FromInteger(1), nil)
 		second.Replacements = map[string]string{"what": "Empire"}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(nil, []*gurps.Skill{first, second}, "3", selMap)
+		remaining := mergePoints(nil, []*gurps.Skill{first, second}, "3", selMap)
 		c.Equal(1, len(remaining))
 		c.Equal(first, remaining[0])
 		c.Equal(fxp.FromInteger(2), first.Points)
@@ -163,7 +181,7 @@ func TestMergeSkillPoints(t *testing.T) {
 		second := newTestSkill("Administration", fxp.FromInteger(1), nil)
 		second.Replacements = map[string]string{"what": "Guild"}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSkillPoints(nil, []*gurps.Skill{first, second}, "3", selMap)
+		remaining := mergePoints(nil, []*gurps.Skill{first, second}, "3", selMap)
 		c.Equal(2, len(remaining))
 	})
 }
@@ -176,7 +194,7 @@ func TestMergeSpellPoints(t *testing.T) {
 		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(4), new("3"))}
 		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(2), new("3"))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSpellPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
 		c.Equal(fxp.FromInteger(6), existing[0].Points)
 	})
@@ -189,7 +207,7 @@ func TestMergeSpellPoints(t *testing.T) {
 		existing := []*gurps.Spell{existingTL4, existingTL3}
 		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(2), new("4"))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSpellPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
 		c.Equal(fxp.FromInteger(4), existingTL3.Points)
 		c.Equal(fxp.FromInteger(3), existingTL4.Points)
@@ -199,7 +217,7 @@ func TestMergeSpellPoints(t *testing.T) {
 		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(1), new("3"))}
 		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(1), new(""))}
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSpellPoints(existing, incoming, "3", selMap)
+		remaining := mergePoints(existing, incoming, "3", selMap)
 		c.Equal(0, len(remaining))
 		c.Equal(fxp.FromInteger(2), existing[0].Points)
 	})
@@ -208,7 +226,7 @@ func TestMergeSpellPoints(t *testing.T) {
 		first := newTestSpell("Fireball", fxp.FromInteger(1), nil)
 		second := newTestSpell("Fireball", fxp.FromInteger(1), nil)
 		selMap := make(map[tid.TID]bool)
-		remaining := mergeSpellPoints(nil, []*gurps.Spell{first, second}, "3", selMap)
+		remaining := mergePoints(nil, []*gurps.Spell{first, second}, "3", selMap)
 		c.Equal(1, len(remaining))
 		c.Equal(first, remaining[0])
 		c.Equal(fxp.FromInteger(2), first.Points)
