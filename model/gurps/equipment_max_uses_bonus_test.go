@@ -111,17 +111,13 @@ func TestEquipmentMaxUsesBonusEquipmentWithName(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	potion := NewEquipment(e, nil, false)
-	potion.Name = "Potion"
+	potion := addCarriedEquipmentWithFeatures(e, "Potion")
 	potion.Tags = []string{"Consumable"}
 	potion.MaxUses = 5
-	e.CarriedEquipment = append(e.CarriedEquipment, potion)
 
-	sword := NewEquipment(e, nil, false)
-	sword.Name = "Sword"
+	sword := addCarriedEquipmentWithFeatures(e, "Sword")
 	sword.Tags = []string{"Weapon"}
 	sword.MaxUses = 5
-	e.CarriedEquipment = append(e.CarriedEquipment, sword)
 
 	// A trait grants +2 max uses to consumables named "Potion".
 	bonus := newMaxUsesBonus(equipmentsel.EquipmentWithName, "+2")
@@ -129,9 +125,7 @@ func TestEquipmentMaxUsesBonusEquipmentWithName(t *testing.T) {
 	bonus.NameCriteria.Qualifier = "Potion"
 	bonus.TagsCriteria.Compare = criteria.IsText
 	bonus.TagsCriteria.Qualifier = "Consumable"
-	trait := NewTrait(e, nil, false)
-	trait.Features = append(trait.Features, bonus)
-	e.Traits = append(e.Traits, trait)
+	trait := addTraitWithFeatures(e, "", bonus)
 	e.Recalculate()
 
 	c.Equal(7, potion.ResolvedMaxUses(), "matching name + tag receives the bonus")

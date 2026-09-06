@@ -183,9 +183,7 @@ func addTagMatchingSkillBonus(e *Entity, tag string, amount fxp.Int) {
 	bonus.NameCriteria.Compare = criteria.AnyText
 	bonus.TagsCriteria = textCriteria(criteria.IsText, tag)
 	bonus.Amount = amount
-	trait := NewTrait(e, nil, false)
-	trait.Features = append(trait.Features, bonus)
-	e.Traits = append(e.Traits, trait)
+	addTraitWithFeatures(e, "", bonus)
 }
 
 // TestSkillDefaultRemovesBonusUsingOtherSkillsTags verifies that the skill bonus baked into a default's level is undone

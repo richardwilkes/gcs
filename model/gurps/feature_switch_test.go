@@ -369,23 +369,17 @@ func TestEntityGatesSwitchableFeatures(t *testing.T) {
 		{
 			name: "trait",
 			setup: func(e *Entity, features Features) FeatureSwitcher {
-				trait := NewTrait(e, nil, false)
-				trait.Name = "Gadget"
-				trait.Features = features
-				e.Traits = append(e.Traits, trait)
-				return trait
+				return addTraitWithFeatures(e, "Gadget", features...)
 			},
 		},
 		{
 			name: "trait modifier",
 			setup: func(e *Entity, features Features) FeatureSwitcher {
-				trait := NewTrait(e, nil, false)
-				trait.Name = "Gadget"
+				trait := addTraitWithFeatures(e, "Gadget")
 				mod := NewTraitModifier(e, nil, false)
 				mod.Name = "Enhanced"
 				mod.Features = features
 				trait.Modifiers = []*TraitModifier{mod}
-				e.Traits = append(e.Traits, trait)
 				return trait
 			},
 		},
@@ -414,23 +408,17 @@ func TestEntityGatesSwitchableFeatures(t *testing.T) {
 		{
 			name: "carried equipment",
 			setup: func(e *Entity, features Features) FeatureSwitcher {
-				eqp := NewEquipment(e, nil, false)
-				eqp.Name = "Amulet"
-				eqp.Features = features
-				e.CarriedEquipment = append(e.CarriedEquipment, eqp)
-				return eqp
+				return addCarriedEquipmentWithFeatures(e, "Amulet", features...)
 			},
 		},
 		{
 			name: "equipment modifier",
 			setup: func(e *Entity, features Features) FeatureSwitcher {
-				eqp := NewEquipment(e, nil, false)
-				eqp.Name = "Amulet"
+				eqp := addCarriedEquipmentWithFeatures(e, "Amulet")
 				mod := NewEquipmentModifier(e, nil, false)
 				mod.Name = "Blessed"
 				mod.Features = features
 				eqp.Modifiers = []*EquipmentModifier{mod}
-				e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 				return eqp
 			},
 		},
@@ -477,10 +465,7 @@ func TestSwitchableSkillBonus(t *testing.T) {
 	switched.Amount = fxp.Two
 	switched.Switchable = true
 
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Gadget"
-	trait.Features = Features{always, switched}
-	e.Traits = append(e.Traits, trait)
+	trait := addTraitWithFeatures(e, "Gadget", always, switched)
 	e.Recalculate()
 
 	off := skill.LevelData.Level
@@ -516,10 +501,7 @@ func TestSwitchableReactionsAndConditionalModifiers(t *testing.T) {
 	switchedMod.Amount = fxp.Two
 	switchedMod.Switchable = true
 
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Gadget"
-	trait.Features = Features{alwaysReaction, switchedReaction, alwaysMod, switchedMod}
-	e.Traits = append(e.Traits, trait)
+	trait := addTraitWithFeatures(e, "Gadget", alwaysReaction, switchedReaction, alwaysMod, switchedMod)
 	e.Recalculate()
 
 	situations := func(list []*ConditionalModifier) []string {
@@ -692,14 +674,11 @@ func TestSwitchableWeaponLocalBonuses(t *testing.T) {
 	skillBonus.Amount = fxp.Two
 	skillBonus.Switchable = true
 
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Gadget"
-	trait.Features = Features{accBonus, skillBonus}
+	trait := addTraitWithFeatures(e, "Gadget", accBonus, skillBonus)
 	w := NewWeapon(trait, false)
 	w.Accuracy = ParseWeaponAccuracy("3")
 	w.Defaults = []*SkillDefault{{DefaultType: DexterityID}}
 	trait.Weapons = []*Weapon{w}
-	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
 
 	c.Equal("3", w.Accuracy.Resolve(w, nil).String(), "a switchable weapon bonus is ignored while the switch is off")
@@ -722,8 +701,7 @@ func TestSwitchableWeaponBonusFromModifier(t *testing.T) {
 	accBonus.Amount = fxp.Two
 	accBonus.Switchable = true
 
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Gadget"
+	trait := addTraitWithFeatures(e, "Gadget")
 	mod := NewTraitModifier(e, nil, false)
 	mod.Name = "Scoped"
 	mod.Features = Features{accBonus}
@@ -731,7 +709,6 @@ func TestSwitchableWeaponBonusFromModifier(t *testing.T) {
 	w := NewWeapon(trait, false)
 	w.Accuracy = ParseWeaponAccuracy("3")
 	trait.Weapons = []*Weapon{w}
-	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
 
 	c.Equal("3", w.Accuracy.Resolve(w, nil).String(),
@@ -760,10 +737,7 @@ func TestSwitchableThisArmorDRBonus(t *testing.T) {
 	thisArmor.Specialization = AllID
 	thisArmor.Amount = fxp.One
 
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Mail Hauberk"
-	eqp.Features = Features{located, thisArmor}
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	eqp := addCarriedEquipmentWithFeatures(e, "Mail Hauberk", located, thisArmor)
 	e.Recalculate()
 
 	c.Equal(0, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
@@ -799,14 +773,11 @@ func TestSwitchableThisArmorDRBonusFromModifier(t *testing.T) {
 	modLocated.Amount = fxp.Four
 	modLocated.Switchable = true
 
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Mail Hauberk"
-	eqp.Features = Features{alwaysLocated, thisArmor}
+	eqp := addCarriedEquipmentWithFeatures(e, "Mail Hauberk", alwaysLocated, thisArmor)
 	mod := NewEquipmentModifier(e, nil, false)
 	mod.Name = "Sleeves"
 	mod.Features = Features{modLocated}
 	eqp.Modifiers = []*EquipmentModifier{mod}
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 	e.Recalculate()
 
 	c.Equal(3, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
@@ -828,18 +799,14 @@ func TestScriptSwitchedOn(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Gadget"
-	e.Traits = append(e.Traits, trait)
+	trait := addTraitWithFeatures(e, "Gadget")
 	skill := NewSkill(e, nil, false)
 	skill.Name = "Brawling"
 	e.Skills = append(e.Skills, skill)
 	spell := NewSpell(e, nil, false)
 	spell.Name = "Fireball"
 	e.Spells = append(e.Spells, spell)
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Amulet"
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	eqp := addCarriedEquipmentWithFeatures(e, "Amulet")
 	e.Recalculate()
 
 	for _, one := range []struct {
@@ -892,10 +859,7 @@ func TestLegacyExportSkipsSwitchedOffDRBonuses(t *testing.T) {
 	bonus.Amount = fxp.Four
 	bonus.Switchable = true
 
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Mail Hauberk"
-	eqp.Features = Features{bonus}
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	eqp := addCarriedEquipmentWithFeatures(e, "Mail Hauberk", bonus)
 	e.Recalculate()
 
 	ex := &legacyExporter{entity: e}
@@ -1072,11 +1036,8 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 	// Both constructors put what they build into the entity's carried equipment list, since that is where an item has
 	// to live for the character to collect anything from it at all.
 	item := func(features ...Feature) *Equipment {
-		eqp := NewEquipment(e, nil, false)
-		eqp.Name = "Amulet"
+		eqp := addCarriedEquipmentWithFeatures(e, "Amulet", features...)
 		eqp.Equipped = false
-		eqp.Features = features
-		e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 		return eqp
 	}
 	withWeapon := func(eqp *Equipment) *Equipment {
@@ -1320,13 +1281,7 @@ func TestTraitSwitchCellDimming(t *testing.T) {
 		bonus.Switchable = true
 		return bonus
 	}
-	trait := func(features ...Feature) *Trait {
-		one := NewTrait(e, nil, false)
-		one.Name = "Gadget"
-		one.Features = features
-		e.Traits = append(e.Traits, one)
-		return one
-	}
+	trait := func(features ...Feature) *Trait { return addTraitWithFeatures(e, "Gadget", features...) }
 	inContainer := func(one *Trait) *Trait {
 		parent := NewTrait(e, nil, true)
 		parent.Name = "Gadgets"
@@ -1438,11 +1393,8 @@ func TestThisArmorDRBonusExpansionKeepsSwitchable(t *testing.T) {
 		thisArmor.Specialization = "crushing"
 		thisArmor.Amount = fxp.One
 		thisArmor.Switchable = switchable
-		eqp := NewEquipment(e, nil, false)
-		eqp.Name = "Mail Hauberk"
-		eqp.Features = Features{located, thisArmor}
+		eqp := addCarriedEquipmentWithFeatures(e, "Mail Hauberk", located, thisArmor)
 		eqp.SwitchedOn = true
-		e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 		e.Recalculate()
 
 		var expanded *DRBonus

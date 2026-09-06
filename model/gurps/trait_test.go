@@ -47,15 +47,12 @@ func TestTraitLevelSelfReferentialBonus(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Growth"
-	trait.CanLevel = true
-	trait.Levels = fxp.Two
 	bonus := NewTraitBonus()
 	bonus.NameCriteria.Qualifier = "Growth"
 	bonus.PerLevel = true
-	trait.Features = append(trait.Features, bonus)
-	e.Traits = append(e.Traits, trait)
+	trait := addTraitWithFeatures(e, "Growth", bonus)
+	trait.CanLevel = true
+	trait.Levels = fxp.Two
 	e.Recalculate()
 
 	// 2 base levels + 1 per level, where the per-level scaling falls back to the unadjusted 2 levels.
@@ -68,25 +65,20 @@ func TestTraitLevelMutuallyReferentialBonuses(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	first := NewTrait(e, nil, false)
-	first.Name = "First"
-	first.CanLevel = true
-	first.Levels = fxp.One
 	firstBonus := NewTraitBonus()
 	firstBonus.NameCriteria.Qualifier = "Second"
 	firstBonus.PerLevel = true
-	first.Features = append(first.Features, firstBonus)
+	first := addTraitWithFeatures(e, "First", firstBonus)
+	first.CanLevel = true
+	first.Levels = fxp.One
 
-	second := NewTrait(e, nil, false)
-	second.Name = "Second"
-	second.CanLevel = true
-	second.Levels = fxp.One
 	secondBonus := NewTraitBonus()
 	secondBonus.NameCriteria.Qualifier = "First"
 	secondBonus.PerLevel = true
-	second.Features = append(second.Features, secondBonus)
+	second := addTraitWithFeatures(e, "Second", secondBonus)
+	second.CanLevel = true
+	second.Levels = fxp.One
 
-	e.Traits = append(e.Traits, first, second)
 	e.Recalculate()
 
 	// Resolving either one drops the other's per-level scaling back to its unadjusted level: 1 + 1*(1 + 1*1) = 3.
@@ -154,13 +146,10 @@ func TestTraitModifierCostUsesPurchasedLevels(t *testing.T) {
 
 	// A TraitBonus grants 2 free levels. Those raise the trait's current level, but not what was paid for, so neither
 	// the leveled base cost nor the enhancement may move.
-	granter := NewTrait(e, nil, false)
-	granter.Name = "Granter"
 	bonus := NewTraitBonus()
 	bonus.NameCriteria.Qualifier = "Innate Attack"
 	bonus.Amount = fxp.Two
-	granter.Features = append(granter.Features, bonus)
-	e.Traits = append(e.Traits, granter)
+	addTraitWithFeatures(e, "Granter", bonus)
 	e.Recalculate()
 
 	c.Equal(fxp.Five, trait.CurrentLevel(), "the bonus raises the trait's current level to 5")

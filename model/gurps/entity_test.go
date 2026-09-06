@@ -107,9 +107,7 @@ func TestEntityAttributeBonus(t *testing.T) {
 	c.Equal(fxp.Int(0), e.ThrowingStrengthBonus, "Throwing ST Bonus default")
 
 	bonus := NewAttributeBonus("st")
-	trait := NewTrait(e, nil, false)
-	trait.Features = append(trait.Features, bonus)
-	e.Traits = append(e.Traits, trait)
+	trait := addTraitWithFeatures(e, "", bonus)
 	e.Recalculate()
 	c.Equal(fxp.Eleven, e.Attributes.Current("st"), "ST; simple +1 bonus")
 
@@ -144,16 +142,13 @@ func TestEntityAttributeBonus(t *testing.T) {
 func TestEntityThisArmorDRBonus(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Mail Hauberk"
-	eqp.Features = Features{
+	addCarriedEquipmentWithFeatures(e, "Mail Hauberk",
 		newTestDRBonus(fxp.Four, AllID, TorsoID, "vitals"),
 		newTestDRBonus(fxp.Two, AllID, "vitals"),  // repeats a location the bonus above already covers
 		newTestDRBonus(fxp.Three, AllID, "Torso"), // repeats a location, but with a different case
 		newTestDRBonus(fxp.Five, "piercing", "arm"),
 		newTestDRBonus(fxp.One, AllID), // no locations, i.e. "this armor"
-	}
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	)
 	e.Recalculate()
 
 	drMap := e.AddDRBonusesFor(TorsoID, nil, nil)
@@ -186,12 +181,10 @@ func newTestDRBonus(amount fxp.Int, specialization string, locations ...string) 
 func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Mail Hauberk"
-	eqp.Features = Features{
+	eqp := addCarriedEquipmentWithFeatures(e, "Mail Hauberk",
 		newTestDRBonus(fxp.Four, AllID, TorsoID),
 		newTestDRBonus(fxp.One, AllID), // no locations, i.e. "this armor"
-	}
+	)
 	mod := NewEquipmentModifier(e, nil, false)
 	mod.Name = "Sleeves"
 	mod.Features = Features{
@@ -199,7 +192,6 @@ func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
 		newTestDRBonus(fxp.Three, AllID, "Torso"), // repeats a location the equipment covers, with a different case
 	}
 	eqp.Modifiers = []*EquipmentModifier{mod}
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 	e.Recalculate()
 
 	c.Equal(8, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
@@ -217,9 +209,7 @@ func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
 	// The reverse direction: the "this armor" bonus lives on the modifier, so it must expand onto both the
 	// equipment's own locations and those of the modifiers.
 	e = NewEntity()
-	eqp = NewEquipment(e, nil, false)
-	eqp.Name = "Mail Hauberk"
-	eqp.Features = Features{newTestDRBonus(fxp.Four, AllID, TorsoID)}
+	eqp = addCarriedEquipmentWithFeatures(e, "Mail Hauberk", newTestDRBonus(fxp.Four, AllID, TorsoID))
 	mod = NewEquipmentModifier(e, nil, false)
 	mod.Name = "Sleeves"
 	mod.Features = Features{
@@ -227,7 +217,6 @@ func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
 		newTestDRBonus(fxp.One, AllID), // no locations, i.e. "this armor"
 	}
 	eqp.Modifiers = []*EquipmentModifier{mod}
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 	e.Recalculate()
 
 	c.Equal(5, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
@@ -263,9 +252,7 @@ func addConditionalModifier(e *Entity, situation string, amt fxp.Int) {
 	bonus := NewConditionalModifierBonus()
 	bonus.Situation = situation
 	bonus.Amount = amt
-	trait := NewTrait(e, nil, false)
-	trait.Features = append(trait.Features, bonus)
-	e.Traits = append(e.Traits, trait)
+	addTraitWithFeatures(e, "", bonus)
 }
 
 // TestEntityProcessPrereqsClearsUnsatisfiedReasonWhenDisabled verifies that disabling a trait (directly or by
@@ -370,13 +357,10 @@ func TestEntityReactionsUseResolvedSelfControl(t *testing.T) {
 
 	// The converse: a trait with a non-reaction adjustment that is overridden into one must gain the reaction.
 	e = NewEntity()
-	trait = NewTrait(e, nil, false)
-	trait.Name = "Bad Temper"
+	trait = addTraitWithFeatures(e, "Bad Temper", newTraitSelectorOverride(selector.TraitSelfControlAdjustment,
+		"Bad Temper", selfctrl.ReactionPenalty.Key()))
 	trait.SelfControl = selfctrl.CR9
 	trait.SelfControlAdj = selfctrl.NoAdjustment
-	trait.Features = append(trait.Features, newTraitSelectorOverride(selector.TraitSelfControlAdjustment, "Bad Temper",
-		selfctrl.ReactionPenalty.Key()))
-	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
 	reactions = e.Reactions()
 	c.Equal(1, len(reactions), "overriding the adjustment into a reaction penalty adds the reaction")

@@ -64,10 +64,7 @@ func TestEntityDRBonusSpecializationUsesReplacements(t *testing.T) {
 	c.Equal(0, drMap[AllID], "nothing lands under 'all'")
 
 	// A second trait carrying the same marker, but with no replacement to answer it, must remain distinguishable.
-	unresolved := NewTrait(e, nil, false)
-	unresolved.Name = "Damage Resistance"
-	unresolved.Features = Features{newTestDRBonus(fxp.Two, "@Damage Type@", TorsoID)}
-	e.Traits = append(e.Traits, unresolved)
+	addTraitWithFeatures(e, "Damage Resistance", newTestDRBonus(fxp.Two, "@Damage Type@", TorsoID))
 	e.Recalculate()
 
 	drMap = e.AddDRBonusesFor(TorsoID, nil, nil)
@@ -93,14 +90,11 @@ func TestDRBonusTooltipUsesResolvedSpecialization(t *testing.T) {
 func TestThisArmorDRBonusResolvesSpecialization(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Cloak of Winter"
-	eqp.Replacements = map[string]string{"Damage Type": "Cold"}
-	eqp.Features = Features{
+	eqp := addCarriedEquipmentWithFeatures(e, "Cloak of Winter",
 		newTestDRBonus(fxp.Four, AllID, TorsoID),
 		newTestDRBonus(fxp.One, "@Damage Type@"), // no locations, i.e. "this armor"
-	}
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	)
+	eqp.Replacements = map[string]string{"Damage Type": "Cold"}
 	e.Recalculate()
 
 	drMap := e.AddDRBonusesFor(TorsoID, nil, nil)
@@ -113,11 +107,8 @@ func TestThisArmorDRBonusResolvesSpecialization(t *testing.T) {
 // the trait are returned, since callers need the trait to alter its replacements.
 func newTestEntityWithDRTrait(bonus *DRBonus, replacements map[string]string) (*Entity, *Trait) {
 	e := NewEntity()
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Damage Resistance"
+	trait := addTraitWithFeatures(e, "Damage Resistance", bonus)
 	trait.Replacements = replacements
-	trait.Features = Features{bonus}
-	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
 	return e, trait
 }

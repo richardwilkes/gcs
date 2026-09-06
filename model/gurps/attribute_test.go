@@ -23,11 +23,7 @@ func newAttrBonusTrait(e *Entity, name, attrID string, amount fxp.Int, limitatio
 	bonus := NewAttributeBonus(attrID)
 	bonus.Amount = amount
 	bonus.Limitation = limitation
-	trait := NewTrait(e, nil, false)
-	trait.Name = name
-	trait.Features = Features{bonus}
-	e.Traits = append(e.Traits, trait)
-	return trait
+	return addTraitWithFeatures(e, name, bonus)
 }
 
 // TestAttributeBonusTooltipListsSources verifies that the tooltip names each source of an attribute bonus along with
@@ -47,10 +43,8 @@ func TestAttributeBonusTooltipListsSources(t *testing.T) {
 	mod := NewEquipmentModifier(e, nil, false)
 	mod.Name = "AR software"
 	mod.Features = Features{modBonus}
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Smart Gloves"
+	eqp := addCarriedEquipmentWithFeatures(e, "Smart Gloves")
 	eqp.Modifiers = []*EquipmentModifier{mod}
-	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nIncreased Strength [+2]\nSmart Gloves (AR software) [+1]", st.BonusTooltip(),
@@ -152,12 +146,9 @@ func TestAttributeBonusTooltipPerLevel(t *testing.T) {
 	bonus := NewAttributeBonus(StrengthID)
 	bonus.Amount = fxp.One
 	bonus.PerLevel = true
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Visual Enhancement"
+	trait := addTraitWithFeatures(e, "Visual Enhancement", bonus)
 	trait.CanLevel = true
 	trait.Levels = fxp.Three
-	trait.Features = Features{bonus}
-	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nVisual Enhancement 3 [+3 (+1 per level)]",
 		e.Attributes.Set[StrengthID].BonusTooltip(), "a per-level bonus shows its total and its rate")

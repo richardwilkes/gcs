@@ -43,11 +43,7 @@ func addTestRitualMagicSpell(e *Entity, name string, colleges ...string) *Spell 
 func addTestSpellBonus(e *Entity, amount fxp.Int) *Trait {
 	bonus := NewSpellBonus()
 	bonus.Amount = amount
-	t := NewTrait(e, nil, false)
-	t.Name = "Magery"
-	t.Features = Features{bonus}
-	e.Traits = append(e.Traits, t)
-	return t
+	return addTraitWithFeatures(e, "Magery", bonus)
 }
 
 // TestSpellAdjustedRelativeLevel verifies that AdjustedRelativeLevel returns the cached relative level for a positive

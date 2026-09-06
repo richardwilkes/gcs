@@ -223,53 +223,40 @@ func TestLegacyExportHitLocationEquipment(t *testing.T) {
 	e := NewEntity()
 
 	// Two DR bonuses that both reach the torso; the item must still only be listed once.
-	plate := NewEquipment(e, nil, false)
-	plate.Name = "Plate Armor"
-	plate.Features = Features{
+	addCarriedEquipmentWithFeatures(e, "Plate Armor",
 		newTestDRBonus(fxp.Two, AllID, TorsoID),
 		newTestDRBonus(fxp.One, AllID, "Torso"), // the same location, with a different case
-	}
+	)
 
 	// DR that only reaches the skull through an enabled modifier.
-	helm := NewEquipment(e, nil, false)
-	helm.Name = "Helmet"
+	helm := addCarriedEquipmentWithFeatures(e, "Helmet")
 	helm.Modifiers = append(helm.Modifiers, newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID,
 		"skull")))
 
 	// A disabled modifier contributes nothing, exactly as it does when features are collected.
-	cloak := NewEquipment(e, nil, false)
-	cloak.Name = "Cloak"
+	cloak := addCarriedEquipmentWithFeatures(e, "Cloak")
 	disabled := newTestDRBonusModifier(e, "Hood", newTestDRBonus(fxp.Five, AllID, "skull"))
 	disabled.Disabled = true
 	cloak.Modifiers = append(cloak.Modifiers, disabled)
 
 	// Switchable bonuses, on the item and on one of its modifiers, only count while the item's switch is on.
-	cape := NewEquipment(e, nil, false)
-	cape.Name = "Cape"
 	switchable := newTestDRBonus(fxp.Seven, AllID, "skull")
 	switchable.Switchable = true
-	cape.Features = Features{switchable}
+	cape := addCarriedEquipmentWithFeatures(e, "Cape", switchable)
 	switchableOnMod := newTestDRBonus(fxp.Nine, AllID, "skull")
 	switchableOnMod.Switchable = true
 	cape.Modifiers = append(cape.Modifiers, newTestDRBonusModifier(e, "Lining", switchableOnMod))
 
 	// A "this armor" bonus needs no examination of its own: it covers the locations the item's and its modifiers'
 	// located bonuses name, and those are what get scanned, so the modifier's skull bonus is what lists the robe.
-	robe := NewEquipment(e, nil, false)
-	robe.Name = "Robe"
-	robe.Features = Features{newTestDRBonus(fxp.Six, AllID)} // no locations, i.e. "this armor"
+	robe := addCarriedEquipmentWithFeatures(e, "Robe", newTestDRBonus(fxp.Six, AllID)) // no locations, i.e. "this armor"
 	robe.Modifiers = append(robe.Modifiers, newTestDRBonusModifier(e, "Cowl", newTestDRBonus(fxp.One, AllID, "skull")))
 
 	// Neither an unequipped carried item nor an item in the other equipment list contributes DR to the character.
-	stowed := NewEquipment(e, nil, false)
-	stowed.Name = "Stowed Helm"
-	stowed.Equipped = false
-	stowed.Features = Features{newTestDRBonus(fxp.Eight, AllID, "skull")}
+	addCarriedEquipmentWithFeatures(e, "Stowed Helm", newTestDRBonus(fxp.Eight, AllID, "skull")).Equipped = false
 	spare := NewEquipment(e, nil, false)
 	spare.Name = "Spare Helm"
 	spare.Features = Features{newTestDRBonus(fxp.Eight, AllID, "skull")}
-
-	e.CarriedEquipment = append(e.CarriedEquipment, plate, helm, cloak, cape, robe, stowed)
 	e.OtherEquipment = append(e.OtherEquipment, spare)
 	e.Recalculate()
 

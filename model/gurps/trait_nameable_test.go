@@ -29,15 +29,13 @@ func TestTraitLevelBonusUsesResolvedName(t *testing.T) {
 	talent.Replacements = map[string]string{"which": "Rifle"}
 	talent.CanLevel = true
 	talent.Levels = fxp.Two
+	e.Traits = append(e.Traits, talent)
 
 	// A separate trait that grants +1 level to "Talent (Rifle)".
-	source := NewTrait(e, nil, false)
-	source.Name = "Bonus Source"
 	bonus := NewTraitBonus()
 	bonus.NameCriteria.Qualifier = "Talent (Rifle)"
-	source.Features = append(source.Features, bonus)
+	addTraitWithFeatures(e, "Bonus Source", bonus)
 
-	e.Traits = append(e.Traits, talent, source)
 	e.Recalculate()
 	c.Equal(fxp.Three, talent.CurrentLevel(), "a TraitBonus on the resolved name should raise level 2 -> 3")
 

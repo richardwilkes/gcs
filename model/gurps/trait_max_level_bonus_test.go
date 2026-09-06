@@ -106,9 +106,7 @@ func TestTraitMaxLevelBonusTraitWithName(t *testing.T) {
 	bonus := newMaxLevelBonus(traitsel.TraitWithName, "+5")
 	bonus.NameCriteria.Compare = criteria.IsText
 	bonus.NameCriteria.Qualifier = "Strength"
-	granter := NewTrait(e, nil, false)
-	granter.Features = append(granter.Features, bonus)
-	e.Traits = append(e.Traits, granter)
+	granter := addTraitWithFeatures(e, "", bonus)
 	e.Recalculate()
 
 	c.Equal(fxp.FromInteger(25), strength.ResolvedMaxLevels(), "matching name receives the bonus")
@@ -192,9 +190,7 @@ func TestTraitMaxLevelBonusBroadScopeLeavesUncappedTraitsAlone(t *testing.T) {
 	// A bonus that matches anything grants +2 maximum levels.
 	bonus := newMaxLevelBonus(traitsel.TraitWithName, "+2")
 	bonus.NameCriteria.Compare = criteria.AnyText
-	granter := NewTrait(e, nil, false)
-	granter.Features = append(granter.Features, bonus)
-	e.Traits = append(e.Traits, granter)
+	addTraitWithFeatures(e, "", bonus)
 	e.Recalculate()
 
 	c.Equal(fxp.FromInteger(7), capped.ResolvedMaxLevels(), "a declared maximum of 5 is raised to 7")
