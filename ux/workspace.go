@@ -576,14 +576,7 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	// display's clamp along, leaving the window shorter than its content asked for even though its eventual display
 	// had the room.
 	wnd.PackWithLocation(frame.Point)
-	wndFrame := wnd.FrameRect()
-	frame.Y += (frame.Height - wndFrame.Height) / 3
-	frame.Height = wndFrame.Height
-	frame.X += (frame.Width - wndFrame.Width) / 2
-	frame.Width = wndFrame.Width
-	frame = frame.Align()
-	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
-	wnd.ToFront()
+	placeWindowOver(wnd, frame)
 	return wnd, nil
 }
 

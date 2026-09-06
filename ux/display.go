@@ -49,3 +49,16 @@ func windowPlacementFrame() geom.Rect {
 	}
 	return primaryDisplayUsableRect()
 }
+
+// placeWindowOver moves wnd, which must already be packed, so that it is centered horizontally over frame and sits one
+// third of the way down it, clamps the result onto the display it best fits, and brings it to the front. Packing is
+// left to the caller because it is what fixes the window's size, and some callers must pack at a particular location
+// (see NewWindowForDockable).
+func placeWindowOver(wnd *unison.Window, frame geom.Rect) {
+	r := wnd.FrameRect()
+	r.X = frame.X + (frame.Width-r.Width)/2
+	r.Y = frame.Y + (frame.Height-r.Height)/3
+	r = r.Align()
+	wnd.SetFrameRect(unison.BestDisplayForRect(r).FitRectOnto(r))
+	wnd.ToFront()
+}

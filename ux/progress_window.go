@@ -55,14 +55,7 @@ func newProgressWindow(windowTitle, labelTitle string, bar *unison.ProgressBar, 
 	}
 	wnd.SetContent(content)
 	wnd.Pack()
-	wndFrame := wnd.FrameRect()
-	frame.Y += (frame.Height - wndFrame.Height) / 3
-	frame.Height = wndFrame.Height
-	frame.X += (frame.Width - wndFrame.Width) / 2
-	frame.Width = wndFrame.Width
-	frame = frame.Align()
-	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
-	wnd.ToFront()
+	placeWindowOver(wnd, frame)
 	return wnd, label, nil
 }
 
