@@ -14,7 +14,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -86,65 +85,10 @@ func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*Node[*gurps.
 }
 
 func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
-	return &AltDropSupport{
-		DragKey: equipmentModifierDragKey,
-		Drop: func(rowIndexes []int, data any) {
-			if tableDragData, ok := data.(*unison.TableDragData[*Node[*gurps.EquipmentModifier]]); ok {
-				// Every target is resolved up front, since the rebuild below replaces this table with a new one --
-				// leaving this very table an orphan whose rows are no longer the ones on screen -- so the row indexes
-				// only mean something before it runs. The sync in between is harmless: attaching modifiers adds and
-				// removes no rows and changes no disclosure, so it rebuilds the row cache with the same rows in the
-				// same order.
-				targets := make([]*gurps.Equipment, 0, len(rowIndexes))
-				for _, rowIndex := range rowIndexes {
-					if row := p.table.RowFromIndex(rowIndex); row != nil {
-						targets = append(targets, row.Data())
-					}
-				}
-				if len(targets) == 0 {
-					return
-				}
-				dataOwner := p.DataOwner()
-				libraryFile := libraryFileFromTable(tableDragData.Table)
-				// Each target has to be given its own clones. They are separate modifiers from here on -- enabled,
-				// renamed and edited independently -- so sharing one set among the targets would tie them together.
-				// The clones are kept grouped by target for the nameables prompt below, which would otherwise show the
-				// copies of one modifier as a run of identically titled sections with nothing to say which item each
-				// belongs to.
-				groups := make([]NameableGroup[*gurps.EquipmentModifier], 0, len(targets))
-				for _, target := range targets {
-					clones := make([]*gurps.EquipmentModifier, 0, len(tableDragData.Rows))
-					for _, row := range tableDragData.Rows {
-						clones = append(clones, row.Data().Clone(libraryFile, dataOwner, nil, gurps.Reference))
-					}
-					target.Modifiers = append(target.Modifiers, clones...)
-					groups = append(groups, NameableGroup[*gurps.EquipmentModifier]{Label: target.String(), Rows: clones})
-				}
-				p.table.SyncToModel()
-				if !xreflect.IsNil(dataOwner) {
-					if entity := dataOwner.OwningEntity(); entity != nil {
-						// Rebuilding is also what reports the drop when the rows belong to an entity (see
-						// dropRebuilder), so the owner is rebuilt as modified rather than just rebuilt.
-						rebuildAsModified(dropRebuilder(p.table), true)
-						// That rebuild can have replaced this very list: an enabled modifier carrying a
-						// switchable feature gives the rows it was dropped onto switchable features, which brings
-						// the switch column into view, and a list can only change its columns by building a new
-						// table. p belongs to the list that was replaced and its table field is never updated, so
-						// each prompt below has to be aimed at the table that took its place -- an orphan has no
-						// Rebuildable above it, so the rebuild its answer asks for would silently be skipped. The
-						// lookup is made twice because answering the modifier prompt rebuilds as well, which can
-						// replace the list a second time.
-						//
-						// The modifier prompt has to be given the rows the modifiers were dropped onto, since
-						// modifiers themselves aren't something ProcessModifiers can process, and only the
-						// topmost of them, since it walks each row's descendants as well.
-						ProcessModifiers(liveTable(p.table), minimalNodes(targets))
-						ProcessNameableGroups(liveTable(p.table), groups)
-					}
-				}
-			}
-		},
-	}
+	return modifierAltDropSupport(&p.listProvider, equipmentModifierDragKey,
+		func(target *gurps.Equipment, clones []*gurps.EquipmentModifier) {
+			target.Modifiers = append(target.Modifiers, clones...)
+		})
 }
 
 func (p *equipmentProvider) ItemNames() (singular, plural string) {

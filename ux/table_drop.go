@@ -64,6 +64,71 @@ func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int)
 	return []int{hovered}
 }
 
+// modifierAltDropSupport returns the alternate drop support for a provider whose rows carry modifiers -- traits and
+// equipment -- which attaches the dragged modifiers to the rows they are dropped onto. attach is given each target
+// row along with the clones of the dragged modifiers that are that row's to keep, and appends them to the row's
+// modifiers. The provider is consulted for its table at drop time rather than up front, since the table is assigned
+// after the provider is built.
+func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T], dragKey *uti.DataType, attach func(target T, clones []M)) *AltDropSupport {
+	return &AltDropSupport{
+		DragKey: dragKey,
+		Drop: func(rowIndexes []int, data any) {
+			tableDragData, ok := data.(*unison.TableDragData[*Node[M]])
+			if !ok {
+				return
+			}
+			// Every target is resolved up front, since the rebuild below replaces this table with a new one -- leaving
+			// this very table an orphan whose rows are no longer the ones on screen -- so the row indexes only mean
+			// something before it runs. The sync in between is harmless: attaching modifiers adds and removes no rows
+			// and changes no disclosure, so it rebuilds the row cache with the same rows in the same order.
+			targets := make([]T, 0, len(rowIndexes))
+			for _, rowIndex := range rowIndexes {
+				if row := p.table.RowFromIndex(rowIndex); row != nil {
+					targets = append(targets, row.Data())
+				}
+			}
+			if len(targets) == 0 {
+				return
+			}
+			dataOwner := p.DataOwner()
+			libraryFile := libraryFileFromTable(tableDragData.Table)
+			// Each target has to be given its own clones. They are separate modifiers from here on -- enabled, renamed
+			// and edited independently -- so sharing one set among the targets would tie them together. The clones are
+			// kept grouped by target for the nameables prompt below, which would otherwise show the copies of one
+			// modifier as a run of identically titled sections with nothing to say which item each belongs to.
+			groups := make([]NameableGroup[M], 0, len(targets))
+			for _, target := range targets {
+				clones := make([]M, 0, len(tableDragData.Rows))
+				for _, row := range tableDragData.Rows {
+					var noParent M
+					clones = append(clones, row.Data().Clone(libraryFile, dataOwner, noParent, gurps.Reference))
+				}
+				attach(target, clones)
+				groups = append(groups, NameableGroup[M]{Label: target.String(), Rows: clones})
+			}
+			p.table.SyncToModel()
+			if !xreflect.IsNil(dataOwner) && dataOwner.OwningEntity() != nil {
+				// Rebuilding is also what reports the drop when the rows belong to an entity (see dropRebuilder), so
+				// the owner is rebuilt as modified rather than just rebuilt.
+				rebuildAsModified(dropRebuilder(p.table), true)
+				// That rebuild can have replaced this very list: an enabled modifier carrying a switchable feature
+				// gives the rows it was dropped onto switchable features, which brings the switch column into view,
+				// and a list can only change its columns by building a new table. p belongs to the list that was
+				// replaced and its table field is never updated, so each prompt below has to be aimed at the table
+				// that took its place -- an orphan has no Rebuildable above it, so the rebuild its answer asks for
+				// would silently be skipped. The lookup is made twice because answering the modifier prompt rebuilds
+				// as well, which can replace the list a second time.
+				//
+				// The modifier prompt has to be given the rows the modifiers were dropped onto, since modifiers
+				// themselves aren't something ProcessModifiers can process, and only the topmost of them, since it
+				// walks each row's descendants as well.
+				ProcessModifiers(liveTable(p.table), minimalNodes(targets))
+				ProcessNameableGroups(liveTable(p.table), groups)
+			}
+		},
+	}
+}
+
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider

@@ -330,6 +330,63 @@ func TestAltDropOnAMissingEquipmentRowIsANoOp(t *testing.T) {
 		"only the target that resolved may be prompted for")
 }
 
+// TestAltDropOfTheWrongKindOfModifierIsIgnored verifies that each provider's alternate drop handler only acts on drag
+// data holding its own kind of modifier: equipment modifiers handed to the traits handler, or trait modifiers handed
+// to the equipment handler, attach nothing and put up no prompt. The handlers share one implementation, so this is
+// what pins each provider to the modifier type its rows actually carry.
+func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
+	c := check.New(t)
+	prompts := captureModifierPrompts(t)
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Trait"
+	entity.Traits = []*gurps.Trait{trait}
+	item := gurps.NewEquipment(entity, nil, false)
+	item.Name = "Item"
+	entity.CarriedEquipment = []*gurps.Equipment{item}
+
+	traitsProv, ok := NewTraitsProvider(entity, false).(*traitsProvider)
+	c.True(ok, "the traits provider must be a *traitsProvider")
+	traitsTable := unison.NewTable(traitsProv)
+	traitsProv.SetTable(traitsTable)
+	traitsTable.SetRootRows(traitsProv.RootRows())
+	equipmentProv, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
+	c.True(ok, "the equipment provider must be an *equipmentProvider")
+	equipmentTable := unison.NewTable(equipmentProv)
+	equipmentProv.SetTable(equipmentTable)
+	equipmentTable.SetRootRows(equipmentProv.RootRows())
+
+	traitMod := gurps.NewTraitModifier(entity, nil, false)
+	traitMod.Name = "Trait Modifier"
+	traitModTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	traitModData := &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: traitModTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(traitModTable, nil, traitMod, false)},
+	}
+	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
+	equipmentMod.Name = "Equipment Modifier"
+	equipmentModTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
+	equipmentModData := &unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
+		Table: equipmentModTable,
+		Rows:  []*Node[*gurps.EquipmentModifier]{NewNode(equipmentModTable, nil, equipmentMod, false)},
+	}
+
+	traitsProv.AltDropSupport().Drop([]int{0}, equipmentModData)
+	equipmentProv.AltDropSupport().Drop([]int{0}, traitModData)
+	c.Equal(0, len(trait.Modifiers), "equipment modifiers must not be attached to a trait")
+	c.Equal(0, len(item.Modifiers), "trait modifiers must not be attached to equipment")
+	c.Equal(0, len(*prompts), "a drop of the wrong kind of modifier must not prompt")
+
+	traitsProv.AltDropSupport().Drop([]int{0}, traitModData)
+	equipmentProv.AltDropSupport().Drop([]int{0}, equipmentModData)
+	c.Equal(1, len(trait.Modifiers), "trait modifiers must still be attached to a trait")
+	c.Equal(1, len(item.Modifiers), "equipment modifiers must still be attached to equipment")
+	c.Equal([]modifierPrompt{
+		{title: "Trait", modifiers: []string{"Trait Modifier"}},
+		{title: "Item", modifiers: []string{"Equipment Modifier"}},
+	}, *prompts, "each provider must prompt for the modifiers of its own kind")
+}
+
 // TestProcessModifiersRebuildsThroughAReplacedTable verifies that answering a modifier prompt still rebuilds the sheet
 // when the table ProcessModifiers was handed has since been replaced. The alternate drop path rebuilds before it
 // prompts, and an earlier prompt in the same pass rebuilds too, and either rebuild can replace the table when the
