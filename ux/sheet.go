@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -25,8 +24,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/printing"
@@ -59,9 +56,7 @@ var (
 
 // Sheet holds the view for a GURPS character sheet.
 type Sheet struct {
-	fileBackedPanel
 	pageView
-	undoMgr              *unison.UndoManager
 	entity               *gurps.Entity
 	content              *unison.Panel
 	contentLayout        *overlayStackLayout
@@ -80,7 +75,6 @@ type Sheet struct {
 	CarriedEquipment     *PageList[*gurps.Equipment]
 	OtherEquipment       *PageList[*gurps.Equipment]
 	Notes                *PageList[*gurps.Note]
-	scale                int
 }
 
 // ActiveSheet returns the currently active sheet.
@@ -114,22 +108,10 @@ func NewSheetFromFile(filePath string) (unison.Dockable, error) {
 // NewSheet creates a new unison.Dockable for GURPS character sheet files.
 func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s := &Sheet{
-		undoMgr: unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		entity:  entity,
-		scale:   gurps.GlobalSettings().General.InitialSheetUIScale,
 		content: unison.NewPanel(),
 	}
-	s.scroll = unison.NewScrollPanel()
-	s.Self = s
-	s.initFileEditor(s, filePath, gurps.SheetExt, entity.Save, entity)
-	s.targetMgr = NewTargetMgr(s)
-	s.SetLayout(&unison.FlexLayout{
-		Columns: 1,
-		HAlign:  align.Fill,
-		VAlign:  align.Fill,
-	})
-
-	installDropRerouting(s.AsPanel(), dropKeys, s.keyToPanel)
+	s.initPageDockable(s, filePath, gurps.SheetExt, entity.Save, entity)
 
 	s.page = NewPage(s.entity)
 	// The page is the only thing the content has ever held. The stacking layout adds the ability to put the layout
@@ -148,35 +130,17 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		}
 	}
 	s.buildLayout()
-	s.scroll.SetContent(s.content, behavior.Unmodified, behavior.Unmodified)
-	s.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	s.createToolbar()
-	s.AddChild(s.scroll)
+	s.finishPageDockable(s, s.content)
 
-	s.InstallCmdHandlers(SaveItemID, func(_ any) bool { return s.Modified() }, func(_ any) { s.save(false) })
-	s.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { s.save(true) })
-	installNewItemCmdHandlers(s, NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return s.Traits })
-	installNewItemCmdHandlers(s, NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return s.Skills })
-	installNewItemCmdHandlers(s, NewTechniqueItemID, -1, func() itemCreator { return s.Skills })
-	installNewItemCmdHandlers(s, NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return s.Spells })
-	installNewItemCmdHandlers(s, NewRitualMagicSpellItemID, -1, func() itemCreator { return s.Spells })
-	installNewItemCmdHandlers(s, NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
-		func() itemCreator { return s.CarriedEquipment })
-	installNewItemCmdHandlers(s, NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
-		func() itemCreator { return s.OtherEquipment })
-	installNewItemCmdHandlers(s, NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return s.Notes })
-	s.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
-		InsertItems(s, s.Traits.Table, s.entity.TraitList, s.entity.SetTraitList,
-			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
-				return s.Traits.provider.RootRows()
-			}, gurps.NewNaturalAttacks(s.entity, nil))
+	installListItemCmdHandlers(s, listItemCreators{
+		traits:           func() itemCreator { return s.Traits },
+		skills:           func() itemCreator { return s.Skills },
+		spells:           func() itemCreator { return s.Spells },
+		carriedEquipment: func() itemCreator { return s.CarriedEquipment },
+		otherEquipment:   func() itemCreator { return s.OtherEquipment },
+		notes:            func() itemCreator { return s.Notes },
 	})
-	s.InstallCmdHandlers(OrganizeTraitsItemID, unison.AlwaysEnabled, func(_ any) { organizeTraits(s, s.Traits.Table) })
+	installTraitListCmdHandlers(s, s.entity, s.entity, func() *PageList[*gurps.Trait] { return s.Traits })
 	s.InstallCmdHandlers(SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
 	InstallExportCmdHandlers(s)
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
@@ -374,11 +338,6 @@ func (s *Sheet) DockableKind() string {
 // Entity returns the entity this is displaying information for.
 func (s *Sheet) Entity() *gurps.Entity {
 	return s.entity
-}
-
-// UndoManager implements undo.Provider
-func (s *Sheet) UndoManager() *unison.UndoManager {
-	return s.undoMgr
 }
 
 // BackingFilePath implements FileBackedDockable. A sheet that has never been saved goes by its character's name.

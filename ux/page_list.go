@@ -69,6 +69,51 @@ func installNewItemCmdHandlers(owner Rebuildable, itemID, containerID int, creat
 	p.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(owner, variant) })
 }
 
+// listItemCreators names the lists of a page dockable that the "New ..." commands add items to, each looked up when a
+// command is invoked (see installNewItemCmdHandlers for why). A dockable leaves out the lists it doesn't have, and the
+// commands for those are not installed, so they stay disabled while it is active.
+type listItemCreators struct {
+	traits           func() itemCreator
+	skills           func() itemCreator
+	spells           func() itemCreator
+	carriedEquipment func() itemCreator
+	otherEquipment   func() itemCreator
+	notes            func() itemCreator
+}
+
+// installListItemCmdHandlers installs on the owner the handlers for the "New ..." commands for each of the lists it
+// has: the item and the container for every list, and the alternate kind of item -- the technique, the ritual magic
+// spell -- for the skills and the spells.
+func installListItemCmdHandlers(owner Rebuildable, creators listItemCreators) {
+	install := func(itemID, containerID int, creator func() itemCreator) {
+		if creator != nil {
+			installNewItemCmdHandlers(owner, itemID, containerID, creator)
+		}
+	}
+	install(NewTraitItemID, NewTraitContainerItemID, creators.traits)
+	install(NewSkillItemID, NewSkillContainerItemID, creators.skills)
+	install(NewTechniqueItemID, -1, creators.skills)
+	install(NewSpellItemID, NewSpellContainerItemID, creators.spells)
+	install(NewRitualMagicSpellItemID, -1, creators.spells)
+	install(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID, creators.carriedEquipment)
+	install(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, creators.otherEquipment)
+	install(NewNoteItemID, NewNoteContainerItemID, creators.notes)
+}
+
+// installTraitListCmdHandlers installs on the owner the handlers for the commands that act on its trait list as a
+// whole: adding the natural attacks and organizing the traits. The list is looked up when a command is invoked, for
+// the same reason as in installNewItemCmdHandlers. The entity is the one the natural attacks are made for, and is nil
+// for a template, whose traits have no entity until the template is applied.
+func installTraitListCmdHandlers(owner Rebuildable, provider gurps.TraitListProvider, entity *gurps.Entity, traits func() *PageList[*gurps.Trait]) {
+	p := owner.AsPanel()
+	p.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
+		InsertItems(owner, traits().Table, provider.TraitList, provider.SetTraitList,
+			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] { return traits().provider.RootRows() },
+			gurps.NewNaturalAttacks(entity, nil))
+	})
+	p.InstallCmdHandlers(OrganizeTraitsItemID, unison.AlwaysEnabled, func(_ any) { organizeTraits(owner, traits().Table) })
+}
+
 // listsForKeys returns the lists for the block keys the predicate accepts, in the canonical block order (see
 // gurps.AllBlockKeys), each fetched with the given function.
 func listsForKeys(list func(key string) sheetList, accept func(key string) bool) []sheetList {

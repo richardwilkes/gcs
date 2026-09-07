@@ -27,8 +27,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 )
 
@@ -44,9 +42,7 @@ var (
 
 // Template holds the view for a GURPS character template.
 type Template struct {
-	fileBackedPanel
 	pageView
-	undoMgr   *unison.UndoManager
 	template  *gurps.Template
 	content   *templateContent
 	Traits    *PageList[*gurps.Trait]
@@ -55,7 +51,6 @@ type Template struct {
 	Equipment *PageList[*gurps.Equipment]
 	Notes     *PageList[*gurps.Note]
 	lastBody  *gurps.Body
-	scale     int
 }
 
 // OpenTemplates returns the currently open templates.
@@ -77,59 +72,28 @@ func NewTemplateFromFile(filePath string) (unison.Dockable, error) {
 // NewTemplate creates a new unison.Dockable for GURPS template files.
 func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t := &Template{
-		undoMgr:  unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		template: template,
 		lastBody: template.BodyType,
-		scale:    gurps.GlobalSettings().General.InitialSheetUIScale,
 	}
 	if t.lastBody == nil {
 		t.lastBody = gurps.FactoryBody()
 	}
-	t.scroll = unison.NewScrollPanel()
-	t.Self = t
-	t.initFileEditor(t, filePath, gurps.TemplatesExt, template.Save, template)
-	t.targetMgr = NewTargetMgr(t)
-	t.SetLayout(&unison.FlexLayout{
-		Columns: 1,
-		HAlign:  align.Fill,
-		VAlign:  align.Fill,
-	})
+	t.initPageDockable(t, filePath, gurps.TemplatesExt, template.Save, template)
+	t.finishPageDockable(t, t.createContent())
 
-	installDropRerouting(t.AsPanel(), dropKeys, t.keyToPanel)
-
-	t.scroll.SetContent(t.createContent(), behavior.Unmodified, behavior.Unmodified)
-	t.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
+	installListItemCmdHandlers(t, listItemCreators{
+		traits:           func() itemCreator { return t.Traits },
+		skills:           func() itemCreator { return t.Skills },
+		spells:           func() itemCreator { return t.Spells },
+		carriedEquipment: func() itemCreator { return t.Equipment },
+		notes:            func() itemCreator { return t.Notes },
 	})
-	t.createToolbar()
-	t.AddChild(t.scroll)
-
-	t.InstallCmdHandlers(SaveItemID, func(_ any) bool { return t.Modified() }, func(_ any) { t.save(false) })
-	t.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { t.save(true) })
-	installNewItemCmdHandlers(t, NewTraitItemID, NewTraitContainerItemID, func() itemCreator { return t.Traits })
-	installNewItemCmdHandlers(t, NewSkillItemID, NewSkillContainerItemID, func() itemCreator { return t.Skills })
-	installNewItemCmdHandlers(t, NewTechniqueItemID, -1, func() itemCreator { return t.Skills })
-	installNewItemCmdHandlers(t, NewSpellItemID, NewSpellContainerItemID, func() itemCreator { return t.Spells })
-	installNewItemCmdHandlers(t, NewRitualMagicSpellItemID, -1, func() itemCreator { return t.Spells })
-	installNewItemCmdHandlers(t, NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
-		func() itemCreator { return t.Equipment })
-	installNewItemCmdHandlers(t, NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return t.Notes })
-	t.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
-		InsertItems(t, t.Traits.Table, t.template.TraitList, t.template.SetTraitList,
-			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
-				return t.Traits.provider.RootRows()
-			}, gurps.NewNaturalAttacks(nil, nil))
-	})
-	t.InstallCmdHandlers(OrganizeTraitsItemID, unison.AlwaysEnabled, func(_ any) { organizeTraits(t, t.Traits.Table) })
+	installTraitListCmdHandlers(t, t.template, nil, func() *PageList[*gurps.Trait] { return t.Traits })
 	t.InstallCmdHandlers(ApplyTemplateItemID, t.canApplyTemplate, t.applyTemplate)
 	t.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, t.newSheetFromTemplate)
 	InstallExportCmdHandlers(t)
 
-	t.template.EnsureAttachments()
-	t.template.SourceMatcher().PrepareHashes(t.template)
+	prepareForPage(t.template)
 	return t
 }
 
@@ -676,11 +640,6 @@ func (t *Template) DockableKind() string {
 	return TemplateDockableKind
 }
 
-// UndoManager implements undo.Provider
-func (t *Template) UndoManager() *unison.UndoManager {
-	return t.undoMgr
-}
-
 // MarkModified implements widget.ModifiableRoot.
 func (t *Template) MarkModified(_ unison.Paneler) {
 	t.markModified(t, nil)
@@ -811,8 +770,7 @@ func (t *Template) SheetSettingsUpdated(e *gurps.Entity, fullRebuild bool) {
 // Rebuild implements widget.Rebuildable.
 func (t *Template) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
-	t.template.EnsureAttachments()
-	t.template.SourceMatcher().PrepareHashes(t.template)
+	prepareForPage(t.template)
 	state := t.captureViewState()
 	if full {
 		defer preserveSelections(t.lists)()

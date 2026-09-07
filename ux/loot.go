@@ -23,7 +23,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xrand"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 var (
@@ -39,14 +38,11 @@ var (
 
 // LootSheet holds the view for a loot sheet.
 type LootSheet struct {
-	fileBackedPanel
 	pageView
-	undoMgr   *unison.UndoManager
 	content   *unison.Panel
 	loot      *gurps.Loot
 	Equipment *PageList[*gurps.Equipment]
 	Notes     *PageList[*gurps.Note]
-	scale     int
 }
 
 // OpenLootSheets returns the currently open loot sheets.
@@ -68,22 +64,10 @@ func NewLootSheetFromFile(filePath string) (unison.Dockable, error) {
 // NewLootSheet creates a new unison.Dockable for loot sheet files.
 func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	l := &LootSheet{
-		undoMgr: unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		content: unison.NewPanel(),
 		loot:    loot,
-		scale:   gurps.GlobalSettings().General.InitialSheetUIScale,
 	}
-	l.scroll = unison.NewScrollPanel()
-	l.Self = l
-	l.initFileEditor(l, filePath, gurps.LootExt, loot.Save, loot)
-	l.targetMgr = NewTargetMgr(l)
-	l.SetLayout(&unison.FlexLayout{
-		Columns: 1,
-		HAlign:  align.Fill,
-		VAlign:  align.Fill,
-	})
-
-	installDropRerouting(l.AsPanel(), dropKeys, l.keyToPanel)
+	l.initPageDockable(l, filePath, gurps.LootExt, loot.Save, loot)
 
 	l.content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
@@ -91,26 +75,15 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	})
 	l.content.AddChild(createLootTopBlock(l.loot, l.targetMgr))
 	l.createLists()
+	l.finishPageDockable(l, l.content)
 
-	l.scroll.SetContent(l.content, behavior.Unmodified, behavior.Unmodified)
-	l.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
+	installListItemCmdHandlers(l, listItemCreators{
+		otherEquipment: func() itemCreator { return l.Equipment },
+		notes:          func() itemCreator { return l.Notes },
 	})
-	l.createToolbar()
-	l.AddChild(l.scroll)
-
-	l.InstallCmdHandlers(SaveItemID, func(_ any) bool { return l.Modified() }, func(_ any) { l.save(false) })
-	l.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { l.save(true) })
-	installNewItemCmdHandlers(l, NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
-		func() itemCreator { return l.Equipment })
-	installNewItemCmdHandlers(l, NewNoteItemID, NewNoteContainerItemID, func() itemCreator { return l.Notes })
 	InstallExportCmdHandlers(l)
 
-	l.loot.EnsureAttachments()
-	l.loot.SourceMatcher().PrepareHashes(l.loot)
+	prepareForPage(l.loot)
 	return l
 }
 
@@ -194,11 +167,6 @@ func (l *LootSheet) DockableKind() string {
 	return LootSheetDockableKind
 }
 
-// UndoManager implements undo.Provider
-func (l *LootSheet) UndoManager() *unison.UndoManager {
-	return l.undoMgr
-}
-
 // BackingFilePath implements FileBackedDockable. A loot sheet that has never been saved goes by its name.
 func (l *LootSheet) BackingFilePath() string {
 	if l.needsSaveAsPrompt {
@@ -224,8 +192,7 @@ func (l *LootSheet) syncWithAllSources() {
 // Rebuild implements widget.Rebuildable.
 func (l *LootSheet) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
-	l.loot.EnsureAttachments()
-	l.loot.SourceMatcher().PrepareHashes(l.loot)
+	prepareForPage(l.loot)
 	state := l.captureViewState()
 	if full {
 		defer preserveSelections(l.lists)()

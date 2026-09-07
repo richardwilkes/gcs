@@ -9,20 +9,100 @@
 
 package ux
 
-import "github.com/richardwilkes/unison"
+import (
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/uti"
+	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+)
 
 // pageView is what the dockables that show a page of lists -- the character sheet, the template and the loot sheet --
-// have in common around the page itself: the toolbar above it, the scroll panel it sits in, the target manager that
-// finds its fields by reference key, and the search over its lists. Bringing such a page back into line with its
-// model, whether by marking the dockable as modified or by rebuilding it, works with all four, so it is shared here.
+// have in common: the file-backed panel at their root, the undo manager and the UI scale of the document they show,
+// and, around the page itself, the toolbar above it, the scroll panel it sits in, the target manager that finds its
+// fields by reference key, and the search over its lists. Putting such a dockable together (see initPageDockable and
+// finishPageDockable) and bringing its page back into line with its model, whether by marking the dockable as
+// modified or by rebuilding it, work with all of those, so they are shared here.
 type pageView struct {
+	fileBackedPanel
+	undoMgr       *unison.UndoManager
 	targetMgr     *TargetMgr
 	toolbar       *unison.Panel
 	scroll        *unison.ScrollPanel
 	searchTracker *SearchTracker
+	scale         int
 	// awaitingUpdate is set while the dockable is being marked as modified, and MarkModified does nothing at all while
 	// it is set (see ownerRecalculates for one consequence of that).
 	awaitingUpdate bool
+}
+
+// pageDockable is a dockable built on a pageView, as the shared scaffolding sees it: the file-backed dockable itself,
+// plus the parts the scaffolding has to call back into, which each dockable defines for itself.
+type pageDockable interface {
+	FileBackedDockable
+	// keyToPanel returns the list a drop of the given kind of item is rerouted to (see installDropRerouting).
+	keyToPanel(key *uti.DataType) *unison.Panel
+	// createToolbar builds the toolbar and adds it to the dockable, above where the page's scroll panel will go.
+	createToolbar()
+}
+
+// initPageDockable is the first half of putting a page dockable together, to be called before any of the page is
+// built: it gives the dockable its undo manager, its initial UI scale, its scroll panel, its file-backed panel -- which
+// hashes the content, so that must be complete by now -- the target manager rooted at it, its layout, and the
+// rerouting of drops of list items to the list that takes them. The dockable is passed in explicitly, since it is the
+// concrete value, not this embedded part of it, that the panel's Self, the file-backed panel and the target manager
+// must refer to.
+func (pv *pageView) initPageDockable(d pageDockable, filePath, extension string, saver func(filePath string) error, hashable gurps.Hashable) {
+	pv.undoMgr = unison.NewUndoManager(200, func(err error) { errs.Log(err) })
+	pv.scale = gurps.GlobalSettings().General.InitialSheetUIScale
+	pv.scroll = unison.NewScrollPanel()
+	pv.Self = d
+	pv.initFileEditor(d, filePath, extension, saver, hashable)
+	pv.targetMgr = NewTargetMgr(d)
+	pv.SetLayout(&unison.FlexLayout{
+		Columns: 1,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
+	})
+	installDropRerouting(pv.AsPanel(), dropKeys, d.keyToPanel)
+}
+
+// finishPageDockable is the second half of putting a page dockable together, to be called once the page's content has
+// been built: the content goes into the scroll panel, the toolbar is created and added above it, the scroll panel is
+// added below that, and the Save and Save As commands are wired up.
+func (pv *pageView) finishPageDockable(d pageDockable, content unison.Paneler) {
+	pv.scroll.SetContent(content, behavior.Unmodified, behavior.Unmodified)
+	pv.scroll.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Fill,
+		HGrab:  true,
+		VGrab:  true,
+	})
+	d.createToolbar()
+	pv.AddChild(pv.scroll)
+	pv.InstallCmdHandlers(SaveItemID, func(_ any) bool { return d.Modified() }, func(_ any) { pv.save(false) })
+	pv.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { pv.save(true) })
+}
+
+// UndoManager implements unison.UndoManagerProvider.
+func (pv *pageView) UndoManager() *unison.UndoManager {
+	return pv.undoMgr
+}
+
+// attachedListProvider is a model that owns the items on its lists and matches them against the library sources
+// they came from: a template or a loot sheet. An entity is one too, but readies itself as part of recalculating.
+type attachedListProvider interface {
+	gurps.ListProvider
+	EnsureAttachments()
+	SourceMatcher() *gurps.SrcMatcher
+}
+
+// prepareForPage readies a model to be shown on a page, whether for the first time or again after a rebuild: its items
+// are attached to it, and the hashes its source matcher compares against the library sources are brought up to date.
+func prepareForPage(model attachedListProvider) {
+	model.EnsureAttachments()
+	model.SourceMatcher().PrepareHashes(model)
 }
 
 // viewState is the user's place on the page: the scroll position and the field holding the keyboard focus.

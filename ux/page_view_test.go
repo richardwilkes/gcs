@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 )
 
 // TestMarkModifiedDropsCallsWhileTheUpdateIsUnderWay verifies that a call to MarkModified arriving from inside the
@@ -102,4 +103,130 @@ func TestTemplateRebuildKeepsTheScrollPosition(t *testing.T) {
 	c.True(replaced, "hiding the TL column must have replaced the equipment list")
 	c.True(refocused, "the rebuild must hand the focus to the replacement")
 	c.Equal(float32(wanted), after, "the rebuild must put the scroll position back")
+}
+
+// pageDockableFixture is one of the three page dockables, built headless, along with what its constructor gave to the
+// shared scaffolding and a change to its model that makes it modified.
+type pageDockableFixture struct {
+	name     string
+	dockable pageDockable
+	view     *pageView
+	content  unison.Paneler
+	modify   func()
+}
+
+// newPageDockableFixtures builds each of the three page dockables the way their tests do: with the key bindable
+// actions registered and a document dock in place, since both the toolbar and the rebuild path reach for them.
+func newPageDockableFixtures(t *testing.T) []pageDockableFixture {
+	t.Helper()
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	entity := gurps.NewEntity()
+	sheet := NewSheet("test"+gurps.SheetExt, entity)
+	templateData := gurps.NewTemplate()
+	template := NewTemplate("test"+gurps.TemplatesExt, templateData)
+	lootData := gurps.NewLoot()
+	loot := NewLootSheet("test"+gurps.LootExt, lootData)
+	return []pageDockableFixture{
+		{"sheet", sheet, &sheet.pageView, sheet.content, func() { entity.Profile.Name = "Bob" }},
+		{
+			"template", template, &template.pageView, template.content,
+			func() { templateData.Notes = append(templateData.Notes, gurps.NewNote(nil, nil, false)) },
+		},
+		{"loot", loot, &loot.pageView, loot.content, func() { lootData.Name = "Dragon Hoard" }},
+	}
+}
+
+// TestPageDockablesShareTheScaffold verifies that each of the three page dockables comes out of its constructor with
+// the scaffolding initPageDockable and finishPageDockable put up around its own content: the dockable itself is what
+// the panel, the file-backed panel and the target manager refer to; it has an undo manager that the undo edits made
+// within it find, and starts at the initial UI scale; the toolbar sits above the scroll panel holding the content;
+// drops onto it are rerouted; and Save As is always on offer, while Save waits for a change to the content.
+func TestPageDockablesShareTheScaffold(t *testing.T) {
+	c := check.New(t)
+	for _, f := range newPageDockableFixtures(t) {
+		p := f.dockable.AsPanel()
+		c.True(f.view.Self == f.dockable, "%s: the panel's Self must be the dockable", f.name)
+		c.True(f.view.dockable == f.dockable, "%s: the file-backed panel must refer to the dockable", f.name)
+		c.True(f.view.targetMgr.root == p, "%s: the target manager must be rooted at the dockable", f.name)
+		c.NotNil(f.view.undoMgr, "%s: the dockable must have an undo manager", f.name)
+		c.True(unison.UndoManagerFor(f.view.scroll) == f.view.undoMgr,
+			"%s: the undo manager must be the one found from within the page", f.name)
+		c.Equal(gurps.GlobalSettings().General.InitialSheetUIScale, f.view.scale, "%s: the initial UI scale", f.name)
+		c.True(f.view.scroll.Content().AsPanel() == f.content.AsPanel(),
+			"%s: the scroll panel must hold the content", f.name)
+		children := p.Children()
+		c.Equal(2, len(children), "%s: the dockable must hold the toolbar and the scroll panel", f.name)
+		c.True(children[0] == f.view.toolbar, "%s: the toolbar must come first", f.name)
+		c.True(children[1] == f.view.scroll.AsPanel(), "%s: the scroll panel must come after the toolbar", f.name)
+		c.True(p.CanAcceptDropCallback != nil && p.DropCallback != nil, "%s: drops must be rerouted", f.name)
+		c.True(p.CanPerformCmd(nil, SaveAsItemID), "%s: Save As must always be on offer", f.name)
+		c.False(p.CanPerformCmd(nil, SaveItemID), "%s: Save must wait for a change", f.name)
+		f.modify()
+		c.True(p.CanPerformCmd(nil, SaveItemID), "%s: Save must be on offer once there is a change", f.name)
+	}
+}
+
+// TestPageDockablesOfferTheCommandsForTheirLists verifies that each page dockable installs the "New ..." commands for
+// the lists it has and none for the lists it lacks -- a loot sheet never offers to add a trait, a template never to
+// add other equipment -- and that the commands acting on the trait list as a whole go only to the dockables with one.
+func TestPageDockablesOfferTheCommandsForTheirLists(t *testing.T) {
+	c := check.New(t)
+	fixtures := newPageDockableFixtures(t)
+	for _, cmd := range []struct {
+		name                  string
+		id                    int
+		sheet, template, loot bool
+	}{
+		{"New Trait", NewTraitItemID, true, true, false},
+		{"New Trait Container", NewTraitContainerItemID, true, true, false},
+		{"New Skill", NewSkillItemID, true, true, false},
+		{"New Skill Container", NewSkillContainerItemID, true, true, false},
+		{"New Technique", NewTechniqueItemID, true, true, false},
+		{"New Spell", NewSpellItemID, true, true, false},
+		{"New Spell Container", NewSpellContainerItemID, true, true, false},
+		{"New Ritual Magic Spell", NewRitualMagicSpellItemID, true, true, false},
+		{"New Carried Equipment", NewCarriedEquipmentItemID, true, true, false},
+		{"New Carried Equipment Container", NewCarriedEquipmentContainerItemID, true, true, false},
+		{"New Other Equipment", NewOtherEquipmentItemID, true, false, true},
+		{"New Other Equipment Container", NewOtherEquipmentContainerItemID, true, false, true},
+		{"New Note", NewNoteItemID, true, true, true},
+		{"New Note Container", NewNoteContainerItemID, true, true, true},
+		{"Add Natural Attacks", AddNaturalAttacksItemID, true, true, false},
+		{"Organize Traits", OrganizeTraitsItemID, true, true, false},
+	} {
+		for i, wanted := range []bool{cmd.sheet, cmd.template, cmd.loot} {
+			f := fixtures[i]
+			c.Equal(wanted, f.dockable.AsPanel().CanPerformCmd(nil, cmd.id), "%s: %s", f.name, cmd.name)
+		}
+	}
+}
+
+// TestAddNaturalAttacksGoesToTheTraitListOfTheDockable verifies that the Add Natural Attacks command adds the trait to
+// the trait list of the dockable it was invoked on, and that on a sheet the trait is made for the sheet's entity,
+// while on a template, whose traits have no entity until it is applied, it is made for none. A new entity may already
+// hold a natural attacks trait of its own (see gurps.GeneralSettings.AutoAddNaturalAttacks), so only the growth of the
+// lists is looked at.
+func TestAddNaturalAttacksGoesToTheTraitListOfTheDockable(t *testing.T) {
+	c := check.New(t)
+	fixtures := newPageDockableFixtures(t)
+	sheet, ok := fixtures[0].dockable.(*Sheet)
+	c.True(ok, "the first fixture must be the sheet")
+	template, ok := fixtures[1].dockable.(*Template)
+	c.True(ok, "the second fixture must be the template")
+	sheetTraits := len(sheet.entity.Traits)
+	templateTraits := len(template.template.Traits)
+
+	sheet.AsPanel().PerformCmd(nil, AddNaturalAttacksItemID)
+	c.Equal(sheetTraits+1, len(sheet.entity.Traits), "the sheet must gain the trait")
+	added := sheet.entity.Traits[len(sheet.entity.Traits)-1]
+	c.Equal("Natural Attacks", added.Name)
+	c.True(added.DataOwner() == sheet.entity, "the sheet's trait must be made for its entity")
+	c.Equal(templateTraits, len(template.template.Traits), "the template must be left alone")
+
+	template.AsPanel().PerformCmd(nil, AddNaturalAttacksItemID)
+	c.Equal(templateTraits+1, len(template.template.Traits), "the template must gain the trait")
+	added = template.template.Traits[len(template.template.Traits)-1]
+	c.Equal("Natural Attacks", added.Name)
+	c.Equal(sheetTraits+1, len(sheet.entity.Traits), "the sheet must be left alone")
 }
