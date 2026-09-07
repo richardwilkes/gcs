@@ -67,23 +67,14 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 
-	text := i18n.Text("Name")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	field := NewStringField(p.dockable.targetMgr, p.dockable.model.KeyPrefix+"name", text,
+	addLabelAndTargetedStringField(content, p.dockable.targetMgr, p.dockable.model.KeyPrefix+"name", i18n.Text("Name"),
+		i18n.Text("The name of this body type"), prototypeMinNameWidth,
 		func() string { return p.dockable.model.Name },
 		func(s string) { p.dockable.model.Name = s })
-	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = newWrappedTooltip(i18n.Text("The name of this body type"))
-	content.AddChild(field)
-
-	text = i18n.Text("Roll")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	field = NewStringField(p.dockable.targetMgr, p.dockable.model.KeyPrefix+"roll", text,
+	addLabelAndTargetedStringField(content, p.dockable.targetMgr, p.dockable.model.KeyPrefix+"roll", i18n.Text("Roll"),
+		i18n.Text("The dice to roll on the table"), "100d1000",
 		func() string { return gurps.Roller.Format(p.dockable.model.Roll) },
 		func(s string) { p.dockable.model.Roll = gurps.Roller.Parse(s) })
-	field.SetMinimumTextWidthUsing("100d1000")
-	field.Tooltip = newWrappedTooltip(i18n.Text("The dice to roll on the table"))
-	content.AddChild(field)
 
 	wrapper := unison.NewPanel()
 	wrapper.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))

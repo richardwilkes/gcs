@@ -350,13 +350,76 @@ func pointerAccessors[T any](parent *unison.Panel, fieldData *T) (get func() T, 
 		}
 }
 
+// baseTooltipSetter is implemented by fields that temporarily replace their tooltip with another one, such as
+// NumericField, which shows an explanation of why its content is invalid while that is the case.
+type baseTooltipSetter interface {
+	SetBaseTooltip(tip *unison.Panel)
+}
+
+// setFieldTooltip installs a tooltip on a field. Fields that temporarily swap their tooltip out for another one, such
+// as the message a NumericField shows while its content is invalid, are told about it indirectly, so that the
+// replacement isn't clobbered while it is showing.
+func setFieldTooltip(field unison.Paneler, tip *unison.Panel) {
+	if setter, ok := field.(baseTooltipSetter); ok {
+		setter.SetBaseTooltip(tip)
+		return
+	}
+	field.AsPanel().Tooltip = tip
+}
+
 // installField gives the field the tooltip, if there is one, and adds it to the parent.
 func installField[F unison.Paneler](parent *unison.Panel, field F, tooltip string) F {
 	if tooltip != "" {
-		field.AsPanel().Tooltip = newWrappedTooltip(tooltip)
+		setFieldTooltip(field, newWrappedTooltip(tooltip))
 	}
 	parent.AddChild(field)
 	return field
+}
+
+// installSizedField is installField for a text field whose minimum width should come from the prototype text, when
+// there is one.
+func installSizedField(parent *unison.Panel, field *StringField, tooltip, prototype string) *StringField {
+	if prototype != "" {
+		field.SetMinimumTextWidthUsing(prototype)
+	}
+	return installField(parent, field, tooltip)
+}
+
+// addLabelAndTargetedStringField adds a label and a single-line field that edits the value the accessors reach and
+// records its undo through the target manager. The label's text is also the undo title, and the field's minimum width
+// comes from the prototype text.
+func addLabelAndTargetedStringField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip, prototype string, get func() string, set func(string)) *StringField {
+	addLabel(parent, labelText, "")
+	return installSizedField(parent, NewStringField(targetMgr, targetKey, labelText, get, set), tooltip, prototype)
+}
+
+// addLabelAndTargetedMultiLineStringField is addLabelAndTargetedStringField for a field that may hold several lines.
+func addLabelAndTargetedMultiLineStringField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip, prototype string, get func() string, set func(string)) *StringField {
+	addLabel(parent, labelText, "")
+	return installSizedField(parent, NewMultiLineStringField(targetMgr, targetKey, labelText, get, set), tooltip,
+		prototype)
+}
+
+// addLabelAndTargetedIntegerField adds a label and an integer field that edits the value the accessors reach and
+// records its undo through the target manager. The label's text is also the undo title.
+func addLabelAndTargetedIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, get func() int, set func(int), minValue, maxValue int, forceSign bool) *IntegerField {
+	addLabel(parent, labelText, "")
+	return installField(parent, NewIntegerField(targetMgr, targetKey, labelText, get, set, minValue, maxValue, forceSign,
+		false), tooltip)
+}
+
+// addLabelAndTargetedPopup adds a label and a popup that edits the value the accessors reach and records its undo
+// through the target manager. The label's text is also the undo title.
+func addLabelAndTargetedPopup[T comparable](parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, get func() T, set func(T), items ...T) *Popup[T] {
+	addLabel(parent, labelText, "")
+	return installField(parent, NewPopup(targetMgr, targetKey, labelText, get, set, items...), tooltip)
+}
+
+// addLabelAndScriptField adds a label and a script field, as addScriptField does, whose undo title is the label's
+// text.
+func addLabelAndScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, get func() string, set func(string), includeMarkdownButton bool) *StringField {
+	addLabel(parent, labelText, "")
+	return addScriptField(parent, targetMgr, targetKey, labelText, tooltip, get, set, includeMarkdownButton)
 }
 
 func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {

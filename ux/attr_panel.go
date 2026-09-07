@@ -51,12 +51,6 @@ type AttrPanel struct {
 	stateLabels map[string]*unison.Label
 }
 
-// baseTooltipSetter is implemented by fields that temporarily replace their tooltip with another one, such as
-// NumericField, which shows an explanation of why its content is invalid while that is the case.
-type baseTooltipSetter interface {
-	SetBaseTooltip(tip *unison.Panel)
-}
-
 // NewPrimaryAttrPanel creates a new primary attributes panel.
 func NewPrimaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *AttrPanel {
 	p := newAttrPanel(entity, targetMgr, gurps.PrimaryAttrKind)
@@ -369,19 +363,8 @@ func (a *AttrPanel) updateBonusTooltips(id string, attr *gurps.Attribute) {
 		label.Tooltip = wrappedTooltipOrNil(text)
 	}
 	if field, ok := a.valueFields[id]; ok {
-		setValueTooltip(field, wrappedTooltipOrNil(text))
+		setFieldTooltip(field, wrappedTooltipOrNil(text))
 	}
-}
-
-// setValueTooltip installs a tooltip on an attribute's value field. Fields that temporarily swap their tooltip out for
-// another one, such as the message a NumericField shows while its content is invalid, are told about it indirectly, so
-// that the replacement isn't clobbered while it is showing.
-func setValueTooltip(field unison.Paneler, tip *unison.Panel) {
-	if setter, ok := field.(baseTooltipSetter); ok {
-		setter.SetBaseTooltip(tip)
-		return
-	}
-	field.AsPanel().Tooltip = tip
 }
 
 // bonusTooltipText returns the tooltip text for an attribute, or an empty string if it doesn't need one.

@@ -98,12 +98,10 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	field.Tooltip = newWrappedTooltip(i18n.Text("A unique ID for the attribute"))
 	content.AddChild(field)
 
-	text = i18n.Text("Attribute Type")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	content.AddChild(NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
+	addLabelAndTargetedPopup(content, p.dockable.targetMgr, p.def.KeyPrefix+"type", i18n.Text("Attribute Type"), "",
 		func() attribute.Type { return p.def.Type },
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
-		attribute.Types...))
+		attribute.Types...)
 
 	if !p.def.IsSeparator() {
 		content.AddChild(NewFieldLeadingLabel(i18n.Text("Placement"), false))
@@ -111,37 +109,20 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	}
 
 	const nameKey = "name"
+	nameGet := func() string { return p.def.Name }
+	nameSet := func(s string) { p.def.Name = s }
 	if p.def.IsSeparator() {
-		text = i18n.Text("Name")
-		content.AddChild(NewFieldLeadingLabel(text, false))
-		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+nameKey, text,
-			func() string { return p.def.Name },
-			func(s string) { p.def.Name = s })
-		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-		field.Tooltip = newWrappedTooltip(i18n.Text("A title to use with the separator"))
-		content.AddChild(field)
+		addLabelAndTargetedStringField(content, p.dockable.targetMgr, p.def.KeyPrefix+nameKey, i18n.Text("Name"),
+			i18n.Text("A title to use with the separator"), prototypeMinIDWidth, nameGet, nameSet)
 	} else {
-		text = i18n.Text("Short Name")
-		content.AddChild(NewFieldLeadingLabel(text, false))
-		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+nameKey, text,
-			func() string { return p.def.Name },
-			func(s string) { p.def.Name = s })
-		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-		field.Tooltip = newWrappedTooltip(i18n.Text("The name of this attribute, often an abbreviation"))
-		content.AddChild(field)
-
-		text = i18n.Text("Full Name")
-		content.AddChild(NewFieldLeadingLabel(text, false))
-		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"fullname", text,
+		addLabelAndTargetedStringField(content, p.dockable.targetMgr, p.def.KeyPrefix+nameKey, i18n.Text("Short Name"),
+			i18n.Text("The name of this attribute, often an abbreviation"), prototypeMinIDWidth, nameGet, nameSet)
+		addLabelAndTargetedStringField(content, p.dockable.targetMgr, p.def.KeyPrefix+"fullname", i18n.Text("Full Name"),
+			i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"),
+			prototypeMinNameWidth,
 			func() string { return p.def.FullName },
 			func(s string) { p.def.FullName = s })
-		field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-		field.Tooltip = newWrappedTooltip(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
-		content.AddChild(field)
-
-		text = i18n.Text("Base Value")
-		content.AddChild(NewFieldLeadingLabel(text, false))
-		addScriptField(content, p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
+		addLabelAndScriptField(content, p.dockable.targetMgr, p.def.KeyPrefix+"base", i18n.Text("Base Value"),
 			i18n.Text("The base value, which may be a number or a script expression"),
 			func() string { return p.def.Base },
 			func(s string) { p.def.Base = s }, false)

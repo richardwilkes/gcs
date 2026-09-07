@@ -81,16 +81,13 @@ func newNameGeneratorPanel(d *nameGeneratorEditorDockable, g, parent *gurps.Name
 func (p *nameGeneratorPanel) addTypeField() {
 	d := p.dockable
 	g := p.generator
-	text := i18n.Text("Type")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	popup := NewPopup(d.targetMgr, g.KeyPrefix+"type", text,
+	addLabelAndTargetedPopup(p.AsPanel(), d.targetMgr, g.KeyPrefix+"type", i18n.Text("Type"),
+		i18n.Text("Simple picks one of the training names at random. Markov Letter builds new names letter by letter from patterns in the training names. Markov Run builds new names from the runs of vowels and consonants in the training names. Compound joins the output of several generators with a separator."),
 		func() namegen.Type { return g.Type },
 		func(t namegen.Type) {
 			g.Type = t
 			d.sync()
 		}, namegen.Types...)
-	popup.Tooltip = newWrappedTooltip(i18n.Text("Simple picks one of the training names at random. Markov Letter builds new names letter by letter from patterns in the training names. Markov Run builds new names from the runs of vowels and consonants in the training names. Compound joins the output of several generators with a separator."))
-	p.AddChild(popup)
 }
 
 // addCaseFields adds the two case-handling checkboxes. The model records the options as negations, since the files do,
@@ -118,14 +115,10 @@ func (p *nameGeneratorPanel) addCaseFields() {
 func (p *nameGeneratorPanel) addCompoundFields() {
 	d := p.dockable
 	g := p.generator
-	text := i18n.Text("Separator")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	field := NewStringField(d.targetMgr, g.KeyPrefix+"separator", text,
+	addLabelAndTargetedStringField(p.AsPanel(), d.targetMgr, g.KeyPrefix+"separator", i18n.Text("Separator"),
+		i18n.Text("Placed between the outputs of the combined generators, such as a space"), prototypeMinIDWidth,
 		func() string { return g.Separator },
 		func(s string) { g.Separator = s })
-	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.Tooltip = newWrappedTooltip(i18n.Text("Placed between the outputs of the combined generators, such as a space"))
-	p.AddChild(field)
 
 	addButton := unison.NewSVGButton(unison.CircledAddSVG)
 	addButton.Tooltip = newWrappedTooltip(i18n.Text("Add generator"))
@@ -157,13 +150,10 @@ func (p *nameGeneratorPanel) addGenerator() {
 func (p *nameGeneratorPanel) addDepthField() {
 	d := p.dockable
 	g := p.generator
-	text := i18n.Text("Depth")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	field := NewIntegerField(d.targetMgr, g.KeyPrefix+"depth", text,
+	addLabelAndTargetedIntegerField(p.AsPanel(), d.targetMgr, g.KeyPrefix+"depth", i18n.Text("Depth"),
+		i18n.Text("How many preceding letters are considered when choosing the next one, from 1 to 5. Lower values produce more random names; higher values stay closer to the training names. 0 uses the default of 3."),
 		func() int { return g.Depth },
-		func(v int) { g.Depth = v }, 0, 5, false, false)
-	field.SetBaseTooltip(newWrappedTooltip(i18n.Text("How many preceding letters are considered when choosing the next one, from 1 to 5. Lower values produce more random names; higher values stay closer to the training names. 0 uses the default of 3.")))
-	p.AddChild(field)
+		func(v int) { g.Depth = v }, 0, 5, false)
 }
 
 // addTrainingDataFields adds the built-in training data popup and, when no built-in set is chosen, the list of training
@@ -171,16 +161,13 @@ func (p *nameGeneratorPanel) addDepthField() {
 func (p *nameGeneratorPanel) addTrainingDataFields() {
 	d := p.dockable
 	g := p.generator
-	text := i18n.Text("Built-in Training Data")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	popup := NewPopup(d.targetMgr, g.KeyPrefix+"built_in", text,
+	addLabelAndTargetedPopup(p.AsPanel(), d.targetMgr, g.KeyPrefix+"built_in", i18n.Text("Built-in Training Data"),
+		i18n.Text("A built-in set of training names. Choose None to provide your own list below."),
 		func() namegen.Builtin { return g.BuiltIn },
 		func(b namegen.Builtin) {
 			g.BuiltIn = b
 			d.sync()
 		}, namegen.Builtins...)
-	popup.Tooltip = newWrappedTooltip(i18n.Text("A built-in set of training names. Choose None to provide your own list below."))
-	p.AddChild(popup)
 	if g.BuiltIn == namegen.None {
 		list := newWeightedStringOptionsPanel(d, p.trainingNamesSpec())
 		list.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill, HGrab: true})

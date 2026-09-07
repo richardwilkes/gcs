@@ -39,14 +39,11 @@ func newAncestryEditorPanel(d *ancestryEditorDockable) *ancestryEditorPanel {
 	p.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 
 	a := d.model
-	text := i18n.Text("Name")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	field := NewStringField(d.targetMgr, a.KeyPrefix+"name", text,
+	addLabelAndTargetedStringField(p.AsPanel(), d.targetMgr, a.KeyPrefix+"name", i18n.Text("Name"),
+		i18n.Text("The name of this ancestry. Traits select an ancestry by the base name of its file rather than by this name, so this is mostly descriptive; it is shown when a template asks about replacing a character's ancestry, and it is offered as the default file name when saving."),
+		prototypeMinNameWidth,
 		func() string { return a.Name },
 		func(s string) { a.Name = s })
-	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = newWrappedTooltip(i18n.Text("The name of this ancestry. Traits select an ancestry by the base name of its file rather than by this name, so this is mostly descriptive; it is shown when a template asks about replacing a character's ancestry, and it is offered as the default file name when saving."))
-	p.AddChild(field)
 
 	p.AddChild(newEditorSectionHeader(i18n.Text("Common Options"),
 		i18n.Text("Options used when the chosen gender does not provide its own")))

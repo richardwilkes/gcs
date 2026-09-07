@@ -106,70 +106,37 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 	field.Tooltip = newWrappedTooltip(i18n.Text("An ID for the hit location"))
 	content.AddChild(field)
 
-	text = i18n.Text("Choice Name")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	field = NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"choice_name", text,
+	mgr := p.dockable.targetMgr
+	addLabelAndTargetedStringField(content, mgr, p.loc.KeyPrefix+"choice_name", i18n.Text("Choice Name"),
+		i18n.Text("The name of this hit location as it should appear in choice lists"), prototypeMinNameWidth,
 		func() string { return p.loc.ChoiceName },
 		func(s string) { p.loc.ChoiceName = s })
-	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = newWrappedTooltip(i18n.Text("The name of this hit location as it should appear in choice lists"))
-	content.AddChild(field)
-
-	text = i18n.Text("Table Name")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	field = NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"table_name", text,
+	addLabelAndTargetedStringField(content, mgr, p.loc.KeyPrefix+"table_name", i18n.Text("Table Name"),
+		i18n.Text("The name of this hit location as it should appear in the hit location table"), prototypeMinNameWidth,
 		func() string { return p.loc.TableName },
 		func(s string) { p.loc.TableName = s })
-	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = newWrappedTooltip(i18n.Text("The name of this hit location as it should appear in the hit location table"))
-	content.AddChild(field)
-
-	text = i18n.Text("Slots")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	intField := NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"slots", text,
+	addLabelAndTargetedIntegerField(content, mgr, p.loc.KeyPrefix+"slots", i18n.Text("Slots"),
+		i18n.Text("The number of consecutive numbers this hit location fills in the table"),
 		func() int { return p.loc.Slots },
-		func(v int) { p.loc.Slots = v },
-		0, 999999, false, false)
-	intField.Tooltip = newWrappedTooltip(i18n.Text("The number of consecutive numbers this hit location fills in the table"))
-	content.AddChild(intField)
-
-	text = i18n.Text("Hit Penalty")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	intField = NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"hit_penalty", text,
+		func(v int) { p.loc.Slots = v }, 0, 999999, false)
+	addLabelAndTargetedIntegerField(content, mgr, p.loc.KeyPrefix+"hit_penalty", i18n.Text("Hit Penalty"),
+		i18n.Text("The skill adjustment for this hit location"),
 		func() int { return p.loc.HitPenalty },
-		func(v int) { p.loc.HitPenalty = v },
-		-100, 100, true, false)
-	intField.Tooltip = newWrappedTooltip(i18n.Text("The skill adjustment for this hit location"))
-	content.AddChild(intField)
-
-	text = i18n.Text("DR Bonus")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	intField = NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"dr_bonus", text,
+		func(v int) { p.loc.HitPenalty = v }, -100, 100, true)
+	addLabelAndTargetedIntegerField(content, mgr, p.loc.KeyPrefix+"dr_bonus", i18n.Text("DR Bonus"),
+		i18n.Text("The amount of DR this hit location grants due to natural toughness"),
 		func() int { return p.loc.DRBonus },
-		func(v int) { p.loc.DRBonus = v },
-		0, 100, false, false)
-	intField.Tooltip = newWrappedTooltip(i18n.Text("The amount of DR this hit location grants due to natural toughness"))
-	content.AddChild(intField)
-
-	text = i18n.Text("Description")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	field = NewMultiLineStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"desc", text,
+		func(v int) { p.loc.DRBonus = v }, 0, 100, false)
+	addLabelAndTargetedMultiLineStringField(content, mgr, p.loc.KeyPrefix+"desc", i18n.Text("Description"),
+		i18n.Text("A description of any special effects for hits to this location"), prototypeMinNameWidth,
 		func() string { return p.loc.Description },
 		func(s string) { p.loc.Description = s })
-	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = newWrappedTooltip(i18n.Text("A description of any special effects for hits to this location"))
-	content.AddChild(field)
 
 	if p.loc.SubTable != nil {
-		text = i18n.Text("Sub-Roll")
-		content.AddChild(NewFieldLeadingLabel(text, false))
-		field = NewStringField(p.dockable.targetMgr, p.loc.SubTable.KeyPrefix+"subroll", text,
+		addLabelAndTargetedStringField(content, mgr, p.loc.SubTable.KeyPrefix+"subroll", i18n.Text("Sub-Roll"),
+			i18n.Text("The dice to roll on the sub-table"), "100d1000",
 			func() string { return gurps.Roller.Format(p.loc.SubTable.Roll) },
 			func(s string) { p.loc.SubTable.Roll = gurps.Roller.Parse(s) })
-		field.SetMinimumTextWidthUsing("100d1000")
-		field.Tooltip = newWrappedTooltip(i18n.Text("The dice to roll on the sub-table"))
-		content.AddChild(field)
-
 		content.AddChild(newBodySettingsSubTablePanel(p.dockable, p.loc.SubTable))
 	}
 	return content

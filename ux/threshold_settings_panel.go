@@ -67,19 +67,13 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 		HGrab:  true,
 	})
 
-	text := i18n.Text("State")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	field := NewStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"state", text,
+	mgr := p.pool.dockable.targetMgr
+	field := addLabelAndTargetedStringField(content, mgr, p.threshold.KeyPrefix+"state", i18n.Text("State"),
+		i18n.Text("A short description of the threshold state"), prototypeMinIDWidth,
 		func() string { return p.threshold.State },
 		func(s string) { p.threshold.State = s })
-	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.Tooltip = newWrappedTooltip(i18n.Text("A short description of the threshold state"))
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	content.AddChild(field)
-
-	text = i18n.Text("Threshold")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	addScriptField(content, p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"threshold", text,
+	addLabelAndScriptField(content, mgr, p.threshold.KeyPrefix+"threshold", i18n.Text("Threshold"),
 		i18n.Text("The value where the threshold takes effect, which may be a number or a script expression"),
 		func() string { return p.threshold.Value },
 		func(s string) { p.threshold.Value = s }, false)
@@ -89,9 +83,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 		content.AddChild(p.createOpCheckBox(op))
 	}
 
-	text = i18n.Text("Explanation")
-	content.AddChild(NewFieldLeadingLabel(text, false))
-	addScriptField(content, p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"explanation", text,
+	addLabelAndScriptField(content, mgr, p.threshold.KeyPrefix+"explanation", i18n.Text("Explanation"),
 		i18n.Text("A explanation of the effects of the threshold state. This field will be interpreted as markdown and may have scripts embedded in it by wrapping each script in <script>your script goes here</script> tags."),
 		func() string { return p.threshold.Explanation },
 		func(value string) {

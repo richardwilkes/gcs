@@ -80,23 +80,15 @@ func newAncestryOptionsPanel(d *ancestryEditorDockable, options *gurps.AncestryO
 
 // addGenderFields adds the weight and name of the gender this block belongs to.
 func (p *ancestryOptionsPanel) addGenderFields() {
-	d := p.dockable
-	text := i18n.Text("Weight")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	weightField := NewIntegerField(d.targetMgr, p.weighted.KeyPrefix+"weight", text,
+	mgr := p.dockable.targetMgr
+	addLabelAndTargetedIntegerField(p.AsPanel(), mgr, p.weighted.KeyPrefix+"weight", i18n.Text("Weight"),
+		i18n.Text("The relative likelihood of this gender being chosen when a random gender is generated. Only the ratio between the weights of the genders matters."),
 		func() int { return p.weighted.Weight },
-		func(v int) { p.weighted.Weight = v }, 0, 9999, false, false)
-	weightField.SetBaseTooltip(newWrappedTooltip(i18n.Text("The relative likelihood of this gender being chosen when a random gender is generated. Only the ratio between the weights of the genders matters.")))
-	p.AddChild(weightField)
-
-	text = i18n.Text("Name")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	nameField := NewStringField(d.targetMgr, p.options.KeyPrefix+"name", text,
+		func(v int) { p.weighted.Weight = v }, 0, 9999, false)
+	addLabelAndTargetedStringField(p.AsPanel(), mgr, p.options.KeyPrefix+"name", i18n.Text("Name"),
+		i18n.Text("The name of this gender, as it will appear on the character sheet when chosen"), prototypeMinIDWidth,
 		func() string { return p.options.Name },
 		func(s string) { p.options.Name = s })
-	nameField.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	nameField.Tooltip = newWrappedTooltip(i18n.Text("The name of this gender, as it will appear on the character sheet when chosen"))
-	p.AddChild(nameField)
 }
 
 // addScriptFields adds the height, weight and age scripts. Their labels say what they are scripts for, so that the
@@ -104,23 +96,15 @@ func (p *ancestryOptionsPanel) addGenderFields() {
 func (p *ancestryOptionsPanel) addScriptFields() {
 	mgr := p.dockable.targetMgr
 	o := p.options
-	text := i18n.Text("Height Script")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	addScriptField(p.AsPanel(), mgr, o.KeyPrefix+"height_script", text,
+	addLabelAndScriptField(p.AsPanel(), mgr, o.KeyPrefix+"height_script", i18n.Text("Height Script"),
 		i18n.Text("A script that produces a height in inches, such as entity.randomHeightInInches($st). A gender leaves this empty to use the common options; when neither provides a script, 64 inches is used."),
 		func() string { return o.HeightScript },
 		func(s string) { o.HeightScript = s }, false)
-
-	text = i18n.Text("Weight Script")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	addScriptField(p.AsPanel(), mgr, o.KeyPrefix+"weight_script", text,
+	addLabelAndScriptField(p.AsPanel(), mgr, o.KeyPrefix+"weight_script", i18n.Text("Weight Script"),
 		i18n.Text("A script that produces a weight in pounds, such as entity.randomWeightInPounds($st). A gender leaves this empty to use the common options; when neither provides a script, 140 pounds is used."),
 		func() string { return o.WeightScript },
 		func(s string) { o.WeightScript = s }, false)
-
-	text = i18n.Text("Age Script")
-	p.AddChild(NewFieldLeadingLabel(text, false))
-	addScriptField(p.AsPanel(), mgr, o.KeyPrefix+"age_script", text,
+	addLabelAndScriptField(p.AsPanel(), mgr, o.KeyPrefix+"age_script", i18n.Text("Age Script"),
 		i18n.Text("A script that produces an age in years, such as dice.roll(\"1d102+140\"). A gender leaves this empty to use the common options; when neither provides a script, 18 is used."),
 		func() string { return o.AgeScript },
 		func(s string) { o.AgeScript = s }, false)
