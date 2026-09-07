@@ -22,34 +22,21 @@ import (
 
 // NumericField holds a numeric value that can be edited.
 type NumericField[T xmath.Integer | xmath.Float] struct {
-	*unison.Field
-	targetMgr     *TargetMgr
-	targetKey     string
-	undoTitle     string
+	undoableField[T]
 	getPrototypes func(minValue, maxValue T) []T
-	get           func() T
-	set           func(T)
 	Format        func(T) string
 	// DisplayFormat, if not nil, provides the text to show while the field does not have the keyboard focus. That text
 	// is never parsed back into the value, since it may be a rounded, lossy rendering of it: the moment the field gains
 	// the focus, or is handed new text by SetText, the text is replaced by Format's exact rendering, so that the user
 	// always sees and edits the exact value.
-	DisplayFormat     func(T) string
-	extract           func(s string) (T, error)
-	validationTooltip *unison.Panel
-	savedTooltip      *unison.Panel
-	lastValue         T
-	minValue          T
-	maxValue          T
-	exception         T
-	hasException      bool
-	useGet            bool
-	marksModified     bool
-	// hasFocus records whether the field holds the keyboard focus, as reported by its own focus callbacks.
-	// Panel.Focused() is not used for this because it also requires the window to be active, and a field keeps the
-	// focus -- and receives the next keystroke -- across its window being deactivated and reactivated, with no focus
-	// callbacks fired in between.
-	hasFocus           bool
+	DisplayFormat      func(T) string
+	extract            func(s string) (T, error)
+	validationTooltip  *unison.Panel
+	savedTooltip       *unison.Panel
+	minValue           T
+	maxValue           T
+	exception          T
+	hasException       bool
 	showingDisplayText bool
 }
 
@@ -103,30 +90,18 @@ func fixedPointPrototypes[T ~int64](minValue, maxValue T) []T {
 
 func newBaseNumericField[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue T) *NumericField[T] {
 	f := &NumericField[T]{
-		Field:         unison.NewField(),
-		targetMgr:     targetMgr,
-		targetKey:     targetKey,
-		undoTitle:     undoTitle,
 		getPrototypes: getPrototypes,
-		get:           get,
-		set:           set,
 		Format:        format,
 		extract:       extract,
-		lastValue:     get(),
 		minValue:      minValue,
 		maxValue:      maxValue,
-		useGet:        true,
-		marksModified: true,
 	}
-	f.Self = f
-	unison.UninstallFocusBorders(f, f)
-	f.GainedFocusCallback = f.gainedFocus
-	f.LostFocusCallback = f.lostFocus
-	unison.InstallDefaultFieldBorder(f, f)
+	// Format is rendered through a closure rather than handed over directly, so that a Format installed later is the
+	// one used.
+	f.init(f, unison.NewField(), targetMgr, targetKey, undoTitle, get, set, f.mustExtract,
+		func(v T) string { return f.Format(v) })
 	f.RuneTypedCallback = f.runeTyped
-	f.ModifiedCallback = f.modified
 	f.ValidateCallback = f.validate
-	setTargetRefKey(f, targetMgr, targetKey)
 	return f
 }
 
@@ -137,7 +112,7 @@ func (f *NumericField[T]) showDisplayText() {
 		return
 	}
 	f.replaceText(f.DisplayFormat(f.get()))
-	f.lastValue = f.get()
+	f.last = f.get()
 	f.showingDisplayText = true
 }
 
@@ -159,7 +134,7 @@ func (f *NumericField[T]) replaceText(text string) {
 // showing. This must be called before anything that will parse the field's text or capture it as an undo state, so
 // that the lossy display rendering never becomes the value.
 //
-// The value restored is lastValue, which showDisplayText recorded as it rendered, rather than whatever the model holds
+// The value restored is last, which showDisplayText recorded as it rendered, rather than whatever the model holds
 // at this moment. The two are the same except when the model has been changed behind the field's back and the field is
 // then told its new text -- which is exactly what the Description block's height and weight randomizers do. Rendering
 // the model's new value here would leave the field already holding the text it is about to be given, so the assignment
@@ -170,7 +145,7 @@ func (f *NumericField[T]) restoreExactText() {
 		return
 	}
 	f.showingDisplayText = false
-	f.replaceText(f.Format(f.lastValue))
+	f.replaceText(f.Format(f.last))
 }
 
 // SetText sets the content of the field. The exact text is restored first, so that the "before" state the resulting
@@ -181,30 +156,13 @@ func (f *NumericField[T]) SetText(text string) {
 }
 
 func (f *NumericField[T]) gainedFocus() {
-	f.hasFocus = true
 	f.restoreExactText()
-	f.DefaultFocusGained()
+	f.undoableField.gainedFocus()
 }
 
 func (f *NumericField[T]) lostFocus() {
-	f.hasFocus = false
-	f.useGet = true
-	f.SetText(f.Format(f.mustExtract(f.Text())))
+	f.undoableField.lostFocus()
 	f.showDisplayText()
-	f.DefaultFocusLost()
-}
-
-func (f *NumericField[T]) getData() string {
-	if f.useGet {
-		f.useGet = false
-		return f.Format(f.get())
-	}
-	return f.Text()
-}
-
-// CurrentValue returns the current committed value, which may not be the same as the value showing.
-func (f *NumericField[T]) CurrentValue() T {
-	return f.get()
 }
 
 func (f *NumericField[T]) mustExtract(s string) T {
@@ -279,54 +237,27 @@ func (f *NumericField[T]) runeTyped(ch rune) bool {
 	return f.DefaultRuneTyped(ch)
 }
 
-func (f *NumericField[T]) modified(before, after *unison.FieldState) {
-	recordTargetUndo(f, f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(), before, after,
-		func(self *NumericField[T], data *unison.FieldState) { self.setWithoutUndo(data, true) })
-	f.adjustForText()
-}
-
-func (f *NumericField[T]) adjustForText() {
-	if v := f.mustExtract(f.Text()); f.lastValue != v {
-		f.lastValue = v
-		f.set(v)
-		MarkForLayoutWithinDockable(f)
-		if f.marksModified {
-			MarkModified(f)
-		}
-	}
-}
-
 func (f *NumericField[T]) setWithoutUndo(state *unison.FieldState, focus bool) {
-	f.ApplyFieldState(state)
-	// Whatever is now showing is exact text meant to be parsed: it came from the user, from an undo, or from the model
-	// by way of getData, never from DisplayFormat.
+	// Whatever is about to show is exact text meant to be parsed: it came from the user, from an undo, or from the
+	// model by way of getData, never from DisplayFormat.
 	f.showingDisplayText = false
-	f.adjustForText()
-	if focus {
-		f.RequestFocus()
-	}
-	f.Validate()
+	f.undoableField.setWithoutUndo(state, focus)
 }
 
 // Sync the field to the current value. While the field has the focus, the text in it is what the user is working on,
 // so it is re-parsed rather than replaced.
 func (f *NumericField[T]) Sync() {
-	if !f.hasFocus {
-		f.useGet = true
-		if f.DisplayFormat != nil {
-			// The value is to come from the model and the field isn't being edited, so show the display rendering of
-			// it rather than the exact text. No modification can be reported for it, so there is nothing else to do.
-			// useGet is cleared for the same reason getData clears it: a Sync that runs while the field has the focus
-			// must re-parse the field's text rather than fetch the value again.
-			f.useGet = false
-			f.showDisplayText()
-			f.Validate()
-			return
-		}
+	if !f.hasFocus && f.DisplayFormat != nil {
+		// The value is to come from the model and the field isn't being edited, so show the display rendering of it
+		// rather than the exact text. No modification can be reported for it, so there is nothing else to do. useGet
+		// is cleared for the same reason getData clears it: a Sync that runs while the field has the focus must
+		// re-parse the field's text rather than fetch the value again.
+		f.useGet = false
+		f.showDisplayText()
+		f.Validate()
+		return
 	}
-	state := f.GetFieldState()
-	state.Text = f.getData()
-	f.setWithoutUndo(state, false)
+	f.undoableField.Sync()
 }
 
 // HasException returns true if an exception value can be used.

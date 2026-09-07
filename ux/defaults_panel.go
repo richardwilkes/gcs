@@ -105,7 +105,7 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 	attrChoicePopup := addAttributeChoicePopup(panel, p.entity, "", &def.DefaultType,
 		gurps.TenFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.SkillFlag)
 	addLabel(panel, i18n.Text("Modifier"), "")
-	addDecimalFieldWithSign(panel, nil, "", i18n.Text("Modifier"), "", &def.Modifier, -fxp.Thousand, fxp.Thousand)
+	addDecimalField(panel, nil, "", i18n.Text("Modifier"), "", &def.Modifier, -fxp.Thousand, fxp.Thousand, true)
 
 	// Rows after the first are rebuilt whenever the type changes.
 	rebuildDynamicRows := func() {

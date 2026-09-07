@@ -16,14 +16,7 @@ import (
 
 // StringField holds the value for a string field.
 type StringField struct {
-	*unison.Field
-	targetMgr *TargetMgr
-	targetKey string
-	undoTitle string
-	last      string
-	get       func() string
-	set       func(string)
-	useGet    bool
+	undoableField[string]
 }
 
 // NewMultiLineStringField creates a new field for editing a string.
@@ -37,75 +30,17 @@ func NewStringField(targetMgr *TargetMgr, targetKey, undoTitle string, get func(
 }
 
 func newStringField(field *unison.Field, targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
-	f := &StringField{
-		Field:     field,
-		targetMgr: targetMgr,
-		targetKey: targetKey,
-		undoTitle: undoTitle,
-		last:      get(),
-		get:       get,
-		set:       set,
-		useGet:    true,
-	}
-	f.Self = f
-	unison.UninstallFocusBorders(f, f)
-	f.LostFocusCallback = f.lostFocus
-	unison.InstallDefaultFieldBorder(f, f)
-	f.ModifiedCallback = f.modified
+	f := &StringField{}
+	f.init(f, field, targetMgr, targetKey, undoTitle, get, set, textAsIs, textAsIs)
 	f.Sync()
 	f.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	setTargetRefKey(f, targetMgr, targetKey)
 	return f
 }
 
-func (f *StringField) lostFocus() {
-	f.useGet = true
-	f.SetText(f.Text())
-	f.DefaultFocusLost()
-}
-
-func (f *StringField) getData() string {
-	if f.useGet {
-		f.useGet = false
-		return f.get()
-	}
-	return f.Text()
-}
-
-func (f *StringField) modified(before, after *unison.FieldState) {
-	recordTargetUndo(f, f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(), before, after,
-		func(self *StringField, data *unison.FieldState) { self.setWithoutUndo(data, true) })
-	f.adjustForText()
-}
-
-func (f *StringField) adjustForText() {
-	text := f.Text()
-	if f.last != text {
-		f.last = text
-		f.set(text)
-		MarkForLayoutWithinDockable(f)
-		MarkModified(f)
-	}
-}
-
-func (f *StringField) setWithoutUndo(state *unison.FieldState, focus bool) {
-	f.ApplyFieldState(state)
-	f.adjustForText()
-	if focus {
-		f.RequestFocus()
-	}
-	f.Validate()
-}
-
-// Sync the field to the current value.
-func (f *StringField) Sync() {
-	if !f.Focused() {
-		f.useGet = true
-	}
-	state := f.GetFieldState()
-	state.Text = f.getData()
-	f.setWithoutUndo(state, false)
+// textAsIs is both the parse and the format function of a string field, whose text is its value.
+func textAsIs(text string) string {
+	return text
 }

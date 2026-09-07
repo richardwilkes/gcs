@@ -290,20 +290,10 @@ func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {
 }
 
 func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip string, fieldData *[]string) {
-	tooltip := fmt.Sprintf(i18n.Text("Separate multiple %s with commas"), pluralForTooltip)
-	addLabel(parent, labelText, tooltip)
-	field := NewMultiLineStringField(nil, "", labelText,
-		func() string { return gurps.CombineTags(*fieldData) },
-		func(value string) {
-			*fieldData = gurps.ExtractTags(value)
-			parent.MarkForLayoutAndRedraw()
-			MarkModified(parent)
-		})
-	if tooltip != "" {
-		field.Tooltip = newWrappedTooltip(tooltip)
-	}
-	field.AutoScroll = false
-	parent.AddChild(field)
+	get, set := pointerAccessors(parent, fieldData)
+	addMultiLineStringFieldWith(parent, labelText, fmt.Sprintf(i18n.Text("Separate multiple %s with commas"), pluralForTooltip),
+		func() string { return gurps.CombineTags(get()) },
+		func(value string) { set(gurps.ExtractTags(value)) })
 }
 
 func addLabelAndStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
@@ -350,34 +340,45 @@ func wrapTextForTooltip(tooltip string) string {
 	return strings.ReplaceAll(xstrings.Wrap("", strings.ReplaceAll(tooltip, " ", "␣"), 80), "␣", " ")
 }
 
-func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
-	field := NewStringField(nil, "", labelText,
-		func() string { return *fieldData },
-		func(value string) {
+// pointerAccessors returns the accessors for a field that edits the value the pointer refers to. The setter stores
+// the value and then marks the parent modified.
+func pointerAccessors[T any](parent *unison.Panel, fieldData *T) (get func() T, set func(T)) {
+	return func() T { return *fieldData },
+		func(value T) {
 			*fieldData = value
 			MarkModified(parent)
-		})
+		}
+}
+
+// installField gives the field the tooltip, if there is one, and adds it to the parent.
+func installField[F unison.Paneler](parent *unison.Panel, field F, tooltip string) F {
 	if tooltip != "" {
-		field.Tooltip = newWrappedTooltip(tooltip)
+		field.AsPanel().Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(field)
 	return field
 }
 
+func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
+	get, set := pointerAccessors(parent, fieldData)
+	return installField(parent, NewStringField(nil, "", labelText, get, set), tooltip)
+}
+
 func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) {
+	get, set := pointerAccessors(parent, fieldData)
+	addMultiLineStringFieldWith(parent, labelText, tooltip, get, set)
+}
+
+// addMultiLineStringFieldWith adds a label and a multi-line field that edits the value the accessors reach. Since the
+// field's height follows its text, the parent is laid out again after each change.
+func addMultiLineStringFieldWith(parent *unison.Panel, labelText, tooltip string, get func() string, set func(string)) *StringField {
 	addLabel(parent, labelText, tooltip)
-	field := NewMultiLineStringField(nil, "", labelText,
-		func() string { return *fieldData },
-		func(value string) {
-			*fieldData = value
-			parent.MarkForLayoutAndRedraw()
-			MarkModified(parent)
-		})
-	if tooltip != "" {
-		field.Tooltip = newWrappedTooltip(tooltip)
-	}
+	field := NewMultiLineStringField(nil, "", labelText, get, func(value string) {
+		set(value)
+		parent.MarkForLayoutAndRedraw()
+	})
 	field.AutoScroll = false
-	parent.AddChild(field)
+	return installField(parent, field, tooltip)
 }
 
 func addLabelAndIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *int, minValue, maxValue int) *IntegerField {
@@ -386,72 +387,30 @@ func addLabelAndIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetK
 }
 
 func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *int, minValue, maxValue int) *IntegerField {
-	field := NewIntegerField(targetMgr, targetKey, labelText,
-		func() int { return *fieldData },
-		func(value int) {
-			*fieldData = value
-			MarkModified(parent)
-		}, minValue, maxValue, false, false)
-	if tooltip != "" {
-		field.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(field)
-	return field
+	get, set := pointerAccessors(parent, fieldData)
+	return installField(parent, NewIntegerField(targetMgr, targetKey, labelText, get, set, minValue, maxValue, false, false),
+		tooltip)
 }
 
 func addLabel(parent *unison.Panel, labelText, tooltip string) {
-	label := NewFieldLeadingLabel(labelText, false)
-	if tooltip != "" {
-		label.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(label)
+	installField(parent, NewFieldLeadingLabel(labelText, false), tooltip)
 }
 
 func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
 	addLabel(parent, labelText, tooltip)
-	return addDecimalField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, minValue, maxValue)
+	return addDecimalField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, minValue, maxValue, false)
 }
 
-func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
-	field := NewDecimalField(targetMgr, targetKey, labelText,
-		func() fxp.Int { return *fieldData },
-		func(value fxp.Int) {
-			*fieldData = value
-			MarkModified(parent)
-		}, minValue, maxValue, false, false)
-	if tooltip != "" {
-		field.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(field)
-	return field
-}
-
-func addDecimalFieldWithSign(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
-	field := NewDecimalField(targetMgr, targetKey, labelText,
-		func() fxp.Int { return *fieldData },
-		func(value fxp.Int) {
-			*fieldData = value
-			MarkModified(parent)
-		}, minValue, maxValue, true, false)
-	if tooltip != "" {
-		field.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(field)
-	return field
+func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int, forceSign bool) *DecimalField {
+	get, set := pointerAccessors(parent, fieldData)
+	return installField(parent, NewDecimalField(targetMgr, targetKey, labelText, get, set, minValue, maxValue, forceSign,
+		false), tooltip)
 }
 
 func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *gurps.Entity, fieldData *fxp.Weight, noMinWidth bool) *WeightField {
-	field := NewWeightField(targetMgr, targetKey, labelText, entity,
-		func() fxp.Weight { return *fieldData },
-		func(value fxp.Weight) {
-			*fieldData = value
-			MarkModified(parent)
-		}, 0, fxp.Weight(fxp.Max), noMinWidth)
-	if tooltip != "" {
-		field.Tooltip = newWrappedTooltip(tooltip)
-	}
-	parent.AddChild(field)
-	return field
+	get, set := pointerAccessors(parent, fieldData)
+	return installField(parent, NewWeightField(targetMgr, targetKey, labelText, entity, get, set, 0, fxp.Weight(fxp.Max),
+		noMinWidth), tooltip)
 }
 
 func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *CheckBox {
@@ -694,7 +653,7 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 			}, minValue.AsInteger[int](), maxValue.AsInteger[int](), false, false)
 		panel.AddChild(field)
 	} else {
-		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue)
+		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue, false)
 	}
 	adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
 	return popup, field
@@ -754,13 +713,7 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 }
 
 func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, title string, amount *gurps.LeveledAmount) (field *DecimalField, checkBox *CheckBox) {
-	field = NewDecimalField(targetMgr, targetKey, i18n.Text("Amount"),
-		func() fxp.Int { return amount.Amount },
-		func(value fxp.Int) {
-			amount.Amount = value
-			MarkModified(parent)
-		}, fxp.Min, fxp.Max, true, false)
-	parent.AddChild(field)
+	field = addDecimalField(parent, targetMgr, targetKey, i18n.Text("Amount"), "", &amount.Amount, fxp.Min, fxp.Max, true)
 	checkBox = addCheckBox(parent, title, &amount.PerLevel)
 	return field, checkBox
 }

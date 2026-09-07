@@ -76,7 +76,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		})
 		content.AddChild(wrapper)
 		levelField = addDecimalField(wrapper, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0,
-			fxp.MaxBasePoints)
+			fxp.MaxBasePoints, false)
 		perLevelField = addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Cost Per Level"), "",
 			&e.editorData.PointsPerLevel, -fxp.MaxBasePoints, fxp.MaxBasePoints)
 		maxLevelLabel := i18n.Text("Maximum Level")

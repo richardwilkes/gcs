@@ -40,7 +40,7 @@ func initEquipmentEditor(carried bool) func(e *editor[*gurps.Equipment, *gurps.E
 		qtyLabel := i18n.Text("Quantity")
 		if carried {
 			wrapper := addFlowWrapper(content, qtyLabel, 2)
-			addDecimalField(wrapper, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
+			addDecimalField(wrapper, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1, false)
 			addCheckBox(wrapper, i18n.Text("Equipped"), &e.editorData.Equipped)
 		} else {
 			addLabelAndDecimalField(content, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)

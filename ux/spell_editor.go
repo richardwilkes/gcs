@@ -53,7 +53,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
 			wrapper := addFlowWrapper(content, pointsLabel, 3)
-			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
+			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints, false)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
 				replacements := e.target.NameableReplacements()

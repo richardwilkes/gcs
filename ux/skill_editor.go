@@ -89,7 +89,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			}
 			modifierField := addDecimalField(wrapper, nil, "", i18n.Text("Technique Default Adjustment"),
 				i18n.Text("Default Adjustment"), &e.editorData.TechniqueDefault.Modifier, -fxp.NinetyNine,
-				fxp.NinetyNine)
+				fxp.NinetyNine, false)
 			attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*gurps.AttributeChoice]) {
 				if item, ok := popup.Selected(); ok {
 					e.editorData.TechniqueDefault.DefaultType = item.Key
@@ -176,14 +176,14 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 
 			encLabel := i18n.Text("Encumbrance Penalty")
 			wrapper := addFlowWrapper(content, encLabel, 2)
-			addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine)
+			addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine, false)
 			wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("times the current encumbrance level"), false))
 		}
 
 		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
 			wrapper := addFlowWrapper(content, pointsLabel, 3)
-			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
+			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints, false)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
 				localName := nameable.Apply(e.editorData.Name, e.target.Replacements)

@@ -53,7 +53,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		affectsPopup := addPopup(wrapper, affects.Options, &e.editorData.Affects)
 		levelLabel := i18n.Text("Level")
 		wrapper = addFlowWrapper(content, levelLabel, 3)
-		levels := addDecimalField(wrapper, nil, "", levelLabel, "", &e.editorData.Levels, 0, fxp.Thousand)
+		levels := addDecimalField(wrapper, nil, "", levelLabel, "", &e.editorData.Levels, 0, fxp.Thousand, false)
 		box := addCheckBox(wrapper, i18n.Text("Use level from owner"), &e.editorData.UseLevelFromTrait)
 		box.OnSet = func() { adjustFieldBlank(levels, e.editorData.UseLevelFromTrait) }
 		adjustFieldBlank(levels, e.editorData.UseLevelFromTrait)
