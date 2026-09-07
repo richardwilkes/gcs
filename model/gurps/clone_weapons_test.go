@@ -12,6 +12,7 @@ package gurps
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -35,12 +36,7 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 			build: func() (any, any, *Weapon, *Weapon) {
 				n := NewTrait(nil, nil, false)
 				n.Name = "@kind@ Attack"
-				n.Replacements = map[string]string{"kind": "Fire"}
-				n.Weapons = []*Weapon{NewWeapon(n, true)}
-				n.SetDataOwner(nil)
-				dup := n.Clone(LibraryFile{}, nil, nil, Reference)
-				dup.Replacements["kind"] = "Ice"
-				return n, dup, n.Weapons[0], dup.Weapons[0]
+				return cloneWithWeapon(n, true, func(t *Trait) *[]*Weapon { return &t.Weapons })
 			},
 		},
 		{
@@ -48,12 +44,7 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 			build: func() (any, any, *Weapon, *Weapon) {
 				n := NewSkill(nil, nil, false)
 				n.Name = "@kind@ Attack"
-				n.Replacements = map[string]string{"kind": "Fire"}
-				n.Weapons = []*Weapon{NewWeapon(n, true)}
-				n.SetDataOwner(nil)
-				dup := n.Clone(LibraryFile{}, nil, nil, Reference)
-				dup.Replacements["kind"] = "Ice"
-				return n, dup, n.Weapons[0], dup.Weapons[0]
+				return cloneWithWeapon(n, true, func(s *Skill) *[]*Weapon { return &s.Weapons })
 			},
 		},
 		{
@@ -61,12 +52,7 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 			build: func() (any, any, *Weapon, *Weapon) {
 				n := NewSpell(nil, nil, false)
 				n.Name = "@kind@ Attack"
-				n.Replacements = map[string]string{"kind": "Fire"}
-				n.Weapons = []*Weapon{NewWeapon(n, false)}
-				n.SetDataOwner(nil)
-				dup := n.Clone(LibraryFile{}, nil, nil, Reference)
-				dup.Replacements["kind"] = "Ice"
-				return n, dup, n.Weapons[0], dup.Weapons[0]
+				return cloneWithWeapon(n, false, func(s *Spell) *[]*Weapon { return &s.Weapons })
 			},
 		},
 		{
@@ -74,12 +60,7 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 			build: func() (any, any, *Weapon, *Weapon) {
 				n := NewEquipment(nil, nil, false)
 				n.Name = "@kind@ Attack"
-				n.Replacements = map[string]string{"kind": "Fire"}
-				n.Weapons = []*Weapon{NewWeapon(n, true)}
-				n.SetDataOwner(nil)
-				dup := n.Clone(LibraryFile{}, nil, nil, Reference)
-				dup.Replacements["kind"] = "Ice"
-				return n, dup, n.Weapons[0], dup.Weapons[0]
+				return cloneWithWeapon(n, true, func(e *Equipment) *[]*Weapon { return &e.Weapons })
 			},
 		},
 	} {
@@ -92,4 +73,21 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 			"%s: the original's weapon is unaffected", one.name)
 		c.True(cloneWeapon.Damage.Owner == cloneWeapon, "%s: the cloned weapon's damage belongs to it", one.name)
 	}
+}
+
+// cloneWithWeapon gives n, whose name is expected to mention "@kind@", a "Fire" replacement for it and one weapon, then
+// clones n and diverges the clone's replacement to "Ice", so the two weapons must resolve differently. Node supplies
+// the clone and owner plumbing, WeaponOwner is what NewWeapon needs and nameable.Setter (promoted from each type's edit
+// data) sets the replacements; only the Weapons slice is a plain field on every node type, so it needs the accessor.
+func cloneWithWeapon[T interface {
+	Node[T]
+	WeaponOwner
+	nameable.Setter
+}](n T, melee bool, weapons func(T) *[]*Weapon) (source, clone any, sourceWeapon, cloneWeapon *Weapon) {
+	n.SetNameableReplacements(map[string]string{"kind": "Fire"})
+	*weapons(n) = []*Weapon{NewWeapon(n, melee)}
+	n.SetDataOwner(nil)
+	dup := n.Clone(LibraryFile{}, nil, nil, Reference)
+	dup.NameableReplacements()["kind"] = "Ice"
+	return n, dup, (*weapons(n))[0], (*weapons(dup))[0]
 }
