@@ -90,6 +90,45 @@ func (n *NodeSyncData) hash(h hash.Hash) {
 	hashStrings(h, n.Tags)
 }
 
+// marshalNodeData writes a node's data and, unless the encoder was asked to omit the derived values, the "calc" object
+// calc builds for it. A nil calc is left out. The data is written pointing at the node's own, so the caller is
+// responsible for clearing whatever must not be written before calling this.
+func marshalNodeData[D, C any](enc *jsontext.Encoder, data *D, calc func() *C) error {
+	if omitCalc(enc) {
+		return json.MarshalEncode(enc, data)
+	}
+	return json.MarshalEncode(enc, &struct {
+		Data *D `json:",embed"`
+		Calc *C `json:"calc,omitzero"`
+	}{
+		Data: data,
+		Calc: calc(),
+	})
+}
+
+// resolvedNotesFor returns the resolved notes when they differ from the raw local notes they were resolved from, and
+// "" otherwise, so that a "calc" object only records notes that changed in resolution.
+func resolvedNotesFor(resolved, local string) string {
+	if resolved == local {
+		return ""
+	}
+	return resolved
+}
+
+// notesCalc is the "calc" object a node whose only derived value is its resolved notes writes alongside its data.
+type notesCalc struct {
+	ResolvedNotes string `json:"resolved_notes,omitzero"`
+}
+
+// newNotesCalc builds the "calc" object for a node whose only derived value is its resolved notes, or returns nil when
+// they match the local notes so the caller's omitzero field drops it.
+func newNotesCalc(resolved, local string) *notesCalc {
+	if notes := resolvedNotesFor(resolved, local); notes != "" {
+		return &notesCalc{ResolvedNotes: notes}
+	}
+	return nil
+}
+
 // leveledCalc is the "calc" object a skill or spell writes alongside its data: the unsatisfied reason, the resolved
 // notes when they differ from the raw local notes, and, for a non-container with a positive level, the level and
 // relative skill level.
@@ -103,9 +142,9 @@ type leveledCalc struct {
 // newLeveledCalc builds the "calc" object for a skill or spell, or returns nil when there is nothing to record so the
 // caller's omitzero field drops it.
 func newLeveledCalc(container bool, level fxp.Int, rsl, unsatisfiedReason, resolvedNotes, localNotes string) *leveledCalc {
-	calc := leveledCalc{UnsatisfiedReason: unsatisfiedReason}
-	if resolvedNotes != localNotes {
-		calc.ResolvedNotes = resolvedNotes
+	calc := leveledCalc{
+		ResolvedNotes:     resolvedNotesFor(resolvedNotes, localNotes),
+		UnsatisfiedReason: unsatisfiedReason,
 	}
 	if !container && level > 0 {
 		calc.Level = level

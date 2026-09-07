@@ -32,6 +32,8 @@ func NewNotesProvider(provider gurps.NoteListProvider, forPage bool) TableProvid
 		setList:    provider.SetNoteList,
 		columnIDs:  p.ColumnIDs,
 		headerData: gurps.NotesHeaderData,
+		newItem:    gurps.NewNote,
+		edit:       EditNote,
 		forPage:    forPage,
 	}
 	return p
@@ -67,16 +69,6 @@ func (p *notesProvider) HierarchyColumnID() int {
 
 func (p *notesProvider) ExcessWidthColumnID() int {
 	return gurps.NoteTextColumn
-}
-
-func (p *notesProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Note]]) {
-	OpenEditor(table, func(item *gurps.Note) { EditNote(owner, item) })
-}
-
-func (p *notesProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Note]], variant ItemVariant) {
-	item := gurps.NewNote(p.DataOwner(), nil, variant == ContainerItemVariant)
-	p.insertItems(owner, table, item)
-	EditNote(owner, item)
 }
 
 func (p *notesProvider) ContextMenuItems() []ContextMenuItem {

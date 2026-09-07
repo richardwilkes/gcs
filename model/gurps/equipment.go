@@ -23,7 +23,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
@@ -221,33 +220,23 @@ func (e *Equipment) MarshalJSONTo(enc *jsontext.Encoder) error {
 		UnsatisfiedReason       string      `json:"unsatisfied_reason,omitzero"`
 	}
 	e.ClearUnusedFieldsForType()
-	if omitCalc(enc) {
-		return json.MarshalEncode(enc, &e.EquipmentData)
-	}
-	defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
-	data := struct {
-		EquipmentData
-		Calc calc `json:"calc"`
-	}{
-		EquipmentData: e.EquipmentData,
-		Calc: calc{
-			Value:                   e.AdjustedValue(),
-			ExtendedValue:           e.ExtendedValue(),
-			Weight:                  e.AdjustedWeight(false, defUnits),
-			ExtendedWeight:          e.ExtendedWeight(false, defUnits),
-			ExtendedWeightForSkills: nil,
-			UnsatisfiedReason:       e.UnsatisfiedReason,
-		},
-	}
-	notes := e.ResolveLocalNotes()
-	if notes != e.LocalNotes {
-		data.Calc.ResolvedNotes = notes
-	}
-	if e.WeightIgnoredForSkills && e.ReallyEquipped() {
-		w := e.ExtendedWeight(true, defUnits)
-		data.Calc.ExtendedWeightForSkills = &w
-	}
-	return json.MarshalEncode(enc, &data)
+	return marshalNodeData(enc, &e.EquipmentData, func() *calc {
+		// The "calc" object is always written, even when empty.
+		defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
+		c := &calc{
+			Value:             e.AdjustedValue(),
+			ExtendedValue:     e.ExtendedValue(),
+			Weight:            e.AdjustedWeight(false, defUnits),
+			ExtendedWeight:    e.ExtendedWeight(false, defUnits),
+			ResolvedNotes:     resolvedNotesFor(e.ResolveLocalNotes(), e.LocalNotes),
+			UnsatisfiedReason: e.UnsatisfiedReason,
+		}
+		if e.WeightIgnoredForSkills && e.ReallyEquipped() {
+			w := e.ExtendedWeight(true, defUnits)
+			c.ExtendedWeightForSkills = &w
+		}
+		return c
+	})
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
@@ -836,54 +825,22 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 
 // ResolvedMaxUses returns the MaxUses adjusted by any applicable EquipmentMaxUsesBonus features, clamped to the range
 // [0, MaxEquipmentMaxUses]. "This equipment" bonuses attached to this item or its enabled modifiers are always applied;
-// "equipment whose name" bonuses are gathered from the owning entity, if there is one.
+// "equipment whose name" bonuses are gathered from the owning entity, if there is one. A MaxUses of zero means the
+// item has no maximum, and it stays that way no matter what bonuses match it, since bonuses adjust an existing cap
+// rather than impose one.
 func (e *Equipment) ResolvedMaxUses() int {
-	addition := fxp.Int(0)
-	percentage := fxp.Int(0)
-	multiplier := fxp.One
-	have := false
-	apply := func(bonus *EquipmentMaxUsesBonus) {
-		have = true
-		amount := bonus.AdjustedAmount()
-		switch bonus.Operation() {
-		case maxusesmod.Percentage:
-			percentage += amount
-		case maxusesmod.Multiplier:
-			if amount <= 0 {
-				amount = fxp.One
-			}
-			multiplier = multiplier.Mul(amount)
-		default: // maxusesmod.Addition
-			addition += amount
-		}
-	}
-	applyThisEquipment := func(features Features) {
-		for _, f := range features {
-			if bonus, ok := f.(*EquipmentMaxUsesBonus); ok && bonus.SelectionType == equipmentsel.ThisEquipment {
-				// The level driving a per-level bonus comes from the item the bonus is attached to, matching how
-				// Entity.processFeatures assigns the leveled owner for equipment features.
-				bonus.SetLeveledOwner(e)
-				apply(bonus)
-			}
-		}
-	}
-	applyThisEquipment(e.ActiveFeatures())
-	Traverse(func(mod *EquipmentModifier) bool {
-		applyThisEquipment(mod.Features.Active(e.SwitchedOn))
-		return false
-	}, true, true, e.Modifiers...)
+	// The level driving a per-level bonus comes from the item the bonus is attached to, even when the bonus is on one
+	// of its modifiers, matching how Entity.processFeatures assigns the leveled owner for equipment features.
+	adj := newMaxAdjustment()
+	forEachActiveEquipmentFeatureList(e, func(_ fmt.Stringer, list Features) {
+		addMaxAdjustmentsFrom(&adj, list, equipmentsel.ThisEquipment, e)
+	})
 	if entity := EntityFromNode(e); entity != nil {
 		for _, bonus := range entity.EquipmentMaxUsesBonusesFor(e.NameWithReplacements(), e.TagList(), nil) {
-			apply(bonus)
+			adj.add(&bonus.MaxUsesModAmount)
 		}
 	}
-	if !have {
-		return e.MaxUses
-	}
-	result := fxp.FromInteger(e.MaxUses) + addition
-	result += result.Mul(percentage).Div(fxp.Hundred)
-	result = result.Mul(multiplier)
-	return result.Max(0).Min(fxp.FromInteger(MaxEquipmentMaxUses)).AsInteger[int]()
+	return adj.apply(fxp.FromInteger(e.MaxUses)).Min(fxp.FromInteger(MaxEquipmentMaxUses)).AsInteger[int]()
 }
 
 // ResolvedUses returns the current Uses capped at ResolvedMaxUses. This is the value that should be displayed; the

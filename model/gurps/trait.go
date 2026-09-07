@@ -27,7 +27,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
@@ -232,28 +231,19 @@ func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 		CurrentLevel      *fxp.Int `json:"current_level,omitzero"`
 	}
 	t.ClearUnusedFieldsForType()
-	if omitCalc(enc) {
-		return json.MarshalEncode(enc, &t.TraitData)
-	}
-	data := struct {
-		TraitData
-		Calc calc `json:"calc"`
-	}{
-		TraitData: t.TraitData,
-		Calc: calc{
+	return marshalNodeData(enc, &t.TraitData, func() *calc {
+		// The "calc" object is always written, even when empty.
+		c := &calc{
 			Points:            t.AdjustedPoints(),
 			UnsatisfiedReason: t.UnsatisfiedReason,
-		},
-	}
-	notes := t.ResolveLocalNotes()
-	if notes != t.LocalNotes {
-		data.Calc.ResolvedNotes = notes
-	}
-	if t.IsLeveled() {
-		level := t.CurrentLevel()
-		data.Calc.CurrentLevel = &level
-	}
-	return json.MarshalEncode(enc, &data)
+			ResolvedNotes:     resolvedNotesFor(t.ResolveLocalNotes(), t.LocalNotes),
+		}
+		if t.IsLeveled() {
+			level := t.CurrentLevel()
+			c.CurrentLevel = &level
+		}
+		return c
+	})
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
@@ -513,55 +503,20 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 	if strings.TrimSpace(t.MaxLevels) != "" {
 		base = ResolveToNumber(EntityFromNode(t), deferredNewScriptTrait(t), t.MaxLevels)
 	}
-	addition := fxp.Int(0)
-	percentage := fxp.Int(0)
-	multiplier := fxp.One
-	have := false
-	apply := func(bonus *TraitMaxLevelBonus) {
-		have = true
-		amount := bonus.AdjustedAmount()
-		switch bonus.Operation() {
-		case maxusesmod.Percentage:
-			percentage += amount
-		case maxusesmod.Multiplier:
-			if amount <= 0 {
-				amount = fxp.One
-			}
-			multiplier = multiplier.Mul(amount)
-		default: // maxusesmod.Addition
-			addition += amount
-		}
-	}
-	applyThisTrait := func(features Features, leveledOwner LeveledOwner) {
-		for _, f := range features {
-			if bonus, ok := f.(*TraitMaxLevelBonus); ok && bonus.SelectionType == traitsel.ThisTrait {
-				// The level driving a per-level bonus comes from the node the bonus is attached to, matching how
-				// Entity.processFeatures assigns the leveled owner for trait and trait modifier features.
-				bonus.SetLeveledOwner(leveledOwner)
-				apply(bonus)
-			}
-		}
-	}
-	applyThisTrait(t.ActiveFeatures(), t)
+	// The level driving a per-level bonus comes from the node the bonus is attached to, matching how
+	// Entity.processFeatures assigns the leveled owner for trait and trait modifier features.
+	adj := newMaxAdjustment()
+	addMaxAdjustmentsFrom(&adj, t.ActiveFeatures(), traitsel.ThisTrait, t)
 	Traverse(func(mod *TraitModifier) bool {
-		applyThisTrait(mod.Features.Active(t.SwitchedOn), mod)
+		addMaxAdjustmentsFrom(&adj, mod.Features.Active(t.SwitchedOn), traitsel.ThisTrait, mod)
 		return false
 	}, true, true, t.Modifiers...)
 	if entity := EntityFromNode(t); entity != nil {
 		for _, bonus := range entity.TraitMaxLevelBonusesFor(t.NameWithReplacements(), t.Tags, nil) {
-			apply(bonus)
+			adj.add(&bonus.MaxUsesModAmount)
 		}
 	}
-	if !have || base <= 0 {
-		// A trait with no declared maximum is unlimited. Bonuses adjust an existing cap, so one must never be allowed
-		// to manufacture a cap from a base of zero -- that would turn a bonus meant to raise a limit into one that
-		// imposes it.
-		return base.Max(0)
-	}
-	result := base + addition
-	result += result.Mul(percentage).Div(fxp.Hundred)
-	result = result.Mul(multiplier)
-	return result.Max(0)
+	return adj.apply(base)
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account.

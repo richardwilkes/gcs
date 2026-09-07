@@ -40,6 +40,8 @@ func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage
 		headerData: func(columnID int) gurps.HeaderData {
 			return gurps.EquipmentHeaderData(columnID, provider, carried, forPage)
 		},
+		newItem: gurps.NewEquipment,
+		edit:    func(owner Rebuildable, item *gurps.Equipment) { EditEquipment(owner, item, carried) },
 		forPage: forPage,
 	}
 	return p
@@ -157,16 +159,6 @@ func (p *equipmentProvider) HierarchyColumnID() int {
 
 func (p *equipmentProvider) ExcessWidthColumnID() int {
 	return gurps.EquipmentDescriptionColumn
-}
-
-func (p *equipmentProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]]) {
-	OpenEditor(table, func(item *gurps.Equipment) { EditEquipment(owner, item, p.carried) })
-}
-
-func (p *equipmentProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]], variant ItemVariant) {
-	item := gurps.NewEquipment(p.DataOwner(), nil, variant == ContainerItemVariant)
-	p.insertItems(owner, table, item)
-	EditEquipment(owner, item, p.carried)
 }
 
 func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {

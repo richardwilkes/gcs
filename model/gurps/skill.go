@@ -293,16 +293,9 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode Clo
 // MarshalJSONTo implements json.MarshalerTo.
 func (s *Skill) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
-	if omitCalc(enc) {
-		return json.MarshalEncode(enc, &s.SkillData)
-	}
-	return json.MarshalEncode(enc, &struct {
-		SkillData
-		Calc *leveledCalc `json:"calc,omitzero"`
-	}{
-		SkillData: s.SkillData,
-		Calc: newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
-			s.ResolveLocalNotes(), s.LocalNotes),
+	return marshalNodeData(enc, &s.SkillData, func() *leveledCalc {
+		return newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
+			s.ResolveLocalNotes(), s.LocalNotes)
 	})
 }
 

@@ -15,20 +15,15 @@ import (
 )
 
 type spellListProvider struct {
-	spells []*gurps.Spell
-}
-
-func (p *spellListProvider) DataOwner() gurps.DataOwner {
-	return nil
+	fileListProvider[*gurps.Spell]
 }
 
 func (p *spellListProvider) SpellList() []*gurps.Spell {
-	return p.spells
+	return p.rows()
 }
 
 func (p *spellListProvider) SetSpellList(list []*gurps.Spell) {
-	gurps.SetDataOwnerAll(nil, list)
-	p.spells = list
+	p.setRows(list)
 }
 
 // NewSpellTableDockableFromFile loads a list of spells from a file and creates a new unison.Dockable for them.
@@ -38,7 +33,7 @@ func NewSpellTableDockableFromFile(filePath string) (unison.Dockable, error) {
 
 // NewSpellTableDockable creates a new unison.Dockable for spell list files.
 func NewSpellTableDockable(filePath string, spells []*gurps.Spell) *TableDockable[*gurps.Spell] {
-	provider := &spellListProvider{spells: spells}
+	provider := &spellListProvider{list: spells}
 	return NewTableDockable(filePath, gurps.SpellsExt, NewSpellsProvider(provider, false),
 		func(path string) error { return gurps.SaveSpells(provider.SpellList(), path) },
 		NewSpellItemID, NewSpellContainerItemID, NewRitualMagicSpellItemID)

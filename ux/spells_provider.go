@@ -35,6 +35,8 @@ func NewSpellsProvider(provider gurps.SpellListProvider, forPage bool) TableProv
 		setList:    provider.SetSpellList,
 		columnIDs:  p.ColumnIDs,
 		headerData: gurps.SpellsHeaderData,
+		newItem:    gurps.NewSpell,
+		edit:       func(owner Rebuildable, item *gurps.Spell) { EditSpell(owner, item) },
 		forPage:    forPage,
 	}
 	return p
@@ -123,25 +125,17 @@ func (p *spellsProvider) ExcessWidthColumnID() int {
 	return p.HierarchyColumnID()
 }
 
-func (p *spellsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Spell]]) {
-	OpenEditor(table, func(item *gurps.Spell) { EditSpell(owner, item) })
-}
-
+// CreateItem adds the alternate variant, a ritual magic spell, to the spell and spell container the shared
+// implementation creates.
 func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Spell]], variant ItemVariant) {
-	var item *gurps.Spell
 	switch variant {
-	case NoItemVariant:
-		item = gurps.NewSpell(p.DataOwner(), nil, false)
-	case ContainerItemVariant:
-		item = gurps.NewSpell(p.DataOwner(), nil, true)
+	case NoItemVariant, ContainerItemVariant:
+		p.listProvider.CreateItem(owner, table, variant)
 	case AlternateItemVariant:
-		item = gurps.NewRitualMagicSpell(p.DataOwner(), nil, false)
+		p.createItem(owner, table, gurps.NewRitualMagicSpell(p.DataOwner(), nil, false))
 	default:
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
-		return
 	}
-	p.insertItems(owner, table, item)
-	EditSpell(owner, item)
 }
 
 func (p *spellsProvider) ContextMenuItems() []ContextMenuItem {

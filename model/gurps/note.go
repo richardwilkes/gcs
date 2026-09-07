@@ -160,23 +160,15 @@ func (n *Note) Clone(from LibraryFile, owner DataOwner, parent *Note, mode Clone
 // MarshalJSONTo implements json.MarshalerTo.
 func (n *Note) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
-		ResolvedNotes string `json:"resolved_text,omitzero"`
+		ResolvedText string `json:"resolved_text,omitzero"`
 	}
 	n.ClearUnusedFieldsForType()
-	if omitCalc(enc) {
-		return json.MarshalEncode(enc, &n.NoteData)
-	}
-	data := struct {
-		NoteData
-		Calc *calc `json:"calc,omitzero"`
-	}{
-		NoteData: n.NoteData,
-	}
-	notes := n.resolveText()
-	if notes != n.MarkDown {
-		data.Calc = &calc{ResolvedNotes: notes}
-	}
-	return json.MarshalEncode(enc, &data)
+	return marshalNodeData(enc, &n.NoteData, func() *calc {
+		if text := resolvedNotesFor(n.resolveText(), n.MarkDown); text != "" {
+			return &calc{ResolvedText: text}
+		}
+		return nil
+	})
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.

@@ -166,6 +166,39 @@ func TestEquipmentResolvedUses(t *testing.T) {
 	c.Equal(2, eqp.Uses, "in-range stored uses left alone on save")
 }
 
+// TestEquipmentMaxUsesBonusCannotCreateMaximum verifies that an item with no maximum uses stays unlimited even when a
+// bonus matches it, as a trait with no maximum level does. Bonuses used to be computed from a base of zero, so a +2
+// turned "no maximum" into a maximum of 2.
+func TestEquipmentMaxUsesBonusCannotCreateMaximum(t *testing.T) {
+	c := check.New(t)
+
+	// Each operation, applied to an item that declares no maximum, must leave it unlimited.
+	for _, amount := range []string{"+2", "50%", "x2", "-2"} {
+		eqp := NewEquipment(nil, nil, false)
+		eqp.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, amount)}
+		c.Equal(0, eqp.ResolvedMaxUses(), "a %q bonus must not create a maximum", amount)
+	}
+
+	// A modifier-carried bonus is subject to the same rule.
+	eqp := NewEquipment(nil, nil, false)
+	mod := NewEquipmentModifier(nil, nil, false)
+	mod.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, "+3")}
+	eqp.Modifiers = []*EquipmentModifier{mod}
+	c.Equal(0, eqp.ResolvedMaxUses(), "a modifier bonus must not create a maximum")
+
+	// So is an "equipment whose name" bonus from the entity.
+	e := NewEntity()
+	bonus := newMaxUsesBonus(equipmentsel.EquipmentWithName, "+5")
+	bonus.NameCriteria.Compare = criteria.IsText
+	bonus.NameCriteria.Qualifier = "Potion"
+	addTraitWithFeatures(e, "", bonus)
+	potion := addCarriedEquipmentWithFeatures(e, "Potion")
+	e.Recalculate()
+	c.Equal(0, potion.ResolvedMaxUses(), "an entity-wide bonus must not create a maximum")
+	potion.MaxUses = 1
+	c.Equal(6, potion.ResolvedMaxUses(), "precondition: the same bonus raises a declared maximum")
+}
+
 // TestEquipmentMaxUsesBonusRoundTrip verifies that each selector/operation combination survives a JSON round-trip.
 func TestEquipmentMaxUsesBonusRoundTrip(t *testing.T) {
 	c := check.New(t)

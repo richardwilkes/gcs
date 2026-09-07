@@ -33,6 +33,8 @@ func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) TableProv
 		setList:    provider.SetTraitList,
 		columnIDs:  p.ColumnIDs,
 		headerData: gurps.TraitsHeaderData,
+		newItem:    gurps.NewTrait,
+		edit:       func(owner Rebuildable, item *gurps.Trait) { EditTrait(owner, item) },
 		forPage:    forPage,
 	}
 	return p
@@ -83,16 +85,6 @@ func (p *traitsProvider) HierarchyColumnID() int {
 
 func (p *traitsProvider) ExcessWidthColumnID() int {
 	return gurps.TraitDescriptionColumn
-}
-
-func (p *traitsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]]) {
-	OpenEditor(table, func(item *gurps.Trait) { EditTrait(owner, item) })
-}
-
-func (p *traitsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]], variant ItemVariant) {
-	item := gurps.NewTrait(p.DataOwner(), nil, variant == ContainerItemVariant)
-	p.insertItems(owner, table, item)
-	EditTrait(owner, item)
 }
 
 func (p *traitsProvider) ContextMenuItems() []ContextMenuItem {

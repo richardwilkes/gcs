@@ -197,24 +197,10 @@ func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitMo
 
 // MarshalJSONTo implements json.MarshalerTo.
 func (t *TraitModifier) MarshalJSONTo(enc *jsontext.Encoder) error {
-	type calc struct {
-		ResolvedNotes string `json:"resolved_notes,omitzero"`
-	}
 	t.ClearUnusedFieldsForType()
-	if omitCalc(enc) {
-		return json.MarshalEncode(enc, &t.TraitModifierData)
-	}
-	data := struct {
-		TraitModifierData
-		Calc *calc `json:"calc,omitzero"`
-	}{
-		TraitModifierData: t.TraitModifierData,
-	}
-	notes := t.ResolveLocalNotes()
-	if notes != t.LocalNotes {
-		data.Calc = &calc{ResolvedNotes: notes}
-	}
-	return json.MarshalEncode(enc, &data)
+	return marshalNodeData(enc, &t.TraitModifierData, func() *notesCalc {
+		return newNotesCalc(t.ResolveLocalNotes(), t.LocalNotes)
+	})
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.

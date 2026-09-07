@@ -191,24 +191,10 @@ func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *Equ
 
 // MarshalJSONTo implements json.MarshalerTo.
 func (e *EquipmentModifier) MarshalJSONTo(enc *jsontext.Encoder) error {
-	type calc struct {
-		ResolvedNotes string `json:"resolved_notes,omitzero"`
-	}
 	e.ClearUnusedFieldsForType()
-	if omitCalc(enc) {
-		return json.MarshalEncode(enc, &e.EquipmentModifierData)
-	}
-	data := struct {
-		EquipmentModifierData
-		Calc *calc `json:"calc,omitzero"`
-	}{
-		EquipmentModifierData: e.EquipmentModifierData,
-	}
-	notes := e.ResolveLocalNotes()
-	if notes != e.LocalNotes {
-		data.Calc = &calc{ResolvedNotes: notes}
-	}
-	return json.MarshalEncode(enc, &data)
+	return marshalNodeData(enc, &e.EquipmentModifierData, func() *notesCalc {
+		return newNotesCalc(e.ResolveLocalNotes(), e.LocalNotes)
+	})
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.

@@ -15,20 +15,15 @@ import (
 )
 
 type skillListProvider struct {
-	skills []*gurps.Skill
-}
-
-func (p *skillListProvider) DataOwner() gurps.DataOwner {
-	return nil
+	fileListProvider[*gurps.Skill]
 }
 
 func (p *skillListProvider) SkillList() []*gurps.Skill {
-	return p.skills
+	return p.rows()
 }
 
 func (p *skillListProvider) SetSkillList(list []*gurps.Skill) {
-	gurps.SetDataOwnerAll(nil, list)
-	p.skills = list
+	p.setRows(list)
 }
 
 // NewSkillTableDockableFromFile loads a list of skills from a file and creates a new unison.Dockable for them.
@@ -38,7 +33,7 @@ func NewSkillTableDockableFromFile(filePath string) (unison.Dockable, error) {
 
 // NewSkillTableDockable creates a new unison.Dockable for skill list files.
 func NewSkillTableDockable(filePath string, skills []*gurps.Skill) *TableDockable[*gurps.Skill] {
-	provider := &skillListProvider{skills: skills}
+	provider := &skillListProvider{list: skills}
 	return NewTableDockable(filePath, gurps.SkillsExt, NewSkillsProvider(provider, false),
 		func(path string) error { return gurps.SaveSkills(provider.SkillList(), path) },
 		NewSkillItemID, NewSkillContainerItemID, NewTechniqueItemID)

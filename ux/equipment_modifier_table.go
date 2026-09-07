@@ -15,19 +15,15 @@ import (
 )
 
 type equipmentModifierListProvider struct {
-	modifiers []*gurps.EquipmentModifier
-}
-
-func (p *equipmentModifierListProvider) DataOwner() gurps.DataOwner {
-	return nil
+	fileListProvider[*gurps.EquipmentModifier]
 }
 
 func (p *equipmentModifierListProvider) EquipmentModifierList() []*gurps.EquipmentModifier {
-	return p.modifiers
+	return p.rows()
 }
 
 func (p *equipmentModifierListProvider) SetEquipmentModifierList(list []*gurps.EquipmentModifier) {
-	p.modifiers = list
+	p.setRows(list)
 }
 
 // NewEquipmentModifierTableDockableFromFile loads a list of equipment modifiers from a file and creates a new
@@ -38,7 +34,7 @@ func NewEquipmentModifierTableDockableFromFile(filePath string) (unison.Dockable
 
 // NewEquipmentModifierTableDockable creates a new unison.Dockable for equipment modifier list files.
 func NewEquipmentModifierTableDockable(filePath string, modifiers []*gurps.EquipmentModifier) *TableDockable[*gurps.EquipmentModifier] {
-	provider := &equipmentModifierListProvider{modifiers: modifiers}
+	provider := &equipmentModifierListProvider{list: modifiers}
 	return NewTableDockable(filePath, gurps.EquipmentModifiersExt,
 		NewEquipmentModifiersProvider(provider, false),
 		func(path string) error { return gurps.SaveEquipmentModifiers(provider.EquipmentModifierList(), path) },

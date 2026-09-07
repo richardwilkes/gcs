@@ -15,9 +15,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// equipmentListProvider holds the two lists of an equipment list file. Unlike the other list files, it is its own data
+// owner, since the equipment needs a weight unit to report its weights in.
 type equipmentListProvider struct {
-	carried []*gurps.Equipment
-	other   []*gurps.Equipment
+	carried fileListProvider[*gurps.Equipment]
+	other   fileListProvider[*gurps.Equipment]
 }
 
 func (p *equipmentListProvider) DataOwner() gurps.DataOwner {
@@ -37,21 +39,19 @@ func (p *equipmentListProvider) WeightUnit() fxp.WeightUnit {
 }
 
 func (p *equipmentListProvider) CarriedEquipmentList() []*gurps.Equipment {
-	return p.carried
+	return p.carried.rows()
 }
 
 func (p *equipmentListProvider) SetCarriedEquipmentList(list []*gurps.Equipment) {
-	gurps.SetDataOwnerAll(nil, list)
-	p.carried = list
+	p.carried.setRows(list)
 }
 
 func (p *equipmentListProvider) OtherEquipmentList() []*gurps.Equipment {
-	return p.other
+	return p.other.rows()
 }
 
 func (p *equipmentListProvider) SetOtherEquipmentList(list []*gurps.Equipment) {
-	gurps.SetDataOwnerAll(nil, list)
-	p.other = list
+	p.other.setRows(list)
 }
 
 // NewEquipmentTableDockableFromFile loads a list of equipment from a file and creates a new unison.Dockable for them.
@@ -61,7 +61,7 @@ func NewEquipmentTableDockableFromFile(filePath string) (unison.Dockable, error)
 
 // NewEquipmentTableDockable creates a new unison.Dockable for equipment list files.
 func NewEquipmentTableDockable(filePath string, equipment []*gurps.Equipment) *TableDockable[*gurps.Equipment] {
-	provider := &equipmentListProvider{other: equipment}
+	provider := &equipmentListProvider{other: fileListProvider[*gurps.Equipment]{list: equipment}}
 	d := NewTableDockable(filePath, gurps.EquipmentExt, NewEquipmentProvider(provider, false, false),
 		func(path string) error { return gurps.SaveEquipment(provider.OtherEquipmentList(), path) },
 		NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID)

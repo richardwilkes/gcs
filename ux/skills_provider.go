@@ -35,6 +35,8 @@ func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) TableProv
 		setList:    provider.SetSkillList,
 		columnIDs:  p.ColumnIDs,
 		headerData: gurps.SkillsHeaderData,
+		newItem:    gurps.NewSkill,
+		edit:       func(owner Rebuildable, item *gurps.Skill) { EditSkill(owner, item) },
 		forPage:    forPage,
 	}
 	return p
@@ -105,25 +107,17 @@ func (p *skillsProvider) ExcessWidthColumnID() int {
 	return gurps.SkillDescriptionColumn
 }
 
-func (p *skillsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Skill]]) {
-	OpenEditor(table, func(item *gurps.Skill) { EditSkill(owner, item) })
-}
-
+// CreateItem adds the alternate variant, a technique, to the skill and skill container the shared implementation
+// creates.
 func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Skill]], variant ItemVariant) {
-	var item *gurps.Skill
 	switch variant {
-	case NoItemVariant:
-		item = gurps.NewSkill(p.DataOwner(), nil, false)
-	case ContainerItemVariant:
-		item = gurps.NewSkill(p.DataOwner(), nil, true)
+	case NoItemVariant, ContainerItemVariant:
+		p.listProvider.CreateItem(owner, table, variant)
 	case AlternateItemVariant:
-		item = gurps.NewTechnique(p.DataOwner(), nil, "")
+		p.createItem(owner, table, gurps.NewTechnique(p.DataOwner(), nil, ""))
 	default:
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
-		return
 	}
-	p.insertItems(owner, table, item)
-	EditSkill(owner, item)
 }
 
 func (p *skillsProvider) ContextMenuItems() []ContextMenuItem {

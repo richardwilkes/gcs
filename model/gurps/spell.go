@@ -273,16 +273,9 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, mode Clo
 // MarshalJSONTo implements json.MarshalerTo.
 func (s *Spell) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
-	if omitCalc(enc) {
-		return json.MarshalEncode(enc, &s.SpellData)
-	}
-	return json.MarshalEncode(enc, &struct {
-		SpellData
-		Calc *leveledCalc `json:"calc,omitzero"`
-	}{
-		SpellData: s.SpellData,
-		Calc: newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
-			s.ResolveLocalNotes(), s.LocalNotes),
+	return marshalNodeData(enc, &s.SpellData, func() *leveledCalc {
+		return newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
+			s.ResolveLocalNotes(), s.LocalNotes)
 	})
 }
 

@@ -15,19 +15,15 @@ import (
 )
 
 type traitModifierListProvider struct {
-	modifiers []*gurps.TraitModifier
-}
-
-func (p *traitModifierListProvider) DataOwner() gurps.DataOwner {
-	return nil
+	fileListProvider[*gurps.TraitModifier]
 }
 
 func (p *traitModifierListProvider) TraitModifierList() []*gurps.TraitModifier {
-	return p.modifiers
+	return p.rows()
 }
 
 func (p *traitModifierListProvider) SetTraitModifierList(list []*gurps.TraitModifier) {
-	p.modifiers = list
+	p.setRows(list)
 }
 
 // NewTraitModifierTableDockableFromFile loads a list of trait modifiers from a file and creates a new
@@ -38,7 +34,7 @@ func NewTraitModifierTableDockableFromFile(filePath string) (unison.Dockable, er
 
 // NewTraitModifierTableDockable creates a new unison.Dockable for trait modifier list files.
 func NewTraitModifierTableDockable(filePath string, modifiers []*gurps.TraitModifier) *TableDockable[*gurps.TraitModifier] {
-	provider := &traitModifierListProvider{modifiers: modifiers}
+	provider := &traitModifierListProvider{list: modifiers}
 	return NewTableDockable(filePath, gurps.TraitModifiersExt,
 		NewTraitModifiersProvider(provider, false),
 		func(path string) error { return gurps.SaveTraitModifiers(provider.TraitModifierList(), path) },

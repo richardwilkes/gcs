@@ -13,91 +13,35 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 )
 
 const equipmentModifierRefKey = "equipment_modifier"
 
-var _ TableProvider[*gurps.EquipmentModifier] = &eqpModProvider{}
-
-type eqpModProvider struct {
-	listProvider[*gurps.EquipmentModifier]
-	forEditor bool
-}
+var _ TableProvider[*gurps.EquipmentModifier] = &modifiersProvider[*gurps.EquipmentModifier]{}
 
 // NewEquipmentModifiersProvider creates a new table provider for equipment modifiers.
 func NewEquipmentModifiersProvider(provider gurps.EquipmentModifierListProvider, forEditor bool) TableProvider[*gurps.EquipmentModifier] {
-	p := &eqpModProvider{forEditor: forEditor}
-	p.listProvider = listProvider[*gurps.EquipmentModifier]{
-		dataOwner:  provider,
-		list:       provider.EquipmentModifierList,
-		setList:    provider.SetEquipmentModifierList,
-		columnIDs:  p.ColumnIDs,
-		headerData: gurps.EquipmentModifierHeaderData,
-	}
-	return p
-}
-
-func (p *eqpModProvider) RefKey() string {
-	return equipmentModifierRefKey
-}
-
-func (p *eqpModProvider) DragKey() *uti.DataType {
-	return equipmentModifierDragKey
-}
-
-func (p *eqpModProvider) DragSVG() *unison.SVG {
-	return svg.GCSEquipmentModifiers
-}
-
-func (p *eqpModProvider) ItemNames() (singular, plural string) {
-	return i18n.Text("Equipment Modifier"), i18n.Text("Equipment Modifiers")
-}
-
-func (p *eqpModProvider) ColumnIDs() []int {
-	columnIDs := make([]int, 0, 7)
-	if p.forEditor {
-		columnIDs = append(columnIDs, gurps.EquipmentModifierEnabledColumn)
-	}
-	columnIDs = append(
-		columnIDs,
-		gurps.EquipmentModifierDescriptionColumn,
-		gurps.EquipmentModifierTechLevelColumn,
-		gurps.EquipmentModifierCostColumn,
-		gurps.EquipmentModifierWeightColumn,
-		gurps.EquipmentModifierTagsColumn,
-		gurps.EquipmentModifierReferenceColumn,
-	)
-	if p.forEditor {
-		columnIDs = append(columnIDs, gurps.EquipmentModifierLibSrcColumn)
-	}
-	return columnIDs
-}
-
-func (p *eqpModProvider) HierarchyColumnID() int {
-	return gurps.EquipmentModifierDescriptionColumn
-}
-
-func (p *eqpModProvider) ExcessWidthColumnID() int {
-	return gurps.EquipmentModifierDescriptionColumn
-}
-
-func (p *eqpModProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.EquipmentModifier]]) {
-	OpenEditor(table, func(item *gurps.EquipmentModifier) {
-		EditEquipmentModifier(owner, item)
-	})
-}
-
-func (p *eqpModProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.EquipmentModifier]], variant ItemVariant) {
-	item := gurps.NewEquipmentModifier(p.DataOwner(), nil, variant == ContainerItemVariant)
-	p.insertItems(owner, table, item)
-	EditEquipmentModifier(owner, item)
-}
-
-func (p *eqpModProvider) ContextMenuItems() []ContextMenuItem {
-	return AppendDefaultContextMenuItems([]ContextMenuItem{
-		contextMenuItemFor(newEquipmentModifierAction),
-		contextMenuItemFor(newEquipmentContainerModifierAction),
-	})
+	return newModifiersProvider(provider, provider.EquipmentModifierList, provider.SetEquipmentModifierList,
+		gurps.EquipmentModifierHeaderData, forEditor, modifierProviderSpec[*gurps.EquipmentModifier]{
+			refKey:            equipmentModifierRefKey,
+			dragKey:           equipmentModifierDragKey,
+			dragSVG:           svg.GCSEquipmentModifiers,
+			singular:          i18n.Text("Equipment Modifier"),
+			plural:            i18n.Text("Equipment Modifiers"),
+			enabledColumn:     gurps.EquipmentModifierEnabledColumn,
+			descriptionColumn: gurps.EquipmentModifierDescriptionColumn,
+			columns: []int{
+				gurps.EquipmentModifierDescriptionColumn,
+				gurps.EquipmentModifierTechLevelColumn,
+				gurps.EquipmentModifierCostColumn,
+				gurps.EquipmentModifierWeightColumn,
+				gurps.EquipmentModifierTagsColumn,
+				gurps.EquipmentModifierReferenceColumn,
+			},
+			libSrcColumn: gurps.EquipmentModifierLibSrcColumn,
+			newItem:      gurps.NewEquipmentModifier,
+			edit:         EditEquipmentModifier,
+			menuActions:  []*unison.Action{newEquipmentModifierAction, newEquipmentContainerModifierAction},
+		})
 }

@@ -12,43 +12,24 @@ package gurps
 import (
 	"hash"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
 var _ Bonus = &TraitMaxLevelBonus{}
 
-// TraitMaxLevelBonus holds an adjustment to a trait's maximum level. See MaxUsesModAmount for how the adjustment is
-// encoded.
+// TraitMaxLevelBonus holds an adjustment to a trait's maximum level: that of the trait it is attached to, or of the
+// traits whose name and tags match its criteria. See MaxUsesModAmount for how the adjustment is encoded.
 type TraitMaxLevelBonus struct {
-	Type feature.Type `json:"type"`
-	FeatureSwitch
-	SelectionType traitsel.Type `json:"selection_type"`
-	NameCriteria  criteria.Text `json:"name,omitzero"`
-	TagsCriteria  criteria.Text `json:"tags,omitzero"`
-	MaxUsesModAmount
-	BonusOwner `json:"-"`
+	maxAdjustmentBonusData[traitsel.Type]
 }
 
 // NewTraitMaxLevelBonus creates a new TraitMaxLevelBonus.
 func NewTraitMaxLevelBonus() *TraitMaxLevelBonus {
-	var t TraitMaxLevelBonus
-	t.Type = feature.TraitMaxLevelBonus
-	t.SelectionType = traitsel.ThisTrait
-	t.NameCriteria.Compare = criteria.IsText
-	t.TagsCriteria.Compare = criteria.AnyText
-	t.Amount = maxusesmod.Normalize("+1")
-	return &t
-}
-
-// FeatureType implements Feature.
-func (t *TraitMaxLevelBonus) FeatureType() feature.Type {
-	return t.Type
+	return &TraitMaxLevelBonus{
+		maxAdjustmentBonusData: newMaxAdjustmentBonusData(feature.TraitMaxLevelBonus, traitsel.ThisTrait),
+	}
 }
 
 // Clone implements Feature.
@@ -58,18 +39,7 @@ func (t *TraitMaxLevelBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (t *TraitMaxLevelBonus) FillWithNameableKeys(m, existing map[string]string) {
-	if t.SelectionType == traitsel.TraitWithName {
-		nameable.Extract(
-			m, existing,
-			t.NameCriteria.Qualifier,
-			t.TagsCriteria.Qualifier,
-		)
-	}
-}
-
-// AddToTooltip implements Bonus.
-func (t *TraitMaxLevelBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
-	t.addToTooltip(t.parentName(), buffer)
+	t.fillWithNameableKeysWhen(m, existing, traitsel.TraitWithName)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -78,10 +48,5 @@ func (t *TraitMaxLevelBonus) Hash(h hash.Hash) {
 		xhash.Num8(h, uint8(255))
 		return
 	}
-	xhash.Num8(h, t.Type)
-	xhash.Bool(h, t.Switchable)
-	xhash.Num8(h, t.SelectionType)
-	t.NameCriteria.Hash(h)
-	t.TagsCriteria.Hash(h)
-	t.MaxUsesModAmount.Hash(h)
+	t.maxAdjustmentBonusData.Hash(h)
 }

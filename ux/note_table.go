@@ -15,20 +15,15 @@ import (
 )
 
 type noteListProvider struct {
-	notes []*gurps.Note
-}
-
-func (p *noteListProvider) DataOwner() gurps.DataOwner {
-	return nil
+	fileListProvider[*gurps.Note]
 }
 
 func (p *noteListProvider) NoteList() []*gurps.Note {
-	return p.notes
+	return p.rows()
 }
 
 func (p *noteListProvider) SetNoteList(list []*gurps.Note) {
-	gurps.SetDataOwnerAll(nil, list)
-	p.notes = list
+	p.setRows(list)
 }
 
 // NewNoteTableDockableFromFile loads a list of notes from a file and creates a new unison.Dockable for them.
@@ -38,7 +33,7 @@ func NewNoteTableDockableFromFile(filePath string) (unison.Dockable, error) {
 
 // NewNoteTableDockable creates a new unison.Dockable for note list files.
 func NewNoteTableDockable(filePath string, notes []*gurps.Note) *TableDockable[*gurps.Note] {
-	provider := &noteListProvider{notes: notes}
+	provider := &noteListProvider{list: notes}
 	d := NewTableDockable(filePath, gurps.NotesExt, NewNotesProvider(provider, false),
 		func(path string) error { return gurps.SaveNotes(provider.NoteList(), path) },
 		NewNoteItemID, NewNoteContainerItemID)

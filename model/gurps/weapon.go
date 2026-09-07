@@ -283,12 +283,7 @@ func (w *Weapon) MarshalJSONTo(enc *jsontext.Encoder) error {
 		Strength   string  `json:"strength,omitzero"`
 	}
 	w.SubVersion = currentWeaponSubVersion
-	data := struct {
-		WeaponData
-		Calc *calc `json:"calc,omitzero"`
-	}{
-		WeaponData: w.WeaponData,
-	}
+	data := w.WeaponData
 	// Clearing the fields that don't apply to this kind of weapon is part of writing out the data, so it happens
 	// whether or not the derived values are wanted.
 	melee := w.IsMelee()
@@ -304,50 +299,49 @@ func (w *Weapon) MarshalJSONTo(enc *jsontext.Encoder) error {
 		data.Block = WeaponBlock{}
 		data.Reach = WeaponReach{}
 	}
-	if omitCalc(enc) {
-		return json.MarshalEncode(enc, &data)
-	}
-	data.Calc = &calc{
-		Level:  w.SkillLevel(nil).Max(0),
-		Damage: w.Damage.ResolvedDamage(nil),
-	}
-	if data.Calc.Strength = w.Strength.Resolve(w, nil).String(); data.Calc.Strength == w.Strength.String() {
-		data.Calc.Strength = ""
-	}
-	if melee {
-		if data.Calc.Parry = w.Parry.Resolve(w, nil).String(); data.Calc.Parry == w.Parry.String() {
-			data.Calc.Parry = ""
+	return marshalNodeData(enc, &data, func() *calc {
+		c := &calc{
+			Level:  w.SkillLevel(nil).Max(0),
+			Damage: w.Damage.ResolvedDamage(nil),
 		}
-		if data.Calc.Block = w.Block.Resolve(w, nil).String(); data.Calc.Block == w.Block.String() {
-			data.Calc.Block = ""
+		if c.Strength = w.Strength.Resolve(w, nil).String(); c.Strength == w.Strength.String() {
+			c.Strength = ""
 		}
-		if data.Calc.Reach = w.Reach.Resolve(w, nil).String(); data.Calc.Reach == w.Reach.String() {
-			data.Calc.Reach = ""
+		if melee {
+			if c.Parry = w.Parry.Resolve(w, nil).String(); c.Parry == w.Parry.String() {
+				c.Parry = ""
+			}
+			if c.Block = w.Block.Resolve(w, nil).String(); c.Block == w.Block.String() {
+				c.Block = ""
+			}
+			if c.Reach = w.Reach.Resolve(w, nil).String(); c.Reach == w.Reach.String() {
+				c.Reach = ""
+			}
+		} else {
+			if c.Accuracy = w.Accuracy.Resolve(w, nil).String(); c.Accuracy == w.Accuracy.String() {
+				c.Accuracy = ""
+			}
+			if c.Range = w.Range.Resolve(w, nil).String(w.musclePowerIsResolved()); c.Range == w.Range.String(false) {
+				c.Range = ""
+			}
+			if c.RateOfFire = w.RateOfFire.Resolve(w, nil).String(); c.RateOfFire == w.RateOfFire.String() {
+				c.RateOfFire = ""
+			}
+			if c.Shots = w.Shots.Resolve(w, nil).String(); c.Shots == w.Shots.String() {
+				c.Shots = ""
+			}
+			if c.Bulk = w.Bulk.Resolve(w, nil).String(); c.Bulk == w.Bulk.String() {
+				c.Bulk = ""
+			}
+			if c.Recoil = w.Recoil.Resolve(w, nil).String(); c.Recoil == w.Recoil.String() {
+				c.Recoil = ""
+			}
 		}
-	} else {
-		if data.Calc.Accuracy = w.Accuracy.Resolve(w, nil).String(); data.Calc.Accuracy == w.Accuracy.String() {
-			data.Calc.Accuracy = ""
+		if *c == (calc{}) {
+			return nil
 		}
-		if data.Calc.Range = w.Range.Resolve(w, nil).String(w.musclePowerIsResolved()); data.Calc.Range == w.Range.String(false) {
-			data.Calc.Range = ""
-		}
-		if data.Calc.RateOfFire = w.RateOfFire.Resolve(w, nil).String(); data.Calc.RateOfFire == w.RateOfFire.String() {
-			data.Calc.RateOfFire = ""
-		}
-		if data.Calc.Shots = w.Shots.Resolve(w, nil).String(); data.Calc.Shots == w.Shots.String() {
-			data.Calc.Shots = ""
-		}
-		if data.Calc.Bulk = w.Bulk.Resolve(w, nil).String(); data.Calc.Bulk == w.Bulk.String() {
-			data.Calc.Bulk = ""
-		}
-		if data.Calc.Recoil = w.Recoil.Resolve(w, nil).String(); data.Calc.Recoil == w.Recoil.String() {
-			data.Calc.Recoil = ""
-		}
-	}
-	if *data.Calc == (calc{}) {
-		data.Calc = nil
-	}
-	return json.MarshalEncode(enc, &data)
+		return c
+	})
 }
 
 func (w *Weapon) musclePowerIsResolved() bool {
