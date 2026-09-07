@@ -15,12 +15,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var lastStudyTypeUsed = study.Self
@@ -39,27 +37,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.S
 		studyNeeded: studyNeeded,
 		study:       s,
 	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	p.SetBorder(unison.NewCompoundBorder(
-		&TitledBorder{
-			Title: i18n.Text("Study"),
-			Font:  unison.LabelFont,
-		},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
-	))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
-	}
+	initTitledEditorSection(p, i18n.Text("Study"))
 
 	top := unison.NewPanel()
 	top.SetLayout(&unison.FlexLayout{
@@ -69,19 +47,15 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.S
 	})
 	p.AddChild(top)
 
-	addButton := unison.NewSVGButton(unison.CircledAddSVG)
-	addButton.ClickCallback = func() {
+	top.AddChild(newSectionAddButton(p, func() bool {
 		def := &gurps.Study{Type: lastStudyTypeUsed}
 		*s = slices.Insert(*s, 0, def)
 		p.insertStudyEntry(1, def, true)
-		MarkRootAncestorForLayoutRecursively(p)
-		MarkModified(p)
-	}
-	top.AddChild(addButton)
+		return true
+	}))
 
 	topRight := unison.NewPanel()
 	topRight.SetLayout(&unison.FlexLayout{Columns: 3})
-	p.AddChild(topRight)
 	top.AddChild(topRight)
 
 	p.total = unison.NewLabel()

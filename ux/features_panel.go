@@ -37,7 +37,6 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var (
@@ -62,36 +61,16 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 		features:             features,
 		forEquipmentModifier: forEquipmentModifier,
 	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-	})
-	p.SetBorder(unison.NewCompoundBorder(
-		&TitledBorder{
-			Title: i18n.Text("Features"),
-			Font:  unison.LabelFont,
-		},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
-	))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
-	}
-	addButton := unison.NewSVGButton(unison.CircledAddSVG)
-	addButton.ClickCallback = func() {
-		if created := p.createFeatureForType(lastFeatureTypeUsed); created != nil {
-			*features = slices.Insert(*features, 0, created)
-			p.insertFeaturePanel(1, created)
-			MarkRootAncestorForLayoutRecursively(p)
-			MarkModified(p)
+	initTitledEditorSection(p, i18n.Text("Features"))
+	p.AddChild(newSectionAddButton(p, func() bool {
+		created := p.createFeatureForType(lastFeatureTypeUsed)
+		if created == nil {
+			return false
 		}
-	}
-	p.AddChild(addButton)
+		*features = slices.Insert(*features, 0, created)
+		p.insertFeaturePanel(1, created)
+		return true
+	}))
 	for i, one := range *features {
 		p.insertFeaturePanel(i+1, one)
 	}

@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 const (
@@ -54,23 +53,7 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 		andOrMap:         make(map[gurps.Prereq]*unison.Label),
 		ownerIsSpell:     ownerIsSpell,
 	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	p.SetBorder(unison.NewCompoundBorder(
-		&TitledBorder{
-			Title: i18n.Text("Prerequisites"),
-			Font:  unison.LabelFont,
-		},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
-	))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
-	}
+	initTitledEditorSection(p, i18n.Text("Prerequisites"))
 	list, _ := p.createPrereqListPanel(0, *root)
 	p.AddChild(list)
 	return p

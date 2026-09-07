@@ -160,6 +160,49 @@ func moveEntry[T any](list *[]T, from, to int) bool {
 	return true
 }
 
+// initTitledEditorSection sets up a panel as a titled section of an editor, such as its features or prerequisites: it
+// becomes its own Self and is given a single-column layout with the standard spacing, layout data that spans and fills
+// both columns of the editor's grid and grabs extra width, a titled border in the label font with a small inset inside
+// it, and a background in the surface color. The panel's rows are then added by the caller.
+func initTitledEditorSection(p unison.Paneler, title string) {
+	panel := p.AsPanel()
+	panel.Self = p
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	panel.SetBorder(unison.NewCompoundBorder(
+		&TitledBorder{
+			Title: title,
+			Font:  unison.LabelFont,
+		},
+		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
+	))
+	panel.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
+		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
+	}
+}
+
+// newSectionAddButton returns the add button of an editor section. Clicking it calls insert, which adds a new item to
+// the head of the section's list along with a row for it and reports whether it did so; when it did, the section is laid
+// out again and marked as modified.
+func newSectionAddButton(section unison.Paneler, insert func() bool) *unison.Button {
+	button := unison.NewSVGButton(unison.CircledAddSVG)
+	button.ClickCallback = func() {
+		if insert() {
+			MarkRootAncestorForLayoutRecursively(section)
+			MarkModified(section)
+		}
+	}
+	return button
+}
+
 // newEditorSectionHeader returns a bold section title with any number of buttons beside it, in the order given. It asks
 // to span two columns, which suits the editors' two-column grids; a single-column parent clamps that to one.
 func newEditorSectionHeader(title, tooltip string, buttons ...*unison.Button) *unison.Panel {

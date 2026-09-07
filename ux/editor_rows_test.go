@@ -13,6 +13,8 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -301,4 +303,90 @@ func TestAncestryDragDropIgnoresNoOpsAndForeignPayloads(t *testing.T) {
 	d.dataDragDrop(geom.Point{}, dragDataForRow(t, listPanelFor(t, d, &d.model.CommonOptions.SkinOptions).rows.Children()[1]))
 	c.Equal([]string{"Pale", "Dark"}, optionValues(d.model.CommonOptions.SkinOptions))
 	c.False(d.undoMgr.CanUndo())
+}
+
+// titledSection is a panel type of its own, so that a test can tell whether initTitledEditorSection made the panel its
+// own Self.
+type titledSection struct {
+	unison.Panel
+}
+
+// sectionRoot is a ModifiableRoot that counts how often it is marked as modified.
+type sectionRoot struct {
+	unison.Panel
+	modified int
+}
+
+func (r *sectionRoot) MarkModified(_ unison.Paneler) {
+	r.modified++
+}
+
+// expectTitledEditorSection verifies that the given panel carries the titled editor section scaffold, whose layout data
+// and border are what make the sections line up with each other in an editor.
+func expectTitledEditorSection(c check.Checker, p unison.Paneler, title string) {
+	c.Helper()
+	panel := p.AsPanel()
+	layout, ok := panel.Layout().(*unison.FlexLayout)
+	c.True(ok, "%s: a titled editor section uses a FlexLayout", title)
+	c.Equal(1, layout.Columns, "%s: a titled editor section stacks its rows in a single column", title)
+	c.Equal(float32(unison.StdHSpacing), layout.HSpacing, "%s: horizontal spacing", title)
+	c.Equal(float32(unison.StdVSpacing), layout.VSpacing, "%s: vertical spacing", title)
+	c.Equal(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill, HGrab: true}, panel.LayoutData(),
+		"%s: a titled editor section spans, fills and grabs both editor columns", title)
+	expected := unison.NewCompoundBorder(&TitledBorder{Title: title, Font: unison.LabelFont},
+		unison.NewEmptyBorder(geom.NewUniformInsets(2)))
+	c.Equal(expected.Insets(), panel.Border().Insets(), "%s: the border is the titled border with a 2-point inset", title)
+	c.NotNil(panel.DrawCallback, "%s: a titled editor section paints its own background", title)
+}
+
+// TestInitTitledEditorSection verifies the scaffold shared by the editors' titled sections and that each of the four
+// section panels is built on it, so that none of them can drift from the others again in how it fills the editor.
+func TestInitTitledEditorSection(t *testing.T) {
+	c := check.New(t)
+	section := &titledSection{}
+	initTitledEditorSection(section, "Sample")
+	c.True(section.Self == section, "the section becomes its own Self")
+	expectTitledEditorSection(c, section, "Sample")
+
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	defs := []*gurps.SkillDefault{{DefaultType: gurps.DexterityID}}
+	expectTitledEditorSection(c, newDefaultsPanel(entity, &defs), "Defaults")
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.SetOwner(owner)
+	features := gurps.Features{bonus}
+	expectTitledEditorSection(c, newFeaturesPanel(entity, owner, &features, false), "Features")
+	root := gurps.NewPrereqList()
+	expectTitledEditorSection(c, newPrereqPanel(entity, &root, prereq.TypesForNonEquipment, false), "Prerequisites")
+	level := study.Standard
+	studies := []*gurps.Study{{Type: study.Self}}
+	expectTitledEditorSection(c, newStudyPanel(entity, &level, &studies), "Study")
+}
+
+// TestNewSectionAddButton verifies that clicking a section's add button runs the insertion and marks the section's
+// root as modified only when the insertion reports that it added something.
+func TestNewSectionAddButton(t *testing.T) {
+	c := check.New(t)
+	root := &sectionRoot{}
+	root.Self = root
+	section := unison.NewPanel()
+	root.AddChild(section)
+	inserted := 0
+	added := true
+	button := newSectionAddButton(section, func() bool {
+		inserted++
+		return added
+	})
+	icon, ok := button.Drawable.(*unison.DrawableSVG)
+	c.True(ok, "the add button shows an icon")
+	c.Equal(unison.CircledAddSVG, icon.SVG, "the add button shows the add icon")
+
+	button.Click()
+	c.Equal(1, inserted, "a click runs the insertion")
+	c.Equal(1, root.modified, "an insertion that added something marks the root as modified")
+
+	added = false
+	button.Click()
+	c.Equal(2, inserted, "a further click runs the insertion again")
+	c.Equal(1, root.modified, "an insertion that added nothing leaves the root alone")
 }

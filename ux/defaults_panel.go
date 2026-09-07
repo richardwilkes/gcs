@@ -15,11 +15,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var lastDefaultTypeUsed = gurps.DexterityID
@@ -35,29 +33,8 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 		entity:   entity,
 		defaults: defaults,
 	}
-	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	p.SetBorder(unison.NewCompoundBorder(
-		&TitledBorder{
-			Title: i18n.Text("Defaults"),
-			Font:  unison.LabelFont,
-		},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
-	))
-	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
-	}
-	addButton := unison.NewSVGButton(unison.CircledAddSVG)
-	addButton.ClickCallback = func() {
+	initTitledEditorSection(p, i18n.Text("Defaults"))
+	p.AddChild(newSectionAddButton(p, func() bool {
 		def := &gurps.SkillDefault{DefaultType: lastDefaultTypeUsed}
 		// See the comment for the delete button as to why we don't just use slices.Insert here.
 		defs := make([]*gurps.SkillDefault, len(*p.defaults)+1)
@@ -65,10 +42,8 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 		copy(defs[1:], *p.defaults)
 		*p.defaults = defs
 		p.insertDefaultsPanel(1, def)
-		MarkRootAncestorForLayoutRecursively(p)
-		MarkModified(p)
-	}
-	p.AddChild(addButton)
+		return true
+	}))
 	for i, one := range *p.defaults {
 		p.insertDefaultsPanel(i+1, one)
 	}
