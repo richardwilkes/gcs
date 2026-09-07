@@ -57,6 +57,53 @@ type SettingsDockable struct {
 	WillCloseCallback func() bool
 }
 
+// settingsSpec describes one of the views that edit a global setting in place -- the colors, fonts, menu keys, general
+// settings, page reference mappings, sheet defaults and library settings: its tab title, the file extension it imports
+// and exports, how to load, save and reset it, and how to build its toolbar and content. It is what distinguishes one
+// of those views from another; everything else about them is in SettingsDockable. Its tab icon is always the settings
+// icon, so the spec does not name one. Any of the functions may be nil, in which case the base omits what it would
+// have done with it: with no loader, saver or resetter the toolbar has no menu or reset button, and with no willClose
+// the view closes without being asked.
+type settingsSpec struct {
+	title             string
+	ext               string
+	loader            func(fileSystem fs.FS, filePath string) error
+	saver             func(filePath string) error
+	resetter          func()
+	willClose         func() bool
+	addToStartToolbar func(toolbar *unison.Panel)
+	initContent       func(content *unison.Panel)
+}
+
+// initSettings fills in the base from the spec, with self, the outer view, as what the dock resolves the panel to, then
+// builds the toolbar and content and places the view in the dock. The caller has already checked that the view is not
+// open, with activateDockable or a predicate of its own, since the base has no way to tell one view from another.
+func (d *SettingsDockable) initSettings(self unison.Paneler, spec *settingsSpec) {
+	d.Self = self
+	d.TabTitle = spec.title
+	d.TabIcon = svg.Settings
+	if spec.ext != "" {
+		d.Extensions = []string{spec.ext}
+	}
+	d.Loader = spec.loader
+	d.Saver = spec.saver
+	d.Resetter = spec.resetter
+	d.WillCloseCallback = spec.willClose
+	d.Setup(spec.addToStartToolbar, nil, spec.initContent)
+}
+
+// initSettingsContent gives a settings view's content panel the layout most of them share, a grid of the given number
+// of columns with the standard spacing, and returns the panel so that a view that keeps a reference to its content can
+// take it from the same call that lays it out.
+func initSettingsContent(content *unison.Panel, columns int) *unison.Panel {
+	content.SetLayout(&unison.FlexLayout{
+		Columns:  columns,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	return content
+}
+
 // Setup the dockable and display it.
 func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent func(*unison.Panel)) {
 	d.SetLayout(&unison.FlexLayout{Columns: 1})

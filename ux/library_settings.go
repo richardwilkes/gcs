@@ -49,12 +49,7 @@ type librarySettingsDockable struct {
 
 // ShowLibrarySettings the Library Settings view for a specific library.
 func ShowLibrarySettings(lib *gurps.Library) {
-	if Activate(func(d unison.Dockable) bool {
-		if settingsDockable, ok := d.AsPanel().Self.(*librarySettingsDockable); ok && settingsDockable.library == lib {
-			return true
-		}
-		return false
-	}) {
+	if activateDockable(func(d *librarySettingsDockable) bool { return d.library == lib }) {
 		return
 	}
 	isUser := lib.IsUser()
@@ -65,11 +60,12 @@ func ShowLibrarySettings(lib *gurps.Library) {
 		special: isUser || lib.IsMaster(),
 		isUser:  isUser,
 	}
-	d.Self = d
-	d.TabTitle = librarySettingsTitle(d.config.Title)
-	d.TabIcon = svg.Settings
-	d.WillCloseCallback = d.willClose
-	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.initSettings(d, &settingsSpec{
+		title:             librarySettingsTitle(d.config.Title),
+		willClose:         d.willClose,
+		addToStartToolbar: d.addToStartToolbar,
+		initContent:       d.initContent,
+	})
 	d.updateToolbar()
 	d.nameField.RequestFocus()
 	d.promptForSave = true
@@ -94,11 +90,7 @@ func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 }
 
 func (d *librarySettingsDockable) initContent(content *unison.Panel) {
-	content.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	initSettingsContent(content, 2)
 
 	title := i18n.Text("Name")
 	content.AddChild(NewFieldLeadingLabel(title, false))

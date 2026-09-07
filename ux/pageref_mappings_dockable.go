@@ -271,18 +271,19 @@ func RefreshPageRefMappingsView() {
 
 // ShowPageRefMappings shows the Page Reference Mappings.
 func ShowPageRefMappings() {
-	if Activate(func(d unison.Dockable) bool { return asPageRefMappingsDockable(d) != nil }) {
+	if activateDockable[*pageRefMappingsDockable](nil) {
 		return
 	}
 	d := &pageRefMappingsDockable{}
-	d.Self = d
-	d.TabTitle = i18n.Text("Page Reference Mappings")
-	d.TabIcon = svg.Settings
-	d.Extensions = []string{gurps.PageRefSettingsExt}
-	d.Loader = d.load
-	d.Saver = d.save
-	d.Resetter = d.reset
-	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.initSettings(d, &settingsSpec{
+		title:             i18n.Text("Page Reference Mappings"),
+		ext:               gurps.PageRefSettingsExt,
+		loader:            d.load,
+		saver:             d.save,
+		resetter:          d.reset,
+		addToStartToolbar: d.addToStartToolbar,
+		initContent:       d.initContent,
+	})
 }
 
 func (d *pageRefMappingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -290,12 +291,7 @@ func (d *pageRefMappingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 }
 
 func (d *pageRefMappingsDockable) initContent(content *unison.Panel) {
-	d.content = content
-	d.content.SetLayout(&unison.FlexLayout{
-		Columns:  5,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	d.content = initSettingsContent(content, 5)
 	d.sync()
 }
 

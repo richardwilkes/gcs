@@ -31,30 +31,22 @@ type menuKeySettingsDockable struct {
 
 // ShowMenuKeySettings shows the Menu Key settings.
 func ShowMenuKeySettings() {
-	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.AsPanel().Self.(*menuKeySettingsDockable)
-		return ok
-	}) {
+	if activateDockable[*menuKeySettingsDockable](nil) {
 		return
 	}
 	d := &menuKeySettingsDockable{}
-	d.Self = d
-	d.TabTitle = i18n.Text("Menu Keys")
-	d.TabIcon = svg.Settings
-	d.Extensions = []string{gurps.KeySettingsExt}
-	d.Loader = d.load
-	d.Saver = d.save
-	d.Resetter = d.reset
-	d.Setup(nil, nil, d.initContent)
+	d.initSettings(d, &settingsSpec{
+		title:       i18n.Text("Menu Keys"),
+		ext:         gurps.KeySettingsExt,
+		loader:      d.load,
+		saver:       d.save,
+		resetter:    d.reset,
+		initContent: d.initContent,
+	})
 }
 
 func (d *menuKeySettingsDockable) initContent(content *unison.Panel) {
-	d.content = content
-	d.content.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	d.content = initSettingsContent(content, 3)
 	d.fill()
 }
 

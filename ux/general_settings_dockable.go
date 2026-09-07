@@ -90,22 +90,20 @@ type membershipCheckBox[T cmp.Ordered] struct {
 
 // ShowGeneralSettings the General Settings window.
 func ShowGeneralSettings() {
-	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.AsPanel().Self.(*generalSettingsDockable)
-		return ok
-	}) {
+	if activateDockable[*generalSettingsDockable](nil) {
 		return
 	}
 	d := &generalSettingsDockable{}
-	d.Self = d
-	d.TabTitle = i18n.Text("General Settings")
-	d.TabIcon = svg.Settings
-	d.Extensions = []string{gurps.GeneralSettingsExt}
-	d.Loader = d.load
-	d.Saver = d.save
-	d.Resetter = d.reset
-	d.WillCloseCallback = d.willClose
-	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.initSettings(d, &settingsSpec{
+		title:             i18n.Text("General Settings"),
+		ext:               gurps.GeneralSettingsExt,
+		loader:            d.load,
+		saver:             d.save,
+		resetter:          d.reset,
+		willClose:         d.willClose,
+		addToStartToolbar: d.addToStartToolbar,
+		initContent:       d.initContent,
+	})
 	d.nameField.RequestFocus()
 }
 
@@ -114,11 +112,7 @@ func (d *generalSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 }
 
 func (d *generalSettingsDockable) initContent(content *unison.Panel) {
-	content.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	initSettingsContent(content, 3)
 	d.createPlayerAndDescFields(content)
 	d.createCheckboxBlock(content)
 	d.createUpdateCheckPopups(content)

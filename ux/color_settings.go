@@ -33,30 +33,23 @@ type colorSettingsDockable struct {
 
 // ShowColorSettings shows the Color settings.
 func ShowColorSettings() {
-	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.AsPanel().Self.(*colorSettingsDockable)
-		return ok
-	}) {
+	if activateDockable[*colorSettingsDockable](nil) {
 		return
 	}
 	d := &colorSettingsDockable{}
-	d.Self = d
-	d.TabTitle = i18n.Text("Colors")
-	d.TabIcon = svg.Settings
-	d.Extensions = []string{gurps.ColorSettingsExt}
-	d.Loader = d.load
-	d.Saver = d.save
-	d.Resetter = d.reset
-	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.initSettings(d, &settingsSpec{
+		title:             i18n.Text("Colors"),
+		ext:               gurps.ColorSettingsExt,
+		loader:            d.load,
+		saver:             d.save,
+		resetter:          d.reset,
+		addToStartToolbar: d.addToStartToolbar,
+		initContent:       d.initContent,
+	})
 }
 
 func (d *colorSettingsDockable) initContent(content *unison.Panel) {
-	d.content = content
-	d.content.SetLayout(&unison.FlexLayout{
-		Columns:  4,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	d.content = initSettingsContent(content, 4)
 	d.fill()
 }
 

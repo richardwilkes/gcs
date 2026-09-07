@@ -30,30 +30,22 @@ type fontSettingsDockable struct {
 
 // ShowFontSettings shows the Font settings.
 func ShowFontSettings() {
-	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.AsPanel().Self.(*fontSettingsDockable)
-		return ok
-	}) {
+	if activateDockable[*fontSettingsDockable](nil) {
 		return
 	}
 	d := &fontSettingsDockable{}
-	d.Self = d
-	d.TabTitle = i18n.Text("Fonts")
-	d.TabIcon = svg.Settings
-	d.Extensions = []string{gurps.FontSettingsExt}
-	d.Loader = d.load
-	d.Saver = d.save
-	d.Resetter = d.reset
-	d.Setup(nil, nil, d.initContent)
+	d.initSettings(d, &settingsSpec{
+		title:       i18n.Text("Fonts"),
+		ext:         gurps.FontSettingsExt,
+		loader:      d.load,
+		saver:       d.save,
+		resetter:    d.reset,
+		initContent: d.initContent,
+	})
 }
 
 func (d *fontSettingsDockable) initContent(content *unison.Panel) {
-	d.content = content
-	d.content.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	d.content = initSettingsContent(content, 3)
 	for i, one := range fonts.CurrentFonts() {
 		d.content.AddChild(NewFieldTrailingLabel(one.Title, false))
 		fp := d.createFontPanel(i)

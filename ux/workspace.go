@@ -189,6 +189,20 @@ func Activate(matcher func(d unison.Dockable) bool) bool {
 	return false
 }
 
+// activateDockable is Activate for the common case of looking for a dockable of a particular type: it activates the
+// first open dockable whose panel's Self is a T and, when match is not nil, that match accepts. The dockable is
+// resolved through its panel's Self, since what the dock hands out may be an inner layer rather than the dockable
+// itself -- SettingsDockable.Setup hands its own embedded SettingsDockable to the placement code, for example -- and a
+// direct type assertion would not see the dockable in that case. Pass nil to match when the type alone identifies the
+// dockable, as it does for the global settings views; pass a predicate when something else is part of its identity,
+// such as the sheet a per-sheet settings view belongs to.
+func activateDockable[T unison.Paneler](match func(T) bool) bool {
+	return Activate(func(d unison.Dockable) bool {
+		t, ok := d.AsPanel().Self.(T)
+		return ok && (match == nil || match(t))
+	})
+}
+
 // ActivateDockable activates the dockable, giving it focus.
 func ActivateDockable(d unison.Dockable) {
 	if dc := unison.Ancestor[*unison.DockContainer](d.AsPanel()); dc != nil {

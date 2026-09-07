@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/paper"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -181,23 +180,19 @@ func sheetOptions() []sheetOption {
 
 // ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowSheetSettings(owner EntityPanel) {
-	if Activate(func(d unison.Dockable) bool {
-		if s, ok := d.AsPanel().Self.(*sheetSettingsDockable); ok && owner == s.owner {
-			return true
-		}
-		return false
-	}) {
+	if activateDockable(func(s *sheetSettingsDockable) bool { return s.owner == owner }) {
 		return
 	}
 	d := &sheetSettingsDockable{owner: owner}
-	d.Self = d
-	d.TabTitle = sheetSettingsTabTitle(owner)
-	d.TabIcon = svg.Settings
-	d.Extensions = []string{gurps.SheetSettingsExt}
-	d.Loader = d.load
-	d.Saver = d.save
-	d.Resetter = d.reset
-	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.initSettings(d, &settingsSpec{
+		title:             sheetSettingsTabTitle(owner),
+		ext:               gurps.SheetSettingsExt,
+		loader:            d.load,
+		saver:             d.save,
+		resetter:          d.reset,
+		addToStartToolbar: d.addToStartToolbar,
+		initContent:       d.initContent,
+	})
 }
 
 // sheetSettingsTabTitle returns the tab title to use for the sheet settings of the given owner, or for the defaults
