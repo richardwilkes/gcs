@@ -866,18 +866,7 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 	if len(items) == 0 {
 		return
 	}
-	var undo *unison.UndoEdit[*TableUndoEditData[T]]
-	mgr := unison.UndoManagerFor(table)
-	if mgr != nil {
-		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-			ID:         unison.NextUndoID(),
-			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()),
-			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-			AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
-			BeforeData: NewTableUndoEditData(table),
-		}
-	}
+	undo := beginTableUndo(table, fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()), nil, nil)
 	var target, zero T
 	i := table.FirstSelectedRowIndex()
 	if i != -1 {
@@ -918,10 +907,7 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 	table.SetSelectionMap(selMap)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
-	if mgr != nil && undo != nil {
-		undo.AfterData = NewTableUndoEditData(table)
-		mgr.Add(undo)
-	}
+	commitTableUndo(table, undo)
 	// The change is reported once, by rebuilding the owner: an inserted item can bring a weapon, reaction or
 	// conditional modifier list onto the page, or the switch column into one of the lists, and only a rebuild creates
 	// those. Marking the table as modified on top of that would just repeat the whole update of the owner.

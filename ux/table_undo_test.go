@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -17,11 +18,48 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/mod"
 )
+
+// TestTableUndoBracket verifies the pair that every edit of a table's contents records its undo through. On a table
+// with no undo manager above it, such as a library list's, beginTableUndo hands back nil and commitTableUndo accepts
+// it, so the edit goes unrecorded without the caller having to check. On a table that has one, the edit is recorded
+// under the title it was begun with, its undo and redo put the "before" and "after" states back, and the hooks run
+// ahead of each of those.
+func TestTableUndoBracket(t *testing.T) {
+	c := check.New(t)
+	orphan := newLibraryStyleTraitsTable(newSwitchableTrait(nil, "Claws"))
+	c.Nil(beginTableUndo(orphan, "Edit", nil, nil), "a table with no undo manager must yield no edit")
+	commitTableUndo(orphan, nil)
+
+	sheet, trait := newSheetWithSwitchableTrait(t)
+	entity := sheet.Entity()
+	mgr := unison.UndoManagerFor(sheet.Traits.Table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	original := trait.Name
+	var seen []string
+	note := func(when string) func() {
+		return func() { seen = append(seen, when+":"+entity.Traits[0].Name) }
+	}
+	undo := beginTableUndo(sheet.Traits.Table, "Rename", note("undo"), note("redo"))
+	c.NotNil(undo, "a table with an undo manager must yield an edit")
+	trait.Name = "Renamed"
+	sheet.Traits.Table.SyncToModel()
+	commitTableUndo(sheet.Traits.Table, undo)
+	c.True(mgr.CanUndo(), "committing must record the edit")
+	c.Equal(fmt.Sprintf(i18n.Text("Undo %s"), "Rename"), mgr.UndoTitle(),
+		"the edit must carry the title it was begun with")
+	mgr.Undo()
+	c.Equal(original, entity.Traits[0].Name, "undo must put the trait's earlier name back")
+	mgr.Redo()
+	c.Equal("Renamed", entity.Traits[0].Name, "redo must put the new name back")
+	c.Equal([]string{"undo:Renamed", "redo:" + original}, seen,
+		"each hook must run once, ahead of the data it precedes being put back")
+}
 
 // TestUndoOfDeleteSurvivesSwitchColumnDisappearing verifies that deleting the only switchable row -- which drops the
 // switch column and so forces the sheet to rebuild the traits page list from scratch -- doesn't sever undo from the

@@ -12,6 +12,8 @@ package ux
 import (
 	"os"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -180,13 +182,16 @@ type numberFormatWidgets struct {
 	format *fxp.NumberFormat
 }
 
-// allNumberFormatWidgets returns the widgets for each of the four display formats in the given settings.
+// allNumberFormatWidgets returns the widgets for each of the four display formats in the given settings. The rows are
+// taken in the order createDecimalPlaces builds them, and the format each is paired with is named here independently of
+// the accessor the row carries, so that a row pointed at the wrong format is caught.
 func allNumberFormatWidgets(d *sheetSettingsDockable, s *gurps.SheetSettings) []numberFormatWidgets {
+	rows := d.numberFormats
 	return []numberFormatWidgets{
-		{name: "height", popup: d.heightPlacesPopup, pad: d.heightPadWithZeros, format: &s.HeightFormat},
-		{name: "body weight", popup: d.bodyWeightPlacesPopup, pad: d.bodyWeightPadWithZeros, format: &s.BodyWeightFormat},
-		{name: "equipment weight", popup: d.equipmentWeightPlacesPopup, pad: d.equipmentWeightPadWithZeros, format: &s.EquipmentWeightFormat},
-		{name: "equipment value", popup: d.equipmentValuePlacesPopup, pad: d.equipmentValuePadWithZeros, format: &s.EquipmentValueFormat},
+		{name: "height", popup: rows[0].popup, pad: rows[0].pad, format: &s.HeightFormat},
+		{name: "body weight", popup: rows[1].popup, pad: rows[1].pad, format: &s.BodyWeightFormat},
+		{name: "equipment weight", popup: rows[2].popup, pad: rows[2].pad, format: &s.EquipmentWeightFormat},
+		{name: "equipment value", popup: rows[3].popup, pad: rows[3].pad, format: &s.EquipmentValueFormat},
 	}
 }
 
@@ -247,6 +252,55 @@ func TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting(t *testing.T) {
 		}
 		c.Equal(updates+2, len(recorder.updates), "each %s change must notify the open sheets", w.name)
 	}
+}
+
+// checkBoxOptionsOf returns the settings' boolean options by name: the top-level boolean settings along with the
+// padding flag of each number format, which are the settings the dockable presents as checkboxes.
+func checkBoxOptionsOf(s *gurps.SheetSettings) map[string]bool {
+	options := make(map[string]bool)
+	v := reflect.ValueOf(s.SheetSettingsData)
+	for i := range v.NumField() {
+		field := v.Field(i)
+		name := v.Type().Field(i).Name
+		switch {
+		case field.Kind() == reflect.Bool:
+			options[name] = field.Bool()
+		case field.Type() == reflect.TypeFor[fxp.NumberFormat]():
+			options[name+".PadWithZeros"] = field.FieldByName("PadWithZeros").Bool()
+		}
+	}
+	return options
+}
+
+// TestSheetSettingsCheckBoxesEachWriteTheirOwnOption verifies that the checkboxes between them cover exactly the
+// boolean options the dockable is meant to present, each writing an option of its own: clicking every box once must
+// leave the settings the same as flipping every one of those options directly. A box wired to another box's option
+// would flip it back again, and one wired to an option that isn't meant to be a checkbox would show up as a difference
+// too. Each click has to notify the open sheets as well.
+func TestSheetSettingsCheckBoxesEachWriteTheirOwnOption(t *testing.T) {
+	c := check.New(t)
+	owner := newEntityPanelWithFlaggedSettings()
+	d, recorder := newTestSheetSettingsDockable(t, owner)
+	expected := owner.entity.SheetSettings.Clone(owner.entity)
+	flipCheckboxOptions(expected)
+	type namedBox struct {
+		name string
+		box  *unison.CheckBox
+	}
+	boxes := make([]namedBox, 0, len(d.options)+len(d.numberFormats))
+	for _, one := range d.options {
+		boxes = append(boxes, namedBox{name: one.option.title, box: one.box})
+	}
+	for i, row := range d.numberFormats {
+		boxes = append(boxes, namedBox{name: "pad #" + strconv.Itoa(i), box: row.pad})
+	}
+	for i, one := range boxes {
+		one.box.State = uncheck.FromBool(one.box.State != uncheck.On)
+		one.box.ClickCallback()
+		c.Equal(i+1, len(recorder.updates), "clicking %q must notify the open sheets", one.name)
+	}
+	c.Equal(checkBoxOptionsOf(expected), checkBoxOptionsOf(owner.entity.SheetSettings),
+		"clicking every checkbox once must flip every checkbox-backed option and nothing else")
 }
 
 // TestSheetSettingsTabTitle verifies that the character name is substituted into the tab title rather than being built

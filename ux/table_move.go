@@ -114,29 +114,15 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 	// The data has to be captured before anything moves, but the edit is only recorded once something has, which the
 	// loop below finds out as it goes; a selection none of whose rows can move therefore costs one serialization and
 	// nothing more, rather than a full pass over it up front to establish that.
-	var undo *unison.UndoEdit[*TableUndoEditData[T]]
+	//
+	// The containers the move opened, collected by the loop below, are closed again before undo puts the data back, so
+	// that undo leaves no trace, and reopened before redo does, so that the rows redo moves into them are showing and
+	// can be selected. Their open state is kept in the global settings under their IDs, so it makes no difference that
+	// the objects themselves are replaced when the data is deserialized.
 	var opened []T
-	mgr := unison.UndoManagerFor(table)
-	if mgr != nil {
-		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-			ID:       unison.NextUndoID(),
-			EditName: dir.Title(),
-			// The containers the move opened, collected by the loop below, are closed again before undo puts the data
-			// back, so that undo leaves no trace, and reopened before redo does, so that the rows redo moves into them
-			// are showing and can be selected. Their open state is kept in the global settings under their IDs, so it
-			// makes no difference that the objects themselves are replaced when the data is deserialized.
-			UndoFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]]) {
-				setContainersOpen(opened, false)
-				e.BeforeData.Apply()
-			},
-			RedoFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]]) {
-				setContainersOpen(opened, true)
-				e.AfterData.Apply()
-			},
-			AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
-			BeforeData: NewTableUndoEditData(table),
-		}
-	}
+	undo := beginTableUndo(table, dir.Title(),
+		func() { setContainersOpen(opened, false) },
+		func() { setContainersOpen(opened, true) })
 	if dir == MoveDown || dir == MoveIntoContainer {
 		// These two act on what sits directly below a row, so the rows are taken from the bottom up: that way a
 		// selected sibling below has already moved on before the row above it looks at what is beneath it. Moving
@@ -179,10 +165,7 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 	clearPreconfiguredFlag(table, nil)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
-	if mgr != nil && undo != nil {
-		undo.AfterData = NewTableUndoEditData(table)
-		mgr.Add(undo)
-	}
+	commitTableUndo(table, undo)
 	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }
 

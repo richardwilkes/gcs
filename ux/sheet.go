@@ -613,16 +613,7 @@ func (s *Sheet) canSwapDefaults(_ any) bool {
 }
 
 func (s *Sheet) swapDefaults(_ any) {
-	undo := &unison.UndoEdit[*TableUndoEditData[*gurps.Skill]]{
-		ID:       unison.NextUndoID(),
-		EditName: swapDefaultsAction.Title,
-		UndoFunc: func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]]) { e.BeforeData.Apply() },
-		RedoFunc: func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]]) { e.AfterData.Apply() },
-		AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]], _ unison.Undoable) bool {
-			return false
-		},
-		BeforeData: NewTableUndoEditData(s.Skills.Table),
-	}
+	undo := beginTableUndo(s.Skills.Table, swapDefaultsAction.Title, nil, nil)
 	for _, skillNode := range s.Skills.SelectedNodes(true) {
 		skill := skillNode.Data()
 		if !skill.CanSwapDefaults() {
@@ -642,8 +633,7 @@ func (s *Sheet) swapDefaults(_ any) {
 	// swapping a default can change well beyond the skills list (weapons, for one), and also bumps the modification
 	// timestamp and updates the title, none of which recalculating and syncing the skills table by hand did.
 	s.MarkModified(nil)
-	undo.AfterData = NewTableUndoEditData(s.Skills.Table)
-	s.UndoManager().Add(undo)
+	commitTableUndo(s.Skills.Table, undo)
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.

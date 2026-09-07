@@ -36,6 +36,56 @@ func NewTableUndoEditData[T gurps.Node[T]](table *unison.Table[*Node[T]]) *Table
 	return undo
 }
 
+// beginTableUndo starts recording an undoable edit of a table's contents, capturing the data as it stands as the edit's
+// "before" state; commitTableUndo captures the "after" state once the edit has been made and records the edit. Nil is
+// returned when there is nothing to record with, i.e. the table has no undo manager, or when the "before" state could
+// not be captured, and commitTableUndo accepts nil, so an edit can be bracketed by the pair unconditionally. The
+// optional beforeUndo and beforeRedo hooks run ahead of putting the "before" and "after" data back, respectively, for
+// an edit that has to restore more than the table's contents (see MoveSelection).
+func beginTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], title string, beforeUndo, beforeRedo func()) *unison.UndoEdit[*TableUndoEditData[T]] {
+	if unison.UndoManagerFor(table) == nil {
+		return nil
+	}
+	before := NewTableUndoEditData(table)
+	if before == nil {
+		return nil
+	}
+	return &unison.UndoEdit[*TableUndoEditData[T]]{
+		ID:       unison.NextUndoID(),
+		EditName: title,
+		UndoFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]]) {
+			if beforeUndo != nil {
+				beforeUndo()
+			}
+			e.BeforeData.Apply()
+		},
+		RedoFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]]) {
+			if beforeRedo != nil {
+				beforeRedo()
+			}
+			e.AfterData.Apply()
+		},
+		AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
+		BeforeData: before,
+	}
+}
+
+// commitTableUndo finishes an edit begun with beginTableUndo: the table's data as it now stands becomes the edit's
+// "after" state and the edit is handed to the table's undo manager. Both are taken from the table currently showing the
+// data (see liveTable), since the edit itself may have replaced the table the "before" state was captured from, and an
+// orphaned table has no manager above it any more. A nil edit, which is what beginTableUndo hands back when there is
+// nothing to record with, is ignored.
+func commitTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], undo *unison.UndoEdit[*TableUndoEditData[T]]) {
+	if undo == nil {
+		return
+	}
+	table = liveTable(table)
+	if mgr := unison.UndoManagerFor(table); mgr != nil {
+		undo.AfterData = NewTableUndoEditData(table)
+		mgr.Add(undo)
+	}
+}
+
 // Apply the undo edit data to a table.
 func (t *TableUndoEditData[T]) Apply() {
 	var restored restoredTables

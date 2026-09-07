@@ -485,18 +485,8 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 			return
 		}
 		var undo *unison.UndoEdit[*TableUndoEditData[T]]
-		var mgr *unison.UndoManager
 		if recordUndo {
-			if mgr = unison.UndoManagerFor(table); mgr != nil {
-				undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-					ID:         unison.NextUndoID(),
-					EditName:   i18n.Text("Delete Selection"),
-					UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-					RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-					AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
-					BeforeData: NewTableUndoEditData(table),
-				}
-			}
+			undo = beginTableUndo(table, i18n.Text("Delete Selection"), nil, nil)
 		}
 		topLevelData := provider.RootData()
 		for _, target := range list {
@@ -519,10 +509,7 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 			}
 		}
 		provider.SetRootData(topLevelData)
-		if recordUndo && mgr != nil && undo != nil {
-			undo.AfterData = NewTableUndoEditData(table)
-			mgr.Add(undo)
-		}
+		commitTableUndo(table, undo)
 		if report {
 			rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 		}
@@ -532,18 +519,7 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 // DuplicateSelection duplicates the selected nodes in the table.
 func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	if provider, ok := any(table.Model).(TableProvider[T]); ok && HasSelectionAndNotFiltered(table) {
-		var undo *unison.UndoEdit[*TableUndoEditData[T]]
-		mgr := unison.UndoManagerFor(table)
-		if mgr != nil {
-			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-				ID:         unison.NextUndoID(),
-				EditName:   i18n.Text("Duplicate Selection"),
-				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-				AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
-				BeforeData: NewTableUndoEditData(table),
-			}
-		}
+		undo := beginTableUndo(table, i18n.Text("Duplicate Selection"), nil, nil)
 		var zero T
 		needSet := false
 		topLevelData := provider.RootData()
@@ -580,10 +556,7 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 		}
 		table.SyncToModel()
 		table.SetSelectionMap(selMap)
-		if mgr != nil && undo != nil {
-			undo.AfterData = NewTableUndoEditData(table)
-			mgr.Add(undo)
-		}
+		commitTableUndo(table, undo)
 		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 	}
 }
@@ -595,64 +568,31 @@ func HasSelectionAndNotFiltered[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 
 // ClearSourceFromSelection clears the source from the selected nodes.
 func ClearSourceFromSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	if HasSelectionAndNotFiltered(table) {
-		var undo *unison.UndoEdit[*TableUndoEditData[T]]
-		mgr := unison.UndoManagerFor(table)
-		if mgr != nil {
-			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-				ID:         unison.NextUndoID(),
-				EditName:   clearSourceAction.Title,
-				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-				AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
-				BeforeData: NewTableUndoEditData(table),
-			}
-		}
-		var zero T
-		sel := table.SelectedRows(false)
-		for _, row := range sel {
-			if target := row.Data(); target != zero {
-				target.ClearSource()
-			}
-		}
-		table.SyncToModel()
-		if mgr != nil && undo != nil {
-			undo.AfterData = NewTableUndoEditData(table)
-			mgr.Add(undo)
-		}
-		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
-	}
+	applyToSelectedRows(table, clearSourceAction.Title, T.ClearSource)
 }
 
 // SyncWithSourceForSelection synchronizes the selected nodes with their source.
 func SyncWithSourceForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	if HasSelectionAndNotFiltered(table) {
-		var undo *unison.UndoEdit[*TableUndoEditData[T]]
-		mgr := unison.UndoManagerFor(table)
-		if mgr != nil {
-			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-				ID:         unison.NextUndoID(),
-				EditName:   syncWithSourceAction.Title,
-				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-				AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
-				BeforeData: NewTableUndoEditData(table),
-			}
-		}
-		var zero T
-		sel := table.SelectedRows(false)
-		for _, row := range sel {
-			if target := row.Data(); target != zero {
-				target.SyncWithSource()
-			}
-		}
-		table.SyncToModel()
-		if mgr != nil && undo != nil {
-			undo.AfterData = NewTableUndoEditData(table)
-			mgr.Add(undo)
-		}
-		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
+	applyToSelectedRows(table, syncWithSourceAction.Title, T.SyncWithSource)
+}
+
+// applyToSelectedRows applies the given change to the data behind each of the selected rows as a single undoable edit
+// with the given title, then reports the change by rebuilding the table's owner. Nothing is done when the table has no
+// selection or is showing search results (see HasSelectionAndNotFiltered).
+func applyToSelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], undoTitle string, apply func(T)) {
+	if !HasSelectionAndNotFiltered(table) {
+		return
 	}
+	undo := beginTableUndo(table, undoTitle, nil, nil)
+	var zero T
+	for _, row := range table.SelectedRows(false) {
+		if target := row.Data(); target != zero {
+			apply(target)
+		}
+	}
+	table.SyncToModel()
+	commitTableUndo(table, undo)
+	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }
 
 // CopyRowsTo copies the provided rows to the target table and reports the change by rebuilding the table's owner.
@@ -672,18 +612,8 @@ func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 		rows[j] = row.CloneForTarget(table, nil)
 	}
 	var undo *unison.UndoEdit[*TableUndoEditData[T]]
-	var mgr *unison.UndoManager
 	if recordUndo {
-		if mgr = unison.UndoManagerFor(table); mgr != nil {
-			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-				ID:         unison.NextUndoID(),
-				EditName:   fmt.Sprintf(i18n.Text("Insert %s"), rows[0].Data().Kind()),
-				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-				AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
-				BeforeData: NewTableUndoEditData(table),
-			}
-		}
+		undo = beginTableUndo(table, fmt.Sprintf(i18n.Text("Insert %s"), rows[0].Data().Kind()), nil, nil)
 	}
 	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
 	selMap := make(map[tid.TID]bool, len(rows))
@@ -704,10 +634,7 @@ func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 	}
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
-	if recordUndo && mgr != nil && undo != nil {
-		undo.AfterData = NewTableUndoEditData(table)
-		mgr.Add(undo)
-	}
+	commitTableUndo(table, undo)
 	if report {
 		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 	}

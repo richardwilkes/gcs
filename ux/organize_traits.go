@@ -29,11 +29,7 @@ func organizeTraits(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]])
 	// trait twice, once where it still sits at the top level and once inside the container it was just filed into,
 	// and the undo would put two copies of every moved row back. syncWithAllSources gets away with building its
 	// "before" data after the fact only because syncing alters traits in place and moves nothing.
-	mgr := unison.UndoManagerFor(table)
-	var before *TableUndoEditData[*gurps.Trait]
-	if mgr != nil {
-		before = NewTableUndoEditData(table)
-	}
+	undo := beginTableUndo(table, organizeTraitsAction.Title, nil, nil)
 	organized, changed := gurps.OrganizeTraits(provider.DataOwner(), provider.RootData())
 	if !changed {
 		// The list was already organized, so there is nothing to record and nothing to report: an edit here would
@@ -42,17 +38,7 @@ func organizeTraits(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]])
 	}
 	provider.SetRootData(organized)
 	table.SyncToModel()
-	if mgr != nil && before != nil {
-		mgr.Add(&unison.UndoEdit[*TableUndoEditData[*gurps.Trait]]{
-			ID:         unison.NextUndoID(),
-			EditName:   organizeTraitsAction.Title,
-			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Trait]]) { e.BeforeData.Apply() },
-			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Trait]]) { e.AfterData.Apply() },
-			AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[*gurps.Trait]], _ unison.Undoable) bool { return false },
-			BeforeData: before,
-			AfterData:  NewTableUndoEditData(table),
-		})
-	}
+	commitTableUndo(table, undo)
 	// A rebuild is the report, rather than also marking the owner as modified, since it is a superset of that and
 	// doing both would repeat the whole update (see rebuildAsModified).
 	rebuildAsModified(owner, true)

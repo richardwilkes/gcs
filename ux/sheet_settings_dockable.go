@@ -37,45 +37,146 @@ type EntityPanel interface {
 
 type sheetSettingsDockable struct {
 	SettingsDockable
-	owner                              EntityPanel
-	damageProgressionPopup             *unison.PopupMenu[progression.Option]
-	showTraitModifier                  *unison.CheckBox
-	showEquipmentModifier              *unison.CheckBox
-	showAllWeapons                     *unison.CheckBox
-	hideUnusedWeaponColumns            *unison.CheckBox
-	showSpellAdjustments               *unison.CheckBox
-	hideSourceMismatch                 *unison.CheckBox
-	hidePageRefColumn                  *unison.CheckBox
-	hideTLColumn                       *unison.CheckBox
-	hideLCColumn                       *unison.CheckBox
-	showTitleInsteadOfNameInPageFooter *unison.CheckBox
-	useMultiplicativeModifiers         *unison.CheckBox
-	useModifyDicePlusAdds              *unison.CheckBox
-	excludeUnspentPointsFromTotal      *unison.CheckBox
-	useHalfStatDefaults                *unison.CheckBox
-	showLiftingSTDamage                *unison.CheckBox
-	showIQBasedDamage                  *unison.CheckBox
-	hideZeroValueConditionalMods       *unison.CheckBox
-	lengthUnitsPopup                   *unison.PopupMenu[fxp.LengthUnit]
-	weightUnitsPopup                   *unison.PopupMenu[fxp.WeightUnit]
-	heightPlacesPopup                  *unison.PopupMenu[fxp.DecimalPlace]
-	heightPadWithZeros                 *unison.CheckBox
-	bodyWeightPlacesPopup              *unison.PopupMenu[fxp.DecimalPlace]
-	bodyWeightPadWithZeros             *unison.CheckBox
-	equipmentWeightPlacesPopup         *unison.PopupMenu[fxp.DecimalPlace]
-	equipmentWeightPadWithZeros        *unison.CheckBox
-	equipmentValuePlacesPopup          *unison.PopupMenu[fxp.DecimalPlace]
-	equipmentValuePadWithZeros         *unison.CheckBox
-	userDescDisplayPopup               *unison.PopupMenu[display.Option]
-	modifiersDisplayPopup              *unison.PopupMenu[display.Option]
-	notesDisplayPopup                  *unison.PopupMenu[display.Option]
-	skillLevelAdjDisplayPopup          *unison.PopupMenu[display.Option]
-	orientationPopup                   *unison.PopupMenu[paper.Orientation]
-	paperSizeField                     *unison.Field
-	topMarginField                     *unison.Field
-	leftMarginField                    *unison.Field
-	bottomMarginField                  *unison.Field
-	rightMarginField                   *unison.Field
+	owner                     EntityPanel
+	damageProgressionPopup    *unison.PopupMenu[progression.Option]
+	options                   []sheetOptionCheckBox
+	lengthUnitsPopup          *unison.PopupMenu[fxp.LengthUnit]
+	weightUnitsPopup          *unison.PopupMenu[fxp.WeightUnit]
+	numberFormats             []sheetNumberFormatRow
+	userDescDisplayPopup      *unison.PopupMenu[display.Option]
+	modifiersDisplayPopup     *unison.PopupMenu[display.Option]
+	notesDisplayPopup         *unison.PopupMenu[display.Option]
+	skillLevelAdjDisplayPopup *unison.PopupMenu[display.Option]
+	orientationPopup          *unison.PopupMenu[paper.Orientation]
+	paperSizeField            *unison.Field
+	topMarginField            *unison.Field
+	leftMarginField           *unison.Field
+	bottomMarginField         *unison.Field
+	rightMarginField          *unison.Field
+}
+
+// sheetOption describes one of the boolean sheet settings the dockable presents as a checkbox. The setting is reached
+// through an accessor rather than a captured pointer, since the settings being edited are replaced wholesale by reset
+// and load.
+type sheetOption struct {
+	title    string
+	pageRef  string // a page reference to link to after the title, if any
+	field    func(s *gurps.SheetSettings) *bool
+	inverted bool // the setting hides what the checkbox offers to show, so the box is checked while the setting is off
+	fullSync bool // the setting can change the columns a sheet shows, which only a full rebuild can pick up
+}
+
+// checked returns whether the checkbox for the option should be checked, given the settings.
+func (o *sheetOption) checked(s *gurps.SheetSettings) bool {
+	return *o.field(s) != o.inverted
+}
+
+// apply stores the state of the checkbox for the option into the settings.
+func (o *sheetOption) apply(s *gurps.SheetSettings, checked bool) {
+	*o.field(s) = checked != o.inverted
+}
+
+// sheetOptionCheckBox pairs a checkbox with the option it presents.
+type sheetOptionCheckBox struct {
+	box    *unison.CheckBox
+	option sheetOption
+}
+
+// sheetNumberFormatRow holds the widgets that present one of the sheet's number formats, along with the accessor for
+// the format they present.
+type sheetNumberFormatRow struct {
+	popup  *unison.PopupMenu[fxp.DecimalPlace]
+	pad    *unison.CheckBox
+	format func(s *gurps.SheetSettings) *fxp.NumberFormat
+}
+
+// sheetOptions returns the boolean sheet settings the dockable presents as checkboxes, in the order they are shown.
+func sheetOptions() []sheetOption {
+	return []sheetOption{
+		{
+			title:    i18n.Text("Show library source column"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideSourceMismatch },
+			inverted: true,
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Show page reference column"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HidePageRefColumn },
+			inverted: true,
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Show tech level (TL) column"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideTLColumn },
+			inverted: true,
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Show legality class (LC) column"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideLCColumn },
+			inverted: true,
+			fullSync: true,
+		},
+		{
+			title: i18n.Text("Show trait modifier cost adjustments"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ShowTraitModifierAdj },
+		},
+		{
+			title: i18n.Text("Show equipment modifier cost & weight adjustments"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ShowEquipmentModifierAdj },
+		},
+		{
+			title:    i18n.Text("Show all weapons"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.ShowAllWeapons },
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Hide unused columns in the melee & ranged weapon tables"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideUnusedWeaponColumns },
+			fullSync: true,
+		},
+		{
+			title: i18n.Text("Show spell ritual, cost & time adjustments"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ShowSpellAdj },
+		},
+		{
+			title: i18n.Text("Show the title instead of the name in the footer"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.UseTitleInFooter },
+		},
+		{
+			title:   i18n.Text("Use Multiplicative Modifiers"),
+			pageRef: "P102",
+			field:   func(s *gurps.SheetSettings) *bool { return &s.UseMultiplicativeModifiers },
+		},
+		{
+			title:   i18n.Text("Use Half-Stat Defaults"),
+			pageRef: "PY65:30",
+			field:   func(s *gurps.SheetSettings) *bool { return &s.UseHalfStatDefaults },
+		},
+		{
+			title:   i18n.Text("Use Modifying Dice + Adds"),
+			pageRef: "B269",
+			field:   func(s *gurps.SheetSettings) *bool { return &s.UseModifyingDicePlusAdds },
+		},
+		{
+			title: i18n.Text("Exclude unspent points from total"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ExcludeUnspentPointsFromTotal },
+		},
+		{
+			title: i18n.Text("Show Lifting ST-based damage"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ShowLiftingSTDamage },
+		},
+		{
+			title:   i18n.Text("Show IQ-based damage"),
+			pageRef: "PY120:7",
+			field:   func(s *gurps.SheetSettings) *bool { return &s.ShowIQBasedDamage },
+		},
+		{
+			title:    i18n.Text("Hide conditional modifiers whose total is zero"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideZeroValueConditionalMods },
+			fullSync: true,
+		},
+	}
 }
 
 // ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
@@ -171,117 +272,38 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	d.hideSourceMismatch = d.addCheckBox(panel, i18n.Text("Show library source column"),
-		!s.HideSourceMismatch, func() {
-			d.settings().HideSourceMismatch = d.hideSourceMismatch.State != check.On
-			d.syncSheet(true)
+	options := sheetOptions()
+	d.options = make([]sheetOptionCheckBox, 0, len(options))
+	for _, option := range options {
+		box := d.addCheckBox(panel, option.title, option.pageRef, option.checked(s), func(checked bool) {
+			option.apply(d.settings(), checked)
+			d.syncSheet(option.fullSync)
 		})
-	d.hidePageRefColumn = d.addCheckBox(panel, i18n.Text("Show page reference column"),
-		!s.HidePageRefColumn, func() {
-			d.settings().HidePageRefColumn = d.hidePageRefColumn.State != check.On
-			d.syncSheet(true)
-		})
-	d.hideTLColumn = d.addCheckBox(panel, i18n.Text("Show tech level (TL) column"),
-		!s.HideTLColumn, func() {
-			d.settings().HideTLColumn = d.hideTLColumn.State != check.On
-			d.syncSheet(true)
-		})
-	d.hideLCColumn = d.addCheckBox(panel, i18n.Text("Show legality class (LC) column"),
-		!s.HideLCColumn, func() {
-			d.settings().HideLCColumn = d.hideLCColumn.State != check.On
-			d.syncSheet(true)
-		})
-	d.showTraitModifier = d.addCheckBox(panel, i18n.Text("Show trait modifier cost adjustments"),
-		s.ShowTraitModifierAdj, func() {
-			d.settings().ShowTraitModifierAdj = d.showTraitModifier.State == check.On
-			d.syncSheet(false)
-		})
-	d.showEquipmentModifier = d.addCheckBox(panel, i18n.Text("Show equipment modifier cost & weight adjustments"),
-		s.ShowEquipmentModifierAdj, func() {
-			d.settings().ShowEquipmentModifierAdj = d.showEquipmentModifier.State == check.On
-			d.syncSheet(false)
-		})
-	d.showAllWeapons = d.addCheckBox(panel, i18n.Text("Show all weapons"),
-		s.ShowAllWeapons, func() {
-			d.settings().ShowAllWeapons = d.showAllWeapons.State == check.On
-			d.syncSheet(true)
-		})
-	d.hideUnusedWeaponColumns = d.addCheckBox(panel,
-		i18n.Text("Hide unused columns in the melee & ranged weapon tables"), s.HideUnusedWeaponColumns, func() {
-			d.settings().HideUnusedWeaponColumns = d.hideUnusedWeaponColumns.State == check.On
-			d.syncSheet(true)
-		})
-	d.showSpellAdjustments = d.addCheckBox(panel, i18n.Text("Show spell ritual, cost & time adjustments"),
-		s.ShowSpellAdj, func() {
-			d.settings().ShowSpellAdj = d.showSpellAdjustments.State == check.On
-			d.syncSheet(false)
-		})
-	d.showTitleInsteadOfNameInPageFooter = d.addCheckBox(panel,
-		i18n.Text("Show the title instead of the name in the footer"), s.UseTitleInFooter, func() {
-			d.settings().UseTitleInFooter = d.showTitleInsteadOfNameInPageFooter.State == check.On
-			d.syncSheet(false)
-		})
-	d.useMultiplicativeModifiers = d.addCheckBoxWithLink(panel,
-		i18n.Text("Use Multiplicative Modifiers"), "P102", s.UseMultiplicativeModifiers, func() {
-			d.settings().UseMultiplicativeModifiers = d.useMultiplicativeModifiers.State == check.On
-			d.syncSheet(false)
-		})
-	d.useHalfStatDefaults = d.addCheckBoxWithLink(panel, i18n.Text("Use Half-Stat Defaults"), "PY65:30",
-		s.UseHalfStatDefaults, func() {
-			d.settings().UseHalfStatDefaults = d.useHalfStatDefaults.State == check.On
-			d.syncSheet(false)
-		})
-	d.useModifyDicePlusAdds = d.addCheckBoxWithLink(panel, i18n.Text("Use Modifying Dice + Adds"), "B269",
-		s.UseModifyingDicePlusAdds, func() {
-			d.settings().UseModifyingDicePlusAdds = d.useModifyDicePlusAdds.State == check.On
-			d.syncSheet(false)
-		})
-	d.excludeUnspentPointsFromTotal = d.addCheckBox(panel, i18n.Text("Exclude unspent points from total"),
-		s.ExcludeUnspentPointsFromTotal, func() {
-			d.settings().ExcludeUnspentPointsFromTotal = d.excludeUnspentPointsFromTotal.State == check.On
-			d.syncSheet(false)
-		})
-	d.showLiftingSTDamage = d.addCheckBox(panel, i18n.Text("Show Lifting ST-based damage"),
-		s.ShowLiftingSTDamage, func() {
-			d.settings().ShowLiftingSTDamage = d.showLiftingSTDamage.State == check.On
-			d.syncSheet(false)
-		})
-	d.showIQBasedDamage = d.addCheckBoxWithLink(panel, i18n.Text("Show IQ-based damage"), "PY120:7",
-		s.ShowIQBasedDamage, func() {
-			d.settings().ShowIQBasedDamage = d.showIQBasedDamage.State == check.On
-			d.syncSheet(false)
-		})
-	d.hideZeroValueConditionalMods = d.addCheckBox(panel,
-		i18n.Text("Hide conditional modifiers whose total is zero"), s.HideZeroValueConditionalMods, func() {
-			d.settings().HideZeroValueConditionalMods = d.hideZeroValueConditionalMods.State == check.On
-			d.syncSheet(true)
-		})
+		d.options = append(d.options, sheetOptionCheckBox{box: box, option: option})
+	}
 	content.AddChild(panel)
 }
 
-func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title string, checked bool, onClick func()) *unison.CheckBox {
+// addCheckBox adds a checkbox with the given title to the panel, followed by a link to the page reference when one is
+// given, and returns it. The click callback is handed the state the box was left in.
+func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title, pageRef string, checked bool, onClick func(checked bool)) *unison.CheckBox {
 	checkbox := unison.NewCheckBox()
 	checkbox.SetTitle(title)
 	checkbox.State = check.FromBool(checked)
-	checkbox.ClickCallback = onClick
-	panel.AddChild(checkbox)
-	return checkbox
-}
-
-func (d *sheetSettingsDockable) addCheckBoxWithLink(panel *unison.Panel, title, ref string, checked bool, onClick func()) *unison.CheckBox {
+	checkbox.ClickCallback = func() { onClick(checkbox.State == check.On) }
+	if pageRef == "" {
+		panel.AddChild(checkbox)
+		return checkbox
+	}
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{Columns: 4})
-	checkbox := unison.NewCheckBox()
-	checkbox.SetTitle(title)
-	checkbox.State = check.FromBool(checked)
-	checkbox.ClickCallback = onClick
 	wrapper.AddChild(checkbox)
 	label := unison.NewLabel()
 	label.Font = checkbox.Font
 	label.SetTitle(" (")
 	wrapper.AddChild(label)
-	wrapper.AddChild(unison.NewLink(ref, "", ref, &unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
-		OpenPageReference(ref, "", nil)
+	wrapper.AddChild(unison.NewLink(pageRef, "", pageRef, &unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
+		OpenPageReference(pageRef, "", nil)
 	}))
 	label = unison.NewLabel()
 	label.Font = checkbox.Font
@@ -311,7 +333,6 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 // createDecimalPlaces adds the section that controls how many decimal places the sheet rounds various numbers to for
 // display. These affect only what is shown: the values themselves are always stored, and edited, at full precision.
 func (d *sheetSettingsDockable) createDecimalPlaces(content *unison.Panel) {
-	s := d.settings()
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  3,
@@ -320,50 +341,38 @@ func (d *sheetSettingsDockable) createDecimalPlaces(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Decimal Places"), 3)
-	padTitle := i18n.Text("Pad with zeros")
-	padTooltip := i18n.Text(`Show trailing zeros out to the number of decimal places chosen, e.g. "7.50" rather than "7.5" at 2 decimal places. Has no effect when "As Needed" or "0" is chosen.`)
-
-	d.heightPlacesPopup = d.createSettingPopup(panel, i18n.Text("Height"), fxp.DecimalPlaces,
-		s.HeightFormat.Places,
-		func(item fxp.DecimalPlace) { d.settings().HeightFormat.Places = item })
-	d.heightPlacesPopup.Tooltip = newWrappedTooltip(i18n.Text(`How many decimal places the height in the Description block on the sheet is rounded to for display. "As Needed" shows every decimal place the value has.`))
-	d.heightPadWithZeros = d.addCheckBox(panel, padTitle, s.HeightFormat.PadWithZeros, func() {
-		d.settings().HeightFormat.PadWithZeros = d.heightPadWithZeros.State == check.On
-		d.syncSheet(false)
-	})
-	d.heightPadWithZeros.Tooltip = newWrappedTooltip(padTooltip)
-
-	d.bodyWeightPlacesPopup = d.createSettingPopup(panel, i18n.Text("Body Weight"), fxp.DecimalPlaces,
-		s.BodyWeightFormat.Places,
-		func(item fxp.DecimalPlace) { d.settings().BodyWeightFormat.Places = item })
-	d.bodyWeightPlacesPopup.Tooltip = newWrappedTooltip(i18n.Text("How many decimal places the character's weight in the Description block on the sheet is rounded to for display"))
-	d.bodyWeightPadWithZeros = d.addCheckBox(panel, padTitle, s.BodyWeightFormat.PadWithZeros, func() {
-		d.settings().BodyWeightFormat.PadWithZeros = d.bodyWeightPadWithZeros.State == check.On
-		d.syncSheet(false)
-	})
-	d.bodyWeightPadWithZeros.Tooltip = newWrappedTooltip(padTooltip)
-
-	d.equipmentWeightPlacesPopup = d.createSettingPopup(panel, i18n.Text("Equipment Weight"), fxp.DecimalPlaces,
-		s.EquipmentWeightFormat.Places,
-		func(item fxp.DecimalPlace) { d.settings().EquipmentWeightFormat.Places = item })
-	d.equipmentWeightPlacesPopup.Tooltip = newWrappedTooltip(i18n.Text("How many decimal places the weight columns and the carried & other equipment totals on the sheet are rounded to for display"))
-	d.equipmentWeightPadWithZeros = d.addCheckBox(panel, padTitle, s.EquipmentWeightFormat.PadWithZeros, func() {
-		d.settings().EquipmentWeightFormat.PadWithZeros = d.equipmentWeightPadWithZeros.State == check.On
-		d.syncSheet(false)
-	})
-	d.equipmentWeightPadWithZeros.Tooltip = newWrappedTooltip(padTooltip)
-
-	d.equipmentValuePlacesPopup = d.createSettingPopup(panel, i18n.Text("Equipment Value"), fxp.DecimalPlaces,
-		s.EquipmentValueFormat.Places,
-		func(item fxp.DecimalPlace) { d.settings().EquipmentValueFormat.Places = item })
-	d.equipmentValuePlacesPopup.Tooltip = newWrappedTooltip(i18n.Text("How many decimal places the value columns and the carried & other equipment totals on the sheet are rounded to for display"))
-	d.equipmentValuePadWithZeros = d.addCheckBox(panel, padTitle, s.EquipmentValueFormat.PadWithZeros, func() {
-		d.settings().EquipmentValueFormat.PadWithZeros = d.equipmentValuePadWithZeros.State == check.On
-		d.syncSheet(false)
-	})
-	d.equipmentValuePadWithZeros.Tooltip = newWrappedTooltip(padTooltip)
-
+	d.numberFormats = []sheetNumberFormatRow{
+		d.addNumberFormatRow(panel, i18n.Text("Height"),
+			i18n.Text(`How many decimal places the height in the Description block on the sheet is rounded to for display. "As Needed" shows every decimal place the value has.`),
+			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.HeightFormat }),
+		d.addNumberFormatRow(panel, i18n.Text("Body Weight"),
+			i18n.Text("How many decimal places the character's weight in the Description block on the sheet is rounded to for display"),
+			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.BodyWeightFormat }),
+		d.addNumberFormatRow(panel, i18n.Text("Equipment Weight"),
+			i18n.Text("How many decimal places the weight columns and the carried & other equipment totals on the sheet are rounded to for display"),
+			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.EquipmentWeightFormat }),
+		d.addNumberFormatRow(panel, i18n.Text("Equipment Value"),
+			i18n.Text("How many decimal places the value columns and the carried & other equipment totals on the sheet are rounded to for display"),
+			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.EquipmentValueFormat }),
+	}
 	content.AddChild(panel)
+}
+
+// addNumberFormatRow adds the popup that chooses how many decimal places one of the sheet's number formats rounds to,
+// with the given tooltip, and the checkbox that has it pad with zeros out to that many, and returns them along with
+// the format's accessor.
+func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, tooltip string, format func(s *gurps.SheetSettings) *fxp.NumberFormat) sheetNumberFormatRow {
+	row := sheetNumberFormatRow{format: format}
+	current := format(d.settings())
+	row.popup = d.createSettingPopup(panel, title, fxp.DecimalPlaces, current.Places,
+		func(item fxp.DecimalPlace) { format(d.settings()).Places = item })
+	row.popup.Tooltip = newWrappedTooltip(tooltip)
+	row.pad = d.addCheckBox(panel, i18n.Text("Pad with zeros"), "", current.PadWithZeros, func(checked bool) {
+		format(d.settings()).PadWithZeros = checked
+		d.syncSheet(false)
+	})
+	row.pad.Tooltip = newWrappedTooltip(i18n.Text(`Show trailing zeros out to the number of decimal places chosen, e.g. "7.50" rather than "7.5" at 2 decimal places. Has no effect when "As Needed" or "0" is chosen.`))
+	return row
 }
 
 func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {
@@ -518,33 +527,16 @@ func (d *sheetSettingsDockable) reset() {
 func (d *sheetSettingsDockable) sync() {
 	s := d.settings()
 	d.damageProgressionPopup.Select(s.DamageProgression)
-	d.hideSourceMismatch.State = check.FromBool(!s.HideSourceMismatch)
-	d.hidePageRefColumn.State = check.FromBool(!s.HidePageRefColumn)
-	d.hideTLColumn.State = check.FromBool(!s.HideTLColumn)
-	d.hideLCColumn.State = check.FromBool(!s.HideLCColumn)
-	d.showTraitModifier.State = check.FromBool(s.ShowTraitModifierAdj)
-	d.showEquipmentModifier.State = check.FromBool(s.ShowEquipmentModifierAdj)
-	d.showAllWeapons.State = check.FromBool(s.ShowAllWeapons)
-	d.hideUnusedWeaponColumns.State = check.FromBool(s.HideUnusedWeaponColumns)
-	d.showSpellAdjustments.State = check.FromBool(s.ShowSpellAdj)
-	d.showTitleInsteadOfNameInPageFooter.State = check.FromBool(s.UseTitleInFooter)
-	d.showLiftingSTDamage.State = check.FromBool(s.ShowLiftingSTDamage)
-	d.showIQBasedDamage.State = check.FromBool(s.ShowIQBasedDamage)
-	d.hideZeroValueConditionalMods.State = check.FromBool(s.HideZeroValueConditionalMods)
-	d.useMultiplicativeModifiers.State = check.FromBool(s.UseMultiplicativeModifiers)
-	d.useHalfStatDefaults.State = check.FromBool(s.UseHalfStatDefaults)
-	d.useModifyDicePlusAdds.State = check.FromBool(s.UseModifyingDicePlusAdds)
-	d.excludeUnspentPointsFromTotal.State = check.FromBool(s.ExcludeUnspentPointsFromTotal)
+	for _, one := range d.options {
+		one.box.State = check.FromBool(one.option.checked(s))
+	}
 	d.lengthUnitsPopup.Select(s.DefaultLengthUnits)
 	d.weightUnitsPopup.Select(s.DefaultWeightUnits)
-	d.heightPlacesPopup.Select(s.HeightFormat.Places)
-	d.heightPadWithZeros.State = check.FromBool(s.HeightFormat.PadWithZeros)
-	d.bodyWeightPlacesPopup.Select(s.BodyWeightFormat.Places)
-	d.bodyWeightPadWithZeros.State = check.FromBool(s.BodyWeightFormat.PadWithZeros)
-	d.equipmentWeightPlacesPopup.Select(s.EquipmentWeightFormat.Places)
-	d.equipmentWeightPadWithZeros.State = check.FromBool(s.EquipmentWeightFormat.PadWithZeros)
-	d.equipmentValuePlacesPopup.Select(s.EquipmentValueFormat.Places)
-	d.equipmentValuePadWithZeros.State = check.FromBool(s.EquipmentValueFormat.PadWithZeros)
+	for _, row := range d.numberFormats {
+		format := row.format(s)
+		row.popup.Select(format.Places)
+		row.pad.State = check.FromBool(format.PadWithZeros)
+	}
 	d.userDescDisplayPopup.Select(s.UserDescriptionDisplay)
 	d.modifiersDisplayPopup.Select(s.ModifiersDisplay)
 	d.notesDisplayPopup.Select(s.NotesDisplay)
