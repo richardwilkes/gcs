@@ -21,6 +21,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"text/template"
 	"unicode"
@@ -116,8 +117,6 @@ func generateEnumSource(info *enumInfo) ([]byte, error) {
 	tmpl, err := template.New("enum.go.tmpl").Funcs(template.FuncMap{
 		"fileLeaf":     filepath.Base,
 		"join":         join,
-		"first":        first,
-		"last":         last,
 		"toIdentifier": toIdentifier,
 		"wrapComment":  wrapComment,
 	}).Parse(enumTmplData)
@@ -161,57 +160,45 @@ func (e *enumInfo) IDFor(v *enumValue) string {
 }
 
 func (e *enumInfo) HasAlt() bool {
-	for _, one := range e.Values {
-		if one.Alt != "" {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(e.Values, func(v *enumValue) bool { return v.Alt != "" })
 }
 
 func (e *enumInfo) HasOldKeys() bool {
-	for _, one := range e.Values {
-		if len(one.OldKeys) != 0 {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(e.Values, func(v *enumValue) bool { return len(v.OldKeys) != 0 })
 }
 
+// Default returns the value that acts as the enum's default: the last one when DefaultLast is set, otherwise the first.
 func (e *enumInfo) Default() *enumValue {
-	if len(e.Values) > 0 {
-		if e.DefaultLast {
-			return e.Values[len(e.Values)-1]
-		}
-		return e.Values[0]
-
+	if e.DefaultLast {
+		return e.Last()
 	}
-	return nil
+	return e.First()
 }
 
 func (e *enumInfo) First() *enumValue {
-	if len(e.Values) > 0 {
-		return e.Values[0]
+	if len(e.Values) == 0 {
+		return nil
 	}
-	return nil
+	return e.Values[0]
 }
 
 func (e *enumInfo) Last() *enumValue {
-	if len(e.Values) > 0 {
-		return e.Values[len(e.Values)-1]
+	if len(e.Values) == 0 {
+		return nil
 	}
-	return nil
+	return e.Values[len(e.Values)-1]
 }
 
+// RealValues returns the values that represent something real, which is all of them unless DefaultUnknown is set, in
+// which case the default value (see Default) is a placeholder for "unrecognized" and is left out.
 func (e *enumInfo) RealValues() []*enumValue {
-	if e.DefaultUnknown && len(e.Values) > 0 {
-		if e.DefaultLast {
-			return e.Values[:len(e.Values)-1]
-		}
-		return e.Values[1:]
-
+	if !e.DefaultUnknown || len(e.Values) == 0 {
+		return e.Values
 	}
-	return e.Values
+	if e.DefaultLast {
+		return e.Values[:len(e.Values)-1]
+	}
+	return e.Values[1:]
 }
 
 // Groups returns the raw group memberships declared on this enum's values, keyed by group name, each holding the
@@ -260,12 +247,9 @@ func (e *enumInfo) Groups() map[string][]string {
 }
 
 func (e *enumInfo) NeedI18N() bool {
-	for _, one := range e.Values {
-		if !one.NoLocalize || (one.Alt != "" && !one.NoLocalizeAlt) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(e.Values, func(v *enumValue) bool {
+		return !v.NoLocalize || (v.Alt != "" && !v.NoLocalizeAlt)
+	})
 }
 
 func (e *enumValue) StringValue() string {
@@ -273,14 +257,6 @@ func (e *enumValue) StringValue() string {
 		return cases.Title(language.AmericanEnglish).String(strings.ReplaceAll(e.Key, "_", " "))
 	}
 	return e.String
-}
-
-func first(in []*enumValue) *enumValue {
-	return in[0]
-}
-
-func last(in []*enumValue) *enumValue {
-	return in[len(in)-1]
 }
 
 func toIdentifier(in string) string {

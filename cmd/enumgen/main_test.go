@@ -70,3 +70,45 @@ func TestNoOrphanedGeneratedFiles(t *testing.T) {
 	}))
 	c.Equal(len(expected), found, "the number of generated files on disk doesn't match the number of enums")
 }
+
+// TestEnumInfoAccessors covers the branches of the value-picking accessors that the enums in allEnums don't reach: an
+// enum with no values, and DefaultUnknown without DefaultLast.
+func TestEnumInfoAccessors(t *testing.T) {
+	c := check.New(t)
+	a := &enumValue{Key: "a"}
+	b := &enumValue{Key: "b", Alt: "alt", NoLocalize: true, NoLocalizeAlt: true}
+	z := &enumValue{Key: "z", OldKeys: []string{"old"}, NoLocalize: true}
+
+	empty := &enumInfo{}
+	c.Nil(empty.Default())
+	c.Nil(empty.First())
+	c.Nil(empty.Last())
+	c.Nil(empty.RealValues())
+	c.False(empty.HasAlt())
+	c.False(empty.HasOldKeys())
+	c.False(empty.NeedI18N())
+
+	info := &enumInfo{Values: []*enumValue{a, b, z}}
+	c.Equal(a, info.Default())
+	c.Equal(a, info.First())
+	c.Equal(z, info.Last())
+	c.Equal([]*enumValue{a, b, z}, info.RealValues())
+	c.True(info.HasAlt())
+	c.True(info.HasOldKeys())
+	c.True(info.NeedI18N())
+
+	info.DefaultUnknown = true
+	c.Equal(a, info.Default())
+	c.Equal([]*enumValue{b, z}, info.RealValues())
+
+	info.DefaultLast = true
+	c.Equal(z, info.Default())
+	c.Equal([]*enumValue{a, b}, info.RealValues())
+
+	info.DefaultUnknown = false
+	c.Equal(z, info.Default())
+	c.Equal([]*enumValue{a, b, z}, info.RealValues())
+
+	// Neither value needs localizing: b has both flags set and z has no alt.
+	c.False((&enumInfo{Values: []*enumValue{b, z}}).NeedI18N())
+}
