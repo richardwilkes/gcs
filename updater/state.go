@@ -69,6 +69,7 @@ type State struct {
 	FromVersion string `json:"from_version,omitzero"`
 	ToVersion   string `json:"to_version,omitzero"`
 	Target      string `json:"target"`
+	Exec        string `json:"exec,omitzero"`
 	Payload     string `json:"payload,omitzero"`
 	Backup      string `json:"backup,omitzero"`
 	WorkDir     string `json:"work_dir,omitzero"`
@@ -121,17 +122,25 @@ func LoadState(path string) (*State, error) {
 	return &state, nil
 }
 
-// TargetInfo reconstructs the installation the state describes as being replaced. Exec is set to the recorded target
-// path, since the state carries nothing finer.
+// TargetInfo reconstructs the installation the state describes as being replaced. Exec is the recorded executable
+// path when the state carries one; a state written by a build that did not record it falls back to the target itself
+// for a bare executable and to the conventional location inside the bundle otherwise, so that the executable is never
+// mistaken for the bundle directory that holds it.
 func (s *State) TargetInfo() Target {
 	kind := KindExecutable
+	exec := s.Exec
 	if s.Bundle {
 		kind = KindBundle
+		if exec == "" {
+			exec = filepath.Join(s.Target, "Contents", "MacOS", CmdName)
+		}
+	} else if exec == "" {
+		exec = s.Target
 	}
 	return Target{
 		Path:   s.Target,
 		Parent: filepath.Dir(s.Target),
-		Exec:   s.Target,
+		Exec:   exec,
 		Kind:   kind,
 	}
 }

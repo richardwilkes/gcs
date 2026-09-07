@@ -155,6 +155,7 @@ func (p *Plan) State(staged *Staged, port int) *State {
 		FromVersion: p.FromVersion,
 		ToVersion:   p.ToVersion,
 		Target:      p.Target.Path,
+		Exec:        p.Target.Exec,
 		Payload:     staged.Payload,
 		Backup:      p.Target.FreeBackupPath(),
 		WorkDir:     staged.WorkDir,

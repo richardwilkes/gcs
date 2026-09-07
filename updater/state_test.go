@@ -29,6 +29,7 @@ func TestStateRoundTrip(t *testing.T) {
 		FromVersion: "5.45.2",
 		ToVersion:   "5.46.0",
 		Target:      "/Applications/GCS.app",
+		Exec:        "/Applications/GCS.app/Contents/MacOS/gcs",
 		Payload:     "/Applications/.gcs-update-abc/GCS.app",
 		Backup:      "/Applications/.GCS.app.old-123",
 		WorkDir:     "/Applications/.gcs-update-abc",
@@ -101,13 +102,44 @@ func TestLoadStateIgnoresUnknownFields(t *testing.T) {
 func TestStateTargetInfo(t *testing.T) {
 	c := check.New(t)
 
-	bundle := (&State{Target: hostPath("/Applications/GCS.app"), Bundle: true}).TargetInfo()
+	bundle := (&State{
+		Target: hostPath("/Applications/GCS.app"),
+		Exec:   hostPath("/Applications/GCS.app/Contents/MacOS/gcs"),
+		Bundle: true,
+	}).TargetInfo()
 	c.Equal(KindBundle, bundle.Kind)
 	c.Equal(hostPath("/Applications"), bundle.Parent)
+	c.Equal(hostPath("/Applications/GCS.app/Contents/MacOS/gcs"), bundle.Exec)
 
-	exe := (&State{Target: hostPath("/home/someone/bin/gcs")}).TargetInfo()
+	exe := (&State{Target: hostPath("/home/someone/bin/gcs"), Exec: hostPath("/home/someone/bin/gcs")}).TargetInfo()
 	c.Equal(KindExecutable, exe.Kind)
 	c.Equal(hostPath("/home/someone/bin"), exe.Parent)
+	c.Equal(hostPath("/home/someone/bin/gcs"), exe.Exec)
+}
+
+// The executable the helper relaunches must never be the bundle directory itself. A state written before the
+// executable path was recorded has to yield the conventional location inside the bundle, and ExecWithin has to locate
+// the executable inside the installed bundle rather than returning the bundle, since that is what the Launch Services
+// fallback in relaunch execs directly.
+func TestStateTargetInfoExecIsNeverTheBundle(t *testing.T) {
+	c := check.New(t)
+
+	target := hostPath("/Applications/GCS.app")
+	wantExec := hostPath("/Applications/GCS.app/Contents/MacOS/" + CmdName)
+
+	legacy := (&State{Target: target, Bundle: true}).TargetInfo()
+	c.Equal(wantExec, legacy.Exec)
+	c.Equal(wantExec, legacy.ExecWithin(target))
+	c.NotEqual(target, filepath.Clean(legacy.ExecWithin(target)))
+
+	recorded := (&State{Target: target, Exec: wantExec, Bundle: true}).TargetInfo()
+	c.Equal(wantExec, recorded.ExecWithin(target))
+	c.Equal(hostPath("/tmp/staged/GCS.app/Contents/MacOS/"+CmdName),
+		recorded.ExecWithin(hostPath("/tmp/staged/GCS.app")))
+
+	exe := (&State{Target: hostPath("/home/someone/bin/gcs")}).TargetInfo()
+	c.Equal(hostPath("/home/someone/bin/gcs"), exe.Exec)
+	c.Equal(hostPath("/home/someone/bin/gcs"), exe.ExecWithin(exe.Path))
 }
 
 // A state file must never be observed half-written. Readers are separate processes, and a truncated file is
