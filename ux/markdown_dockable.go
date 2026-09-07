@@ -28,7 +28,6 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
-	"github.com/richardwilkes/unison/enums/mod"
 )
 
 const markdownContentOnlyPrefix = "//////////"
@@ -98,10 +97,6 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	d.markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(d)
 	insets := geom.NewUniformInsets(20)
 	d.markdown.SetBorder(unison.NewEmptyBorder(insets))
-	d.markdown.MouseDownCallback = d.mouseDown
-	d.markdown.MouseDragCallback = d.mouseDrag
-	d.markdown.MouseUpCallback = d.mouseUp
-	d.markdown.UpdateCursorCallback = d.updateCursor
 	d.markdown.SetFocusable(true)
 	// The content is normalized before it is hashed, since the editor produces LF line endings and that hash is what
 	// the content is compared against to determine whether the dockable has been modified. Without this, a file stored
@@ -147,6 +142,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	} else {
 		d.scroller.SetContent(d.markdown, behavior.Fill, behavior.Fill)
 	}
+	d.pan.install(d.scroller, d.markdown.AsPanel(), d.markdown)
 
 	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -210,28 +206,6 @@ func (d *MarkdownDockable) Hash(h hash.Hash) {
 func (d *MarkdownDockable) ScrollToAnchor(anchor string) {
 	d.ValidateLayout()
 	d.markdown.ScrollToAnchor(anchor)
-}
-
-func (d *MarkdownDockable) updateCursor(_ geom.Point) *unison.Cursor {
-	return d.pan.cursor()
-}
-
-func (d *MarkdownDockable) mouseDown(where geom.Point, _, _ int, _ mod.Modifiers) bool {
-	d.pan.begin(where)
-	d.markdown.RequestFocus()
-	d.UpdateCursorNow()
-	return true
-}
-
-func (d *MarkdownDockable) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
-	d.pan.drag(where)
-	return true
-}
-
-func (d *MarkdownDockable) mouseUp(_ geom.Point, _ int, _ mod.Modifiers) bool {
-	d.pan.end()
-	d.UpdateCursorNow()
-	return true
 }
 
 // UndoManager implements undo.Provider

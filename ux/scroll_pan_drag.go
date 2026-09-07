@@ -12,6 +12,7 @@ package ux
 import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // scrollPanDrag pans a scroll panel by dragging its content: the scroll position captured when the drag began is
@@ -23,6 +24,30 @@ type scrollPanDrag struct {
 	start   geom.Point
 	origin  geom.Point
 	active  bool
+}
+
+// install wires the pan state to scroll and content, and sets content's mouse and cursor callbacks so that dragging it
+// pans the scroll panel. A mouse-down also gives focus to the given panel. Dockables whose content only pans should use
+// this rather than installing the callbacks themselves, so that the wiring cannot be forgotten.
+func (p *scrollPanDrag) install(scroll *unison.ScrollPanel, content *unison.Panel, focus unison.Paneler) {
+	p.scroll = scroll
+	p.content = content
+	content.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor { return p.cursor() }
+	content.MouseDownCallback = func(where geom.Point, _, _ int, _ mod.Modifiers) bool {
+		p.begin(where)
+		focus.AsPanel().RequestFocus()
+		content.UpdateCursorNow()
+		return true
+	}
+	content.MouseDragCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
+		p.drag(where)
+		return true
+	}
+	content.MouseUpCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
+		p.end()
+		content.UpdateCursorNow()
+		return true
+	}
 }
 
 // begin starts a drag at the given content-local point.

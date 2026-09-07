@@ -29,7 +29,6 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/imgfmt"
-	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -91,10 +90,6 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	d.drawablePanel = unison.NewPanel()
 	d.drawablePanel.SetSizer(d.imageSizer)
 	d.drawablePanel.DrawCallback = d.draw
-	d.drawablePanel.MouseDownCallback = d.mouseDown
-	d.drawablePanel.MouseDragCallback = d.mouseDrag
-	d.drawablePanel.MouseUpCallback = d.mouseUp
-	d.drawablePanel.UpdateCursorCallback = d.updateCursor
 	d.drawablePanel.SetFocusable(true)
 
 	d.scroll = unison.NewScrollPanel()
@@ -105,7 +100,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		VGrab:  true,
 	})
 	d.scroll.SetContent(d.drawablePanel, behavior.Fill, behavior.Fill)
-	d.pan = scrollPanDrag{scroll: d.scroll, content: d.drawablePanel}
+	d.pan.install(d.scroll, d.drawablePanel, d)
 
 	typeLabel := unison.NewLabel()
 	typeLabel.Font = unison.DefaultFieldTheme.Font
@@ -166,28 +161,6 @@ func loadSVGFromFile(filePath string) (*unison.SVG, error) {
 		r = gz
 	}
 	return unison.NewSVGFromReader(r)
-}
-
-func (d *ImageDockable) updateCursor(_ geom.Point) *unison.Cursor {
-	return d.pan.cursor()
-}
-
-func (d *ImageDockable) mouseDown(where geom.Point, _, _ int, _ mod.Modifiers) bool {
-	d.pan.begin(where)
-	d.RequestFocus()
-	d.UpdateCursorNow()
-	return true
-}
-
-func (d *ImageDockable) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
-	d.pan.drag(where)
-	return true
-}
-
-func (d *ImageDockable) mouseUp(_ geom.Point, _ int, _ mod.Modifiers) bool {
-	d.pan.end()
-	d.UpdateCursorNow()
-	return true
 }
 
 func (d *ImageDockable) imageSizer(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {

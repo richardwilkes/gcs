@@ -10,6 +10,9 @@
 package ux
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -92,4 +95,63 @@ func TestScrollPanDragCursor(t *testing.T) {
 	c.Equal(unison.MoveCursor(), pan.cursor())
 	pan.end()
 	c.Equal(unison.ArrowCursor(), pan.cursor())
+}
+
+// TestScrollPanDragInstall verifies that install wires the pan state to the scroll panel and content, and that the
+// callbacks it sets on the content drive the drag: a mouse-down begins it, a mouse-drag pans, and a mouse-up ends it.
+func TestScrollPanDragInstall(t *testing.T) {
+	c := check.New(t)
+	_, scroll, content := newScrollPanDragFixture()
+	var pan scrollPanDrag
+	pan.install(scroll, content, content)
+	c.Equal(scroll, pan.scroll)
+	c.Equal(content, pan.content)
+	c.NotNil(content.MouseDownCallback)
+	c.NotNil(content.MouseDragCallback)
+	c.NotNil(content.MouseUpCallback)
+	c.NotNil(content.UpdateCursorCallback)
+
+	c.Equal(unison.ArrowCursor(), content.UpdateCursorCallback(geom.Point{}))
+	c.True(content.MouseDownCallback(geom.NewPoint(50, 50), 1, 1, 0))
+	c.True(pan.active)
+	c.Equal(unison.MoveCursor(), content.UpdateCursorCallback(geom.Point{}))
+	c.True(content.MouseDragCallback(geom.NewPoint(30, 20), 1, 0))
+	c.Equal(geom.NewPoint(20, 30), scrollPosition(scroll))
+	c.True(content.MouseUpCallback(geom.NewPoint(30, 20), 1, 0))
+	c.False(pan.active)
+	c.Equal(unison.ArrowCursor(), content.UpdateCursorCallback(geom.Point{}))
+}
+
+// TestDockablesPanOnDrag verifies that dragging the content of the image and markdown dockables pans their scroll
+// panels. The markdown dockable once installed the mouse handlers without wiring the pan state to its scroll panel,
+// so a mouse-down on it dereferenced a nil scroll panel and panicked.
+func TestDockablesPanOnDrag(t *testing.T) {
+	c := check.New(t)
+	svgPath := filepath.Join(t.TempDir(), "image.svg")
+	svg := `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16" width="480" height="320">` +
+		`<rect x="0" y="0" width="24" height="16"/></svg>`
+	c.NoError(os.WriteFile(svgPath, []byte(svg), 0o600))
+	image, err := NewImageDockable(svgPath)
+	c.NoError(err)
+	imageDockable, ok := image.(*ImageDockable)
+	c.True(ok)
+	markdown := NewMarkdownDockableWithContent("notes", strings.Repeat("Some text.\n\n", 100), false, false)
+	markdownDockable, ok := markdown.(*MarkdownDockable)
+	c.True(ok)
+	for _, tc := range []struct {
+		name    string
+		scroll  *unison.ScrollPanel
+		content *unison.Panel
+	}{
+		{name: "image", scroll: imageDockable.scroll, content: imageDockable.drawablePanel},
+		{name: "markdown", scroll: markdownDockable.scroller, content: markdownDockable.markdown.AsPanel()},
+	} {
+		tc.scroll.SetFrameRect(geom.NewRect(0, 0, 100, 100))
+		tc.scroll.ValidateLayout()
+		c.Equal(geom.Point{}, scrollPosition(tc.scroll), tc.name)
+		c.True(tc.content.MouseDownCallback(geom.NewPoint(50, 50), 1, 1, 0), tc.name)
+		c.True(tc.content.MouseDragCallback(geom.NewPoint(50, 20), 1, 0), tc.name)
+		c.Equal(geom.NewPoint(0, 30), scrollPosition(tc.scroll), "%s: the content should pan with the pointer", tc.name)
+		c.True(tc.content.MouseUpCallback(geom.NewPoint(50, 20), 1, 0), tc.name)
+	}
 }
