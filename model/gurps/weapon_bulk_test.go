@@ -67,7 +67,6 @@ func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 	sw.SwitchTypeValue = true
 	w := newWeaponWithBonuses(false, sw)
 
-	// Switched on, the stock marker appears, and with it the tooltip explaining the folded-stock stats.
 	w.Bulk = gurps.ParseWeaponBulk("-3")
 	resolved := w.Bulk.Resolve(w, nil)
 	c.Equal("-3*", resolved.String(), "the switch adds a retracting stock")
@@ -76,7 +75,6 @@ func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 	w.Bulk = gurps.ParseWeaponBulk("-3*")
 	c.Equal("-3*", w.Bulk.Resolve(w, nil).String(), "a weapon that already has one is unchanged")
 
-	// Switched off, it is removed.
 	sw.SwitchTypeValue = false
 	w.Bulk = gurps.ParseWeaponBulk("-3*")
 	resolved = w.Bulk.Resolve(w, nil)
@@ -86,7 +84,6 @@ func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 	w.Bulk = gurps.ParseWeaponBulk("-3")
 	c.Equal("-3", w.Bulk.Resolve(w, nil).String(), "a weapon that has none is unchanged")
 
-	// A bulk bonus still applies alongside the switch.
 	bonus := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
 	bonus.Amount = fxp.NegOne
 	sw.SwitchTypeValue = true

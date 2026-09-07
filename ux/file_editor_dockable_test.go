@@ -47,8 +47,8 @@ type fileEditorContract[T fileEditorModel[T]] struct {
 	edit func(t *testing.T, d *fileEditorDockable[T])
 }
 
-// checkFileEditorContract runs, as subtests, the checks every kind of file editor must pass: those of the behavior the
-// base provides, which the ancestry and name generator editors share.
+// checkFileEditorContract runs, as subtests, the checks every kind of file editor must pass -- those of the behavior
+// the base provides.
 func checkFileEditorContract[T fileEditorModel[T]](t *testing.T, contract fileEditorContract[T]) {
 	t.Helper()
 	untitled := contract.titlePrefix + ": Untitled"
@@ -95,8 +95,8 @@ func checkFileEditorContract[T fileEditorModel[T]](t *testing.T, contract fileEd
 		c.False(d.Modified())
 	})
 
-	// Reset replaces the model with a new one while the editor keeps its file, so that it shows as modified until saved,
-	// and rebuilds the content around the new model; undoing brings back the previous model.
+	// Reset replaces the model with a new one while the editor keeps its file, so that it shows as modified until
+	// saved, and rebuilds the content around the new model; undoing brings back the previous model.
 	t.Run("Reset", func(t *testing.T) {
 		c := check.New(t)
 		ref := testFileRef(t, c, contract.fileName, contract.ext, contract.validJSON)
@@ -141,8 +141,7 @@ func checkFileEditorContract[T fileEditorModel[T]](t *testing.T, contract fileEd
 	})
 }
 
-// TestFileEditorRecognizersTellTheEditorsApart verifies that each kind of editor is recognized as itself and as nothing
-// else, and that an unrelated dockable is recognized as neither.
+// Each kind of editor must be recognized as itself and as nothing else, and an unrelated dockable as neither.
 func TestFileEditorRecognizersTellTheEditorsApart(t *testing.T) {
 	c := check.New(t)
 	ancestry := newTestAncestryEditorDockable(gurps.NewAncestry())
@@ -157,8 +156,7 @@ func TestFileEditorRecognizersTellTheEditorsApart(t *testing.T) {
 	c.False(isNameGeneratorEditor(recorder))
 }
 
-// failOnWorkspaceError makes any error the workspace would show in a dialog fail the test instead, for the duration of
-// the test.
+// failOnWorkspaceError makes any error the workspace would show in a dialog fail the test instead.
 func failOnWorkspaceError(t *testing.T) {
 	t.Helper()
 	swapForTest(t, &Workspace.ErrorHandler, func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) })
@@ -173,9 +171,8 @@ func builtInAncestryRef(t *testing.T, c check.Checker, name, content string) *gu
 	return ref
 }
 
-// TestFileEditorUndoPastSaveLeavesModified verifies that undoing an edit that has been saved leaves the editor showing
-// as modified, since what it then holds is not what its file holds, so that Save is offered and closing prompts; and
-// that redoing the edit brings it back into step with the file.
+// Undoing an edit that has been saved must leave the editor showing as modified, since what it then holds is not what
+// its file holds, so Save is offered and closing prompts; redoing the edit brings it back into step with the file.
 func TestFileEditorUndoPastSaveLeavesModified(t *testing.T) {
 	c := check.New(t)
 	failOnWorkspaceError(t)
@@ -198,10 +195,9 @@ func TestFileEditorUndoPastSaveLeavesModified(t *testing.T) {
 	c.False(d.saveButton.Enabled())
 }
 
-// TestFileEditorBuiltInFileKeepsItsName verifies that a file with no path on disk, as a built-in one has, is known by
-// its name for as long as it is loaded: in the title and as the file name a Save As is offered, so that a copy saved
-// into a library takes precedence over the built-in as the user expects. A reset changes the content, not the file, so
-// the name stays.
+// A file with no path on disk, as a built-in one has, is known by its name for as long as it is loaded: in the title
+// and as the file name a Save As is offered, so a copy saved into a library takes precedence over the built-in as the
+// user expects. A reset changes the content, not the file, so the name stays.
 func TestFileEditorBuiltInFileKeepsItsName(t *testing.T) {
 	c := check.New(t)
 	ref := builtInAncestryRef(t, c, "Elf", testAncestryJSON)
@@ -225,9 +221,8 @@ func TestFileEditorBuiltInFileKeepsItsName(t *testing.T) {
 	c.False(d.showsFile(ref), "the editor no longer holds the built-in")
 }
 
-// TestOpenFileEditorBrokenFileOpensNothing verifies that opening a file that fails to load makes no editor at all: the
-// error is returned to the caller to report, and with no document dock to place an editor in, showing one would fail,
-// so returning quietly is the proof that none was shown.
+// Opening a file that fails to load must make no editor at all: the error is returned to the caller to report, and with
+// no document dock to place an editor in, showing one would fail, so returning quietly proves none was shown.
 func TestOpenFileEditorBrokenFileOpensNothing(t *testing.T) {
 	c := check.New(t)
 	swapForTest(t, &Workspace.DocumentDock, nil)
@@ -242,8 +237,7 @@ func TestOpenFileEditorBrokenFileOpensNothing(t *testing.T) {
 	c.True(dockable == nil, "the file type registry's loader hands back a nil dockable, not a typed nil")
 }
 
-// TestDiskFileRef verifies that a reference made from a path on disk names the file the way a library scan would, and
-// reads the same file.
+// A reference made from a path on disk must name the file the way a library scan would, and read the same file.
 func TestDiskFileRef(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

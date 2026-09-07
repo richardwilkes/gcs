@@ -18,10 +18,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestScanForNamedFileSetsIgnoresExtensionCase verifies that files are matched without regard to the case of their
-// extension. The extension map is built from lowercased extensions, but the file's own extension was looked up as-is,
-// so anything with an upper or mixed-case extension was silently skipped from the settings, ancestry, calendar and
-// name-generator scans.
+// Files are matched without regard to the case of their extension. The extension map is built from lowercased
+// extensions, but the file's own extension was looked up as-is, so anything with an upper or mixed-case extension was
+// silently skipped from the settings, ancestry, calendar and name-generator scans.
 func TestScanForNamedFileSetsIgnoresExtensionCase(t *testing.T) {
 	c := check.New(t)
 	fileSystem := fstest.MapFS{
@@ -38,9 +37,8 @@ func TestScanForNamedFileSetsIgnoresExtensionCase(t *testing.T) {
 	c.Equal([]string{"Dwarf", "Elf", "Human"}, names, "extensions match without regard to case")
 }
 
-// TestScanForNamedFileSetsRecordsDiskPath verifies that a file found in a library carries the absolute path of the file
-// on disk, so that an editor can save back to where the file came from, while a built-in file, which is embedded in the
-// application and has no disk location, leaves it empty.
+// A file found in a library carries its absolute path on disk, so an editor can save back to where it came from, while
+// a built-in file, embedded in the application and with no disk location, leaves it empty.
 func TestScanForNamedFileSetsRecordsDiskPath(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

@@ -44,9 +44,8 @@ func installSentinelNavigator(t *testing.T) (*Navigator, *gurps.Settings) {
 	return nav, settings
 }
 
-// TestOpenInWindowCheckboxLeavesDeepSearchAlone verifies that toggling a "Use Separate Windows" checkbox updates only
-// the OpenInWindow setting. It used to also rebuild the Library Explorer's deep-search extension map, a copy/paste
-// leftover from the deep-search checkboxes that has nothing to do with which documents open in their own window.
+// Toggling a "Use Separate Windows" checkbox must update only the OpenInWindow setting. It used to also rebuild the
+// Library Explorer's deep-search extension map, a copy/paste leftover from the deep-search checkboxes.
 func TestOpenInWindowCheckboxLeavesDeepSearchAlone(t *testing.T) {
 	c := check.New(t)
 	nav, settings := installSentinelNavigator(t)
@@ -70,8 +69,8 @@ func TestOpenInWindowCheckboxLeavesDeepSearchAlone(t *testing.T) {
 		"toggling a separate-window checkbox must not rebuild the deep search map")
 }
 
-// updateCheckStub stands in for the repeating checks' scheduler and work, so that a test can see what the checks were
-// asked to do without a real timer being started or the network being reached.
+// updateCheckStub stands in for the repeating checks' scheduler and work, so a test can see what the checks were asked
+// to do without a real timer being started or the network being reached.
 type updateCheckStub struct {
 	ticks       []recordedTick
 	appRuns     int
@@ -84,8 +83,8 @@ func (s *updateCheckStub) schedule(f func(), after time.Duration) {
 
 // stubUpdateCheckSchedules replaces the repeating checks with fresh ones that record onto the returned stub for the
 // duration of the test. A popup selection made through the real callback would otherwise leave a real hour- or day-long
-// timer pending in the test process, and turning the checks on would reach out to the network. The checks are put back
-// exactly as they were afterwards; the ticks recorded in between are never fired.
+// timer pending in the test process, and turning the checks on would reach out to the network. The ticks recorded in
+// between are never fired.
 func stubUpdateCheckSchedules(t *testing.T) *updateCheckStub {
 	t.Helper()
 	stub := &updateCheckStub{}
@@ -104,10 +103,10 @@ func stubUpdateCheckSchedules(t *testing.T) *updateCheckStub {
 	return stub
 }
 
-// prepareUpdateCheckSettings installs a Navigator without an update button, so that the ApplyUpdateCheckSettings() call
-// the popups make finds nothing to sync, stubs out the repeating checks, and restores the update check settings the
-// popups mutate when the test finishes. Returns the general settings, with both update checks set to their default,
-// and the stub the repeating checks now record onto.
+// prepareUpdateCheckSettings installs a Navigator without an update button, so the ApplyUpdateCheckSettings() call the
+// popups make finds nothing to sync, stubs out the repeating checks, and restores the update check settings the popups
+// mutate when the test finishes. It returns the general settings, with both update checks set to their default, and the
+// stub the repeating checks now record onto.
 func prepareUpdateCheckSettings(t *testing.T) (*gurps.GeneralSettings, *updateCheckStub) {
 	t.Helper()
 	installSentinelNavigator(t)
@@ -124,9 +123,8 @@ func prepareUpdateCheckSettings(t *testing.T) (*gurps.GeneralSettings, *updateCh
 	return gs, stub
 }
 
-// TestUpdateCheckPopupsApplyTheirSelection verifies that each update check popup starts out showing its own setting and
-// writes back to only that setting. The two popups are built by the same helper, so a mixed-up getter or setter would
-// leave one of them silently driving the other's setting.
+// Each update check popup must start out showing its own setting and write back to only that setting. The two popups
+// are built by the same helper, so a mixed-up getter or setter would leave one silently driving the other's setting.
 func TestUpdateCheckPopupsApplyTheirSelection(t *testing.T) {
 	c := check.New(t)
 	gs, _ := prepareUpdateCheckSettings(t)
@@ -150,9 +148,9 @@ func TestUpdateCheckPopupsApplyTheirSelection(t *testing.T) {
 	c.Equal(updatecheck.Daily, gs.AppUpdateCheck, "the library update popup must not disturb the app update setting")
 }
 
-// TestUpdateCheckPopupsRunACheckWhenTurnedOn verifies that choosing anything other than Never in a popup that was at
-// Never runs that check right away, for the app and the libraries independently, while other changes don't. The
-// popups are the way the checks get turned on mid-session, and the user who does that expects something to happen.
+// Choosing anything other than Never in a popup that was at Never must run that check right away, for the app and the
+// libraries independently, while other changes must not. The popups are the way the checks get turned on mid-session,
+// and the user who does that expects something to happen.
 func TestUpdateCheckPopupsRunACheckWhenTurnedOn(t *testing.T) {
 	c := check.New(t)
 	gs, stub := prepareUpdateCheckSettings(t)
@@ -182,11 +180,11 @@ func TestUpdateCheckPopupsRunACheckWhenTurnedOn(t *testing.T) {
 	c.Equal(2, stub.libraryRuns, "turning the library check on again must run it again")
 }
 
-// TestUpdateCheckPopupsFollowTheSettings verifies that the popups can be brought back into line with settings that were
-// replaced wholesale, as a reset or a load of a settings file does, and that selecting the replaced value is enough to
-// bring the repeating check into line with it as well: the popup's own callback reschedules on a change, and a value
-// that didn't change needs no rescheduling, since the schedule reads the settings live. This is what sync() performs;
-// the rest of sync() isn't exercised here, since a bare dockable has none of the other widgets it touches.
+// The popups must follow settings that were replaced wholesale, as a reset or a load of a settings file does, and
+// selecting the replaced value must bring the repeating check into line with it as well: the popup's own callback
+// reschedules on a change, and a value that didn't change needs no rescheduling, since the schedule reads the settings
+// live. This is what sync() performs; the rest of sync() isn't exercised here, since a bare dockable has none of the
+// other widgets it touches.
 func TestUpdateCheckPopupsFollowTheSettings(t *testing.T) {
 	c := check.New(t)
 	gs, stub := prepareUpdateCheckSettings(t)
@@ -218,8 +216,8 @@ func TestUpdateCheckPopupsFollowTheSettings(t *testing.T) {
 	c.Equal(ticks, len(stub.ticks), "re-selecting an unchanged setting must not schedule another tick")
 }
 
-// TestDeepSearchCheckboxRebuildsDeepSearch is the counterpart to TestOpenInWindowCheckboxLeavesDeepSearchAlone: the
-// deep-search checkboxes are the ones that must rebuild the Library Explorer's extension map.
+// The counterpart to TestOpenInWindowCheckboxLeavesDeepSearchAlone: the deep-search checkboxes are the ones that must
+// rebuild the Library Explorer's extension map.
 func TestDeepSearchCheckboxRebuildsDeepSearch(t *testing.T) {
 	c := check.New(t)
 	nav, settings := installSentinelNavigator(t)
@@ -239,9 +237,8 @@ func TestDeepSearchCheckboxRebuildsDeepSearch(t *testing.T) {
 }
 
 // newTestGeneralSettingsDockable returns a general settings dockable with its content built on a bare panel, the way
-// Setup would build it, but without a workspace to dock it in. The general settings, the interface locale setting and
-// the deep search and separate window lists that its widgets and its reset mutate are put back when the test ends, and
-// the update checks its popups drive are stubbed.
+// Setup would build it, but without a workspace to dock it in. The settings its widgets and its reset mutate are put
+// back when the test ends, and the update checks its popups drive are stubbed.
 func newTestGeneralSettingsDockable(t *testing.T) *generalSettingsDockable {
 	t.Helper()
 	prepareUpdateCheckSettings(t)
@@ -258,10 +255,10 @@ func newTestGeneralSettingsDockable(t *testing.T) *generalSettingsDockable {
 	return d
 }
 
-// TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings verifies that every checkbox in the checkbox block and
-// every initial scale field edits its own field of the live general settings, and keeps doing so after a reset has
-// replaced the settings wholesale, which also has to bring each of them back into line. The widgets hold pointers into
-// the settings, which is only right because reset and load copy into the settings struct rather than swapping it out.
+// Every checkbox in the checkbox block and every initial scale field must edit its own field of the live general
+// settings, and keep doing so after a reset has replaced the settings wholesale, which also has to bring each of them
+// back into line. The widgets hold pointers into the settings, which is only right because reset and load copy into the
+// settings struct rather than swapping it out.
 func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T) {
 	c := check.New(t)
 	d := newTestGeneralSettingsDockable(t)

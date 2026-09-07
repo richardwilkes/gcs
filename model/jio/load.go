@@ -28,7 +28,8 @@ func InvalidFileData() string {
 	return i18n.Text("Invalid file data.")
 }
 
-// LoadFromFile JSON data from the specified filesystem path. 'fileSystem' may be nil, in which case os.Open() is used instead.
+// LoadFromFile loads JSON data from the specified filesystem path. 'fileSystem' may be nil, in which case os.Open() is
+// used instead.
 func LoadFromFile(fileSystem fs.FS, path string, result any) error {
 	var f fs.File
 	var err error
@@ -75,19 +76,18 @@ func DecompressAndDeserialize(data []byte, result any) error {
 		return errs.Wrap(err)
 	}
 	if err = UnmarshalRead(r, result); err != nil {
-		// Note that we don't explicitly close the gzip reader on error because this is all done in memory and it isn't
-		// necessary to free resources.
+		// No need to close the gzip reader on error, since this is all done in memory and has no resources to free.
 		return errs.Wrap(err)
 	}
 	return errs.Wrap(r.Close())
 }
 
-// Unmarshal drop-in replacement for json.Unmarshal that applies any application-wide options
+// Unmarshal is a drop-in replacement for json.Unmarshal that applies any application-wide options.
 func Unmarshal(data []byte, result any, opts ...json.Options) error {
 	return UnmarshalRead(bytes.NewReader(data), result, opts...)
 }
 
-// UnmarshalRead drop-in replacement for json.UnmarshalRead that applies any application-wide options
+// UnmarshalRead is a drop-in replacement for json.UnmarshalRead that applies any application-wide options.
 func UnmarshalRead(r io.Reader, result any, opts ...json.Options) error {
 	opts = append([]json.Options{}, opts...)
 	return errs.Wrap(json.UnmarshalRead(r, result, opts...))

@@ -18,8 +18,8 @@ import (
 )
 
 // processIsAlive reports whether the process is still running. Signal 0 performs the existence and permission checks
-// without delivering anything, so the only answer that definitively means "gone" is ESRCH -- a permission error means
-// the process is there but belongs to someone else, which still counts as running.
+// without delivering anything, so only ESRCH definitively means "gone"; a permission error means the process is there
+// but belongs to someone else, which still counts as running.
 func processIsAlive(pid int) bool {
 	proc, err := os.FindProcess(pid)
 	if err != nil {

@@ -24,8 +24,7 @@ import (
 // titledPagePanelInsets are the insets between the border of a sheet page block and its content.
 var titledPagePanelInsets = geom.Insets{Top: 1, Left: 2, Bottom: 1, Right: 2}
 
-// newTitledPageBorder returns the border of a titled sheet page block: the titled border with the standard insets
-// inside it.
+// newTitledPageBorder returns the titled border of a sheet page block with the standard insets inside it.
 func newTitledPageBorder(title string) unison.Border {
 	return unison.NewCompoundBorder(&TitledBorder{Title: title}, unison.NewEmptyBorder(titledPagePanelInsets))
 }
@@ -37,9 +36,8 @@ func initTitledPagePanel(p unison.Paneler, title string, columns int, banded boo
 
 // initPagePanel sets up a panel as a block of a sheet page: it becomes its own Self and is given the border, a grid of
 // the given number of columns with the standard page spacing, and layout data that fills its cell. When banded is
-// true, its rows, each of which pairs a label with a field, are drawn with alternating backgrounds. A tint that is not
-// nil is installed as the block's tint. The layout and layout data are returned so that a block can adjust them,
-// such as to grab extra space or to center its rows.
+// true, its rows, each of which pairs a label with a field, are drawn with alternating backgrounds. A non-nil tint is
+// installed as the block's tint. The layout and layout data are returned so that a block can adjust them.
 func initPagePanel(p unison.Paneler, border unison.Border, columns int, banded bool, tint *unison.ThemeColor) (*unison.FlexLayout, *unison.FlexLayoutData) {
 	panel := p.AsPanel()
 	panel.Self = p
@@ -173,8 +171,8 @@ func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 	return field
 }
 
-// addLabeledStringPageField adds a label, built by newLabel, and a text entry field for a sheet page to parent, in that
-// order, and returns the field. newLabel is typically NewPageLabel or NewPageLabelEnd.
+// addLabeledStringPageField adds a label, built by newLabel (typically NewPageLabel or NewPageLabelEnd), and a text
+// entry field for a sheet page to parent, in that order, and returns the field.
 func addLabeledStringPageField(parent unison.Paneler, targetMgr *TargetMgr, targetKey, title string, newLabel func(string) *unison.Label, get func() string, set func(string)) *StringField {
 	p := parent.AsPanel()
 	p.AddChild(newLabel(title))
@@ -184,8 +182,8 @@ func addLabeledStringPageField(parent unison.Paneler, targetMgr *TargetMgr, targ
 }
 
 // addRandomizedStringPageField adds a label with a randomization button and a text entry field for a sheet page to
-// parent, in that order, and returns the field. Clicking the button stores the value random returns via set, then shows
-// it in the field and marks the sheet modified.
+// parent, in that order, and returns the field. Clicking the button stores what random returns via set, then shows it
+// in the field and marks the sheet modified.
 func addRandomizedStringPageField(parent unison.Paneler, targetMgr *TargetMgr, targetKey, title, tooltip string, get func() string, set func(string), random func() string) *StringField {
 	return addRandomizedPageField(parent, NewStringPageField(targetMgr, targetKey, title, get, set), title, tooltip,
 		func() string {
@@ -195,9 +193,9 @@ func addRandomizedStringPageField(parent unison.Paneler, targetMgr *TargetMgr, t
 }
 
 // addRandomizedPageField adds a label with a randomization button and field to parent, in that order, and returns the
-// field. Clicking the button calls randomize, which is expected to store the new value and return the text to show for
-// it, then shows that text in the field and marks the sheet modified. The field is flagged SkipDeepSync, since the
-// values these fields hold have no bearing on the rest of the sheet.
+// field. Clicking the button calls randomize, which must store the new value and return the text to show for it, then
+// shows that text in the field and marks the sheet modified. The field is flagged SkipDeepSync, since the values these
+// fields hold have no bearing on the rest of the sheet.
 func addRandomizedPageField[F SelectableTextField](parent unison.Paneler, field F, title, tooltip string, randomize func() string) F {
 	p := parent.AsPanel()
 	p.AddChild(NewPageLabelWithRandomizer(title, tooltip, func() { SetTextAndMarkModified(field, randomize()) }))
@@ -236,8 +234,7 @@ func newUnitsPageField[T ~int64](field *NumericField[T], displayFormat func(T) s
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	// The field was synced with the exact text when it was created, before the display format was installed, so sync it
-	// again to pick that up.
+	// The field was synced with the exact text when it was created, before the display format was installed.
 	field.Sync()
 	return field
 }

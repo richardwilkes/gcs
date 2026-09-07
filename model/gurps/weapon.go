@@ -601,7 +601,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 
 func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if w.IsMelee() &&
-		// Cannot use w.ParryParts.Resolve() here, because that calls this
+		// Cannot use w.Parry.Resolve() here, because it ends up calling this
 		w.ResolveBoolFlag(wswitch.CanParry, w.Parry.CanParry) &&
 		w.ResolveBoolFlag(wswitch.Fencing, w.Parry.Fencing) {
 		return w.EncumbrancePenalty(e, tooltip)
@@ -641,7 +641,6 @@ func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes
 			if level == fxp.Min {
 				continue
 			}
-			// Convert the skill level into a defense level.
 			level = defenseLevelFromSkill(level+preAdj, defenseBonus)
 		}
 		level += postAdj
@@ -901,7 +900,7 @@ func (w *Weapon) FillWithNameableKeys(m, existing map[string]string) {
 	}
 }
 
-// ApplyNameableKeys replaces any nameable keys found in this Weapon with the corresponding values in the provided map.
+// ApplyNameableKeys does nothing, since a weapon resolves its nameable keys through its owner.
 func (w *Weapon) ApplyNameableKeys(_ map[string]string) {
 }
 

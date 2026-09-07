@@ -15,8 +15,7 @@ import "github.com/richardwilkes/toolbox/v2/xrand"
 type WeightedStringOption struct {
 	Weight int    `json:"weight"`
 	Value  string `json:"value"`
-	// KeyPrefix is a runtime-only key the editor uses to give each option's widgets a stable identity. It is never
-	// written to disk.
+	// KeyPrefix is a runtime-only key the editor uses to give each option's widgets a stable identity.
 	KeyPrefix string `json:"-"`
 }
 
@@ -31,7 +30,8 @@ func (o *WeightedStringOption) Valid() bool {
 	return o != nil && o.Weight > 0
 }
 
-// ChooseWeightedStringOption selects a string option from the available set.
+// ChooseWeightedStringOption randomly selects one of the valid options, weighted by their weights and ignoring any
+// option whose value equals 'not'. Returns an empty string when there is nothing to choose from.
 func ChooseWeightedStringOption(options []*WeightedStringOption, not string) string {
 	total := 0
 	for _, one := range options {

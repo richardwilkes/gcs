@@ -19,8 +19,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestPageRefsUnmarshalSkipsNullEntries verifies that a null in place of a page reference -- which a hand-edited or
-// damaged file may hold, and which decodes without error as a nil *PageRef -- is skipped rather than dereferenced.
+// A null in place of a page reference -- which a hand-edited or damaged file may hold, and which decodes without error
+// as a nil *PageRef -- is skipped rather than dereferenced.
 func TestPageRefsUnmarshalSkipsNullEntries(t *testing.T) {
 	c := check.New(t)
 	var refs PageRefs
@@ -39,8 +39,8 @@ func TestPageRefsUnmarshalSkipsNullEntries(t *testing.T) {
 	c.Equal(2, list[0].Offset)
 }
 
-// TestNewPageRefsFromFSWithNullEntry verifies that importing a page reference file holding a null reports usable data
-// rather than crashing the app. This is reachable from the page reference mappings dockable's import.
+// Importing a page reference file holding a null must report usable data rather than crashing the app. This is
+// reachable from the page reference mappings dockable's import.
 func TestNewPageRefsFromFSWithNullEntry(t *testing.T) {
 	c := check.New(t)
 	fileSystem := fstest.MapFS{
@@ -57,9 +57,8 @@ func TestNewPageRefsFromFSWithNullEntry(t *testing.T) {
 	c.Nil(refs.Lookup("B"))
 }
 
-// TestLoadSettingsOrDefaultsWithNullPageRefEntry verifies that a settings file holding a null in place of a page
-// reference is survivable. Decoding one used to panic, which bypassed loadSettingsOrDefaults' recovery entirely and
-// crashed GCS at startup rather than leaving it with usable settings.
+// A settings file holding a null in place of a page reference must be survivable. Decoding one used to panic, which
+// bypassed loadSettingsOrDefaults' recovery entirely and crashed GCS at startup.
 func TestLoadSettingsOrDefaultsWithNullPageRefEntry(t *testing.T) {
 	c := check.New(t)
 	countErrorLogging(t)

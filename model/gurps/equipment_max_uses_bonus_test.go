@@ -31,7 +31,6 @@ func newMaxUsesBonus(sel equipmentsel.Type, amount string) *EquipmentMaxUsesBonu
 func TestEquipmentMaxUsesBonusThisEquipment(t *testing.T) {
 	c := check.New(t)
 
-	// No bonuses: the resolved value equals the raw MaxUses.
 	eqp := NewEquipment(nil, nil, false)
 	eqp.MaxUses = 10
 	c.Equal(10, eqp.ResolvedMaxUses(), "no bonuses")
@@ -58,13 +57,11 @@ func TestEquipmentMaxUsesBonusThisEquipment(t *testing.T) {
 	eqp.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, "x100")}
 	c.Equal(MaxEquipmentMaxUses, eqp.ResolvedMaxUses(), "clamped to maximum")
 
-	// A non-positive multiplier is treated as 1 (no change).
 	eqp = NewEquipment(nil, nil, false)
 	eqp.MaxUses = 10
 	eqp.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, "x-5")}
 	c.Equal(10, eqp.ResolvedMaxUses(), "non-positive multiplier treated as 1")
 
-	// A "to this equipment" bonus applies even when the item is not equipped.
 	eqp = NewEquipment(nil, nil, false)
 	eqp.Equipped = false
 	eqp.MaxUses = 10
@@ -130,7 +127,6 @@ func TestEquipmentMaxUsesBonusEquipmentWithName(t *testing.T) {
 	c.Equal(7, potion.ResolvedMaxUses(), "matching name + tag receives the bonus")
 	c.Equal(5, sword.ResolvedMaxUses(), "non-matching item is unaffected")
 
-	// Per-level scaling comes from the attaching trait's level.
 	bonus.PerLevel = true
 	trait.CanLevel = true
 	trait.Levels = fxp.Three
@@ -147,20 +143,16 @@ func TestEquipmentResolvedUses(t *testing.T) {
 	eqp.MaxUses = 10
 	eqp.Uses = 8
 
-	// With no bonus, the stored and displayed values match.
 	c.Equal(8, eqp.ResolvedUses(), "displayed uses without a bonus")
 
-	// A feature that lowers the maximum below the stored Uses caps the displayed value but leaves the stored value.
 	eqp.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, "x0.3")} // 10 * 0.3 = 3
 	c.Equal(3, eqp.ResolvedMaxUses(), "reduced maximum")
 	c.Equal(3, eqp.ResolvedUses(), "displayed uses capped at the reduced maximum")
 	c.Equal(8, eqp.Uses, "stored uses left unchanged until an edit or save")
 
-	// The save-time adjustment brings the stored value down to the cap.
 	AdjustEquipmentUsesForSave([]*Equipment{eqp})
 	c.Equal(3, eqp.Uses, "stored uses adjusted to the cap on save")
 
-	// A stored value already within range is not modified by the save-time adjustment.
 	eqp.Uses = 2
 	AdjustEquipmentUsesForSave([]*Equipment{eqp})
 	c.Equal(2, eqp.Uses, "in-range stored uses left alone on save")
@@ -172,21 +164,18 @@ func TestEquipmentResolvedUses(t *testing.T) {
 func TestEquipmentMaxUsesBonusCannotCreateMaximum(t *testing.T) {
 	c := check.New(t)
 
-	// Each operation, applied to an item that declares no maximum, must leave it unlimited.
 	for _, amount := range []string{"+2", "50%", "x2", "-2"} {
 		eqp := NewEquipment(nil, nil, false)
 		eqp.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, amount)}
 		c.Equal(0, eqp.ResolvedMaxUses(), "a %q bonus must not create a maximum", amount)
 	}
 
-	// A modifier-carried bonus is subject to the same rule.
 	eqp := NewEquipment(nil, nil, false)
 	mod := NewEquipmentModifier(nil, nil, false)
 	mod.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, "+3")}
 	eqp.Modifiers = []*EquipmentModifier{mod}
 	c.Equal(0, eqp.ResolvedMaxUses(), "a modifier bonus must not create a maximum")
 
-	// So is an "equipment whose name" bonus from the entity.
 	e := NewEntity()
 	bonus := newMaxUsesBonus(equipmentsel.EquipmentWithName, "+5")
 	bonus.NameCriteria.Compare = criteria.IsText

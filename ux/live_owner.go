@@ -16,8 +16,7 @@ import (
 
 // liveOwner returns the panel that is currently showing the data the given panel was created for. It is the type-erased
 // counterpart of liveTable, for callers that only need something to ask for a rebuild through and can't name the row
-// type of the table they were handed -- a caller whose type parameter comes from the rows it was given rather than from
-// the table those rows live in, for one. An owner that has to alter its set of columns can only do so by replacing its
+// type of the table they were handed. An owner that has to alter its set of columns can only do so by replacing its
 // table entirely, which leaves any table captured earlier orphaned, and an orphan has no Rebuildable above it, so a
 // rebuild asked for through one would silently be skipped. Anything that isn't a table its owner may have replaced is
 // returned as-is, as is a nil panel, since callers that may not have a panel at all pass one through here.

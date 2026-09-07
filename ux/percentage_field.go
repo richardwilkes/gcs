@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-// PercentageField is field that holds a percentage.
+// PercentageField is a field that holds a percentage.
 type PercentageField = NumericField[int]
 
 // NewPercentageField creates a new field that holds a percentage.

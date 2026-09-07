@@ -48,7 +48,7 @@ func ExtractPageReferences(s string) []string {
 	return list
 }
 
-// OpenPageReference opens the given page reference. Returns true if the the user asked to cancel further processing.
+// OpenPageReference opens the given page reference. Returns true if the user asked to cancel further processing.
 func OpenPageReference(ref, highlight string, promptContext map[string]bool) bool {
 	switch {
 	case unison.HasURLPrefix(ref):
@@ -67,7 +67,6 @@ func OpenPageReference(ref, highlight string, promptContext map[string]bool) boo
 func openMarkdownPageReference(ref string) {
 	path, anchor := splitMarkdownPageRef(ref[3:])
 	if path != "" {
-		// First check in the Markdown directory of each library.
 		for _, lib := range gurps.GlobalSettings().Libraries.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", path)
 			if xos.FileIsReadable(filePath) {
@@ -75,7 +74,6 @@ func openMarkdownPageReference(ref string) {
 				return
 			}
 		}
-		// Then check in the root of each library.
 		for _, lib := range gurps.GlobalSettings().Libraries.List() {
 			filePath := filepath.Join(lib.Path(), path)
 			if xos.FileIsReadable(filePath) {
@@ -88,11 +86,10 @@ func openMarkdownPageReference(ref string) {
 }
 
 // splitMarkdownPageRef splits a markdown page reference (with the "md:" prefix already removed) into the file path and
-// an optional anchor (the portion following a '#'). Any URL-encoding in the path (e.g. "%20" for spaces) is decoded so
-// that both encoded and non-encoded references resolve to the same file. The ".md" extension is appended to the path if
-// it isn't already present. Splitting the anchor off before appending the extension ensures a reference such as
-// "File#Section" resolves to "File.md" rather than the non-existent "File#Section.md". The anchor is returned as-is;
-// its own decoding is handled downstream by unison when scrolling to it.
+// an optional anchor (the portion following a '#'). URL-encoding in the path (e.g. "%20" for spaces) is decoded, so
+// that encoded and non-encoded references resolve to the same file, and the ".md" extension is appended if not already
+// present. Splitting the anchor off first ensures "File#Section" resolves to "File.md" rather than the non-existent
+// "File#Section.md". The anchor is returned as-is; unison decodes it when scrolling to it.
 func splitMarkdownPageRef(ref string) (path, anchor string) {
 	path, anchor, _ = strings.Cut(ref, "#")
 	if unescaped, err := url.PathUnescape(path); err == nil {
@@ -110,7 +107,7 @@ func openMarkdownFileAtAnchor(filePath, anchor string) {
 		return
 	}
 	if md, ok := dockable.(*MarkdownDockable); ok {
-		// Defer until the freshly-displayed dockable has had a chance to lay out, so the heading positions are known.
+		// Defer until the freshly-displayed dockable has laid out, so the heading positions are known.
 		unison.InvokeTask(func() { md.ScrollToAnchor(anchor) })
 	}
 }
@@ -122,8 +119,8 @@ func openPDFPageReference(ref, highlight string, promptContext map[string]bool) 
 	var pageInfo gurps.PageInfo
 	var key string
 	hadColon := false
-	// First, look for a separating colon. These are mandatory if the key would otherwise end in a number, or if the
-	// page number portion is not a number and instead references a page label in a pdf, such as "iv".
+	// A separating colon is mandatory if the key would otherwise end in a number, or if the page portion is a page
+	// label in the PDF rather than a number, such as "iv".
 	i := strings.Index(ref, ":")
 	if i >= 0 {
 		hadColon = true
@@ -144,7 +141,7 @@ func openPDFPageReference(ref, highlight string, promptContext map[string]bool) 
 		pageInfo.Label = ref[i:]
 	}
 	if key != "" && pageInfo.Label != "" {
-		// Special-case handing for Basic Set page references that use `B` for pages in the Campaigns book
+		// Basic Set page references use `B` for pages in the Campaigns book, too.
 		if key == "B" {
 			if pageNum, err := strconv.Atoi(pageInfo.Label); err == nil && pageNum >= 338 {
 				key = "BX"
@@ -228,8 +225,8 @@ func openExternalPDF(filePath, highlight string, pageInfo gurps.PageInfo) {
 	}
 	go func() {
 		if err = cmd.Wait(); err != nil {
-			// Intentionally not putting up a dialog, since -- at least on Windows -- many of the viewers incorrectly
-			// return a non-zero exit code.
+			// Intentionally not putting up a dialog, since -- at least on Windows -- many viewers incorrectly return
+			// a non-zero exit code.
 			slog.Error("unexpected response from external PDF viewer", "error", err)
 		}
 	}()
@@ -252,8 +249,8 @@ func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
 
 // asPageRefMappingsDockable returns the Page Reference Mappings view for the given Dockable, or nil if it isn't one.
 // The Dockable is resolved through its panel's Self, since the value a caller has in hand may be an inner layer rather
-// than the view itself -- SettingsDockable.Setup, for example, hands its own embedded SettingsDockable to the placement
-// code -- and a direct type assertion would not see the view in that case.
+// than the view itself -- SettingsDockable.Setup, for example, hands its own embedded SettingsDockable to the
+// placement code -- which a direct type assertion would not see.
 func asPageRefMappingsDockable(d unison.Dockable) *pageRefMappingsDockable {
 	m, _ := d.AsPanel().Self.(*pageRefMappingsDockable) //nolint:errcheck // The nil case is handled by returning nil
 	return m

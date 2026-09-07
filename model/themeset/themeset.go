@@ -109,7 +109,7 @@ func (s *Set[V, E, P]) MakeCurrent() {
 	p.Applied()
 }
 
-// Reset to factory defaults.
+// Reset restores the factory defaults.
 func (s *Set[V, E, P]) Reset() {
 	var p P
 	s.assign(p.Factory())

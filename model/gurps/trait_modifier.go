@@ -59,7 +59,7 @@ type GeneralModifier interface {
 	SetEnabled(enabled bool)
 }
 
-// TraitModifier holds a modifier to an Trait.
+// TraitModifier holds a modifier to a Trait.
 type TraitModifier struct {
 	TraitModifierData
 	owner DataOwner
@@ -79,12 +79,12 @@ type TraitModifierData struct {
 type TraitModifierEditData struct {
 	TraitModifierSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
-	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
+	Replacements map[string]string `json:"replacements,omitempty"` // No longer used; kept only to migrate old data
 	TraitModifierEditDataNonContainerOnly
 }
 
-// TraitModifierEditDataNonContainerOnly holds the TraitModifier data that is only applicable to
-// TraitModifiers that aren't containers.
+// TraitModifierEditDataNonContainerOnly holds the TraitModifier data that is only applicable to TraitModifiers that
+// aren't containers.
 type TraitModifierEditDataNonContainerOnly struct {
 	TraitModifierNonContainerSyncData
 	Levels   fxp.Int `json:"levels,omitzero"`

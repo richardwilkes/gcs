@@ -29,16 +29,15 @@ import (
 const stageTimeout = 30 * time.Minute
 
 // progressResolution is how finely the progress bar is subdivided. Every change has to be posted to the UI thread, so
-// the download's byte counter is quantized to this before anything is posted -- otherwise a fast download floods the
-// task queue with tens of thousands of updates that no one can see the difference between.
+// the download's byte counter is quantized to this first -- otherwise a fast download floods the task queue with tens
+// of thousands of updates no one could tell apart.
 const progressResolution = 1000
 
 // pendingUpdate holds an update that has been prepared and is waiting for the application to quit.
 //
-// It is applied from the quitting callback rather than immediately after the quit is requested, because
-// unison.AttemptQuit does not return when the quit succeeds -- it reaches xos.Exit and the process ends. Code placed
-// after the call runs only when the quit was refused, so the quitting callback is the one place that can act on a quit
-// that is actually going to happen.
+// It is applied from the quitting callback rather than right after the quit is requested, because unison.AttemptQuit
+// does not return when the quit succeeds -- it reaches xos.Exit and the process ends. Code after the call runs only
+// when the quit was refused, so the quitting callback is the one place that can act on a quit that will happen.
 var pendingUpdate struct {
 	state     *updater.State
 	statePath string
@@ -133,7 +132,7 @@ func stageAppUpdate(plan *updater.Plan) (*updater.Staged, bool) {
 	// The channel must be buffered, and the result read only after RunModal has returned. The background goroutine
 	// sends before it asks for the modal loop to stop, and the UI thread is inside RunModal until then, so nothing is
 	// there to receive at the moment of the send. Reading a shared variable instead would let a failed preparation be
-	// observed as a success. See runInBackground.
+	// observed as a success.
 	resultChan := make(chan stageResult, 1)
 	runInBackground(resultChan,
 		func() stageResult {
@@ -164,8 +163,8 @@ type stageResult struct {
 }
 
 // throttledProgress returns a progress reporter that only posts to the UI thread when the bar would actually move.
-// Without this, a download running at any speed at all posts a task per read, which floods the queue and makes the
-// window less responsive the faster the download goes.
+// Without this, a download posts a task per read, flooding the queue and making the window less responsive the faster
+// the download goes.
 func throttledProgress(bar *unison.ProgressBar) func(float64) {
 	last := -1
 	return func(fraction float64) {

@@ -124,7 +124,7 @@ func ExtractOp(str string) Op {
 
 // ExtractKnownOp extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractOp, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
+// Unlike ExtractOp, which quietly maps anything it doesn't recognize onto the default value, this permits a caller that
 // is dispatching on the type to detect unknown types.
 func ExtractKnownOp(str string) (value Op, known bool) {
 	for _, enum := range Ops {

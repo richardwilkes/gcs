@@ -82,9 +82,8 @@ func (c *ContainedWeightReduction) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, c.Reduction)
 }
 
-// ExtractContainedWeightReduction extracts the weight reduction (which may be a weight or a percentage) and returns
-// a sanitized result. If 'err' is not nil, then the input was bad. Even in that case, however, a valid string is
-// returned.
+// ExtractContainedWeightReduction extracts the weight reduction (which may be a weight or a percentage) and returns a
+// sanitized result. A non-nil error means the input was bad, but a valid string is returned even in that case.
 func ExtractContainedWeightReduction(s string, defUnits fxp.WeightUnit) (string, error) {
 	s = strings.TrimSpace(s)
 	if strings.HasSuffix(s, "%") {

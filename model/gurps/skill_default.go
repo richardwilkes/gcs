@@ -42,9 +42,8 @@ type SkillDefault struct {
 	WhenTL         criteria.Number `json:"when_tl,omitzero"`
 }
 
-// migrateStringToCriteriaText loads a criteria.Text that may have been written in the old format, where it was a plain
-// string rather than an object. The raw value was captured by the caller rather than decoded in place, so the caller's
-// options have to be handed back in for the re-parse to be made under the same terms as the decode it came from.
+// migrateStringToCriteriaText loads a criteria.Text that may have been written in the old format, as a plain string
+// rather than an object. The caller's decode options are needed since the raw value was captured, not decoded in place.
 func migrateStringToCriteriaText(raw jsontext.Value, dst *criteria.Text, opts json.Options) error {
 	if len(raw) == 0 {
 		return nil
@@ -69,9 +68,8 @@ func DefaultTypeIsSkillBased(skillDefaultType string) bool {
 }
 
 // normalizeDefaultType reduces a SkillDefault type to the form the IDs are written in. Only SetType() sanitizes the
-// type, so a data file not written by GCS may hold something like "Parry" or " dx ", which every classifier here
-// (DefaultTypeIsSkillBased, SkillBased, FullName) already accepts. Level resolution has to agree with them, or such a
-// default is displayed and treated as a parry/block/skill default everywhere except where its level is computed.
+// type, so a file not written by GCS may hold "Parry" or " dx "; the classifiers accept those, and level resolution
+// must agree with them, or such a default would be treated as skill-based everywhere but where its level is computed.
 func normalizeDefaultType(skillDefaultType string) string {
 	return strings.ToLower(strings.TrimSpace(skillDefaultType))
 }
@@ -90,8 +88,8 @@ func cloneSkillDefaults(list []*SkillDefault) []*SkillDefault {
 }
 
 // cloneTechniqueDefault creates a copy of a technique's default, or nil when there is none. The criteria of a default
-// that isn't skill-based are neither shown nor consulted, but would still be written to disk and hashed, so nothing of
-// them is kept.
+// that isn't skill-based are neither shown nor consulted, so they are dropped rather than being written to disk and
+// hashed.
 func cloneTechniqueDefault(def *SkillDefault) *SkillDefault {
 	if def == nil {
 		return nil
@@ -155,9 +153,8 @@ func (s *SkillDefault) Equivalent(replacements map[string]string, other *SkillDe
 }
 
 // sameTagCriteria reports whether two tag criteria select the same skills, judged the way Hash and IsZero judge them:
-// every "is anything" criteria is the same as every other, whatever qualifier it may still carry from an earlier
-// selection and whatever unknown comparison it may hold, and otherwise the comparison and the qualifier (after
-// replacements) must both agree.
+// any "is anything" criteria equals any other, whatever qualifier and comparison it may still carry, and otherwise the
+// comparison and the qualifier (after replacements) must both agree.
 func sameTagCriteria(a, b criteria.Text, replacements map[string]string) bool {
 	if a.IsZero() && b.IsZero() {
 		return true
@@ -178,7 +175,7 @@ func (s *SkillDefault) SetType(t string) {
 
 // FullName returns the full name of the skill to default from. A default that names a skill outright is described by
 // that name, with the specialization in parentheses when it names one; any other selection is spelled out criteria by
-// criteria, in the words the editor uses for them, so that nothing the default matches on goes unmentioned.
+// criteria, in the words the editor uses for them.
 func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) string {
 	if !s.SkillBased() {
 		return ResolveAttributeName(entity, s.Type())
@@ -230,9 +227,8 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 }
 
 // namesSkill reports whether this default names a skill outright: its name criteria is "is" some name, its
-// specialization criteria is either "is anything" or "is" some specialization (an empty one meaning a skill without
-// one), and it asks nothing of the tags. That is the ordinary kind of default, and the one FullName describes by the
-// name alone.
+// specialization criteria is "is anything" or "is" some specialization (an empty one meaning a skill without one), and
+// it asks nothing of the tags. That is the ordinary kind of default, and the one FullName describes by the name alone.
 func (s *SkillDefault) namesSkill(replacements map[string]string) bool {
 	return s.Name.Compare.EnsureValid() == criteria.IsText &&
 		s.NameWithReplacements(replacements) != "" &&
@@ -291,8 +287,7 @@ func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string
 }
 
 // isTLPermitted reports whether the WhenTL constraint (if any) is satisfied. skillTL is the tech level of the skill the
-// default is resolving against; when empty (the skill has no tech level, or the default isn't skill-based), it falls
-// back to the entity's tech level.
+// default is resolving against; when empty, the entity's tech level is used instead.
 func (s *SkillDefault) isTLPermitted(entity *Entity, skillTL string) bool {
 	if s.WhenTL.Compare == criteria.AnyNumber {
 		return true
@@ -311,11 +306,8 @@ func (s *SkillDefault) isTLPermitted(entity *Entity, skillTL string) bool {
 	return s.WhenTL.Compare.Matches(s.WhenTL.Qualifier, tl)
 }
 
-// matchingSkills returns the skills this SkillDefault selects. On top of the name and specialization criteria, the tag
-// criteria (when one has been set) filters the result: the qualifier may hold a comma-separated list of tags, where a
-// positive comparison (is, contains, starts with, ...) matches a skill having any one tag that matches any one of the
-// qualifiers, while a negative one (is not, does not contain, ...) requires every tag of the skill to fail against
-// every qualifier. A skill carrying no tags at all counts as having a single, empty tag.
+// matchingSkills returns the skills this SkillDefault selects: those matching the name and specialization criteria,
+// then filtered by the tag criteria when one has been set (see criteria.Text.MatchesList for how the tags are judged).
 func (s *SkillDefault) matchingSkills(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
 	if entity == nil {
 		return nil
@@ -334,9 +326,9 @@ func (s *SkillDefault) bestMatchingSkill(entity *Entity, replacements map[string
 	return BestSkillIn(s.matchingSkills(entity, replacements, requirePoints, excludes), excludes)
 }
 
-// bestFastMatchingSkill returns the skill bestFast() scores this SkillDefault by: the one with the highest already-
-// calculated level among those the default selects and whose tech level satisfies the WhenTL constraint, with the
-// first one encountered winning a tie.
+// bestFastMatchingSkill returns the skill bestFast() scores this SkillDefault by: the one with the highest
+// already-calculated level among those it selects whose tech level satisfies WhenTL, the first one encountered winning
+// a tie.
 func (s *SkillDefault) bestFastMatchingSkill(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) *Skill {
 	var best *Skill
 	level := fxp.Min
@@ -406,12 +398,11 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 }
 
 // asDefense returns this SkillDefault re-pointed at the given defense (ParryID or BlockID) when it names the other
-// defense, and the receiver unchanged otherwise. A "Cloak Parry" default names the Cloak skill; the parry conversion
-// SkillLevelFast() applies to it is the wrong one when the caller is computing a block, and halving the resulting
-// parry level a second time would fold the parry bonus into the block on top of that. Re-pointing it makes such a
-// default contribute exactly what a plain skill default to the same skill would, with the defense being computed
-// supplying its own +3 and its own bonus. Note that this is only right between the two defenses -- the weapon's attack
-// skill deliberately leaves a defense-type default alone; see Weapon.SkillLevel.
+// defense, and the receiver unchanged otherwise. Applying the parry conversion when a block is being computed would
+// halve the level a second time and fold the parry bonus into the block; re-pointing makes such a default contribute
+// exactly what a plain skill default to the same skill would, with the defense being computed supplying its own +3 and
+// its own bonus. This is only right between the two defenses -- the weapon's attack skill deliberately leaves a
+// defense-type default alone; see Weapon.SkillLevel.
 func (s *SkillDefault) asDefense(defenseID string) *SkillDefault {
 	switch s.Type() {
 	case ParryID, BlockID:
@@ -426,9 +417,9 @@ func (s *SkillDefault) asDefense(defenseID string) *SkillDefault {
 
 // defenseLevelFast returns the defense level for a defense-type default (one whose Type() is ParryID or BlockID),
 // folding skillAdj into the named skill's level before the halving that turns it into a defense level and adding
-// defenseBonus afterwards. SkillLevelFast() performs that halving itself, so a caller holding a skill-level adjustment
-// -- a minimum-ST penalty or a bonus aimed at this weapon's skill -- cannot simply add it to that result: at defense
-// scale the adjustment would count for twice what it does on the skill-type default path.
+// defenseBonus afterwards. A caller holding a skill-level adjustment -- a minimum-ST penalty or a bonus aimed at this
+// weapon's skill -- cannot simply add it to SkillLevelFast()'s result, since at defense scale it would count for twice
+// what it does on the skill-type default path.
 func (s *SkillDefault) defenseLevelFast(entity *Entity, replacements map[string]string, skillAdj, defenseBonus fxp.Int) fxp.Int {
 	best := s.bestFast(entity, replacements, false, nil)
 	if best == fxp.Min {
@@ -438,7 +429,7 @@ func (s *SkillDefault) defenseLevelFast(entity *Entity, replacements map[string]
 }
 
 // defenseLevelFromSkill converts a skill level into the level of the parry or block that skill provides: half the
-// skill level, rounded down, plus three, plus the entity's bonus to that defense.
+// skill level, rounded down, plus three, plus defenseBonus.
 func defenseLevelFromSkill(skillLevel, defenseBonus fxp.Int) fxp.Int {
 	return skillLevel.Div(fxp.Two).Floor() + fxp.Three + defenseBonus
 }
@@ -465,11 +456,11 @@ func (s *SkillDefault) Hash(h hash.Hash) {
 	s.Name.Hash(h)
 	s.Specialization.Hash(h)
 	if !s.WhenTL.IsZero() {
-		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
+		// Only hash when non-default, so that old files don't suddenly become marked as modified.
 		s.WhenTL.Hash(h)
 	}
 	if !s.Tags.IsZero() {
-		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
+		// Only hash when non-default, so that old files don't suddenly become marked as modified.
 		s.Tags.Hash(h)
 	}
 }

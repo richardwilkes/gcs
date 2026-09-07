@@ -30,11 +30,9 @@ type editorDockable interface {
 	unison.TabCloser
 }
 
-// editorShell is the dockable-editor shell that editor and pointsEditor share: the panel itself, the icon its tab
-// shows, the owner it was opened from, the dockable and focus to return to when it closes, the undo manager, the
-// scrolling content with its Apply and Discard buttons, and whether closing should still prompt to save. What the
-// editors differ in -- their title, their data, how it is applied and whether it has changed -- stays with the
-// embedding type, which the shell reaches through Self when it needs the whole dockable.
+// editorShell is the dockable-editor shell that editor and pointsEditor share. What the editors differ in -- their
+// title, their data, how it is applied and whether it has changed -- stays with the embedding type, which the shell
+// reaches through Self when it needs the whole dockable.
 type editorShell struct {
 	unison.Panel
 	owner            Rebuildable
@@ -46,11 +44,11 @@ type editorShell struct {
 	applyButton      *unison.Button
 	cancelButton     *unison.Button
 	// promptForSave is cleared by the Apply and Discard buttons, which have already settled what happens to pending
-	// changes, so that closing then asks nothing.
+	// changes, so closing then asks nothing.
 	promptForSave bool
 }
 
-// editor returns the editor embedding the shell.
+// editor returns the editor embedding the shell, or nil if Self has not been set to one.
 func (s *editorShell) editor() editorDockable {
 	if d, ok := s.Self.(editorDockable); ok {
 		return d
@@ -61,7 +59,7 @@ func (s *editorShell) editor() editorDockable {
 // setUp readies the shell for display, once Self has been set: it records where to return to when the editor closes,
 // creates the undo manager, and lays the editor out as a single column, for a toolbar above the scrolling content. It
 // returns the content panel, laid out in the given number of columns; the editor adds the toolbar and then the scroll
-// panel itself, once it has built the toolbar, since the toolbar may need the scroll panel.
+// panel itself, since the toolbar may need the scroll panel.
 func (s *editorShell) setUp(columns int) *unison.Panel {
 	if defDC := DefaultDockContainer(); defDC != nil {
 		if s.previousDockable = defDC.CurrentDockable(); !xreflect.IsNil(s.previousDockable) {
@@ -78,8 +76,8 @@ func (s *editorShell) setUp(columns int) *unison.Panel {
 }
 
 // newContentPanel creates the editor's content panel, laid out in the given number of columns, and the scroll panel
-// that holds it. Cmd-Return within the content applies the changes and Escape discards them, by clicking the toolbar's
-// Apply and Discard buttons, which addApplyAndCancelButtons creates.
+// that holds it. Cmd-Return within the content applies the changes and Escape discards them, by clicking the buttons
+// addApplyAndCancelButtons creates.
 func (s *editorShell) newContentPanel(columns int) *unison.Panel {
 	content := unison.NewPanel()
 	content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
@@ -115,9 +113,9 @@ func (s *editorShell) newContentPanel(columns int) *unison.Panel {
 	return content
 }
 
-// addApplyAndCancelButtons adds the Apply and Discard buttons to the toolbar. Apply applies the changes with apply and
-// closes the editor; Discard closes it without applying them. Neither prompts on the way out, since the user has just
-// said what to do with the changes.
+// addApplyAndCancelButtons adds the Apply and Discard buttons to the toolbar. Apply applies the changes and closes the
+// editor; Discard closes it without applying them. Neither prompts on the way out, since the user has just said what to
+// do with the changes.
 func (s *editorShell) addApplyAndCancelButtons(toolbar *unison.Panel, apply func()) {
 	s.applyButton, s.cancelButton = newApplyCancelButtons(toolbar, true,
 		func() bool {
@@ -176,8 +174,8 @@ func (s *editorShell) confirmClose(isModified func() bool, apply func()) bool {
 }
 
 // returnToPrevious makes the dockable that was current when the editor opened current again and gives the keyboard
-// focus back to the panel within it that held the focus then. It returns that panel, or nil when there is no such
-// dockable or panel.
+// focus back to the panel within it that held it then, returning that panel or nil when there is no such dockable or
+// panel.
 func (s *editorShell) returnToPrevious() *unison.Panel {
 	if xreflect.IsNil(s.previousDockable) {
 		return nil
@@ -204,7 +202,7 @@ type focusWithoutScroller interface {
 }
 
 // restoreFocus gives the keyboard focus back to a panel that held it before an editor was opened. A table's default
-// focus handling scrolls the entire table into view, which moves the surrounding content even when the row the user was
+// focus handling scrolls the entire table into view, moving the surrounding content even when the row the user was
 // working with is still visible, so tables are focused without that. Callers that know which row matters can follow up
 // with revealRowForData, which only scrolls if that row is actually out of view.
 func restoreFocus(p *unison.Panel) {

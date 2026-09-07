@@ -40,8 +40,8 @@ func panelsOfType[T any](root *unison.Panel) []T {
 }
 
 // firstPanelOfType returns the first panel of the given type within the subtree rooted at root, in pre-order. Editors
-// build their sub-panels several levels down and hand back no references to most of them, so a test that wants to
-// drive one has to go looking for it.
+// build their sub-panels several levels down and hand back no references to most of them, so a test that wants to drive
+// one has to go looking for it.
 func firstPanelOfType[T any](root *unison.Panel) (T, bool) {
 	var found T
 	ok := root.HasInSelfOrDescendants(func(p *unison.Panel) bool {
@@ -66,8 +66,8 @@ func panelsMatching(root *unison.Panel, keep func(*unison.Panel) bool) []*unison
 	return found
 }
 
-// TestSwapForTest verifies the swap is visible for the duration of the test that asked for it and undone once that
-// test finishes, so a test can rely on the helper to keep its changes to process-wide state from reaching other tests.
+// TestSwapForTest verifies the swap is visible for the duration of the test that asked for it and undone once that test
+// finishes.
 func TestSwapForTest(t *testing.T) {
 	c := check.New(t)
 	value := "original"
@@ -103,16 +103,12 @@ func TestNoModifiersDown(t *testing.T) {
 	}
 }
 
-// newFocusablePanel returns a plain, focusable, non-button panel usable in a headless test.
 func newFocusablePanel() *unison.Panel {
 	p := unison.NewPanel()
 	p.SetFocusable(true)
 	return p
 }
 
-// TestFirstContentFocusTarget verifies that the focus target for a newly-opened dockable is chosen deterministically
-// from the content and toolbar subtrees, preferring the first non-button focusable widget in the content, then any
-// focusable widget in the content, and finally a focusable widget in the toolbar.
 func TestFirstContentFocusTarget(t *testing.T) {
 	c := check.New(t)
 

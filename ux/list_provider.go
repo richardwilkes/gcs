@@ -26,11 +26,11 @@ type tagLister interface {
 }
 
 // listProvider is the part of a TableProvider that is the same for every kind of node: everything that only delegates
-// to the list the rows come from, the owner of that list, and the header data for its columns, along with opening
-// the editor for the selected items and creating a new item or container. A provider embeds it and supplies the parts
-// that differ between node types -- the reference and drag keys, the item names, the column IDs, the context menu,
-// and the callbacks that create and edit an item -- along with any of these methods it needs to do differently. The
-// column IDs are taken through a callback, since they are the embedding provider's to decide.
+// to the list the rows come from, the owner of that list, and the header data for its columns, along with opening the
+// editor for the selected items and creating a new item or container. A provider embeds it and supplies the parts that
+// differ between node types -- the reference and drag keys, the item names, the column IDs, the context menu, and the
+// callbacks that create and edit an item -- along with any of these methods it needs to do differently. The column IDs
+// are taken through a callback, since they are the embedding provider's to decide.
 type listProvider[T gurps.Node[T]] struct {
 	table      *unison.Table[*Node[T]]
 	dataOwner  gurps.DataOwnerProvider
@@ -43,9 +43,9 @@ type listProvider[T gurps.Node[T]] struct {
 	forPage    bool
 }
 
-// fileListProvider is the list behind a table dockable that shows a list file: a bare list of nodes with no data
-// owner. A concrete provider embeds it and adds the interface-named getter and setter its node type's list provider
-// interface asks for, each a one-line call to rows and setRows.
+// fileListProvider is the list behind a table dockable that shows a list file: a bare list of nodes with no data owner.
+// A concrete provider embeds it and adds the interface-named getter and setter its node type's list provider interface
+// asks for, each a one-line call to rows and setRows.
 type fileListProvider[T gurps.Node[T]] struct {
 	list []T
 }
@@ -58,8 +58,8 @@ func (p *fileListProvider[T]) rows() []T {
 	return p.list
 }
 
-// setRows replaces the list, first detaching the nodes from whatever data owner they came with, since a list file
-// has none.
+// setRows replaces the list, first detaching the nodes from whatever data owner they came with, since a list file has
+// none.
 func (p *fileListProvider[T]) setRows(list []T) {
 	gurps.SetDataOwnerAll(nil, list)
 	p.list = list
@@ -197,7 +197,6 @@ func (p *listProvider[T]) CreateItem(owner Rebuildable, table *unison.Table[*Nod
 	p.createItem(owner, table, p.newItem(p.DataOwner(), noParent, variant == ContainerItemVariant))
 }
 
-// createItem adds the newly created item to the table and opens its editor.
 func (p *listProvider[T]) createItem(owner Rebuildable, table *unison.Table[*Node[T]], item T) {
 	p.insertItems(owner, table, item)
 	p.edit(owner, item)

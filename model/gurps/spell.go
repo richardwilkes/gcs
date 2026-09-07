@@ -119,7 +119,7 @@ type SpellContainerOnlySyncData struct {
 // SpellSyncData holds the spell sync data that is common to both containers and non-containers.
 type SpellSyncData = NodeSyncData
 
-// SpellNonContainerOnlySyncData holds the spell sync data that is only applicable to traits that aren't containers.
+// SpellNonContainerOnlySyncData holds the spell sync data that is only applicable to spells that aren't containers.
 type SpellNonContainerOnlySyncData struct {
 	Difficulty      AttributeDifficulty `json:"difficulty,omitzero"`
 	College         CollegeList         `json:"college,omitempty"`
@@ -489,7 +489,6 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellLibSrcColumn:
 		fillLibSrcCell(data, s.owner, s)
 	case SpellSwitchColumn:
-		// Only items that actually have something to switch get a cell; the rest are left blank.
 		if s.HasSwitchableFeatures() {
 			data.Type = cell.Switch
 			data.Checked = s.SwitchedOn
@@ -691,8 +690,7 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 	def.Specialization.Qualifier = ""
 	def.Modifier -= fxp.Six
 	// The fallback defaults from a generically-named skill that carries no specialization. SkillNamed() treats an empty
-	// specialization as a wildcard, so exclude the skills that do have a specialization to avoid matching one that
-	// belongs to a different college.
+	// specialization as a wildcard, so the specialized skills are excluded to avoid matching one from another college.
 	fallback := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
 		&limit, specializedRitualSkills(e, ritualSkillName))
 	fallback.RelativeLevel += def.Modifier
@@ -703,8 +701,7 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 }
 
 // specializedRitualSkills returns the set of skills (keyed by Skill.String()) named ritualSkillName that carry a
-// specialization, suitable for use as an excludes set when looking up a generically-named ritual skill that has no
-// specialization.
+// specialization, for use as an excludes set when looking up a ritual skill that has none.
 func specializedRitualSkills(e *Entity, ritualSkillName string) map[string]bool {
 	if e == nil || ritualSkillName == "" {
 		return nil
@@ -741,9 +738,8 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xbytes.InsertBuffer, prefix string
 			return true
 		}
 	}
-	// Fall back to a generically-named skill that carries no specialization. A specialization here is treated as an
-	// exact match by SkillNamed only when non-empty; passing "" would match any specialization, so the result must be
-	// checked to ensure the skill truly has no specialization.
+	// Fall back to a generically-named skill that carries no specialization. SkillNamed treats an empty specialization
+	// as a wildcard, so each result has to be checked to ensure the skill truly has none.
 	for _, sk := range e.SkillNamed(ritual, "", false, nil) {
 		if sk.SpecializationWithReplacements() == "" {
 			return true
@@ -856,7 +852,7 @@ func (s *Spell) TagList() []string {
 	return s.Tags
 }
 
-// RatedStrength always return 0 for spells.
+// RatedStrength always returns 0 for spells.
 func (s *Spell) RatedStrength() fxp.Int {
 	return 0
 }
@@ -1153,10 +1149,9 @@ func (s *SpellEditData) ApplyTo(other *Spell) {
 	other.copyFrom(other, s, other.Container(), true, Copy)
 }
 
-// copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it
-// back, and only affects how an empty Prereq list is resolved. mode controls how cloned weapons are
-// cloned -- CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same spell's own
-// data, not producing a new one; Clone passes its own mode through.
+// copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it back, and
+// only affects how an empty Prereq list is resolved. mode controls how the weapons are cloned -- CopyFrom/ApplyTo above
+// always use Copy, since that's staging or committing the same spell's own data; Clone passes its own mode through.
 func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer, isApply bool, mode CloneMode) {
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)

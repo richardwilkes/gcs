@@ -128,7 +128,7 @@ func (a *AttributeDefs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// Clone a copy of this.
+// Clone returns a copy of this AttributeDefs.
 func (a *AttributeDefs) Clone() *AttributeDefs {
 	clone := &AttributeDefs{Set: make(map[string]*AttributeDef)}
 	for k, v := range a.Set {

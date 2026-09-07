@@ -17,11 +17,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
-// TestScriptIDsArePrimitiveStrings verifies that the id and parentID properties every script wrapper exposes arrive in
-// JavaScript as primitive strings. Handing goja a tid.TID (a named string type) rather than a plain string makes it
-// build a String *object* instead: typeof reports "object", === against a string literal is always false, and
-// Array.prototype.includes — which compares with SameValueZero — never matches, so the ids are unusable for the
-// comparisons scripts actually need to make.
+// The id and parentID properties every script wrapper exposes must arrive in JavaScript as primitive strings. Handing
+// goja a tid.TID (a named string type) rather than a plain string makes it build a String object instead: typeof
+// reports "object", === against a string literal is always false, and Array.prototype.includes — which compares with
+// SameValueZero — never matches, so the ids are unusable for the comparisons scripts need to make.
 func TestScriptIDsArePrimitiveStrings(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -83,10 +82,9 @@ func TestScriptIDsArePrimitiveStrings(t *testing.T) {
 		// The value must be a primitive string, not a String object.
 		c.Equal("string", ResolveScript(e, tc.provider, "typeof "+tc.expr), "case %q", tc.name)
 
-		// It must hold the expected id...
 		c.Equal(string(tc.want), ResolveScript(e, tc.provider, tc.expr), "case %q", tc.name)
 
-		// ...and compare equal to that id with the operators scripts use. A String object fails every one of these.
+		// It must also compare equal to that id with the operators scripts use. A String object fails all of these.
 		for _, cmp := range []struct {
 			label  string
 			script string
@@ -106,9 +104,8 @@ func TestScriptIDsArePrimitiveStrings(t *testing.T) {
 	c.Equal("undefined", ResolveScript(e, deferredNewScriptNote(note), "typeof self.parentID"))
 }
 
-// TestScriptCollectionIDsArePrimitiveStrings verifies that the ids reachable through the collection-valued accessors
-// (children, weapons, activeModifiers, and the entity-level find functions) are primitive strings too, since those are
-// the paths a script most often uses to gather ids for comparison.
+// The ids reachable through the collection-valued accessors (children, weapons, activeModifiers, and the entity-level
+// find functions) are primitive strings too, since those are the paths a script most often uses to gather ids.
 func TestScriptCollectionIDsArePrimitiveStrings(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

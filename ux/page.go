@@ -97,7 +97,7 @@ func (p *Page) insets() geom.Insets {
 // pageNumbering returns this page's number, counting from 1, and how many pages there are, both taken from the pages
 // that share its parent. Only the pages are counted: while the block layout is being edited the sheet's content also
 // holds the editor's overlay, and a page whose footer counted that would call itself the second of two -- and, being
-// even-numbered, swap the two halves of its footer around.
+// even-numbered, swap its footer's halves around.
 func (p *Page) pageNumbering() (number, count int) {
 	parent := p.Parent()
 	if parent == nil {
@@ -112,8 +112,7 @@ func (p *Page) pageNumbering() (number, count int) {
 		}
 	}
 	if number == 0 {
-		// Can't happen, since the page is one of its parent's children, but a footer that said "Page 0" would be worse
-		// than one that counted from 1.
+		// Can't happen, since the page is a child of its parent, but "Page 0" would be worse than counting from 1.
 		return 1, max(count, 1)
 	}
 	return number, count

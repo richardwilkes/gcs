@@ -35,7 +35,7 @@ type ProfileRandom struct {
 	Weight     fxp.Weight `json:"weight,omitzero"`
 }
 
-// Profile holds the profile information for an NPC.
+// Profile holds the profile information for a character.
 type Profile struct {
 	ProfileRandom
 	PlayerName          string        `json:"player_name,omitzero"`
@@ -61,8 +61,8 @@ func (p *Profile) Portrait() *unison.Image {
 		img, err := unison.NewImageFromBytes(p.PortraitData, geom.NewPoint(0.5, 0.5))
 		if err != nil {
 			errs.Log(errs.NewWithCause("unable to load portrait data", err))
-			// Retain the data so that it isn't lost on the next save, since another build may be able to decode
-			// it, but don't attempt to decode it again, since it would just fail and log repeatedly.
+			// Retain the data so it isn't lost on the next save, since another build may be able to decode it, but
+			// don't attempt to decode it again, since it would just fail and log repeatedly.
 			p.portraitUndecodable = true
 			return nil
 		}

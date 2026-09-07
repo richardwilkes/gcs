@@ -56,7 +56,7 @@ func SerializeAndCompress(data any) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-// Marshal drop-in replacement for json.Marshal that applies any application-wide options
+// Marshal is a drop-in replacement for json.Marshal that applies any application-wide options.
 func Marshal(data any, opts ...json.Options) ([]byte, error) {
 	var buffer bytes.Buffer
 	if err := MarshalWrite(&buffer, data, opts...); err != nil {
@@ -65,7 +65,7 @@ func Marshal(data any, opts ...json.Options) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-// MarshalWrite drop-in replacement for json.MarshalWrite that applies any application-wide options
+// MarshalWrite is a drop-in replacement for json.MarshalWrite that applies any application-wide options.
 func MarshalWrite(w io.Writer, data any, opts ...json.Options) error {
 	// NOTE: Any application-wide JSON Marshal options belong here.
 	opts = append([]json.Options{}, opts...)

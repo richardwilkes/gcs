@@ -47,7 +47,7 @@ func AvailableAncestries(libraries *Libraries) []*NamedFileSet {
 	return ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, AncestryExt)
 }
 
-// LookupAncestry an Ancestry by name.
+// LookupAncestry returns the Ancestry with the given name, or nil if there isn't one.
 func LookupAncestry(name string, libraries *Libraries) *Ancestry {
 	for _, lib := range AvailableAncestries(libraries) {
 		for _, one := range lib.List {
@@ -231,7 +231,7 @@ func (a *Ancestry) RandomHair(gender, not string) string {
 	return defaultHair
 }
 
-// RandomEyes returns a randomized eyes.
+// RandomEyes returns randomized eyes.
 func (a *Ancestry) RandomEyes(gender, not string) string {
 	if options := a.GenderedOptions(gender); options != nil && len(options.EyeOptions) != 0 {
 		return options.RandomEye(not)

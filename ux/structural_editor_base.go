@@ -16,11 +16,10 @@ import (
 )
 
 // structuralEditorBase is the part shared by every dockable that holds a whole model and changes it in undoable steps:
-// the target manager its widgets register with, the undo manager, the model along with the hash of the model as it was
-// when the dockable last matched what it edits, and the content rebuild that follows every step. Each step captures the
-// whole model before and after, so that a structural change is as undoable as a typed one. Together with the row drag
-// state it embeds, it provides everything structuralEditor asks of a dockable other than being a panel, so a dockable
-// that embeds it and calls initEditor with itself is one.
+// the target manager its widgets register with, the undo manager, the model along with the hash of it as of when the
+// dockable last matched what it edits, and the content rebuild that follows every step. Each step captures the whole
+// model before and after, so that a structural change is as undoable as a typed one. With the row drag state it
+// embeds, it supplies everything structuralEditor asks of a dockable other than being a panel.
 type structuralEditorBase[T gurps.Hashable] struct {
 	rowDragState
 	targetMgr *TargetMgr
@@ -50,7 +49,7 @@ func (s *structuralEditorBase[T]) initEditor(editor rowDragEditor, clone func(T)
 	s.buildContent = buildContent
 }
 
-// setModel makes the model the one the editor holds and records it as the state the editor is compared against.
+// setModel makes the model the one the editor holds and records its hash as the state modelModified compares against.
 func (s *structuralEditorBase[T]) setModel(model T) {
 	s.model = model
 	s.originalHash = gurps.Hash64(model)
@@ -96,8 +95,7 @@ func (s *structuralEditorBase[T]) finishAndPostUndo(undo *unison.UndoEdit[T]) {
 	s.UndoManager().Add(undo)
 }
 
-// applyModel replaces the model with a copy of the given one and rebuilds the content from it. It is what undo and
-// redo do.
+// applyModel replaces the model with a copy of the given one and rebuilds the content from it; undo and redo use it.
 func (s *structuralEditorBase[T]) applyModel(model T) {
 	s.model = s.clone(model)
 	s.sync()

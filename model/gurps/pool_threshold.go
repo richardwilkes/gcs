@@ -116,7 +116,7 @@ func (p *PoolThreshold) Clone() *PoolThreshold {
 	return &clone
 }
 
-// Threshold returns the threshold value for the given maximum.
+// Threshold returns the threshold value for the given attribute.
 func (p *PoolThreshold) Threshold(attr *Attribute) fxp.Int {
 	return ResolveToNumber(attr.Entity, deferredNewScriptAttribute(attr), p.Value)
 }

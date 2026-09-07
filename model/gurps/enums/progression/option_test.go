@@ -17,9 +17,8 @@ import (
 )
 
 // TestDamageProgressionsAlwaysSetDiceMultiplier verifies that every progression produces dice with a multiplier of 1.
-// A zero multiplier is not merely a display nuisance: addDice in model/gurps/weapon_damage.go multiplies each side's
-// average by its multiplier when combining dice with differing side counts, so a zero would silently erase the entire
-// ST-based damage contribution.
+// addDice in model/gurps/weapon_damage.go weights each side's average by its multiplier when combining dice with
+// differing side counts, so a zero would silently erase the entire ST-based damage contribution.
 func TestDamageProgressionsAlwaysSetDiceMultiplier(t *testing.T) {
 	c := check.New(t)
 	for _, option := range progression.Options {

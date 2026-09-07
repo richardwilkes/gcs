@@ -34,9 +34,9 @@ type workflowRunStep struct {
 
 // TestWorkflowRunStepsDoNotInterpolateExpressions verifies that no workflow splices a `${{ ... }}` expression into a
 // `run:` script. Actions substitutes those expressions before the shell ever sees the script, so a value containing
-// quotes, `;` or `$(...)` becomes shell code executed by the job -- and the release job holds the macOS signing
-// certificate, the notarization API key, and `contents: write`. Values belong in an `env:` entry and are referenced as
-// "$VAR" from the script, which the shell treats as data no matter what it contains.
+// quotes, `;` or `$(...)` becomes shell code executed by the job -- and the release workflow's jobs hold the macOS
+// signing certificate, the notarization API key, and `contents: write`. Values belong in an `env:` entry and are
+// referenced as "$VAR" from the script, which the shell treats as data no matter what it contains.
 func TestWorkflowRunStepsDoNotInterpolateExpressions(t *testing.T) {
 	c := check.New(t)
 	entries, err := os.ReadDir(workflowDir)
@@ -80,8 +80,8 @@ func TestReleaseWorkflowVersionStepResistsInjection(t *testing.T) {
 	c.NotEqual("", script, "the release workflow has no \"Determine version\" step")
 
 	// The payloads below are only meaningful if they would in fact run when spliced into the script, so first confirm
-	// that a version substituted directly into the shell -- what the step used to do -- executes the command it smuggles
-	// in. Without this, the assertions that follow could pass simply because the payload was inert.
+	// that a version substituted directly into the shell -- what the step used to do -- executes the command it
+	// smuggles in. Without this, the assertions that follow could pass simply because the payload was inert.
 	dir := t.TempDir()
 	_, err = runShellScript(bash, dir, `version="x"; touch pwned; echo ""`+"\n"+`echo "version=$version" >> "$GITHUB_OUTPUT"`, nil)
 	c.NoError(err)

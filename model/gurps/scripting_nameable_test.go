@@ -16,9 +16,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestScriptSpellCollegeUsesReplacements verifies that a spell's college list is exposed to scripts with any nameable
-// replacements applied, matching every other text field on the script spell object. It previously handed scripts the
-// raw stored college (containing @placeholders@).
+// A spell's college list is exposed to scripts with any nameable replacements applied, matching every other text field
+// on the script spell object. It previously handed scripts the raw stored college (containing @placeholders@).
 func TestScriptSpellCollegeUsesReplacements(t *testing.T) {
 	c := check.New(t)
 	spell := NewSpell(nil, nil, false)
@@ -28,10 +27,9 @@ func TestScriptSpellCollegeUsesReplacements(t *testing.T) {
 	c.Equal("Fire College|Meta", ResolveScript(nil, deferredNewScriptSpell(spell), "self.college.join('|')"))
 }
 
-// TestScriptSkillLevelResolutionExclusionUsesResolvedName verifies that reading a skill script object's level keys the
-// self-reference recursion guard by the resolved (replacement-applied) name, so it agrees with the entity.skillLevel
-// path (which keys by the resolved name). Previously the skill path keyed by the raw name, so for a nameable skill the
-// two guards used different keys and the recursion guard was defeated.
+// Reading a skill script object's level keys the self-reference recursion guard by the resolved (replacement-applied)
+// name, so it agrees with the entity.skillLevel path. The skill path used to key by the raw name, so for a nameable
+// skill the two guards used different keys and the recursion guard was defeated.
 func TestScriptSkillLevelResolutionExclusionUsesResolvedName(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

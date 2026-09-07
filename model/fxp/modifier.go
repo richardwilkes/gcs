@@ -21,10 +21,8 @@ const (
 	// MultiplicationSign is the Unicode multiplication sign, which users may type in place of the ASCII "x" when
 	// entering a multiplier.
 	MultiplicationSign = "×"
-	// multiplierMarker is the canonical marker for a multiplier value.
-	multiplierMarker = "x"
-	// percentMarker is the marker for a percentage value.
-	percentMarker = "%"
+	multiplierMarker   = "x"
+	percentMarker      = "%"
 	// multiplierLeaders holds every rune that may lead a multiplier value. Since classification is case-insensitive
 	// and also accepts the Unicode multiplication sign, extraction must strip all of these forms.
 	multiplierLeaders = "xX" + MultiplicationSign

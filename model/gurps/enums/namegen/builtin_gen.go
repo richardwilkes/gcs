@@ -126,7 +126,7 @@ func ExtractBuiltin(str string) Builtin {
 
 // ExtractKnownBuiltin extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractBuiltin, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// Unlike ExtractBuiltin, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
 // that is dispatching on the type to detect unknown types.
 func ExtractKnownBuiltin(str string) (value Builtin, known bool) {
 	for _, enum := range Builtins {

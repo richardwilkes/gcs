@@ -26,11 +26,10 @@ type rowDragEditor interface {
 	reorderRows(title string, move func() bool)
 }
 
-// structuralEditor is an editor dockable whose model is changed in undoable steps, each of which rebuilds the content.
-// It is what lets a list panel be shared between editors that keep different models.
+// structuralEditor is an editor dockable whose model is changed in undoable steps, each of which rebuilds the content,
+// letting a list panel be shared between editors that keep different models.
 type structuralEditor interface {
 	rowDragEditor
-	// targetManager returns the target manager the editor's widgets are registered with.
 	targetManager() *TargetMgr
 	// editStructure applies mutate inside an undo edit named title, then rebuilds the content and, when focusKey is not
 	// empty, gives the keyboard focus to the widget with that reference key.
@@ -38,8 +37,7 @@ type structuralEditor interface {
 }
 
 // editorRowDragData is the payload of a row drag within an editor. Drop positions are computed from the dragged row's
-// siblings, so a row can only be reordered within the list that owns it. Once the drop position is known, move performs
-// the reorder in the model.
+// siblings, so a row can only be reordered within the list that owns it.
 type editorRowDragData struct {
 	editor rowDragEditor
 	row    *unison.Panel
@@ -57,8 +55,6 @@ type rowDragState struct {
 	inDragOver bool
 }
 
-// install records the editor and its content panel, then wires the drag callbacks and the insertion marker to the
-// content panel.
 func (s *rowDragState) install(editor rowDragEditor, content *unison.Panel) {
 	s.editor = editor
 	s.content = content
@@ -66,8 +62,8 @@ func (s *rowDragState) install(editor rowDragEditor, content *unison.Panel) {
 	content.DrawOverCallback = s.drawOver
 }
 
-// dataDragOver tracks the pointer during a row drag: it keeps the pointer in view and works out which list and which
-// insertion position within it the pointer is over, redrawing when that changes.
+// dataDragOver keeps the pointer in view and works out which list, and which insertion position within it, the pointer
+// is over, redrawing when that changes.
 func (s *rowDragState) dataDragOver(where geom.Point, data any) bool {
 	s.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
 	s.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
@@ -102,7 +98,6 @@ func (s *rowDragState) dataDragOver(where geom.Point, data any) bool {
 	return true
 }
 
-// dataDragExit clears the drop-target state and removes the insertion marker.
 func (s *rowDragState) dataDragExit() {
 	s.inDragOver = false
 	s.dragInsert = -1
@@ -110,8 +105,8 @@ func (s *rowDragState) dataDragExit() {
 	s.editor.AsPanel().MarkForRedraw()
 }
 
-// dataDragDrop hands the drop to the editor that owns the payload, then clears the drop-target state. A payload from
-// some other editor, or a drop with no insertion position, is ignored.
+// dataDragDrop hands the drop to the editor that owns the payload, ignoring a payload from another editor or a drop
+// with no insertion position.
 func (s *rowDragState) dataDragDrop(_ geom.Point, data any) {
 	if s.inDragOver && s.dragInsert != -1 {
 		if dd, ok := data.(*editorRowDragData); ok && dd.editor == s.editor {
@@ -140,10 +135,10 @@ func (s *rowDragState) drawOver(gc *unison.Canvas, rect geom.Rect) {
 	}
 }
 
-// moveEntry moves the entry at from to the insertion index to, which may be anywhere from 0 to len(*list). The
-// insertion index is a position in the list as it stands before the entry is taken out of it, so a target beyond the
-// entry's current position is adjusted down by one, exactly as a drop below a row is. It returns false and leaves the
-// list untouched when either index is out of range or the move would leave the entry where it already is.
+// moveEntry moves the entry at from to the insertion index to, which may be anywhere from 0 to len(*list) and is a
+// position in the list as it stands before the entry is taken out of it, so a target beyond the entry's current
+// position is adjusted down by one. It returns false and leaves the list untouched when either index is out of range or
+// the move would leave the entry where it already is.
 func moveEntry[T any](list *[]T, from, to int) bool {
 	n := len(*list)
 	if from < 0 || from >= n || to < 0 || to > n {
@@ -160,10 +155,8 @@ func moveEntry[T any](list *[]T, from, to int) bool {
 	return true
 }
 
-// initTitledEditorSection sets up a panel as a titled section of an editor, such as its features or prerequisites: it
-// becomes its own Self and is given a single-column layout with the standard spacing, layout data that spans and fills
-// both columns of the editor's grid and grabs extra width, a titled border in the label font with a small inset inside
-// it, and a background in the surface color. The panel's rows are then added by the caller.
+// initTitledEditorSection sets up a panel as a titled section of an editor, such as its features or prerequisites,
+// spanning both columns of the editor's grid. The caller then adds the section's rows.
 func initTitledEditorSection(p unison.Paneler, title string) {
 	panel := p.AsPanel()
 	panel.Self = p
@@ -189,9 +182,9 @@ func initTitledEditorSection(p unison.Paneler, title string) {
 	}
 }
 
-// newSectionAddButton returns the add button of an editor section. Clicking it calls insert, which adds a new item to
-// the head of the section's list along with a row for it and reports whether it did so; when it did, the section is laid
-// out again and marked as modified.
+// newSectionAddButton returns the add button of an editor section. Clicking it calls insert, which adds a new item and
+// a row for it to the head of the section's list and reports whether it did so; when it did, the section is laid out
+// again and marked as modified.
 func newSectionAddButton(section unison.Paneler, insert func() bool) *unison.Button {
 	button := unison.NewSVGButton(unison.CircledAddSVG)
 	button.ClickCallback = func() {
@@ -203,8 +196,8 @@ func newSectionAddButton(section unison.Paneler, insert func() bool) *unison.But
 	return button
 }
 
-// newEditorSectionHeader returns a bold section title with any number of buttons beside it, in the order given. It asks
-// to span two columns, which suits the editors' two-column grids; a single-column parent clamps that to one.
+// newEditorSectionHeader returns a bold section title with the given buttons beside it. It asks to span two columns,
+// which suits the editors' two-column grids; a single-column parent clamps that to one.
 func newEditorSectionHeader(title, tooltip string, buttons ...*unison.Button) *unison.Panel {
 	header := unison.NewPanel()
 	for _, button := range buttons {
@@ -224,9 +217,8 @@ func newEditorSectionHeader(title, tooltip string, buttons ...*unison.Button) *u
 	return header
 }
 
-// editorRowInsets returns the insets of an editor row. The scrollbar is drawn over the content, so a row at the
-// outermost level of an editor, which sits directly under the bar, is given twice the right inset to keep the bar from
-// obscuring the right edge of its content.
+// editorRowInsets returns the insets of an editor row. The scrollbar is drawn over the content, so an outermost row,
+// which sits directly under the bar, gets twice the right inset to keep the bar from obscuring its content.
 func editorRowInsets(outermost bool) geom.Insets {
 	insets := geom.Insets{
 		Top:    unison.StdVSpacing,
@@ -240,10 +232,9 @@ func editorRowInsets(outermost bool) geom.Insets {
 	return insets
 }
 
-// configureEditorRow sets up a panel as one row of an editor list: the standard row insets, a background that
-// alternates with the row's position among its siblings so that adjacent rows can be told apart, the given number of
-// columns, and a layout that fills the width of the list. A row at the outermost level of the editor gets the wider
-// right inset described by editorRowInsets.
+// configureEditorRow sets up a panel as one row of an editor list, giving it the insets from editorRowInsets, a
+// background that alternates with the row's position among its siblings so adjacent rows can be told apart, the given
+// number of columns, and a layout that fills the width of the list.
 func configureEditorRow(row *unison.Panel, columns int, outermost bool) {
 	row.SetBorder(unison.NewEmptyBorder(editorRowInsets(outermost)))
 	row.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
@@ -263,8 +254,7 @@ func configureEditorRow(row *unison.Panel, columns int, outermost bool) {
 	row.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 }
 
-// newEditorRowButtonColumn returns the column of buttons that follows the drag handle in an editor row, holding the
-// given buttons stacked in the order given.
+// newEditorRowButtonColumn returns the column of stacked buttons that follows the drag handle in an editor row.
 func newEditorRowButtonColumn(buttons ...*unison.Button) *unison.Panel {
 	column := unison.NewPanel()
 	column.SetLayout(&unison.FlexLayout{

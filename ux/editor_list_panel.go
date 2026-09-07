@@ -17,9 +17,7 @@ import (
 )
 
 // editorListPanel is the bordered table an editor shows one of its item lists (modifiers, weapons) in, spanning both
-// columns of the editor's layout. The list itself belongs to the editor's data; the panel only points at it. A
-// concrete panel embeds this and adds the list provider methods that the table's provider reads and writes the list
-// through.
+// columns of the editor's layout. The list itself belongs to the editor's data; the panel only points at it.
 type editorListPanel[T gurps.Node[T]] struct {
 	unison.Panel
 	owner    gurps.DataOwner
@@ -29,8 +27,7 @@ type editorListPanel[T gurps.Node[T]] struct {
 }
 
 // init sets up the panel and builds its table. self is the concrete panel embedding this one, which provider must
-// already be bound to. The list is recorded before the table is built, since building it reads the list through the
-// provider.
+// already be bound to, since building the table reads the list through the provider.
 func (p *editorListPanel[T]) init(self unison.Paneler, owner gurps.DataOwner, list *[]T, provider TableProvider[T], refKey string) {
 	p.Self = self
 	p.owner = owner
@@ -58,8 +55,8 @@ func (p *editorListPanel[T]) setList(list []T) {
 	syncTablePreservingSelection(p.table)
 }
 
-// installNewItemHandler makes the command create a new item of the given variant in this panel's table. The handler
-// is installed on cmdRoot, the editor holding the panel, which is also what the creation is undone and rebuilt through.
+// installNewItemHandler makes the command create a new item of the given variant in this panel's table. The handler is
+// installed on cmdRoot, the editor holding the panel, which the creation is also undone and rebuilt through.
 func (p *editorListPanel[T]) installNewItemHandler(cmdRoot Rebuildable, id int, variant ItemVariant) {
 	cmdRoot.AsPanel().InstallCmdHandlers(id, unison.AlwaysEnabled,
 		func(_ any) { p.provider.CreateItem(cmdRoot, p.table, variant) })

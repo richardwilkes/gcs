@@ -27,18 +27,18 @@ const (
 	// waitPollInterval is how often the port is tried. The wait is normally over within a second or two of the
 	// application exiting, so this is short enough to be imperceptible.
 	waitPollInterval = 50 * time.Millisecond
-	// pidGraceInterval is how long to wait before believing that a departed process leaves the port to someone else.
-	// A socket outlives its process by a moment, so checking immediately would mistake that for another instance.
+	// pidGraceInterval is how long to wait before believing that a departed process left the port to someone else. A
+	// socket outlives its process by a moment, so checking immediately would mistake that for another instance.
 	pidGraceInterval = 2 * time.Second
 )
 
 // waitForPredecessor blocks until the application that staged this update has exited.
 //
-// It waits on the single-instance port rather than on the process, because that is the resource that actually governs
-// what happens next: a new instance started while the port is still held hands its arguments to whoever holds it and
-// exits immediately, so relaunching too early would look exactly like the update having done nothing at all. Being able
-// to bind the port is the direct answer to "can the replacement become the primary instance?", and unlike watching a
-// process identifier it cannot be fooled by that identifier being reused.
+// It waits on the single-instance port rather than on the process, because that is the resource that governs what
+// happens next: a new instance started while the port is still held hands its arguments to whoever holds it and exits
+// immediately, so relaunching too early would look exactly like the update having done nothing. Being able to bind the
+// port answers "can the replacement become the primary instance?" directly, and unlike watching a process identifier it
+// cannot be fooled by that identifier being reused.
 //
 // The listener is closed as soon as it is obtained rather than held through the swap. Holding it would make any GCS the
 // user launches meanwhile connect to the helper and stall on a handoff that will never be answered. Releasing it leaves
@@ -54,9 +54,8 @@ func waitForPredecessor(pid, port int) error {
 			xio.CloseIgnoringErrors(listener)
 			return nil
 		}
-		// The port being held by something else entirely -- a second GCS installation, say -- would otherwise stall
-		// this until the timeout. Once the process we are actually waiting for is definitively gone, the port is no
-		// longer evidence about it.
+		// A port held by something else entirely -- a second GCS installation, say -- would otherwise stall this until
+		// the timeout. Once the process being waited for is definitively gone, the port is no longer evidence about it.
 		if time.Since(started) > pidGraceInterval && !processExists(pid) {
 			slog.Warn("the application has exited but its port is held by something else; continuing", "port", port)
 			return nil
@@ -67,9 +66,9 @@ func waitForPredecessor(pid, port int) error {
 }
 
 // processExists reports whether a process with the given identifier is still around. A zero or negative identifier
-// means the state file carried no process to watch, in which case there is nothing to check and the port alone decides.
+// means the state file carried no process to watch, so it reports true and the port alone decides.
 //
-// This is only ever a tiebreaker for a port held by something other than what we are waiting for, so erring towards
+// This is only ever a tiebreaker for a port held by something other than what is being waited for, so erring towards
 // "still running" is the safe direction: it means waiting longer, never swapping too early.
 func processExists(pid int) bool {
 	if pid <= 0 {

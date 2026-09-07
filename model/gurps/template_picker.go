@@ -20,9 +20,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// TemplatePickerProvider provides the method used to get a list of valid picker type and to access the picker data
+// TemplatePickerProvider provides access to the valid picker types and the picker data.
 type TemplatePickerProvider interface {
-	// TemplatePickerData returns a list of valid picker types and valid, non-nil, pointer to a TemplatePicker struct
+	// TemplatePickerData returns the valid picker types and a non-nil pointer to the TemplatePicker.
 	TemplatePickerData() ([]picker.Type, *TemplatePicker)
 }
 

@@ -28,8 +28,8 @@ const (
 	detachDelay    = 500 * time.Millisecond
 )
 
-// commandTimeout bounds each external tool invocation. None of these should take more than a few seconds on a working
-// system, and a hung one would otherwise leave the update dialog spinning forever.
+// commandTimeout bounds each external tool invocation. None of these should take more than a few seconds, and a hung
+// one would otherwise leave the update dialog spinning forever.
 const commandTimeout = 2 * time.Minute
 
 // stagePayload mounts the downloaded disk image and copies the application bundle out of it.
@@ -49,13 +49,12 @@ func stagePayload(ctx context.Context, archivePath, dstPath string) (err error) 
 		return errs.New("the downloaded disk image does not hold " + BundleName)
 	}
 	// ditto rather than a hand-rolled copy: it is the only thing that reliably carries extended attributes, access
-	// control lists and BSD flags across, and a bundle that loses those is a bundle whose code signature no longer
-	// verifies.
+	// control lists and BSD flags across, and a bundle that loses those no longer verifies against its signature.
 	if err = run(ctx, "/usr/bin/ditto", src, dstPath); err != nil {
 		return errs.NewWithCause("unable to unpack the downloaded application", err)
 	}
 	// Nothing here sets the quarantine attribute -- a download made by this process is not marked the way a browser's
-	// would be -- but clearing it costs nothing and covers the case of an image that arrived carrying one.
+	// would be -- but clearing it costs nothing and covers an image that arrived carrying one.
 	if err = run(ctx, "/usr/bin/xattr", "-dr", "com.apple.quarantine", dstPath); err != nil {
 		slog.Warn("unable to clear the quarantine attribute", "error", err)
 	}
@@ -65,19 +64,17 @@ func stagePayload(ctx context.Context, archivePath, dstPath string) (err error) 
 // stageHelper places a copy of the running application in the staging directory and returns the executable to run. See
 // Stage for why the helper is a copy at all.
 //
-// The whole bundle is copied, not just the executable inside it. A bundle's main executable is signed with the hashes
-// of Contents/Info.plist and of the sealed resource directory recorded in its own signature, so that file on its own
-// carries a signature that can never be satisfied: macOS rejects it and kills the process at exec, before a line of
-// this program runs. Nothing would report that, either -- the helper starts as the application quits, and a process the
-// kernel kills writes no log.
+// The whole bundle is copied, not just the executable inside it. That executable's own signature records the hashes of
+// Contents/Info.plist and of the sealed resource directory, so on its own it carries a signature that can never be
+// satisfied: macOS kills the process at exec, before a line of this program runs, and nothing reports it -- the helper
+// starts as the application quits, and a process the kernel kills writes no log.
 //
 // For the same reason the copy has to keep the executable's name and its position within the bundle. Only the name of
 // the bundle directory itself is free, and it deliberately does not end in ".app", so that Launch Services does not
 // index a second com.trollworks.gcs sitting in the staging directory.
 //
-// ditto rather than a hand-rolled copy, for the reason given in stagePayload: it is what carries the extended
-// attributes, access control lists and BSD flags a valid signature depends on. For a target that is a bare executable
-// rather than a bundle, this copies just that file, which is the same thing the other platforms do.
+// ditto is used for the reason given in stagePayload. For a target that is a bare executable rather than a bundle,
+// this copies just that file, as the other platforms do.
 func stageHelper(ctx context.Context, t *Target, workDir string) (string, error) {
 	dst := filepath.Join(workDir, helperName)
 	if err := run(ctx, "/usr/bin/ditto", t.Path, dst); err != nil {
@@ -89,10 +86,10 @@ func stageHelper(ctx context.Context, t *Target, workDir string) (string, error)
 // attachDMG mounts the disk image at an explicit mount point.
 //
 // The mount point is given rather than discovered because the volume is named "GCS v<version>", and a user who already
-// has that disk image open pushes ours to "/Volumes/GCS v5.46 1". Naming the mount point removes both the guess and the
-// need to parse hdiutil's plist output, which Go has no standard reader for.
+// has that disk image open pushes ours to "/Volumes/GCS v5.46 1". Naming it removes both the guess and the need to
+// parse hdiutil's plist output, which Go has no standard reader for.
 //
-// -noverify skips re-checksumming the image, which the SHA-256 check during the download has already covered far more
+// -noverify skips re-checksumming the image, which the SHA-256 check during the download already covered far more
 // strictly, and which on a 30MB image is otherwise several seconds of doing it twice.
 func attachDMG(ctx context.Context, dmgPath, mountPoint string) error {
 	if err := run(ctx, "/usr/bin/hdiutil", "attach", "-nobrowse", "-readonly", "-noverify", "-noautoopen",
@@ -120,9 +117,8 @@ func detachDMG(mountPoint string) {
 // verifyPayload establishes that the downloaded application is intact and came from the same developer as the copy
 // already installed.
 //
-// This carries real weight on macOS, because nothing else will check. A download made by this process is not marked
-// with the quarantine attribute the way a browser's would be, so Gatekeeper never examines the result -- there is no
-// first-launch check, no prompt, and no second opinion. What follows is the only verification that happens.
+// Nothing else will check: a download made by this process is not marked with the quarantine attribute the way a
+// browser's would be, so Gatekeeper never examines the result. What follows is the only verification that happens.
 func verifyPayload(ctx context.Context, payloadPath, installedPath string) error {
 	// A cryptographic check of the bundle against its own signature. Offline, and independent of any system policy.
 	if err := run(ctx, "/usr/bin/codesign", "--verify", "--strict", "--deep", payloadPath); err != nil {
@@ -130,7 +126,7 @@ func verifyPayload(ctx context.Context, payloadPath, installedPath string) error
 	}
 	// The property that actually matters: the replacement is signed by the same developer as the application the user
 	// already trusts. Comparing against the installed copy rather than a name written into this source means the check
-	// keeps working if the signing identity ever changes, and cannot be satisfied by any other developer's signature.
+	// keeps working if the signing identity ever changes.
 	wantTeam, err := teamIdentifier(ctx, installedPath)
 	if err != nil {
 		return err
@@ -144,8 +140,8 @@ func verifyPayload(ctx context.Context, payloadPath, installedPath string) error
 	}
 	// Whether Gatekeeper would admit this bundle is worth knowing but cannot be a condition. The notarization ticket is
 	// stapled to the disk image, not to the application inside it, so a bundle copied out has none and the assessment
-	// needs to reach Apple -- it fails offline on a perfectly good copy. It also consults user policy, so it approves
-	// everything on a machine with Gatekeeper turned off. Neither behavior belongs in a gate.
+	// has to reach Apple -- it fails offline on a perfectly good copy. It also consults user policy, so it approves
+	// everything on a machine with Gatekeeper turned off.
 	if err = run(ctx, "/usr/sbin/spctl", "--assess", "--type", "execute", payloadPath); err != nil {
 		slog.Warn("the downloaded application did not pass a Gatekeeper assessment; continuing on the strength of "+
 			"its signature", "error", err)

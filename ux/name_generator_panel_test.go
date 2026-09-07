@@ -22,7 +22,6 @@ import (
 	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
-// hasWidget reports whether the editor has a widget with the given reference key.
 func hasWidget(d structuralEditor, key string) bool {
 	return d.targetManager().Find(key) != nil
 }

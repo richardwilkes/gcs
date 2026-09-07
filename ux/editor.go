@@ -110,10 +110,9 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 					if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
 						ShowNameablesDialog([]string{tmp.String()}, []map[string]string{m}, [][]string{nil})
 						tmp.ApplyNameableKeys(m)
-						// Applying nameable keys only alters the replacements map, so copy just that back into the
-						// editor data. Using CopyFrom here would replace the entire object graph with fresh
-						// sub-objects, orphaning the widgets that are already bound to the existing ones (e.g. the
-						// modifiers table), causing their subsequent edits to be silently lost.
+						// Applying nameable keys only alters the replacements map, so copy just that back. CopyFrom
+						// would replace the entire object graph with fresh sub-objects, orphaning the widgets already
+						// bound to the existing ones (e.g. the modifiers table) and silently losing their later edits.
 						if setter, ok2 := any(e.editorData).(nameable.Setter); ok2 {
 							setter.SetNameableReplacements(tmp.NameableReplacements())
 						} else {
@@ -209,13 +208,10 @@ func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 		}
 	})
 	// The editor's tables show row state -- a modifier's enabled checkmark, a weapon's Hide checkmark -- that nothing
-	// above has marked for redraw: DeepSync reaches the editor's fields, which are Syncers, but no table, since neither
-	// unison.Table nor the panels wrapping the editor's tables (traitModifiersPanel, equipmentModifiersPanel,
-	// weaponsPanel) is one, and the dock tab only redraws when its title text changes. A cell click flips its own
-	// drawable by hand, but the command path and the undo or redo of either has nothing to flip, so without this a
-	// toggle could leave a stale checkmark on screen. MarkForRedraw is window-wide and idempotent, and Node.ColumnCell
-	// re-derives the cell data on draw and rebuilds any cell whose cache no longer matches it, so a redraw is all that
-	// is needed here.
+	// above has marked for redraw, since DeepSync only reaches Syncers and neither unison.Table nor the panels wrapping
+	// the editor's tables is one. A cell click flips its own drawable by hand, but the command path and the undo or
+	// redo of either has nothing to flip, so without this a toggle could leave a stale checkmark on screen.
+	// Node.ColumnCell re-derives the cell data on draw, so a redraw is all that is needed.
 	e.MarkForRedraw()
 }
 
@@ -262,7 +258,7 @@ func rowIndexForData[T gurps.Node[T]](table *unison.Table[*Node[T]], data T) int
 }
 
 func (e *editor[N, D]) apply() {
-	e.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
+	e.Window().FocusNext() // Move the focus to flush any pending edits
 	if e.preApplyCallback != nil {
 		e.preApplyCallback(e.editorData)
 	}

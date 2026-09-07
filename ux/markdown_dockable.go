@@ -40,7 +40,7 @@ var (
 	_ gurps.Hashable     = &MarkdownDockable{}
 )
 
-// MarkdownDockable holds the view for an image file.
+// MarkdownDockable holds the view for a markdown file.
 type MarkdownDockable struct {
 	fileBackedPanel
 	content      string
@@ -99,8 +99,8 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	d.markdown.SetBorder(unison.NewEmptyBorder(insets))
 	d.markdown.SetFocusable(true)
 	// The content is normalized before it is hashed, since the editor produces LF line endings and that hash is what
-	// the content is compared against to determine whether the dockable has been modified. Without this, a file stored
-	// with CRLF (or CR) line endings would be reported as modified the moment it was opened.
+	// determines whether the dockable has been modified. Without this, a file stored with CRLF (or CR) line endings
+	// would be reported as modified the moment it was opened.
 	d.content = xstrings.NormalizeLineEndings(content)
 	d.markdown.SetContent(d.content, 0)
 	if allowEditing {
@@ -208,7 +208,7 @@ func (d *MarkdownDockable) ScrollToAnchor(anchor string) {
 	d.markdown.ScrollToAnchor(anchor)
 }
 
-// UndoManager implements undo.Provider
+// UndoManager implements unison.UndoManagerProvider.
 func (d *MarkdownDockable) UndoManager() *unison.UndoManager {
 	return d.undoMgr
 }

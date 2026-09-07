@@ -42,9 +42,9 @@ func installed(t *testing.T, dir string) Target {
 	return target
 }
 
-// TestStageHelperProducesAnExecutableCopy covers what every platform needs from the helper, whatever shape the copy
-// takes: the path handed back is a copy of the running program, it lives in the staging directory rather than in the
-// installation about to be replaced, and it can be executed.
+// What every platform needs from the helper, whatever shape the copy takes: the path handed back is a copy of the
+// running program, it lives in the staging directory rather than in the installation about to be replaced, and it can
+// be executed.
 func TestStageHelperProducesAnExecutableCopy(t *testing.T) {
 	c := check.New(t)
 	target := installed(t, t.TempDir())
@@ -64,15 +64,13 @@ func TestStageHelperProducesAnExecutableCopy(t *testing.T) {
 	}
 }
 
-// TestStageHelperCanBeStarted is a regression test for an update that could be prepared but never applied.
+// A regression test for an update that could be prepared but never applied. The helper was staged as a bare "helper",
+// with no extension, which on Windows cannot be started at all: the program name is resolved against PATHEXT even when
+// it is an absolute path, so os/exec rejected it with "executable file not found in %PATH%" and every Windows update
+// failed at the final step.
 //
-// The helper was staged as a bare "helper", with no extension. On Windows that copy cannot be started at all: the
-// program name is resolved against PATHEXT even when it is an absolute path, so os/exec rejected it with "executable
-// file not found in %PATH%" and every Windows update failed at the final step, after the user had already waited
-// through the whole download.
-//
-// exec.LookPath is what this checks against because it applies exactly the rule Start does, and it does not require a
-// real executable image -- so the stub the fixture writes is enough to catch a name that could never be run.
+// exec.LookPath applies exactly the rule Start does and does not require a real executable image, so the stub the
+// fixture writes is enough to catch a name that could never be run.
 func TestStageHelperCanBeStarted(t *testing.T) {
 	c := check.New(t)
 	target := installed(t, t.TempDir())
@@ -84,8 +82,8 @@ func TestStageHelperCanBeStarted(t *testing.T) {
 	c.NoError(err, "the staged helper must be startable by the path stageHelper hands back")
 }
 
-// TestStageHelperLeavesTheInstallationAlone confirms the property the whole design rests on at this point: preparing an
-// update touches nothing outside the staging directory, so an abort here can cost the user nothing.
+// The property the whole design rests on at this point: preparing an update touches nothing outside the staging
+// directory, so an abort here can cost the user nothing.
 func TestStageHelperLeavesTheInstallationAlone(t *testing.T) {
 	c := check.New(t)
 	installDir := t.TempDir()

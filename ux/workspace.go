@@ -37,7 +37,7 @@ const (
 	dockableClientDataKey  = "dockable"
 )
 
-// Workspace holds the data necessary to track the Workspace.
+// Workspace holds the main window, its docks and the handler that errors are reported through.
 var Workspace struct {
 	Window       *unison.Window
 	TopDock      *unison.Dock
@@ -66,10 +66,9 @@ type GroupedCloser interface {
 type boundsDeferredDockable interface {
 	// BoundsKnown returns true when the Dockable's preferred size reflects what it will actually display.
 	BoundsKnown() bool
-	// WhenBoundsKnown registers a callback to be invoked on the UI thread once the bounds become known, or once the
-	// Dockable has been waiting long enough that continuing to wait would be worse for the user than proceeding
-	// without them, whichever comes first. Each callback is invoked exactly once, or not at all if the Dockable is
-	// closed before either of those occurs.
+	// WhenBoundsKnown registers a callback to be invoked on the UI thread once the bounds become known, or once
+	// waiting longer would be worse for the user than proceeding without them, whichever comes first. Each callback
+	// is invoked exactly once, or not at all if the Dockable is closed before either occurs.
 	WhenBoundsKnown(callback func())
 }
 
@@ -177,8 +176,7 @@ func extractDockKeys(m map[string]unison.Dockable, dockState *unison.DockState) 
 	}
 }
 
-// Activate attempts to locate an existing dockable that 'matcher' returns true for. Will return true if a suitable
-// match was found. If found, it will have been activated and focused.
+// Activate activates and focuses the first dockable that 'matcher' returns true for, reporting whether one was found.
 func Activate(matcher func(d unison.Dockable) bool) bool {
 	for _, d := range AllDockables() {
 		if matcher(d) {
@@ -190,10 +188,9 @@ func Activate(matcher func(d unison.Dockable) bool) bool {
 }
 
 // activateDockable is Activate for the common case of looking for a dockable of a particular type: it activates the
-// first open dockable whose panel's Self is a T and, when match is not nil, that match accepts. The dockable is
-// resolved through its panel's Self, since what the dock hands out may be an inner layer rather than the dockable
-// itself -- SettingsDockable.Setup hands its own embedded SettingsDockable to the placement code, for example -- and a
-// direct type assertion would not see the dockable in that case. Pass nil to match when the type alone identifies the
+// first open dockable whose panel's Self is a T and, when match is not nil, that match accepts. The dockable is reached
+// through its panel's Self, since what the dock hands out may be an inner layer rather than the dockable itself (see
+// resolveDockable), which a direct type assertion would not see. Pass nil to match when the type alone identifies the
 // dockable, as it does for the global settings views; pass a predicate when something else is part of its identity,
 // such as the sheet a per-sheet settings view belongs to.
 func activateDockable[T unison.Paneler](match func(T) bool) bool {
@@ -273,7 +270,7 @@ func isWorkspaceAllowedToClose() bool {
 	global.TopDockState = unison.NewDockState(Workspace.TopDock, collectDockKeys)
 	global.DocDockState = unison.NewDockState(Workspace.DocumentDock.Dock, collectDockKeys)
 
-	// Finally, close all of the remaining dockables.
+	// Finally, close the remaining dockables; grouped ones are closed by the dockable they are grouped with.
 	for _, d := range AllDockables() {
 		if tc, ok := d.(unison.TabCloser); ok {
 			if _, ok = d.(GroupedCloser); !ok {
@@ -308,7 +305,7 @@ func workspaceWillClose() {
 // AllDockables returns all Dockables, whether in the workspace or in a separate window.
 func AllDockables() []unison.Dockable {
 	var all []unison.Dockable
-	// There is no dock until the workspace has been set up, and there are no dockables in one that does not exist.
+	// There is no dock until the workspace has been set up.
 	if Workspace.DocumentDock != nil {
 		Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 			all = append(all, dc.Dockables()...)
@@ -449,9 +446,9 @@ func MoveDockableToWorkspace(dockable unison.Dockable) {
 	PlaceInDock(dockable, group, true)
 }
 
-// MoveDockableToWindow closes the tab a dockable is in within the workspace and opens a windows for it instead. If
-// already in its own window, does nothing. The returned window is nil if the creation of the window had to be deferred
-// until the dockable's bounds are known; see placeInWindow.
+// MoveDockableToWindow closes the tab a dockable is in within the workspace and opens a window for it instead. If
+// already in its own window, does nothing. The returned window is nil if its creation had to be deferred until the
+// dockable's bounds are known; see placeInWindow.
 func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
 	panel := dockable.AsPanel()
 	wnd := panel.Window()
@@ -474,10 +471,10 @@ func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
 // resolveDockable returns the outermost implementation of the Dockable, i.e. its panel's Self. The code that places a
 // Dockable is frequently handed an inner layer rather than the Dockable itself -- SettingsDockable.Setup, for example,
 // passes its own embedded SettingsDockable rather than the settings view that contains it -- so the value has to be
-// resolved before it is retained or examined, which is exactly what unison's dock containers do when a Dockable is
-// docked. Without it, everything that type-asserts a Dockable to a concrete type or probes it for an optional interface
-// would see a different value depending on whether the Dockable ended up in the workspace or in a window of its own.
-// The Dockable is returned unchanged if its Self isn't a Dockable.
+// resolved before it is retained or examined, exactly as unison's dock containers do when a Dockable is docked. Without
+// it, anything that type-asserts a Dockable to a concrete type or probes it for an optional interface would see a
+// different value depending on whether the Dockable ended up in the workspace or in a window of its own. The Dockable
+// is returned unchanged if its Self isn't a Dockable.
 func resolveDockable(dockable unison.Dockable) unison.Dockable {
 	if xreflect.IsNil(dockable) {
 		return dockable
@@ -505,9 +502,8 @@ func placeInWindow(dockable unison.Dockable, group dgroup.Group) (*unison.Window
 				errs.Log(err)
 				return
 			}
-			// There was no window at the point the Dockable was placed, so any request to focus its content made then
-			// went nowhere. Make it now, so that a deferred window ends up with the focus where an immediate one would
-			// have had it.
+			// There was no window when the Dockable was placed, so any request to focus its content made then went
+			// nowhere. Make it now, so a deferred window ends up with the focus where an immediate one would have it.
 			if children := dockable.AsPanel().Children(); len(children) > 1 {
 				FocusFirstContent(children[0], children[1])
 			}
@@ -741,8 +737,8 @@ func saveDockableAs(d FileBackedDockable, extension string, fallbackDir func() s
 	return true
 }
 
-// PromptForDestination puts up a modal dialog to choose one or more destinations if choices contains more than one
-// choice. Return an empty list if canceled or there are no selections made.
+// PromptForDestination puts up a modal dialog to choose one or more destinations when choices holds more than one, and
+// returns choices unchanged otherwise. Returns nil if the dialog was canceled or nothing was selected.
 func PromptForDestination[T FileBackedDockable](choices []T) []T {
 	if len(choices) < 2 {
 		return choices
@@ -775,8 +771,8 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 	return result
 }
 
-// MarkRootAncestorForLayoutRecursively looks for a parent DockContainer (and, failing to find one of those, a parent
-// Dockable) and marks it and all of its descendents as needing to be laid out.
+// MarkRootAncestorForLayoutRecursively marks the nearest ancestor DockContainer (or, failing that, the nearest ancestor
+// Dockable) and all of its descendants as needing to be laid out.
 func MarkRootAncestorForLayoutRecursively(p unison.Paneler) {
 	if dc := unison.Ancestor[*unison.DockContainer](p); dc != nil {
 		dc.MarkForLayoutRecursively()
@@ -816,7 +812,8 @@ type saveable interface {
 	save(bool) bool
 }
 
-// AttemptSaveForDockable attempts to save a dockable.
+// AttemptSaveForDockable closes the dockables grouped with the dockable, then, if it is modified, asks whether to save
+// it. Returns false if something refused to close, the save failed, or the user canceled.
 func AttemptSaveForDockable(d unison.Dockable) bool {
 	if !CloseGroup(d) {
 		return false

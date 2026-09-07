@@ -25,8 +25,7 @@ type testPageBlock struct {
 
 // TestInitTitledPagePanel verifies the shared setup of a titled sheet page block: the panel becomes its own Self, gets
 // the titled border with the standard insets inside it, a grid of the requested columns, layout data that fills its
-// cell, the banded background and the tint only when asked for, and hands back the layout and layout data it installed
-// so that a block can adjust them.
+// cell, the banded background and the tint only when asked for, and hands back the layout and layout data installed.
 func TestInitTitledPagePanel(t *testing.T) {
 	c := check.New(t)
 	block := &testPageBlock{}

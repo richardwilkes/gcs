@@ -192,7 +192,6 @@ func TestUnknownDataSurvivesFileRoundTrip(t *testing.T) {
 	c.Contains(string(saved), "future_prereq_from_a_newer_gcs", "the unknown prereq type should survive the save")
 	c.NotContains(string(saved), "attribute_bonus", "the unknown feature must not be rewritten as another type")
 
-	// Reload what was written and confirm it is still the same unrecognized data.
 	reloaded, err := gurps.NewTraitsFromFile(os.DirFS(filepath.Dir(savePath)), "Test.adq")
 	c.NoError(err, "the saved file should load again")
 	reloadedFeature, ok := reloaded[0].Features[0].(*gurps.UnknownFeature)

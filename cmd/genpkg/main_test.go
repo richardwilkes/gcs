@@ -24,8 +24,7 @@ import (
 	"github.com/richardwilkes/unison/cmd/upack/packager"
 )
 
-// repoRoot is the top-level directory of the repository, relative to this package's directory, which is where the test
-// runs.
+// repoRoot is the repository root, relative to this package's directory, which is where the test runs.
 const repoRoot = "../.."
 
 func TestMain(m *testing.M) {
@@ -69,9 +68,9 @@ func TestCommittedPackagingIconsExist(t *testing.T) {
 }
 
 // TestGenerateDocIcons verifies that a document icon is produced for every file type GCS owns, and that each one is a
-// usable image of the same size as the document image they are built on top of. Being an ordinary test, it also pins
-// down that the generation needs no UI: it runs on a test goroutine with unison never started and no window in
-// existence, which is only possible because the SVGs are rendered by canvas' CPU rasterizer.
+// usable image of the same size as the document image they are built on top of. It also pins down that generation
+// needs no UI: unison is never started and no window exists, which works only because the SVGs are rendered by canvas'
+// CPU rasterizer.
 func TestGenerateDocIcons(t *testing.T) {
 	c := check.New(t)
 	docImg, _, err := image.Decode(bytes.NewBuffer(docImgBytes))

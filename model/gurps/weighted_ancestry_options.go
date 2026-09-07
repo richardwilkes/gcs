@@ -15,8 +15,7 @@ import "github.com/richardwilkes/toolbox/v2/xrand"
 type WeightedAncestryOptions struct {
 	Weight int              `json:"weight"`
 	Value  *AncestryOptions `json:"value"`
-	// KeyPrefix is a runtime-only key the editor uses to give each entry's widgets a stable identity. It is never
-	// written to disk.
+	// KeyPrefix is a runtime-only key the editor uses to give each entry's widgets a stable identity.
 	KeyPrefix string `json:"-"`
 }
 
@@ -36,7 +35,8 @@ func (o *WeightedAncestryOptions) Valid() bool {
 	return o != nil && o.Weight > 0 && o.Value != nil
 }
 
-// ChooseWeightedAncestryOptions selects a string option from the available set.
+// ChooseWeightedAncestryOptions randomly selects one of the valid options, weighted by their weights and skipping any
+// the omitter rejects. Returns nil when there is nothing to choose from.
 func ChooseWeightedAncestryOptions(options []*WeightedAncestryOptions, omitter func(*AncestryOptions) bool) *AncestryOptions {
 	total := 0
 	for _, one := range options {

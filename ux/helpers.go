@@ -20,14 +20,14 @@ import (
 const dataOwnerProviderKey = "data_owner_provider"
 
 // noModifiersDown returns true if none of the non-sticky modifier keys (Shift, Control, Option, Command) were down when
-// the event occurred. The sticky lock keys (CapsLock, NumLock) are masked out first, since a latched CapsLock or
-// NumLock must not prevent a plain keypress from being recognized.
+// the event occurred. The sticky lock keys (CapsLock, NumLock) are ignored, since a latched one must not prevent a
+// plain keypress from being recognized.
 func noModifiersDown(mods mod.Modifiers) bool {
 	return mods&mod.NonSticky == 0
 }
 
-// SetFieldValue sets the value of this field, marking the field and all of its parents as needing to be laid out again
-// if the value is not what is currently in the field.
+// SetFieldValue sets the text of the field, marking it and its parents up to the enclosing Dockable as needing layout,
+// if the value differs from what the field currently holds.
 func SetFieldValue(field *unison.Field, value string) {
 	if value != field.Text() {
 		field.SetText(value)
@@ -35,8 +35,8 @@ func SetFieldValue(field *unison.Field, value string) {
 	}
 }
 
-// MarkForLayoutWithinDockable sets the NeedsLayout flag on the provided panel and all of its parents up to the first
-// Dockable.
+// MarkForLayoutWithinDockable sets the NeedsLayout flag on the provided panel and its parents, up to and including the
+// first Dockable.
 func MarkForLayoutWithinDockable(panel unison.Paneler) {
 	p := panel.AsPanel()
 	for p != nil {
@@ -54,14 +54,12 @@ func SetCheckBoxState(checkbox *CheckBox, checked bool) {
 	checkbox.Sync()
 }
 
-// FocusFirstContent attempts to focus the first non-button widget in the content. Failing that, tries to focus the
-// first focusable widget in the content. Failing that, tries to focus the first focusable widget in the toolbar.
+// FocusFirstContent focuses the first non-button widget in the content, failing that the first focusable widget in the
+// content, and failing that the first focusable widget in the toolbar.
 //
-// The target is chosen by scanning only the content and toolbar subtrees. This deliberately avoids cycling the
-// window's focus (via FocusNext), which roams the entire window and depends on wherever the focus happened to be
-// beforehand. That whole-window walk could intermittently leave the focus outside the just-opened dockable -- most
-// visibly in the navigator -- making it look like the dockable never received the focus or lost it immediately after
-// opening.
+// Only the content and toolbar subtrees are scanned. Cycling the window's focus (via FocusNext) instead would roam the
+// entire window and depend on wherever the focus happened to be beforehand, which could intermittently leave the focus
+// outside the just-opened dockable -- most visibly in the navigator.
 func FocusFirstContent(toolbar, content unison.Paneler) {
 	if target := firstContentFocusTarget(toolbar.AsPanel(), content.AsPanel()); target != nil {
 		target.RequestFocus()
@@ -69,8 +67,7 @@ func FocusFirstContent(toolbar, content unison.Paneler) {
 }
 
 // firstContentFocusTarget returns the panel that FocusFirstContent should focus, or nil if neither the content nor the
-// toolbar contains a focusable widget. Preference is given to the first focusable non-button widget in the content,
-// then the first focusable widget in the content, and finally the first focusable widget in the toolbar.
+// toolbar contains a focusable widget.
 func firstContentFocusTarget(toolbar, content *unison.Panel) *unison.Panel {
 	if target := firstFocusableInSubtree(content, true); target != nil {
 		return target
@@ -82,8 +79,8 @@ func firstContentFocusTarget(toolbar, content *unison.Panel) *unison.Panel {
 }
 
 // firstFocusableInSubtree returns the first focusable panel found in a pre-order traversal of the subtree rooted at p,
-// matching the order the window uses when cycling focus. When skipButtons is true, buttons are not treated as valid
-// targets. Returns nil if no suitable panel is found.
+// matching the order the window uses when cycling focus, or nil if there is none. When skipButtons is true, buttons are
+// not treated as valid targets.
 func firstFocusableInSubtree(p *unison.Panel, skipButtons bool) *unison.Panel {
 	if p == nil {
 		return nil
@@ -101,7 +98,7 @@ func firstFocusableInSubtree(p *unison.Panel, skipButtons bool) *unison.Panel {
 	return nil
 }
 
-// SetDataOwnerProvider sets the DataOwnerProvider into the client data of the target.
+// SetDataOwnerProvider sets the DataOwnerProvider into the client data of the target, removing it when provider is nil.
 func SetDataOwnerProvider(target unison.Paneler, provider gurps.DataOwnerProvider) {
 	data := target.AsPanel().ClientData()
 	if xreflect.IsNil(provider) {
@@ -111,7 +108,8 @@ func SetDataOwnerProvider(target unison.Paneler, provider gurps.DataOwnerProvide
 	}
 }
 
-// DetermineDataOwnerProvider returns the DataOwnerProvider for the given target.
+// DetermineDataOwnerProvider returns the DataOwnerProvider for the given target, preferring the nearest one in its
+// ancestry and falling back to the one in its client data, or nil if there is none.
 func DetermineDataOwnerProvider(target unison.Paneler) gurps.DataOwnerProvider {
 	if provider := unison.AncestorOrSelf[gurps.DataOwnerProvider](target); provider != nil {
 		return provider

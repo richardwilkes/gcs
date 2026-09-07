@@ -21,7 +21,6 @@ import (
 // test would hang until the harness killed it.
 const neverSleep = time.Hour
 
-// TestRetryStopsAtTheFirstSuccess verifies that a success ends the loop with the remaining attempts unused.
 func TestRetryStopsAtTheFirstSuccess(t *testing.T) {
 	c := check.New(t)
 	calls := 0
@@ -36,8 +35,7 @@ func TestRetryStopsAtTheFirstSuccess(t *testing.T) {
 	c.Equal(3, calls)
 }
 
-// TestRetryDoesNotSleepAfterAnImmediateSuccess verifies that the common case on the platforms where the first attempt
-// always works costs nothing.
+// The common case, on the platforms where the first attempt always works, must cost nothing.
 func TestRetryDoesNotSleepAfterAnImmediateSuccess(t *testing.T) {
 	c := check.New(t)
 	calls := 0
@@ -48,8 +46,7 @@ func TestRetryDoesNotSleepAfterAnImmediateSuccess(t *testing.T) {
 	c.Equal(1, calls)
 }
 
-// TestRetryReturnsTheLastErrorWhenEveryAttemptFails verifies both the attempt count and that the error reported is
-// from the final attempt, which is the one that describes the state things were left in.
+// The error reported must be the final attempt's, which is the one describing the state things were left in.
 func TestRetryReturnsTheLastErrorWhenEveryAttemptFails(t *testing.T) {
 	c := check.New(t)
 	calls := 0
@@ -62,8 +59,8 @@ func TestRetryReturnsTheLastErrorWhenEveryAttemptFails(t *testing.T) {
 	c.True(errors.Is(err, errs[len(errs)-1]), "the last attempt's error should be the one returned")
 }
 
-// TestRetryGivesUpAtOnceWhenTold verifies the escape hatch the atomic exchange depends on: a refusal or an unsupported
-// operation must come back immediately and unwrapped, not after the full run of sleeps.
+// The escape hatch the atomic exchange depends on: a refusal or an unsupported operation must come back immediately
+// and unwrapped, not after the full run of sleeps.
 func TestRetryGivesUpAtOnceWhenTold(t *testing.T) {
 	c := check.New(t)
 	cause := errors.New("refused")
@@ -76,8 +73,7 @@ func TestRetryGivesUpAtOnceWhenTold(t *testing.T) {
 	c.Equal(cause, err, "the cause should come back as given, not wrapped")
 }
 
-// TestRetryAlwaysMakesOneAttempt guards against a zero or negative attempt count turning into a silent success that
-// never ran the operation at all.
+// Guards against a zero or negative attempt count turning into a silent success that never ran the operation at all.
 func TestRetryAlwaysMakesOneAttempt(t *testing.T) {
 	c := check.New(t)
 	for _, attempts := range []int{0, -1} {

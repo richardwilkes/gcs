@@ -34,8 +34,8 @@ func TestTreasureGenPanelWithInRangeValues(t *testing.T) {
 
 // TestTreasureGenPanelWithOutOfRangeValues reproduces the crash that occurred when the stored loot generation values
 // were larger than the maximum the fields accept. Creating the field clamps the value into range and reports it through
-// the set callback, which runs while the dialog and the fields themselves are still nil, so validating the OK button at
-// that point panicked with a nil pointer dereference and the treasure generation dialog could never be opened.
+// the set callback, which runs while the dialog and the fields are still nil, so validating the OK button at that point
+// panicked and the treasure generation dialog could never be opened.
 func TestTreasureGenPanelWithOutOfRangeValues(t *testing.T) {
 	c := check.New(t)
 
@@ -82,12 +82,11 @@ func newTestLootSheet(t *testing.T) *LootSheet {
 
 // TestLootSheetNewItemCommandUsesTheLiveList verifies that a loot sheet's "New Equipment" command adds its item to the
 // list the user is looking at rather than to whichever list existed when the sheet was created. LootSheet.createLists
-// replaces any list whose columns no longer match what its provider asks for, exactly as a character sheet does, and a
-// command holding on to the list it was handed at construction would afterwards be creating items in an orphan: the
-// insertion wouldn't be undoable, since an orphaned table can't find the undo manager, and the new row would be
-// neither selected nor scrolled into view in the list that is on screen. Nothing in a loot sheet's data calls for a
-// different set of columns today -- the switch column is reserved for character sheets -- so the mismatch that drives
-// the replacement is arranged here directly.
+// replaces any list whose columns no longer match what its provider asks for, and a command holding on to the list it
+// was handed at construction would afterwards be creating items in an orphan: the insertion wouldn't be undoable, since
+// an orphaned table can't find the undo manager, and the new row would be neither selected nor scrolled into view in
+// the list that is on screen. Nothing in a loot sheet's data calls for a different set of columns today, so the
+// mismatch that drives the replacement is arranged here directly.
 func TestLootSheetNewItemCommandUsesTheLiveList(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestLootSheet(t)
@@ -113,9 +112,10 @@ func TestLootSheetNewItemCommandUsesTheLiveList(t *testing.T) {
 	c.Equal(0, sheet.Equipment.Table.RootRowCount(), "undo must take the row back out of the list that is on screen")
 }
 
-// TestLootSheetIgnoresAnotherEntitySheetSettings verifies that a loot sheet only responds to a change in the global sheet
-// settings, which is what it reads from, and not to a change made in some character's per-sheet settings. Responding
-// to the latter would rebuild the loot sheet and bump its modification timestamp for an edit that was never made to it.
+// TestLootSheetIgnoresAnotherEntitySheetSettings verifies that a loot sheet only responds to a change in the global
+// sheet settings, which is what it reads from, and not to a change made in some character's per-sheet settings.
+// Responding to the latter would rebuild the loot sheet and bump its modification timestamp for an edit that was never
+// made to it.
 func TestLootSheetIgnoresAnotherEntitySheetSettings(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestLootSheet(t)

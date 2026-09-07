@@ -168,7 +168,6 @@ func TestHitLocationDragDropReordersOwningTable(t *testing.T) {
 	c.False(d.Modified())
 }
 
-// hitLocationIDs returns the IDs of the table's locations in order.
 func hitLocationIDs(table *gurps.Body) []string {
 	ids := make([]string, len(table.Locations))
 	for i, loc := range table.Locations {
@@ -177,7 +176,6 @@ func hitLocationIDs(table *gurps.Body) []string {
 	return ids
 }
 
-// hitLocationRollRanges returns the roll ranges of the table's locations in order.
 func hitLocationRollRanges(table *gurps.Body) []string {
 	ranges := make([]string, len(table.Locations))
 	for i, loc := range table.Locations {

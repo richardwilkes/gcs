@@ -73,7 +73,6 @@ func newTestLayout(bands ...*SheetLayoutNode) *SheetLayout {
 	return layout
 }
 
-// weightsOf returns the weights of the given node's children.
 func weightsOf(node *SheetLayoutNode) []fxp.Int {
 	weights := make([]fxp.Int, 0, len(node.Children))
 	for _, child := range node.Children {
@@ -250,7 +249,6 @@ func TestSheetLayoutEnsureValidityRoot(t *testing.T) {
 	})
 }
 
-// allKeysExcept returns every block key other than the ones given.
 func allKeysExcept(keys ...string) []string {
 	result := make([]string, 0, len(AllBlockKeys))
 	for _, key := range AllBlockKeys {
@@ -467,7 +465,6 @@ func TestSheetLayoutEnsureValidityHidden(t *testing.T) {
 	})
 }
 
-// TestSheetLayoutHideShow verifies hiding and showing blocks.
 func TestSheetLayoutHideShow(t *testing.T) {
 	c := check.New(t)
 	layout := FactorySheetLayout()
@@ -489,7 +486,6 @@ func TestSheetLayoutHideShow(t *testing.T) {
 		"the row the hidden block was in must collapse onto its remaining child")
 }
 
-// TestSheetLayoutMove verifies each of the ways a block can be moved.
 func TestSheetLayoutMove(t *testing.T) {
 	t.Run("into an existing row", func(t *testing.T) {
 		c := check.New(t)
@@ -865,7 +861,6 @@ func TestSheetLayoutMoveToBand(t *testing.T) {
 	})
 }
 
-// TestSheetLayoutSetWeightsAndMinHeight verifies the sizing operations.
 func TestSheetLayoutSetWeightsAndMinHeight(t *testing.T) {
 	c := check.New(t)
 	layout := newTestLayout(containerNode(layoutnode.Row, fxp.One, blockNode(BlockTraitsKey),

@@ -26,22 +26,19 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// startHeadlessWorkspace starts a headless unison session running the GCS workspace -- the menu bar, the navigator and
-// the document dock in a single window -- exactly as Start does, minus the update checks and the handoff service. It
-// returns the screen that drives the session and the workspace window. The session is stopped when the test ends, and
-// the process-wide state the workspace touches is put back afterwards: the Workspace global, the settings path, the
-// libraries (swapped for fresh temporary ones, see useTestLibraries), the recent files and last-used directories that
-// saving and opening files record (see preserveRecentFilesAndLastDirs) and the workspace-restoration setting, which is
-// turned off so that the dock does not try to restore whatever the settings hold.
+// startHeadlessWorkspace starts a headless unison session running the GCS workspace -- menu bar, navigator and document
+// dock in one window -- as Start does, minus the update checks and the handoff service. It returns the screen driving
+// the session and the workspace window. The session is stopped when the test ends and the process-wide state the
+// workspace touches is put back: the Workspace global, the settings path, the libraries (see useTestLibraries), the
+// recent files and last-used directories (see preserveRecentFilesAndLastDirs) and the workspace-restoration setting,
+// which is turned off so that the dock does not try to restore whatever the settings hold.
 //
-// Stop clears every window's AllowCloseCallback and WillCloseCallback and stops every modal loop before it quits, so a
-// dockable left open with unsaved changes cannot put up a save prompt that would hang the shutdown, and the workspace's
-// own close handler, which saves the global settings, never runs. Even so, a test should leave the dockables it opened
-// closed or unmodified, so that a failure elsewhere is not hidden behind whatever teardown makes of them.
+// Stop clears every window's close callbacks and stops every modal loop before it quits, so a dockable left open with
+// unsaved changes cannot hang the shutdown with a save prompt, and the workspace's own close handler, which saves the
+// global settings, never runs. Even so, a test should leave the dockables it opened closed or unmodified.
 //
-// Anything the session recorded through Errors() -- a panic in a callback, a wait that was abandoned because the
-// application never went quiet -- fails the test when it ends. Sessions run one at a time and own most of unison's
-// mutable globals while they run, so a test using this must not call t.Parallel.
+// Anything the session recorded through Errors() fails the test when it ends. Sessions run one at a time and own most
+// of unison's mutable globals while they run, so a test using this must not call t.Parallel.
 func startHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScreen, *unison.Window) {
 	t.Helper()
 	swapForTest(t, &Workspace, Workspace) // The session replaces most of the workspace; put all of it back.
@@ -68,8 +65,8 @@ func startHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScre
 	if err != nil {
 		t.Fatalf("unable to start the headless session: %v", err)
 	}
-	// Registered ahead of Stop so that it runs after the session has ended, by which time everything the session is
-	// ever going to record has been recorded.
+	// Registered ahead of Stop so that it runs after the session has ended, by which time everything it will record
+	// has been recorded.
 	t.Cleanup(func() {
 		for _, one := range screen.Errors() {
 			t.Errorf("the headless session recorded an error: %v", one)
@@ -79,8 +76,8 @@ func startHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScre
 	if wnd == nil {
 		t.Fatal("the workspace window was not created")
 	}
-	// The workspace reports errors with a modal dialog once it has finished initializing. A dialog nobody is going to
-	// dismiss would leave the test stranded, so report them as test failures instead.
+	// The workspace reports errors with a modal dialog once it has finished initializing. Nobody would dismiss it, so
+	// report them as test failures instead.
 	screen.Do(func() {
 		Workspace.ErrorHandler = func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) }
 	})
@@ -88,9 +85,8 @@ func startHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScre
 }
 
 // preserveRecentFilesAndLastDirs puts the global settings' recent files list and last-used directories back when the
-// test ends. Saving or opening a file through the workspace records the file in the one and its directory in the
-// other, and the global settings are process-wide, so a temporary path left in either would be offered to every test
-// that runs afterwards.
+// test ends. Saving or opening a file records the file in the one and its directory in the other, and the global
+// settings are process-wide, so a temporary path left in either would be offered to every test that runs afterwards.
 func preserveRecentFilesAndLastDirs(t *testing.T) {
 	t.Helper()
 	global := gurps.GlobalSettings()
@@ -103,7 +99,7 @@ func preserveRecentFilesAndLastDirs(t *testing.T) {
 }
 
 // captureScreen writes what the screen shows to name.png in the directory named by GCS_HEADLESS_CAPTURE_DIR, for the
-// person running the test to look at. When nothing is named there, nobody is going to look, so nothing is captured.
+// person running the test to look at. When nothing is named there, nothing is captured.
 func captureScreen(t *testing.T, c check.Checker, screen *unison.HeadlessScreen, name string) {
 	t.Helper()
 	dir := os.Getenv("GCS_HEADLESS_CAPTURE_DIR")
@@ -124,10 +120,10 @@ func captureScreen(t *testing.T, c check.Checker, screen *unison.HeadlessScreen,
 }
 
 // dragRowAheadOf drags the handle of the from'th child of rows to the upper half of the to'th, which asks for the row
-// to be inserted ahead of that one, the way a user reorders an editor list. Both rows must be in view for the drag to
-// land where it is aimed, so the span from a little above the target row to the dragged row's handle is scrolled into
-// view first; the headroom keeps the pointer clear of the edge that the drop target scrolls at. The test fails if the
-// span does not fit the view, so the two rows must be near enough to each other for it to.
+// to be inserted ahead of that one. Both rows must be in view for the drag to land where it is aimed, so the span from
+// a little above the target row to the dragged row's handle is scrolled into view first; the headroom keeps the pointer
+// clear of the edge that the drop target scrolls at. The test fails if the span does not fit the view, so the two rows
+// must be near enough to each other for it to.
 func dragRowAheadOf(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, rows *unison.Panel, from, to int) {
 	t.Helper()
 	var handle *unison.Panel
@@ -185,7 +181,7 @@ func buttonWithSVG(root *unison.Panel, icon *unison.SVG) *unison.Button {
 }
 
 // buttonWithTooltip returns the first button within root whose tooltip reads exactly text, or nil if there is none.
-// Where several buttons share an icon, the tooltip is what tells a user -- and so a test -- which is which.
+// Where several buttons share an icon, the tooltip is what tells them apart.
 func buttonWithTooltip(root *unison.Panel, text string) *unison.Button {
 	for _, b := range panelsOfType[*unison.Button](root) {
 		if b.Tooltip != nil && tooltipText(b.Tooltip) == text {
@@ -245,9 +241,9 @@ func menuItemPanels(menuPanel *unison.Panel) []*unison.Panel {
 }
 
 // chooseMenuBarItem chooses an item from one of the menus in wnd's menu bar the way a user would: it clicks the menu's
-// title in the bar, then clicks the item in the popup that opens. Since the item's handler runs from the event loop
-// once the menu has closed, and every injection waits for the application to go quiet, the handler has finished by the
-// time this returns -- or, for a handler that puts up a modal dialog, the dialog is up and idle.
+// title in the bar, then the item in the popup that opens. Since every injection waits for the application to go quiet,
+// the item's handler has finished by the time this returns -- or, for a handler that puts up a modal dialog, the dialog
+// is up and idle.
 func chooseMenuBarItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, menuTitle, itemTitle string) {
 	t.Helper()
 	var titlePanel *unison.Panel
@@ -289,9 +285,8 @@ func chooseMenuBarItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.
 }
 
 // choosePopupItem chooses the item at index from a unison.PopupMenu (or anything wrapping one, such as Popup) the way a
-// user would: it clicks the popup, which opens an in-window menu holding one item per entry of the popup in the popup's
-// own order, then clicks that menu's item. The popup's selection callback has run by the time this returns, since every
-// injection waits for the application to go quiet.
+// user would: it clicks the popup, which opens an in-window menu holding one item per entry in the popup's own order,
+// then clicks that menu's item. The popup's selection callback has run by the time this returns.
 func choosePopupItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, popup unison.Paneler, index int) {
 	t.Helper()
 	screen.Click(screen.PanelCenter(popup))
@@ -308,9 +303,8 @@ func choosePopupItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Wi
 }
 
 // modalDialog returns the dialog window currently up alongside wnd and the unison.Dialog behind it, failing the test if
-// there is no such window. A dialog runs a nested modal loop, so the call that put it up has not returned yet; every
-// injection waits for the application to go quiet inside that loop, which is what makes it safe to look for the dialog
-// right after the click that opened it.
+// there is no such window. A dialog runs a nested modal loop, and every injection waits for the application to go quiet
+// inside that loop, which is what makes it safe to look for the dialog right after the click that opened it.
 func modalDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window) (*unison.Window, *unison.Dialog) {
 	t.Helper()
 	var dialogWnd *unison.Window
@@ -333,9 +327,8 @@ func modalDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window
 	return dialogWnd, dialog
 }
 
-// saveDialogFields returns the file name field of the pure-Go save dialog in dialogWnd, the name it offers and the
-// name of the directory its popup shows, failing the test if the window is not the save dialog or has no file name
-// field.
+// saveDialogFields returns the file name field of the pure-Go save dialog in dialogWnd, the name it offers and the name
+// of the directory its popup shows, failing the test if the window is not the save dialog or has no file name field.
 func saveDialogFields(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *unison.Window) (field *unison.Field, fileName, dirName string) {
 	t.Helper()
 	var title string
@@ -362,8 +355,8 @@ func saveDialogFields(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *un
 	return field, fileName, dirName
 }
 
-// soleEditor returns the one open dockable that match accepts, as a T, failing the test if there is not exactly one
-// or it is not a T. Only the lookup runs on the UI thread, so a caller reading anything from the editor does so in a
+// soleEditor returns the one open dockable that match accepts, as a T, failing the test if there is not exactly one or
+// it is not a T. Only the lookup runs on the UI thread, so a caller reading anything from the editor does so in a
 // screen.Do of its own afterwards.
 func soleEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool) T {
 	t.Helper()
@@ -377,8 +370,8 @@ func otherEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen,
 	return onlyEditor[T](t, screen, match, d)
 }
 
-// onlyEditor is what soleEditor and otherEditor share: it returns the one open dockable that match accepts, other
-// than except when that is not nil, failing the test if there is not exactly one or it is not a T.
+// onlyEditor is what soleEditor and otherEditor share: it returns the one open dockable that match accepts, other than
+// except when that is not nil, failing the test if there is not exactly one or it is not a T.
 func onlyEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool, except unison.Dockable) T {
 	t.Helper()
 	var editors []T
@@ -417,7 +410,7 @@ func loadSavedFile[T any](t *testing.T, c check.Checker, path string, read func(
 // no file makes the Save button bring up the pure-Go save dialog, which must offer offeredName as the file name and
 // open in the user library's ancestries folder, where both the ancestries and the name generators they use live; when
 // saveAs is empty the offered name is accepted as it stands, and otherwise saveAs is typed in its place. typeName is
-// what the editor edits, such as "Ancestry", which its title must show along with the file's base name, and ext is the
+// what the editor edits, such as "Ancestry", which its title must show along with the file's base name; ext is the
 // extension of the file it saves. The file is read back with read and must hold exactly what the editor holds.
 func saveNewFileEditor[M fileEditorModel[M], T gurps.Hashable](t *testing.T, c check.Checker,
 	screen *unison.HeadlessScreen, wnd *unison.Window, d *fileEditorDockable[M],
@@ -469,8 +462,8 @@ func saveNewFileEditor[M fileEditorModel[M], T gurps.Hashable](t *testing.T, c c
 	return savedPath, loaded, hash
 }
 
-// visibleRect returns the part of p's content area that is within view, in the root coordinate space of its window:
-// its whole content area when no scroll panel encloses it, and otherwise the part of it inside the scroll panel's view
+// visibleRect returns the part of p's content area that is within view, in the root coordinate space of its window: its
+// whole content area when no scroll panel encloses it, and otherwise the part of it inside the scroll panel's view
 // port. An empty rect means nothing of p can be seen, and so nothing of it can be clicked.
 func visibleRect(p *unison.Panel) geom.Rect {
 	r := p.RectToRoot(p.ContentRect(false))

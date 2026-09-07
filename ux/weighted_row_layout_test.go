@@ -71,8 +71,6 @@ func newSquareTestPanel(height float32) *unison.Panel {
 	return p
 }
 
-// TestWeightedRowLayoutDividesByWeight verifies that the available width, less the spacing between the children, is
-// handed out in proportion to the weights, and that the children are placed one after the other across the row.
 func TestWeightedRowLayoutDividesByWeight(t *testing.T) {
 	c := check.New(t)
 	row, layout := newTestRow([]fxp.Int{fxp.One, fxp.Two, fxp.One}, 0,
@@ -90,9 +88,6 @@ func TestWeightedRowLayoutDividesByWeight(t *testing.T) {
 	c.Equal(geom.NewRect(75.5, 0, 24.5, 40), children[2].FrameRect())
 }
 
-// TestWeightedRowLayoutPinsToTheFloor verifies that a child whose share of the width would leave it narrower than the
-// one width no block may go below is pinned there, and that what pinning it costs comes out of the children that still
-// have room to give, with the widths still adding up to exactly what was available.
 func TestWeightedRowLayoutPinsToTheFloor(t *testing.T) {
 	c := check.New(t)
 	row, layout := newTestRow([]fxp.Int{fxp.FromInteger(10), fxp.One}, 0,
@@ -104,10 +99,9 @@ func TestWeightedRowLayoutPinsToTheFloor(t *testing.T) {
 	c.Equal(float32(99), widths[0]+widths[1], "the widths must add up to the space less the spacing")
 }
 
-// TestWeightedRowLayoutIgnoresTheWidthItsContentWants verifies that a child is given the share of the row its weight
-// calls for however wide its content would like to be, since a block that could not be made narrower than its content
-// could not be resized at all. The page lists are exactly that case: their tables re-fit their columns to whatever
-// width they are given, so what they ask for is always the width they already have.
+// A block that could not be made narrower than its content could not be resized at all. The page lists are exactly
+// that case: their tables re-fit their columns to whatever width they are given, so what they ask for is always the
+// width they already have.
 func TestWeightedRowLayoutIgnoresTheWidthItsContentWants(t *testing.T) {
 	c := check.New(t)
 	row, layout := newTestRow([]fxp.Int{fxp.One, fxp.One}, 0,
@@ -121,8 +115,8 @@ func TestWeightedRowLayoutIgnoresTheWidthItsContentWants(t *testing.T) {
 	c.Equal([]float32{75, 25}, widths, "changing the weights must re-proportion the row regardless of the content")
 }
 
-// TestWeightedRowLayoutOverflowsWhenTheFloorsDoNotFit verifies that a row that cannot fit even the narrowest each of
-// its children may be hands out that width anyway, running off the end rather than squeezing them into nothing.
+// A row that cannot fit even the narrowest each of its children may be hands out that width anyway, running off the
+// end rather than squeezing them into nothing.
 func TestWeightedRowLayoutOverflowsWhenTheFloorsDoNotFit(t *testing.T) {
 	c := check.New(t)
 	row, layout := newTestRow([]fxp.Int{fxp.One, fxp.One}, 0,
@@ -136,8 +130,6 @@ func TestWeightedRowLayoutOverflowsWhenTheFloorsDoNotFit(t *testing.T) {
 		"the row's minimum width is the floor of each of its children, plus the spacing")
 }
 
-// TestWeightedRowLayoutHeightIsTheTallestChild verifies that the row is as tall as its tallest child, measured at the
-// width that child is actually given, but never shorter than a minimum height carried by a child or by the row itself.
 func TestWeightedRowLayoutHeightIsTheTallestChild(t *testing.T) {
 	c := check.New(t)
 	tall := newSizedPanel(0, 10, 50)
@@ -160,8 +152,8 @@ func TestWeightedRowLayoutHeightIsTheTallestChild(t *testing.T) {
 	c.Equal(float32(50), prefSize.Height, "the row is back to the height of its tallest child")
 }
 
-// TestWeightedRowLayoutMeasuresHeightAtTheGivenWidth verifies that a child that wraps its content is asked how tall it
-// is at the width the row gives it, rather than at whatever width it would have chosen for itself.
+// A child that wraps its content must be asked how tall it is at the width the row gives it, not at whatever width it
+// would have chosen for itself.
 func TestWeightedRowLayoutMeasuresHeightAtTheGivenWidth(t *testing.T) {
 	c := check.New(t)
 	wrapping := newMeasuredPanel(0, 200, func(width float32) float32 { return 4000 / width })
@@ -170,8 +162,8 @@ func TestWeightedRowLayoutMeasuresHeightAtTheGivenWidth(t *testing.T) {
 	c.Equal(float32(80), prefSize.Height, "the wrapping child is measured at the 50 pixels it is given")
 }
 
-// TestWeightedRowLayoutWithoutAWidthUsesPreferredWidths verifies that a row asked for its size without a width to work
-// from reports what its children would like to be, rather than dividing a width it doesn't have.
+// A row asked for its size without a width to work from reports what its children would like to be, rather than
+// dividing a width it doesn't have.
 func TestWeightedRowLayoutWithoutAWidthUsesPreferredWidths(t *testing.T) {
 	c := check.New(t)
 	row, layout := newTestRow([]fxp.Int{fxp.One, fxp.Three}, 0,
@@ -184,9 +176,8 @@ func TestWeightedRowLayoutWithoutAWidthUsesPreferredWidths(t *testing.T) {
 	c.Equal(prefSize, maxSize, "a row is never given more than it asked for")
 }
 
-// TestWeightedRowLayoutSquareChildTakesItsWidthFromTheHeight verifies that a square child is given the width that makes
-// its content -- its frame less its border insets -- as wide as the row is tall less those insets, that the row is as
-// tall as the child beside it, and that what is left over goes to that child.
+// A square child is given the width that makes its content -- its frame less its border insets -- as wide as the row
+// is tall less those insets; the row is as tall as the child beside it, and what is left over goes to that child.
 func TestWeightedRowLayoutSquareChildTakesItsWidthFromTheHeight(t *testing.T) {
 	c := check.New(t)
 	square := newSquareTestPanel(30)
@@ -210,8 +201,6 @@ func TestWeightedRowLayoutSquareChildTakesItsWidthFromTheHeight(t *testing.T) {
 	c.Equal(content.Height, content.Width, "the square child's content must come out square")
 }
 
-// TestWeightedRowLayoutSquareChildDrivesTheHeight verifies that a square child's own minimum height counts toward the
-// height of the row like any other child's, and that its width then follows that height.
 func TestWeightedRowLayoutSquareChildDrivesTheHeight(t *testing.T) {
 	c := check.New(t)
 	square := newSquareTestPanel(30)
@@ -225,8 +214,6 @@ func TestWeightedRowLayoutSquareChildDrivesTheHeight(t *testing.T) {
 	c.Equal(199-widths[0], widths[1])
 }
 
-// TestWeightedRowLayoutOtherChildrenShareWhatIsLeft verifies that the children that aren't square divide up whatever the
-// square ones didn't take, in proportion to their own weights.
 func TestWeightedRowLayoutOtherChildrenShareWhatIsLeft(t *testing.T) {
 	c := check.New(t)
 	square := newSquareTestPanel(30)
@@ -241,9 +228,9 @@ func TestWeightedRowLayoutOtherChildrenShareWhatIsLeft(t *testing.T) {
 	c.Equal(3*remainder/4, widths[2])
 }
 
-// TestWeightedRowLayoutSquareChildIgnoresThePageWidth verifies that changing how much width the row has to divide up
-// leaves a square child exactly as it was, since its width comes from the height instead. This is what makes the
-// portrait's picture area square on a page of any size rather than only on the one its weight was tuned for.
+// Changing how much width the row has to divide up leaves a square child exactly as it was, since its width comes
+// from the height instead. This is what makes the portrait's picture area square on a page of any size rather than
+// only on the one its weight was tuned for.
 func TestWeightedRowLayoutSquareChildIgnoresThePageWidth(t *testing.T) {
 	c := check.New(t)
 	square := newSquareTestPanel(30)
@@ -256,9 +243,8 @@ func TestWeightedRowLayoutSquareChildIgnoresThePageWidth(t *testing.T) {
 	c.Equal(letter[1]-17, a4[1], "the whole of the difference comes out of the child that isn't square")
 }
 
-// TestWeightedRowLayoutAllSquareFallsBackToWeights verifies that a row whose children are all square divides itself up
-// by weight after all: there is nothing beside them for the height to come from, so there is nothing to take a width
-// from either.
+// A row whose children are all square divides itself up by weight after all: there is nothing beside them for the
+// height to come from, so there is nothing to take a width from either.
 func TestWeightedRowLayoutAllSquareFallsBackToWeights(t *testing.T) {
 	c := check.New(t)
 	row, layout := newTestSquareRow([]fxp.Int{fxp.One, fxp.Three}, []bool{true, true},
@@ -268,9 +254,9 @@ func TestWeightedRowLayoutAllSquareFallsBackToWeights(t *testing.T) {
 	c.Equal(float32(30), height, "the row is as tall as the tallest of them")
 }
 
-// TestWeightedRowLayoutSquareChildAgainstWrappingContent verifies that a square child beside a child that wraps its
-// content ends up with a width that matches the height the row reports, even though giving it that width changed how
-// the other child wraps, and that measuring the row twice gives the same answer both times.
+// A square child beside a child that wraps its content must end up with a width that matches the height the row
+// reports, even though giving it that width changed how the other child wraps, and measuring the row twice must give
+// the same answer both times.
 func TestWeightedRowLayoutSquareChildAgainstWrappingContent(t *testing.T) {
 	c := check.New(t)
 	square := newSizedPanel(0, 10, 30)
@@ -284,8 +270,6 @@ func TestWeightedRowLayoutSquareChildAgainstWrappingContent(t *testing.T) {
 	c.Equal(height, againHeight)
 }
 
-// TestWeightedRowLayoutWithoutChildren verifies that an empty row is harmless: it asks for nothing but its own minimum
-// height and lays nothing out.
 func TestWeightedRowLayoutWithoutChildren(t *testing.T) {
 	c := check.New(t)
 	row, layout := newTestRow(nil, 25)
@@ -297,10 +281,9 @@ func TestWeightedRowLayoutWithoutChildren(t *testing.T) {
 	c.Equal(0, len(row.Children()))
 }
 
-// TestWeightedRowLayoutSquareChildFollowsTheHeightItIsGiven verifies that a row placed taller than it asked for -- as
-// one nested in a column beside something taller is, since a column stretches its children to its bottom -- squares its
-// square child at the height it actually has rather than at the height it was measured at, and hands what that leaves
-// to the other child.
+// A row placed taller than it asked for -- as one nested in a column beside something taller is, since a column
+// stretches its children to its bottom -- squares its square child at the height it actually has rather than at the
+// height it was measured at, and hands what that leaves to the other child.
 func TestWeightedRowLayoutSquareChildFollowsTheHeightItIsGiven(t *testing.T) {
 	c := check.New(t)
 	square := newSquareTestPanel(30)
@@ -324,9 +307,9 @@ func TestWeightedRowLayoutSquareChildFollowsTheHeightItIsGiven(t *testing.T) {
 		"at the height it asked for, the row places its children exactly as it measured them")
 }
 
-// TestWeightedRowLayoutNeverReportsLessThanItsChildrenNeed verifies that the height the row reports is never less than
-// what a child asks for at the width the row hands it, however many passes it would take the wrapping to settle, so
-// that nothing is ever clipped: when the passes run out, the square child comes out short of square instead.
+// The height the row reports is never less than what a child asks for at the width the row hands it, however many
+// passes it would take the wrapping to settle, so that nothing is ever clipped: when the passes run out, the square
+// child comes out short of square instead.
 func TestWeightedRowLayoutNeverReportsLessThanItsChildrenNeed(t *testing.T) {
 	c := check.New(t)
 	square := newSizedPanel(0, 10, 10)

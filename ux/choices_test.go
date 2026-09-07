@@ -20,8 +20,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// newChoices builds the "Choices" row an item editor shows for a picker, returning the two
-// popups and the qualifier field it is made of.
+// newChoices builds the "Choices" row an item editor shows for a picker, returning the two popups and the qualifier
+// field it is made of.
 func newChoices(pickerType picker.Type, compare criteria.NumericComparison) (typePopup *unison.PopupMenu[picker.Type], comparisonPopup *unison.PopupMenu[string], field unison.Paneler) {
 	trait := gurps.NewTrait(nil, nil, true)
 	trait.TemplatePicker.Type = pickerType
@@ -32,12 +32,12 @@ func newChoices(pickerType picker.Type, compare criteria.NumericComparison) (typ
 	return addChoices(e, unison.NewPanel(), false)
 }
 
-// TestChoicesOpeningState verifies that a freshly opened editor blanks the picker's comparison popup
-// and qualifier field under exactly the conditions its own selection callback uses. A picker set to Not Applicable is
-// zero, so anything entered for it is dropped when the item is saved; leaving the comparison popup live let the user
-// make a selection that set the comparison, un-blanked the qualifier and marked the item modified, all for edits that
-// could never be kept. In the other direction, a saved picker whose comparison takes no qualifier opened with the
-// qualifier editable, even though every later pass through the callback blanks it.
+// TestChoicesOpeningState verifies that a freshly opened editor blanks the picker's comparison popup and qualifier
+// field under exactly the conditions its own selection callback uses. A picker set to Not Applicable is zero, so
+// anything entered for it is dropped when the item is saved; leaving the comparison popup live let the user make a
+// selection that set the comparison, un-blanked the qualifier and marked the item modified, all for edits that could
+// never be kept. In the other direction, a saved picker whose comparison takes no qualifier opened with the qualifier
+// editable, even though every later pass through the callback blanks it.
 func TestChoicesOpeningState(t *testing.T) {
 	c := check.New(t)
 
@@ -58,11 +58,11 @@ func TestChoicesOpeningState(t *testing.T) {
 	c.True(field.AsPanel().Enabled(), "a comparison that takes a qualifier must offer one")
 }
 
-// TestChoicesFollowTheTypeSelection verifies that choosing a picker type updates the comparison popup
-// and qualifier field, and that returning to Not Applicable blanks them both again. A Not Applicable
-// picker's qualifier data is meaningless and is normalized away (see TemplatePicker.Clone) as soon as the
-// editor stages the data, so putting a fresh picker to use starts with the comparison blank until one is
-// chosen, rather than resurrecting whatever was set before it went out of use.
+// TestChoicesFollowTheTypeSelection verifies that choosing a picker type updates the comparison popup and qualifier
+// field, and that returning to Not Applicable blanks them both again. A Not Applicable picker's qualifier data is
+// meaningless and is normalized away (see TemplatePicker.Clone) as soon as the editor stages the data, so putting a
+// fresh picker to use starts with the comparison blank until one is chosen, rather than resurrecting whatever was set
+// before it went out of use.
 func TestChoicesFollowTheTypeSelection(t *testing.T) {
 	c := check.New(t)
 	typePopup, comparison, field := newChoices(picker.NotApplicable, criteria.EqualsNumber)

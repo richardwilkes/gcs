@@ -22,8 +22,7 @@ import (
 //
 // Standard input comes from the null device and output is appended to logPath, if one is given. Leaving them attached
 // to this process's own streams would keep pipes open that whoever started this is waiting to see closed, and would
-// mean the child's output vanishes exactly when it is most wanted -- an application started from the Finder has no
-// terminal for it to go to.
+// lose the child's output exactly when it is most wanted -- an application started from the Finder has no terminal.
 func spawnDetached(exePath string, args []string, logPath, workingDir string) (err error) {
 	cmd := exec.Command(exePath, args...) //nolint:gosec // A path this package staged or resolved from its own installation
 	detach(cmd)

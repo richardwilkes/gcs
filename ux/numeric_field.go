@@ -27,8 +27,7 @@ type NumericField[T xmath.Integer | xmath.Float] struct {
 	Format        func(T) string
 	// DisplayFormat, if not nil, provides the text to show while the field does not have the keyboard focus. That text
 	// is never parsed back into the value, since it may be a rounded, lossy rendering of it: the moment the field gains
-	// the focus, or is handed new text by SetText, the text is replaced by Format's exact rendering, so that the user
-	// always sees and edits the exact value.
+	// the focus, or is handed new text by SetText, Format's exact rendering replaces it.
 	DisplayFormat      func(T) string
 	extract            func(s string) (T, error)
 	validationTooltip  *unison.Panel
@@ -49,7 +48,7 @@ func NewNumericField[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, target
 }
 
 // NewNumericFieldWithException creates a new field that formats its content and can hold an exceptional value (one
-// outside of the minimum/maximum range.
+// outside of the minimum/maximum range).
 func NewNumericFieldWithException[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue, exception T) *NumericField[T] {
 	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
 	f.exception = exception
@@ -61,8 +60,8 @@ func NewNumericFieldWithException[T xmath.Integer | xmath.Float](targetMgr *Targ
 
 // newUnitsField creates a new field that holds a fixed-point value carrying units, such as a length or a weight. The
 // format and extract functions are expected to render and parse the value in the units the entity is using. Unlike the
-// other numeric fields, keystrokes are not validated by parsing the text as it is typed: the extractor accepts the
-// text once a number has been typed, but not while a units suffix is being typed after it.
+// other numeric fields, keystrokes are not validated as they are typed, since the extractor rejects the text while a
+// units suffix is being typed after the number.
 func newUnitsField[T ~int64](targetMgr *TargetMgr, targetKey, undoTitle string, get func() T, set func(T), format func(T) string, extract func(string) (T, error), minValue, maxValue T, noMinWidth bool) *NumericField[T] {
 	var getPrototypes func(minValue, maxValue T) []T
 	if !noMinWidth {
@@ -96,8 +95,7 @@ func newBaseNumericField[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, ta
 		minValue:      minValue,
 		maxValue:      maxValue,
 	}
-	// Format is rendered through a closure rather than handed over directly, so that a Format installed later is the
-	// one used.
+	// Format is called through a closure rather than handed over directly, so that a Format installed later is used.
 	f.init(f, unison.NewField(), targetMgr, targetKey, undoTitle, get, set, f.mustExtract,
 		func(v T) string { return f.Format(v) })
 	f.RuneTypedCallback = f.runeTyped
@@ -116,10 +114,10 @@ func (f *NumericField[T]) showDisplayText() {
 	f.showingDisplayText = true
 }
 
-// replaceText puts the given text into the field without reporting a modification, so that text which must never be
-// parsed back into the value can be shown. The field state is applied directly, rather than going through SetText, for
-// that reason. Since nothing else will ask for one, a layout is requested when the text actually changes: the field is
-// sized to its text, and the display rendering and the exact text will usually differ in width.
+// replaceText puts the given text into the field without reporting a modification, applying the field state directly
+// rather than going through SetText, so that text which must never be parsed back into the value can be shown. Since
+// nothing else will ask for one, a layout is requested when the text actually changes: the field is sized to its text,
+// and the display rendering and the exact text will usually differ in width.
 func (f *NumericField[T]) replaceText(text string) {
 	state := f.GetFieldState()
 	if state.Text == text {
@@ -134,12 +132,11 @@ func (f *NumericField[T]) replaceText(text string) {
 // showing. This must be called before anything that will parse the field's text or capture it as an undo state, so
 // that the lossy display rendering never becomes the value.
 //
-// The value restored is last, which showDisplayText recorded as it rendered, rather than whatever the model holds
-// at this moment. The two are the same except when the model has been changed behind the field's back and the field is
-// then told its new text -- which is exactly what the Description block's height and weight randomizers do. Rendering
-// the model's new value here would leave the field already holding the text it is about to be given, so the assignment
-// would be a no-op, no modification would be reported, and the randomization would go unrecorded and thus be
-// impossible to undo.
+// The value restored is last, which showDisplayText recorded as it rendered, rather than whatever the model holds at
+// this moment. The two differ only when the model has been changed behind the field's back and the field is then told
+// its new text -- which is exactly what the Description block's height and weight randomizers do. Rendering the model's
+// new value here would leave the field already holding the text it is about to be given, so the assignment would be a
+// no-op, no modification would be reported, and the randomization would go unrecorded and thus be impossible to undo.
 func (f *NumericField[T]) restoreExactText() {
 	if !f.showingDisplayText {
 		return
@@ -238,7 +235,7 @@ func (f *NumericField[T]) runeTyped(ch rune) bool {
 }
 
 func (f *NumericField[T]) setWithoutUndo(state *unison.FieldState, focus bool) {
-	// Whatever is about to show is exact text meant to be parsed: it came from the user, from an undo, or from the
+	// Whatever is about to show is exact text meant to be parsed -- it came from the user, from an undo, or from the
 	// model by way of getData, never from DisplayFormat.
 	f.showingDisplayText = false
 	f.undoableField.setWithoutUndo(state, focus)
@@ -250,8 +247,8 @@ func (f *NumericField[T]) Sync() {
 	if !f.hasFocus && f.DisplayFormat != nil {
 		// The value is to come from the model and the field isn't being edited, so show the display rendering of it
 		// rather than the exact text. No modification can be reported for it, so there is nothing else to do. useGet
-		// is cleared for the same reason getData clears it: a Sync that runs while the field has the focus must
-		// re-parse the field's text rather than fetch the value again.
+		// is cleared for the same reason getData clears it: a fetch made while the field has the focus must re-parse
+		// the field's text rather than fetch the value again.
 		f.useGet = false
 		f.showDisplayText()
 		f.Validate()

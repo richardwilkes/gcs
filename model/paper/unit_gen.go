@@ -100,8 +100,8 @@ func ExtractUnit(str string) Unit {
 
 // ExtractKnownUnit extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractUnit, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
-// is dispatching on the type to detect unknown types.
+// Unlike ExtractUnit, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
+// that is dispatching on the type to detect unknown types.
 func ExtractKnownUnit(str string) (value Unit, known bool) {
 	for _, enum := range Units {
 		if strings.EqualFold(enum.Key(), str) {

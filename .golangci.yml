@@ -55,8 +55,7 @@ linters:
     goconst:
       min-len: 3
       min-occurrences: 3
-      # Repeated literals are more readable than named constants in tests, where seeing the actual value at the point of
-      # use is the whole point.
+      # Repeated literals read better than named constants in tests, where seeing the actual value is the whole point.
       ignore-tests: true
     gocritic:
       disabled-checks:

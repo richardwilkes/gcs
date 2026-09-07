@@ -30,15 +30,14 @@ import (
 	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
-// findFeatureTypePopup returns the first feature-type switcher popup found anywhere beneath the given panel, or nil if
-// there is none. It is used by the tests to drive a type change the same way a user's popup selection would.
+// findFeatureTypePopup returns the first feature-type switcher popup found anywhere beneath the given panel, which is
+// what the tests drive a type change through.
 func findFeatureTypePopup(p *unison.Panel) *unison.PopupMenu[feature.Type] {
 	popup, _ := firstPanelOfType[*unison.PopupMenu[feature.Type]](p)
 	return popup
 }
 
-// switchFeatureType finds the type switcher inside the given feature row and invokes its callback to switch to newType,
-// mirroring what happens when the user picks a different entry from the popup.
+// switchFeatureType invokes the type switcher inside the given feature row the way picking newType from the popup does.
 func switchFeatureType(c check.Checker, row *unison.Panel, types []feature.Type, newType feature.Type) {
 	popup := findFeatureTypePopup(row)
 	c.NotNil(popup, "expected a feature-type switcher in the row")
@@ -47,10 +46,9 @@ func switchFeatureType(c check.Checker, row *unison.Panel, types []feature.Type,
 	popup.ChoiceMadeCallback(popup, index, newType)
 }
 
-// TestFeaturesPanelSwitchAwayFromSelectorOverride reproduces the bug where switching a feature's type away from the
-// SelectorOverride ("Set the value of") entry deleted the entire Features section instead of just replacing that one
-// row. The SelectorOverride row hosts its type switcher directly on the base row panel, so the old parent.Parent()
-// removal walked all the way up to the features panel and removed everything.
+// Reproduces the bug where switching a feature's type away from the SelectorOverride ("Set the value of") entry deleted
+// the entire Features section instead of just replacing that one row. The SelectorOverride row hosts its type switcher
+// directly on the base row panel, so the old parent.Parent() removal walked all the way up to the features panel.
 func TestFeaturesPanelSwitchAwayFromSelectorOverride(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -61,21 +59,18 @@ func TestFeaturesPanelSwitchAwayFromSelectorOverride(t *testing.T) {
 	features := gurps.Features{override}
 
 	panel := newFeaturesPanel(entity, owner, &features, false)
-	// Give the features panel a parent so that an erroneous RemoveFromParent() on the panel itself would be observable
-	// as the whole section vanishing, exactly as it does in a real editor.
+	// Give the features panel a parent so an erroneous RemoveFromParent() on the panel itself shows up as the whole
+	// section vanishing, exactly as it does in a real editor.
 	container := unison.NewPanel()
 	container.AddChild(panel)
 
-	// Sanity check: the panel holds the add button plus the single SelectorOverride row.
 	c.Equal(2, len(panel.Children()), "expected add button + one feature row before the switch")
 
 	row := panel.Children()[1]
 	switchFeatureType(c, row, panel.featureTypesList(), feature.WeaponBonus)
 
-	// The features panel must still be attached to its parent (the section did not vanish).
 	c.True(slices.Contains(container.Children(), panel.AsPanel()), "the features section must not be removed")
 
-	// The single feature is now a weapon damage bonus, and the panel still shows the add button plus one row.
 	c.Equal(1, len(features), "there must still be exactly one feature")
 	_, ok := features[0].(*gurps.WeaponBonus)
 	c.True(ok, "the feature must have been replaced with a WeaponBonus")
@@ -107,8 +102,8 @@ func TestFeaturesPanelSwitchToSelectorOverride(t *testing.T) {
 	c.Equal(2, len(panel.Children()), "expected add button + one feature row after the switch")
 }
 
-// TestFeaturesPanelSwitchMiddleFeature guards the index-based removal: with several features present, switching the
-// type of one in the middle must replace only that row and leave the others (and their order) untouched.
+// Guards the index-based removal: with several features present, switching the type of one in the middle must replace
+// only that row and leave the others, and their order, untouched.
 func TestFeaturesPanelSwitchMiddleFeature(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -139,9 +134,8 @@ func TestFeaturesPanelSwitchMiddleFeature(t *testing.T) {
 	c.Equal(4, len(panel.Children()), "expected add button + three feature rows after the switch")
 }
 
-// switchableCheckBoxes returns every "switchable" checkbox found anywhere beneath the given panel. Like
-// findFeatureTypePopup, it lets the tests reach a widget whose position within the row varies from one feature type to
-// the next, and returning all of them rather than just the first lets a test insist that a row has exactly one.
+// switchableCheckBoxes returns every "switchable" checkbox found anywhere beneath the given panel, since the box's
+// position within a row varies from one feature type to the next and a test needs to insist that a row has exactly one.
 func switchableCheckBoxes(p *unison.Panel) []*CheckBox {
 	return checkBoxesTitled(p, i18n.Text("switchable"))
 }
@@ -157,15 +151,13 @@ func findSwitchableCheckBox(c check.Checker, p *unison.Panel) *CheckBox {
 	return boxes[0]
 }
 
-// clickCheckBox puts the checkbox into the given state and runs its click callback, mirroring what a user's click on it
-// does.
+// clickCheckBox puts the checkbox into the given state and runs its click callback, as a user's click does.
 func clickCheckBox(box *CheckBox, on bool) {
 	box.State = uncheck.FromBool(on)
 	box.ClickCallback()
 }
 
-// TestFeaturesPanelSwitchableCheckBoxTogglesTheFlag verifies that the "switchable" checkbox on a feature row is wired
-// to the feature's own flag in both directions.
+// The "switchable" checkbox on a feature row must be wired to the feature's own flag in both directions.
 func TestFeaturesPanelSwitchableCheckBoxTogglesTheFlag(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -188,8 +180,7 @@ func TestFeaturesPanelSwitchableCheckBoxTogglesTheFlag(t *testing.T) {
 	c.False(bonus.IsSwitchable(), "clearing the box must mark the feature as not switchable")
 }
 
-// TestFeaturesPanelSwitchableCheckBoxReflectsExistingFlag verifies that a feature loaded as switchable shows a checked
-// box rather than an empty one.
+// A feature loaded as switchable must show a checked box rather than an empty one.
 func TestFeaturesPanelSwitchableCheckBoxReflectsExistingFlag(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -206,8 +197,8 @@ func TestFeaturesPanelSwitchableCheckBoxReflectsExistingFlag(t *testing.T) {
 	c.Equal(uncheck.On, box.State, "a switchable feature must show a checked box")
 }
 
-// TestFeaturesPanelSwitchPreservesSwitchable verifies that changing a feature's type carries the switchable flag over
-// to the replacement feature, so that a user retyping a feature doesn't silently lose the switch that governs it.
+// Changing a feature's type must carry the switchable flag over to the replacement, so a user retyping a feature
+// doesn't silently lose the switch that governs it.
 func TestFeaturesPanelSwitchPreservesSwitchable(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -231,9 +222,8 @@ func TestFeaturesPanelSwitchPreservesSwitchable(t *testing.T) {
 	c.Equal(uncheck.On, box.State, "the replacement row's checkbox must show the preserved flag")
 }
 
-// TestFeaturesPanelUnknownFeatureHasNoSwitchableCheckBox verifies that a feature this version of GCS doesn't understand
-// offers no switchable checkbox. Its raw data is preserved verbatim, so there is nothing here that could be switched
-// and any such flag in the data must not be second-guessed.
+// A feature this version of GCS doesn't understand offers no switchable checkbox: its raw data is preserved verbatim,
+// so any such flag in the data must not be second-guessed.
 func TestFeaturesPanelUnknownFeatureHasNoSwitchableCheckBox(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -248,10 +238,10 @@ func TestFeaturesPanelUnknownFeatureHasNoSwitchableCheckBox(t *testing.T) {
 	c.False(unknown.IsSwitchable(), "an unknown feature is never switchable")
 }
 
-// TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast guards the layout of the weapon "switch" row, the one row whose
-// controls live in a nested two-row wrapper. The switchable checkbox belongs at the end of the wrapper's second row,
-// right after the last control, as it is on every other row. As a sibling of the wrapper instead, it was top-aligned
-// against the wrapper's two rows and pinned to the far right edge, since the wrapper's column takes up all the slack.
+// Guards the layout of the weapon "switch" row, the one row whose controls live in a nested two-row wrapper. The
+// switchable checkbox belongs at the end of the wrapper's second row, as it is on every other row. As a sibling of the
+// wrapper instead, it was top-aligned against the wrapper's two rows and pinned to the far right edge, since the
+// wrapper's column takes up all the slack.
 func TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -284,7 +274,7 @@ func TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast(t *testing.T) {
 	c.True(ok, "the type switcher must carry flex layout data")
 	c.Equal(layout.Columns, data.HSpan, "the type switcher must span the whole first row")
 
-	// The wrapper is the only thing on the line, so the line's column count must be 1: anything else beside the wrapper
+	// The wrapper is the only thing on the line, so the line's column count must be 1: anything beside the wrapper
 	// would be shoved aside by the column the wrapper's HGrab expands.
 	line := wrapper.Parent()
 	c.NotNil(line, "the wrapper must be attached to the line panel")
@@ -294,10 +284,9 @@ func TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast(t *testing.T) {
 	c.Equal(len(line.Children()), lineLayout.Columns, "the line's column count must match its child count")
 }
 
-// TestFeaturesPanelCreatesEverySelectableType verifies that the editor can create a feature for every type the user
-// can pick, that the result carries that type and, for bonuses, has its owner set. In particular, the weapon bonuses
-// share one constructor keyed by type, so a weapon type missing from feature.Type.IsWeaponBonus would fall through to
-// the "unknown feature type" arm and yield nil here.
+// The editor must create a feature for every type the user can pick, carrying that type and, for bonuses, its owner.
+// The weapon bonuses share one constructor keyed by type, so a weapon type missing from feature.Type.IsWeaponBonus
+// would fall through to the "unknown feature type" arm and yield nil here.
 func TestFeaturesPanelCreatesEverySelectableType(t *testing.T) {
 	entity := gurps.NewEntity()
 	trait := gurps.NewTrait(entity, nil, false)
@@ -321,9 +310,8 @@ func TestFeaturesPanelCreatesEverySelectableType(t *testing.T) {
 	}
 }
 
-// TestFeaturesPanelSwitchableCheckBoxOnEveryRowType verifies that every feature type that builds its own first row --
-// rather than going through the shared leveled-amount line -- gets exactly one switchable checkbox, and that the
-// checkbox is wired to that feature.
+// Every feature type that builds its own first row -- rather than going through the shared leveled-amount line -- gets
+// exactly one switchable checkbox, wired to that feature.
 func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
 	entity := gurps.NewEntity()
 	trait := gurps.NewTrait(entity, nil, false)
@@ -381,8 +369,8 @@ func findPopups[T comparable](p *unison.Panel) []*unison.PopupMenu[T] {
 }
 
 // checkSelectionCriteriaRow drives the selection-type popup of a feature row built on addSelectionCriteriaRow and
-// verifies that the criteria rows follow it: the "this item" choice blanks the name criteria and leaves the row with
-// thisRows criteria rows, while the other choice enables the name criteria and leaves it with otherRows of them.
+// verifies that the criteria rows follow it: the "this item" choice blanks the name criteria and leaves thisRows
+// criteria rows, while the other choice enables the name criteria and leaves otherRows of them.
 func checkSelectionCriteriaRow[E comparable](t *testing.T, f gurps.Feature, selection *E, this E, thisRows int, other E, otherRows int) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -431,54 +419,48 @@ func nameCriteriaField(popup *unison.PopupMenu[string]) *unison.Panel {
 	return popup.Parent().Children()[1]
 }
 
-// TestFeaturesPanelEquipmentMaxUsesSelectionRows verifies the equipment maximum uses row rebuilds its criteria rows
-// as the selection type changes: "this equipment" needs only the blanked name row, while "equipment with name" adds
-// the tag row.
+// "this equipment" needs only the blanked name row, while "equipment with name" adds the tag row.
 func TestFeaturesPanelEquipmentMaxUsesSelectionRows(t *testing.T) {
 	f := gurps.NewEquipmentMaxUsesBonus()
 	checkSelectionCriteriaRow(t, f, &f.SelectionType, equipmentsel.ThisEquipment, 1, equipmentsel.EquipmentWithName, 2)
 }
 
-// TestFeaturesPanelTraitMaxLevelSelectionRows verifies the trait maximum level row rebuilds its criteria rows as the
-// selection type changes: "this trait" needs only the blanked name row, while "trait with name" adds the tag row.
+// "this trait" needs only the blanked name row, while "trait with name" adds the tag row.
 func TestFeaturesPanelTraitMaxLevelSelectionRows(t *testing.T) {
 	f := gurps.NewTraitMaxLevelBonus()
 	checkSelectionCriteriaRow(t, f, &f.SelectionType, traitsel.ThisTrait, 1, traitsel.TraitWithName, 2)
 }
 
-// TestFeaturesPanelSkillBonusSelectionRows verifies the skill bonus row rebuilds its criteria rows as the selection
-// type changes: "this weapon" has the blanked name row plus the usage row, while "skills with name" has the name,
-// specialization and tag rows.
+// "this weapon" has the blanked name row plus the usage row, while "skills with name" has the name, specialization and
+// tag rows.
 func TestFeaturesPanelSkillBonusSelectionRows(t *testing.T) {
 	f := gurps.NewSkillBonus()
 	checkSelectionCriteriaRow(t, f, &f.SelectionType, skillsel.ThisWeapon, 2, skillsel.Name, 3)
 }
 
-// TestFeaturesPanelWeaponBonusSelectionRows verifies the weapon bonus row rebuilds its criteria rows as the selection
-// type changes: "this weapon" has the blanked name row plus the usage row, while "weapons with required skill" has the
-// name, specialization, usage, tag and relative skill level rows.
+// "this weapon" has the blanked name row plus the usage row, while "weapons with required skill" has the name,
+// specialization, usage, tag and relative skill level rows.
 func TestFeaturesPanelWeaponBonusSelectionRows(t *testing.T) {
 	f := gurps.NewWeaponBonus(feature.WeaponBonus)
 	checkSelectionCriteriaRow(t, f, &f.SelectionType, wsel.ThisWeapon, 2, wsel.WithRequiredSkill, 5)
 }
 
-// TestFeaturesPanelSpellBonusSelectionRows verifies the spell bonus row keeps its name and tag rows across match type
-// changes, blanking the name row only for "all colleges".
+// The spell bonus row keeps its name and tag rows across match type changes, blanking the name row only for "all
+// colleges".
 func TestFeaturesPanelSpellBonusSelectionRows(t *testing.T) {
 	f := gurps.NewSpellBonus()
 	checkSelectionCriteriaRow(t, f, &f.SpellMatchType, spellmatch.AllColleges, 2, spellmatch.Name, 2)
 }
 
-// TestFeaturesPanelSpellPointBonusSelectionRows verifies the spell point bonus row keeps its name and tag rows across
-// match type changes, blanking the name row only for "all colleges".
+// The spell point bonus row keeps its name and tag rows across match type changes, blanking the name row only for "all
+// colleges".
 func TestFeaturesPanelSpellPointBonusSelectionRows(t *testing.T) {
 	f := gurps.NewSpellPointBonus()
 	checkSelectionCriteriaRow(t, f, &f.SpellMatchType, spellmatch.AllColleges, 2, spellmatch.Name, 2)
 }
 
-// TestFeaturesPanelSelectionRowBlanksNameFieldForAnyComparison verifies that the name qualifier field is blanked
-// while the name comparison accepts anything, even though the selection type calls for a name, and that the
-// comparison popup itself stays enabled so the user can pick a comparison that needs a qualifier.
+// The name qualifier field is blanked while the name comparison accepts anything, even though the selection type calls
+// for a name, while the comparison popup stays enabled so the user can pick a comparison that needs a qualifier.
 func TestFeaturesPanelSelectionRowBlanksNameFieldForAnyComparison(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()

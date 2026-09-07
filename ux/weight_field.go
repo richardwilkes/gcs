@@ -14,7 +14,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 )
 
-// WeightField is field that holds a weight value.
+// WeightField is a field that holds a weight value.
 type WeightField = NumericField[fxp.Weight]
 
 // NewWeightField creates a new field that holds a weight value, shown in the entity's default weight units.

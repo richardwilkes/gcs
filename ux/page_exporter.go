@@ -158,9 +158,8 @@ func newPageExporter(provider gurps.PageInfoProvider) *pageExporter {
 	p.pages = append(p.pages, page)
 	// Each band of the layout is placed on its own, one page at a time. A band that doesn't fit in what is left of the
 	// page it starts on is built again for the next page, this time holding only the parts of it that have yet to be
-	// placed, and the band after it picks up wherever the one before it left off. The new page is only brought into
-	// being once there is something to put on it, so that a band that ends exactly at the bottom of a page can't leave
-	// a blank one behind it.
+	// placed. The new page is only brought into being once there is something to put on it, so that a band ending
+	// exactly at the bottom of a page can't leave a blank one behind it.
 	needNewPage := false
 	for i, node := range gurps.SheetSettingsFor(p.entity).Layout.Root.Children {
 		startAt := make(map[string]int)
@@ -387,11 +386,10 @@ func newBandPlacer(startAt map[string]int) *bandPlacer {
 // itself and so must place something rather than run off the end of the pages: a list then takes its first row and a
 // block that isn't a list is placed anyway, with whatever runs past the bottom of the page being lost.
 //
-// A minimum height is a floor the panel stands at however little of it is placed, so it is checked against avail
-// before anything else is: a panel whose floor is deeper than what the page has left can't be placed here without
-// running off the bottom of it, however few rows it would take, and so the whole of it is left for the next page,
-// exactly as a block that can't be split is. A panel that has the page to itself is placed anyway, since no page has
-// more room to offer it than this one.
+// A minimum height is a floor the panel stands at however little of it is placed, so it is checked against avail first:
+// a panel whose floor is deeper than what the page has left would run off the bottom of it however few rows it took, so
+// the whole of it is left for the next page, exactly as a block that can't be split is. A panel that has the page to
+// itself is placed anyway, since no page has more room to offer it than this one.
 func (b *bandPlacer) placeBand(panel *unison.Panel, avail float32, mayOverflow bool) (used float32, done bool) {
 	minHeight := panelMinHeight(panel)
 	if minHeight > avail && !mayOverflow {

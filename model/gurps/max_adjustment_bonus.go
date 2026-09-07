@@ -63,8 +63,8 @@ func (d *maxAdjustmentBonusData[S]) adjustmentData() *maxAdjustmentBonusData[S] 
 	return d
 }
 
-// fillWithNameableKeysWhen extracts the nameable keys from the name and tag criteria when the selection is the one
-// that consults them.
+// fillWithNameableKeysWhen extracts the nameable keys from the name and tag criteria when the selection is withName,
+// the only one that consults them.
 func (d *maxAdjustmentBonusData[S]) fillWithNameableKeysWhen(m, existing map[string]string, withName S) {
 	if d.SelectionType == withName {
 		nameable.Extract(
@@ -94,12 +94,10 @@ type maxAdjustment struct {
 	have       bool
 }
 
-// newMaxAdjustment returns an accumulator with nothing folded in yet.
 func newMaxAdjustment() maxAdjustment {
 	return maxAdjustment{multiplier: fxp.One}
 }
 
-// add folds one bonus in.
 func (m *maxAdjustment) add(bonus *MaxUsesModAmount) {
 	m.have = true
 	amount := bonus.AdjustedAmount()

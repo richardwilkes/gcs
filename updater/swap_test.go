@@ -19,7 +19,7 @@ import (
 )
 
 // swapFixture lays out an installation, a staging directory holding the replacement, and the backup path the swap will
-// use, all within one temporary directory so that the renames behave as they do in practice.
+// use, all within one temporary directory so the renames behave as they do in practice.
 type swapFixture struct {
 	target  string
 	payload string
@@ -63,8 +63,8 @@ func bundleMarker(t *testing.T, path string) string {
 	return read(t, filepath.Join(path, "Contents", "MacOS", CmdName))
 }
 
-// TestSwapReplacesAFile verifies the ordinary Linux and Windows case: the installed executable becomes the downloaded
-// one, and the previous version is left where the record says it will be.
+// The ordinary Linux and Windows case: the installed executable becomes the downloaded one, and the previous version
+// is left where the record says it will be.
 func TestSwapReplacesAFile(t *testing.T) {
 	c := check.New(t)
 	f := newSwapFixture(t, false)
@@ -75,8 +75,8 @@ func TestSwapReplacesAFile(t *testing.T) {
 	c.Equal("installed", read(t, f.backup), "the previous version must be kept until the new one has started")
 }
 
-// TestSwapReplacesABundle verifies the macOS case, where what is replaced is a directory tree. A plain rename cannot
-// replace a non-empty directory, so this is the case that would fail if the swap were written naively.
+// The macOS case, where what is replaced is a directory tree. A plain rename cannot replace a non-empty directory, so
+// this is the case that would fail if the swap were written naively.
 func TestSwapReplacesABundle(t *testing.T) {
 	c := check.New(t)
 	f := newSwapFixture(t, true)
@@ -88,9 +88,8 @@ func TestSwapReplacesABundle(t *testing.T) {
 	c.True(exists(filepath.Join(f.target, "Contents", "Info.plist")), "the whole bundle must move, not just its parts")
 }
 
-// TestSwapReplacesABundleWithoutTheAtomicExchange verifies the same result on a filesystem that does not implement the
-// atomic exchange, where the swap has to fall back to moving the installation aside first. This is the only path on
-// Linux and Windows, and a real possibility on macOS.
+// The same result on a filesystem that does not implement the atomic exchange, where the swap has to fall back to
+// moving the installation aside first. This is the only path on Linux and Windows, and a real possibility on macOS.
 func TestSwapReplacesABundleWithoutTheAtomicExchange(t *testing.T) {
 	c := check.New(t)
 	useRenameFallback(t)
@@ -102,7 +101,7 @@ func TestSwapReplacesABundleWithoutTheAtomicExchange(t *testing.T) {
 	c.Equal("installed", bundleMarker(t, f.backup))
 }
 
-// useRenameFallback forces the two-rename form, which is what runs on Linux and Windows always, and on macOS whenever
+// useRenameFallback forces the two-rename form, which is what always runs on Linux and Windows, and on macOS whenever
 // the filesystem does not implement the atomic exchange. Without this the macOS run would take the exchange and the
 // rollback below would never be exercised anywhere.
 func useRenameFallback(t *testing.T) {
@@ -112,9 +111,8 @@ func useRenameFallback(t *testing.T) {
 	t.Cleanup(func() { exchangeFunc = realExchange })
 }
 
-// TestSwapRestoresTheInstallationWhenTheSecondRenameFails is the case that decides whether a failed update leaves the
-// user with a working application or with nothing at all. It is unreachable without forcing the failure, and it is
-// exactly the situation where being wrong is unrecoverable.
+// The case that decides whether a failed update leaves the user with a working application or with nothing at all. It
+// is unreachable without forcing the failure, and it is exactly the situation where being wrong is unrecoverable.
 func TestSwapRestoresTheInstallationWhenTheSecondRenameFails(t *testing.T) {
 	c := check.New(t)
 	useRenameFallback(t)
@@ -138,8 +136,8 @@ func TestSwapRestoresTheInstallationWhenTheSecondRenameFails(t *testing.T) {
 	c.Equal("replacement", read(t, f.payload), "the staged copy is left for the sweep to clear")
 }
 
-// TestSwapLeavesEverythingAloneWhenTheFirstRenameFails verifies that a swap which cannot even begin changes nothing.
-// This is what happens when the installation directory turns out not to be writable after all.
+// A swap that cannot even begin must change nothing. This is what happens when the installation directory turns out
+// not to be writable after all.
 func TestSwapLeavesEverythingAloneWhenTheFirstRenameFails(t *testing.T) {
 	c := check.New(t)
 	useRenameFallback(t)
@@ -162,8 +160,8 @@ func TestSwapLeavesEverythingAloneWhenTheFirstRenameFails(t *testing.T) {
 	c.False(exists(f.backup), "nothing moved, so nothing should have been backed up")
 }
 
-// TestSwapRefusesBadArguments verifies the checks made before anything moves. Each of these would otherwise turn into a
-// partly-completed swap, which is far harder to recover from than a refusal.
+// The checks made before anything moves. Each of these would otherwise turn into a partly-completed swap, which is far
+// harder to recover from than a refusal.
 func TestSwapRefusesBadArguments(t *testing.T) {
 	c := check.New(t)
 
@@ -185,9 +183,9 @@ func TestSwapRefusesBadArguments(t *testing.T) {
 	c.HasError(swap(f3.target, f3.payload, f3.backup), "a missing installation must be refused")
 }
 
-// TestSwapRefusesToOverwriteAnExistingBackup verifies that the installation is never renamed over something already
-// sitting at the backup path. On most systems that rename would destroy the existing file silently, and if it happened
-// to be a backup from an earlier update, the user's only other copy of the application would go with it.
+// The installation must never be renamed over something already sitting at the backup path. On most systems that
+// rename would destroy the existing file silently, and if it happened to be a backup from an earlier update, the
+// user's only other copy of the application would go with it.
 func TestSwapRefusesToOverwriteAnExistingBackup(t *testing.T) {
 	c := check.New(t)
 	f := newSwapFixture(t, false)
@@ -198,8 +196,8 @@ func TestSwapRefusesToOverwriteAnExistingBackup(t *testing.T) {
 	c.Equal("installed", read(t, f.target), "a refused swap must change nothing")
 }
 
-// TestFreeBackupPathAvoidsWhatIsAlreadyThere verifies that the name chosen for the displaced installation is one
-// nothing occupies, which is what keeps the refusal above from being reachable in practice.
+// The name chosen for the displaced installation must be one nothing occupies, which is what keeps the refusal above
+// from being reachable in practice.
 func TestFreeBackupPathAvoidsWhatIsAlreadyThere(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -214,9 +212,8 @@ func TestFreeBackupPathAvoidsWhatIsAlreadyThere(t *testing.T) {
 	c.Equal(dir, filepath.Dir(second), "the backup must still be a sibling of what it replaces")
 }
 
-// TestSwapRefusesAMismatchedPayload verifies that a bundle cannot replace a bare executable, or the reverse. Reaching
-// that point would mean something upstream resolved the wrong thing, and completing the swap would install something
-// the system cannot run.
+// A bundle must not replace a bare executable, or the reverse. Reaching that point would mean something upstream
+// resolved the wrong thing, and completing the swap would install something the system cannot run.
 func TestSwapRefusesAMismatchedPayload(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

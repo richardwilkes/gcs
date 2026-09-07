@@ -52,9 +52,9 @@ jobs:
           brew untap aws/tap azure/bicep || true
           brew install create-dmg
 
-      # The tag (v1.2.3 -> 1.2.3) drives the version on tag pushes and a manual run may supply one, but one or the other
-      # is required: `build.sh -d` refuses to build a distribution without GCS_RELEASE, so a run with no version to use
-      # is stopped here, in seconds, rather than after every runner has set up its toolchain.
+      # A manual run's input wins; otherwise the tag (v1.2.3 -> 1.2.3) drives the version. One or the other is required:
+      # `build.sh -d` refuses to build a distribution without GCS_RELEASE, so a run with no version to use is stopped
+      # here, in seconds, rather than after every runner has set up its toolchain.
       - name: Determine version
         id: version
         # The dispatch input arrives through an env var rather than a `${{ }}` interpolation: expression substitution

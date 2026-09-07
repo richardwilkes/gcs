@@ -36,9 +36,9 @@ type fileLoadable interface {
 }
 
 // fileBackedPanel is the root panel of a dockable that shows a file. It holds the path the content came from, or will
-// be saved to, and, for the dockables whose content can be edited, the hash of that content as of the last load or
-// save and whether the next save must first ask where to put it. It provides the FileBackedDockable, KeyedDockable and
-// unison.TabCloser methods those dockables share, so that each of them only has to define the ones it does differently.
+// be saved to, and, for editable content, the hash of that content as of the last load or save. It provides the
+// FileBackedDockable, KeyedDockable and unison.TabCloser methods those dockables share, so each only has to define the
+// ones it does differently.
 //
 // The unison.Panel lives inside it rather than beside it in the dockable: the panel has a Tooltip field and a String
 // method, and if the two were embedded side by side, the Tooltip and String methods here would be ambiguous with them

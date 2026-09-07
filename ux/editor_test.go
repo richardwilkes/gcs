@@ -22,8 +22,8 @@ import (
 )
 
 // newEditorForTrait returns an editor holding the two copies of a trait's edit data that displayEditor would give it,
-// without building any of the editor's UI. The trait belongs to an entity and carries weapons and a script-bearing
-// modifier, so the derived values both copies would otherwise publish come from running the scripts in the data.
+// without building any of the editor's UI. The trait carries weapons and a script-bearing modifier, so the derived
+// values both copies would otherwise publish come from running the scripts in the data.
 func newEditorForTrait() *editor[*gurps.Trait, *gurps.TraitEditData] {
 	entity := gurps.NewEntity()
 	trait := gurps.NewTrait(entity, nil, false)
@@ -45,11 +45,11 @@ func newEditorForTrait() *editor[*gurps.Trait, *gurps.TraitEditData] {
 	return e
 }
 
-// TestEditorIsModifiedFollowsTheDataAlone verifies that an editor reports unsaved changes when, and only when, its data
-// has actually been edited. The two copies it compares are separate clones with separate script caches, and the derived
-// values used to be part of the comparison: a script that exceeded the permitted per-script execution time while one
-// copy was being marshaled but not the other made an untouched editor enable Apply and Cancel and prompt to save on the
-// way out, purely because the machine had been busy for a moment.
+// An editor must report unsaved changes when, and only when, its data has actually been edited. The two copies it
+// compares are separate clones with separate script caches, and the derived values used to be part of the comparison: a
+// script that exceeded the permitted per-script execution time while one copy was being marshaled but not the other
+// made an untouched editor enable Apply and Cancel and prompt to save on the way out, purely because the machine had
+// been busy for a moment.
 func TestEditorIsModifiedFollowsTheDataAlone(t *testing.T) {
 	c := check.New(t)
 	e := newEditorForTrait()
@@ -63,8 +63,8 @@ func TestEditorIsModifiedFollowsTheDataAlone(t *testing.T) {
 }
 
 // buildEditorContent fills in the content panel that displayEditor would hand to the given init function, without any
-// of the docking machinery that needs a window. It returns both the editor and its content, so that a test can check
-// what a widget in the content does to the editor's copy of the data.
+// of the docking machinery that needs a window. It returns both the editor and its content, so a test can check what a
+// widget in the content does to the editor's copy of the data.
 func buildEditorContent[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, target N,
 	initContent func(*editor[N, D], *unison.Panel) func(),
 ) (*editor[N, D], *unison.Panel) {
@@ -98,8 +98,7 @@ func checkBoxesTitled(p *unison.Panel, title string) []*CheckBox {
 	return boxes
 }
 
-// findCheckBoxTitled returns the first checkbox bearing the given title found anywhere beneath the given panel, or nil
-// if there is none.
+// findCheckBoxTitled returns the first checkbox bearing the given title found anywhere beneath the given panel.
 func findCheckBoxTitled(p *unison.Panel, title string) *CheckBox {
 	if boxes := checkBoxesTitled(p, title); len(boxes) != 0 {
 		return boxes[0]
@@ -107,15 +106,14 @@ func findCheckBoxTitled(p *unison.Panel, title string) *CheckBox {
 	return nil
 }
 
-// findFeaturesPanel returns the first features panel found anywhere beneath the given panel, or nil if there is none.
+// findFeaturesPanel returns the first features panel found anywhere beneath the given panel.
 func findFeaturesPanel(p *unison.Panel) *featuresPanel {
 	panel, _ := firstPanelOfType[*featuresPanel](p)
 	return panel
 }
 
-// TestTraitEditorHasSwitchedOnCheckBox verifies that both container and non-container traits offer the "Switched On"
-// checkbox, since a container's modifiers can hold switchable features even though the container itself has no
-// features of its own, and that the checkbox is wired to the editor's copy of the data.
+// Both container and non-container traits offer the "Switched On" checkbox, since a container's modifiers can hold
+// switchable features even though the container itself has none of its own.
 func TestTraitEditorHasSwitchedOnCheckBox(t *testing.T) {
 	for _, isContainer := range []bool{false, true} {
 		name := "trait"
@@ -141,10 +139,9 @@ func TestTraitEditorHasSwitchedOnCheckBox(t *testing.T) {
 	}
 }
 
-// TestEquipmentEditorHasSwitchedOnCheckBox verifies that both container and non-container equipment offer the
-// "Switched On" checkbox -- a container holds features of its own as well as modifiers that can contribute switchable
-// ones -- that the checkbox is wired to the editor's copy of the data, and that it sits with the editor's other
-// checkbox rather than being stranded in the middle of the numeric fields.
+// Both container and non-container equipment offer the "Switched On" checkbox -- a container holds features of its own
+// as well as modifiers that can contribute switchable ones -- and it must sit with the editor's other checkbox rather
+// than being stranded in the middle of the numeric fields.
 func TestEquipmentEditorHasSwitchedOnCheckBox(t *testing.T) {
 	for _, isContainer := range []bool{false, true} {
 		name := "equipment"
@@ -179,9 +176,8 @@ func TestEquipmentEditorHasSwitchedOnCheckBox(t *testing.T) {
 	}
 }
 
-// TestSpellEditorHasFeaturesPanelAndSwitch verifies that a non-container spell can now be given features, along with
-// the switch that governs the switchable ones, and that a spell container -- which has no features of its own -- gets
-// neither.
+// A non-container spell can be given features, along with the switch that governs the switchable ones; a spell
+// container, which has no features of its own, gets neither.
 func TestSpellEditorHasFeaturesPanelAndSwitch(t *testing.T) {
 	t.Run("spell", func(t *testing.T) {
 		c := check.New(t)
@@ -207,8 +203,7 @@ func TestSpellEditorHasFeaturesPanelAndSwitch(t *testing.T) {
 	})
 }
 
-// TestSkillEditorSwitchedOnCheckBoxOnlyForNonContainers verifies that only a skill that can hold features offers the
-// switch.
+// Only a skill that can hold features offers the switch.
 func TestSkillEditorSwitchedOnCheckBoxOnlyForNonContainers(t *testing.T) {
 	t.Run("skill", func(t *testing.T) {
 		c := check.New(t)
@@ -232,8 +227,7 @@ func TestSkillEditorSwitchedOnCheckBoxOnlyForNonContainers(t *testing.T) {
 	})
 }
 
-// scrollRecordingPanel is a panel that stands in for a scroll area above a table in a headless test, recording the
-// rects it is asked to bring into view.
+// scrollRecordingPanel stands in for a scroll area above a table, recording the rects it is asked to bring into view.
 type scrollRecordingPanel struct {
 	unison.Panel
 	rects []geom.Rect
@@ -249,7 +243,7 @@ func newScrollRecordingPanel() *scrollRecordingPanel {
 	return p
 }
 
-// focusRecordingPanel is a panel that records whether it was asked to take the focus without scrolling.
+// focusRecordingPanel records whether it was asked to take the focus without scrolling.
 type focusRecordingPanel struct {
 	unison.Panel
 	withoutScroll int
@@ -257,10 +251,8 @@ type focusRecordingPanel struct {
 
 func (p *focusRecordingPanel) RequestFocusWithoutScroll() { p.withoutScroll++ }
 
-// TestRestoreFocusSkipsTableScrolling verifies that giving the focus back to a table after an editor closes does not go
-// through the table's default focus handling, which scrolls the whole table into view and so moved the sheet even when
-// the edited row was already on screen. Every table instantiation provides the scroll-free focus request, and
-// restoreFocus must use it when it is there.
+// Giving the focus back to a table after an editor closes must not go through the table's default focus handling, which
+// scrolls the whole table into view and so moved the sheet even when the edited row was already on screen.
 func TestRestoreFocusSkipsTableScrolling(t *testing.T) {
 	c := check.New(t)
 	var _ focusWithoutScroller = (*unison.Table[*Node[*gurps.Trait]])(nil)
@@ -275,9 +267,6 @@ func TestRestoreFocusSkipsTableScrolling(t *testing.T) {
 	restoreFocus(plain) // No window, so this must simply do nothing rather than panic.
 }
 
-// TestRevealRowForDataScrollsOnlyTheEditedRow verifies that, after an editor closes, only the row holding the edited
-// item is requested to be scrolled into view, not the whole table, and that nothing is requested when the table does
-// not display the item.
 func TestRevealRowForDataScrollsOnlyTheEditedRow(t *testing.T) {
 	c := check.New(t)
 	scroller := newScrollRecordingPanel()

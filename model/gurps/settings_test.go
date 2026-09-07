@@ -33,8 +33,8 @@ func countErrorLogging(t *testing.T) *atomic.Int32 {
 	return &count
 }
 
-// TestLoadSettingsOrDefaultsWithMissingFile verifies that the normal first-run case -- no settings file at all -- yields
-// factory defaults without logging an error or leaving a stray backup behind.
+// TestLoadSettingsOrDefaultsWithMissingFile verifies that the normal first-run case -- no settings file at all --
+// yields factory defaults without logging an error or leaving a stray backup behind.
 func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 	c := check.New(t)
 	count := countErrorLogging(t)
@@ -48,7 +48,6 @@ func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 	c.HasError(err)
 }
 
-// TestLoadSettingsOrDefaultsWithValidFile verifies that a usable settings file is loaded rather than discarded.
 func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
 	c := check.New(t)
 	count := countErrorLogging(t)

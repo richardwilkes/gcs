@@ -29,8 +29,7 @@ func checkFeaturesJSONRoundTrip(c check.Checker, original Features) {
 }
 
 // addTraitWithFeatures creates a non-container trait with the given name and features, appends it to the entity's
-// traits, and returns it. Callers that need more (levels, replacements, modifiers, weapons) set those on the result;
-// the entity is not recalculated here.
+// traits, and returns it. The entity is not recalculated here.
 func addTraitWithFeatures(e *Entity, name string, features ...Feature) *Trait {
 	trait := NewTrait(e, nil, false)
 	trait.Name = name
@@ -39,9 +38,8 @@ func addTraitWithFeatures(e *Entity, name string, features ...Feature) *Trait {
 	return trait
 }
 
-// addCarriedEquipmentWithFeatures creates a non-container piece of equipment with the given name and features,
-// appends it to the entity's carried equipment, and returns it. Callers that need more (replacements, modifiers,
-// weapons, the equipped state) set those on the result; the entity is not recalculated here.
+// addCarriedEquipmentWithFeatures creates a non-container piece of equipment with the given name and features, appends
+// it to the entity's carried equipment, and returns it. The entity is not recalculated here.
 func addCarriedEquipmentWithFeatures(e *Entity, name string, features ...Feature) *Equipment {
 	eqp := NewEquipment(e, nil, false)
 	eqp.Name = name
@@ -51,10 +49,9 @@ func addCarriedEquipmentWithFeatures(e *Entity, name string, features ...Feature
 }
 
 // newSwitchableItemSet creates one non-container item of each kind that can carry a feature switch -- a "Gadget" trait,
-// a "Brawling" skill, a "Fireball" spell and an "Amulet" piece of carried equipment -- gives each of them the supplied
+// a "Brawling" skill, a "Fireball" spell and an "Amulet" piece of carried equipment -- gives each the supplied
 // features, appends them to the entity's lists and returns them. The four items share the feature instances handed in,
-// which suits the switch tests, since none of them alter a feature; a caller that needs one feature per item has to
-// build its items itself. The entity is not recalculated here.
+// which suits the switch tests, since none of them alter a feature. The entity is not recalculated here.
 func newSwitchableItemSet(e *Entity, features ...Feature) (*Trait, *Skill, *Spell, *Equipment) {
 	trait := addTraitWithFeatures(e, "Gadget", features...)
 	skill := NewSkill(e, nil, false)

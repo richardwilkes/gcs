@@ -54,8 +54,6 @@ func TestResolveEmptyTechLevel(t *testing.T) {
 	c.Equal("8", *spell.TechLevel, "a TL that is already set must be left alone")
 }
 
-// TestMergeSkillPoints verifies that applying a template's skills onto an existing set folds the points of identical
-// skills together, correctly distinguishing skills that differ only by tech level.
 func TestMergeSkillPoints(t *testing.T) {
 	c := check.New(t)
 
@@ -88,7 +86,8 @@ func TestMergeSkillPoints(t *testing.T) {
 	})
 
 	// This reproduces the reported bug: on the first apply the skill's empty TL is resolved to the entity's TL, so on
-	// the second apply the incoming skill (still empty TL) must resolve to that same TL and merge rather than duplicate.
+	// the second apply the incoming skill (still empty TL) must resolve to that same TL and merge rather than
+	// duplicate.
 	t.Run("incoming empty TL resolves to the entity TL and merges", func(_ *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), new("3"))}
 		incoming := []*gurps.Skill{newTestSkill("Architecture", fxp.FromInteger(1), new(""))}
@@ -110,11 +109,10 @@ func TestMergeSkillPoints(t *testing.T) {
 		c.Equal("3", *remaining[0].TechLevel)
 	})
 
-	// Both variants share a hash (the TL is not part of the hash). The incoming TL9 skill must merge with the existing
-	// TL9 skill even when the TL8 variant happens to be considered first.
+	// Both variants share a hash, since the TL is not part of it. The matching TL9 variant is listed first, so a lookup
+	// keyed only by hash that retained just the last-seen (TL8) variant would fail to merge; every candidate for the
+	// hash must be considered.
 	t.Run("matches the correct TL variant when several share a hash", func(_ *testing.T) {
-		// The matching TL9 variant is listed first so that a lookup keyed only by hash (retaining just the
-		// last-seen TL8 variant) would fail to merge; the merge must consider every candidate for the hash.
 		existingTL9 := newTestSkill("Guns", fxp.FromInteger(1), new("9"))
 		existingTL8 := newTestSkill("Guns", fxp.FromInteger(4), new("8"))
 		existing := []*gurps.Skill{existingTL9, existingTL8}
@@ -128,7 +126,6 @@ func TestMergeSkillPoints(t *testing.T) {
 		c.Equal(false, selMap[existingTL8.ID()])
 	})
 
-	// A skill with a TL must not merge into a same-named skill that has no TL at all.
 	t.Run("a skill with a TL does not merge with one lacking a TL", func(_ *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), nil)}
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("8"))}
@@ -161,8 +158,8 @@ func TestMergeSkillPoints(t *testing.T) {
 		c.Equal(fxp.FromInteger(4), existing[0].Points)
 	})
 
-	// Two identical entries within the incoming set (e.g. a template containing the same skill twice) collapse into one
-	// even when there is nothing on the sheet to merge into.
+	// Two identical incoming entries (a template containing the same skill twice) collapse into one even when there is
+	// nothing on the sheet to merge into.
 	t.Run("identical incoming skills merge with each other", func(_ *testing.T) {
 		first := newTestSkill("Administration", fxp.FromInteger(1), nil)
 		first.Replacements = map[string]string{"what": "Empire"}
@@ -186,7 +183,6 @@ func TestMergeSkillPoints(t *testing.T) {
 	})
 }
 
-// TestMergeSpellPoints verifies the same folding behavior for spells, including the tech-level distinction.
 func TestMergeSpellPoints(t *testing.T) {
 	c := check.New(t)
 
@@ -243,8 +239,8 @@ func newSkillTable(skills ...*gurps.Skill) (*unison.Table[*Node[*gurps.Skill]], 
 	return table, nodes
 }
 
-// TestMergeAddedRows verifies that adding a skill to a sheet (as when dragging or copying one in, where the
-// added rows are the selection) folds its points into an identical existing row and removes the redundant new row.
+// The rows added by a drag or copy are the ones left selected, which is how MergeAddedRows tells them from the rows
+// that were already there.
 func TestMergeAddedRows(t *testing.T) {
 	c := check.New(t)
 
@@ -313,8 +309,8 @@ func TestMergeAddedRows(t *testing.T) {
 		c.Equal(true, sel[container.ID()], "the surviving container must remain selected")
 	})
 
-	// Same as above, but with the merged skill nested two container levels deep, to ensure both the merge traversal and
-	// the view refresh handle arbitrary nesting rather than just direct children of an added container.
+	// Same as above, but nested two container levels deep, so that both the merge traversal and the view refresh are
+	// shown to handle arbitrary nesting rather than just direct children of an added container.
 	t.Run("a skill nested two levels deep in an added container merges and its row leaves the view", func(_ *testing.T) {
 		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
 		container := gurps.NewSkill(nil, nil, true)
@@ -344,13 +340,11 @@ func TestMergeAddedRows(t *testing.T) {
 	})
 }
 
-// TestTemplateReplacesAListWhoseColumnsChanged verifies that a template rebuilds a list from scratch when the columns
-// it has to show no longer match the ones it has, and that the "New ..." commands then create their items in the list
-// that took its place. A template's equipment list follows the global sheet settings for its TL and LC columns, which
-// the user can change while the template is open; a list that was merely synced would go on showing the old columns,
-// and a command that captured the list when the template was created would be creating items in an orphan afterwards
-// -- the model would gain the item, but it would be neither selected in the list on screen nor undoable, since an
-// orphaned table can't find the undo manager.
+// A template's equipment list follows the global sheet settings for its TL and LC columns, which the user can change
+// while the template is open; a list that was merely synced would go on showing the old columns, and a command that
+// captured the list when the template was created would be creating items in an orphan afterwards -- the model would
+// gain the item, but it would be neither selected in the list on screen nor undoable, since an orphaned table can't
+// find the undo manager.
 func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c := check.New(t)
 	settings := gurps.GlobalSettings().SheetSettings()
@@ -390,10 +384,9 @@ func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c.Equal(0, template.Equipment.Table.RootRowCount(), "undo must take the row back out of the list on screen")
 }
 
-// TestTemplateRebuildKeepsTheFocusInAReplacedList verifies that the table holding the keyboard focus still holds it
-// after a rebuild that had to replace its list. The template used to note which list the focus was in and put it back
-// by hand; the rebuild's ordinary focus restoration finds the replacement table by the reference key it shares with
-// the one it replaced, so that is no longer needed.
+// The template used to note which list the focus was in and put it back by hand; the rebuild's ordinary focus
+// restoration finds the replacement table by the reference key it shares with the one it replaced, so that is no
+// longer needed.
 func TestTemplateRebuildKeepsTheFocusInAReplacedList(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
@@ -426,9 +419,8 @@ func TestTemplateRebuildKeepsTheFocusInAReplacedList(t *testing.T) {
 	c.True(refocused, "the focus must have moved into the replacement")
 }
 
-// TestTemplateSearchSkipsAListTheLayoutDoesNotShow verifies that a template's search, like a sheet's, only looks in
-// the lists that are on the page. A match in a list the layout hides could only be shown by scrolling a table nobody
-// is looking at into view.
+// A template's search, like a sheet's, only looks in the lists that are on the page: a match in a list the layout
+// hides could only be shown by scrolling a table nobody is looking at into view.
 func TestTemplateSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {
 	c := check.New(t)
 	sheetSettings := gurps.GlobalSettings().Sheet

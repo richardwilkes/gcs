@@ -21,7 +21,7 @@ type NonEditableField struct {
 	syncer func(*NonEditableField)
 }
 
-// NewNonEditableField creates a new start-aligned non-editable field that uses the same font and size as the field.
+// NewNonEditableField creates a new start-aligned non-editable field that uses the standard field font.
 func NewNonEditableField(syncer func(*NonEditableField)) *NonEditableField {
 	return newNonEditableField(syncer, align.Start)
 }

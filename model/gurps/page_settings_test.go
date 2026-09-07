@@ -16,8 +16,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestParsePageSizeUnits verifies that the width and height come back in the units the size itself specifies rather
-// than always in inches, which is what the doc comments used to claim.
+// Width and height come back in the units the size itself specifies, not always in inches as the doc comments once
+// claimed.
 func TestParsePageSizeUnits(t *testing.T) {
 	c := check.New(t)
 
@@ -44,7 +44,6 @@ func TestParsePageSizeUnits(t *testing.T) {
 	c.Equal(paper.Length{Length: 20, Units: paper.Centimeter}, height)
 }
 
-// TestParsePageSizeInvalid verifies the failure paths of ParsePageSize and MustParsePageSize.
 func TestParsePageSizeInvalid(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []string{"", "bogus", "1x", "x1", "0.01in x 1in", "1000in x 1in"} {

@@ -169,9 +169,9 @@ func factorySettings() Settings {
 	}
 }
 
-// setAsideDamagedSettings renames the settings file at the given path so that it survives the next save, allowing the
-// user a chance to recover data from it. A ".bad" suffix is appended to the name; if a file with that name is already
-// present from an earlier failure, a timestamp is inserted as well so that the older copy isn't lost.
+// setAsideDamagedSettings renames the settings file at the given path so that it survives the next save, giving the
+// user a chance to recover data from it. A ".bad" suffix is appended; if such a file is already present from an earlier
+// failure, a timestamp is inserted as well so that the older copy isn't lost.
 func setAsideDamagedSettings(filePath string) {
 	if !xos.FileExists(filePath) {
 		return // Nothing to preserve; the load failure wasn't caused by the file's content.
@@ -362,12 +362,12 @@ func (s *Settings) AddRecentFile(filePath string) {
 	}
 }
 
-// GeneralSettings implements gurps.SettingsProvider.
+// GeneralSettings returns the general settings.
 func (s *Settings) GeneralSettings() *GeneralSettings {
 	return s.General
 }
 
-// SheetSettings implements gurps.SettingsProvider.
+// SheetSettings returns the sheet settings.
 func (s *Settings) SheetSettings() *SheetSettings {
 	return s.Sheet
 }

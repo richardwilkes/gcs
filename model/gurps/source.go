@@ -61,8 +61,8 @@ func (s Source) IsZero() bool {
 	return s.TID == "" || s.Library == "" || s.Path == ""
 }
 
-// MarshalJSONTo implements json.MarshalerTo. It normalizes the stored path to use forward slashes so that sources are
-// always written in a platform-independent form, regardless of how the path was constructed in memory.
+// MarshalJSONTo implements json.MarshalerTo. It normalizes the path to forward slashes so that sources are always
+// written in a platform-independent form.
 func (s Source) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type alias Source
 	a := alias(s)
@@ -70,8 +70,8 @@ func (s Source) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, &a)
 }
 
-// UnmarshalJSONFrom implements json.UnmarshalerFrom. It normalizes the stored path to use forward slashes so that
-// sources created on one platform (e.g. Windows, which uses backslash separators) remain usable on others.
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. It normalizes the path to forward slashes so that sources written
+// on Windows, with backslash separators, remain usable on other platforms.
 func (s *Source) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	type alias Source
 	var a alias
@@ -207,15 +207,12 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 // A 'Reference' when original has no Source of its own, anchors Source to reference the original.
 // Otherwise Source is copied directly from the original.
 func (s *SourcedID) AdjustSource(from LibraryFile, original SourcedID, mode CloneMode) {
-	// For a 'Copy' it should be identical, including IDs
 	if mode == Copy {
 		s.TID = original.TID
 	}
 	if mode == Reference && original.Source.Library == "" {
-		// If this is for a 'Reference' *and* the original is "root" data, create a new reference source
 		s.Source = Source{LibraryFile: from, TID: original.TID}
 	} else {
-		// Copy source data as-is from the original
 		s.Source = original.Source
 	}
 }

@@ -15,7 +15,7 @@ import (
 	"strconv"
 )
 
-// IntegerField is field that holds an integer.
+// IntegerField is a field that holds an integer.
 type IntegerField = NumericField[int]
 
 // NewIntegerField creates a new field that holds an int.

@@ -27,8 +27,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestScriptMathExp2 verifies that Math.exp2 is exposed to scripts as a real member of the built-in Math object (rather
-// than an unreachable global with a dotted name), while leaving the standard Math members intact.
+// Math.exp2 is exposed as a real member of the built-in Math object (rather than an unreachable global with a dotted
+// name), leaving the standard Math members intact.
 func TestScriptMathExp2(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -47,9 +47,8 @@ func TestScriptMathExp2(t *testing.T) {
 	}
 }
 
-// TestScriptRandomWeightInPounds verifies that entity.randomWeightInPounds returns a numeric result without panicking
-// for very low (even negative) strength values. At such ST the internal deviation used as the bound for rnd.Intn would
-// otherwise go non-positive; the clamp keeps the call safe regardless of how rnd.Intn treats a non-positive bound.
+// entity.randomWeightInPounds returns a numeric result without panicking for very low (even negative) strength values.
+// At such ST the deviation used as the bound for rnd.Intn would otherwise go non-positive.
 func TestScriptRandomWeightInPounds(t *testing.T) {
 	c := check.New(t)
 	entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, nil) }}
@@ -61,10 +60,9 @@ func TestScriptRandomWeightInPounds(t *testing.T) {
 	}
 }
 
-// TestScriptEntityPoints verifies that reading the fields of entity.points reports values consistent with
-// entity.PointsBreakdown(). The implementation computes the breakdown once per access to entity.points and reads each
-// field (total, unspent, skills, spells, …) from that single result, so this also guards against the fields drifting
-// apart from the canonical breakdown.
+// The fields of entity.points report values consistent with entity.PointsBreakdown(). The breakdown is computed once
+// per access to entity.points and every field read from that single result, so this also guards against the fields
+// drifting apart from the canonical breakdown.
 func TestScriptEntityPoints(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -97,12 +95,10 @@ func TestScriptEntityPoints(t *testing.T) {
 	}
 }
 
-// TestScriptThrustSwingFor exercises the entity.thrustFor and entity.swingFor script bindings, which format their dice
-// using the UseModifyingDicePlusAdds flag read through the entity's sheet settings (via SheetSettingsFor(entity)). The
-// GURPS damage progression keeps thrust/swing modifiers within the -3..+2 range, so the plain and modifying-dice
-// formats never actually diverge for these dice; the flag is therefore behaviorally invisible here. The test guards the
-// wiring itself: the bindings must exist, resolve without error, and return exactly what FormatDice produces for the
-// entity's current setting, regardless of how that flag is toggled.
+// Exercises the entity.thrustFor and entity.swingFor bindings, which format their dice using the
+// UseModifyingDicePlusAdds flag from the entity's sheet settings. The GURPS damage progression keeps thrust/swing
+// modifiers within -3..+2, so the plain and modifying-dice formats never diverge for these dice; what is guarded here
+// is the wiring: the bindings must exist, resolve without error, and return exactly what FormatDice produces.
 func TestScriptThrustSwingFor(t *testing.T) {
 	c := check.New(t)
 	for _, fn := range []string{"thrustFor", "swingFor"} {
@@ -125,25 +121,22 @@ func TestScriptThrustSwingFor(t *testing.T) {
 	}
 }
 
-// TestScriptTraitPoints verifies that reading self.points from a trait script returns the trait's AdjustedPoints(),
-// which already accounts for base points, cost-per-level, trait modifiers, and the reduced cost of children within an
-// Alternative Abilities container. This addresses GitHub issue #1053 (exposing a trait's total value to scripts).
+// self.points on a trait script returns the trait's AdjustedPoints(), which already accounts for base points,
+// cost-per-level, trait modifiers, and the reduced cost of children within an Alternative Abilities container. See
+// GitHub issue #1053 (exposing a trait's total value to scripts).
 func TestScriptTraitPoints(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	// A simple, non-leveled trait.
 	simple := NewTrait(e, nil, false)
 	simple.BasePoints = fxp.FromInteger(10)
 
-	// A leveled trait: 5 points per level, 3 levels.
 	leveled := NewTrait(e, nil, false)
 	leveled.CanLevel = true
 	leveled.PointsPerLevel = fxp.FromInteger(5)
 	leveled.Levels = fxp.FromInteger(3)
 
-	// An Alternative Abilities container whose children have differing costs; the container total is reduced per the
-	// Alternative Abilities rules rather than being the simple sum.
+	// The container total is reduced per the Alternative Abilities rules rather than being the simple sum.
 	altAbilities := NewTrait(e, nil, true)
 	altAbilities.ContainerType = container.AlternativeAbilities
 	child1 := NewTrait(e, altAbilities, false)
@@ -169,22 +162,18 @@ func TestScriptTraitPoints(t *testing.T) {
 	c.Equal(fxp.FromInteger(22), altAbilities.AdjustedPoints())
 }
 
-// TestScriptSkillOptionalSpecializationMatch verifies that the script skill-lookup bindings match a skill by its
-// optional specialization as well as its required specialization. This addresses GitHub issue #1062, where
-// entity.findSkills(name, specialization), entity.skillLevel(name, specialization), and a skill container's
-// find(name, specialization) only checked the required specialization.
+// The script skill-lookup bindings match a skill by its optional specialization as well as its required one. See GitHub
+// issue #1062, where entity.findSkills, entity.skillLevel and a skill container's find only checked the required one.
 func TestScriptSkillOptionalSpecializationMatch(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	// A top-level skill with both a required and an optional specialization.
 	sk := NewSkill(e, nil, false)
 	sk.Name = "Guns"
 	sk.Specialization = "Pistol"
 	sk.OptionalSpecialization = "Glock"
 	sk.Points = fxp.One
 
-	// A container holding a child skill that likewise carries an optional specialization.
 	group := NewSkill(e, nil, true)
 	group.Name = "Group"
 	child := NewSkill(e, group, false)
@@ -223,9 +212,9 @@ func TestScriptSkillOptionalSpecializationMatch(t *testing.T) {
 	}
 }
 
-// TestScriptResolutionConcurrency hammers the package-global script state (the compiled-program cache, the entity-less
-// resolve cache and its discard path, and the entity-less recursion-depth map) from several goroutines at once. Run
-// under the race detector (go test -race) it guards against reintroducing unsynchronized access to that shared state.
+// Hammers the package-global script state (the compiled-program cache, the entity-less resolve cache and its discard
+// path, and the entity-less recursion-depth map) from several goroutines at once. Run under the race detector, it
+// guards against reintroducing unsynchronized access to that shared state.
 func TestScriptResolutionConcurrency(t *testing.T) {
 	DiscardGlobalResolveCache()
 	const goroutines = 8
@@ -251,12 +240,11 @@ func TestScriptResolutionConcurrency(t *testing.T) {
 	wg.Wait()
 }
 
-// TestEntitylessScriptDepthIsPerGoroutine verifies that the depth limit on entity-less script resolution measures each
-// goroutine's own recursion, not how many goroutines happen to be resolving at once. Both halves matter: the deep search
-// content cache runs a worker per CPU through entity-less resolution, so on a machine with more CPUs than
-// maximumAllowedResolvingDepth a shared counter would refuse resolutions that were not recursing at all and bake the
-// refusal into the cached search text; and the limit must still catch a genuinely circular reference on every goroutine
-// at the same depth it would if that goroutine were alone.
+// The depth limit on entity-less script resolution measures each goroutine's own recursion, not how many goroutines
+// happen to be resolving at once. Both halves matter: the deep search content cache runs a worker per CPU through
+// entity-less resolution, so on a machine with more CPUs than maximumAllowedResolvingDepth a shared counter would
+// refuse resolutions that were not recursing at all and bake the refusal into the cached search text; and the limit
+// must still catch a circular reference on every goroutine at the depth it would if that goroutine were alone.
 func TestEntitylessScriptDepthIsPerGoroutine(t *testing.T) {
 	c := check.New(t)
 	DiscardGlobalResolveCache()
@@ -336,11 +324,10 @@ func TestEntitylessScriptDepthIsPerGoroutine(t *testing.T) {
 	c.Equal(0, remaining, "no depth entry may outlive its goroutine's resolution")
 }
 
-// TestScriptCacheIsBounded verifies that the compiled-program cache cannot grow without bound while still keeping the
-// programs that are actually in use. The item editors re-resolve the script being typed after every keystroke, so every
-// syntactically valid intermediate text becomes a distinct cache key; an unbounded cache would hold a compiled program
-// for each of them until the process exited. A script that keeps being resolved, on the other hand, must survive the
-// turnover that discards those transients, or the cache would stop serving its purpose.
+// The compiled-program cache cannot grow without bound, yet keeps the programs actually in use. The item editors
+// re-resolve the script being typed after every keystroke, so every syntactically valid intermediate text becomes a
+// distinct cache key; an unbounded cache would hold a compiled program for each until the process exited. A script that
+// keeps being resolved must survive the turnover that discards those transients.
 func TestScriptCacheIsBounded(t *testing.T) {
 	c := check.New(t)
 	discardScriptCache()
@@ -384,8 +371,8 @@ func TestScriptCacheIsBounded(t *testing.T) {
 	c.False(again == coldProgram, "the abandoned script must have been evicted from the cache")
 }
 
-// errorCountingHandler is a slog.Handler that counts the error-level records it is asked to handle. It lets a test
-// observe whether a failed script resolution logged an error without depending on the log's textual format.
+// errorCountingHandler counts the error-level records it is asked to handle, so a test can observe whether a failed
+// script resolution logged an error without depending on the log's textual format.
 type errorCountingHandler struct {
 	count *atomic.Int32
 }
@@ -406,9 +393,8 @@ func (h errorCountingHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
 
 func (h errorCountingHandler) WithGroup(_ string) slog.Handler { return h }
 
-// TestSuppressScriptResolveErrorLogging verifies that SuppressScriptResolveErrorLogging silences the error logging that
-// a failed script resolution would otherwise produce, that the suppression only applies within the dynamic scope of the
-// supplied function (so failures elsewhere still log), and that nested suppression is handled correctly.
+// SuppressScriptResolveErrorLogging silences the error logging a failed script resolution would otherwise produce, only
+// within the dynamic scope of the supplied function (so failures elsewhere still log), and nests correctly.
 func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 	c := check.New(t)
 	var count atomic.Int32
@@ -453,10 +439,9 @@ func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 	c.Equal(int32(1), count.Load(), "error logging should resume after suppression returns")
 }
 
-// TestScriptResultConversionHonorsTimeout verifies that converting a script's result to a string happens while the
-// runtime is still checked out and the timeout is still armed. Turning an object into a string runs the object's
-// toString, so a toString that never returns must be cut short by the per-script time limit and reported as a timeout
-// rather than hanging the application.
+// Converting a script's result to a string happens while the runtime is still checked out and the timeout still armed.
+// Turning an object into a string runs its toString, so a toString that never returns must be cut short by the
+// per-script time limit and reported as a timeout rather than hanging the application.
 func TestScriptResultConversionHonorsTimeout(t *testing.T) {
 	c := check.New(t)
 	prev := scriptExecTimeLimitOverride.Load()
@@ -480,10 +465,10 @@ func TestScriptResultConversionHonorsTimeout(t *testing.T) {
 	c.Equal("converted", ResolveScript(nil, ScriptSelfProvider{}, "({toString: function() { return 'converted' }})"))
 }
 
-// TestScriptExecTimeLimitOverride verifies that the per-script execution time limit the tests run with is the override
-// SetScriptExecTimeLimitForTesting installs rather than the one in the general settings. The override exists so CI can
-// run with a limit beyond what users may configure, so it has to be honored as given -- outside the permitted range and
-// untouched by settings validation -- has to be what actually cuts a script short, and has to fall away when cleared.
+// The per-script execution time limit the tests run with is the override SetScriptExecTimeLimitForTesting installs
+// rather than the one in the general settings. The override exists so CI can run with a limit beyond what users may
+// configure, so it has to be honored as given -- outside the permitted range and untouched by settings validation --
+// has to be what actually cuts a script short, and has to fall away when cleared.
 func TestScriptExecTimeLimitOverride(t *testing.T) {
 	c := check.New(t)
 	prev := scriptExecTimeLimitOverride.Load()
@@ -507,10 +492,9 @@ func TestScriptExecTimeLimitOverride(t *testing.T) {
 		"the override is the limit a runaway script is cut short at")
 }
 
-// TestScriptObjectResultConcurrency resolves object-valued scripts, whose results can only be turned into strings by
-// running JavaScript, from several goroutines at once. Run under the race detector (go test -race) it guards against
-// converting a result after its runtime has been handed back to the pool, where another goroutine may already be using
-// it.
+// Resolves object-valued scripts, whose results can only be turned into strings by running JavaScript, from several
+// goroutines at once. Run under the race detector, it guards against converting a result after its runtime has been
+// handed back to the pool, where another goroutine may already be using it.
 func TestScriptObjectResultConcurrency(t *testing.T) {
 	DiscardGlobalResolveCache()
 	defer DiscardGlobalResolveCache()
@@ -538,10 +522,9 @@ func TestScriptObjectResultConcurrency(t *testing.T) {
 	wg.Wait()
 }
 
-// TestScriptGlobalPollutionDoesNotLeak verifies that a script cannot alter the shared state of a pooled runtime for the
-// scripts that follow it. Strict mode alone does not provide this: it only rejects assignment to undeclared names, so
-// adding globals through globalThis, replacing the predefined bindings, and mutating the built-ins all have to be
-// prevented or undone explicitly.
+// A script cannot alter the shared state of a pooled runtime for the scripts that follow it. Strict mode alone does not
+// provide this: it only rejects assignment to undeclared names, so adding globals through globalThis, replacing the
+// predefined bindings, and mutating the built-ins all have to be prevented or undone explicitly.
 func TestScriptGlobalPollutionDoesNotLeak(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -595,8 +578,8 @@ func TestScriptGlobalPollutionDoesNotLeak(t *testing.T) {
 		},
 		{
 			// Freezing the Math object doesn't protect the global binding that names it, which goja creates as a
-			// writable property of the global object. Note that `typeof` is useless as a probe here, since `typeof null`
-			// is also "object".
+			// writable property of the global object. Note that `typeof` is useless as a probe here, since `typeof
+			// null` is also "object".
 			name:    "replaced built-in global",
 			script:  "Math = null; 'ok'",
 			rejects: true,
@@ -681,9 +664,9 @@ func TestScriptGlobalPollutionDoesNotLeak(t *testing.T) {
 	}
 }
 
-// TestScriptBaselineGlobalsArePinned verifies that the bindings naming the built-ins are locked down, not merely the
-// objects they name. goja creates Math, JSON, Date and the rest as writable, configurable properties of the global
-// object, so freezing the objects alone left the bindings open to being replaced or deleted outright.
+// The bindings naming the built-ins are locked down, not merely the objects they name. goja creates Math, JSON, Date
+// and the rest as writable, configurable properties of the global object, so freezing the objects alone left the
+// bindings open to being replaced or deleted outright.
 func TestScriptBaselineGlobalsArePinned(t *testing.T) {
 	c := check.New(t)
 	vm := newScriptVM()
@@ -698,10 +681,9 @@ func TestScriptBaselineGlobalsArePinned(t *testing.T) {
 	}
 }
 
-// TestScriptBaselineIncludesHiddenSymbolGlobals verifies that the recorded baseline covers the symbol globals that are
-// not enumerable, which is how the standard Symbol.toStringTag binding is defined. goja's Object.Symbols() reports only
-// the enumerable symbols, so a baseline built from it comes up empty here, and the cleanup that consults it would take
-// Symbol.toStringTag for something the script had added and delete it from every runtime that ran one.
+// The recorded baseline covers the symbol globals that are not enumerable, which is how the standard Symbol.toStringTag
+// binding is defined. goja's Object.Symbols() reports only the enumerable symbols, so a baseline built from it comes up
+// empty here, and the cleanup consulting it would take Symbol.toStringTag for something the script added and delete it.
 func TestScriptBaselineIncludesHiddenSymbolGlobals(t *testing.T) {
 	c := check.New(t)
 	vm := newScriptVM()
@@ -724,10 +706,9 @@ func TestScriptBaselineIncludesHiddenSymbolGlobals(t *testing.T) {
 	}
 }
 
-// TestScriptRestoreGlobalsDetectsBaselineDamage verifies that restoreGlobals reports a runtime whose baseline globals
-// were replaced or deleted as unrestorable, so that the caller discards it instead of returning it to the pool. Removing
-// what a script added says nothing about what it destroyed, and a runtime whose JSON is missing or whose Math is no
-// longer the built-in would silently break every later script in the process.
+// restoreGlobals reports a runtime whose baseline globals were replaced or deleted as unrestorable, so the caller
+// discards it instead of returning it to the pool. Removing what a script added says nothing about what it destroyed,
+// and a runtime whose JSON is missing or whose Math is no longer the built-in would break every later script.
 //
 // The pinning applied by freezeBuiltInsProgram means a real script can no longer inflict this damage, so the runtimes
 // used here are built without it; otherwise the runtime would reject the attempt first and leave this detection
@@ -795,11 +776,10 @@ func newUnpinnedScriptVM() *scriptVM {
 	return s
 }
 
-// TestScriptTimeoutDoesNotAffectNextRun verifies that a script's timeout cannot interrupt a later, unrelated script.
-// Stopping the timer is not enough on its own, because time.Timer.Stop does not wait for a timeout that has already
-// begun firing; that timeout would otherwise land on the runtime after the next script had picked it up. The window is
-// microseconds wide in practice, so it is reproduced here by invoking the timeout's interrupt directly, exactly as a
-// timer goroutine that had already started would.
+// A script's timeout cannot interrupt a later, unrelated script. Stopping the timer is not enough on its own, because
+// time.Timer.Stop does not wait for a timeout that has already begun firing; that timeout would otherwise land on the
+// runtime after the next script had picked it up. The window is microseconds wide in practice, so it is reproduced here
+// by invoking the timeout's interrupt directly, exactly as a timer goroutine that had already started would.
 func TestScriptTimeoutDoesNotAffectNextRun(t *testing.T) {
 	c := check.New(t)
 	vm := goja.New()
@@ -833,10 +813,9 @@ func TestScriptTimeoutDoesNotAffectNextRun(t *testing.T) {
 	c.Equal("2", result)
 }
 
-// TestScriptEvalSemantics pins down the contract runScript actually implements: the text is evaluated as an expression
-// or sequence of statements whose value is that of its last expression, declarations within it do not escape into the
-// runtime, and — because the text is evaluated rather than used as a function body — a top-level return is a syntax
-// error.
+// Pins down the contract runScript implements: the text is evaluated as an expression or sequence of statements whose
+// value is that of its last expression, declarations within it do not escape into the runtime, and — because the text
+// is evaluated rather than used as a function body — a top-level return is a syntax error.
 func TestScriptEvalSemantics(t *testing.T) {
 	c := check.New(t)
 
@@ -858,8 +837,8 @@ func TestScriptEvalSemantics(t *testing.T) {
 	c.Contains(err.Error(), "Illegal return statement")
 }
 
-// TestResolveToNumberAndWeight verifies the shared resolution path: text the parser accepts is returned as it stands,
-// anything else is run as a script and its result parsed, and empty text or an unparseable result yields zero.
+// Covers the shared resolution path: text the parser accepts is returned as it stands, anything else is run as a script
+// and its result parsed, and empty text or an unparseable result yields zero.
 func TestResolveToNumberAndWeight(t *testing.T) {
 	c := check.New(t)
 	SuppressScriptResolveErrorLogging(func() {
@@ -878,8 +857,8 @@ func TestResolveToNumberAndWeight(t *testing.T) {
 	})
 }
 
-// TestScriptAttributeMaximumAndCurrent verifies that an attribute's maximum, current value and valueOf all resolve
-// through the entity, and that an attribute with no entity reports undefined for each.
+// An attribute's maximum, current value and valueOf all resolve through the entity, and an attribute with no entity
+// reports undefined for each.
 func TestScriptAttributeMaximumAndCurrent(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -901,9 +880,9 @@ func TestScriptAttributeMaximumAndCurrent(t *testing.T) {
 	c.Equal("undefined", ResolveScript(nil, orphan, "typeof self.valueOf()"))
 }
 
-// TestScriptFindActiveModifier verifies that findActiveModifier on both traits and equipment ignores the case of and
-// surrounding whitespace in the name, as the entity's own name lookups do, answers null for a modifier that is not
-// present, and that activeModifiers leaves disabled modifiers out.
+// findActiveModifier on both traits and equipment ignores the case of and surrounding whitespace in the name, as the
+// entity's own name lookups do, answers null for a modifier that is not present, and activeModifiers omits disabled
+// modifiers.
 func TestScriptFindActiveModifier(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

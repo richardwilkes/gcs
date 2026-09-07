@@ -47,9 +47,8 @@ func newPeriodicCheckHarness(option updatecheck.Option) *periodicCheckHarness {
 	return h
 }
 
-// TestPeriodicCheckSchedulesNothingWithoutAnInterval verifies that the options which don't repeat -- Never, and the
-// default of checking only at launch -- leave no tick pending. Anything else would keep waking the application up to
-// do work the user asked it not to do.
+// The options that don't repeat -- Never, and the default of checking only at launch -- must leave no tick pending.
+// Anything else would keep waking the application up to do work the user asked it not to do.
 func TestPeriodicCheckSchedulesNothingWithoutAnInterval(t *testing.T) {
 	c := check.New(t)
 	for _, option := range []updatecheck.Option{updatecheck.Never, updatecheck.AtLaunch} {
@@ -60,8 +59,6 @@ func TestPeriodicCheckSchedulesNothingWithoutAnInterval(t *testing.T) {
 	}
 }
 
-// TestPeriodicCheckSchedulesAtTheRequestedInterval verifies that the repeating options ask for a tick at the delay
-// they name, since that delay is the entire meaning of the setting.
 func TestPeriodicCheckSchedulesAtTheRequestedInterval(t *testing.T) {
 	c := check.New(t)
 	for option, want := range map[updatecheck.Option]time.Duration{
@@ -76,9 +73,8 @@ func TestPeriodicCheckSchedulesAtTheRequestedInterval(t *testing.T) {
 	}
 }
 
-// TestPeriodicCheckTickRunsTheWorkAndSchedulesTheNext verifies that firing a tick does the work exactly once and keeps
-// the chain going. A tick that ran the work twice would double the checks with every repetition, and one that failed
-// to reschedule would silently turn the setting into a single check.
+// A tick that ran the work twice would double the checks with every repetition, and one that failed to reschedule
+// would silently turn the setting into a single check.
 func TestPeriodicCheckTickRunsTheWorkAndSchedulesTheNext(t *testing.T) {
 	c := check.New(t)
 	h := newPeriodicCheckHarness(updatecheck.Hourly)
@@ -93,9 +89,8 @@ func TestPeriodicCheckTickRunsTheWorkAndSchedulesTheNext(t *testing.T) {
 	c.Equal(3, len(h.ticks))
 }
 
-// TestPeriodicCheckRetiresTicksFromAnOldSetting verifies that a tick scheduled under the previous setting does nothing
-// once the setting has changed. Scheduled ticks can't be canceled, so without the generation check a switch from
-// hourly to daily would leave the hourly tick to fire anyway, and the two chains would then run side by side.
+// Scheduled ticks can't be canceled, so without the generation check a switch from hourly to daily would leave the
+// hourly tick to fire anyway, and the two chains would then run side by side.
 func TestPeriodicCheckRetiresTicksFromAnOldSetting(t *testing.T) {
 	c := check.New(t)
 	h := newPeriodicCheckHarness(updatecheck.Hourly)
@@ -110,8 +105,7 @@ func TestPeriodicCheckRetiresTicksFromAnOldSetting(t *testing.T) {
 	c.Equal(2, len(h.ticks), "a tick from the previous setting must not schedule anything")
 }
 
-// TestPeriodicCheckStopsWhenSwitchedToNever verifies that turning the checks off ends the chain even though a tick was
-// already on its way when the user changed the setting.
+// A tick was already on its way when the user turned the checks off, and must not keep the chain going.
 func TestPeriodicCheckStopsWhenSwitchedToNever(t *testing.T) {
 	c := check.New(t)
 	h := newPeriodicCheckHarness(updatecheck.Hourly)
@@ -125,8 +119,7 @@ func TestPeriodicCheckStopsWhenSwitchedToNever(t *testing.T) {
 	c.Equal(1, len(h.ticks), "a tick that arrives after the checks were turned off must not schedule anything")
 }
 
-// TestPeriodicCheckKeepsTheClockRunningWhenNothingChanged verifies that re-applying the same setting doesn't restart
-// the wait. The settings dialog applies the settings every time it syncs or resets, so a reschedule that always began
+// The settings dialog applies the settings every time it syncs or resets, so a reschedule that always began the wait
 // again would push the next check out indefinitely for anyone who left that dialog open.
 func TestPeriodicCheckKeepsTheClockRunningWhenNothingChanged(t *testing.T) {
 	c := check.New(t)
@@ -141,8 +134,6 @@ func TestPeriodicCheckKeepsTheClockRunningWhenNothingChanged(t *testing.T) {
 	c.Equal(2, len(h.ticks))
 }
 
-// TestPeriodicCheckTickSkipsTheWorkWhenTheSettingNoLongerRepeats verifies that a tick which finds the setting changed
-// behind its back -- to Never, or to checking only at launch -- neither runs the work nor schedules another tick.
 // Every path that changes the setting reschedules, which retires the tick, so this is a backstop; but a backstop that
 // ran one last check the user had just turned off would be worse than none.
 func TestPeriodicCheckTickSkipsTheWorkWhenTheSettingNoLongerRepeats(t *testing.T) {
@@ -160,11 +151,10 @@ func TestPeriodicCheckTickSkipsTheWorkWhenTheSettingNoLongerRepeats(t *testing.T
 	}
 }
 
-// TestPeriodicCheckRunsAtOnceWhenTurnedOn verifies that switching the checks on from Never runs the work immediately,
-// and that nothing else does: not starting the schedule at launch, whose check is made separately, and not moving
-// between settings that already check. Without this, turning the checks on left the Help menu insisting that they were
-// off, and no check happened until the next launch or, for the repeating settings, the first tick an hour or a day
-// later.
+// Switching on from Never runs the work immediately; nothing else does -- not starting the schedule at launch, whose
+// check is made separately, and not moving between settings that already check. Without this, turning the checks on
+// left the Help menu insisting that they were off, and no check happened until the next launch or, for the repeating
+// settings, the first tick an hour or a day later.
 func TestPeriodicCheckRunsAtOnceWhenTurnedOn(t *testing.T) {
 	c := check.New(t)
 	h := newPeriodicCheckHarness(updatecheck.Never)
@@ -201,9 +191,8 @@ func TestPeriodicCheckRunsAtOnceWhenTurnedOn(t *testing.T) {
 	}
 }
 
-// TestAppUpdateCheckFrequencyForDevelopmentBuilds verifies that a development build, which never looks for updates,
-// doesn't schedule repeating checks that would only wake up to say so again, while a release build follows the setting
-// as written.
+// A development build never looks for updates, so it must not schedule repeating checks that would only wake up to say
+// so again; a release build follows the setting as written.
 func TestAppUpdateCheckFrequencyForDevelopmentBuilds(t *testing.T) {
 	c := check.New(t)
 	gs, _ := prepareUpdateCheckSettings(t)

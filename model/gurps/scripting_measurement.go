@@ -158,12 +158,11 @@ func ssrtInchesToValue(inches fxp.Int, allowNegative bool) int {
 // without bound while fxp.Int tops out just above 9.2e14: value 87 is 700,000,000,000,000 yards, and 88 would need
 // 1e15.
 //
-// Both ends are clamped rather than rejected. The low end has always been. The high end must be, because the value
-// reaches ssrtToYards straight from a script (measure.modifierToYards) and the loop below runs (value-4)/6 times: an
-// unclamped measure.modifierToYards(1e15) would spin here for weeks inside a Go function, where the per-script timeout
-// cannot reach it — goja's Interrupt is only honored between VM instructions, so it cannot preempt a host call — and
-// would then hand back a value saturated at fxp.Max regardless. With the clamp the loop runs at most 13 times and the
-// multiplication can never overflow.
+// Both ends are clamped rather than rejected. The high end must be, because the value reaches ssrtToYards straight from
+// a script (measure.modifierToYards) and the loop below runs (value-4)/6 times: an unclamped
+// measure.modifierToYards(1e15) would spin here for weeks inside a Go function, where the per-script timeout cannot
+// reach it — goja's Interrupt is only honored between VM instructions — and would then hand back a value saturated at
+// fxp.Max regardless. With the clamp the loop runs at most 13 times and the multiplication can never overflow.
 const (
 	minSSRTValue = -15
 	maxSSRTValue = 87

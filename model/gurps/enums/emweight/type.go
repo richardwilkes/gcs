@@ -29,8 +29,7 @@ func (enum Type) Permitted() []Value {
 	return []Value{Addition, PercentageMultiplier, Multiplier}
 }
 
-// FromString examines a string to determine what Value it is, but restricts the result to those allowed for this
-// Type.
+// FromString examines a string to determine what Value it is, but restricts the result to those allowed for this Type.
 func (enum Type) FromString(s string) Value {
 	permitted := enum.Permitted()
 	if v := ValueFromString(s); slices.Contains(permitted, v) {

@@ -43,9 +43,9 @@ var _ Override = &SelectorOverride{}
 // that field (see SelectorFieldDescriptorFor for the field's suggested states). This subsumes what would otherwise be a
 // separate feature type per field — damage type is just Field == selector.WeaponDamageType.
 //
-// NOTE: matching is currently a self-contained name/usage/tags comparison suitable for weapon-scoped fields. Adding a
-// field that lives somewhere other than a weapon means giving that field its own matcher and resolve site; the Override
-// design (priority + specificity ladder, tooltip contest) is unchanged.
+// Matching is a self-contained name/usage/tags comparison, with one matcher per scope (MatchesWeapon, MatchesTrait).
+// Adding a field that lives on some other kind of node means giving that scope its own matcher and resolve site; the
+// Override design (priority + specificity ladder, tooltip contest) is unchanged.
 type SelectorOverride struct {
 	SelectorOverrideData
 	BonusOwner
@@ -120,7 +120,8 @@ func (o *SelectorOverride) OverrideSpecificity() int {
 	return specificity
 }
 
-// MatchesWeapon returns true if this override targets a weapon-scoped field and applies to the given weapon.
+// MatchesWeapon returns true if this override's criteria match the given weapon. The caller is responsible for checking
+// that the override targets the field it is interested in.
 func (o *SelectorOverride) MatchesWeapon(w *Weapon) bool {
 	replacements := w.NameableReplacements()
 	return o.NameCriteria.Matches(replacements, w.String()) &&
@@ -128,8 +129,9 @@ func (o *SelectorOverride) MatchesWeapon(w *Weapon) bool {
 		o.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...)
 }
 
-// MatchesTrait returns true if this override targets a trait-scoped field and applies to the given trait. Traits have
-// no usage, so only the name and tag criteria participate.
+// MatchesTrait returns true if this override's criteria match the given trait. Traits have no usage, so only the name
+// and tag criteria participate. The caller is responsible for checking that the override targets the field it is
+// interested in.
 func (o *SelectorOverride) MatchesTrait(t *Trait) bool {
 	replacements := t.NameableReplacements()
 	return o.NameCriteria.Matches(replacements, t.NameWithReplacements()) &&
@@ -164,7 +166,7 @@ func (o *SelectorOverride) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 
 // SelectorFieldDescriptor describes a selector field: the values worth suggesting in the authoring UI, an optional
 // human label for each of those values, an optional validator, and whether values outside the suggested set are
-// permitted. This is the domain knowledge that turns a bare enum into an editable field.
+// permitted.
 type SelectorFieldDescriptor struct {
 	SuggestedStates []string
 	StateTitle      func(state string) string // optional human label in the picker; nil means the state itself
@@ -178,7 +180,6 @@ type SelectorFieldDescriptor struct {
 // fields. Both are free-form strings in this model, so these are offered as suggestions but anything is accepted.
 var damageTypeStates = []string{"cr", "cut", "imp", "pi-", "pi", "pi+", "pi++", "burn", "cor", "fat", "tox"}
 
-// validFixedPoint reports whether value parses as a fixed-point number, used to validate the numeric damage fields.
 func validFixedPoint(value string) bool {
 	_, err := fxp.FromString(value)
 	return err == nil
@@ -235,7 +236,6 @@ var traitSelfControlAdjustmentStates = func() []string {
 	return states
 }()
 
-// selectorFieldDescriptors holds the descriptor for every selector.Field.
 var selectorFieldDescriptors = map[selector.Field]SelectorFieldDescriptor{
 	selector.WeaponDamageType: {
 		Field:           selector.WeaponDamageType,
@@ -292,9 +292,8 @@ var selectorFieldDescriptors = map[selector.Field]SelectorFieldDescriptor{
 // SelectorFieldDescriptorFor returns the descriptor for the given field, or a zero-value free-form descriptor if the
 // field is unknown.
 func SelectorFieldDescriptorFor(field selector.Field) SelectorFieldDescriptor {
-	// Note: the lookup is deliberately made with the field as-is rather than with field.EnsureValid(), since that would
-	// map every unknown field onto the first enum value and hand back that field's descriptor instead of the safe
-	// free-form one.
+	// The lookup deliberately uses the field as-is rather than field.EnsureValid(), since that would map every unknown
+	// field onto the first enum value and hand back that field's descriptor instead of the safe free-form one.
 	if d, ok := selectorFieldDescriptors[field]; ok {
 		return d
 	}

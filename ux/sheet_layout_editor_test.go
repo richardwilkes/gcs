@@ -28,10 +28,10 @@ import (
 	"github.com/richardwilkes/unison/enums/side"
 )
 
-// newTestLayoutRegions returns a hand-built set of regions describing a page holding a two-block row above a
-// full-width band, with a gap above the row, the seam of the page between the two bands and a gap below the band. Those
-// two gaps are the only ones the editor ever builds: the space between two bands is a seam, since a block dropped there
-// may be meant to straddle the two of them rather than to come between them.
+// newTestLayoutRegions returns a hand-built set of regions describing a page holding a two-block row above a full-width
+// band, with a gap above the row, the seam of the page between the two bands and a gap below the band. Those two gaps
+// are the only ones the editor ever builds: the space between two bands is a seam, since a block dropped there may be
+// meant to straddle the two of them rather than to come between them.
 func newTestLayoutRegions() *layoutRegions {
 	pageRect := geom.NewRect(0, 0, 100, 200)
 	band := &gurps.SheetLayoutNode{Type: layoutnode.Row}
@@ -62,9 +62,8 @@ func newTestLayoutRegions() *layoutRegions {
 	}
 }
 
-// TestResolveDropTarget verifies where a block being dragged would land for each of the places the pointer can be over
-// the page. The drop is resolved from the regions and the point alone, so all of this can be checked without a window
-// to drag in.
+// TestResolveDropTarget checks where a block being dragged would land for each of the places the pointer can be over
+// the page. The drop is resolved from the regions and the point alone, so this needs no window to drag in.
 func TestResolveDropTarget(t *testing.T) {
 	c := check.New(t)
 	regions := newTestLayoutRegions()
@@ -259,9 +258,9 @@ func newTestLadderRegions() (regions *layoutRegions, nodesByName map[string]*gur
 	}, nodes
 }
 
-// TestResolveDropTargetEdgeLadder verifies that how far the pointer is from the edge of a block says which of the
-// things sharing that edge the drop is meant for: the outermost container within the first step of it, the next one in
-// within the second, and the block itself past the last of them or on an edge no container shares.
+// TestResolveDropTargetEdgeLadder checks that how far the pointer is from the edge of a block says which of the things
+// sharing that edge the drop is meant for: the outermost container within the first step of it, the next one in within
+// the second, and the block itself past the last of them or on an edge no container shares.
 func TestResolveDropTargetEdgeLadder(t *testing.T) {
 	c := check.New(t)
 	regions, nodes := newTestLadderRegions()
@@ -344,8 +343,8 @@ func TestResolveDropTargetEdgeLadder(t *testing.T) {
 
 // newTestSeamRegions returns a hand-built set of regions describing a page holding a band that is a row of two blocks
 // above a full-width band, along with the nodes of the things in it. The seam between the two blocks of the row runs up
-// and down between them and the seam between the two bands runs across the page, and the two cross one another where
-// the row's seam reaches the bottom of its band.
+// and down and the seam between the two bands runs across the page, and the two cross one another where the row's seam
+// reaches the bottom of its band.
 func newTestSeamRegions() (regions *layoutRegions, nodesByName map[string]*gurps.SheetLayoutNode) {
 	nodes := map[string]*gurps.SheetLayoutNode{
 		"root":   {Type: layoutnode.Column},
@@ -409,7 +408,7 @@ func newTestSeamRegions() (regions *layoutRegions, nodesByName map[string]*gurps
 	}, nodes
 }
 
-// TestResolveDropTargetSeams verifies what each third of a seam means, that the strip only reaches as far as its
+// TestResolveDropTargetSeams checks what each third of a seam means, that the strip only reaches as far as its
 // thickness, that the seam of a container wins over the page's own where the two cross, and that the seam a block being
 // dragged is one of the two sides of is passed over.
 func TestResolveDropTargetSeams(t *testing.T) {
@@ -548,7 +547,7 @@ func TestResolveDropTargetSeams(t *testing.T) {
 	}
 }
 
-// TestResolveDropTargetWithoutRegions verifies that a drop resolved before anything has been worked out goes nowhere
+// TestResolveDropTargetWithoutRegions checks that a drop resolved before anything has been worked out goes nowhere
 // rather than panicking.
 func TestResolveDropTargetWithoutRegions(t *testing.T) {
 	c := check.New(t)
@@ -584,8 +583,8 @@ func undoEditCount(mgr *unison.UndoManager) int {
 }
 
 // leafOnPage returns the region of the block with the given key, ending the test if that block isn't on the page. Every
-// caller reaches straight into what comes back, so a block that isn't there has to stop the test then and there rather
-// than be left as a nil to be dereferenced a line later.
+// caller reaches straight into what comes back, so a missing block has to stop the test then and there rather than be
+// left as a nil to be dereferenced a line later.
 func leafOnPage(t *testing.T, regions *layoutRegions, key string) *layoutLeafRegion {
 	t.Helper()
 	leaf := regions.leafFor(key)
@@ -616,7 +615,7 @@ func findTestSeam(regions *layoutRegions, first, second *gurps.SheetLayoutNode) 
 	return nil
 }
 
-// TestLayoutRegionsMatchThePage verifies that the regions describe exactly the blocks that are on the page, that each
+// TestLayoutRegionsMatchThePage checks that the regions describe exactly the blocks that are on the page, that each
 // full-width band is tied to the band of the model it was built from, and that a row of two blocks has a divider and a
 // seam between them.
 func TestLayoutRegionsMatchThePage(t *testing.T) {
@@ -710,9 +709,9 @@ func TestLayoutRegionsMatchThePage(t *testing.T) {
 		"the last gap must append a band past the end")
 }
 
-// TestPageFooterNumberingIgnoresTheOverlay verifies that the overlay the layout editor puts beside the sheet's page
-// doesn't make the page's footer call it the second of two -- which, the page then being even-numbered, would also
-// swap the two halves of the footer around.
+// TestPageFooterNumberingIgnoresTheOverlay checks that the overlay the layout editor puts beside the sheet's page
+// doesn't make the page's footer call it the second of two -- which, the page then being even-numbered, would also swap
+// the two halves of the footer around.
 func TestPageFooterNumberingIgnoresTheOverlay(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -727,7 +726,7 @@ func TestPageFooterNumberingIgnoresTheOverlay(t *testing.T) {
 	c.Equal(1, count)
 }
 
-// TestSecondButtonDuringAGestureIsIgnored verifies that a press of another button while a divider drag is under way
+// TestSecondButtonDuringAGestureIsIgnored checks that a press of another button while a divider drag is under way
 // neither abandons the drag -- which would leave the weights it had already written in place with nothing recorded to
 // undo them -- nor commits it on that button's release, and that the release of the button that began the drag still
 // commits it as one undoable edit. The reverse holds too: a press while a context menu is pending starts nothing.
@@ -770,10 +769,10 @@ func TestSecondButtonDuringAGestureIsIgnored(t *testing.T) {
 	c.Equal(1, undoEditCount(mgr), "and nothing may have been resized along the way")
 }
 
-// TestSeamBelongsToTheContainerItLiesIn verifies that the seam between two blocks names, as its parent, the container
-// the model holds the two of them in, even when that container's panel has taken over the slot of an outer container
-// the builder dropped -- here a column whose other child, an empty derived list, was left off the page -- so that the
-// node the slot is governed by and the node the pair belongs to differ.
+// TestSeamBelongsToTheContainerItLiesIn checks that the seam between two blocks names, as its parent, the container the
+// model holds the two of them in, even when that container's panel has taken over the slot of an outer container the
+// builder dropped -- here a column whose other child, an empty derived list, was left off the page -- so that the node
+// governing the slot and the node the pair belongs to differ.
 func TestSeamBelongsToTheContainerItLiesIn(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetWithLayout(t, testContainerNode(layoutnode.Column, fxp.One,
@@ -805,7 +804,7 @@ func TestSeamBelongsToTheContainerItLiesIn(t *testing.T) {
 	c.Equal(row, target.parent, "in the container the model holds them in")
 }
 
-// TestHideAndShowBlock verifies that taking a block off the sheet and putting it back are each one undoable edit that
+// TestHideAndShowBlock checks that taking a block off the sheet and putting it back are each one undoable edit that
 // updates the sheet exactly once, and that both can still be undone once editing mode has been left.
 func TestHideAndShowBlock(t *testing.T) {
 	c := check.New(t)
@@ -847,7 +846,7 @@ func TestHideAndShowBlock(t *testing.T) {
 	c.Equal(before, sheet.Entity().SheetSettings.Layout.VisibleKeys(), "redoing the show must put the block back")
 }
 
-// TestHideBlockThatIsAlreadyHiddenDoesNothing verifies that an edit that changes nothing is neither recorded nor shown.
+// TestHideBlockThatIsAlreadyHiddenDoesNothing checks that an edit changing nothing is neither recorded nor shown.
 func TestHideBlockThatIsAlreadyHiddenDoesNothing(t *testing.T) {
 	c := check.New(t)
 	sheet, _ := newTestSheetForLayoutEditing(t)
@@ -860,7 +859,7 @@ func TestHideBlockThatIsAlreadyHiddenDoesNothing(t *testing.T) {
 	c.Equal(1, undoEditCount(sheet.UndoManager()), "hiding a block that is already hidden must not be recorded")
 }
 
-// TestMoveBlockByDragging verifies that dropping a block against the edge of another one moves it there as a single
+// TestMoveBlockByDragging checks that dropping a block against the edge of another one moves it there as a single
 // undoable edit that updates the sheet exactly once, and that the move round trips through undo and redo.
 func TestMoveBlockByDragging(t *testing.T) {
 	c := check.New(t)
@@ -891,11 +890,10 @@ func TestMoveBlockByDragging(t *testing.T) {
 	c.Equal(1, undoEditCount(mgr), "moving a block must be one undoable edit")
 }
 
-// TestMoveBlockBesideAColumn verifies that a block dropped a step inside the left edge of the primary attributes block
+// TestMoveBlockBesideAColumn checks that a block dropped a step inside the left edge of the primary attributes block
 // lands beside the whole of the column that block is in, spanning everything in it, since that column's left edge is
 // the edge the pointer is on. The band's own left edge is in the same place, so the column is the second rung of the
-// ladder rather than the first; the first step of an edge two things share this way is what a drop right against it
-// means.
+// ladder rather than the first.
 func TestMoveBlockBesideAColumn(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -921,7 +919,7 @@ func TestMoveBlockBesideAColumn(t *testing.T) {
 		"the block must stand beside the whole column")
 }
 
-// TestMoveBlockBesideARow verifies that a block dropped on the middle of the seam below the identity block lands below
+// TestMoveBlockBesideARow checks that a block dropped on the middle of the seam below the identity block lands below
 // the whole of the row that block is in, spanning it, since coming between the two things a seam lies between is
 // joining their container between them.
 func TestMoveBlockBesideARow(t *testing.T) {
@@ -952,8 +950,8 @@ func TestMoveBlockBesideARow(t *testing.T) {
 		"the column the block came out of must collapse onto what is left of it")
 }
 
-// TestBlockDroppedWhereItStartedChangesNothing verifies that picking a block up and putting it back down without
-// moving it neither records an edit nor rebuilds the sheet.
+// TestBlockDroppedWhereItStartedChangesNothing checks that picking a block up and putting it back down without moving
+// it neither records an edit nor rebuilds the sheet.
 func TestBlockDroppedWhereItStartedChangesNothing(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -967,9 +965,9 @@ func TestBlockDroppedWhereItStartedChangesNothing(t *testing.T) {
 	c.False(sheet.UndoManager().CanUndo(), "a block dropped on itself must not be recorded")
 }
 
-// TestDividerDragTransfersWidth verifies that dragging the divider between two blocks moves width from one of them to
-// the other without altering how much of the row the pair takes up, and that a divider put back where it started
-// leaves nothing to undo.
+// TestDividerDragTransfersWidth checks that dragging the divider between two blocks moves width from one of them to the
+// other without altering how much of the row the pair takes up, and that a divider put back where it started leaves
+// nothing to undo.
 func TestDividerDragTransfersWidth(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -1008,7 +1006,7 @@ func TestDividerDragTransfersWidth(t *testing.T) {
 	c.Equal(1, undoEditCount(mgr), "resizing a block must be one undoable edit")
 }
 
-// TestBottomEdgeDragSetsMinimumHeight verifies that dragging a block's bottom edge past its natural height gives it a
+// TestBottomEdgeDragSetsMinimumHeight checks that dragging a block's bottom edge past its natural height gives it a
 // minimum height, that leaving it within a few pixels of its natural height gives it that height back, and that the
 // whole gesture is a single undoable edit.
 func TestBottomEdgeDragSetsMinimumHeight(t *testing.T) {
@@ -1044,8 +1042,8 @@ func TestBottomEdgeDragSetsMinimumHeight(t *testing.T) {
 	c.Equal(1, undoEditCount(mgr), "setting a block's height must be one undoable edit")
 }
 
-// TestResetLayoutRestoresTheDefault verifies that resetting returns the sheet to the layout new sheets are given, as
-// one undoable edit that updates the sheet exactly once.
+// TestResetLayoutRestoresTheDefault checks that resetting returns the sheet to the layout new sheets are given, as one
+// undoable edit that updates the sheet exactly once.
 func TestResetLayoutRestoresTheDefault(t *testing.T) {
 	c := check.New(t)
 	sheet, _ := newTestSheetForLayoutEditing(t)
@@ -1069,8 +1067,8 @@ func TestResetLayoutRestoresTheDefault(t *testing.T) {
 	c.Equal(2, undoEditCount(mgr), "resetting the layout must be one more undoable edit")
 }
 
-// TestEditingModeSurvivesARebuild verifies that a rebuild leaves the overlay on top of the page and the size of it,
-// since everything on the page is replaced by one and the page's own size can change along with it.
+// TestEditingModeSurvivesARebuild checks that a rebuild leaves the overlay on top of the page and the size of it, since
+// everything on the page is replaced by one and the page's own size can change along with it.
 func TestEditingModeSurvivesARebuild(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -1087,7 +1085,6 @@ func TestEditingModeSurvivesARebuild(t *testing.T) {
 	c.NotNil(editor.ensureRegions().leafFor(gurps.BlockNotesKey), "the regions must describe the rebuilt page")
 }
 
-// TestLeavingEditingModeTakesTheOverlayAway verifies that the sheet goes back to being an ordinary sheet.
 func TestLeavingEditingModeTakesTheOverlayAway(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -1123,9 +1120,9 @@ func restoreDefaultSheetLayout(t *testing.T, layout *gurps.SheetLayout) {
 	})
 }
 
-// TestUseLayoutAsDefaultStoresACopy verifies that making a sheet's layout the default for new sheets stores a copy of
-// it rather than the sheet's own, publishes it for the sheets opened from then on, and tells everything that lays
-// itself out from the defaults about the change.
+// TestUseLayoutAsDefaultStoresACopy checks that making a sheet's layout the default for new sheets stores a copy of it
+// rather than the sheet's own, publishes it for the sheets opened from then on, and tells everything that lays itself
+// out from the defaults about the change.
 func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
@@ -1157,7 +1154,7 @@ func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 	c.True(layout.Contains(gurps.BlockSpellsKey), "changing the default must not change the sheet")
 }
 
-// TestResetDefaultLayoutRestoresTheFactoryLayout verifies that resetting the default layout puts the factory layout in
+// TestResetDefaultLayoutRestoresTheFactoryLayout checks that resetting the default layout puts the factory layout in
 // place for new sheets and publishes it for the sheets opened from then on, leaves the sheet's own layout alone, and
 // tells everything that lays itself out from the defaults about the change.
 func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
@@ -1190,8 +1187,8 @@ func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
 	c.Nil(recorder.entities[0], "a nil entity is what says the change was to the defaults")
 }
 
-// TestCancelDragPutsTheLayoutBack verifies that abandoning a gesture partway through restores the layout it started
-// from, which is what the Escape key does.
+// TestCancelDragPutsTheLayoutBack checks that abandoning a gesture partway through restores the layout it started from,
+// which is what the Escape key does.
 func TestCancelDragPutsTheLayoutBack(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -1267,8 +1264,8 @@ func layoutTreeOf(sheet *Sheet) string {
 	return sheet.Entity().SheetSettings.Layout.Root.String()
 }
 
-// seamBetween returns the editor's regions, the regions of the two blocks with the given keys and the seam that lies
-// between those two, ending the test if any of the three is missing.
+// seamBetween returns the editor's regions, the regions of the two blocks with the given keys and the seam between
+// those two, ending the test if any of the three is missing.
 func seamBetween(t *testing.T, editor *sheetLayoutEditor, firstKey, secondKey string) (regions *layoutRegions,
 	first, second *layoutLeafRegion, seam *layoutSeamRegion,
 ) {
@@ -1282,9 +1279,9 @@ func seamBetween(t *testing.T, editor *sheetLayoutEditor, firstKey, secondKey st
 	return regions, first, second, seam
 }
 
-// checkSingleLayoutEdit drops the block with the given key at the given point and verifies that the drop syncs the
-// sheet exactly once, turns the layout tree from before into after, and is a single undoable edit that undo and redo
-// take back and forth. The description names the gesture, as in "straddling two bands".
+// checkSingleLayoutEdit drops the block with the given key at the given point and checks that the drop syncs the sheet
+// exactly once, turns the layout tree from before into after, and is a single undoable edit that undo and redo take
+// back and forth. what names the gesture, as in "straddling two bands".
 func checkSingleLayoutEdit(t *testing.T, c check.Checker, sheet *Sheet, editor *sheetLayoutEditor, key string,
 	where geom.Point, before, after, what string,
 ) {
@@ -1303,11 +1300,11 @@ func checkSingleLayoutEdit(t *testing.T, c check.Checker, sheet *Sheet, editor *
 	c.Equal(after, layoutTreeOf(sheet), "redo must put the layout back the way %s left it", what)
 }
 
-// TestDropDeepInsideABandStacksTheTwoIntoOneBand verifies that a block dropped on the half of a full-width band that is
-// deeper than the outermost step of the edge ladder stacks the two of them into a band group, and that a third block
-// dropped against the edge of that group then spans both of them. The block being dragged is the band just below the
-// one being dropped on, so the seam between the two of them is passed over and the ladder is what the drop lands on:
-// the top and bottom edges of a band belong to the page, so a drop within the outermost step of one means a new band.
+// TestDropDeepInsideABandStacksTheTwoIntoOneBand checks that a block dropped on the half of a full-width band deeper
+// than the outermost step of the edge ladder stacks the two of them into a band group, and that a third block dropped
+// against the edge of that group then spans both. The block being dragged is the band just below the one being dropped
+// on, so the seam between the two is passed over and the ladder is what the drop lands on: the top and bottom edges of
+// a band belong to the page, so a drop within the outermost step of one means a new band.
 func TestDropDeepInsideABandStacksTheTwoIntoOneBand(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetWithLeafBands(t, gurps.BlockTraitsKey, gurps.BlockSkillsKey, gurps.BlockNotesKey)
@@ -1365,7 +1362,7 @@ func TestDropDeepInsideABandStacksTheTwoIntoOneBand(t *testing.T) {
 	c.Equal("column[row[notes column[traits skills]]]", layoutTreeOf(sheet), "redo must put the block back beside it")
 }
 
-// TestDropAtTheEdgeOfABandGroupStillMakesANewBand verifies that the bottom edge of a band group means a new band of the
+// TestDropAtTheEdgeOfABandGroupStillMakesANewBand checks that the bottom edge of a band group means a new band of the
 // page, exactly as it does for a block that is a band of its own. The strip on that edge belongs to the seam the group
 // shares with the band below it, and the middle of a seam of the page is a new band between the two of them, so a band
 // group never turns into a target that would nest a block inside it.
@@ -1397,9 +1394,9 @@ func TestDropAtTheEdgeOfABandGroupStillMakesANewBand(t *testing.T) {
 		"the block must become a band of its own after the group rather than joining it")
 }
 
-// TestStraddleTwoBandsFromTheSeamBetweenThem verifies that dropping a block on one end of the seam between two of the
-// page's bands makes it stand beside both of them, spanning the pair. There is no other gesture that asks for it: the
-// edge of either band alone can only ask to stand beside that one band.
+// TestStraddleTwoBandsFromTheSeamBetweenThem checks that dropping a block on one end of the seam between two of the
+// page's bands makes it stand beside both of them, spanning the pair. No other gesture asks for that: the edge of
+// either band alone can only ask to stand beside that one band.
 func TestStraddleTwoBandsFromTheSeamBetweenThem(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetWithLeafBands(t, gurps.BlockTraitsKey, gurps.BlockSkillsKey, gurps.BlockNotesKey,
@@ -1422,7 +1419,7 @@ func TestStraddleTwoBandsFromTheSeamBetweenThem(t *testing.T) {
 		"column[row[notes column[traits skills]] spells]", "straddling two bands")
 }
 
-// TestDropBetweenTwoBandsFromTheSeamBetweenThem verifies that dropping a block on the middle of the seam between two of
+// TestDropBetweenTwoBandsFromTheSeamBetweenThem checks that dropping a block on the middle of the seam between two of
 // the page's bands makes it a band of its own between them.
 func TestDropBetweenTwoBandsFromTheSeamBetweenThem(t *testing.T) {
 	c := check.New(t)
@@ -1441,8 +1438,8 @@ func TestDropBetweenTwoBandsFromTheSeamBetweenThem(t *testing.T) {
 		"column[traits spells skills notes]", "coming between two bands")
 }
 
-// TestStraddleTwoBlocksSideBySideFromTheSeamBetweenThem verifies that dropping a block on one end of the seam between
-// two blocks that sit side by side puts it above or below the pair, spanning the width of both.
+// TestStraddleTwoBlocksSideBySideFromTheSeamBetweenThem checks that dropping a block on one end of the seam between two
+// blocks that sit side by side puts it above or below the pair, spanning the width of both.
 func TestStraddleTwoBlocksSideBySideFromTheSeamBetweenThem(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetWithLayout(t,
@@ -1464,7 +1461,7 @@ func TestStraddleTwoBlocksSideBySideFromTheSeamBetweenThem(t *testing.T) {
 		"column[column[notes row[traits skills]]]", "straddling two blocks")
 }
 
-// TestDropBetweenTwoBlocksSideBySideFromTheSeamBetweenThem verifies that dropping a block on the middle of the seam
+// TestDropBetweenTwoBlocksSideBySideFromTheSeamBetweenThem checks that dropping a block on the middle of the seam
 // between two blocks that sit side by side puts it into their row between the two of them.
 func TestDropBetweenTwoBlocksSideBySideFromTheSeamBetweenThem(t *testing.T) {
 	c := check.New(t)
@@ -1493,15 +1490,14 @@ func portraitContentSize(t *testing.T, editor *sheetLayoutEditor) geom.Size {
 	return leafOnPage(t, editor.ensureRegions(), gurps.BlockPortraitKey).panel.ContentRect(false).Size
 }
 
-// nearlySquare returns true if the given picture area is square to within a page pixel, which is as near as the
-// rounding of a weight into the fixed-point number the model keeps allows.
+// nearlySquare returns true if the given picture area is square to within a page pixel, which is as near as rounding a
+// weight into the fixed-point number the model keeps allows.
 func nearlySquare(size geom.Size) bool {
 	return xmath.Abs(size.Width-size.Height) < 1
 }
 
-// TestSquarePortraitNarrowsTheWiderBlock verifies that a portrait that is far wider than it is tall is squared by
-// taking width away from it, which is much the smaller change of the two, rather than by making its whole band as tall
-// as the portrait is wide.
+// TestSquarePortraitNarrowsTheWiderBlock checks that a portrait far wider than it is tall is squared by taking width
+// away from it, much the smaller change of the two, rather than by making its whole band as tall as it is wide.
 func TestSquarePortraitNarrowsTheWiderBlock(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetWithLayout(t,
@@ -1537,7 +1533,7 @@ func TestSquarePortraitNarrowsTheWiderBlock(t *testing.T) {
 	c.True(nearlySquare(portraitContentSize(t, editor)), "redo must make the picture area square again")
 }
 
-// TestSquarePortraitWidensAgainstATallerNeighbor verifies that a portrait kept tall by what stands beside it is squared
+// TestSquarePortraitWidensAgainstATallerNeighbor checks that a portrait kept tall by what stands beside it is squared
 // by widening it. Shortening it is not on offer at all: the row is as tall as the column beside it, so the minimum
 // height that would square the block is swallowed and the block is left exactly as it was.
 func TestSquarePortraitWidensAgainstATallerNeighbor(t *testing.T) {
@@ -1564,9 +1560,8 @@ func TestSquarePortraitWidensAgainstATallerNeighbor(t *testing.T) {
 	c.Equal(1, undoEditCount(sheet.UndoManager()), "squaring the portrait must be one undoable edit")
 }
 
-// TestSquarePortraitAloneInABandSetsItsHeight verifies that a portrait that has the page to itself, which leaves
-// nothing to take width from, is squared by giving the block the minimum height that makes its picture area as tall as
-// it is wide.
+// TestSquarePortraitAloneInABandSetsItsHeight checks that a portrait with the page to itself, which leaves nothing to
+// take width from, is squared by giving the block the minimum height that makes its picture area as tall as it is wide.
 func TestSquarePortraitAloneInABandSetsItsHeight(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetWithLayout(t, testBlockNode(gurps.BlockPortraitKey, fxp.One),
@@ -1591,7 +1586,7 @@ func TestSquarePortraitAloneInABandSetsItsHeight(t *testing.T) {
 	c.Equal(1, undoEditCount(sheet.UndoManager()), "squaring the portrait must be one undoable edit")
 }
 
-// TestSquarePortraitThatIsAlreadySquareDoesNothing verifies that asking for a square a second time neither records an
+// TestSquarePortraitThatIsAlreadySquareDoesNothing checks that asking for a square a second time neither records an
 // edit nor rebuilds the sheet.
 func TestSquarePortraitThatIsAlreadySquareDoesNothing(t *testing.T) {
 	c := check.New(t)
@@ -1611,7 +1606,7 @@ func TestSquarePortraitThatIsAlreadySquareDoesNothing(t *testing.T) {
 	c.Equal(1, undoEditCount(sheet.UndoManager()), "squaring a portrait that is already square must not be recorded")
 }
 
-// TestDividerDragBesideTheSquarePortraitTakesOverTheWidth verifies that dragging the divider beside the portrait of a
+// TestDividerDragBesideTheSquarePortraitTakesOverTheWidth checks that dragging the divider beside the portrait of a
 // sheet laid out the factory way takes its width out of the height's hands, that nothing jumps as that happens, and
 // that undoing the drag gives the portrait its square back.
 func TestDividerDragBesideTheSquarePortraitTakesOverTheWidth(t *testing.T) {
@@ -1651,8 +1646,8 @@ func TestDividerDragBesideTheSquarePortraitTakesOverTheWidth(t *testing.T) {
 		"undo must give the picture area the shape it had, but %v became %v", before, restored)
 }
 
-// TestBottomEdgeDragKeepsTheSquarePortraitSquare verifies that dragging the portrait's bottom edge grows its picture
-// area without taking it off its square: the minimum height raises the band, and the width follows the height.
+// TestBottomEdgeDragKeepsTheSquarePortraitSquare checks that dragging the portrait's bottom edge grows its picture area
+// without taking it off its square: the minimum height raises the band, and the width follows the height.
 func TestBottomEdgeDragKeepsTheSquarePortraitSquare(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -1675,7 +1670,7 @@ func TestBottomEdgeDragKeepsTheSquarePortraitSquare(t *testing.T) {
 	c.True(node.MinHeight.Pixels() > 0, "the drag must have set a minimum height")
 }
 
-// TestSquarePortraitButton verifies that only the portrait carries the square button, that it sits just to the left of
+// TestSquarePortraitButton checks that only the portrait carries the square button, that it sits just to the left of
 // the close button, and that pressing and releasing on it squares the picture area.
 func TestSquarePortraitButton(t *testing.T) {
 	c := check.New(t)

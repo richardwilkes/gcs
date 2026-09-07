@@ -108,8 +108,8 @@ func ExtractPlacement(str string) Placement {
 
 // ExtractKnownPlacement extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractPlacement, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// Unlike ExtractPlacement, which quietly maps anything it doesn't recognize onto the default value, this permits a
+// caller that is dispatching on the type to detect unknown types.
 func ExtractKnownPlacement(str string) (value Placement, known bool) {
 	for _, enum := range Placements {
 		if strings.EqualFold(enum.Key(), str) {

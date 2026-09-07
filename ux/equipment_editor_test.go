@@ -35,10 +35,9 @@ func newEditorEquipment(mutate func(e *gurps.Equipment, mod *gurps.EquipmentModi
 	return equipment, &data
 }
 
-// TestExtendedValuePreviewUsesPendingLevel verifies that the Extended Value preview honors the level currently typed
-// into the editor rather than the level the equipment was opened with. The preview's modifier context used to be the
-// unedited target, so a "per level" cost modifier kept multiplying by the original level and the preview never moved
-// when the Level field changed -- then the sheet showed a different value than the editor had just displayed.
+// The Extended Value preview must honor the level currently typed into the editor rather than the level the equipment
+// was opened with. The preview's modifier context used to be the unedited target, so a "per level" cost modifier kept
+// multiplying by the original level and the preview never moved when the Level field changed.
 func TestExtendedValuePreviewUsesPendingLevel(t *testing.T) {
 	c := check.New(t)
 	equipment, data := newEditorEquipment(func(e *gurps.Equipment, mod *gurps.EquipmentModifier) {
@@ -62,9 +61,9 @@ func TestExtendedValuePreviewUsesPendingLevel(t *testing.T) {
 	c.Equal(fxp.FromInteger(130), equipment.ExtendedValue(), "the applied value matches the preview")
 }
 
-// TestExtendedValuePreviewUsesPendingWeight verifies that a "per pound" cost modifier in the Extended Value preview
-// sees the weight currently typed into the editor. The multiplier comes from the equipment's own weight, so passing
-// the unedited target left the preview stuck on the original weight.
+// A "per pound" cost modifier in the Extended Value preview must see the weight currently typed into the editor. The
+// multiplier comes from the equipment's own weight, so passing the unedited target left the preview stuck on the
+// original weight.
 func TestExtendedValuePreviewUsesPendingWeight(t *testing.T) {
 	c := check.New(t)
 	equipment, data := newEditorEquipment(func(e *gurps.Equipment, mod *gurps.EquipmentModifier) {
@@ -85,8 +84,8 @@ func TestExtendedValuePreviewUsesPendingWeight(t *testing.T) {
 	c.Equal(fxp.FromInteger(150), equipment.ExtendedValue(), "the applied value matches the preview")
 }
 
-// TestExtendedWeightPreviewUsesPendingLevel verifies the same fix for the Extended Weight preview, whose "per level"
-// weight modifiers were likewise multiplied by the target's original level instead of the editor's pending one.
+// The same fix for the Extended Weight preview, whose "per level" weight modifiers were likewise multiplied by the
+// target's original level instead of the editor's pending one.
 func TestExtendedWeightPreviewUsesPendingLevel(t *testing.T) {
 	c := check.New(t)
 	equipment, data := newEditorEquipment(func(e *gurps.Equipment, mod *gurps.EquipmentModifier) {
@@ -108,9 +107,9 @@ func TestExtendedWeightPreviewUsesPendingLevel(t *testing.T) {
 		"the applied weight matches the preview")
 }
 
-// TestExtendedPreviewsHonorModifierEnablement verifies that toggling a modifier off in the editor is reflected by both
-// previews. The modifier list itself was already the editor's, but the equipment context it was evaluated against was
-// not, so anything the multiplier derived from the equipment stayed stale.
+// Toggling a modifier off in the editor must be reflected by both previews. The modifier list itself was already the
+// editor's, but the equipment context it was evaluated against was not, so anything the multiplier derived from the
+// equipment stayed stale.
 func TestExtendedPreviewsHonorModifierEnablement(t *testing.T) {
 	c := check.New(t)
 	equipment, data := newEditorEquipment(func(e *gurps.Equipment, mod *gurps.EquipmentModifier) {
@@ -135,8 +134,7 @@ func TestExtendedPreviewsHonorModifierEnablement(t *testing.T) {
 		"weight preview with the modifier disabled")
 }
 
-// TestExtendedPreviewsWithZeroQuantity verifies that a zero quantity yields zero for both previews, matching what the
-// sheet reports for such a row.
+// A zero quantity yields zero for both previews, matching what the sheet reports for such a row.
 func TestExtendedPreviewsWithZeroQuantity(t *testing.T) {
 	c := check.New(t)
 	equipment, data := newEditorEquipment(func(e *gurps.Equipment, mod *gurps.EquipmentModifier) {

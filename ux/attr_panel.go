@@ -99,8 +99,8 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 }
 
 // computeHash returns a hash of the attribute definitions combined with their trait-driven effective placements, so
-// that the panel is rebuilt not only when the definitions themselves change, but also when a trait is added, removed,
-// enabled, or disabled in a way that reveals or hides an attribute.
+// that the panel is rebuilt not only when the definitions change, but also when a trait is added, removed, enabled or
+// disabled in a way that reveals or hides an attribute.
 func (a *AttrPanel) computeHash(attrs *gurps.AttributeDefs) uint64 {
 	h := xxh3.New()
 	xhash.Num64(h, gurps.Hash64(attrs))
@@ -355,8 +355,8 @@ func (a *AttrPanel) Sync() {
 }
 
 // updateBonusTooltips sets the tooltip on both the name label and the value field of an attribute's row, listing the
-// sources of the bonuses currently affecting it, so that hovering over either the name or the number shows where the
-// bonuses come from. Point pool labels show only the abbreviated name, so their full name leads the tooltip.
+// sources of the bonuses currently affecting it. Point pool labels show only the abbreviated name, so their full name
+// leads the tooltip.
 func (a *AttrPanel) updateBonusTooltips(id string, attr *gurps.Attribute) {
 	text := a.bonusTooltipText(attr)
 	if label, ok := a.nameLabels[id]; ok {
@@ -381,7 +381,6 @@ func (a *AttrPanel) bonusTooltipText(attr *gurps.Attribute) string {
 	return strings.Join(parts, "\n")
 }
 
-// wrappedTooltipOrNil returns a wrapped tooltip for the text, or nil if the text is empty.
 func wrappedTooltipOrNil(text string) *unison.Panel {
 	if text == "" {
 		return nil

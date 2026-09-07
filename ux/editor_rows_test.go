@@ -21,12 +21,8 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// TestMoveEntry verifies the insertion-index semantics of moveEntry: the target is a position in the list before the
-// entry is removed, so a target beyond the entry is adjusted down by one, out-of-range indexes and no-op moves are
-// refused, and a refused move leaves the list alone.
-// TestConfigureEditorRow verifies the shared row setup: the standard insets, widened on the right for a row at the
-// outermost level so that the overlaid scrollbar doesn't cover its content, the requested number of columns, and a
-// layout that fills the width of the list; and that a button column stacks its buttons in the order given.
+// The shared row setup widens the right inset for an outermost row so that the overlaid scrollbar doesn't cover its
+// content.
 func TestConfigureEditorRow(t *testing.T) {
 	c := check.New(t)
 	nested := unison.NewPanel()
@@ -109,19 +105,18 @@ func dragDataForRow(t *testing.T, row *unison.Panel) *editorRowDragData {
 	return dd
 }
 
-// beginDragOver puts an editor's drag state into the state dataDragOver leaves it in when the pointer is over the given
-// insertion position within the rows container, so that a drop can be tested without aiming a pointer at laid-out
-// rows; TestDragOverFindsInsertionPositionFromGeometry covers that part of dataDragOver on its own.
+// beginDragOver puts an editor's drag state where dataDragOver would leave it for the given insertion position within
+// the rows container, so a drop can be tested without aiming a pointer at laid-out rows;
+// TestDragOverFindsInsertionPositionFromGeometry covers that part of dataDragOver on its own.
 func beginDragOver(s *rowDragState, rows *unison.Panel, insert int) {
 	s.inDragOver = true
 	s.dragTarget = rows
 	s.dragInsert = insert
 }
 
-// layOutTestEditor gives a test editor a frame of a workable size and lays it out, so that its rows have the positions
-// and sizes that dataDragOver's hit-testing works from. The editor is in no window, so nothing else lays it out, and it
-// has no layout of its own, since Setup, which would give it one, is not run for a test editor; the one given here has
-// the scroll panel fill the frame, as Setup's does.
+// layOutTestEditor gives a test editor a frame of a workable size and lays it out, so its rows have the positions and
+// sizes dataDragOver's hit-testing works from. A test editor is in no window and never runs Setup, so nothing else
+// would lay it out or give it a layout; the one given here has the scroll panel fill the frame, as Setup's does.
 func layOutTestEditor(d unison.Paneler) {
 	p := d.AsPanel()
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -133,11 +128,9 @@ func layOutTestEditor(d unison.Paneler) {
 	p.ValidateLayout()
 }
 
-// TestDragOverFindsInsertionPositionFromGeometry verifies the part of a row drag that the other drag tests bypass
-// through beginDragOver: with the editor laid out, dataDragOver finds the row under the pointer among the dragged row's
-// siblings and chooses the insertion position ahead of it when the pointer is above the row's center line and after it
-// otherwise; a pointer over no row, or a payload from another editor, makes no drop target; and a drop then lands at
-// the position the last dataDragOver chose.
+// This covers the part of a row drag that the other drag tests bypass through beginDragOver: with the editor laid out,
+// dataDragOver finds the row under the pointer among the dragged row's siblings and inserts ahead of it when the
+// pointer is above the row's center line and after it otherwise.
 func TestDragOverFindsInsertionPositionFromGeometry(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -157,8 +150,8 @@ func TestDragOverFindsInsertionPositionFromGeometry(t *testing.T) {
 	c.True(rows[1].FrameRect().Y >= rows[0].FrameRect().Bottom(), "and stacked")
 	dd := dragDataForRow(t, rows[2])
 
-	// pointInRow returns the point the given fraction of the way down the row, in the coordinate space of the content
-	// panel, which is the space dataDragOver takes its pointer in.
+	// pointInRow returns the point the given fraction of the way down the row, in the content panel's coordinate space,
+	// which is the space dataDragOver takes its pointer in.
 	pointInRow := func(row *unison.Panel, fraction float32) geom.Point {
 		r := row.FrameRect()
 		return d.content.PointFromRoot(list.rows.PointToRoot(geom.NewPoint(r.CenterX(), r.Y+r.Height*fraction)))
@@ -206,8 +199,6 @@ func TestDragOverFindsInsertionPositionFromGeometry(t *testing.T) {
 	c.True(d.undoMgr.CanUndo(), "and the drop is undoable")
 }
 
-// TestAncestryDragDropReordersOwningList verifies that dropping a row moves its entry within the list that owns it,
-// posts a single undo edit, rebuilds the rows, and clears the drag state.
 func TestAncestryDragDropReordersOwningList(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -239,8 +230,7 @@ func TestAncestryDragDropReordersOwningList(t *testing.T) {
 	c.Equal([]string{"Brown", "Blond", "Black"}, optionValues(d.model.CommonOptions.HairOptions))
 }
 
-// TestAncestryDragDropOnGendersAndGenerators verifies that the same mechanism reorders the gender list and the name
-// generator list.
+// The same mechanism must also reorder the gender list and the name generator list.
 func TestAncestryDragDropOnGendersAndGenerators(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -268,8 +258,6 @@ func TestAncestryDragDropOnGendersAndGenerators(t *testing.T) {
 	c.False(d.undoMgr.CanUndo())
 }
 
-// TestAncestryDragDropIgnoresNoOpsAndForeignPayloads verifies that a drop that would not move anything posts no undo
-// edit, that a payload from another editor is ignored, and that both still clear the drag state.
 func TestAncestryDragDropIgnoresNoOpsAndForeignPayloads(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -284,7 +272,7 @@ func TestAncestryDragDropIgnoresNoOpsAndForeignPayloads(t *testing.T) {
 	c.False(d.undoMgr.CanUndo(), "a no-op drop posts nothing")
 	c.False(d.inDragOver)
 
-	// A payload belonging to another editor is not acted on, even if its move would succeed.
+	// Another editor's payload is not acted on, even if its move would succeed.
 	other := newTestAncestryEditorDockable(gurps.NewAncestry())
 	moved := false
 	foreign := &editorRowDragData{
@@ -321,8 +309,8 @@ func (r *sectionRoot) MarkModified(_ unison.Paneler) {
 	r.modified++
 }
 
-// expectTitledEditorSection verifies that the given panel carries the titled editor section scaffold, whose layout data
-// and border are what make the sections line up with each other in an editor.
+// expectTitledEditorSection verifies that the panel carries the titled editor section scaffold, whose layout data and
+// border are what make the sections line up with each other in an editor.
 func expectTitledEditorSection(c check.Checker, p unison.Paneler, title string) {
 	c.Helper()
 	panel := p.AsPanel()
@@ -339,8 +327,8 @@ func expectTitledEditorSection(c check.Checker, p unison.Paneler, title string) 
 	c.NotNil(panel.DrawCallback, "%s: a titled editor section paints its own background", title)
 }
 
-// TestInitTitledEditorSection verifies the scaffold shared by the editors' titled sections and that each of the four
-// section panels is built on it, so that none of them can drift from the others again in how it fills the editor.
+// Each of the four section panels must be built on the shared scaffold, so none can drift from the others again in how
+// it fills the editor.
 func TestInitTitledEditorSection(t *testing.T) {
 	c := check.New(t)
 	section := &titledSection{}
@@ -363,8 +351,6 @@ func TestInitTitledEditorSection(t *testing.T) {
 	expectTitledEditorSection(c, newStudyPanel(entity, &level, &studies), "Study")
 }
 
-// TestNewSectionAddButton verifies that clicking a section's add button runs the insertion and marks the section's
-// root as modified only when the insertion reports that it added something.
 func TestNewSectionAddButton(t *testing.T) {
 	c := check.New(t)
 	root := &sectionRoot{}

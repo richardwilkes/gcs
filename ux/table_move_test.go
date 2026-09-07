@@ -49,7 +49,6 @@ func newMoveTestSheet(t *testing.T) (*Sheet, moveTestTraits) {
 	return sheet, traits
 }
 
-// selectTraits makes the given traits the table's selection.
 func selectTraits(table *unison.Table[*Node[*gurps.Trait]], traits ...*gurps.Trait) {
 	selMap := make(map[tid.TID]bool, len(traits))
 	for _, trait := range traits {
@@ -468,7 +467,6 @@ func TestMoveSelectionInEditorTable(t *testing.T) {
 	c.Equal([]string{"Sharp", "Variations"}, modifierNames(e.editorData.Modifiers), "undo must put the order back")
 }
 
-// skillNames returns the names of the skills, in order.
 func skillNames(skills []*gurps.Skill) []string {
 	names := make([]string, 0, len(skills))
 	for _, skill := range skills {
@@ -477,7 +475,6 @@ func skillNames(skills []*gurps.Skill) []string {
 	return names
 }
 
-// modifierNames returns the names of the trait modifiers, in order.
 func modifierNames(modifiers []*gurps.TraitModifier) []string {
 	names := make([]string, 0, len(modifiers))
 	for _, modifier := range modifiers {

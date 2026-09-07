@@ -15,8 +15,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestParseRulesLookupData verifies that the downloaded data is grouped by book, that a UTF-8 BOM is tolerated and that
-// malformed data is reported as an error rather than silently yielding an empty set of rules.
 func TestParseRulesLookupData(t *testing.T) {
 	c := check.New(t)
 

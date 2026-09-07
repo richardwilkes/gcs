@@ -30,9 +30,9 @@ var (
 
 // sheetList is what a dockable that shows page lists asks of each of them without regard to the type of row a list
 // holds, so that its lists can be worked on as a group -- cleared, searched, disclosed and their selections carried
-// across a rebuild -- by looping over the dockable's lists() rather than by naming each one. Every method but the
-// disclosure ones tolerates a nil *PageList, since a dockable's lists() includes lists it hasn't built yet while it is
-// first being put together.
+// across a rebuild -- by looping over the dockable's lists() rather than by naming each one. The selection and search
+// methods tolerate a nil *PageList, since a dockable's lists() includes lists it hasn't built yet while it is first
+// being put together.
 type sheetList interface {
 	unison.Paneler
 	hierarchyDiscloser
@@ -51,12 +51,12 @@ type itemCreator interface {
 // installNewItemCmdHandlers installs on the owner the handlers for the "New ..." commands that add an item to one of
 // its lists: the plain item, and -- unless the container ID is -1, in which case the item is the alternate kind (a
 // technique, a ritual magic spell) -- the container as well. The list is looked up through the getter each time a
-// command is invoked rather than captured here, since a list whose set of columns has to change can only do so by
-// being replaced outright (a table's columns are fixed at creation -- see PageList.needReconstruction), which leaves
-// the list that was captured orphaned. Creating an item in an orphaned list still updates the model, but everything
-// that goes with it is aimed at a table nobody is looking at: the undo edit can't even find the undo manager, so the
-// insertion isn't undoable and the user's next undo silently takes back the edit before it, and the new row is neither
-// selected nor scrolled into view in the list that is actually on screen.
+// command is invoked rather than captured here, since a list whose set of columns has to change can only do so by being
+// replaced outright (a table's columns are fixed at creation -- see PageList.needReconstruction), leaving whatever
+// captured it holding an orphan. Creating an item in an orphaned list still updates the model, but everything that goes
+// with it is aimed at a table nobody is looking at: the undo edit can't even find the undo manager, so the insertion
+// isn't undoable and the user's next undo silently takes back the edit before it, and the new row is neither selected
+// nor scrolled into view in the list that is actually on screen.
 func installNewItemCmdHandlers(owner Rebuildable, itemID, containerID int, creator func() itemCreator) {
 	p := owner.AsPanel()
 	variant := NoItemVariant

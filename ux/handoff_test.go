@@ -51,9 +51,8 @@ func handoffHeader(size uint32) []byte {
 	return header
 }
 
-// TestReadHandoffPathsRejectsOversizedPayload verifies that a byte count larger than the maximum is refused before it
-// is handed to make(). The handoff port is reachable by any local process, so an unchecked count let one of them ask
-// for an allocation of up to 4GB, likely OOM-killing GCS.
+// A byte count larger than the maximum must be refused before it is handed to make(). The handoff port is reachable by
+// any local process, so an unchecked count let one of them ask for an allocation of up to 4GB, likely OOM-killing GCS.
 func TestReadHandoffPathsRejectsOversizedPayload(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -73,8 +72,8 @@ func TestReadHandoffPathsRejectsOversizedPayload(t *testing.T) {
 	}
 }
 
-// TestReadHandoffPathsRejectsMalformedFraming verifies the rest of the framing checks, so that a bad marker or a
-// truncated stream is reported rather than silently treated as an empty path list.
+// The rest of the framing checks: a bad marker or a truncated stream must be reported rather than silently treated as
+// an empty path list.
 func TestReadHandoffPathsRejectsMalformedFraming(t *testing.T) {
 	c := check.New(t)
 	payload, err := jio.Marshal([]string{"/tmp/a.gcs"})
@@ -97,8 +96,7 @@ func TestReadHandoffPathsRejectsMalformedFraming(t *testing.T) {
 	}
 }
 
-// TestReadHandoffPathsAcceptsMaximumSizedPayload verifies the bound is inclusive, so a payload of exactly the maximum
-// is still accepted.
+// The bound is inclusive, so a payload of exactly the maximum is still accepted.
 func TestReadHandoffPathsAcceptsMaximumSizedPayload(t *testing.T) {
 	c := check.New(t)
 	// A single-element array of one long path: two brackets and two quotes plus the path itself.
@@ -117,8 +115,8 @@ func useTestAppIdentifier(t *testing.T) {
 	swapForTest(t, &xos.AppIdentifier, "com.trollworks.gcs")
 }
 
-// TestHandoffRefusesOversizedPayload verifies the sending side applies the same bound, so it reports the problem
-// against the paths it can name instead of writing a payload the receiver is going to throw away.
+// The sending side applies the same bound, so it reports the problem against the paths it can name instead of writing
+// a payload the receiver is going to throw away.
 func TestHandoffRefusesOversizedPayload(t *testing.T) {
 	c := check.New(t)
 	useTestAppIdentifier(t)
@@ -137,8 +135,8 @@ func TestHandoffRefusesOversizedPayload(t *testing.T) {
 	c.False(handoff(client, make([]byte, maxHandoffPayloadSize+1)), "an oversized payload must not be sent")
 }
 
-// TestHandoffRoundTrip runs the sending and receiving halves against each other, verifying they agree on the wire
-// format and that a normal path list still makes it across.
+// Runs the sending and receiving halves against each other: they must agree on the wire format and a normal path list
+// must still make it across.
 func TestHandoffRoundTrip(t *testing.T) {
 	c := check.New(t)
 	useTestAppIdentifier(t)

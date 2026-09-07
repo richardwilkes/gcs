@@ -26,7 +26,7 @@ import (
 
 var _ Hashable = &HitLocation{}
 
-// HitLocationData holds the Hitlocation data that gets written to disk.
+// HitLocationData holds the HitLocation data that gets written to disk.
 type HitLocationData struct {
 	LocID       string `json:"id"`
 	ChoiceName  string `json:"choice_name"`
@@ -59,7 +59,7 @@ func NewHitLocation(entity *Entity, keyPrefix string) *HitLocation {
 	}
 }
 
-// Clone a copy of this.
+// Clone returns a copy of this HitLocation, owned by the given entity and table.
 func (h *HitLocation) Clone(entity *Entity, owningTable *Body) *HitLocation {
 	clone := *h
 	clone.Entity = entity
@@ -114,8 +114,8 @@ func (h *HitLocation) ID() string {
 	return h.LocID
 }
 
-// SetID sets the ID, sanitizing it in the process (i.e. it may be changed from what you set -- read it back if you want
-// to be sure of what it gets set to.
+// SetID sets the ID, sanitizing it in the process, so the result may differ from the value passed in -- read it back
+// if you need to be sure of what it became.
 func (h *HitLocation) SetID(value string) {
 	h.LocID = SanitizeID(value, false, ReservedIDs...)
 }
@@ -125,8 +125,9 @@ func (h *HitLocation) OwningTable() *Body {
 	return h.owningTable
 }
 
-// DR computes the DR coverage for this HitLocation. If 'tooltip' isn't nil, the buffer will be updated with details on
-// how the DR was calculated. If 'drMap' isn't nil, it will be returned.
+// DR computes the DR coverage for this HitLocation, including the DR contributed by the locations that own it. If
+// 'tooltip' isn't nil, it is updated with details on how the DR was calculated. If 'drMap' isn't nil, the DR is added
+// into it and it is the map that is returned.
 func (h *HitLocation) DR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map[string]int) map[string]int {
 	drMap = h.accumulateDR(entity, tooltip, drMap)
 	if tooltip != nil && len(drMap) != 0 {

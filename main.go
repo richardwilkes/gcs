@@ -50,7 +50,7 @@ func main() {
 		w.WriteByte('\n')
 	}
 
-	// Look for a settings file co-located with the executable and prefer that over the one in the app data dir.
+	// Prefer a settings file co-located with the executable over the one in the app data dir.
 	settingsName := xos.AppCmdName + "_prefs.json"
 	gurps.SettingsPath = filepath.Join(xos.AppDataDir(true), settingsName)
 	if dir, err := xos.AppDir(); err == nil {
@@ -119,9 +119,8 @@ func main() {
 	xos.Exit(0)
 }
 
-// exclusiveModeMsg returns a non-empty error message if more than one of the mutually exclusive command-line modes
-// (--convert, --sync, --text, --finish-update) has been specified. These modes each take over the process and exit, so
-// only one may be requested at a time.
+// exclusiveModeMsg returns a non-empty error message if more than one of --convert, --sync, --text and --finish-update
+// was specified. Each of these modes takes over the process and exits, so only one may be requested at a time.
 func exclusiveModeMsg(convert, sync bool, textTmplPath, finishUpdatePath string) string {
 	var modes []string
 	if convert {

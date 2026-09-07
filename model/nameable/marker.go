@@ -39,9 +39,8 @@ var (
 	legacyLabeledPattern = regexp.MustCompile(`^([^:\n]{1,40}): (.+)$`)
 )
 
-// NewMarker parses a single nameable marker string into a Marker struct
-//
-// NOTE: This will trim the marker string and save it as the Raw value.
+// NewMarker parses a single nameable marker string into a Marker. The marker string is trimmed and stored as Raw.
+// Returns false if the marker has no non-empty label, in which case only Raw is filled in.
 func NewMarker(marker string) (Marker, bool) {
 	raw := strings.TrimSpace(marker)
 	segments := ExtractSegments(raw, SegmentDelimiter)
@@ -88,9 +87,8 @@ func NewMarker(marker string) (Marker, bool) {
 			}, true
 		}
 
-		// The marker is a single segment and not known legacy format
-		// In this case it's treated as having the FreeForm and AllowEmpty flags
-		// This is an allowed and simplified form of a marker
+		// A single segment that isn't one of the known legacy formats is the allowed, simplified form of a marker and
+		// is treated as free-form and empty-allowed.
 		return Marker{
 			Raw:        raw,
 			Label:      label,
@@ -129,8 +127,8 @@ func NewMarker(marker string) (Marker, bool) {
 
 	options = unique(options)
 
-	// A marker with no literal options is treated as free-form, even if the FreeFormToken wasn't given.
-	// This is a reasonable fallback to prevent an invalid marker config
+	// A marker with no literal options is treated as free-form even if the FreeFormToken wasn't given, since there
+	// would otherwise be nothing to choose from.
 	if len(options) == 0 {
 		freeForm = true
 	}
@@ -147,13 +145,10 @@ func NewMarker(marker string) (Marker, bool) {
 
 // Marker is a parsed nameable key of the form "Label|tt(Tooltip line)|option|option|...".
 //
-// Segments are pipe-delimited.
-// The first segment MUST be the label and MUST NOT be empty.
-// Each tt(...) segment (there may be more than one) supplies one line of the tooltip.
-// Multiple tooltip segments are joined with '\n' into a final single tooltip string.
-// AllowEmptyToken and FreeFormToken toggle UI behavior instead of being literal choices.
-// A literal `|` or `\` can be escaped by prefixing with `\`. No other character is reserved within the
-// label, tooltip, or option text.
+// The first pipe-delimited segment is the label and must not be empty. Each tt(...) segment supplies one line of the
+// tooltip, with multiple such segments joined by '\n'. AllowEmptyToken and FreeFormToken toggle UI behavior instead of
+// being literal choices. A literal `|` or `\` can be escaped by prefixing it with `\`. No other character is reserved
+// within the label, tooltip, or option text.
 type Marker struct {
 	Raw        string
 	Label      string
@@ -164,7 +159,7 @@ type Marker struct {
 	Legacy     bool
 }
 
-// Key returns a normalized marker key
+// Key returns the normalized key for this marker. A legacy marker keys on its raw text, unchanged.
 func (m *Marker) Key() string {
 	if m.Legacy {
 		return m.Raw
@@ -173,7 +168,7 @@ func (m *Marker) Key() string {
 	sb.Grow(len(m.Raw))
 	sb.WriteString(EscapeRunes(m.Label, EscapeRune, SegmentDelimiter))
 	if len(m.Options) == 0 && m.FreeForm && m.AllowEmpty && m.Tooltip == "" {
-		// Handle an early return from simple markers to simplify the key
+		// A simple marker's key is just its label.
 		return sb.String()
 	}
 	for _, o := range m.Options {

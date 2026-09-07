@@ -39,8 +39,9 @@ const (
 	TorsoID            = "torso"
 )
 
-// SanitizeID ensures the ID is not empty and consists of only lowercase alphanumeric characters. If permitLeadingDigits
-// is false, then leading digits are stripped. A list of reserved values can be passed in to disallow specific IDs.
+// SanitizeID ensures the ID is not empty and consists of only lowercase alphanumeric characters and underscores. If
+// permitLeadingDigits is false, then leading digits are stripped. A list of reserved values can be passed in to
+// disallow specific IDs; an ID that collides with one gets underscores appended until it no longer does.
 func SanitizeID(id string, permitLeadingDigits bool, reserved ...string) string {
 	var buffer strings.Builder
 	buffer.Grow(len(id))

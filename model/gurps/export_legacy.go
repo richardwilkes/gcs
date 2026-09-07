@@ -467,10 +467,8 @@ func (ex *legacyExporter) emitKey(key string) error {
 					return nil
 				}
 			}
-			// The suffixes must be checked from most-specific to least-specific, since "_full_name" and
-			// "_combined_name" both end with "_name". A suffix that matches but whose remaining text isn't an
-			// attribute ID falls through to the next candidate, so an attribute whose ID itself ends with one of
-			// these suffixes still resolves.
+			// A suffix that matches but whose remaining text isn't an attribute ID falls through to the next
+			// candidate, so an attribute whose own ID ends with one of these suffixes still resolves.
 			for _, one := range attributeKeySuffixes {
 				if !strings.HasSuffix(attrKey, one.suffix) {
 					continue
@@ -676,21 +674,19 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 	}
 }
 
-// hitLocationEquipment returns the names of the carried, really-equipped pieces of equipment that grant DR to the
-// given hit location, in the order they appear in the carried equipment list. What counts as granting DR mirrors how
-// the DR printed for the location is arrived at (see Entity.AddDRBonusesFor), so that the two agree:
+// hitLocationEquipment returns the names of the carried, really-equipped pieces of equipment that grant DR to the given
+// hit location, in the order they appear in the carried equipment list and each named at most once. What counts as
+// granting DR mirrors how the DR printed for the location is arrived at (see Entity.AddDRBonusesFor), so that the two
+// agree:
 //
-//   - The DR bonuses of an item's enabled, non-container modifiers are considered as well as the item's own, subject to
-//     the item's switch, exactly as they are when the entity collects features (see Entity.processFeatures). Armor
-//     that only reaches the location through a modifier -- a hood adding DR to the skull, say -- is therefore listed.
-//   - A bonus naming the "all" location covers every location this is called for, since the hit location loop only
-//     visits the top-level locations of the body (see processHitLocationLoop) and "all" applies to those.
-//   - A "this armor" DR bonus (one that names no locations) needs no examination of its own, since it covers the union
-//     of the locations named by the item's and its enabled modifiers' located DR bonuses (see
-//     Entity.expandThisArmorDRBonus), every one of which is already scanned here; the item therefore gets listed for
-//     precisely the locations such a bonus can reach.
-//
-// Each piece of equipment is named at most once, no matter how many of its DR bonuses reach the location.
+//   - The DR bonuses of an item's enabled, non-container modifiers count alongside the item's own, subject to the
+//     item's switch, exactly as when the entity collects features (see Entity.processFeatures), so armor that reaches
+//     the location only through a modifier -- a hood adding DR to the skull, say -- is listed.
+//   - A bonus naming the "all" location covers every location this is called for, since the hit location loop visits
+//     only the top-level locations of the body (see processHitLocationLoop).
+//   - A "this armor" DR bonus (one naming no locations) needs no examination of its own, since it reaches exactly the
+//     locations named by the item's and its enabled modifiers' located DR bonuses (see Entity.expandThisArmorDRBonus),
+//     all of which are already scanned here.
 func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 	var list []string
 	Traverse(func(eqp *Equipment) bool {
@@ -711,8 +707,8 @@ func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 
 // drBonusCoversLocation returns true if any of the given features that is active for an owner whose switch is in the
 // given state is a DR bonus naming the given hit location ID, either explicitly or via the "all" location. The switch
-// is applied here rather than by way of Features.Active, since this runs once per hit location for every piece of
-// equipment during an export and Features.Active allocates whenever it has something to filter out.
+// is applied here rather than via Features.Active, since this runs once per hit location for every piece of equipment
+// during an export and Features.Active allocates whenever it has something to filter out.
 func drBonusCoversLocation(features Features, switchedOn bool, locID string) bool {
 	for _, f := range features {
 		if f.IsSwitchable() && !switchedOn {
@@ -730,7 +726,7 @@ func drBonusCoversLocation(features Features, switchedOn bool, locID string) boo
 }
 
 // legacyNodeKeys supplies what processLegacyNodeKey needs from a node beyond the methods every Node has. A nil func
-// marks a key family the node type does not support, leaving those keys to be reported as unidentified.
+// marks a key family the node type doesn't support, leaving those keys to be reported as unidentified.
 type legacyNodeKeys struct {
 	// containerType is what the TYPE key emits for a container node, defaulting to "GROUP" when empty.
 	containerType string
@@ -1161,8 +1157,7 @@ func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 // scanning from.
 type weaponKeyFunc func(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int
 
-// weapons returns the melee or ranged weapons the flat loops iterate over, honoring the sheet's show-all-weapons
-// setting.
+// weapons returns the melee or ranged weapons the flat loops iterate over, honoring the show-all-weapons setting.
 func (ex *legacyExporter) weapons(melee bool) []*Weapon {
 	return ex.entity.Weapons(melee, ex.entity.SheetSettings.ShowAllWeapons, true)
 }
@@ -1429,10 +1424,10 @@ func (ex *legacyExporter) writeWithOptionalParens(key, text string) {
 
 // processBuffer runs the template scanner over buffer. Text is copied to the output until an '@' that is not followed
 // by a digit starts a key; the key is the run of [A-Za-z0-9_] bytes that follows, and the byte that ends it is scanned
-// again as text unless enhanced key parsing is on and it is a closing '@'. Each key is handed to f along with the buffer
-// and the index scanning would resume from, and f returns the index to actually resume from, so that a loop handler can
-// skip the body it consumed. A key that is still being accumulated when the buffer ends is returned as pending rather
-// than dispatched: loop bodies drop it, while the top-level template emits it.
+// again as text unless enhanced key parsing is on and it is a closing '@'. Each key is handed to f along with the
+// buffer and the index scanning would resume from, and f returns the index to actually resume from, so that a loop
+// handler can skip the body it consumed. A key that is still being accumulated when the buffer ends is returned as
+// pending rather than dispatched: loop bodies drop it, while the top-level template emits it.
 func (ex *legacyExporter) processBuffer(buffer []byte, f func(key string, buf []byte, index int) int) (pending string) {
 	var keyBuffer bytes.Buffer
 	lookForKeyMarker := true

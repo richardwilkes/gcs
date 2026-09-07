@@ -14,7 +14,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 )
 
-// LengthField is field that holds a length value.
+// LengthField is a field that holds a length value.
 type LengthField = NumericField[fxp.Length]
 
 // NewLengthField creates a new field that holds a length value, shown in the entity's default length units.

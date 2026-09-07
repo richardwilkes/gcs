@@ -21,9 +21,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestSettingsDockableDoLoadPrefersRefLoader verifies that doLoad hands the whole file reference to RefLoader when one
-// is set, falls back to Loader with the reference's file system and path when there is no RefLoader, and reports a
-// loader's failure through the workspace's error handler under the dockable's title.
+// TestSettingsDockableDoLoadPrefersRefLoader checks that doLoad prefers RefLoader, falls back to Loader without one,
+// and reports a loader's failure through the workspace's error handler under the dockable's title.
 func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -52,20 +51,17 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 		},
 	}
 
-	// With both set, RefLoader wins and receives the reference itself.
 	d.doLoad(ref)
 	c.Equal(1, refLoaderCalls, "RefLoader is preferred")
 	c.Equal(0, loaderCalls, "Loader is not called when RefLoader is set")
 	c.True(gotRef == ref, "RefLoader receives the same reference")
 
-	// With only Loader set, it receives the reference's file system and path.
 	d.RefLoader = nil
 	d.doLoad(ref)
 	c.Equal(1, loaderCalls, "Loader is used when there is no RefLoader")
 	c.Equal(ref.FileSystem, gotFS)
 	c.Equal(ref.FilePath, gotPath)
 
-	// A failing loader is reported through the workspace's error handler.
 	var gotMsg string
 	var gotErr error
 	swapForTest(t, &Workspace.ErrorHandler, func(msg string, err error) {
@@ -80,7 +76,6 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 	c.Equal(1, loaderCalls, "Loader is not called when RefLoader fails")
 }
 
-// TestSettingsDockableCanLoad verifies that a dockable can load with either form of loader, and not without one.
 func TestSettingsDockableCanLoad(t *testing.T) {
 	c := check.New(t)
 	d := &SettingsDockable{}
@@ -240,8 +235,7 @@ func TestShowSettingsViewsOpenOnceAndActivate(t *testing.T) {
 		c.Equal(one.asksOnClose, asksOnClose, "%s: will-close callback", one.name)
 		c.Equal(one.toolbarButton, hasToolbarButton, "%s: start-of-toolbar content", one.name)
 	}
-	// Opening every view again activates the one already open rather than adding another, and the view asked for last
-	// is the one showing.
+	// Opening every view again activates the one already open rather than adding another.
 	for _, one := range views {
 		screen.Do(one.show)
 		d := soleEditor[unison.Dockable](t, screen, one.is)
@@ -288,10 +282,10 @@ func settingsDockableOf(d unison.Dockable) (*SettingsDockable, bool) {
 	}
 }
 
-// toolbarStartsWithViewContent reports whether the settings view's toolbar starts with something the view itself
-// added. What the base adds -- the reset and menu buttons -- comes after a grabbing spacer when the view added
-// anything, and is all there is otherwise, so a toolbar whose first child is the spacer, or which is empty, holds
-// nothing from the view.
+// toolbarStartsWithViewContent reports whether the settings view's toolbar starts with something the view itself added.
+// What the base adds -- the reset and menu buttons -- comes after a grabbing spacer when the view added anything, and
+// is all there is otherwise, so a toolbar whose first child is the spacer, or which is empty, holds nothing from the
+// view.
 func toolbarStartsWithViewContent(base *SettingsDockable) bool {
 	children := base.Children()[0].Children()
 	if len(children) == 0 {

@@ -40,9 +40,9 @@ func (f Features) AnySwitchable() bool {
 	return false
 }
 
-// Active returns the features that currently take effect for an owner whose switch is in the given state: every
-// feature that is not switchable, plus the switchable ones only when switchedOn is true. The receiver is returned
-// unchanged (no allocation) when nothing needs to be filtered out.
+// Active returns the features that take effect for an owner whose switch is in the given state: the non-switchable
+// ones, plus the switchable ones only when switchedOn is true. The receiver is returned as-is, without allocating,
+// when there is nothing to filter out.
 func (f Features) Active(switchedOn bool) Features {
 	if switchedOn || !f.AnySwitchable() {
 		return f
@@ -67,7 +67,7 @@ func (f *Features) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// allocFeature returns an empty Feature of the concrete type that represents featureType, or nil if there is none.
+// allocFeature returns an empty Feature of the type that represents featureType, or nil if there is none.
 func allocFeature(featureType feature.Type) Feature {
 	if featureType.IsWeaponBonus() {
 		return &WeaponBonus{}

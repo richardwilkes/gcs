@@ -29,8 +29,8 @@ func newUnlearnableSkill(e *Entity, name string) *Skill {
 	return sk
 }
 
-// TestScriptSkillLevelSentinel verifies that a skill whose level cannot be computed (no points and no usable default)
-// reports 0 to scripts rather than leaking the fxp.Min sentinel as -922337203685477.
+// A skill whose level cannot be computed (no points and no usable default) reports 0 to scripts rather than leaking the
+// fxp.Min sentinel as -922337203685477.
 func TestScriptSkillLevelSentinel(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -40,8 +40,7 @@ func TestScriptSkillLevelSentinel(t *testing.T) {
 	c.Equal("0", ResolveScript(e, deferredNewScriptSkill(sk), "self.relativeLevel"))
 }
 
-// TestScriptEntitySkillLevelSentinel verifies that entity.skillLevel() applies the same sentinel guard as the skill
-// wrapper when it matches a skill that cannot be learned.
+// entity.skillLevel() applies the same sentinel guard as the skill wrapper when it matches an unlearnable skill.
 func TestScriptEntitySkillLevelSentinel(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -52,9 +51,8 @@ func TestScriptEntitySkillLevelSentinel(t *testing.T) {
 		`entity.skillLevel("Unlearnable Via Entity", "None", true, "")`))
 }
 
-// TestScriptSkillLevelWithPoints verifies that a normally-resolvable skill still reports its real level and relative
-// level, i.e. that the sentinel guard doesn't disturb the usual case. A relative level may legitimately be negative,
-// so it must not be clamped.
+// A normally-resolvable skill still reports its real level and relative level, so the sentinel guard doesn't disturb
+// the usual case. A relative level may legitimately be negative, so it must not be clamped.
 func TestScriptSkillLevelWithPoints(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -72,10 +70,9 @@ func TestScriptSkillLevelWithPoints(t *testing.T) {
 		ResolveScript(e, deferredNewScriptSkill(sk), "self.relativeLevel"))
 }
 
-// TestScriptSkillLevelExclusionReleasedOnPanic verifies that a panic while recalculating a skill's level for a script
-// does not leave the skill-level resolution exclusion registered on the entity. Leaving it registered would freeze the
-// skill's script-visible level and produce spurious "attempt to resolve skill level via itself" errors until the next
-// full Recalculate.
+// A panic while recalculating a skill's level for a script must not leave the skill-level resolution exclusion
+// registered on the entity. Leaving it registered would freeze the skill's script-visible level and produce spurious
+// "attempt to resolve skill level via itself" errors until the next full Recalculate.
 func TestScriptSkillLevelExclusionReleasedOnPanic(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

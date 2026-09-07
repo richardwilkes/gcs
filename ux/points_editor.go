@@ -40,9 +40,9 @@ type pointsEditor struct {
 	current []*gurps.PointsRecord
 }
 
-// newPointsEditor returns an editor holding the two copies of the entity's points record list, without building any of
-// the editor's UI. Both copies are put into the same order, since the editor displays and compares them in that order
-// and a list loaded from a file may have been stored in some other order.
+// newPointsEditor returns an editor holding two copies of the entity's points record list, without building any of the
+// editor's UI. Both copies are sorted, since the editor displays and compares them in that order and a list loaded
+// from a file may have been stored in some other one.
 func newPointsEditor(owner Rebuildable, entity *gurps.Entity) *pointsEditor {
 	e := &pointsEditor{
 		owner:   owner,

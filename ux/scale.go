@@ -21,7 +21,8 @@ import (
 // ScaleDelta is the delta used when adjusting the view scale incrementally.
 const ScaleDelta = 10
 
-// NewScaleField creates a new scale field and hooks it into the target.
+// NewScaleField creates a scale field for the given scroll panel, adding option-scroll wheel scaling to it and the view
+// scale commands to the dockable that holds it.
 func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(int), afterApply func(), attemptCenter, adjustForDisplayPPI bool, scroller *unison.ScrollPanel) *PercentageField {
 	applyFunc := func() {
 		scale := float32(get()) / 100

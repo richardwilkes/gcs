@@ -37,9 +37,8 @@ func NewTraitTableDockable(filePath string, traits []*gurps.Trait) *TableDockabl
 	d := NewTableDockable(filePath, gurps.TraitsExt, NewTraitsProvider(provider, false),
 		func(path string) error { return gurps.SaveTraits(provider.TraitList(), path) },
 		NewTraitItemID, NewTraitContainerItemID)
-	// Organizing moves rows around, which unison.Table.ApplyFilter says must not be done while a filter is applied,
-	// so the command is turned off whenever the content filter is hiding part of the list, just as Delete, Duplicate
-	// and the source commands are.
+	// Organizing moves rows around, which unison.Table.ApplyFilter says must not be done while a filter is applied, so
+	// the command is turned off whenever the content filter is hiding part of the list, as Delete and Duplicate are.
 	d.InstallCmdHandlers(OrganizeTraitsItemID,
 		func(_ any) bool { return !d.table.IsFiltered() },
 		func(_ any) { organizeTraits(d, d.table) })

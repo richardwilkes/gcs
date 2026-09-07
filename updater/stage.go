@@ -44,9 +44,8 @@ type Staged struct {
 // Everything it creates lives in a single staging directory, and an abort at any point removes that directory and
 // leaves the installation exactly as it was.
 //
-// The staging directory is created beside the installation rather than in the system temporary directory. That is what
-// makes the swap a rename within one filesystem, which is atomic and instant, instead of a copy across two, which is
-// neither and which cannot be undone halfway.
+// The staging directory is created beside the installation rather than in the system temporary directory, which is
+// what makes the swap a rename within one filesystem -- atomic and instant -- instead of a copy across two.
 //
 // progress reports the fraction of the download completed, from 0 to 1. phase reports which step is running. Both are
 // called from this goroutine, may be nil, and must not block.
@@ -58,12 +57,12 @@ func (p *Plan) Stage(ctx context.Context, client *http.Client, progress func(fra
 	}
 
 	// Clear away anything left by an attempt that did not clean up after itself. Each staging directory holds a full
-	// copy of the application, so without this a few failed attempts would quietly consume hundreds of megabytes of
-	// the user's disk and sit there for a week until the startup sweep got round to them.
+	// copy of the application, so without this a few failed attempts would consume hundreds of megabytes of the user's
+	// disk until the startup sweep got round to them a week later.
 	//
-	// This does not affect the directory created below: os.MkdirTemp generates a fresh random name and retries until
-	// it creates one that did not already exist, so a new staging directory can never collide with, or reuse, one that
-	// is already there -- including one a helper is actively working in.
+	// This cannot affect the directory created below: os.MkdirTemp retries until it creates a name that did not
+	// already exist, so a new staging directory can never collide with one that is already there -- including one a
+	// helper is actively working in.
 	sweepStrays([]string{p.Target.Parent}, abandonedStagingAge)
 
 	workDir, err := os.MkdirTemp(p.Target.Parent, workDirPrefix)
@@ -110,12 +109,12 @@ func (p *Plan) Stage(ctx context.Context, client *http.Client, progress func(fra
 	}
 
 	// The helper is a copy of the *running* build rather than the downloaded one because the command line between the
-	// two is a contract: having the same compilation write it and read it means the compiler checks it. Handing the job
-	// to the new build would make it a permanent cross-version interface, where a rename years from now silently breaks
+	// two is a contract: having one compilation write it and read it means the compiler checks it. Handing the job to
+	// the new build would make it a permanent cross-version interface, where a rename years from now silently breaks
 	// every older version's ability to update.
 	//
 	// It is a copy rather than the installed file so that, once the application has exited, nothing under the
-	// installation directory is open by any GCS process. That is what lets the swap and the cleanup be unconditional --
+	// installation directory is open by any GCS process. That is what lets the swap and the cleanup be unconditional:
 	// Windows will not delete a running image, and would otherwise leave the displaced copy behind for a week.
 	report(PhasePreparing)
 	helper, err := stageHelper(ctx, &p.Target, workDir)
@@ -139,8 +138,8 @@ func Discard(staged *Staged) {
 	}
 }
 
-// ClearState removes the record of an update, for the case where one was prepared and then abandoned before the helper
-// ever ran. Leaving it would make the next launch report an update that is no longer waiting.
+// ClearState removes the record of an update prepared and then abandoned before the helper ever ran. Leaving it would
+// make the next launch report an update that is no longer waiting.
 func ClearState(path string) error {
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
 		return errs.Wrap(err)

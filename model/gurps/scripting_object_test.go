@@ -16,10 +16,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestScriptObjectPrototypeIsReachable verifies that the members Object.prototype supplies are reachable from the
-// objects handed to scripts. goja consults a dynamic object's prototype only when its Get returns nil, so a Get that
-// answered goja.Undefined() for keys the object does not provide shadowed Object.prototype in its entirety:
-// hasOwnProperty, valueOf and constructor all read as undefined, and calling any of them threw a TypeError.
+// The members Object.prototype supplies must be reachable from the objects handed to scripts. goja consults a dynamic
+// object's prototype only when its Get returns nil, so a Get that answered goja.Undefined() for keys the object does
+// not provide shadowed Object.prototype entirely: hasOwnProperty, valueOf and constructor all read as undefined, and
+// calling any of them threw a TypeError.
 func TestScriptObjectPrototypeIsReachable(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -52,12 +52,11 @@ func TestScriptObjectPrototypeIsReachable(t *testing.T) {
 	}
 }
 
-// TestScriptObjectWithValueOfConvertsToItsValue verifies that an object which describes itself as a value through
-// valueOf — the attributes bound as $st, $dx and the rest — both answers toString and still turns into that value when
-// converted to a string, which is how a script's result reaches the rest of GCS. The two pull against each other:
-// JavaScript consults toString before valueOf, so an object with no toString of its own would inherit
-// Object.prototype.toString and convert to "[object Object]", while an object with no toString at all leaves
-// `$st.toString()` undefined and a TypeError when called.
+// An object that describes itself as a value through valueOf — the attributes bound as $st, $dx and the rest — must
+// both answer toString and still turn into that value when converted to a string, which is how a script's result
+// reaches the rest of GCS. The two pull against each other: JavaScript consults toString before valueOf, so an object
+// with no toString of its own would inherit Object.prototype.toString and convert to "[object Object]", while an object
+// with no toString at all leaves `$st.toString()` undefined and a TypeError when called.
 func TestScriptObjectWithValueOfConvertsToItsValue(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

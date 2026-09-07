@@ -77,7 +77,7 @@ func (enum LengthUnit) FormatWith(length Length, format NumberFormat) string {
 	}
 }
 
-// FromInches converts inches to LengthUnit
+// FromInches converts a length in inches to this LengthUnit.
 func (enum LengthUnit) FromInches(inches Int) Int {
 	switch enum {
 	case Inch:

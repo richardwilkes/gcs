@@ -22,7 +22,7 @@ import (
 // TestPromptForFileSystemNameGatesOKOnTarget drives the name prompt the rename and new-folder commands share inside a
 // headless workspace: OK is disabled while the entry holds an invalid name or one whose target already exists and
 // enabled once the target is free, the path handed back is the target of the trimmed name, so that the path validated
-// is the one the caller acts on, a current name is shown in a disabled row of its own, and canceling hands back nothing.
+// is the one the caller acts on, a current name is shown in a disabled row of its own, and canceling returns nothing.
 func TestPromptForFileSystemNameGatesOKOnTarget(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)

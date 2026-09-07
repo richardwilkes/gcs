@@ -24,14 +24,6 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 )
 
-// Known dockable kinds
-const (
-	SheetDockableKind     = "sheet"
-	TemplateDockableKind  = "template"
-	LootSheetDockableKind = "loot"
-	ListDockableKind      = "list"
-)
-
 var (
 	_ unison.Dockable  = &SettingsDockable{}
 	_ unison.TabCloser = &SettingsDockable{}
@@ -45,11 +37,11 @@ type SettingsDockable struct {
 	Extensions []string
 	Loader     func(fileSystem fs.FS, filePath string) error
 	// RefLoader is an alternative to Loader for dockables that need to know where the file lives on disk. When set, it
-	// is used in preference to Loader for both the library list and the toolbar menu's item that loads a chosen file.
+	// is used in preference to Loader.
 	RefLoader func(ref *gurps.NamedFileRef) error
 	// LoadItemTitle is the title of the toolbar menu's item that loads a file chosen in a dialog. When empty, it is
-	// Import…, which suits a dockable that takes the file's contents into itself; the file editors, which open the chosen
-	// file in an editor of its own, call it Open… instead.
+	// Import…, which suits a dockable that takes the file's contents into itself; the file editors, which open the
+	// chosen file in an editor of its own, call it Open… instead.
 	LoadItemTitle     string
 	Saver             func(filePath string) error
 	Resetter          func()
@@ -57,13 +49,11 @@ type SettingsDockable struct {
 	WillCloseCallback func() bool
 }
 
-// settingsSpec describes one of the views that edit a global setting in place -- the colors, fonts, menu keys, general
-// settings, page reference mappings, sheet defaults and library settings: its tab title, the file extension it imports
-// and exports, how to load, save and reset it, and how to build its toolbar and content. It is what distinguishes one
-// of those views from another; everything else about them is in SettingsDockable. Its tab icon is always the settings
-// icon, so the spec does not name one. Any of the functions may be nil, in which case the base omits what it would
-// have done with it: with no loader, saver or resetter the toolbar has no menu or reset button, and with no willClose
-// the view closes without being asked.
+// settingsSpec is what distinguishes one of the views that edit a global setting in place -- the colors, fonts, menu
+// keys, general settings, page reference mappings, sheet defaults and library settings -- from another; everything else
+// about them is in SettingsDockable. Their tab icon is always the settings icon, so the spec does not name one. Any of
+// the functions may be nil, in which case the base omits what it would have done with it: with no loader, saver or
+// resetter the toolbar has no menu or reset button, and with no willClose the view closes without being asked.
 type settingsSpec struct {
 	title             string
 	ext               string
@@ -76,8 +66,8 @@ type settingsSpec struct {
 }
 
 // initSettings fills in the base from the spec, with self, the outer view, as what the dock resolves the panel to, then
-// builds the toolbar and content and places the view in the dock. The caller has already checked that the view is not
-// open, with activateDockable or a predicate of its own, since the base has no way to tell one view from another.
+// builds the toolbar and content and places the view in the dock. The caller must already have checked that the view is
+// not open, with activateDockable or a predicate of its own, since the base cannot tell one view from another.
 func (d *SettingsDockable) initSettings(self unison.Paneler, spec *settingsSpec) {
 	d.Self = self
 	d.TabTitle = spec.title
@@ -93,8 +83,8 @@ func (d *SettingsDockable) initSettings(self unison.Paneler, spec *settingsSpec)
 }
 
 // initSettingsContent gives a settings view's content panel the layout most of them share, a grid of the given number
-// of columns with the standard spacing, and returns the panel so that a view that keeps a reference to its content can
-// take it from the same call that lays it out.
+// of columns with the standard spacing, and returns it so that a view keeping a reference to its content can take it
+// from the same call.
 func initSettingsContent(content *unison.Panel, columns int) *unison.Panel {
 	content.SetLayout(&unison.FlexLayout{
 		Columns:  columns,
@@ -151,7 +141,7 @@ func (d *SettingsDockable) Modified() bool {
 	return d.ModifiedCallback()
 }
 
-// MarkModified implements widget.ModifiableRoot
+// MarkModified implements ModifiableRoot.
 func (d *SettingsDockable) MarkModified(_ unison.Paneler) {
 	d.Modified()
 	UpdateTitleForDockable(d)
@@ -258,13 +248,13 @@ func (d *SettingsDockable) loadItemTitle() string {
 	return i18n.Text("Import…")
 }
 
-// canLoad reports whether the dockable has a way to load a settings file, whichever form of loader it was given.
+// canLoad reports whether the dockable was given either form of loader.
 func (d *SettingsDockable) canLoad() bool {
 	return d.Loader != nil || d.RefLoader != nil
 }
 
-// doLoad hands the file reference to RefLoader when one is set, since it wants the whole reference, and otherwise to
-// Loader, which only cares about the file system and path. A failure is reported through the workspace's error handler.
+// doLoad hands the whole file reference to RefLoader when one is set, and otherwise its file system and path to Loader.
+// A failure is reported through the workspace's error handler.
 func (d *SettingsDockable) doLoad(ref *gurps.NamedFileRef) {
 	var err error
 	if d.RefLoader != nil {

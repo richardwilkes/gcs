@@ -32,8 +32,8 @@ func buildStandIn(t *testing.T, src string) string {
 		t.Fatal(err)
 	}
 	// The stand-in uses nothing beyond the standard library, so it asks for no particular Go version -- the one on the
-	// PATH need not be the one running this test -- and GOTOOLCHAIN=local keeps that go from ever reaching out to
-	// download a toolchain, which is the one way this test could otherwise need more than the local machine.
+	// PATH need not be the one running this test -- and GOTOOLCHAIN=local keeps that go from downloading a toolchain,
+	// which is the one way this test could otherwise need more than the local machine.
 	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module standin\n\ngo 1.21\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -50,8 +50,6 @@ func buildStandIn(t *testing.T, src string) string {
 	return exePath
 }
 
-// TestVerifyRunsAcceptsAWorkingBuild verifies the trial run passes for an executable that starts and reports the
-// version that was expected.
 func TestVerifyRunsAcceptsAWorkingBuild(t *testing.T) {
 	c := check.New(t)
 	exePath := buildStandIn(t, `package main
@@ -63,8 +61,8 @@ func main() { fmt.Println("5.46.0") }
 	c.NoError(verifyRuns(t.Context(), exePath, "5.46.0"))
 }
 
-// TestVerifyRunsAcceptsAModifiedBuildMarker verifies the version comparison tolerates the "~" that a build made from a
-// modified checkout appends, which would otherwise be read as the wrong version entirely.
+// The version comparison must tolerate the "~" a build made from a modified checkout appends, which would otherwise be
+// read as the wrong version entirely.
 func TestVerifyRunsAcceptsAModifiedBuildMarker(t *testing.T) {
 	c := check.New(t)
 	exePath := buildStandIn(t, `package main
@@ -76,10 +74,9 @@ func main() { fmt.Println("5.46.0~") }
 	c.NoError(verifyRuns(t.Context(), exePath, "5.46.0"))
 }
 
-// TestVerifyRunsRejectsABuildThatFails is the case this check exists for. A downloaded release that cannot start on
-// this machine -- wrong processor, a system library too old, a corrupted extraction -- must be caught here, while the
-// installation is still untouched, rather than at the launch that follows the swap, where there is nothing left to
-// fall back to.
+// The case this check exists for: a downloaded release that cannot start on this machine -- wrong processor, a system
+// library too old, a corrupted extraction -- must be caught while the installation is still untouched, rather than at
+// the launch that follows the swap, where there is nothing left to fall back to.
 func TestVerifyRunsRejectsABuildThatFails(t *testing.T) {
 	c := check.New(t)
 	exePath := buildStandIn(t, `package main
@@ -100,8 +97,8 @@ func main() {
 	c.Contains(err.Error(), "libc.so.6", "the reason the executable gave must survive into the error")
 }
 
-// TestVerifyRunsRejectsTheWrongVersion verifies that an executable which starts but is not the release that was
-// downloaded is refused, which would mean the wrong asset had been fetched or unpacked.
+// An executable that starts but is not the release that was downloaded must be refused; it would mean the wrong asset
+// had been fetched or unpacked.
 func TestVerifyRunsRejectsTheWrongVersion(t *testing.T) {
 	c := check.New(t)
 	exePath := buildStandIn(t, `package main
@@ -115,9 +112,9 @@ func main() { fmt.Println("5.30.0") }
 	c.Contains(err.Error(), "5.30.0")
 }
 
-// TestVerifyRunsAcceptsSilence verifies that an executable exiting cleanly without printing anything is accepted. The
-// Windows build is linked as a GUI application, so it has no console to write to and reports nothing even though it
-// ran correctly -- a clean exit is the requirement, not the output.
+// An executable exiting cleanly without printing anything is accepted. The Windows build is linked as a GUI
+// application, so it has no console to write to and reports nothing even though it ran correctly; a clean exit is the
+// requirement, not the output.
 func TestVerifyRunsAcceptsSilence(t *testing.T) {
 	c := check.New(t)
 	exePath := buildStandIn(t, `package main
@@ -127,8 +124,7 @@ func main() {}
 	c.NoError(verifyRuns(t.Context(), exePath, "5.46.0"))
 }
 
-// TestVerifyRunsRejectsSomethingUnrunnable verifies the case a corrupted download produces: a file that exists and is
-// marked executable but is not a program at all.
+// The case a corrupted download produces: a file that exists and is marked executable but is not a program at all.
 func TestVerifyRunsRejectsSomethingUnrunnable(t *testing.T) {
 	c := check.New(t)
 	exePath := filepath.Join(t.TempDir(), CmdName)

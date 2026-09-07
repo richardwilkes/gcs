@@ -114,15 +114,14 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.initPageDockable(s, filePath, gurps.SheetExt, entity.Save, entity)
 
 	s.page = NewPage(s.entity)
-	// The page is the only thing the content has ever held. The stacking layout adds the ability to put the layout
-	// editor's overlay on top of it, at exactly the page's size, and is otherwise indistinguishable from the single
-	// column the content used to be laid out as.
+	// The stacking layout puts the layout editor's overlay on top of the page, at exactly the page's size, and is
+	// otherwise indistinguishable from the single column the content used to be laid out as.
 	s.contentLayout = &overlayStackLayout{page: s.page}
 	s.content.SetLayout(s.contentLayout)
 	s.content.AddChild(s.page)
 	// Every block that isn't a list is built once, here, and kept for as long as the sheet lives, whether the layout
 	// shows it or not. Re-parenting the same panels on each rebuild keeps the field focus and the target manager's
-	// references to them valid, and a block that is hidden today can be shown again without rebuilding it.
+	// references to them valid.
 	s.blocks = make(map[string]unison.Paneler, len(gurps.AllBlockKeys))
 	for _, key := range gurps.AllBlockKeys {
 		if block := newSheetBlockPanel(key, s.entity, s.targetMgr); !xreflect.IsNil(block) {
@@ -224,8 +223,8 @@ func (s *Sheet) createToolbar() {
 	s.toolbar.AddChild(bodyTypeButton)
 
 	// The layout button latches, which unison only draws for a button that belongs to a group, so it is given one of
-	// its own. The base is hidden while the button is off, the way every other toolbar button's is, and shown while it
-	// is on, so that editing the layout reads as a filled chip rather than a mere change of tint.
+	// its own. Its base is hidden while off, the way every other toolbar button's is, and shown while on, so that
+	// editing the layout reads as a filled chip rather than a mere change of tint.
 	s.layoutButton = unison.NewSVGButton(svg.Layout)
 	s.layoutButton.Sticky = true
 	s.layoutButtonGroup = unison.NewGroup(s.layoutButton)
@@ -323,16 +322,10 @@ func (s *Sheet) keyToPanel(key *uti.DataType) *unison.Panel {
 		return nil
 	}
 	if !unison.AncestorIs(p, s.page) {
-		// The layout doesn't place the list, so it is no more a drop target than it is something the sheet can draw
-		// the drop feedback over.
+		// The layout doesn't place the list, so it isn't a drop target and there is nothing to draw feedback over.
 		return nil
 	}
 	return p.AsPanel()
-}
-
-// DockableKind implements widget.DockableKind
-func (s *Sheet) DockableKind() string {
-	return SheetDockableKind
 }
 
 // Entity returns the entity this is displaying information for.
@@ -348,18 +341,16 @@ func (s *Sheet) BackingFilePath() string {
 	return s.path
 }
 
-// MarkModified implements widget.ModifiableRoot. A sheet does more than the shared pageView.markModified: its entity
-// has to be recalculated first, its calculator brought up to date last, and a source that asks for it (see
-// SkipDeepSync) is spared the sync in between.
+// MarkModified implements ModifiableRoot. A sheet does more than the shared pageView.markModified: its entity has to
+// be recalculated first, its calculator brought up to date last, and a source that asks for it (see SkipDeepSync) is
+// spared the sync in between.
 func (s *Sheet) MarkModified(src unison.Paneler) {
 	if s.awaitingUpdate {
 		return
 	}
 	s.awaitingUpdate = true
 	// Everything below reads the derived state -- the panels, the tables, and the calculator all display skill levels,
-	// points and the like -- so the entity is brought up to date first. This used to happen by accident, as a side
-	// effect of the tab asking whether the sheet had unsaved changes, which recalculated the entity on its way to
-	// hashing it.
+	// points and the like -- so the entity is brought up to date first.
 	s.entity.Recalculate()
 	s.bumpModificationTimestamp()
 	skipDeepSync := false
@@ -367,11 +358,10 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		_, skipDeepSync = src.AsPanel().ClientData()[SkipDeepSync]
 	}
 	if skipDeepSync {
-		// The deep sync is what rebuilds the tables, and it is also the only thing here that can disturb the focus and
-		// scroll position or change which rows match the active search. When it is skipped (e.g. while typing into a
-		// simple field such as the name or title), saving and restoring the focus and scroll position and refreshing
-		// the search results is just wasted work, and that overhead is enough to make interactive typing stutter on
-		// slower platforms. So none of it is done in that case.
+		// The deep sync rebuilds the tables and is the only thing here that can disturb the focus and scroll position
+		// or change which rows match the active search. When it is skipped (e.g. while typing into a simple field such
+		// as the name), saving and restoring that state is wasted work -- enough to make typing stutter on slower
+		// platforms.
 		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
 	} else {
@@ -395,9 +385,9 @@ func (s *Sheet) bumpModificationTimestamp() {
 // has to show no longer match the ones it has, since a table's columns are fixed at creation. Anything that captured a
 // list has to allow for it being replaced -- see installNewItemCmdHandlers.
 func (s *Sheet) buildLayout() {
-	// Everything the sheet keeps is detached first, so that a block the layout doesn't place is left without a parent.
-	// That is how the rest of the sheet tells a block that is on the page from one that isn't: removing the page's
-	// children only detaches the bands, leaving anything nested inside them still pointing at a band nobody can see.
+	// Detaching everything first leaves a block the layout doesn't place without a parent, which is how the rest of the
+	// sheet tells a block that is on the page from one that isn't; removing the page's children would only detach the
+	// bands, leaving anything nested inside them still pointing at a band nobody can see.
 	for _, block := range s.blocks {
 		block.AsPanel().RemoveFromParent()
 	}
@@ -412,8 +402,7 @@ func (s *Sheet) buildLayout() {
 		s.page.AddChild(band)
 	}
 	// A list the layout doesn't show is still brought into being, since the undo data, the disclosure handling, the
-	// searching and the rebuild's selection tracking all reach for all ten of them without asking whether they are on
-	// the page.
+	// searching and the rebuild's selection tracking all reach for all ten without asking whether they are on the page.
 	for _, key := range gurps.AllBlockKeys {
 		if gurps.IsListBlockKey(key) && !layout.Contains(key) {
 			s.layoutLeaf(key)
@@ -421,8 +410,7 @@ func (s *Sheet) buildLayout() {
 	}
 	s.page.ApplyPreferredSize()
 	if s.layoutEditing() {
-		// The page just changed size and every block moved, so the overlay has to be brought back over it and the
-		// regions it works from thrown away.
+		// The page just changed size and every block moved, so the overlay has to be resized and its regions discarded.
 		s.layoutEditor.syncFrame()
 	}
 }
@@ -468,8 +456,7 @@ func (s *Sheet) layoutLeaf(key string) unison.Paneler {
 		if !exists {
 			return nil
 		}
-		// The same panel is used for as long as the sheet lives, so it has to be taken out of the band it was in the
-		// last time the page was built before it can go into a new one.
+		// The same panel is used for as long as the sheet lives, so it has to leave any band it is already in.
 		block.AsPanel().RemoveFromParent()
 		return block
 	}
@@ -477,8 +464,8 @@ func (s *Sheet) layoutLeaf(key string) unison.Paneler {
 
 // derivedListLeaf syncs or rebuilds one of the sheet's four lists that are derived from the character rather than
 // edited directly (see syncOrRebuildList) and returns it as the panel to show for its block, or nil when it has no
-// rows, since an empty derived list is left off the page. These lists are built without an owner, so the sheet has to
-// be attached to their tables as the data owner provider by hand.
+// rows, since an empty derived list is left off the page. Such lists are built without an owner, so the sheet is
+// attached to their tables as the data owner provider by hand.
 func derivedListLeaf[T gurps.Node[T]](s *Sheet, list **PageList[T], build func() *PageList[T]) unison.Paneler {
 	l := syncOrRebuildList(list, build)
 	SetDataOwnerProvider(l.Table, s)
@@ -489,8 +476,8 @@ func derivedListLeaf[T gurps.Node[T]](s *Sheet, list **PageList[T], build func()
 }
 
 // blockPanel returns the panel the sheet uses for the block with the given key, or nil if it has none. Unlike
-// layoutLeaf, this neither creates nor synchronizes anything, so it is what the layout editor maps a panel it found on
-// the page back to a block key with.
+// layoutLeaf, it neither creates nor synchronizes anything, so it is what the layout editor maps a panel found on the
+// page back to a block key with.
 func (s *Sheet) blockPanel(key string) unison.Paneler {
 	if gurps.IsListBlockKey(key) {
 		return s.list(key)
@@ -499,8 +486,8 @@ func (s *Sheet) blockPanel(key string) unison.Paneler {
 }
 
 // list returns the sheet's list for the given block key, or nil if the key isn't one of the ten list blocks. A list the
-// sheet hasn't built yet -- which is only the case while the sheet is first being put together -- comes back as a nil
-// *PageList inside the interface, which xreflect.IsNil sees through.
+// sheet hasn't built yet -- only possible while the sheet is first being put together -- comes back as a nil *PageList
+// inside the interface, which xreflect.IsNil sees through.
 func (s *Sheet) list(key string) sheetList {
 	switch key {
 	case gurps.BlockReactionsKey:
@@ -588,9 +575,8 @@ func (s *Sheet) swapDefaults(_ any) {
 			other.SwapDefaults()
 		}
 	}
-	// Marking the sheet as modified recalculates the entity and re-syncs everything that shows a skill level, which
-	// swapping a default can change well beyond the skills list (weapons, for one), and also bumps the modification
-	// timestamp and updates the title, none of which recalculating and syncing the skills table by hand did.
+	// Swapping a default can change skill levels well beyond the skills list (weapons, for one), so the whole sheet is
+	// marked as modified, which also bumps the modification timestamp and updates the title.
 	s.MarkModified(nil)
 	commitTableUndo(s.Skills.Table, undo)
 }
@@ -604,12 +590,10 @@ func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
 	}
 }
 
-// layoutEditing returns true if the sheet is currently in block layout editing mode.
 func (s *Sheet) layoutEditing() bool {
 	return s.layoutEditor != nil
 }
 
-// toggleLayoutEditing turns block layout editing mode on or off.
 func (s *Sheet) toggleLayoutEditing() {
 	if s.layoutEditing() {
 		editor := s.layoutEditor
@@ -658,7 +642,7 @@ func (s *Sheet) recordLayoutUndo(name string, before, after *gurps.SheetLayout) 
 
 // changeLayout applies the given alteration to the sheet's block layout, records it as a single undoable edit and
 // shows the result. An alteration that leaves the layout as it was is dropped, so that a gesture that changed nothing
-// doesn't put an edit that does nothing onto the undo stack.
+// doesn't land on the undo stack.
 func (s *Sheet) changeLayout(name string, alter func(l *gurps.SheetLayout)) {
 	layout := s.entity.SheetSettings.Layout
 	before := layout.Clone()
@@ -670,7 +654,6 @@ func (s *Sheet) changeLayout(name string, alter func(l *gurps.SheetLayout)) {
 	rebuildAsModified(s, true)
 }
 
-// hideLayoutBlock removes the block with the given key from the sheet.
 func (s *Sheet) hideLayoutBlock(key string) {
 	s.changeLayout(i18n.Text("Hide Block"), func(l *gurps.SheetLayout) { l.Hide(key) })
 }
@@ -689,7 +672,6 @@ func (s *Sheet) resetLayout() {
 	})
 }
 
-// useLayoutAsDefault makes this sheet's block layout the one new sheets are created with.
 func (s *Sheet) useLayoutAsDefault() {
 	setDefaultSheetLayout(s.entity.SheetSettings.Layout.Clone())
 }
@@ -716,7 +698,6 @@ func setDefaultSheetLayout(layout *gurps.SheetLayout) {
 	}
 }
 
-// showLayoutMenu pops up the block layout menu beneath the given toolbar button.
 func (s *Sheet) showLayoutMenu(b *unison.Button) {
 	f := unison.DefaultMenuFactory()
 	m := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
@@ -744,8 +725,8 @@ func (s *Sheet) appendLayoutMenuItems(f unison.MenuFactory, m unison.Menu, id *i
 			func(_ unison.MenuItem) { s.hideLayoutBlock(hideKey) }))
 	}
 	if hideKey == gurps.BlockPortraitKey && s.layoutEditing() {
-		// Only the overlay supplies a hide key, and it is only in place while the layout is being edited, so this is
-		// never reached from the toolbar's menu, which has no block to work on.
+		// Only the overlay supplies a hide key, and only while the layout is being edited, so the toolbar's menu, which
+		// has no block to work on, never reaches this.
 		m.InsertItem(-1, f.NewItem(nextLayoutMenuItemID(id), i18n.Text("Make Portrait Square"), unison.KeyBinding{},
 			nil, func(_ unison.MenuItem) {
 				if s.layoutEditing() {
@@ -773,7 +754,6 @@ func (s *Sheet) appendLayoutMenuItems(f unison.MenuFactory, m unison.Menu, id *i
 		func(_ unison.MenuItem) { s.resetDefaultLayout() }))
 }
 
-// nextLayoutMenuItemID hands out the next ID for an item of a temporary popup menu.
 func nextLayoutMenuItemID(id *int) int {
 	next := unison.PopupMenuTemporaryBaseID + *id
 	*id++
@@ -784,7 +764,7 @@ func (s *Sheet) syncWithAllSources() {
 	syncWithAllSources(s, s.entity, s.Traits, s.Skills, s.Spells, s.CarriedEquipment, s.OtherEquipment, s.Notes)
 }
 
-// Rebuild implements widget.Rebuildable.
+// Rebuild implements Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
 	state := s.captureViewState()
@@ -852,8 +832,7 @@ func (s *Sheet) SetBodySettings(body *gurps.Body) {
 	}
 }
 
-// attributesDiscloser adapts an entity's attributes to hierarchyDiscloser, which their own methods fall short of only
-// by needing the entity handed to them.
+// attributesDiscloser adapts an entity's attributes to hierarchyDiscloser, whose methods take no entity.
 type attributesDiscloser struct {
 	entity *gurps.Entity
 }

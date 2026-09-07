@@ -30,7 +30,7 @@ import (
 const (
 	noAndOr = ""
 	// samePowerSourceIndex is the position of the "is the same as this spell's" choice within the power source popup
-	// menu, just after "is anything". The choice is only present when the prerequisite belongs to a spell.
+	// menu, just after "is anything". It is only present when the prerequisite belongs to a spell.
 	samePowerSourceIndex = 1
 )
 
@@ -126,9 +126,8 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 }
 
 // createUnknownPrereqPanel creates the panel for a prerequisite this version of GCS doesn't understand. No editing is
-// offered, since we have no idea what the data means, but the row is shown so that the presence of the prerequisite is
-// visible and it can be deleted deliberately. Note that no type switcher is present, as switching the type would throw
-// away the original data.
+// offered, since we have no idea what the data means, but the row is shown so the prerequisite is visible and can be
+// deleted deliberately. No type switcher is present, as switching the type would throw away the original data.
 func (p *prereqPanel) createUnknownPrereqPanel(depth int, pr *gurps.UnknownPrereq) (main, focus unison.Paneler) {
 	row := p.beginPrereqRow(depth, pr, nil)
 	label := NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Unknown prerequisite type %q; it will be preserved, but is never satisfied"),
@@ -296,9 +295,9 @@ func (p *prereqPanel) createPrereqForType(prereqType prereq.Type, parentList *gu
 	}
 }
 
-// prereqRow is the leading row of a prerequisite panel while it is being assembled. beginPrereqRow adds the parts every
-// row starts with, the caller adds those particular to the prerequisite type, and finish adds the trailing and/or
-// label and sets the layout.
+// prereqRow is the leading row of a prerequisite panel while it is being assembled. beginPrereqRow adds the parts
+// every row starts with, the caller adds those particular to the prerequisite type, and finish adds the trailing
+// and/or label and sets the layout.
 type prereqRow struct {
 	panel   *unison.Panel
 	owner   *prereqPanel
@@ -309,7 +308,7 @@ type prereqRow struct {
 
 // beginPrereqRow starts the leading row of a prerequisite panel with the buttons, the and/or label when it has text,
 // and the "has" popup when has is not nil. An and/or label without text is instead added at the end of the row by
-// finish, from where adjustAndOr moves it to the front should it gain text later.
+// finish, from where adjustAndOr moves it to the front should it gain text.
 func (p *prereqPanel) beginPrereqRow(depth int, pr gurps.Prereq, has *bool) *prereqRow {
 	row := &prereqRow{
 		panel:   unison.NewPanel(),
@@ -328,13 +327,12 @@ func (p *prereqPanel) beginPrereqRow(depth int, pr gurps.Prereq, has *bool) *pre
 	return row
 }
 
-// addTypeSwitcher adds the popup that switches the prerequisite to a different type.
 func (r *prereqRow) addTypeSwitcher() {
 	r.owner.addPrereqTypeSwitcher(r.panel, r.depth, r.pr)
 }
 
-// finish adds the and/or label if it was not placed in front, sets the row's layout to one column per child and returns
-// that column count, so that callers can span subsequent rows across the columns after the buttons.
+// finish adds the and/or label if it was not placed in front, then sets the row's layout to one column per child and
+// returns that count, so callers can span subsequent rows across the columns after the buttons.
 func (r *prereqRow) finish() (columns int) {
 	if !r.inFront {
 		r.owner.addAndOr(r.panel, r.pr)
@@ -348,8 +346,8 @@ func (r *prereqRow) finish() (columns int) {
 	return columns
 }
 
-// addIndentedSubRow adds a row beneath the leading row of a prerequisite panel that is indented past the buttons column
-// and spans the remaining columns, calls populate to fill it in, then sets its layout to one column per child. When
+// addIndentedSubRow adds a row beneath the leading row of a prerequisite panel, indented past the buttons column and
+// spanning the remaining columns, calls populate to fill it in, then sets its layout to one column per child. When
 // fill is true, the sub-row stretches to the width of the panel so that a field within it can grow.
 func addIndentedSubRow(parent *unison.Panel, columns int, fill bool, populate func(subRow *unison.Panel)) {
 	parent.AddChild(unison.NewPanel())
@@ -459,9 +457,9 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) (
 // addPowerSourceCriteriaPanel adds the row that restricts which power sources may satisfy a spell prerequisite. When
 // the prerequisite belongs to a spell, an extra choice for matching that spell's own power source is offered.
 func (p *prereqPanel) addPowerSourceCriteriaPanel(parent *unison.Panel, pr *gurps.SpellPrereq, hSpan int) {
-	// Only a spell can ask for its own power source, and when it does, any explicit criteria is ignored. Neither of the
-	// other states can be produced here, but a file edited by hand can hold them, so bring the prerequisite into line
-	// before building the popup: otherwise the popup would show something other than what the prerequisite does.
+	// Only a spell can ask for its own power source, and when it does, any explicit criteria is ignored. This code
+	// can't produce the other states, but a file edited by hand can hold them, so bring the prerequisite into line
+	// before building the popup, which would otherwise show something other than what the prerequisite does.
 	pr.SamePowerSource = pr.SamePowerSource && p.ownerIsSpell
 	if pr.SamePowerSource {
 		pr.PowerSourceCriteria.Compare = criteria.AnyText

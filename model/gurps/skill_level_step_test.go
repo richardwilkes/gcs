@@ -18,8 +18,7 @@ import (
 )
 
 // stepLevelUpAndDown drives IncrementSkillLevel and DecrementSkillLevel through the expected point ladders, checking
-// after each step that exactly one level was gained or lost, that the points landed on the cheapest value for that
-// level, and that the cached level matches a fresh calculation.
+// after each step that exactly one level was gained or lost and that the points landed on the expected value.
 func stepLevelUpAndDown(t *testing.T, p SkillAdjustmentProvider, level func() Level, up, down []fxp.Int) {
 	t.Helper()
 	c := check.New(t)

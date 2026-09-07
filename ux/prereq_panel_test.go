@@ -42,7 +42,7 @@ func newTestPrereqList(entity *gurps.Entity) *gurps.PrereqList {
 }
 
 // prereqRows returns the panels for the members of the list shown by the given list panel, which follow the children
-// of its own leading row.
+// of its leading row.
 func prereqRows(listPanel *unison.Panel) []*unison.Panel {
 	layout, ok := listPanel.Layout().(*unison.FlexLayout)
 	if !ok {
@@ -53,7 +53,7 @@ func prereqRows(listPanel *unison.Panel) []*unison.Panel {
 
 // TestPrereqRowsShareTheirLeadingRowShape builds a prerequisite panel holding one of every kind of prerequisite and
 // checks the shape every row builder shares: the leading row is laid out with one column per child, the and/or label
-// sits at the end of the leading row for the first member of a list and just after the buttons for the others, and any
+// sits at the end of that row for the first member of a list and just after the buttons for the others, and any
 // sub-row is indented past the buttons column and spans the rest.
 func TestPrereqRowsShareTheirLeadingRowShape(t *testing.T) {
 	c := check.New(t)
@@ -100,8 +100,8 @@ func TestPrereqRowsShareTheirLeadingRowShape(t *testing.T) {
 }
 
 // TestPrereqRowAndOrLabelsFollowDeletion verifies that the leading row's layout is what adjustAndOr relies on: after
-// the first member of a list is deleted, the label of the member that becomes first is moved to the end of its leading
-// row and emptied, and the others keep theirs in place.
+// the first member of a list is deleted, the label of the member that becomes first moves to the end of its leading
+// row and is emptied, while the others keep theirs in place.
 func TestPrereqRowAndOrLabelsFollowDeletion(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()

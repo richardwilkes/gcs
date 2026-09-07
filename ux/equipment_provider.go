@@ -25,7 +25,8 @@ type equipmentProvider struct {
 	carried  bool
 }
 
-// NewEquipmentProvider creates a new table provider for equipment. 'carried' is only relevant if 'forPage' is true.
+// NewEquipmentProvider creates a new table provider for equipment, drawing on the carried equipment list when 'carried'
+// is true and the other equipment list when it is not.
 func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage bool) TableProvider[*gurps.Equipment] {
 	p := &equipmentProvider{provider: provider, carried: carried}
 	list, setList := provider.OtherEquipmentList, provider.SetOtherEquipmentList
@@ -63,11 +64,9 @@ func (p *equipmentProvider) DragSVG() *unison.SVG {
 }
 
 func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Equipment]]) bool {
-	// Within same table?
 	if from == to {
 		return true
 	}
-	// Within same dockable?
 	dockable := from.Ancestor[unison.Dockable]()
 	if dockable != nil && dockable == to.Ancestor[unison.Dockable]() {
 		return true

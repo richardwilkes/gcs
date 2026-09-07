@@ -38,7 +38,7 @@ func newWrappingLabel() *wrappingLabel {
 	return l
 }
 
-// setText replaces the text and the ink it is drawn in, and asks for the label and its ancestors to be laid out again,
+// setText replaces the text and the ink it is drawn in, then asks for the label and its ancestors to be laid out again,
 // since the number of lines may have changed.
 func (l *wrappingLabel) setText(text string, ink unison.Ink) {
 	l.text = text

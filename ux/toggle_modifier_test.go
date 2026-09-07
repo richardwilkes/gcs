@@ -20,7 +20,7 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// newTraitEditorWithModifiers returns a trait editor's table of trait modifiers, along with the non-container modifier
+// newTraitEditorWithModifiers returns a trait editor, its table of trait modifiers, and the non-container modifier
 // belonging to the trait itself. The trait carries one modifier that can be toggled followed by one container, which
 // cannot.
 func newTraitEditorWithModifiers(t *testing.T) (*editor[*gurps.Trait, *gurps.TraitEditData],
@@ -84,10 +84,10 @@ func checkModifierUndoRedo[T gurps.Node[T]](c check.Checker, table *unison.Table
 		func() { c.True(generalModifier(c, modifiers[0]).Enabled(), "undo must turn the modifier back on") })
 }
 
-// checkModifierToggleInEditor drives Toggle State over a modifiers table holding one non-container modifier followed by
-// one container, both selected, and verifies that only the editor's copy of the non-container one is flipped and that
-// the change can be taken back and put back again. The trait and equipment editors differ only in the type of modifier
-// they hold, so the two subtests share this.
+// checkModifierToggleInEditor drives Toggle State over a modifiers table holding one non-container modifier followed
+// by one container, both selected, and verifies that only the editor's copy of the non-container one is flipped and
+// that the change can be taken back and put back again. The trait and equipment editors differ only in the type of
+// modifier they hold, so the two subtests share this.
 func checkModifierToggleInEditor[T gurps.Node[T]](t *testing.T, table *unison.Table[*Node[T]], modifiers []T,
 	isModified func() bool, targetModifier gurps.GeneralModifier, undoName string,
 ) {
@@ -108,11 +108,10 @@ func checkModifierToggleInEditor[T gurps.Node[T]](t *testing.T, table *unison.Ta
 	checkModifierUndoRedo(c, table, modifiers, isModified, undoName, "toggle")
 }
 
-// TestToggleStateFlipsModifiersInsideEditors verifies that Toggle State reaches the modifier rows of a detail editor,
-// which is what issue #1074 asked for: until now the only way to turn a modifier on or off was to click its checkmark
-// cell one row at a time, since the editor tables installed no handler for the command and so both greyed out the Edit
-// menu item and dropped it from their context menus. The whole selection is flipped as a single undoable edit, and
-// only the editor's copy of the data is touched, so nothing reaches the item being edited until Apply.
+// Issue #1074: Toggle State must reach the modifier rows of a detail editor. The editor tables used to install no
+// handler for the command, so the only way to turn a modifier on or off was clicking its checkmark cell one row at a
+// time. The whole selection is flipped as one undoable edit, and only the editor's copy of the data is touched, so
+// nothing reaches the item being edited until Apply.
 func TestToggleStateFlipsModifiersInsideEditors(t *testing.T) {
 	t.Run("trait", func(t *testing.T) {
 		e, table, modifier := newTraitEditorWithModifiers(t)
@@ -127,9 +126,8 @@ func TestToggleStateFlipsModifiersInsideEditors(t *testing.T) {
 	})
 }
 
-// TestToggleStateSkipsModifierContainers verifies that the command is offered only when the selection holds something
-// it can actually change. A container is always enabled and shows no checkmark cell, so a selection of nothing but
-// containers must leave the menu item greyed out rather than registering an edit that changes nothing.
+// A container is always enabled and shows no checkmark cell, so a selection of nothing but containers must leave the
+// menu item greyed out rather than registering an edit that changes nothing.
 func TestToggleStateSkipsModifierContainers(t *testing.T) {
 	c := check.New(t)
 	_, table, _ := newTraitEditorWithModifiers(t)
@@ -158,9 +156,8 @@ func checkModifierCheckmarkClickInEditor[T gurps.Node[T]](t *testing.T, table *u
 	label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false, false).(*unison.Label)
 	c.True(ok, "the enabled cell must be a label")
 	// The cell has to be part of the editor's panel tree for the undo manager and the owning editor to be found, so the
-	// test attaches it itself, standing in for what the table does for the duration of a real click. A cell is never
-	// one of the table's children beyond the event it is handling, so it is taken back off again as soon as the click
-	// has been dispatched.
+	// test attaches it itself, standing in for what the table does during a real click, then takes it back off: a cell
+	// is never one of the table's children beyond the event it is handling.
 	table.AddChild(label)
 	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
 	label.RemoveFromParent()
@@ -170,10 +167,8 @@ func checkModifierCheckmarkClickInEditor[T gurps.Node[T]](t *testing.T, table *u
 	checkModifierUndoRedo(c, table, modifiers, isModified, undoName, "click")
 }
 
-// TestModifierCheckmarkClickIsUndoable verifies that clicking a modifier's checkmark cell inside an editor still flips
-// the editor's copy and can be taken back and put back again, now that the click is routed through the same machinery
-// as the command rather than through an undo payload of its own. Both kinds of modifier cell take that route, so both
-// are exercised here.
+// The click is routed through the same machinery as the command rather than through an undo payload of its own. Both
+// kinds of modifier cell take that route, so both are exercised here.
 func TestModifierCheckmarkClickIsUndoable(t *testing.T) {
 	t.Run("trait", func(t *testing.T) {
 		e, table, _ := newTraitEditorWithModifiers(t)

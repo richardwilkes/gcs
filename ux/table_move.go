@@ -33,7 +33,7 @@ const (
 	MoveIntoContainer
 )
 
-// Title returns the Title of the command, which also serves as the name of the undo edit it records.
+// Title returns the title of the command, which also serves as the name of the undo edit it records.
 func (d MoveDirection) Title() string {
 	switch d {
 	case MoveDown:
@@ -104,31 +104,30 @@ func CanMoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDi
 // A drag within a table finishes by giving the provider a look at the rows that landed -- for skills and spells that
 // fills in a blank tech level from the entity and refreshes their levels -- and by clearing the Preconfigured flag on
 // them anywhere but in a template (see didDropCallback), so a move does the same to stay interchangeable with one. The
-// prompts for modifiers and nameables that a drop may go on to raise are left out: they configure rows arriving on a
-// sheet, which a move never brings.
+// modifier and nameable prompts a drop may raise are left out: they configure rows arriving on a sheet, which a move
+// never brings.
 func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirection) {
 	provider, items, selected, ok := selectionToMove(table)
 	if !ok {
 		return
 	}
 	// The data has to be captured before anything moves, but the edit is only recorded once something has, which the
-	// loop below finds out as it goes; a selection none of whose rows can move therefore costs one serialization and
-	// nothing more, rather than a full pass over it up front to establish that.
+	// loop below finds out as it goes; a selection none of whose rows can move therefore costs one serialization rather
+	// than a full pass over it up front.
 	//
-	// The containers the move opened, collected by the loop below, are closed again before undo puts the data back, so
-	// that undo leaves no trace, and reopened before redo does, so that the rows redo moves into them are showing and
-	// can be selected. Their open state is kept in the global settings under their IDs, so it makes no difference that
-	// the objects themselves are replaced when the data is deserialized.
+	// The containers the move opened are closed again before undo puts the data back, so that undo leaves no trace, and
+	// reopened before redo does, so that the rows redo moves into them are showing and can be selected. Their open
+	// state is kept in the global settings under their IDs, so it makes no difference that the objects themselves are
+	// replaced when the data is deserialized.
 	var opened []T
 	undo := beginTableUndo(table, dir.Title(),
 		func() { setContainersOpen(opened, false) },
 		func() { setContainersOpen(opened, true) })
 	if dir == MoveDown || dir == MoveIntoContainer {
 		// These two act on what sits directly below a row, so the rows are taken from the bottom up: that way a
-		// selected sibling below has already moved on before the row above it looks at what is beneath it. Moving
-		// down, a run of selected siblings then moves as a block instead of the top one being blocked by the one
-		// below it; moving into a container, each row of the run finds the container directly beneath it in turn and
-		// goes in ahead of the one that just did, so the run arrives in order.
+		// selected sibling below has already moved on before the row above it looks at what is beneath it. Moving down,
+		// a run of selected siblings then moves as a block; moving into a container, each row of the run goes in ahead
+		// of the one that just did, so the run arrives in order.
 		slices.Reverse(items)
 	}
 	moved := false
@@ -189,7 +188,6 @@ func selectionToMove[T gurps.Node[T]](table *unison.Table[*Node[T]]) (provider T
 	return provider, items, table.CopySelectionMap(), true
 }
 
-// setContainersOpen opens or closes each of the containers.
 func setContainersOpen[T gurps.Node[T]](containers []T, open bool) {
 	for _, container := range containers {
 		container.SetOpen(open)

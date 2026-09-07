@@ -26,14 +26,14 @@ import (
 // Download streams the asset to dstPath, verifying both its length and its SHA-256 as it arrives.
 //
 // The checksum is the one GitHub publishes alongside the download URL. Both travel in the same TLS-protected API
-// response, so this establishes that what arrived is what GitHub meant to send -- it is an integrity check against a
-// truncated or corrupted transfer, not an independent proof of authenticity. On macOS the code signature check that
-// follows is what establishes the latter; elsewhere the trust is in GitHub and the transport.
+// response, so this is an integrity check against a truncated or corrupted transfer, not an independent proof of
+// authenticity. On macOS the code signature check that follows establishes the latter; elsewhere the trust is in
+// GitHub and the transport.
 //
 // progress, when not nil, is called with the running byte count. It is called often, so it must be cheap and must not
 // block; throttling and marshaling to a UI thread are the caller's business.
 //
-// dstPath is removed on any failure, including cancellation, so a failed attempt can never leave a partial file for a
+// dstPath is removed on any failure, including cancellation, so a failed attempt cannot leave a partial file for a
 // later step to mistake for a complete one.
 func Download(ctx context.Context, client *http.Client, asset Asset, dstPath string, progress func(read int64)) (err error) {
 	if asset.SHA256 == "" {
@@ -60,8 +60,8 @@ func Download(ctx context.Context, client *http.Client, asset Asset, dstPath str
 
 	hash := sha256.New()
 	counter := &progressWriter{progress: progress}
-	// Allowing exactly one byte past the expected size is what makes "longer than advertised" detectable: without it, a
-	// body of exactly the limit and one that overruns it look identical.
+	// Allowing one byte past the expected size is what makes "longer than advertised" detectable: without it, a body of
+	// exactly the limit and one that overruns it look identical.
 	n, err := io.Copy(io.MultiWriter(f, hash, counter), io.LimitReader(body, asset.Size+1))
 	if err != nil {
 		return errs.NewWithCause("unable to download "+asset.Name, err)
@@ -75,7 +75,6 @@ func Download(ctx context.Context, client *http.Client, asset Asset, dstPath str
 	return nil
 }
 
-// progressWriter counts bytes as they pass through and reports the running total.
 type progressWriter struct {
 	progress func(read int64)
 	total    int64

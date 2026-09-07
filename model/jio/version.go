@@ -28,7 +28,7 @@ const (
 	// MinimumDataVersion holds the oldest version for data files that can be loaded. Note that this is intentionally
 	// the same for all data files that GCS processes.
 	MinimumDataVersion    = 2
-	MinimumLibraryVersion = 3 // Note that as of the Go version of GCS, the data and library version are the same.
+	MinimumLibraryVersion = 3
 )
 
 // CheckVersion returns an error if the data version is out of the acceptable range.

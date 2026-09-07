@@ -23,8 +23,7 @@ import (
 // noEnv stands in for a process with none of the sandbox markers set.
 func noEnv(string) (string, bool) { return "", false }
 
-// linuxAssets is a release publishing every build, so that the platform checks are what a test exercises rather than a
-// missing asset.
+// linuxAssets is a release publishing every build, so a test exercises the platform checks rather than a missing asset.
 func linuxAssets(version string) []Asset {
 	var assets []Asset
 	for _, goos := range []string{xos.MacOS, xos.LinuxOS, xos.WindowsOS} {
@@ -49,8 +48,8 @@ func blockerOf(t *testing.T, err error) Blocker {
 	return unavailable.Blocker
 }
 
-// TestPreflightAcceptsAWritableInstallation verifies the case that must work: an ordinary installation in a directory
-// the user can write to, with the matching build published.
+// The case that must work: an ordinary installation in a directory the user can write to, with the matching build
+// published.
 func TestPreflightAcceptsAWritableInstallation(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -66,9 +65,9 @@ func TestPreflightAcceptsAWritableInstallation(t *testing.T) {
 	c.Equal(exePath, plan.Target.Path)
 }
 
-// TestPreflightRefusesADevBuild verifies that a build with no release behind it never tries to update. The stamped
-// version is "0.0" for a build with no version at all, but a plain `go build` from a git checkout stamps a VCS
-// pseudo-version instead, optionally with "+dirty" appended, and those must be refused just the same.
+// A build with no release behind it must never try to update. The stamped version is "0.0" for a build with no version
+// at all, but a plain `go build` from a git checkout stamps a VCS pseudo-version instead, optionally with "+dirty"
+// appended, and those must be refused just the same.
 func TestPreflightRefusesADevBuild(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -87,9 +86,8 @@ func TestPreflightRefusesADevBuild(t *testing.T) {
 	}
 }
 
-// TestPreflightRefusesARenamedExecutable verifies that a copy the user renamed is left alone. On Linux the desktop
-// integration only installs itself when the executable is named "gcs", so replacing a differently-named file would
-// produce an installation that half works.
+// A copy the user renamed is left alone. On Linux the desktop integration only installs itself when the executable is
+// named "gcs", so replacing a differently-named file would produce an installation that half works.
 func TestPreflightRefusesARenamedExecutable(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -101,9 +99,8 @@ func TestPreflightRefusesARenamedExecutable(t *testing.T) {
 	c.Equal(BlockerRenamedExecutable, blockerOf(t, err))
 }
 
-// TestPreflightRefusesPackageManagedLocations verifies that an installation belonging to a package manager is left for
-// that package manager to update. Replacing it would leave the package database describing a file that is no longer
-// there.
+// An installation belonging to a package manager is left for that package manager to update; replacing it would leave
+// the package database describing a file that is no longer there.
 func TestPreflightRefusesPackageManagedLocations(t *testing.T) {
 	c := check.New(t)
 	for _, dir := range []string{
@@ -117,8 +114,8 @@ func TestPreflightRefusesPackageManagedLocations(t *testing.T) {
 	}
 }
 
-// TestPreflightRefusesSandboxedRuntimes verifies detection of the packaging systems that run the application from a
-// managed image, which do not necessarily install under a recognizable path.
+// The packaging systems that run the application from a managed image do not necessarily install under a recognizable
+// path, so they are detected by their environment variables instead.
 func TestPreflightRefusesSandboxedRuntimes(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -138,9 +135,9 @@ func TestPreflightRefusesSandboxedRuntimes(t *testing.T) {
 	}
 }
 
-// TestPreflightRefusesAnUnwritableInstallation verifies the check that keeps an update from being downloaded only to
-// discover at the last moment that it cannot be installed. The probe is a real write, since permission bits alone do
-// not account for access control lists or a read-only mount.
+// The check that keeps an update from being downloaded only to discover at the last moment that it cannot be
+// installed. The probe is a real write, since permission bits alone do not account for access control lists or a
+// read-only mount.
 func TestPreflightRefusesAnUnwritableInstallation(t *testing.T) {
 	if runtime.GOOS == xos.WindowsOS {
 		t.Skip("directory modes do not govern writability on Windows")
@@ -161,8 +158,8 @@ func TestPreflightRefusesAnUnwritableInstallation(t *testing.T) {
 	c.Equal(BlockerReadOnly, blockerOf(t, err))
 }
 
-// TestPreflightRefusesATranslocatedApp verifies the App Translocation check. The randomized copy's parent directory can
-// be writable, so the write probe alone would happily "update" a copy that vanishes when the application quits.
+// The App Translocation copy's parent directory can be writable, so the write probe alone would happily "update" a
+// copy that vanishes when the application quits.
 func TestPreflightRefusesATranslocatedApp(t *testing.T) {
 	c := check.New(t)
 	exePath := "/private/var/folders/xy/T/AppTranslocation/1234-ABCD/d/GCS.app/Contents/MacOS/gcs"
@@ -171,8 +168,8 @@ func TestPreflightRefusesATranslocatedApp(t *testing.T) {
 	c.Equal(BlockerTranslocated, blockerOf(t, err))
 }
 
-// TestPreflightRefusesABareExecutableOnMacOS verifies that macOS only updates a real installed bundle. Replacing a bare
-// executable would not produce something the Finder or Launch Services could run.
+// macOS only updates a real installed bundle; replacing a bare executable would not produce something the Finder or
+// Launch Services could run.
 func TestPreflightRefusesABareExecutableOnMacOS(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -184,8 +181,8 @@ func TestPreflightRefusesABareExecutableOnMacOS(t *testing.T) {
 	c.Equal(BlockerNotABundle, blockerOf(t, err))
 }
 
-// TestPreflightRefusesAMissingAsset verifies that a release which did not publish a build for this platform is reported
-// as such, rather than some other platform's file being downloaded.
+// A release that did not publish a build for this platform is reported as such, rather than some other platform's file
+// being downloaded.
 func TestPreflightRefusesAMissingAsset(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -199,10 +196,9 @@ func TestPreflightRefusesAMissingAsset(t *testing.T) {
 	c.Equal(BlockerNoAsset, blockerOf(t, err))
 }
 
-// TestPreflightRefusesAnUnverifiableAsset verifies that a release whose asset carries no checksum is refused outright
-// rather than installed without verification. GitHub has published checksums since 2025, so this only arises for
-// releases far older than anything worth installing -- but silently skipping the check would be worse than not
-// updating at all.
+// A release whose asset carries no checksum is refused outright rather than installed without verification. GitHub has
+// published checksums since 2025, so this only arises for releases far older than anything worth installing, but
+// silently skipping the check would be worse than not updating at all.
 func TestPreflightRefusesAnUnverifiableAsset(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -216,9 +212,9 @@ func TestPreflightRefusesAnUnverifiableAsset(t *testing.T) {
 	c.Equal(BlockerNoDigest, blockerOf(t, err))
 }
 
-// TestCheckHomebrewOnlyRefusesTheManagedCopy verifies both halves of the Homebrew rule. The cask moves the bundle into
-// /Applications exactly as a person would, so the installed copy is indistinguishable on its own -- but a second copy
-// the user keeps elsewhere is theirs, and refusing to update that would be wrong.
+// Both halves of the Homebrew rule. The cask moves the bundle into /Applications exactly as a person would, so the
+// installed copy is indistinguishable on its own -- but a second copy the user keeps elsewhere is theirs, and refusing
+// to update that would be wrong.
 func TestCheckHomebrewOnlyRefusesTheManagedCopy(t *testing.T) {
 	c := check.New(t)
 
@@ -243,8 +239,8 @@ func TestCheckHomebrewOnlyRefusesTheManagedCopy(t *testing.T) {
 	}
 }
 
-// TestProbeWritableCleansUpAfterItself verifies the probe leaves nothing behind. It runs every time the update dialog
-// is shown, so a probe that leaked a directory each time would slowly fill the user's installation directory.
+// The probe runs every time the update dialog is shown, so one that leaked a directory each time would slowly fill the
+// user's installation directory.
 func TestProbeWritableCleansUpAfterItself(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

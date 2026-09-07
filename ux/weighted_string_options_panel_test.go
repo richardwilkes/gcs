@@ -39,10 +39,9 @@ func optionValues(list []*gurps.WeightedStringOption) []string {
 	return values
 }
 
-// TestWeightedStringOptionRowBindsFields verifies that a row's value and weight fields write to the model, that a
-// weight below the minimum shows the field's validation tooltip and is held at the minimum, and that the explanatory
-// tooltip returns once the weight is valid again. Zero is allowed, since the randomizers skip a zero-weight entry and a
-// file that contains one must load without being altered.
+// A weight below the minimum shows the field's validation tooltip and is held at the minimum, and the explanatory
+// tooltip returns once the weight is valid again. Zero is allowed, since the randomizers skip a zero-weight entry and
+// a file that contains one must load without being altered.
 func TestWeightedStringOptionRowBindsFields(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -74,9 +73,8 @@ func TestWeightedStringOptionRowBindsFields(t *testing.T) {
 	c.True(d.Modified())
 }
 
-// TestWeightedStringOptionsAddAndRemove verifies that an empty list shows no rows container, that adding an option
-// appends a weight-1 option with its own key prefix and builds a row for it, that removing the last option removes the
-// rows container again, and that both are undoable.
+// An empty list shows no rows container: adding the first option brings it into being and removing the last takes it
+// away again.
 func TestWeightedStringOptionsAddAndRemove(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -113,8 +111,7 @@ func TestWeightedStringOptionsAddAndRemove(t *testing.T) {
 	c.False(d.undoMgr.CanUndo(), "each edit is its own undo")
 }
 
-// TestWeightedStringOptionsRemoveFromMiddle verifies that an option is removed by identity, not by position, so the
-// other options keep their order.
+// An option is removed by identity, not by position, so the other options keep their order.
 func TestWeightedStringOptionsRemoveFromMiddle(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -130,8 +127,7 @@ func TestWeightedStringOptionsRemoveFromMiddle(t *testing.T) {
 	c.Equal(2, len(listPanelFor(t, d, &d.model.CommonOptions.EyeOptions).rows.Children()))
 }
 
-// TestWeightedStringOptionsPerGenderListsBindToGender verifies that each gender's lists edit that gender's options, not
-// the common ones, and that every one of the four lists is present for each block.
+// Each gender's lists must edit that gender's options, not the common ones, and all four must be present for each.
 func TestWeightedStringOptionsPerGenderListsBindToGender(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -153,10 +149,9 @@ func TestWeightedStringOptionsPerGenderListsBindToGender(t *testing.T) {
 		"the other gender is untouched")
 }
 
-// TestWeightedStringOptionsSelection verifies how clicks build up a selection -- a plain click selects one row, a
-// shift-click extends from the last plain click in either direction, and a command-click toggles a row without
-// touching the others -- that the header's remove button follows the selection, that removing the selection takes out
-// exactly the selected options in one undoable edit, and that the selection does not outlive the rows it was made on.
+// How clicks build up a selection: a plain click selects one row, a shift-click extends from the last plain click in
+// either direction, and a command-click toggles a row without touching the others. Removing the selection takes out
+// exactly the selected options in one undoable edit, and the selection does not outlive the rows it was made on.
 func TestWeightedStringOptionsSelection(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -212,8 +207,8 @@ func TestWeightedStringOptionsSelection(t *testing.T) {
 	c.False(d.undoMgr.CanUndo(), "the removal was a single edit")
 }
 
-// TestWeightedStringOptionRowClicksSelect verifies that a left click on a row, or on its drag handle, selects the row
-// with the click's modifiers, while a click with another button is left for whatever else wants it.
+// A left click on a row, or on its drag handle, selects the row with the click's modifiers, while a click with another
+// button is left for whatever else wants it.
 func TestWeightedStringOptionRowClicksSelect(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()

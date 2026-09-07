@@ -24,12 +24,10 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// testBlockNode returns a Block node for the given key and weight.
 func testBlockNode(key string, weight fxp.Int) *gurps.SheetLayoutNode {
 	return &gurps.SheetLayoutNode{Type: layoutnode.Block, Key: key, Weight: weight}
 }
 
-// testContainerNode returns a Row or Column node holding the given children.
 func testContainerNode(nodeType layoutnode.Type, weight fxp.Int,
 	children ...*gurps.SheetLayoutNode,
 ) *gurps.SheetLayoutNode {
@@ -37,7 +35,7 @@ func testContainerNode(nodeType layoutnode.Type, weight fxp.Int,
 }
 
 // testLeafFunc returns a leaf function that hands back a fresh panel for each of the given keys and nil for anything
-// else, along with the map of the panels it made, so that a test can tell which panel is which.
+// else, along with the map of the panels it made.
 func testLeafFunc(keys ...string) (leaf layoutLeafFunc, panelsByKey map[string]*unison.Panel) {
 	panels := make(map[string]*unison.Panel, len(keys))
 	for _, key := range keys {
@@ -51,7 +49,6 @@ func testLeafFunc(keys ...string) (leaf layoutLeafFunc, panelsByKey map[string]*
 	}, panels
 }
 
-// layoutNodeOf returns the layout node the builder recorded on the given panel.
 func layoutNodeOf(p unison.Paneler) *gurps.SheetLayoutNode {
 	node, ok := p.AsPanel().ClientData()[sheetLayoutNodeKey].(*gurps.SheetLayoutNode)
 	if !ok {
@@ -60,7 +57,6 @@ func layoutNodeOf(p unison.Paneler) *gurps.SheetLayoutNode {
 	return node
 }
 
-// flexDataOf returns the layout data the builder gave the panel.
 func flexDataOf(p unison.Paneler) *unison.FlexLayoutData {
 	data, ok := p.AsPanel().LayoutData().(*unison.FlexLayoutData)
 	if !ok {
@@ -69,7 +65,7 @@ func flexDataOf(p unison.Paneler) *unison.FlexLayoutData {
 	return data
 }
 
-// TestBuildLayoutBandsBuildsOneBandPerRootChild verifies that each of the root's bands becomes a panel of its own, laid
+// TestBuildLayoutBandsBuildsOneBandPerRootChild checks that each of the root's bands becomes a panel of its own, laid
 // out the way its node calls for, with the weights of a row's surviving children handed to the row's layout.
 func TestBuildLayoutBandsBuildsOneBandPerRootChild(t *testing.T) {
 	c := check.New(t)
@@ -97,7 +93,6 @@ func TestBuildLayoutBandsBuildsOneBandPerRootChild(t *testing.T) {
 	c.Nil(buildLayoutNode(nil, leaf))
 }
 
-// TestBuildLayoutNodeColumn verifies that a column becomes a panel that stacks its children in a single column.
 func TestBuildLayoutNodeColumn(t *testing.T) {
 	c := check.New(t)
 	leaf, panels := testLeafFunc(gurps.BlockTraitsKey, gurps.BlockSkillsKey)
@@ -113,9 +108,9 @@ func TestBuildLayoutNodeColumn(t *testing.T) {
 	c.Equal([]*unison.Panel{panels[gurps.BlockTraitsKey], panels[gurps.BlockSkillsKey]}, built.AsPanel().Children())
 }
 
-// TestBuildLayoutColumnChildrenFillTheRow verifies that the blocks stacked in a column that stands beside something
-// taller than they are share out the height they are given, so that the bottom of the last of them is the bottom of
-// the row rather than the page showing through below it.
+// TestBuildLayoutColumnChildrenFillTheRow checks that the blocks stacked in a column standing beside something taller
+// share out the height they are given, so the bottom of the last of them is the bottom of the row rather than the page
+// showing through below it.
 func TestBuildLayoutColumnChildrenFillTheRow(t *testing.T) {
 	c := check.New(t)
 	leaf, panels := testLeafFunc(gurps.BlockEncumbranceKey, gurps.BlockLiftingKey, gurps.BlockBodyKey)
@@ -149,9 +144,8 @@ func TestBuildLayoutColumnChildrenFillTheRow(t *testing.T) {
 		"the bottom of the last block is the bottom of the row")
 }
 
-// TestBuildLayoutNodePrunes verifies that a block the leaf function has nothing for is left out, that a container all
-// of whose children were left out goes with them, and that a container left holding a single child is replaced by that
-// child.
+// TestBuildLayoutNodePrunes checks that a block the leaf function has nothing for is left out, that a container all of
+// whose children were left out goes with them, and that a container left holding a single child is replaced by it.
 func TestBuildLayoutNodePrunes(t *testing.T) {
 	c := check.New(t)
 	leaf, panels := testLeafFunc(gurps.BlockTraitsKey)
@@ -174,7 +168,7 @@ func TestBuildLayoutNodePrunes(t *testing.T) {
 	c.Equal(float32(72), flexDataOf(built).MinSize.Height, "and takes on the container's minimum height")
 }
 
-// TestBuildLayoutNodeLayoutData verifies that the builder is the sole authority on the layout data of the panels it
+// TestBuildLayoutNodeLayoutData checks that the builder is the sole authority on the layout data of the panels it
 // returns: each of them fills its slot, carries the minimum height its node calls for, and records that node.
 func TestBuildLayoutNodeLayoutData(t *testing.T) {
 	c := check.New(t)
@@ -202,15 +196,16 @@ func TestBuildLayoutNodeLayoutData(t *testing.T) {
 	c.Equal(skillsNode, layoutNodeOf(panels[gurps.BlockSkillsKey]))
 }
 
-// TestBuildLayoutNodeSquareFlags verifies that a row is told which of its children take their width from its height,
-// and that the square flag travels the same way the layout node does: a container left holding a single block is
-// dropped, and the block that takes its place keeps the flag of its own node rather than the container's.
+// TestBuildLayoutNodeSquareFlags checks that a row is told which of its children take their width from its height, and
+// that the square flag travels the way the layout node does: a container left holding a single block is dropped, and
+// the block that takes its place keeps the flag of its own node rather than the container's.
 func TestBuildLayoutNodeSquareFlags(t *testing.T) {
 	c := check.New(t)
 	leaf, panels := testLeafFunc(gurps.BlockPortraitKey, gurps.BlockIdentityKey, gurps.BlockNotesKey)
 	portraitNode := testBlockNode(gurps.BlockPortraitKey, fxp.One)
 	portraitNode.Square = true
-	// The column holds the portrait and a block with nothing to show, so it is dropped and the portrait takes its place.
+	// The column holds the portrait and a block with nothing to show, so it is dropped and the portrait takes its
+	// place.
 	rowNode := testContainerNode(layoutnode.Row, fxp.One,
 		testContainerNode(layoutnode.Column, fxp.One, portraitNode,
 			testBlockNode(gurps.BlockSpellsKey, fxp.One)),
@@ -239,9 +234,9 @@ func TestBuildLayoutNodeSquareFlags(t *testing.T) {
 	c.Nil(squareLayoutNodeOf(panels[gurps.BlockPortraitKey]))
 }
 
-// TestFactoryPortraitPictureAreaIsSquare verifies that the portrait of a sheet laid out the factory way has a square
+// TestFactoryPortraitPictureAreaIsSquare checks that the portrait of a sheet laid out the factory way has a square
 // picture area whatever the page and the rest of the layout come to, since its width is taken from the height of the
-// band it is in rather than from a share of the page width, and that the blocks beside it still fill the rest of that
+// band it is in rather than from a share of the page width, and that the blocks beside it still fill the rest of the
 // band.
 func TestFactoryPortraitPictureAreaIsSquare(t *testing.T) {
 	c := check.New(t)
@@ -287,7 +282,7 @@ func TestFactoryPortraitPictureAreaIsSquare(t *testing.T) {
 		"a taller band must make the picture area wider, but %v became %v", letter.Width, taller.Width)
 }
 
-// TestSheetPageMatchesTheLayout verifies that the sheet's page holds one panel per band of the layout that has anything
+// TestSheetPageMatchesTheLayout checks that the sheet's page holds one panel per band of the layout that has anything
 // to show, and that the blocks that aren't lists are the panels the sheet keeps rather than new ones.
 func TestSheetPageMatchesTheLayout(t *testing.T) {
 	c := check.New(t)
@@ -306,8 +301,7 @@ func TestSheetPageMatchesTheLayout(t *testing.T) {
 	c.NotNil(sheet.MeleeWeapons.AsPanel().Parent(), "a list with rows must be placed")
 }
 
-// nonEmptyBandCount returns the number of the layout's bands that have something to show for the given sheet, which for
-// a character with no content means every band but the two whose lists are empty.
+// nonEmptyBandCount returns how many of the layout's bands have something to show for the given sheet.
 func nonEmptyBandCount(sheet *Sheet, layout *gurps.SheetLayout) int {
 	count := 0
 	for _, band := range layout.Root.Children {
@@ -345,9 +339,9 @@ func isEmptyDerivedList(sheet *Sheet, key string) bool {
 	}
 }
 
-// TestSheetHidingAndShowingABlock verifies that hiding a block takes it off the page without taking it away from the
-// sheet, that nothing that reaches for it afterwards is handed something nobody can see, and that showing it again
-// brings it back.
+// TestSheetHidingAndShowingABlock checks that hiding a block takes it off the page without taking it away from the
+// sheet, that nothing reaching for it afterwards is handed something nobody can see, and that showing it brings it
+// back.
 func TestSheetHidingAndShowingABlock(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -372,8 +366,8 @@ func TestSheetHidingAndShowingABlock(t *testing.T) {
 	c.NotNil(sheet.keyToPanel(noteDragKey), "and makes it a drop target again")
 }
 
-// TestSheetHidingABlockThatIsNotAList verifies that a block the sheet keeps a panel for is taken off the page when it
-// is hidden, and that the panel itself survives to be put back.
+// TestSheetHidingABlockThatIsNotAList checks that a block the sheet keeps a panel for is taken off the page when it is
+// hidden, and that the panel itself survives to be put back.
 func TestSheetHidingABlockThatIsNotAList(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -392,7 +386,7 @@ func TestSheetHidingABlockThatIsNotAList(t *testing.T) {
 	c.Equal(portrait, sheet.blocks[gurps.BlockPortraitKey])
 }
 
-// TestTemplateBuildsFromTheDefaultLayout verifies that a template lays its content out from the default layout, showing
+// TestTemplateBuildsFromTheDefaultLayout checks that a template lays its content out from the default layout, showing
 // exactly the five blocks a template can have.
 func TestTemplateBuildsFromTheDefaultLayout(t *testing.T) {
 	c := check.New(t)
@@ -407,10 +401,10 @@ func TestTemplateBuildsFromTheDefaultLayout(t *testing.T) {
 	c.Equal(len(lists), len(placed), "the template shows exactly its five lists")
 }
 
-// TestBuildLayoutNodeRecordsTheContainerItWasBuiltFrom verifies that a container panel records the Row or Column node
-// its children were built from, and keeps doing so when an outer container that was left with only it is dropped onto
-// it: the node that governs the slot is then the outer container's, but the pairs of children the panel holds are
-// still the inner one's.
+// TestBuildLayoutNodeRecordsTheContainerItWasBuiltFrom checks that a container panel records the Row or Column node its
+// children were built from, and keeps doing so when an outer container left with only it is dropped onto it: the node
+// governing the slot is then the outer container's, but the pairs of children the panel holds are still the inner
+// one's.
 func TestBuildLayoutNodeRecordsTheContainerItWasBuiltFrom(t *testing.T) {
 	c := check.New(t)
 	leaf, panels := testLeafFunc(gurps.BlockTraitsKey, gurps.BlockSkillsKey)
@@ -432,10 +426,9 @@ func TestBuildLayoutNodeRecordsTheContainerItWasBuiltFrom(t *testing.T) {
 	c.Equal(rowBandPanel, bandKindOf(built.AsPanel()), "and it is still laid out as a row")
 }
 
-// TestBuildLayoutSquareBlockInAStretchedRowStaysSquare verifies, against the real builder, that a square block in a row
-// that a column stretches to the bottom of a taller sibling keeps its content square: the row is given more height
-// than it asked for, so the block's width has to follow the height it is actually given rather than the one the row
-// was measured at.
+// TestBuildLayoutSquareBlockInAStretchedRowStaysSquare checks, against the real builder, that a square block in a row a
+// column stretches to the bottom of a taller sibling keeps its content square: the row is given more height than it
+// asked for, so the block's width has to follow the height it is actually given rather than the one it was measured at.
 func TestBuildLayoutSquareBlockInAStretchedRowStaysSquare(t *testing.T) {
 	c := check.New(t)
 	leaf, panels := testLeafFunc(gurps.BlockPortraitKey, gurps.BlockIdentityKey, gurps.BlockLiftingKey,

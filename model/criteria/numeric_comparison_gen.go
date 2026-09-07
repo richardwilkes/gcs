@@ -132,8 +132,8 @@ func ExtractNumericComparison(str string) NumericComparison {
 
 // ExtractKnownNumericComparison extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractNumericComparison, which quietly maps anything it doesn't recognize onto the first value, this permits
-// a caller that is dispatching on the type to detect unknown types.
+// Unlike ExtractNumericComparison, which quietly maps anything it doesn't recognize onto the default value, this
+// permits a caller that is dispatching on the type to detect unknown types.
 func ExtractKnownNumericComparison(str string) (value NumericComparison, known bool) {
 	for _, enum := range NumericComparisons {
 		if strings.EqualFold(enum.Key(), str) {

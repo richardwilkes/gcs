@@ -98,14 +98,14 @@ func (b *Body) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// Rewrap the description field. Should only be called for older data (prior to noNeedForRewrapVersion)
+// Rewrap the description fields. Should only be called for older data (prior to noNeedForRewrapVersion).
 func (b *Body) Rewrap() {
 	for _, loc := range b.Locations {
 		loc.rewrap()
 	}
 }
 
-// Clone a copy of this.
+// Clone returns a copy of this Body, bound to the given Entity and owning HitLocation.
 func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 	clone := *b
 	clone.owningLocation = owningLocation
@@ -125,7 +125,7 @@ func (b *Body) Save(filePath string) error {
 	})
 }
 
-// Update the role ranges and populate the lookup map.
+// Update the roll ranges and populate the lookup map.
 func (b *Body) Update(entity *Entity) {
 	for _, one := range b.Locations {
 		one.owningTable = b

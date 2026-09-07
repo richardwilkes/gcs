@@ -135,15 +135,15 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	return d, nil
 }
 
-// isSVGPath returns true if the path uses one of the extensions registered for SVG content. Note that this covers both
-// ".svg" and ".svgz", since both are registered by uti.SVG and therefore advertised as openable.
+// isSVGPath returns true if the path uses one of the extensions registered for SVG content, which covers both ".svg"
+// and ".svgz".
 func isSVGPath(filePath string) bool {
 	return slices.Contains(uti.SVG.Extensions, strings.ToLower(filepath.Ext(filePath)))
 }
 
-// loadSVGFromFile loads the SVG found at the given path. ".svgz" files hold gzip-compressed SVG data, which the SVG
-// parser can't consume directly, so the content is decompressed first. The gzip header is checked rather than the
-// extension, since compressed content is sometimes stored with the plain ".svg" extension as well.
+// loadSVGFromFile loads the SVG found at the given path, decompressing it first when the gzip header is present, since
+// the SVG parser can't consume gzipped data. The header is checked rather than the extension, since compressed content
+// is sometimes stored with the plain ".svg" extension as well.
 func loadSVGFromFile(filePath string) (*unison.SVG, error) {
 	f, err := os.Open(filePath)
 	if err != nil {

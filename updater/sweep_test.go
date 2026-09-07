@@ -20,7 +20,7 @@ import (
 )
 
 // installation builds a fake install directory holding a target, a backup and a staging directory, and returns the
-// state describing them. Which of the three actually exist is up to the caller, so that each way an update can be
+// state describing them. Which of the three actually exist is up to the caller, so each way an update can be
 // interrupted can be set up precisely.
 func installation(t *testing.T, status Status, present ...string) (state *State, dir string) {
 	t.Helper()
@@ -68,9 +68,8 @@ func read(t *testing.T, path string) string {
 	return string(data)
 }
 
-// TestSettleRepairsAnInterruptedSwap is the case that matters most: the helper moved the installation aside and died
-// before putting the replacement in its place, so the user has no application at all. The previous version must come
-// back rather than the user being left with nothing.
+// The case that matters most: the helper moved the installation aside and died before putting the replacement in its
+// place, so the user has no application at all. The previous version must come back.
 func TestSettleRepairsAnInterruptedSwap(t *testing.T) {
 	c := check.New(t)
 	state, _ := installation(t, StatusStaged, "backup", "workdir")
@@ -85,8 +84,8 @@ func TestSettleRepairsAnInterruptedSwap(t *testing.T) {
 	c.False(outcome.Applied)
 }
 
-// TestSettleRemovesTheBackupOnlyAfterASuccessfulStart verifies the rollback window. The helper deliberately leaves the
-// previous version on disk; it is removed here, which is the first moment the replacement has been shown to run.
+// The rollback window: the helper deliberately leaves the previous version on disk, and it is removed here, the first
+// moment the replacement has been shown to run.
 func TestSettleRemovesTheBackupOnlyAfterASuccessfulStart(t *testing.T) {
 	c := check.New(t)
 	state, _ := installation(t, StatusApplied, "target", "backup", "workdir")
@@ -101,9 +100,8 @@ func TestSettleRemovesTheBackupOnlyAfterASuccessfulStart(t *testing.T) {
 	c.Equal(ReasonNone, outcome.Reason)
 }
 
-// TestSettleKeepsTheBackupOnAVersionMismatch verifies that when the swap claims to have installed a version other than
-// the one now running, the previous version is kept. Deleting it would leave only a copy that is already known not to
-// be what it claimed.
+// When the swap claims to have installed a version other than the one now running, the previous version is kept.
+// Deleting it would leave only a copy already known not to be what it claimed.
 func TestSettleKeepsTheBackupOnAVersionMismatch(t *testing.T) {
 	c := check.New(t)
 	state, _ := installation(t, StatusApplied, "target", "backup", "workdir")
@@ -118,8 +116,8 @@ func TestSettleKeepsTheBackupOnAVersionMismatch(t *testing.T) {
 	c.False(outcome.Applied)
 }
 
-// TestSettleReportsAnInstalledButUnlaunchedUpdate verifies that a relaunch failure is still reported as applied. The
-// new version is in place and running -- that is how we got here -- so it is a notice, not a failure.
+// A relaunch failure is still reported as applied: the new version is in place and running -- that is how we got here
+// -- so it is a notice, not a failure.
 func TestSettleReportsAnInstalledButUnlaunchedUpdate(t *testing.T) {
 	c := check.New(t)
 	state, _ := installation(t, StatusApplied, "target", "backup", "workdir")
@@ -133,8 +131,8 @@ func TestSettleReportsAnInstalledButUnlaunchedUpdate(t *testing.T) {
 	c.False(exists(state.Backup))
 }
 
-// TestSettleOnAFailedUpdateLeavesTheInstallationAlone verifies that a failure recorded before anything was touched
-// clears the staging and leaves the installed application exactly as it was.
+// A failure recorded before anything was touched clears the staging and leaves the installed application exactly as it
+// was.
 func TestSettleOnAFailedUpdateLeavesTheInstallationAlone(t *testing.T) {
 	c := check.New(t)
 	state, _ := installation(t, StatusFailed, "target", "workdir")
@@ -150,8 +148,8 @@ func TestSettleOnAFailedUpdateLeavesTheInstallationAlone(t *testing.T) {
 	c.False(outcome.Applied)
 }
 
-// TestSettleDiscardsAnAbandonedStaging verifies that an update that was prepared but never applied -- the user vetoed
-// the quit, or the helper never ran -- is cleaned up without touching the installation.
+// An update prepared but never applied -- the user vetoed the quit, or the helper never ran -- is cleaned up without
+// touching the installation.
 func TestSettleDiscardsAnAbandonedStaging(t *testing.T) {
 	c := check.New(t)
 	state, _ := installation(t, StatusStaged, "target", "workdir")
@@ -165,9 +163,9 @@ func TestSettleDiscardsAnAbandonedStaging(t *testing.T) {
 	c.Equal(ReasonAbandoned, outcome.Reason)
 }
 
-// TestSweepStraysRemovesOnlyOldLeftovers verifies both halves of the sweep: it clears what an interrupted update leaves
-// behind, and it leaves alone anything recent enough to belong to an update being applied right now by a helper this
-// process knows nothing about. It must also not touch the user's own files.
+// Both halves of the sweep: it clears what an interrupted update leaves behind, and it leaves alone anything recent
+// enough to belong to an update being applied right now by a helper this process knows nothing about. It must also not
+// touch the user's own files.
 func TestSweepStraysRemovesOnlyOldLeftovers(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -208,17 +206,16 @@ func TestSweepStraysRemovesOnlyOldLeftovers(t *testing.T) {
 	}
 }
 
-// TestSweepStraysToleratesMissingDirectories verifies the sweep is harmless when the installation directory cannot be
-// determined or no longer exists. It runs on every launch, so it must never be able to fail the startup path.
+// The sweep must be harmless when the installation directory cannot be determined or no longer exists. It runs on
+// every launch, so it must never be able to fail the startup path.
 func TestSweepStraysToleratesMissingDirectories(t *testing.T) {
 	sweepStrays(nil, staleAge)
 	sweepStrays([]string{""}, staleAge)
 	sweepStrays([]string{filepath.Join(t.TempDir(), "gone")}, staleAge)
 }
 
-// TestSweepStraysClearsAbandonedStagingSooner verifies the shorter bound used just before a new update is prepared.
-// Each staging directory holds a whole copy of the application, so leaving a few failed attempts to sit for a week
-// would quietly cost the user hundreds of megabytes.
+// The shorter bound used just before a new update is prepared. Each staging directory holds a whole copy of the
+// application, so leaving a few failed attempts to sit for a week would quietly cost the user hundreds of megabytes.
 func TestSweepStraysClearsAbandonedStagingSooner(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

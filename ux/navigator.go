@@ -478,7 +478,6 @@ func promptForFileSystemName(currentName, label, initial string, targetPath func
 	return targetPath(name), true
 }
 
-// reloadAndSelect reloads the tree and selects the row at the given path.
 func (n *Navigator) reloadAndSelect(path string) {
 	n.Reload()
 	n.ApplySelectedPaths([]string{path})
@@ -597,8 +596,9 @@ func (n *Navigator) showSelectionReleaseNotes() {
 	}
 }
 
-// checkLibraryReleases is checkLibraryReleases with the toolbar brought back into line afterwards: a check that found
-// nothing to offer leaves the buttons with nothing to do, and one that found an update reloads the tree on its own.
+// checkLibraryReleases calls the package-level checkLibraryReleases and then brings the toolbar back into line: a check
+// that found nothing to offer leaves the buttons with nothing to do, and one that found an update reloads the tree on
+// its own.
 func (n *Navigator) checkLibraryReleases(libs []*gurps.Library) bool {
 	ok := checkLibraryReleases(libs)
 	n.selectionChanged()
@@ -748,11 +748,11 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 }
 
 // watchCallback is what the filesystem watches on the libraries report each change to, on the UI thread. Whatever the
-// change, the deep search content cache entry for the path is dropped so that a search re-reads the file rather than
-// matching on its previous contents. The path arrives named the way the library names it (see Library.Watch), which
-// is also how NavigatorNode.Path() names it, so it is the cache key as is. A change that may have altered the tree is
-// followed by a reload; a plain write to a file's contents does not need one, and a file arriving in pieces would
-// otherwise restart the reload's cache rebuild on every piece.
+// change, the deep search content cache entry for the path is dropped so that a search re-reads the file. The path
+// arrives named the way the library names it (see Library.Watch), which is also how NavigatorNode.Path() names it, so
+// it is the cache key as is. A change that may have altered the tree is followed by a reload; a plain write to a file's
+// contents does not need one, and a file arriving in pieces would otherwise restart the reload's cache rebuild on every
+// piece.
 func (n *Navigator) watchCallback(_ *gurps.Library, fullPath string, what notify.Event) {
 	n.invalidateContentCacheEntry(fullPath)
 	if what&^notify.Write != 0 {
@@ -761,8 +761,8 @@ func (n *Navigator) watchCallback(_ *gurps.Library, fullPath string, what notify
 }
 
 // EventuallyReload calls Reload() after a small delay, collapsing intervening requests to do the same. May be called
-// from any goroutine: the library update checks and the filesystem watches both report from background goroutines, so
-// the needReload bookkeeping is pushed onto the UI thread rather than being touched directly.
+// from any goroutine, as the library update checks and the filesystem watches do, since the needReload bookkeeping is
+// pushed onto the UI thread rather than being touched directly.
 func (n *Navigator) EventuallyReload() {
 	unison.InvokeTask(func() {
 		if !n.needReload {
@@ -902,8 +902,8 @@ func (n *Navigator) handleSelectionDoubleClick() {
 		} else {
 			if d, _ := row.OpenNodeContent(); !xreflect.IsNil(d) {
 				if slices.Contains(n.searchResult, row) {
-					// If we didn't match on the file name, copy the search text into the newly opened dockable's search
-					// field
+					// The row matched on its contents rather than its name, so hand the search text to the dockable
+					// that was just opened for it.
 					if !row.Match(strings.ToLower(n.searchField.Text())) {
 						if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
 							f.SetText(n.searchField.Text())
@@ -1061,9 +1061,9 @@ func prepareForContentCache[T gurps.Node[T]](data []T) string {
 
 // contentCacheEntry holds the extracted, lowercased and trimmed text of one file for the deep search, along with the
 // file metadata used to decide whether the entry can be reused when the cache is revalidated after a reload. Size and
-// modification time are deliberately used instead of a content hash: hashing would require reading every file just to
-// decide whether it needs to be re-read, and the case it would catch — a content change that alters neither size nor
-// modification time — is unlikely to occur in real use.
+// modification time are used instead of a content hash: hashing would require reading every file just to decide
+// whether it needs re-reading, and the case it would catch — a content change that alters neither size nor modification
+// time — is unlikely to occur in real use.
 type contentCacheEntry struct {
 	modTime time.Time
 	content string
@@ -1082,8 +1082,8 @@ func (e *contentCacheEntry) isCurrent(p string) bool {
 // it can inherit the entries it completed instead of starting over from the live cache alone. Reloads arrive
 // back-to-back at startup — the navigator's own, then one for each launch-time library check that finds a change — and
 // each cancels the build before it, so without the hand-off the first full parse of a large library would be restarted
-// from zero several times over. The inherited entries are revalidated against the files' size and modification time
-// like any other, so a canceled build's partial work is as safe to reuse as a finished one's.
+// from zero several times over. Inherited entries are revalidated against the files like any other, so a canceled
+// build's partial work is as safe to reuse as a finished one's.
 type contentCacheBuild struct {
 	done    chan struct{}                 // Closed once entries may be read
 	entries map[string]*contentCacheEntry // What the build started from, overlaid with what it completed
@@ -1204,12 +1204,12 @@ func (n *Navigator) addToContentCache(p string, entry *contentCacheEntry) {
 }
 
 // invalidateContentCacheEntry drops the deep search content cache entry for the given path, so that the next search
-// re-reads the file rather than matching on its previous contents. The filesystem watches call this as each change is
-// reported, which is what lets a search serve cache hits without checking the files on disk: revalidating every hit
-// against the file's size and modification time instead would be a stat per deep-searchable file on each keystroke,
-// thousands of syscalls per character typed with the master library enabled. A background build that is in flight may
-// already have read the file's old contents, so the path is also noted for applyPrewarmedContentCache to drop from that
-// build's result. Must be called on the UI thread, like the searches and the cache builds.
+// re-reads the file. The filesystem watches call this as each change is reported, which is what lets a search serve
+// cache hits without checking the files on disk: revalidating every hit instead would be a stat per deep-searchable
+// file on each keystroke, thousands of syscalls per character typed with the master library enabled. A background build
+// that is in flight may already have read the file's old contents, so the path is also noted for
+// applyPrewarmedContentCache to drop from that build's result. Must be called on the UI thread, like the searches and
+// the cache builds.
 func (n *Navigator) invalidateContentCacheEntry(p string) {
 	delete(n.contentCache, p)
 	if n.invalidatedPaths == nil {
@@ -1235,11 +1235,10 @@ func (n *Navigator) collectDeepSearchPaths(rows []*NavigatorNode, paths map[stri
 
 // prewarmContentCache rebuilds the deep search content cache on background goroutines so the first keystroke in the
 // search field doesn't have to read and parse every deep-searchable file inline on the UI thread. Entries from the
-// previous cache are reused when the file's size and modification time are unchanged, so a reload triggered by a
-// single file change only pays to re-parse that file rather than entire libraries. Must be called on the UI thread;
-// the completed cache is swapped in on the UI thread as well. A newer call cancels an older one that is still running
-// and inherits the entries it had completed, so back-to-back reloads make a large build incremental rather than
-// restarting it from zero.
+// previous cache are reused when the file's size and modification time are unchanged, so a reload triggered by a single
+// file change only pays to re-parse that file. A newer call cancels an older one that is still running and inherits the
+// entries it had completed, so back-to-back reloads make a large build incremental rather than restarting it from zero.
+// Must be called on the UI thread; the completed cache is swapped in on the UI thread as well.
 func (n *Navigator) prewarmContentCache() {
 	if n.prewarmSuspensions > 0 {
 		n.prewarmPending = true
@@ -1325,12 +1324,12 @@ func (n *Navigator) applyPrewarmedContentCache(gen int64, fresh map[string]*cont
 }
 
 // suspendContentCachePrewarm holds off background rebuilds of the deep search content cache until the matching call to
-// resumeContentCachePrewarm. A library update writes hundreds of files, and each batch of filesystem watch events
-// would otherwise kick off another rebuild that the next batch immediately cancels, so a caller that is about to churn
-// the libraries suspends first. Any build already in flight is abandoned as well, since it is reading files that are
-// about to be replaced; the rebuild on resume inherits what it completed and revalidates each entry against the file on
-// disk, so the replaced files are re-read and the rest are not. Suspensions nest; must be called on the UI thread, like
-// the prewarm itself.
+// resumeContentCachePrewarm. A library update writes hundreds of files, and each batch of filesystem watch events would
+// otherwise kick off another rebuild that the next batch immediately cancels, so a caller about to churn the libraries
+// suspends first. Any build already in flight is abandoned as well, since it is reading files that are about to be
+// replaced; the rebuild on resume inherits what it completed and revalidates each entry against the file on disk, so
+// the replaced files are re-read and the rest are not. Suspensions nest; must be called on the UI thread, like the
+// prewarm itself.
 func (n *Navigator) suspendContentCachePrewarm() {
 	n.prewarmSuspensions++
 	if n.prewarmSuspensions == 1 {
@@ -1345,7 +1344,7 @@ func (n *Navigator) suspendContentCachePrewarm() {
 // rather than started directly, since Reload runs a prewarm of its own and the work a suspension covers ends with a
 // reload anyway (a library update schedules one via EventuallyReload): starting the rebuild directly would only have
 // that reload's prewarm cancel and repeat it. The EventuallyReload here collapses with the caller's into a single
-// Reload, leaving one rebuild. Must be called on the UI thread.
+// Reload. Must be called on the UI thread.
 func (n *Navigator) resumeContentCachePrewarm() {
 	if n.liftContentCachePrewarmSuspension() {
 		n.EventuallyReload()

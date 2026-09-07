@@ -30,7 +30,7 @@ func AvailableCalendarRefs(libraries *Libraries) []*NamedFileSet {
 	return ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, CalendarExt)
 }
 
-// LookupCalendarRef a CalendarRef by name.
+// LookupCalendarRef returns the CalendarRef with the given name, or nil if there isn't one.
 func LookupCalendarRef(name string, libraries *Libraries) *CalendarRef {
 	for _, lib := range AvailableCalendarRefs(libraries) {
 		for _, one := range lib.List {

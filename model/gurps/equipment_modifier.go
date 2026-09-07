@@ -514,10 +514,8 @@ func multiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.I
 
 // ValueAdjustedForModifiers returns the value after adjusting it for a set of modifiers.
 func ValueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
-	// Apply all equipment.OriginalCost
 	cost := processNonCFStep(equipment, emcost.Original, value, modifiers)
 
-	// Apply all equipment.BaseCost
 	var cf fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.equipment = equipment
@@ -534,10 +532,8 @@ func ValueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []
 		cost = cost.Mul(cf.Max(fxp.NegPointEight) + fxp.One)
 	}
 
-	// Apply all equipment.FinalBaseCost
 	cost = processNonCFStep(equipment, emcost.FinalBase, cost, modifiers)
 
-	// Apply all equipment.FinalCost
 	cost = processNonCFStep(equipment, emcost.Final, cost, modifiers)
 
 	return cost.Max(0)
@@ -574,7 +570,6 @@ func WeightAdjustedForModifiers(equipment *Equipment, weight fxp.Weight, modifie
 	var percentages fxp.Int
 	w := fxp.Int(weight)
 
-	// Apply all equipment.OriginalWeight
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.equipment = equipment
 		if mod.WeightType == emweight.Original {
@@ -595,13 +590,10 @@ func WeightAdjustedForModifiers(equipment *Equipment, weight fxp.Weight, modifie
 		w += fxp.Int(weight).Mul(percentages.Div(fxp.Hundred))
 	}
 
-	// Apply all equipment.BaseWeight
 	w = processMultiplyAddWeightStep(equipment, emweight.Base, w, defUnits, modifiers)
 
-	// Apply all equipment.FinalBaseWeight
 	w = processMultiplyAddWeightStep(equipment, emweight.FinalBase, w, defUnits, modifiers)
 
-	// Apply all equipment.FinalWeight
 	w = processMultiplyAddWeightStep(equipment, emweight.Final, w, defUnits, modifiers)
 
 	return fxp.Weight(w.Max(0))

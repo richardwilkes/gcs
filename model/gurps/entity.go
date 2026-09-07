@@ -200,10 +200,9 @@ func (e *Entity) Save(filePath string) error {
 //
 // Writing an entity out does not recalculate it first. Recalculating is not a read-only operation — it updates the
 // skill levels, the features and prerequisites, and the "defaulted_from" of every skill, the last of which is written
-// to disk — so doing it here would mean that merely hashing an entity to ask whether it has unsaved changes rewrote
-// part of it, and rewrote it from values the scripts in the data produce, which are not guaranteed to come out the
-// same twice. The callers that need the derived state current — Save, the exporters, and the sheet whenever anything
-// changes — recalculate for themselves.
+// to disk — so merely hashing an entity to ask whether it has unsaved changes would rewrite part of it, from values
+// the scripts in the data produce, which are not guaranteed to come out the same twice. The callers that need the
+// derived state current — Save, the exporters, and the sheet whenever anything changes — recalculate for themselves.
 func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if omitCalc(enc) {
 		data := e.EntityData
@@ -315,10 +314,9 @@ func (e *Entity) Recalculate() {
 	e.UpdateSkills()
 	e.UpdateSpells()
 	for range 5 {
-		// Some skill & spell levels won't be correct until the features & prerequisites have been processed, and those
-		// can't be processed in some cases until the skills & spells have known levels. Due to this circular
-		// referencing, we need to update the skills & spells at least twice. Once they no longer change, we can stop
-		// processing. To avoid an infinite loop, we limit the number of iterations to 5.
+		// Skill & spell levels and the features & prerequisites depend on each other, so the skills & spells must be
+		// updated at least twice. Once they no longer change, we can stop, but the iterations are capped to avoid an
+		// infinite loop.
 		e.processFeatures()
 		e.processPrereqs()
 		e.DiscardCaches()
@@ -388,15 +386,14 @@ func (e *Entity) processFeatures() {
 	e.BlockBonusTooltip = tooltip.String()
 }
 
-// forEachActiveFeatureList calls fn with each list of features that is currently in effect on the entity: those of
-// every enabled, non-container trait and of each enabled trait's enabled modifiers, those of every non-container skill
-// and spell, and those of every carried piece of equipment that is really equipped and of its enabled modifiers.
-// Switchable features, whether on an item or on one of its modifiers, only take effect while the switch of the primary
-// item is on, which is what the .Active() calls enforce. The owner is the primary item and mod is the modifier carrying
-// the list, or nil when the list is the item's own. The leveled owner is the node whose level drives a per-level
-// amount: the modifier itself for trait modifiers, which can have levels of their own, and the equipment for equipment
-// modifiers, which cannot. Everything that gathers features from the entity goes through this walk so that they all
-// agree on which features are in effect.
+// forEachActiveFeatureList calls fn with each list of features currently in effect on the entity: those of every
+// enabled, non-container trait, of every non-container skill and spell, of every carried piece of equipment that is
+// really equipped, and of each of their enabled modifiers. Switchable features, whether on an item or on one of its
+// modifiers, only take effect while the switch of the primary item is on. The owner is the primary item and mod is the
+// modifier carrying the list, or nil when the list is the item's own. The leveled owner is the node whose level drives
+// a per-level amount: the modifier itself for trait modifiers, which can have levels of their own, and the equipment
+// for equipment modifiers, which cannot. Everything that gathers features from the entity goes through this walk, so
+// they all agree on which features are in effect.
 func (e *Entity) forEachActiveFeatureList(fn func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features)) {
 	Traverse(func(t *Trait) bool {
 		if !t.Container() {
@@ -439,9 +436,9 @@ func forEachActiveEquipmentFeatureList(eqp *Equipment, fn func(mod fmt.Stringer,
 
 // processFeature collects a feature into the entity's feature lists. The owner is the primary item the feature came
 // from (a trait, skill, spell, or piece of equipment) and the sub-owner, when present, is the modifier of that item
-// that actually carries the feature; together they name the source in tooltips. The leveled owner is the node whose
-// level drives a per-level amount: the modifier itself when the modifier can have levels of its own (trait modifiers),
-// and the primary item when it cannot (equipment modifiers).
+// carrying the feature; together they name the source in tooltips. The leveled owner is the node whose level drives a
+// per-level amount: the modifier itself for trait modifiers, which can have levels of their own, and the primary item
+// for equipment modifiers, which cannot.
 func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveledOwner LeveledOwner) {
 	if bonus, ok := f.(Bonus); ok {
 		bonus.SetOwner(owner)
@@ -490,8 +487,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 	}
 }
 
-// defenseBonus returns the entity's bonus to the defense with the given ID, ParryID or BlockID, and zero for any other
-// ID.
+// defenseBonus returns the entity's bonus for ParryID or BlockID, and zero for any other ID.
 func (e *Entity) defenseBonus(defenseID string) fxp.Int {
 	switch defenseID {
 	case ParryID:
@@ -504,21 +500,18 @@ func (e *Entity) defenseBonus(defenseID string) fxp.Int {
 }
 
 // expandThisArmorDRBonus handles a DR bonus that specifies no locations (a "this armor" bonus). Such a bonus applies to
-// whatever locations the owning piece of equipment already grants DR to, so we resolve those locations by scanning the
-// equipment's other DR bonuses and emitting a single copy of the bonus, carrying the original's specialization, that
-// covers the union of the locations they name. The DR bonuses of the equipment's enabled modifiers count as well,
-// subject to the equipment's switch, just as they do when features are collected: a modifier that extends the armor to
-// further locations (say, a hood that adds DR to the skull) makes those locations part of what "this armor" covers,
-// whether the "this armor" bonus itself came from the equipment or from one of its modifiers. Emitting exactly one copy
-// matters: a location named by more than one of those DR bonuses must still receive the "this armor" amount just once.
-// If the owner isn't a piece of equipment, the bonus is dropped, since there is nothing for it to attach to.
+// whatever locations the owning piece of equipment already grants DR to, so a single copy of it, carrying the
+// original's specialization, is emitted covering the union of the locations named by the equipment's other DR bonuses
+// and those of its enabled modifiers -- a hood that adds DR to the skull makes the skull part of what "this armor"
+// covers, no matter which of the two the bonus itself came from. Exactly one copy is emitted, so a location named by
+// more than one of those DR bonuses still receives the amount just once. If the owner isn't a piece of equipment, the
+// bonus is dropped, since there is nothing for it to attach to.
 func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwner LeveledOwner, src *DRBonus) {
 	eqp, ok := owner.(*Equipment)
 	if !ok {
 		return
 	}
-	// Keyed by the lowercased location, since location matching is case-insensitive, with the first spelling
-	// encountered as the value.
+	// Keyed by the lowercased location, since matching is case-insensitive; the value is the first spelling seen.
 	locations := make(map[string]string)
 	forEachActiveEquipmentFeatureList(eqp, func(_ fmt.Stringer, list Features) {
 		for _, f := range list {
@@ -538,8 +531,7 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 		return
 	}
 	// The switch flag is carried over so that the copy still describes itself the way the original does. It plays no
-	// part in whether the copy applies -- the original has already passed the switch gate to get here -- but anything
-	// that later asks the collected bonuses whether they are switchable should get the truthful answer.
+	// part in whether the copy applies, since the original has already passed the switch gate to get here.
 	bonus := &DRBonus{
 		Type:           feature.DRBonus,
 		FeatureSwitch:  src.FeatureSwitch,
@@ -622,8 +614,8 @@ func (e *Entity) processPrereqs() {
 
 // evaluatePrereqs evaluates the prerequisites, which may be nil, of the node given as exclude and returns the reason to
 // record when they are not met, or "" when they are. onEquipmentPenalty, if non-nil, is called when the prerequisites
-// ask for the missing-equipment penalty to be applied. extra, if non-nil, performs a further check that runs only while
-// the prerequisites are still satisfied, appending its reasons to the tooltip when it fails.
+// ask for the missing-equipment penalty. extra, if non-nil, performs a further check that runs only while the
+// prerequisites are still satisfied, appending its reasons to the tooltip when it fails.
 func (e *Entity) evaluatePrereqs(prereq *PrereqList, exclude any, onEquipmentPenalty func(), extra func(tooltip *xbytes.InsertBuffer) bool) string {
 	var tooltip xbytes.InsertBuffer
 	satisfied := true
@@ -1004,8 +996,8 @@ func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.Inser
 	})
 }
 
-// AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
-// created. The provided map (or the newly created one) will be returned.
+// AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons to the map. If 'm' is nil, it will be created.
+// The provided map (or the newly created one) will be returned.
 func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
@@ -1032,8 +1024,8 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 	return m
 }
 
-// AddNamedWeaponBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
-// be created. The provided map (or the newly created one) will be returned.
+// AddNamedWeaponBonusesFor adds the bonuses for matching weapons to the map. If 'm' is nil, it will be created. The
+// provided map (or the newly created one) will be returned.
 func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
@@ -1592,7 +1584,7 @@ func (e *Entity) HasTraitNamed(name string) bool {
 		return false
 	}
 	found := false
-	// Pass onlyEnabled=true so that disabled traits (and traits nested under a disabled container) are not considered.
+	// onlyEnabled=true also skips traits nested under a disabled container.
 	Traverse(func(t *Trait) bool {
 		if strings.EqualFold(strings.TrimSpace(t.NameWithReplacements()), name) {
 			found = true

@@ -35,8 +35,7 @@ err() {
 
 need() { command -v "$1" >/dev/null 2>&1 || err "required tool not found: $1"; }
 
-# Map a required glibc x.y version to the oldest Ubuntu / Debian / Fedora
-# release that satisfies it (i.e. ships that glibc version or newer).
+# Map a required glibc x.y version to the oldest Ubuntu / Debian / Fedora release that ships that glibc or newer.
 glibc_distro() {
 	case "$1" in
 	2.41) echo "Ubuntu 25.04 / Debian 13 / Fedora 42 (or newer)" ;;
@@ -58,9 +57,8 @@ glibc_distro() {
 	esac
 }
 
-# Map a macOS minos version to its marketing name. Releases 10.x carry a minor
-# (e.g. 10.15); 11 and later are identified by their major version alone (Apple
-# jumped from 15 "Sequoia" to 26 "Tahoe").
+# Map a macOS minos version to its marketing name. Releases 10.x carry a minor (e.g. 10.15); 11 and later are identified
+# by their major version alone (Apple jumped from 15 "Sequoia" to 26 "Tahoe").
 macos_name() {
 	case "$1" in
 	10.13*) echo "High Sierra" ;;
@@ -79,9 +77,8 @@ macos_name() {
 # Map a Windows PE major.minor version to a marketing name.
 windows_name() {
 	case "$1" in
-	# Windows 11 shares the NT 10.0 version and is distinguished only by build
-	# number (>= 22000), so a PE subsystem version of 10.0 covers both 10 and
-	# 11 today.
+	# Windows 11 shares the NT 10.0 version and is distinguished only by build number (>= 22000), so a PE subsystem
+	# version of 10.0 covers both 10 and 11 today.
 	10.0) echo "Windows 10 / 11 / Server 2016+" ;;
 	6.3) echo "Windows 8.1 / Server 2012 R2" ;;
 	6.2) echo "Windows 8 / Server 2012" ;;
@@ -93,8 +90,7 @@ windows_name() {
 
 # Shared column layout for every platform's row:
 #   platform   arch   primary-requirement   secondary-requirement   [resolved name]
-# Only Linux uses the secondary (kernel) column; others leave it blank so the
-# resolved-name column lines up across all rows.
+# Only Linux uses the secondary (kernel) column; others leave it blank so the resolved-name column lines up everywhere.
 row_fmt='%-9s %-8s %-16s %-18s %s\n'
 
 analyze_elf() {
@@ -140,8 +136,7 @@ analyze_pe() {
 analyze() {
 	local f=$1 kind
 	kind=$(file -b "$f")
-	# Only analyze the main application executables; skip shared libraries
-	# (e.g. an embedded Skia DLL/dylib) so they don't add misleading rows.
+	# Only analyze the main application executables; skip shared libraries so they don't add misleading rows.
 	case "$kind" in
 	*Mach-O*executable*) analyze_macho "$f" ;;
 	*PE32*DLL*) ;; # skip Windows DLLs
@@ -152,8 +147,8 @@ analyze() {
 	esac
 }
 
-# Expand any release archives found in the directory in place, so the analyzer
-# can walk the binaries inside them. Handles .tgz/.tar.gz, .zip, and macOS .dmg.
+# Expand any .tgz/.tar.gz, .zip or macOS .dmg release archives found in the directory in place, so the analyzer can walk
+# the binaries inside them.
 extract_archives() {
 	local dir=$1 archive mnt dest
 	while IFS= read -r -d '' archive; do
@@ -173,12 +168,10 @@ extract_archives() {
 				echo "warning: hdiutil not available; skipping $archive" >&2
 				continue
 			}
-			# Mount read-only, copy the .app out, then detach. The mount point
-			# is the trailing /Volumes/... path on the last line of the output.
-			# The mount runs as an `if` condition so that a failure (a corrupt
-			# or partial download) only skips this archive: as a bare
-			# assignment, pipefail plus errexit would abort the entire
-			# analysis, silently and with no output.
+			# Mount read-only, copy the .app out, then detach. The mount point is the trailing /Volumes/... path on
+			# the last line of the output. The mount runs as an `if` condition so that a failure (a corrupt or
+			# partial download) only skips this archive: as a bare assignment, pipefail plus errexit would abort the
+			# entire analysis, silently and with no output.
 			if ! mnt=$(hdiutil attach -nobrowse -readonly "$archive" 2>/dev/null |
 				sed -nE 's#.*(/Volumes/.*)$#\1#p' | tail -1) || [ -z "$mnt" ]; then
 				echo "warning: unable to mount $archive; skipping it" >&2

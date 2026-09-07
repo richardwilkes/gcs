@@ -15,9 +15,9 @@ import (
 )
 
 // unison.PrimaryDisplay() can return nil on some configurations (notably on Linux when no monitor is enumerated).
-// Dereferencing it directly then crashes, and when that happens on an unrecovered background goroutine (e.g. the
-// markdown image loader) the process terminates with nothing written to the log. The helpers below provide safe
-// fallbacks so a missing primary display degrades gracefully instead of crashing.
+// Dereferencing it then crashes, and on an unrecovered background goroutine (e.g. the markdown image loader) the
+// process terminates with nothing written to the log. The helpers below fall back so that a missing primary display
+// degrades gracefully instead.
 
 // primaryDisplayScale returns the content scale of the primary display, or a 1:1 scale when no display is available.
 func primaryDisplayScale() geom.Point {
@@ -38,8 +38,7 @@ func primaryDisplayUsableRect() geom.Rect {
 
 // windowPlacementFrame returns a rectangle within which to center a transient window: the active window's frame when
 // there is one, or failing that, the frontmost window's frame, so that transient windows open on the same display the
-// user is working on. Only when no window is available does it fall back to the primary display's usable area (with a
-// safe fallback when no display is available).
+// user is working on. Only when no window is available does it fall back to the primary display's usable area.
 func windowPlacementFrame() geom.Rect {
 	if focused := unison.ActiveWindow(); focused != nil {
 		return focused.FrameRect()

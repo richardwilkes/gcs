@@ -63,7 +63,7 @@ func (a *ApplyTemplateUndoEditData) Apply() {
 	updateRandomizedProfileFieldsWithoutUndo(a.sheet)
 	// The tables are only restored here, not marked as modified: the rebuild below recalculates the entity, re-syncs
 	// every table, refreshes the search results and restores the focus and scroll position, so reporting each table as
-	// it is put back would perform all of that work five more times than necessary for a single undo.
+	// it is put back would do all of that five more times than necessary.
 	if err := a.traits.Restore(a.sheet.Traits.Table); err != nil {
 		errs.Log(err)
 	}

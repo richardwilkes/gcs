@@ -21,8 +21,7 @@ import (
 )
 
 // holdPort takes a port and returns it along with the listener holding it. A port allocated by the system is used
-// rather than the real handoff port, so that these tests cannot interfere with a copy of GCS the developer happens to
-// be running.
+// rather than the real handoff port, so these tests cannot interfere with a copy of GCS the developer is running.
 func holdPort(t *testing.T) (listener net.Listener, port int) {
 	t.Helper()
 	listener, err := net.Listen("tcp4", "127.0.0.1:0")
@@ -36,8 +35,7 @@ func holdPort(t *testing.T) (listener net.Listener, port int) {
 	return listener, addr.Port
 }
 
-// TestWaitForPredecessorReturnsWhenThePortIsFree verifies the ordinary case: the application has already exited, so
-// there is nothing to wait for.
+// The ordinary case: the application has already exited, so there is nothing to wait for.
 func TestWaitForPredecessorReturnsWhenThePortIsFree(t *testing.T) {
 	c := check.New(t)
 	listener, port := holdPort(t)
@@ -48,9 +46,8 @@ func TestWaitForPredecessorReturnsWhenThePortIsFree(t *testing.T) {
 	c.True(time.Since(started) < 5*time.Second, "a free port should be noticed immediately")
 }
 
-// TestWaitForPredecessorWaitsUntilThePortIsReleased is the property the whole wait exists for. Relaunching while the
-// port is still held would make the new instance hand its arguments to the old one and exit, so the update would look
-// as though it had done nothing at all.
+// The property the whole wait exists for. Relaunching while the port is still held would make the new instance hand
+// its arguments to the old one and exit, so the update would look as though it had done nothing at all.
 func TestWaitForPredecessorWaitsUntilThePortIsReleased(t *testing.T) {
 	c := check.New(t)
 	listener, port := holdPort(t)
@@ -75,9 +72,8 @@ func TestWaitForPredecessorWaitsUntilThePortIsReleased(t *testing.T) {
 	}
 }
 
-// TestWaitForPredecessorGivesUpOnAPortHeldByAnotherProcess verifies the tiebreaker. Once the application being waited
-// for is definitively gone, a port still held belongs to something else -- a second GCS installation, say -- and
-// waiting the full timeout for it would abandon an update for no reason.
+// The tiebreaker: once the application being waited for is definitively gone, a port still held belongs to something
+// else -- a second GCS installation, say -- and waiting the full timeout would abandon an update for no reason.
 func TestWaitForPredecessorGivesUpOnAPortHeldByAnotherProcess(t *testing.T) {
 	c := check.New(t)
 	listener, port := holdPort(t)
@@ -98,8 +94,8 @@ func TestWaitForPredecessorGivesUpOnAPortHeldByAnotherProcess(t *testing.T) {
 	c.True(elapsed < waitTimeout, "a port held by something else must not consume the whole timeout")
 }
 
-// TestWaitForPredecessorIgnoresAnAbsentProcessID verifies that a state file carrying no process to watch falls back to
-// the port alone rather than treating "no process" as "already gone".
+// A state file carrying no process to watch falls back to the port alone rather than treating "no process" as "already
+// gone".
 func TestWaitForPredecessorIgnoresAnAbsentProcessID(t *testing.T) {
 	c := check.New(t)
 	c.True(processExists(0))
@@ -110,8 +106,8 @@ func TestWaitForPredecessorIgnoresAnAbsentProcessID(t *testing.T) {
 	c.NoError(waitForPredecessor(0, port))
 }
 
-// TestProcessExists verifies the liveness check both ways round, since a wrong answer either stalls every update or
-// starts the swap while the application is still running.
+// The liveness check both ways round, since a wrong answer either stalls every update or starts the swap while the
+// application is still running.
 func TestProcessExists(t *testing.T) {
 	c := check.New(t)
 	c.True(processExists(os.Getpid()), "this process is certainly running")

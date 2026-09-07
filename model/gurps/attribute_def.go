@@ -83,7 +83,7 @@ func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// Clone a copy of this.
+// Clone returns a copy of this AttributeDef. Thresholds are only carried over for the pool types.
 func (a *AttributeDef) Clone() *AttributeDef {
 	clone := *a
 	if a.Type == attribute.Pool || a.Type == attribute.PoolRef {
@@ -104,8 +104,7 @@ func (a *AttributeDef) ID() string {
 	return a.DefID
 }
 
-// SetID sets the ID, sanitizing it in the process (i.e. it may be changed from what you set -- read it back if you want
-// to be sure of what it gets set to.
+// SetID sets the ID, sanitizing it in the process, so the stored value may differ from what was passed in.
 func (a *AttributeDef) SetID(value string) {
 	a.DefID = SanitizeID(value, false, ReservedIDs...)
 }
@@ -134,10 +133,9 @@ func (a *AttributeDef) IsSeparator() bool {
 	return a.Type == attribute.PrimarySeparator || a.Type == attribute.SecondarySeparator || a.Type == attribute.PoolSeparator
 }
 
-// EffectivePlacement returns the placement to use for this attribute, taking into account any trait-based override.
-// When the Placement is Hidden and a PlacementTrait has been specified and the given entity has an enabled trait whose
-// name matches it, the PlacementWhenPresent value is returned instead. Passing a nil entity, or leaving the
-// PlacementTrait empty, yields the unmodified Placement (i.e. the attribute remains Hidden).
+// EffectivePlacement returns the placement to use for this attribute. When the Placement is Hidden, a PlacementTrait
+// has been specified, and the entity has an enabled trait with that name, PlacementWhenPresent is returned instead. A
+// nil entity or an empty PlacementTrait yields the unmodified Placement.
 func (a *AttributeDef) EffectivePlacement(entity *Entity) attribute.Placement {
 	if a.Placement == attribute.Hidden && a.PlacementTrait != "" && entity.HasTraitNamed(a.PlacementTrait) {
 		return a.PlacementWhenPresent

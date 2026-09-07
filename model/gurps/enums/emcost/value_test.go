@@ -16,10 +16,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestValueExtractionMatchesClassification verifies that every spelling of a multiplier that FromString classifies as
-// one is also understood by ExtractValue. FromString lowercases before classifying and accepts the Unicode
-// multiplication sign, so "X2" and "×2" must extract 2, not fall through to the non-positive-multiplier coercion that
-// turns them into "x1" (or, for "×2", into an addition of 0).
+// TestValueExtractionMatchesClassification verifies that every spelling of a multiplier that ValueFromString accepts --
+// including "X2" and "×2" -- is also understood by ExtractValue, rather than falling through to the
+// non-positive-multiplier coercion that turns them into "x1" (or, for "×2", into an addition of 0).
 func TestValueExtractionMatchesClassification(t *testing.T) {
 	c := check.New(t)
 	for i, one := range []struct {

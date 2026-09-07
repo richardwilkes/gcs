@@ -144,7 +144,7 @@ func ExtractGroup(str string) Group {
 
 // ExtractKnownGroup extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractGroup, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// Unlike ExtractGroup, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
 // that is dispatching on the type to detect unknown types.
 func ExtractKnownGroup(str string) (value Group, known bool) {
 	for _, enum := range Groups {

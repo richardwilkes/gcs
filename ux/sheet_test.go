@@ -19,11 +19,10 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestMarkModifiedRecalculates verifies that telling the sheet something changed brings the entity's derived state up
-// to date. Everything MarkModified goes on to do -- the panels, the tables and the calculator -- displays that state.
-// It used to be refreshed only as a side effect of the tab asking whether the sheet had unsaved changes, which
-// recalculated the entity on its way to hashing it; hashing no longer does that, since recalculating rewrites part of
-// what gets saved.
+// TestMarkModifiedRecalculates checks that telling the sheet something changed brings the entity's derived state up to
+// date, since everything MarkModified goes on to do displays that state. It used to be refreshed only as a side effect
+// of the tab asking whether the sheet had unsaved changes, which recalculated the entity on its way to hashing it;
+// hashing no longer does that, since recalculating rewrites part of what gets saved.
 func TestMarkModifiedRecalculates(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -41,13 +40,13 @@ func TestMarkModifiedRecalculates(t *testing.T) {
 	c.Equal(before+fxp.Four, skill.LevelData.Level, "the skill level must reflect the raised attribute")
 }
 
-// TestNewItemCommandUsesTheLiveList verifies that the "New Trait" command adds its item to the list the user is
-// looking at, even after the sheet has had to replace that list. A list can only change its set of columns by being
-// built anew -- which is what the arrival of the first switchable feature forces, since it brings the switch column in
-// -- so a command that captured the list when the sheet was created would afterwards be creating items in an orphan:
-// the model would gain the trait, but an orphaned table can't find the undo manager, so the insertion wouldn't be
-// undoable and the user's next undo would silently take back the edit before it instead, and the new row would be
-// neither selected nor scrolled into view in the list that is actually on screen.
+// TestNewItemCommandUsesTheLiveList checks that the "New Trait" command adds its item to the list the user is looking
+// at, even after the sheet has had to replace that list. A list can only change its set of columns by being built anew
+// -- which the arrival of the first switchable feature forces, since it brings the switch column in -- so a command
+// that captured the list when the sheet was created would afterwards be creating items in an orphan: the model would
+// gain the trait, but an orphaned table can't find the undo manager, so the insertion wouldn't be undoable and the
+// user's next undo would silently take back the edit before it instead, and the new row would be neither selected nor
+// scrolled into view in the list that is actually on screen.
 func TestNewItemCommandUsesTheLiveList(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -80,9 +79,9 @@ func TestNewItemCommandUsesTheLiveList(t *testing.T) {
 	c.Equal(1, sheet.Traits.Table.RootRowCount(), "undo must take the row back out of the list that is on screen")
 }
 
-// TestSheetListsFollowTheCanonicalBlockOrder verifies that the sheet's lists come back in the canonical block order,
-// that the lookup by key the layout editor uses yields the same list for each, and that it yields nothing for a key
-// that isn't a list's.
+// TestSheetListsFollowTheCanonicalBlockOrder checks that the sheet's lists come back in the canonical block order, that
+// the lookup by key the layout editor uses yields the same list for each, and that it yields nothing for a key that
+// isn't a list's.
 func TestSheetListsFollowTheCanonicalBlockOrder(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -112,9 +111,9 @@ func TestSheetListsFollowTheCanonicalBlockOrder(t *testing.T) {
 	}
 }
 
-// TestSheetRebuildCarriesTheSelectionToAReplacedList verifies that a row selected in a list is still selected after a
-// rebuild that had to replace the list, since the selection is put back into the list that is on screen rather than
-// the orphan it replaced.
+// TestSheetRebuildCarriesTheSelectionToAReplacedList checks that a row selected in a list is still selected after a
+// rebuild that had to replace the list, since the selection is put back into the list that is on screen rather than the
+// orphan it replaced.
 func TestSheetRebuildCarriesTheSelectionToAReplacedList(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

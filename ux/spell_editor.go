@@ -21,7 +21,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// EditSpell displays the editor for an spell.
+// EditSpell displays the editor for a spell.
 func EditSpell(owner Rebuildable, spell *gurps.Spell) *editor[*gurps.Spell, *gurps.SpellEditData] {
 	return displayEditor(owner, spell, svg.GCSSpells, "md:User%20Guide/Spells", nil, initSpellEditor, nil)
 }

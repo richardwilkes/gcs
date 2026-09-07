@@ -38,22 +38,20 @@ var (
 	vmPool              = sync.Pool{New: func() any { return newScriptVM() }}
 )
 
-// freezeBuiltInsProgram freezes the built-ins: every object reachable as a global, together with their prototype
-// chains and the prototypes they hand to the instances they create. Runtimes are pooled and reused by unrelated
-// scripts, and strict mode does nothing to stop a script from mutating the shared state it can reach
-// (`Math.exp2 = null`, `Object.prototype.toString = ...`, `Array.prototype.foo = 1`, ...), so without this a single
-// script could silently alter the behavior of every script that later ran on the same runtime, including those
-// belonging to other documents. What is left writable — a property added to a built-in method's function object, say —
-// cannot alter what any built-in does. Host objects (the Go-backed bindings) cannot be frozen, but goja already rejects
-// adding to or replacing their fields.
+// freezeBuiltInsProgram freezes every object reachable as a global, along with their prototype chains and the
+// prototypes they hand to the instances they create. Runtimes are pooled and reused by unrelated scripts, and strict
+// mode does nothing to stop a script from mutating the shared state it can reach (`Math.exp2 = null`,
+// `Object.prototype.toString = ...`), which would silently alter every script that later ran on the same runtime,
+// including those belonging to other documents. What is left writable — a property added to a built-in method's
+// function object, say — cannot alter what any built-in does. Host objects (the Go-backed bindings) cannot be frozen,
+// but goja already rejects adding to or replacing their fields.
 //
-// Freezing the objects is not enough on its own, because the global bindings that name them are separate: goja creates
-// `Math`, `JSON`, `Date` and the rest as writable, configurable properties of the global object, so `Math = null` or
-// `delete globalThis.JSON` would leave a frozen-but-unreachable built-in behind. The second loop therefore pins every
-// global binding that exists at this point as non-writable and non-configurable, which turns both of those into a
-// TypeError under the strict mode every script runs in. The global object itself is deliberately left extensible, since
-// each run defines its arguments on it; those, and anything else a script leaves there, are removed again by
-// scriptVM.restoreGlobals.
+// Freezing is not enough on its own, because the global bindings that name the built-ins are separate: goja creates
+// them as writable, configurable properties of the global object, so `Math = null` or `delete globalThis.JSON` would
+// leave a frozen-but-unreachable built-in behind. The second loop therefore pins every global binding that exists at
+// this point as non-writable and non-configurable, making both a TypeError under the strict mode every script runs in.
+// The global object itself is deliberately left extensible, since each run defines its arguments on it; those, and
+// anything else a script leaves there, are removed again by scriptVM.restoreGlobals.
 var freezeBuiltInsProgram = goja.MustCompile("", `(function() {
 	'use strict';
 	var seen = new Set();
@@ -105,9 +103,8 @@ var freezeBuiltInsProgram = goja.MustCompile("", `(function() {
 	pin(globalThis, Object.getOwnPropertySymbols(globalThis));
 })();`, true)
 
-// scriptVM pairs a goja runtime with the global state it was created with. Runtimes are pooled and reused, so
-// scriptVM.restoreGlobals uses the recorded baseline to strip anything a script left behind before the runtime is made
-// available to the next script.
+// scriptVM pairs a goja runtime with the globals it was created with. Runtimes are pooled and reused, so
+// restoreGlobals uses that baseline to strip anything a script left behind before the next script gets the runtime.
 type scriptVM struct {
 	runtime         *goja.Runtime
 	listSymbols     goja.Callable
@@ -130,7 +127,7 @@ func newScriptVM() *scriptVM {
 	if _, err := vm.RunProgram(freezeBuiltInsProgram); err != nil {
 		panic(errs.NewWithCause("failed to freeze script built-ins", err))
 	}
-	// Object.getOwnPropertySymbols is captured here, while the runtime still holds nothing but the built-ins, so that
+	// Object.getOwnPropertySymbols is captured while the runtime still holds nothing but the built-ins, so that
 	// symbolGlobals cannot be handed a substitute by a script later on. See symbolGlobals for why goja's own
 	// Object.Symbols() is not enough.
 	listSymbols, ok := goja.AssertFunction(globals.Get("Object").ToObject(vm).Get("getOwnPropertySymbols"))
@@ -145,7 +142,7 @@ func newScriptVM() *scriptVM {
 	}
 	for _, name := range globals.GetOwnPropertyNames() {
 		// The value is recorded, not just the name, so that restoreGlobals can tell a binding that still exists from
-		// one that still holds what it was created with. Reading it here is safe: nothing has run on this runtime yet.
+		// one that still holds what it was created with. Reading it is safe: nothing has run on this runtime yet.
 		s.baselineNames[name] = globals.Get(name)
 	}
 	symbols, err := s.symbolGlobals()
@@ -160,9 +157,8 @@ func newScriptVM() *scriptVM {
 
 // symbolGlobals returns every symbol-keyed property of the global object, including the non-enumerable ones. goja's
 // Object.Symbols() reports only the enumerable ones, so a symbol global hidden behind an Object.defineProperty with
-// `enumerable: false` would be invisible to restoreGlobals and survive into every later script that reused the
-// runtime. It would also make the standard, non-enumerable Symbol.toStringTag look like a global the script had
-// deleted.
+// `enumerable: false` would be invisible to restoreGlobals and survive into every later script that reused the runtime,
+// and the standard, non-enumerable Symbol.toStringTag would look like a global the script had deleted.
 func (s *scriptVM) symbolGlobals() ([]*goja.Symbol, error) {
 	result, err := s.listSymbols(goja.Undefined(), s.runtime.GlobalObject())
 	if err != nil {
@@ -179,19 +175,18 @@ func (s *scriptVM) symbolGlobals() ([]*goja.Symbol, error) {
 	return symbols, nil
 }
 
-// restoreGlobals removes everything the run that just finished left on the global object: the arguments that were
-// defined for it, plus any globals the script created itself, which strict mode does not prevent (`globalThis.foo = 1`
-// and `Object.defineProperty(globalThis, ...)` both succeed). It also verifies that the baseline globals themselves
-// came through the run untouched, since removing what was added says nothing about what was replaced or deleted:
+// restoreGlobals removes everything the run that just finished left on the global object: the arguments defined for it,
+// plus any globals the script created itself, which strict mode does not prevent. It also verifies that the baseline
+// globals came through untouched, since removing what was added says nothing about what was replaced or deleted:
 // freezeBuiltInsProgram pins those bindings so neither should be possible, but a runtime whose `JSON` is missing or
 // whose `Math` is no longer the frozen built-in must never be handed to another script regardless of how it got that
-// way. It reports whether the runtime was fully restored; if it was not, the caller must discard the runtime rather
-// than return it to the pool, since the residue would silently alter unrelated scripts run later.
+// way. It reports whether the runtime was fully restored; if not, the caller must discard it rather than return it to
+// the pool, since the residue would silently alter unrelated scripts run later.
 func (s *scriptVM) restoreGlobals() bool {
 	symbols, symErr := s.symbolGlobals()
 	if symErr != nil {
 		// Without the symbol list there is no way to establish that the runtime is clean, and the caller discards a
-		// runtime that isn't, so there is nothing left to do here.
+		// runtime that isn't, so there is nothing more to do here.
 		errs.LogWithLevel(context.Background(), slog.LevelWarn, nil, symErr)
 		return false
 	}
@@ -238,10 +233,9 @@ func (s *scriptVM) restoreGlobals() bool {
 	return restored
 }
 
-// scriptTimeout arms the interrupt that aborts a script which runs longer than it is permitted to. time.Timer.Stop
-// does not wait for an AfterFunc that has already begun running, so stopping the timer is not enough on its own: a
-// timeout that fires just as its run ends could otherwise land on the runtime after another script has picked it up,
-// aborting that unrelated script with a bogus timeout. release closes that window.
+// scriptTimeout arms the interrupt that aborts a script which runs longer than it is permitted to. time.Timer.Stop does
+// not wait for an AfterFunc that has already begun running, so a timeout firing just as its run ends could otherwise
+// land on the runtime after another script picked it up, aborting that unrelated script. release closes that window.
 type scriptTimeout struct {
 	vm       *goja.Runtime
 	timer    *time.Timer
@@ -249,15 +243,14 @@ type scriptTimeout struct {
 	finished bool
 }
 
-// newScriptTimeout returns a scriptTimeout that will interrupt the given runtime once the timeout elapses. The caller
-// must call release before the runtime is used for anything else.
+// newScriptTimeout returns a scriptTimeout that interrupts the runtime once the timeout elapses. The caller must call
+// release before the runtime is used for anything else.
 func newScriptTimeout(vm *goja.Runtime, timeout time.Duration) *scriptTimeout {
 	t := &scriptTimeout{vm: vm}
 	t.timer = time.AfterFunc(timeout, t.interrupt)
 	return t
 }
 
-// interrupt aborts the run this timeout was created for, unless that run has already been released.
 func (t *scriptTimeout) interrupt() {
 	t.lock.Lock()
 	defer t.lock.Unlock()
@@ -266,8 +259,8 @@ func (t *scriptTimeout) interrupt() {
 	}
 }
 
-// release disarms the timeout. Once it returns, no interrupt from this timeout can reach the runtime; one that was
-// delivered after the run finished, but before the timeout could be marked as done, is cleared here.
+// release disarms the timeout. Once it returns, no interrupt from this timeout can reach the runtime; one delivered
+// after the run finished, but before the timeout could be marked as done, is cleared here.
 func (t *scriptTimeout) release() {
 	t.timer.Stop()
 	t.lock.Lock()
@@ -282,7 +275,7 @@ type ScriptSelfProvider struct {
 	Provider func(r *goja.Runtime) any
 }
 
-// ResolveID returns the ID of the provider. If the the underlying Provider is nil, an empty string is returned.
+// ResolveID returns the ID of the provider, or an empty string if the underlying Provider is nil.
 func (s ScriptSelfProvider) ResolveID() string {
 	if s.Provider == nil {
 		return ""
@@ -291,7 +284,7 @@ func (s ScriptSelfProvider) ResolveID() string {
 }
 
 // deferredScriptSelf returns the provider that presents item to a script as "self": its ID is the item's, and its
-// wrapper is built by ctor only when a script actually runs. A nil item yields the empty provider, which has no self.
+// wrapper is built by ctor only when a script actually runs. A zero item yields the empty provider, which has no self.
 func deferredScriptSelf[T interface {
 	comparable
 	ID() tid.TID
@@ -311,12 +304,12 @@ type scriptResolveKey struct {
 	text string
 }
 
-// scriptResolveResult is what a resolution produced, along with whether it produced it. A script that GCS stopped part
-// way through -- because it ran past the permitted per-script execution time, or because it recursed too deeply --
-// never computed an answer at all, and the text stands in for one. That is recorded so that a caller about to store a
-// value derived from the resolution can decline to, since whether such a script is stopped depends on how busy the
-// machine happens to be rather than on the data. A script that ran to completion and threw is a different matter: the
-// data is simply wrong, in the same way on every machine and every run, so its result is treated as any other.
+// scriptResolveResult is what a resolution produced, along with whether it produced it. A script GCS stopped part way
+// through -- past the permitted execution time, or recursed too deeply -- never computed an answer, and the text stands
+// in for one. That is recorded so a caller about to store a value derived from the resolution can decline to, since
+// whether such a script is stopped depends on how busy the machine is rather than on the data. A script that ran to
+// completion and threw is different: the data is simply wrong on every machine and every run, so its result is treated
+// as any other.
 type scriptResolveResult struct {
 	text      string
 	abandoned bool
@@ -337,21 +330,19 @@ const maximumCachedScriptPrograms = 1024
 // resolves scripts, so all access is guarded by scriptCacheMutex.
 //
 // The cache has to be bounded, because the set of keys it sees is not: the item editors re-resolve the text being typed
-// after every keystroke, so each syntactically valid intermediate the user passes through is a distinct key that an
-// unbounded map would hold a compiled program for until the process exited. The bound is applied generationally.
-// Entries go into the current generation; once it is full, it becomes oldScriptCache and a fresh generation takes its
-// place, dropping whatever the generation before it still held. A lookup that misses the current generation but hits
-// the old one promotes the entry, so anything still in use survives the turnover and only entries left untouched across
-// two full generations are discarded. That preserves the scripts a document actually recalculates with, lets the
-// transients from typing fall away, and costs only a map operation or two per access.
+// after every keystroke, so each syntactically valid intermediate is a distinct key an unbounded map would hold a
+// program for until the process exited. The bound is generational. Entries go into the current generation; once it is
+// full, it becomes oldScriptCache and a fresh generation takes its place, dropping whatever the generation before it
+// still held. A lookup that misses the current generation but hits the old one promotes the entry, so anything still in
+// use survives the turnover and only entries left untouched across two full generations are discarded.
 var (
 	scriptCacheMutex sync.Mutex
 	scriptCache      = make(map[string]*goja.Program, maximumCachedScriptPrograms)
 	oldScriptCache   map[string]*goja.Program
 )
 
-// discardScriptCache drops every compiled program the script cache holds. The cache bounds itself, so this exists for
-// tests that need a known starting point rather than for anything the application does.
+// discardScriptCache drops every compiled program the script cache holds. The cache bounds itself, so this exists only
+// for tests that need a known starting point.
 func discardScriptCache() {
 	scriptCacheMutex.Lock()
 	defer scriptCacheMutex.Unlock()
@@ -360,8 +351,8 @@ func discardScriptCache() {
 }
 
 // globalResolveCache holds resolved results for scripts that have no associated entity. Unlike an entity's own
-// scriptCache (which is only touched while recalculating that single entity), this is package-global state that may be
-// reached from multiple goroutines, so all access is guarded by globalResolveMutex.
+// scriptCache, which is only touched while recalculating that single entity, this may be reached from multiple
+// goroutines, so all access is guarded by globalResolveMutex.
 var (
 	globalResolveMutex sync.Mutex
 	globalResolveCache = make(map[scriptResolveKey]scriptResolveResult)
@@ -377,13 +368,12 @@ func DiscardGlobalResolveCache() {
 // scriptResolveErrorSuppression tracks nested requests to suppress the error logging that normally occurs when a script
 // fails to resolve to an expected result (e.g. a number or weight). The item editors resolve partially-typed—and thus
 // frequently invalid—scripts to build live previews as the user types; logging every intermediate failure would flood
-// the log with noise. It is an atomic counter so suppression can be nested and remains correct even if resolution ever
-// spans goroutines.
+// the log. It is an atomic counter so suppression can be nested and remains correct if resolution spans goroutines.
 var scriptResolveErrorSuppression atomic.Int32
 
 // SuppressScriptResolveErrorLogging runs f with the error logging that normally accompanies a failed script resolution
-// suppressed. Failures that occur outside the dynamic scope of f continue to be logged normally. This is intended for
-// contexts such as the item editors, which repeatedly resolve incomplete scripts to produce live previews.
+// suppressed. Failures outside the dynamic scope of f are still logged. This is intended for contexts such as the item
+// editors, which repeatedly resolve incomplete scripts to produce live previews.
 func SuppressScriptResolveErrorLogging(f func()) {
 	scriptResolveErrorSuppression.Add(1)
 	defer scriptResolveErrorSuppression.Add(-1)
@@ -395,15 +385,12 @@ func scriptResolveErrorLoggingSuppressed() bool {
 	return scriptResolveErrorSuppression.Load() > 0
 }
 
-// intFromScript narrows a number supplied by a script to an int, saturating at the ends of the int range rather than
-// letting the conversion itself go out of range.
-//
-// Go leaves the conversion of an out-of-range float64 to an integer implementation-defined, and the architectures GCS
-// ships on disagree: arm64 saturates to MaxInt64 while amd64 produces MinInt64. goja performs exactly that conversion
-// when it maps a JS number onto a Go int parameter — its own ToInteger saturates correctly, but the reflect-based
-// ExportTo used for parameters does not — so a binding that takes an int is handed a different value depending on the
-// machine. Taking such arguments as a float64 and narrowing them here keeps every architecture in agreement. NaN, which
-// compares false against everything, becomes 0.
+// intFromScript narrows a number supplied by a script to an int, saturating at the ends of the int range; NaN becomes
+// 0. Go leaves the conversion of an out-of-range float64 to an integer implementation-defined, and the architectures
+// GCS ships on disagree: arm64 saturates to MaxInt64 while amd64 produces MinInt64. goja performs exactly that
+// conversion when it maps a JS number onto a Go int parameter — its own ToInteger saturates correctly, but the
+// reflect-based ExportTo used for parameters does not — so a binding that takes an int would otherwise be handed a
+// different value depending on the machine.
 func intFromScript(value float64) int {
 	switch {
 	case math.IsNaN(value):
@@ -418,7 +405,7 @@ func intFromScript(value float64) int {
 }
 
 // mustDefineGlobal defines a global binding that scripts may read but not replace. A plain Runtime.Set would create a
-// writable global, which a script could then overwrite (`dice = null`) for every script that later reused the pooled
+// writable global, which a script could overwrite (`dice = null`) for every script that later reused the pooled
 // runtime.
 func mustDefineGlobal(vm *goja.Runtime, name string, value any) {
 	if err := vm.GlobalObject().DefineDataProperty(name, vm.ToValue(value), goja.FLAG_FALSE, goja.FLAG_FALSE,
@@ -428,30 +415,29 @@ func mustDefineGlobal(vm *goja.Runtime, name string, value any) {
 }
 
 // mustSetMember sets a member on an existing object (e.g. adding a function to the built-in Math object). Unlike
-// Runtime.Set, this resolves a property on the object rather than creating a top-level global with a dotted name.
+// Runtime.Set, this sets a property on the object rather than creating a top-level global with a dotted name.
 func mustSetMember(obj *goja.Object, name string, value any) {
 	if err := obj.Set(name, value); err != nil {
 		panic(errs.Newf("failed to set %s: %s", name, err.Error()))
 	}
 }
 
-// ResolveText will process embedded scripts.
+// ResolveText replaces each embedded <script>...</script> section in the text with the result of resolving it.
 func ResolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
 	return embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
 		return ResolveScript(entity, selfProvider, s[len(scriptStart):len(s)-len(scriptEnd)])
 	})
 }
 
-// ResolveToNumber resolves the text to a fixed-point number. If the text is just a number, that value is returned,
-// otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a number. If
-// this fails, a value of 0 will be returned.
+// ResolveToNumber resolves the text to a fixed-point number. Text that already parses as a number is used directly;
+// otherwise it is evaluated as Javascript and the result parsed as a number, yielding 0 if that fails.
 func ResolveToNumber(entity *Entity, selfProvider ScriptSelfProvider, text string) fxp.Int {
 	return resolveScriptAs(entity, selfProvider, text, fxp.FromString, "number")
 }
 
-// ResolveToWeight resolves the text to a weight. If the text is just a weight, that weight is returned,
-// otherwise, it will be evaluated as Javascript and the result of that will attempt to be processed as a weight. If
-// this fails, a weight of 0 will be returned.
+// ResolveToWeight resolves the text to a weight, using defUnits for a value that carries no units. Text that already
+// parses as a weight is used directly; otherwise it is evaluated as Javascript and the result parsed as a weight,
+// yielding 0 if that fails.
 func ResolveToWeight(entity *Entity, selfProvider ScriptSelfProvider, text string, defUnits fxp.WeightUnit) fxp.Weight {
 	return resolveScriptAs(entity, selfProvider, text,
 		func(s string) (fxp.Weight, error) { return fxp.WeightFromString(s, defUnits) }, "weight")
@@ -485,7 +471,6 @@ func resolveScriptAs[T any](entity *Entity, selfProvider ScriptSelfProvider, tex
 
 const maximumAllowedResolvingDepth = 20
 
-// entityScriptArgName is the name the entity is bound to within scripts.
 const entityScriptArgName = "entity"
 
 // entitylessResolvingDepths guards entity-less script resolution against runaway or circular references. Entity-scoped
@@ -495,11 +480,11 @@ const entityScriptArgName = "entity"
 //
 // The depth has to be per-goroutine, not process-wide: resolution recurses synchronously on the goroutine that started
 // it, so a goroutine's own depth is the only measure of whether it is chasing a circular reference. Entity-less
-// resolution happens on many goroutines at once (the deep search content cache parses library files on a worker per
-// CPU while the UI thread draws library lists and editors), and a shared counter would add all of their depths
-// together and refuse a resolution that had nothing to do with any of them -- and a refusal on a worker is baked into
-// that worker's cached search text. Go has no goroutine-local storage, so the key is the ID currentGoroutineID reads
-// from the runtime; entries exist only while their goroutine is inside a resolution and are removed when it leaves.
+// resolution happens on many goroutines at once (the deep search content cache parses library files on a worker per CPU
+// while the UI thread draws library lists and editors), and a shared counter would add all of their depths together and
+// refuse a resolution that had nothing to do with any of them -- a refusal that is then baked into that worker's cached
+// search text. Go has no goroutine-local storage, so the key is the ID currentGoroutineID reads from the runtime;
+// entries exist only while their goroutine is inside a resolution.
 var (
 	entitylessResolvingDepthsMutex sync.Mutex
 	entitylessResolvingDepths      = make(map[uint64]int)
@@ -530,8 +515,8 @@ func abandonedScripts(entity *Entity) int64 {
 }
 
 // anyScriptAbandonedDuring runs f and reports whether any script was stopped before it could produce an answer while it
-// ran. Callers that are about to store a value they computed from a script use this to decline to store one that was
-// arrived at without the script's real result; see scriptResolveResult for why that matters.
+// ran. Callers about to store a value they computed from a script use this to decline to store one arrived at without
+// the script's real result; see scriptResolveResult for why that matters.
 //
 // For a nil entity the count is the package-global one, so an entity-less resolution abandoned on another goroutine
 // while f runs is reported here too. That costs the caller nothing beyond keeping the value it already had for one more
@@ -545,8 +530,8 @@ func anyScriptAbandonedDuring(entity *Entity, f func()) bool {
 // enterScriptResolution increments the appropriate recursion-depth counter and returns the new depth along with a
 // function that restores it. Resolution recurses through the goja boundary on the calling goroutine (resolving one
 // script can read a value whose own script must be resolved); tracking the depth per-entity, or per-goroutine when
-// there is no entity, keeps that count accurate even when unrelated resolutions run concurrently on different
-// goroutines. An entity is only ever resolved on one goroutine at a time, so its field needs no locking.
+// there is no entity, keeps that count accurate when unrelated resolutions run concurrently. An entity is only ever
+// resolved on one goroutine at a time, so its field needs no locking.
 func enterScriptResolution(entity *Entity) (depth int, leave func()) {
 	if entity != nil {
 		entity.scriptResolvingDepth++
@@ -572,12 +557,12 @@ func enterScriptResolution(entity *Entity) (depth int, leave func()) {
 // settings. Only SetScriptExecTimeLimitForTesting sets it.
 var scriptExecTimeLimitOverride atomic.Int64
 
-// SetScriptExecTimeLimitForTesting overrides the number of seconds a script may run before ResolveScript interrupts
-// it; passing 0 restores the limit from the general settings. Users may only configure that limit between
-// PermittedScriptExecTimeMin and PermittedScriptExecTimeMax, and the production default is deliberately small, but
-// neither suits the tests: they are not exercising the timeout, and some CI runners are slow enough that legitimate
-// scripts exceed even the maximum. The override lives outside the settings so that nothing which validates them (see
-// GeneralSettings.EnsureValidity) can quietly reset it to the default. Only tests should call this.
+// SetScriptExecTimeLimitForTesting overrides the number of seconds a script may run before ResolveScript interrupts it;
+// passing 0 restores the limit from the general settings. Users may only configure that limit between
+// PermittedScriptExecTimeMin and PermittedScriptExecTimeMax, but that does not suit the tests: they are not exercising
+// the timeout, and some CI runners are slow enough that legitimate scripts exceed even the maximum. The override lives
+// outside the settings so that nothing which validates them (see GeneralSettings.EnsureValidity) can quietly reset it.
+// Only tests should call this.
 func SetScriptExecTimeLimitForTesting(seconds fxp.Int) {
 	scriptExecTimeLimitOverride.Store(int64(seconds))
 }
@@ -586,12 +571,12 @@ func SetScriptExecTimeLimitForTesting(seconds fxp.Int) {
 // goroutines as well as the UI thread (the deep search content cache parses sheets and templates in the background),
 // but the settings dialog mutates the GeneralSettings struct in place on the UI thread -- including wholesale copies of
 // it on load and reset -- so reading the field from another goroutine is a data race. The UI thread publishes the value
-// here instead; see SyncScriptExecTimeLimit.
+// here instead via SyncScriptExecTimeLimit.
 var scriptExecTimeLimitMirror atomic.Int64
 
-// SyncScriptExecTimeLimit publishes the current GlobalSettings().General.PermittedPerScriptExecTime for script
-// execution on any goroutine. GlobalSettings() calls this when the settings are first loaded; any code that changes the
-// value afterward must call it again.
+// SyncScriptExecTimeLimit publishes the current GlobalSettings().General.PermittedPerScriptExecTime for use on any
+// goroutine. GlobalSettings() calls this when the settings are first loaded; any code that changes the value afterward
+// must call it again.
 func SyncScriptExecTimeLimit() {
 	syncScriptExecTimeLimit(GlobalSettings().General)
 }
@@ -609,7 +594,8 @@ func scriptExecTimeLimit() fxp.Int {
 	return fxp.Int(scriptExecTimeLimitMirror.Load())
 }
 
-// ResolveScript will process a script.
+// ResolveScript evaluates the script text and returns its result, or a message describing why no result could be
+// produced.
 func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
 	depth, leave := enterScriptResolution(entity)
 	defer leave()
@@ -620,8 +606,8 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
 	if cached, exists := lookupResolvedScript(entity, key); exists {
 		if cached.abandoned {
-			// A cached abandonment has to be reported again, or only the first caller to ask for this script would
-			// know not to trust what it got back.
+			// A cached abandonment has to be reported again, or only the first caller to ask for this script would know
+			// not to trust what it got back.
 			noteAbandonedScript(entity)
 		}
 		return cached.text
@@ -671,7 +657,7 @@ func ResolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 }
 
 // lookupResolvedScript returns a previously resolved result for the given key. Entity-scoped results live in the
-// entity's own cache (only touched while recalculating that entity); entity-less results live in the package-global
+// entity's own cache, only touched while recalculating that entity; entity-less results live in the package-global
 // cache and are read under globalResolveMutex.
 func lookupResolvedScript(entity *Entity, key scriptResolveKey) (scriptResolveResult, bool) {
 	if entity != nil {
@@ -697,10 +683,9 @@ func storeResolvedScript(entity *Entity, key scriptResolveKey, result scriptReso
 
 // compiledProgram returns the compiled program for the given script text, compiling and caching it on first use. The
 // text is evaluated by an eval call inside an anonymous strict-mode function, so the script's value is that of its last
-// expression and any variables it declares are confined to that function. Note that this does not sandbox the script:
-// strict mode only rejects assignment to undeclared names, so a script can still reach shared state via globalThis and
-// the built-ins. Keeping the pooled runtimes clean is handled instead by freezeBuiltInsProgram and
-// scriptVM.restoreGlobals.
+// expression and any variables it declares are confined to that function. This does not sandbox the script: strict mode
+// only rejects assignment to undeclared names, so a script can still reach shared state via globalThis and the
+// built-ins. Keeping the pooled runtimes clean is handled instead by freezeBuiltInsProgram and scriptVM.restoreGlobals.
 func compiledProgram(text string) (*goja.Program, error) {
 	if program := lookupCompiledProgram(text); program != nil {
 		return program, nil
@@ -732,8 +717,8 @@ func lookupCompiledProgram(text string) *goja.Program {
 }
 
 // storeCompiledProgram records the program compiled for the given text and returns the program the caller should use.
-// That is the program already cached for the same text if another goroutine compiled and stored it while this caller
-// was compiling, so that all callers share a single program instance.
+// That is the one already cached for the same text if another goroutine compiled and stored it while this caller was
+// compiling, so that all callers share a single program instance.
 func storeCompiledProgram(text string, program *goja.Program) *goja.Program {
 	scriptCacheMutex.Lock()
 	defer scriptCacheMutex.Unlock()
@@ -763,7 +748,7 @@ func addToScriptCache(text string, program *goja.Program) {
 // compiledProgram), so its value is that of its last expression; a top-level `return` is not permitted. The arguments
 // are exposed as globals for the duration of the run and removed again afterwards. The result is converted to a string
 // here, rather than by the caller, because that conversion can itself run script code — an object's `toString` or
-// `valueOf` — which must happen while this runtime is still checked out of the pool and still covered by the timeout.
+// `valueOf` — which must happen while the runtime is still checked out of the pool and still covered by the timeout.
 func runScript(timeout time.Duration, text string, args ...ScriptArg) (string, error) {
 	program, err := compiledProgram(text)
 	if err != nil {
@@ -779,8 +764,8 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (string, e
 	defer func() {
 		// Only return the VM to the pool if the run completed without panicking and every global it touched could be
 		// restored. A panic (e.g. from a Go function invoked by the script) can leave the VM in an inconsistent state,
-		// and a global that could not be removed would alter later scripts, so in either case we discard the VM and let
-		// the pool create a fresh one rather than risk reusing a corrupt or polluted one.
+		// and a global that could not be removed would alter later scripts, so in either case the VM is discarded and
+		// the pool creates a fresh one.
 		if reusable && s.restoreGlobals() {
 			vmPool.Put(s)
 		}

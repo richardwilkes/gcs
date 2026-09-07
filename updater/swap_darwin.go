@@ -17,18 +17,15 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// exchange swaps the staged copy and the installed one in a single atomic operation.
+// exchange swaps the staged copy and the installed one in a single atomic operation. It returns false if the exchange
+// is not available on this filesystem, leaving the caller to fall back to the two-rename form.
 //
-// macOS has a rename that exchanges two existing paths rather than replacing one with the other, which suits this
-// exactly. It removes the window the two-rename form leaves -- there is no instant at which the application is not at
-// its usual path, so no crash or power loss can leave the user without one -- and it sidesteps the fact that an
-// ordinary rename cannot replace a non-empty directory, which is what an application bundle is.
+// macOS has a rename that exchanges two existing paths rather than replacing one with the other. That removes the
+// window the two-rename form leaves -- there is no instant at which the application is not at its usual path -- and it
+// sidesteps the fact that an ordinary rename cannot replace a non-empty directory, which is what a bundle is.
 //
 // It also does the work of the backup for free: after the exchange, the previous version is sitting at the staged
 // copy's path, so it only has to be moved to where the record says the backup lives.
-//
-// Returns false if the exchange is not available on this filesystem, leaving the caller to fall back to the two-rename
-// form.
 func exchange(payload, target, backup string) (bool, error) {
 	err := retry(renameAttempts, renameDelay, func() error {
 		err := unix.RenamexNp(payload, target, unix.RENAME_SWAP)
@@ -41,17 +38,16 @@ func exchange(payload, target, backup string) (bool, error) {
 	switch {
 	case err == nil:
 		slog.Info("replacing the installed version", "target", target, "payload", payload, "backup", backup)
-		// The previous version is now where the staged copy was. Move it to the recorded backup path so that the
-		// startup sweep can find it, and so that it is not removed along with the staging directory.
+		// The previous version is now where the staged copy was. Move it to the recorded backup path so the startup
+		// sweep can find it, and so it is not removed along with the staging directory.
 		if renameErr := renameWithRetry(payload, backup); renameErr != nil {
-			// The update itself succeeded; only the tidying did not. Say so and carry on rather than undoing a good
-			// installation over a misplaced backup.
+			// The update itself succeeded; only the tidying did not. Carry on rather than undoing a good installation
+			// over a misplaced backup.
 			slog.Warn("unable to move the previous version aside after the update", "error", renameErr)
 		}
 		return true, nil
 	case exchangeUnsupported(err):
-		// The filesystem does not support the exchange. Not an error worth reporting: the two-rename form works
-		// everywhere.
+		// Not an error worth reporting: the two-rename form works everywhere.
 		return false, nil
 	case exchangeRefused(err):
 		// Refused rather than transiently unavailable, most likely because macOS wants explicit permission for one

@@ -16,10 +16,9 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// newProgressWindow builds the small floating window a long-running operation reports on itself in: a label saying what
-// is happening, a progress bar and, unless cancel is nil, a Cancel button that disables itself, rewrites the label to
-// say the operation is being canceled and calls cancel. The window is packed and placed over the active window, ready
-// for RunModal, which is what disposes of it.
+// newProgressWindow builds the floating window a long-running operation reports itself in: a label, a progress bar and,
+// unless cancel is nil, a Cancel button that disables itself, rewrites the label to say the operation is being canceled
+// and calls cancel. The window is packed and placed over the active window, ready for RunModal, which disposes of it.
 func newProgressWindow(windowTitle, labelTitle string, bar *unison.ProgressBar, cancel func()) (wnd *unison.Window, label *unison.Label, err error) {
 	frame := windowPlacementFrame()
 	if wnd, err = unison.NewWindow(windowTitle, unison.FloatingWindowOption(), unison.NotResizableWindowOption(),
@@ -59,12 +58,11 @@ func newProgressWindow(windowTitle, labelTitle string, bar *unison.ProgressBar, 
 	return wnd, label, nil
 }
 
-// runInBackground starts a goroutine that performs work while the UI thread waits inside RunModal(), hands the result
-// to that thread through resultChan and only then calls finish, which is what eventually stops the modal loop.
-// resultChan must be buffered so that the send can never block, since nothing can receive from it until the modal loop
-// has been stopped. The ordering is what makes the hand-off safe: the caller receives from resultChan only after
-// RunModal() has returned, so the send is guaranteed to have completed first. Letting the goroutine write variables
-// shared with the UI thread instead would allow a failed operation to be observed as a success.
+// runInBackground runs work on a goroutine while the UI thread waits inside RunModal(), sends the result to resultChan
+// and only then calls finish, which is what stops the modal loop. resultChan must be buffered, since nothing can
+// receive from it until that loop has been stopped. Sending before finishing is what makes the hand-off safe: handing
+// the result over through variables shared with the UI thread would allow a failed operation to be observed as a
+// success.
 func runInBackground[T any](resultChan chan<- T, work func() T, finish func()) {
 	go func() {
 		var result T

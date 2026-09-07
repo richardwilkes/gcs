@@ -22,12 +22,12 @@ func TestDesktopEntryStartupWMClass(t *testing.T) {
 	early.Configure()
 	entry := desktopEntry("/opt/gcs/gcs")
 
-	// The StartupWMClass entry must be present and must match the WM_CLASS that Unison sets on our windows
-	// (xos.AppIdentifier); otherwise window managers cannot associate our windows with this launcher entry. See
+	// The StartupWMClass entry must match the WM_CLASS that Unison sets on our windows (xos.AppIdentifier); otherwise
+	// window managers cannot associate our windows with this launcher entry. See
 	// https://github.com/richardwilkes/gcs/issues/1059.
 	c.Contains(entry, "\nStartupWMClass="+xos.AppIdentifier+"\n", "desktop entry StartupWMClass line:\n", entry)
 
-	// Sanity check the rest of the entry still renders as expected.
+	// Sanity check that the rest of the entry still renders as expected.
 	c.HasPrefix(entry, "[Desktop Entry]\n", "desktop entry prefix")
 	c.Contains(entry, "\nExec=\"/opt/gcs/gcs\" %F\n", "desktop entry Exec line")
 }

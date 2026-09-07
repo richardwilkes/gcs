@@ -41,8 +41,7 @@ func NewAttributeBonus(attrID string) *AttributeBonus {
 	}
 }
 
-// ActualLimitation returns the actual limitation, if any. This is needed in case the limitation is set to something
-// other than none when the attribute is not ST.
+// ActualLimitation returns the limitation, which applies only to ST; any other attribute yields stlimit.None.
 func (a *AttributeBonus) ActualLimitation() stlimit.Option {
 	if a.Attribute == StrengthID {
 		return a.Limitation

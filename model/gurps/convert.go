@@ -59,9 +59,9 @@ func Convert(paths ...string) error {
 }
 
 // converters maps each GCS file extension, in lowercase, to the function that rewrites a file of that type in the
-// current file format. Extensions mapped to nil currently carry no version information, so there is nothing to update
-// for them. The walker only collects files whose extensions are in this set, so every entry here must have a
-// counterpart in GCSExtensions or GCSSecondaryExtensions.
+// current file format. A nil entry marks a type that carries no version information, so there is nothing to update for
+// it. Only files whose extension appears in GCSExtensions or GCSSecondaryExtensions are collected for conversion, so an
+// entry without a counterpart in one of those is never used.
 var converters = map[string]func(p string) error{
 	TraitsExt:             convertFile(NewTraitsFromFile, SaveTraits),
 	TraitModifiersExt:     convertFile(NewTraitModifiersFromFile, SaveTraitModifiers),
@@ -127,9 +127,8 @@ func convertWalker(pathSet, extSet map[string]struct{}) func(path string, d fs.D
 					}
 				}
 			} else {
-				// The extensions in the set are the lowercase constants, and the switch that dispatches the
-				// conversion lowercases as well, so match without regard to case. Otherwise a file named
-				// "Character.GCS" is skipped without a word about it.
+				// The set holds lowercase extension constants and the converters map is keyed the same way, so match
+				// case-insensitively. Otherwise a file named "Character.GCS" is skipped without a word about it.
 				if _, exists := extSet[strings.ToLower(filepath.Ext(name))]; exists {
 					if path, err = realpath.Realpath(path); err == nil {
 						pathSet[path] = struct{}{}

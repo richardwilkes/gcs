@@ -40,7 +40,7 @@ type CellCache struct {
 	Width float32
 }
 
-// Matches returns true if the provided width and data match the current contents.
+// Matches returns true if the provided width and data match the current contents. A nil cache never matches.
 func (c *CellCache) Matches(width float32, data *gurps.CellData) bool {
 	return c != nil && c.Panel != nil && c.Width == width && c.Data == *data
 }
@@ -131,9 +131,9 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 	}
 }
 
-// RefreshChildren discards any cached child nodes so that the next access to Children() rebuilds them from the
-// underlying data. Call this when the data's children have been altered directly, since the cached nodes would
-// otherwise continue to reflect the old state.
+// RefreshChildren discards any cached child nodes so that the next call to Children() rebuilds them from the underlying
+// data. Call this when the data's children have been altered directly, since the cached nodes would otherwise go on
+// reflecting the old state.
 func (n *Node[T]) RefreshChildren() {
 	n.children = nil
 }
@@ -226,7 +226,7 @@ func (n *Node[T]) SetOpen(open bool) {
 	}
 }
 
-// Data returns the underlying data object.
+// Data returns the underlying data object. A nil node returns the zero value.
 func (n *Node[T]) Data() T {
 	if n == nil {
 		var zero T
@@ -251,7 +251,7 @@ func (n *Node[T]) HasTag(tag string) bool {
 }
 
 // PartialMatchExceptTag returns true if the specified text is present in the node's displayable columns other than the
-// the tags column. An empty text will match all nodes.
+// tags column. An empty text will match all nodes.
 func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 	if text == "" {
 		return true
@@ -265,8 +265,7 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 	return false
 }
 
-// Match looks for the text in the node and return true if it is present. Note that calls to this method should always
-// pass in text that has already been run through strings.ToLower().
+// Match returns true if the text is present in the node. The text must already have been lowercased by the caller.
 func (n *Node[T]) Match(text string) bool {
 	if text != "" {
 		for i := range n.table.Columns {
@@ -529,12 +528,11 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 // change; if it didn't, the cell is put back the way it was, so that it never shows a state the model didn't take on.
 //
 // Only a single click of the primary button toggles the cell. A press of any other button is deliberately left
-// unconsumed, so that the table's own handling gets it and selects the row and pops up its context menu -- these cells
-// sit at the very front of the page lists, where they are a natural right-click target. A primary press with any other
-// click count is consumed, but doesn't toggle: the second click of a double-click would otherwise flip the state
-// straight back, leaving the item unchanged at the cost of two undo edits, and passing it along would instead have the
-// table open the row's editor. The drag and up callbacks report the same consumption as the press they belong to, so
-// that a press the cell didn't take is left to the table from beginning to end.
+// unconsumed, so that the table selects the row and pops up its context menu -- these cells sit at the very front of
+// the page lists, where they are a natural right-click target. A primary press with any other click count is consumed
+// but doesn't toggle: the second click of a double-click would otherwise flip the state straight back at the cost of
+// two undo edits. The drag and up callbacks report the same consumption as the press they belong to, so that a press
+// the cell didn't take is left to the table from beginning to end.
 func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor func(on bool) *unison.SVG,
 	onClick func(label *unison.Label, mods mod.Modifiers) bool,
 ) *unison.Label {
@@ -626,25 +624,20 @@ func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) uni
 	if c.Dim {
 		// The switch of an item that isn't currently contributing its features -- a piece of equipment that isn't
 		// equipped, a trait that is turned off -- is drawn dimmed to say so, which is exactly what a disabled label
-		// does: Label.DefaultDraw applies the disabled filter whenever the label isn't enabled. Disabling it costs
-		// nothing here, because a cell is not a panel the window dispatches to. The table hands mouse events to its
-		// cells itself (Table.DefaultMouseDown and friends locate the cell panel and call it directly), and its
-		// tooltip lookup does the same; neither consults the cell's enabled state, and the window only ever sees the
-		// table, since a cell is attached to it for the duration of a single event rather than being one of its
-		// children. So the switch stays every bit as usable as an undimmed one, which it has to be: dimming here says
+		// does. The switch stays as usable as an undimmed one: the table hands mouse events and tooltip lookups to its
+		// cells itself, without consulting their enabled state, and the window only ever sees the table. Dimming says
 		// the switch has no effect at the moment, not that it can't be thrown.
 		label.SetEnabled(false)
 	}
 	return label
 }
 
-// handleCheck applies the new state of a toggle cell to the item it belongs to, registering an undoable edit. Each
-// kind of toggle is routed through the same machinery as the command that performs it for a whole selection, so that a
-// click and the command behave identically -- same undo title, same choice of recalculating and of rebuilding the
-// owner versus merely marking it as modified. It returns true if it has already reported the change to the item's
-// owner, in which case the caller must not mark the owner as modified on top of that; false means the caller has to do
-// the reporting. Nothing gets reported when there is no owner to report to, which is exactly when marking as modified
-// would find nothing to tell either.
+// handleCheck applies the new state of a toggle cell to the item it belongs to, registering an undoable edit. Each kind
+// of toggle is routed through the same machinery as the command that performs it for a whole selection, so that a click
+// and the command behave identically -- same undo title, same choice of recalculating and of rebuilding the owner
+// versus merely marking it as modified. It returns true if it has already reported the change to the item's owner, in
+// which case the caller must not mark the owner as modified on top of that; false means the caller has to do the
+// reporting, which is also what happens when there is no owner to report to.
 func handleCheck(data any, check unison.Paneler, checked bool) bool {
 	owner := unison.AncestorOrSelf[Rebuildable](check)
 	switch item := data.(type) {
@@ -673,7 +666,7 @@ func convertLinksForPageRef(in string) (string, *unison.SVG) {
 	}
 }
 
-// pageRefSeparator is placed between individual page references when more than one is shown in a page reference cell.
+// pageRefSeparator is placed between page references when more than one is shown in a cell.
 const pageRefSeparator = ", "
 
 func (n *Node[T]) createPageRefCell(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
@@ -686,10 +679,10 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, width float32, foreground
 	for i, part := range parts {
 		links[i] = n.createPageRefLink(c, part, font, foreground)
 	}
-	// Determine how many references fit within the available width, always showing at least the first one. References
-	// that don't fit are clipped, and a trailing "+" is added to the last shown reference to indicate there are more.
-	// A non-positive width means we're being asked for the preferred size (e.g. while the table is sizing its columns);
-	// in that case we only claim the space needed for a single reference so the column doesn't grow to fit them all.
+	// Determine how many references fit within the available width, always showing at least the first one, with a
+	// trailing "+" on the last shown one to indicate there are more. A non-positive width means the preferred size is
+	// being asked for (e.g. while the table sizes its columns), so only one reference is claimed and the column doesn't
+	// grow to fit them all.
 	shown := 1
 	if width > 0 {
 		sepWidth := pageRefSeparatorWidth(font)
@@ -873,18 +866,16 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 		row := table.RowFromIndex(i)
 		if target = row.Data(); target != zero {
 			if row.CanHaveChildren() {
-				// Target is container, append to end of that container
 				SetParents(items, target)
 				row.data.SetChildren(append(row.data.NodeChildren(), items...))
 			} else {
-				// Target isn't a container. If it has a parent, insert after the target within that parent.
+				// The items go in after the target, within its parent's children or the top-level list.
 				parent := row.Parent()
 				if parentData := parent.Data(); parentData != zero {
 					SetParents(items, parentData)
 					children := parent.data.NodeChildren()
 					parent.data.SetChildren(slices.Insert(children, slices.Index(children, target)+1, items...))
 				} else {
-					// Otherwise, insert after the target within the top-level list.
 					SetParents(items, zero)
 					list := topList()
 					setTopList(slices.Insert(list, slices.Index(list, target)+1, items...))
@@ -893,7 +884,7 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 		}
 	}
 	if target == zero {
-		// There was no selection, so append to the end of the top-level list.
+		// Nothing usable was selected, so append to the end of the top-level list.
 		SetParents(items, zero)
 		setTopList(append(topList(), items...))
 	}
@@ -910,7 +901,7 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 	commitTableUndo(table, undo)
 	// The change is reported once, by rebuilding the owner: an inserted item can bring a weapon, reaction or
 	// conditional modifier list onto the page, or the switch column into one of the lists, and only a rebuild creates
-	// those. Marking the table as modified on top of that would just repeat the whole update of the owner.
+	// those.
 	rebuildAsModified(owner, true)
 }
 

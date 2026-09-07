@@ -31,8 +31,8 @@ func WeightFromFixed(value Int, unit WeightUnit) Weight {
 	return Weight(unit.ToPounds(value))
 }
 
-// WeightFromStringForced creates a new Weight. May have any of the known Weight suffixes or no notation at all, in
-// which case defaultUnits is used.
+// WeightFromStringForced creates a new Weight. May have any of the known unit suffixes or no notation at all, in which
+// case defaultUnits is used.
 func WeightFromStringForced(text string, defaultUnits WeightUnit) Weight {
 	weight, err := WeightFromString(text, defaultUnits)
 	if err != nil {
@@ -41,7 +41,7 @@ func WeightFromStringForced(text string, defaultUnits WeightUnit) Weight {
 	return weight
 }
 
-// WeightFromString creates a new Weight. May have any of the known Weight suffixes or no notation at all, in which case
+// WeightFromString creates a new Weight. May have any of the known unit suffixes or no notation at all, in which case
 // defaultUnits is used.
 func WeightFromString(text string, defaultUnits WeightUnit) (Weight, error) {
 	text = strings.ToLower(strings.TrimLeft(strings.TrimSpace(text), "+"))
@@ -54,7 +54,6 @@ func WeightFromString(text string, defaultUnits WeightUnit) (Weight, error) {
 			return Weight(unit.ToPounds(value)), nil
 		}
 	}
-	// No matches, so let's use our passed-in default units
 	value, err := FromString(strings.TrimSpace(text))
 	if err != nil {
 		return 0, err

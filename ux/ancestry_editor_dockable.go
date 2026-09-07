@@ -24,34 +24,32 @@ var (
 	_ structuralEditor   = &ancestryEditorDockable{}
 )
 
-// ancestryEditorDockable edits an ancestry file. Everything about loading, saving, undo and rebuilding the content is
-// in fileEditorDockable, which it shares with the name generator editor; what is particular to an ancestry is its
-// content and the name generators its rows offer.
+// ancestryEditorDockable edits an ancestry file. Loading, saving, undo and rebuilding come from fileEditorDockable;
+// particular to an ancestry are its content and the name generators its rows offer.
 type ancestryEditorDockable struct {
 	fileEditorDockable[*gurps.Ancestry]
-	// nameGeneratorLookup returns the base names of the available name generators. It is a field so that tests can
-	// supply choices without a library on disk.
+	// nameGeneratorLookup is a field so that tests can supply choices without a library on disk.
 	nameGeneratorLookup func() []string
 	// nameGeneratorChoices is what nameGeneratorLookup returned when the content was last built, which is what the
-	// rows offer. Every rebuild refreshes it, so a generator saved from the name generator editor is on offer as soon
-	// as the ancestry is next edited.
+	// rows offer. Every rebuild refreshes it, so a newly saved generator is on offer the next time the ancestry is
+	// edited.
 	nameGeneratorChoices []string
 }
 
-// newAncestryDocument is what File > New Ancestry does: it opens an editor holding a new, blank ancestry. Every choice
-// of the item opens another editor; those already open are left as they are.
+// newAncestryDocument opens an editor holding a new, blank ancestry. Each use opens another editor, leaving any
+// already open alone.
 func newAncestryDocument() {
 	newAncestryEditorDockable().show()
 }
 
 // openAncestryRef opens the ancestry the reference names in an editor of its own, or activates the editor already
-// showing it; see openFileEditor.
+// showing it.
 func openAncestryRef(ref *gurps.NamedFileRef) (*ancestryEditorDockable, error) {
 	return openFileEditor(ref, newAncestryEditorDockable)
 }
 
-// openAncestryFile opens an ancestry file the way the file type registry expects. The workspace has already looked for
-// a dockable showing the file, so this is reached for one that is not open yet.
+// openAncestryFile opens an ancestry file for the file type registry, which is reached only for a file that isn't
+// already showing in a dockable.
 func openAncestryFile(filePath string) (unison.Dockable, error) {
 	d, err := openAncestryRef(diskFileRef(filePath))
 	if err != nil {
@@ -60,14 +58,13 @@ func openAncestryFile(filePath string) (unison.Dockable, error) {
 	return d, nil
 }
 
-// isAncestryEditor returns true if the dockable is the ancestry editor.
 func isAncestryEditor(d unison.Dockable) bool {
 	_, ok := d.AsPanel().Self.(*ancestryEditorDockable)
 	return ok
 }
 
-// newAncestryEditorDockable creates an ancestry editor holding a new, blank ancestry, ready for load to replace that
-// with a file's and for show to build its toolbar and content and place it in the dock.
+// newAncestryEditorDockable creates an ancestry editor holding a new, blank ancestry; load replaces that with a
+// file's contents and show places it in the dock.
 func newAncestryEditorDockable() *ancestryEditorDockable {
 	d := &ancestryEditorDockable{nameGeneratorLookup: availableNameGeneratorNames}
 	d.Self = d
@@ -87,8 +84,7 @@ func newAncestryEditorDockable() *ancestryEditorDockable {
 	return d
 }
 
-// availableNameGeneratorNames returns the base names of the name generators every library holds, in the order the
-// libraries list them.
+// availableNameGeneratorNames returns the base names of the name generators in all libraries, in library order.
 func availableNameGeneratorNames() []string {
 	refs := gurps.AvailableNameGenerators(gurps.GlobalSettings().Libraries)
 	names := make([]string, 0, len(refs))
@@ -98,7 +94,6 @@ func availableNameGeneratorNames() []string {
 	return names
 }
 
-// buildContent fills the content with the editor for the ancestry, offering the name generators available now.
 func (d *ancestryEditorDockable) buildContent() {
 	d.nameGeneratorChoices = d.nameGeneratorLookup()
 	d.content.AddChild(newAncestryEditorPanel(d))

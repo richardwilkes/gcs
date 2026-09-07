@@ -23,28 +23,27 @@ import (
 // builder returns carries one, so that the layout editor and the page exporter can map a panel back into the tree.
 const sheetLayoutNodeKey = "sheetLayoutNode"
 
-// sheetLayoutContainerKey is the client data key the Row or Column node a container panel the builder made was built
-// from is recorded under. Only the container panels the builder creates itself carry one, which is what tells them
-// apart from the block panels the leaf function hands back: the node recorded under sheetLayoutNodeKey can't be used
-// for that, since a container left with a single child is dropped and its node recorded on the child that took its
-// place. Nor is that node always the container's own: when an outer container was dropped onto this one, the node
-// recorded here is still the one whose children this panel's children were built from, which is what anything that
-// deals with the pairs of them, like the seams the layout editor collects, has to be told.
+// sheetLayoutContainerKey is the client data key the Row or Column node a container panel was built from is recorded
+// under. Only the container panels the builder creates itself carry one, which is what tells them apart from the block
+// panels the leaf function hands back: the node under sheetLayoutNodeKey can't be used for that, since a container left
+// with a single child is dropped and its node recorded on the child that took its place. Nor is that node always the
+// container's own: when an outer container was dropped onto this one, the node recorded here is still the one whose
+// children this panel's children were built from, which is what anything dealing with the pairs of them, like the seams
+// the layout editor collects, has to be told.
 const sheetLayoutContainerKey = "sheetLayoutContainer"
 
 // sheetLayoutSquareKey is the client data key the Block node whose Square flag governs a panel's slot is recorded
-// under. Only a panel whose slot takes its width from the height of the row it is in carries one, and the node it names
-// is always a Block, even where the node recorded under sheetLayoutNodeKey is the container that block was left alone
-// in: the flag lives on the block, so that is the node the editor has to clear it on.
+// under. Only a panel whose slot takes its width from the height of its row carries one, and the node it names is
+// always a Block, even where the node under sheetLayoutNodeKey is the container that block was left alone in: the flag
+// lives on the block, so that is the node the editor has to clear it on.
 const sheetLayoutSquareKey = "sheetLayoutSquare"
 
 // layoutLeafFunc returns the panel to show for the block with the given key, or nil if that block is not to be shown
 // at all -- because it has nothing to say, or because this kind of sheet has no such block.
 type layoutLeafFunc func(key string) unison.Paneler
 
-// buildLayoutBands builds one panel per band of the given layout root, in order. Bands that come back empty, because
-// none of the blocks in them had anything to show, are omitted, so the result may be shorter than the root's list of
-// children.
+// buildLayoutBands builds one panel per band of the given layout root, in order. Bands whose blocks all had nothing to
+// show are omitted, so the result may be shorter than the root's list of children.
 func buildLayoutBands(root *gurps.SheetLayoutNode, leaf layoutLeafFunc) []*unison.Panel {
 	if root == nil {
 		return nil
@@ -64,15 +63,15 @@ func buildLayoutBands(root *gurps.SheetLayoutNode, leaf layoutLeafFunc) []*uniso
 //
 // The builder is the sole authority on the layout data of the panels it returns: each of them, leaves included, is
 // given a fresh unison.FlexLayoutData that fills its slot and carries the minimum height its node calls for, replacing
-// whatever the panel had. Each of them also records, under sheetLayoutNodeKey, the node that governs the slot it
-// occupies. That is normally the node it was built for, but a container left with a single child once the rest of them
-// came back nil is dropped and its child returned in its place, and the child then records the container's node, since
-// it is the container's weight and minimum height that decide how the slot it took over is sized. A minimum height of
-// the child's own still wins over the container's, matching the way the model collapses single-child containers.
+// whatever the panel had, and records under sheetLayoutNodeKey the node that governs that slot. That is normally the
+// node it was built for, but a container left with a single child once the rest of them came back nil is dropped and
+// its child returned in its place, and the child then records the container's node, since it is the container's weight
+// and minimum height that size the slot it took over. A minimum height of the child's own still wins over the
+// container's, matching the way the model collapses single-child containers.
 //
-// A Block's square flag travels with its panel in the same way. A container is never square, but the child that takes a
-// dropped container's place keeps the flag of the block it was built from rather than picking up the container's, since
-// it is that block's content the row would be squaring.
+// A Block's square flag travels with its panel in the same way, save that the child taking a dropped container's place
+// keeps the flag of the block it was built from rather than picking up the container's, since it is that block's
+// content the row would be squaring.
 func buildLayoutNode(node *gurps.SheetLayoutNode, leaf layoutLeafFunc) unison.Paneler {
 	if node == nil {
 		return nil
@@ -126,11 +125,11 @@ func buildLayoutNode(node *gurps.SheetLayoutNode, leaf layoutLeafFunc) unison.Pa
 				VSpacing: 1,
 			})
 			for _, panel := range panels {
-				// A column standing beside something taller is given the full height of the row it is in, and its
-				// children share out the extra so that the bottom of the last of them is the bottom of the row. Without
-				// this they would keep their natural heights and leave the page showing below them. Only the children
-				// of a column are given this: a root band that grabbed height would be stretched to the bottom of the
-				// paper on an exported page, since those pages are forced to the full height of the sheet.
+				// A column standing beside something taller is given the full height of the row, and its children share
+				// out the extra so that the bottom of the last of them is the bottom of the row rather than the page
+				// showing below them. Only the children of a column get this: a root band that grabbed height would be
+				// stretched to the bottom of the paper on an exported page, since those pages are forced to the full
+				// height of the sheet.
 				if data, ok := panel.AsPanel().LayoutData().(*unison.FlexLayoutData); ok {
 					data.VGrab = true
 				}

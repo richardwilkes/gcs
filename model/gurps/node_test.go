@@ -24,9 +24,9 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// TestNewTraitsFromFileAttachesContainerModifiers verifies that loading a trait list attaches the modifiers of container
-// rows as well as those of leaf rows. The loader used to skip containers, so a container's modifiers never learned
-// which trait they belonged to and could not resolve its nameable placeholders.
+// TestNewTraitsFromFileAttachesContainerModifiers verifies that loading a trait list attaches the modifiers of
+// container rows as well as those of leaf rows. The loader used to skip containers, so a container's modifiers never
+// learned which trait they belonged to and could not resolve its nameable placeholders.
 func TestNewTraitsFromFileAttachesContainerModifiers(t *testing.T) {
 	c := check.New(t)
 	container := NewTrait(nil, nil, true)

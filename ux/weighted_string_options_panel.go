@@ -25,22 +25,21 @@ import (
 )
 
 // weightedStringOptionsPanel edits a weighted string list: a header with an add button (and an import button, when the
-// spec provides an importer) and a button that removes the selected rows, and, when the list has any entries, a
-// bordered container holding a row per entry. The container is omitted for an empty list rather than drawn empty, so
-// its children are always exactly the rows, which is what drag reordering relies on.
+// spec provides an importer) and a button that removes the selected rows, plus a bordered container holding a row per
+// entry. The container is omitted for an empty list rather than drawn empty, so its children are always exactly the
+// rows, which is what drag reordering relies on.
 //
-// Rows are selected by clicking them, as the rows of a table are: a plain click selects the row alone, a click with
-// the OS's menu command key adds the row to the selection or takes it out, and a shift-click selects every row from
-// the anchor -- the row last clicked without shift -- to the clicked one. The selection is what the remove button in
-// the header acts on, so that a long list, such as imported training names, can be pruned without a click per row.
+// Rows are selected by clicking them, as the rows of a table are: a plain click selects the row alone, a click with the
+// OS's menu command key adds the row to the selection or takes it out, and a shift-click selects every row from the
+// anchor -- the row last clicked without shift -- to the clicked one. The header's remove button acts on that
+// selection, so a long list, such as imported training names, can be pruned without a click per row.
 type weightedStringOptionsPanel struct {
 	unison.Panel
 	dockable structuralEditor
 	spec     *weightedStringListSpec
 	rows     *unison.Panel // nil when the list is empty
-	// selected holds the options whose rows are selected, and anchor is where a shift-click extends the selection
-	// from. Both belong to the rows as built, and are let go of along with them when a structural edit rebuilds the
-	// content.
+	// selected holds the options whose rows are selected, and anchor is where a shift-click extends the selection from.
+	// Both belong to the rows as built and are discarded with them when a structural edit rebuilds the content.
 	selected             map[*gurps.WeightedStringOption]bool
 	anchor               *gurps.WeightedStringOption
 	removeSelectedButton *unison.Button
@@ -139,7 +138,6 @@ func (p *weightedStringOptionsPanel) selectRow(option *gurps.WeightedStringOptio
 	}
 }
 
-// isSelected reports whether the row of the option is selected.
 func (p *weightedStringOptionsPanel) isSelected(option *gurps.WeightedStringOption) bool {
 	return p.selected[option]
 }
@@ -155,8 +153,7 @@ func (p *weightedStringOptionsPanel) selectedOptions() []*gurps.WeightedStringOp
 	return result
 }
 
-// removeSelected removes every selected option from the list in a single undo edit. Nothing is posted when none is
-// selected.
+// removeSelected removes every selected option in a single undo edit. Nothing is posted when none is selected.
 func (p *weightedStringOptionsPanel) removeSelected() {
 	if len(p.selected) == 0 {
 		return

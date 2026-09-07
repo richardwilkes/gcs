@@ -21,19 +21,17 @@ import (
 
 // traitCategory is one of the buckets a top-level trait can be filed into.
 type traitCategory struct {
-	// points reports whether a trait costing this many points belongs here. nil for a category that can only be
-	// reached by tag.
+	// points reports whether a trait with this cost belongs here; nil for a category reachable only by tag.
 	points func(pts fxp.Int) bool
 	name   string
 	tags   []string
-	// overrides marks a category whose tag beats every other consideration, rather than having to be the only tag
-	// present before it counts.
+	// overrides marks a category whose tag wins outright, rather than having to be the only tag present.
 	overrides bool
 }
 
-// organizeTraitCategories returns the categories OrganizeTraits files traits into, in the order their containers are
-// placed. This is built on each call instead of being held in a package-level variable because the names come from the
-// translation catalog, which isn't loaded yet when package-level variables are initialized.
+// organizeTraitCategories returns the categories OrganizeTraits files traits into, in container order. It is built on
+// each call rather than held in a package-level variable because the names come from the translation catalog, which
+// isn't loaded yet when package-level variables are initialized.
 func organizeTraitCategories() []traitCategory {
 	return []traitCategory{
 		{
@@ -70,21 +68,20 @@ func organizeTraitCategories() []traitCategory {
 }
 
 // OrganizeTraits files each top-level trait that isn't a container into a container named for its category, creating
-// that container if the list doesn't already hold one by that name, then puts those containers at the front of the
-// list in category order and sorts their direct children by name. A category container that ends up with no children
-// is dropped. Everything else keeps its relative order behind them. Returns the new top-level list and whether it
-// differs from the one passed in, so a caller can skip recording an edit for a list that was already organized.
+// that container if the list doesn't already hold one by that name, then puts those containers at the front of the list
+// in category order and sorts their direct children by name. A category container that ends up empty is dropped and
+// everything else keeps its relative order behind them. Returns the new top-level list and whether it differs from the
+// one passed in, so a caller can skip recording an edit for a list that was already organized.
 func OrganizeTraits(owner DataOwner, list []*Trait) ([]*Trait, bool) {
 	if len(list) == 0 {
 		return list, false
 	}
 	categories := organizeTraitCategories()
 
-	// Every trait is classified before any of them is moved. A trait's point total isn't a property of the trait
-	// alone: AllModifiers() gathers the modifiers of its ancestors and EffectivelyDisabled() reports true when any
-	// ancestor is disabled, so dropping a trait into a container that carries a cost modifier or is switched off would
-	// change the answer for every trait filed after it. Deciding up front means each trait is judged as the user left
-	// it.
+	// Classify every trait before moving any of them. A trait's point total isn't a property of the trait alone:
+	// AllModifiers() gathers the modifiers of its ancestors and EffectivelyDisabled() reports true when any ancestor is
+	// disabled, so dropping a trait into a container that carries a cost modifier or is switched off would change the
+	// answer for every trait filed after it.
 	destinations := make([]int, len(list))
 	for i, t := range list {
 		if t.Container() {
@@ -95,9 +92,9 @@ func OrganizeTraits(owner DataOwner, list []*Trait) ([]*Trait, bool) {
 		destinations[i] = categoryForTrait(t, categories)
 	}
 
-	// Give each category the first top-level Group container that already carries its name, so an existing container
-	// and whatever the user put in it survive. Containers of any other type are passed over, since their type gives
-	// them a meaning that filing unrelated traits into them would break.
+	// Give each category the first top-level Group container that already carries its name, so it and whatever the user
+	// put in it survive. Containers of any other type are passed over, since their type gives them a meaning that
+	// filing unrelated traits into them would break.
 	containers := make([]*Trait, len(categories))
 	consumed := make([]bool, len(list))
 	for ci := range categories {
@@ -110,8 +107,8 @@ func OrganizeTraits(owner DataOwner, list []*Trait) ([]*Trait, bool) {
 		}
 	}
 
-	// Assemble fresh children slices rather than appending into the ones the containers already hold, so that a list
-	// that turns out to need no changes is left exactly as it was found.
+	// Build fresh children slices rather than appending into the ones the containers already hold, so that a list that
+	// turns out to need no changes is left exactly as it was found.
 	existing := make([][]*Trait, len(categories))
 	children := make([][]*Trait, len(categories))
 	for ci, c := range containers {
@@ -130,8 +127,7 @@ func OrganizeTraits(owner DataOwner, list []*Trait) ([]*Trait, bool) {
 	changed := false
 	for ci := range categories {
 		if len(children[ci]) == 0 {
-			// A category container with nothing to hold is clutter, so it is dropped. Only a container that a category
-			// claimed can be dropped this way; anything else the user made is kept, empty or not.
+			// Only a container a category claimed is dropped; anything else the user made is kept, empty or not.
 			continue
 		}
 		c := containers[ci]
@@ -162,20 +158,18 @@ func OrganizeTraits(owner DataOwner, list []*Trait) ([]*Trait, bool) {
 	return result, true
 }
 
-// categoryForTrait returns the index of the category the trait belongs to, or -1 if none of them fit, in which case
-// the caller should leave the trait where it is.
+// categoryForTrait returns the index of the category the trait belongs to, or -1 if none fit, in which case the caller
+// should leave the trait where it is.
 func categoryForTrait(t *Trait, categories []traitCategory) int {
-	// An overriding tag settles the question by itself. A language costs points like any other trait, but the user
-	// filed it as a language by tagging it, and that is what they want to see.
+	// An overriding tag settles the question by itself, whatever else the trait is tagged as or costs.
 	for i := range categories {
 		if categories[i].overrides && hasAnyTag(categories[i].tags, t.Tags) {
 			return i
 		}
 	}
 
-	// A single category tag is a deliberate statement about where the trait goes, so it is honored even when the point
-	// total disagrees. Tags for more than one category contradict each other and say nothing, so those traits are
-	// filed by their cost along with the untagged ones.
+	// A single category tag is honored even when the point total disagrees. Tags for more than one category contradict
+	// each other, so those traits are filed by cost along with the untagged ones.
 	found := -1
 	for i := range categories {
 		if categories[i].overrides || !hasAnyTag(categories[i].tags, t.Tags) {
@@ -202,14 +196,12 @@ func categoryForTrait(t *Trait, categories []traitCategory) int {
 
 // pointsForOrganizing returns the point total to file the trait by. The free AdjustedPoints function is used rather
 // than the Trait.AdjustedPoints method because the method reports zero for a disabled trait, which would bury a
-// switched-off 15-point advantage among the features instead of leaving it with the advantages it will rejoin as soon
-// as it is switched back on.
+// switched-off 15-point advantage among the features.
 func pointsForOrganizing(t *Trait) fxp.Int {
 	return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.SelfControl,
 		t.Frequency, t.AllModifiers(), t.RoundCostDown)
 }
 
-// hasAnyTag returns true if any of the candidates is present in tags.
 func hasAnyTag(candidates, tags []string) bool {
 	for _, candidate := range candidates {
 		if HasTag(candidate, tags) {
@@ -219,17 +211,15 @@ func hasAnyTag(candidates, tags []string) bool {
 	return false
 }
 
-// isOrganizeContainerFor returns true if the trait is a plain group container that organizing may file traits into
-// under the given category name.
+// isOrganizeContainerFor returns true if the trait is a plain group container named for the given category.
 func isOrganizeContainerFor(t *Trait, name string) bool {
 	return t.Container() && t.ContainerType == container.Group &&
 		strings.EqualFold(strings.TrimSpace(t.NameWithReplacements()), name)
 }
 
-// compareTraitsByName orders two traits the way the trait table orders them when sorting by name, so that organizing a
-// list and sorting the table by name agree on what "in order" looks like. Commas are dropped so that "Appearance,
-// Beautiful" sorts as though it read "Appearance Beautiful", and the comparison is natural so that "Damage Resistance
-// 2" comes before "Damage Resistance 10".
+// compareTraitsByName orders two traits the way the trait table's name sort does, so organizing a list and sorting the
+// table agree. Commas are dropped so "Appearance, Beautiful" sorts as "Appearance Beautiful", and the comparison is
+// natural so "Damage Resistance 2" comes before "Damage Resistance 10".
 func compareTraitsByName(a, b *Trait) int {
 	return xstrings.NaturalCmp(strings.ReplaceAll(a.String(), ",", ""), strings.ReplaceAll(b.String(), ",", ""), true)
 }

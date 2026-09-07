@@ -20,14 +20,14 @@ import (
 )
 
 // Blocker identifies why this installation cannot update itself. These are checked before anything is downloaded, so
-// the user is told that an automatic update is not possible without first waiting for thirty megabytes to arrive.
+// the user learns an automatic update is not possible without first waiting for the download.
 type Blocker string
 
 const (
 	// BlockerDevBuild means this is a development build, which has no release to update from.
 	BlockerDevBuild Blocker = "dev-build"
 	// BlockerRenamedExecutable means the executable is not named what the distribution names it, so replacing it would
-	// not produce a working installation -- on Linux the desktop integration keys off the name.
+	// not produce a working installation; on Linux the desktop integration keys off the name.
 	BlockerRenamedExecutable Blocker = "renamed-executable"
 	// BlockerNotABundle means macOS is running a bare executable rather than an installed application bundle.
 	BlockerNotABundle Blocker = "not-a-bundle"
@@ -47,8 +47,8 @@ const (
 	BlockerNoDigest Blocker = "no-digest"
 )
 
-// Unavailable reports that an automatic update is not possible, and why. Detail carries the technical specifics for the
-// log; the Blocker is what the caller turns into something to show the user.
+// Unavailable reports that an automatic update is not possible, and why. Detail carries the technical specifics for
+// the log; the Blocker is what the caller turns into something to show the user.
 type Unavailable struct {
 	Blocker Blocker
 	Detail  string
@@ -70,8 +70,8 @@ type Plan struct {
 }
 
 // packageManagedPrefixes are locations owned by a system package manager. Replacing a file under one of these would
-// leave the package database describing something that is no longer there, and the next package operation would either
-// undo the update or refuse to proceed.
+// leave the package database describing something that is no longer there, and the next package operation would undo
+// the update or refuse to proceed.
 var packageManagedPrefixes = []string{
 	"/usr/", "/opt/", "/snap/", "/nix/store/", "/var/lib/flatpak/", "/app/",
 }
@@ -83,15 +83,15 @@ var sandboxEnvVars = []string{"SNAP", "FLATPAK_ID", "APPIMAGE", "APPDIR", "conta
 var caskroomPaths = []string{"/opt/homebrew/Caskroom/" + CmdName, "/usr/local/Caskroom/" + CmdName}
 
 // caskInstallPath is where the Homebrew cask puts the application. A cask moves the bundle into /Applications exactly
-// as a person dragging it there would, so the installed copy carries no marking of its own -- the only evidence is the
+// as a person dragging it there would, so the installed copy carries no marking of its own; the only evidence is the
 // Caskroom entry alongside it.
 const caskInstallPath = "/Applications/" + BundleName
 
-// checkHomebrew refuses to replace an installation Homebrew is managing. Updating it behind Homebrew's back would leave
-// `brew` still describing the old version, free to reinstall it over the new one on the next upgrade.
+// checkHomebrew refuses to replace an installation Homebrew is managing. Updating it behind Homebrew's back would
+// leave `brew` still describing the old version, free to reinstall it over the new one on the next upgrade.
 //
-// Both conditions are required. The Caskroom existing only means the cask is installed somewhere; a second copy the
-// user keeps elsewhere is theirs to update, and refusing that would be wrong.
+// Both the location and a Caskroom entry are required: the Caskroom existing only means the cask is installed
+// somewhere, and a second copy the user keeps elsewhere is theirs to update.
 func checkHomebrew(targetPath string) error {
 	if targetPath != caskInstallPath {
 		return nil
@@ -104,10 +104,9 @@ func checkHomebrew(targetPath string) error {
 	return nil
 }
 
-// Preflight decides whether the running installation can replace itself with the given release, and returns the plan to
-// do it. Every check here is local and immediate: nothing is downloaded until this succeeds.
-//
-// The inputs are parameters rather than being read from globals so that each refusal can be reached from a test.
+// Preflight decides whether the running installation can replace itself with the given release, and returns the plan
+// to do it. Every check here is local and immediate: nothing is downloaded until this succeeds. The inputs are
+// parameters rather than globals so that each refusal can be reached from a test.
 func Preflight(exePath, goos, goarch, fromVersion, toVersion string, assets []Asset, lookupEnv func(string) (string, bool)) (*Plan, error) {
 	if IsDevVersion(fromVersion) {
 		return nil, &Unavailable{Blocker: BlockerDevBuild, Detail: "version is " + fromVersion}
@@ -125,8 +124,8 @@ func Preflight(exePath, goos, goarch, fromVersion, toVersion string, assets []As
 	}
 	if asset.SHA256 == "" {
 		// GitHub only began publishing asset checksums in 2025, so this cannot happen for any release new enough to be
-		// worth installing. It is refused rather than downgraded to an unverified install, because an update that
-		// silently skips its integrity check is worse than no automatic update at all.
+		// worth installing. Refused rather than downgraded to an unverified install, since an update that silently
+		// skips its integrity check is worse than no automatic update at all.
 		return nil, &Unavailable{Blocker: BlockerNoDigest, Detail: asset.Name + " has no checksum"}
 	}
 	return &Plan{Target: target, Asset: asset, FromVersion: fromVersion, ToVersion: toVersion}, nil
@@ -143,9 +142,9 @@ func checkInstallation(target *Target, exePath, goos string, lookupEnv func(stri
 	}
 	if goos == xos.MacOS {
 		// App Translocation runs the application from a randomized read-only copy, which happens whenever a quarantined
-		// application is launched without first being moved out of the disk image it arrived in. The copy's containing
-		// directory can be writable, so the write probe below would happily "update" something that is thrown away the
-		// moment the application quits.
+		// application is launched without first being moved out of the disk image it arrived in. That copy's containing
+		// directory can be writable, so the write probe below would happily "update" something thrown away the moment
+		// the application quits.
 		if strings.Contains(exePath, "/AppTranslocation/") {
 			return &Unavailable{Blocker: BlockerTranslocated, Detail: exePath}
 		}
@@ -177,8 +176,8 @@ func checkInstallation(target *Target, exePath, goos string, lookupEnv func(stri
 	return nil
 }
 
-// probeWritable verifies that the directory can actually be written to, by writing to it. Checking permission bits is
-// not equivalent: it does not account for access control lists, for a read-only mount -- which is what running straight
+// probeWritable verifies that the directory can be written to, by writing to it. Checking permission bits is not
+// equivalent: it does not account for access control lists, for a read-only mount -- which is what running straight
 // from a disk image looks like -- or for Windows, where the bits carry almost no information at all.
 func probeWritable(dir string) error {
 	probe, err := os.MkdirTemp(dir, workDirPrefix+"probe-")

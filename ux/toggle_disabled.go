@@ -25,8 +25,8 @@ func canToggleDisabled(table *unison.Table[*Node[*gurps.Trait]]) bool {
 
 // toggleDisabled flips the enabled state of each selected trait. The owner is rebuilt rather than merely marked as
 // modified, since a trait that stops contributing takes its weapons, reactions and conditional modifiers out of play
-// with it, and whether the lists showing those appear on the page at all -- along with which columns they hold -- is
-// decided only when the owner creates its lists.
+// with it, and which lists the owner shows -- along with which columns they hold -- is decided only when it creates
+// them.
 func toggleDisabled(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]]) {
 	adjustSelection(i18n.Text("Toggle Enablement"), owner, table, disabledExtractor,
 		func(t *gurps.Trait) bool { return t.Disabled },

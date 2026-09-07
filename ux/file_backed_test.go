@@ -18,8 +18,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestOpenDockableFromFile checks that a dockable opened from a file is tied to that file: it is not modified, it goes
-// by the file's name, and saving it writes back to the file without needing to be told where.
+// A dockable opened from a file is tied to that file: it is not modified, it goes by the file's name, and saving it
+// writes back to the file without needing to be told where.
 func TestOpenDockableFromFile(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
@@ -51,8 +51,8 @@ func TestOpenDockableFromFile(t *testing.T) {
 	c.HasError(err, "opening a file that does not exist must fail")
 }
 
-// TestUnsavedSheetsGoByTheirNames checks that a sheet that has never been saved takes its file name from the name of
-// its content, and only from its path once it has been.
+// A sheet that has never been saved takes its file name from the name of its content, and only from its path once it
+// has been saved.
 func TestUnsavedSheetsGoByTheirNames(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
@@ -81,8 +81,7 @@ func TestUnsavedSheetsGoByTheirNames(t *testing.T) {
 	c.Equal("untitled"+gurps.LootExt, lootSheet.BackingFilePath(), "a saved loot sheet must go by its path")
 }
 
-// TestFileViewerIsNeverModified checks that a dockable that only views a file is tied to it by name and key, but never
-// has anything to save.
+// A dockable that only views a file is tied to it by name and key, but never has anything to save.
 func TestFileViewerIsNeverModified(t *testing.T) {
 	c := check.New(t)
 	p := filepath.Join(t.TempDir(), "picture.svg")
@@ -102,8 +101,8 @@ func TestFileViewerIsNeverModified(t *testing.T) {
 	c.Equal("", readOnly.Tooltip(), "content that is not in a file has no path to show")
 }
 
-// TestMarkdownDockableSaves checks that saving an edited markdown file writes the edited content back to it and clears
-// the modified state, which is what the hash over its content is for.
+// Saving an edited markdown file writes the edited content back to it and clears the modified state, which is what the
+// hash over its content is for.
 func TestMarkdownDockableSaves(t *testing.T) {
 	c := check.New(t)
 	p := filepath.Join(t.TempDir(), "notes.md")

@@ -54,9 +54,8 @@ func TestExtractPartsLeadingPlaceholder(t *testing.T) {
 
 func TestExtractPartsMultiplePlaceholdersSeparatedByPlainText(t *testing.T) {
 	c := check.New(t)
-	// Regression test: closing a placeholder used to leave isPlaceholder set to true instead of resetting it to
-	// false (the "Start new non-placeholder part" comment gave away the intent), so the plain-text run between two
-	// placeholders was itself misidentified as a placeholder. That broke every multi-marker string; fixed now.
+	// Regression test: closing a placeholder used to leave isPlaceholder set to true, so the plain-text run between two
+	// placeholders was itself misidentified as a placeholder. That broke every multi-marker string.
 	got := nameable.ExtractParts("@A@ and @B@", '@', '@')
 	c.Equal([]nameable.Part{
 		{Value: "A", Placeholder: true},
@@ -84,11 +83,10 @@ func TestExtractPartsDoubledEscapeBeforeOpenStillOpensPlaceholder(t *testing.T) 
 
 func TestExtractPartsTripleEscapeBeforeOpenEscapesIt(t *testing.T) {
 	c := check.New(t)
-	// An odd number of escape runes leaves the final one live, so the '@' it precedes is escaped and no placeholder
-	// is opened. Since open == close here, the trailing, unescaped '@' is then read as a fresh open attempt (there's
-	// no separate "close" semantics while not already inside a placeholder) that never finds a match before end of
-	// input -- so it round-trips as its own trailing literal part rather than merging into the first one, but
-	// nothing is lost.
+	// An odd number of escape runes leaves the final one live, so the '@' it precedes is escaped and no placeholder is
+	// opened. Since open == close here, the trailing, unescaped '@' is then read as a fresh open attempt that never
+	// finds a match before end of input, so it round-trips as its own trailing literal part rather than merging into
+	// the first one. Nothing is lost.
 	got := nameable.ExtractParts(`abc \\\@Foo@`, '@', '@')
 	c.Equal([]nameable.Part{
 		{Value: `abc \\\@Foo`, Placeholder: false},
@@ -109,10 +107,9 @@ func TestExtractPartsEmptyPlaceholderTreatedAsLiteralText(t *testing.T) {
 
 func TestExtractPartsUnterminatedPlaceholderPreservesOpenDelimiter(t *testing.T) {
 	c := check.New(t)
-	// Regression test: an opened-but-never-closed placeholder used to be flushed as plain text at end of input
-	// with its open delimiter rune silently dropped (already consumed when the placeholder started, and never
-	// written back out), so "abc @Foo" lost the '@' entirely instead of round-tripping as literal text. Fixed now:
-	// the trailing flush backs up over the dropped delimiter before slicing.
+	// Regression test: an opened-but-never-closed placeholder used to be flushed as plain text at end of input with its
+	// open delimiter silently dropped, so "abc @Foo" lost the '@' entirely instead of round-tripping as literal text.
+	// The trailing flush now backs up over that delimiter before slicing.
 	got := nameable.ExtractParts("abc @Foo", '@', '@')
 	c.Equal([]nameable.Part{
 		{Value: "abc ", Placeholder: false},
@@ -123,11 +120,10 @@ func TestExtractPartsUnterminatedPlaceholderPreservesOpenDelimiter(t *testing.T)
 func TestExtractPartsControlCharBreaksInProgressPlaceholder(t *testing.T) {
 	c := check.New(t)
 	// A control rune (here, newline) aborts an in-progress placeholder scan. Regression test: the abandoned open
-	// delimiter used to be silently dropped (already consumed when the placeholder started, and never written back
-	// out), so "@Foo\nBar..." lost the '@' entirely instead of round-tripping as literal text. Fixed now: the
-	// abort backs up over the dropped delimiter, folding it back into a single plain-text run together with the
-	// abandoned placeholder content. The following '@' then reopens a new placeholder that never finds a close
-	// before end of input, so it survives as a preserved, unterminated literal too.
+	// delimiter used to be silently dropped, so "@Foo\nBar..." lost the '@' entirely instead of round-tripping as
+	// literal text. The abort now backs up over that delimiter, folding it into a single plain-text run with the
+	// abandoned placeholder content. The following '@' reopens a placeholder that never finds a close before end of
+	// input, so it survives as an unterminated literal too.
 	got := nameable.ExtractParts("@Foo\nBar@ baz", '@', '@')
 	c.Equal([]nameable.Part{
 		{Value: "@Foo\nBar", Placeholder: false},

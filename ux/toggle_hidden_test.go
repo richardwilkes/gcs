@@ -22,11 +22,10 @@ import (
 )
 
 // checkToggleUndoRedo verifies what must hold once something has been toggled inside an editor, no matter what the
-// toggle was or how it was made: the editor must have unsaved changes, the table must be able to reach the editor's
-// undo manager, the Edit menu must name the change, undo must put the old state back and leave the editor with no
-// unsaved changes, and redo must make the change again. verb names the change for the failure messages ("hide",
-// "click", "toggle"), while checkToggled and checkRestored make whatever assertions the caller needs about the state
-// itself, the first after the redo and the second after the undo.
+// toggle was or how it was made: the editor has unsaved changes, the table can reach the editor's undo manager, the
+// Edit menu names the change, undo puts the old state back and leaves no unsaved changes, and redo makes the change
+// again. verb names the change for the failure messages, while checkToggled and checkRestored assert about the state
+// itself, after the redo and after the undo respectively.
 func checkToggleUndoRedo(c check.Checker, table unison.Paneler, isModified func() bool, undoName, verb string,
 	checkToggled, checkRestored func(),
 ) {
@@ -113,10 +112,10 @@ func checkWeaponHideUndoRedo(c check.Checker, e *editor[*gurps.Trait, *gurps.Tra
 		func() { c.False(weapon.Hide, "undo must show the weapon again") })
 }
 
-// TestToggleStateHidesWeaponsInsideEditors verifies that Toggle State reaches the weapon rows of a detail editor, where
-// the checkmark column means "hidden". As with the modifier tables, the only way to hide a weapon used to be clicking
-// its cell one row at a time. Only the editor's copy of the data is touched, so nothing reaches the item being edited
-// until Apply, and the whole selection is flipped as a single undoable edit.
+// The checkmark column of a weapon row in a detail editor means "hidden". Before Toggle State reached these tables,
+// the only way to hide a weapon was clicking its cell one row at a time. Only the editor's copy of the data is
+// touched, so nothing reaches the item being edited until Apply, and the whole selection is flipped as one undoable
+// edit.
 func TestToggleStateHidesWeaponsInsideEditors(t *testing.T) {
 	forEachWeaponKind(t, func(t *testing.T, melee bool) {
 		c := check.New(t)
@@ -132,10 +131,8 @@ func TestToggleStateHidesWeaponsInsideEditors(t *testing.T) {
 	})
 }
 
-// TestWeaponHideCheckmarkClickIsUndoable verifies that clicking a weapon's Hide checkmark cell inside an editor hides
-// the weapon in the editor's copy and that the change can be taken back and put back again. The click and the command
-// now share adjustTargets and snapshotList.apply, so the click path -- and the redo that goes with it -- needs a test
-// of its own rather than being taken on faith from the command's.
+// The click and the command share adjustTargets and snapshotList.apply, so the click path -- and the redo that goes
+// with it -- needs a test of its own rather than being taken on faith from the command's.
 func TestWeaponHideCheckmarkClickIsUndoable(t *testing.T) {
 	forEachWeaponKind(t, func(t *testing.T, melee bool) {
 		c := check.New(t)
@@ -146,9 +143,8 @@ func TestWeaponHideCheckmarkClickIsUndoable(t *testing.T) {
 		label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false, false).(*unison.Label)
 		c.True(ok, "the Hide cell must be a label")
 		// The cell has to be part of the editor's panel tree for the undo manager and the owning editor to be found, so
-		// the test attaches it itself, standing in for what the table does for the duration of a real click. A cell is
-		// never one of the table's children beyond the event it is handling, so it is taken back off again as soon as
-		// the click has been dispatched.
+		// the test attaches it itself, standing in for what the table does during a real click, then takes it back off:
+		// a cell is never one of the table's children beyond the event it is handling.
 		table.AddChild(label)
 		c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
 		label.RemoveFromParent()
@@ -158,9 +154,8 @@ func TestWeaponHideCheckmarkClickIsUndoable(t *testing.T) {
 	})
 }
 
-// TestToggleStateNotOfferedOnSheetWeaponLists verifies that the command stays off the sheet's own weapon lists. Those
-// lists carry no Hide column -- a weapon is listed there only when it isn't hidden -- so the command is installed on
-// the editor tables alone rather than on every table that happens to hold weapons.
+// The sheet's own weapon lists carry no Hide column -- a weapon is listed there only when it isn't hidden -- so the
+// command is installed on the editor tables alone rather than on every table that happens to hold weapons.
 func TestToggleStateNotOfferedOnSheetWeaponLists(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

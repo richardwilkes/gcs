@@ -36,12 +36,11 @@ func NewTableUndoEditData[T gurps.Node[T]](table *unison.Table[*Node[T]]) *Table
 	return undo
 }
 
-// beginTableUndo starts recording an undoable edit of a table's contents, capturing the data as it stands as the edit's
-// "before" state; commitTableUndo captures the "after" state once the edit has been made and records the edit. Nil is
-// returned when there is nothing to record with, i.e. the table has no undo manager, or when the "before" state could
-// not be captured, and commitTableUndo accepts nil, so an edit can be bracketed by the pair unconditionally. The
-// optional beforeUndo and beforeRedo hooks run ahead of putting the "before" and "after" data back, respectively, for
-// an edit that has to restore more than the table's contents (see MoveSelection).
+// beginTableUndo starts recording an undoable edit of a table's contents, capturing the current data as the "before"
+// state; commitTableUndo captures the "after" state and records the edit. Returns nil when there is no undo manager or
+// the "before" state could not be captured; commitTableUndo accepts nil, so an edit can be bracketed by the pair
+// unconditionally. The optional beforeUndo and beforeRedo hooks run ahead of putting the "before" and "after" data
+// back, for an edit that has to restore more than the table's contents (see MoveSelection).
 func beginTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], title string, beforeUndo, beforeRedo func()) *unison.UndoEdit[*TableUndoEditData[T]] {
 	if unison.UndoManagerFor(table) == nil {
 		return nil
@@ -70,11 +69,10 @@ func beginTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], title string
 	}
 }
 
-// commitTableUndo finishes an edit begun with beginTableUndo: the table's data as it now stands becomes the edit's
-// "after" state and the edit is handed to the table's undo manager. Both are taken from the table currently showing the
-// data (see liveTable), since the edit itself may have replaced the table the "before" state was captured from, and an
-// orphaned table has no manager above it any more. A nil edit, which is what beginTableUndo hands back when there is
-// nothing to record with, is ignored.
+// commitTableUndo finishes an edit begun with beginTableUndo: the table's current data becomes the edit's "after"
+// state and the edit is handed to the table's undo manager. Both come from the table currently showing the data (see
+// liveTable), since the edit may have replaced the table the "before" state was captured from, and an orphaned table
+// has no manager above it any more. A nil edit is ignored.
 func commitTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], undo *unison.UndoEdit[*TableUndoEditData[T]]) {
 	if undo == nil {
 		return
@@ -93,15 +91,13 @@ func (t *TableUndoEditData[T]) Apply() {
 	restored.report()
 }
 
-// restore puts the preserved data back into the table that is currently showing it, without reporting the change to
-// anything, and returns that table along with the owner it belongs to, if any. It has to be the table on screen rather
-// than the one the data was collected from: the model would come back either way, since an orphaned table's provider
-// still points at it, but the selection would not, because the rebuild that follows records and re-applies the
-// selection of the table on screen and would discard one restored into an orphan. Nothing is returned if there was
-// nothing to restore or the restore failed. The reporting is left to restoredTables, so that an undo spanning several
-// tables can do it just once for all of them. The table comes back as a plain Paneler, which is all restoredTables
-// needs and what lets an undo spanning tables of different row types hold their data behind one interface (see
-// tableRestorer).
+// restore puts the preserved data back into the table currently showing it and returns that table along with its
+// owner, if any, leaving the reporting to restoredTables so an undo spanning several tables reports just once. It has
+// to be the table on screen rather than the one the data was collected from: the model would come back either way,
+// since an orphaned table's provider still points at it, but the selection would not, because the rebuild that follows
+// re-applies the on-screen table's selection and would discard one restored into an orphan. Nothing is returned if
+// there was nothing to restore or the restore failed. The table comes back as a plain Paneler, which lets an undo
+// spanning tables of different row types hold their data behind one interface (see tableRestorer).
 func (t *TableUndoEditData[T]) restore() (unison.Paneler, Rebuildable) {
 	if t == nil {
 		return nil, nil
@@ -144,7 +140,7 @@ type tablesUndoData struct {
 }
 
 // newTablesUndoData collects the undo edit data for each of the given lists. A list whose data can't be collected
-// contributes nothing, just as it would to a single-table edit (see NewTableUndoEditData).
+// contributes nothing.
 func newTablesUndoData(lists []syncableList) *tablesUndoData {
 	data := &tablesUndoData{restorers: make([]tableRestorer, 0, len(lists))}
 	for _, list := range lists {
@@ -158,9 +154,8 @@ func newTablesUndoData(lists []syncableList) *tablesUndoData {
 // Apply the undo edit data to the tables.
 func (d *tablesUndoData) Apply() {
 	// Every list is put back before any of them is reported, so that the undo updates the document once rather than
-	// once per table: a single rebuild brings all of the lists back into line, while reporting each one as it was
-	// restored would recalculate the entity and re-sync every table on the sheet once per list for the one undo. See
-	// restoredTables for the rest of the reasoning.
+	// once per table: reporting each list as it was restored would recalculate the entity and re-sync every table on
+	// the sheet once per list. See restoredTables.
 	var restored restoredTables
 	for _, restorer := range d.restorers {
 		restored.add(restorer.restore())
@@ -168,12 +163,12 @@ func (d *tablesUndoData) Apply() {
 	restored.report()
 }
 
-// syncWithAllSources syncs a document's model with the library sources its items came from and records the change as
-// a single undoable edit spanning the given lists, which are the ones the sync can alter. One edit rather than one per
+// syncWithAllSources syncs a document's model with the library sources its items came from and records the change as a
+// single undoable edit spanning the given lists, which are the ones the sync can alter. One edit rather than one per
 // list is what lets an undo put every list back and update the document just once (see tablesUndoData.Apply). The
-// owner is rebuilt afterwards, which is what reports the change (see rebuildAsModified). Building the "before" data
-// as part of the edit, right before the sync, is safe here because syncing alters items in place and moves nothing;
-// see organizeTraits for an edit that has to take its snapshot with more care.
+// owner is rebuilt afterwards, which reports the change. Building the "before" data right before the sync is safe here
+// because syncing alters items in place and moves nothing; see organizeTraits for an edit that has to take its
+// snapshot with more care.
 func syncWithAllSources(owner Rebuildable, model librarySyncer, lists ...syncableList) {
 	var undo *unison.UndoEdit[*tablesUndoData]
 	mgr := unison.UndoManagerFor(owner)
@@ -205,7 +200,7 @@ type restoredTables struct {
 	owner Rebuildable
 }
 
-// add records what restoring one table produced, i.e. the results of a TableUndoEditData.restore() call.
+// add records the result of one restore call, keeping the first non-nil table and the first non-nil owner.
 func (r *restoredTables) add(table unison.Paneler, owner Rebuildable) {
 	if xreflect.IsNil(r.table) && !xreflect.IsNil(table) {
 		r.table = table
@@ -217,14 +212,11 @@ func (r *restoredTables) add(table unison.Paneler, owner Rebuildable) {
 
 // report tells the rest of the app about the restored data.
 func (r *restoredTables) report() {
-	// An owner is rebuilt rather than merely told that one of its tables changed, because far more of what it shows
-	// than the rows themselves is derived from the data that was just put back, and only rebuilding recomputes any of
-	// it (see rebuildAsModified). Marking as modified is left for the tables that have no owner recorded, i.e. those
-	// in an editor or a library list, which nothing ever replaces or reshapes.
-	//
-	// Whichever of the two applies happens once for the whole undo rather than once per table, which is why restoring
-	// doesn't report the change on its own: on a sheet that may hold hundreds of rows all of that work is the entire
-	// cost of the edit, and an undo spanning six tables would otherwise pay it six times over.
+	// An owner is rebuilt rather than merely told that one of its tables changed, because much of what it shows is
+	// derived from the data that was just put back and only rebuilding recomputes it. Marking as modified is left for
+	// the tables that have no owner recorded, i.e. those in an editor or a library list, which nothing ever replaces or
+	// reshapes. Either way it happens once for the whole undo rather than once per table, which is why restoring
+	// doesn't report the change on its own.
 	if !xreflect.IsNil(r.owner) {
 		rebuildAsModified(r.owner, true)
 		return
@@ -238,8 +230,7 @@ func (r *restoredTables) report() {
 // alter its set of columns can only do so by replacing the table entirely, which leaves any table captured earlier
 // orphaned: applying data to it would update the model but leave the table the user is looking at untouched. A nil
 // table is returned as-is, since callers that may not have a source table at all (the alternate drop path, for one)
-// pass one through here. This is the typed counterpart of liveOwner, for callers that need the table itself rather
-// than just something to ask for a rebuild through.
+// pass one through here. This is the typed counterpart of liveOwner.
 func liveTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) *unison.Table[*Node[T]] {
 	if table == nil {
 		return nil
@@ -266,15 +257,12 @@ func NewTableDragUndoEditData[T gurps.Node[T]](from, to *unison.Table[*Node[T]])
 
 // Apply the undo edit data to a table.
 func (t *TableDragUndoEditData[T]) Apply() {
-	// Both lists have to be back in place before either of them is reported: a row that was dragged from one list to
-	// the other is in neither of them while only the first has been restored, so reporting there would recalculate the
-	// entity and re-sync the whole sheet against a state the user never had, and the second restore would then pay for
-	// the same update all over again. One report covers both, because the two tables always belong to the same owner.
-	// A drag only counts as a move -- the only case that leaves anything to put back in the list the rows came from,
-	// which is why From is nil for the rest -- when both tables are in the same dockable, and only equipment can move
-	// between two different tables at all (see the providers' DropShouldMoveData). So a drag between two sheets is a
-	// copy that leaves the source sheet untouched, and "Move to Other/Carried Equipment" works within one sheet by
-	// construction. A nil From restores nothing and contributes nothing to report.
+	// Both lists have to be back in place before either of them is reported: a row dragged from one list to the other
+	// is in neither of them while only the first has been restored, so reporting there would re-sync the whole sheet
+	// against a state the user never had. One report covers both, because the two tables always belong to the same
+	// owner: a drag only counts as a move -- the only case that leaves anything to put back in the list the rows came
+	// from, which is why From is nil for the rest -- when both tables are in the same dockable, and only equipment can
+	// move between two different tables at all (see the providers' DropShouldMoveData). A nil From restores nothing.
 	var restored restoredTables
 	restored.add(t.To.restore())
 	restored.add(t.From.restore())

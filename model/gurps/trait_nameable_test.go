@@ -23,7 +23,6 @@ func TestTraitLevelBonusUsesResolvedName(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
-	// A leveled trait with a nameable name that resolves to "Talent (Rifle)".
 	talent := NewTrait(e, nil, false)
 	talent.Name = "Talent (@which@)"
 	talent.Replacements = map[string]string{"which": "Rifle"}
@@ -39,7 +38,6 @@ func TestTraitLevelBonusUsesResolvedName(t *testing.T) {
 	e.Recalculate()
 	c.Equal(fxp.Three, talent.CurrentLevel(), "a TraitBonus on the resolved name should raise level 2 -> 3")
 
-	// A bonus qualified by the unresolved raw name must not match the resolved trait.
 	bonus.NameCriteria.Qualifier = "Talent (@which@)"
 	e.Recalculate()
 	c.Equal(fxp.Two, talent.CurrentLevel(), "a TraitBonus on the raw @placeholder@ name must not apply")

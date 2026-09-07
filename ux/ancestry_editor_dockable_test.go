@@ -32,9 +32,8 @@ const testAncestryJSON = `{
 	]
 }`
 
-// newTestAncestryEditorDockable builds an ancestry editor around the given ancestry without placing it in the dock or
-// creating a window, neither of which the headless test environment can do, and without scanning the libraries for name
-// generators, which the caller supplies instead.
+// newTestAncestryEditorDockable builds an ancestry editor around the given ancestry without the dock or window the
+// headless test environment cannot provide, and with the caller's name generator choices in place of a library scan.
 func newTestAncestryEditorDockable(a *gurps.Ancestry, nameGeneratorChoices ...string) *ancestryEditorDockable {
 	d := newAncestryEditorDockable()
 	d.nameGeneratorLookup = func() []string { return nameGeneratorChoices }
@@ -42,8 +41,6 @@ func newTestAncestryEditorDockable(a *gurps.Ancestry, nameGeneratorChoices ...st
 	return d
 }
 
-// wireTestFileEditor finishes an editor its constructor has made, giving it the model to edit and building its content;
-// see buildTestFileEditor.
 func wireTestFileEditor[T fileEditorModel[T]](d *fileEditorDockable[T], model T) {
 	model.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	d.model = model
@@ -51,10 +48,10 @@ func wireTestFileEditor[T fileEditorModel[T]](d *fileEditorDockable[T], model T)
 	buildTestFileEditor(d)
 }
 
-// buildTestFileEditor builds an editor's content from the model it holds as show would, but with no dock and no window:
-// the content is wrapped in a scroll panel that is itself a child of the dockable, as Setup arranges, so that sync() can
-// find a scroll root and the target manager, which is rooted at the dockable, can find the widgets. The undo manager is
-// replaced by one that panics on an error, so that a test sees it.
+// buildTestFileEditor builds an editor's content as show would, but with no dock and no window. The content is wrapped
+// in a scroll panel below the dockable, as Setup arranges, so that sync() can find a scroll root and the target
+// manager, rooted at the dockable, can find the widgets. The undo manager is replaced by one that panics on an error,
+// so that a test sees it.
 func buildTestFileEditor[T fileEditorModel[T]](d *fileEditorDockable[T]) {
 	d.undoMgr = unison.NewUndoManager(100, func(err error) { panic(err) })
 	content := unison.NewPanel()
@@ -64,16 +61,12 @@ func buildTestFileEditor[T fileEditorModel[T]](d *fileEditorDockable[T]) {
 	d.initContent(content)
 }
 
-// loadTestFileEditor finishes an editor its constructor has made the way opening a file does: the file the reference
-// names is loaded into it before its content is built; see buildTestFileEditor.
 func loadTestFileEditor[T fileEditorModel[T]](t *testing.T, c check.Checker, d *fileEditorDockable[T], ref *gurps.NamedFileRef) {
 	t.Helper()
 	c.NoError(d.load(ref))
 	buildTestFileEditor(d)
 }
 
-// loadedTestAncestryEditorDockable builds an ancestry editor holding the ancestry in the file the reference names; see
-// loadTestFileEditor.
 func loadedTestAncestryEditorDockable(t *testing.T, c check.Checker, ref *gurps.NamedFileRef, nameGeneratorChoices ...string) *ancestryEditorDockable {
 	t.Helper()
 	d := newAncestryEditorDockable()
@@ -82,15 +75,13 @@ func loadedTestAncestryEditorDockable(t *testing.T, c check.Checker, ref *gurps.
 	return d
 }
 
-// ancestryFileRef writes the content to an ancestry file in a fresh temporary directory and returns a reference to it
-// of the kind a library scan or the toolbar menu's Open… produces.
 func ancestryFileRef(t *testing.T, c check.Checker, name, content string) *gurps.NamedFileRef {
 	t.Helper()
 	return testFileRef(t, c, name, gurps.AncestryExt, content)
 }
 
-// testFileRef writes the content to a file with the given name and extension in a fresh temporary directory and returns
-// a reference to it of the kind a library scan or the toolbar menu's Open… produces.
+// testFileRef writes the content to a file in a fresh temporary directory and returns a reference to it of the kind a
+// library scan or the toolbar menu's Open… produces.
 func testFileRef(t *testing.T, c check.Checker, name, ext, content string) *gurps.NamedFileRef {
 	t.Helper()
 	dir := t.TempDir()
@@ -104,8 +95,8 @@ func testFileRef(t *testing.T, c check.Checker, name, ext, content string) *gurp
 	}
 }
 
-// widgetFor returns the widget of the given type with the given reference key within the editor, failing the test if
-// there is no such widget or it is of some other type.
+// widgetFor returns the editor's widget with the given reference key, failing the test if there is no such widget or
+// it is of some other type.
 func widgetFor[T any](t *testing.T, d structuralEditor, key string) T {
 	t.Helper()
 	panel := d.targetManager().Find(key)
@@ -154,8 +145,7 @@ func TestAncestryEditorContract(t *testing.T) {
 }
 
 // TestAncestryEditorTitleFollowsNameThenPath verifies that the title tracks the Name field until the ancestry has a
-// file, after which it tracks the file's base name -- the name traits select an ancestry by -- and the tooltip shows
-// the path.
+// file, after which it tracks the file's base name -- the name traits select an ancestry by.
 func TestAncestryEditorTitleFollowsNameThenPath(t *testing.T) {
 	c := check.New(t)
 	d := newTestAncestryEditorDockable(gurps.NewAncestry())
@@ -172,8 +162,8 @@ func TestAncestryEditorTitleFollowsNameThenPath(t *testing.T) {
 	c.Equal(p, d.Tooltip())
 }
 
-// TestAncestryEditorLoad verifies that an editor opened on a file records its path, starts out unmodified with nothing to
-// undo, normalizes the loaded data, assigns key prefixes, and builds its panels from the loaded ancestry.
+// TestAncestryEditorLoad verifies that an editor opened on a file records its path, starts out unmodified with nothing
+// to undo, normalizes the loaded data, assigns key prefixes, and builds its panels from the loaded ancestry.
 func TestAncestryEditorLoad(t *testing.T) {
 	c := check.New(t)
 	ref := ancestryFileRef(t, c, "Elf", testAncestryJSON)

@@ -17,10 +17,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestScriptNodeIdentityProperties verifies the properties every node script wrapper shares -- parent, container and
-// tags -- for each wrapper, both as a top-level node and as a child. parent must be the wrapper for the actual parent,
-// reachable recursively up the chain, and undefined at the top; container must follow the node's kind; and tags must
-// be a copy, so a script cannot alter the node through it.
+// Covers the properties every node script wrapper shares -- parent, container and tags -- both as a top-level node and
+// as a child. parent must be the wrapper for the actual parent, reachable recursively up the chain, and undefined at
+// the top; container must follow the node's kind; and tags must be a copy, so a script cannot alter the node.
 func TestScriptNodeIdentityProperties(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -87,7 +86,6 @@ func TestScriptNodeIdentityProperties(t *testing.T) {
 			wantTags: "Reminder",
 		},
 	} {
-		// A top-level node has no parent, is a container, and carries its own tags.
 		c.Equal("undefined", ResolveScript(e, tc.top, "typeof self.parent"), "case %q", tc.name)
 		c.Equal("true", ResolveScript(e, tc.top, "self.container"), "case %q", tc.name)
 		c.Equal(tc.wantTags, ResolveScript(e, tc.top, "self.tags.join(',')"), "case %q", tc.name)
@@ -107,9 +105,8 @@ func TestScriptNodeIdentityProperties(t *testing.T) {
 	}
 }
 
-// TestScriptNotesReportAllSecondaryText verifies that the notes property every wrapper exposes yields the node's
-// secondary text even when the sheet is configured not to display notes at all, since a script wants the content, not
-// the layout decision.
+// The notes property every wrapper exposes yields the node's secondary text even when the sheet is configured not to
+// display notes at all, since a script wants the content, not the layout decision.
 func TestScriptNotesReportAllSecondaryText(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

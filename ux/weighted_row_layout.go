@@ -18,21 +18,19 @@ import (
 var _ unison.Layout = &weightedRowLayout{}
 
 // layoutMinBlockWidth is the narrowest a block is ever made, whether by the widths a row divides itself into or by
-// dragging the divider between two blocks. It is deliberately far below anything a block's content would ask for: what
-// the content wants has no say in how wide the block is, since a block whose width was floored at what it needed
-// couldn't be made any narrower, and the tables the lists are drawn with re-fit their columns to whatever width they
-// are given and so always need exactly the width they already have.
+// dragging the divider between two blocks. It is deliberately far below anything a block's content would ask for: a
+// block floored at what its content needed couldn't be made any narrower, and the tables the lists are drawn with
+// re-fit their columns to whatever width they are given.
 const layoutMinBlockWidth float32 = 24
 
 // weightedRowLayout lays the children of its target out side by side, dividing the available width among them in
 // proportion to their weights and giving each of them the full height of the row. The widths follow the weights alone,
-// save that no child is made narrower than layoutMinBlockWidth; the width that pinning a child there costs comes out of
-// the children that still have room to give. Content that no longer fits the width its block was given is clipped by
-// that block: that is what the user asked for by making it narrower, and widening it again brings the content back.
-// The height of the row is that of its tallest child, but never less than the row's own minimum height, and a child
-// that carries a minimum height of its own in its unison.FlexLayoutData counts at that height. That is the same place a
-// minimum height is read from when the parent is a column laid out by a unison.FlexLayout, so a block's minimum height
-// lives in exactly one place no matter which kind of container holds it.
+// save that no child is made narrower than layoutMinBlockWidth; what pinning a child there costs comes out of the
+// children that still have room to give. Content that no longer fits its block is clipped by that block: that is what
+// the user asked for by making it narrower, and widening it again brings the content back. The height of the row is
+// that of its tallest child, but never less than the row's own minimum height, and a child that carries a minimum
+// height of its own in its unison.FlexLayoutData counts at that height -- the same place a minimum height is read from
+// when the parent is a column laid out by a unison.FlexLayout, so a block's minimum height lives in exactly one place.
 //
 // A child marked square is the exception to the weights: its width is taken from the height of the row instead, so that
 // its content -- its frame less its border insets -- comes out square whatever the page size and the fonts make of the
@@ -143,9 +141,8 @@ func (r *weightedRowLayout) distribute(widths []float32, indexes []int, pool flo
 
 // heightOf returns the height the row comes to with its children at the given widths: the tallest of them, measured at
 // the width each is actually given, with a child that carries a minimum height of its own counted at that height, and
-// never less than the row's own minimum height. A square child counts here like any other: what it asks for -- the
-// portrait's fixed natural height, or a minimum height of its own -- is a floor the row can't go below, even though
-// what the row settles on is then what decides how wide that child is.
+// never less than the row's own minimum height. A square child counts here like any other -- what it asks for is a
+// floor the row can't go below -- even though what the row settles on is then what decides how wide that child is.
 func (r *weightedRowLayout) heightOf(children []*unison.Panel, widths []float32) float32 {
 	height := r.minHeight
 	for i, child := range children {
@@ -161,8 +158,8 @@ func (r *weightedRowLayout) heightOf(children []*unison.Panel, widths []float32)
 
 // split returns the indexes of the children that take their width from the height of the row and the indexes of the
 // ones that divide up what is left, or nil for both when the row has nothing to reconcile: no square child at all, or
-// nothing but square children. Telling that apart costs nothing, which is what lets a row that has no square child in
-// it hand out its widths without measuring anything.
+// nothing but square children. Telling that apart costs nothing, which is what lets a row with no square child hand
+// out its widths without measuring anything.
 func (r *weightedRowLayout) split(count int) (squares, others []int) {
 	found := false
 	for i := range count {
@@ -191,11 +188,11 @@ func (r *weightedRowLayout) split(count int) (squares, others []int) {
 
 // widthsAt returns the width to give each of the given children when the row has the given amount of space to divide
 // among them and stands at the given height. That is the weights alone unless a square child has to have its width
-// worked out from the height, which is the only case where anything has to be measured to place the children. The
-// arrangement the row was measured with is what decides it when the row stands at the height that measurement arrived
-// at, so that measuring and placing can't disagree. A row standing at any other height -- one a column has stretched
-// to the bottom of a taller sibling, say -- squares its square children at the height it actually has instead, since
-// that is the height every child of it is about to be given, and the other children divide up what is then left.
+// worked out from the height, the only case where anything has to be measured to place the children. When the row
+// stands at the height its measurement arrived at, the arrangement it was measured with decides, so that measuring and
+// placing can't disagree. A row standing at any other height -- one a column has stretched to the bottom of a taller
+// sibling, say -- squares its square children at the height it actually has, since that is the height every child of
+// it is about to be given, and the other children divide up what is then left.
 func (r *weightedRowLayout) widthsAt(children []*unison.Panel, avail, height float32) []float32 {
 	count := len(children)
 	squares, others := r.split(count)
@@ -241,9 +238,8 @@ func squareWidth(child *unison.Panel, height float32) float32 {
 // has to be a pure function of what it is given so that measuring and placing can't disagree, so rather than iterating
 // to a fixed point it stops after a set number of passes. A row whose height was still moving then reports the greater
 // of the height its square children were fitted at and the height its children ask for at the widths it is handing
-// out, so that nothing is ever clipped. What is left is that the square children come out short of square by however
-// much the last pass would still have moved the height: a little squareness is traded for a bounded cost, and a row
-// that is still moving after that many passes is one whose wrapping is chasing its own tail.
+// out, so that nothing is ever clipped; the square children come out short of square by however much the last pass
+// would still have moved the height, trading a little squareness for a bounded cost.
 func (r *weightedRowLayout) arrange(children []*unison.Panel, avail float32) (widths []float32, height float32) {
 	count := len(children)
 	widths = r.widths(count, avail)
@@ -293,8 +289,8 @@ func (r *weightedRowLayout) fitSquares(children []*unison.Panel, widths []float3
 }
 
 // applySquareWidths gives each of the square children the width that squares its content at the given height, leaving
-// room for the other children to keep the narrowest they may be. The square children are served in order, so an earlier
-// one gets what it asks for and a later one gets whatever is still going.
+// room for the other children to keep the narrowest they may be. The square children are served in order, so an
+// earlier one gets what it asks for and a later one gets whatever is still going.
 func (r *weightedRowLayout) applySquareWidths(children []*unison.Panel, widths []float32, squares []int,
 	otherCount int, pool, height float32,
 ) {

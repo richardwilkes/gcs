@@ -42,7 +42,7 @@ func serveBytes(t *testing.T, payload []byte) (*httptest.Server, Asset) {
 	}
 }
 
-// TestDownload verifies the happy path, including that progress is reported and ends at the full size.
+// The happy path, including that progress is reported and ends at the full size.
 func TestDownload(t *testing.T) {
 	c := check.New(t)
 	payload := []byte("a plausible archive of some length")
@@ -63,8 +63,7 @@ func TestDownload(t *testing.T) {
 	c.Equal(int64(len(payload)), last, "progress must finish at the full size")
 }
 
-// TestDownloadRejectsATamperedPayload is the check that matters: a body that is not what GitHub published must never
-// reach the disk as if it were.
+// The check that matters: a body that is not what GitHub published must never reach the disk as if it were.
 func TestDownloadRejectsATamperedPayload(t *testing.T) {
 	c := check.New(t)
 	_, asset := serveBytes(t, []byte("the real archive"))
@@ -75,8 +74,8 @@ func TestDownloadRejectsATamperedPayload(t *testing.T) {
 	c.False(exists(dst), "a failed integrity check must not leave the file behind")
 }
 
-// TestDownloadRejectsAWrongLength verifies both directions of the length check. A short body is a truncated transfer; a
-// long one means the response is not the asset that was described.
+// Both directions of the length check: a short body is a truncated transfer, a long one means the response is not the
+// asset that was described.
 func TestDownloadRejectsAWrongLength(t *testing.T) {
 	c := check.New(t)
 	payload := []byte("0123456789")
@@ -93,8 +92,8 @@ func TestDownloadRejectsAWrongLength(t *testing.T) {
 	}
 }
 
-// TestDownloadRejectsAnErrorResponse verifies that an HTTP error is reported as one, rather than the error page being
-// written out and handed to the extractor as though it were an archive.
+// An HTTP error must be reported as one, rather than the error page being written out and handed to the extractor as
+// though it were an archive.
 func TestDownloadRejectsAnErrorResponse(t *testing.T) {
 	c := check.New(t)
 	for _, code := range []int{http.StatusNotFound, http.StatusForbidden, http.StatusInternalServerError} {
@@ -114,8 +113,8 @@ func TestDownloadRejectsAnErrorResponse(t *testing.T) {
 	}
 }
 
-// TestDownloadRefusesWithoutAChecksum verifies that an unverifiable asset is never fetched at all. Preflight already
-// refuses these, so reaching here would mean a caller bypassed it.
+// An unverifiable asset is never fetched at all. Preflight already refuses these, so reaching here would mean a caller
+// bypassed it.
 func TestDownloadRefusesWithoutAChecksum(t *testing.T) {
 	c := check.New(t)
 	_, asset := serveBytes(t, []byte("content"))
@@ -125,8 +124,8 @@ func TestDownloadRefusesWithoutAChecksum(t *testing.T) {
 	c.False(exists(dst))
 }
 
-// TestDownloadStopsWhenCanceled verifies that the Cancel button actually stops the transfer and cleans up, rather than
-// leaving a partial file that a later run might find.
+// The Cancel button must actually stop the transfer and clean up, rather than leaving a partial file that a later run
+// might find.
 func TestDownloadStopsWhenCanceled(t *testing.T) {
 	c := check.New(t)
 	release := make(chan struct{})
@@ -163,8 +162,8 @@ func TestDownloadStopsWhenCanceled(t *testing.T) {
 	c.False(exists(dst), "a canceled download must not leave a partial file behind")
 }
 
-// TestDownloadRefusesAnExistingDestination verifies that the destination is created exclusively, so two updates racing
-// in the same staging directory cannot interleave into one file.
+// The destination is created exclusively, so two updates racing in the same staging directory cannot interleave into
+// one file.
 func TestDownloadRefusesAnExistingDestination(t *testing.T) {
 	c := check.New(t)
 	_, asset := serveBytes(t, []byte("content"))

@@ -20,7 +20,7 @@ type Preconfigurable interface {
 	SetPreconfigured(bool)
 }
 
-// preconfigurable self contained Preconfigurable implementation that can be embedded in another struct in this package
+// preconfigurable is a self-contained Preconfigurable implementation for embedding in other structs in this package.
 type preconfigurable struct {
 	Preconfigured bool `json:"preconfigured,omitzero"`
 }
@@ -61,8 +61,9 @@ func IsNodePreconfigurable[T Node[T]](node T) bool {
 	return false
 }
 
-// IsNodePreconfigured reports whether the given node has been marked as preconfigured, meaning its modifiers and nameable
-// replacements are considered already finalized and shouldn't be prompted for again (e.g. when applying a template).
+// IsNodePreconfigured reports whether the given node has been marked as preconfigured, meaning its modifiers and
+// nameable replacements are considered already finalized and shouldn't be prompted for again (e.g. when applying a
+// template).
 func IsNodePreconfigured[T Node[T]](node T) bool {
 	if tl, ok := any(node).(Preconfigurable); ok && !xreflect.IsNil(tl) {
 		return tl.IsPreconfigured()

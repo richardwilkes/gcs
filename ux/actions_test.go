@@ -22,8 +22,8 @@ import (
 )
 
 // keyBindingRegistrars names the functions in actions.go that take a key binding ID as their first argument. Every
-// registration helper must be listed here, or TestKeyBindingIDsAreUnique cannot see the IDs it registers; the test
-// fails on a binding that is registered but not found in the source, which catches a helper that is missing.
+// registration helper must be listed here, or TestKeyBindingIDsAreUnique cannot see the IDs it registers; that test
+// fails on a binding registered but not found in the source, which catches a helper missing from this list.
 var keyBindingRegistrars = map[string]bool{
 	"registerKeyBindableAction": true,
 	"registerFocusAction":       true,
@@ -31,7 +31,6 @@ var keyBindingRegistrars = map[string]bool{
 	"registerSheetAction":       true,
 }
 
-// TestKeyBindingIDsAreUnique verifies that no two actions are registered with the same key binding ID.
 // gurps.RegisterKeyBinding silently ignores a duplicate ID, so an action that reuses one is never added to the binding
 // set: it can't be seen or assigned a binding in the Menu Keys settings, KeyBindings.MakeCurrent() never updates it,
 // and any binding the user assigns to that ID applies only to the action that claimed it first.
@@ -57,8 +56,8 @@ func TestKeyBindingIDsAreUnique(t *testing.T) {
 	}
 }
 
-// TestEquipmentLibraryActionsAreSeparatelyBindable verifies that the two similarly-named equipment library actions each
-// have their own key binding, since they were once registered with the same ID.
+// The two similarly-named equipment library actions must each have their own key binding; they were once registered
+// with the same ID.
 func TestEquipmentLibraryActionsAreSeparatelyBindable(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
@@ -109,9 +108,9 @@ func keyBindingIDsInSource(c check.Checker) []string {
 	return ids
 }
 
-// TestLibraryActionsOpenAnEmptyLibraryOfTheirKind verifies that each "New … Library" action opens a new, empty library
-// dockable of its own kind under the expected name. One helper builds all seven from a file name and a constructor, so
-// a slip there would hand a menu item another kind of library.
+// Each "New … Library" action must open a new, empty library dockable of its own kind under the expected name. One
+// helper builds all seven from a file name and a constructor, so a slip there would hand a menu item another kind of
+// library.
 func TestLibraryActionsOpenAnEmptyLibraryOfTheirKind(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -143,8 +142,8 @@ func TestLibraryActionsOpenAnEmptyLibraryOfTheirKind(t *testing.T) {
 	}
 }
 
-// TestPerSheetSettingsActionsFollowTheActiveSheet verifies that the per-sheet settings actions are disabled while no
-// character sheet is active and, once one is, open their settings editor for that sheet rather than for the defaults.
+// The per-sheet settings actions must be disabled while no character sheet is active and, once one is, open their
+// settings editor for that sheet rather than for the defaults.
 func TestPerSheetSettingsActionsFollowTheActiveSheet(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -206,9 +205,9 @@ func TestPerSheetSettingsActionsFollowTheActiveSheet(t *testing.T) {
 	}
 }
 
-// TestUndoAndRedoActionsDriveTheActiveWindowUndoManager verifies that the Undo and Redo actions take their enabled
-// state and titles from the active window's undo manager and perform the matching operation on it. Both actions are
-// built by one helper handed the undo manager's methods, so this is what catches the two being wired to each other's.
+// Undo and Redo must take their enabled state and titles from the active window's undo manager and perform the
+// matching operation on it. Both are built by one helper handed the undo manager's methods, so this is what catches the
+// two being wired to each other's.
 func TestUndoAndRedoActionsDriveTheActiveWindowUndoManager(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)

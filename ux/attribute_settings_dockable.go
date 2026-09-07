@@ -27,7 +27,7 @@ type attributeSettingsDockable struct {
 	owner EntityPanel
 }
 
-// ShowAttributeSettings the Attribute Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
+// ShowAttributeSettings shows the Attribute Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowAttributeSettings(owner EntityPanel) {
 	if Activate(func(d unison.Dockable) bool {
 		if s, ok := d.AsPanel().Self.(*attributeSettingsDockable); ok && owner == s.owner {
@@ -67,8 +67,8 @@ func newAttributeSettingsDockable(owner EntityPanel, defs *gurps.AttributeDefs) 
 	return d
 }
 
-// attributeSettingsTabTitle returns the tab title to use for the attribute settings of the given owner, or for the
-// defaults when the owner is nil.
+// attributeSettingsTabTitle returns the tab title for the owner's attribute settings, or for the defaults when the
+// owner is nil.
 func attributeSettingsTabTitle(owner EntityPanel) string {
 	if owner == nil {
 		return i18n.Text("Default Attributes")
@@ -137,7 +137,6 @@ func (d *attributeSettingsDockable) addAttributeDef() *gurps.AttributeDef {
 	return attrDef
 }
 
-// buildContent fills the content with a panel per attribute definition, in order.
 func (d *attributeSettingsDockable) buildContent() {
 	for _, def := range d.model.List(false) {
 		d.content.AddChild(newAttrDefSettingsPanel(d, def))

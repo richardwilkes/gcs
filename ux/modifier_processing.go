@@ -48,14 +48,11 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 		// prompt in this very loop asked for, since toggling a modifier can add or take away the switch column and a
 		// list can only change its columns by building a new table. An orphaned table has no Rebuildable above it, so
 		// the rebuild would silently be skipped; looking the live table up first keeps every prompt's answer reflected.
-		// The lookup is made without regard for T, so that it holds up for any owner rather than only for one whose row
-		// type happens to match the rows handed in.
 		owner = liveOwner(owner)
 		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](owner), true)
 	}
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
-			// If the row is preconfigured, bypass processing
 			if gurps.IsNodePreconfigured(row) {
 				return false
 			}
@@ -76,9 +73,8 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 
 // minimalNodes returns the given rows with any row that is a descendant of another of them left out. ProcessModifiers
 // walks everything below each row it is handed, so a container and one of its own descendants both being present would
-// prompt for that descendant twice. This is the same reduction the selection-driven callers get for free from
-// SelectedRows(true); a caller that assembles its own list of rows -- the alternate drop handlers -- has to make it for
-// itself.
+// prompt for that descendant twice. This is the same reduction SelectedRows(true) makes for the selection-driven
+// callers; a caller that assembles its own list of rows -- the alternate drop handlers -- has to make it for itself.
 func minimalNodes[T gurps.Node[T]](rows []T) []T {
 	if len(rows) < 2 {
 		return rows

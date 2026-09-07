@@ -43,15 +43,15 @@ func Start(files []string) {
 			} else {
 				unison.DefaultTitleIcons = []*unison.Image{appIcon}
 			}
-			// Settle up after an update applied while this application was not running, before anything else has a
-			// chance to look at the installation directory. This runs only in the primary instance, since the handoff
-			// service has already decided that by the time this callback fires.
+			// Settle up after an update applied while this application was not running, before anything else looks at
+			// the installation directory. Only the primary instance gets here, since the handoff service has already
+			// decided that by the time this callback fires.
 			ReportAppUpdateOutcome()
 			if gurps.GlobalSettings().General.AppUpdateCheck.ChecksAtLaunch() {
 				CheckForAppUpdates()
 			}
-			// The repeating checks are started from here, on the UI thread and after unison is up, since that is where
-			// their ticks are delivered and where the state they touch may only be read.
+			// The repeating checks are started here, on the UI thread and after unison is up, since that is where their
+			// ticks are delivered and where the state they touch may only be read.
 			ApplyUpdateCheckSettings()
 			wnd, err := unison.NewWindow(xos.AppName)
 			xos.ExitIfErr(err)

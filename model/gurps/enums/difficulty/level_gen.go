@@ -112,7 +112,7 @@ func ExtractLevel(str string) Level {
 
 // ExtractKnownLevel extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractLevel, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// Unlike ExtractLevel, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
 // that is dispatching on the type to detect unknown types.
 func ExtractKnownLevel(str string) (value Level, known bool) {
 	for _, enum := range Levels {

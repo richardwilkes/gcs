@@ -21,8 +21,8 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 )
 
-// newScrollPanDragFixture builds a 100x100 scroll panel over 500x400 content, laid out so the scroll bars have a real
-// range, and returns the pan state wired to it.
+// newScrollPanDragFixture builds a 100x100 scroll panel over 500x400 content, so the scroll bars have a real range, and
+// returns the pan state wired to it.
 func newScrollPanDragFixture() (*scrollPanDrag, *unison.ScrollPanel, *unison.Panel) {
 	content := unison.NewPanel()
 	content.SetSizer(func(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
@@ -41,8 +41,8 @@ func scrollPosition(scroll *unison.ScrollPanel) geom.Point {
 	return geom.NewPoint(h, v)
 }
 
-// TestScrollPanDragFollowsThePointer verifies that dragging the content moves the scroll position by the same amount
-// the pointer moved, in the opposite direction, so the content stays under the pointer.
+// TestScrollPanDragFollowsThePointer checks that dragging moves the scroll position by the amount the pointer moved, in
+// the opposite direction, so the content stays under the pointer.
 func TestScrollPanDragFollowsThePointer(t *testing.T) {
 	c := check.New(t)
 	pan, scroll, content := newScrollPanDragFixture()
@@ -69,7 +69,7 @@ func TestScrollPanDragFollowsThePointer(t *testing.T) {
 	c.False(pan.active)
 }
 
-// TestScrollPanDragStartsFromTheCurrentPosition verifies that a drag begun while already scrolled offsets from that
+// TestScrollPanDragStartsFromTheCurrentPosition checks that a drag begun while already scrolled offsets from that
 // position rather than from the origin, and that scrolling is clamped at the end of the content.
 func TestScrollPanDragStartsFromTheCurrentPosition(t *testing.T) {
 	c := check.New(t)
@@ -86,7 +86,6 @@ func TestScrollPanDragStartsFromTheCurrentPosition(t *testing.T) {
 	c.Equal(geom.NewPoint(400, 300), scrollPosition(scroll))
 }
 
-// TestScrollPanDragCursor verifies the move cursor is shown only while a drag is in progress.
 func TestScrollPanDragCursor(t *testing.T) {
 	c := check.New(t)
 	pan, _, _ := newScrollPanDragFixture()
@@ -97,8 +96,8 @@ func TestScrollPanDragCursor(t *testing.T) {
 	c.Equal(unison.ArrowCursor(), pan.cursor())
 }
 
-// TestScrollPanDragInstall verifies that install wires the pan state to the scroll panel and content, and that the
-// callbacks it sets on the content drive the drag: a mouse-down begins it, a mouse-drag pans, and a mouse-up ends it.
+// TestScrollPanDragInstall checks that install wires the pan state up and that the callbacks it sets on the content
+// drive the drag: a mouse-down begins it, a mouse-drag pans and a mouse-up ends it.
 func TestScrollPanDragInstall(t *testing.T) {
 	c := check.New(t)
 	_, scroll, content := newScrollPanDragFixture()
@@ -122,9 +121,9 @@ func TestScrollPanDragInstall(t *testing.T) {
 	c.Equal(unison.ArrowCursor(), content.UpdateCursorCallback(geom.Point{}))
 }
 
-// TestDockablesPanOnDrag verifies that dragging the content of the image and markdown dockables pans their scroll
-// panels. The markdown dockable once installed the mouse handlers without wiring the pan state to its scroll panel,
-// so a mouse-down on it dereferenced a nil scroll panel and panicked.
+// TestDockablesPanOnDrag checks that dragging the content of the image and markdown dockables pans their scroll panels.
+// The markdown dockable once installed the mouse handlers without wiring the pan state to its scroll panel, so a
+// mouse-down on it dereferenced a nil scroll panel and panicked.
 func TestDockablesPanOnDrag(t *testing.T) {
 	c := check.New(t)
 	svgPath := filepath.Join(t.TempDir(), "image.svg")

@@ -56,7 +56,7 @@ func (a *Attributes) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// Clone a copy of this.
+// Clone returns a copy of this Attributes, bound to the given Entity.
 func (a *Attributes) Clone(entity *Entity) *Attributes {
 	clone := &Attributes{Set: make(map[string]*Attribute)}
 	for k, v := range a.Set {

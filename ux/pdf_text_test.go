@@ -25,9 +25,9 @@ import (
 const pdfTextSampleString = "Hello World"
 
 // pdfTextSamplePDF is a one-page 200x100 pt document that draws pdfTextSampleString in 24 pt Helvetica, a standard-14
-// font that needs nothing embedded. It is spelled out here rather than being carried as a test file so that what the
-// assertions below rely on is visible right next to them. No xref is supplied (startxref 0), so the engine rebuilds
-// one, which is why the object offsets don't have to be maintained by hand. The content stream's /Length is exact.
+// font that needs nothing embedded. It is spelled out here rather than carried as a test file so that what the
+// assertions below rely on is visible next to them. No xref is supplied (startxref 0), so the engine rebuilds one and
+// the object offsets don't have to be maintained by hand. The content stream's /Length is exact.
 const pdfTextSamplePDF = `%PDF-1.7
 1 0 obj
 << /Type /Catalog /Pages 2 0 R >>
@@ -59,19 +59,18 @@ startxref
 `
 
 // newPDFTextSampleRenderer writes pdfTextSamplePDF to a temporary file and opens a renderer over it, closing the
-// renderer when the test ends. A scale adjustment of 1 is used so that the logical space the renderer's public API
-// speaks in and the pixel space the extracted text works in are the same, which lets the assertions talk about
-// coordinates without having to undo a scaling first. The callbacks do nothing: these tests drive the extraction
-// themselves rather than waiting to be told about it.
+// renderer when the test ends. A scale adjustment of 1 makes the logical space the renderer's public API speaks in and
+// the pixel space the extracted text works in the same, so the assertions can talk about coordinates without undoing a
+// scaling first. The callbacks do nothing: these tests drive the extraction themselves.
 func newPDFTextSampleRenderer(t *testing.T) *PDFRenderer {
 	t.Helper()
 	return newPDFTextSampleRendererAtScale(t, geom.NewPoint(1, 1))
 }
 
 // newPDFTextSampleRendererAtScale is newPDFTextSampleRenderer with the image scale adjustment spelled out. That
-// adjustment is what a display's pixel density produces -- 1 on an ordinary display, 0.5 on a Retina one -- and it is
-// the whole of the difference between the pixel space the extracted text works in and the logical space the renderer's
-// public API speaks in, so a test that wants to see that conversion actually happen asks for a scale that isn't 1.
+// adjustment is what a display's pixel density produces -- 1 on an ordinary display, 0.5 on a Retina one -- and is the
+// whole of the difference between the extracted text's pixel space and the renderer's logical space, so a test that
+// wants to see that conversion happen asks for a scale that isn't 1.
 func newPDFTextSampleRendererAtScale(t *testing.T, scaleAdjust geom.Point) *PDFRenderer {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "sample.pdf")
@@ -88,13 +87,12 @@ func newPDFTextSampleRendererAtScale(t *testing.T, scaleAdjust geom.Point) *PDFR
 
 // pdfBlockSharedQueue occupies the shared render queue's single worker for the remainder of the test, so that work a
 // renderer hands to the queue stays queued instead of being done behind the test's back. The accessors that answer a
-// live interaction -- SearchMatches among them -- ask for a page's text extraction through the queue rather than
-// leaving it to the caller, and a test that wants to see the request sitting there, and to decide for itself when it
-// gets answered, can't have the worker racing it to the answer.
+// live interaction -- SearchMatches among them -- ask for a page's text extraction through the queue, and a test that
+// wants to see the request sitting there can't have the worker racing it to the answer.
 //
-// Call this before opening the renderer under test. Cleanups run in reverse order, so that has the renderer closed --
-// which is what takes it back out of the queue -- while the worker is still parked here, rather than the worker being
-// let loose on a renderer that is in the middle of being closed.
+// Call this before opening the renderer under test. Cleanups run in reverse order, so that closes the renderer --
+// taking it back out of the queue -- while the worker is still parked here, rather than letting the worker loose on a
+// renderer in the middle of being closed.
 func pdfBlockSharedQueue(t *testing.T) {
 	t.Helper()
 	started := make(chan string)
@@ -105,12 +103,12 @@ func pdfBlockSharedQueue(t *testing.T) {
 }
 
 // TestPDFRendererPagePointFromPointRoundTrip pins that pagePointFromPoint is the exact inverse of the scaling
-// rectFromPageRect applies. Hit-testing a click against the extracted text runs a coordinate the other way through the
-// same conversion the highlights and search hits come out of, so any disagreement between the two would show up as a
-// caret that lands a pixel away from where the selection it belongs to is drawn.
+// rectFromPageRect applies. Hit-testing a click runs a coordinate the other way through the same conversion the
+// highlights and search hits come out of, so a disagreement would show up as a caret landing a pixel away from where
+// the selection it belongs to is drawn.
 func TestPDFRendererPagePointFromPointRoundTrip(t *testing.T) {
-	// A half-scale adjustment is what a Retina display produces, and it is the case a rounding mistake shows up in:
-	// every odd pixel coordinate lands on a half in logical space.
+	// A half-scale adjustment is what a Retina display produces, and is where a rounding mistake shows up: every odd
+	// pixel coordinate lands on a half in logical space.
 	p := &PDFRenderer{scaleAdjust: geom.NewPoint(0.5, 0.5)}
 	for _, r := range []image.Rectangle{
 		image.Rect(0, 0, 1, 1),
@@ -126,8 +124,8 @@ func TestPDFRendererPagePointFromPointRoundTrip(t *testing.T) {
 }
 
 // TestPDFRendererTextUnextracted pins that a page nobody has asked about yet reports its length as unknown rather than
-// as zero. The distinction is what lets the dockable tell "there is no text here" apart from "the text isn't ready
-// yet", and therefore whether it should try again once the text extracted callback fires.
+// as zero. The distinction lets the dockable tell "there is no text here" from "the text isn't ready yet", and so
+// whether to try again once the text extracted callback fires.
 func TestPDFRendererTextUnextracted(t *testing.T) {
 	pdf := newPDFTextSampleRenderer(t)
 	if length, known := pdf.TextLength(0); known {
@@ -137,8 +135,8 @@ func TestPDFRendererTextUnextracted(t *testing.T) {
 
 // TestPDFRendererTextExtraction runs a real document all the way through the text path: the request, the extraction on
 // what would be the queue's worker, and then every accessor the selection UI uses. The extraction is driven directly
-// rather than through the queue so that the test doesn't depend on the shared queue's timing; requestText is the same
-// bookkeeping RequestText does under the lock, minus the submission that would hand the work to the worker.
+// so that the test doesn't depend on the shared queue's timing; requestText is the same bookkeeping RequestText does
+// under the lock, minus the submission that would hand the work to the worker.
 func TestPDFRendererTextExtraction(t *testing.T) {
 	pdf := newPDFTextSampleRenderer(t)
 	if pdf.extractNextText() {
@@ -180,7 +178,7 @@ func TestPDFRendererTextExtraction(t *testing.T) {
 	}
 
 	// Clicking in the middle of the rectangle the first character paints in has to put the caret at one end of that
-	// character, since there is nothing else there to land on.
+	// character, since there is nothing else to land on.
 	first := pdf.TextHighlights(0, 0, 1)
 	if len(first) != 1 {
 		t.Fatalf("the first character painted as %d rectangles, want 1: %v", len(first), first)
@@ -210,16 +208,15 @@ func TestPDFRendererTextExtraction(t *testing.T) {
 }
 
 // pdfTextRequestState reports what the renderer's text bookkeeping holds: the pages whose text has been asked for but
-// not yet extracted, and how many pages the text cache holds. Both live under the lock, which is where they are read
-// from here.
+// not yet extracted, and how many pages the text cache holds. Both live under the lock.
 func pdfTextRequestState(p *PDFRenderer) (want []int, cached int) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	return slices.Clone(p.textWant), len(p.textCache)
 }
 
-// pdfExtractSamplePage extracts the sample document's only page, the same way the tests above do it: the request is
-// recorded under the lock and the extraction is driven directly, so that neither depends on the shared queue.
+// pdfExtractSamplePage extracts the sample document's only page the way the tests above do: the request is recorded
+// under the lock and the extraction is driven directly, so that neither depends on the shared queue.
 func pdfExtractSamplePage(t *testing.T, pdf *PDFRenderer) {
 	t.Helper()
 	pdf.lock.Lock()
@@ -230,9 +227,9 @@ func pdfExtractSamplePage(t *testing.T, pdf *PDFRenderer) {
 	}
 }
 
-// TestPDFRendererSearchMatchesEmptySearch pins that drawing a document nobody is searching costs nothing. Every visible
-// page asks for its matches on every frame, so an empty search has to be answered on the spot, without pulling the text
-// of each page that scrolls past into memory to prove there is nothing to find.
+// TestPDFRendererSearchMatchesEmptySearch pins that drawing a document nobody is searching costs nothing. Every
+// visible page asks for its matches on every frame, so an empty search has to be answered on the spot, without pulling
+// the text of each page that scrolls past into memory to prove there is nothing to find.
 func TestPDFRendererSearchMatchesEmptySearch(t *testing.T) {
 	pdfBlockSharedQueue(t)
 	pdf := newPDFTextSampleRenderer(t)
@@ -254,13 +251,13 @@ func TestPDFRendererSearchMatchesEmptySearch(t *testing.T) {
 
 // TestPDFRendererSearchMatches runs the whole of the search path against a real document: the ask that arrives before
 // there is anything to search, the extraction it puts in the queue, and then the hits themselves. The rectangles are
-// compared against what the page's text reports directly, which is the same answer a render-time search used to bake
-// into the image -- the point of moving the search out of the rendering being that the answer doesn't change.
+// compared against what the page's text reports directly -- the same answer a render-time search used to bake into the
+// image, since the point of moving the search out of the rendering was that the answer doesn't change.
 func TestPDFRendererSearchMatches(t *testing.T) {
 	pdfBlockSharedQueue(t)
 	pdf := newPDFTextSampleRenderer(t)
 
-	// Nothing has been extracted, so there is no answer yet -- and asking is what puts the extraction in the queue.
+	// Nothing has been extracted, so there is no answer yet -- and asking puts the extraction in the queue.
 	if matches, ok := pdf.SearchMatches(0, "Hello"); ok || matches != nil {
 		t.Errorf("searching page 0 answered %v ok=%v before its text was extracted", matches, ok)
 	}
@@ -288,9 +285,9 @@ func TestPDFRendererSearchMatches(t *testing.T) {
 	}
 }
 
-// TestPDFRendererSearchMatchesNeedles pins what each kind of needle finds on the fixture's one line. The whitespace-only
-// needle is the one worth having: the search field is a text field like any other, so a space typed into it must not
-// light up every gap on the page.
+// TestPDFRendererSearchMatchesNeedles pins what each kind of needle finds on the fixture's one line. The
+// whitespace-only needle is the one worth having: the search field is a text field like any other, so a space typed
+// into it must not light up every gap on the page.
 func TestPDFRendererSearchMatchesNeedles(t *testing.T) {
 	pdfBlockSharedQueue(t)
 	pdf := newPDFTextSampleRenderer(t)
@@ -324,8 +321,8 @@ func TestPDFRendererSearchMatchesNeedles(t *testing.T) {
 }
 
 // TestPDFRendererSearchMatchesCached pins that the matcher runs once per page per search rather than once per frame.
-// Drawing asks for the matches of every visible page on every frame, so an answer that was recomputed each time would
-// be doing the work of the whole visible document over and over while the search text sits still.
+// Drawing asks for the matches of every visible page on every frame, so an answer recomputed each time would redo the
+// work of the whole visible document over and over while the search text sits still.
 func TestPDFRendererSearchMatchesCached(t *testing.T) {
 	pdfBlockSharedQueue(t)
 	pdf := newPDFTextSampleRenderer(t)
@@ -349,8 +346,7 @@ func TestPDFRendererSearchMatchesCached(t *testing.T) {
 		t.Errorf("searching for %q found the same rectangle %v that %q did", "World", other[0], "Hello")
 	}
 
-	// ...which means coming back to the first search recomputes it, rather than the two answers being confused for
-	// each other.
+	// ...which means coming back to the first search recomputes it, rather than confusing the two answers.
 	again, _ := pdf.SearchMatches(0, "Hello")
 	if !reflect.DeepEqual(again, first) {
 		t.Errorf("searching page 0 for %q a second time found %v, want %v", "Hello", again, first)
@@ -360,9 +356,9 @@ func TestPDFRendererSearchMatchesCached(t *testing.T) {
 	}
 }
 
-// TestPDFRendererSearchMatchesScaled pins that the hits come back in the logical space the view draws in rather than in
-// the pixel space the extracted text works in. On a Retina display the two differ by a factor of two, so a conversion
-// that was skipped would put every underline at twice the offset and twice the size of the text it belongs to.
+// TestPDFRendererSearchMatchesScaled pins that the hits come back in the logical space the view draws in rather than
+// the pixel space the extracted text works in. On a Retina display the two differ by a factor of two, so a skipped
+// conversion would put every underline at twice the offset and twice the size of the text it belongs to.
 func TestPDFRendererSearchMatchesScaled(t *testing.T) {
 	scaleAdjust := geom.NewPoint(0.5, 0.5)
 	pdfBlockSharedQueue(t)
@@ -393,11 +389,10 @@ func TestPDFRendererSearchMatchesScaled(t *testing.T) {
 	}
 }
 
-// TestPDFRendererSearchLeavesRenderedPagesAlone is the regression pin for what this whole arrangement is for: typing in
-// the search field must not disturb what has been rendered. The hits used to come out of the rendering, so every
+// TestPDFRendererSearchLeavesRenderedPagesAlone is the regression pin for what this whole arrangement is for: typing
+// in the search field must not disturb what has been rendered. The hits used to come out of the rendering, so every
 // keystroke marked every visible page stale and put the "Rendering page N…" overlay back up over pages that were
-// already on screen. The page is rendered here for real -- the fixture is small enough that a real image is no trouble
-// -- and then searched, one keystroke's worth of search text at a time.
+// already on screen. The page is rendered here for real and then searched, one keystroke at a time.
 func TestPDFRendererSearchLeavesRenderedPagesAlone(t *testing.T) {
 	pdfBlockSharedQueue(t)
 	pdf := newPDFTextSampleRenderer(t)
@@ -414,7 +409,7 @@ func TestPDFRendererSearchLeavesRenderedPagesAlone(t *testing.T) {
 	for _, search := range []string{"H", "He", "Hel", "Hell", "Hello", "Hello ", "Hello W"} {
 		if _, ok := pdf.SearchMatches(0, search); !ok {
 			// Only the first keystroke has any extraction to wait for; the rest are answered from the text it brought
-			// in, which is what makes searching as you type free of the queue entirely.
+			// in, which is what keeps searching as you type off the queue entirely.
 			if search != "H" {
 				t.Fatalf("searching for %q had to wait for a text extraction of its own", search)
 			}
@@ -437,7 +432,7 @@ func TestPDFRendererSearchLeavesRenderedPagesAlone(t *testing.T) {
 	}
 
 	// The same holds for the wanted set being handed over again unchanged, which is what the view does on every scroll
-	// and every resize: nothing is re-rendered and nothing goes back to pending.
+	// and resize: nothing is re-rendered and nothing goes back to pending.
 	pdf.SetWantedPages([]int{0})
 	if again := pdf.CachedPage(0); again != page {
 		t.Error("asking for the same wanted pages again replaced the rendered page")
@@ -449,8 +444,8 @@ func TestPDFRendererSearchLeavesRenderedPagesAlone(t *testing.T) {
 
 // TestPDFRendererTextCacheHoldsCap pins that the text cache stays within its cap no matter how many pages are paged
 // through. storeText is exercised directly rather than through recordText, since recordText also fires the callback
-// and talks to the shared render queue, neither of which a bare renderer has any business doing. A nil text stands in
-// for the extracted text, which the eviction bookkeeping never looks at.
+// and talks to the shared render queue. A nil text stands in for the extracted text, which the eviction bookkeeping
+// never looks at.
 func TestPDFRendererTextCacheHoldsCap(t *testing.T) {
 	p := &PDFRenderer{textCache: make(map[int]*pdfTextEntry)}
 	for pageNumber := range maxPDFTextPages * 3 {
@@ -469,7 +464,7 @@ func TestPDFRendererTextCacheHoldsCap(t *testing.T) {
 }
 
 // TestPDFRendererTextCacheEvictsLeastRecentlyUsed pins that it is the least recently used page that goes, rather than
-// the one stored the longest ago. A page being read from is a page the selection is still working with, so touching it
+// the one stored the longest ago. A page being read from is one the selection is still working with, so touching it
 // has to move it out of harm's way.
 func TestPDFRendererTextCacheEvictsLeastRecentlyUsed(t *testing.T) {
 	p := &PDFRenderer{textCache: make(map[int]*pdfTextEntry)}

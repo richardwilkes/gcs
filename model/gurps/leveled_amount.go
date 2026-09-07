@@ -26,7 +26,8 @@ type LeveledAmount struct {
 	PerLevel     bool         `json:"per_level,omitzero"`
 }
 
-// AdjustedAmount returns the amount, adjusted for level, if requested.
+// AdjustedAmount returns the amount, multiplied by the owner's current level when PerLevel is set. In that case, 0 is
+// returned if there is no owner or its level isn't positive.
 func (l *LeveledAmount) AdjustedAmount() fxp.Int {
 	if l.PerLevel {
 		if xreflect.IsNil(l.LeveledOwner) {
@@ -41,7 +42,7 @@ func (l *LeveledAmount) AdjustedAmount() fxp.Int {
 	return l.Amount
 }
 
-// Format the value.
+// Format returns the adjusted amount as a string, noting the per-level amount when PerLevel is set.
 func (l *LeveledAmount) Format() string {
 	amt := l.Amount.StringWithSign()
 	if !l.PerLevel {

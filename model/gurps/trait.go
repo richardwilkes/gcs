@@ -268,7 +268,6 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	t.TraitData = localData.TraitData
 	t.Replacements = nameable.Normalize(t.Replacements)
 	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
-	// Force the CanLevel flag, if needed
 	if !t.Container() {
 		if t.Levels < 0 {
 			t.Levels = 0
@@ -407,18 +406,16 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 	case TraitLibSrcColumn:
 		fillLibSrcCell(data, t.owner, t)
 	case TraitSwitchColumn:
-		// Only items that actually have something to switch get a cell; the rest are left blank.
+		// Only items with something to switch get a cell; the rest are left blank.
 		if t.HasSwitchableFeatures() {
 			data.Type = cell.Switch
 			data.Checked = t.SwitchedOn
 			data.Alignment = align.Middle
 			data.Tooltip = SwitchCellTooltip(t.Container())
-			// A disabled trait -- or one inside a disabled container -- has already been dimmed above, which is
-			// exactly what the switch cell wants: throwing the switch of a disabled trait changes nothing the user can
-			// see, since every collection pass (features, weapons, reactions and conditional modifiers) skips traits
-			// that aren't enabled, and the one thing the trait resolves for itself from its own switchable features,
-			// ResolvedMaxLevels, is only consulted for enabled traits. The cell stays a live switch either way; the
-			// dimming is purely visual.
+			// A disabled trait -- or one inside a disabled container -- was dimmed above, which is what the switch cell
+			// wants: throwing the switch changes nothing the user can see, since every collection pass skips traits
+			// that aren't enabled and ResolvedMaxLevels is only consulted for enabled ones. The cell stays a live
+			// switch either way; the dimming is purely visual.
 		}
 	}
 }
@@ -475,10 +472,9 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 		return 0
 	}
 	if t.resolvingLevel {
-		// A per-level trait bonus whose leveled owner is this trait -- either because the bonus it carries matches its
-		// own name, or because two traits adjust each other's level -- would re-enter here while resolving the
-		// adjustment. Fall back to the unadjusted level to break the cycle rather than recursing until the stack
-		// overflows.
+		// A per-level trait bonus whose leveled owner is this trait -- because the bonus matches the trait's own name,
+		// or because two traits adjust each other's level -- would re-enter here while resolving the adjustment. Fall
+		// back to the unadjusted level to break the cycle.
 		return t.Levels.Max(0)
 	}
 	t.resolvingLevel = true
@@ -674,7 +670,7 @@ func (t *Trait) TagList() []string {
 	return t.Tags
 }
 
-// RatedStrength always return 0 for traits.
+// RatedStrength always returns 0 for traits.
 func (t *Trait) RatedStrength() fxp.Int {
 	return 0
 }
@@ -774,7 +770,7 @@ func (t *Trait) modifierNotes(includeSelfControl, includeFrequency bool) string 
 	return strings.Join(lines, "\n")
 }
 
-// SecondaryText returns the "secondary" text: the text display below an Trait.
+// SecondaryText returns the "secondary" text: the text displayed below a Trait.
 func (t *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(EntityFromNode(t))
@@ -1029,8 +1025,8 @@ func (t *TraitContainerSyncData) hash(h hash.Hash) {
 	}
 }
 
-// ResolvedAlternativeSlots returns the number of children that should be billed at full price when this is
-// an Alternative Abilities container, i.e. the number of alternative abilities that can be active simultaneously.
+// ResolvedAlternativeSlots returns the number of children that should be billed at full price when this is an
+// Alternative Abilities container, i.e. the number of alternative abilities that can be active simultaneously.
 func (t *TraitContainerSyncData) ResolvedAlternativeSlots() int {
 	return max(t.AlternativeSlots, 1)
 }
@@ -1050,17 +1046,15 @@ func (t *TraitEditData) ApplyTo(other *Trait) {
 	other.copyFrom(other, t, true, Copy)
 }
 
-// copyFrom copies other into t. isApply distinguishes staging the editor's working copy from committing it
-// back, and only affects how an empty Prereq list is resolved. mode controls how nested modifiers and
-// weapons are cloned -- CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same
-// trait's own data, not producing a new one; Clone passes its own mode through.
+// copyFrom copies other into t. isApply distinguishes staging the editor's working copy from committing it back, and
+// only affects how an empty Prereq list is resolved. mode controls how nested modifiers and weapons are cloned --
+// CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same trait's own data, not producing
+// a new one; Clone passes its own mode through.
 func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply bool, mode CloneMode) {
 	*t = *other
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
 	// Each copy is pointed at the trait it belongs to, so that a "use level from owner" modifier can resolve its level.
-	// Prior to this, the copies held in an editor only acquired their trait as a side effect of a point cost
-	// computation.
 	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode, func(m *TraitModifier) { m.setTrait(trait) })
 	// setTrait() migrates a modifier's legacy replacements into the trait it was pointed at, which isn't the holder of
 	// this data when an editor is being populated, so pick up anything it added. This is a no-op when this data is the

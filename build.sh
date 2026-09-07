@@ -5,7 +5,6 @@ trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
 
 export GOEXPERIMENT=simd
 
-# Process args
 RELEASE="0.0"
 for arg in "$@"; do
 	case "$arg" in
@@ -118,13 +117,11 @@ esac
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/v2/xos.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
-# Generate the source
 if [ "$BUILD_GEN"x == "1x" ]; then
 	echo -e "\033[33mGenerating...\033[0m"
 	GOOS="" GOARCH="" go generate ./cmd/enumgen/main.go
 fi
 
-# Generate the translation file
 if [ "$I18N"x == "1x" ]; then
 	# Ensure all dependencies are present in the module cache; otherwise the `go list -f "{{.Dir}}"` lookups below
 	# resolve to empty strings for any module that hasn't been downloaded yet, silently excluding it from the scan.
@@ -137,13 +134,11 @@ if [ "$I18N"x == "1x" ]; then
 		.
 fi
 
-# Build our Go code
 if [ "$BUILD_GO"x == "1x" ]; then
-	# On Windows the app icon and the version info shown in Explorer's Properties dialog are embedded via a .syso
-	# resource object that the Go linker only links in if it is already present when `go build` runs. That object is
-	# produced by the packager, so on Windows it must be generated *before* the build; the packaging step below re-emits
-	# the same file, but by then the build has already consumed it. Without this, packaged Windows binaries end up as
-	# generic, info-less executables.
+	# On Windows the app icon and the version info Explorer shows come from a .syso resource object that the Go linker
+	# only links in if it is already present when `go build` runs. The packager produces it, so it has to be generated
+	# before the build; the packaging step below re-emits it, but by then the build has already consumed it. Without
+	# this, packaged Windows binaries end up as generic, info-less executables.
 	if [ "$PACKAGER"x == "1x" ] && [ "$WINDOWS"x == "1x" ]; then
 		echo -e "\033[33mGenerating Windows resources...\033[0m"
 		go run ./cmd/pack/main.go --release "$RELEASE"
@@ -167,10 +162,8 @@ ensure_golangci_lint() {
 	GOLANGCI_LINT="$TOOLS_DIR/golangci-lint"
 }
 
-# Verify formatting
-#
-# This needs its own pass because `golangci-lint run` ignores the `formatters` section of .golangci.yml entirely -- only
-# `golangci-lint fmt` consults it -- so without this the gofumpt and goimports settings declared there enforce nothing.
+# Formatting needs its own pass because `golangci-lint run` ignores the `formatters` section of .golangci.yml entirely
+# -- only `golangci-lint fmt` consults it -- so without this the gofumpt and goimports settings there enforce nothing.
 if [ "$FMT"x == "1x" ]; then
 	ensure_golangci_lint
 	echo -e "\033[33mChecking the formatting of the Go code...\033[0m"
@@ -181,19 +174,16 @@ if [ "$FMT"x == "1x" ]; then
 	echo "0 issues."
 fi
 
-# Lint the Go code
 if [ "$LINT"x == "1x" ]; then
 	ensure_golangci_lint
 	echo -e "\033[33mLinting the Go code...\033[0m"
 	"$GOLANGCI_LINT" run
 fi
 
-# Run the tests
-#
 # Race instrumentation slows the test packages down 3-10x, yet the detector can only ever report an access made while
-# two or more goroutines are live, which almost none of the tests produce. So the full suite runs uninstrumented, and
-# the race pass is limited to the TestRace wrappers (see model/gurps/race_coverage_test.go), which re-run just the
-# tests that actually put multiple goroutines over shared state.
+# two or more goroutines are live, which almost none of the tests produce. So the full suite runs uninstrumented and the
+# race pass is limited to the TestRace wrappers (see model/gurps/race_coverage_test.go), which re-run just the tests
+# that actually put multiple goroutines over shared state.
 if [ "$TEST"x == "1x" ]; then
 	echo -e "\033[33mTesting...\033[0m"
 	go test ./... | grep -v "no test files"
@@ -203,7 +193,6 @@ if [ "$TEST"x == "1x" ]; then
 	fi
 fi
 
-# Package
 if [ "$PACKAGER"x == "1x" ]; then
 	go run ./cmd/pack/main.go --release $RELEASE $DIST
 fi

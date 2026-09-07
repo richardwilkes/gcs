@@ -26,8 +26,7 @@ type undoableSettingsModel interface {
 
 // undoableSettingsSpec describes one kind of per-sheet settings editor: where its help lives, how to copy its model,
 // how to build its content, how to apply the edited model to what it came from, and any extra toolbar buttons. It is
-// what distinguishes the attribute editor from the body type editor; everything else about them is in
-// undoableSettingsDockable.
+// all that distinguishes the attribute editor from the body type editor.
 type undoableSettingsSpec[T undoableSettingsModel] struct {
 	// helpLink is the link the toolbar's Help button opens.
 	helpLink string
@@ -43,10 +42,9 @@ type undoableSettingsSpec[T undoableSettingsModel] struct {
 }
 
 // undoableSettingsDockable is the common part of the editors for settings that belong to a sheet or to the defaults --
-// the attribute and body type editors. Each holds a copy of the settings and edits that, applying the copy back to the
-// sheet or the defaults only when asked to, or when closing with changes pending and the user agrees; discarding the
-// copy is what the cancel button does. Every change to the model goes through an undo edit that captures the whole
-// model, so that a structural change is as undoable as a typed one.
+// the attribute and body type editors. Each edits a copy of the settings, applying it back only when asked to, or when
+// closing with changes pending and the user agrees; the cancel button discards the copy. Every change to the model
+// goes through an undo edit that captures the whole model, so that a structural change is as undoable as a typed one.
 type undoableSettingsDockable[T undoableSettingsModel] struct {
 	SettingsDockable
 	structuralEditorBase[T]

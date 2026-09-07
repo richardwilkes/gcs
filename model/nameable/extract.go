@@ -21,7 +21,7 @@ import (
 // EscapeRune is the fixed rune used to escape delimiters throughout this package.
 const EscapeRune rune = '\\'
 
-// List of reserved runes used to escape things like control characters
+// reservedEscapes maps a rune that cannot be written literally, such as a newline, to the letter representing it.
 var reservedEscapes = map[rune]rune{'\n': 'n', '\t': 't'}
 
 // reservedUnescapes is the reverse of reservedEscapes, mapping each reserved letter back to the rune it represents.
@@ -70,83 +70,64 @@ func ExtractParts(src string, begin, end rune) []Part {
 		if isEscaping {
 			isEscaping = false
 			if r == begin || r == end {
-				// The begin/end rune was escaped, so we advance past it.
+				// The begin/end rune was escaped, so it doesn't delimit anything.
 				continue
 			}
 		}
 
 		if r == begin && !isPlaceholder {
-			// Collect previous non-empty part
 			if start < i {
 				parts = append(parts, Part{Value: src[start:i], Placeholder: false})
 			}
 
-			// Start new placeholder part
 			isPlaceholder = true
 
-			// Set the new start index after this begin delimiter
 			start = i + ol
 
-			// Advance to the next rune
 			continue
 		}
 
 		if r == end && isPlaceholder {
 			if start == i {
-				// This is an empty placeholder and we treat this as a portion of a non-placeholder part
-
-				// Clear the placeholder flag
+				// An empty placeholder is folded back into the surrounding literal text.
 				isPlaceholder = false
 
-				// Move the start index backwards by the length of the begin delimiter
 				start -= ol
 			} else {
-				// Collect the placeholder part
 				parts = append(parts, Part{Value: src[start:i], Placeholder: true})
 
-				// Start new non-placeholder part
 				isPlaceholder = false
 
-				// Set the new start index after this end delimiter
 				start = i + cl
 			}
 
-			// Advance to the next rune
 			continue
 		}
 
-		// A begin delimiter inside a placeholder is a special case.
-		// It's treated like a misidentified placeholder start.
+		// A begin delimiter inside a placeholder means the earlier one was a misidentified start, so everything from it
+		// to here becomes literal text and the placeholder restarts from this one.
 		if r == begin && isPlaceholder {
-			// Move the start index backwards by the length of the begin delimiter
 			start -= ol
 
-			// Collect the non-placeholder part
 			parts = append(parts, Part{Value: src[start:i], Placeholder: false})
 
-			// Set the new start index after this begin delimiter
 			start = i + ol
 
-			// Advance to the next rune
 			continue
 		}
 
-		// Any control byte breaks a placeholder part stride and any escaping
+		// Any control byte breaks a placeholder part stride and any escaping.
 		if r < 32 {
-			// Clear the escaping flag
 			isEscaping = false
 			if isPlaceholder {
-				// Clear the placeholder flag
 				isPlaceholder = false
-				// Move the start index backwards by the length of the begin delimiter
 				start -= ol
 			}
 		}
 	}
 	if isPlaceholder {
-		// The final placeholder was never closed -- move the start index backwards by the length of the begin
-		// delimiter so it's included in the trailing literal text instead of being silently dropped, even when
-		// the begin delimiter is the last thing in the input.
+		// The final placeholder was never closed, so back up over its begin delimiter to include it in the trailing
+		// literal text rather than silently dropping it, even when it is the last thing in the input.
 		start -= ol
 	}
 	if start < len(src) {
@@ -189,7 +170,6 @@ func ExtractSegments(src string, delimiter rune) []string {
 		}
 	}
 
-	// Capture remaining runes (or all if there are no delimiters)
 	if start < len(src) {
 		segments = append(segments, src[start:])
 	}
@@ -197,9 +177,9 @@ func ExtractSegments(src string, delimiter rune) []string {
 	return segments
 }
 
-// EscapeRunes prefixes each occurrence of any of chars in in with EscapeRune. A rune with a reserved letter
-// (see reservedEscapes, e.g. a literal newline) is written as EscapeRune followed by its reserved letter
-// instead of the literal rune itself.
+// EscapeRunes prefixes each occurrence in 'in' of any of the chars with EscapeRune. A rune with a reserved letter (see
+// reservedEscapes, e.g. a literal newline) is written as EscapeRune followed by its reserved letter instead of the
+// literal rune itself.
 func EscapeRunes(in string, chars ...rune) string {
 	if len(chars) == 0 {
 		return in

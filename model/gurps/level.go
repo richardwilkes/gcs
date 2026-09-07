@@ -18,7 +18,8 @@ type Level struct {
 	Tooltip       string
 }
 
-// LevelAsString returns the level as a string.
+// LevelAsString returns the floored level as a string, or an empty string for a container and "-" when the level isn't
+// positive.
 func (l Level) LevelAsString(forContainer bool) string {
 	if forContainer {
 		return ""

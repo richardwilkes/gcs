@@ -148,7 +148,7 @@ func ExtractAdjustment(str string) Adjustment {
 
 // ExtractKnownAdjustment extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractAdjustment, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// Unlike ExtractAdjustment, which quietly maps anything it doesn't recognize onto the default value, this permits a
 // caller that is dispatching on the type to detect unknown types.
 func ExtractKnownAdjustment(str string) (value Adjustment, known bool) {
 	for _, enum := range Adjustments {

@@ -17,10 +17,9 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestPageNumberingCountsOnlyPages verifies that a page's number and the count its footer reports come from the pages
-// that share its parent alone, so that anything else put beside them -- the layout editor's overlay, say -- neither
-// shifts the numbers nor swaps the footer's halves around, and that a page with no parent still calls itself the first
-// of one.
+// TestPageNumberingCountsOnlyPages verifies that a page's number and count come only from the pages sharing its
+// parent, so that anything else beside them -- the layout editor's overlay, say -- neither shifts the numbers nor
+// swaps the footer's halves around, and that a page with no parent is still the first of one.
 func TestPageNumberingCountsOnlyPages(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()

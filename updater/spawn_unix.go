@@ -19,8 +19,7 @@ import (
 // detach configures the command to outlive the process starting it.
 //
 // Setsid makes the child a session leader, so it has no controlling terminal and a signal aimed at this process's group
-// -- a hangup when a terminal closes, or the interrupt from a Ctrl-C -- cannot reach it. That matters because the whole
-// point of this process is to still be running after the one that started it has gone.
+// -- a hangup when a terminal closes, or the interrupt from a Ctrl-C -- cannot reach it.
 func detach(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 }

@@ -15,20 +15,18 @@ import (
 	"strings"
 )
 
-// Unset is a sentinel value used in the nameables map produced by Extract to indicate that a marker has no
-// recorded replacement yet. It is bracketed with NUL bytes so it won't collide with a value a user typed
-// or that came from file content. Callers that read Extract's output must treat it the same as the key being absent
+// Unset is a sentinel value used in the nameables map produced by Extract to indicate that a marker has no recorded
+// replacement yet. It is bracketed with NUL bytes so it won't collide with a value a user typed or that came from file
+// content. Callers that read Extract's output must treat it the same as the key being absent.
 const Unset = "\x00unset\x00"
 
 // Filler defines the method for filling the nameable key map.
 type Filler interface {
-	// FillWithNameableKeys fills the map with nameable keys.
 	FillWithNameableKeys(m, existing map[string]string)
 }
 
 // Accesser defines the method for retrieving the nameable replacements.
 type Accesser interface {
-	// NameableReplacements returns the replacements to be used with Nameables.
 	NameableReplacements() map[string]string
 }
 
@@ -37,16 +35,15 @@ type Setter interface {
 	SetNameableReplacements(replacements map[string]string)
 }
 
-// Applier defines methods types that want to participate the nameable adjustments should implement.
+// Applier is implemented by types that participate in the nameable adjustments.
 type Applier interface {
 	Accesser
 	Filler
-	// ApplyNameableKeys applies the nameable keys to this object.
 	ApplyNameableKeys(m map[string]string)
 }
 
-// Extract nameable markers from the provided strings
-// Each extracted marker will be a key and its value will come from replacements, or be Unset.
+// Extract adds a key for each nameable marker found in the provided strings to nameables, allocating that map if it is
+// nil, and returns it. Each key's value comes from replacements, or is Unset when replacements has no entry for it.
 func Extract(nameables, replacements map[string]string, in ...string) map[string]string {
 	if nameables == nil {
 		nameables = make(map[string]string)
@@ -54,9 +51,8 @@ func Extract(nameables, replacements map[string]string, in ...string) map[string
 	for _, src := range in {
 		for _, part := range ExtractParts(src, MarkerDelimiter, MarkerDelimiter) {
 			if part.Placeholder {
-				// Parse the unescaped marker text into a Marker
 				if m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter)); ok {
-					// We may end up with duplicates and that's fine, they will collapse to one entry
+					// Duplicate markers are fine, since they collapse to a single entry.
 					if v, exists := replacements[m.Key()]; exists {
 						nameables[m.Key()] = v
 					} else {
@@ -69,10 +65,9 @@ func Extract(nameables, replacements map[string]string, in ...string) map[string
 	return nameables
 }
 
-// Normalize returns a replacements map with each key rewritten to its normalized marker form.
-//
-// Keys that fail to parse as markers are retained unchanged.
-// Map is normalized in sorted source key order.
+// Normalize returns a replacements map with each key rewritten to its normalized marker form, or nil if there is
+// nothing to normalize. Keys that fail to parse as markers are retained unchanged. Source keys are processed in sorted
+// order, so two source keys that normalize to the same form always resolve the same way.
 func Normalize(replacements map[string]string) map[string]string {
 	if len(replacements) == 0 {
 		return nil
@@ -88,11 +83,9 @@ func Normalize(replacements map[string]string) map[string]string {
 	return out
 }
 
-// Apply replaces nameable markers with their replacement values in a single string.
-//
-// Any unresolved markers are rendered in their compact form, "`@Label@`".
-// The '@' wrapper is kept on unresolved markers so displayed text (sheet rows, table columns, tooltips) still
-// visibly flags the value as an unresolved nameable marker.
+// Apply replaces nameable markers with their replacement values in a single string. An unresolved marker is rendered
+// in its compact form, "`@Label@`", keeping the '@' wrapper so displayed text (sheet rows, table columns, tooltips)
+// still visibly flags it as unresolved.
 func Apply(str string, replacements map[string]string) string {
 	if !strings.ContainsRune(str, MarkerDelimiter) {
 		return str
@@ -100,11 +93,7 @@ func Apply(str string, replacements map[string]string) string {
 	return ApplyToList([]string{str}, replacements)[0]
 }
 
-// ApplyToList replaces nameable markers with their replacement values in a slice of strings.
-//
-// Any unresolved markers are rendered in their compact form, "`@Label@`".
-// The '@' wrapper is kept on unresolved markers so displayed text (sheet rows, table columns, tooltips) still
-// visibly flags the value as an unresolved nameable marker.
+// ApplyToList is Apply for a slice of strings. Returns nil if the slice is empty.
 func ApplyToList(in []string, replacements map[string]string) []string {
 	if len(in) == 0 {
 		return nil
@@ -114,17 +103,14 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 
 	for i, str := range in {
 		if !strings.ContainsRune(str, MarkerDelimiter) {
-			// Skip processing a string with no markers
 			out[i] = str
 			continue
 		}
 
-		// Allocate a string builder to collect the processed string as we go
 		var sb strings.Builder
 
 		for _, part := range ExtractParts(str, MarkerDelimiter, MarkerDelimiter) {
 			if part.Placeholder {
-				// Parse the unescaped marker text into a Marker
 				if m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter)); ok {
 					if r, hasReplacement := replacements[m.Key()]; hasReplacement {
 						sb.WriteString(r)
@@ -134,14 +120,14 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 						sb.WriteRune(MarkerDelimiter)
 					}
 				} else {
-					// Since marker parsing failed we write the exact marker back out, with delimiters
+					// Marker parsing failed, so write the original text back out with its delimiters.
 					sb.WriteRune(MarkerDelimiter)
 					sb.WriteString(part.Value)
 					sb.WriteRune(MarkerDelimiter)
 				}
 			} else {
-				// Unescape any escaped marker delimiters so a literal "\@" the user typed to keep an '@' out of
-				// marker detection displays as a plain '@' rather than surfacing the escape itself.
+				// Unescape any escaped marker delimiters, so a literal "\@" the user typed to keep an '@' out of marker
+				// detection displays as a plain '@' rather than surfacing the escape itself.
 				sb.WriteString(UnescapeRunes(part.Value, MarkerDelimiter))
 			}
 		}
@@ -153,19 +139,16 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 
 // Reduce returns a map of the replacements which exist in nameables.
 //
-// Both maps must already be keyed by normalized marker key: nameables from Extract, and replacements from
-// load-time normalization (see Normalize) or the output of a previous Reduce call. Reduce does not itself
-// normalize either map's keys.
+// Both maps must already be keyed by normalized marker key: nameables from Extract, and replacements from load-time
+// normalization (see Normalize) or the output of a previous Reduce call. Reduce does not itself normalize either map's
+// keys.
 //
-// A replacements entry still holding the Unset sentinel (i.e. the substitutions dialog was shown but the user
-// never explicitly chose a value for that marker) is dropped rather than kept, so an untouched marker is never
-// persisted as if it had been resolved.
+// An entry still holding the Unset sentinel (i.e. the substitutions dialog was shown but the user never chose a value
+// for that marker) is dropped, so an untouched marker is never persisted as if it had been resolved.
 //
-// Returns nil, not an empty map, when there is nothing to keep -- callers that assign the result directly to a
-// stored Replacements field and later write into it without a nil check (e.g. `x.Replacements[k] = v`) must guard
-// for nil first.
+// Returns nil, not an empty map, when there is nothing to keep -- callers that assign the result directly to a stored
+// Replacements field and later write into it (e.g. `x.Replacements[k] = v`) must guard for nil first.
 func Reduce(nameables, replacements map[string]string) map[string]string {
-	// We can return early if there are no known namables or no known replacements
 	if len(nameables) == 0 || len(replacements) == 0 {
 		return nil
 	}
@@ -183,18 +166,16 @@ func Reduce(nameables, replacements map[string]string) map[string]string {
 	return ret
 }
 
-// Missing returns a list of nameable keys without replacements
+// Missing returns the nameable keys that have no replacement, in no particular order.
 //
-// Both maps must already be keyed by normalized marker key: nameables from Extract, and replacements from
-// load-time normalization (see Normalize) or the output of a previous Reduce call. Missing does not itself
-// normalize either map's keys. The returned keys are normalized, since they are drawn from nameables.
+// Both maps must already be keyed by normalized marker key: nameables from Extract, and replacements from load-time
+// normalization (see Normalize) or the output of a previous Reduce call. Missing does not itself normalize either
+// map's keys. The returned keys are normalized, since they are drawn from nameables.
 func Missing(nameables, replacements map[string]string) []string {
-	// We can return early if there are no known namables
 	if len(nameables) == 0 {
 		return nil
 	}
 
-	// If there are no replacements, everything is missing
 	if len(replacements) == 0 {
 		return slices.Collect(maps.Keys(nameables))
 	}

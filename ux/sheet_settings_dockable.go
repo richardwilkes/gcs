@@ -55,8 +55,7 @@ type sheetSettingsDockable struct {
 }
 
 // sheetOption describes one of the boolean sheet settings the dockable presents as a checkbox. The setting is reached
-// through an accessor rather than a captured pointer, since the settings being edited are replaced wholesale by reset
-// and load.
+// through an accessor rather than a captured pointer, since reset and load replace the settings being edited wholesale.
 type sheetOption struct {
 	title    string
 	pageRef  string // a page reference to link to after the title, if any
@@ -65,24 +64,19 @@ type sheetOption struct {
 	fullSync bool // the setting can change the columns a sheet shows, which only a full rebuild can pick up
 }
 
-// checked returns whether the checkbox for the option should be checked, given the settings.
 func (o *sheetOption) checked(s *gurps.SheetSettings) bool {
 	return *o.field(s) != o.inverted
 }
 
-// apply stores the state of the checkbox for the option into the settings.
 func (o *sheetOption) apply(s *gurps.SheetSettings, checked bool) {
 	*o.field(s) = checked != o.inverted
 }
 
-// sheetOptionCheckBox pairs a checkbox with the option it presents.
 type sheetOptionCheckBox struct {
 	box    *unison.CheckBox
 	option sheetOption
 }
 
-// sheetNumberFormatRow holds the widgets that present one of the sheet's number formats, along with the accessor for
-// the format they present.
 type sheetNumberFormatRow struct {
 	popup  *unison.PopupMenu[fxp.DecimalPlace]
 	pad    *unison.CheckBox
@@ -178,7 +172,7 @@ func sheetOptions() []sheetOption {
 	}
 }
 
-// ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
+// ShowSheetSettings shows the Sheet Settings. Pass nil to edit the defaults, or a sheet to edit that sheet's.
 func ShowSheetSettings(owner EntityPanel) {
 	if activateDockable(func(s *sheetSettingsDockable) bool { return s.owner == owner }) {
 		return
@@ -195,10 +189,10 @@ func ShowSheetSettings(owner EntityPanel) {
 	})
 }
 
-// sheetSettingsTabTitle returns the tab title to use for the sheet settings of the given owner, or for the defaults
-// when the owner is nil. The character name must be substituted into an otherwise constant string, since i18n.Text
-// looks the whole string up in the translation catalog; passing it a string built with the name embedded produces a key
-// that can never match an entry and can't be extracted for translation in the first place.
+// sheetSettingsTabTitle returns the tab title for the sheet settings of the given owner, or for the defaults when the
+// owner is nil. The character name must be substituted into an otherwise constant string, since i18n.Text looks the
+// whole string up in the translation catalog; a string built with the name embedded produces a key that can never match
+// an entry and can't be extracted for translation in the first place.
 func sheetSettingsTabTitle(owner EntityPanel) string {
 	if owner == nil {
 		return i18n.Text("Default Sheet Settings")
@@ -325,8 +319,8 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 	content.AddChild(panel)
 }
 
-// createDecimalPlaces adds the section that controls how many decimal places the sheet rounds various numbers to for
-// display. These affect only what is shown: the values themselves are always stored, and edited, at full precision.
+// createDecimalPlaces adds the section that controls how many decimal places the sheet rounds various numbers to. These
+// affect only what is shown: the values themselves are always stored, and edited, at full precision.
 func (d *sheetSettingsDockable) createDecimalPlaces(content *unison.Panel) {
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -354,8 +348,7 @@ func (d *sheetSettingsDockable) createDecimalPlaces(content *unison.Panel) {
 }
 
 // addNumberFormatRow adds the popup that chooses how many decimal places one of the sheet's number formats rounds to,
-// with the given tooltip, and the checkbox that has it pad with zeros out to that many, and returns them along with
-// the format's accessor.
+// with the given tooltip, and the checkbox that has it pad with zeros out to that many.
 func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, tooltip string, format func(s *gurps.SheetSettings) *fxp.NumberFormat) sheetNumberFormatRow {
 	row := sheetNumberFormatRow{format: format}
 	current := format(d.settings())

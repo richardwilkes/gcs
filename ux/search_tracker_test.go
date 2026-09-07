@@ -17,10 +17,10 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// TestMatchStepper verifies the stepping the search toolbars share: the buttons only enable when there is a match to
-// step to in their direction, the label shows the position -- or "-" in place of one when no match is current yet, and
-// alone when there are no matches -- and stepping shows the match it lands on while a step past either end does
-// nothing. RETURN and SHIFT-RETURN in the search field step the same way the buttons do.
+// TestMatchStepper checks the stepping the search toolbars share: the buttons enable only when there is a match to step
+// to in their direction, the label shows the position -- or "-" in place of one when no match is current yet, and alone
+// when there are no matches -- stepping shows the match it lands on while a step past either end does nothing, and
+// RETURN and SHIFT-RETURN in the search field step the same way the buttons do.
 func TestMatchStepper(t *testing.T) {
 	c := check.New(t)
 	var shown []string

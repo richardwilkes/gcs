@@ -106,8 +106,8 @@ func ExtractEnum(str string) Enum {
 
 // ExtractKnownEnum extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractEnum, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
-// is dispatching on the type to detect unknown types.
+// Unlike ExtractEnum, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
+// that is dispatching on the type to detect unknown types.
 func ExtractKnownEnum(str string) (value Enum, known bool) {
 	for _, enum := range Enums {
 		if strings.EqualFold(enum.Key(), str) {

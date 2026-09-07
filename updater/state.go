@@ -39,8 +39,8 @@ const (
 )
 
 // Reason identifies why an update could not be applied. These are stable identifiers rather than messages: the file
-// they travel in is written by one build of GCS and read by another, possibly running in a different language, so the
-// translation has to happen at the point of display rather than here.
+// they travel in is written by one build of GCS and read by another, possibly running in a different language, so
+// translation has to happen at the point of display.
 type Reason string
 
 const (
@@ -59,8 +59,8 @@ const (
 )
 
 // State is the record shared between the application staging an update, the helper applying it, and the application
-// that comes back afterwards. It is deliberately flat and made only of strings and integers, so that a build which
-// predates or postdates any given field can still read the rest of it.
+// that comes back afterwards. It is deliberately flat and made only of strings and integers, so a build that predates
+// or postdates any given field can still read the rest of it.
 type State struct {
 	Schema      int    `json:"schema"`
 	Status      Status `json:"status"`
@@ -80,14 +80,13 @@ type State struct {
 }
 
 // StatePath returns where the update state lives. It sits in the application data directory rather than in the staging
-// directory so that it survives the staging directory being swept, which is what lets a failure still be reported after
-// everything else has been cleaned up.
+// directory so that it survives the staging being swept, which is what lets a failure still be reported afterwards.
 func StatePath() string {
 	return filepath.Join(xos.AppDataDir(true), stateName)
 }
 
-// Save writes the state atomically. A torn state file would be read by a different build than the one that wrote it,
-// with no way to tell a truncated file from a stale one, so the write must not be observable half-done.
+// Save writes the state atomically. A torn file would be read by a different build than the one that wrote it, with no
+// way to tell a truncated file from a stale one, so the write must not be observable half-done.
 func (s *State) Save(path string) error {
 	s.Schema = StateSchema
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
@@ -122,7 +121,8 @@ func LoadState(path string) (*State, error) {
 	return &state, nil
 }
 
-// TargetInfo reconstructs what the state describes as the installation being replaced.
+// TargetInfo reconstructs the installation the state describes as being replaced. Exec is set to the recorded target
+// path, since the state carries nothing finer.
 func (s *State) TargetInfo() Target {
 	kind := KindExecutable
 	if s.Bundle {

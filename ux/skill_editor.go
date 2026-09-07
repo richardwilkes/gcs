@@ -24,7 +24,7 @@ import (
 	"github.com/richardwilkes/unison/enums/check"
 )
 
-// EditSkill displays the editor for an skill.
+// EditSkill displays the editor for a skill.
 func EditSkill(owner Rebuildable, skill *gurps.Skill) *editor[*gurps.Skill, *gurps.SkillEditData] {
 	return displayEditor(owner, skill, svg.GCSSkills, "md:User%20Guide/Skills", nil, initSkillEditor, nil)
 }

@@ -63,8 +63,7 @@ func showAppUpdateButton(releases []gurps.Release, option updatecheck.Option) bo
 	return len(releases) != 0 && option != updatecheck.Never
 }
 
-// syncAppUpdateButton adds the update button to the toolbar or removes it, updates its tooltip, and starts or stops its
-// pulse.
+// syncAppUpdateButton adds or removes the update button, updates its tooltip, and starts or stops its pulse.
 func (n *Navigator) syncAppUpdateButton() {
 	title, releases, _ := AppUpdateResult()
 	if showAppUpdateButton(releases, gurps.GlobalSettings().General.AppUpdateCheck) {
@@ -114,8 +113,8 @@ type appUpdatePulse struct {
 
 // start begins pulsing for the given release. The pulse runs for appUpdatePulseDuration and then settles, and it
 // doesn't start again for a release it has already pulsed for: the syncs that follow every check must neither restart
-// the cycle nor wake a pulse that has settled. Only a release the button hasn't announced before sets it going again,
-// or the button being shown again after having been hidden (see stop).
+// the cycle nor wake a pulse that has settled. Only a release not pulsed for before sets it going again, or the button
+// being shown again after having been hidden (see stop).
 func (p *appUpdatePulse) start(version string) {
 	if p.version == version {
 		return

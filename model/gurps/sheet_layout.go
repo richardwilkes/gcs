@@ -226,8 +226,7 @@ func (n *SheetLayoutNode) Clone() *SheetLayoutNode {
 
 // String renders this node and everything below it as a compact string: "<nil>" for a nil node, the block key for a
 // Block, and otherwise the container's type followed by its children in square brackets, such as
-// "column[row[traits skills] notes]". It is meant for tests and diagnostics, where the shape of a tree needs stating in
-// one readable line.
+// "column[row[traits skills] notes]". Meant for tests and diagnostics.
 func (n *SheetLayoutNode) String() string {
 	if n == nil {
 		return "<nil>"
@@ -268,7 +267,6 @@ type SheetLayout struct {
 	Hidden []string         `json:"hidden,omitempty"`
 }
 
-// blockNode creates a new Block node for the given key.
 func blockNode(key string) *SheetLayoutNode {
 	return &SheetLayoutNode{
 		Type:   layoutnode.Block,
@@ -277,7 +275,6 @@ func blockNode(key string) *SheetLayoutNode {
 	}
 }
 
-// weightedBlockNode creates a new Block node for the given key with the given weight.
 func weightedBlockNode(key string, nodeWeight fxp.Int) *SheetLayoutNode {
 	return &SheetLayoutNode{
 		Type:   layoutnode.Block,
@@ -294,7 +291,6 @@ func squareBlockNode(key string) *SheetLayoutNode {
 	return node
 }
 
-// containerNode creates a new Row or Column node with the given weight and children.
 func containerNode(nodeType layoutnode.Type, nodeWeight fxp.Int, children ...*SheetLayoutNode) *SheetLayoutNode {
 	return &SheetLayoutNode{
 		Type:     nodeType,
@@ -446,15 +442,14 @@ func (l *SheetLayout) Reset() {
 	*l = *FactorySheetLayout()
 }
 
-// EnsureValidity checks the current layout for validity and if it isn't valid, makes it so.
-//
-// This rewrites the layout into its canonical form: the root is a Column; every block appears exactly once, either
-// in the tree or in Hidden; containers hold at least two children; and every weight and minimum height is usable.
+// EnsureValidity checks the current layout for validity and if it isn't valid, makes it so, rewriting it into its
+// canonical form: the root is a Column; every block appears exactly once, either in the tree or in Hidden; containers
+// hold at least two children; and every weight and minimum height is usable.
 //
 // A band of the root may be a Column of its own -- a band group, which is how two bands are made to stack as one thing
 // that something else can be placed beside so as to span both of them. Only the root's own children are spared the
-// splicing of a container into a same-typed parent: a Column anywhere below a band group is still spliced into it, so
-// nothing deeper than a band of the root is ever a Column within a Column.
+// splicing of a container into a same-typed parent, so nothing deeper than a band of the root is ever a Column within a
+// Column.
 func (l *SheetLayout) EnsureValidity() {
 	if l.Root == nil {
 		l.Root = containerNode(layoutnode.Column, fxp.One)
@@ -639,18 +634,19 @@ func (l *SheetLayout) Move(key, target string, edge layoutedge.Enum) bool {
 // MoveBeside relocates the block with the given key so that it sits against the given edge of the target node, which
 // may be any node in the tree other than the root: a block, or a row or column with any number of blocks below it.
 // Placing a block beside a container is how it is made to span everything in that container, which the edge of a single
-// block within it can't ask for.
+// block within it can't ask for. The block is detached from wherever it was first, so a target that is one of its own
+// ancestors simply loses it.
 //
-// The block is detached from wherever it was first, so a target that is one of its own ancestors simply loses it. If
-// the target's parent is already the kind of container the edge calls for -- a Row for Left and Right, a Column for Top
-// and Bottom -- the block becomes a sibling of the target there, with the mean of that parent's weights; if it isn't,
+// If the target's parent is already the kind of container the edge calls for -- a Row for Left and Right, a Column for
+// Top and Bottom -- the block becomes a sibling of the target there, with the mean of that parent's weights; otherwise
 // the target is replaced by a new container of that kind, inheriting the target's weight and holding the two of them in
-// the order the edge calls for. Returns true if the layout was altered, and false for an unknown or absent key, a
-// target that is nil, the root, the block itself, or not in the tree.
+// the order the edge calls for. A band of the root is the one exception to that sibling rule: Top and Bottom there wrap
+// the target in a band group of its own rather than making the block a band of the page, since MoveToBand is what asks
+// for a band and this is the only way to ask for the two of them to stack as one thing that a third block can then be
+// placed beside.
 //
-// A band of the root is the one exception to the sibling rule: Top and Bottom there wrap the target in a band group of
-// its own rather than making the block a band of the page, since MoveToBand is what asks for a band and this is the
-// only way to ask for the two of them to stack as one thing that a third block can then be placed beside.
+// Returns true if the layout was altered, and false for an unknown or absent key, or a target that is nil, the root,
+// the block itself, or not in the tree.
 func (l *SheetLayout) MoveBeside(key string, target *SheetLayoutNode, edge layoutedge.Enum) bool {
 	key = normalizeBlockKey(key)
 	if !IsBlockKey(key) || target == nil || target == l.Root {
@@ -729,22 +725,19 @@ func findLayoutNodeParent(within, target *SheetLayoutNode) (parent *SheetLayoutN
 // Straddle relocates the block with the given key so that it sits against the given edge of the pair of nodes given,
 // spanning both of them and everything between them. The two nodes must be children of one and the same parent -- any
 // container, the root included -- and may be given in either order; everything from the earlier of them to the later,
-// inclusive, is gathered into a group of its own, so that something lying between them that has nothing to show is
-// swept in with them rather than being left behind. The block then stands against the given edge of that group: Left
-// and Right put the two of them in a Row, Top and Bottom in a Column.
-//
-// This is the only way to ask for a block to span two things that aren't already gathered into a container of their
-// own, since the edge of a single one of them can't ask for it and MoveBeside can only place a block against something
-// the tree already holds as one thing.
+// inclusive, is gathered into a group of its own, so that something lying between them is swept in with them rather
+// than being left behind. The block then stands against the given edge of that group: Left and Right put the two of
+// them in a Row, Top and Bottom in a Column. This is the only way to ask for a block to span two things that aren't
+// already gathered into a container of their own, since the edge of a single one of them can't ask for it and
+// MoveBeside can only place a block against something the tree already holds as one thing.
 //
 // The block is detached from wherever it was before the group is formed, so straddling a pair it was itself inside
 // works: whatever it leaves behind is what gets grouped. The group keeps the weights of the things it gathers, and the
 // container that takes the range's place inherits the sum of them, so that a pair within a Row keeps the share of the
-// width the two of them had between them.
-//
-// An edge that calls for the kind of container the parent already is -- Left or Right within a Row, Top or Bottom
-// within a Column -- is not a special case: validation splices such a container away again, which degenerates into
-// inserting the block beside the range rather than around it, which is what that gesture means.
+// width the two of them had between them. An edge that calls for the kind of container the parent already is -- Left or
+// Right within a Row, Top or Bottom within a Column -- is not a special case: validation splices such a container away
+// again, degenerating into inserting the block beside the range rather than around it, which is what that gesture
+// means.
 //
 // Returns true if the layout was altered, and false for an unknown or absent key, a node that is nil, isn't in the
 // tree, is the block being moved, or doesn't share its parent with the other.
@@ -828,7 +821,6 @@ func (l *SheetLayout) MoveToBand(key string, index int) bool {
 	return true
 }
 
-// meanWeight returns the average of the weights of the given nodes.
 func meanWeight(nodes []*SheetLayoutNode) fxp.Int {
 	if len(nodes) == 0 {
 		return fxp.One

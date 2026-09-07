@@ -80,7 +80,7 @@ type WeaponBonus struct {
 	WeaponBonusData
 }
 
-// WeaponBonusData holds the data for an adjustment to weapon stats which are persisted.
+// WeaponBonusData holds the persisted data for an adjustment to weapon stats.
 type WeaponBonusData struct { //nolint:govet // The field alignment here is poor, but kept to reduce diffs in the data
 	Type feature.Type `json:"type"`
 	FeatureSwitch
@@ -139,7 +139,7 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 	return w.AdjustedAmount()
 }
 
-// AdjustedAmount returns the amount, adjusted for level, if requested.
+// AdjustedAmount returns the amount, adjusted for the die count and level when the bonus is per-die or per-level.
 func (w *WeaponBonus) AdjustedAmount() fxp.Int {
 	return w.adjustedAmount(w.DieCount, w.LeveledOwner)
 }

@@ -74,7 +74,7 @@ type SkillAdjustmentProvider interface {
 }
 
 // SkillLevelStepper is what the shared bodies of IncrementSkillLevel and DecrementSkillLevel need from a skill or
-// spell, so that the point-stepping search lives once, in skill.go, rather than in each type.
+// spell, so that the point-stepping search lives once rather than in each type.
 type SkillLevelStepper interface {
 	RawPoints() fxp.Int
 	SetRawPoints(points fxp.Int) bool
@@ -109,7 +109,7 @@ type SkillEditData struct {
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 	// copiedDefaultsHash is defaultsHash(Defaults) as of CopyFrom, which lets ApplyTo tell whether the defaults have
-	// been edited since. It is only meaningful on edit data that CopyFrom produced.
+	// been edited since. Only meaningful on edit data that CopyFrom produced.
 	copiedDefaultsHash uint64
 }
 
@@ -417,7 +417,6 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillLibSrcColumn:
 		fillLibSrcCell(data, s.owner, s)
 	case SkillSwitchColumn:
-		// Only items that actually have something to switch get a cell; the rest are left blank.
 		if s.HasSwitchableFeatures() {
 			data.Type = cell.Switch
 			data.Checked = s.SwitchedOn
@@ -523,7 +522,7 @@ func (s *Skill) TagList() []string {
 	return s.Tags
 }
 
-// RatedStrength always return 0 for skills.
+// RatedStrength always returns 0 for skills.
 func (s *Skill) RatedStrength() fxp.Int {
 	return 0
 }
@@ -893,10 +892,9 @@ func (s *Skill) UpdateLevel() bool {
 		defaultedFrom = s.bestDefaultWithPoints(nil)
 		level = s.CalculateLevel(nil)
 	}) {
-		// A script was stopped before it could produce an answer, so what came back stood in for one rather than being
-		// one, and both of these were computed from it. Neither is kept: what is already here was arrived at when the
-		// scripts did finish, which makes it merely out of date, whereas storing these would make it wrong -- and
-		// DefaultedFrom is written to disk, so it would be wrong there too until something recalculated it. The next
+		// A script was stopped before it could produce an answer, so both of these were computed from a stand-in. What
+		// is already here was arrived at when the scripts did finish, making it merely out of date, whereas storing
+		// these would make it wrong -- and DefaultedFrom is written to disk, so it would be wrong there too. The next
 		// recalculation that gets through its scripts puts both right.
 		return false
 	}
@@ -935,16 +933,15 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 	}
 	excludes := make(map[string]bool)
 	excludes[s.String()] = true
-	// A skill with points that already records which default it uses should keep using that same default as long as it
-	// remains resolvable, rather than silently jumping to whichever default currently yields the highest level. The
-	// user changes it explicitly via "Swap Defaults". This only applies to skills that declare their own defaults; a
-	// skill whose defaults are purely synthetic (e.g. the automatic -2 default to a sibling's optional specialization)
-	// always tracks the dynamically-best default. Skills with no points also show the dynamically-best default.
+	// A skill with points that already records which default it uses keeps it as long as it remains resolvable, rather
+	// than silently jumping to whichever default currently yields the highest level; the user changes it explicitly via
+	// "Swap Defaults". Skills with no points, and those whose defaults are purely synthetic (the automatic -2 default
+	// to a sibling's optional specialization), always track the dynamically-best default.
 	keepCurrent := excluded == nil && s.DefaultedFrom != nil && s.AdjustedPoints(nil) > 0 && len(s.Defaults) > 0
 	var bestDef, preferredDef *SkillDefault
 	best := fxp.Min
 	for _, def := range s.resolveToSpecificDefaults() {
-		// For skill-based defaults, prune out any that already use a default that we are involved with
+		// Skip the excluded default and any that circle back through this skill.
 		if def.Equivalent(s.Replacements, excluded) || s.inDefaultChain(def, make(map[*Skill]bool)) {
 			continue
 		}
@@ -969,8 +966,8 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 }
 
 // resolvableDefaults returns the distinct, currently-resolvable defaults this skill could use, ordered from the highest
-// resulting level to the lowest. Candidates that currently default back to this skill are still included: the user may
-// choose one, and SwapToNextDefault breaks the resulting cycle so the chosen skill re-resolves to its own best default.
+// resulting level to the lowest. Candidates that currently default back to this skill are included: the user may choose
+// one, and SwapToNextDefault breaks the resulting cycle so the chosen skill re-resolves to its own best default.
 func (s *Skill) resolvableDefaults() []*SkillDefault {
 	if EntityFromNode(s) == nil {
 		return nil
@@ -1003,8 +1000,8 @@ func (s *Skill) resolvableDefaults() []*SkillDefault {
 }
 
 // AlternateDefaultsAvailable returns true if this skill has more than one default it could use, allowing the user to
-// choose among them via "Swap Defaults". Only skills that declare their own defaults are swappable; a skill whose
-// defaults are purely synthetic (the automatic optional-specialization defaults) tracks the best default automatically.
+// choose among them via "Swap Defaults". Only skills that declare their own defaults are swappable; purely synthetic
+// (optional-specialization) defaults track the best default automatically.
 func (s *Skill) AlternateDefaultsAvailable() bool {
 	return s.CanSwapDefaults() && len(s.Defaults) > 0 && len(s.resolvableDefaults()) > 1
 }
@@ -1027,8 +1024,8 @@ func (s *Skill) SwapToNextDefault() {
 	}
 	s.DefaultedFrom = candidates[(idx+1)%len(candidates)]
 	// If the newly chosen skill currently defaults back to this one (directly or transitively), clear its default so
-	// this explicit choice wins; the recalculation below then resolves it to its own best remaining default. This keeps
-	// two skills from ending up defaulting to each other.
+	// this explicit choice wins; the recalculation below resolves it to its own best remaining default, keeping the two
+	// from defaulting to each other.
 	if s.inDefaultChain(s.DefaultedFrom, make(map[*Skill]bool)) {
 		if target := s.DefaultSkill(); target != nil && target != s {
 			target.DefaultedFrom = nil
@@ -1088,10 +1085,10 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 		} else {
 			for _, one := range def.matchingSkills(e, s.Replacements, true, map[string]bool{s.String(): true}) {
 				local := *def
-				// The copy is pinned to the skill that was matched, by name and specialization, so the tag criteria
-				// has already done its job here. Leaving it on would carry it into the DefaultedFrom that gets
-				// persisted, and would make two expansions of a tag default look different from a plain default to the
-				// same skill, so that neither the swap list nor the "keep the current default" check could pair them.
+				// The copy is pinned to the matched skill by name and specialization, so the tag criteria has already
+				// done its job. Leaving it on would carry it into the persisted DefaultedFrom and make an expansion of
+				// a tag default look different from a plain default to the same skill, so that neither the swap list
+				// nor the "keep the current default" check could pair them.
 				local.Tags = criteria.Text{}
 				local.Name.Compare = criteria.IsText
 				local.Name.Qualifier = one.NameWithReplacements()
@@ -1119,8 +1116,7 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 			}
 			// The optional-specialty default only relates skills that share the same required specialization (differing
 			// only in the optional one). SkillNamed treats an empty specialization as a wildcard, so without this check
-			// a fully-unspecialized skill would pick up defaults to siblings that have a different required
-			// specialization.
+			// a fully-unspecialized skill would pick up defaults to differently-specialized siblings.
 			if one.SpecializationWithReplacements() != s.SpecializationWithReplacements() {
 				continue
 			}
@@ -1150,8 +1146,8 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 	satisfied := sk != nil && (sk.IsTechnique() || sk.Points > 0)
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		// A default that names its skill outright reads as "a skill named X". One that selects it by some other
-		// criteria is described by FullName in full, and the sentence is shaped around that description instead.
+		// A default that names its skill outright reads as "a skill named X"; one that selects it by other criteria is
+		// described by FullName, and the sentence is shaped around that description instead.
 		named := s.TechniqueDefault.namesSkill(s.Replacements)
 		switch {
 		case sk == nil && named:
@@ -1457,9 +1453,8 @@ func (s *SkillEditData) ApplyTo(other *Skill) {
 	// The default a skill records is kept from one recalculation to the next rather than silently jumping to whichever
 	// default currently yields the highest level (see bestDefault). That only holds while the declared defaults it was
 	// chosen from stay the same: once they have been edited, the recorded choice is stale and is made afresh. Whether
-	// they have been is judged against the defaults as they were when this edit data was copied from its skill, not
-	// against the target's current ones: an undo applies a snapshot whose recorded default was chosen from that very
-	// snapshot's defaults, and so is exactly the one to bring back.
+	// they have been is judged against the defaults as of the copy this edit data was made from, not the target's
+	// current ones: an undo applies a snapshot whose recorded default was chosen from that snapshot's own defaults.
 	rechoose := defaultsHash(s.Defaults) != s.copiedDefaultsHash
 	other.copyFrom(other, s, other.Container(), true, Copy, other.IsTechnique())
 	if rechoose {
@@ -1482,10 +1477,9 @@ func defaultsHash(defaults []*SkillDefault) uint64 {
 	return h.Sum64()
 }
 
-// copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it
-// back, and only affects how an empty Prereq list is resolved. mode controls how cloned weapons are
-// cloned -- CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same skill's own
-// data, not producing a new one; Clone passes its own mode through.
+// copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it back, and
+// only affects how an empty Prereq list is resolved. mode controls how the weapons are cloned -- CopyFrom/ApplyTo above
+// always use Copy, since that's staging or committing the same skill's own data; Clone passes its own mode through.
 func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer, isApply bool, mode CloneMode, isTechnique bool) {
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)

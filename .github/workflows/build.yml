@@ -16,10 +16,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Same target set the Unison packager (upack) supports. GCS is pure Go now — Unison and pdfview both reach the
-        # platform APIs through purego, so there are no C toolchains or per-arch static libraries in the picture and
-        # every target cross-compiles cleanly. Each one is still built on its own runner so that the tests execute on
-        # the platform they ship for and the uploaded artifact is a natively produced binary.
+        # Same target set the Unison packager (upack) supports. GCS is pure Go — Unison and pdfview both reach the
+        # platform APIs through purego, so there are no C toolchains in the picture and every target cross-compiles
+        # cleanly. Each is still built on its own runner so the tests execute on the platform they ship for and the
+        # uploaded artifact is a natively produced binary.
         os: [ubuntu-22.04, ubuntu-22.04-arm, macos-26-intel, macos-26, windows-2022, windows-11-arm]
     defaults:
       run:

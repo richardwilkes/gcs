@@ -17,7 +17,7 @@ import (
 )
 
 // modifierExtractor yields a selected row's modifier when its enablement can be toggled. Containers are left out: a
-// container is always enabled and shows no checkmark cell, so leaving them out is what disables the menu item for a
+// container is always enabled and shows no checkmark cell, so excluding them disables the menu item for a
 // container-only selection instead of letting it register an edit that changes nothing.
 func modifierExtractor[T gurps.Node[T]](node T) (gurps.GeneralModifier, bool) {
 	if xreflect.IsNil(node) {
@@ -28,9 +28,8 @@ func modifierExtractor[T gurps.Node[T]](node T) (gurps.GeneralModifier, bool) {
 	return m, ok && !m.Container()
 }
 
-// modifierToggleUndoTitle returns the undo title to use for a table of the given kind of modifier. The Edit menu shows
-// this title next to Undo and Redo, so it says which kind of modifier was toggled rather than just "modifier", which is
-// what the separate per-kind code that preceded this did.
+// modifierToggleUndoTitle returns the undo title for a table of the given kind of modifier, so that the Edit menu says
+// which kind was toggled rather than just "modifier".
 func modifierToggleUndoTitle[T gurps.Node[T]]() string {
 	var zero T
 	switch any(zero).(type) {

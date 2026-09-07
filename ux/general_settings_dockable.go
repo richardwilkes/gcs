@@ -88,7 +88,7 @@ type membershipCheckBox[T cmp.Ordered] struct {
 	item T
 }
 
-// ShowGeneralSettings the General Settings window.
+// ShowGeneralSettings shows the General Settings window.
 func ShowGeneralSettings() {
 	if activateDockable[*generalSettingsDockable](nil) {
 		return

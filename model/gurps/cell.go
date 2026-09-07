@@ -17,7 +17,7 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// PageRefCellAlias is used an alias to request the page reference cell, if any.
+// PageRefCellAlias is the column alias used to request the page reference cell, if any.
 const PageRefCellAlias = -10
 
 // These constants are used to specify images to use in column headers.
@@ -47,27 +47,22 @@ func imageHeaderData(imageKey, detail string) HeaderData {
 	return HeaderData{Title: imageKey, Detail: detail, TitleIsImageKey: true}
 }
 
-// tagsHeaderData returns the header data for a tags column.
 func tagsHeaderData() HeaderData {
 	return HeaderData{Title: i18n.Text("Tags")}
 }
 
-// pageRefHeaderData returns the header data for a page reference column.
 func pageRefHeaderData() HeaderData {
 	return imageHeaderData(HeaderBookmark, PageRefTooltip())
 }
 
-// libSrcHeaderData returns the header data for a library source column.
 func libSrcHeaderData() HeaderData {
 	return imageHeaderData(HeaderDatabase, LibSrcTooltip())
 }
 
-// switchHeaderData returns the header data for a switch column.
 func switchHeaderData() HeaderData {
 	return imageHeaderData(HeaderSwitch, SwitchHeaderTooltip())
 }
 
-// enabledHeaderData returns the header data for a modifier's enabled column.
 func enabledHeaderData() HeaderData {
 	return imageHeaderData(HeaderCheckmark, ModifierEnabledTooltip())
 }
@@ -90,20 +85,19 @@ type CellData struct {
 	// is left untouched by that method. It is true when the cell is being displayed on a sheet, template or loot
 	// page, as opposed to an editor, a library list, or a request made only to sort the rows. Display preferences
 	// that belong to the sheet alone, such as the number of decimal places shown for equipment weights, are applied
-	// only when it is set, so that the same node renders exactly elsewhere.
+	// only when it is set.
 	ForPage bool
 }
 
-// fillTagsCell fills in the cell data for a tags column.
 func fillTagsCell(data *CellData, tags []string) {
 	data.Type = cell.Tags
 	data.Primary = CombineTags(tags)
 }
 
-// fillPageRefCell fills in the cell data for a page reference column: the reference itself, and the text to look for on
-// the page, which is highlight when the node has one and otherwise what fallback produces (normally the node's name).
-// fallback is only called when it is needed, since resolving a node's text can be costly and this runs for every row
-// on each sort and each keystroke of a search.
+// fillPageRefCell fills in the cell data for a page reference column: the reference itself, plus the text to look for
+// on the page -- highlight when the node has one, otherwise what fallback produces (normally the node's name). fallback
+// is only called when it is needed, since resolving a node's text can be costly and this runs for every row on each
+// sort and each keystroke of a search.
 func fillPageRefCell(data *CellData, pageRef, highlight string, fallback func() string) {
 	data.Type = cell.PageRef
 	data.Primary = pageRef

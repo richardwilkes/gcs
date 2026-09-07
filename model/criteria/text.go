@@ -48,9 +48,8 @@ func (t Text) Matches(replacements map[string]string, value string) bool {
 }
 
 // MatchesList performs a comparison and returns true if the data matches. The qualifier may hold a comma-separated
-// list of qualifiers; for the positive comparison types (e.g. "is", "contains") a match against any one of them is
-// sufficient, while for the negative comparison types (e.g. "is not", "does not contain") every value must fail to
-// match all of them.
+// list of qualifiers; a positive comparison (e.g. "is", "contains") needs a match against any one of them, while a
+// negative comparison (e.g. "is not", "does not contain") requires every value to fail to match all of them.
 func (t Text) MatchesList(replacements map[string]string, value ...string) bool {
 	qualifiers := splitQualifiers(nameable.Apply(t.Qualifier, replacements))
 	if len(value) == 0 {

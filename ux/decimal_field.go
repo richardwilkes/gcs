@@ -11,7 +11,7 @@ package ux
 
 import "github.com/richardwilkes/gcs/v5/model/fxp"
 
-// DecimalField is field that holds a decimal (fixed-point) number.
+// DecimalField is a field that holds a decimal (fixed-point) number.
 type DecimalField = NumericField[fxp.Int]
 
 // NewDecimalField creates a new field that holds a fixed-point number.

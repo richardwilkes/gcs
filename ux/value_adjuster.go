@@ -38,8 +38,7 @@ func (s *snapshotList[A, V]) apply() {
 }
 
 func (s *snapshotList[A, V]) finish() {
-	// The owner is an interface, so it is checked the way the rest of this file's callers check it: a typed nil would
-	// slip past a plain comparison and then be asked to rebuild.
+	// The owner is an interface, so a typed nil would slip past a plain comparison and then be asked to rebuild.
 	if !xreflect.IsNil(s.owner) && s.rebuild {
 		// Rebuilding stands in for marking the owner as modified (see rebuildAsModified), so the entity only needs
 		// recalculating here when the rebuild won't do it on its own.
@@ -78,10 +77,10 @@ func sheetOwning(owner unison.Paneler, entity *gurps.Entity) *Sheet {
 // ownerRecalculates returns true if marking the owner as modified will recalculate the given entity on its own, so
 // that a single edit doesn't pay for the recalculation twice. Only a Sheet does that, and only for its own entity:
 // Sheet.MarkModified recalculates before updating anything, since everything it then touches reads the derived state.
-// A sheet that is already in the middle of an update pass doesn't count, since MarkModified does nothing at all while
-// awaitingUpdate is set. Skipping the recalculation in that case wouldn't defer it, it would drop it, leaving the
-// derived state stale until some unrelated later edit. Reading the flag here is safe: it is only ever set and cleared
-// within MarkModified, which, like everything else here, runs on the UI thread.
+// A sheet already in the middle of an update pass doesn't count, since MarkModified does nothing at all while
+// awaitingUpdate is set; skipping the recalculation then would drop it rather than defer it, leaving the derived state
+// stale until some unrelated later edit. Reading the flag here is safe: it is only ever set and cleared within
+// MarkModified, which, like everything else here, runs on the UI thread.
 func ownerRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 	sheet := sheetOwning(owner, entity)
 	return sheet != nil && !sheet.awaitingUpdate
@@ -108,9 +107,8 @@ func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], e
 // adjustSelection snapshots, mutates, and registers an undoable edit for each selected row that yields an adjustable
 // target via extract. When recalculate is true, the owning entity is recalculated after the change (and on undo/redo).
 // Pass rebuild for a change that alters more of what the owner shows than the rows being adjusted -- which lists are
-// on the page, which columns they hold -- so that the owner is rebuilt rather than just marked as modified. The same
-// extract should be used by the corresponding canAdjustSelection call so that the enable check and the action never
-// diverge.
+// on the page, which columns they hold. The corresponding canAdjustSelection call should use the same extract, so that
+// the enable check and the action never diverge.
 func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuildable, table *unison.Table[*Node[T]],
 	extract func(T) (A, bool), get func(A) V, set func(A, V), mutate func(A), recalculate, rebuild bool,
 ) {

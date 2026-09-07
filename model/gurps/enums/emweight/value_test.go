@@ -17,10 +17,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestFractionExtractionMatchesClassification verifies that every spelling of a multiplier that ValueFromString
-// classifies as one is also understood by ExtractFraction. ValueFromString explicitly accepts an uppercase "X" (via
-// ToLower) and the Unicode multiplication sign, so those leading characters must be stripped before the fraction is
-// parsed; otherwise the fraction comes back as 0/1 and multiplies the equipment's weight by zero.
+// TestFractionExtractionMatchesClassification verifies that every spelling of a multiplier that ValueFromString accepts
+// -- including "X2" and "×2" -- is also understood by ExtractFraction. A leading marker that isn't stripped yields a
+// fraction of 0/1, which multiplies the equipment's weight by zero.
 func TestFractionExtractionMatchesClassification(t *testing.T) {
 	c := check.New(t)
 	for i, one := range []struct {

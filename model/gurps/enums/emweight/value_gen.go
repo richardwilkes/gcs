@@ -106,7 +106,7 @@ func ExtractValue(str string) Value {
 
 // ExtractKnownValue extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractValue, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// Unlike ExtractValue, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
 // that is dispatching on the type to detect unknown types.
 func ExtractKnownValue(str string) (value Value, known bool) {
 	for _, enum := range Values {

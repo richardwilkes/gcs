@@ -20,8 +20,6 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 )
 
-// TestNewToolbar verifies the shared toolbar shell every dockable builds on: the standard insets plus the one-pixel
-// surface-edge line along the bottom, and layout data that stretches it across its parent.
 func TestNewToolbar(t *testing.T) {
 	c := check.New(t)
 	toolbar := newToolbar()
@@ -36,8 +34,7 @@ func TestNewToolbar(t *testing.T) {
 	c.Equal(0, len(toolbar.Children()), "toolbar starts empty")
 }
 
-// TestFinishToolbarLayout verifies the single-row layout takes its column count from the children present when it is
-// installed, so every child lands on the one row.
+// The column count is taken from the children present when the layout is installed, so every child lands on one row.
 func TestFinishToolbarLayout(t *testing.T) {
 	c := check.New(t)
 	toolbar := newToolbar()
@@ -52,9 +49,6 @@ func TestFinishToolbarLayout(t *testing.T) {
 	c.Equal(float32(0), layout.VSpacing, "no vertical spacing on a single row")
 }
 
-// TestAddUIScaleField verifies the scale field is appended to the toolbar, is bound to the caller's accessors and the
-// standard UI scale bounds, and scales the scroller's content when edited, honoring the display PPI adjustment that the
-// sheet-like views ask for.
 func TestAddUIScaleField(t *testing.T) {
 	c := check.New(t)
 	// Twice the 72 PPI baseline, so the adjusted scale is easy to predict.

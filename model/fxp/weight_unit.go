@@ -63,7 +63,7 @@ func (enum WeightUnit) FromPounds(weight Int) Int {
 	}
 }
 
-// ToPounds the weight for this WeightUnit.
+// ToPounds converts a weight in this WeightUnit to pounds.
 func (enum WeightUnit) ToPounds(weight Int) Int {
 	switch enum {
 	case Pound, PoundAlt:

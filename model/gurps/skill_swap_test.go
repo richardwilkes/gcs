@@ -275,8 +275,7 @@ func TestAlternateDefaultsAvailable(t *testing.T) {
 	c.False(fire.AlternateDefaultsAvailable(), "Fire has a single resolvable default, so there is nothing to swap among")
 }
 
-// TestSwapToNextDefaultCycles verifies that swapping cycles through every resolvable default and wraps back around,
-// persisting each choice.
+// TestSwapToNextDefaultCycles verifies that swapping cycles through every resolvable default and wraps back around.
 func TestSwapToNextDefaultCycles(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

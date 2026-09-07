@@ -35,17 +35,12 @@ type Feature interface {
 // Bonus is an extension of a Feature, which provides a numerical bonus or penalty.
 type Bonus interface {
 	Feature
-	// Owner returns the owner that is currently set.
 	Owner() fmt.Stringer
-	// SetOwner sets the owner to use.
 	SetOwner(owner fmt.Stringer)
-	// SubOwner returns the sub-owner that is currently set.
 	SubOwner() fmt.Stringer
-	// SetSubOwner sets the sub-owner to use.
 	SetSubOwner(owner fmt.Stringer)
-	// SetLeveledOwner sets the LeveledOwner.
 	SetLeveledOwner(provider LeveledOwner)
-	// AdjustedAmount returns the amount, adjusted for level, if requested.
+	// AdjustedAmount returns the amount, adjusted for the owner's level when the bonus is per-level.
 	AdjustedAmount() fxp.Int
 	// AddToTooltip adds this Bonus's details to the tooltip. 'buffer' may be nil.
 	AddToTooltip(buffer *xbytes.InsertBuffer)

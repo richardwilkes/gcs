@@ -16,9 +16,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestEditorNewItemCommandsAddToTheirPanels verifies that each "new item" command an editor offers for its modifier and
-// weapon lists lands in the right list of the editor's data and on the right table. The list panels install these
-// handlers themselves, so one that failed to would leave a menu item that does nothing.
+// Each "new item" command must land in the right list of the editor's data and on the right table. The list panels
+// install these handlers themselves, so one that failed to would leave a menu item that does nothing.
 func TestEditorNewItemCommandsAddToTheirPanels(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

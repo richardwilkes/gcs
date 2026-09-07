@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// newOrganizableTrait creates a non-container trait with a fixed point cost and the given tags.
 func newOrganizableTrait(owner DataOwner, name string, points int, tags ...string) *Trait {
 	trait := NewTrait(owner, nil, false)
 	trait.Name = name
@@ -27,7 +26,6 @@ func newOrganizableTrait(owner DataOwner, name string, points int, tags ...strin
 	return trait
 }
 
-// newOrganizableContainer creates a trait container of the given type.
 func newOrganizableContainer(owner DataOwner, name string, containerType container.Type) *Trait {
 	trait := NewTrait(owner, nil, true)
 	trait.Name = name
@@ -35,7 +33,6 @@ func newOrganizableContainer(owner DataOwner, name string, containerType contain
 	return trait
 }
 
-// organizedNames returns the display names of the traits in the list, which is what most of these tests compare.
 func organizedNames(list []*Trait) []string {
 	names := make([]string, len(list))
 	for i, one := range list {
@@ -44,8 +41,8 @@ func organizedNames(list []*Trait) []string {
 	return names
 }
 
-// TestOrganizeTraitsPointBuckets verifies that untagged traits are filed by cost alone and that the containers come out
-// in the fixed category order, no matter what order the traits arrived in.
+// Untagged traits are filed by cost alone and the containers come out in the fixed category order, whatever order the
+// traits arrived in.
 func TestOrganizeTraitsPointBuckets(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -67,9 +64,8 @@ func TestOrganizeTraitsPointBuckets(t *testing.T) {
 	c.Equal([]string{"Feature"}, organizedNames(organized[4].Children), "0 points is a feature")
 }
 
-// TestOrganizeTraitsTagOverridesPoints verifies that a single category tag decides where a trait goes even when its
-// cost says otherwise, and that the tag is matched the way the rest of GCS matches tags: without regard to case, and
-// against the colon-separated pieces of a compound tag.
+// A single category tag decides where a trait goes even when its cost says otherwise, and the tag is matched the way
+// the rest of GCS matches tags: ignoring case, and against the colon-separated pieces of a compound tag.
 func TestOrganizeTraitsTagOverridesPoints(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -89,8 +85,7 @@ func TestOrganizeTraitsTagOverridesPoints(t *testing.T) {
 	c.Equal([]string{"Costly Quirk"}, organizedNames(organized[2].Children), "the tag beats the point total")
 }
 
-// TestOrganizeTraitsConflictingTagsFallBackToPoints verifies that a trait claiming to belong to two categories at once
-// is filed by its cost instead, since its tags cancel each other out.
+// A trait claiming two categories at once is filed by its cost instead, since its tags cancel each other out.
 func TestOrganizeTraitsConflictingTagsFallBackToPoints(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -107,8 +102,8 @@ func TestOrganizeTraitsConflictingTagsFallBackToPoints(t *testing.T) {
 	c.Equal([]string{"Minus One"}, organizedNames(organized[2].Children), "-1 point is a quirk")
 }
 
-// TestOrganizeTraitsLanguageTagWins verifies that a Language tag files the trait with the languages regardless of what
-// else it is tagged as or what it costs, and that the languages come last among the category containers.
+// A Language tag files the trait with the languages regardless of its other tags or cost, and the languages come last
+// among the category containers.
 func TestOrganizeTraitsLanguageTagWins(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -126,9 +121,8 @@ func TestOrganizeTraitsLanguageTagWins(t *testing.T) {
 		"every language lands in the languages container")
 }
 
-// TestOrganizeTraitsReusesExistingContainer verifies that an existing group container is adopted rather than
-// duplicated, wherever it sits in the list and whatever surrounding whitespace or casing its name has, and that what
-// it already held is sorted in alongside the newly filed traits.
+// An existing group container is adopted rather than duplicated, wherever it sits in the list and whatever surrounding
+// whitespace or casing its name has, and what it already held is sorted in alongside the newly filed traits.
 func TestOrganizeTraitsReusesExistingContainer(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -146,8 +140,8 @@ func TestOrganizeTraitsReusesExistingContainer(t *testing.T) {
 		"the trait already present is merged into the sort")
 }
 
-// TestOrganizeTraitsResortsExistingContainer verifies that a list which is already in the right shape still reports a
-// change when the only thing out of place is the order of an existing container's children.
+// A list already in the right shape still reports a change when the only thing out of place is the order of an existing
+// container's children.
 func TestOrganizeTraitsResortsExistingContainer(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -163,9 +157,9 @@ func TestOrganizeTraitsResortsExistingContainer(t *testing.T) {
 	c.Equal([]string{"Acute Vision", "Zeal"}, organizedNames(organized[0].Children), "the children were sorted")
 }
 
-// TestOrganizeTraitsIgnoresNonGroupContainers verifies that a container whose type gives it a meaning of its own -- a
-// meta-trait or a set of alternative abilities -- is never filed into, even when it happens to carry a category name.
-// A fresh group container is made instead and the typed one keeps its contents and its place in the tail.
+// A container whose type gives it a meaning of its own -- a meta-trait or a set of alternative abilities -- is never
+// filed into, even when it carries a category name. A fresh group container is made instead and the typed one keeps its
+// contents and its place in the tail.
 func TestOrganizeTraitsIgnoresNonGroupContainers(t *testing.T) {
 	for _, containerType := range []container.Type{container.MetaTrait, container.AlternativeAbilities} {
 		t.Run(containerType.Key(), func(_ *testing.T) {
@@ -191,8 +185,8 @@ func TestOrganizeTraitsIgnoresNonGroupContainers(t *testing.T) {
 	}
 }
 
-// TestOrganizeTraitsDropsEmptyCategoryContainers verifies that a category container left with nothing in it is removed,
-// while a container the user made for some other purpose is kept even when it is empty.
+// A category container left with nothing in it is removed, while a container the user made for some other purpose is
+// kept even when it is empty.
 func TestOrganizeTraitsDropsEmptyCategoryContainers(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -206,8 +200,7 @@ func TestOrganizeTraitsDropsEmptyCategoryContainers(t *testing.T) {
 	c.True(organized[1] == racial, "the non-category container is the one that survived")
 }
 
-// TestOrganizeTraitsKeepsOtherContainersInOrder verifies that containers organizing has no interest in are neither
-// reordered nor separated from each other.
+// Containers organizing has no interest in are neither reordered nor separated from each other.
 func TestOrganizeTraitsKeepsOtherContainersInOrder(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -226,8 +219,8 @@ func TestOrganizeTraitsKeepsOtherContainersInOrder(t *testing.T) {
 		"the untouched containers keep their relative order behind the category container")
 }
 
-// TestOrganizeTraitsSortsChildrenNaturally verifies that a container's children are ordered the way the trait table
-// orders a name sort: case is ignored and embedded numbers compare as numbers, so level 2 precedes level 10.
+// A container's children are ordered the way the trait table's name sort does: case is ignored and embedded numbers
+// compare as numbers, so level 2 precedes level 10.
 func TestOrganizeTraitsSortsChildrenNaturally(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -250,9 +243,8 @@ func TestOrganizeTraitsSortsChildrenNaturally(t *testing.T) {
 		organizedNames(organized[0].Children), "children sort naturally, ignoring case")
 }
 
-// TestOrganizeTraitsSetsParentsAndOwner verifies that the tree comes out consistent: every filed trait points at its
-// new container, every container sits at the top level, and a created container is a properly formed container owned by
-// the same data owner the caller passed in.
+// The tree comes out consistent: every filed trait points at its new container, every container sits at the top level,
+// and a created container is owned by the data owner the caller passed in.
 func TestOrganizeTraitsSetsParentsAndOwner(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -271,8 +263,8 @@ func TestOrganizeTraitsSetsParentsAndOwner(t *testing.T) {
 	}
 }
 
-// TestOrganizeTraitsIsIdempotent verifies that organizing an already organized list reports no change and hands back
-// the very same slice, so a caller can skip recording an undoable edit.
+// Organizing an already organized list reports no change and hands back the very same slice, so a caller can skip
+// recording an undoable edit.
 func TestOrganizeTraitsIsIdempotent(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -287,7 +279,6 @@ func TestOrganizeTraitsIsIdempotent(t *testing.T) {
 	c.True(slices.Equal(organized, again), "the same list is handed back untouched")
 }
 
-// TestOrganizeTraitsEmptyList verifies that there is nothing to do for a list with nothing in it.
 func TestOrganizeTraitsEmptyList(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -299,9 +290,8 @@ func TestOrganizeTraitsEmptyList(t *testing.T) {
 	c.Equal(0, len(organized), "an empty list stays empty")
 }
 
-// TestOrganizeTraitsDisabledTrait verifies that switching a trait off doesn't change where it is filed. The
-// Trait.AdjustedPoints method reports zero for a disabled trait, which would file every switched-off trait under
-// Features; organizing has to look past that to what the trait costs when it is on.
+// Switching a trait off doesn't change where it is filed. The Trait.AdjustedPoints method reports zero for a disabled
+// trait, which would file every switched-off trait under Features; organizing looks past that to what it costs when on.
 func TestOrganizeTraitsDisabledTrait(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -314,8 +304,8 @@ func TestOrganizeTraitsDisabledTrait(t *testing.T) {
 	c.Equal([]string{"Sleepy"}, organizedNames(organized[0].Children), "the disabled trait was filed")
 }
 
-// TestOrganizeTraitsSecondSameNamedContainerLeftAlone verifies that only one container per category is adopted; a
-// duplicate keeps its contents and drops to the tail rather than being merged away.
+// Only one container per category is adopted; a duplicate keeps its contents and drops to the tail rather than being
+// merged away.
 func TestOrganizeTraitsSecondSameNamedContainerLeftAlone(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -334,8 +324,8 @@ func TestOrganizeTraitsSecondSameNamedContainerLeftAlone(t *testing.T) {
 	c.Equal([]string{"Stowed"}, organizedNames(second.Children), "the duplicate keeps what it held")
 }
 
-// TestOrganizeTraitsNestedTraitsUntouched verifies that only top-level traits are re-filed. A trait the user tucked
-// into a container stays where they put it, even when its cost says it belongs somewhere else.
+// Only top-level traits are re-filed. A trait the user tucked into a container stays where they put it, even when its
+// cost says it belongs somewhere else.
 func TestOrganizeTraitsNestedTraitsUntouched(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -350,9 +340,8 @@ func TestOrganizeTraitsNestedTraitsUntouched(t *testing.T) {
 	c.True(existing == nested.Parent(), "the nested trait keeps its parent")
 }
 
-// TestOrganizeTraitsClassifiesBeforeMoving verifies that a trait is filed by what it cost before the move. A container
-// can carry modifiers that its contents inherit, so filing a trait into one can change that trait's cost -- and would
-// change where it belongs if the decision were made after the fact rather than before.
+// A trait is filed by what it cost before the move. A container can carry modifiers its contents inherit, so filing a
+// trait into one can change that trait's cost -- and would change where it belongs if decided after the fact.
 func TestOrganizeTraitsClassifiesBeforeMoving(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -371,8 +360,8 @@ func TestOrganizeTraitsClassifiesBeforeMoving(t *testing.T) {
 		"the container's limitation really does drop the trait to a perk's worth of points once it is inside")
 }
 
-// TestOrganizeTraitsLibraryShapes covers the shapes that show up in the stock libraries: language traits tagged as
-// advantages, and leveled traits tagged both ways whose category depends on how many levels were bought.
+// Covers the shapes that show up in the stock libraries: language traits tagged as advantages, and leveled traits
+// tagged both ways whose category depends on how many levels were bought.
 func TestOrganizeTraitsLibraryShapes(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -397,8 +386,7 @@ func TestOrganizeTraitsLibraryShapes(t *testing.T) {
 	c.Equal([]string{"Advantages"}, organizedNames(organized), "three levels cost three points, so it is an advantage")
 }
 
-// TestOrganizeTraitsWithTemplateOwner verifies that organizing works for a template, which has no entity behind its
-// traits for the point calculations to consult.
+// Organizing works for a template, which has no entity behind its traits for the point calculations to consult.
 func TestOrganizeTraitsWithTemplateOwner(t *testing.T) {
 	c := check.New(t)
 	tmpl := NewTemplate()

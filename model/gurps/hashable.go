@@ -112,12 +112,11 @@ func HashJSON(h hash.Hash, in any) {
 // HashJSON hands to a hasher. It is for the callers that compare the encodings of two pieces of document data to decide
 // whether one differs from the other, such as an open editor asking whether it holds unapplied changes.
 //
-// Such a comparison must be a function of the data alone. The "calc" members are derived values, and computing them
-// runs the scripts the data owner wrote; a script is abandoned once it exceeds the permitted per-script execution time
-// and then resolves to 0 rather than its real value. Whether that happens depends on how busy the machine is, so two
-// encodings of identical data could otherwise disagree — and the caller would report changes that were never made.
-// Leaving the derived values out also spares the caller from running those scripts at all, which matters when the
-// comparison is made as often as one asking whether an editor is modified.
+// Such a comparison must be a function of the data alone, and the derived "calc" values are not: computing them runs
+// the scripts the data owner wrote, and a script that exceeds the permitted per-script execution time resolves to 0
+// rather than its real value, so two encodings of identical data could otherwise disagree and report changes that were
+// never made (see HashJSON). Leaving them out also spares the caller from running those scripts at all, which matters
+// when the comparison is made as often as one asking whether an editor is modified.
 //
 // The encoding is deterministic, since the bytes are compared directly and json/v2 is otherwise free to write a map's
 // entries in a different order each time.

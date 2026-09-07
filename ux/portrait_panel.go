@@ -35,9 +35,7 @@ import (
 const (
 	maxPortraitDimension = 400
 	// defaultPortraitWidth and defaultPortraitHeight are the size the portrait asks for when nothing else decides it,
-	// in the 72 pixels-per-inch units the page works in: an inch and a half wide, an inch tall. The row it sits in
-	// gives it its width, and its height is the taller of this and whatever else is in the row, or the minimum height
-	// its layout node asks for.
+	// in the 72 pixels-per-inch units the page works in: an inch and a half wide, an inch tall.
 	defaultPortraitWidth  = 108
 	defaultPortraitHeight = 72
 )
@@ -75,12 +73,11 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 	return p
 }
 
-// sizer reports the portrait's natural size. The panel has no layout of its own, so this is what unison asks for its
-// size. The width is whatever the row offers (or defaultPortraitWidth when asked without one), and the natural height
-// is a fixed defaultPortraitHeight rather than something tied to the width: a portrait's height is set by the blocks
-// beside it or by dragging its bottom edge in the layout editor, and tying it to the width would make a wide portrait
-// tall with no way to shorten it. The image is drawn to fit whatever shape results. The maximum height is left open so
-// the portrait fills the row it is in.
+// sizer reports the portrait's natural size. The width is whatever the row offers (or defaultPortraitWidth when asked
+// without one), and the natural height is a fixed defaultPortraitHeight rather than something tied to the width: a
+// portrait's height is set by the blocks beside it or by dragging its bottom edge in the layout editor, and tying it
+// to the width would make a wide portrait tall with no way to shorten it. The maximum height is left open so the
+// portrait fills the row it is in.
 func (p *PortraitPanel) sizer(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	var insets geom.Insets
 	if border := p.Border(); border != nil {
@@ -99,9 +96,8 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	paint := unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill)
 	gc.DrawRect(r, paint)
 	if img := p.entity.Profile.Portrait(); img != nil {
-		// The picture always occupies a square, the largest one that fits in the block, centered, and the image is
-		// scaled to fit inside that square with its proportions kept and centered within it. The block itself can be
-		// any shape the layout gives it.
+		// The picture occupies the largest square that fits in the block, centered, with the image scaled to fit
+		// inside that square with its proportions kept. The block itself can be any shape the layout gives it.
 		side := min(r.Width, r.Height)
 		pr := geom.NewRect(r.X+(r.Width-side)/2, r.Y+(r.Height-side)/2, side, side)
 		if size := img.LogicalSize(); size.Width > 0 && size.Height > 0 && size != pr.Size {

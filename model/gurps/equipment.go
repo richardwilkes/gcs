@@ -273,7 +273,7 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, forPage bool) HeaderData {
 	var data HeaderData
 	// Templates and loot sheets have no entity, so this resolves to the default sheet settings for them, which is where
-	// their WeightUnit() comes from as well. It is the one source of the weight units here, so that the totals and the
+	// their WeightUnit() comes from as well. It is the one source of the weight units here, so the totals and the
 	// column sort order cannot come to use different units.
 	settings := SheetSettingsFor(provider.DataOwner().OwningEntity())
 	switch columnID {
@@ -334,11 +334,10 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 	return data
 }
 
-// equipmentTotalsTitle returns the header title for an equipment list on a page, with the list's total weight and
-// value appended using the sheet's display formats. When those formats change the rendering of either total, the
-// exact totals are returned as well, for the header's tooltip: a total is rounded once after summing, so what shows
-// need not match either the exact total or the sum of the rounded rows, and the tooltip is where the exact figure is
-// found for the rows themselves.
+// equipmentTotalsTitle returns the header title for an equipment list on a page, with the list's total weight and value
+// appended using the sheet's display formats. When those formats change the rendering of either total, the exact totals
+// are returned as well, for the header's tooltip: a total is rounded once after summing, so what shows need not match
+// either the exact total or the sum of the rounded rows.
 func equipmentTotalsTitle(title string, list []*Equipment, settings *SheetSettings) (fullTitle, exactTotals string) {
 	var weight fxp.Weight
 	var value fxp.Int
@@ -438,22 +437,18 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	case EquipmentLibSrcColumn:
 		fillLibSrcCell(data, e.owner, e)
 	case EquipmentSwitchColumn:
-		// Only items that actually have something to switch get a cell; the rest are left blank.
 		if e.HasSwitchableFeatures() {
 			data.Type = cell.Switch
 			data.Checked = e.SwitchedOn
 			data.Alignment = align.Middle
 			data.Tooltip = SwitchCellTooltip(e.Container())
 			// Dim (but leave usable) a switch that would change nothing if thrown right now. The character only
-			// collects features from carried equipment that is really equipped, and this column is present for the
-			// other equipment list as well, where the equipped flag is meaningless -- nothing clears it when an item
-			// is created in or moved to that list. Neither state is the whole answer, though: the features the
-			// equipment resolves for itself take effect no matter which list it lives in.
+			// collects features from carried equipment that is really equipped, but the features the equipment
+			// resolves for itself take effect no matter which list it lives in.
 			//
 			// The tests are ordered by cost, since this runs for every column of every row on each sort and each
 			// keystroke of a search: ReallyEquipped only walks the parent chain, IsCarried additionally scans the
-			// entity's root equipment lists, and switchMattersWhileUnequipped traverses every modifier, so each is
-			// only reached when the cheaper ones ahead of it left the answer open.
+			// entity's root equipment lists, and switchMattersWhileUnequipped traverses every modifier.
 			if (!e.ReallyEquipped() || !e.IsCarried()) && !e.switchMattersWhileUnequipped() {
 				data.Dim = true
 			}
@@ -484,12 +479,9 @@ func (e *Equipment) ReallyEquipped() bool {
 // list to be told apart from, so it is considered carried.
 //
 // A row on a sheet is always rooted in one of the two lists, and the other equipment list is checked first, since it is
-// normally the far shorter of the two. Only a root found in neither list needs any further work, and there are two ways
-// to get one. An editor's working clone is made with the row's own parent, which is nil for a top-level row, leaving
-// the clone rooted outside both lists while keeping the ID of the row it stands for; that ID is what settles the
-// question, so the clone's preview of Extended Value and Extended Weight agrees with the sheet no matter which list the
-// row came from. A row in flight between the lists has no such counterpart to be found and is treated as carried, which
-// mirrors the no-entity case.
+// normally the far shorter of the two. A root found in neither list is either an editor's working clone, which keeps
+// the ID of the row it stands for and is settled by that ID, so its preview of Extended Value and Extended Weight
+// agrees with the sheet, or a row in flight between the lists, which has no such counterpart and is treated as carried.
 func (e *Equipment) IsCarried() bool {
 	entity := EntityFromNode(e)
 	if entity == nil {
@@ -626,12 +618,10 @@ func (e *Equipment) HasSwitchableFeatures() bool {
 	return anyModifierSwitchable(e.Modifiers, func(mod *EquipmentModifier) Features { return mod.Features })
 }
 
-// switchMattersWhileUnequipped returns true if any of the switchable features this equipment currently contributes --
-// its own or those of its enabled modifiers -- would still take effect while the entity isn't collecting from the
-// equipment, i.e. while it isn't really equipped or isn't carried at all. The owning entity only collects features
-// from carried equipment that is really equipped (see Entity.processFeatures), but a handful of features are resolved
-// by the equipment itself, no matter which list it lives in or whether it is equipped, so the switch controlling one
-// of those is never inert.
+// switchMattersWhileUnequipped returns true if any of the switchable features this equipment contributes -- its own or
+// those of its enabled modifiers -- would still take effect while the entity isn't collecting from the equipment, i.e.
+// while it isn't really equipped or isn't carried at all. A handful of features are resolved by the equipment itself,
+// no matter which list it lives in or whether it is equipped, so the switch controlling one of those is never inert.
 func (e *Equipment) switchMattersWhileUnequipped() bool {
 	if e.anySwitchableMattersWhileUnequipped(e.Features) {
 		return true
@@ -663,9 +653,8 @@ func (e *Equipment) anySwitchableMattersWhileUnequipped(features Features) bool 
 		case *WeaponBonus:
 			// "To this weapon" bonuses are resolved by the weapon itself, and the weapons of unequipped equipment are
 			// still displayed when the sheet is set to show them all. "To a named weapon" bonuses count, too: the
-			// entity's own collection only reaches really-equipped items, but the weapon additionally reads its
-			// owner's active features directly, no matter where that owner lives, so such a bonus still lands on this
-			// equipment's own weapon whenever the name, usage and tag criteria match it.
+			// weapon reads its owner's active features directly, no matter where that owner lives, so such a bonus
+			// still lands on this equipment's own weapon whenever the criteria match it.
 			if (f.SelectionType == wsel.ThisWeapon || f.SelectionType == wsel.WithName) && len(e.Weapons) != 0 {
 				return true
 			}
@@ -1077,17 +1066,17 @@ func (e *EquipmentEditData) ApplyTo(other *Equipment) {
 	other.copyFrom(other, e, true, Copy)
 }
 
-// copyFrom copies other into e. isApply distinguishes staging the editor's working copy from committing it
-// back, and only affects how an empty Prereq list is resolved. mode controls how nested modifiers and
-// weapons are cloned -- CopyFrom/ApplyTo above always use Copy, since that's staging or committing the same
-// equipment's own data, not producing a new one; Clone passes its own mode through.
+// copyFrom copies other into e. isApply distinguishes staging the editor's working copy from committing it back, and
+// only affects how an empty Prereq list is resolved. mode controls how nested modifiers and weapons are cloned --
+// CopyFrom/ApplyTo always use Copy, since they stage or commit the same equipment's own data rather than producing a
+// new one; Clone passes its own mode through.
 func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditData, isApply bool, mode CloneMode) {
 	*e = *other
 	e.Tags = slices.Clone(other.Tags)
 	e.Replacements = maps.Clone(other.Replacements)
-	// Each copy is pointed at the equipment it belongs to, so that its nameable placeholders can be resolved with that
-	// equipment's replacements. Without this, the copies held in an editor show their raw placeholders (e.g.
-	// "@Material@"), since the accessors fall back to the unsubstituted text when there is no equipment.
+	// Each copy is pointed at the equipment it belongs to, so its nameable placeholders resolve with that equipment's
+	// replacements. Without this, the copies held in an editor show their raw placeholders (e.g. "@Material@"), since
+	// the accessors fall back to the unsubstituted text when there is no equipment.
 	e.Modifiers = cloneModifiers(other.Modifiers, equipment, mode,
 		func(m *EquipmentModifier) { m.setEquipment(equipment) })
 	// setEquipment() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't the

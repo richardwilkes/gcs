@@ -127,8 +127,8 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 	}
 	singular, plural := provider.ItemNames()
 	table.InstallDragSupport(provider.DragSVG(), provider.DragKey(), singular, plural)
-	// Mirror the dragged rows into our own storage so that alternate drop handlers (which deal with a different row
-	// type than the destination table) can access them, since unison only retains them internally.
+	// Mirror the dragged rows into our own storage, since unison only retains them internally, so that alternate drop
+	// handlers -- which deal with a different row type than the destination table -- can reach them.
 	origMouseDrag := table.MouseDragCallback
 	table.MouseDragCallback = func(where geom.Point, button int, mods mod.Modifiers) bool {
 		if button == unison.ButtonLeft && table.HasSelection() && table.IsDragGesture(where) {
@@ -201,12 +201,11 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 }
 
 // installStandardTableCmdHandlers installs the commands every node table offers -- opening the editor, following the
-// page references, and, when the table is editable, deleting, duplicating, syncing with and clearing the source of the
-// selection -- on the panel that owns the table rather than on the table itself, so that they are reachable from
-// anywhere within that panel: in a list dockable that means the filter field as well as the table, so that the
-// commands keep acting on the selection while the user is typing in the filter. The owner is resolved through a
-// function rather than taken up front because the editor's list panels are built before they are attached to the
-// editor that owns them.
+// page references, and, when editable, deleting, duplicating, syncing with and clearing the source of the selection --
+// on the panel that owns the table rather than on the table itself, so that they are reachable from anywhere within
+// that panel: in a list dockable that means the filter field too, keeping the commands active on the selection while
+// the user types in the filter. The owner is resolved through a function rather than taken up front because the
+// editor's list panels are built before they are attached to the editor that owns them.
 func installStandardTableCmdHandlers[T gurps.Node[T]](target unison.Paneler, table *unison.Table[*Node[T]], provider TableProvider[T], owner func() Rebuildable, editable bool) {
 	panel := target.AsPanel()
 	panel.InstallCmdHandlers(OpenEditorItemID,
@@ -237,8 +236,8 @@ func installStandardTableCmdHandlers[T gurps.Node[T]](target unison.Paneler, tab
 
 // sizePageTableColumns sizes the columns of a fixed-width page table to fit, then, when the user can't resize columns
 // and the setting is enabled, lets any page reference columns claim leftover space so they can show more than one
-// reference before the rest goes to the excess column. This is run both when the table's frame changes and when it is
-// synced, since a settings change won't necessarily alter the frame.
+// reference. Run both when the table's frame changes and when it is synced, since a settings change won't necessarily
+// alter the frame.
 func sizePageTableColumns[T gurps.Node[T]](table *unison.Table[*Node[T]], excessColumnID int) {
 	table.SizeColumnsToFitWithExcessIn(excessColumnID)
 	if table.PreventUserColumnResize && gurps.GlobalSettings().General.ExpandPageReferences &&
@@ -248,10 +247,10 @@ func sizePageTableColumns[T gurps.Node[T]](table *unison.Table[*Node[T]], excess
 }
 
 // expandPageRefColumns hands leftover horizontal space to any page reference columns so they can display more than a
-// single reference, taking that space from the excess-width column. The excess column first keeps enough room to show
-// its primary content with notes collapsed; only the space beyond that is offered to the page reference columns, and
-// each grows only up to the width needed to show all of its references (capped by its AutoMaximum). Whatever isn't
-// claimed stays with the excess column. Returns true if any column width was changed.
+// single reference, taking that space from the excess-width column. The excess column keeps enough room to show its
+// primary content with notes collapsed; only the space beyond that is offered, and each page reference column grows
+// only up to the width needed to show all of its references (capped by its AutoMaximum). Returns true if any column
+// width was changed.
 func expandPageRefColumns[T gurps.Node[T]](table *unison.Table[*Node[T]], excessColumnID int) bool {
 	excess := table.ColumnIndexForID(excessColumnID)
 	if excess < 0 || excess >= len(table.Columns) {
@@ -278,8 +277,7 @@ func expandPageRefColumns[T gurps.Node[T]](table *unison.Table[*Node[T]], excess
 		if col == excess {
 			continue
 		}
-		// Determine the width needed to show every reference in this column across all rows, skipping the column
-		// entirely if it isn't a page reference column.
+		// A negative width means this isn't a page reference column, so skip it.
 		content := float32(-1)
 		isPageRef := true
 		for row := 0; row <= lastRow; row++ {
@@ -312,8 +310,8 @@ func expandPageRefColumns[T gurps.Node[T]](table *unison.Table[*Node[T]], excess
 }
 
 // copyDestination is what copySelectionTo asks of a sheet or template it copies rows onto: the page list for a block
-// key, so that the type of the rows being copied can pick the list they land in without the destination's fields being
-// named. Both *Sheet and *Template satisfy it.
+// key, so the type of the rows being copied can pick the list they land in without naming the destination's fields.
+// Both *Sheet and *Template satisfy it.
 type copyDestination interface {
 	FileBackedDockable
 	list(key string) sheetList
@@ -394,25 +392,25 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 }
 
 // processCopiedRows resolves the just-copied, currently-selected rows of a sheet's or template's table the same way a
-// drop onto one does: prompting for the modifiers and nameables of rows that arrived from somewhere other than a sheet,
-// then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
-// destination isn't a character sheet, loot sheet or template (see shouldProcessModifiersAndNameablesTo).
+// drop onto one does: prompting for the modifiers and nameables of rows that arrived from somewhere other than a
+// sheet, then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
+// destination isn't a character sheet, loot sheet or template.
 func processCopiedRows[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
 	if shouldProcessModifiersAndNameablesTo(target) {
 		if shouldProcessModifiersAndNameablesFrom(source) {
-			// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us: only
-			// the modifiers that are enabled count toward a row having switchable features, so turning one on or off can
-			// add or take away the switch column, and a list can only change its columns by building a new table. An
-			// orphaned table has no Rebuildable above it, so a rebuild asked for through it never happens, and the rows it
-			// reports as selected are its own rather than the ones the user is now looking at -- both of which the steps
-			// below depend upon. Applying nameable substitutions rebuilds as well, so look it up again afterwards too.
+			// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us:
+			// only enabled modifiers count toward a row having switchable features, so toggling one can add or take
+			// away the switch column, and a list can only change its columns by building a new table. An orphaned table
+			// has no Rebuildable above it and reports its own rows as selected rather than the ones the user is now
+			// looking at, both of which the steps below depend upon. Applying nameable substitutions rebuilds as well,
+			// so look it up again afterwards too.
 			ProcessModifiersForSelection(target)
 			target = liveTable(target)
 			ProcessNameablesForSelection(target)
 			target = liveTable(target)
 		}
-		// The copy always adds rows to a different sheet, so always merge points into identical existing rows, including
-		// when copying from another sheet.
+		// The copy always adds rows to a different sheet, so merge points into identical existing rows even when
+		// copying from another sheet.
 		MergeAddedRows(target)
 	}
 }
@@ -623,13 +621,12 @@ func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 	table.SetSelectionMap(selMap)
 	if postProcessor != nil {
 		postProcessor(rows)
-		// The post-processing can put a prompt in front of the user, and answering one rebuilds the owner: only the
-		// modifiers that are enabled count toward a row having switchable features, so toggling one can add or take
-		// away the switch column, and a list can only change its columns by building a new table. That leaves the
-		// table we were handed orphaned, with no Rebuildable above it, so the scroll below would aim at a detached
-		// table and the closing rebuild would be skipped entirely -- leaving the sheet showing whatever the last
-		// rebuild produced, with no deferred refresh on this path to cover for it. Note that the selection needs no
-		// restoring, since the rebuild that produced the replacement records it and puts it back by row ID.
+		// The post-processing can put a prompt in front of the user, and answering one rebuilds the owner, which can
+		// replace the table: only enabled modifiers count toward a row having switchable features, so toggling one can
+		// add or take away the switch column, and a list can only change its columns by building a new table. That
+		// leaves the table we were handed orphaned, with no Rebuildable above it, so the scroll below would aim at a
+		// detached table and the closing rebuild would be skipped entirely. The selection needs no restoring, since
+		// the rebuild that produced the replacement records it and puts it back by row ID.
 		table = liveTable(table)
 	}
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)

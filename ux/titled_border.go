@@ -34,7 +34,7 @@ func (t *TitledBorder) font() unison.Font {
 	return t.Font
 }
 
-// Insets implements unison.Border
+// Insets implements unison.Border.
 func (t *TitledBorder) Insets() geom.Insets {
 	return geom.Insets{
 		Top:    xmath.Ceil(t.font().LineHeight()) + 2,
@@ -44,7 +44,7 @@ func (t *TitledBorder) Insets() geom.Insets {
 	}
 }
 
-// Draw implements unison.Border
+// Draw implements unison.Border.
 func (t *TitledBorder) Draw(gc *unison.Canvas, rect geom.Rect) {
 	clip := rect.Inset(t.Insets())
 	clip.Y += 0.5

@@ -25,13 +25,13 @@ import (
 )
 
 // libraryCheckTimeout bounds a check made on demand from the Library Explorer. It is far shorter than the background
-// checks allow themselves, since the user is waiting on this one.
+// checks allow, since the user is waiting on this one.
 const libraryCheckTimeout = time.Minute
 
 // libraryUpdateButtonsEnabled returns true if the Library Explorer's update and release-notes buttons should be enabled
 // for the given library: when a check has turned up a release to offer, or when no check has completed and there is a
-// repository to ask, so that the buttons remain a way to get at a library's releases whatever the periodic checks are
-// set to. Clicking either button in that second state makes the check first (see checkLibraryReleases).
+// repository to ask, so the buttons remain a way to get at a library's releases whatever the periodic checks are set
+// to. Clicking either button in that second state makes the check first (see checkLibraryReleases).
 func libraryUpdateButtonsEnabled(lib *gurps.Library) bool {
 	_, releases := lib.AvailableReleases()
 	return (len(releases) != 0 && releases[0].HasUpdate()) || lib.NeedsUpgradeCheck()
@@ -41,10 +41,9 @@ func libraryUpdateButtonsEnabled(lib *gurps.Library) bool {
 // Libraries whose releases are already known aren't asked about again, so when the periodic checks have been running
 // this returns at once. Otherwise a small window reports on the check while it runs, which the user may cancel, and the
 // result is false if they did or if a library still has no answer once the checks have finished, the failure having
-// been reported. A library whose check is still in flight -- the launch-time or periodic check having not yet finished
-// with it -- is waited on rather than asked again, since Library.CheckForAvailableUpgrade() joins a check already under
-// way instead of making a second request. Must be called on the UI thread; it runs a modal loop while waiting on the
-// checks.
+// been reported. A library whose check is still in flight is waited on rather than asked again, since
+// Library.CheckForAvailableUpgrade() joins a check already under way instead of making a second request. Must be called
+// on the UI thread; it runs a modal loop while waiting on the checks.
 func checkLibraryReleases(libs []*gurps.Library) bool {
 	var pending []*gurps.Library
 	for _, lib := range libs {
@@ -88,7 +87,6 @@ func checkLibraryReleases(libs []*gurps.Library) bool {
 	return true
 }
 
-// libraryCheckTitle describes what the check is looking at.
 func libraryCheckTitle(libs []*gurps.Library) string {
 	if len(libs) == 1 {
 		return fmt.Sprintf(i18n.Text("Checking for %s updates…"), libs[0].Data().Title)

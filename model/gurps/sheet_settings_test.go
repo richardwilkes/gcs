@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// writeSheetSettingsFile writes the given JSON to a temporary file and returns its path.
 func writeSheetSettingsFile(t *testing.T, content string) string {
 	t.Helper()
 	p := filepath.Join(t.TempDir(), "settings.sheet")

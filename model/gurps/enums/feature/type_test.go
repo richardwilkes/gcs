@@ -17,10 +17,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestIsWeaponBonusMatchesWeaponKeys verifies that IsWeaponBonus, which is maintained by hand, agrees with the
-// generated enum: every type whose key starts with "weapon_" is a weapon bonus and nothing else is. A weapon type added
-// to the enum without being added to IsWeaponBonus would otherwise load as an UnknownFeature and be missing from the
-// feature editor.
+// TestIsWeaponBonusMatchesWeaponKeys verifies that the hand-maintained IsWeaponBonus agrees with the generated enum:
+// every type whose key starts with "weapon_" is a weapon bonus and nothing else is. A weapon type missing from
+// IsWeaponBonus loads as an UnknownFeature and is absent from the feature editor.
 func TestIsWeaponBonusMatchesWeaponKeys(t *testing.T) {
 	c := check.New(t)
 	count := 0

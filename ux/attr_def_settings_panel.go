@@ -153,8 +153,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 // createPlacementPanel builds the content that follows the "Placement" label. When the placement is Hidden, it expands
 // to read "[Hidden] unless trait [trait name] is present, then [placement]", allowing an attribute to be revealed with
-// an alternate placement whenever the character has the named trait. Leaving the trait name empty keeps the attribute
-// hidden, matching the original behavior.
+// an alternate placement whenever the character has the named trait. An empty trait name keeps it hidden.
 func (p *attrDefSettingsPanel) createPlacementPanel() *unison.Panel {
 	panel := unison.NewPanel()
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})

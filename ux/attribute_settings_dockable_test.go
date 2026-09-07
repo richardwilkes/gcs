@@ -168,9 +168,9 @@ func testAttrDef(id, name string, order int) *gurps.AttributeDef {
 	return def
 }
 
-// initTestSettingsContent builds a settings dockable's content the way Setup does, but with no dock and no window: the
-// content is wrapped in a scroll panel that is itself a child of the dockable, so that sync() can find a scroll root and
-// the target manager, which is rooted at the dockable, can find the widgets.
+// initTestSettingsContent builds a settings dockable's content as Setup does, but with no dock and no window. The
+// content is wrapped in a scroll panel below the dockable, so that sync() can find a scroll root and the target
+// manager, rooted at the dockable, can find the widgets.
 func initTestSettingsContent[T undoableSettingsModel](d *undoableSettingsDockable[T]) {
 	content := unison.NewPanel()
 	scroller := unison.NewScrollPanel()
@@ -196,8 +196,8 @@ func attrDeleteButtonEnabled(d *attributeSettingsDockable, index int) bool {
 	return panel != nil && panel.deleteButton.Enabled()
 }
 
-// newTestAttributeSettingsDockable returns a dockable for the defaults that edits the factory attribute definitions, its
-// content not yet built; see initTestSettingsContent.
+// newTestAttributeSettingsDockable returns a dockable for the defaults that edits the factory attribute definitions,
+// its content not yet built.
 func newTestAttributeSettingsDockable() *attributeSettingsDockable {
 	return newTestAttributeSettingsDockableFor(gurps.FactoryAttributeDefs())
 }
@@ -210,9 +210,10 @@ func newTestAttributeSettingsDockableFor(defs *gurps.AttributeDefs) *attributeSe
 	return d
 }
 
-// TestAttributeDefDragDropReorders verifies that dropping a dragged attribute definition moves it among the definitions,
-// renumbers them to match, posts a single undo edit, rebuilds the panels and clears the drag state; and that a payload
-// from another attribute editor, which is what a drag from another sheet's settings delivers, is ignored.
+// TestAttributeDefDragDropReorders verifies that dropping a dragged attribute definition moves it among the
+// definitions, renumbers them to match, posts a single undo edit, rebuilds the panels and clears the drag state; and
+// that a payload from another attribute editor, which is what a drag from another sheet's settings delivers, is
+// ignored.
 func TestAttributeDefDragDropReorders(t *testing.T) {
 	c := check.New(t)
 	d := newTestAttributeSettingsDockableFor(testAttrDefs("st", "dx", "iq"))
@@ -349,7 +350,6 @@ func testAttrDefs(ids ...string) *gurps.AttributeDefs {
 	return defs
 }
 
-// attrDefIDs returns the IDs of the definitions in order.
 func attrDefIDs(defs *gurps.AttributeDefs) []string {
 	list := defs.List(false)
 	ids := make([]string, len(list))
@@ -359,7 +359,6 @@ func attrDefIDs(defs *gurps.AttributeDefs) []string {
 	return ids
 }
 
-// attrDefOrders returns the Order of the definitions in order.
 func attrDefOrders(defs *gurps.AttributeDefs) []int {
 	list := defs.List(false)
 	orders := make([]int, len(list))
@@ -369,7 +368,6 @@ func attrDefOrders(defs *gurps.AttributeDefs) []int {
 	return orders
 }
 
-// thresholdStates returns the states of the definition's thresholds in order.
 func thresholdStates(def *gurps.AttributeDef) []string {
 	states := make([]string, len(def.Thresholds))
 	for i, threshold := range def.Thresholds {

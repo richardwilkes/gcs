@@ -59,8 +59,8 @@ func TestWrappingLabelSizes(t *testing.T) {
 		"a hint with no width wraps to the default width regardless of the insets, which are still added")
 }
 
-// TestWrappingLabelSetText verifies that setText replaces the text and the ink it is drawn in, and asks for the label
-// and its ancestors to be laid out again, since the number of lines may have changed.
+// TestWrappingLabelSetText verifies that setText replaces the text and ink and asks the label and its ancestors to be
+// laid out again, since the number of lines may have changed.
 func TestWrappingLabelSetText(t *testing.T) {
 	c := check.New(t)
 	parent := unison.NewPanel()

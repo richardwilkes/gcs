@@ -16,7 +16,7 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// weightedStringListSpec describes a weighted string list an editor shows: its labels and undo titles, and the list
+// weightedStringListSpec describes a weighted string list an editor shows: its labels and undo titles, plus the list
 // itself, bound by pointer so that appends and removals reach the model. When importer is set, the list's header gets
 // an import button that calls it.
 type weightedStringListSpec struct {
@@ -35,8 +35,6 @@ type weightedStringListSpec struct {
 	list                  *[]*gurps.WeightedStringOption
 }
 
-// ancestryOptionValueTooltip returns the tooltip of the value field in each of an options block's weighted string
-// lists.
 func ancestryOptionValueTooltip() string {
 	return i18n.Text("The text placed on the character sheet when this option is chosen")
 }
@@ -78,7 +76,6 @@ func newAncestryOptionsPanel(d *ancestryEditorDockable, options *gurps.AncestryO
 	return p
 }
 
-// addGenderFields adds the weight and name of the gender this block belongs to.
 func (p *ancestryOptionsPanel) addGenderFields() {
 	mgr := p.dockable.targetMgr
 	addLabelAndTargetedIntegerField(p.AsPanel(), mgr, p.weighted.KeyPrefix+"weight", i18n.Text("Weight"),
@@ -110,8 +107,8 @@ func (p *ancestryOptionsPanel) addScriptFields() {
 		func(s string) { o.AgeScript = s }, false)
 }
 
-// weightedStringListSpecs returns the specs for the four weighted string lists of an options block, in the order they
-// are shown, one below another: hair, eyes, skin and handedness.
+// weightedStringListSpecs returns the specs for an options block's four weighted string lists, in the order shown:
+// hair, eyes, skin and handedness.
 func weightedStringListSpecs(options *gurps.AncestryOptions) []*weightedStringListSpec {
 	return []*weightedStringListSpec{
 		{

@@ -19,8 +19,7 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// shellTestEditor is the least an editor built on editorShell can be: it supplies the title, whether there are changes,
-// and how they are applied, and counts what the shell asks of it.
+// shellTestEditor is the least an editor built on editorShell can be, counting what the shell asks of it.
 type shellTestEditor struct {
 	editorShell
 	modified bool
@@ -50,9 +49,8 @@ func (e *shellTestEditor) AttemptClose() bool {
 	return true
 }
 
-// TestEditorShellContentKeysDriveTheButtons verifies that Cmd-Return and Escape within an editor's content stand in for
-// its Apply and Discard buttons -- doing nothing while those are disabled, since there is nothing to apply or discard --
-// that neither button prompts on the way out, and that other keys are left to the content.
+// Cmd-Return and Escape within an editor's content stand in for its Apply and Discard buttons, doing nothing while
+// those are disabled, and other keys are left to the content.
 func TestEditorShellContentKeysDriveTheButtons(t *testing.T) {
 	c := check.New(t)
 	e := newShellTestEditor()
@@ -96,9 +94,8 @@ func TestEditorShellContentKeysDriveTheButtons(t *testing.T) {
 	c.False(e.cancelButton.Enabled())
 }
 
-// TestEditorShellConfirmCloseAsksOnlyWhenThereIsSomethingToAsk verifies the two cases in which closing an editor must
-// not put up the save prompt: when a button has already settled what happens to the changes, and when there are none.
-// Whether there are any is not even asked in the first case, since finding out can be costly.
+// Closing an editor must not put up the save prompt when a button has already settled what happens to the changes, or
+// when there are none. In the first case whether there are any is not even asked, since finding out can be costly.
 func TestEditorShellConfirmCloseAsksOnlyWhenThereIsSomethingToAsk(t *testing.T) {
 	c := check.New(t)
 	e := newShellTestEditor()
@@ -119,8 +116,6 @@ func TestEditorShellConfirmCloseAsksOnlyWhenThereIsSomethingToAsk(t *testing.T) 
 	c.Equal(0, applied, "without applying anything")
 }
 
-// TestEditorShellReturnsToPreviousWithoutADockable verifies that returning to where an editor was opened from is a
-// no-op when nothing was recorded, as when the editor was opened while no dockable was current.
 func TestEditorShellReturnsToPreviousWithoutADockable(t *testing.T) {
 	c := check.New(t)
 	e := newShellTestEditor()
@@ -129,14 +124,13 @@ func TestEditorShellReturnsToPreviousWithoutADockable(t *testing.T) {
 	c.Nil(e.returnToPrevious(), "a dockable that is not in a dock container cannot be made current")
 }
 
-// isPointsEditor reports whether a dockable is a points editor.
 func isPointsEditor(d unison.Dockable) bool {
 	_, ok := d.AsPanel().Self.(*pointsEditor)
 	return ok
 }
 
-// openPointsEditorForSheet focuses the sheet's name field, so that there is a focus to restore, and opens the points
-// editor for the sheet's entity from it, the way the edit button beside the point total does. It returns the editor.
+// openPointsEditorForSheet focuses the sheet's name field, so there is a focus to restore, then opens the points editor
+// for the sheet's entity the way the edit button beside the point total does.
 func openPointsEditorForSheet(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) *pointsEditor {
 	t.Helper()
 	screen.Do(func() {
@@ -148,8 +142,8 @@ func openPointsEditorForSheet(t *testing.T, screen *unison.HeadlessScreen, sheet
 	return soleEditor[*pointsEditor](t, screen, isPointsEditor)
 }
 
-// checkReturnedToSheet verifies that, with the points editor gone, the sheet is current in its dock container again and
-// its name field holds the keyboard focus once more, and that no prompt was left behind.
+// checkReturnedToSheet verifies that the points editor is gone, leaving no prompt behind, and that the sheet is current
+// in its dock container again with its name field holding the keyboard focus.
 func checkReturnedToSheet(t *testing.T, c check.Checker, screen *unison.HeadlessScreen, wnd *unison.Window, sheet *Sheet) {
 	t.Helper()
 	var editors, windows int
@@ -173,9 +167,8 @@ func checkReturnedToSheet(t *testing.T, c check.Checker, screen *unison.Headless
 	c.Equal(identityPanelNameFieldRefKey, focusKey, "and its name field has the focus back")
 }
 
-// TestPointsEditorOpensBesideTheSheetAndReturnsToIt verifies that the points editor is docked with the editors, next to
-// the sheet it was opened from rather than in the sheet's own tab group, records what it edits and where it was opened
-// from, and then, whichever way it is closed -- discarding with Escape, applying with Cmd-Return, or closing the tab and
+// The points editor is docked with the editors, beside the sheet it was opened from rather than in the sheet's own tab
+// group, and whichever way it is closed -- discarding with Escape, applying with Cmd-Return, or closing the tab and
 // discarding at the prompt -- makes the sheet current again and hands the focus back to the field that had it.
 func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	c := check.New(t)
@@ -223,7 +216,7 @@ func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	c.False(applyEnabled, "there is nothing to apply yet")
 	c.False(cancelEnabled, "or to discard")
 
-	// Add an entry, which is a change to discard, then press Escape, which stands in for the Discard button.
+	// Add an entry, which is a change to discard, then press Escape, standing in for the Discard button.
 	addEntry := buttonWithTooltip(e.AsPanel(), i18n.Text("Add Entry"))
 	if addEntry == nil {
 		t.Fatal("the points editor has no Add Entry button")
@@ -242,7 +235,7 @@ func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	checkReturnedToSheet(t, c, screen, wnd, sheet)
 	c.Equal(records, len(entity.PointsRecord), "discarding leaves the entity's points record alone")
 
-	// Add an entry again, then press Cmd-Return, which stands in for the Apply button.
+	// Add an entry again, then press Cmd-Return, standing in for the Apply button.
 	e = openPointsEditorForSheet(t, screen, sheet)
 	addEntry = buttonWithTooltip(e.AsPanel(), i18n.Text("Add Entry"))
 	if addEntry == nil {

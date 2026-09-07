@@ -37,9 +37,9 @@ func gzipped(t *testing.T, data string) []byte {
 	return buffer.Bytes()
 }
 
-// TestIsSVGPath verifies that every extension registered for SVG content routes to the SVG branch of
-// NewImageDockable. ".svgz" is one of uti.SVG's extensions, so it is advertised as openable; sending it to the raster
-// branch instead just fails with "unable to decode image data".
+// TestIsSVGPath verifies that every extension registered for SVG content routes to the SVG branch of NewImageDockable.
+// ".svgz" is one of uti.SVG's extensions, so it is advertised as openable; sending it to the raster branch instead just
+// fails with "unable to decode image data".
 func TestIsSVGPath(t *testing.T) {
 	c := check.New(t)
 	for _, ext := range uti.SVG.Extensions {
@@ -54,8 +54,8 @@ func TestIsSVGPath(t *testing.T) {
 	c.False(isSVGPath("svg"), "a bare name should not be recognized as SVG")
 }
 
-// TestLoadSVGFromFile verifies that both plain and gzip-compressed SVG content loads. ".svgz" files hold gzipped SVG
-// data, which the SVG parser cannot consume directly, so it must be decompressed first.
+// TestLoadSVGFromFile verifies that both plain and gzip-compressed SVG content loads, since the SVG parser cannot
+// consume the gzipped data that ".svgz" files hold.
 func TestLoadSVGFromFile(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

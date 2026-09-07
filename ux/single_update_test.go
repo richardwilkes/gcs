@@ -23,8 +23,6 @@ import (
 // then rebuilding it, or rebuilding it once per table an edit touched -- so that each now updates the sheet a single
 // time while still bumping its modification timestamp, which is the one thing a rebuild on its own leaves out.
 
-// TestInsertItemsSyncsTheSheetOnlyOnce verifies that inserting an item into one of a sheet's lists updates the sheet
-// once, by rebuilding it, rather than marking it as modified and then rebuilding it as well.
 func TestInsertItemsSyncsTheSheetOnlyOnce(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -50,8 +48,6 @@ func TestInsertItemsSyncsTheSheetOnlyOnce(t *testing.T) {
 	c.True(mgr.CanUndo(), "the insertion must be undoable")
 }
 
-// TestSheetSettingsUpdatedSyncsTheSheetOnlyOnce verifies that a change to the sheet settings updates the sheet once,
-// by rebuilding it, rather than marking it as modified and then rebuilding it as well.
 func TestSheetSettingsUpdatedSyncsTheSheetOnlyOnce(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -74,9 +70,9 @@ func TestSheetSettingsUpdatedSyncsTheSheetOnlyOnce(t *testing.T) {
 }
 
 // TestDropIntoASheetSyncsTheSheetOnlyOnce verifies that a drop into one of a sheet's lists is reported by the single
-// rebuild the drop completion performs, which also bumps the modification timestamp, and that the table's own drop
-// notification can tell that it has been, so that it doesn't mark the sheet as modified on top of that. A drop into a
-// template, by contrast, isn't reported by a rebuild, so the notification has to do it.
+// rebuild the drop completion performs, and that the table's own drop notification can tell that it has been, so that
+// it doesn't mark the sheet as modified on top of that. A drop into a template, by contrast, isn't reported by a
+// rebuild, so the notification has to do it.
 func TestDropIntoASheetSyncsTheSheetOnlyOnce(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -112,7 +108,7 @@ func TestDropIntoASheetSyncsTheSheetOnlyOnce(t *testing.T) {
 
 // TestRowEditsReportThemselvesOnce verifies that the row-level edits that report themselves by rebuilding the sheet --
 // deleting and duplicating rows, here -- do so exactly once and bump the modification timestamp as they go, which a
-// bare rebuild used to leave out, so that the sheet's "Modified" date stood still through them.
+// bare rebuild used to leave out.
 func TestRowEditsReportThemselvesOnce(t *testing.T) {
 	c := check.New(t)
 	sheet, trait := newSheetWithSwitchableTrait(t)

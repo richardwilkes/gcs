@@ -89,7 +89,7 @@ func (a *Attribute) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return json.UnmarshalDecode(dec, &a.AttributeData)
 }
 
-// Clone a copy of this.
+// Clone returns a copy of this Attribute, bound to the given Entity.
 func (a *Attribute) Clone(entity *Entity) *Attribute {
 	clone := *a
 	clone.Entity = entity
@@ -101,8 +101,7 @@ func (a *Attribute) ID() string {
 	return a.AttrID
 }
 
-// SetID sets the ID, sanitizing it in the process (i.e. it may be changed from what you set -- read it back if you want
-// to be sure of what it gets set to.
+// SetID sets the ID, sanitizing it in the process, so the stored value may differ from what was passed in.
 func (a *Attribute) SetID(value string) {
 	a.AttrID = SanitizeID(value, false, ReservedIDs...)
 }
@@ -191,7 +190,7 @@ func (a *Attribute) Current() fxp.Int {
 	return maximum - a.Damage
 }
 
-// CurrentThreshold return the current PoolThreshold, if any.
+// CurrentThreshold returns the current PoolThreshold, if any.
 func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	def := a.AttributeDef()
 	if def == nil || def.IsSeparator() {
@@ -221,7 +220,7 @@ func (a *Attribute) PointCost() fxp.Int {
 	return def.ComputeCost(a.Entity, a.Adjustment, a.CostReduction, sm)
 }
 
-// IsThresholdOpMet if the given ThresholdOp is met.
+// IsThresholdOpMet returns true if any attribute's current threshold contains the given op.
 func IsThresholdOpMet(op threshold.Op, attributes *Attributes) bool {
 	for _, one := range attributes.Set {
 		if t := one.CurrentThreshold(); t != nil && t.ContainsOp(op) {

@@ -15,9 +15,9 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// scrollPanDrag pans a scroll panel by dragging its content: the scroll position captured when the drag began is
-// offset by how far the pointer has moved since, so the content follows the pointer. Points are tracked in root
-// coordinates, since the content panel's own coordinate space shifts underneath the pointer as it scrolls.
+// scrollPanDrag pans a scroll panel by dragging its content: the scroll position captured when the drag began is offset
+// by how far the pointer has moved since. Points are tracked in root coordinates, since the content panel's own
+// coordinate space shifts underneath the pointer as it scrolls.
 type scrollPanDrag struct {
 	scroll  *unison.ScrollPanel
 	content *unison.Panel
@@ -26,9 +26,9 @@ type scrollPanDrag struct {
 	active  bool
 }
 
-// install wires the pan state to scroll and content, and sets content's mouse and cursor callbacks so that dragging it
-// pans the scroll panel. A mouse-down also gives focus to the given panel. Dockables whose content only pans should use
-// this rather than installing the callbacks themselves, so that the wiring cannot be forgotten.
+// install wires the pan state to scroll and content and sets content's mouse and cursor callbacks so that dragging it
+// pans the scroll panel; a mouse-down also focuses the given panel. Dockables whose content only pans should use this
+// rather than installing the callbacks themselves, so that the wiring cannot be forgotten.
 func (p *scrollPanDrag) install(scroll *unison.ScrollPanel, content *unison.Panel, focus unison.Paneler) {
 	p.scroll = scroll
 	p.content = content
@@ -63,7 +63,6 @@ func (p *scrollPanDrag) drag(where geom.Point) {
 	p.scroll.SetPosition(pt.X, pt.Y)
 }
 
-// end finishes the drag.
 func (p *scrollPanDrag) end() {
 	p.active = false
 }

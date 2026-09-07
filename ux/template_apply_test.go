@@ -18,7 +18,7 @@ import (
 
 // newTestSheetForTemplate returns a character sheet that can be built and rebuilt without a window. Both the toolbar
 // and the rebuild path reach for global state, so the key bindable actions are registered and a document dock is
-// installed for the duration of the test.
+// installed for the test.
 func newTestSheetForTemplate(t *testing.T) *Sheet {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
@@ -39,10 +39,9 @@ func newTestTemplateWithBodyType(bodyTypeName string) *Template {
 	return NewTemplate("test"+gurps.TemplatesExt, data)
 }
 
-// TestApplyTemplateCanceledPickerLeavesSheetUntouched verifies that canceling a template picker abandons the entire
-// operation. The body type used to be replaced (and any existing ancestry traits disabled) before the pickers ran, so
-// canceling one left the character with the template's hit locations, none of the template's content, and no undo
-// edit with which to get the original back.
+// The body type used to be replaced (and any existing ancestry traits disabled) before the pickers ran, so canceling
+// one left the character with the template's hit locations, none of the template's content, and no undo edit with
+// which to get the original back.
 func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -60,9 +59,8 @@ func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	c.False(sheet.undoMgr.CanUndo(), "nothing was changed, so there must be nothing to undo")
 }
 
-// TestApplyTemplateUndoRestoresBodyType verifies that undoing an "Apply Template" puts the character's original hit
-// location table back. The undo data used to preserve only the profile randomizer fields and the five table data sets,
-// leaving the character permanently stuck with the template's body type.
+// The undo data used to preserve only the profile randomizer fields and the five table data sets, leaving the
+// character permanently stuck with the template's body type.
 func TestApplyTemplateUndoRestoresBodyType(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -91,8 +89,6 @@ func TestApplyTemplateUndoRestoresBodyType(t *testing.T) {
 	c.Equal("Template Body", entity.SheetSettings.BodyType.Name, "a second redo must still reapply the template's")
 }
 
-// TestApplyTemplateWithoutBodyTypeLeavesBodyTypeAlone verifies that a template that doesn't define a body type leaves
-// the character's own in place, both when applied and when that application is undone.
 func TestApplyTemplateWithoutBodyTypeLeavesBodyTypeAlone(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

@@ -146,11 +146,11 @@ type pdfPendingSelPoint struct {
 }
 
 // NewPDFDockable creates a new unison.Dockable for PDFRenderer files. The document itself is not loaded here: opening
-// it can take anywhere from a moment to several minutes -- the worst case being a large file that the OS has to fetch
-// back from cloud storage before it can be read -- and doing that on the UI thread makes the whole application
-// unresponsive before its window has even appeared. Instead, a fully-formed dockable in a loading state is returned
-// immediately and the document is prepared on a background goroutine. As a result, this never fails; a document that
-// can't be loaded reports the failure within the dockable rather than by returning an error.
+// it can take anywhere from a moment to several minutes -- the worst case being a large file the OS has to fetch back
+// from cloud storage first -- and doing that on the UI thread would leave the application unresponsive before its
+// window has even appeared. Instead, a dockable in a loading state is returned immediately and the document is
+// prepared on a background goroutine, so this never fails; a document that can't be loaded reports the failure within
+// the dockable.
 func NewPDFDockable(filePath string, initialPageInfo gurps.PageInfo) (unison.Dockable, error) {
 	generalSettings := gurps.GlobalSettings().General
 	d := &PDFDockable{
@@ -189,9 +189,9 @@ func NewPDFDockable(filePath string, initialPageInfo gurps.PageInfo) (unison.Doc
 	return d, nil
 }
 
-// load prepares the document on a background goroutine and then hands the result back to the UI thread. Nothing in
-// here may touch the dockable's fields or any other UI object: the file path and the display-derived values are passed
-// in as parameters for that reason, and everything that has to be done with the result happens in loadCompleted.
+// load prepares the document on a background goroutine and then hands the result back to the UI thread. Nothing here
+// may touch the dockable's fields or any other UI object -- which is why the file path and display-derived values are
+// parameters -- so everything that has to be done with the result happens in loadCompleted.
 func (d *PDFDockable) load(filePath string, ppi float32, scaleAdjust geom.Point) {
 	pdf, err := NewPDFRenderer(filePath, ppi, scaleAdjust, func(_ int) {
 		unison.InvokeTask(d.pageRendered)
@@ -202,8 +202,8 @@ func (d *PDFDockable) load(filePath string, ppi float32, scaleAdjust geom.Point)
 }
 
 // loadCompleted installs the freshly prepared renderer, or records the failure that prevented one from being made. It
-// runs on the UI thread, since it touches the dockable's fields and the widgets that were built against a page count
-// that wasn't known yet.
+// runs on the UI thread, since it touches the dockable's fields and the widgets that were built before the page count
+// was known.
 func (d *PDFDockable) loadCompleted(pdf *PDFRenderer, err error) {
 	if d.closed {
 		if pdf != nil {
@@ -232,8 +232,8 @@ func (d *PDFDockable) loadCompleted(pdf *PDFRenderer, err error) {
 }
 
 // BoundsKnown implements boundsDeferredDockable. The size of the document isn't known until it has been loaded, at
-// which point the provisional size docSizer reports gives way to the real one. A document that failed to load never
-// gets a real size, but it is never going to get one, either, so it counts as known.
+// which point the provisional size docSizer reports gives way to the real one. A document that failed to load is never
+// going to get a real size, so it counts as known.
 func (d *PDFDockable) BoundsKnown() bool {
 	return d.pdf != nil || d.loadErr != nil
 }
@@ -629,10 +629,9 @@ func (d *PDFDockable) Forward() {
 // LoadPage scrolls to the specified page, recording the jump in the history.
 func (d *PDFDockable) LoadPage(pageInfo gurps.PageInfo) {
 	if d.pdf == nil {
-		// The document hasn't finished loading, so there is nothing to scroll to yet. Hold onto the request and let the
-		// load completion issue it, which is the same path the page the dockable was created for takes. This matters
-		// for a page reference that targets a document which is already open but still loading: the jump it asks for
-		// must supersede the one the dockable was opened with rather than being dropped.
+		// The document hasn't finished loading, so hold onto the request and let the load completion issue it, the
+		// same path the page the dockable was created for takes. A page reference targeting a document that is
+		// already open but still loading must supersede the jump the dockable was opened with rather than be dropped.
 		d.initialPageInfo = pageInfo
 		return
 	}
@@ -646,8 +645,7 @@ func (d *PDFDockable) LoadPage(pageInfo gurps.PageInfo) {
 }
 
 // ScrollToPage scrolls the view so that the top of the given 0-based page is at the top of the view. If recordHistory
-// is true, the jump is added to the navigation history, which is what distinguishes an explicit jump from ordinary
-// scrolling.
+// is true, the jump is added to the navigation history, which is what distinguishes it from ordinary scrolling.
 func (d *PDFDockable) ScrollToPage(pageNumber int, recordHistory bool) {
 	if len(d.pageRects) == 0 {
 		return
@@ -735,9 +733,9 @@ func (d *PDFDockable) syncViewState() {
 		}
 	}
 
-	// The count comes from the page's text rather than from anything that has been rendered, so it appears as soon as
-	// the text of the current page has been extracted -- which searching asks for -- rather than waiting on an image.
-	// A dash stands in until then, and for the case of nothing being searched for at all.
+	// The count comes from the page's text rather than from anything rendered, so it appears as soon as the current
+	// page's text has been extracted -- which searching asks for -- rather than waiting on an image. A dash stands in
+	// until then, and for nothing being searched for at all.
 	matchText := "-"
 	if search := d.searchField.Text(); search != "" {
 		if matches, ok := d.pdf.SearchMatches(d.currentPage, search); ok {
@@ -1118,8 +1116,7 @@ func (d *PDFDockable) textExtracted(pageNumber int) {
 		d.copySelection()
 	}
 	d.MarkForRedraw()
-	// The matches label is computed from the current page's text, so it has an answer to show now that this page's
-	// text has landed.
+	// The matches label is computed from the current page's text, which has now landed.
 	d.scheduleViewSync()
 }
 
@@ -1298,8 +1295,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 		return
 	}
 	xOff := d.horizontalOffset()
-	// The search text is read once here rather than once per page: it can't change in the middle of a draw, and the
-	// pages below ask the renderer for their hits with it.
+	// Read once rather than once per page, since it can't change in the middle of a draw.
 	search := d.searchField.Text()
 	first, limit := d.pageRange(dirty.Y, dirty.Bottom())
 	for i := first; i < limit; i++ {
@@ -1316,9 +1312,8 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty geom.Rect) {
 				FilterMode:     filtermode.Linear,
 				MipMapMode:     mipmapmode.Linear,
 			}, nil)
-			// The hits are marked only on top of a page that has actually been rendered. Bars floating on the blank
-			// white slot a page occupies until its image arrives would read as marks on an empty page, and nobody can
-			// see what they are supposed to be marking there anyway.
+			// The hits are marked only on a page that has actually been rendered. Bars floating on the blank white
+			// slot a page occupies until its image arrives would read as marks on an empty page.
 			if search != "" {
 				if matches, _ := d.pdf.SearchMatches(i, search); len(matches) != 0 {
 					p := pdfHighlightPaint(unison.ThemeWarning.GetColor())
@@ -1470,16 +1465,15 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty geom.Rect, msg str
 	text.Draw(gc, geom.NewPoint(x, r.Y+(r.Height-height)/2+baseline))
 }
 
-// AttemptClose implements unison.TabCloser. Once the dockable is gone, everything it was still doing with the
-// document is stopped and the document released.
+// AttemptClose implements unison.TabCloser. Everything still being done with the document is stopped and the document
+// released.
 func (d *PDFDockable) AttemptClose() bool {
 	if !d.fileBackedPanel.AttemptClose() {
 		return false
 	}
-	// This flag needs no synchronization, even though the load runs on a background goroutine: it is only ever written
-	// here and only ever read by the load completion task, and both of those run on the UI thread, so they can't
-	// interleave. If the load hasn't finished yet, its completion task will see this and dispose of the renderer it
-	// produced rather than installing it into a dockable that is already gone.
+	// This flag needs no synchronization, even though the load runs on a background goroutine: it is only written here
+	// and only read by the load completion task, both of which run on the UI thread. A load that hasn't finished yet
+	// will see this and dispose of the renderer it produced rather than installing it into a dockable that is gone.
 	d.closed = true
 	// The selection points into text the renderer is about to release, and the auto-scroll loop would go on driving it
 	// for another tick or two, so both are let go of before the document is.

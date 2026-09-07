@@ -14,8 +14,8 @@ import (
 	"time"
 )
 
-// stopRetry is the error an operation returns from retry when a failure is final and further attempts would be
-// pointless. retry unwraps it and returns the cause at once.
+// stopRetry is what an operation returns from retry when a failure is final. retry unwraps it and returns the cause at
+// once.
 type stopRetry struct {
 	cause error
 }
@@ -30,8 +30,8 @@ func stopRetrying(err error) error {
 }
 
 // retry calls op until it succeeds, making at most attempts calls and sleeping for delay between them. The error from
-// the last attempt is returned when none succeeds. An error op has wrapped with stopRetrying is returned right away,
-// unwrapped, without waiting for the remaining attempts. op is always called at least once, whatever attempts says.
+// the last attempt is returned when none succeeds. An error op wrapped with stopRetrying is returned right away,
+// unwrapped. op is always called at least once, whatever attempts says.
 func retry(attempts int, delay time.Duration, op func() error) error {
 	attempts = max(attempts, 1)
 	var err error

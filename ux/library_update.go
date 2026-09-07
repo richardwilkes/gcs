@@ -24,8 +24,8 @@ import (
 )
 
 // libraryUpdateTimeout bounds the whole update. It is generous because a library is tens of megabytes of archive and a
-// great many files to write, and some connections are slow; the Cancel button, not this, is how an impatient user stops
-// it.
+// great many files to write, and some connections are slow; the Cancel button, not this, is how an impatient user
+// stops it.
 const libraryUpdateTimeout = 30 * time.Minute
 
 func initiateLibraryUpdate(lib *gurps.Library, rel *gurps.Release) bool {
@@ -57,22 +57,22 @@ documents from the library are open.`))
 	}
 
 	// The library's own filesystem watch is stopped before the download starts (see performLibraryUpdate) and only
-	// re-established by the reload that finishLibraryUpdate schedules, so in the normal flow the events the extraction
-	// generates never reach the navigator. Two things can still put a rebuild of the deep search content cache over
-	// the files being replaced. A build already in flight when the update starts is reading them. And the UI thread
-	// keeps servicing tasks inside RunModal(), so a reload triggered while the modal progress window below is up -- by
-	// an update check or a watch event from another library, or by a library rooted inside this one, whose watch sees
-	// the extraction directly -- re-watches every library, this one included, after which each batch of extraction
-	// events would start a rebuild that the next batch immediately cancels. Suspending abandons the in-flight build and
-	// holds the rebuilds off until the update is over. The resume folds the one rebuild that is owed into the reload
-	// that finishLibraryUpdate schedules, whose own prewarm covers it.
+	// re-established by the reload that finishLibraryUpdate schedules, so in the normal flow the extraction's events
+	// never reach the navigator. Two things can still put a rebuild of the deep search content cache over the files
+	// being replaced: a build already in flight when the update starts is reading them; and the UI thread keeps
+	// servicing tasks inside RunModal(), so a reload triggered while the modal progress window below is up -- by an
+	// update check or a watch event from another library, or by a library rooted inside this one, whose watch sees the
+	// extraction directly -- re-watches every library, this one included, after which each batch of extraction events
+	// would start a rebuild that the next batch immediately cancels. Suspending abandons the in-flight build and holds
+	// the rebuilds off until the update is over; the resume folds the one rebuild that is owed into the reload that
+	// finishLibraryUpdate schedules, whose own prewarm covers it.
 	Workspace.Navigator.suspendContentCachePrewarm()
 	defer Workspace.Navigator.resumeContentCachePrewarm()
 
 	ctx, cancel := context.WithTimeout(context.Background(), libraryUpdateTimeout)
 	defer cancel()
 	// canceling is written and read only on the UI thread: the Cancel button's callback, and the task the progress
-	// reporter posts. That is what keeps the label from being rewritten with the phase that was already underway when
+	// reporter posts. That is what keeps the label from being rewritten with the phase that was already under way when
 	// the user asked to stop.
 	canceling := false
 	progress := unison.NewProgressBar(progressResolution)
@@ -100,8 +100,8 @@ documents from the library are open.`))
 		// and that failure would otherwise be discarded as "the user canceled".
 		if errors.Is(err, context.Canceled) {
 			// The user asked for this, so there is nothing to report. The library itself is untouched: a failed update
-			// puts the previous content back before it returns. A deadline that expired is deliberately not treated the
-			// same way, since nobody asked for that and it needs saying.
+			// puts the previous content back before it returns. A deadline that expired is deliberately not treated
+			// the same way, since nobody asked for that and it needs saying.
 			return false
 		}
 		Workspace.ErrorHandler(i18n.Text("Unable to update"), err)
@@ -135,7 +135,6 @@ func libraryUpdateProgress(label *unison.Label, bar *unison.ProgressBar, title, 
 	}
 }
 
-// libraryPhaseTitle describes what the update is doing at the moment.
 func libraryPhaseTitle(phase gurps.LibraryUpdatePhase, title, version string) string {
 	if phase == gurps.LibraryUpdateInstalling {
 		return fmt.Sprintf(i18n.Text("Installing %s %s…"), title, filterVersion(version))
@@ -145,9 +144,9 @@ func libraryPhaseTitle(phase gurps.LibraryUpdatePhase, title, version string) st
 
 // finishLibraryUpdate refreshes the library's list of available releases and then posts the teardown of the progress
 // window onto the UI thread. It runs on the background goroutine, so it must not touch the modal state itself:
-// StopModal() mutates the window's modal fields and unison's package-global modal stack without any locking, all while
-// the UI thread is spinning on them inside RunModal(). The release check is left here rather than being posted along
-// with the teardown because it makes network calls that would otherwise stall the UI thread for up to a minute.
+// StopModal() mutates the window's modal fields and unison's package-global modal stack without any locking, while the
+// UI thread is spinning on them inside RunModal(). The release check is left here rather than posted along with the
+// teardown because it makes network calls that would otherwise stall the UI thread for up to a minute.
 func finishLibraryUpdate(wnd *unison.Window, lib *gurps.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()

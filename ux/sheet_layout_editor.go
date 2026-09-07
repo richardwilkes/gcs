@@ -31,7 +31,7 @@ import (
 var _ unison.Layout = &overlayStackLayout{}
 
 // The sizes, in page pixels, of the things the layout editor draws and reacts to. They are float32 so that halving one
-// of them yields the half rather than the integer division of it.
+// yields the half rather than an integer division.
 const (
 	layoutButtonSize       float32 = 12 // The side of each of the square buttons in a block's top right corner
 	layoutButtonGap        float32 = 2  // The space around and between the buttons in a block's top right corner
@@ -49,9 +49,9 @@ const (
 	layoutSquareTolerance float32 = 1
 )
 
-// overlayStackLayout lays a sheet's content out as the page at its preferred size with, while the block layout is
-// being edited, the editor's overlay covering it exactly. The content has only ever held the one page, so this behaves
-// the way the single-column layout it replaced did whenever there is no overlay.
+// overlayStackLayout lays a sheet's content out as the page at its preferred size with, while the block layout is being
+// edited, the editor's overlay covering it exactly. The content has only ever held the one page, so with no overlay
+// this behaves the way the single-column layout it replaced did.
 type overlayStackLayout struct {
 	page    *Page
 	overlay *unison.Panel
@@ -92,8 +92,8 @@ type layoutLeafRegion struct {
 	ancestors []int
 	rect      geom.Rect
 	closeRect geom.Rect
-	// The button that makes the portrait's picture area square, which sits just to the left of the close button. Only
-	// the portrait has one, so this is the zero rect for every other block.
+	// The button that makes the portrait's picture area square, just to the left of the close button. Only the portrait
+	// has one, so this is the zero rect for every other block.
 	squareRect    geom.Rect
 	bottomRect    geom.Rect
 	naturalHeight float32
@@ -103,7 +103,7 @@ type layoutLeafRegion struct {
 
 // layoutContainerRegion is one of the rows and columns the layout is built from, as it appears on the page, in the
 // overlay's coordinates. The depth is how many containers it sits inside, so a band of the page is at zero. Dropping a
-// block against the edge of one of these is how it is made to span everything the container holds.
+// block against the edge of one is how it is made to span everything the container holds.
 type layoutContainerRegion struct {
 	node       *gurps.SheetLayoutNode
 	rect       geom.Rect
@@ -128,8 +128,8 @@ type layoutDividerRegion struct {
 // layoutSeamRegion is the seam between two consecutive children of one of the rows and columns the layout is built
 // from, the page's list of bands included. Dropping a block on one end of it makes the block straddle the two of them,
 // spanning both, and dropping it in the middle puts it between them; see resolveDropTarget for the zones the strip is
-// divided into. The nodes are the ones that govern the slots the two panels occupy, which are the ones the model has
-// to be told to group.
+// divided into. The nodes are the ones that govern the slots the two panels occupy, which are the ones the model has to
+// be told to group.
 type layoutSeamRegion struct {
 	parent   *gurps.SheetLayoutNode
 	first    *gurps.SheetLayoutNode
@@ -146,8 +146,8 @@ type layoutSeamRegion struct {
 }
 
 // layoutGapRegion is the space above the page's first band or below its last, dropping a block into which makes it a
-// band of its own. The index is the position among the model's bands that a block dropped here takes. The space
-// between two bands is a seam rather than a gap, since there is more than one thing that can be meant there.
+// band of its own at the given index among the model's bands. The space between two bands is a seam rather than a gap,
+// since there is more than one thing that can be meant there.
 type layoutGapRegion struct {
 	rect  geom.Rect
 	y     float32
@@ -201,8 +201,8 @@ type dropTarget struct {
 
 // sheetLayoutEditor is the block layout editor of one sheet. While it is in place, a transparent overlay sits on top of
 // the page, taking every mouse event that would otherwise have reached a field or a table, drawing the affordances and
-// carrying out the gestures made on them. Nothing it draws can reach a printed or exported page, since neither builds
-// its pages from this sheet's panels.
+// carrying out the gestures made on them. Nothing it draws can reach a printed or exported page, since neither of those
+// builds its pages from this sheet's panels.
 type sheetLayoutEditor struct {
 	focusRef     *FocusRef // The focus to hand back when editing ends
 	sheet        *Sheet
@@ -294,7 +294,7 @@ func (e *sheetLayoutEditor) stop() {
 }
 
 // restoreFocus hands the focus back to whatever had it before editing began, or to the sheet's first focusable content
-// when that is gone, so that the sheet -- and with it the undo manager the Edit menu consults -- stays focused.
+// when that is gone, so the sheet -- and with it the undo manager the Edit menu consults -- stays focused.
 func (e *sheetLayoutEditor) restoreFocus() {
 	wnd := e.sheet.Window()
 	if wnd == nil {
@@ -323,13 +323,10 @@ func (e *sheetLayoutEditor) syncFrame() {
 	e.invalidateRegions()
 }
 
-// invalidateRegions discards what the editor knows about where everything is, so that the next thing that needs it
-// works it out again.
 func (e *sheetLayoutEditor) invalidateRegions() {
 	e.regions = nil
 }
 
-// markForRedraw asks for the overlay to be drawn again.
 func (e *sheetLayoutEditor) markForRedraw() {
 	if e.overlay != nil {
 		e.overlay.MarkForRedraw()
@@ -360,8 +357,8 @@ func sheetLayoutNodeOf(p *unison.Panel) *gurps.SheetLayoutNode {
 }
 
 // panelKeys returns the block key of every panel the sheet could have put on the page. A panel's key can only be found
-// this way: the node recorded on it is the one that governs its slot, which for a container that was left with a
-// single child is the container's node rather than the surviving block's.
+// this way: the node recorded on it governs its slot, which for a container left with a single child is the container's
+// node rather than the surviving block's.
 func (e *sheetLayoutEditor) panelKeys() map[*unison.Panel]string {
 	keys := make(map[*unison.Panel]string, len(gurps.AllBlockKeys))
 	for _, key := range gurps.AllBlockKeys {
@@ -373,9 +370,9 @@ func (e *sheetLayoutEditor) panelKeys() map[*unison.Panel]string {
 }
 
 // buildRegions works out where everything the editor can point at is, from the panels that are on the page: the blocks,
-// the rows and columns they are gathered into, the dividers between the children of a row and the gaps between the
-// bands of the page. The containers are there so that a block can be dropped against the edge of a whole row or column
-// rather than only against the edge of a single block; see resolveDropTarget for how one of them is picked.
+// the rows and columns they are gathered into, the dividers between the children of a row and the gaps above and below
+// the page's bands. The containers are there so that a block can be dropped against the edge of a whole row or column
+// rather than only against the edge of a single block; see resolveDropTarget for how one is picked.
 func (e *sheetLayoutEditor) buildRegions() *layoutRegions {
 	regions := &layoutRegions{}
 	if e.overlay == nil {
@@ -433,7 +430,7 @@ func (e *sheetLayoutEditor) collectRegions(regions *layoutRegions, panel *unison
 			e.collectDividers(regions, panel, children)
 		}
 		// The seams lie between this container's own children, so they belong to the node the panel was built from,
-		// which isn't the node that governs the panel's slot when an outer container was dropped onto it.
+		// which isn't the node governing the panel's slot when an outer container was dropped onto it.
 		e.collectSeams(regions, container, children, container.Type == layoutnode.Row, len(ancestors))
 		childAncestors := append(slices.Clip(ancestors), index)
 		for _, child := range children {
@@ -495,11 +492,10 @@ func (e *sheetLayoutEditor) collectDividers(regions *layoutRegions, rowPanel *un
 }
 
 // collectSeams adds the region of the seam between each pair of consecutive children of a container. The parent is the
-// node the children were built from -- the one the model holds them in, which is the one a drop that straddles a pair
-// of them concerns -- and the children are the panels the builder actually made, so a child that was pruned leaves the
-// two neighbors it still has adjoining one another, with the seam between them. The depth is how many containers the
-// container itself sits inside, or -1 for the page's list of bands, and vertical says whether the children sit side by
-// side rather than stacked.
+// node the children were built from -- the one the model holds them in, which is the one a straddling drop concerns --
+// and the children are the panels the builder actually made, so a pruned child leaves the two neighbors it had
+// adjoining one another, with the seam between them. The depth is how many containers the container itself sits inside,
+// or -1 for the page's list of bands, and vertical says whether the children sit side by side rather than stacked.
 func (e *sheetLayoutEditor) collectSeams(regions *layoutRegions, parent *gurps.SheetLayoutNode,
 	children []*unison.Panel, vertical bool, depth int,
 ) {
@@ -577,9 +573,8 @@ func layoutBandBar(pageRect geom.Rect, y float32) geom.Rect {
 	return geom.NewRect(pageRect.X, y-layoutBandBarHeight/2, pageRect.Width, layoutBandBarHeight)
 }
 
-// layoutSeamBar returns the bar drawn along a seam where a block would come between the two things it lies between.
-// It is the band bar of a seam that reaches no further than the pair of them does, and it runs up and down rather than
-// across when the two of them sit side by side.
+// layoutSeamBar returns the bar drawn along a seam where a block would come between the two things it lies between. It
+// reaches no further than the pair does, and runs up and down rather than across when the two sit side by side.
 func layoutSeamBar(seam *layoutSeamRegion) geom.Rect {
 	if seam.vertical {
 		return geom.NewRect(seam.rect.CenterX()-layoutBandBarHeight/2, seam.spanRect.Y, layoutBandBarHeight,
@@ -594,22 +589,21 @@ func layoutSeamBar(seam *layoutSeamRegion) geom.Rect {
 // kinds of zone are tried, in this order: the seams between the children of a container, then the edge ladder of the
 // block the pointer is over, then the gaps above and below the page's bands.
 //
-// A seam is the strip layoutSeamThickness thick that lies on the join between two consecutive children of a row or
-// column, the page's list of bands included, and runs the length the two of them share. It is divided into thirds
-// along that length. Either end asks for the block to straddle the pair: to stand against that end of the two of them
-// taken together, spanning both, which is what nothing else can ask for and what a seam is for. The middle asks for
-// the block to come between them, which for a seam of the page means a new band there and anywhere else means the
-// block joining the pair's own container between the two of them. A seam whose own container sits deeper wins over one
-// higher up at the same point, and a seam is passed over altogether when the block being dragged is one of the pair,
-// since neither thing it offers would be a move.
+// A seam is the strip layoutSeamThickness thick lying on the join between two consecutive children of a row or column,
+// the page's list of bands included, running the length the two of them share. It is divided into thirds along that
+// length. Either end asks for the block to straddle the pair: to stand against that end of the two of them taken
+// together, spanning both, which is what nothing else can ask for and what a seam is for. The middle asks for the block
+// to come between them, which for a seam of the page means a new band there and anywhere else means the block joining
+// the pair's own container between the two of them. A seam whose own container sits deeper wins over one higher up at
+// the same point, and a seam is passed over altogether when the block being dragged is one of the pair, since neither
+// thing it offers would be a move.
 //
 // The block under the pointer says which edge is meant: whichever of its four sides the pointer is nearest. How far
-// from that edge the pointer is then says which of the nested things that share the edge is meant, so that a block can
-// be placed against a whole row or column rather than only against the one block it touches. The containers the block
-// sits inside whose own edge is in the same place, outermost first, each own a band layoutEdgeLadderStep wide: within
-// the first step of the edge the outermost of them is meant, within the second the next one in, and so on, until past
-// the last of them the block itself is meant. An edge none of them share belongs to the block alone, however near the
-// pointer is to it.
+// from that edge the pointer is then says which of the nested things sharing the edge is meant, so that a block can be
+// placed against a whole row or column rather than only against the one block it touches. The containers the block sits
+// inside whose own edge is in the same place, outermost first, each own a band layoutEdgeLadderStep wide: within the
+// first step the outermost of them is meant, within the second the next one in, and so on, until past the last of them
+// the block itself is meant. An edge none of them share belongs to the block alone, however near the pointer is to it.
 //
 // The Top and Bottom edges of a band of the page are shared with the page itself, so the outermost rung of the ladder
 // there -- the pointer less than layoutEdgeLadderStep from the edge, which whatever the ladder picked is within
@@ -649,8 +643,8 @@ func resolveDropTarget(regions *layoutRegions, pt geom.Point, draggedKey string)
 		}
 		if isRootBand && bandIndex >= 0 && distance < layoutEdgeLadderStep &&
 			(edge == layoutedge.Top || edge == layoutedge.Bottom) {
-			// The outermost step of the top or bottom edge of a band belongs to the page, so it means a new band there.
-			// Deeper in, the band is meant as itself and the drop groups the two of them into a band of their own.
+			// The outermost step of the top or bottom edge of a band belongs to the page, so it means a new band there;
+			// deeper in, the band is meant as itself and the drop groups the two of them into a band of their own.
 			index := bandIndex
 			y := rect.Y
 			if edge == layoutedge.Bottom {
@@ -689,10 +683,10 @@ func resolveDropTarget(regions *layoutRegions, pt geom.Point, draggedKey string)
 	}
 }
 
-// seamAt returns the seam the given point is on, or nil if it is on none of them. The innermost of the seams the point
-// is on wins, so that the seam between two blocks within a band is reachable where it crosses the seam between that
-// band and the next. A seam the block being dragged is one of the two sides of is passed over: standing beside itself
-// and coming between itself and its neighbor are both where it already is.
+// seamAt returns the innermost seam the given point is on, or nil if it is on none, so that the seam between two blocks
+// within a band is reachable where it crosses the seam between that band and the next. A seam the block being dragged
+// is one of the two sides of is passed over: standing beside itself and coming between itself and its neighbor are both
+// where it already is.
 func seamAt(regions *layoutRegions, pt geom.Point, draggedKey string) *layoutSeamRegion {
 	var dragged *gurps.SheetLayoutNode
 	if leaf := regions.leafFor(draggedKey); leaf != nil {
@@ -773,9 +767,9 @@ func straddleDropTarget(seam *layoutSeamRegion, edge layoutedge.Enum) dropTarget
 	}
 }
 
-// ladderContainer returns the container that the given distance from the given edge of the given block names, or nil
-// if that distance is past every container sharing the edge and so names the block itself. See resolveDropTarget for
-// what the ladder is for.
+// ladderContainer returns the container the given distance from the given edge of the given block names, or nil if that
+// distance is past every container sharing the edge and so names the block itself. See resolveDropTarget for what the
+// ladder is for.
 func ladderContainer(regions *layoutRegions, leaf *layoutLeafRegion, edge layoutedge.Enum,
 	distance float32,
 ) *layoutContainerRegion {
@@ -906,8 +900,7 @@ func (e *sheetLayoutEditor) leafAt(where geom.Point) *layoutLeafRegion {
 // The window delivers every press to the panel under the pointer, whichever buttons are already down, so a second
 // button pressed while a gesture is under way arrives here too. It is ignored: it may neither abandon the gesture --
 // which would leave whatever a drag had already written into the layout in place, with nothing recorded to undo it --
-// nor start another on top of it. The gesture belongs to the button that began it, and only that button's release
-// ends it.
+// nor start another on top of it. The gesture belongs to the button that began it, and only its release ends it.
 func (e *sheetLayoutEditor) mouseDown(where geom.Point, button int) {
 	if e.mode != layoutIdle {
 		return
@@ -950,7 +943,6 @@ func (e *sheetLayoutEditor) mouseDown(where geom.Point, button int) {
 	e.mode = layoutPressed
 }
 
-// mouseDrag carries whatever gesture is under way forward.
 func (e *sheetLayoutEditor) mouseDrag(where geom.Point) {
 	switch e.mode {
 	case layoutPressed:
@@ -1034,8 +1026,8 @@ func (e *sheetLayoutEditor) keyDown(keyCode unison.KeyCode, _ mod.Modifiers, _ b
 	return true
 }
 
-// beginBlockDrag starts moving the block with the given key. The layout as it stands is remembered here rather than
-// at the press, since a press that never becomes a drag changes nothing and has nothing to undo.
+// beginBlockDrag starts moving the block with the given key. The layout as it stands is remembered here rather than at
+// the press, since a press that never becomes a drag changes nothing and has nothing to undo.
 func (e *sheetLayoutEditor) beginBlockDrag(key string, where geom.Point) {
 	e.mode = layoutDraggingBlock
 	e.beforeLayout = e.sheet.entity.SheetSettings.Layout.Clone()
@@ -1091,9 +1083,8 @@ func (e *sheetLayoutEditor) autoScroll(where geom.Point) geom.Point {
 	return e.overlay.PointFromRoot(root)
 }
 
-// beginDividerDrag starts moving width from one of a row's children to the next. The geometry the drag works from is
-// the geometry at the moment it started, so that the blocks moving as the width is transferred can't feed back into
-// it.
+// beginDividerDrag starts moving width from one of a row's children to the next. The drag works from the geometry as it
+// was at the moment it started, so that the blocks moving as the width is transferred can't feed back into it.
 func (e *sheetLayoutEditor) beginDividerDrag(divider *layoutDividerRegion, where geom.Point) {
 	e.mode = layoutDraggingDivider
 	e.beforeLayout = e.sheet.entity.SheetSettings.Layout.Clone()
@@ -1147,8 +1138,7 @@ func (e *sheetLayoutEditor) updateDividerDrag(where geom.Point) {
 // width it has on screen at that moment, so that nothing jumps as the flag comes off: the drag then moves the divider
 // from where it stands rather than from wherever the old weights alone would have put it.
 //
-// This does nothing at all once there is no square block left beside the divider, so the drag can call it as often as
-// it likes.
+// This does nothing once no square block is left beside the divider, so the drag can call it as often as it likes.
 func (e *sheetLayoutEditor) releaseSquareDivider(divider *layoutDividerRegion) {
 	row, ok := divider.rowPanel.Layout().(*weightedRowLayout)
 	if !ok || (!row.squareOf(divider.index) && !row.squareOf(divider.index+1)) {
@@ -1178,7 +1168,6 @@ func (e *sheetLayoutEditor) releaseSquareDivider(divider *layoutDividerRegion) {
 	}
 }
 
-// endDividerDrag finishes a width transfer.
 func (e *sheetLayoutEditor) endDividerDrag(where geom.Point) {
 	e.updateDividerDrag(where)
 	e.mode = layoutIdle
@@ -1194,9 +1183,9 @@ func (e *sheetLayoutEditor) beginBottomDrag(leaf *layoutLeafRegion, where geom.P
 	e.updateBottomDrag(where)
 }
 
-// updateBottomDrag gives the block the minimum height the pointer calls for. A height that is no more than a little
-// past what the block wanted anyway is taken as a request for its natural height, so that a block can be put back to
-// growing with its content without having to land exactly on its current bottom edge.
+// updateBottomDrag gives the block the minimum height the pointer calls for. A height no more than a little past what
+// the block wanted anyway is taken as a request for its natural height, so that a block can be put back to growing with
+// its content without having to land exactly on its current bottom edge.
 //
 // A block that takes its width from the height of its row keeps doing so: the minimum height set here raises the height
 // of the row, which widens the block to match, so dragging the bottom edge of the portrait grows its picture area
@@ -1213,14 +1202,13 @@ func (e *sheetLayoutEditor) updateBottomDrag(where geom.Point) {
 		return
 	}
 	// The builder is the sole authority on a panel's layout data, so the live value goes in the one place it keeps the
-	// minimum height, whether the block's parent is a row or a column.
+	// minimum height, whatever the block's parent is.
 	if data, ok := leaf.panel.LayoutData().(*unison.FlexLayoutData); ok {
 		data.MinSize.Height = minHeight.Pixels()
 	}
 	e.relayoutLive(leaf.panel)
 }
 
-// endBottomDrag finishes setting a minimum height.
 func (e *sheetLayoutEditor) endBottomDrag(where geom.Point) {
 	e.updateBottomDrag(where)
 	e.mode = layoutIdle
@@ -1229,8 +1217,8 @@ func (e *sheetLayoutEditor) endBottomDrag(where geom.Point) {
 
 // layoutSquareCandidate is what one way of making a block's content square turned out to do: how far from square the
 // content was left and how far the dimension that moved had to travel to get there, as a fraction of what it was. The
-// apply function makes the change the candidate stands for in the model, which is all that is needed once the winner
-// has been picked, since applying it rebuilds the page from the model.
+// apply function makes the change in the model, which is all that is needed once the winner has been picked, since
+// applying it rebuilds the page from the model.
 type layoutSquareCandidate struct {
 	apply    func()
 	err      float32
@@ -1240,21 +1228,21 @@ type layoutSquareCandidate struct {
 // squarePortrait makes the portrait's picture area square. That area is the block's content rect, so the shape the
 // layout has to be brought to is that square plus the block's border insets.
 //
-// There are two ways to arrive at one, and each of them is tried on the page itself rather than reasoned about, since
-// only the page can say what the rest of the layout leaves room for. The vertical candidate gives the block the
-// minimum height that would make its content as tall as it is wide, exactly as dragging its bottom edge does. The
-// horizontal candidate, available only when the block sits in a row, gives it the share of that row's width that would
-// make its content as wide as it is tall, exactly as dragging the divider beside it does: with pool the width the row
-// has to divide up and W the weights of its other children, the share that yields a frame width of target is
+// There are two ways to arrive at one, and each is tried on the page itself rather than reasoned about, since only the
+// page can say what the rest of the layout leaves room for. The vertical candidate gives the block the minimum height
+// that would make its content as tall as it is wide, exactly as dragging its bottom edge does. The horizontal
+// candidate, available only when the block sits in a row, gives it the share of that row's width that would make its
+// content as wide as it is tall, exactly as dragging the divider beside it does: with pool the width the row has to
+// divide up and W the weights of its other children, the share that yields a frame width of target is
 // W*target/(pool-target), which is out of reach when what is left over would push the other blocks below the narrowest
 // a block may be. Each candidate is applied, the page is laid out again, the block is measured and what was there
 // before is put back, so a height a taller neighbor swallows or a width the row refuses is seen for what it is.
 //
 // The winner is the candidate that actually lands on a square and moves the block the least, measured as a fraction of
-// the dimension it changes, so that the portrait is nudged rather than being turned into a page-wide slab whenever the
-// other way round would do just as well. If neither lands on one, the nearer miss wins, and if that is no better than
-// the shape the block already has, nothing is done at all. Only the winner is applied for real, as a single undoable
-// edit that rebuilds the sheet once.
+// the dimension it changes, so that the portrait is nudged rather than turned into a page-wide slab whenever the other
+// way round would do just as well. If neither lands on one, the nearer miss wins, and if that is no better than the
+// shape the block already has, nothing is done at all. Only the winner is applied for real, as a single undoable edit
+// that rebuilds the sheet once.
 func (e *sheetLayoutEditor) squarePortrait() {
 	found := e.ensureRegions().leafFor(gurps.BlockPortraitKey)
 	if found == nil || found.panel == nil {
@@ -1576,8 +1564,8 @@ func (e *sheetLayoutEditor) drawSquareButton(gc *unison.Canvas, leaf *layoutLeaf
 }
 
 // drawLayoutButton paints one of the small buttons in a block's title strip: a filled square with the glyph the given
-// function draws on it, inset by the amount given. The pointer resting on it swaps the two inks for the pair given, so
-// that what the button would do is shown before it is pressed.
+// function draws on it, inset by the amount given. The pointer resting on it swaps in the given pair of inks, so that
+// what the button would do is shown before it is pressed.
 func (e *sheetLayoutEditor) drawLayoutButton(gc *unison.Canvas, r geom.Rect,
 	hoverBackground, hoverForeground unison.Ink, inset float32, glyph func(mark geom.Rect, paint *unison.Paint),
 ) {
@@ -1642,8 +1630,8 @@ func (e *sheetLayoutEditor) drawGhost(gc *unison.Canvas) {
 		OnBackgroundInk: unison.ThemeOnFocus,
 	})
 	size := geom.NewSize(text.Width()+12, text.Height()+8)
-	// The ghost is carried by the point within the block that was grabbed, but never so far from the pointer that the
-	// pointer ends up outside it.
+	// The ghost is carried by the point within the block that was grabbed, but never so far that the pointer ends up
+	// outside it.
 	offset := geom.NewPoint(min(e.grabOffset.X, size.Width-1), min(e.grabOffset.Y, size.Height-1))
 	r := geom.Rect{Point: e.dragPt.Sub(offset), Size: size}
 	gc.DrawRoundedRect(r, geom.NewSize(4, 4), unison.ThemeFocus.Paint(gc, r, paintstyle.Fill))

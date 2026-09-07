@@ -47,7 +47,7 @@ type librarySettingsDockable struct {
 	promptForSave bool
 }
 
-// ShowLibrarySettings the Library Settings view for a specific library.
+// ShowLibrarySettings shows the Library Settings view for a specific library.
 func ShowLibrarySettings(lib *gurps.Library) {
 	if activateDockable(func(d *librarySettingsDockable) bool { return d.library == lib }) {
 		return
@@ -73,7 +73,7 @@ func ShowLibrarySettings(lib *gurps.Library) {
 
 // librarySettingsTitle returns the title of the settings view for a library with the given name. A library created via
 // Navigator.addLibrary has no name until one is typed into the view, so an empty name gets a placeholder rather than
-// leaving the title to trail off after the colon.
+// leaving the title trailing off after the colon.
 func librarySettingsTitle(name string) string {
 	if name == "" {
 		name = i18n.Text("Untitled Library")
@@ -343,10 +343,9 @@ func (d *librarySettingsDockable) apply() bool {
 	UpdateTitleForDockable(d)
 	Workspace.Navigator.Reload()
 	// A library that has just been pointed at a different repository has no releases to show until it has been checked
-	// (see Library.Configure). With the periodic checks on, that is done now, in the background, so that the Library
+	// (see Library.Configure). With the periodic checks on, that is done now, in the background, so the Library
 	// Explorer's indicator is right as soon as it can be. With them off, the Library Explorer asks when its update
-	// buttons are clicked, as it does for any unchecked library, rather than a check being made behind a setting that
-	// says not to. A library that has already been checked and whose repository didn't change has nothing to ask.
+	// buttons are clicked, rather than a check being made behind a setting that says not to.
 	if libraryCheckWantedAfterApply(d.library, gurps.GlobalSettings().General.LibraryUpdateCheck) {
 		go checkForLibraryUpgrade(d.library)
 	}

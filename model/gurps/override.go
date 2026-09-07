@@ -18,10 +18,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
-// Override is a Feature that *replaces* a field's value rather than adjusting it additively. Unlike a Bonus, overrides
-// are never accumulated: when more than one applies to the same field, exactly one must win. The winner is chosen by a
-// fixed, user-visible ladder (see ResolveOverride) so the outcome is predictable and never depends on the order rows
-// happen to be stored in.
+// Override is a Feature that replaces a field's value rather than adjusting it additively. Unlike a Bonus, overrides
+// are never accumulated: when more than one applies to the same field, exactly one wins, chosen by the ladder in
+// ResolveOverride so the outcome never depends on the order rows happen to be stored in.
 type Override interface {
 	Feature
 	// Owner returns the owner that is currently set.
@@ -32,8 +31,8 @@ type Override interface {
 	SubOwner() fmt.Stringer
 	// SetSubOwner sets the sub-owner to use.
 	SetSubOwner(owner fmt.Stringer)
-	// OverridePriority returns the author-assigned priority. Higher wins. This is the deliberate control knob: an
-	// ordinary override leaves it at 0, a special effect raises it to out-rank ordinary ones.
+	// OverridePriority returns the author-assigned priority. Higher wins. An ordinary override leaves it at 0; a
+	// special effect raises it to out-rank ordinary ones.
 	OverridePriority() int
 	// OverrideSpecificity returns how narrowly this override's match criteria target a field. Higher is more specific.
 	// It breaks ties between overrides of equal priority: "the more specific rule wins", the same intuition CSS uses.
@@ -48,16 +47,16 @@ type OverrideCandidate[T comparable] struct {
 }
 
 // ResolveOverride applies the override-resolution ladder and returns the winning value. base is the field's intrinsic
-// value, used when nothing applies; it also plays the part of an implicit lowest-priority contender, so an ordinary
-// priority-0 override still replaces it, yet the "pick the single winner" logic stays uniform. render turns a value
-// into display text (for the tooltip and for the deterministic final tie-break). If tooltip is non-nil, the entire
-// contest is written to it, the winner and any genuine conflict flagged, so the user can always see why a value won.
+// value, returned when nothing applies; it also acts as an implicit lowest-priority contender, so an ordinary
+// priority-0 override still replaces it. render turns a value into display text, for the tooltip and for the
+// deterministic final tie-break. If tooltip is non-nil, the entire contest is written to it, with the winner and any
+// genuine conflict flagged.
 //
 // The ladder, applied in order:
 //  1. Highest OverridePriority wins.
 //  2. Highest OverrideSpecificity wins (more specific criteria beat broader ones).
 //  3. Last resort: the value that renders first (stable string order). This is order-independent, so dragging rows
-//     around never changes the result; when it is what decides two *different* values, that is a real conflict and is
+//     around never changes the result; when it is what decides two different values, that is a real conflict and is
 //     marked as such in the tooltip rather than silently resolved.
 func ResolveOverride[T comparable](base T, candidates []OverrideCandidate[T], render func(T) string, tooltip *xbytes.InsertBuffer) T {
 	if len(candidates) == 0 {

@@ -159,8 +159,7 @@ func (h *PageTableColumnHeader[T]) TooltipText() string {
 	return h.tooltipText
 }
 
-// SetTooltipText sets the text of the header's tooltip, removing the tooltip entirely when the text is empty. The
-// tooltip panel is only rebuilt when the text actually changes.
+// SetTooltipText sets the text of the header's tooltip, removing the tooltip entirely when the text is empty.
 func (h *PageTableColumnHeader[T]) SetTooltipText(text string) {
 	if h.tooltipText == text {
 		return

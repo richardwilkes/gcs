@@ -22,8 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// runLegacyExport runs the legacy (non-Go-template) exporter over the given template text and returns the resulting
-// output.
+// runLegacyExport runs the legacy (non-Go-template) exporter over the given template text and returns its output.
 func runLegacyExport(t *testing.T, c check.Checker, entity *Entity, tmpl string) string {
 	t.Helper()
 	entity.Recalculate()

@@ -13,10 +13,9 @@ package ux
 
 import "testing"
 
-// TestRace re-runs the tests that put two or more goroutines over shared state, which is the only situation the race
-// detector can ever report on. build.sh runs the full suite uninstrumented and then runs only this wrapper under the
-// race detector; see model/gurps/race_coverage_test.go for the full rationale. When adding a test that involves
-// concurrency, list it here as well so the race pass covers it.
+// TestRace re-runs the tests that put two or more goroutines over shared state, which is all the race detector can
+// report on. build.sh runs the full suite uninstrumented and then only this wrapper under the race detector; see
+// model/gurps/race_coverage_test.go for the full rationale. List any new concurrency test here as well.
 func TestRace(t *testing.T) {
 	t.Run("BuildContentCacheReuseAndFailureCaching", TestBuildContentCacheReuseAndFailureCaching)
 	t.Run("HandoffRefusesOversizedPayload", TestHandoffRefusesOversizedPayload)

@@ -20,8 +20,8 @@ import (
 	"github.com/yuin/goldmark/extension"
 )
 
-// renderTooltipMarkdown renders the given text using the same Markdown configuration that unison uses for tooltips
-// (goldmark with the GFM extension), so the tests exercise the real rendering behavior rather than an approximation.
+// renderTooltipMarkdown renders the text with the same Markdown configuration unison uses for tooltips (goldmark with
+// the GFM extension), so the tests exercise the real rendering behavior rather than an approximation.
 func renderTooltipMarkdown(c check.Checker, text string) string {
 	var buffer bytes.Buffer
 	c.NoError(goldmark.New(goldmark.WithExtensions(extension.GFM)).Convert([]byte(text), &buffer))
@@ -52,17 +52,15 @@ func TestMarkdownHardLineBreaksRendering(t *testing.T) {
 	c := check.New(t)
 	tooltip := "+2 Beauty\n+3 Charisma\n+1 Voice"
 
-	// Without the fix, the renderer produces no line breaks (all bonuses on one line).
 	raw := renderTooltipMarkdown(c, tooltip)
 	c.Equal(0, strings.Count(raw, "<br>"), "unconverted tooltip should collapse onto one line")
 
-	// With the fix, each newline becomes a hard line break, so there is one break between each of the three bonuses.
 	fixed := renderTooltipMarkdown(c, markdownHardLineBreaks(tooltip))
 	c.Equal(2, strings.Count(fixed, "<br>"), "converted tooltip should render one bonus per line")
 }
 
-// TestMarkdownHardLineBreaksPreservesParagraphs verifies that blank lines (paragraph breaks) and other block constructs
-// continue to render correctly after conversion, so the fix does not disturb tooltips that already rely on Markdown.
+// TestMarkdownHardLineBreaksPreservesParagraphs verifies that blank lines and other block constructs still render
+// correctly after conversion, so tooltips that already rely on Markdown are left undisturbed.
 func TestMarkdownHardLineBreaksPreservesParagraphs(t *testing.T) {
 	c := check.New(t)
 	rendered := renderTooltipMarkdown(c, markdownHardLineBreaks("first\n\nsecond"))

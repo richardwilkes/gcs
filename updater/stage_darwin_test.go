@@ -24,9 +24,9 @@ import (
 // signedBundle builds a directory shaped like an application bundle around a real Mach-O and signs it, then returns
 // what an update to it would replace.
 //
-// An ad-hoc signature is enough. It seals Contents/Info.plist and the resource directory exactly as the Developer ID
-// signature on a released build does, and it is those seals that decide whether a copy of the executable can run --
-// which makes what follows reproducible on any Mac, with no signing identity and no network.
+// An ad-hoc signature is enough: it seals Contents/Info.plist and the resource directory exactly as the Developer ID
+// signature on a released build does, and it is those seals that decide whether a copy of the executable can run. That
+// makes what follows reproducible on any Mac, with no signing identity and no network.
 func signedBundle(t *testing.T, dir string) Target {
 	t.Helper()
 	for _, tool := range []string{"/usr/bin/codesign", "/usr/bin/ditto"} {
@@ -37,8 +37,7 @@ func signedBundle(t *testing.T, dir string) Target {
 	bundle := filepath.Join(dir, BundleName)
 	exePath := filepath.Join(bundle, "Contents", "MacOS", CmdName)
 	// Any real Mach-O will do, and one that is on every macOS installation avoids building one here. A plain copy of
-	// the bytes, since this is standing in for an executable rather than trying to be that one: the flags on a system
-	// binary are not ours to reproduce, and the signature that matters is applied below.
+	// the bytes suffices, since this only stands in for an executable and the signature that matters is applied below.
 	data, err := os.ReadFile("/bin/echo")
 	if err != nil {
 		t.Skipf("unable to prepare an executable for this test: %v", err)
@@ -73,13 +72,11 @@ func verifySignature(ctx context.Context, path string) error {
 	return run(ctx, "/usr/bin/codesign", "--verify", "--strict", path)
 }
 
-// TestStageHelperCopiesEnoughOfTheBundleToRun is a regression test for an update that could never be applied.
-//
-// The helper was once a bare copy of the bundle's main executable. macOS refuses to run one of those: that executable's
-// signature records the hashes of Contents/Info.plist and of the sealed resource directory, and outside the bundle
-// there is nothing for them to match, so the kernel kills the process at exec. The update simply never happened, and
-// because the helper starts as the application is quitting and died before running any of its own code, nothing
-// anywhere said why.
+// A regression test for an update that could never be applied. The helper was once a bare copy of the bundle's main
+// executable, which macOS refuses to run: that executable's signature records the hashes of Contents/Info.plist and of
+// the sealed resource directory, and outside the bundle there is nothing for them to match, so the kernel kills the
+// process at exec. The update simply never happened, and since the helper died before running any of its own code,
+// nothing anywhere said why.
 func TestStageHelperCopiesEnoughOfTheBundleToRun(t *testing.T) {
 	c := check.New(t)
 	target := signedBundle(t, t.TempDir())
@@ -108,11 +105,9 @@ func TestStageHelperCopiesEnoughOfTheBundleToRun(t *testing.T) {
 		"the staged copy must not look like a second installed application")
 }
 
-// makeDMG builds a real disk image holding a directory shaped like an application bundle, so that the mount, copy and
-// unmount sequence is exercised against the tools it actually uses rather than against a stand-in.
-//
-// The image is given the same style of volume name the packager produces, since that name is exactly what the mount
-// deliberately does not rely on.
+// makeDMG builds a real disk image holding a directory shaped like an application bundle, so the mount, copy and
+// unmount sequence is exercised against the tools it actually uses. The image is given the same style of volume name
+// the packager produces, since that name is exactly what the mount deliberately does not rely on.
 func makeDMG(t *testing.T, volumeName string) string {
 	t.Helper()
 	for _, tool := range []string{"/usr/bin/hdiutil", "/usr/bin/ditto"} {
@@ -134,9 +129,9 @@ func makeDMG(t *testing.T, volumeName string) string {
 	return dmg
 }
 
-// TestStagePayloadFromADiskImage exercises the macOS unpacking path against a real disk image: mounting it, copying the
-// bundle out, and unmounting again. None of that can be exercised any other way, and getting the hdiutil invocation
-// wrong would only show up when a user tried to update.
+// The macOS unpacking path against a real disk image: mounting it, copying the bundle out, and unmounting again. None
+// of that can be exercised any other way, and getting the hdiutil invocation wrong would only show up when a user
+// tried to update.
 func TestStagePayloadFromADiskImage(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mounting a disk image is slow")
@@ -155,17 +150,16 @@ func TestStagePayloadFromADiskImage(t *testing.T) {
 	c.NoError(err)
 	c.True(fi.Mode().IsRegular())
 
-	// The image must not be left mounted. A stray mount would accumulate a volume per update attempt, and would keep
-	// the downloaded file alive after the directory holding it was removed.
+	// A stray mount would accumulate a volume per update attempt, and would keep the downloaded file alive after the
+	// directory holding it was removed.
 	out, err := exec.Command("/usr/bin/hdiutil", "info").CombinedOutput()
 	c.NoError(err)
 	c.NotContains(string(out), dmg, "the disk image was left mounted")
 }
 
-// TestStagePayloadWithTheVolumeNameAlreadyInUse is the case the explicit mount point exists for. The packager names
-// every volume "GCS v<version>", so a user who already has that disk image open would push a second mount to a
-// different, unpredictable path -- and anything that guessed the path from the volume name would copy from the wrong
-// place, or fail outright.
+// The case the explicit mount point exists for. The packager names every volume "GCS v<version>", so a user who
+// already has that disk image open would push a second mount to a different, unpredictable path, and anything that
+// guessed the path from the volume name would copy from the wrong place or fail outright.
 func TestStagePayloadWithTheVolumeNameAlreadyInUse(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mounting a disk image is slow")
@@ -187,8 +181,8 @@ func TestStagePayloadWithTheVolumeNameAlreadyInUse(t *testing.T) {
 	c.Equal("the application", read(t, filepath.Join(dst, "Contents", "MacOS", CmdName)))
 }
 
-// TestStagePayloadRejectsAnImageWithoutTheApplication verifies that a disk image which is readable but does not hold
-// what was expected is refused, rather than producing an empty or partial installation.
+// A disk image that is readable but does not hold what was expected must be refused, rather than producing an empty or
+// partial installation.
 func TestStagePayloadRejectsAnImageWithoutTheApplication(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mounting a disk image is slow")
@@ -207,8 +201,7 @@ func TestStagePayloadRejectsAnImageWithoutTheApplication(t *testing.T) {
 	c.False(exists(dst))
 }
 
-// TestStagePayloadRejectsSomethingThatIsNotADiskImage verifies that a corrupted download is reported rather than
-// producing a confusing failure further along.
+// A corrupted download must be reported rather than producing a confusing failure further along.
 func TestStagePayloadRejectsSomethingThatIsNotADiskImage(t *testing.T) {
 	c := check.New(t)
 	dmg := filepath.Join(t.TempDir(), "test.dmg")

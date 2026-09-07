@@ -26,8 +26,7 @@ import (
 // TestAncestryEditorHeadless drives the ancestry editor end to end inside a headless GCS workspace, the way a user
 // would: it opens the editor from the File menu, edits it by clicking and typing, reorders a list by dragging, undoes
 // with the keyboard, saves through the file dialog, reloads the file from the toolbar menu, and closes the tab with
-// unsaved changes. The phases build on one another, so a failure in one that the rest cannot proceed without stops the
-// test there.
+// unsaved changes. The phases build on one another, so a failure the rest cannot proceed without stops the test there.
 func TestAncestryEditorHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
@@ -192,7 +191,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	screen.Do(func() { names = genderNames(d.model) })
 	c.Equal([]string{"Male", "Female", "Other"}, names, "undo restores the original order")
 
-	// Capture the rendering for a person to look at, when one has asked for it; see captureScreen.
+	// Capture the rendering for a person to look at, when one has asked for it.
 	captureScreen(t, c, screen, "ancestry_editor")
 
 	// Save through the toolbar. A new ancestry has no file, so the pure-Go save dialog comes up, offering the user
@@ -235,8 +234,8 @@ func TestAncestryEditorHeadless(t *testing.T) {
 
 	// Change the name, then choose the saved file from the toolbar menu's library list. The editor already shows that
 	// file, so the choice brings it forward and changes nothing, not even the edit in progress. The name is at the top
-	// of the content, which the steps above scrolled away from, so it is brought back into view first, as a user would.
-	// A second ancestry is put into the library first, so that the menu has one to open in an editor of its own.
+	// of the content, which the steps above scrolled away from, so it is brought back into view first. A second
+	// ancestry is put into the library too, so that the menu has one to open in an editor of its own.
 	dwarfPath := filepath.Join(user.AncestriesPath(), "Dwarf"+gurps.AncestryExt)
 	c.NoError(os.WriteFile(dwarfPath, []byte(`{"version": 5, "name": "Dwarf"}`), 0o640))
 	screen.Do(func() {
@@ -338,9 +337,9 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	c.Equal("Elf", loadSavedFile(t, c, savedPath, gurps.NewAncestryFromFile).Name, "discarding leaves the file as it was saved")
 }
 
-// closeEditorWithoutPrompt closes a dockable that is expected to close without a prompt, and fails the test if it is
-// still open or a dialog came up afterwards. The close is posted rather than run through Do, since a prompt, were there
-// one, would be modal and Do would wait for it.
+// closeEditorWithoutPrompt closes a dockable that is expected to close without a prompt, failing the test if it is
+// still open or a dialog came up. The close is posted rather than run through Do, since a prompt would be modal and Do
+// would wait for it.
 func closeEditorWithoutPrompt(t *testing.T, screen *unison.HeadlessScreen, d interface {
 	unison.Dockable
 	unison.TabCloser

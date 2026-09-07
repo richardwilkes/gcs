@@ -40,11 +40,10 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 	ProcessNameableGroups(owner, []NameableGroup[T]{{Rows: rows}})
 }
 
-// NameableGroup is a set of rows whose entries in the nameables prompt are all headed by the same label. An entry is
-// normally titled with the row's own name, which is enough while every row in the prompt is a different thing; with a
-// label the title becomes "label: name", which is what tells apart rows that are otherwise identical -- the copies of
-// one modifier that a single drop attached to several traits or equipment items, say, which each need an answer of
-// their own. An empty label leaves the row's own name to stand alone.
+// NameableGroup is a set of rows whose entries in the nameables prompt share a label. An entry is normally titled with
+// the row's own name; a non-empty label makes the title "label: name", which is what tells apart otherwise identical
+// rows -- the copies of one modifier that a single drop attached to several traits, say, each needing an answer of
+// their own.
 type NameableGroup[T gurps.Node[T]] struct {
 	Label string
 	Rows  []T
@@ -67,8 +66,7 @@ func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []Namea
 				}
 				var keys []string
 				if gurps.IsNodePreconfigured(row) {
-					// Only prompt for keys that don't already have a replacement recorded; the rest were already
-					// resolved and shouldn't be asked about again.
+					// Only prompt for keys with no replacement recorded; the rest were already resolved.
 					if keys = missingNameableKeys(row, m); len(keys) == 0 {
 						return false
 					}
@@ -90,21 +88,18 @@ func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []Namea
 			for i, row := range data {
 				row.ApplyNameableKeys(nameables[i])
 			}
-			// The owner is normally the table the rows live in, and that table may have been replaced by a rebuild
-			// before this was called -- the alternate drop path rebuilds before prompting, and the modifier prompt
-			// that precedes this one rebuilds when its answer changes something, either of which can add or take away
-			// the switch column, and a list can only change its columns by building a new table. An orphaned table
+			// The owner is normally the table the rows live in, and a rebuild may have replaced that table before
+			// this was called, since a list can only change its columns by building a new table. An orphaned table
 			// has no Rebuildable above it, so the rebuild would silently be skipped, leaving the substitutions in the
-			// model while the list the user is looking at goes on showing the raw keys and the values derived from
-			// them. The live table has to be looked up without regard for T, since on the very path this is here for
-			// the rows are the modifiers that were dropped and T is therefore not the row type of the table they
-			// landed in.
+			// model while the list the user is looking at goes on showing the raw keys. The live table has to be
+			// looked up without regard for T, since on the very path this is here for the rows are the modifiers that
+			// were dropped and T is therefore not the row type of the table they landed in.
 			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
 		}
 	}
 }
 
-// missingNameableKeys returns the keys in m that don't already have an explicit replacement recorded on row.
+// missingNameableKeys returns the keys of nameables that have no explicit replacement recorded on row.
 func missingNameableKeys[T gurps.Node[T]](row T, nameables map[string]string) []string {
 	var replacements map[string]string
 	if accessor, ok := any(row).(nameable.Accesser); ok && !xreflect.IsNil(accessor) {
@@ -186,20 +181,12 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 	return showListQuestionDialog(i18n.Text("Provide substitutions:"), list)
 }
 
-// createNameableField builds the widget used to edit the replacement value for the marker.
-//
-// marker comes from nameable.NewMarker, called by our caller with its ok result already checked -- an old-format,
-// no-pipe key gets a synthesized marker (see NewMarker) rather than a plain text field, so every nameable, old
-// format or new, gets the same NewComboField shell: its options (if any) listed, an "empty" entry when AllowEmpty is
-// set (which every synthesized legacy marker has), and free typing enabled when FreeForm is set (also always true
-// for a synthesized marker, matching old-format markers' traditional unrestricted typing). A "not set" entry is
-// always included too -- for now; that's this function's call, not NewComboField's, since NewComboField itself has
-// no opinion on whether "not set" should be offered (see its docs) -- and it's now the only way to clear a
-// substitution, there's no separate "clear" button in the dialog.
-//
-// m's value for this marker's key comes from nameable.Extract, which uses nameable.Unset to mark a marker with
-// no recorded replacement -- every nameable defaults to "not set" here unless a real replacement was already
-// on record, regardless of the marker's Options/AllowEmpty configuration.
+// createNameableField builds the widget used to edit the replacement value for the marker, which comes from
+// nameable.NewMarker with its ok result already checked. A FreeForm marker -- which every synthesized old-format
+// marker is, matching such markers' traditional unrestricted typing -- gets an editable combo field, while any other
+// gets a popup menu limited to the marker's options. A "not set" entry is always offered as well, since it is the only
+// way to clear a substitution, and a nameable whose value in m is nameable.Unset starts out on it, regardless of the
+// marker's Options and AllowEmpty settings.
 func createNameableField(marker *nameable.Marker, m map[string]string) unison.Paneler {
 	var initial *string
 	if v, ok := m[marker.Key()]; ok && v != nameable.Unset {
@@ -247,9 +234,9 @@ func createNameableField(marker *nameable.Marker, m map[string]string) unison.Pa
 		}
 	}
 	if initial != nil && selected == nil {
-		// The stored value doesn't match any of the marker's current options -- e.g. a legacy value, or the
-		// options changed since it was set. Show it instead of silently displaying "«not set»" while leaving the
-		// old value in place if the user presses OK without touching this field.
+		// The stored value doesn't match any of the marker's current options -- a legacy value, or the options
+		// changed since it was set. Show it rather than displaying "«not set»" while silently leaving the old
+		// value in place if the user presses OK without touching this field.
 		popup.AddItem(initial)
 		selected = initial
 	}

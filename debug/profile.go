@@ -23,8 +23,7 @@ var (
 	pprofFile *os.File
 )
 
-// StartCPUProfile starts CPU profiling and writes the profile data to a file named "cpu_profile.prof".
-// If profiling is already started, it does nothing.
+// StartCPUProfile starts CPU profiling, writing to "cpu_profile.prof". Does nothing if profiling is already started.
 func StartCPUProfile() {
 	lock.Lock()
 	defer lock.Unlock()
@@ -42,8 +41,7 @@ func StartCPUProfile() {
 	}
 }
 
-// StopCPUProfile stops CPU profiling and closes the profile file.
-// If profiling is not started, it does nothing.
+// StopCPUProfile stops CPU profiling and closes the profile file. Does nothing if profiling isn't started.
 func StopCPUProfile() {
 	lock.Lock()
 	defer lock.Unlock()

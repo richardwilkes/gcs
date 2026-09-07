@@ -162,7 +162,7 @@ func ExtractField(str string) Field {
 
 // ExtractKnownField extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractField, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// Unlike ExtractField, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
 // that is dispatching on the type to detect unknown types.
 func ExtractKnownField(str string) (value Field, known bool) {
 	for _, enum := range Fields {

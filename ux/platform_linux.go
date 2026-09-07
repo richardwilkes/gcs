@@ -60,10 +60,10 @@ func performPlatformLateStartup() {
 }
 
 // installExecutableIcon attaches the application icon to the executable file itself so that file managers display it
-// with our icon rather than the generic "executable" icon. Unlike Windows (PE resource) and macOS (bundle), a Linux ELF
-// binary can't embed an icon a file manager will read; instead, GVfs-based file managers (e.g. GNOME Files) honor a
-// per-file "custom-icon" metadata attribute, which is what we set here. This is re-applied on every launch, so it also
-// fixes itself up if the binary is moved to a new location.
+// with our icon rather than the generic "executable" icon. Unlike Windows (PE resource) and macOS (bundle), a Linux
+// ELF binary can't embed an icon a file manager will read; instead, GVfs-based file managers (e.g. GNOME Files) honor
+// a per-file "custom-icon" metadata attribute, which is what we set here. Re-applying it on every launch also fixes it
+// up if the binary is moved.
 //
 // This is GNOME/GVfs-specific. KDE's Dolphin has no equivalent: KIO's KFileItem resolves a custom icon only for
 // .desktop files (via their Icon= entry) and directories (via a .directory file), otherwise falling back to the
@@ -101,8 +101,8 @@ func installDesktopFiles(exePath string) error {
 }
 
 // desktopEntry returns the contents of the .desktop file used to integrate with the Linux desktop environment. The
-// StartupWMClass entry must match the WM_CLASS that Unison sets on our windows (xos.AppIdentifier) so that window
-// managers can associate our windows with this launcher entry (e.g. for the taskbar/dock icon and launcher feedback).
+// StartupWMClass entry must match the WM_CLASS that Unison sets on our windows (xos.AppIdentifier), so that window
+// managers can associate our windows with this launcher entry (e.g. for the taskbar/dock icon).
 func desktopEntry(exePath string) string {
 	return fmt.Sprintf(`[Desktop Entry]
 Type=Application

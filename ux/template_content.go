@@ -20,7 +20,6 @@ type templateContent struct {
 	flex *unison.FlexLayout
 }
 
-// newTemplateContent creates a new page.
 func newTemplateContent() *templateContent {
 	p := &templateContent{
 		flex: &unison.FlexLayout{

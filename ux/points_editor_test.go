@@ -20,9 +20,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// newEntityWithAscendingPointsRecord returns an entity whose points record list is stored oldest first, which is the
-// opposite of the order the editor uses. Files not written by GCS may hold the list in any order, since Entity's
-// unmarshaling only sorts it when the point-total reconciliation branch runs.
+// newEntityWithAscendingPointsRecord returns an entity whose points record list is stored oldest first, the opposite
+// of the order the editor uses. Files not written by GCS may hold the list in any order, since Entity's unmarshaling
+// only sorts it when the point-total reconciliation branch runs.
 func newEntityWithAscendingPointsRecord() *gurps.Entity {
 	base := time.Date(2026, time.March, 1, 12, 0, 0, 0, time.Local)
 	entity := gurps.NewEntity()
@@ -35,9 +35,9 @@ func newEntityWithAscendingPointsRecord() *gurps.Entity {
 }
 
 // TestPointsEditorOpensUnmodifiedForAnUnsortedRecordList verifies that an editor opened on a points record list that
-// isn't already in the editor's display order reports no changes. The editor sorts the copy it edits, so if the copy it
-// compares against isn't sorted the same way, an untouched editor enables Apply and Cancel, shows the modified marker
-// on its tab, and prompts to save on the way out.
+// isn't already in the editor's display order reports no changes. The editor sorts the copy it edits, so if the copy
+// it compares against isn't sorted the same way, an untouched editor enables Apply and Cancel, shows the modified
+// marker on its tab, and prompts to save on the way out.
 func TestPointsEditorOpensUnmodifiedForAnUnsortedRecordList(t *testing.T) {
 	c := check.New(t)
 	entity := newEntityWithAscendingPointsRecord()
@@ -58,7 +58,7 @@ func TestPointsEditorOpensUnmodifiedForAnUnsortedRecordList(t *testing.T) {
 }
 
 // TestPointsEditorSortsBothCopiesTheSameWay verifies that the two copies the editor holds are independent of each
-// other, but hold equal values in the same order, no matter what order the entity stored them in.
+// other, but hold equal values in the same order, whatever order the entity stored them in.
 func TestPointsEditorSortsBothCopiesTheSameWay(t *testing.T) {
 	c := check.New(t)
 	entity := newEntityWithAscendingPointsRecord()

@@ -23,9 +23,9 @@ import (
 
 // TestI18nTextArgsAreLiterals verifies that every i18n.Text call in the source tree is passed a single string literal.
 // i18n.Text looks the whole string up in the translation catalog, so a call such as
-// i18n.Text("Attributes: " + profile.Name) builds a key that varies per character and can never match an entry; worse,
-// there is nothing constant for the extraction tooling to put in the catalog in the first place. The runtime portion
-// belongs outside the lookup, as fmt.Sprintf(i18n.Text("Attributes: %s"), profile.Name).
+// i18n.Text("Attributes: " + profile.Name) builds a key that can never match an entry, and leaves the extraction
+// tooling nothing constant to put in the catalog. The runtime portion belongs outside the lookup, as
+// fmt.Sprintf(i18n.Text("Attributes: %s"), profile.Name).
 func TestI18nTextArgsAreLiterals(t *testing.T) {
 	c := check.New(t)
 	root, err := filepath.Abs("..")

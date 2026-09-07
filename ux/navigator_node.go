@@ -219,8 +219,7 @@ func (n *NavigatorNode) primaryColumnText() string {
 	}
 }
 
-// Match looks for the text in the node and return true if it is present. Note that calls to this method should always
-// pass in text that has already been run through strings.ToLower().
+// Match returns true if the text is present in the node. The text must already have been lowercased by the caller.
 func (n *NavigatorNode) Match(text string) bool {
 	if text == "" {
 		return false
@@ -325,7 +324,7 @@ func (n *NavigatorNode) Refresh() {
 					if aIsDir {
 						return -1 // Directories before files
 					}
-					return 1 // Files after directories
+					return 1
 				}
 			}
 			result := xstrings.NaturalCmp(xfilepath.TrimExtension(a.path), xfilepath.TrimExtension(b.path), true)
@@ -375,7 +374,7 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 				if aIsDir {
 					return -1 // Directories before files
 				}
-				return 1 // Files after directories
+				return 1
 			}
 		}
 		aName := a.Name()

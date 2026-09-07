@@ -310,13 +310,13 @@ type exportedEntity struct {
 	Page                    exportedPage
 }
 
-// ExportSheets exports the files to a text representation.
+// ExportSheets exports each exportable file in fileList using the template found at templatePath, writing each result
+// beside its source file.
 func ExportSheets(templatePath string, fileList []string) error {
 	var exported int
 	for _, one := range fileList {
 		if FileInfoFor(one).IsExportable {
-			// Currently, only one file type supports exporting. Should this change, this will need to be adjusted to
-			// call the correct loader.
+			// Only one file type is exportable today. If that changes, the right loader must be chosen here.
 			entity, err := NewEntityFromFile(os.DirFS(filepath.Dir(one)), filepath.Base(one))
 			if err != nil {
 				return err
@@ -390,9 +390,8 @@ func createTemplateFuncs() texttmpl.FuncMap {
 	}
 }
 
-// htmlLines turns a multi-line plain text value into HTML that renders one line per newline. The text is escaped
-// first, so only the line breaks this adds are treated as markup; the result is then marked safe so that an
-// "GCS HTML Template v1" template emits the <br> tags rather than escaping them again.
+// htmlLines escapes the text and turns each newline into a <br>, marking the result safe so that a "GCS HTML Template
+// v1" template emits those line breaks rather than escaping them again.
 func htmlLines(text string) htmltmpl.HTML {
 	//nolint:gosec // G203: the text is escaped above, so the only markup in the result is the line breaks added here.
 	return htmltmpl.HTML(strings.ReplaceAll(htmltmpl.HTMLEscapeString(text), "\n", "<br>\n"))

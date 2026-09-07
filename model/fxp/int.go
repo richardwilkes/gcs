@@ -119,8 +119,7 @@ func FromStringForced(value string) Int {
 	return fixed64.FromStringForced[DP](value)
 }
 
-// ApplyRounding rounds in the positive direction if roundDown is false, or in the negative direction if roundDown is
-// true.
+// ApplyRounding rounds value toward negative infinity if roundDown is true, otherwise toward positive infinity.
 func ApplyRounding(value Int, roundDown bool) Int {
 	if roundDown {
 		return value.Floor()
@@ -137,8 +136,8 @@ func ResetIfOutOfRange[T xmath.Integer | xmath.Float | Int](value, minValue, max
 	return value
 }
 
-// Extract a leading value from a string. If a value is found, it is returned along with the portion of the string that
-// was unused. If a value is not found, then 0 is returned along with the original string.
+// Extract returns the leading numeric value in the string along with the unused remainder. If no value is found, 0 and
+// the original string are returned.
 func Extract(in string) (value Int, remainder string) {
 	last := 0
 	maximum := len(in)

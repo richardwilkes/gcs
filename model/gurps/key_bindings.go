@@ -36,7 +36,7 @@ type Binding struct {
 	Action     *unison.Action
 }
 
-// RegisterKeyBinding register a keybinding.
+// RegisterKeyBinding registers a key binding. A second registration of the same ID is ignored.
 func RegisterKeyBinding(id string, action *unison.Action) {
 	if _, exists := factoryBindings[id]; exists {
 		return
@@ -84,7 +84,7 @@ func (b *KeyBindings) IsZero() bool {
 	return true
 }
 
-// Save writes the Fonts to the file as JSON.
+// Save writes the key bindings to the file as JSON.
 func (b *KeyBindings) Save(filePath string) error {
 	return jio.SaveToFile(filePath, b)
 }
@@ -140,7 +140,7 @@ func (b *KeyBindings) MakeCurrent() {
 	}
 }
 
-// Current returns the binding for the given ID.
+// Current returns the binding for the given ID, or a zero KeyBinding if the ID isn't registered.
 func (b *KeyBindings) Current(id string) unison.KeyBinding {
 	if f, ok := factoryBindings[id]; ok {
 		if c, ok2 := b.data[id]; ok2 {
@@ -165,12 +165,12 @@ func (b *KeyBindings) Set(id string, binding unison.KeyBinding) {
 	}
 }
 
-// Reset to factory defaults.
+// Reset all bindings to the factory defaults.
 func (b *KeyBindings) Reset() {
 	b.data = nil
 }
 
-// ResetOne resets one font by ID to factory defaults.
+// ResetOne resets one key binding by ID to the factory default.
 func (b *KeyBindings) ResetOne(id string) {
 	if b.data != nil {
 		delete(b.data, id)

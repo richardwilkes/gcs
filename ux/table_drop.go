@@ -42,11 +42,10 @@ type AltDropSupport struct {
 // with at most one row selected -- applies it to just the row it landed on, as it always has.
 //
 // Only rows that are explicitly selected count. unison paints the descendants of a selected container as indirectly
-// selected rather than putting them into the selection itself, and dropping onto a container attaches the modifiers to
-// the container alone, so a container's children are no more a target here than they are when one is dropped onto
-// directly. The scan runs over the disclosed rows rather than the selection map, which is also what leaves out any
-// selected row currently tucked inside a closed container: a row that can't be highlighted while dragging shouldn't be
-// quietly modified by the drop either.
+// selected rather than putting them into the selection, and dropping onto a container attaches the modifiers to the
+// container alone, so its children are no more a target here. Scanning the disclosed rows rather than the selection map
+// also leaves out a selected row tucked inside a closed container: one that can't be highlighted while dragging
+// shouldn't be quietly modified by the drop either.
 func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int) []int {
 	if hovered == -1 {
 		return nil
@@ -77,10 +76,9 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 			if !ok {
 				return
 			}
-			// Every target is resolved up front, since the rebuild below replaces this table with a new one -- leaving
-			// this very table an orphan whose rows are no longer the ones on screen -- so the row indexes only mean
-			// something before it runs. The sync in between is harmless: attaching modifiers adds and removes no rows
-			// and changes no disclosure, so it rebuilds the row cache with the same rows in the same order.
+			// Every target is resolved up front, since the rebuild below can replace this table, leaving it an orphan
+			// whose rows are no longer the ones on screen, so the row indexes only mean something before it runs. The
+			// sync in between is harmless: attaching modifiers adds and removes no rows and changes no disclosure.
 			targets := make([]T, 0, len(rowIndexes))
 			for _, rowIndex := range rowIndexes {
 				if row := p.table.RowFromIndex(rowIndex); row != nil {
@@ -92,10 +90,9 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 			}
 			dataOwner := p.DataOwner()
 			libraryFile := libraryFileFromTable(tableDragData.Table)
-			// Each target has to be given its own clones. They are separate modifiers from here on -- enabled, renamed
-			// and edited independently -- so sharing one set among the targets would tie them together. The clones are
-			// kept grouped by target for the nameables prompt below, which would otherwise show the copies of one
-			// modifier as a run of identically titled sections with nothing to say which item each belongs to.
+			// Each target gets its own clones, since they are separate modifiers from here on -- enabled, renamed and
+			// edited independently. They are kept grouped by target for the nameables prompt below, which would
+			// otherwise show the copies of one modifier as identically titled sections with nothing to tell them apart.
 			groups := make([]NameableGroup[M], 0, len(targets))
 			for _, target := range targets {
 				clones := make([]M, 0, len(tableDragData.Rows))
@@ -111,17 +108,14 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 				// Rebuilding is also what reports the drop when the rows belong to an entity (see dropRebuilder), so
 				// the owner is rebuilt as modified rather than just rebuilt.
 				rebuildAsModified(dropRebuilder(p.table), true)
-				// That rebuild can have replaced this very list: an enabled modifier carrying a switchable feature
-				// gives the rows it was dropped onto switchable features, which brings the switch column into view,
-				// and a list can only change its columns by building a new table. p belongs to the list that was
-				// replaced and its table field is never updated, so each prompt below has to be aimed at the table
-				// that took its place -- an orphan has no Rebuildable above it, so the rebuild its answer asks for
-				// would silently be skipped. The lookup is made twice because answering the modifier prompt rebuilds
-				// as well, which can replace the list a second time.
+				// That rebuild can have replaced this very list -- an enabled modifier carrying a switchable feature
+				// brings the switch column into view, and a list can only change its columns by building a new table
+				// -- and p's table field is never updated, so each prompt below has to be aimed at the table that took
+				// its place; an orphan has no Rebuildable above it, so the rebuild its answer asks for would silently
+				// be skipped. The lookup is made twice because answering the modifier prompt rebuilds as well.
 				//
-				// The modifier prompt has to be given the rows the modifiers were dropped onto, since modifiers
-				// themselves aren't something ProcessModifiers can process, and only the topmost of them, since it
-				// walks each row's descendants as well.
+				// ProcessModifiers is given the rows the modifiers were dropped onto, since modifiers themselves
+				// aren't something it can process, and only the topmost of them, since it walks descendants as well.
 				ProcessModifiers(liveTable(p.table), minimalNodes(targets))
 				ProcessNameableGroups(liveTable(p.table), groups)
 			}
@@ -136,16 +130,14 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 	// The keyboard repositioning commands are the equivalents of a drag within the table, so they belong on exactly
 	// the tables that accept one.
 	InstallMoveSelectionHandlers(table)
-	// No DragRemovedRowsCallback is installed. It would only ever fire for a move between two different tables, and
-	// the providers only allow that within a single dockable (see their DropShouldMoveData), so the report made for
-	// the table the rows landed in covers the one they left as well; a separate report for the source would just
-	// update the same owner twice.
+	// No DragRemovedRowsCallback is installed: it would only ever fire for a move between two different tables, which
+	// the providers only allow within a single dockable (see their DropShouldMoveData), so the report made for the
+	// table the rows landed in covers the one they left as well.
 	table.DropOccurredCallback = func() {
 		// unison notifies the table before it calls the did-drop callback, so this is deferred until the drop handlers
-		// have had their turn, and it has to look up the table still on screen rather than assume it, since those
-		// handlers may have caused the owner to replace the table. The handlers report the drop themselves when they
-		// rebuild the owner (see dropRebuilder), in which case marking the table as modified on top of that would just
-		// repeat the whole update; elsewhere the drop is reported here.
+		// have had their turn, and it looks up the table still on screen, since those handlers may have caused the
+		// owner to replace it. They report the drop themselves when they rebuild the owner (see dropRebuilder), in
+		// which case marking the table as modified would just repeat the whole update; elsewhere it is reported here.
 		unison.InvokeTaskAfter(func() {
 			current := liveTable(table)
 			if dropRebuilder(current) == nil {
@@ -222,11 +214,10 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 				return
 			}
 			// Every row the drop will be applied to is highlighted, so that the user can see the whole extent of what
-			// is about to happen before letting go. This is drawn afresh on every drag-update event, and the targets
-			// can be a selection of hundreds of rows with most of them scrolled out of view, so the work is confined
-			// to the rows the dirty rect reaches: RowFrame sums the heights of every row above the one asked for, so
-			// it is only called for the targets among those rows -- the indexes are in table order (see
-			// altDropTargets), so the scan stops at the first one past them -- and a single paint serves them all.
+			// is about to happen before letting go. This is drawn afresh on every drag-update event and the targets can
+			// number in the hundreds, so the work is confined to the rows the dirty rect reaches: RowFrame sums the
+			// heights of every row above the one asked for, and the indexes are in table order (see altDropTargets),
+			// so the scan stops at the first one past them.
 			first := max(table.OverRow(rect.Y), 0)
 			last := table.OverRow(rect.Bottom())
 			if last == -1 {
@@ -280,24 +271,19 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		rebuildAsModified(rebuilder, true)
 		// The rebuild covers the whole owner, so it may have replaced either table: adding rows to one list and
 		// removing them from another can change which columns each needs, and a list can only change its columns by
-		// building a new table. Everything from here on -- the checks for where the rows came from and went, the
-		// merging, the undo edit, even finding the undo manager -- has to work with the tables that took their place
-		// rather than the orphaned ones the drag started and finished on. Refreshing both keeps them comparable: two
-		// tables that were the same resolve to the same replacement, and two that were different have different
-		// reference keys, so they stay different.
+		// building a new table. Everything from here on has to work with the tables that took their place rather than
+		// the orphaned ones the drag started and finished on. Refreshing both keeps them comparable: two tables that
+		// were the same resolve to the same replacement, and two that differed have different reference keys.
 		from = liveTable(from)
 		to = liveTable(to)
 	}
 	if shouldProcessModifiersAndNameablesTo(to) {
 		if shouldProcessModifiersAndNameablesFrom(from) {
-			// Answering the modifier prompt rebuilds the owner all over again, and that rebuild can replace the tables
-			// just as the one above did: only the modifiers that are enabled count toward a row having switchable
-			// features, so turning one on or off can add or take away the switch column, and a list can only change its
-			// columns by building a new table. An orphaned table has no Rebuildable above it, so a rebuild asked for
-			// through it never happens, and the rows it reports as selected are its own rather than the ones the user
-			// is now looking at -- both of which the steps below depend upon. Applying nameable substitutions rebuilds
-			// as well, so refresh again afterwards. Refreshing both tables each time keeps them comparable, for the
-			// same reason the rebuild above does.
+			// Answering the modifier prompt rebuilds the owner again, and that rebuild can replace the tables just as
+			// the one above did: only enabled modifiers count toward a row having switchable features, so turning one
+			// on or off can add or take away the switch column. An orphaned table has no Rebuildable above it and
+			// reports its own rows as selected rather than the ones the user is now looking at, both of which the steps
+			// below depend upon. Applying nameable substitutions rebuilds as well, so refresh again afterwards.
 			ProcessModifiersForSelection(to)
 			from = liveTable(from)
 			to = liveTable(to)
@@ -323,11 +309,9 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 // melee weapons, ranged weapons, reactions and conditional modifiers lists are only on the page while there is
 // something to put in them, and the switch column comes and goes with the presence of switchable features, neither of
 // which anything short of a rebuild re-creates. Everywhere else -- a template, a loot sheet, a library list, or a table
-// in an editor whose item has no entity -- marking the table as modified covers everything a drop can change. The
-// normal and the alternate drop handlers both decide whether to rebuild with this, and the table's drop notification
-// uses it to tell whether they have already reported the drop, so the three always agree. The entity is taken from the
-// table's own provider, which is what the alternate drop handlers clone the dropped rows for. Nil, typed or otherwise,
-// is accepted, since the alternate drop path may have no source table at all.
+// in an editor whose item has no entity -- marking the table as modified covers everything a drop can change. Both drop
+// paths and the table's drop notification decide with this, so the three always agree. The entity is taken from the
+// table's own provider. Nil, typed or otherwise, is accepted, since the alternate drop path may have no source table.
 func dropRebuilder(table unison.Paneler) Rebuildable {
 	if xreflect.IsNil(table) {
 		return nil
@@ -343,7 +327,8 @@ func dropRebuilder(table unison.Paneler) Rebuildable {
 	return unison.Ancestor[Rebuildable](table)
 }
 
-// shouldProcessModifiersAndNameablesFrom checks if the copy source should process modifiers and nameables
+// shouldProcessModifiersAndNameablesFrom reports whether rows coming from the given panel need their modifiers and
+// nameables processed. Rows that were already on a sheet or loot sheet have been through that.
 func shouldProcessModifiersAndNameablesFrom(panel unison.Paneler) bool {
 	if xreflect.IsNil(panel) {
 		return false
@@ -356,7 +341,8 @@ func shouldProcessModifiersAndNameablesFrom(panel unison.Paneler) bool {
 	}
 }
 
-// shouldProcessModifiersAndNameablesFrom checks if the copy destination should process modifiers and nameables
+// shouldProcessModifiersAndNameablesTo reports whether rows landing on the given panel need their modifiers and
+// nameables processed. Only a sheet, loot sheet or template prompts for them.
 func shouldProcessModifiersAndNameablesTo(panel unison.Paneler) bool {
 	if xreflect.IsNil(panel) {
 		return false

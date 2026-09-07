@@ -160,7 +160,7 @@ func Extract{{$name}}(str string) {{$name}} {
 
 {{wrapComment (printf "ExtractKnown%s extracts the value from a string, reporting whether the string was actually recognized." $name) 120}}
 //
-{{wrapComment (printf "Unlike Extract%s, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that is dispatching on the type to detect unknown types." $name) 120}}
+{{wrapComment (printf "Unlike Extract%s, which quietly maps anything it doesn't recognize onto the default value, this permits a caller that is dispatching on the type to detect unknown types." $name) 120}}
 func ExtractKnown{{$name}}(str string) (value {{$name}}, known bool) {
     for _, enum := range {{$name}}s {
         if strings.EqualFold(enum.Key(), str) {

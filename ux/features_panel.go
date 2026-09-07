@@ -376,8 +376,8 @@ func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) (main *
 // offering the types, followed by the name criteria. The name criteria are blanked while the chosen type needs no name
 // (blank reports that, e.g. for a "this weapon" choice that targets the owner itself), and the name field is also
 // blanked while its comparison accepts anything. When secondary is non-nil, it is called to add the rows that depend on
-// the chosen type after the selection row, and those rows are torn down and rebuilt whenever the choice changes. This
-// is a plain function rather than a method because methods cannot have type parameters.
+// the chosen type after the selection row, and those rows are torn down and rebuilt whenever the choice changes. It is
+// a plain function rather than a method because methods cannot have type parameters.
 func addSelectionCriteriaRow[E comparable](p *featuresPanel, panel *unison.Panel, types []E, sel *E, blank func(E) bool, nameCriteria *criteria.Text, secondary func(parent *unison.Panel, index int)) {
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
@@ -547,8 +547,8 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) (ma
 	return p.createSpellMatchBonusPanel(f, &f.SpellMatchType, &f.NameCriteria, &f.TagsCriteria, &f.LeveledAmount)
 }
 
-// createSpellMatchBonusPanel builds the panel shared by the spell bonus and the spell point bonus, which pick the spells
-// they apply to the same way: by a match type, a name to match against it and the spells' tags.
+// createSpellMatchBonusPanel builds the panel shared by the spell bonus and the spell point bonus, which pick the
+// spells they apply to the same way: by a match type, a name to match against it and the spells' tags.
 func (p *featuresPanel) createSpellMatchBonusPanel(f gurps.Feature, matchType *spellmatch.Type, name, tags *criteria.Text, amount *gurps.LeveledAmount) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	focus = p.addLeveledModifierLine(panel, f, amount)
@@ -704,9 +704,8 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 		addPopup(wrapper, wswitch.Types[1:], &wb.SwitchType)
 		focus = addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &wb.SwitchTypeValue)
 		// The checkbox belongs inside the wrapper, at the end of its second row, so that it sits snugly after the last
-		// control just as it does on every other feature row. Placing it beside the wrapper instead would leave it
-		// top-aligned against a two-row neighbor and pinned to the far right edge, since the wrapper's column absorbs
-		// all of the slack.
+		// control as it does on every other feature row. Beside the wrapper instead, it would be top-aligned against a
+		// two-row neighbor and pinned to the far right edge, since the wrapper's column absorbs all of the slack.
 		addSwitchableCheckBox(wrapper, wb)
 		wrapper.SetLayout(&unison.FlexLayout{
 			Columns:  4,
@@ -729,8 +728,7 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 		panel.AddChild(field)
 		addCheckBox(panel, i18n.Text("per level"), &wb.PerLevel)
 		if wb.Type != feature.WeaponMinSTBonus && wb.Type != feature.WeaponEffectiveSTBonus {
-			// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on
-			// resolution.
+			// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on resolution.
 			addCheckBox(panel, i18n.Text("per die"), &wb.PerDie)
 		}
 		addCheckBox(panel, i18n.Text("as a %"), &wb.Percent)
@@ -847,7 +845,7 @@ func (p *featuresPanel) addSelectorValueEditor(parent *unison.Panel, f *gurps.Se
 			MarkModified(parent)
 		})
 	// Give the field a minimum width so it can't collapse to nothing as the panel narrows, and let it grab the slack so
-	// it is the widget that flexes rather than being crushed by its neighbors.
+	// it flexes rather than being crushed by its neighbors.
 	field.SetMinimumTextWidthUsing("impaling")
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -864,9 +862,8 @@ func (p *featuresPanel) addSelectorValueEditor(parent *unison.Panel, f *gurps.Se
 }
 
 // createUnknownFeaturePanel creates the panel for a feature this version of GCS doesn't understand. No editing is
-// offered, since we have no idea what the data means, but the row is shown so that the presence of the feature is
-// visible and it can be deleted deliberately. Note that no type switcher is present, as switching the type would throw
-// away the original data.
+// offered, since we have no idea what the data means, but the row is shown so the feature's presence is visible and it
+// can be deleted deliberately. No type switcher is present, as switching the type would throw away the original data.
 func (p *featuresPanel) createUnknownFeaturePanel(f *gurps.UnknownFeature) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	label := NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Unknown feature type %q; it will be preserved, but ignored"),

@@ -21,9 +21,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xio"
 )
 
-// TestGitHubGetPresentsTokenAsBearer verifies that an access token travels as a bearer token and that its absence sends
-// no authorization at all, since GitHub answers a malformed header with a 401 that reads like a bad token. It also
-// verifies that a failed request hands back no response, so a caller can't be left holding a body it must close.
+// An access token travels as a bearer token and its absence sends no authorization at all, since GitHub answers a
+// malformed header with a 401 that reads like a bad token. A failed request hands back no response, so a caller can't
+// be left holding a body it must close.
 func TestGitHubGetPresentsTokenAsBearer(t *testing.T) {
 	c := check.New(t)
 	var status atomic.Int64
@@ -73,9 +73,8 @@ func loadReleasesFrom(t *testing.T, body string) ([]Release, error) {
 	return LoadReleases(t.Context(), client, "someone", "", "repo", "1.0.0", nil, false)
 }
 
-// TestLoadReleasesCapturesAssets verifies that the packaged distributions attached to a release are carried through.
-// The app updater downloads one of these directly, so an asset's name, URL, size and digest all have to survive the
-// decode; before this, only the source zipball URL did.
+// The app updater downloads a packaged distribution directly, so an asset's name, URL, size and digest all have to
+// survive the decode; before this, only the source zipball URL did.
 func TestLoadReleasesCapturesAssets(t *testing.T) {
 	c := check.New(t)
 	releases, err := loadReleasesFrom(t, `[{
@@ -110,10 +109,9 @@ func TestLoadReleasesCapturesAssets(t *testing.T) {
 	c.Equal("abc123", asset.SHA256(), "the sha256: prefix must be stripped")
 }
 
-// TestLoadReleasesToleratesMissingAssets verifies that a release with no assets, or with assets that predate GitHub's
-// digest field, still loads. Every GCS release before v5.36.0 has assets carrying no digest, and the "latest commit"
-// path synthesizes a release with no assets at all, so neither case may be an error here -- refusing to update on a
-// missing digest is the updater's job, not the loader's.
+// A release with no assets, or with assets that predate GitHub's digest field, still loads. Every GCS release before
+// v5.36.0 has assets carrying no digest, and the "latest commit" path synthesizes a release with no assets at all, so
+// neither case may be an error here -- refusing to update on a missing digest is the updater's job, not the loader's.
 func TestLoadReleasesToleratesMissingAssets(t *testing.T) {
 	c := check.New(t)
 	releases, err := loadReleasesFrom(t, `[
@@ -132,8 +130,8 @@ func TestLoadReleasesToleratesMissingAssets(t *testing.T) {
 	c.Equal("", releases[2].Assets[0].SHA256(), "no digest must not produce a bogus hash")
 }
 
-// TestReleaseAssetLookup verifies the by-name lookup the updater uses to find the distribution built for the running
-// platform. Names come from the API rather than the filesystem, so the match is case-insensitive.
+// Covers the by-name lookup the updater uses to find the distribution built for the running platform. Names come from
+// the API rather than the filesystem, so the match is case-insensitive.
 func TestReleaseAssetLookup(t *testing.T) {
 	c := check.New(t)
 	release := Release{Assets: []ReleaseAsset{

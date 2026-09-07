@@ -461,13 +461,13 @@ func TestApplyPrewarmedContentCache(t *testing.T) {
 }
 
 // TestSupersededCacheBuildHandsEntriesToItsSuccessor verifies that a background cache build inherits the entries of the
-// build it supersedes rather than starting over from the live cache alone, which is what keeps the back-to-back
-// reloads at startup from restarting the first full parse of a library from zero. The hand-off rules are checked
-// against a synthetic prior build, whose contents are known: its entries fill in what the live cache lacks, the live
-// cache's own entry wins where both hold one, and its entry for a file whose change was reported after it began is not
-// inherited, since it may have read the old contents. A real pair of builds then confirms the wiring: the second
-// waits for the first to stop and reuses whatever it completed. Neither build's completion task runs, since nothing
-// here pumps unison's task queue, so the results are read from the build records directly.
+// build it supersedes rather than starting over from the live cache alone, which is what keeps the back-to-back reloads
+// at startup from restarting the first full parse of a library from zero. The hand-off rules are checked against a
+// synthetic prior build, whose contents are known: its entries fill in what the live cache lacks, the live cache's own
+// entry wins where both hold one, and its entry for a file whose change was reported after it began is not inherited,
+// since it may have read the old contents. A real pair of builds then confirms the wiring: the second waits for the
+// first to stop and reuses whatever it completed. Neither build's completion task runs, since nothing here pumps
+// unison's task queue, so the results are read from the build records directly.
 func TestSupersededCacheBuildHandsEntriesToItsSuccessor(t *testing.T) {
 	c := check.New(t)
 	ext := uti.Markdown.Extensions[0]

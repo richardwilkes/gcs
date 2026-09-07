@@ -35,8 +35,8 @@ import (
 // which the user asked for or which runs at launch, and a quiet one, which the repeating schedule runs in the
 // background. A visible check announces itself by blanking what is known and setting updating, so that the menu and
 // the toolbar button say a check is under way; a quiet check leaves the previous answer on display until it has a
-// better one, so that a failed or unchanged background check never takes away an update the user has already been
-// told about.
+// better one, so that a failed or unchanged background check never takes away an update the user was already told
+// about.
 type appUpdater struct {
 	lock      sync.RWMutex
 	frequency func() updatecheck.Option // nil means the general settings' AppUpdateCheck; tests inject a value
@@ -98,7 +98,6 @@ func (u *appUpdater) uncheckedTitleLocked() string {
 	}
 }
 
-// option returns the update check setting in force.
 func (u *appUpdater) option() updatecheck.Option {
 	if u.frequency != nil {
 		return u.frequency()
@@ -106,7 +105,7 @@ func (u *appUpdater) option() updatecheck.Option {
 	return gurps.GlobalSettings().General.AppUpdateCheck
 }
 
-// SetResult records the outcome of a visible check that found nothing to offer.
+// SetResult records a check outcome that has no releases to offer and marks any visible check as finished.
 func (u *appUpdater) SetResult(str string) {
 	u.lock.Lock()
 	u.result = str
@@ -128,22 +127,18 @@ func (u *appUpdater) setReleasesLocked(releases []gurps.Release) {
 	u.updating = false
 }
 
-// noAppUpdatesText returns the title shown when a check completed and found nothing newer than what is running.
 func noAppUpdatesText() string {
 	return fmt.Sprintf(i18n.Text("No %s updates are available"), xos.AppName)
 }
 
-// checkingForAppUpdatesText returns the title shown while a check is under way.
 func checkingForAppUpdatesText() string {
 	return fmt.Sprintf(i18n.Text("Checking for %s updates…"), xos.AppName)
 }
 
-// unableToAccessAppUpdateSiteText returns the title shown when a check couldn't reach the update site.
 func unableToAccessAppUpdateSiteText() string {
 	return fmt.Sprintf(i18n.Text("Unable to access the %s update site"), xos.AppName)
 }
 
-// devVersionAppUpdateText returns the title shown by a development build, which never looks for updates.
 func devVersionAppUpdateText() string {
 	return fmt.Sprintf(i18n.Text("Development versions don't look for %s updates"), xos.AppName)
 }
@@ -234,10 +229,9 @@ func CheckForAppUpdates() {
 }
 
 // shouldShowAppUpdateDialog reports whether a release warrants interrupting the user with the notification dialog.
-// LastSeenGCSVersion is written when the dialog is shown (see NotifyOfAppUpdate, just before it goes modal) and is
-// cleared by the manual Help menu action (see checkForAppUpdatesAction in actions.go), so the dialog opens the first
-// time a release is seen and whenever the user asks for a check, while later launches that turn up the same release
-// they've already declined say so with the toolbar button alone.
+// LastSeenGCSVersion is written by NotifyOfAppUpdate just before it goes modal and is cleared by the Help menu's check
+// item, so the dialog opens the first time a release is seen and whenever the user asks for a check, while later
+// launches that turn up an already declined release say so with the toolbar button alone.
 func shouldShowAppUpdateDialog(version, lastSeen string) bool {
 	return version != lastSeen
 }
@@ -247,7 +241,7 @@ func shouldShowAppUpdateDialog(version, lastSeen string) bool {
 func checkForAppUpdatesQuietly() {
 	if updater.IsDevVersion(xos.AppVersion) {
 		// Development versions have no release behind them to compare against, so they never look for updates. Saying
-		// so is what the visible check does too, and it beats a status claiming that a check is still to come.
+		// so, as the visible check does, beats a status claiming that a check is still to come.
 		appUpdate.SetResult(devVersionAppUpdateText())
 		return
 	}
@@ -357,8 +351,8 @@ func planAppUpdate(release *gurps.Release) (plan *updater.Plan, unavailableMsg s
 }
 
 // blockerMessage explains, in the user's language, why an update cannot be installed automatically, and where possible
-// what they can do about it. The updater deals in stable identifiers rather than messages precisely so that this
-// translation happens here, at the point of display.
+// what they can do about it. The updater deals in stable identifiers rather than messages so that this translation
+// happens here, at the point of display.
 func blockerMessage(blocker updater.Blocker) string {
 	switch blocker {
 	case updater.BlockerDevBuild:
@@ -406,9 +400,8 @@ func ReportAppUpdateOutcome() {
 		xstrings.Wrap("", outcomeMessage(outcome.Reason), 100))
 }
 
-// outcomeMessage explains why an update that had already been prepared was not applied. The result is wrapped by the
-// caller rather than here, since a dialog is the only thing that shows it and the wrapping belongs with the width the
-// dialog wants.
+// outcomeMessage explains why an update that had already been prepared was not applied. The caller wraps the result,
+// since the wrapping belongs with the width the dialog showing it wants.
 func outcomeMessage(reason updater.Reason) string {
 	switch reason {
 	case updater.ReasonPredecessorRunning:

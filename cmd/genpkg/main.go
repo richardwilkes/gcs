@@ -55,7 +55,7 @@ func main() {
 
 // generateDocIcons creates a document icon for each of the file types GCS owns by overlaying the file type's icon onto
 // the generic document image. The SVGs are rendered by canvas' CPU rasterizer, which needs neither a GPU context nor a
-// window, so unison doesn't have to be started up for this.
+// window, so unison doesn't have to be started up.
 func generateDocIcons(dir string) error {
 	docImg, _, err := image.Decode(bytes.NewBuffer(docImgBytes))
 	if err != nil {
@@ -89,9 +89,9 @@ func writePNG(dstPath string, img image.Image) (err error) {
 	return errs.Wrap(png.Encode(f, img))
 }
 
-// removeGeneratedDocIcons removes the document icons left over from a previous run, so that only the ones this run
-// generates remain. The error passed into the walk function has to be checked, since the directory entry is nil
-// whenever that error isn't, which is what happens when dir itself can't be read.
+// removeGeneratedDocIcons removes the document icons left over from a previous run. The error passed into the walk
+// function has to be checked, since the directory entry is nil whenever that error isn't, which is what happens when
+// dir itself can't be read.
 func removeGeneratedDocIcons(dir string) error {
 	return fs.WalkDir(os.DirFS(dir), ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -104,7 +104,6 @@ func removeGeneratedDocIcons(dir string) error {
 	})
 }
 
-// docIconName returns the name of the document icon file generated for the given file type.
 func docIconName(fi *gurps.FileInfo) string {
 	return fi.UTI.Extensions[0][1:] + docIconSuffix
 }
@@ -150,8 +149,7 @@ func buildConfig() *packager.Config {
 		}
 		if one.IsGCSData {
 			// Document icons are only generated for the file types GCS owns, and the packager only consumes the icon
-			// of an entry whose Rank is Owner, so the others are deliberately left without one rather than pointing at
-			// a file that will never exist.
+			// of an entry whose Rank is Owner, so the others are deliberately left without one.
 			data.Icon = iconsPath + "/" + docIconName(one)
 			data.Role = "Editor"
 			data.Rank = "Owner"

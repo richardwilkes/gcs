@@ -20,9 +20,8 @@ import (
 )
 
 // TestMarkModifiedDropsCallsWhileTheUpdateIsUnderWay verifies that a call to MarkModified arriving from inside the
-// sync it performs -- a panel reporting a change as it is brought into line with the model -- is dropped rather than
-// acted upon, so that the update doesn't repeat itself from inside itself, and that the guard is lifted once the update
-// is over, so that the next edit is acted upon.
+// sync it performs -- a panel reporting a change as it is brought into line with the model -- is dropped, and that the
+// guard is lifted once the update is over, so that the next edit is acted upon.
 func TestMarkModifiedDropsCallsWhileTheUpdateIsUnderWay(t *testing.T) {
 	c := check.New(t)
 	template := newTestTemplateDockable("Reentrant", gurps.NewTemplate())
@@ -39,8 +38,8 @@ func TestMarkModifiedDropsCallsWhileTheUpdateIsUnderWay(t *testing.T) {
 	c.Equal(2, counter.count, "the next call must be acted upon")
 }
 
-// TestLootSheetMarkModifiedBumpsTheTimestamp verifies that marking a loot sheet as modified records when it was
-// changed, which is the one thing its MarkModified does beyond what the other page dockables' do.
+// TestLootSheetMarkModifiedBumpsTheTimestamp verifies that a loot sheet's MarkModified bumps its modification
+// timestamp, the one thing it does beyond what the other page dockables do.
 func TestLootSheetMarkModifiedBumpsTheTimestamp(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestLootSheet(t)
@@ -50,9 +49,9 @@ func TestLootSheetMarkModifiedBumpsTheTimestamp(t *testing.T) {
 }
 
 // TestTemplateRebuildKeepsTheScrollPosition verifies that rebuilding a template puts the page back where the user had
-// scrolled it. A rebuild that has to replace a list -- here by hiding the TL column of a long equipment list -- hands
-// the focus the old table held to its replacement, and a table scrolls itself into view as it takes the focus: with
-// the page scrolled well down into the list, that on its own would jump the page back up to the top of the list.
+// scrolled it. A rebuild that replaces a list -- here by hiding the TL column of a long equipment list -- hands the
+// focus the old table held to its replacement, and a table scrolls itself into view as it takes the focus, which on
+// its own would jump the page back up to the top of the list.
 func TestTemplateRebuildKeepsTheScrollPosition(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
@@ -105,8 +104,8 @@ func TestTemplateRebuildKeepsTheScrollPosition(t *testing.T) {
 	c.Equal(float32(wanted), after, "the rebuild must put the scroll position back")
 }
 
-// pageDockableFixture is one of the three page dockables, built headless, along with what its constructor gave to the
-// shared scaffolding and a change to its model that makes it modified.
+// pageDockableFixture is one of the three page dockables, along with what its constructor gave to the shared
+// scaffolding and a change to its model that makes it modified.
 type pageDockableFixture struct {
 	name     string
 	dockable pageDockable
@@ -115,8 +114,8 @@ type pageDockableFixture struct {
 	modify   func()
 }
 
-// newPageDockableFixtures builds each of the three page dockables the way their tests do: with the key bindable
-// actions registered and a document dock in place, since both the toolbar and the rebuild path reach for them.
+// newPageDockableFixtures builds each of the three page dockables with the key bindable actions registered and a
+// document dock in place, since both the toolbar and the rebuild path reach for them.
 func newPageDockableFixtures(t *testing.T) []pageDockableFixture {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
@@ -138,10 +137,10 @@ func newPageDockableFixtures(t *testing.T) []pageDockableFixture {
 }
 
 // TestPageDockablesShareTheScaffold verifies that each of the three page dockables comes out of its constructor with
-// the scaffolding initPageDockable and finishPageDockable put up around its own content: the dockable itself is what
-// the panel, the file-backed panel and the target manager refer to; it has an undo manager that the undo edits made
-// within it find, and starts at the initial UI scale; the toolbar sits above the scroll panel holding the content;
-// drops onto it are rerouted; and Save As is always on offer, while Save waits for a change to the content.
+// the scaffolding initPageDockable and finishPageDockable put up around its own content: the dockable is what the
+// panel, the file-backed panel and the target manager refer to; it has an undo manager and the initial UI scale; the
+// toolbar sits above the scroll panel holding the content; drops are rerouted; and Save As is always on offer, while
+// Save waits for a change.
 func TestPageDockablesShareTheScaffold(t *testing.T) {
 	c := check.New(t)
 	for _, f := range newPageDockableFixtures(t) {
@@ -169,7 +168,7 @@ func TestPageDockablesShareTheScaffold(t *testing.T) {
 
 // TestPageDockablesOfferTheCommandsForTheirLists verifies that each page dockable installs the "New ..." commands for
 // the lists it has and none for the lists it lacks -- a loot sheet never offers to add a trait, a template never to
-// add other equipment -- and that the commands acting on the trait list as a whole go only to the dockables with one.
+// add other equipment -- and that the commands acting on the trait list go only to the dockables with one.
 func TestPageDockablesOfferTheCommandsForTheirLists(t *testing.T) {
 	c := check.New(t)
 	fixtures := newPageDockableFixtures(t)
@@ -205,8 +204,7 @@ func TestPageDockablesOfferTheCommandsForTheirLists(t *testing.T) {
 // TestAddNaturalAttacksGoesToTheTraitListOfTheDockable verifies that the Add Natural Attacks command adds the trait to
 // the trait list of the dockable it was invoked on, and that on a sheet the trait is made for the sheet's entity,
 // while on a template, whose traits have no entity until it is applied, it is made for none. A new entity may already
-// hold a natural attacks trait of its own (see gurps.GeneralSettings.AutoAddNaturalAttacks), so only the growth of the
-// lists is looked at.
+// hold such a trait (see gurps.GeneralSettings.AutoAddNaturalAttacks), so only the growth of the lists is looked at.
 func TestAddNaturalAttacksGoesToTheTraitListOfTheDockable(t *testing.T) {
 	c := check.New(t)
 	fixtures := newPageDockableFixtures(t)

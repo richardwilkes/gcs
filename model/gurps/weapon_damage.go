@@ -90,7 +90,6 @@ func (w *WeaponDamage) MarshalJSONTo(enc *jsontext.Encoder) error {
 		data.FragmentationArmorDivisor = 0
 		data.FragmentationType = ""
 	} else if data.FragmentationArmorDivisor == fxp.One {
-		// An armor divisor of 0 is not valid and 1 is very common, so suppress its output when 1.
 		data.FragmentationArmorDivisor = 0
 	}
 	return json.MarshalEncode(enc, &data)
@@ -219,8 +218,8 @@ func (w *WeaponDamage) resolvedDamageNumeric(field selector.Field, base fxp.Int,
 	return base
 }
 
-// surfaceBaseDamageOverrides records, in the tooltip, the contest for every override that BaseDamageDice consumes with a
-// nil tooltip (so those entries are written exactly once, here, rather than on every internal call).
+// surfaceBaseDamageOverrides records, in the tooltip, the contest for every override that BaseDamageDice consumes with
+// a nil tooltip, so those entries are written exactly once here rather than on every internal call.
 func (w *WeaponDamage) surfaceBaseDamageOverrides(tooltip *xbytes.InsertBuffer) {
 	w.resolvedStrengthType(tooltip)
 	w.resolvedDamageString(selector.WeaponBaseDamageDice, w.Base, tooltip)
@@ -310,7 +309,6 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 		return w.String()
 	}
 	base := w.BaseDamageDice()
-	// Record the overrides BaseDamageDice consumed with a nil tooltip, so the contest is written exactly once, here.
 	w.surfaceBaseDamageOverrides(tooltip)
 	adjustForPhoenixFlame := entity.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int

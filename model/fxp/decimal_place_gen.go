@@ -121,7 +121,7 @@ func ExtractDecimalPlace(str string) DecimalPlace {
 
 // ExtractKnownDecimalPlace extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractDecimalPlace, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// Unlike ExtractDecimalPlace, which quietly maps anything it doesn't recognize onto the default value, this permits a
 // caller that is dispatching on the type to detect unknown types.
 func ExtractKnownDecimalPlace(str string) (value DecimalPlace, known bool) {
 	for _, enum := range DecimalPlaces {

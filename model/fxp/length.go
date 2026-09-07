@@ -20,9 +20,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xmath"
 )
 
-// Length contains a fixed-point value in inches. Conversions to/from metric are done using the simplified Length metric
-// conversion of 1 yd = 1 meter. For consistency, all metric lengths are converted to meters, then to yards, rather than
-// the variations at different lengths that the Length rules suggest.
+// Length contains a fixed-point value in inches. Metric conversions use a simplified 2.5 cm per inch, rather than the
+// variations at different lengths that the GURPS rules suggest.
 type Length Int
 
 // LengthFromInteger creates a new Length.
@@ -35,7 +34,7 @@ func LengthFromFixed(value Int, unit LengthUnit) Length {
 	return Length(unit.ToInches(value))
 }
 
-// LengthFromStringForced creates a new Length. May have any of the known Units suffixes, a feet and inches format (e.g.
+// LengthFromStringForced creates a new Length. May have any of the known unit suffixes, a feet and inches format (e.g.
 // 6'2"), or no notation at all, in which case defaultUnits is used.
 func LengthFromStringForced(text string, defaultUnits LengthUnit) Length {
 	length, err := LengthFromString(text, defaultUnits)
@@ -45,7 +44,7 @@ func LengthFromStringForced(text string, defaultUnits LengthUnit) Length {
 	return length
 }
 
-// LengthFromString creates a new Length. May have any of the known Units suffixes, a feet and inches format (e.g.
+// LengthFromString creates a new Length. May have any of the known unit suffixes, a feet and inches format (e.g.
 // 6'2"), or no notation at all, in which case defaultUnits is used.
 func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 	text = strings.ToLower(strings.TrimLeft(strings.TrimSpace(text), "+"))
@@ -58,11 +57,10 @@ func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 			return Length(unit.ToInches(value)), nil
 		}
 	}
-	// Didn't match any of the Units types, let's try feet & inches
+	// No unit suffix matched, so try feet & inches
 	feetIndex := strings.Index(text, "'")
 	inchIndex := strings.Index(text, `"`)
 	if feetIndex == -1 && inchIndex == -1 {
-		// Nope, so let's use our passed-in default units
 		value, err := FromString(strings.TrimSpace(text))
 		if err != nil {
 			return 0, err

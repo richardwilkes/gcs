@@ -17,10 +17,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestIntFromScript verifies that a number supplied by a script is narrowed to an int identically on every
-// architecture. Go leaves the conversion of an out-of-range float64 to an integer implementation-defined: arm64
-// saturates to MaxInt64 while amd64 produces MinInt64. goja performs that conversion itself when it maps a JS number
-// onto a Go int parameter, so any binding that accepts an int is handed a different value depending on the machine.
+// A number supplied by a script must narrow to an int identically on every architecture. Go leaves the conversion of an
+// out-of-range float64 to an integer implementation-defined: arm64 saturates to MaxInt64 while amd64 produces MinInt64.
+// goja does that conversion itself when mapping a JS number onto a Go int parameter, so any binding that accepts an int
+// is handed a different value depending on the machine.
 func TestIntFromScript(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -45,9 +45,8 @@ func TestIntFromScript(t *testing.T) {
 	}
 }
 
-// TestScriptDiceFromIsArchitectureIndependent verifies that dice.from clamps a component to the Roller's configured
-// maximum rather than wrapping to the opposite extreme. Letting goja narrow the arguments made dice.from(1e300, 6)
-// produce "999999d" on arm64 and "0" on amd64.
+// dice.from clamps a component to the Roller's configured maximum rather than wrapping to the opposite extreme. Letting
+// goja narrow the arguments made dice.from(1e300, 6) produce "999999d" on arm64 and "0" on amd64.
 func TestScriptDiceFromIsArchitectureIndependent(t *testing.T) {
 	c := check.New(t)
 	cfg := Roller.Config()
@@ -83,9 +82,8 @@ func diceOf(count, sides, modifier, multiplier int) dice.Dice {
 	return dice.Dice{Count: count, Sides: sides, Modifier: modifier, Multiplier: multiplier}
 }
 
-// TestScriptDiceAddSubtract verifies that dice.add and dice.subtract combine two specifications term by term after
-// flattening each one's multiplier, that subtraction never yields a negative count, and that specifications with
-// differing sides are refused.
+// dice.add and dice.subtract combine two specifications term by term after flattening each one's multiplier,
+// subtraction never yields a negative count, and specifications with differing sides are refused.
 func TestScriptDiceAddSubtract(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {

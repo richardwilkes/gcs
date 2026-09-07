@@ -17,9 +17,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestStateRoundTrip verifies that everything the helper needs survives being written and read back. The file is the
-// only channel between the application that stages an update and the process that applies it, so a field lost here is
-// a field the helper silently does without.
+// Everything the helper needs must survive being written and read back. The file is the only channel between the
+// application that stages an update and the process that applies it, so a field lost here is one the helper silently
+// does without.
 func TestStateRoundTrip(t *testing.T) {
 	c := check.New(t)
 	path := filepath.Join(t.TempDir(), stateName)
@@ -48,8 +48,7 @@ func TestStateRoundTrip(t *testing.T) {
 	c.Equal(want, got)
 }
 
-// TestLoadStateWithNoFile verifies that having no update in progress is the ordinary case rather than an error. Every
-// launch takes this path.
+// Having no update in progress is the ordinary case rather than an error; every launch takes this path.
 func TestLoadStateWithNoFile(t *testing.T) {
 	c := check.New(t)
 	state, err := LoadState(filepath.Join(t.TempDir(), "does-not-exist.json"))
@@ -57,9 +56,8 @@ func TestLoadStateWithNoFile(t *testing.T) {
 	c.Nil(state)
 }
 
-// TestLoadStateRejectsUnusableFiles verifies that a corrupt file, or one written by a build using a layout this one
-// does not know, is refused rather than acted on. Acting on a half-understood state could mean deleting the wrong
-// directory.
+// A corrupt file, or one written by a build using a layout this one does not know, must be refused rather than acted
+// on: acting on a half-understood state could mean deleting the wrong directory.
 func TestLoadStateRejectsUnusableFiles(t *testing.T) {
 	c := check.New(t)
 	for name, content := range map[string]string{
@@ -77,9 +75,8 @@ func TestLoadStateRejectsUnusableFiles(t *testing.T) {
 	}
 }
 
-// TestLoadStateIgnoresUnknownFields verifies forward tolerance. A state written by a newer build carrying fields this
-// one has never heard of must still be readable, or an update that installs a newer GCS could leave the newly
-// installed application unable to report on its own installation.
+// Forward tolerance: a state written by a newer build carrying unknown fields must still be readable, or an update
+// that installs a newer GCS could leave the newly installed application unable to report on its own installation.
 func TestLoadStateIgnoresUnknownFields(t *testing.T) {
 	c := check.New(t)
 	path := filepath.Join(t.TempDir(), stateName)
@@ -99,9 +96,8 @@ func TestLoadStateIgnoresUnknownFields(t *testing.T) {
 	c.Equal("/Applications/GCS.app", state.Target)
 }
 
-// TestStateTargetInfo verifies that the helper can reconstruct what it is replacing without re-deriving it from its own
-// executable path -- which would be wrong, since the helper runs from the staging directory rather than from the
-// installation.
+// The helper must be able to reconstruct what it is replacing without re-deriving it from its own executable path,
+// which would be wrong, since the helper runs from the staging directory rather than from the installation.
 func TestStateTargetInfo(t *testing.T) {
 	c := check.New(t)
 
@@ -114,8 +110,8 @@ func TestStateTargetInfo(t *testing.T) {
 	c.Equal(hostPath("/home/someone/bin"), exe.Parent)
 }
 
-// TestStateSaveIsAtomic verifies that a state file is never observed half-written. Readers are separate processes, and
-// a truncated file is indistinguishable from a stale one.
+// A state file must never be observed half-written. Readers are separate processes, and a truncated file is
+// indistinguishable from a stale one.
 func TestStateSaveIsAtomic(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

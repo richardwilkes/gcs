@@ -25,8 +25,8 @@ func canToggleEquipped(table *unison.Table[*Node[*gurps.Equipment]]) bool {
 
 // toggleEquipped flips the equipped state of each selected piece of equipment. The owner is rebuilt rather than merely
 // marked as modified, since an item that starts or stops contributing takes its weapons, reactions and conditional
-// modifiers into or out of play with it, and whether the lists showing those appear on the page at all -- along with
-// which columns they hold -- is decided only when the owner creates its lists.
+// modifiers into or out of play with it, and which lists the owner shows -- along with which columns they hold -- is
+// decided only when it creates them.
 func toggleEquipped(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]]) {
 	adjustSelection(i18n.Text("Toggle Equipped"), owner, table, equippedExtractor,
 		func(e *gurps.Equipment) bool { return e.Equipped },

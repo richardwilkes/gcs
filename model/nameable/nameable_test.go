@@ -76,7 +76,7 @@ func TestApplyUnresolvedMarkersWithSharedLabelDoNotBleed(t *testing.T) {
 	for range 50 {
 		c.Equal("Patron (@Who@) and The King", nameable.Apply("Patron (@Who: A deity@) and @Who@", m))
 		if t.Failed() {
-			// Stop at the first bad iteration instead of repeating the same failure 500 times in the test output.
+			// Stop at the first bad iteration instead of repeating the same failure 50 times in the test output.
 			break
 		}
 	}
@@ -95,7 +95,7 @@ func TestApplyToListUnresolvedMarkersWithSharedLabelDoNotBleedAcrossEntries(t *t
 			"Nail-biting",
 		}, got)
 		if t.Failed() {
-			// Stop at the first bad iteration instead of repeating the same failure 500 times in the test output.
+			// Stop at the first bad iteration instead of repeating the same failure 50 times in the test output.
 			break
 		}
 	}

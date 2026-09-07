@@ -17,9 +17,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// popupUndoRoot stands in for a SettingsDockable in the tests below: it supplies the undo manager that
-// unison.UndoManagerFor locates and, like SettingsDockable.MarkModified, performs a DeepSync of its subtree whenever
-// something within it is marked modified.
+// popupUndoRoot stands in for a SettingsDockable: it supplies the undo manager that unison.UndoManagerFor locates and,
+// like SettingsDockable.MarkModified, deep-syncs its subtree whenever something within it is marked modified.
 type popupUndoRoot struct {
 	unison.Panel
 	mgr *unison.UndoManager
@@ -54,7 +53,7 @@ func selectedValue(p *Popup[attribute.Placement]) attribute.Placement {
 
 // TestPopupUndoRedo verifies that undoing and then redoing a Popup change works. Applying the undo drives the popup's
 // selection back, which re-enters SelectionChangedCallback; if that re-entry adds another edit with the same undo ID
-// while the manager is still processing the current one, the edit's AfterData is overwritten and the redo tail is
+// while the manager is still processing the current one, the edit's AfterData is overwritten and the redo tail
 // released, making Redo a no-op.
 func TestPopupUndoRedo(t *testing.T) {
 	c := check.New(t)

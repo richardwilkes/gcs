@@ -21,7 +21,7 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
-// EventRootSync the event code used when the root path being monitored has been changed to a new path. Only the
+// EventRootSync is the event code used when the root path being monitored has been changed to a new path. Only the
 // watches that were carried over to the new root receive it; establishing a watch does not deliver one, since whoever
 // establishes it does its own initial scan. Sending one at that point would put a callback that rescans on every event
 // into an endless cycle, as each rescan re-establishes the watch and would be handed another sync in turn.
@@ -172,9 +172,9 @@ type MonitorToken struct {
 	callback func(*Library, string, notify.Event)
 	root     string
 	// watched maps each path this token watches, as the library knows it, to the form the platform watcher was handed
-	// and reports changes in (see reportedForm). The root is always present; AddSubPath adds the rest. Guarded by the monitor's tokensLock, since it is read
-	// while events are delivered, which happens on the monitor's queue -- and the monitor's own lock is held while that
-	// queue is shut down and drained, so waiting on it there would deadlock.
+	// and reports changes in (see reportedForm). The root is always present; AddSubPath adds the rest. Guarded by the
+	// monitor's tokensLock, since it is read while events are delivered, which happens on the monitor's queue -- and
+	// the monitor's own lock is held while that queue is shut down and drained, so waiting on it there would deadlock.
 	watched    map[string]string
 	onUIThread bool
 }

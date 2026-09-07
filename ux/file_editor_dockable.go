@@ -56,14 +56,13 @@ type fileEditorSpec[T fileEditorModel[T]] struct {
 	openRef func(ref *gurps.NamedFileRef) error
 }
 
-// fileEditorDockable is the common part of the editors that edit a settings file of their own -- the ancestry and
-// name generator editors. It is a settings dockable, sharing the Reset button and the toolbar menu of every library's
-// files with the attribute and body type editors, but since it edits a file of its own rather than a per-sheet setting,
-// it also tracks the file it was loaded from and saves back to it, which is what makes it a FileBackedDockable as well.
-// Each editor holds one document for its whole life, as a sheet does: File > New opens another editor rather than
-// replacing what one holds, opening a file finds the editor already showing it or opens one of its own, and the toolbar
-// menu's entries do the same rather than loading into the editor they were chosen from. Every change to the model goes
-// through an undo edit that captures the whole model, so that a structural change is as undoable as a typed one.
+// fileEditorDockable is the common part of the editors that edit a settings file of their own -- the ancestry and name
+// generator editors. It is a settings dockable, sharing the Reset button and the toolbar menu of every library's files
+// with the attribute and body type editors, but since it edits a file of its own rather than a per-sheet setting, it
+// also tracks the file it was loaded from and saves back to it, which makes it a FileBackedDockable as well. Each
+// editor holds one document for its whole life, as a sheet does: File > New opens another editor rather than replacing
+// what one holds, and opening a file finds the editor already showing it or opens one of its own. Every change to the
+// model goes through an undo edit that captures the whole model, so a structural change is as undoable as a typed one.
 type fileEditorDockable[T fileEditorModel[T]] struct {
 	SettingsDockable
 	structuralEditorBase[T]
@@ -76,9 +75,9 @@ type fileEditorDockable[T fileEditorModel[T]] struct {
 	saveButton *unison.Button
 }
 
-// init readies the editor to hold a new, blank model. The outer dockable calls it after setting Self, which is what
-// the rows name as their editor, so that a payload can be recognized as this editor's own; load may then replace the
-// blank model with a file's, before show builds the toolbar and content and places the editor in the dock.
+// init readies the editor to hold a new, blank model. The outer dockable calls it after setting Self, which is what the
+// rows name as their editor, so a payload can be recognized as this editor's own; load may then replace the blank model
+// with a file's, before show builds the toolbar and content and places the editor in the dock.
 func (d *fileEditorDockable[T]) init(spec fileEditorSpec[T]) {
 	d.spec = spec
 	editor, ok := d.Self.(rowDragEditor)
@@ -214,10 +213,8 @@ func (d *fileEditorDockable[T]) markSaved() {
 // load fills the editor with the model in the file, in place of the blank one init gave it. It is for an editor that
 // has not been shown yet, so nothing is rebuilt and nothing is posted to the undo stack: the editor starts out holding
 // the file's model, unmodified, with nothing to undo, as a sheet opened from a file does. A file that fails to load
-// changes nothing. The path is where the file lives on disk, which is empty for a built-in file, so that Save on one of
-// those prompts for a location rather than trying to write into the application. The file the editor holds is not part
-// of any undo edit: nothing undoable changes the file, since an editor holds one document for its whole life, and a
-// Save As is no more undoable here than it is for a sheet.
+// changes nothing. The recorded path is empty for a built-in file, so that Save on one of those prompts for a location
+// rather than trying to write into the application.
 func (d *fileEditorDockable[T]) load(ref *gurps.NamedFileRef) error {
 	model, err := d.spec.readModel(ref.FileSystem, ref.FilePath)
 	if err != nil {
@@ -290,9 +287,9 @@ type fileEditor interface {
 }
 
 // openFileEditor opens the file the reference names in an editor of the kind newEditor makes. An editor already showing
-// the file is activated and returned rather than a second one being opened, so that a file is never open in two editors
-// at once. Otherwise the file is loaded into a new editor, which is shown only if the load succeeds: a file that fails
-// to load opens nothing, and the error is returned for the caller to report.
+// the file is activated and returned rather than a second one being opened, so a file is never open in two editors at
+// once. Otherwise the file is loaded into a new editor, which is shown only if the load succeeds: a file that fails to
+// load opens nothing, and the error is returned for the caller to report.
 func openFileEditor[D fileEditor](ref *gurps.NamedFileRef, newEditor func() D) (D, error) {
 	if d, ok := findDockable(func(d D) bool { return d.showsFile(ref) }); ok {
 		ActivateDockable(d)

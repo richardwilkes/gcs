@@ -82,7 +82,7 @@ var (
 	fileTypeRegistry = make(map[string]*FileInfo)
 )
 
-// Register with the central registry.
+// Register adds this FileInfo to the central registry under each of its extensions.
 func (f *FileInfo) Register() {
 	for _, ext := range f.UTI.Extensions {
 		fileTypeRegistry[ext] = f
@@ -90,7 +90,8 @@ func (f *FileInfo) Register() {
 	KnownFileTypes = append(KnownFileTypes, f)
 }
 
-// FileInfoFor returns the FileInfo for the given file path's extension.
+// FileInfoFor returns the FileInfo for the given file path's extension, falling back to the generic file type when
+// the extension isn't registered.
 func FileInfoFor(filePath string) *FileInfo {
 	if info, ok := fileTypeRegistry[strings.ToLower(path.Ext(filePath))]; ok {
 		return info

@@ -25,16 +25,13 @@ func TestHasTag(t *testing.T) {
 	c := check.New(t)
 	tags := []string{"Advantage: Mental", "Physical"}
 
-	// The whole tag matches, including the colon-containing one.
 	c.True(HasTag("Advantage: Mental", tags), "an exact match on a colon-containing tag is found")
 	c.True(HasTag("  advantage: MENTAL  ", tags), "whole-tag matching ignores case and surrounding whitespace")
 	c.True(HasTag("Physical", tags), "an exact match on a tag without a colon is found")
 
-	// The colon-separated subsets still match.
 	c.True(HasTag("Advantage", tags), "the portion before the colon is found")
 	c.True(HasTag("Mental", tags), "the portion after the colon is found")
 
-	// Non-matches remain non-matches.
 	c.False(HasTag("Advantage: Physical", tags), "a colon-containing tag that isn't present isn't found")
 	c.False(HasTag("Social", tags), "a tag that isn't present isn't found")
 	c.False(HasTag("Advantage: Mental", nil), "nothing matches an empty set of tags")
@@ -209,8 +206,8 @@ func TestAlternativeAbilitiesCost(t *testing.T) {
 		"mixed children bill the most expensive one at full cost")
 }
 
-// TestAlternativeAbilitiesMultipleSlots verifies that setting AlternativeSlots > 1 bills that many of the
-// most expensive children at full cost and the rest at 20%.
+// TestAlternativeAbilitiesMultipleSlots verifies that setting AlternativeSlots > 1 bills that many of the most
+// expensive children at full cost and the rest at 20%.
 func TestAlternativeAbilitiesMultipleSlots(t *testing.T) {
 	c := check.New(t)
 
@@ -267,12 +264,10 @@ func TestInheritedModifiersAreNotRepointed(t *testing.T) {
 	second := newChild("Second", 5)
 	parent.SetDataOwner(nil)
 
-	// The inherited +2 per level modifier is costed against the level of the child it is being applied to.
 	c.Equal(fxp.FromInteger(16), first.AdjustedPoints(), "10 + 2*3")
 	c.Equal(fxp.FromInteger(20), second.AdjustedPoints(), "10 + 2*5")
 	c.Equal(fxp.FromInteger(16), first.AdjustedPoints(), "the first child's cost is unaffected by the second's")
 
-	// The container's modifier still belongs to the container, so the container's display of it is unchanged.
 	c.Equal(parent, mod.OwningTrait(), "the inherited modifier still belongs to the container")
 	c.Equal("Fire Attack", mod.NameWithReplacements(),
 		"the inherited modifier still resolves against the container's replacements")

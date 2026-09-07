@@ -27,8 +27,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
-// makeOverride builds a SelectorOverride (which implements gurps.Override) with the given priority and a number of
-// active criteria, so it exposes a known specificity to the resolver.
+// makeOverride builds a SelectorOverride with the given priority and enough pinned criteria to give it the requested
+// specificity.
 func makeOverride(value string, priority, specificity int) *gurps.SelectorOverride {
 	o := gurps.NewSelectorOverride(selector.WeaponDamageType)
 	o.Value = value
@@ -51,28 +51,24 @@ func TestResolveOverride(t *testing.T) {
 	c := check.New(t)
 	identity := func(s string) string { return s }
 
-	// No candidates: the base value survives.
 	c.Equal("cr", gurps.ResolveOverride("cr", nil, identity, nil), "no override keeps base")
 
-	// A single ordinary (priority 0) override still replaces the base.
 	c.Equal("burn", gurps.ResolveOverride("cr",
 		[]gurps.OverrideCandidate[string]{candidate(makeOverride("burn", 0, 0))}, identity, nil),
 		"priority-0 override still beats base")
 
-	// Highest priority wins regardless of listing order.
 	c.Equal("burn", gurps.ResolveOverride("cr", []gurps.OverrideCandidate[string]{
 		candidate(makeOverride("imp", 0, 0)),
 		candidate(makeOverride("burn", 10, 0)),
 	}, identity, nil), "highest priority wins")
 
-	// Equal priority: the more specific match wins.
 	c.Equal("burn", gurps.ResolveOverride("cr", []gurps.OverrideCandidate[string]{
 		candidate(makeOverride("imp", 5, 1)),
 		candidate(makeOverride("burn", 5, 3)),
 	}, identity, nil), "more specific wins the tie")
 
-	// Equal priority and specificity but different values: a real conflict. Resolution is deterministic (first by
-	// rendered value, so "burn" < "imp") and the tooltip flags it, independent of input order.
+	// Equal priority and specificity but different values is a real conflict: resolved deterministically by rendered
+	// value ("burn" < "imp"), independent of input order, and flagged in the tooltip.
 	var tooltip xbytes.InsertBuffer
 	got := gurps.ResolveOverride("cr", []gurps.OverrideCandidate[string]{
 		candidate(makeOverride("imp", 5, 2)),
@@ -90,8 +86,8 @@ func TestResolveOverride(t *testing.T) {
 	c.Equal("burn", got, "agreeing candidates resolve to their shared value")
 	c.False(strings.Contains(tooltip.String(), "conflict"), "agreement is not flagged as a conflict")
 
-	// Three tied candidates valued {burn, burn, imp}: the winner's immediate runner-up agrees with it, but "imp" still
-	// lost purely to name order, so this is a genuine conflict. The whole tied group must be scanned, not just index 1.
+	// Three tied candidates valued {burn, burn, imp}: the winner's immediate runner-up agrees with it, but "imp" lost
+	// purely to name order, so this is a genuine conflict. The whole tied group must be scanned, not just index 1.
 	tooltip.Reset()
 	got = gurps.ResolveOverride("cr", []gurps.OverrideCandidate[string]{
 		candidate(makeOverride("imp", 5, 2)),
@@ -101,7 +97,8 @@ func TestResolveOverride(t *testing.T) {
 	c.Equal("burn", got, "conflict past the runner-up still resolves deterministically")
 	c.True(strings.Contains(tooltip.String(), "conflict"), "conflict beyond the runner-up is flagged in tooltip")
 
-	// A differing value that lost on priority or specificity is not a conflict -- the ladder decided it, not name order.
+	// A differing value that lost on priority or specificity is not a conflict -- the ladder decided it, not name
+	// order.
 	tooltip.Reset()
 	got = gurps.ResolveOverride("cr", []gurps.OverrideCandidate[string]{
 		candidate(makeOverride("burn", 5, 2)),
@@ -141,8 +138,8 @@ func (n *nilOwnerOverride) Clone() gurps.Feature {
 	return &nilOwnerOverride{owner: n.owner, subOwner: n.subOwner}
 }
 
-// TestResolveOverrideTooltipTypedNilOwner guards against the typed-nil pitfall: an Override whose owner is a nil
-// *pointer* stored in a fmt.Stringer interface must render as "Unknown" rather than panicking inside String().
+// Guards the typed-nil pitfall: an Override whose owner is a nil pointer stored in a fmt.Stringer must render as
+// "Unknown" rather than panicking inside String().
 func TestResolveOverrideTooltipTypedNilOwner(t *testing.T) {
 	c := check.New(t)
 	identity := func(s string) string { return s }
@@ -159,9 +156,8 @@ func TestResolveOverrideTooltipTypedNilOwner(t *testing.T) {
 	c.True(strings.Contains(tooltip.String(), "Unknown"), "a typed-nil owner renders as Unknown")
 }
 
-// TestSelectorFieldDescriptors guards the field wiring: every selector.Field must have a descriptor, and a constrained
-// field's suggested states must all be valid stored values with a non-empty picker label. This catches enum-key typos
-// in the descriptor table.
+// Guards the field wiring: every selector.Field must have a descriptor, and a constrained field's suggested states must
+// all be valid stored values with a non-empty picker label. This catches enum-key typos in the descriptor table.
 func TestSelectorFieldDescriptors(t *testing.T) {
 	c := check.New(t)
 	for _, field := range selector.Fields {
@@ -171,13 +167,11 @@ func TestSelectorFieldDescriptors(t *testing.T) {
 			continue
 		}
 		for _, state := range d.SuggestedStates {
-			// A constrained state must produce a non-empty picker label.
 			c.True(d.StateTitle(state) != "", "state %q of %v has a label", state, field)
 		}
 	}
 
-	// The strength-basis states must map to distinct, valid stdmg options (a duplicated or misspelled key would collapse
-	// two picker entries onto the same option).
+	// A duplicated or misspelled strength-basis key would collapse two picker entries onto the same stdmg option.
 	d := gurps.SelectorFieldDescriptorFor(selector.WeaponDamageStrengthBasis)
 	seen := make(map[stdmg.Option]bool)
 	for _, state := range d.SuggestedStates {
@@ -205,12 +199,11 @@ func TestSelectorFieldDescriptors(t *testing.T) {
 		c.True(gurps.SelectorFieldDescriptorFor(field).Validate == nil, "%v is free-form (no validator)", field)
 	}
 
-	// Scope: weapon fields default to the weapon scope; the trait frequency field is trait-scoped.
 	c.Equal(gurps.SelectorScopeWeapon, gurps.SelectorFieldDescriptorFor(selector.WeaponDamageType).Scope, "damage type is weapon-scoped")
 	freq := gurps.SelectorFieldDescriptorFor(selector.TraitFrequency)
 	c.Equal(gurps.SelectorScopeTrait, freq.Scope, "trait frequency is trait-scoped")
 
-	// Every frequency state must be a valid roll whose label round-trips (a bad key would mislabel or drop a choice).
+	// A bad frequency key would mislabel or drop a choice.
 	c.Equal(len(frequency.Rolls), len(freq.SuggestedStates), "one state per frequency roll")
 	for _, state := range freq.SuggestedStates {
 		n, err := strconv.Atoi(state)
@@ -242,10 +235,9 @@ func TestSelectorFieldDescriptors(t *testing.T) {
 	}
 }
 
-// TestSelectorOverrideSpecificityScope verifies that only the criteria the field's scope actually matches on count
-// toward specificity. A trait-scoped override never consults the usage criterion (traits have no usage), so a leftover
-// usage criterion -- which the editor hides once the field switches to a trait-scoped one -- must not silently win a
-// specificity tie-break it does nothing to constrain.
+// Only the criteria the field's scope actually matches on count toward specificity. A trait-scoped override never
+// consults the usage criterion (traits have no usage), so a leftover usage criterion -- which the editor hides once the
+// field switches to a trait-scoped one -- must not silently win a tie-break it does nothing to constrain.
 func TestSelectorOverrideSpecificityScope(t *testing.T) {
 	c := check.New(t)
 
@@ -265,10 +257,9 @@ func TestSelectorOverrideSpecificityScope(t *testing.T) {
 	c.Equal(2, weapon.OverrideSpecificity(), "usage still counts for a weapon-scoped override")
 }
 
-// TestSelectorFieldDescriptorForUnknownField verifies that an unrecognized field falls back to the documented
-// zero-value free-form descriptor. Normalizing the field first mapped every out-of-range value onto the first enum
-// value, so an unknown field quietly received the trait self-control roll descriptor -- wrong scope, wrong suggested
-// states, and a self-control key seeded into the value of any new override built from it.
+// An unrecognized field falls back to the zero-value free-form descriptor. Normalizing the field first mapped every
+// out-of-range value onto the first enum value, so an unknown field quietly received the trait self-control roll
+// descriptor -- wrong scope, wrong suggested states, and a self-control key seeded into any new override built from it.
 func TestSelectorFieldDescriptorForUnknownField(t *testing.T) {
 	c := check.New(t)
 
@@ -282,7 +273,6 @@ func TestSelectorFieldDescriptorForUnknownField(t *testing.T) {
 	c.Equal(gurps.SelectorScopeWeapon, d.Scope, "an unknown field uses the zero-value scope")
 	c.Equal("", gurps.NewSelectorOverride(unknown).Value, "no state is seeded for an unknown field")
 
-	// Every known field still resolves to its own descriptor.
 	for _, field := range selector.Fields {
 		c.Equal(field, gurps.SelectorFieldDescriptorFor(field).Field, "%v resolves to its own descriptor", field)
 	}

@@ -266,9 +266,9 @@ func (t *Template) applyTemplateToSheetWithPickers(sheet *Sheet, suppressRandomi
 	}
 	e := sheet.Entity()
 	// Nothing from here until the pickers have been dealt with may modify the sheet: canceling a picker abandons the
-	// entire operation, which must leave the sheet exactly as it was. That includes the answer to the Ancestry question
-	// below, which is asked here to preserve the order the questions are presented in, but not acted upon until the
-	// operation is known to be going through.
+	// entire operation, which must leave the sheet exactly as it was. That includes the Ancestry question below, which
+	// is asked here to preserve the order the questions are presented in, but not acted upon until the operation is
+	// known to be going through.
 	disableExistingAncestries := false
 	templateAncestries := gurps.ActiveAncestries(ExtractNodeDataFromList(t.Traits.Table.RootRows()))
 	if len(templateAncestries) != 0 {
@@ -299,9 +299,9 @@ Disable your character's existing Ancestry (%s)?`),
 		}
 	}
 	// Skills and spells merge points with identical existing rows during appendRows, and the merge match includes the
-	// nameable replacements. Since skills and spells have no modifiers to toggle, resolve their nameables up front so
-	// that the merge compares against the final replacements; otherwise re-applying a template would compare empty
-	// replacements against the already-resolved existing rows and add duplicates instead of merging.
+	// nameable replacements. Since they have no modifiers to toggle, resolve their nameables up front so the merge
+	// compares against the final replacements; otherwise re-applying a template would compare empty replacements
+	// against the already-resolved existing rows and add duplicates instead of merging.
 	ProcessNameables(sheet.Skills.Table, ExtractNodeDataFromList(rows.skills))
 	ProcessNameables(sheet.Spells.Table, ExtractNodeDataFromList(rows.spells))
 	appendRows(sheet.Traits.Table, rows.traits)
@@ -461,10 +461,9 @@ type pointsMergeable[T gurps.Node[T]] interface {
 	NameableReplacements() map[string]string
 }
 
-// mergeRowsFor merges the incoming rows into the existing ones when the table holds a mergeable row type (see
-// mergeRows). It exists to bridge from a caller generic over any node type, which only knows the row type once it has
-// switched on the table's concrete type, to mergeRows, which needs that concrete type; the conversions cannot fail
-// once the switch has matched, but rows are returned untouched should one somehow not hold up.
+// mergeRowsFor bridges from a caller generic over any node type, which only knows the row type once it has switched on
+// the table's concrete type, to mergeRows, which needs that concrete type. The conversions cannot fail once the switch
+// has matched, but rows are returned untouched should one somehow not hold up.
 func mergeRowsFor[T pointsMergeable[T], U gurps.Node[U]](table *unison.Table[*Node[T]], existing, rows []*Node[U], selMap map[tid.TID]bool) []*Node[U] {
 	if existingNodes, ok := any(existing).([]*Node[T]); ok {
 		if rowNodes, ok2 := any(rows).([]*Node[T]); ok2 {
@@ -491,17 +490,13 @@ func mergeRows[T pointsMergeable[T]](table *unison.Table[*Node[T]], existing, ro
 // mergePoints folds the points of each incoming row into a matching row, returning the incoming rows that had no match
 // (and should therefore be added as new rows). A match requires an identical hash, the same nameable replacements, and
 // the same tech level. Since neither the tech level nor the replacements are part of the hash, several rows can share
-// a hash, so all candidates for a hash are considered rather than just one. An incoming row can match either an
-// existing row or an earlier incoming row, so a template that itself contains two identical entries collapses them
-// into one just as it merges into what is already on the sheet.
+// a hash, so all candidates for a hash are considered. An incoming row can match either an existing row or an earlier
+// incoming row, so a template containing two identical entries collapses them into one.
 //
 // An incoming row with an empty (but non-nil) tech level has it resolved to defaultTechLevel first, mirroring the
 // substitution performed on drop by the skills and spells providers. Without this, a template applied a second time
 // would compare the incoming empty tech level against the already-resolved tech level of the existing row, fail to
 // match, and add a duplicate row instead of merging.
-//
-// Folding the points through SetRawPoints recomputes the level of the row merged into, which the caller's subsequent
-// rebuild does again; the extra pass is harmless and keeps this free of knowledge about how each type stores its points.
 func mergePoints[T pointsMergeable[T]](existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T {
 	byHash := make(map[uint64][]T)
 	gurps.Traverse(func(item T) bool {
@@ -544,10 +539,9 @@ func mergePoints[T pointsMergeable[T]](existing, incoming []T, defaultTechLevel 
 
 // MergeAddedRows folds the points of the newly-added, currently-selected top-level rows (and any rows nested within
 // them, such as the contents of an added container) into identical skill or spell rows already present in the sheet,
-// removing the now-redundant new rows. It applies the same merge used when a template is applied, so that dragging or
-// copying a skill or spell that already exists on the sheet adds to its points rather than creating a duplicate. It
-// must be called only after tech levels and nameables have been resolved on the new rows, since the match includes
-// both. Only skills and spells are affected; other row types are left untouched.
+// removing the now-redundant new rows, so that dragging or copying a skill or spell that already exists on the sheet
+// adds to its points rather than creating a duplicate. It must be called only after tech levels and nameables have
+// been resolved on the new rows, since the match includes both. Only skills and spells are affected.
 func MergeAddedRows[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	switch t := any(table).(type) {
 	case *unison.Table[*Node[*gurps.Skill]]:
@@ -580,9 +574,9 @@ func mergeNewlySelectedRows[T pointsMergeable[T]](table *unison.Table[*Node[T]])
 	if len(newSel) == 0 {
 		return // Nothing merged, so leave the table untouched.
 	}
-	// Note that comparing len(surviving) to len(incoming) is not a valid way to detect that nothing merged: a merged
-	// row nested inside an added container is pruned from the container's data without changing the top-level count,
-	// and the view must still be refreshed or the pruned row remains visible until the next rebuild.
+	// Comparing len(surviving) to len(incoming) is not a valid way to detect that nothing merged: a merged row nested
+	// inside an added container is pruned from the container's data without changing the top-level count, and the view
+	// must still be refreshed or the pruned row remains visible until the next rebuild.
 	survivingSet := make(map[T]bool, len(surviving))
 	for _, data := range surviving {
 		survivingSet[data] = true
@@ -626,21 +620,15 @@ func rawPoints[T gurps.Node[T]](child T) fxp.Int {
 	if rp, ok := any(child).(interface{ AdjustedPoints() fxp.Int }); ok {
 		return rp.AdjustedPoints()
 	}
-	// Fallback
 	return 0
 }
 
-// Entity implements gurps.EntityProvider
+// Entity implements EntityPanel. A template has no entity, so nil is always returned.
 func (t *Template) Entity() *gurps.Entity {
 	return nil
 }
 
-// DockableKind implements widget.DockableKind
-func (t *Template) DockableKind() string {
-	return TemplateDockableKind
-}
-
-// MarkModified implements widget.ModifiableRoot.
+// MarkModified implements ModifiableRoot.
 func (t *Template) MarkModified(_ unison.Paneler) {
 	t.markModified(t, nil)
 }
@@ -655,12 +643,11 @@ func (t *Template) createContent() unison.Paneler {
 // only built anew when the columns it has to show no longer match the ones it has, since a table's columns are fixed
 // at creation; otherwise the existing list is kept and synced (see syncOrRebuildList). Anything that captured a list
 // has to allow for it being replaced -- see installNewItemCmdHandlers. Taking the page apart takes the focus away from
-// whichever table held it and moves the scroll position; Rebuild puts both back, the focus by the table's reference
-// key, which a replacement table shares.
+// whichever table held it and moves the scroll position; Rebuild puts both back.
 func (t *Template) createLists() {
 	// The lists are detached first, so that a list the layout doesn't place is left without a parent. Removing the
-	// content's children only detaches the bands, which would leave a list nested inside one still pointing at a band
-	// nobody can see, and a list's parent is how the search tells one that is on the page from one that isn't.
+	// content's children only detaches the bands, leaving a list nested inside one still pointing at a band nobody can
+	// see, and a list's parent is how the search tells one that is on the page from one that isn't.
 	for _, list := range t.lists() {
 		if !xreflect.IsNil(list) {
 			list.AsPanel().RemoveFromParent()
@@ -735,8 +722,8 @@ func (t *Template) layoutLeaf(key string) unison.Paneler {
 }
 
 // list returns the template's list for the given block key, or nil if the key isn't one of the five blocks a template
-// can show. A list the template hasn't built yet -- which is only the case while the template is first being put
-// together -- comes back as a nil *PageList inside the interface, which xreflect.IsNil sees through.
+// can show. A list the template hasn't built yet -- only possible while the template is first being put together --
+// comes back as a nil *PageList inside the interface, which xreflect.IsNil sees through.
 func (t *Template) list(key string) sheetList {
 	switch key {
 	case gurps.BlockTraitsKey:
@@ -767,7 +754,7 @@ func (t *Template) SheetSettingsUpdated(e *gurps.Entity, fullRebuild bool) {
 	}
 }
 
-// Rebuild implements widget.Rebuildable.
+// Rebuild implements Rebuildable.
 func (t *Template) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
 	prepareForPage(t.template)

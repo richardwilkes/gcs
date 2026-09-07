@@ -21,14 +21,12 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// stBonusFor returns the total ST bonus the entity currently receives.
 func stBonusFor(entity *gurps.Entity) fxp.Int {
 	return entity.AttributeBonusFor(gurps.StrengthID, stlimit.None, nil)
 }
 
-// TestShowSwitchColumnOnlyForSheetsWithSwitchableRows verifies the conditions under which the switch column appears:
-// only on a character sheet (never on a loot sheet, in a template, a library list or an editor's table), and only when
-// something in the list actually has a switch to throw.
+// The switch column appears only on a character sheet -- never on a loot sheet, in a template, a library list or an
+// editor's table -- and only when something in the list actually has a switch to throw.
 func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -57,8 +55,7 @@ func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 
 // switchableWeightReducer returns a container holding one child, where the container's contained weight reduction only
 // applies while its switch is on. This is the strongest case a loot sheet could make for the switch column, since the
-// reduction changes what the sheet shows without a character being involved at all, yet the column is still reserved
-// for character sheets.
+// reduction changes what the sheet shows without a character being involved at all.
 func switchableWeightReducer(owner gurps.DataOwner) *gurps.Equipment {
 	container := gurps.NewEquipment(owner, nil, true)
 	container.Name = "Bag of Holding"
@@ -74,9 +71,8 @@ func switchableWeightReducer(owner gurps.DataOwner) *gurps.Equipment {
 	return container
 }
 
-// TestLootSheetDoesNotShowSwitchColumn verifies that a loot sheet never gets the switch column, not even when its
-// equipment has switchable features that change what the sheet displays. The switch column belongs to character sheets
-// alone; everywhere else the switch is thrown from the item's editor.
+// A loot sheet never gets the switch column, not even when its equipment has switchable features that change what the
+// sheet displays; everywhere but a character sheet the switch is thrown from the item's editor.
 func TestLootSheetDoesNotShowSwitchColumn(t *testing.T) {
 	c := check.New(t)
 	loot := gurps.NewLoot()
@@ -101,8 +97,8 @@ func TestLootSheetDoesNotShowSwitchColumn(t *testing.T) {
 	container.SwitchedOn = false
 }
 
-// TestLootSheetHasNoSwitchColumnInPlace verifies that the loot sheet's equipment list really is built without the
-// switch column, through the same provider the sheet itself uses, whether or not anything in it is switchable.
+// The loot sheet's equipment list really is built without the switch column, through the same provider the sheet itself
+// uses, whether or not anything in it is switchable.
 func TestLootSheetHasNoSwitchColumnInPlace(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestLootSheet(t)
@@ -116,8 +112,8 @@ func TestLootSheetHasNoSwitchColumnInPlace(t *testing.T) {
 		"a switchable contained weight reduction must not bring the switch column into a loot sheet")
 }
 
-// TestShowSwitchColumnFindsNestedRows verifies that the scan looks at every depth, not just the top level, so that a
-// switchable item tucked inside a container still brings the column into view.
+// The scan looks at every depth, not just the top level, so a switchable item tucked inside a container still brings
+// the column into view.
 func TestShowSwitchColumnFindsNestedRows(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -141,8 +137,8 @@ func TestShowSwitchColumnFindsNestedRows(t *testing.T) {
 		"a container whose modifier is switchable must show the switch column")
 }
 
-// TestSheetShowsSwitchColumnWhenNeeded verifies that each of the sheet's page lists gains its switch column -- in the
-// expected position -- as soon as one of its rows has switchable features, and doesn't have it before that.
+// Each of the sheet's page lists gains its switch column, in the expected position, as soon as one of its rows has
+// switchable features, and does without it before that.
 func TestSheetShowsSwitchColumnWhenNeeded(t *testing.T) {
 	for _, tc := range []struct {
 		name         string
@@ -218,7 +214,7 @@ func TestSheetShowsSwitchColumnWhenNeeded(t *testing.T) {
 }
 
 // newSheetWithSwitchableTrait returns a sheet whose entity holds exactly one trait, carrying a switchable +1 ST bonus
-// that is currently switched off, along with that trait.
+// that starts switched off, along with that trait.
 func newSheetWithSwitchableTrait(t *testing.T) (*Sheet, *gurps.Trait) {
 	t.Helper()
 	sheet := newTestSheetForTemplate(t)
@@ -229,9 +225,9 @@ func newSheetWithSwitchableTrait(t *testing.T) (*Sheet, *gurps.Trait) {
 	return sheet, trait
 }
 
-// TestSwitchCellClickTogglesTheSwitch verifies the full path a user takes: the cell in the switch column shows a dash
-// while the switch is off, clicking it turns the switch on (bringing the switchable bonus into play and changing the
-// drawable to a checkmark), and undoing puts everything back.
+// The full path a user takes: the cell in the switch column shows a dash while the switch is off, clicking it turns the
+// switch on -- bringing the switchable bonus into play and changing the drawable to a checkmark -- and undo puts
+// everything back.
 func TestSwitchCellClickTogglesTheSwitch(t *testing.T) {
 	c := check.New(t)
 	sheet, trait := newSheetWithSwitchableTrait(t)
@@ -276,8 +272,8 @@ func TestSwitchCellClickTogglesTheSwitch(t *testing.T) {
 	c.Equal(fxp.One, stBonusFor(entity), "redo must put the bonus back into play")
 }
 
-// TestToggleFeatureSwitchRecalculatesAndIsUndoable verifies the action behind the cell in isolation: it changes the
-// state, recalculates the entity, and registers a single undoable edit.
+// The action behind the cell, in isolation: it changes the state, recalculates the entity, and registers a single
+// undoable edit.
 func TestToggleFeatureSwitchRecalculatesAndIsUndoable(t *testing.T) {
 	c := check.New(t)
 	sheet, trait := newSheetWithSwitchableTrait(t)
@@ -320,8 +316,7 @@ func newSheetWithSwitchableContainer(t *testing.T) (sheet *Sheet, container *gur
 	return sheet, container, children
 }
 
-// TestToggleFeatureSwitchWithDescendants verifies that an option-click cascades the new state to everything inside the
-// container, and that undoing restores every one of them.
+// An option-click cascades the new state to everything inside the container, and undo restores every one of them.
 func TestToggleFeatureSwitchWithDescendants(t *testing.T) {
 	c := check.New(t)
 	sheet, parent, children := newSheetWithSwitchableContainer(t)
@@ -345,8 +340,7 @@ func TestToggleFeatureSwitchWithDescendants(t *testing.T) {
 	c.Equal(fxp.Int(0), stBonusFor(sheet.Entity()), "undo must take all of the bonuses back out of play")
 }
 
-// TestToggleFeatureSwitchWithoutDescendants verifies that an ordinary click on a container's switch leaves the items
-// inside it alone.
+// An ordinary click on a container's switch leaves the items inside it alone.
 func TestToggleFeatureSwitchWithoutDescendants(t *testing.T) {
 	c := check.New(t)
 	sheet, parent, children := newSheetWithSwitchableContainer(t)
@@ -360,10 +354,9 @@ func TestToggleFeatureSwitchWithoutDescendants(t *testing.T) {
 	c.Equal(fxp.One, stBonusFor(sheet.Entity()), "only the container's modifier may be contributing")
 }
 
-// TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone verifies that an option-click only reaches the
-// descendants that actually have something to switch. Throwing the switch of an item with no switchable features would
-// change nothing the user could see, yet the new state would still be written to the file, altering the sheet's
-// contents and bloating the undo edit.
+// An option-click only reaches the descendants that actually have something to switch. Throwing the switch of an item
+// with no switchable features would change nothing the user could see, yet the new state would still be written to the
+// file, altering the sheet's contents and bloating the undo edit.
 func TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -418,9 +411,9 @@ func TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone(t *testing
 	c.Equal(fxp.One, stBonusFor(entity), "undo must take the switchable bonuses back out of play")
 }
 
-// TestAdjustTargetsWithUnparentedSource verifies that adjusting a value from a panel that isn't part of a window's
-// panel tree -- so there is no undo manager and no owner to mark as modified -- still applies the change and
-// recalculates the entity rather than panicking. Editors build such detached widgets while they are being assembled.
+// Adjusting a value from a panel that isn't part of a window's panel tree -- so there is no undo manager and no owner
+// to mark as modified -- must still apply the change and recalculate the entity rather than panicking. Editors build
+// such detached widgets while they are being assembled.
 func TestAdjustTargetsWithUnparentedSource(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -451,11 +444,10 @@ func switchColumnIndex(columns []unison.ColumnInfo, switchColumnID int) int {
 	return -1
 }
 
-// TestDimmedSwitchCellRemainsClickable verifies that the switch of an item that isn't currently contributing its
-// features -- a piece of equipment that isn't equipped, which is the very case the switch column is offered for in the
-// other equipment list -- is still usable. Its cell is disabled, which is what draws it dimmed, and that costs it
-// nothing: a table hands mouse events to its cells itself, without consulting their enabled state, so the switch can
-// still be thrown. Dimming says the switch has no effect at the moment, not that it can't be thrown.
+// The switch of an item that isn't currently contributing its features -- equipment that isn't equipped, say -- must
+// still be usable. Its cell is disabled, which is what draws it dimmed, and that costs it nothing: a table hands mouse
+// events to its cells without consulting their enabled state. Dimming says the switch has no effect at the moment, not
+// that it can't be thrown.
 func TestDimmedSwitchCellRemainsClickable(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -506,9 +498,9 @@ func TestDimmedSwitchCellRemainsClickable(t *testing.T) {
 }
 
 // clickSwitchCellThroughTable delivers a primary click to the cell at the given row and column the way a real one
-// arrives: at the center of the frame the table itself computes for that cell, through the table's own mouse
-// callbacks, which are what locate the cell under the pointer and hand it the event. The table has to have been sized
-// beforehand, since those frames come from the column widths and row heights a layout pass produces.
+// arrives: at the center of the frame the table computes for that cell, through the table's own mouse callbacks, which
+// are what locate the cell under the pointer and hand it the event. The table must have been sized beforehand, since
+// those frames come from the column widths and row heights a layout pass produces.
 func clickSwitchCellThroughTable[T gurps.Node[T]](table *unison.Table[*Node[T]], row, col int) (down, up bool) {
 	where := table.CellFrame(row, col).Center()
 	down = table.MouseDownCallback(where, unison.ButtonLeft, 1, mod.None)
@@ -516,14 +508,13 @@ func clickSwitchCellThroughTable[T gurps.Node[T]](table *unison.Table[*Node[T]],
 	return down, up
 }
 
-// TestSwitchCellIsClickableThroughTheTable verifies the property that lets a dimmed switch cell be a disabled panel,
-// along the path a user actually takes rather than by calling the cell's own callback directly: the table locates the
-// cell under the pointer and hands it the press itself (Table.DefaultMouseDown and friends), never consulting the
-// cell's enabled state, and the window only ever sees the table, since a cell is attached to the table for the
-// duration of a single event rather than being one of its children. So a dimmed switch is thrown by a click exactly as
-// an undimmed one is. Both are driven identically here, so that the dimmed case is measured against a known-good
-// baseline, and each ends with a press on an ordinary column that does reach the table's own row selection -- which
-// shows the dispatch really is happening rather than the presses going nowhere.
+// The property that lets a dimmed switch cell be a disabled panel, along the path a user actually takes rather than by
+// calling the cell's own callback directly: the table locates the cell under the pointer and hands it the press itself
+// (Table.DefaultMouseDown and friends), never consulting the cell's enabled state, and the window only ever sees the
+// table, since a cell is attached to the table for the duration of a single event rather than being one of its
+// children. Both cases are driven identically here, so the dimmed one is measured against a known-good baseline, and
+// each ends with a press on an ordinary column that does reach the table's own row selection -- which shows the
+// dispatch really is happening rather than the presses going nowhere.
 func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
 	for _, tc := range []struct {
 		name string
@@ -552,7 +543,7 @@ func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
 			// Hit testing needs the table to know how wide its columns and how tall its rows are, which it does even
 			// without a window: syncing a page list sizes its columns to their content (see sizePageTableColumns) and
 			// syncing a table to its model measures every row, and the rebuild above did both. The frame is checked
-			// here so that a change to any of that shows up as this rather than as presses that quietly land nowhere.
+			// here so a change to any of that shows up as this rather than as presses that quietly land nowhere.
 			c.False(table.CellFrame(0, col).Empty(), "the switch cell must have a frame to aim at")
 			label, ok := table.RootRows()[0].ColumnCell(0, col, unison.Black, unison.White, false, false,
 				false).(*unison.Label)
@@ -584,9 +575,8 @@ func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
 	}
 }
 
-// TestOwnerRecalculatesOnlyForItsOwnSheet verifies the check that keeps a single edit from recalculating the entity
-// twice: a sheet always recalculates its own entity when it is marked as modified, so the caller must not do so as
-// well, while anything else leaves that to the caller.
+// The check that keeps a single edit from recalculating the entity twice: a sheet always recalculates its own entity
+// when it is marked as modified, so the caller must not do so as well, while anything else leaves that to the caller.
 func TestOwnerRecalculatesOnlyForItsOwnSheet(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -604,8 +594,8 @@ func TestOwnerRecalculatesOnlyForItsOwnSheet(t *testing.T) {
 }
 
 // newSheetWithSwitchableReaction returns a sheet whose entity holds one trait carrying a switchable reaction bonus that
-// is currently switched off, along with that trait. With the switch off, the sheet has no reactions to show, so the
-// Reactions list is not on the page.
+// starts switched off, along with that trait. With the switch off there are no reactions to show, so the Reactions list
+// is not on the page.
 func newSheetWithSwitchableReaction(t *testing.T) (*Sheet, *gurps.Trait) {
 	t.Helper()
 	sheet := newTestSheetForTemplate(t)
@@ -621,12 +611,11 @@ func newSheetWithSwitchableReaction(t *testing.T) (*Sheet, *gurps.Trait) {
 	return sheet, trait
 }
 
-// TestToggleFeatureSwitchRebuildsConditionallyPresentLists verifies that throwing a switch rebuilds the sheet rather
-// than merely marking it as modified. A switchable feature can be a reaction bonus, and the Reactions list is only
-// carried on the page while there is a reaction to show -- something decided only when the sheet creates its lists --
-// so a toggle that only marked the sheet as modified would leave the list missing after switching on, and leave an
-// empty list behind after switching off. The rebuild is also the whole of the update: the sheet must not be synced a
-// second time on top of it.
+// Throwing a switch must rebuild the sheet rather than merely mark it as modified. A switchable feature can be a
+// reaction bonus, and the Reactions list is only carried on the page while there is a reaction to show -- something
+// decided only when the sheet creates its lists -- so a toggle that only marked the sheet as modified would leave the
+// list missing after switching on, and an empty list behind after switching off. The rebuild is also the whole of the
+// update: the sheet must not be synced a second time on top of it.
 func TestToggleFeatureSwitchRebuildsConditionallyPresentLists(t *testing.T) {
 	c := check.New(t)
 	sheet, trait := newSheetWithSwitchableReaction(t)
@@ -665,8 +654,8 @@ func TestToggleFeatureSwitchRebuildsConditionallyPresentLists(t *testing.T) {
 	c.Equal(1, counter.count, "the second undo must update the sheet exactly once")
 }
 
-// TestToggleFeatureSwitchDeclinesRowsWithoutASwitch verifies that a row whose data has no switch is left alone and
-// reported as such, so that a switch cell -- which flips its drawn state before asking -- can put itself back.
+// A row whose data has no switch is left alone and reported as such, so a switch cell -- which flips its drawn state
+// before asking -- can put itself back.
 func TestToggleFeatureSwitchDeclinesRowsWithoutASwitch(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

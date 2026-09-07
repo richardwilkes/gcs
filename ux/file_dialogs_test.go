@@ -22,15 +22,15 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// TestChooseFilesToOpen drives the shared open-file dialog inside a headless workspace: it opens in the directory
-// recorded under the caller's key, lists only the files with the allowed extensions, hands back what was chosen and
-// records the directory for next time, but records nothing when it is canceled.
+// The shared open-file dialog opens in the directory recorded under the caller's key, lists only the files with the
+// allowed extensions, hands back what was chosen and records the directory for next time, but records nothing when it
+// is canceled.
 func TestChooseFilesToOpen(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
 
-	// A directory holding a text file and an image, so that an extension filter has something to leave out. The
-	// last-used directories are process-wide; startHeadlessWorkspace puts them back afterwards.
+	// A directory holding a text file and an image, so an extension filter has something to leave out. The last-used
+	// directories are process-wide; startHeadlessWorkspace puts them back afterwards.
 	dir := t.TempDir()
 	textPath := filepath.Join(dir, "notes.txt")
 	imagePath := filepath.Join(dir, "picture.png")
@@ -130,9 +130,9 @@ func TestChooseFilesToOpen(t *testing.T) {
 	c.False(recorded, "a canceled dialog records no directory")
 }
 
-// TestChooseFileToSave drives the shared save-file dialog inside a headless workspace: it opens in the directory it is
-// given offering the sanitized initial name, hands back the chosen path with the required extension on it and records
-// the directory under the caller's key, but records nothing when canceled or when given no key.
+// The shared save-file dialog opens in the directory it is given offering the sanitized initial name, hands back the
+// chosen path with the required extension on it and records the directory under the caller's key, but records nothing
+// when canceled or when given no key.
 func TestChooseFileToSave(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)

@@ -198,7 +198,7 @@ func DisplayCalculator(sheet *Sheet) {
 	c.content.RequestFocus()
 }
 
-// UpdateCalculator for the given owner.
+// UpdateCalculator refreshes the calculator open for the given sheet, if there is one.
 func UpdateCalculator(sheet *Sheet) {
 	for _, other := range AllDockables() {
 		c, ok := other.(*Calculator)
@@ -340,8 +340,8 @@ func (c *Calculator) addHikingSection() {
 	c.hikingChanged()
 }
 
-// hikingChanged is what a hiking control runs once it has stored its value: it brings the controls that depend on the
-// selections into line, then recomputes the result.
+// hikingChanged is what a hiking control runs once it has stored its value: it brings the dependent controls into
+// line, then recomputes the result.
 func (c *Calculator) hikingChanged() {
 	c.adjustHikingControls()
 	c.updateHikingResult()
@@ -449,7 +449,6 @@ func addIndexPopup[T comparable](parent *unison.Panel, items []T, index *int, ch
 	parent.AddChild(popup)
 }
 
-// addPlainLabel adds a plain label with the given text to the parent and returns it.
 func addPlainLabel(parent *unison.Panel, text string) *unison.Label {
 	label := unison.NewLabel()
 	label.SetTitle(text)
@@ -893,9 +892,9 @@ func (c *Calculator) updateHikingResult() {
 }
 
 // hikingTimeInDays returns the number of days needed to cover distanceToCover while traveling distancePerDay each day,
-// rounded to a tenth of a day. It returns ok == false when distancePerDay is 0, since no ground can be covered at 0 Move
-// and the travel time is therefore undefined; guarding here also avoids a division by zero (fxp.Int.Div panics on a zero
-// divisor with a non-zero numerator).
+// rounded to a tenth of a day. ok is false when distancePerDay is 0, since no ground can be covered at 0 Move and the
+// travel time is therefore undefined; the guard also avoids a division by zero (fxp.Int.Div panics on a zero divisor
+// with a non-zero numerator).
 func hikingTimeInDays(distanceToCover, distancePerDay fxp.Int) (days fxp.Int, ok bool) {
 	if distancePerDay == 0 {
 		return 0, false

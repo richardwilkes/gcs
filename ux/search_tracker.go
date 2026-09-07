@@ -26,9 +26,8 @@ type searchRef struct {
 	row   any
 }
 
-// matchStepper holds the controls and state the search toolbars share for stepping through matches: the back and
-// forward buttons, the search field, the label showing the position within the matches, the matches themselves and the
-// index of the current one. A searchIndex of -1 means no match is current yet, which the label shows as "- of N".
+// matchStepper holds the controls and state the search toolbars share for stepping through matches. A searchIndex of -1
+// means no match is current yet, which the label shows as "- of N".
 type matchStepper[T any] struct {
 	backButton    *unison.Button
 	forwardButton *unison.Button
@@ -41,8 +40,8 @@ type matchStepper[T any] struct {
 
 // setupControls creates the controls: the back and forward buttons, disabled until there is somewhere to step, the
 // search field, whose RETURN and SHIFT-RETURN step to the next and previous match, and the matches label.
-// searchModified is called when the search field's text changes and showMatch is called to select and reveal the
-// current match. Nothing is added to a parent; see addControlsTo and installJumpToSearchHandlers.
+// searchModified is called when the search field's text changes and showMatch to select and reveal the current match.
+// Nothing is added to a parent; see addControlsTo and installJumpToSearchHandlers.
 func (m *matchStepper[T]) setupControls(searchModified func(before, after *unison.FieldState), showMatch func(match T)) {
 	m.showMatch = showMatch
 
@@ -76,7 +75,6 @@ func (m *matchStepper[T]) setupControls(searchModified func(before, after *uniso
 	m.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
 }
 
-// addControlsTo adds the controls to the given panel, in order.
 func (m *matchStepper[T]) addControlsTo(panel *unison.Panel) {
 	panel.AddChild(m.backButton)
 	panel.AddChild(m.forwardButton)
@@ -84,8 +82,7 @@ func (m *matchStepper[T]) addControlsTo(panel *unison.Panel) {
 	panel.AddChild(m.matchesLabel)
 }
 
-// installJumpToSearchHandlers installs the handlers for the jump-to-search command on the given panel, so that the
-// command moves the focus to the search field.
+// installJumpToSearchHandlers makes the jump-to-search command on the given panel move the focus to the search field.
 func (m *matchStepper[T]) installJumpToSearchHandlers(panel *unison.Panel) {
 	panel.InstallCmdHandlers(JumpToSearchFilterItemID,
 		func(any) bool { return !m.searchField.Focused() },
@@ -107,9 +104,8 @@ func (m *matchStepper[T]) nextMatch() {
 }
 
 // adjustForMatch updates the controls and, when a match is current, shows it. Only direct user actions (typing in the
-// search field, stepping between matches) should call this; asynchronous paths that merely refresh the results must
-// use updateMatchControls instead, since grabbing the selection while the user may have moved on to other rows would
-// discard their place.
+// search field, stepping between matches) may call this; paths that merely refresh the results must use
+// updateMatchControls instead, since grabbing the selection after the user has moved on would discard their place.
 func (m *matchStepper[T]) adjustForMatch() {
 	m.updateMatchControls()
 	if m.searchIndex >= 0 && m.searchIndex < len(m.searchResult) {
@@ -117,8 +113,8 @@ func (m *matchStepper[T]) adjustForMatch() {
 	}
 }
 
-// updateMatchControls updates the back and forward buttons and the matches label for the current search results
-// without touching any selection or scroll position.
+// updateMatchControls updates the buttons and the matches label for the current results without touching any selection
+// or scroll position.
 func (m *matchStepper[T]) updateMatchControls() {
 	m.backButton.SetEnabled(m.searchIndex > 0)
 	m.forwardButton.SetEnabled(len(m.searchResult) != 0 && m.searchIndex != len(m.searchResult)-1)
@@ -174,8 +170,8 @@ func (s *SearchTracker) searchModified(_, after *unison.FieldState) {
 	s.doSearch(after.Text)
 }
 
-// doSearch runs a fresh search and shows its first match. The selections are cleared even when nothing matches, so
-// that clearing the search field deselects the last match.
+// doSearch runs a fresh search and shows its first match. The selections are cleared even when nothing matches, so that
+// clearing the search field deselects the last match.
 func (s *SearchTracker) doSearch(text string) {
 	s.searchIndex = 0
 	s.searchResult = nil
@@ -184,9 +180,9 @@ func (s *SearchTracker) doSearch(text string) {
 	s.adjustForMatch()
 }
 
-// search adds the rows of the list that match the text to the reference list, but only when the list is on the page.
-// A list the layout doesn't show has no parent (see Sheet.buildLayout), and a match found in one could only be shown
-// by scrolling a table nobody is looking at into view. A list that doesn't exist has nothing to search.
+// search adds the rows of the list that match the text to the reference list, but only when the list is on the page. A
+// list the layout doesn't show has no parent (see Sheet.buildLayout), and a match found in one could only be shown by
+// scrolling a table nobody is looking at into view. A list that doesn't exist has nothing to search.
 func (p *PageList[T]) search(refList *[]*searchRef, text string, namesOnly bool) {
 	if p == nil || p.Parent() == nil {
 		return
@@ -197,8 +193,8 @@ func (p *PageList[T]) search(refList *[]*searchRef, text string, namesOnly bool)
 }
 
 // installListSearchTracker installs a search tracker on the toolbar that searches the lists the function returns and
-// clears their selections when the search is cleared. The lists are fetched afresh each time rather than captured,
-// since a rebuild can replace any of them (see syncOrRebuildList).
+// clears their selections. The lists are fetched afresh each time rather than captured, since a rebuild can replace any
+// of them (see syncOrRebuildList).
 func installListSearchTracker(toolbar *unison.Panel, lists func() []sheetList) *SearchTracker {
 	return InstallSearchTracker(toolbar, func() {
 		for _, list := range lists() {

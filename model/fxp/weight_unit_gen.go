@@ -126,7 +126,7 @@ func ExtractWeightUnit(str string) WeightUnit {
 
 // ExtractKnownWeightUnit extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractWeightUnit, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// Unlike ExtractWeightUnit, which quietly maps anything it doesn't recognize onto the default value, this permits a
 // caller that is dispatching on the type to detect unknown types.
 func ExtractKnownWeightUnit(str string) (value WeightUnit, known bool) {
 	for _, enum := range WeightUnits {

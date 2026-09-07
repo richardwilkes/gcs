@@ -79,8 +79,8 @@ func (p *SpellPrereq) FillWithNameableKeys(m, existing map[string]string) {
 }
 
 // powerSourceMatches returns true if a candidate spell's power source passes this prerequisite's filter. For the "same
-// as this spell" form, ownerPowerSource is the owning spell's resolved power source, or nil when the prerequisite does
-// not belong to a spell, in which case nothing matches.
+// as this spell" form, ownerPowerSource is the owning spell's resolved power source; nil (the prerequisite does not
+// belong to a spell) matches nothing.
 func (p *SpellPrereq) powerSourceMatches(replacements map[string]string, candidate string,
 	ownerPowerSource *string,
 ) bool {
@@ -90,14 +90,13 @@ func (p *SpellPrereq) powerSourceMatches(replacements map[string]string, candida
 	return p.PowerSourceCriteria.Matches(replacements, candidate)
 }
 
-// hasPowerSourceFilter returns true if this prerequisite restricts which power sources may satisfy it.
 func (p *SpellPrereq) hasPowerSourceFilter() bool {
 	return p.SamePowerSource || p.PowerSourceCriteria.Compare != criteria.AnyText
 }
 
-// powerSourceDescription returns the "is ..." text for the tooltip. For the "same as this spell" form, the owning
-// spell's resolved power source is named as well, so that a spell whose power source is blank or spelled differently
-// from the spells it expects to match can be diagnosed from the tooltip alone.
+// powerSourceDescription returns the "is ..." text for the tooltip. The "same as this spell" form also names the owning
+// spell's resolved power source, so a power source that is blank or spelled differently from the spells it expects to
+// match can be diagnosed from the tooltip alone.
 func (p *SpellPrereq) powerSourceDescription(replacements map[string]string, ownerPowerSource *string) string {
 	if !p.SamePowerSource {
 		return p.PowerSourceCriteria.String(replacements)
@@ -109,8 +108,8 @@ func (p *SpellPrereq) powerSourceDescription(replacements map[string]string, own
 	return desc
 }
 
-// writePowerSourceTooltip appends the power source portion of the tooltip, introduced by leadIn, to text that already
-// describes the spells being looked for. Nothing is written when no power source filter has been set.
+// writePowerSourceTooltip appends the power source portion of the tooltip, introduced by leadIn. Nothing is written
+// when no power source filter has been set.
 func (p *SpellPrereq) writePowerSourceTooltip(tooltip *xbytes.InsertBuffer, leadIn string,
 	replacements map[string]string, ownerPowerSource *string,
 ) {
@@ -135,8 +134,8 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	excludeSpell, isSpell := exclude.(*Spell)
 	if isSpell {
 		techLevel = excludeSpell.TechLevel
-		// Resolve the owning spell's name and power source once here rather than once per candidate spell, since a
-		// nameable marker in either would otherwise be re-applied for every spell on the sheet.
+		// Resolve the owning spell's name and power source once rather than once per candidate spell, since a nameable
+		// marker in either would otherwise be re-applied for every spell on the sheet.
 		ownerName = excludeSpell.NameWithReplacements()
 		resolved := excludeSpell.PowerSourceWithReplacements()
 		ownerPowerSource = &resolved
@@ -231,8 +230,8 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 }
 
 // spellDirectlyRequires returns true if the candidate spell directly lists a spell-by-name prerequisite that matches
-// the target spell. This is used to prevent a spell from being counted as a prerequisite for a spell that it, in turn,
-// requires, which would otherwise create a circular prerequisite relationship.
+// the target spell. It keeps a spell from being counted as a prerequisite for a spell that it, in turn, requires, which
+// would create a circular prerequisite relationship.
 func spellDirectlyRequires(candidate, target *Spell) bool {
 	if candidate == nil || target == nil {
 		return false
@@ -251,11 +250,10 @@ func spellDirectlyRequiresNamed(candidate *Spell, targetName, targetPowerSource 
 		targetPowerSource)
 }
 
-// prereqListRequiresSpell returns true if the given prereq list contains a spell-by-name prerequisite (at any nesting
+// prereqListRequiresSpell returns true if the given prereq list holds a spell-by-name prerequisite (at any nesting
 // depth) that is required (Has), matches the target spell's name, and whose power source filter, if any, the target
 // spell's power source passes. The replacements and owner power source are those of the spell the prereq list belongs
-// to: its qualifiers are resolved against the former, and a "same power source as this spell" filter compares against
-// the latter.
+// to: its qualifiers resolve against the former, and a "same power source as this spell" filter compares to the latter.
 func prereqListRequiresSpell(list *PrereqList, replacements map[string]string, ownerPowerSource *string, targetName,
 	targetPowerSource string,
 ) bool {

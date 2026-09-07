@@ -18,9 +18,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// backgroundHandshakeTimeout is how long these tests wait for the background goroutine before giving up. It is far
-// longer than anything that should ever be needed, since it exists only so that a broken hand-off fails the test rather
-// than hanging it.
+// backgroundHandshakeTimeout is how long these tests wait for the background goroutine. It is far longer than anything
+// that should ever be needed, since it exists only so that a broken hand-off fails the test rather than hanging it.
 const backgroundHandshakeTimeout = 10 * time.Second
 
 // awaitBackgroundResult receives the background work's result, failing rather than hanging if it never arrives.
@@ -47,9 +46,8 @@ func awaitBackgroundFinish(t *testing.T, finished <-chan struct{}) {
 	}
 }
 
-// TestRunInBackgroundReportsFailure verifies that failed work is reported as a failure. The UI thread receives the
-// result only after its modal loop has been stopped, which is the moment a hand-off through shared variables could still
-// be racing with the goroutine that produced it and read back a nil error.
+// TestRunInBackgroundReportsFailure guards against failed work being observed as a success, which a hand-off through
+// variables shared with the UI thread could still be racing over when the modal loop is stopped.
 func TestRunInBackgroundReportsFailure(t *testing.T) {
 	c := check.New(t)
 	want := errors.New("download failed")
@@ -60,8 +58,8 @@ func TestRunInBackgroundReportsFailure(t *testing.T) {
 	c.Equal(want, awaitBackgroundResult(t, resultChan))
 }
 
-// TestRunInBackgroundReportsSuccess verifies the same hand-off for work that succeeded, including that a result made
-// of more than an error makes it across whole.
+// TestRunInBackgroundReportsSuccess checks the same hand-off for work that succeeded, with a result made of more than
+// an error.
 func TestRunInBackgroundReportsSuccess(t *testing.T) {
 	c := check.New(t)
 	want := map[string][]*rule{"B": {{Rule: "Dodge", Book: "B", Page: "374"}}}
@@ -72,10 +70,10 @@ func TestRunInBackgroundReportsSuccess(t *testing.T) {
 	c.Equal(want, result.rules)
 }
 
-// TestRunInBackgroundDeliversResultBeforeFinishing is the invariant the hand-off rests on: finish is what ultimately
-// stops the modal loop, and the UI thread reads the result as soon as that loop exits, so the result has to already be
-// in the channel by the time finish runs. The receive here is non-blocking on purpose -- an empty channel means the UI
-// thread could have been released with nothing to read.
+// TestRunInBackgroundDeliversResultBeforeFinishing checks the invariant the hand-off rests on: finish stops the modal
+// loop and the UI thread reads the result as soon as that loop exits, so the result must already be in the channel by
+// the time finish runs. The receive is non-blocking on purpose -- an empty channel means the UI thread could have been
+// released with nothing to read.
 func TestRunInBackgroundDeliversResultBeforeFinishing(t *testing.T) {
 	c := check.New(t)
 	want := errors.New("download failed")
@@ -98,9 +96,8 @@ func TestRunInBackgroundDeliversResultBeforeFinishing(t *testing.T) {
 	c.Equal(want, got)
 }
 
-// TestRunInBackgroundDoesNotBlockWithoutAReceiver verifies that the goroutine completes even though nothing is
-// receiving yet. The UI thread cannot receive until its modal loop has been stopped, and the loop is only stopped by
-// finish, so a send that blocked would deadlock the application.
+// TestRunInBackgroundDoesNotBlockWithoutAReceiver checks that the goroutine completes with nothing receiving yet. Only
+// finish stops the modal loop the UI thread must leave before it can receive, so a send that blocked would deadlock.
 func TestRunInBackgroundDoesNotBlockWithoutAReceiver(t *testing.T) {
 	c := check.New(t)
 	resultChan := make(chan error, 1)
@@ -110,9 +107,6 @@ func TestRunInBackgroundDoesNotBlockWithoutAReceiver(t *testing.T) {
 	c.NoError(awaitBackgroundResult(t, resultChan))
 }
 
-// TestProgressWindowCancelButton verifies that the window offers a Cancel button exactly when the operation can be
-// canceled, and that pressing it calls the cancel function, disables itself and rewrites the label to say the
-// operation is being canceled.
 func TestProgressWindowCancelButton(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)

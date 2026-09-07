@@ -102,8 +102,7 @@ func processEnumTemplate(rootDir string, info *enumInfo) {
 		if data == nil {
 			xos.ExitIfErr(err)
 		}
-		// The source couldn't be formatted, so write it out unformatted, since being able to look at the bad output is
-		// what makes such a failure diagnosable.
+		// Write the unformatted source anyway, since seeing the bad output is what makes such a failure diagnosable.
 		fmt.Println("unable to format source file: " + filepath.Join(info.Pkg, info.Name+genSuffix))
 	}
 	dir := filepath.Join(rootDir, info.Pkg)
@@ -201,13 +200,13 @@ func (e *enumInfo) RealValues() []*enumValue {
 	return e.Values[1:]
 }
 
-// Groups returns the raw group memberships declared on this enum's values, keyed by group name, each holding the
-// identifiers of the member values in declaration order. The template is responsible for turning a group name into a
-// proper Go identifier and deciding what to name and how to render the resulting variable.
+// Groups returns the group memberships declared on this enum's values, keyed by group name, each holding the member
+// value identifiers in declaration order. The template turns a group name into a Go identifier and decides how to name
+// and render the resulting variable.
 //
-// A value whose Groups includes "*" is treated as a member of every other named group declared anywhere in this
-// enum's values, in addition to any groups it names explicitly. If the enum declares no named groups at all, "*" has
-// nothing to expand into and is ignored.
+// A value whose Groups includes "*" joins every other named group declared anywhere in this enum's values, in addition
+// to any it names explicitly. If the enum declares no named groups at all, "*" has nothing to expand into and is
+// ignored.
 func (e *enumInfo) Groups() map[string][]string {
 	if len(e.Values) == 0 {
 		return nil
@@ -396,7 +395,7 @@ var allEnums = []*enumInfo{
 	{
 		Pkg:  "model/fxp",
 		Name: "length_unit",
-		Desc: "holds the length unit type. Note that conversions to/from metric are done using the simplified GURPS metric conversion of 1 yd = 1 meter. For consistency, all metric lengths are converted to meters, then to yards, rather than the variations at different lengths that the GURPS rules suggest",
+		Desc: "holds the length unit type. Note that conversions to/from metric are done using the simplified GURPS metric conversion of 2.5 cm = 1 inch. For consistency, all metric lengths are converted to inches, rather than the variations at different lengths that the GURPS rules suggest",
 		Values: []*enumValue{
 			{
 				Name:   "FeetAndInches",
@@ -1597,9 +1596,8 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/selector",
 		Name: "field",
 		Desc: "identifies a multi-state field that a SelectorOverride can replace",
-		// The fields are first grouped by the type of data they are used for, then the order within each type matches
-		// the order the fields are presented in the detail editor's block, so the field picker reads top-to-bottom the
-		// same way the editor does.
+		// Fields are grouped by the type of data they apply to, and within each group follow the order the detail
+		// editor presents them, so the field picker reads the same way the editor does.
 		Values: []*enumValue{
 			{
 				Name:   "TraitSelfControlRoll",

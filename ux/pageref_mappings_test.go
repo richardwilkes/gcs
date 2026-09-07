@@ -18,9 +18,9 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestSplitMarkdownPageRef verifies that a markdown page reference is split into its file path and anchor correctly. The
-// key regression this guards against is a reference containing a '#' anchor: the anchor must be removed before the ".md"
-// extension is appended, otherwise the path becomes "File#Section.md" and never resolves to a real file.
+// TestSplitMarkdownPageRef guards the regression a reference containing a '#' anchor caused: the anchor must be
+// removed before the ".md" extension is appended, otherwise the path becomes "File#Section.md" and never resolves to a
+// real file.
 func TestSplitMarkdownPageRef(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -38,7 +38,6 @@ func TestSplitMarkdownPageRef(t *testing.T) {
 		{name: "empty ref", ref: "", wantPath: "", wantAnchor: ""},
 		{name: "anchor only", ref: "#New", wantPath: "", wantAnchor: "New"},
 		{name: "trailing hash yields empty anchor", ref: "Home#", wantPath: "Home.md", wantAnchor: ""},
-		// URL-encoded spaces in the path are decoded so encoded and non-encoded references resolve to the same file.
 		{name: "encoded spaces in path", ref: "User%20Guide/Scripting%20Guide#code", wantPath: "User Guide/Scripting Guide.md", wantAnchor: "code"},
 		{name: "encoded spaces without anchor", ref: "User%20Guide/Home", wantPath: "User Guide/Home.md", wantAnchor: ""},
 	} {
@@ -50,11 +49,10 @@ func TestSplitMarkdownPageRef(t *testing.T) {
 	}
 }
 
-// TestAsPageRefMappingsDockable verifies that the Page Reference Mappings view is found from any of the Dockable values
-// that refer to it, including the embedded SettingsDockable that SettingsDockable.Setup hands to the placement code. A
-// direct type assertion to *pageRefMappingsDockable misses that inner layer, which is the regression this guards
-// against: RefreshPageRefMappingsView silently found nothing to refresh, leaving the view showing the previous PDF for
-// a mapping until it was closed and reopened.
+// TestAsPageRefMappingsDockable verifies that the Page Reference Mappings view is found from any of the Dockable
+// values that refer to it, including the embedded SettingsDockable that SettingsDockable.Setup hands to the placement
+// code. A direct type assertion misses that inner layer, so RefreshPageRefMappingsView silently found nothing to
+// refresh, leaving the view showing a mapping's previous PDF until it was closed and reopened.
 func TestAsPageRefMappingsDockable(t *testing.T) {
 	c := check.New(t)
 	d := &pageRefMappingsDockable{}
@@ -67,8 +65,8 @@ func TestAsPageRefMappingsDockable(t *testing.T) {
 }
 
 // TestPageRefMappingsSyncReflectsChangedPath verifies that syncing the Page Reference Mappings view rebuilds its rows
-// from the current settings, so that pointing a key at a different PDF is reflected in the row's file name label. This
-// is the update askUserForPageRefPath asks for after the user picks a new PDF for a mapping.
+// from the current settings, so that pointing a key at a different PDF shows up in the row's file name label. This is
+// the update askUserForPageRefPath asks for after the user picks a new PDF for a mapping.
 func TestPageRefMappingsSyncReflectsChangedPath(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
@@ -86,11 +84,11 @@ func TestPageRefMappingsSyncReflectsChangedPath(t *testing.T) {
 	c.Equal("Basic Set 4th Edition.pdf", pageRefMappingRowName(content, 0))
 }
 
-// TestPageRefMappingsInitialFocus verifies that the widget the Page Reference Mappings view starts out focused on is
-// the first row's offset field, which is what SettingsDockable.Setup selects. The view used to override that with a
-// hardcoded child index that landed on the row's ID label instead; since a label is neither focusable nor holds any
-// focusable children, unison.Window.SetFocus fell through to dropping the window's focus altogether, so keyboard input
-// went nowhere until the user clicked something.
+// TestPageRefMappingsInitialFocus verifies that the Page Reference Mappings view starts out focused on the first row's
+// offset field, which is what SettingsDockable.Setup selects. The view used to override that with a hardcoded child
+// index that landed on the row's ID label instead; since a label is neither focusable nor holds focusable children,
+// unison.Window.SetFocus dropped the window's focus altogether and keyboard input went nowhere until something was
+// clicked.
 func TestPageRefMappingsInitialFocus(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
@@ -132,8 +130,8 @@ func TestPageRefMappingsInitialFocusWithNoMappings(t *testing.T) {
 	c.NotNil(firstContentFocusTarget(toolbar, content), "the toolbar's help button takes the focus instead")
 }
 
-// pageRefMappingRowName returns the file name displayed by the given row of the Page Reference Mappings view, or an
-// empty string if that row isn't present.
+// pageRefMappingRowName returns the file name shown by the given row of the Page Reference Mappings view, or an empty
+// string if that row isn't present.
 func pageRefMappingRowName(content *unison.Panel, row int) string {
 	children := content.Children()
 	i := row*5 + 4 // Each row is a trash button, ID label, offset field, edit button and file name label

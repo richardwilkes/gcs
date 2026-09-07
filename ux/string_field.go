@@ -14,12 +14,12 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// StringField holds the value for a string field.
+// StringField is a field that holds a string.
 type StringField struct {
 	undoableField[string]
 }
 
-// NewMultiLineStringField creates a new field for editing a string.
+// NewMultiLineStringField creates a new multi-line field for editing a string.
 func NewMultiLineStringField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
 	return newStringField(unison.NewMultiLineField(), targetMgr, targetKey, undoTitle, get, set)
 }

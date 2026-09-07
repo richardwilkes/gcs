@@ -39,7 +39,7 @@ func OpenPageRef[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	}
 }
 
-// OpenEachPageRef opens the all page references on each selected item in the table.
+// OpenEachPageRef opens every page reference on each selected item in the table, stopping if the user cancels.
 func OpenEachPageRef[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	promptCtx := make(map[string]bool)
 	for _, row := range table.SelectedRows(false) {

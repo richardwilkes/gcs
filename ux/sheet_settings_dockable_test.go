@@ -58,7 +58,6 @@ func (r *sheetSettingsRecorder) sawFullRebuild() bool {
 	return false
 }
 
-// entityPanelForTest is a minimal EntityPanel for a sheet settings dockable to own.
 type entityPanelForTest struct {
 	unison.Panel
 	entity *gurps.Entity
@@ -81,8 +80,8 @@ func newTestSheetSettingsDockable(t *testing.T, owner EntityPanel) (*sheetSettin
 }
 
 // newEntityPanelWithFlaggedSettings returns an EntityPanel whose sheet settings differ from the global defaults only in
-// the boolean options that the dockable presents as checkboxes. Every popup and text field therefore still matches, so
-// nothing in sync() will fire a change callback of its own.
+// the boolean options the dockable presents as checkboxes, so that nothing in sync() fires a change callback of its
+// own.
 func newEntityPanelWithFlaggedSettings() *entityPanelForTest {
 	p := &entityPanelForTest{entity: gurps.NewEntity()}
 	p.Self = p
@@ -121,10 +120,10 @@ func flipCheckboxOptions(s *gurps.SheetSettings) {
 	s.EquipmentValueFormat.PadWithZeros = !s.EquipmentValueFormat.PadWithZeros
 }
 
-// TestSheetSettingsResetNotifiesSheets verifies that resetting the sheet settings tells the open sheets to rebuild.
+// TestSheetSettingsResetNotifiesSheets checks that resetting the sheet settings tells the open sheets to rebuild.
 // sync() only pushes the new values into this dockable's own widgets, and assigning a CheckBox's State does not fire
-// its ClickCallback, so settings that differ only in the checkbox-backed options used to leave the open sheet showing
-// the old columns and values until some unrelated edit happened to trigger a rebuild.
+// its ClickCallback, so settings differing only in the checkbox-backed options used to leave the open sheet showing the
+// old columns and values until some unrelated edit happened to trigger a rebuild.
 func TestSheetSettingsResetNotifiesSheets(t *testing.T) {
 	c := check.New(t)
 	owner := newEntityPanelWithFlaggedSettings()
@@ -138,8 +137,8 @@ func TestSheetSettingsResetNotifiesSheets(t *testing.T) {
 	c.True(recorder.sawFullRebuild(), "reset must ask for a full rebuild, since column visibility may have changed")
 }
 
-// TestSheetSettingsLoadNotifiesSheets verifies the same for importing a sheet settings file: a file differing only in
-// the checkbox-backed options must still refresh the open sheets.
+// TestSheetSettingsLoadNotifiesSheets checks the same for importing a sheet settings file: a file differing only in the
+// checkbox-backed options must still refresh the open sheets.
 func TestSheetSettingsLoadNotifiesSheets(t *testing.T) {
 	c := check.New(t)
 	owner := newEntityPanelWithFlaggedSettings()
@@ -157,15 +156,15 @@ func TestSheetSettingsLoadNotifiesSheets(t *testing.T) {
 	c.True(recorder.sawFullRebuild(), "load must ask for a full rebuild, since column visibility may have changed")
 }
 
-// TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks documents the reason the notification above has to be explicit:
-// sync() assigns each CheckBox's State directly, which unison does not treat as a click, so the callbacks that would
-// otherwise push the change out to the sheets never run.
+// TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks documents why the notification above has to be explicit: sync()
+// assigns each CheckBox's State directly, which unison does not treat as a click, so the callbacks that would otherwise
+// push the change out to the sheets never run.
 func TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks(t *testing.T) {
 	c := check.New(t)
 	owner := newEntityPanelWithFlaggedSettings()
 	d, recorder := newTestSheetSettingsDockable(t, owner)
 
-	// Swap in settings that differ only in the checkbox-backed options, then sync the widgets to them.
+	// The replacement differs from the owner's current settings only in the checkbox-backed options.
 	replacement := gurps.GlobalSettings().Sheet.Clone(owner.entity)
 	owner.entity.SheetSettings = replacement
 	replacement.SetOwningEntity(owner.entity)
@@ -174,7 +173,6 @@ func TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks(t *testing.T) {
 	c.Equal(0, len(recorder.updates), "sync() alone must not be relied upon to notify the sheets")
 }
 
-// numberFormatWidgets pairs one of the sheet's display formats with the popup and checkbox the dockable builds for it.
 type numberFormatWidgets struct {
 	name   string
 	popup  *unison.PopupMenu[fxp.DecimalPlace]
@@ -183,8 +181,8 @@ type numberFormatWidgets struct {
 }
 
 // allNumberFormatWidgets returns the widgets for each of the four display formats in the given settings. The rows are
-// taken in the order createDecimalPlaces builds them, and the format each is paired with is named here independently of
-// the accessor the row carries, so that a row pointed at the wrong format is caught.
+// taken in the order createDecimalPlaces builds them, and each is paired with its format here independently of the
+// accessor the row carries, so that a row pointed at the wrong format is caught.
 func allNumberFormatWidgets(d *sheetSettingsDockable, s *gurps.SheetSettings) []numberFormatWidgets {
 	rows := d.numberFormats
 	return []numberFormatWidgets{
@@ -195,10 +193,10 @@ func allNumberFormatWidgets(d *sheetSettingsDockable, s *gurps.SheetSettings) []
 	}
 }
 
-// TestSheetSettingsSyncSelectsNumberFormats verifies that sync() pushes each of the four number format settings into
-// its own decimal places popup and padding checkbox, so that loading a settings file or resetting to the defaults
-// leaves the widgets showing what is actually in effect. Every format is given a different choice, so that a widget
-// reading from the wrong format is caught.
+// TestSheetSettingsSyncSelectsNumberFormats checks that sync() pushes each of the four number format settings into its
+// own decimal places popup and padding checkbox, so that loading a settings file or resetting to the defaults leaves
+// the widgets showing what is in effect. Every format is given a different choice, so a widget reading from the wrong
+// format is caught.
 func TestSheetSettingsSyncSelectsNumberFormats(t *testing.T) {
 	c := check.New(t)
 	owner := newEntityPanelWithFlaggedSettings()
@@ -216,10 +214,10 @@ func TestSheetSettingsSyncSelectsNumberFormats(t *testing.T) {
 	}
 }
 
-// TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting verifies the other direction: that each decimal places popup
+// TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting checks the other direction: that each decimal places popup
 // and padding checkbox writes to its own format and to no other, and that each change notifies the open sheets. The
-// four blocks that build these widgets are near-identical, which makes a copy-paste slip between them the most likely
-// error, and nothing less specific than this would notice one.
+// four blocks that build these widgets are near-identical, so a copy-paste slip between them is the most likely error,
+// and nothing less specific than this would notice one.
 func TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting(t *testing.T) {
 	c := check.New(t)
 	owner := newEntityPanelWithFlaggedSettings()
@@ -272,11 +270,11 @@ func checkBoxOptionsOf(s *gurps.SheetSettings) map[string]bool {
 	return options
 }
 
-// TestSheetSettingsCheckBoxesEachWriteTheirOwnOption verifies that the checkboxes between them cover exactly the
-// boolean options the dockable is meant to present, each writing an option of its own: clicking every box once must
-// leave the settings the same as flipping every one of those options directly. A box wired to another box's option
-// would flip it back again, and one wired to an option that isn't meant to be a checkbox would show up as a difference
-// too. Each click has to notify the open sheets as well.
+// TestSheetSettingsCheckBoxesEachWriteTheirOwnOption checks that the checkboxes between them cover exactly the boolean
+// options the dockable is meant to present, each writing an option of its own: clicking every box once must leave the
+// settings the same as flipping every one of those options directly. A box wired to another box's option would flip it
+// back again, and one wired to an option that isn't meant to be a checkbox would show up as a difference too. Each
+// click has to notify the open sheets as well.
 func TestSheetSettingsCheckBoxesEachWriteTheirOwnOption(t *testing.T) {
 	c := check.New(t)
 	owner := newEntityPanelWithFlaggedSettings()
@@ -303,9 +301,8 @@ func TestSheetSettingsCheckBoxesEachWriteTheirOwnOption(t *testing.T) {
 		"clicking every checkbox once must flip every checkbox-backed option and nothing else")
 }
 
-// TestSheetSettingsTabTitle verifies that the character name is substituted into the tab title rather than being built
-// into the string handed to i18n.Text, which would produce a per-character lookup key that no catalog entry can ever
-// match.
+// TestSheetSettingsTabTitle checks that the character name is substituted into the tab title rather than built into the
+// string handed to i18n.Text, which would produce a per-character lookup key no catalog entry can ever match.
 func TestSheetSettingsTabTitle(t *testing.T) {
 	c := check.New(t)
 	i18n.SetLocalizer(func(text string) string {

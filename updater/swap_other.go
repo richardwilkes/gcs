@@ -14,9 +14,9 @@ package updater
 // exchange reports that no atomic two-path exchange is available, leaving the caller to use the two-rename form.
 //
 // Linux has renameat2 with RENAME_EXCHANGE, which would serve, but it is refused by several filesystems in common use
-// and needs a runtime fallback anyway. Windows has no equivalent at all. Since what is being replaced on both of these
-// platforms is a single file rather than a directory tree, the two-rename form is straightforward and its window --
-// the microseconds between moving the old file aside and moving the new one in -- is covered by the startup repair.
+// and needs a runtime fallback anyway; Windows has no equivalent at all. What is replaced on both platforms is a single
+// file rather than a directory tree, so the two-rename form is straightforward, and its window -- the microseconds
+// between moving the old file aside and moving the new one in -- is covered by the startup repair.
 func exchange(_, _, _ string) (bool, error) {
 	return false, nil
 }

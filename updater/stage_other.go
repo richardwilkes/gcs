@@ -22,8 +22,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
-// stagePayload unpacks the downloaded archive. Both the Linux and Windows distributions hold exactly one file, the
-// executable, so this extracts that one file and refuses anything else.
+// stagePayload unpacks the downloaded archive. The Linux and Windows distributions hold exactly one file, the
+// executable, so this extracts that and refuses anything else.
 func stagePayload(_ context.Context, archivePath, dstPath string) error {
 	wantName, err := PayloadName(runtime.GOOS)
 	if err != nil {
@@ -45,8 +45,8 @@ func stagePayload(_ context.Context, archivePath, dstPath string) error {
 // On Windows the ".exe" extension is required, not cosmetic. Windows resolves a program against the PATHEXT list before
 // starting it, and os/exec applies that rule even when handed an absolute path, so an extensionless copy is refused
 // outright -- "executable file not found in %PATH%" -- despite being a perfectly good image at exactly the path named.
-// Since nothing else cares what the helper is called, carrying the extension costs nothing, and without it no update
-// can ever be applied on Windows: staging succeeds, and then the helper that would finish the job cannot be started.
+// Without it, staging succeeds and the helper that would finish the job cannot be started, so no Windows update can
+// ever be applied.
 func helperFileName() string {
 	if runtime.GOOS == xos.WindowsOS {
 		return helperName + ".exe"
@@ -69,7 +69,7 @@ func stageHelper(_ context.Context, t *Target, workDir string) (string, error) {
 
 // verifyPayload has nothing to check on these platforms. The distributions carry no signature -- the packager signs
 // only on macOS -- so the SHA-256 recorded by GitHub, checked during the download, is the whole of the integrity
-// guarantee here. What follows it, running the staged executable to see that it works, is what catches the rest.
+// guarantee here. Running the staged executable afterwards is what catches the rest.
 func verifyPayload(_ context.Context, _, _ string) error {
 	return nil
 }

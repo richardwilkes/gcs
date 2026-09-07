@@ -51,10 +51,9 @@ const (
 )
 
 // defaultDownloadSizeEstimate scales the download portion of the progress bar the first time a library is updated,
-// before a real size has been recorded for it. A guess that is too small shows as a bar that pauses just short of the
-// end of the download; one that is too large, as a bar that jumps to it. Being a little over the size of the Master
-// Library, which is by far the largest and most commonly updated of them, trades the pause for the jump. Every update
-// records what it actually transferred, so this only has to be close enough to be useful once.
+// before a real size has been recorded for it. Being a little over the size of the Master Library -- by far the largest
+// and most commonly updated of them -- trades a bar that pauses just short of the end for one that jumps to it. Every
+// update records what it actually transferred, so this only has to be close enough to be useful once.
 const defaultDownloadSizeEstimate = 32 * 1024 * 1024
 
 var (
@@ -443,14 +442,12 @@ func (l *Library) IsUser() bool {
 }
 
 // CheckForAvailableUpgrade retrieves the releases that can be upgraded to, recording them for AvailableReleases(). Only
-// one check of a library runs at a time: a call made while another is in flight -- the Library Explorer asking on the
-// user's behalf while the launch-time or periodic check is still under way, say -- waits for that one to finish rather
-// than making a second request for the same answer, and returns once it has, or once ctx is done. The check that was
-// waited on serves the caller only if it answered for the repository the library follows now, whether with its
-// releases or with a failure to reach it, which asking again at once would only repeat. One that was discarded because
-// the repository was reconfigured while it ran -- its answer describing a repository the library no longer follows --
-// or that was cut short by its own caller's context rather than by this one's, leaves the need it was waited on for
-// unmet, so the caller then makes a check of its own. Without that, a check made from the settings dialog or the
+// one check of a library runs at a time: a call made while another is in flight waits for that one rather than making a
+// second request for the same answer, and returns once it has, or once ctx is done. The check waited on serves the
+// caller only if it answered for the repository the library follows now, whether with its releases or with a failure to
+// reach it, which asking again at once would only repeat. One that was discarded because the repository was
+// reconfigured while it ran, or that was cut short by its own caller's context rather than by this one's, leaves the
+// need unmet, so the caller then makes a check of its own. Without that, a check made from the settings dialog or the
 // Library Explorer right after a repository change would wait on the doomed launch-time check and come back with
 // nothing, leaving the library unchecked until the next scheduled check.
 func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Client) {
@@ -535,12 +532,12 @@ func (l *Library) performCheck(ctx context.Context, client *http.Client, check *
 	// A notification reloads the entire library tree, which restarts the filesystem watches, drops what has been cached
 	// and disturbs anything in progress, so one is sent only when this check turned up something the previous check
 	// didn't: an update that has just become available, a library whose content changed on disk outside of the app, or
-	// an update that was on offer and no longer is -- the release having been withdrawn, or the library having been
-	// brought up to date outside of the app -- which must take the indicator down. The first check of a library also
-	// announces an update that was already pending, which is what raises the indicator at startup. A library with no
-	// releases to compare against -- a local one, or a repo whose releases were all rejected as incompatible -- has
-	// nothing to announce, even though the "0" that stands in for an unknown version on disk differs from the empty
-	// version of a release that isn't there.
+	// an update that was on offer and no longer is -- the release having been withdrawn, or the library brought up to
+	// date outside of the app -- which must take the indicator down. The first check of a library also announces an
+	// update that was already pending, which is what raises the indicator at startup. A library with no releases to
+	// compare against -- a local one, or a repo whose releases were all rejected as incompatible -- has nothing to
+	// announce, even though the "0" that stands in for an unknown version on disk differs from the empty version of a
+	// release that isn't there.
 	prevUpdateAvailable := prevLastRelease != "" && prevCurrent != prevLastRelease
 	updateAvailable := lastRelease != "" && current != lastRelease
 	if updateAvailable && (firstCheck || prevCurrent != current || prevLastRelease != lastRelease) ||

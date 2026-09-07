@@ -68,7 +68,6 @@ func configureRegistry() error {
 		if !fi.IsGCSData {
 			continue
 		}
-		// Create the doc icon
 		var overlay image.Image
 		if overlay, err = svg.CreateImageFromSVG(fi.SVG, 128); err != nil {
 			return err
@@ -78,7 +77,7 @@ func configureRegistry() error {
 			return err
 		}
 
-		// Create the entry that points to the app's information for the extension
+		// Point the extension at the app's information for it
 		appExtKey := xos.AppIdentifier + fi.UTI.Extensions[0]
 		if err = setRegistryKey(softwareClasses+fi.UTI.Extensions[0], "", appExtKey); err != nil {
 			return err

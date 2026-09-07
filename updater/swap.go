@@ -18,18 +18,16 @@ import (
 )
 
 const (
-	// renameAttempts and renameDelay bound the retries around each rename.
-	//
-	// These exist for Windows, where antivirus scanners and shell extensions routinely take a brief handle on a
-	// freshly written executable and a rename fails with an access error that is gone a moment later. They are
-	// harmless on the other platforms, where the first attempt always succeeds.
+	// renameAttempts and renameDelay bound the retries around each rename. They exist for Windows, where antivirus
+	// scanners and shell extensions routinely take a brief handle on a freshly written executable and a rename fails
+	// with an access error that is gone a moment later. They are harmless elsewhere, where the first attempt succeeds.
 	renameAttempts = 10
 	renameDelay    = 200 * time.Millisecond
 )
 
-// renameFunc and exchangeFunc are the operations swap is built from. They are variables so that a test can make a
-// chosen step fail and check that the recovery actually restores the installation -- a path that is otherwise
-// unreachable, and the one that matters most, since getting it wrong means leaving the user with no application at all.
+// renameFunc and exchangeFunc are the operations swap is built from. They are variables so a test can make a chosen
+// step fail and check that the recovery actually restores the installation -- otherwise an unreachable path, and the
+// one that matters most, since getting it wrong leaves the user with no application at all.
 //
 // Substituting exchangeFunc also makes the two-rename fallback reachable on macOS, where the atomic exchange would
 // normally be taken. That fallback is not test-only there: it is what runs on any filesystem whose driver does not
@@ -46,8 +44,7 @@ var (
 // one directory, leaving a window of microseconds between them; a crash inside that window leaves the backup intact,
 // which the startup repair recovers from.
 //
-// If the second rename fails, the first is undone before returning, so a failure leaves the installation exactly as it
-// was found.
+// If the second rename fails, the first is undone before returning, so a failure leaves the installation as it was.
 func swap(target, payload, backup string) error {
 	if err := validateSwap(target, payload, backup); err != nil {
 		return err
@@ -84,9 +81,9 @@ func validateSwap(target, payload, backup string) error {
 	}
 	if _, err := os.Lstat(backup); err == nil {
 		// The installation is about to be renamed to this path, and on most systems that would replace whatever is
-		// already there without a word. If it happened to be a backup from an earlier update, the user's only other
-		// copy of the application would be destroyed. The name carries a timestamp, so reaching this means something
-		// is wrong; refusing costs one update, and being wrong here costs the fallback.
+		// already there without a word, destroying it if it happened to be a backup from an earlier update. The name
+		// carries a timestamp, so reaching this means something is wrong; refusing costs one update, while being wrong
+		// here costs the fallback.
 		return errs.New("something is already where the previous version would be moved to")
 	}
 	payloadInfo, err := os.Lstat(payload)

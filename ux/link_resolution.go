@@ -20,7 +20,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// WorkingDirKey the client data key for setting the working directory for markdown and link resolution.
+// WorkingDirKey is the client data key for setting the working directory for markdown and link resolution.
 const WorkingDirKey = "working_dir"
 
 // WorkingDirProvider extracts a working dir for the given panel, if possible, otherwise returns ".".

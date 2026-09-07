@@ -71,9 +71,10 @@ type Node[T Node[T]] interface {
 
 func assertNode[T Node[T]]() {}
 
-// NodeSyncData holds the sync data that every named node shares: the fields a library copy is expected to keep in step
-// with its source. The per-type SyncData types are either aliases of it or structs that embed it, which json/v2
-// inlines, so the on-disk format is the same as if each declared the fields itself.
+// NodeSyncData holds the sync data the skill, spell, trait, trait modifier and equipment modifier types share: the
+// fields a library copy is expected to keep in step with its source. Their SyncData types are either aliases of it or
+// structs that embed it, which json/v2 inlines, so the on-disk format is the same as if each declared the fields
+// itself. Equipment and notes name their equivalents differently, so they declare their own.
 type NodeSyncData struct {
 	Name             string   `json:"name,omitzero"`
 	PageRef          string   `json:"reference,omitzero"`
@@ -91,8 +92,8 @@ func (n *NodeSyncData) hash(h hash.Hash) {
 }
 
 // marshalNodeData writes a node's data and, unless the encoder was asked to omit the derived values, the "calc" object
-// calc builds for it. A nil calc is left out. The data is written pointing at the node's own, so the caller is
-// responsible for clearing whatever must not be written before calling this.
+// calc builds for it. A nil calc is left out. data points at the node's own, so the caller is responsible for clearing
+// whatever must not be written before calling this.
 func marshalNodeData[D, C any](enc *jsontext.Encoder, data *D, calc func() *C) error {
 	if omitCalc(enc) {
 		return json.MarshalEncode(enc, data)
@@ -230,8 +231,8 @@ func fixupLegacyTID(id *tid.TID, legacyType string, kindFor func(container bool)
 	return true
 }
 
-// migrateLegacyText fills in text from its legacy counterpart, which held embedded expressions rather than scripts, when
-// the node was written before the field text belongs to existed.
+// migrateLegacyText fills in text from its legacy counterpart, which held embedded expressions rather than scripts,
+// when the node was written before the field text belongs to existed.
 func migrateLegacyText(text *string, legacy string) {
 	if *text == "" && legacy != "" {
 		*text = EmbeddedExprToScript(legacy)
@@ -309,7 +310,7 @@ type modifierHolder interface {
 // The LibraryFile for each clone must come from the holder rather than from the modifier being cloned. This covers the
 // case where the source data *is* the authoritative source and therefore carries no source information of its own: the
 // modifier's Source.LibraryFile is empty and AdjustSource won't set source data on the copy, whereas the holder's
-// Source.LibraryFile holds the already-adjusted source for the holder's copy, so it always has the correct library path.
+// Source.LibraryFile holds the already-adjusted source for the holder's copy, so it always has the right library path.
 //
 // Background: when GCS clones an item from one library into another location (as opposed to duplicating in place), it
 // passes the *source* library as the first argument to Clone. That path, combined with the IDs from the source nodes,
@@ -339,16 +340,15 @@ func PropagateNodeNoteClosedState[T Node[T]](from, to T) {
 type CloneMode int
 
 const (
-	// Reference creates a fresh ID and, if the node being cloned has no Source of its own, anchors the
-	// result's Source to reference it. Used when copying a node into a different list: "Copy to Character
-	// Sheet"/"Copy to Template", drag-and-drop from a library into a sheet or template, dropping a
-	// modifier onto a row.
+	// Reference creates a fresh ID and, if the node being cloned has no Source of its own, anchors the result's Source
+	// to reference it. Used when copying a node into a different list: "Copy to Character Sheet"/"Copy to Template",
+	// drag-and-drop from a library into a sheet or template, dropping a modifier onto a row.
 	Reference CloneMode = iota
-	// Duplicate create a fresh ID but copies the node being cloned's Source verbatim, even when empty. Used
-	// for "Duplicate": the result is a sibling within the same list, not a new reference to the original.
+	// Duplicate creates a fresh ID but copies the node being cloned's Source verbatim, even when empty. Used for
+	// "Duplicate": the result is a sibling within the same list, not a new reference to the original.
 	Duplicate
-	// Copy preserves the ID of the node being cloned and copies its Source verbatim, even when empty.
-	// Used for in-memory working copies never inserted into any list: the editor's CopyFrom/ApplyTo
-	// staging round trip, and scratch clones for live preview/calculation.
+	// Copy preserves the ID of the node being cloned and copies its Source verbatim, even when empty. Used for
+	// in-memory working copies never inserted into any list: the editor's CopyFrom/ApplyTo staging round trip, and
+	// scratch clones for live preview/calculation.
 	Copy
 )

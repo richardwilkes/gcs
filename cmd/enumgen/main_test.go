@@ -20,12 +20,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// repoRoot is where the generated files live, relative to this package's directory, which is where the test runs.
+// repoRoot is the repository root, relative to this package's directory, which is where the test runs.
 const repoRoot = "../.."
 
-// TestGeneratedFilesAreUpToDate regenerates each enum from the template and compares it against the file committed to
-// the repository. A failure means either the template or the enum definitions changed without the generated code being
-// regenerated ("go generate ./cmd/enumgen/main.go").
+// TestGeneratedFilesAreUpToDate regenerates each enum and compares it against the committed file. A failure means the
+// template or the enum definitions changed without "go generate ./cmd/enumgen/main.go" being run.
 func TestGeneratedFilesAreUpToDate(t *testing.T) {
 	c := check.New(t)
 	for _, one := range allEnums {
@@ -42,7 +41,7 @@ func TestGeneratedFilesAreUpToDate(t *testing.T) {
 
 // TestNoOrphanedGeneratedFiles verifies that every committed *_gen.go file corresponds to an entry in allEnums. The
 // generator removes all of them before regenerating, so one that no longer has a definition behind it would simply
-// vanish on the next run -- and template special-cases written for such a file can never fire.
+// vanish on the next run.
 func TestNoOrphanedGeneratedFiles(t *testing.T) {
 	c := check.New(t)
 	expected := make(map[string]bool, len(allEnums))

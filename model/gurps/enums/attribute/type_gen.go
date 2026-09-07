@@ -138,8 +138,8 @@ func ExtractType(str string) Type {
 
 // ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractType, which quietly maps anything it doesn't recognize onto the first value, this permits a caller that
-// is dispatching on the type to detect unknown types.
+// Unlike ExtractType, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
+// that is dispatching on the type to detect unknown types.
 func ExtractKnownType(str string) (value Type, known bool) {
 	for _, enum := range Types {
 		if strings.EqualFold(enum.Key(), str) {

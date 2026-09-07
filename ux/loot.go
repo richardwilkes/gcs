@@ -157,14 +157,9 @@ func (l *LootSheet) keyToPanel(key *uti.DataType) *unison.Panel {
 	return p.AsPanel()
 }
 
-// Entity implements gurps.EntityProvider
+// Entity implements EntityPanel. A loot sheet has no entity, so nil is always returned.
 func (l *LootSheet) Entity() *gurps.Entity {
 	return nil
-}
-
-// DockableKind implements widget.DockableKind
-func (l *LootSheet) DockableKind() string {
-	return LootSheetDockableKind
 }
 
 // BackingFilePath implements FileBackedDockable. A loot sheet that has never been saved goes by its name.
@@ -175,7 +170,7 @@ func (l *LootSheet) BackingFilePath() string {
 	return l.path
 }
 
-// MarkModified implements widget.ModifiableRoot.
+// MarkModified implements ModifiableRoot.
 func (l *LootSheet) MarkModified(_ unison.Paneler) {
 	l.markModified(l, l.bumpModificationTimestamp)
 }
@@ -189,7 +184,7 @@ func (l *LootSheet) syncWithAllSources() {
 	syncWithAllSources(l, l.loot, l.Equipment, l.Notes)
 }
 
-// Rebuild implements widget.Rebuildable.
+// Rebuild implements Rebuildable.
 func (l *LootSheet) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
 	prepareForPage(l.loot)
@@ -241,10 +236,9 @@ func (l *LootSheet) PageInfoProvider() gurps.PageInfoProvider {
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder. A loot sheet has no entity of its own and reads the
-// global sheet settings (see Loot.WeightUnit and Loot.PageSettings), so only a change to those -- reported with
-// a nil entity -- concerns it, just as with a template. A change to one character's per-sheet settings is none of its
-// business, and responding to it anyway would bump the loot sheet's modification timestamp for an edit that was never
-// made to it.
+// global sheet settings (see Loot.WeightUnit and Loot.PageSettings), so only a change to those -- reported with a nil
+// entity -- concerns it, just as with a template. Responding to one character's per-sheet settings would bump the loot
+// sheet's modification timestamp for an edit that was never made to it.
 func (l *LootSheet) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
 	if entity == nil {
 		// A single rebuild both reports the change and refreshes everything the settings affect; marking the sheet as

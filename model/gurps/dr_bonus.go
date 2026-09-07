@@ -64,7 +64,7 @@ func (d *DRBonus) Clone() Feature {
 	return &other
 }
 
-// Normalize adjusts the data to it preferred representation.
+// Normalize adjusts the data to its preferred representation.
 func (d *DRBonus) Normalize() {
 	for i, loc := range d.Locations {
 		loc = strings.TrimSpace(loc)

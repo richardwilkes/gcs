@@ -76,14 +76,13 @@ func nameGeneratorRefNamed(name string) *gurps.NamedFileRef {
 	return nil
 }
 
-// isNameGeneratorEditor returns true if the dockable is the name generator editor.
 func isNameGeneratorEditor(d unison.Dockable) bool {
 	_, ok := d.AsPanel().Self.(*nameGeneratorEditorDockable)
 	return ok
 }
 
 // newNameGeneratorEditorDockable creates a name generator editor holding a new, empty generator, ready for load to
-// replace that with a file's and for show to build its toolbar and content and place it in the dock.
+// replace that with a file's and for show to build its content and place it in the dock.
 func newNameGeneratorEditorDockable() *nameGeneratorEditorDockable {
 	d := &nameGeneratorEditorDockable{}
 	d.Self = d
@@ -102,7 +101,6 @@ func newNameGeneratorEditorDockable() *nameGeneratorEditorDockable {
 	return d
 }
 
-// buildContent fills the content with the sample names and the editor for the generator.
 func (d *nameGeneratorEditorDockable) buildContent() {
 	d.content.SetBorder(unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing*2, unison.StdHSpacing*2)))
 	d.samples = newNameGeneratorSamplesPanel(d)

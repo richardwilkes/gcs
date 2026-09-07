@@ -82,12 +82,11 @@ func (b *BonusOwner) parentName() string {
 }
 
 // DerivedLeveledOwner returns the node whose level drives a per-level amount for this bonus: the sub-owner if it can
-// have levels of its own, otherwise the owner if it can, otherwise a stand-in that always reports a level of zero.
-// This mirrors the leveled owner Entity.processFeatures assigns, so that a tooltip computed from it reports the same
-// amount that is actually applied. Note that the test is only whether the node implements LeveledOwner, not whether it
-// currently has levels: a trait modifier without levels contributes nothing to a per-level bonus it carries, and
-// falling back to the trait's level here would claim otherwise. Nothing is lost by not checking, since the
-// implementations all report a level of zero while they are not leveled.
+// have levels of its own, otherwise the owner if it can, otherwise a stand-in that always reports a level of zero. This
+// mirrors the leveled owner Entity.processFeatures assigns, so that a tooltip computed from it reports the amount that
+// is actually applied. The test is only whether the node implements LeveledOwner, not whether it currently has levels:
+// a trait modifier without levels contributes nothing to a per-level bonus it carries, so falling back to the trait's
+// level would claim otherwise, and the implementations all report a level of zero while they are not leveled.
 func (b *BonusOwner) DerivedLeveledOwner() LeveledOwner {
 	if !xreflect.IsNil(b.subOwner) {
 		if lo, ok := b.subOwner.(LeveledOwner); ok {

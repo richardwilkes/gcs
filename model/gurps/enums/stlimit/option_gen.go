@@ -108,7 +108,7 @@ func ExtractOption(str string) Option {
 
 // ExtractKnownOption extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractOption, which quietly maps anything it doesn't recognize onto the first value, this permits a caller
+// Unlike ExtractOption, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
 // that is dispatching on the type to detect unknown types.
 func ExtractKnownOption(str string) (value Option, known bool) {
 	for _, enum := range Options {

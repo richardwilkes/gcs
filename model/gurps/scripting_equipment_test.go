@@ -17,10 +17,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestScriptEquipmentEquipped verifies that the `equipped` property a script sees means "affecting the character".
-// Equipment in the other equipment list contributes nothing to the character, yet its equipped flag is typically true,
-// since new equipment starts out equipped and nothing clears the flag when an item is created in or moved to that
-// list, so the property must not simply report that flag.
+// The `equipped` property a script sees means "affecting the character". Equipment in the other equipment list
+// contributes nothing to the character, yet its equipped flag is typically true, since new equipment starts out
+// equipped and nothing clears the flag when an item is created in or moved to that list, so the property must not
+// simply report that flag.
 func TestScriptEquipmentEquipped(t *testing.T) {
 	c := check.New(t)
 
@@ -69,11 +69,10 @@ func TestScriptEquipmentEquipped(t *testing.T) {
 	c.Equal("true", equipped(NewEquipment(nil, nil, false)), "an equipped item with no owning entity is equipped")
 }
 
-// TestScriptEquipmentEquippedOnEditorClone verifies that the working clone the equipment editor makes to preview
-// Extended Value and Extended Weight resolves scripts the same way the row it was cloned from does. The editor clones
-// with the row's own parent, which is nil for a top-level row, so the clone is rooted in neither of the entity's
-// equipment lists. The clone keeps the ID of the row it stands for, though, so a script reading self.equipped must
-// answer the same in the editor's preview as it does on the sheet, whichever list the row lives in.
+// The working clone the equipment editor makes to preview Extended Value and Extended Weight must resolve scripts the
+// same way the row it was cloned from does. The editor clones with the row's own parent, which is nil for a top-level
+// row, so the clone is rooted in neither of the entity's equipment lists. It keeps the ID of the row it stands for,
+// though, so a script reading self.equipped must answer the same in the preview as on the sheet.
 func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 	c := check.New(t)
 
@@ -102,9 +101,9 @@ func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 
 	// The clone preserves the ID of the row it came from, and script results are cached per entity by (self ID, script
 	// text), so the cache has to be discarded between the two resolutions or the second would just get the first's
-	// answer back. Note that the editor itself doesn't discard the cache, so its preview of an unchanged script reuses
-	// the answer the sheet already has; what this test pins down is that the clone resolves the same way the row does
-	// whenever the script is actually run for it -- once the user edits the script text, for one.
+	// answer back. The editor itself doesn't discard the cache, so its preview of an unchanged script reuses the answer
+	// the sheet already has; what is pinned down here is that the clone resolves the same way the row does whenever the
+	// script is actually run for it -- once the user edits the script text, for one.
 	baseValue := func(eqp *Equipment) fxp.Int {
 		e.DiscardCaches()
 		return eqp.ResolvedBaseValue()
@@ -145,9 +144,9 @@ func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 	c.Equal(fxp.FromInteger(100), baseValue(inFlight), "an item in neither list resolves as equipped")
 }
 
-// TestScriptEquipmentWithoutQuantityIsHidden verifies that equipment with no quantity is left out of every list a
-// script can reach: the entity's equipment, a container's children, and the name-and-tag searches, which also skip
-// anything inside a container that itself has no quantity, and match tags regardless of case.
+// Equipment with no quantity is left out of every list a script can reach: the entity's equipment, a container's
+// children, and the name-and-tag searches, which also skip anything inside a container that itself has no quantity, and
+// match tags regardless of case.
 func TestScriptEquipmentWithoutQuantityIsHidden(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

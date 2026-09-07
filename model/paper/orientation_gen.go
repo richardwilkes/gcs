@@ -96,7 +96,7 @@ func ExtractOrientation(str string) Orientation {
 
 // ExtractKnownOrientation extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractOrientation, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// Unlike ExtractOrientation, which quietly maps anything it doesn't recognize onto the default value, this permits a
 // caller that is dispatching on the type to detect unknown types.
 func ExtractKnownOrientation(str string) (value Orientation, known bool) {
 	for _, enum := range Orientations {

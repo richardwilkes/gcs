@@ -20,8 +20,7 @@ import (
 // TestLibraryCheckWantedAfterApply verifies when applying a library's settings is followed by a background check of its
 // releases: only for a library that needs one -- its repository having just been changed, or never having been checked
 // -- and only when the periodic checks are on. With them set to Never, the Library Explorer checks when its update
-// buttons are clicked, and a check made here would be one the user has asked not to have; a library that has already
-// been checked and whose repository didn't change has nothing to ask.
+// buttons are clicked, and a check made here would be one the user has asked not to have.
 func TestLibraryCheckWantedAfterApply(t *testing.T) {
 	c := check.New(t)
 	unchecked := gurps.NewLibrary("Test", "someone", "", "repo", t.TempDir())
@@ -41,8 +40,8 @@ func TestLibraryCheckWantedAfterApply(t *testing.T) {
 	}
 }
 
-// TestLibrarySettingsTitle verifies that the settings view's title names the library, falling back to a placeholder
-// for a library that has not been named yet, so that neither the tab nor the save prompt trails off after the colon.
+// TestLibrarySettingsTitle verifies that the settings view's title names the library, falling back to a placeholder for
+// a library that has not been named yet, so neither the tab nor the save prompt trails off after the colon.
 func TestLibrarySettingsTitle(t *testing.T) {
 	c := check.New(t)
 	c.Equal("Library Settings: Master Library", librarySettingsTitle("Master Library"))

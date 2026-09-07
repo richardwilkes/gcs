@@ -75,10 +75,8 @@ func ParseWeaponRange(s string) WeaponRange {
 
 // MarshalJSONTo implements json.MarshalerTo.
 //
-// The data is persisted as the unresolved display string. Passing false for musclePowerIsResolved is deliberate and
-// load-bearing: it emits the "x" prefixes (e.g. "x10/x100") that encode the MusclePowered flag, which ParseWeaponRange
-// detects on load to restore that flag. Passing true here would silently drop MusclePowered on a save/reload
-// round-trip.
+// The unresolved display string is persisted so that the "x" prefixes (e.g. "x10/x100") survive: ParseWeaponRange
+// detects them on load to restore the MusclePowered flag.
 func (wr WeaponRange) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wr.String(false))
 }
@@ -138,8 +136,6 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) 
 //
 // When MusclePowered is set, passing false for musclePowerIsResolved prefixes the range values with "x" (the GURPS
 // notation for "multiply by ST"); pass true once the ranges have already been multiplied by ST so the "x" is omitted.
-// ParseWeaponRange relies on the "x" prefix to recover the MusclePowered flag, so persistence must stringify with
-// false.
 func (wr WeaponRange) String(musclePowerIsResolved bool) string {
 	var buffer strings.Builder
 	if wr.HalfDamage != 0 {

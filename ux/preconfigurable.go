@@ -30,7 +30,7 @@ func addPreconfigurable[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D],
 			}
 		}
 
-		// This panel serves only to fill the space where a label would normally be located
+		// This panel only fills the space where a label would normally be
 		parent.AddChild(unison.NewPanel())
 		addCheckBox(parent, i18n.Text("Preconfigured"), p.PreconfiguredRef())
 	}

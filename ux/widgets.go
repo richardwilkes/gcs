@@ -37,12 +37,12 @@ type Rebuildable interface {
 	Rebuild(full bool)
 }
 
-// Owned defines the methods a value owned by a Rebuildable should have
+// Owned defines the methods a value owned by a Rebuildable should have.
 type Owned interface {
 	Owner() Rebuildable
 }
 
-// FindOwner follow the lineage of a panel up locate a parent that satisfies `Owned`
+// FindOwner walks up the panel's lineage and returns the first owner that is a T, or the zero value if there is none.
 func FindOwner[T Rebuildable](panel *unison.Panel) T {
 	for panel != nil {
 		if owned, ok := any(panel.Self).(Owned); ok && !xreflect.IsNil(owned) && !xreflect.IsNil(owned.Owner()) {
@@ -58,17 +58,18 @@ func FindOwner[T Rebuildable](panel *unison.Panel) T {
 	return zero
 }
 
-// HasOwner follow the lineage of a panel up to determine if parent satisfies `Owned`
+// HasOwner reports whether the panel has an owner that is a T.
 func HasOwner[T Rebuildable](panel *unison.Panel) bool {
 	return !xreflect.IsNil(FindOwner[T](panel))
 }
 
-// Targeted defines the methods a value with a node target should have
+// Targeted defines the methods a value with a node target should have.
 type Targeted[N gurps.Node[N]] interface {
 	Target() N
 }
 
-// FindTarget follow the lineage of a panel up locate a parent that satisfies `Targeted`
+// FindTarget walks up the panel's lineage and returns the target of the first Targeted[T] found, or the zero value if
+// there is none.
 func FindTarget[T gurps.Node[T]](panel *unison.Panel) T {
 	for panel != nil {
 		if targeted, ok := any(panel.Self).(Targeted[T]); ok {
@@ -80,13 +81,12 @@ func FindTarget[T gurps.Node[T]](panel *unison.Panel) T {
 	return zero
 }
 
-// Syncer should be called to sync an object's UI state to its model.
+// Syncer is implemented by objects that can update their UI state from their model.
 type Syncer interface {
 	Sync()
 }
 
-// DeepSync does a depth-first traversal of the panel and all of its descendents and calls Sync() on any Syncer objects
-// it finds.
+// DeepSync calls Sync on the panel and each of its descendants that is a Syncer, depth-first.
 func DeepSync(panel unison.Paneler) {
 	p := panel.AsPanel()
 	for _, child := range p.Children() {
@@ -97,12 +97,13 @@ func DeepSync(panel unison.Paneler) {
 	}
 }
 
-// ModifiableRoot marks the root of a modifable tree of components, typically a Dockable.
+// ModifiableRoot marks the root of a modifiable tree of components, typically a Dockable.
 type ModifiableRoot interface {
 	MarkModified(src unison.Paneler)
 }
 
-// MarkModified looks for a ModifiableRoot, starting at the panel. If found, it then called MarkModified() on it.
+// MarkModified discards the global resolve cache, then calls MarkModified on the nearest ModifiableRoot at or above the
+// panel, if there is one.
 func MarkModified(panel unison.Paneler) {
 	gurps.DiscardGlobalResolveCache()
 	p := panel.AsPanel()
@@ -118,8 +119,7 @@ func MarkModified(panel unison.Paneler) {
 // modificationTimestampBumper is implemented by those owners that record when their data was last changed. Marking such
 // an owner as modified bumps that timestamp, but rebuilding it doesn't, so anything that rebuilds in place of marking
 // as modified has to ask for the bump itself (see rebuildAsModified). Not every owner has one -- a template's
-// modification time is whatever the file system says it is -- which is why this is an optional interface rather than
-// part of Rebuildable.
+// modification time is whatever the file system says it is -- hence the optional interface.
 type modificationTimestampBumper interface {
 	bumpModificationTimestamp()
 }
@@ -129,16 +129,15 @@ var (
 	_ modificationTimestampBumper = &LootSheet{}
 )
 
-// rebuildAsModified reports an edit to its owner by rebuilding the owner, in place of marking it as modified. A
-// rebuild is a superset of marking as modified for every kind of owner -- it recalculates the entity, re-syncs every
-// table, refreshes the search results and restores the focus and scroll position -- and is what an edit needs when it
-// changes more of what the owner shows than the rows it touched: a sheet only carries the melee weapons, ranged
-// weapons, reactions and conditional modifiers lists on the page while there is something to put in them, the weapon
-// lists drop the columns nothing in them uses, and the switch column comes and goes with the presence of switchable
-// features, and a set of columns can only change by building a new table. Doing both would repeat the whole update,
-// and on a sheet holding hundreds of rows that update is the entire cost of the edit. The one thing a rebuild leaves
-// out is bumping the owner's modification timestamp, so that is done here, and before the rebuild, since the panel
-// showing the timestamp only picks up the new value when it is synced. A nil owner, typed or otherwise, is ignored.
+// rebuildAsModified reports an edit to its owner by rebuilding the owner, in place of marking it as modified. A rebuild
+// is a superset of marking as modified for every kind of owner -- it recalculates the entity, re-syncs every table,
+// refreshes the search results and restores the focus and scroll position -- and is what an edit needs when it changes
+// more of what the owner shows than the rows it touched: a sheet carries its melee weapon, ranged weapon, reaction and
+// conditional modifier lists only while there is something to put in them, and a table's set of columns, which comes
+// from what its rows use, can only change by building a new table. Doing both would repeat the whole update, and on a
+// sheet holding hundreds of rows that update is the entire cost of the edit. The one thing a rebuild leaves out is
+// bumping the owner's modification timestamp, so that is done here, and before the rebuild, since the panel showing the
+// timestamp only picks up the new value when it is synced. A nil owner, typed or otherwise, is ignored.
 func rebuildAsModified(owner Rebuildable, full bool) {
 	if xreflect.IsNil(owner) {
 		return
@@ -320,10 +319,9 @@ func newMarkdownTooltip(text, workingDir string) *unison.Panel {
 	return tip
 }
 
-// markdownHardLineBreaks converts the single newlines in the given text into Markdown hard line breaks so that
-// multi-line tooltip content renders one line per newline. Without this, the Markdown renderer treats a single newline
-// as a soft break, collapsing it into a space and putting everything on one line. Blank lines (paragraph breaks) and
-// other block constructs are preserved, since a trailing hard break before a blank line is ignored by the renderer.
+// markdownHardLineBreaks converts single newlines into Markdown hard line breaks so that multi-line tooltip content
+// renders one line per newline; the renderer otherwise treats a single newline as a soft break and collapses it into a
+// space. Blank lines and other block constructs are unaffected, since a hard break before a blank line is ignored.
 func markdownHardLineBreaks(text string) string {
 	return strings.ReplaceAll(text, "\n", "  \n")
 }
@@ -340,8 +338,8 @@ func wrapTextForTooltip(tooltip string) string {
 	return strings.ReplaceAll(xstrings.Wrap("", strings.ReplaceAll(tooltip, " ", "␣"), 80), "␣", " ")
 }
 
-// pointerAccessors returns the accessors for a field that edits the value the pointer refers to. The setter stores
-// the value and then marks the parent modified.
+// pointerAccessors returns accessors for the value the pointer refers to. The setter stores the value and then marks
+// the parent modified.
 func pointerAccessors[T any](parent *unison.Panel, fieldData *T) (get func() T, set func(T)) {
 	return func() T { return *fieldData },
 		func(value T) {
@@ -356,9 +354,8 @@ type baseTooltipSetter interface {
 	SetBaseTooltip(tip *unison.Panel)
 }
 
-// setFieldTooltip installs a tooltip on a field. Fields that temporarily swap their tooltip out for another one, such
-// as the message a NumericField shows while its content is invalid, are told about it indirectly, so that the
-// replacement isn't clobbered while it is showing.
+// setFieldTooltip installs a tooltip on a field, as its base tooltip when the field has one, so that a temporary
+// replacement -- such as the message a NumericField shows while its content is invalid -- isn't clobbered.
 func setFieldTooltip(field unison.Paneler, tip *unison.Panel) {
 	if setter, ok := field.(baseTooltipSetter); ok {
 		setter.SetBaseTooltip(tip)
@@ -530,7 +527,6 @@ func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip str
 }
 
 func addPopup[T comparable](parent *unison.Panel, choices []T, fieldData *T) *unison.PopupMenu[T] {
-	// Ensure that the passed field value is in the list of choices
 	if fieldData != nil && len(choices) > 0 && !slices.Contains(choices, *fieldData) {
 		*fieldData = choices[0]
 	}
@@ -799,7 +795,7 @@ func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoT
 	return field
 }
 
-// WrapWithSpan wraps a number of children with a single panel that request to fill in span number of columns.
+// WrapWithSpan wraps the children in a single panel that asks to fill span columns of its parent's layout.
 func WrapWithSpan(span int, children ...unison.Paneler) *unison.Panel {
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
@@ -843,10 +839,10 @@ func NewMarkdownGuideButton() *unison.Button {
 	return button
 }
 
-// newApplyCancelButtons adds the Apply Changes and Discard Changes buttons that every editor with a pending set of
-// changes has to the toolbar and returns them, disabled until there is something to apply. Clicking apply calls the
-// given function and, when it reports success, closes the editor without its usual prompt, which is also all that
-// cancel does. showKeys adds the keyboard shortcuts the editors bind to the buttons to their tooltips.
+// newApplyCancelButtons adds the Apply Changes and Discard Changes buttons to the toolbar and returns them, disabled
+// until there is something to apply. Clicking apply calls the given function and, when it reports success, closes the
+// editor without its usual prompt, which is also all that cancel does. showKeys adds the keyboard shortcuts the editors
+// bind to the buttons' tooltips.
 func newApplyCancelButtons(toolbar *unison.Panel, showKeys bool, apply func() bool, closeWithoutPrompt func()) (applyButton, cancelButton *unison.Button) {
 	applyText := i18n.Text("Apply Changes")
 	cancelText := i18n.Text("Discard Changes")

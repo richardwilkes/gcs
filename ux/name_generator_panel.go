@@ -218,7 +218,6 @@ func (p *nameGeneratorPanel) importTrainingNames() {
 // slow to respond; the built-in training sets are the way to use a list of that size.
 const largeTrainingNameCount = 2000
 
-// confirmLargeImport asks whether to go ahead with importing count names from the file.
 func confirmLargeImport(filePath string, count int) bool {
 	return unison.QuestionDialog(fmt.Sprintf(i18n.Text("Import %d names from %s?"), count, filepath.Base(filePath)),
 		xstrings.Wrap("", fmt.Sprintf(i18n.Text("Every training name is a row in the editor, which becomes slow to respond with more than %d of them. For a list this size, consider one of the built-in training sets instead."),

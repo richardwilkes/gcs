@@ -48,9 +48,8 @@ func TestSSRTToYardsTableValues(t *testing.T) {
 	}
 }
 
-// TestSSRTToYardsClamps verifies that values beyond either end of the table are clamped to it. The low end has always
-// been clamped; the high end must be too, since the value arrives straight from a script and the yardage grows without
-// bound while fxp.Int does not.
+// Values beyond either end of the table are clamped to it. The low end has always been clamped; the high end must be
+// too, since the value arrives straight from a script and the yardage grows without bound while fxp.Int does not.
 func TestSSRTToYardsClamps(t *testing.T) {
 	c := check.New(t)
 	low := ssrtToYards(minSSRTValue)
@@ -63,10 +62,9 @@ func TestSSRTToYardsClamps(t *testing.T) {
 	}
 }
 
-// TestSSRTToYardsNeverSaturates verifies that every value the table accepts yields an exact result rather than one that
-// hit the top of the fixed-point range. fxp.Int.Mul saturates at fxp.Max instead of wrapping, so an unbounded value
-// would silently report ~9.2e14 yards for every input past 87 rather than reporting anything meaningful. Strict
-// monotonicity across the whole range is checked at the same time, since a saturated entry would show up as a
+// Every value the table accepts must yield an exact result rather than one that hit the top of the fixed-point range.
+// fxp.Int.Mul saturates at fxp.Max instead of wrapping, so an unbounded value would silently report ~9.2e14 yards for
+// every input past 87. Strict monotonicity is checked at the same time, since a saturated entry would show up as a
 // repeated value.
 func TestSSRTToYardsNeverSaturates(t *testing.T) {
 	c := check.New(t)
@@ -83,10 +81,9 @@ func TestSSRTToYardsNeverSaturates(t *testing.T) {
 	c.Equal(fxp.Max, fxp.FromInteger(100000000000000).Mul(fxp.Ten))
 }
 
-// TestScriptModifierToYardsIsBounded verifies that measure.modifierToYards returns promptly no matter what a script
-// hands it. The conversion loop runs (value-4)/6 times inside a Go function, and goja only honors an Interrupt between
-// VM instructions, so the per-script timeout cannot preempt it: before the value was clamped, a call such as
-// measure.modifierToYards(1e15) would have spun here for weeks with the application unresponsive.
+// measure.modifierToYards must return promptly no matter what a script hands it. The conversion loop runs (value-4)/6
+// times inside a Go function, and goja only honors an Interrupt between VM instructions, so the per-script timeout
+// cannot preempt it: before the value was clamped, measure.modifierToYards(1e15) would have spun here for weeks.
 func TestScriptModifierToYardsIsBounded(t *testing.T) {
 	c := check.New(t)
 
@@ -116,9 +113,8 @@ func TestScriptModifierToYardsIsBounded(t *testing.T) {
 	}
 }
 
-// TestSSRTRoundTrip verifies that the yardage ssrtToYards produces maps back to the value it came from through
-// ssrtInchesToValue, tying the two directions of the table together so that a change to either one that drifts from the
-// other is caught.
+// The yardage ssrtToYards produces must map back to the value it came from through ssrtInchesToValue, so a change to
+// either direction of the table that drifts from the other is caught.
 //
 // The round trip stops short of maxSSRTValue because ssrtInchesToValue works in inches: multiplying the yardage by 36
 // saturates once the result passes fxp.Max, at which point the remaining entries are indistinguishable from one
@@ -139,11 +135,10 @@ func TestSSRTRoundTrip(t *testing.T) {
 	c.Equal(94, covered, "the round trip should cover -15 through 78")
 }
 
-// TestScriptModifierUsesSaturatedLength verifies that measure.modifier agrees with measure.rangeModifier and
-// measure.sizeModifier for the same physical length, including one too large for the fixed-point type to hold.
-// measure.modifier used to format the length into a string and parse it back, which turned the range error that
-// conversion now reports into a flat 0 — so measure.modifier(1e300, "yd", false) answered 0 while
-// measure.rangeModifier(1e300) answered -79.
+// measure.modifier must agree with measure.rangeModifier and measure.sizeModifier for the same physical length,
+// including one too large for the fixed-point type to hold. It used to format the length into a string and parse it
+// back, which turned the range error that conversion now reports into a flat 0 — so measure.modifier(1e300, "yd",
+// false) answered 0 while measure.rangeModifier(1e300) answered -79.
 func TestScriptModifierUsesSaturatedLength(t *testing.T) {
 	c := check.New(t)
 	for _, yards := range []string{"0.5", "2", "100", "1e6", "9.2e14", "1e15", "1e300", "-1e300"} {
@@ -169,9 +164,8 @@ func TestScriptModifierUsesSaturatedLength(t *testing.T) {
 	c.True(saturated > 0, "a saturated length should yield a large positive size modifier, got %d", saturated)
 }
 
-// TestScriptModifierUnitResolution verifies that every length unit a script can name resolves to the same conversion
-// the other measurement bindings use, and that an unrecognized or empty unit still falls back to yards, as it did when
-// these units were resolved by parsing a formatted string.
+// Every length unit a script can name resolves to the same conversion the other measurement bindings use, and an
+// unrecognized or empty unit still falls back to yards, as it did when these units were resolved by parsing a string.
 func TestScriptModifierUnitResolution(t *testing.T) {
 	c := check.New(t)
 	for _, unit := range fxp.LengthUnits {
@@ -200,8 +194,7 @@ func TestScriptModifierUnitResolution(t *testing.T) {
 	}
 }
 
-// TestSSRTValueFromScriptIsArchitectureIndependent verifies that a script-supplied number reaches the table as the same
-// value on every architecture.
+// A script-supplied number must reach the table as the same value on every architecture.
 //
 // Go leaves the conversion of an out-of-range float64 to an integer implementation-defined. arm64 saturates to
 // MaxInt64, which clamps to the top of the table; amd64 produces MinInt64, which clamps to the bottom. Narrowing before

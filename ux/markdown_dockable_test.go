@@ -20,8 +20,8 @@ import (
 // TestMarkdownDockableNotModifiedWhenOpened verifies that opening a markdown file never reports the dockable as
 // modified, regardless of the line endings the file was stored with. The content is normalized to LF when loaded, so
 // the copy retained for comparison must be normalized as well; otherwise a file saved with CRLF (or CR) line endings
-// would be flagged as dirty the instant it was opened, marking the tab modified and prompting to save changes on close
-// even though nothing was edited.
+// would be flagged as dirty the instant it was opened, prompting to save changes on close even though nothing was
+// edited.
 func TestMarkdownDockableNotModifiedWhenOpened(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {

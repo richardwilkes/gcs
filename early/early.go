@@ -11,7 +11,7 @@ package early
 
 import "github.com/richardwilkes/toolbox/v2/xos"
 
-// Configure the app data. This is here so that the helper utilities can utilize it as well.
+// Configure sets the app-wide identity data. It lives in its own package so the helper commands can use it too.
 func Configure() {
 	xos.AppName = "GCS"
 	xos.AppCmdName = "gcs"

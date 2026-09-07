@@ -88,7 +88,7 @@ func ExprToScript(expr string) string {
 			{symbol: "/", precedence: 6},
 			{symbol: "%", precedence: 6},
 			// JavaScript's ** is not a usable stand-in for the legacy exponent operator: it is right-associative
-			// where the legacy operator was left-associative (2^3^2 is 64, not 512), and its grammar rejects an
+			// where the legacy one was left-associative (2^3^2 is 64, not 512), and its grammar rejects an
 			// unparenthesized unary operand on its left, making "-$st ** 2" a syntax error. Math.pow has neither
 			// problem, since the tree already carries the intended grouping.
 			{symbol: "^", call: "Math.pow", precedence: 7},
@@ -447,13 +447,11 @@ func (e *exprToScript) process(parts []string, op any) ([]string, error) {
 		skip := false
 		next, remaining := extractNextEvalArg(v.args)
 		for next != "" {
-			// Special case for some dice functions
 			if strings.HasPrefix(v.function, "dice.") && v.function != "dice.from" {
 				if i == 0 || i > 0 && v.function != "dice.roll" {
 					funcParts, skip = extractDiceArg(funcParts, next)
 				}
 			} else if strings.HasPrefix(next, `"`) && strings.HasSuffix(next, `"`) {
-				// If the next argument is a string, we don't need to do anything special
 				funcParts = append(funcParts, next)
 				skip = true
 			}
@@ -488,7 +486,7 @@ func (e *exprToScript) process(parts []string, op any) ([]string, error) {
 	}
 }
 
-// processCall emits a binary operator as a call to the function named by the operator, with the left and right sides as
+// processCall emits a binary operator as a call to the function the operator names, with the left and right sides as
 // its two arguments. The tree already encodes the grouping the legacy expression called for, so the call form carries
 // it over without depending on the precedence or associativity of any JavaScript operator.
 func (e *exprToScript) processCall(parts []string, v *expressionTree) ([]string, error) {

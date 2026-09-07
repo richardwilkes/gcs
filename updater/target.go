@@ -35,21 +35,19 @@ const (
 type Target struct {
 	// Path is what gets swapped: the .app directory on macOS, the executable elsewhere.
 	Path string
-	// Parent is the directory holding Path. Staging happens here, so that the swap is a rename within a single
-	// directory on a single filesystem.
+	// Parent is the directory holding Path. Staging happens here, so the swap is a rename within a single directory on
+	// a single filesystem.
 	Parent string
 	// Exec is the executable to run, which is inside Path for a bundle and equal to it otherwise.
 	Exec string
 	Kind Kind
 }
 
-// ResolveTarget determines what an update running from exePath would replace.
+// ResolveTarget determines what an update running from exePath would replace. exePath is expected to already be
+// absolute and symlink-free. This reports what *would* be replaced; whether replacing it is allowed is Preflight's job.
 //
 // goos is a parameter rather than being read from runtime.GOOS so that the rules for every platform can be exercised
 // from any host; callers outside of tests should use CurrentTarget.
-//
-// exePath is expected to already be absolute and symlink-free. Note that this reports what *would* be replaced; whether
-// replacing it is actually allowed is Preflight's job.
 func ResolveTarget(exePath, goos string) (Target, error) {
 	if exePath == "" {
 		return Target{}, errs.New("an executable path is required")
@@ -58,8 +56,8 @@ func ResolveTarget(exePath, goos string) (Target, error) {
 		return Target{Path: exePath, Parent: filepath.Dir(exePath), Exec: exePath, Kind: KindExecutable}, nil
 	}
 	// On macOS the executable normally lives at <name>.app/Contents/MacOS/<name>, and it is the bundle as a whole that
-	// has to be replaced -- swapping just the executable would leave the bundle's signature broken. Walk up looking for
-	// the enclosing bundle rather than assuming a fixed depth.
+	// has to be replaced, since swapping just the executable would leave the bundle's signature broken. Walk up looking
+	// for the enclosing bundle rather than assuming a fixed depth.
 	dir := filepath.Dir(exePath)
 	for {
 		if strings.HasSuffix(dir, ".app") {
@@ -90,11 +88,11 @@ func CurrentTarget() (Target, error) {
 	return ResolveTarget(exePath, runtime.GOOS)
 }
 
-// BackupPath returns the path to move the existing installation aside to. The unique suffix means a leftover from an
-// earlier attempt can never collide, and it is what lets the startup sweep recognize these.
+// BackupPath returns the path to move the existing installation aside to. The unique suffix keeps a leftover from an
+// earlier attempt from colliding, and the shape of the name is what lets the startup sweep recognize these.
 //
-// Two properties of the name matter on macOS. It no longer ends in ".app", so a bundle moved aside is not a second live
-// Launch Services registration for com.trollworks.gcs that document associations could resolve to; and it starts with a
+// Two properties of the name matter on macOS: it no longer ends in ".app", so a bundle moved aside is not a second live
+// Launch Services registration for com.trollworks.gcs that document associations could resolve to, and it starts with a
 // dot, so the Finder does not show the user a mysterious extra item mid-update.
 func (t *Target) BackupPath(unique string) string {
 	return filepath.Join(t.Parent, "."+filepath.Base(t.Path)+backupSuffix+unique)
@@ -103,9 +101,8 @@ func (t *Target) BackupPath(unique string) string {
 // FreeBackupPath returns a backup path that nothing currently occupies.
 //
 // The timestamp alone makes a collision all but impossible, but "all but" is not good enough here: the swap moves the
-// installation to this path, and on most systems a rename over an existing file destroys it silently. If that file were
-// a backup from an earlier update that had not yet been cleaned up, the user's only other copy of the application would
-// disappear without a word.
+// installation to this path, and on most systems a rename over an existing file destroys it silently. Were that file a
+// backup from an earlier update, the user's only other copy of the application would disappear without a word.
 func (t *Target) FreeBackupPath() string {
 	base := strconv.FormatInt(time.Now().UnixNano(), 36)
 	path := t.BackupPath(base)

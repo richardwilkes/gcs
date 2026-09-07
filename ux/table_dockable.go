@@ -165,22 +165,17 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	return toolbar
 }
 
-// Entity implements gurps.EntityProvider
+// Entity implements EntityPanel. A list file has no entity, so nil is always returned.
 func (d *TableDockable[T]) Entity() *gurps.Entity {
 	return nil
 }
 
-// UndoManager implements undo.Provider
+// UndoManager implements unison.UndoManagerProvider.
 func (d *TableDockable[T]) UndoManager() *unison.UndoManager {
 	return d.undoMgr
 }
 
-// DockableKind implements widget.DockableKind
-func (d *TableDockable[T]) DockableKind() string {
-	return ListDockableKind
-}
-
-// MarkModified implements widget.ModifiableRoot.
+// MarkModified implements ModifiableRoot.
 func (d *TableDockable[T]) MarkModified(_ unison.Paneler) {
 	UpdateTitleForDockable(d)
 }
@@ -240,7 +235,7 @@ func (d *TableDockable[T]) sizeToFit() {
 	d.table.MarkForRedraw()
 }
 
-// Rebuild implements widget.Rebuildable.
+// Rebuild implements Rebuildable.
 func (d *TableDockable[T]) Rebuild(_ bool) {
 	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()

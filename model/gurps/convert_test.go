@@ -43,8 +43,8 @@ func TestConvertWalkerUnreadableRoot(t *testing.T) {
 }
 
 // TestConvertWalkerIgnoresExtensionCase verifies that the conversion walker collects data files whose extension is
-// upper- or mixed-case. The switch that dispatches the conversion lowercases the extension, so a file the walker
-// declines to collect here is silently skipped by both --convert and --sync, with nothing said about it.
+// upper- or mixed-case. The converters map is keyed by the lowercase extension, so a file the walker declines to
+// collect here is silently skipped by both --convert and --sync, with nothing said about it.
 func TestConvertWalkerIgnoresExtensionCase(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -75,9 +75,9 @@ func TestConvertWalkerIgnoresExtensionCase(t *testing.T) {
 }
 
 // TestConvertersCoverCollectedExtensions verifies that every extension the conversion walker collects has an entry in
-// the converters map, so that each file type GCS owns is either rewritten or deliberately left alone rather than
-// silently skipped because the map fell out of sync with the extension lists. The primary extensions are listed here
-// because the file type registry that GCSExtensions reads from is populated by the ux package.
+// the converters map, so a file type GCS owns is never silently skipped because the map fell out of sync with the
+// extension lists. The primary extensions are listed here because the file type registry that GCSExtensions reads from
+// is populated by the ux package.
 func TestConvertersCoverCollectedExtensions(t *testing.T) {
 	c := check.New(t)
 	primary := []string{

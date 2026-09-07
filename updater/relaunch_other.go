@@ -20,9 +20,8 @@ import (
 // relaunch starts the newly installed application. Linux and Windows install a single executable, so there is nothing
 // to do but run it.
 //
-// It is started with no arguments. Whatever files the user had open are not reopened: capturing them would mean writing
-// them down before the quit and handing them to a process that starts a minute later, by which time they may have moved
-// or been deleted, and passing a stale path would be worse than passing none.
+// It is started with no arguments: reopening whatever files the user had open would mean handing paths recorded before
+// the quit to a process that starts a minute later, and passing a stale path would be worse than passing none.
 func relaunch(t *Target, logPath string) error {
 	if err := spawnDetached(t.Path, nil, logPath, os.TempDir()); err != nil {
 		return errs.NewWithCause("unable to start the updated application", err)

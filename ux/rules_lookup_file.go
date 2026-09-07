@@ -36,9 +36,8 @@ type rule struct {
 	Link     string
 }
 
-// rulesLookupResult is the outcome of the download, handed from the download goroutine to the UI thread as a unit. A
-// failed download must reach the UI thread as a failure (see runInBackground): observing it as a success would silently
-// write an empty notes file rather than reporting the error.
+// rulesLookupResult is the outcome of the download, handed from the download goroutine to the UI thread as a unit (see
+// runInBackground). Observing a failure as a success would silently write an empty notes file rather than report it.
 type rulesLookupResult struct {
 	rules map[string][]*rule
 	err   error
@@ -56,7 +55,7 @@ func retrieveRulesLookupData() (map[string][]*rule, error) {
 	return parseRulesLookupData(data)
 }
 
-// parseRulesLookupData parses the downloaded GURPS Rules Lookup data and returns its rules grouped by book.
+// parseRulesLookupData parses the downloaded data, tolerating a leading BOM, and returns its rules grouped by book.
 func parseRulesLookupData(data []byte) (map[string][]*rule, error) {
 	r, err := xio.NewBOMStripper(bytes.NewBuffer(data))
 	if err != nil {

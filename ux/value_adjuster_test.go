@@ -20,9 +20,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestOwnerRecalculatesSkipsSheetAlreadyUpdating verifies that an edit only leaves the recalculation to the owner when
-// the owner is actually going to perform one. A sheet that is already inside an update pass is not, since
-// Sheet.MarkModified does nothing at all while awaitingUpdate is set.
+// An edit may only leave the recalculation to the owner when the owner is actually going to perform one. A sheet
+// already inside an update pass is not, since Sheet.MarkModified does nothing at all while awaitingUpdate is set.
 func TestOwnerRecalculatesSkipsSheetAlreadyUpdating(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -36,10 +35,9 @@ func TestOwnerRecalculatesSkipsSheetAlreadyUpdating(t *testing.T) {
 	c.True(ownerRecalculates(sheet, entity), "the sheet recalculates again once the update pass is done")
 }
 
-// TestValueAdjustmentRecalculatesDuringUpdatePass verifies that an adjustment made while the sheet is already inside an
-// update pass still brings the derived state up to date. Sheet.MarkModified is a no-op in that case, so an adjustment
-// that left the recalculation to it would silently drop it, leaving the sheet showing stale levels and points until
-// some unrelated later edit happened to trigger a pass of its own.
+// Sheet.MarkModified is a no-op while the sheet is inside an update pass, so an adjustment that left the
+// recalculation to it would silently drop it, leaving the sheet showing stale levels and points until some unrelated
+// later edit happened to trigger a pass of its own.
 func TestValueAdjustmentRecalculatesDuringUpdatePass(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -66,14 +64,12 @@ func TestValueAdjustmentRecalculatesDuringUpdatePass(t *testing.T) {
 	c.Equal(before+fxp.Four, skill.LevelData.Level, "the skill level must reflect the raised attribute")
 }
 
-// TestToggleDisabledUpdatesTheSheetOnlyOnce verifies that toggling a trait's enablement pays for the sheet's update
-// exactly once. The change alters more of the sheet than the traits list -- a trait that is turned off takes its
+// Toggling a trait's enablement alters more of the sheet than the traits list -- a trait that is turned off takes its
 // features, weapons, reactions and conditional modifiers out of play with it, and whether the lists showing those are
 // carried on the page at all is decided only when the sheet creates its lists -- so the owner is rebuilt. Marking it
 // as modified first would recalculate the entity, re-sync every table, refresh the search results and reacquire the
-// focus, and the rebuild would then immediately do all of it over again; on a sheet with many rows that work is the
-// entire cost of the edit. The rebuild has to bump the modification timestamp itself, since that is the one thing
-// marking as modified would have done that it doesn't.
+// focus, all of which the rebuild would then immediately do again. The rebuild has to bump the modification timestamp
+// itself, since that is the one thing marking as modified would have done that it doesn't.
 func TestToggleDisabledUpdatesTheSheetOnlyOnce(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -120,11 +116,10 @@ func TestToggleDisabledUpdatesTheSheetOnlyOnce(t *testing.T) {
 	c.NotEqual(jio.Time{}, entity.ModifiedOn, "the undo must bump the modification timestamp, too")
 }
 
-// TestOwnerRebuildRecalculatesIgnoresTheUpdatePass verifies the difference between the two "will the owner recalculate
-// this entity on its own" checks. Marking a sheet as modified does nothing at all while the sheet is already inside an
-// update pass, so an edit that left the recalculation to it then would drop it rather than defer it; rebuilding is
-// never suppressed, so an edit that rebuilds can always leave the recalculation to the rebuild. Anything that isn't
-// the sheet holding the entity leaves it to the caller either way.
+// The difference between the two "will the owner recalculate this entity on its own" checks: marking a sheet as
+// modified does nothing while the sheet is inside an update pass, so an edit that left the recalculation to it then
+// would drop it rather than defer it, while rebuilding is never suppressed. Anything that isn't the sheet holding the
+// entity leaves the recalculation to the caller either way.
 func TestOwnerRebuildRecalculatesIgnoresTheUpdatePass(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

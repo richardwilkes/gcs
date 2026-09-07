@@ -51,8 +51,8 @@ var LengthUnits = []LengthUnit{
 }
 
 // LengthUnit holds the length unit type. Note that conversions to/from metric are done using the simplified GURPS
-// metric conversion of 1 yd = 1 meter. For consistency, all metric lengths are converted to meters, then to yards,
-// rather than the variations at different lengths that the GURPS rules suggest.
+// metric conversion of 2.5 cm = 1 inch. For consistency, all metric lengths are converted to inches, rather than the
+// variations at different lengths that the GURPS rules suggest.
 type LengthUnit byte
 
 // EnsureValid ensures this is of a known value.
@@ -134,7 +134,7 @@ func ExtractLengthUnit(str string) LengthUnit {
 
 // ExtractKnownLengthUnit extracts the value from a string, reporting whether the string was actually recognized.
 //
-// Unlike ExtractLengthUnit, which quietly maps anything it doesn't recognize onto the first value, this permits a
+// Unlike ExtractLengthUnit, which quietly maps anything it doesn't recognize onto the default value, this permits a
 // caller that is dispatching on the type to detect unknown types.
 func ExtractKnownLengthUnit(str string) (value LengthUnit, known bool) {
 	for _, enum := range LengthUnits {

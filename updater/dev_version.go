@@ -14,16 +14,16 @@ import (
 	"strings"
 )
 
-// pseudoVersionRE matches a Go VCS pseudo-version, in all three of the forms the toolchain generates: no prior tag, a
-// prior release tag, and a prior pre-release tag. It is adapted from the one in golang.org/x/mod, which isn't a
-// dependency here, with the leading "v" made optional because callers may have already trimmed it.
+// pseudoVersionRE matches a Go VCS pseudo-version in all three forms the toolchain generates: no prior tag, a prior
+// release tag, and a prior pre-release tag. Adapted from the one in golang.org/x/mod, which isn't a dependency here,
+// with the leading "v" made optional because callers may have already trimmed it.
 var pseudoVersionRE = regexp.MustCompile(`^v?[0-9]+\.(0\.0-|\d+\.\d+-([^+]*\.)?0\.)\d{14}-[A-Za-z0-9]+(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`)
 
-// IsDevVersion reports whether a version string identifies a development build rather than a release: the "0.0" a
-// build without a stamped version reports, an empty version, a Go VCS pseudo-version (what `go build` stamps from a
-// git checkout that isn't exactly on a release tag, e.g. 5.48.1-0.20260826001723-41ebfa03e3e8), or any version
-// carrying build metadata such as the "+dirty" Go appends when the tree had uncommitted changes. Releases are built
-// from a clean, tagged checkout with the version passed explicitly, so none of these ever describe a release.
+// IsDevVersion reports whether a version string identifies a development build rather than a release: an empty
+// version, the "0.0" an unstamped build reports, a Go VCS pseudo-version (what `go build` stamps from a checkout that
+// isn't exactly on a release tag, e.g. 5.48.1-0.20260826001723-41ebfa03e3e8), or any version carrying build metadata
+// such as the "+dirty" Go appends for an uncommitted tree. Releases are built from a clean, tagged checkout with the
+// version passed explicitly, so none of these ever describe one.
 func IsDevVersion(version string) bool {
 	return version == "" || version == "0.0" || strings.Contains(version, "+") || pseudoVersionRE.MatchString(version)
 }

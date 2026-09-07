@@ -37,15 +37,12 @@ func newLeveledTrait(e *Entity, maxLevels string) *Trait {
 func TestTraitMaxLevelResolution(t *testing.T) {
 	c := check.New(t)
 
-	// No expression and no bonuses: there is no maximum.
 	trait := newLeveledTrait(nil, "")
 	c.Equal(fxp.Int(0), trait.ResolvedMaxLevels(), "no maximum")
 
-	// A plain-number expression resolves to that number.
 	trait = newLeveledTrait(nil, "20")
 	c.Equal(fxp.FromInteger(20), trait.ResolvedMaxLevels(), "plain number expression")
 
-	// A script expression resolves to its numeric result.
 	trait = newLeveledTrait(nil, "10 + 5")
 	c.Equal(fxp.FromInteger(15), trait.ResolvedMaxLevels(), "script expression")
 
@@ -63,7 +60,6 @@ func TestTraitMaxLevelResolution(t *testing.T) {
 	trait.Features = Features{newMaxLevelBonus(traitsel.ThisTrait, "-100")}
 	c.Equal(fxp.Int(0), trait.ResolvedMaxLevels(), "clamped to minimum of 0")
 
-	// A non-leveled trait has no maximum, regardless of expression.
 	trait = newLeveledTrait(nil, "20")
 	trait.CanLevel = false
 	c.Equal(fxp.Int(0), trait.ResolvedMaxLevels(), "non-leveled trait has no maximum")
@@ -101,7 +97,6 @@ func TestTraitMaxLevelBonusTraitWithName(t *testing.T) {
 	other.Tags = []string{"Attribute"}
 	e.Traits = append(e.Traits, other)
 
-	// A trait grants +5 maximum level to a trait named "Strength".
 	bonus := newMaxLevelBonus(traitsel.TraitWithName, "+5")
 	bonus.NameCriteria.Compare = criteria.IsText
 	bonus.NameCriteria.Qualifier = "Strength"
@@ -111,7 +106,6 @@ func TestTraitMaxLevelBonusTraitWithName(t *testing.T) {
 	c.Equal(fxp.FromInteger(25), strength.ResolvedMaxLevels(), "matching name receives the bonus")
 	c.Equal(fxp.FromInteger(20), other.ResolvedMaxLevels(), "non-matching trait is unaffected")
 
-	// Per-level scaling comes from the attaching trait's level.
 	bonus.PerLevel = true
 	granter.CanLevel = true
 	granter.Levels = fxp.Three
@@ -136,7 +130,6 @@ func TestTraitMaxLevelFlagging(t *testing.T) {
 	e.Recalculate()
 	c.Equal("", trait.UnsatisfiedReason, "level within the maximum is not flagged")
 
-	// A trait with no maximum is never flagged, no matter how high the level.
 	trait.MaxLevels = ""
 	trait.Levels = fxp.FromInteger(100)
 	e.Recalculate()
@@ -149,19 +142,16 @@ func TestTraitMaxLevelFlagging(t *testing.T) {
 func TestTraitMaxLevelBonusCannotCreateMaximum(t *testing.T) {
 	c := check.New(t)
 
-	// Each operation, applied to a trait that declares no maximum, must leave it unlimited.
 	for _, amount := range []string{"+2", "50%", "x2", "-2"} {
 		trait := newLeveledTrait(nil, "")
 		trait.Features = Features{newMaxLevelBonus(traitsel.ThisTrait, amount)}
 		c.Equal(fxp.Int(0), trait.ResolvedMaxLevels(), "a %q bonus must not create a maximum", amount)
 	}
 
-	// An expression that resolves to zero means "no maximum" just as an empty one does.
 	trait := newLeveledTrait(nil, "0")
 	trait.Features = Features{newMaxLevelBonus(traitsel.ThisTrait, "+2")}
 	c.Equal(fxp.Int(0), trait.ResolvedMaxLevels(), "a maximum expression of 0 stays unlimited")
 
-	// A modifier-carried bonus is subject to the same rule.
 	trait = newLeveledTrait(nil, "")
 	mod := NewTraitModifier(nil, nil, false)
 	mod.Features = Features{newMaxLevelBonus(traitsel.ThisTrait, "+3")}
@@ -186,7 +176,6 @@ func TestTraitMaxLevelBonusBroadScopeLeavesUncappedTraitsAlone(t *testing.T) {
 	uncapped.Levels = fxp.FromInteger(6)
 	e.Traits = append(e.Traits, uncapped)
 
-	// A bonus that matches anything grants +2 maximum levels.
 	bonus := newMaxLevelBonus(traitsel.TraitWithName, "+2")
 	bonus.NameCriteria.Compare = criteria.AnyText
 	addTraitWithFeatures(e, "", bonus)

@@ -16,8 +16,8 @@ import (
 )
 
 // TestPDFTextPosBefore pins the ordering of selection endpoints. Everything the selection does with its two endpoints
-// -- deciding which of them the range starts at, which pages lie between them, and which way a drag ran -- rests on
-// this comparison, and a selection made by dragging backwards through the text is the case that depends on it.
+// -- which of them the range starts at, which pages lie between them, which way a drag ran -- rests on this
+// comparison, and a selection made by dragging backwards through the text is the case that depends on it.
 func TestPDFTextPosBefore(t *testing.T) {
 	for _, tc := range []struct {
 		name string
@@ -42,11 +42,11 @@ func TestPDFTextPosBefore(t *testing.T) {
 
 // TestPDFSelectionRangeFor pins what each page contributes to a selection. The interesting part is the middle of a
 // multi-page selection: those pages contribute all of their text, so their length has to be known, and until it is
-// there is no answer to give -- which is what tells the drawing and the copy to wait for the extraction rather than
-// treating the page as empty.
+// there is no answer -- which tells the drawing and the copy to wait for the extraction rather than treating the page
+// as empty.
 func TestPDFSelectionRangeFor(t *testing.T) {
-	// A length that is known for every page but the one nobody has extracted yet. The pages are deliberately given
-	// different lengths, so a range that came from the wrong page would show up as the wrong number.
+	// A length that is known for every page but the one nobody has extracted yet. The pages are given different
+	// lengths, so a range that came from the wrong page would show up as the wrong number.
 	lengths := map[int]int{0: 100, 1: 200, 2: 300, 4: 500}
 	lengthOf := func(pageNumber int) (int, bool) {
 		length, known := lengths[pageNumber]
@@ -127,10 +127,10 @@ func TestPDFSelectionRangeFor(t *testing.T) {
 	}
 }
 
-// TestPDFSelectionRangeForOrderedByCaller pins that the caller is the one responsible for putting the endpoints in
-// document order, which is what orderedSelection does before this is reached. Handed a backwards pair, the function
-// reports the whole document as being outside the selection rather than inventing a range, so a mistake there can't
-// quietly produce a plausible-looking but wrong selection.
+// TestPDFSelectionRangeForOrderedByCaller pins that the caller is responsible for putting the endpoints in document
+// order, which is what orderedSelection does before this is reached. Handed a backwards pair, the function reports the
+// whole document as outside the selection rather than inventing a range, so a mistake there can't quietly produce a
+// plausible-looking but wrong selection.
 func TestPDFSelectionRangeForOrderedByCaller(t *testing.T) {
 	lengthOf := func(_ int) (int, bool) {
 		t.Helper()
@@ -150,8 +150,8 @@ func TestPDFSelectionRangeForOrderedByCaller(t *testing.T) {
 
 // TestPDFTextPosSpan pins how a selection is derived from its anchor unit and the unit beneath the pointer: the span
 // runs from the earlier of the two starts to the later of the two ends, whichever side of the anchor the pointer is
-// on. This is what makes a drag begun with a double click grow and shrink by whole words, and what keeps the anchor's
-// own word selected when the pointer comes back inside it.
+// on. That is what makes a drag begun with a double click grow and shrink by whole words, and keeps the anchor's own
+// word selected when the pointer comes back inside it.
 func TestPDFTextPosSpan(t *testing.T) {
 	word := func(page, start, end int) [2]pdfTextPos {
 		return [2]pdfTextPos{{page: page, index: start}, {page: page, index: end}}
@@ -190,8 +190,8 @@ func TestPDFTextPosSpan(t *testing.T) {
 }
 
 // TestPDFSearchHitBar pins the shape of the bar that marks a search hit: it spans the hit's full width, hugs the hit's
-// bottom edge, and is a fraction of the hit's height rather than a fixed thickness, so that it scales with the text it
-// underlines rather than swamping small type or vanishing under large.
+// bottom edge, and is a fraction of the hit's height rather than a fixed thickness, so that it scales with the text
+// rather than swamping small type or vanishing under large.
 func TestPDFSearchHitBar(t *testing.T) {
 	const tolerance = 1e-4
 	for _, hit := range []geom.Rect{
@@ -217,7 +217,7 @@ func TestPDFSearchHitBar(t *testing.T) {
 
 // TestPDFAutoScrollAmount pins the auto-scroll step. A pointer inside the viewport must produce exactly zero, since a
 // nonzero step is what keeps the tick loop running, and a pointer well outside it must be capped, so that dragging to
-// the far edge of the screen doesn't send the document past faster than the selection can follow.
+// the far edge of the screen doesn't outrun the selection.
 func TestPDFAutoScrollAmount(t *testing.T) {
 	const lo, hi = float32(100), float32(500)
 	for _, tc := range []struct {
@@ -242,14 +242,13 @@ func TestPDFAutoScrollAmount(t *testing.T) {
 }
 
 // TestPDFSelectionRangeAgainstRealText runs the range arithmetic against a real extracted page rather than a stubbed
-// length, which is what pins that the two halves agree: the lengths pdfSelectionRangeFor asks the renderer for are
-// indices into the same text TextRange later slices with the range it produced. The fixture is the one-line document
-// the text tests use, so the whole document is a single page's worth of characters.
+// length, pinning that the two halves agree: the lengths pdfSelectionRangeFor asks the renderer for are indices into
+// the same text TextRange later slices with the range it produced.
 func TestPDFSelectionRangeAgainstRealText(t *testing.T) {
 	pdf := newPDFTextSampleRenderer(t)
 
 	// Before anything has been extracted, a selection running off the end of the page can't say how much of it is
-	// covered, which is what holds a copy back until the text lands.
+	// covered, which holds a copy back until the text lands.
 	lo := pdfTextPos{page: 0, index: 0}
 	hi := pdfTextPos{page: 1, index: 0}
 	if _, _, ok := pdfSelectionRangeFor(lo, hi, 0, pdf.TextLength); ok {
@@ -281,8 +280,7 @@ func TestPDFSelectionRangeAgainstRealText(t *testing.T) {
 		t.Errorf("the whole of page 0 reads %q, want %q", text, pdfTextSampleString)
 	}
 
-	// A selection wholly within the page is handed straight through, and the text it names is the substring it should
-	// be. "World" is the second word of the fixture's one line.
+	// A selection wholly within the page is handed straight through. "World" is the second word of the fixture's line.
 	const wordStart = len("Hello ")
 	lo = pdfTextPos{page: 0, index: wordStart}
 	hi = pdfTextPos{page: 0, index: length}

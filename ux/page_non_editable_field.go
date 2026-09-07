@@ -22,32 +22,27 @@ type NonEditablePageField struct {
 	syncer func(*NonEditablePageField)
 }
 
-// NewNonEditablePageField creates a new start-aligned non-editable field that uses the same font and size as the page
-// field.
+// NewNonEditablePageField creates a new start-aligned non-editable field using the page field font.
 func NewNonEditablePageField(syncer func(*NonEditablePageField)) *NonEditablePageField {
 	return newNonEditablePageField(syncer, align.Start)
 }
 
-// NewNonEditablePageFieldEnd creates a new end-aligned non-editable field that uses the same font and size as the page
-// field.
+// NewNonEditablePageFieldEnd creates a new end-aligned non-editable field using the page field font.
 func NewNonEditablePageFieldEnd(syncer func(*NonEditablePageField)) *NonEditablePageField {
 	return newNonEditablePageField(syncer, align.End)
 }
 
-// NewNonEditablePageFieldFor creates a new start-aligned non-editable field that shows the text the given function
-// returns, re-reading it on every sync.
+// NewNonEditablePageFieldFor creates a new start-aligned non-editable field showing what text returns on each sync.
 func NewNonEditablePageFieldFor(text func() string) *NonEditablePageField {
 	return NewNonEditablePageField(syncTitleFrom(text))
 }
 
-// NewNonEditablePageFieldEndFor creates a new end-aligned non-editable field that shows the text the given function
-// returns, re-reading it on every sync.
+// NewNonEditablePageFieldEndFor creates a new end-aligned non-editable field showing what text returns on each sync.
 func NewNonEditablePageFieldEndFor(text func() string) *NonEditablePageField {
 	return NewNonEditablePageFieldEnd(syncTitleFrom(text))
 }
 
-// NewNonEditablePageFieldCenter creates a new center-aligned non-editable field that uses the same font and size as the
-// page field.
+// NewNonEditablePageFieldCenter creates a new center-aligned non-editable field using the page field font.
 func NewNonEditablePageFieldCenter(syncer func(*NonEditablePageField)) *NonEditablePageField {
 	return newNonEditablePageField(syncer, align.Middle)
 }
@@ -73,7 +68,6 @@ func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign align.En
 	return f
 }
 
-// syncTitleFrom returns a syncer that makes the field show the text the given function returns.
 func syncTitleFrom(text func() string) func(*NonEditablePageField) {
 	return func(f *NonEditablePageField) { f.SetTitleIfChanged(text()) }
 }
@@ -83,8 +77,8 @@ func (f *NonEditablePageField) Sync() {
 	f.syncer(f)
 }
 
-// SetTitleIfChanged makes the field show the given text and marks it for layout within its dockable, unless that is
-// already the text it shows. It returns true if the text was changed.
+// SetTitleIfChanged sets the field's text and marks it for layout within its dockable when the text differs, returning
+// true if it did.
 func (f *NonEditablePageField) SetTitleIfChanged(text string) bool {
 	if text == f.Text.String() {
 		return false
