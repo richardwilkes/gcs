@@ -56,28 +56,16 @@ func TestLibrariesAccessIsSafeForConcurrentMutation(t *testing.T) {
 	// Readers stand in for the deep search content loaders; the mutation loop below stands in for the UI thread
 	// re-keying a library in the library settings dialog or removing one in the navigator.
 	var missedStable atomic.Bool
-	stop := make(chan struct{})
-	var wg sync.WaitGroup
-	for range 4 {
-		wg.Go(func() {
-			for {
-				select {
-				case <-stop:
-					return
-				default:
-				}
-				if s.Libraries.Lookup(stable.Key()) == nil {
-					missedStable.Store(true)
-				}
-			}
-		})
-	}
+	stop := spinUntilStopped(4, func() {
+		if s.Libraries.Lookup(stable.Key()) == nil {
+			missedStable.Store(true)
+		}
+	})
 	for range 1000 {
 		s.Libraries.Store(churn.Key(), churn)
 		s.Libraries.Remove(churn.Key())
 	}
-	close(stop)
-	wg.Wait()
+	stop()
 	c.False(missedStable.Load(), "every lookup must find the library that was never removed")
 
 	// A snapshot is unaffected by mutations made after it was taken.
@@ -105,29 +93,17 @@ func TestLibrariesRekeyNeverLeavesTheLibraryAbsent(t *testing.T) {
 	}
 
 	var sawAbsent atomic.Bool
-	stop := make(chan struct{})
-	var wg sync.WaitGroup
-	for range 4 {
-		wg.Go(func() {
-			for {
-				select {
-				case <-stop:
-					return
-				default:
-				}
-				if libs.Len() != size {
-					sawAbsent.Store(true)
-				}
-			}
-		})
-	}
+	stop := spinUntilStopped(4, func() {
+		if libs.Len() != size {
+			sawAbsent.Store(true)
+		}
+	})
 	for i := range 1000 {
 		oldKey := lib.Key()
 		lib.Configure(configs[(i+1)%len(configs)])
 		libs.Rekey(oldKey, lib)
 	}
-	close(stop)
-	wg.Wait()
+	stop()
 	c.False(sawAbsent.Load(), "the set must never be seen without the library being re-keyed")
 
 	// The library ends up under its new key only.

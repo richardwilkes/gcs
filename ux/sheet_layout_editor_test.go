@@ -583,6 +583,18 @@ func undoEditCount(mgr *unison.UndoManager) int {
 	return count
 }
 
+// leafOnPage returns the region of the block with the given key, ending the test if that block isn't on the page. Every
+// caller reaches straight into what comes back, so a block that isn't there has to stop the test then and there rather
+// than be left as a nil to be dereferenced a line later.
+func leafOnPage(t *testing.T, regions *layoutRegions, key string) *layoutLeafRegion {
+	t.Helper()
+	leaf := regions.leafFor(key)
+	if leaf == nil {
+		t.Fatalf("the %q block must be on the page", key)
+	}
+	return leaf
+}
+
 // findTestDivider returns the divider whose left-hand block is the one with the given key.
 func findTestDivider(regions *layoutRegions, key string) *layoutDividerRegion {
 	for i := range regions.dividers {
@@ -658,18 +670,15 @@ func TestLayoutRegionsMatchThePage(t *testing.T) {
 				"the outermost container around %q must be a band", leaf.key)
 		}
 	}
-	identity := regions.leafFor(gurps.BlockIdentityKey)
-	c.NotNil(identity, "the identity block must be on the page")
+	identity := leafOnPage(t, regions, gurps.BlockIdentityKey)
 	c.Equal(3, len(identity.ancestors),
 		"the identity block sits inside the band, the column beside the portrait and the row it shares")
 
-	spells := regions.leafFor(gurps.BlockSpellsKey)
-	c.NotNil(spells, "the spells block must be on the page")
+	spells := leafOnPage(t, regions, gurps.BlockSpellsKey)
 	c.True(spells.isRootBand, "the spells block is a band of its own in the default layout")
 	c.Equal(0, len(spells.ancestors), "a block that is a band of its own sits inside nothing")
 
-	traits := regions.leafFor(gurps.BlockTraitsKey)
-	c.NotNil(traits, "the traits block must be on the page")
+	traits := leafOnPage(t, regions, gurps.BlockTraitsKey)
 	c.False(traits.isRootBand, "the traits block shares a band with the skills block in the default layout")
 
 	divider := findTestDivider(regions, gurps.BlockTraitsKey)
@@ -677,7 +686,7 @@ func TestLayoutRegionsMatchThePage(t *testing.T) {
 	c.Equal(gurps.BlockSkillsKey, divider.right.Key, "the divider must sit between the traits and skills blocks")
 	c.True(divider.rect.Width > 0 && divider.rect.Height > 0, "the divider must have a size")
 
-	seam := findTestSeam(regions, traits.node, regions.leafFor(gurps.BlockSkillsKey).node)
+	seam := findTestSeam(regions, traits.node, leafOnPage(t, regions, gurps.BlockSkillsKey).node)
 	c.NotNil(seam, "the traits and skills blocks must have a seam between them")
 	c.True(seam.vertical, "two blocks side by side have a seam that runs up and down")
 	c.Equal(layoutSeamThickness, seam.rect.Width, "the seam must be a strip of the standard thickness")
@@ -860,10 +869,8 @@ func TestMoveBlockByDragging(t *testing.T) {
 	mgr := sheet.UndoManager()
 	before := sheet.Entity().SheetSettings.Layout.VisibleKeys()
 	regions := editor.ensureRegions()
-	spells := regions.leafFor(gurps.BlockSpellsKey)
-	c.NotNil(spells, "the spells block must be on the page")
-	notes := regions.leafFor(gurps.BlockNotesKey)
-	c.NotNil(notes, "the notes block must be on the page")
+	spells := leafOnPage(t, regions, gurps.BlockSpellsKey)
+	notes := leafOnPage(t, regions, gurps.BlockNotesKey)
 
 	counter.count = 0
 	editor.beginBlockDrag(gurps.BlockSpellsKey, spells.rect.Center())
@@ -894,10 +901,8 @@ func TestMoveBlockBesideAColumn(t *testing.T) {
 	sheet, editor := newTestSheetForLayoutEditing(t)
 	layout := sheet.Entity().SheetSettings.Layout
 	regions := editor.ensureRegions()
-	primary := regions.leafFor(gurps.BlockPrimaryAttributesKey)
-	c.NotNil(primary, "the primary attributes block must be on the page")
-	body := regions.leafFor(gurps.BlockBodyKey)
-	c.NotNil(body, "the body type block must be on the page")
+	primary := leafOnPage(t, regions, gurps.BlockPrimaryAttributesKey)
+	body := leafOnPage(t, regions, gurps.BlockBodyKey)
 	column := layout.Root.Children[1].Children[0]
 	c.Equal(layoutnode.Column, column.Type,
 		"the primary attributes block's column must be the first thing in the second band")
@@ -924,12 +929,9 @@ func TestMoveBlockBesideARow(t *testing.T) {
 	sheet, editor := newTestSheetForLayoutEditing(t)
 	layout := sheet.Entity().SheetSettings.Layout
 	regions := editor.ensureRegions()
-	identity := regions.leafFor(gurps.BlockIdentityKey)
-	c.NotNil(identity, "the identity block must be on the page")
-	description := regions.leafFor(gurps.BlockDescriptionKey)
-	c.NotNil(description, "the description block must be on the page")
-	lifting := regions.leafFor(gurps.BlockLiftingKey)
-	c.NotNil(lifting, "the lifting block must be on the page")
+	identity := leafOnPage(t, regions, gurps.BlockIdentityKey)
+	description := leafOnPage(t, regions, gurps.BlockDescriptionKey)
+	lifting := leafOnPage(t, regions, gurps.BlockLiftingKey)
 	row := layout.Root.Children[0].Children[1].Children[0]
 	c.Equal(layoutnode.Row, row.Type, "the identity block's row must be the first thing in its column")
 
@@ -956,8 +958,7 @@ func TestBlockDroppedWhereItStartedChangesNothing(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
 	counter := installSyncCounter(sheet)
-	spells := editor.ensureRegions().leafFor(gurps.BlockSpellsKey)
-	c.NotNil(spells, "the spells block must be on the page")
+	spells := leafOnPage(t, editor.ensureRegions(), gurps.BlockSpellsKey)
 
 	counter.count = 0
 	editor.beginBlockDrag(gurps.BlockSpellsKey, spells.rect.Center())
@@ -1015,8 +1016,7 @@ func TestBottomEdgeDragSetsMinimumHeight(t *testing.T) {
 	sheet, editor := newTestSheetForLayoutEditing(t)
 	counter := installSyncCounter(sheet)
 	mgr := sheet.UndoManager()
-	notes := editor.ensureRegions().leafFor(gurps.BlockNotesKey)
-	c.NotNil(notes, "the notes block must be on the page")
+	notes := leafOnPage(t, editor.ensureRegions(), gurps.BlockNotesKey)
 	natural := notes.naturalHeight
 	node, _, _ := sheet.Entity().SheetSettings.Layout.Find(gurps.BlockNotesKey)
 	c.NotNil(node, "the notes block must be in the tree")
@@ -1257,10 +1257,7 @@ func newTestSheetWithLeafBands(t *testing.T, keys ...string) (*Sheet, *sheetLayo
 // dragBlockTo picks the block with the given key up from the middle of wherever it is and drops it at the given point.
 func dragBlockTo(t *testing.T, editor *sheetLayoutEditor, key string, where geom.Point) {
 	t.Helper()
-	leaf := editor.ensureRegions().leafFor(key)
-	if leaf == nil {
-		t.Fatalf("the %q block must be on the page to be dragged", key)
-	}
+	leaf := leafOnPage(t, editor.ensureRegions(), key)
 	editor.beginBlockDrag(key, leaf.rect.Center())
 	editor.endBlockDrag(where)
 }
@@ -1268,6 +1265,42 @@ func dragBlockTo(t *testing.T, editor *sheetLayoutEditor, key string, where geom
 // layoutTreeOf returns the sheet's block layout tree in the form gurps.SheetLayoutNode.String renders.
 func layoutTreeOf(sheet *Sheet) string {
 	return sheet.Entity().SheetSettings.Layout.Root.String()
+}
+
+// seamBetween returns the editor's regions, the regions of the two blocks with the given keys and the seam that lies
+// between those two, ending the test if any of the three is missing.
+func seamBetween(t *testing.T, editor *sheetLayoutEditor, firstKey, secondKey string) (regions *layoutRegions,
+	first, second *layoutLeafRegion, seam *layoutSeamRegion,
+) {
+	t.Helper()
+	regions = editor.ensureRegions()
+	first = leafOnPage(t, regions, firstKey)
+	second = leafOnPage(t, regions, secondKey)
+	if seam = findTestSeam(regions, first.node, second.node); seam == nil {
+		t.Fatalf("the %q and %q blocks must have a seam between them", firstKey, secondKey)
+	}
+	return regions, first, second, seam
+}
+
+// checkSingleLayoutEdit drops the block with the given key at the given point and verifies that the drop syncs the
+// sheet exactly once, turns the layout tree from before into after, and is a single undoable edit that undo and redo
+// take back and forth. The description names the gesture, as in "straddling two bands".
+func checkSingleLayoutEdit(t *testing.T, c check.Checker, sheet *Sheet, editor *sheetLayoutEditor, key string,
+	where geom.Point, before, after, what string,
+) {
+	t.Helper()
+	counter := installSyncCounter(sheet)
+	counter.count = 0
+	dragBlockTo(t, editor, key, where)
+	c.Equal(1, counter.count, "%s must sync the sheet exactly once", what)
+	c.Equal(after, layoutTreeOf(sheet), "%s must leave the layout the way the drop asked for", what)
+
+	mgr := sheet.UndoManager()
+	c.Equal(1, undoEditCount(mgr), "%s must be one undoable edit", what)
+	mgr.Undo()
+	c.Equal(before, layoutTreeOf(sheet), "undo must put the layout back the way it was before %s", what)
+	mgr.Redo()
+	c.Equal(after, layoutTreeOf(sheet), "redo must put the layout back the way %s left it", what)
 }
 
 // TestDropDeepInsideABandStacksTheTwoIntoOneBand verifies that a block dropped on the half of a full-width band that is
@@ -1280,8 +1313,7 @@ func TestDropDeepInsideABandStacksTheTwoIntoOneBand(t *testing.T) {
 	sheet, editor := newTestSheetWithLeafBands(t, gurps.BlockTraitsKey, gurps.BlockSkillsKey, gurps.BlockNotesKey)
 	c.Equal("column[traits skills notes]", layoutTreeOf(sheet), "each block must start out as a band of its own")
 	regions := editor.ensureRegions()
-	traits := regions.leafFor(gurps.BlockTraitsKey)
-	c.NotNil(traits, "the traits block must be on the page")
+	traits := leafOnPage(t, regions, gurps.BlockTraitsKey)
 	c.True(traits.isRootBand, "the traits block must be a band of its own")
 	c.True(traits.rect.Height > 2*layoutEdgeLadderStep, "the band must be deep enough to have an inside")
 
@@ -1308,8 +1340,7 @@ func TestDropDeepInsideABandStacksTheTwoIntoOneBand(t *testing.T) {
 
 	// The group is a container like any other, so its edge can be dropped against, which is the point of making one.
 	regions = editor.ensureRegions()
-	traits = regions.leafFor(gurps.BlockTraitsKey)
-	c.NotNil(traits, "the traits block must still be on the page")
+	traits = leafOnPage(t, regions, gurps.BlockTraitsKey)
 	c.False(traits.isRootBand, "the traits block is now inside the band group rather than being a band itself")
 	group := sheet.Entity().SheetSettings.Layout.Root.Children[0]
 	beside := geom.NewPoint(traits.rect.X+layoutEdgeLadderStep/4, traits.rect.CenterY())
@@ -1342,21 +1373,18 @@ func TestDropAtTheEdgeOfABandGroupStillMakesANewBand(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetWithLeafBands(t, gurps.BlockTraitsKey, gurps.BlockSkillsKey, gurps.BlockSpellsKey,
 		gurps.BlockNotesKey)
-	traits := editor.ensureRegions().leafFor(gurps.BlockTraitsKey)
-	c.NotNil(traits, "the traits block must be on the page")
+	traits := leafOnPage(t, editor.ensureRegions(), gurps.BlockTraitsKey)
 	dragBlockTo(t, editor, gurps.BlockSkillsKey,
 		geom.NewPoint(traits.rect.CenterX(), traits.rect.Bottom()-3*layoutEdgeLadderStep/2))
 	c.Equal("column[column[traits skills] spells notes]", layoutTreeOf(sheet), "the first two blocks must be a group")
 
 	regions := editor.ensureRegions()
-	skills := regions.leafFor(gurps.BlockSkillsKey)
-	c.NotNil(skills, "the skills block must be on the page")
+	skills := leafOnPage(t, regions, gurps.BlockSkillsKey)
 	c.Equal(1, len(skills.ancestors), "the skills block sits inside the group alone")
 	group := &regions.containers[skills.ancestors[0]]
 	c.True(group.isRootBand, "the group must be a band of the page")
 
-	spells := regions.leafFor(gurps.BlockSpellsKey)
-	c.NotNil(spells, "the spells block must be on the page")
+	spells := leafOnPage(t, regions, gurps.BlockSpellsKey)
 	where := geom.NewPoint(skills.rect.CenterX(), skills.rect.Bottom()-layoutEdgeLadderStep/4)
 	target := resolveDropTarget(regions, where, gurps.BlockNotesKey)
 	c.Equal(dropAsBand, target.kind, "the bottom of the group is the bottom of the last block stacked in it")
@@ -1377,13 +1405,7 @@ func TestStraddleTwoBandsFromTheSeamBetweenThem(t *testing.T) {
 	sheet, editor := newTestSheetWithLeafBands(t, gurps.BlockTraitsKey, gurps.BlockSkillsKey, gurps.BlockNotesKey,
 		gurps.BlockSpellsKey)
 	c.Equal("column[traits skills notes spells]", layoutTreeOf(sheet), "each block must start out as a band of its own")
-	regions := editor.ensureRegions()
-	traits := regions.leafFor(gurps.BlockTraitsKey)
-	c.NotNil(traits, "the traits block must be on the page")
-	skills := regions.leafFor(gurps.BlockSkillsKey)
-	c.NotNil(skills, "the skills block must be on the page")
-	seam := findTestSeam(regions, traits.node, skills.node)
-	c.NotNil(seam, "the traits and skills bands must have a seam between them")
+	regions, traits, skills, seam := seamBetween(t, editor, gurps.BlockTraitsKey, gurps.BlockSkillsKey)
 	span := traits.rect.Union(skills.rect)
 	c.Equal(span, seam.spanRect, "the seam must span both of the bands it lies between")
 
@@ -1396,20 +1418,8 @@ func TestStraddleTwoBandsFromTheSeamBetweenThem(t *testing.T) {
 	c.Equal(edgeHalf(span, layoutedge.Left), target.highlight, "the left half of the pair together is lit up")
 	c.False(target.bar, "a block that spans a pair is shown as an area rather than as a bar")
 
-	counter := installSyncCounter(sheet)
-	counter.count = 0
-	dragBlockTo(t, editor, gurps.BlockNotesKey, where)
-	c.Equal(1, counter.count, "straddling two bands must sync the sheet exactly once")
-	c.Equal("column[row[notes column[traits skills]] spells]", layoutTreeOf(sheet),
-		"the two bands must have become one group with the block beside it")
-
-	mgr := sheet.UndoManager()
-	c.Equal(1, undoEditCount(mgr), "straddling two bands must be one undoable edit")
-	mgr.Undo()
-	c.Equal("column[traits skills notes spells]", layoutTreeOf(sheet), "undo must take the two bands back apart")
-	mgr.Redo()
-	c.Equal("column[row[notes column[traits skills]] spells]", layoutTreeOf(sheet),
-		"redo must put the block back beside the pair")
+	checkSingleLayoutEdit(t, c, sheet, editor, gurps.BlockNotesKey, where, "column[traits skills notes spells]",
+		"column[row[notes column[traits skills]] spells]", "straddling two bands")
 }
 
 // TestDropBetweenTwoBandsFromTheSeamBetweenThem verifies that dropping a block on the middle of the seam between two of
@@ -1418,13 +1428,7 @@ func TestDropBetweenTwoBandsFromTheSeamBetweenThem(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetWithLeafBands(t, gurps.BlockTraitsKey, gurps.BlockSkillsKey, gurps.BlockNotesKey,
 		gurps.BlockSpellsKey)
-	regions := editor.ensureRegions()
-	traits := regions.leafFor(gurps.BlockTraitsKey)
-	c.NotNil(traits, "the traits block must be on the page")
-	skills := regions.leafFor(gurps.BlockSkillsKey)
-	c.NotNil(skills, "the skills block must be on the page")
-	seam := findTestSeam(regions, traits.node, skills.node)
-	c.NotNil(seam, "the traits and skills bands must have a seam between them")
+	regions, _, _, seam := seamBetween(t, editor, gurps.BlockTraitsKey, gurps.BlockSkillsKey)
 
 	where := geom.NewPoint(seam.rect.CenterX(), seam.rect.CenterY())
 	target := resolveDropTarget(regions, where, gurps.BlockSpellsKey)
@@ -1433,19 +1437,8 @@ func TestDropBetweenTwoBandsFromTheSeamBetweenThem(t *testing.T) {
 	c.Equal(layoutBandBar(regions.pageRect, seam.rect.CenterY()), target.highlight,
 		"a new band is shown as a bar across the page")
 
-	counter := installSyncCounter(sheet)
-	counter.count = 0
-	dragBlockTo(t, editor, gurps.BlockSpellsKey, where)
-	c.Equal(1, counter.count, "coming between two bands must sync the sheet exactly once")
-	c.Equal("column[traits spells skills notes]", layoutTreeOf(sheet),
-		"the block must become a plain band between the two of them")
-
-	mgr := sheet.UndoManager()
-	c.Equal(1, undoEditCount(mgr), "coming between two bands must be one undoable edit")
-	mgr.Undo()
-	c.Equal("column[traits skills notes spells]", layoutTreeOf(sheet), "undo must put the block back where it was")
-	mgr.Redo()
-	c.Equal("column[traits spells skills notes]", layoutTreeOf(sheet), "redo must put the block back between them")
+	checkSingleLayoutEdit(t, c, sheet, editor, gurps.BlockSpellsKey, where, "column[traits skills notes spells]",
+		"column[traits spells skills notes]", "coming between two bands")
 }
 
 // TestStraddleTwoBlocksSideBySideFromTheSeamBetweenThem verifies that dropping a block on one end of the seam between
@@ -1457,13 +1450,7 @@ func TestStraddleTwoBlocksSideBySideFromTheSeamBetweenThem(t *testing.T) {
 			testBlockNode(gurps.BlockSkillsKey, fxp.One)),
 		testBlockNode(gurps.BlockNotesKey, fxp.One))
 	c.Equal("column[row[traits skills] notes]", layoutTreeOf(sheet), "the first band must be a row of two blocks")
-	regions := editor.ensureRegions()
-	traits := regions.leafFor(gurps.BlockTraitsKey)
-	c.NotNil(traits, "the traits block must be on the page")
-	skills := regions.leafFor(gurps.BlockSkillsKey)
-	c.NotNil(skills, "the skills block must be on the page")
-	seam := findTestSeam(regions, traits.node, skills.node)
-	c.NotNil(seam, "the traits and skills blocks must have a seam between them")
+	regions, traits, skills, seam := seamBetween(t, editor, gurps.BlockTraitsKey, gurps.BlockSkillsKey)
 	c.True(seam.vertical, "two blocks side by side have a seam that runs up and down")
 	span := traits.rect.Union(skills.rect)
 
@@ -1473,19 +1460,8 @@ func TestStraddleTwoBlocksSideBySideFromTheSeamBetweenThem(t *testing.T) {
 	c.Equal(layoutedge.Top, target.edge)
 	c.Equal(edgeHalf(span, layoutedge.Top), target.highlight, "the top half of the pair together is lit up")
 
-	counter := installSyncCounter(sheet)
-	counter.count = 0
-	dragBlockTo(t, editor, gurps.BlockNotesKey, where)
-	c.Equal(1, counter.count, "straddling two blocks must sync the sheet exactly once")
-	c.Equal("column[column[notes row[traits skills]]]", layoutTreeOf(sheet),
-		"the block must span the width of both, which the band becomes a group to hold")
-
-	mgr := sheet.UndoManager()
-	c.Equal(1, undoEditCount(mgr), "straddling two blocks must be one undoable edit")
-	mgr.Undo()
-	c.Equal("column[row[traits skills] notes]", layoutTreeOf(sheet), "undo must put the block back where it was")
-	mgr.Redo()
-	c.Equal("column[column[notes row[traits skills]]]", layoutTreeOf(sheet), "redo must put the block back above them")
+	checkSingleLayoutEdit(t, c, sheet, editor, gurps.BlockNotesKey, where, "column[row[traits skills] notes]",
+		"column[column[notes row[traits skills]]]", "straddling two blocks")
 }
 
 // TestDropBetweenTwoBlocksSideBySideFromTheSeamBetweenThem verifies that dropping a block on the middle of the seam
@@ -1496,13 +1472,7 @@ func TestDropBetweenTwoBlocksSideBySideFromTheSeamBetweenThem(t *testing.T) {
 		testContainerNode(layoutnode.Row, fxp.One, testBlockNode(gurps.BlockTraitsKey, fxp.One),
 			testBlockNode(gurps.BlockSkillsKey, fxp.One)),
 		testBlockNode(gurps.BlockNotesKey, fxp.One))
-	regions := editor.ensureRegions()
-	traits := regions.leafFor(gurps.BlockTraitsKey)
-	c.NotNil(traits, "the traits block must be on the page")
-	skills := regions.leafFor(gurps.BlockSkillsKey)
-	c.NotNil(skills, "the skills block must be on the page")
-	seam := findTestSeam(regions, traits.node, skills.node)
-	c.NotNil(seam, "the traits and skills blocks must have a seam between them")
+	regions, traits, _, seam := seamBetween(t, editor, gurps.BlockTraitsKey, gurps.BlockSkillsKey)
 
 	where := geom.NewPoint(seam.rect.CenterX(), seam.rect.CenterY())
 	target := resolveDropTarget(regions, where, gurps.BlockNotesKey)
@@ -1512,29 +1482,15 @@ func TestDropBetweenTwoBlocksSideBySideFromTheSeamBetweenThem(t *testing.T) {
 	c.True(target.bar, "coming between two things is shown as a bar rather than as an area")
 	c.Equal(layoutSeamBar(seam), target.highlight, "the bar sits on the seam and reaches no further than the pair")
 
-	counter := installSyncCounter(sheet)
-	counter.count = 0
-	dragBlockTo(t, editor, gurps.BlockNotesKey, where)
-	c.Equal(1, counter.count, "coming between two blocks must sync the sheet exactly once")
-	c.Equal("column[row[traits notes skills]]", layoutTreeOf(sheet), "the block must have joined the row between them")
-
-	mgr := sheet.UndoManager()
-	c.Equal(1, undoEditCount(mgr), "coming between two blocks must be one undoable edit")
-	mgr.Undo()
-	c.Equal("column[row[traits skills] notes]", layoutTreeOf(sheet), "undo must put the block back where it was")
-	mgr.Redo()
-	c.Equal("column[row[traits notes skills]]", layoutTreeOf(sheet), "redo must put the block back between them")
+	checkSingleLayoutEdit(t, c, sheet, editor, gurps.BlockNotesKey, where, "column[row[traits skills] notes]",
+		"column[row[traits notes skills]]", "coming between two blocks")
 }
 
 // portraitContentSize returns the size of the portrait's picture area, which is the block's content rect: its frame
 // less the insets of its titled border.
 func portraitContentSize(t *testing.T, editor *sheetLayoutEditor) geom.Size {
 	t.Helper()
-	leaf := editor.ensureRegions().leafFor(gurps.BlockPortraitKey)
-	if leaf == nil {
-		t.Fatal("the portrait block must be on the page")
-	}
-	return leaf.panel.ContentRect(false).Size
+	return leafOnPage(t, editor.ensureRegions(), gurps.BlockPortraitKey).panel.ContentRect(false).Size
 }
 
 // nearlySquare returns true if the given picture area is square to within a page pixel, which is as near as the
@@ -1618,9 +1574,7 @@ func TestSquarePortraitAloneInABandSetsItsHeight(t *testing.T) {
 	counter := installSyncCounter(sheet)
 	before := portraitContentSize(t, editor)
 	c.True(before.Width > before.Height+1, "the portrait must start out wider than it is tall, but was %v", before)
-	leaf := editor.ensureRegions().leafFor(gurps.BlockPortraitKey)
-	c.NotNil(leaf, "the portrait block must be on the page")
-	insets := leaf.panel.Border().Insets()
+	insets := leafOnPage(t, editor.ensureRegions(), gurps.BlockPortraitKey).panel.Border().Insets()
 
 	counter.count = 0
 	editor.squarePortrait()
@@ -1702,8 +1656,7 @@ func TestDividerDragBesideTheSquarePortraitTakesOverTheWidth(t *testing.T) {
 func TestBottomEdgeDragKeepsTheSquarePortraitSquare(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
-	leaf := editor.ensureRegions().leafFor(gurps.BlockPortraitKey)
-	c.NotNil(leaf, "the portrait block must be on the page")
+	leaf := leafOnPage(t, editor.ensureRegions(), gurps.BlockPortraitKey)
 	before := portraitContentSize(t, editor)
 	c.True(nearlySquare(before), "the picture area must start out square, but was %v", before)
 	// A copy is taken, since the regions are thrown away the moment the drag moves anything.
@@ -1731,8 +1684,7 @@ func TestSquarePortraitButton(t *testing.T) {
 			testBlockNode(gurps.BlockIdentityKey, fxp.One)))
 	counter := installSyncCounter(sheet)
 	regions := editor.ensureRegions()
-	portrait := regions.leafFor(gurps.BlockPortraitKey)
-	c.NotNil(portrait, "the portrait block must be on the page")
+	portrait := leafOnPage(t, regions, gurps.BlockPortraitKey)
 	for i := range regions.leaves {
 		leaf := &regions.leaves[i]
 		c.Equal(leaf.key == gurps.BlockPortraitKey, !leaf.squareRect.Empty(),

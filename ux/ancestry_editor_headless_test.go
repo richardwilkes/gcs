@@ -196,40 +196,9 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	captureScreen(t, c, screen, "ancestry_editor")
 
 	// Save through the toolbar. A new ancestry has no file, so the pure-Go save dialog comes up, offering the user
-	// library's ancestries folder and the ancestry's name as the file name.
-	var saveButton *unison.Button
-	screen.Do(func() {
-		saveButton = d.saveButton
-		saveEnabled = saveButton.Enabled()
-	})
-	c.True(saveEnabled, "the edited ancestry can be saved")
-	screen.Click(screen.PanelCenter(saveButton))
-	dialogWnd, _ := modalDialog(t, screen, wnd)
-	fileNameField, fileName, dirName := saveDialogFields(t, screen, dialogWnd)
-	c.Equal("Elf", fileName, "the ancestry's name is offered as the file name")
-	c.Equal(gurps.AncestriesDirName, dirName, "the dialog opens in the user library's ancestries folder")
-	screen.Click(screen.PanelCenter(fileNameField))
-	screen.KeyPress(unison.KeyReturn, mod.None)
-	savedPath := filepath.Join(user.AncestriesPath(), "Elf"+gurps.AncestryExt)
-	var path, tooltip string
-	var hash uint64
-	var windows int
-	screen.Do(func() {
-		windows = len(unison.Windows())
-		path = d.path
-		modified = d.Modified()
-		saveEnabled = d.saveButton.Enabled()
-		title = d.Title()
-		tooltip = d.Tooltip()
-		hash = gurps.Hash64(d.model)
-	})
-	c.Equal(1, windows, "the save dialog has been dismissed")
-	c.Equal(savedPath, path, "the editor records where the file was saved")
-	c.False(modified, "the saved ancestry is unmodified")
-	c.False(saveEnabled, "saving disables Save")
-	c.Equal("Ancestry: Elf", title)
-	c.Equal(savedPath, tooltip, "the tooltip shows the path")
-	loaded := loadSavedFile(t, c, savedPath, gurps.NewAncestryFromFile)
+	// library's ancestries folder and the ancestry's name as the file name, which is accepted as it stands.
+	savedPath, loaded, _ := saveNewFileEditor(t, c, screen, wnd, &d.fileEditorDockable, "Ancestry", "Elf", "",
+		gurps.AncestryExt, gurps.NewAncestryFromFile)
 	c.Equal("Elf", loaded.Name)
 
 	// Save As is always available and always prompts, opening in the directory of the current file with its name
@@ -243,10 +212,12 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	screen.Do(func() { saveAsEnabled = saveAsButton.Enabled() })
 	c.True(saveAsEnabled, "Save As is available even when the ancestry is unmodified")
 	screen.Click(screen.PanelCenter(saveAsButton))
-	dialogWnd, _ = modalDialog(t, screen, wnd)
-	_, fileName, _ = saveDialogFields(t, screen, dialogWnd)
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	_, fileName, _ := saveDialogFields(t, screen, dialogWnd)
 	c.Equal("Elf", fileName, "Save As offers the current file name")
 	screen.KeyPress(unison.KeyEscape, mod.None)
+	var path string
+	var windows int
 	screen.Do(func() {
 		windows = len(unison.Windows())
 		path = d.path
@@ -261,7 +232,6 @@ func TestAncestryEditorHeadless(t *testing.T) {
 		c.Equal(3, loaded.CommonOptions.HairOptions[0].Weight)
 		c.Equal("Silver", loaded.CommonOptions.HairOptions[0].Value)
 	}
-	c.Equal(hash, gurps.Hash64(loaded), "the file holds exactly what the editor holds")
 
 	// Change the name, then choose the saved file from the toolbar menu's library list. The editor already shows that
 	// file, so the choice brings it forward and changes nothing, not even the edit in progress. The name is at the top

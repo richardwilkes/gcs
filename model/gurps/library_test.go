@@ -53,44 +53,30 @@ func TestLibraryConcurrentAccess(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
 	lib := NewLibrary("Test", "someone", "token", "repo", filepath.Join(dir, "p0"))
-	stop := make(chan struct{})
-	var wg sync.WaitGroup
-	for range 4 {
-		wg.Go(func() {
-			for {
-				select {
-				case <-stop:
-					return
-				default:
-				}
-				_ = lib.Data()
-				_ = lib.Config()
-				_ = lib.Favorites()
-				_ = lib.Key()
-				_ = lib.Valid()
-				_ = lib.IsMaster()
-				_ = lib.IsUser()
-				_ = lib.Path()
-				_ = lib.VersionOnDisk()
-				_, _ = lib.AvailableReleases()
-			}
-		})
-	}
-	wg.Go(func() {
-		defer close(stop)
-		for i := range 100 {
-			lib.Configure(LibraryConfig{
-				Title:             fmt.Sprintf("Test %d", i),
-				GitHubAccountName: "someone",
-				AccessToken:       "token",
-				RepoName:          "repo",
-				UseLatest:         i%2 == 0,
-			})
-			lib.ToggleFavorite(fmt.Sprintf("f%d.gcs", i))
-			c.NoError(lib.SetPath(filepath.Join(dir, fmt.Sprintf("p%d", i%3))))
-		}
+	stop := spinUntilStopped(4, func() {
+		_ = lib.Data()
+		_ = lib.Config()
+		_ = lib.Favorites()
+		_ = lib.Key()
+		_ = lib.Valid()
+		_ = lib.IsMaster()
+		_ = lib.IsUser()
+		_ = lib.Path()
+		_ = lib.VersionOnDisk()
+		_, _ = lib.AvailableReleases()
 	})
-	wg.Wait()
+	for i := range 100 {
+		lib.Configure(LibraryConfig{
+			Title:             fmt.Sprintf("Test %d", i),
+			GitHubAccountName: "someone",
+			AccessToken:       "token",
+			RepoName:          "repo",
+			UseLatest:         i%2 == 0,
+		})
+		lib.ToggleFavorite(fmt.Sprintf("f%d.gcs", i))
+		c.NoError(lib.SetPath(filepath.Join(dir, fmt.Sprintf("p%d", i%3))))
+	}
+	stop()
 	data := lib.Data()
 	c.Equal("Test 99", data.Title)
 	c.Equal(filepath.Join(dir, "p0"), data.PathOnDisk)
@@ -795,22 +781,10 @@ func TestCheckForAvailableUpgradeJoinsACheckInFlight(t *testing.T) {
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	first := make(chan struct{})
-	go func() {
-		defer close(first)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
+	first := startUpgradeCheck(t.Context(), lib, client)
 	<-srv.started
-	second := make(chan struct{})
-	go func() {
-		defer close(second)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
-	select {
-	case <-second:
-		t.Fatal("the second check must wait for the first rather than return at once")
-	case <-time.After(50 * time.Millisecond):
-	}
+	second := startUpgradeCheck(t.Context(), lib, client)
+	checkStillWaiting(t, second)
 	c.True(lib.NeedsUpgradeCheck(), "a check in flight doesn't yet satisfy the need for one")
 	srv.release()
 	<-first
@@ -821,14 +795,7 @@ func TestCheckForAvailableUpgradeJoinsACheckInFlight(t *testing.T) {
 	c.Equal(1, len(releases))
 
 	// Once the check is over, the next one is a check of its own.
-	third := make(chan struct{})
-	go func() {
-		defer close(third)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
-	<-srv.started
-	srv.release()
-	<-third
+	runUpgradeCheck(t, lib, client, srv)
 	c.Equal(int64(2), srv.requests.Load())
 }
 
@@ -841,11 +808,7 @@ func TestCheckForAvailableUpgradeWaiterHonorsItsContext(t *testing.T) {
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	first := make(chan struct{})
-	go func() {
-		defer close(first)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
+	first := startUpgradeCheck(t.Context(), lib, client)
 	<-srv.started
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
@@ -867,11 +830,7 @@ func TestConfigureDiscardsACheckInFlight(t *testing.T) {
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
+	done := startUpgradeCheck(t.Context(), lib, client)
 	<-srv.started
 	config := lib.Config()
 	config.RepoName = "other"
@@ -884,14 +843,7 @@ func TestConfigureDiscardsACheckInFlight(t *testing.T) {
 	c.Equal(int64(0), calls.Load(), "a discarded check has nothing to announce")
 
 	// The next check is of the new repository, and lands as usual.
-	done = make(chan struct{})
-	go func() {
-		defer close(done)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
-	<-srv.started
-	srv.release()
-	<-done
+	runUpgradeCheck(t, lib, client, srv)
 	c.False(lib.NeedsUpgradeCheck(), "the check of the new repository must complete")
 	c.Equal(int64(1), calls.Load())
 }
@@ -906,14 +858,7 @@ func TestConfigureForKeyDiscardsChecksOfTheOldRepository(t *testing.T) {
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
-	<-srv.started
-	srv.release()
-	<-done
+	runUpgradeCheck(t, lib, client, srv)
 	c.False(lib.NeedsUpgradeCheck())
 	_, releases := lib.AvailableReleases()
 	c.Equal(1, len(releases))
@@ -931,11 +876,7 @@ func TestConfigureForKeyDiscardsChecksOfTheOldRepository(t *testing.T) {
 	c.Equal(0, len(releases), "changing the key must discard the old repository's releases")
 
 	// A check that was under way when the key changed is discarded when it finishes.
-	done = make(chan struct{})
-	go func() {
-		defer close(done)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
+	done := startUpgradeCheck(t.Context(), lib, client)
 	<-srv.started
 	c.NoError(lib.ConfigureForKey("someone/another"))
 	srv.release()
@@ -982,11 +923,7 @@ func TestSetPathDiscardsACheckInFlight(t *testing.T) {
 	current, _ := lib.AvailableReleases()
 	c.Equal("4", current)
 
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
+	done := startUpgradeCheck(t.Context(), lib, client)
 	<-srv.started
 	c.NoError(lib.SetPath(newDir))
 	current, _ = lib.AvailableReleases()
@@ -1000,11 +937,7 @@ func TestSetPathDiscardsACheckInFlight(t *testing.T) {
 	c.Equal(int64(0), calls.Load(), "a discarded check has nothing to announce")
 
 	// Re-applying the same path is not a change, so a check that spans it lands as usual.
-	done = make(chan struct{})
-	go func() {
-		defer close(done)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
+	done = startUpgradeCheck(t.Context(), lib, client)
 	<-srv.started
 	c.NoError(lib.SetPath(newDir))
 	srv.release()
@@ -1042,11 +975,7 @@ func TestDownloadDiscardsACheckInFlight(t *testing.T) {
 		{name: "failed download", status: http.StatusInternalServerError, version: "4"},
 		{name: "successful download", status: http.StatusOK, version: "5"},
 	} {
-		done := make(chan struct{})
-		go func() {
-			defer close(done)
-			lib.CheckForAvailableUpgrade(t.Context(), client)
-		}()
+		done := startUpgradeCheck(t.Context(), lib, client)
 		<-srv.started
 		archive.status.Store(int64(one.status))
 		err := lib.Download(t.Context(), archive.client, &Release{Version: "5", ZipFileURL: archive.url}, nil)
@@ -1071,14 +1000,7 @@ func TestDownloadDiscardsACheckInFlight(t *testing.T) {
 	c.Equal(libraryArchiveFileContent, string(content), "the successful download must have installed the content")
 
 	// With the download over, a check lands as usual and finds the library current.
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
-	<-srv.started
-	srv.release()
-	<-done
+	runUpgradeCheck(t, lib, client, srv)
 	c.False(lib.NeedsUpgradeCheck())
 	current, releases := lib.AvailableReleases()
 	c.Equal("5", current)
@@ -1097,25 +1019,13 @@ func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded(t *testi
 
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	first := make(chan struct{})
-	go func() {
-		defer close(first)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
+	first := startUpgradeCheck(t.Context(), lib, client)
 	<-srv.started
 	config := lib.Config()
 	config.RepoName = "other"
 	lib.Configure(config)
-	second := make(chan struct{})
-	go func() {
-		defer close(second)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
-	select {
-	case <-second:
-		t.Fatal("the second check must wait for the first rather than return at once")
-	case <-time.After(50 * time.Millisecond):
-	}
+	second := startUpgradeCheck(t.Context(), lib, client)
+	checkStillWaiting(t, second)
 	c.Equal(int64(1), srv.requests.Load(), "the second check must not ask while the first is still in flight")
 	srv.release()
 	<-first
@@ -1149,22 +1059,10 @@ func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsCanceled(t *testin
 	client, srv := newBlockingReleasesServer(t, "5")
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
 	ctx, cancel := context.WithCancel(t.Context())
-	first := make(chan struct{})
-	go func() {
-		defer close(first)
-		lib.CheckForAvailableUpgrade(ctx, client)
-	}()
+	first := startUpgradeCheck(ctx, lib, client)
 	<-srv.started
-	second := make(chan struct{})
-	go func() {
-		defer close(second)
-		lib.CheckForAvailableUpgrade(t.Context(), client)
-	}()
-	select {
-	case <-second:
-		t.Fatal("the second check must wait for the first rather than return at once")
-	case <-time.After(50 * time.Millisecond):
-	}
+	second := startUpgradeCheck(t.Context(), lib, client)
+	checkStillWaiting(t, second)
 	cancel()
 	<-first
 	c.True(lib.NeedsUpgradeCheck(), "a canceled check doesn't count as a completed one")
@@ -1181,22 +1079,10 @@ func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsCanceled(t *testin
 	unreachable := &blockingFailingTransport{started: make(chan struct{}, 16), releases: make(chan struct{}, 16)}
 	failing := &http.Client{Transport: unreachable}
 	other := NewLibrary("Other", "someone", "", "repo", t.TempDir())
-	first = make(chan struct{})
-	go func() {
-		defer close(first)
-		other.CheckForAvailableUpgrade(t.Context(), failing)
-	}()
+	first = startUpgradeCheck(t.Context(), other, failing)
 	<-unreachable.started
-	second = make(chan struct{})
-	go func() {
-		defer close(second)
-		other.CheckForAvailableUpgrade(t.Context(), failing)
-	}()
-	select {
-	case <-second:
-		t.Fatal("the second check must wait for the first rather than return at once")
-	case <-time.After(50 * time.Millisecond):
-	}
+	second = startUpgradeCheck(t.Context(), other, failing)
+	checkStillWaiting(t, second)
 	unreachable.releases <- struct{}{}
 	<-first
 	<-second
@@ -1229,29 +1115,13 @@ func TestNotifyOfLibraryChangeConcurrent(t *testing.T) {
 	c := check.New(t)
 	isolateLibraryChangeNotification(t)
 
-	stop := make(chan struct{})
-	var wg sync.WaitGroup
-	for range 4 {
-		wg.Go(func() {
-			for {
-				select {
-				case <-stop:
-					return
-				default:
-				}
-				NotifyOfLibraryChange()
-			}
-		})
-	}
+	stop := spinUntilStopped(4, NotifyOfLibraryChange)
 	var calls atomic.Int64
-	wg.Go(func() {
-		defer close(stop)
-		for range 100 {
-			SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
-			SetNotifyOfLibraryChangeFunc(nil)
-		}
-	})
-	wg.Wait()
+	for range 100 {
+		SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
+		SetNotifyOfLibraryChangeFunc(nil)
+	}
+	stop()
 
 	// Whatever interleaving occurred, the notification state must still be usable afterwards.
 	resetLibraryChangeNotification()
@@ -1310,6 +1180,39 @@ func countLibraryChangeNotifications(t *testing.T) *atomic.Int64 {
 	var calls atomic.Int64
 	SetNotifyOfLibraryChangeFunc(func() { calls.Add(1) })
 	return &calls
+}
+
+// startUpgradeCheck runs an upgrade check for the library on a goroutine of its own, as the launch-time and periodic
+// checks do, returning a channel that is closed once the check has returned.
+func startUpgradeCheck(ctx context.Context, lib *Library, client *http.Client) <-chan struct{} {
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		lib.CheckForAvailableUpgrade(ctx, client)
+	}()
+	return done
+}
+
+// checkStillWaiting fails the test if the check behind done has already returned, allowing it a moment to do so. It
+// stands for the "a check made while another is under way waits for that one" half of the joining contract; that the
+// check eventually returns is what the receive from done that each caller goes on to make establishes.
+func checkStillWaiting(t *testing.T, done <-chan struct{}) {
+	t.Helper()
+	select {
+	case <-done:
+		t.Fatal("the second check must wait for the first rather than return at once")
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+// runUpgradeCheck runs an upgrade check for the library to completion, letting the one request it makes of the blocking
+// releases server through once that request has arrived.
+func runUpgradeCheck(t *testing.T, lib *Library, client *http.Client, srv *blockingReleasesServer) {
+	t.Helper()
+	done := startUpgradeCheck(t.Context(), lib, client)
+	<-srv.started
+	srv.release()
+	<-done
 }
 
 // newReleasesServer starts a stand-in for the GitHub releases API. It returns a client that reaches it in place of the
@@ -1465,5 +1368,29 @@ func waitForMonitorQueue(lib *Library) {
 	done := make(chan struct{})
 	if queue.Submit(func() { close(done) }) {
 		<-done
+	}
+}
+
+// spinUntilStopped starts n goroutines that each call fn over and over until the returned function is called, standing
+// in for the background readers that the UI thread mutates shared state out from under. The returned function stops
+// them and waits for them to finish, and must be called exactly once, on the goroutine that started them.
+func spinUntilStopped(n int, fn func()) (stop func()) {
+	stopped := make(chan struct{})
+	var wg sync.WaitGroup
+	for range n {
+		wg.Go(func() {
+			for {
+				select {
+				case <-stopped:
+					return
+				default:
+				}
+				fn()
+			}
+		})
+	}
+	return func() {
+		close(stopped)
+		wg.Wait()
 	}
 }

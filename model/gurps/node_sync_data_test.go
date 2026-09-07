@@ -12,7 +12,6 @@ package gurps
 import (
 	"bytes"
 	"encoding/json/jsontext"
-	"encoding/json/v2"
 	"slices"
 	"strings"
 	"testing"
@@ -49,26 +48,15 @@ func TestNodeSyncDataIsInlined(t *testing.T) {
 		node    any
 		restore func([]byte) (*NodeSyncData, error)
 	}{
-		{"skill", skill, func(data []byte) (*NodeSyncData, error) {
-			var s Skill
-			return &s.SkillSyncData, json.Unmarshal(data, &s)
-		}},
-		{"spell", spell, func(data []byte) (*NodeSyncData, error) {
-			var s Spell
-			return &s.SpellSyncData, json.Unmarshal(data, &s)
-		}},
-		{"trait", trait, func(data []byte) (*NodeSyncData, error) {
-			var tr Trait
-			return &tr.NodeSyncData, json.Unmarshal(data, &tr)
-		}},
-		{"trait modifier", traitMod, func(data []byte) (*NodeSyncData, error) {
-			var m TraitModifier
-			return &m.TraitModifierSyncData, json.Unmarshal(data, &m)
-		}},
-		{"equipment modifier", eqpMod, func(data []byte) (*NodeSyncData, error) {
-			var m EquipmentModifier
-			return &m.EquipmentModifierSyncData, json.Unmarshal(data, &m)
-		}},
+		{"skill", skill, reloadInto(func(s *Skill) *NodeSyncData { return &s.SkillSyncData })},
+		{"spell", spell, reloadInto(func(s *Spell) *NodeSyncData { return &s.SpellSyncData })},
+		{"trait", trait, reloadInto(func(tr *Trait) *NodeSyncData { return &tr.NodeSyncData })},
+		{"trait modifier", traitMod, reloadInto(func(m *TraitModifier) *NodeSyncData {
+			return &m.TraitModifierSyncData
+		})},
+		{"equipment modifier", eqpMod, reloadInto(func(m *EquipmentModifier) *NodeSyncData {
+			return &m.EquipmentModifierSyncData
+		})},
 	} {
 		data, err := jio.Marshal(tc.node)
 		c.NoError(err, tc.name)

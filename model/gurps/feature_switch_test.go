@@ -171,36 +171,26 @@ func TestFeatureHashIncludesSwitchable(t *testing.T) {
 func TestItemHashIgnoresSwitchedOn(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Gadget"
-	trait.Features = Features{NewAttributeBonus(StrengthID)}
-	skill := NewSkill(e, nil, false)
-	skill.Name = "Brawling"
-	skill.Features = Features{NewAttributeBonus(StrengthID)}
-	spell := NewSpell(e, nil, false)
-	spell.Name = "Fireball"
-	spell.Features = Features{NewAttributeBonus(StrengthID)}
-	eqp := NewEquipment(e, nil, false)
-	eqp.Name = "Amulet"
-	eqp.Features = Features{NewAttributeBonus(StrengthID)}
+	trait, skill, spell, eqp := newSwitchableItemSet(e, NewAttributeBonus(StrengthID))
 
 	for _, one := range []struct {
-		name     string
-		hashable Hashable
-		switcher FeatureSwitcher
+		name string
+		item interface {
+			Hashable
+			FeatureSwitcher
+		}
 	}{
-		{name: "trait", hashable: trait, switcher: trait},
-		{name: "skill", hashable: skill, switcher: skill},
-		{name: "spell", hashable: spell, switcher: spell},
-		{name: "equipment", hashable: eqp, switcher: eqp},
+		{name: "trait", item: trait},
+		{name: "skill", item: skill},
+		{name: "spell", item: spell},
+		{name: "equipment", item: eqp},
 	} {
-		before := Hash64(one.hashable)
-		one.switcher.SetSwitchedOn(true)
-		c.Equal(before, Hash64(one.hashable), "%s: flipping the switch must not alter the source-data hash", one.name)
-		c.True(one.switcher.IsSwitchedOn(), "%s: the switch is on", one.name)
-		one.switcher.SetSwitchedOn(false)
-		c.False(one.switcher.IsSwitchedOn(), "%s: the switch is off again", one.name)
+		before := Hash64(one.item)
+		one.item.SetSwitchedOn(true)
+		c.Equal(before, Hash64(one.item), "%s: flipping the switch must not alter the source-data hash", one.name)
+		c.True(one.item.IsSwitchedOn(), "%s: the switch is on", one.name)
+		one.item.SetSwitchedOn(false)
+		c.False(one.item.IsSwitchedOn(), "%s: the switch is off again", one.name)
 	}
 }
 
@@ -208,65 +198,20 @@ func TestItemHashIgnoresSwitchedOn(t *testing.T) {
 func TestSwitchedOnJSONRoundTrip(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
+	trait, skill, spell, eqp := newSwitchableItemSet(e)
 
 	for _, one := range []struct {
 		name   string
-		make   func() (any, FeatureSwitcher)
+		item   FeatureSwitcher
 		reload func(data []byte) (FeatureSwitcher, error)
 	}{
-		{
-			name: "trait",
-			make: func() (any, FeatureSwitcher) {
-				t := NewTrait(e, nil, false)
-				t.Name = "Gadget"
-				return t, t
-			},
-			reload: func(data []byte) (FeatureSwitcher, error) {
-				var t Trait
-				return &t, jio.Unmarshal(data, &t)
-			},
-		},
-		{
-			name: "skill",
-			make: func() (any, FeatureSwitcher) {
-				s := NewSkill(e, nil, false)
-				s.Name = "Brawling"
-				return s, s
-			},
-			reload: func(data []byte) (FeatureSwitcher, error) {
-				var s Skill
-				return &s, jio.Unmarshal(data, &s)
-			},
-		},
-		{
-			name: "spell",
-			make: func() (any, FeatureSwitcher) {
-				s := NewSpell(e, nil, false)
-				s.Name = "Fireball"
-				return s, s
-			},
-			reload: func(data []byte) (FeatureSwitcher, error) {
-				var s Spell
-				return &s, jio.Unmarshal(data, &s)
-			},
-		},
-		{
-			name: "equipment",
-			make: func() (any, FeatureSwitcher) {
-				eqp := NewEquipment(e, nil, false)
-				eqp.Name = "Amulet"
-				return eqp, eqp
-			},
-			reload: func(data []byte) (FeatureSwitcher, error) {
-				var eqp Equipment
-				return &eqp, jio.Unmarshal(data, &eqp)
-			},
-		},
+		{name: "trait", item: trait, reload: reloadInto(func(tr *Trait) FeatureSwitcher { return tr })},
+		{name: "skill", item: skill, reload: reloadInto(func(sk *Skill) FeatureSwitcher { return sk })},
+		{name: "spell", item: spell, reload: reloadInto(func(sp *Spell) FeatureSwitcher { return sp })},
+		{name: "equipment", item: eqp, reload: reloadInto(func(it *Equipment) FeatureSwitcher { return it })},
 	} {
-		item, switcher := one.make()
-
 		// A switch that is off is not written at all.
-		data, err := jio.Marshal(item)
+		data, err := jio.Marshal(one.item)
 		c.NoError(err, "%s: should marshal", one.name)
 		c.NotContains(string(data), "switched_on", "%s: an off switch is not written", one.name)
 		restored, err := one.reload(data)
@@ -274,8 +219,8 @@ func TestSwitchedOnJSONRoundTrip(t *testing.T) {
 		c.False(restored.IsSwitchedOn(), "%s: the loaded switch is off", one.name)
 
 		// A switch that is on is written and comes back on.
-		switcher.SetSwitchedOn(true)
-		data, err = jio.Marshal(item)
+		one.item.SetSwitchedOn(true)
+		data, err = jio.Marshal(one.item)
 		c.NoError(err, "%s: should marshal", one.name)
 		c.Contains(string(data), `"switched_on":true`, "%s: an on switch is written", one.name)
 		restored, err = one.reload(data)
@@ -799,15 +744,7 @@ func TestSwitchableThisArmorDRBonusFromModifier(t *testing.T) {
 func TestScriptSwitchedOn(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-
-	trait := addTraitWithFeatures(e, "Gadget")
-	skill := NewSkill(e, nil, false)
-	skill.Name = "Brawling"
-	e.Skills = append(e.Skills, skill)
-	spell := NewSpell(e, nil, false)
-	spell.Name = "Fireball"
-	e.Spells = append(e.Spells, spell)
-	eqp := addCarriedEquipmentWithFeatures(e, "Amulet")
+	trait, skill, spell, eqp := newSwitchableItemSet(e)
 	e.Recalculate()
 
 	for _, one := range []struct {

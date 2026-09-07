@@ -45,6 +45,16 @@ func newSwitchableTraitModifier(name string) *gurps.TraitModifier {
 	return modifier
 }
 
+// newSwitchableEquipmentModifier returns a disabled equipment modifier carrying a switchable +1 ST bonus, so that
+// enabling it is what gives its owner switchable features.
+func newSwitchableEquipmentModifier(name string) *gurps.EquipmentModifier {
+	modifier := gurps.NewEquipmentModifier(nil, nil, false)
+	modifier.Name = name
+	modifier.Disabled = true
+	modifier.Features = gurps.Features{switchableSTBonus(nil)}
+	return modifier
+}
+
 // newSwitchableSkill returns a non-container skill carrying a single switchable +1 ST bonus, so that a sheet's skills
 // list needs the switch column while the skill is in it.
 func newSwitchableSkill(entity *gurps.Entity, name string) *gurps.Skill {

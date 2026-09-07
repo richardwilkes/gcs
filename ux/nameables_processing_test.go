@@ -14,12 +14,13 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 )
 
 // stubNameablesPrompt substitutes a non-interactive nameables prompt that hands the section titles and the substitution
-// maps it was asked to fill to the given responder and reports back whatever the responder returns, letting a test drive
-// the rebuild that answering the prompt triggers. The count of prompts actually shown is returned, and the real prompt
-// is restored when the test finishes.
+// maps it was asked to fill to the given responder and reports back whatever the responder returns, letting a test
+// drive the rebuild that answering the prompt triggers. The count of prompts actually shown is returned, and the real
+// prompt is restored when the test finishes.
 func stubNameablesPrompt(t *testing.T, respond func(titles []string, nameables []map[string]string) bool) *int {
 	t.Helper()
 	shown := 0
@@ -30,39 +31,114 @@ func stubNameablesPrompt(t *testing.T, respond func(titles []string, nameables [
 	return &shown
 }
 
+// fillNameables returns a responder for stubNameablesPrompt that answers every section it is shown by filling in the
+// given key with the given value.
+func fillNameables(key, value string) func(titles []string, nameables []map[string]string) bool {
+	return func(_ []string, nameables []map[string]string) bool {
+		for _, one := range nameables {
+			one[key] = value
+		}
+		return true
+	}
+}
+
+// sheetWithNamedTraits returns a sheet whose traits list holds one non-container trait per name, along with those
+// traits in the order a drop will visit them, which is the order they appear in the list rather than the order they
+// were handed over in. The list is verified to be showing every one of them and to be without the switch column, so
+// that a drop which brings that column in can be seen to have replaced the table.
+func sheetWithNamedTraits(t *testing.T, c check.Checker, names ...string) (*Sheet, []*gurps.Trait) {
+	t.Helper()
+	sheet := newTestSheetForTemplate(t)
+	namedTraits(sheet.Entity(), names...)
+	sheet.Rebuild(true)
+	table := sheet.Traits.Table
+	c.Equal(len(names)-1, table.LastRowIndex(), "the sheet must show every trait")
+	c.Equal(-1, switchColumnIndex(table.Columns, gurps.TraitSwitchColumn),
+		"the traits list must start out without the switch column")
+	return sheet, rowData(table)
+}
+
+// sheetWithNamedEquipment returns a sheet whose carried equipment list holds one non-container item per name, along
+// with those items in the order a drop will visit them, which is the order they appear in the list rather than the
+// order they were handed over in. The list is verified to be showing every one of them and to be without the switch
+// column, so that a drop which brings that column in can be seen to have replaced the table.
+func sheetWithNamedEquipment(t *testing.T, c check.Checker, names ...string) (*Sheet, []*gurps.Equipment) {
+	t.Helper()
+	sheet := newTestSheetForTemplate(t)
+	namedEquipment(sheet.Entity(), names...)
+	sheet.Rebuild(true)
+	table := sheet.CarriedEquipment.Table
+	c.Equal(len(names)-1, table.LastRowIndex(), "the sheet must show every item")
+	c.Equal(-1, switchColumnIndex(table.Columns, gurps.EquipmentSwitchColumn),
+		"the carried equipment list must start out without the switch column")
+	return sheet, rowData(table)
+}
+
+// rowData returns the data of each of the table's rows, in the order the rows appear in it.
+func rowData[T gurps.Node[T]](table *unison.Table[*Node[T]]) []T {
+	data := make([]T, table.LastRowIndex()+1)
+	for i := range data {
+		data[i] = table.RowFromIndex(i).Data()
+	}
+	return data
+}
+
+// sheetWithStaleTraitsTable returns a sheet holding a single trait named traitName whose traits table has since been
+// replaced, along with that trait, the enabled switchable modifier named modifierName that was attached to it and the
+// table the replacement left orphaned. Attaching that modifier stands in for the rebuild the alternate drop path
+// performs before it prompts: the modifier carries a switchable feature, so the trait now has switchable features,
+// which brings the switch column into view, and a list can only gain a column by being built anew.
+func sheetWithStaleTraitsTable(t *testing.T, c check.Checker, traitName, modifierName string) (sheet *Sheet,
+	trait *gurps.Trait, modifier *gurps.TraitModifier, stale *unison.Table[*Node[*gurps.Trait]],
+) {
+	t.Helper()
+	sheet, traits := sheetWithNamedTraits(t, c, traitName)
+	trait = traits[0]
+	stale = sheet.Traits.Table
+	modifier = newSwitchableTraitModifier(modifierName)
+	modifier.Disabled = false
+	trait.Modifiers = []*gurps.TraitModifier{modifier}
+	sheet.Rebuild(true)
+	c.NotEqual(stale, sheet.Traits.Table, "gaining the switch column must replace the traits table")
+	c.Nil(stale.Ancestor[Rebuildable](), "an orphaned table must have no rebuildable above it")
+	return sheet, trait, modifier, stale
+}
+
+// altDropNameableModifier performs an alternate drop of dropped onto the rows at rowIndexes of the provider's table,
+// answering the nameables prompt that follows by filling in the "Material" key of each section with the answers in
+// turn, so that the copy of the dropped modifier each target received can be told from the others by the name it ends
+// up with. The sheet is given a sync counter first and the counter's tally at the moment the prompt went up is
+// reported along with it, so that the rebuild the answers ask for can be told from the ones the drop itself performed.
+// The whole drop must be covered by a single prompt; that prompt's section titles are returned.
+func altDropNameableModifier[T gurps.Node[T], M gurps.Node[M]](t *testing.T, c check.Checker, sheet *Sheet,
+	provider TableProvider[T], rowIndexes []int, dropped M, answers ...string,
+) (headings []string, syncsWhenAsked int, counter *syncCounter) {
+	t.Helper()
+	counter = installSyncCounter(sheet)
+	syncsWhenAsked = -1
+	shown := stubNameablesPrompt(t, func(titles []string, nameables []map[string]string) bool {
+		headings = titles
+		syncsWhenAsked = counter.count
+		for i, one := range nameables {
+			one["Material"] = answers[i%len(answers)]
+		}
+		return true
+	})
+	altDrop(provider.AltDropSupport(), rowIndexes, dropped)
+	c.Equal(1, *shown, "the whole drop must be covered by a single prompt")
+	return headings, syncsWhenAsked, counter
+}
+
 // TestProcessNameablesRebuildsThroughAReplacedTable verifies that answering the nameables prompt still rebuilds the
 // sheet when the table ProcessNameables was handed has since been replaced. The substitutions are applied to the model
 // no matter what, so a rebuild that never happens leaves the list the user is looking at showing the raw keys and the
 // values derived from them until some unrelated edit comes along.
 func TestProcessNameablesRebuildsThroughAReplacedTable(t *testing.T) {
 	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Name = "@Adjective@ Claws"
-	entity.Traits = []*gurps.Trait{trait}
-	sheet.Rebuild(true)
-	stale := sheet.Traits.Table
-	c.Equal(-1, switchColumnIndex(stale.Columns, gurps.TraitSwitchColumn),
-		"the traits list must start out without the switch column")
-
-	// Stand in for the rebuild the alternate drop path performs before it prompts: the modifier that was dropped onto
-	// the trait carries a switchable feature, so the trait now has switchable features, which brings the switch column
-	// into view, and a list can only gain a column by being built anew -- leaving the table captured above orphaned.
-	modifier := newSwitchableTraitModifier("Retractable")
-	modifier.Disabled = false
-	trait.Modifiers = []*gurps.TraitModifier{modifier}
-	sheet.Rebuild(true)
-	c.NotEqual(stale, sheet.Traits.Table, "gaining the switch column must replace the traits table")
-	c.Nil(stale.Ancestor[Rebuildable](), "an orphaned table must have no rebuildable above it")
+	sheet, trait, _, stale := sheetWithStaleTraitsTable(t, c, "@Adjective@ Claws", "Retractable")
 
 	counter := installSyncCounter(sheet)
-	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
-		for _, one := range nameables {
-			one["Adjective"] = "Sharp"
-		}
-		return true
-	})
+	shown := stubNameablesPrompt(t, fillNameables("Adjective", "Sharp"))
 	ProcessNameables(stale, []*gurps.Trait{trait})
 
 	c.Equal(1, *shown, "the trait's nameable key must be prompted for")
@@ -72,38 +148,15 @@ func TestProcessNameablesRebuildsThroughAReplacedTable(t *testing.T) {
 
 // TestProcessNameablesRebuildsThroughAReplacedTableForModifierRows verifies the same for the alternate drop path's
 // call, where the rows handed over are the dropped modifiers rather than the rows of the table that came with them.
-// The lookup for the live table therefore can't be driven by the row type, since it doesn't match the table's.
+// The lookup for the live table therefore can't be driven by the row type, since it doesn't match the table's. The
+// modifier's own name is what needs a substitution here, so it is the modifier, not the trait, that the prompt is
+// asked for.
 func TestProcessNameablesRebuildsThroughAReplacedTableForModifierRows(t *testing.T) {
 	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Name = "Claws"
-	entity.Traits = []*gurps.Trait{trait}
-	sheet.Rebuild(true)
-	stale := sheet.Traits.Table
-	c.Equal(-1, switchColumnIndex(stale.Columns, gurps.TraitSwitchColumn),
-		"the traits list must start out without the switch column")
-
-	// Stand in for the rebuild the alternate drop path performs before it prompts: the modifier that was dropped onto
-	// the trait is enabled and carries a switchable feature, so the trait now has switchable features, which brings the
-	// switch column into view, and a list can only gain a column by being built anew -- leaving the table captured
-	// above orphaned. The modifier's own name is what needs a substitution, so it is the modifier, not the trait, that
-	// the prompt is asked for.
-	modifier := newSwitchableTraitModifier("@Material@ Coating")
-	modifier.Disabled = false
-	trait.Modifiers = []*gurps.TraitModifier{modifier}
-	sheet.Rebuild(true)
-	c.NotEqual(stale, sheet.Traits.Table, "gaining the switch column must replace the traits table")
-	c.Nil(stale.Ancestor[Rebuildable](), "an orphaned table must have no rebuildable above it")
+	sheet, _, modifier, stale := sheetWithStaleTraitsTable(t, c, "Claws", "@Material@ Coating")
 
 	counter := installSyncCounter(sheet)
-	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
-		for _, one := range nameables {
-			one["Material"] = "Steel"
-		}
-		return true
-	})
+	shown := stubNameablesPrompt(t, fillNameables("Material", "Steel"))
 	ProcessNameables(stale, []*gurps.TraitModifier{modifier})
 
 	c.Equal(1, *shown, "the modifier's nameable key must be prompted for")
@@ -118,36 +171,18 @@ func TestProcessNameablesRebuildsThroughAReplacedTableForModifierRows(t *testing
 func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 	c := check.New(t)
 	captureModifierPrompts(t) // The modifier prompt comes first and must not try to put up a real dialog.
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	target := gurps.NewTrait(entity, nil, false)
-	target.Name = "Claws"
-	entity.Traits = []*gurps.Trait{target}
-	sheet.Rebuild(true)
-	provider := sheet.Traits.provider
+	sheet, targets := sheetWithNamedTraits(t, c, "Claws")
 	stale := sheet.Traits.Table
-	c.Equal(-1, switchColumnIndex(stale.Columns, gurps.TraitSwitchColumn),
-		"the traits list must start out without the switch column")
 
 	// The dropped modifier is enabled and carries a switchable feature, so adding it is what makes the switch column
 	// necessary, and its name needs a substitution.
 	dropped := newSwitchableTraitModifier("@Material@ Coating")
 	dropped.Disabled = false
-	counter := installSyncCounter(sheet)
-	syncsWhenAsked := -1
-	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
-		syncsWhenAsked = counter.count
-		for _, one := range nameables {
-			one["Material"] = "Steel"
-		}
-		return true
-	})
+	_, syncsWhenAsked, counter := altDropNameableModifier(t, c, sheet, sheet.Traits.provider, []int{0}, dropped,
+		"Steel")
 
-	altDrop(provider.AltDropSupport(), []int{0}, dropped)
-
-	c.Equal(1, *shown, "the drop must prompt for the dropped modifier's nameable keys")
-	c.Equal(1, len(target.Modifiers), "the dropped modifier must be added to the target trait")
-	c.Equal("Steel Coating", target.Modifiers[0].NameWithReplacements(),
+	c.Equal(1, len(targets[0].Modifiers), "the dropped modifier must be added to the target trait")
+	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
 		"the substitution must be applied to the dropped modifier")
 	live := sheet.Traits.Table
 	c.NotEqual(stale, live, "gaining the switch column must replace the traits table")
@@ -157,43 +192,47 @@ func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
 }
 
-// TestAltDropOnSeveralTraitsPromptsForEachCopy verifies that dropping a modifier whose name needs filling in
-// onto several selected traits asks about every copy separately, in one prompt. Each target has a copy of its own, so
-// each gets its own entry in the prompt and its own answer, letting the same modifier be named differently on each
-// trait it was attached to. The copies are otherwise identical, so the entries have to be headed by the trait each
-// belongs to, or the user has no way of telling which answer goes where.
+// TestAltDropOnEquipmentAppliesNameablesToTheLiveList verifies the same for dropping equipment modifiers onto an
+// equipment row.
+func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
+	c := check.New(t)
+	captureModifierPrompts(t) // The modifier prompt comes first and must not try to put up a real dialog.
+	sheet, targets := sheetWithNamedEquipment(t, c, "Sword")
+	stale := sheet.CarriedEquipment.Table
+
+	// The dropped modifier is enabled and carries a switchable feature, so adding it is what makes the switch column
+	// necessary, and its name needs a substitution.
+	dropped := newSwitchableEquipmentModifier("@Material@ Coating")
+	dropped.Disabled = false
+	_, syncsWhenAsked, counter := altDropNameableModifier(t, c, sheet, sheet.CarriedEquipment.provider, []int{0},
+		dropped, "Steel")
+
+	c.Equal(1, len(targets[0].Modifiers), "the dropped modifier must be added to the target equipment")
+	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
+		"the substitution must be applied to the dropped modifier")
+	live := sheet.CarriedEquipment.Table
+	c.NotEqual(stale, live, "gaining the switch column must replace the carried equipment table")
+	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.EquipmentSwitchColumn),
+		"the dropped modifier's switchable feature must bring the switch column into view")
+	c.True(counter.count > syncsWhenAsked,
+		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
+}
+
+// TestAltDropOnSeveralTraitsPromptsForEachCopy verifies that dropping a modifier whose name needs filling in onto
+// several selected traits asks about every copy separately, in one prompt. Each target has a copy of its own, so each
+// gets its own entry in the prompt and its own answer, letting the same modifier be named differently on each trait it
+// was attached to. The copies are otherwise identical, so the entries have to be headed by the trait each belongs to,
+// or the user has no way of telling which answer goes where.
 func TestAltDropOnSeveralTraitsPromptsForEachCopy(t *testing.T) {
 	c := check.New(t)
 	captureModifierPrompts(t) // The modifier prompt comes first and must not try to put up a real dialog.
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	first := gurps.NewTrait(entity, nil, false)
-	first.Name = "Claws"
-	second := gurps.NewTrait(entity, nil, false)
-	second.Name = "Fangs"
-	entity.Traits = []*gurps.Trait{first, second}
-	sheet.Rebuild(true)
-	provider := sheet.Traits.provider
-	table := sheet.Traits.Table
-	c.Equal(1, table.LastRowIndex(), "the sheet must show both traits")
-	// The answers are handed out by position, so the targets have to be taken in the order the drop will visit them.
-	targets := []*gurps.Trait{table.RowFromIndex(0).Data(), table.RowFromIndex(1).Data()}
+	sheet, targets := sheetWithNamedTraits(t, c, "Claws", "Fangs")
 
 	dropped := gurps.NewTraitModifier(nil, nil, false)
 	dropped.Name = "@Material@ Coating"
-	materials := []string{"Steel", "Silver"}
-	var headings []string
-	shown := stubNameablesPrompt(t, func(titles []string, nameables []map[string]string) bool {
-		headings = titles
-		for i, one := range nameables {
-			one["Material"] = materials[i%len(materials)]
-		}
-		return true
-	})
+	headings, _, _ := altDropNameableModifier(t, c, sheet, sheet.Traits.provider, []int{0, 1}, dropped,
+		"Steel", "Silver")
 
-	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
-
-	c.Equal(1, *shown, "the whole drop must be covered by a single prompt")
 	c.Equal([]string{"Claws: @Material@ Coating", "Fangs: @Material@ Coating"}, headings,
 		"the prompt must hold an entry for each copy of the dropped modifier, headed by the trait it belongs to")
 	c.Equal(1, len(targets[0].Modifiers), "the first trait must receive a copy of the dropped modifier")
@@ -204,87 +243,24 @@ func TestAltDropOnSeveralTraitsPromptsForEachCopy(t *testing.T) {
 		"the second copy must get its own answer rather than the first one's")
 }
 
-// TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy verifies the same for dropping an equipment modifier onto several
-// selected equipment items.
+// TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy verifies the same for dropping an equipment modifier onto
+// several selected equipment items.
 func TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy(t *testing.T) {
 	c := check.New(t)
 	captureModifierPrompts(t) // The modifier prompt comes first and must not try to put up a real dialog.
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	first := gurps.NewEquipment(entity, nil, false)
-	first.Name = "Sword"
-	second := gurps.NewEquipment(entity, nil, false)
-	second.Name = "Shield"
-	entity.CarriedEquipment = []*gurps.Equipment{first, second}
-	sheet.Rebuild(true)
-	provider := sheet.CarriedEquipment.provider
-	table := sheet.CarriedEquipment.Table
-	c.Equal(1, table.LastRowIndex(), "the sheet must show both items")
-	// The answers are handed out by position, so the targets have to be taken in the order the drop will visit them.
-	targets := []*gurps.Equipment{table.RowFromIndex(0).Data(), table.RowFromIndex(1).Data()}
+	sheet, targets := sheetWithNamedEquipment(t, c, "Sword", "Shield")
 
 	dropped := gurps.NewEquipmentModifier(nil, nil, false)
 	dropped.Name = "@Material@ Coating"
-	materials := []string{"Steel", "Silver"}
-	var headings []string
-	shown := stubNameablesPrompt(t, func(titles []string, nameables []map[string]string) bool {
-		headings = titles
-		for i, one := range nameables {
-			one["Material"] = materials[i%len(materials)]
-		}
-		return true
-	})
+	headings, _, _ := altDropNameableModifier(t, c, sheet, sheet.CarriedEquipment.provider, []int{0, 1}, dropped,
+		"Steel", "Silver")
 
-	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
-
-	c.Equal(1, *shown, "the whole drop must be covered by a single prompt")
 	c.Equal([]string{"Sword: @Material@ Coating", "Shield: @Material@ Coating"}, headings,
 		"the prompt must hold an entry for each copy of the dropped modifier, headed by the item it belongs to")
+	c.Equal(1, len(targets[0].Modifiers), "the first item must receive a copy of the dropped modifier")
+	c.Equal(1, len(targets[1].Modifiers), "the second item must receive a copy of the dropped modifier")
 	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
 		"the first copy must get the first answer")
 	c.Equal("Silver Coating", targets[1].Modifiers[0].NameWithReplacements(),
 		"the second copy must get its own answer rather than the first one's")
-}
-
-// TestAltDropOnEquipmentAppliesNameablesToTheLiveList verifies the same for dropping equipment modifiers onto an
-// equipment row.
-func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
-	c := check.New(t)
-	captureModifierPrompts(t) // The modifier prompt comes first and must not try to put up a real dialog.
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	target := gurps.NewEquipment(entity, nil, false)
-	target.Name = "Sword"
-	entity.CarriedEquipment = []*gurps.Equipment{target}
-	sheet.Rebuild(true)
-	provider := sheet.CarriedEquipment.provider
-	stale := sheet.CarriedEquipment.Table
-	c.Equal(-1, switchColumnIndex(stale.Columns, gurps.EquipmentSwitchColumn),
-		"the carried equipment list must start out without the switch column")
-
-	dropped := gurps.NewEquipmentModifier(nil, nil, false)
-	dropped.Name = "@Material@ Coating"
-	dropped.Features = gurps.Features{switchableSTBonus(nil)}
-	counter := installSyncCounter(sheet)
-	syncsWhenAsked := -1
-	shown := stubNameablesPrompt(t, func(_ []string, nameables []map[string]string) bool {
-		syncsWhenAsked = counter.count
-		for _, one := range nameables {
-			one["Material"] = "Steel"
-		}
-		return true
-	})
-
-	altDrop(provider.AltDropSupport(), []int{0}, dropped)
-
-	c.Equal(1, *shown, "the drop must prompt for the dropped modifier's nameable keys")
-	c.Equal(1, len(target.Modifiers), "the dropped modifier must be added to the target equipment")
-	c.Equal("Steel Coating", target.Modifiers[0].NameWithReplacements(),
-		"the substitution must be applied to the dropped modifier")
-	live := sheet.CarriedEquipment.Table
-	c.NotEqual(stale, live, "gaining the switch column must replace the carried equipment table")
-	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.EquipmentSwitchColumn),
-		"the dropped modifier's switchable feature must bring the switch column into view")
-	c.True(counter.count > syncsWhenAsked,
-		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
 }

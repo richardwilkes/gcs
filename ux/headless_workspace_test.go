@@ -16,12 +16,14 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // startHeadlessWorkspace starts a headless unison session running the GCS workspace -- the menu bar, the navigator and
@@ -408,6 +410,63 @@ func loadSavedFile[T any](t *testing.T, c check.Checker, path string, read func(
 		t.Fatalf("the file at %s must parse: %v", path, err)
 	}
 	return loaded
+}
+
+// saveNewFileEditor saves a file editor that has no file on disk yet through its toolbar's Save button, the way a user
+// would, and returns where the file went, what the file holds and the hash of the model as it was saved. A model with
+// no file makes the Save button bring up the pure-Go save dialog, which must offer offeredName as the file name and
+// open in the user library's ancestries folder, where both the ancestries and the name generators they use live; when
+// saveAs is empty the offered name is accepted as it stands, and otherwise saveAs is typed in its place. typeName is
+// what the editor edits, such as "Ancestry", which its title must show along with the file's base name, and ext is the
+// extension of the file it saves. The file is read back with read and must hold exactly what the editor holds.
+func saveNewFileEditor[M fileEditorModel[M], T gurps.Hashable](t *testing.T, c check.Checker,
+	screen *unison.HeadlessScreen, wnd *unison.Window, d *fileEditorDockable[M],
+	typeName, offeredName, saveAs, ext string, read func(fs.FS, string) (T, error),
+) (savedPath string, loaded T, hash uint64) {
+	t.Helper()
+	kind := strings.ToLower(typeName)
+	var saveButton *unison.Button
+	var saveEnabled bool
+	screen.Do(func() {
+		saveButton = d.saveButton
+		saveEnabled = saveButton.Enabled()
+	})
+	c.True(saveEnabled, "the edited %s can be saved", kind)
+	screen.Click(screen.PanelCenter(saveButton))
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	fileNameField, fileName, dirName := saveDialogFields(t, screen, dialogWnd)
+	c.Equal(offeredName, fileName, "the save dialog offers %q as the %s's file name", offeredName, kind)
+	c.Equal(gurps.AncestriesDirName, dirName, "the dialog opens in the user library's ancestries folder")
+	screen.Click(screen.PanelCenter(fileNameField))
+	name := offeredName
+	if saveAs != "" {
+		name = saveAs
+		screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
+		screen.Type(saveAs)
+	}
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	savedPath = filepath.Join(gurps.GlobalSettings().Libraries.User().AncestriesPath(), name+ext)
+	var path, title, tooltip string
+	var modified bool
+	var windows int
+	screen.Do(func() {
+		windows = len(unison.Windows())
+		path = d.path
+		modified = d.Modified()
+		saveEnabled = d.saveButton.Enabled()
+		title = d.Title()
+		tooltip = d.Tooltip()
+		hash = gurps.Hash64(d.model)
+	})
+	c.Equal(1, windows, "the save dialog has been dismissed")
+	c.Equal(savedPath, path, "the editor records where the file was saved")
+	c.False(modified, "the saved %s is unmodified", kind)
+	c.False(saveEnabled, "saving disables Save")
+	c.Equal(typeName+": "+name, title, "the title follows the file's base name")
+	c.Equal(savedPath, tooltip, "the tooltip shows the path")
+	loaded = loadSavedFile(t, c, savedPath, read)
+	c.Equal(hash, gurps.Hash64(loaded), "the file holds exactly what the editor holds")
+	return savedPath, loaded, hash
 }
 
 // visibleRect returns the part of p's content area that is within view, in the root coordinate space of its window:

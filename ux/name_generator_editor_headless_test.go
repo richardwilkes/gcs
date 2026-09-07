@@ -42,7 +42,6 @@ type fileListPanel interface {
 func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
-	user := gurps.GlobalSettings().Libraries.User()
 
 	// Open the editor from the File menu. With no training data, the samples can only say why there are none.
 	chooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
@@ -405,40 +404,10 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	captureScreen(t, c, screen, "name_generator_editor")
 
 	// Save through the toolbar. A new generator has no file, so the pure-Go save dialog comes up, offering the user
-	// library's ancestries folder, where ancestries look for generators, and the placeholder name.
-	var saveButton *unison.Button
-	screen.Do(func() {
-		saveButton = d.saveButton
-		saveEnabled = saveButton.Enabled()
-	})
-	c.True(saveEnabled, "the edited generator can be saved")
-	screen.Click(screen.PanelCenter(saveButton))
-	dialogWnd, _ = modalDialog(t, screen, wnd)
-	fileNameField, fileName, dirName := saveDialogFields(t, screen, dialogWnd)
-	c.Equal("Untitled", fileName, "a generator with no file is offered the placeholder name")
-	c.Equal(gurps.AncestriesDirName, dirName, "the dialog opens in the user library's ancestries folder")
-	screen.Click(screen.PanelCenter(fileNameField))
-	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
-	screen.Type("Test Names")
-	screen.KeyPress(unison.KeyReturn, mod.None)
-	savedPath := filepath.Join(user.AncestriesPath(), "Test Names"+gurps.NamesExt)
-	var path string
-	var hash uint64
-	screen.Do(func() {
-		windows = len(unison.Windows())
-		path = d.path
-		modified = d.Modified()
-		saveEnabled = d.saveButton.Enabled()
-		title = d.Title()
-		hash = gurps.Hash64(d.model)
-	})
-	c.Equal(1, windows, "the save dialog has been dismissed")
-	c.Equal(savedPath, path, "the editor records where the file was saved")
-	c.False(modified, "the saved generator is unmodified")
-	c.False(saveEnabled, "saving disables Save")
-	c.Equal("Name Generator: Test Names", title, "the title follows the file's base name")
-	loaded := loadSavedFile(t, c, savedPath, gurps.ReadNameGeneratorFromFS)
-	c.Equal(hash, gurps.Hash64(loaded), "the file holds exactly what the editor holds")
+	// library's ancestries folder, where ancestries look for generators, and the placeholder name, which is replaced
+	// with one of its own.
+	savedPath, loaded, hash := saveNewFileEditor(t, c, screen, wnd, &d.fileEditorDockable, "Name Generator", "Untitled",
+		"Test Names", gurps.NamesExt, gurps.ReadNameGeneratorFromFS)
 	// The weighted form is a map, read back sorted by name, which for these names is also the order they were in.
 	c.Equal(imported, plainEntries(loaded.Entries), "the file holds the training names and their weights")
 	data, err := os.ReadFile(savedPath)
@@ -505,6 +474,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	screen.Click(screen.PanelCenter(editButton))
 	var editors int
 	var current bool
+	var path string
 	screen.Do(func() {
 		editors = len(AllMatchingDockables(isNameGeneratorEditor))
 		if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {

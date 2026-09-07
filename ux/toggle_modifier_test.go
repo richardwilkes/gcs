@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -73,6 +72,18 @@ func generalModifier[T gurps.Node[T]](c check.Checker, node T) gurps.GeneralModi
 	return m
 }
 
+// checkModifierUndoRedo verifies what must hold once the first modifier of a table has been turned off inside an
+// editor, whether by the Toggle State command or by a click on its checkmark cell: the editor has unsaved changes and
+// the change can be taken back and put back again. verb names the change for the failure messages.
+func checkModifierUndoRedo[T gurps.Node[T]](c check.Checker, table *unison.Table[*Node[T]], modifiers []T,
+	isModified func() bool, undoName, verb string,
+) {
+	c.Helper()
+	checkToggleUndoRedo(c, table, isModified, undoName, verb,
+		func() { c.False(generalModifier(c, modifiers[0]).Enabled(), "redo must turn the modifier off again") },
+		func() { c.True(generalModifier(c, modifiers[0]).Enabled(), "undo must turn the modifier back on") })
+}
+
 // checkModifierToggleInEditor drives Toggle State over a modifiers table holding one non-container modifier followed by
 // one container, both selected, and verifies that only the editor's copy of the non-container one is flipped and that
 // the change can be taken back and put back again. The trait and equipment editors differ only in the type of modifier
@@ -93,21 +104,8 @@ func checkModifierToggleInEditor[T gurps.Node[T]](t *testing.T, table *unison.Ta
 	c.True(generalModifier(c, modifiers[1]).Enabled(),
 		"a container is always enabled, so the command must leave it alone")
 	c.True(targetModifier.Enabled(), "the target's own modifier must not be touched until the edit is applied")
-	c.True(isModified(), "toggling a modifier must give the editor unsaved changes")
 
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr, "the table must be able to find the editor's undo manager")
-	c.True(mgr.CanUndo(), "toggling a modifier must be undoable")
-	c.Equal(fmt.Sprintf(i18n.Text("Undo %s"), undoName), mgr.UndoTitle(),
-		"the Edit menu must name the kind of modifier that was toggled")
-	mgr.Undo()
-	c.True(generalModifier(c, modifiers[0]).Enabled(), "undo must turn the modifier back on")
-	c.False(isModified(), "undo must leave the editor with no unsaved changes")
-
-	c.True(mgr.CanRedo(), "an undone toggle must be redoable")
-	mgr.Redo()
-	c.False(generalModifier(c, modifiers[0]).Enabled(), "redo must turn the modifier off again")
-	c.True(isModified(), "redo must give the editor unsaved changes again")
+	checkModifierUndoRedo(c, table, modifiers, isModified, undoName, "toggle")
 }
 
 // TestToggleStateFlipsModifiersInsideEditors verifies that Toggle State reaches the modifier rows of a detail editor,
@@ -168,21 +166,8 @@ func checkModifierCheckmarkClickInEditor[T gurps.Node[T]](t *testing.T, table *u
 	label.RemoveFromParent()
 	c.False(generalModifier(c, modifiers[0]).Enabled(),
 		"clicking the cell must turn the modifier off in the editor's copy")
-	c.True(isModified(), "clicking the cell must give the editor unsaved changes")
 
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr, "the table must be able to find the editor's undo manager")
-	c.True(mgr.CanUndo(), "clicking the cell must be undoable")
-	c.Equal(fmt.Sprintf(i18n.Text("Undo %s"), undoName), mgr.UndoTitle(),
-		"the Edit menu must name the kind of modifier that was toggled")
-	mgr.Undo()
-	c.True(generalModifier(c, modifiers[0]).Enabled(), "undo must turn the modifier back on")
-	c.False(isModified(), "undo must leave the editor with no unsaved changes")
-
-	c.True(mgr.CanRedo(), "an undone click must be redoable")
-	mgr.Redo()
-	c.False(generalModifier(c, modifiers[0]).Enabled(), "redo must turn the modifier off again")
-	c.True(isModified(), "redo must give the editor unsaved changes again")
+	checkModifierUndoRedo(c, table, modifiers, isModified, undoName, "click")
 }
 
 // TestModifierCheckmarkClickIsUndoable verifies that clicking a modifier's checkmark cell inside an editor still flips

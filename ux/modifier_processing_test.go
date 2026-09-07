@@ -49,6 +49,61 @@ func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 	return &prompts
 }
 
+// namedTraits fills the entity's traits list with one non-container trait per name and returns them.
+func namedTraits(entity *gurps.Entity, names ...string) []*gurps.Trait {
+	traits := make([]*gurps.Trait, len(names))
+	for i, name := range names {
+		traits[i] = gurps.NewTrait(entity, nil, false)
+		traits[i].Name = name
+	}
+	entity.Traits = traits
+	return traits
+}
+
+// namedEquipment fills the entity's carried equipment list with one non-container item per name and returns them.
+func namedEquipment(entity *gurps.Entity, names ...string) []*gurps.Equipment {
+	equipment := make([]*gurps.Equipment, len(names))
+	for i, name := range names {
+		equipment[i] = gurps.NewEquipment(entity, nil, false)
+		equipment[i].Name = name
+	}
+	entity.CarriedEquipment = equipment
+	return equipment
+}
+
+// entityWithNamedTraits returns a new entity whose traits list holds one non-container trait per name, along with those
+// traits.
+func entityWithNamedTraits(names ...string) (*gurps.Entity, []*gurps.Trait) {
+	entity := gurps.NewEntity()
+	return entity, namedTraits(entity, names...)
+}
+
+// entityWithNamedEquipment returns a new entity whose carried equipment list holds one non-container item per name,
+// along with those items.
+func entityWithNamedEquipment(names ...string) (*gurps.Entity, []*gurps.Equipment) {
+	entity := gurps.NewEntity()
+	return entity, namedEquipment(entity, names...)
+}
+
+// tabledProvider gives the provider the table and root rows that NewNodeTable would, then hands the provider back, so
+// that a provider a test only needs in order to drive a drop can be had in a single expression.
+func tabledProvider[T gurps.Node[T]](provider TableProvider[T]) TableProvider[T] {
+	newProviderTable(provider)
+	return provider
+}
+
+// checkAltDropPrompts performs an alternate drop of dropped onto the rows at rowIndexes of the provider's table and
+// verifies that the modifier prompts that go up are exactly the wanted ones, in order. The prompts are captured for the
+// remainder of the test, so nothing tries to put up a real dialog.
+func checkAltDropPrompts[T gurps.Node[T], M gurps.Node[M]](t *testing.T, c check.Checker, provider TableProvider[T],
+	rowIndexes []int, dropped M, wantPrompts []modifierPrompt,
+) {
+	t.Helper()
+	prompts := captureModifierPrompts(t)
+	altDrop(provider.AltDropSupport(), rowIndexes, dropped)
+	c.Equal(wantPrompts, *prompts, "the drop must prompt for the modifiers of each target it resolved, and no others")
+}
+
 // TestProcessModifiersIgnoresModifierRows documents that ProcessModifiers only has something to do for rows that can
 // hold modifiers. Handing it the modifiers themselves matches nothing, which is why the alternate drop handlers must
 // pass the row the modifiers were dropped onto.
@@ -79,54 +134,38 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 // ProcessModifiers matches nothing for, so it could never appear.
 func TestAltDropOnTraitPromptsForTargetModifiers(t *testing.T) {
 	c := check.New(t)
-	prompts := captureModifierPrompts(t)
-	entity := gurps.NewEntity()
-
-	target := gurps.NewTrait(entity, nil, false)
-	target.Name = "Target Trait"
+	entity, traits := entityWithNamedTraits("Target Trait")
+	target := traits[0]
 	existing := gurps.NewTraitModifier(entity, nil, false)
 	existing.Name = "Existing"
 	target.Modifiers = []*gurps.TraitModifier{existing}
-	entity.Traits = []*gurps.Trait{target}
-
-	provider := NewTraitsProvider(entity, false)
-	newProviderTable(provider)
-
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	altDrop(provider.AltDropSupport(), []int{0}, dropped)
+
+	checkAltDropPrompts(t, c, tabledProvider(NewTraitsProvider(entity, false)), []int{0}, dropped,
+		[]modifierPrompt{{title: "Target Trait", modifiers: []string{"Existing", "Dropped"}}})
 
 	c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target trait")
 	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target trait")
-	c.Equal([]modifierPrompt{{title: "Target Trait", modifiers: []string{"Existing", "Dropped"}}}, *prompts,
-		"the drop must prompt for the target trait's modifiers")
 }
 
 // TestAltDropOnEquipmentPromptsForTargetModifiers verifies the same for dropping equipment modifiers onto an equipment
 // row.
 func TestAltDropOnEquipmentPromptsForTargetModifiers(t *testing.T) {
 	c := check.New(t)
-	prompts := captureModifierPrompts(t)
-	entity := gurps.NewEntity()
-
-	target := gurps.NewEquipment(entity, nil, false)
-	target.Name = "Target Equipment"
+	entity, equipment := entityWithNamedEquipment("Target Equipment")
+	target := equipment[0]
 	existing := gurps.NewEquipmentModifier(entity, nil, false)
 	existing.Name = "Existing"
 	target.Modifiers = []*gurps.EquipmentModifier{existing}
-	entity.CarriedEquipment = []*gurps.Equipment{target}
-
-	provider := NewEquipmentProvider(entity, true, false)
-	newProviderTable(provider)
-
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	altDrop(provider.AltDropSupport(), []int{0}, dropped)
+
+	checkAltDropPrompts(t, c, tabledProvider(NewEquipmentProvider(entity, true, false)), []int{0}, dropped,
+		[]modifierPrompt{{title: "Target Equipment", modifiers: []string{"Existing", "Dropped"}}})
 
 	c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target equipment")
 	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target equipment")
-	c.Equal([]modifierPrompt{{title: "Target Equipment", modifiers: []string{"Existing", "Dropped"}}}, *prompts,
-		"the drop must prompt for the target equipment's modifiers")
 }
 
 // TestAltDropOnSeveralTraitsGivesEachItsOwnCopy verifies that dropping a trait modifier onto several selected traits
@@ -134,21 +173,16 @@ func TestAltDropOnEquipmentPromptsForTargetModifiers(t *testing.T) {
 // together, so that enabling it on one would enable it on all and renaming it would rename it everywhere.
 func TestAltDropOnSeveralTraitsGivesEachItsOwnCopy(t *testing.T) {
 	c := check.New(t)
-	prompts := captureModifierPrompts(t)
-	entity := gurps.NewEntity()
-
-	first := gurps.NewTrait(entity, nil, false)
-	first.Name = "First Trait"
-	second := gurps.NewTrait(entity, nil, false)
-	second.Name = "Second Trait"
-	entity.Traits = []*gurps.Trait{first, second}
-
-	provider := NewTraitsProvider(entity, false)
-	newProviderTable(provider)
-
+	entity, traits := entityWithNamedTraits("First Trait", "Second Trait")
+	first, second := traits[0], traits[1]
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
+
+	checkAltDropPrompts(t, c, tabledProvider(NewTraitsProvider(entity, false)), []int{0, 1}, dropped,
+		[]modifierPrompt{
+			{title: "First Trait", modifiers: []string{"Dropped"}},
+			{title: "Second Trait", modifiers: []string{"Dropped"}},
+		})
 
 	c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first trait")
 	c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second trait")
@@ -156,40 +190,29 @@ func TestAltDropOnSeveralTraitsGivesEachItsOwnCopy(t *testing.T) {
 	c.Equal("Dropped", second.Modifiers[0].Name, "the second trait must get the dropped modifier")
 	c.NotEqual(first.Modifiers[0].ID(), second.Modifiers[0].ID(), "each trait must get a copy of its own")
 	c.NotEqual(dropped.ID(), first.Modifiers[0].ID(), "the dragged modifier itself must not be attached")
-	c.Equal([]modifierPrompt{
-		{title: "First Trait", modifiers: []string{"Dropped"}},
-		{title: "Second Trait", modifiers: []string{"Dropped"}},
-	}, *prompts, "each trait must be prompted for its own modifiers")
 }
 
 // TestAltDropOnSeveralEquipmentItemsGivesEachItsOwnCopy verifies the same for dropping equipment modifiers onto several
 // selected equipment items.
 func TestAltDropOnSeveralEquipmentItemsGivesEachItsOwnCopy(t *testing.T) {
 	c := check.New(t)
-	prompts := captureModifierPrompts(t)
-	entity := gurps.NewEntity()
-
-	first := gurps.NewEquipment(entity, nil, false)
-	first.Name = "First Item"
-	second := gurps.NewEquipment(entity, nil, false)
-	second.Name = "Second Item"
-	entity.CarriedEquipment = []*gurps.Equipment{first, second}
-
-	provider := NewEquipmentProvider(entity, true, false)
-	newProviderTable(provider)
-
+	entity, equipment := entityWithNamedEquipment("First Item", "Second Item")
+	first, second := equipment[0], equipment[1]
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
+
+	checkAltDropPrompts(t, c, tabledProvider(NewEquipmentProvider(entity, true, false)), []int{0, 1}, dropped,
+		[]modifierPrompt{
+			{title: "First Item", modifiers: []string{"Dropped"}},
+			{title: "Second Item", modifiers: []string{"Dropped"}},
+		})
 
 	c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first item")
 	c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second item")
+	c.Equal("Dropped", first.Modifiers[0].Name, "the first item must get the dropped modifier")
+	c.Equal("Dropped", second.Modifiers[0].Name, "the second item must get the dropped modifier")
 	c.NotEqual(first.Modifiers[0].ID(), second.Modifiers[0].ID(), "each item must get a copy of its own")
 	c.NotEqual(dropped.ID(), first.Modifiers[0].ID(), "the dragged modifier itself must not be attached")
-	c.Equal([]modifierPrompt{
-		{title: "First Item", modifiers: []string{"Dropped"}},
-		{title: "Second Item", modifiers: []string{"Dropped"}},
-	}, *prompts, "each item must be prompted for its own modifiers")
 }
 
 // TestAltDropOnAContainerAndItsChildPromptsTheChildOnce verifies that a selection holding both a container and one of
@@ -230,49 +253,35 @@ func TestAltDropOnAContainerAndItsChildPromptsTheChildOnce(t *testing.T) {
 // handler down.
 func TestAltDropOnAMissingTraitRowIsANoOp(t *testing.T) {
 	c := check.New(t)
-	prompts := captureModifierPrompts(t)
-	entity := gurps.NewEntity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Name = "Trait"
-	entity.Traits = []*gurps.Trait{trait}
-	provider := NewTraitsProvider(entity, false)
-	newProviderTable(provider)
+	entity, traits := entityWithNamedTraits("Trait")
+	trait := traits[0]
+	provider := tabledProvider(NewTraitsProvider(entity, false))
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	data := newDragData(dropped)
 
-	provider.AltDropSupport().Drop([]int{99}, data)
+	checkAltDropPrompts(t, c, provider, []int{99}, dropped, nil)
 	c.Equal(0, len(trait.Modifiers), "a drop with no resolvable target must attach nothing")
-	c.Equal(0, len(*prompts), "a drop with no resolvable target must not prompt")
 
-	provider.AltDropSupport().Drop([]int{99, 0}, data)
+	checkAltDropPrompts(t, c, provider, []int{99, 0}, dropped,
+		[]modifierPrompt{{title: "Trait", modifiers: []string{"Dropped"}}})
 	c.Equal(1, len(trait.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
-	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Dropped"}}}, *prompts,
-		"only the target that resolved may be prompted for")
 }
 
 // TestAltDropOnAMissingEquipmentRowIsANoOp verifies the same for the equipment drop handler.
 func TestAltDropOnAMissingEquipmentRowIsANoOp(t *testing.T) {
 	c := check.New(t)
-	prompts := captureModifierPrompts(t)
-	entity := gurps.NewEntity()
-	item := gurps.NewEquipment(entity, nil, false)
-	item.Name = "Item"
-	entity.CarriedEquipment = []*gurps.Equipment{item}
-	provider := NewEquipmentProvider(entity, true, false)
-	newProviderTable(provider)
+	entity, equipment := entityWithNamedEquipment("Item")
+	item := equipment[0]
+	provider := tabledProvider(NewEquipmentProvider(entity, true, false))
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	data := newDragData(dropped)
 
-	provider.AltDropSupport().Drop([]int{99}, data)
+	checkAltDropPrompts(t, c, provider, []int{99}, dropped, nil)
 	c.Equal(0, len(item.Modifiers), "a drop with no resolvable target must attach nothing")
-	c.Equal(0, len(*prompts), "a drop with no resolvable target must not prompt")
 
-	provider.AltDropSupport().Drop([]int{99, 0}, data)
+	checkAltDropPrompts(t, c, provider, []int{99, 0}, dropped,
+		[]modifierPrompt{{title: "Item", modifiers: []string{"Dropped"}}})
 	c.Equal(1, len(item.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
-	c.Equal([]modifierPrompt{{title: "Item", modifiers: []string{"Dropped"}}}, *prompts,
-		"only the target that resolved may be prompted for")
 }
 
 // TestAltDropOfTheWrongKindOfModifierIsIgnored verifies that each provider's alternate drop handler only acts on drag
@@ -283,17 +292,11 @@ func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
 	c := check.New(t)
 	prompts := captureModifierPrompts(t)
 	entity := gurps.NewEntity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Name = "Trait"
-	entity.Traits = []*gurps.Trait{trait}
-	item := gurps.NewEquipment(entity, nil, false)
-	item.Name = "Item"
-	entity.CarriedEquipment = []*gurps.Equipment{item}
+	trait := namedTraits(entity, "Trait")[0]
+	item := namedEquipment(entity, "Item")[0]
 
-	traitsProv := NewTraitsProvider(entity, false)
-	newProviderTable(traitsProv)
-	equipmentProv := NewEquipmentProvider(entity, true, false)
-	newProviderTable(equipmentProv)
+	traitsProv := tabledProvider(NewTraitsProvider(entity, false))
+	equipmentProv := tabledProvider(NewEquipmentProvider(entity, true, false))
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
