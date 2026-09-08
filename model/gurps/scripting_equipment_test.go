@@ -180,3 +180,23 @@ func TestScriptEquipmentWithoutQuantityIsHidden(t *testing.T) {
 	c.Equal("Coin", names(`entity.findEquipment("Bag", "")[0].children`))
 	c.Equal("Coin", names(`entity.findEquipment("Bag", "")[0].find("", "")`))
 }
+
+// entity.otherEquipment exposes the non-carried equipment list, the same way entity.equipment (covered by
+// TestScriptEquipmentWithoutQuantityIsHidden) exposes the carried one, and it filters out items with a
+// non-positive quantity too.
+func TestScriptEntityOtherEquipment(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	other := NewEquipment(e, nil, false)
+	other.Name = "Spare Armor"
+	zeroQty := NewEquipment(e, nil, false)
+	zeroQty.Name = "Sold Off"
+	zeroQty.Quantity = 0
+	e.OtherEquipment = []*Equipment{other, zeroQty}
+	e.Recalculate()
+
+	resolve := func(expr string) string { return ResolveScript(e, ScriptSelfProvider{}, expr) }
+	c.Equal("1", resolve("entity.otherEquipment.length"))
+	c.Equal("Spare Armor", resolve("entity.otherEquipment[0].name"))
+}

@@ -48,6 +48,7 @@
   and removed together. Sample names from the current definition are shown as you edit. Saving, opening from your
   libraries, having several open at once, and undo work as in the ancestry editor, and each name generator row in the
   ancestry editor has a button that opens that generator for editing. (#607)
+- Added three new fields to the `entity` object in scripting. The `otherEquipment` field is an array of equipment not currently carried. The `wealthCarried` and wealthNotCarried` fields are currency sums for the two groups of equipment.
 
 ## Bug Fixes
 
