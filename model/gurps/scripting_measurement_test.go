@@ -252,7 +252,7 @@ func intFromScriptClampedToSSRT(value float64) int {
 	return min(max(intFromScript(value), minSSRTValue), maxSSRTValue)
 }
 
-// TestSpeedRangePenalty pins the Size and Speed/Range Table (B550) rows that a distance or a speed in yards reads off,
+// TestSpeedRangePenalty pins the Size and Speed/Range Table (BX550) rows that a distance or a speed in yards reads off,
 // and verifies that the script binding measure.rangeModifier resolves to the same function, so the two cannot drift.
 func TestSpeedRangePenalty(t *testing.T) {
 	c := check.New(t)

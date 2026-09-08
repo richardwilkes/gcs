@@ -18,7 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// printedFallingVelocities is the Falling Velocity Table exactly as it appears on B431, one entry per yard, written out
+// printedFallingVelocities is the Falling Velocity Table exactly as it appears on BX431, one entry per yard, written out
 // independently of the row structure collision.go encodes so that a mistake in either one shows up as a disagreement.
 var printedFallingVelocities = map[int]int{
 	1: 5, 2: 7, 3: 8, 4: 9, 5: 10, 6: 11, 7: 12, 8: 13, 9: 14,
@@ -60,7 +60,7 @@ var printedFallingVelocities = map[int]int{
 }
 
 // TestFallingVelocityTable verifies that FallingVelocity reproduces every entry of the printed Falling Velocity Table
-// (B431) at one gravity, that it hands off to the formula past the end of the table without a step in the value, and
+// (BX431) at one gravity, that it hands off to the formula past the end of the table without a step in the value, and
 // that it uses the formula for any other gravity.
 //
 // The printed table cannot be replaced by the formula the same page offers as an alternative: 29 of its 112 entries are
@@ -77,8 +77,8 @@ func TestFallingVelocityTable(t *testing.T) {
 	}
 	c.Equal(29, formulaMismatches, "the printed table must differ from the formula, or it would not need encoding")
 
-	// The worked example on B431: a 17 yard fall reaches 19 yards per second.
-	c.Equal(fxp.Nineteen, FallingVelocity(fxp.FromInteger(17), fxp.One), "the B431 worked example")
+	// The worked example on BX431: a 17 yard fall reaches 19 yards per second.
+	c.Equal(fxp.Nineteen, FallingVelocity(fxp.FromInteger(17), fxp.One), "the BX431 worked example")
 
 	// The seam at the end of the table is clean: the last printed row and the first formula result agree.
 	c.Equal(fxp.FromInteger(49), FallingVelocity(fxp.FromInteger(112), fxp.One), "the last printed row")
@@ -105,7 +105,7 @@ func TestFallingVelocityTable(t *testing.T) {
 	}
 }
 
-// formulaFallingVelocity is the alternative formula from B431, expressed here so the test can show how far the printed
+// formulaFallingVelocity is the alternative formula from BX431, expressed here so the test can show how far the printed
 // table strays from it.
 func formulaFallingVelocity(yards, gravity float64) fxp.Int {
 	return fxp.FromFloat(math.Round(math.Sqrt(21.4 * gravity * yards)))
@@ -189,7 +189,7 @@ func TestCollisionDamageDice(t *testing.T) {
 		want  dice.Dice
 	}{
 		{
-			name: "the B431 worked example", count: fxp.FromStringForced("3.8"),
+			name: "the BX431 worked example", count: fxp.FromStringForced("3.8"),
 			want: dice.Dice{Count: 4, Sides: 6, Multiplier: 1},
 		},
 		{
@@ -223,7 +223,7 @@ func TestCollisionDamageDice(t *testing.T) {
 	}
 }
 
-// TestCollisionVelocity verifies that each collision angle combines the two velocities the way B430 describes, that a
+// TestCollisionVelocity verifies that each collision angle combines the two velocities the way BX430 describes, that a
 // rear-end collision in which the struck object is the faster of the two closes at zero rather than a negative
 // velocity, and that negative velocities are treated as zero.
 func TestCollisionVelocity(t *testing.T) {
@@ -276,7 +276,7 @@ func TestCollisionVelocity(t *testing.T) {
 	}
 }
 
-// TestCollisionRearEnd verifies the worked example on B430: a 60 HP car moving at 25 yards per second rear-ends a 10 HP
+// TestCollisionRearEnd verifies the worked example on BX430: a 60 HP car moving at 25 yards per second rear-ends a 10 HP
 // pedestrian fleeing at 5, so the two meet at 20 yards per second, the car inflicts 12d and the pedestrian 2d. Neither
 // side is capped, since the pedestrian's 2d is already well under the car's 12d.
 func TestCollisionRearEnd(t *testing.T) {
@@ -294,7 +294,7 @@ func TestCollisionRearEnd(t *testing.T) {
 		"the pedestrian's damage")
 }
 
-// TestCollisionCaps verifies that the "cannot inflict more dice than" limits of B430 hold the right side down: in a
+// TestCollisionCaps verifies that the "cannot inflict more dice than" limits of BX430 hold the right side down: in a
 // head-on collision the slower object is capped at the faster one's dice (and neither is capped when the two match),
 // while in a rear-end or side-on collision the struck object is capped at the striker's. It also verifies that halving
 // the damage of a bullet-shaped, sharp or spiked object happens before the cap is applied, so that such a striker
@@ -390,7 +390,7 @@ func TestImmovableCollisionHP(t *testing.T) {
 		c.Equal(tc.want, ImmovableCollisionHP(tc.hp, tc.hard), tc.name)
 	}
 
-	// The B431 worked example: 10 HP on hard ground at 19 yards per second is (2 x 10 x 19)/100 = 3.8d, which rounds
+	// The BX431 worked example: 10 HP on hard ground at 19 yards per second is (2 x 10 x 19)/100 = 3.8d, which rounds
 	// to 4d.
 	count := CollisionDiceCount(ImmovableCollisionHP(fxp.Ten, true), FallingVelocity(fxp.FromInteger(17), fxp.One))
 	c.Equal(fxp.FromStringForced("3.8"), count, "(2 x 10 x 19)/100 dice")

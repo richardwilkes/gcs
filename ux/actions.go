@@ -52,6 +52,7 @@ var (
 	downloadRulesFileAction        *unison.Action
 	duplicateAction                *unison.Action
 	editSheetLayoutAction          *unison.Action
+	explosionCalculatorAction      *unison.Action
 	exportAsJPEGAction             *unison.Action
 	exportAsPDFAction              *unison.Action
 	exportAsPNGAction              *unison.Action
@@ -265,6 +266,11 @@ func registerActions() {
 		unison.KeyBinding{KeyCode: unison.KeyU, Modifiers: mod.OSMenuCommand()})
 	editSheetLayoutAction = registerFocusAction("edit.sheet.layout", EditSheetLayoutItemID,
 		i18n.Text("Edit Sheet Layout"), unison.KeyBinding{})
+	explosionCalculatorAction = registerKeyBindableAction("calculator.explosion", &unison.Action{
+		ID:              ExplosionCalculatorItemID,
+		Title:           i18n.Text("Explosion & Area Attack Calculator"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { DisplayExplosionCalculator(ActiveSheet()) },
+	})
 	exportAsJPEGAction = registerFocusAction("export.jpeg", ExportAsJPEGItemID, i18n.Text("JPEG"), unison.KeyBinding{})
 	exportAsPDFAction = registerFocusAction("export.pdf", ExportAsPDFItemID, i18n.Text("PDF"),
 		unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: mod.Shift | mod.OSMenuCommand()})

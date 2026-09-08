@@ -110,7 +110,8 @@ func TestCalculatorHikingControls(t *testing.T) {
 			s.skis = calc.usingSkis
 			s.skates = calc.usingSkates
 			s.roll = calc.successfulHikingRoll
-			s.rollTitle = calc.successfulHikingRollCheckBox.Text.String()
+			// The page the skill is on sits beside the checkbox as a link; reading it with the title keeps one field.
+			s.rollTitle = calc.successfulHikingRollCheckBox.Text.String() + " " + calc.hikingRollPageLabel.Title()
 		})
 		return s
 	}
@@ -150,7 +151,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 		hours:         fxp.Eight,
 		skisEnabled:   true,
 		skatesEnabled: true,
-		rollTitle:     "Made a successful Hiking (B200) roll",
+		rollTitle:     "Made a successful Hiking roll (B200)",
 	}, current(), "the calculator must start from the defaults")
 
 	// Snow on a road lets it be cleared; a swamp cannot be.
@@ -186,7 +187,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 	s = current()
 	c.True(s.skis, "clicking the skis checkbox must store the choice")
 	c.False(s.skatesEnabled, "skis must rule out skates")
-	c.Equal("Made a successful Skiing (B221) roll", s.rollTitle, "on skis, the roll is against Skiing")
+	c.Equal("Made a successful Skiing roll (B221)", s.rollTitle, "on skis, the roll is against Skiing")
 	clickCheckBox(calc.successfulHikingRollCheckBox)
 	s = current()
 	c.True(s.roll, "clicking the roll checkbox must store the choice")
@@ -195,12 +196,12 @@ func TestCalculatorHikingControls(t *testing.T) {
 	s = current()
 	c.False(s.skis, "clicking the skis checkbox again must clear the choice")
 	c.True(s.skatesEnabled, "without skis, skates are allowed again")
-	c.Equal("Made a successful Hiking (B200) roll", s.rollTitle, "on foot, the roll is against Hiking")
+	c.Equal("Made a successful Hiking roll (B200)", s.rollTitle, "on foot, the roll is against Hiking")
 	clickCheckBox(calc.usingSkatesCheckBox)
 	s = current()
 	c.True(s.skates, "clicking the skates checkbox must store the choice")
 	c.False(s.skisEnabled, "skates must rule out skis")
-	c.Equal("Made a successful Skating (B220) roll", s.rollTitle, "on skates, the roll is against Skating")
+	c.Equal("Made a successful Skating roll (B220)", s.rollTitle, "on skates, the roll is against Skating")
 	clickCheckBox(calc.roadsAreClearedCheckBox)
 	c.True(current().roadsCleared, "clicking the roads checkbox must store the choice")
 

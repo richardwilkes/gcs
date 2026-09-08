@@ -90,7 +90,7 @@ func (s scriptMeasurement) ModifierToYards(ssrtValue float64) float64 {
 	return ssrtToYards(intFromScript(ssrtValue)).AsFloat[float64]()
 }
 
-// SpeedRangePenalty returns the modifier from the Size and Speed/Range Table (B550) for a distance or a speed of the
+// SpeedRangePenalty returns the modifier from the Size and Speed/Range Table (BX550) for a distance or a speed of the
 // given number of yards. The table is shared by both: a range in yards and a velocity in yards per second read off the
 // same rows, so a speed penalty is looked up exactly as a range penalty is. The result is zero or negative.
 func SpeedRangePenalty(yards fxp.Int) int {

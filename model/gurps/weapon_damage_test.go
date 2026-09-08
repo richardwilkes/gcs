@@ -119,3 +119,61 @@ func TestWeaponDamageSpecIsScriptOrCompleteDice(t *testing.T) {
 		c.Equal(one.expected, w.Damage.ResolvedDamage(nil), "test %d (%s)", i, one.base)
 	}
 }
+
+// TestResolveDamageMatchesResolvedDamage verifies that the resolved damage structure and the formatted damage string
+// stay in step: ResolvedDamage is nothing more than ResolveDamage formatted, so the two must agree for a weapon that
+// exercises every piece of the formatting -- a damage bonus, an armor divisor, an explosive damage type and
+// fragmentation with an armor divisor and type of its own. A weapon with no owner has nothing to resolve against, so
+// ResolveDamage answers nil and ResolvedDamage falls back on the unresolved form.
+func TestResolveDamageMatchesResolvedDamage(t *testing.T) {
+	c := check.New(t)
+	bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+	bonus.Amount = fxp.Two
+	w := newWeaponWithBonuses(false, bonus)
+	w.Damage.Type = "cr ex"
+	w.Damage.ArmorDivisor = fxp.Two
+	w.Damage.Fragmentation = "2d"
+	w.Damage.FragmentationArmorDivisor = fxp.Three
+	w.Damage.FragmentationType = "cut"
+
+	resolved := w.Damage.ResolveDamage(nil)
+	c.NotNil(resolved, "a weapon with an entity resolves")
+	c.Equal("1d+2(2) cr ex [2d(3) cut]", resolved.String(), "the resolved damage formats as it always has")
+	c.Equal(w.Damage.ResolvedDamage(nil), resolved.String(), "ResolvedDamage is ResolveDamage formatted")
+	c.Equal(2, resolved.Dice.Modifier, "the damage bonus landed on the dice")
+	c.Equal(fxp.Two, resolved.ArmorDivisor, "the armor divisor came through")
+	c.Equal(2, resolved.Fragmentation.Count, "the fragmentation dice came through")
+	c.Equal(fxp.Three, resolved.FragmentationArmorDivisor, "the fragmentation armor divisor came through")
+	c.Equal("cut", resolved.FragmentationType, "the fragmentation type came through")
+	c.True(resolved.HasFragmentation, "a weapon that throws fragments has fragmentation")
+
+	unowned := &gurps.WeaponDamage{}
+	c.Nil(unowned.ResolveDamage(nil), "a weapon damage with no owner cannot be resolved")
+	c.Equal(unowned.String(), unowned.ResolvedDamage(nil), "and its damage falls back on the unresolved form")
+}
+
+// TestResolvedWeaponDamageIsExplosive verifies that damage counts as an explosion (BX414) when its type carries the
+// Explosion modifier or when it throws fragments, and not otherwise.
+func TestResolvedWeaponDamageIsExplosive(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		name          string
+		damageType    string
+		fragmentation string
+		want          bool
+	}{
+		{name: "an explosive damage type", damageType: "cr ex", want: true},
+		{name: "a decorated explosive damage type", damageType: "burn ex*", want: true},
+		{name: "fragmentation without the explosion modifier", damageType: "cr", fragmentation: "2d", want: true},
+		{name: "both", damageType: "cr ex", fragmentation: "2d", want: true},
+		{name: "neither", damageType: "cut", want: false},
+		{name: "fragmentation that formats as nothing", damageType: "cut", fragmentation: "0", want: false},
+	} {
+		w := newWeaponWithBonuses(false)
+		w.Damage.Type = tc.damageType
+		w.Damage.Fragmentation = tc.fragmentation
+		resolved := w.Damage.ResolveDamage(nil)
+		c.NotNil(resolved, tc.name)
+		c.Equal(tc.want, resolved.IsExplosive(), tc.name)
+	}
+}

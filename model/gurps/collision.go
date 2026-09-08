@@ -16,7 +16,7 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 )
 
-// CollisionAngle names the geometry of a collision, which decides the velocity the two objects meet at (B430).
+// CollisionAngle names the geometry of a collision, which decides the velocity the two objects meet at (BX430).
 type CollisionAngle byte
 
 // The possible CollisionAngle values.
@@ -26,12 +26,12 @@ const (
 	SideOnCollision                        // A side-on hit, or a hit on a stationary object: the striker's velocity.
 )
 
-// fallingVelocityTableMaxYards is the largest distance the printed Falling Velocity Table (B431) covers. Past this
+// fallingVelocityTableMaxYards is the largest distance the printed Falling Velocity Table (BX431) covers. Past this
 // point FallingVelocity switches to the formula, and the seam is clean: the table's last row and the formula both give
 // 49 yards per second.
 const fallingVelocityTableMaxYards = 112
 
-// fallingVelocityTable is the printed Falling Velocity Table (B431) for one gravity, one row per printed entry, giving
+// fallingVelocityTable is the printed Falling Velocity Table (BX431) for one gravity, one row per printed entry, giving
 // the largest distance in yards the row covers and the velocity in yards per second reached over it.
 //
 // The table is encoded rather than computed because it does not match the formula the same page offers as an
@@ -88,7 +88,7 @@ var fallingVelocityTable = []struct {
 }
 
 // FallingVelocity returns the velocity in yards per second reached by falling the given distance in yards under the
-// given gravity, expressed in Gs (B431). A distance or gravity of zero or less yields zero.
+// given gravity, expressed in Gs (BX431). A distance or gravity of zero or less yields zero.
 //
 // At one gravity, and out to the 112 yards the printed Falling Velocity Table covers, the table is consulted: the
 // distance is rounded up to a whole yard and the first row that reaches it supplies the velocity. Everywhere else the
@@ -112,7 +112,7 @@ func FallingVelocity(distanceYards, gravity fxp.Int) fxp.Int {
 
 // TerminalVelocity returns the velocity in yards per second at which a fall stops accelerating, given the base velocity
 // for the falling object's shape and posture -- 60 for a spread-eagle human, 100 for one in a swan dive, and 200 or
-// more for something dense and streamlined -- the gravity in Gs and the atmospheric pressure in atmospheres (B431). The
+// more for something dense and streamlined -- the gravity in Gs and the atmospheric pressure in atmospheres (BX431). The
 // base velocity is scaled by the square root of the gravity and divided by the square root of the pressure.
 //
 // A pressure of zero or less is a vacuum, where a fall never stops accelerating, so unlimited is returned as true and
@@ -128,7 +128,7 @@ func TerminalVelocity(baseVelocity, gravity, pressure fxp.Int) (velocity fxp.Int
 		math.Sqrt(pressure.AsFloat[float64]())), false
 }
 
-// CollisionDiceCount returns the number of dice of crushing damage a collision inflicts, as (HP x velocity)/100 (B430).
+// CollisionDiceCount returns the number of dice of crushing damage a collision inflicts, as (HP x velocity)/100 (BX430).
 // Negative HP or velocity is treated as zero.
 //
 // The count is deliberately left fractional, since the rules act on the fraction: a count below one die maps onto the
@@ -141,7 +141,7 @@ func CollisionDiceCount(hp, velocity fxp.Int) fxp.Int {
 }
 
 // CollisionDamageDice converts a fractional dice count from CollisionDiceCount into the dice of crushing damage
-// actually rolled (B430). Below a full die the count maps onto fixed steps: a quarter of a die or less is 1d-3, a half
+// actually rolled (BX430). Below a full die the count maps onto fixed steps: a quarter of a die or less is 1d-3, a half
 // or less is 1d-2, and anything short of a full die is 1d-1. From one die up, the count is rounded to the nearest whole
 // die, with a fraction of exactly a half rounding up. A count of zero or less produces no dice at all.
 func CollisionDamageDice(count fxp.Int) dice.Dice {
@@ -161,7 +161,7 @@ func CollisionDamageDice(count fxp.Int) dice.Dice {
 }
 
 // CollisionVelocity returns the velocity in yards per second that the two objects in a collision meet at, given the
-// angle of the collision and each object's own velocity (B430). Negative velocities are treated as zero, as is a
+// angle of the collision and each object's own velocity (BX430). Negative velocities are treated as zero, as is a
 // rear-end collision in which the struck object is the faster of the two.
 func CollisionVelocity(angle CollisionAngle, strikerVelocity, struckVelocity fxp.Int) fxp.Int {
 	striker := strikerVelocity.Max(0)
@@ -180,7 +180,7 @@ func CollisionVelocity(angle CollisionAngle, strikerVelocity, struckVelocity fxp
 type CollisionObject struct {
 	HP         fxp.Int // Its HP.
 	Velocity   fxp.Int // Its own velocity in yards per second, before the angle of the collision is applied.
-	HalfDamage bool    // Whether it is bullet-shaped, sharp or spiked, and so does half damage (B430).
+	HalfDamage bool    // Whether it is bullet-shaped, sharp or spiked, and so does half damage (BX430).
 }
 
 // diceFor returns the fractional dice this object inflicts at the given collision velocity, halved if it is shaped to
@@ -203,7 +203,7 @@ type CollisionResult struct {
 	StruckCapped  bool    // Whether the struck object's dice were held down to the striker's.
 }
 
-// Collision returns the damage a collision between two objects does to each of them (B430). Each object inflicts the
+// Collision returns the damage a collision between two objects does to each of them (BX430). Each object inflicts the
 // dice its own HP and the collision velocity call for, halved if it is shaped to do half damage, and then one of them
 // may be capped.
 //
@@ -242,7 +242,7 @@ func Collision(angle CollisionAngle, striker, struck CollisionObject) CollisionR
 }
 
 // ImmovableCollisionHP returns the HP to compute collision damage from when an object slams into something that will
-// not move (B430). The mover inflicts its usual collision damage on the obstacle and takes the same damage itself, but
+// not move (BX430). The mover inflicts its usual collision damage on the obstacle and takes the same damage itself, but
 // a hard obstacle -- the ground, concrete, a building -- doubles the mover's HP for that calculation, while a soft one
 // leaves it alone. Negative HP is treated as zero.
 func ImmovableCollisionHP(moverHP fxp.Int, hard bool) fxp.Int {
@@ -253,7 +253,7 @@ func ImmovableCollisionHP(moverHP fxp.Int, hard bool) fxp.Int {
 }
 
 // BluntTraumaFromFall returns the injury that leaks through armor that stopped the given amount of falling damage
-// (B431). Every five full points stopped inflicts one point of injury, since the falling rules count all armor as
+// (BX431). Every five full points stopped inflicts one point of injury, since the falling rules count all armor as
 // flexible. Negative damage is treated as zero.
 func BluntTraumaFromFall(damageStopped fxp.Int) int {
 	return damageStopped.Max(0).Div(fxp.Five).Floor().AsInteger[int]()

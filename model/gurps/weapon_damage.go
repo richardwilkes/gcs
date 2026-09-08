@@ -299,14 +299,33 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	return base
 }
 
-// ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible.
-func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
+// ResolvedWeaponDamage is a weapon's damage after the wielder's ST, the bonuses that apply to it and any selector
+// overrides have all been folded in. ResolvedDamage formats it, but callers that need the pieces themselves -- the
+// explosion calculator, which wants the dice and the fragmentation dice -- work from this rather than parsing the
+// formatted string back apart.
+type ResolvedWeaponDamage struct {
+	Type                      string    // The damage type, e.g. "cr ex".
+	FragmentationType         string    // The damage type of the fragments, e.g. "cut".
+	Dice                      dice.Dice // The damage dice.
+	Fragmentation             dice.Dice // The fragmentation dice; only meaningful when HasFragmentation is true.
+	ArmorDivisor              fxp.Int   // The armor divisor; 1 means none.
+	FragmentationArmorDivisor fxp.Int   // The armor divisor for the fragments; 1 means none.
+	HasFragmentation          bool      // Whether a fragmentation bracket would be printed for this damage.
+	// useModifyingDicePlusAdds is captured from the entity's sheet settings so that String() cannot format the dice
+	// differently than the entity the damage was resolved against would.
+	useModifyingDicePlusAdds bool
+}
+
+// ResolveDamage returns the damage, fully resolved for the user's sw or thr, or nil if there is no owning weapon or no
+// entity to resolve it against. If 'tooltip' isn't nil, it is updated with the details of every bonus and selector
+// override that was consulted.
+func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeaponDamage {
 	if w.Owner == nil {
-		return w.String()
+		return nil
 	}
 	entity := w.Owner.Entity()
 	if entity == nil {
-		return w.String()
+		return nil
 	}
 	base := w.BaseDamageDice()
 	w.surfaceBaseDamageOverrides(tooltip)
@@ -355,48 +374,82 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	if percentDRDivisorBonus != 0 {
 		armorDivisor += armorDivisor.Mul(percentDRDivisorBonus).Div(fxp.Hundred)
 	}
-	var buffer strings.Builder
-	if base.Count != 0 || base.Modifier != 0 {
-		buffer.WriteString(FormatDice(base, entity.SheetSettings.UseModifyingDicePlusAdds))
+	resolved := ResolvedWeaponDamage{
+		Dice:                     base,
+		ArmorDivisor:             armorDivisor,
+		useModifyingDicePlusAdds: entity.SheetSettings.UseModifyingDicePlusAdds,
 	}
-	if armorDivisor != fxp.One {
-		buffer.WriteByte('(')
-		buffer.WriteString(armorDivisor.String())
-		buffer.WriteByte(')')
-	}
-	t := strings.TrimSpace(w.Owner.ResolveSelector(selector.WeaponDamageType, w.Type, tooltip))
-	if t != "" {
-		if buffer.Len() != 0 {
-			buffer.WriteByte(' ')
-		}
-		buffer.WriteString(t)
-	}
+	resolved.Type = strings.TrimSpace(w.Owner.ResolveSelector(selector.WeaponDamageType, w.Type, tooltip))
 	if fragSpec := w.resolvedDamageString(selector.WeaponFragmentationDice, w.Fragmentation, tooltip); fragSpec != "" {
 		d, sub := w.resolveDiceSpec(fragSpec)
 		if sub {
 			// Negative fragmentation doesn't make sense, so ignore it.
 			d = dice.Dice{Sides: 6, Multiplier: 1}
 		}
-		if frag := FormatDice(d, entity.SheetSettings.UseModifyingDicePlusAdds); frag != "0" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte(' ')
-			}
-			buffer.WriteByte('[')
-			buffer.WriteString(frag)
-			if fragArmorDivisor := w.resolvedDamageNumeric(selector.WeaponFragmentationArmorDivisor, w.FragmentationArmorDivisor, tooltip); fragArmorDivisor != fxp.One {
-				buffer.WriteByte('(')
-				buffer.WriteString(fragArmorDivisor.String())
-				buffer.WriteByte(')')
-			}
-			t = strings.TrimSpace(w.Owner.ResolveSelector(selector.WeaponFragmentationType, w.FragmentationType, tooltip))
-			if t != "" {
-				buffer.WriteByte(' ')
-				buffer.WriteString(t)
-			}
-			buffer.WriteByte(']')
+		// Dice that format as "0" produce no fragmentation bracket at all, so the formatted form is what decides
+		// whether there is any fragmentation, just as it decides whether the bracket is printed.
+		if FormatDice(d, resolved.useModifyingDicePlusAdds) != "0" {
+			resolved.HasFragmentation = true
+			resolved.Fragmentation = d
+			resolved.FragmentationArmorDivisor = w.resolvedDamageNumeric(selector.WeaponFragmentationArmorDivisor,
+				w.FragmentationArmorDivisor, tooltip)
+			resolved.FragmentationType = strings.TrimSpace(w.Owner.ResolveSelector(selector.WeaponFragmentationType,
+				w.FragmentationType, tooltip))
 		}
 	}
+	return &resolved
+}
+
+// String returns the resolved damage formatted the way it appears on a sheet: the dice, the armor divisor in
+// parentheses if it isn't 1, the damage type, and the fragmentation in brackets.
+func (r *ResolvedWeaponDamage) String() string {
+	var buffer strings.Builder
+	if r.Dice.Count != 0 || r.Dice.Modifier != 0 {
+		buffer.WriteString(FormatDice(r.Dice, r.useModifyingDicePlusAdds))
+	}
+	if r.ArmorDivisor != fxp.One {
+		buffer.WriteByte('(')
+		buffer.WriteString(r.ArmorDivisor.String())
+		buffer.WriteByte(')')
+	}
+	if r.Type != "" {
+		if buffer.Len() != 0 {
+			buffer.WriteByte(' ')
+		}
+		buffer.WriteString(r.Type)
+	}
+	if r.HasFragmentation {
+		if buffer.Len() != 0 {
+			buffer.WriteByte(' ')
+		}
+		buffer.WriteByte('[')
+		buffer.WriteString(FormatDice(r.Fragmentation, r.useModifyingDicePlusAdds))
+		if r.FragmentationArmorDivisor != fxp.One {
+			buffer.WriteByte('(')
+			buffer.WriteString(r.FragmentationArmorDivisor.String())
+			buffer.WriteByte(')')
+		}
+		if r.FragmentationType != "" {
+			buffer.WriteByte(' ')
+			buffer.WriteString(r.FragmentationType)
+		}
+		buffer.WriteByte(']')
+	}
 	return buffer.String()
+}
+
+// IsExplosive reports whether this damage is an explosion for the purposes of the explosion rules (BX414): its damage
+// type carries the Explosion modifier, or it throws fragments.
+func (r *ResolvedWeaponDamage) IsExplosive() bool {
+	return IsExplosiveDamageType(r.Type) || r.HasFragmentation
+}
+
+// ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible.
+func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
+	if r := w.ResolveDamage(tooltip); r != nil {
+		return r.String()
+	}
+	return w.String()
 }
 
 // multiplyDice returns the dice scaled by the given multiplier. Dice evaluate as ((sum of Count dice) + Modifier) *

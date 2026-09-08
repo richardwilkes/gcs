@@ -39,6 +39,22 @@ func panelsOfType[T any](root *unison.Panel) []T {
 	return found
 }
 
+// labelTexts returns the text of every label within the subtree rooted at root, in pre-order, whether it is a
+// unison.Label or one of the calculators' link-aware textLabels.
+func labelTexts(root *unison.Panel) []string {
+	var texts []string
+	root.HasInSelfOrDescendants(func(p *unison.Panel) bool {
+		switch label := p.Self.(type) {
+		case *unison.Label:
+			texts = append(texts, label.String())
+		case *textLabel:
+			texts = append(texts, label.String())
+		}
+		return false
+	})
+	return texts
+}
+
 // firstPanelOfType returns the first panel of the given type within the subtree rooted at root, in pre-order. Editors
 // build their sub-panels several levels down and hand back no references to most of them, so a test that wants to drive
 // one has to go looking for it.

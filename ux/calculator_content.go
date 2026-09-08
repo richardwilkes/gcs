@@ -17,11 +17,17 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/weight"
 )
+
+// calculatorFieldPrototype is the widest text every numeric field in a calculator is sized to hold. The fields sit in
+// rows of their own, so left to themselves they would each take a width from their own range; sizing them all to the
+// same text lines them up down the column.
+const calculatorFieldPrototype = "-99,999.99"
 
 type linkSpec struct {
 	pageRef   string
@@ -29,8 +35,8 @@ type linkSpec struct {
 }
 
 // calculatorContent is the column of sections a calculator dockable is built from, and the helpers that add rows to
-// it. The per-sheet Calculator and the standalone collision calculator both embed it, so the two lay their sections
-// out the same way: a bold header, its controls indented beneath it, and the results set off by a divider.
+// it. The per-sheet Calculator and the standalone calculators all embed it, so they lay their sections out the same
+// way: a bold header, its controls indented beneath it, and the results set off by a divider.
 type calculatorContent struct {
 	content *unison.Panel
 }
@@ -68,7 +74,7 @@ func (c *calculatorContent) addRow(columns int) *unison.Panel {
 
 // addFieldRow adds a row holding the field followed by a label with the given text, and returns the label so that a
 // caller passing no text can fill it in later.
-func (c *calculatorContent) addFieldRow(field unison.Paneler, trailing string) *unison.Label {
+func (c *calculatorContent) addFieldRow(field unison.Paneler, trailing string) *textLabel {
 	row := c.addRow(2)
 	row.AddChild(field)
 	return addPlainLabel(row, trailing)
@@ -92,15 +98,81 @@ func (c *calculatorContent) addResultRow() *unison.Panel {
 // addCheckBox adds an indented checkbox with the given title to the content. Clicking it stores whether it is now
 // checked in *flag, then runs changed.
 func (c *calculatorContent) addCheckBox(title string, flag *bool, changed func()) *unison.CheckBox {
+	cb := newCheckBox(title, flag, changed)
+	cb.SetBorder(newSectionIndent())
+	c.content.AddChild(cb)
+	return cb
+}
+
+// newCheckBox returns a checkbox with the given title that stores whether it is checked in *flag, then runs changed,
+// for a caller that places it in a row of its own.
+func newCheckBox(title string, flag *bool, changed func()) *unison.CheckBox {
 	cb := unison.NewCheckBox()
 	cb.SetTitle(title)
-	cb.SetBorder(newSectionIndent())
 	cb.ClickCallback = func() {
 		*flag = cb.State == check.On
 		changed()
 	}
-	c.content.AddChild(cb)
 	return cb
+}
+
+// newRowGroup returns a panel to hold a group of rows that come and go together as the choices change, or a slot that
+// holds whichever of those groups is in use. A group is added to and removed from its slot rather than hidden, since
+// unison's FlexLayout gives a hidden child a cell just the same, so a hidden group would leave a gap its own size.
+func newRowGroup() *unison.Panel {
+	group := unison.NewPanel()
+	group.SetLayout(&unison.FlexLayout{Columns: 1, HSpacing: unison.StdHSpacing, VSpacing: unison.StdVSpacing})
+	group.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	return group
+}
+
+// fillSlot makes the slot hold exactly the given panels, in order.
+func fillSlot(slot *unison.Panel, panels ...*unison.Panel) {
+	current := slot.Children()
+	same := len(current) == len(panels)
+	if same {
+		for i, p := range panels {
+			if current[i] != p {
+				same = false
+				break
+			}
+		}
+	}
+	if same {
+		return
+	}
+	slot.RemoveAllChildren()
+	for _, p := range panels {
+		slot.AddChild(p)
+	}
+}
+
+// newSubheader returns a bold label naming one of the parts a calculator's content is divided into.
+func newSubheader(text string) *unison.Label {
+	label := unison.NewLabel()
+	label.Font = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor {
+			desc := unison.LabelFont.Descriptor()
+			desc.Weight = weight.Bold
+			return desc
+		},
+	}
+	label.SetTitle(text)
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}))
+	return label
+}
+
+// addSubheader adds a subheader with the given text to the content and returns it.
+func (c *calculatorContent) addSubheader(text string) *unison.Label {
+	label := newSubheader(text)
+	c.content.AddChild(label)
+	return label
+}
+
+// sameWidth sizes the field to calculatorFieldPrototype and returns it.
+func sameWidth[T xmath.Integer | xmath.Float](field *NumericField[T]) *NumericField[T] {
+	field.SetMinimumTextWidthUsing(calculatorFieldPrototype)
+	return field
 }
 
 // addIndexPopup adds a popup offering the items to the parent, with the one at *index selected, and returns it.
@@ -117,12 +189,19 @@ func addIndexPopup[T comparable](parent *unison.Panel, items []T, index *int, ch
 	return popup
 }
 
-// addPlainLabel adds a label with the given text to the parent and returns it.
-func addPlainLabel(parent *unison.Panel, text string) *unison.Label {
-	label := unison.NewLabel()
+// addPlainLabel adds a single-line label with the given text to the parent and returns it. Any page reference in the
+// text, such as "(BX400)", is a link that opens the page.
+func addPlainLabel(parent *unison.Panel, text string) *textLabel {
+	label := newSingleLineLabel()
+	label.linkPageRefs(openPageRefLink)
 	label.SetTitle(text)
 	parent.AddChild(label)
 	return label
+}
+
+// openPageRefLink opens the page a link in a label refers to.
+func openPageRefLink(ref string) {
+	OpenPageReference(ref, "", nil)
 }
 
 // addResultLabel adds a bold label for showing a result to the parent and returns it.
@@ -137,6 +216,30 @@ func addResultLabel(parent *unison.Panel) *unison.Label {
 	}
 	parent.AddChild(label)
 	return label
+}
+
+// addResult adds a labeled result to the parent.
+func addResult(parent *unison.Panel, label, value string) {
+	addPlainLabel(parent, label)
+	addResultLabel(parent).SetTitle(value)
+}
+
+// newNoteRow returns a bulleted note that wraps to the width it is given, with its lines hanging under the first. The
+// page references it cites, such as "(BX377)", are links that open the page, as the ones in a section header are.
+func newNoteRow(note string) *unison.Panel {
+	row := unison.NewPanel()
+	row.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing})
+	row.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	bullet := unison.NewLabel()
+	bullet.SetTitle("•")
+	bullet.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
+	row.AddChild(bullet)
+	text := newWrappingLabel()
+	text.linkPageRefs(openPageRefLink)
+	text.setText(note, unison.DefaultLabelTheme.OnBackgroundInk)
+	text.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	row.AddChild(text)
+	return row
 }
 
 // createHeader returns a section header holding the text, followed by the page references in parentheses, with the

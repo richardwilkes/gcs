@@ -107,13 +107,13 @@ type Calculator struct {
 	sheet                        *Sheet
 	undoMgr                      *unison.UndoManager
 	scroll                       *unison.ScrollPanel
-	jumpingLabel                 *unison.Label
+	jumpingLabel                 *textLabel
 	highJumpResult               *unison.Label
 	broadJumpResult              *unison.Label
 	throwingDistanceResult       *unison.Label
 	throwingDamageResult         *unison.Label
 	hikingResult                 *unison.Label
-	hikingDistanceLabel          *unison.Label
+	hikingDistanceLabel          *textLabel
 	hikingTimeLabel              *unison.Label
 	hikingHoursField             *DecimalField
 	hikingExtraEffortField       *IntegerField
@@ -121,6 +121,7 @@ type Calculator struct {
 	usingSkisCheckBox            *unison.CheckBox
 	usingSkatesCheckBox          *unison.CheckBox
 	successfulHikingRollCheckBox *unison.CheckBox
+	hikingRollPageLabel          *textLabel
 	scale                        int
 	jumpingRunningStartYards     fxp.Int
 	throwingObjectWeight         fxp.Weight
@@ -292,8 +293,11 @@ func (c *Calculator) addHikingSection() {
 	c.usingSkisCheckBox = c.addCheckBox(i18n.Text("Using skis"), &c.usingSkis, c.hikingChanged)
 	c.usingSkatesCheckBox = c.addCheckBox(i18n.Text("Using skates"), &c.usingSkates, c.hikingChanged)
 	// The title names the skill the roll is against, which depends on the mode of travel, so adjustHikingControls
-	// sets it.
-	c.successfulHikingRollCheckBox = c.addCheckBox("", &c.successfulHikingRoll, c.hikingChanged)
+	// sets it, along with the page the skill is on, which sits beside the checkbox as a link.
+	row = c.addRow(2)
+	c.successfulHikingRollCheckBox = newCheckBox("", &c.successfulHikingRoll, c.hikingChanged)
+	row.AddChild(c.successfulHikingRollCheckBox)
+	c.hikingRollPageLabel = addPlainLabel(row, "")
 
 	c.hikingHoursField = NewDecimalField(nil, "", i18n.Text("Traveling Hours per Day"),
 		func() fxp.Int { return c.hikingHours },
@@ -340,13 +344,16 @@ func (c *Calculator) hikingChanged() {
 func (c *Calculator) adjustHikingControls() {
 	switch {
 	case c.usingSkis:
-		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Skiing (B221) roll"))
+		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Skiing roll"))
+		c.hikingRollPageLabel.SetTitle("(B221)")
 		c.usingSkatesCheckBox.SetEnabled(false)
 	case c.usingSkates:
-		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Skating (B220) roll"))
+		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Skating roll"))
+		c.hikingRollPageLabel.SetTitle("(B220)")
 		c.usingSkisCheckBox.SetEnabled(false)
 	default:
-		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Hiking (B200) roll"))
+		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Hiking roll"))
+		c.hikingRollPageLabel.SetTitle("(B200)")
 		c.usingSkatesCheckBox.SetEnabled(true)
 		c.usingSkisCheckBox.SetEnabled(true)
 	}
@@ -361,7 +368,8 @@ func (c *Calculator) adjustHikingControls() {
 
 	w := weather[c.weatherIndex]
 	c.roadsAreClearedCheckBox.SetEnabled(terrain[c.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
-	c.hikingExtraEffortField.SetEnabled(c.successfulHikingRoll)
+	// The penalty is not used without a successful roll, so the field is blanked as well as disabled.
+	adjustFieldBlank(c.hikingExtraEffortField, !c.successfulHikingRoll)
 	c.content.MarkForLayoutRecursively()
 	c.content.MarkForLayoutRecursivelyUpward()
 	c.content.MarkForRedraw()

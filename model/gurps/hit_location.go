@@ -177,7 +177,7 @@ func (h *HitLocation) accumulateDR(entity *Entity, tooltip *xbytes.InsertBuffer,
 // DR.
 //
 // The location's own DR bonus is innate, so it is left out here, as is any DR granted by a trait, skill or spell. The
-// falling rules (B431) need the split, since armor DR counts as flexible armor and converts the damage it stops into
+// falling rules (BX431) need the split, since armor DR counts as flexible armor and converts the damage it stops into
 // blunt trauma, while innate DR does not.
 func (h *HitLocation) ArmorDR(entity *Entity, drMap map[string]int) map[string]int {
 	if drMap == nil {

@@ -2,8 +2,15 @@
 
 ## New & Improved
 
+- Added an Explosion & Area Attack calculator, opened from View → Explosion & Area Attack Calculator, for the
+  Explosions, Fragmentation, Demolition and Scatter rules (BX414-BX415) and the Area and Spreading Attacks rules (BX413).
+  It works out the collateral damage and fragmentation reaching a target at any distance from a blast (in air,
+  underwater or in vacuum), contact and internal explosions, the damage from a dissipating area-effect or cone attack,
+  how far a miss scatters, and how much of a given explosive a blast needs or how big a blast a given weight makes.
+  The blast can be typed in or taken from an explosive weapon on any open character sheet, and the target can take its
+  Size Modifier, HP and DR from any open sheet, with DR against the blast worked out per Large-Area Injury (BX400).
 - Added a Collision & Falling Damage calculator, opened from View → Collision & Falling Damage Calculator, for the
-  Collisions and Falls rules (B430-B432). It handles a fall onto a surface, a collision with an immovable object, a
+  Collisions and Falls rules (BX430-BX432). It handles a fall onto a surface, a collision with an immovable object, a
   collision between two objects (including dropped objects, the angle of the collision and overruns), and the sudden
   stop of a vehicle or elevator. Each object involved can take its HP, ST, Size Modifier, Acrobatics and Swimming
   levels and torso DR from any open character sheet, or have them typed in, and the results note the Swimming roll

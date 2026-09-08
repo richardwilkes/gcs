@@ -11,7 +11,6 @@ package ux
 
 import (
 	"fmt"
-	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -20,11 +19,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
-	"github.com/richardwilkes/unison/enums/weight"
 )
 
 var (
@@ -93,7 +90,7 @@ func (s collisionScenario) String() string {
 }
 
 // collisionShape says what an object's shape does to the damage it inflicts: a bullet-shaped, sharp or spiked object
-// does half damage, but of its own type rather than crushing (B430).
+// does half damage, but of its own type rather than crushing (BX430).
 type collisionShape struct {
 	name       string
 	damageType string
@@ -104,7 +101,7 @@ func (s collisionShape) String() string {
 	return s.name
 }
 
-// collisionSurface is a kind of immovable object (B431): a hard one is hit as if the mover had twice its HP, an elastic
+// collisionSurface is a kind of immovable object (BX431): a hard one is hit as if the mover had twice its HP, an elastic
 // one gives extra DR, and water can be dived into cleanly.
 type collisionSurface struct {
 	name    string
@@ -117,7 +114,7 @@ func (s collisionSurface) String() string {
 	return s.name
 }
 
-// terminalVelocityChoice is a terminal velocity at one G in one atmosphere (B431); base is zero for the choice that
+// terminalVelocityChoice is a terminal velocity at one G in one atmosphere (BX431); base is zero for the choice that
 // applies no limit, and custom marks the one whose value is typed in.
 type terminalVelocityChoice struct {
 	name   string
@@ -139,7 +136,7 @@ func (a collisionAngleChoice) String() string {
 }
 
 // collisionRestraint is what holds an occupant in place during a sudden stop, and the DR it gives against the damage
-// (B431).
+// (BX432).
 type collisionRestraint struct {
 	name string
 	dr   int
@@ -149,18 +146,7 @@ func (r collisionRestraint) String() string {
 	return r.name
 }
 
-// collisionSource is an entry in a participant's Source popup: the sheet its numbers come from, or none for numbers
-// that are typed in.
-type collisionSource struct {
-	name  string
-	sheet *Sheet
-}
-
-func (s collisionSource) String() string {
-	return s.name
-}
-
-// CollisionCalculator works out the damage from a collision or a fall (B430-B431). Unlike the per-sheet Calculator it
+// CollisionCalculator works out the damage from a collision or a fall (BX430-BX431). Unlike the per-sheet Calculator it
 // belongs to no document: each of the objects involved either has its numbers typed in or takes them from any open
 // character sheet.
 type CollisionCalculator struct {
@@ -218,16 +204,15 @@ type CollisionCalculator struct {
 // refreshed whenever the sheet changes. The velocity is the exception: a sheet only suggests it (the character's Move),
 // since how fast something was going is a matter of circumstance.
 type collisionParticipant struct {
+	sheetSourcePicker
 	calc            *CollisionCalculator
-	sheet           *Sheet
 	panel           *unison.Panel
 	extras          *unison.Panel
-	sourcePopup     *unison.PopupMenu[collisionSource]
 	hpField         *DecimalField
 	stField         *DecimalField
 	smField         *IntegerField
 	velocityField   *DecimalField
-	velocityLabel   *unison.Label
+	velocityLabel   *textLabel
 	acrobaticsField *IntegerField
 	swimmingField   *IntegerField
 	armorDRField    *IntegerField
@@ -241,7 +226,6 @@ type collisionParticipant struct {
 	armorDR         int
 	innateDR        int
 	shapeIndex      int
-	rebuilding      bool
 }
 
 // DisplayCollisionCalculator brings the collision calculator forward, opening it if it is not already open. preselect,
@@ -280,8 +264,9 @@ func DisplayCollisionCalculator(preselect *Sheet) {
 	c.AddChild(c.createToolbar())
 	c.AddChild(c.scroll)
 	if preselect != nil {
+		c.mover.sheet = preselect
 		c.mover.selectSheet(preselect)
-		c.mover.rebuildSources()
+		c.mover.rebuild()
 	}
 	c.changed()
 	c.content.ValidateScrollRoot()
@@ -289,17 +274,10 @@ func DisplayCollisionCalculator(preselect *Sheet) {
 	c.content.RequestFocus()
 }
 
-// UpdateCollisionCalculators brings the collision calculator, if it is open, up to date with the sheet that has just
-// changed. Nothing announces a sheet closing, so this is also one of the places a source that names a closed sheet is
-// noticed and dropped; the others are the Source popup, just before it opens, and every change to a control.
-func UpdateCollisionCalculators(sheet *Sheet) {
-	for _, d := range AllDockables() {
-		if c, ok := d.AsPanel().Self.(*CollisionCalculator); ok {
-			if c.mover.sheet == sheet || c.target.sheet == sheet {
-				c.changed()
-			}
-			return
-		}
+// sheetChanged implements sheetSourceUser.
+func (c *CollisionCalculator) sheetChanged(sheet *Sheet) {
+	if c.mover.sheet == sheet || c.target.sheet == sheet {
+		c.changed()
 	}
 }
 
@@ -350,69 +328,16 @@ func (c *CollisionCalculator) createContent() {
 	c.content.AddChild(c.notes)
 }
 
-// newRowGroup returns a panel to hold a group of rows that come and go together with the scenario, or a slot that
-// holds whichever of those groups is in use. A group is added to and removed from its slot rather than hidden, since
-// unison's FlexLayout gives a hidden child a cell just the same, so a hidden group would leave a gap its own size.
-func newRowGroup() *unison.Panel {
-	group := unison.NewPanel()
-	group.SetLayout(&unison.FlexLayout{Columns: 1, HSpacing: unison.StdHSpacing, VSpacing: unison.StdVSpacing})
-	group.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	return group
-}
-
-// newSubheader returns a bold label naming one of the objects in the collision.
-func newSubheader(text string) *unison.Label {
-	label := unison.NewLabel()
-	label.Font = &unison.DynamicFont{
-		Resolver: func() unison.FontDescriptor {
-			desc := unison.LabelFont.Descriptor()
-			desc.Weight = weight.Bold
-			return desc
-		},
-	}
-	label.SetTitle(text)
-	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}))
-	return label
-}
-
-func (c *CollisionCalculator) addSubheader(text string) *unison.Label {
-	label := newSubheader(text)
-	c.content.AddChild(label)
-	return label
-}
-
-// collisionFieldPrototype is the widest text every numeric field in the calculator is sized to hold. The fields sit in
-// rows of their own, so left to themselves they would each take a width from their own range; sizing them all to the
-// same text lines them up down the column.
-const collisionFieldPrototype = "-99,999.99"
-
-// sameWidth sizes the field to collisionFieldPrototype and returns it.
-func sameWidth[T xmath.Integer | xmath.Float](field *NumericField[T]) *NumericField[T] {
-	field.SetMinimumTextWidthUsing(collisionFieldPrototype)
-	return field
-}
-
 // createPanel builds the participant's rows into a panel of its own, added to the parent.
 func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 	p.panel = newRowGroup()
 	parent.AddChild(p.panel)
 	rows := &calculatorContent{content: p.panel}
 
-	row := rows.addRow(2)
-	addPlainLabel(row, i18n.Text("Source:"))
-	p.sourcePopup = unison.NewPopupMenu[collisionSource]()
-	p.sourcePopup.WillShowMenuCallback = func(_ *unison.PopupMenu[collisionSource]) { p.rebuildSources() }
-	p.sourcePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[collisionSource]) {
-		if p.rebuilding {
-			return
-		}
-		if source, ok := popup.Selected(); ok {
-			p.selectSheet(source.sheet)
-		}
-		p.calc.changed()
-	}
-	row.AddChild(p.sourcePopup)
-	p.rebuildSources()
+	p.selected = p.selectSheet
+	p.refreshed = p.pullFromSheet
+	p.changed = p.calc.changed
+	p.addRow(rows, i18n.Text("Source:"))
 
 	p.hpField = sameWidth(NewDecimalField(nil, "", i18n.Text("Hit Points"),
 		func() fxp.Int { return p.hp },
@@ -438,7 +363,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 		},
 		-100, 100, true, false))
 	rows.addFieldRow(p.smField, i18n.Text("SM"))
-	row = rows.addRow(2)
+	row := rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Shape:"))
 	addIndexPopup(row, collisionShapes, &p.shapeIndex, p.calc.changed)
 	p.velocityField = sameWidth(NewDecimalField(nil, "", i18n.Text("Velocity"),
@@ -499,70 +424,16 @@ func (p *collisionParticipant) showExtras(show bool) {
 	}
 }
 
-// rebuildSources fills the Source popup with the sheets that are open right now, keeping the current sheet selected if
-// it is still among them and otherwise dropping back to typed-in numbers.
-func (p *collisionParticipant) rebuildSources() {
-	p.rebuilding = true
-	defer func() { p.rebuilding = false }()
-	p.sourcePopup.RemoveAllItems()
-	p.sourcePopup.AddItem(collisionSource{name: i18n.Text("Manual")})
-	sheets := OpenSheets(nil)
-	names := sheetSourceNames(sheets)
-	selected := 0
-	for i, sheet := range sheets {
-		p.sourcePopup.AddItem(collisionSource{name: names[i], sheet: sheet})
-		if sheet == p.sheet {
-			selected = i + 1
-		}
-	}
-	if selected == 0 {
-		p.sheet = nil
-	}
-	p.sourcePopup.SelectIndex(selected)
-}
-
-// sheetSourceNames returns a name for each sheet: its title, or its full path when another open sheet has the same
-// title.
-func sheetSourceNames(sheets []*Sheet) []string {
-	counts := make(map[string]int, len(sheets))
-	for _, sheet := range sheets {
-		counts[sheet.String()]++
-	}
-	names := make([]string, len(sheets))
-	for i, sheet := range sheets {
-		names[i] = sheet.String()
-		if counts[names[i]] > 1 {
-			if path := sheet.BackingFilePath(); path != "" {
-				names[i] = path
-			}
-		}
-	}
-	return names
-}
-
-// selectSheet makes the sheet the source of the participant's numbers, or none of them when it is nil. Choosing a sheet
-// also suggests its Move as the velocity; it is only a suggestion, so a later refresh leaves the velocity alone.
+// selectSheet reads the participant's numbers from the sheet the picker has just made its source, and does nothing at
+// all when there is none. Choosing a sheet also suggests its Move as the velocity; it is only a suggestion, so a later
+// refresh leaves the velocity alone.
 func (p *collisionParticipant) selectSheet(sheet *Sheet) {
-	p.sheet = sheet
 	if sheet == nil {
 		return
 	}
 	entity := sheet.Entity()
 	p.velocity = fxp.FromInteger(entity.Move(entity.EncumbranceLevel(false)))
 	p.velocityField.Sync()
-	p.pullFromSheet()
-}
-
-// refreshSource drops the sheet if it has been closed, and otherwise re-reads its numbers.
-func (p *collisionParticipant) refreshSource() {
-	if p.sheet == nil {
-		return
-	}
-	if !slices.Contains(OpenSheets(nil), p.sheet) {
-		p.sheet = nil
-		p.rebuildSources()
-		return
-	}
 	p.pullFromSheet()
 }
 
@@ -589,41 +460,6 @@ func (p *collisionParticipant) pullFromSheet() {
 	p.swimmingField.Sync()
 	p.armorDRField.Sync()
 	p.innateDRField.Sync()
-}
-
-// skillLevelOrDefault returns the entity's level in the named skill, falling back to its default from the attribute
-// when the skill is not on the sheet. It is zero when even the default cannot be worked out.
-func skillLevelOrDefault(entity *gurps.Entity, name, defaultAttrID string, modifier int) int {
-	if sk := entity.BestSkillNamed(name, "", false, nil); sk != nil {
-		return sk.CalculateLevel(nil).Level.AsInteger[int]()
-	}
-	def := &gurps.SkillDefault{DefaultType: defaultAttrID, Modifier: fxp.FromInteger(modifier)}
-	level := def.SkillLevelFast(entity, nil, false, nil, true)
-	if level == fxp.Min {
-		return 0
-	}
-	return level.AsInteger[int]()
-}
-
-// torsoDR returns the entity's total DR on the torso and the part of it that comes from armor.
-func torsoDR(entity *gurps.Entity) (total, armor int) {
-	body := entity.SheetSettings.BodyType
-	if body == nil {
-		return 0, 0
-	}
-	torso := body.LookupLocationByID(entity, gurps.TorsoID)
-	if torso == nil {
-		return 0, 0
-	}
-	return torso.DR(entity, nil, nil)[gurps.AllID], torso.ArmorDR(entity, nil)[gurps.AllID]
-}
-
-// entity returns the entity the participant's numbers come from, or nil when they are typed in.
-func (p *collisionParticipant) entity() *gurps.Entity {
-	if p.sheet == nil {
-		return nil
-	}
-	return p.sheet.Entity()
 }
 
 // lockSheetFields enables the fields whose values are typed in and disables those that a sheet supplies.
@@ -765,8 +601,8 @@ func (c *CollisionCalculator) changed() {
 	}
 	c.updating = true
 	defer func() { c.updating = false }()
-	c.mover.refreshSource()
-	c.target.refreshSource()
+	c.mover.refresh()
+	c.target.refresh()
 	c.adjustControls()
 	c.updateResults()
 }
@@ -819,17 +655,20 @@ func (c *CollisionCalculator) adjustControls() {
 		c.mover.velocityLabel.SetTitle(i18n.Text("yards/second"))
 	}
 	c.target.velocityLabel.SetTitle(i18n.Text("yards/second"))
-	c.target.velocityField.SetEnabled(collisionAngles[c.angleIndex].angle != gurps.SideOnCollision)
+	// A control whose input would not be used is blanked as well as disabled, so that a stale value cannot be read as
+	// part of the answer. The moving object's velocity is the exception: when it comes from the fall, the field shows
+	// the velocity the fall reaches, which is in use.
+	adjustFieldBlank(c.target.velocityField, collisionAngles[c.angleIndex].angle == gurps.SideOnCollision)
 
 	// Unison does not disable a panel's children along with it, so the fall rows are switched one by one when the
 	// striking object in a two-object collision is not something that was dropped.
-	c.fallDistanceField.SetEnabled(fromFall)
-	c.gravityField.SetEnabled(fromFall)
-	c.terminalPopup.SetEnabled(fromFall)
+	adjustFieldBlank(c.fallDistanceField, !fromFall)
+	adjustFieldBlank(c.gravityField, !fromFall)
+	adjustPopupBlank(c.terminalPopup, !fromFall)
 	terminal := terminalVelocities[c.terminalIndex]
-	c.customTerminalField.SetEnabled(fromFall && terminal.custom)
-	c.pressureField.SetEnabled(fromFall && (terminal.base > 0 || terminal.custom))
-	// The fall can be softened by an Acrobatics roll or by a clean dive into water, but not by both (B431).
+	adjustFieldBlank(c.customTerminalField, !fromFall || !terminal.custom)
+	adjustFieldBlank(c.pressureField, !fromFall || (terminal.base <= 0 && !terminal.custom))
+	// The fall can be softened by an Acrobatics roll or by a clean dive into water, but not by both (BX431).
 	c.controlledFallBox.SetTitle(i18n.Text("Made a successful Acrobatics roll for a controlled fall (-5 yards)"))
 	c.controlledFallBox.SetEnabled(c.scenarioIndex == fallScenario && !c.diving())
 	c.cleanDiveBox.SetTitle(fmt.Sprintf(i18n.Text("Made a successful Swimming roll at %d for a clean dive"),
@@ -837,9 +676,9 @@ func (c *CollisionCalculator) adjustControls() {
 	c.cleanDiveBox.SetEnabled(c.inWater() && !c.controlledFallApplies())
 
 	surface := collisionSurfaces[c.surfaceIndex]
-	c.elasticDRField.SetEnabled(surface.elastic)
-	c.obstacleHPField.SetEnabled(c.breakable)
-	c.obstacleDRField.SetEnabled(c.breakable)
+	adjustFieldBlank(c.elasticDRField, !surface.elastic)
+	adjustFieldBlank(c.obstacleHPField, !c.breakable)
+	adjustFieldBlank(c.obstacleDRField, !c.breakable)
 
 	c.content.MarkForLayoutRecursively()
 	c.content.MarkForLayoutRecursivelyUpward()
@@ -864,30 +703,9 @@ func (c *CollisionCalculator) controlledFallApplies() bool {
 }
 
 // diving reports whether a clean dive negates the damage: only in water, and not when the faller chose a controlled
-// fall instead, since the rules allow one or the other (B431).
+// fall instead, since the rules allow one or the other (BX431).
 func (c *CollisionCalculator) diving() bool {
 	return c.inWater() && c.cleanDive && !c.controlledFallApplies()
-}
-
-// fillSlot makes the slot hold exactly the given panels, in order.
-func fillSlot(slot *unison.Panel, panels ...*unison.Panel) {
-	current := slot.Children()
-	same := len(current) == len(panels)
-	if same {
-		for i, p := range panels {
-			if current[i] != p {
-				same = false
-				break
-			}
-		}
-	}
-	if same {
-		return
-	}
-	slot.RemoveAllChildren()
-	for _, p := range panels {
-		slot.AddChild(p)
-	}
 }
 
 // moverVelocity returns the velocity the moving object hits at: its own, or the one it reaches in a fall.
@@ -904,7 +722,7 @@ func (c *CollisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) 
 	distance := c.fallDistance
 	if c.controlledFallApplies() {
 		distance = (distance - fxp.Five).Max(0)
-		notes = append(notes, fmt.Sprintf(i18n.Text("The controlled fall counts as a fall of %s yards."), distance.Comma()))
+		notes = append(notes, fmt.Sprintf(i18n.Text("The controlled fall counts as a fall of %s yards (BX431)."), distance.Comma()))
 	}
 	velocity = gurps.FallingVelocity(distance, c.gravity)
 	if c.gravity <= 0 {
@@ -922,10 +740,10 @@ func (c *CollisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) 
 	limit, unlimited := gurps.TerminalVelocity(base, c.gravity, c.pressure)
 	switch {
 	case unlimited:
-		notes = append(notes, i18n.Text("In a vacuum there is no terminal velocity."))
+		notes = append(notes, i18n.Text("In a vacuum there is no terminal velocity (BX431)."))
 	case velocity > limit:
 		velocity = limit
-		notes = append(notes, fmt.Sprintf(i18n.Text("The fall is limited to the terminal velocity of %s yards/second."),
+		notes = append(notes, fmt.Sprintf(i18n.Text("The fall is limited to the terminal velocity of %s yards/second (BX431)."),
 			limit.Comma()))
 	}
 	return velocity, notes
@@ -950,29 +768,12 @@ func (c *CollisionCalculator) updateResults() {
 	c.results.MarkForRedraw()
 }
 
-// newNoteRow returns a bulleted note that wraps to the width it is given, with its lines hanging under the first.
-func newNoteRow(note string) *unison.Panel {
-	row := unison.NewPanel()
-	row.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing})
-	row.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	bullet := unison.NewLabel()
-	bullet.SetTitle("\u2022")
-	bullet.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
-	row.AddChild(bullet)
-	text := newWrappingLabel()
-	text.setText(note, unison.DefaultLabelTheme.OnBackgroundInk)
-	text.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	row.AddChild(text)
-	return row
-}
-
 // addResult adds a labeled result to the results panel.
 func (c *CollisionCalculator) addResult(label, value string) {
-	addPlainLabel(c.results, label)
-	addResultLabel(c.results).SetTitle(value)
+	addResult(c.results, label, value)
 }
 
-// velocityText describes a velocity in yards per second and miles per hour (2 mph is 1 yard/second, B430).
+// velocityText describes a velocity in yards per second and miles per hour (2 mph is 1 yard/second, BX430).
 func velocityText(velocity fxp.Int) string {
 	return fmt.Sprintf(i18n.Text("%s yards/second (%s mph)"), velocity.Comma(), velocity.Mul(fxp.Two).Comma())
 }
@@ -1010,7 +811,7 @@ func (c *CollisionCalculator) updateSurfaceResults() []string {
 	c.addResult(i18n.Text("Velocity:"), velocityText(velocity))
 	if c.diving() {
 		c.addResult(fmt.Sprintf(i18n.Text("Damage to %s:"), mover), i18n.Text("None"))
-		notes = append(notes, i18n.Text("The clean dive negates all damage."))
+		notes = append(notes, i18n.Text("The clean dive negates all damage (BX431)."))
 		return notes
 	}
 	damage := damageText(entity, count, shape.damageType)
@@ -1019,28 +820,28 @@ func (c *CollisionCalculator) updateSurfaceResults() []string {
 		c.addResult(i18n.Text("Damage to the surface:"), damage)
 	}
 	if surface.hard {
-		notes = append(notes, i18n.Text("The surface is hard, so the damage is worked out with twice the HP."))
+		notes = append(notes, i18n.Text("The surface is hard, so the damage is worked out with twice the HP (BX431)."))
 	}
 	if c.scenarioIndex != suddenStopScenario && c.breakable {
-		notes = append(notes, fmt.Sprintf(i18n.Text("The surface can break, so neither side takes more than %s points (its HP + DR)."),
+		notes = append(notes, fmt.Sprintf(i18n.Text("The surface can break, so neither side takes more than %s points, its HP + DR (BX431)."),
 			(c.obstacleHP+fxp.FromInteger(c.obstacleDR)).Comma()))
 	}
 	if surface.elastic {
-		notes = append(notes, fmt.Sprintf(i18n.Text("The elastic surface gives DR %d against this damage."), c.elasticDR))
+		notes = append(notes, fmt.Sprintf(i18n.Text("The elastic surface gives DR %d against this damage (BX431)."), c.elasticDR))
 	}
 	if c.inWater() {
 		notes = append(notes, c.swimmingNote())
 	}
 	if c.scenarioIndex == suddenStopScenario {
 		if dr := collisionRestraints[c.restraintIndex].dr; dr > 0 {
-			notes = append(notes, fmt.Sprintf(i18n.Text("The restraint gives DR %d against this damage."), dr))
+			notes = append(notes, fmt.Sprintf(i18n.Text("The restraint gives DR %d against this damage (BX432)."), dr))
 		}
-		notes = append(notes, i18n.Text("Anyone not strapped into an open vehicle is also thrown; work out knockback from this damage to see how far."))
+		notes = append(notes, i18n.Text("Anyone not strapped into an open vehicle is also thrown; work out knockback from this damage to see how far (BX432)."))
 	}
 	if c.scenarioIndex != immovableScenario {
 		notes = append(notes, c.armorNote(count))
 		if c.scenarioIndex == fallScenario {
-			notes = append(notes, i18n.Text("Roll randomly for the hit location. Injury to a limb or extremity in excess of what cripples it is not ignored; if a limb is crippled, roll 1d, and on 5-6 all limbs of that type are crippled."))
+			notes = append(notes, i18n.Text("Roll randomly for the hit location. Injury to a limb or extremity in excess of what cripples it is not ignored; if a limb is crippled, roll 1d, and on 5-6 all limbs of that type are crippled (BX431)."))
 		}
 	}
 	return notes
@@ -1054,32 +855,32 @@ func (c *CollisionCalculator) swimmingNote() string {
 		roll = i18n.Text("Swimming roll (or vehicle control roll, when ditching a vehicle)")
 	}
 	if c.mover.swimming > 0 {
-		return fmt.Sprintf(i18n.Text("A successful %s at %d (effective skill %d) would be a clean dive that negates all damage."),
+		return fmt.Sprintf(i18n.Text("A successful %s at %d (effective skill %d) would be a clean dive that negates all damage (BX431)."),
 			roll, penalty, c.mover.swimming+penalty)
 	}
-	return fmt.Sprintf(i18n.Text("A successful %s at %d would be a clean dive that negates all damage."), roll, penalty)
+	return fmt.Sprintf(i18n.Text("A successful %s at %d would be a clean dive that negates all damage (BX431)."), roll, penalty)
 }
 
 // armorNote describes how the mover's armor fares against falling damage: all of it counts as flexible, so it lets 1 HP
-// of injury through for every 5 full points it stops, even when it stops all of it (B431). The most it can stop is its
+// of injury through for every 5 full points it stops, even when it stops all of it (BX431). The most it can stop is its
 // own DR, which bounds the blunt trauma.
 func (c *CollisionCalculator) armorNote(count fxp.Int) string {
 	if count <= 0 {
 		return ""
 	}
 	if c.mover.armorDR <= 0 {
-		return i18n.Text("Any armor worn counts as flexible against this damage: 1 HP of injury per 5 full points it stops, even if it stops all of it.")
+		return i18n.Text("Any armor worn counts as flexible against this damage: 1 HP of injury per 5 full points it stops, even if it stops all of it (BX431).")
 	}
 	trauma := gurps.BluntTraumaFromFall(fxp.FromInteger(c.mover.armorDR))
 	if trauma == 0 {
-		return fmt.Sprintf(i18n.Text("Armor DR %d counts as flexible against this damage, but it cannot stop 5 full points, so no blunt trauma gets through it."),
+		return fmt.Sprintf(i18n.Text("Armor DR %d counts as flexible against this damage, but it cannot stop 5 full points, so no blunt trauma gets through it (BX431)."),
 			c.mover.armorDR)
 	}
-	return fmt.Sprintf(i18n.Text("Armor DR %d counts as flexible against this damage: 1 HP of injury per 5 full points it stops, even if it stops all of it, so up to %d HP gets through it as blunt trauma."),
+	return fmt.Sprintf(i18n.Text("Armor DR %d counts as flexible against this damage: 1 HP of injury per 5 full points it stops, even if it stops all of it, so up to %d HP gets through it as blunt trauma (BX431)."),
 		c.mover.armorDR, trauma)
 }
 
-// updateTwoObjectResults handles a collision between two objects, either of which may be moving (B430).
+// updateTwoObjectResults handles a collision between two objects, either of which may be moving (BX432).
 func (c *CollisionCalculator) updateTwoObjectResults() []string {
 	var notes []string
 	strikerVelocity := c.mover.velocity
@@ -1105,13 +906,13 @@ func (c *CollisionCalculator) updateTwoObjectResults() []string {
 		damageText(c.target.entity(), result.StruckDice, c.target.shape().damageType))
 	switch {
 	case result.StrikerCapped:
-		notes = append(notes, fmt.Sprintf(i18n.Text("As the slower object, %s cannot inflict more dice than %s."), striker, struck))
+		notes = append(notes, fmt.Sprintf(i18n.Text("As the slower object, %s cannot inflict more dice than %s (BX432)."), striker, struck))
 	case result.StruckCapped:
-		notes = append(notes, fmt.Sprintf(i18n.Text("As the struck object, %s cannot inflict more dice than %s."), struck, striker))
+		notes = append(notes, fmt.Sprintf(i18n.Text("As the struck object, %s cannot inflict more dice than %s (BX432)."), struck, striker))
 	}
 	if c.dropped {
 		if c.mover.sm >= c.target.sm {
-			notes = append(notes, i18n.Text("The falling object is at least as big as the victim, so on the victim's next turn he may move only one yard and his active defenses are at -3."))
+			notes = append(notes, i18n.Text("The falling object is at least as big as the victim, so on the victim's next turn he may move only one yard and his active defenses are at -3 (BX431)."))
 		}
 	} else if c.mover.sm >= c.target.sm+2 {
 		st := c.mover.st
@@ -1122,7 +923,7 @@ func (c *CollisionCalculator) updateTwoObjectResults() []string {
 		thrust := gurps.SheetSettingsFor(c.mover.entity()).DamageProgression.Thrust(st.AsInteger[int]())
 		c.addResult(i18n.Text("Overrun damage:"),
 			gurps.FormatDice(thrust, gurps.SheetSettingsFor(c.mover.entity()).UseModifyingDicePlusAdds)+" cr")
-		notes = append(notes, fmt.Sprintf(i18n.Text("Being at least two sizes bigger, %s overruns %s and inflicts thrust damage for ST %s as well."),
+		notes = append(notes, fmt.Sprintf(i18n.Text("Being at least two sizes bigger, %s overruns %s and inflicts thrust damage for ST %s as well (BX432)."),
 			striker, struck, st.Comma()))
 	}
 	return notes

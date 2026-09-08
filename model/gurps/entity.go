@@ -926,7 +926,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 // AddArmorDRBonusesFor locates the active DR bonuses that come from worn armor and adds them to the map. If 'drMap' is
 // nil, it will be created. The provided map (or the newly created one) will be returned.
 //
-// The falling rules (B431) count all armor DR as flexible for the purpose of blunt trauma, while innate DR -- a hit
+// The falling rules (BX431) count all armor DR as flexible for the purpose of blunt trauma, while innate DR -- a hit
 // location's own DR, or DR granted by a trait, skill or spell -- does not stop a fall that way at all, so the two have
 // to be told apart. A DR bonus counts as armor when the item it came from is a piece of equipment.
 func (e *Entity) AddArmorDRBonusesFor(locationID string, drMap map[string]int) map[string]int {

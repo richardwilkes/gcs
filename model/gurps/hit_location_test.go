@@ -62,7 +62,7 @@ func TestHitLocationDRTooltipSummaryNotDuplicated(t *testing.T) {
 }
 
 // TestHitLocationArmorDRSeparatedFromInnate verifies that ArmorDR reports only the DR granted by worn equipment, while
-// DR reports that plus the innate DR from the location itself and from a trait. The falling rules (B431) treat armor DR
+// DR reports that plus the innate DR from the location itself and from a trait. The falling rules (BX431) treat armor DR
 // as flexible for blunt trauma and innate DR not at all, so the two have to be distinguishable.
 func TestHitLocationArmorDRSeparatedFromInnate(t *testing.T) {
 	c := check.New(t)

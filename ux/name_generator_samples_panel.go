@@ -32,7 +32,7 @@ const sampleNameCount = 10
 type nameGeneratorSamplesPanel struct {
 	unison.Panel
 	dockable *nameGeneratorEditorDockable
-	label    *wrappingLabel
+	label    *textLabel
 	// shownHash is the hash of the definition the samples were last generated from, so that a Sync prompted by
 	// something other than a change to the definition -- a field committing an unchanged value, the rebuild that
 	// follows every structural edit -- does not generate them again.
