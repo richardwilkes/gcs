@@ -20,10 +20,11 @@ import (
 )
 
 // TestExplosionCalculatorSources drives the explosion calculator inside a headless workspace the way a user would: it
-// opens it from its menu action with a character sheet active, checks that the sheet is preselected as the target with
-// the fields it supplies locked and filled, works the collateral damage example on BX414, switches the attack type to a
-// cone and works the width example on BX413, works the demolition example on BX415, and finally closes the sheet and
-// checks that the target drops back to Manual with the fields unlocked.
+// opens the calculators from their menu action with a character sheet active, checks that the sheet is preselected as
+// the target with the fields it supplies locked and filled, works the collateral damage example on BX414, switches the
+// attack type to a cone and works the width example on BX413, works the scatter and demolition examples on BX414 and
+// BX415 on their own tabs, and finally closes the sheet and checks that the target drops back to Manual with the fields
+// unlocked.
 func TestExplosionCalculatorSources(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
@@ -31,10 +32,9 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
-	calc, ok := openedByAction(t, screen, explosionCalculatorAction).(*ExplosionCalculator)
-	if !ok {
-		t.Fatal("the action must open the explosion calculator")
-	}
+	dockable := openCalculator(t, screen)
+	calc := dockable.explosion
+	selectCalculatorTab(t, screen, dockable, calc)
 
 	type state struct {
 		sheet                           *Sheet
@@ -74,16 +74,6 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	c.True(s.exposedEnabled, "the exposed locations of a sheet may be chosen among for an explosion")
 	c.True(s.situationShown, "an explosion asks where the target was")
 	c.Equal([]*unison.Panel{calc.explosionRows}, s.sections, "an explosion shows the environment and its checkboxes")
-	var refBlank, weightBlank, countBlank bool
-	screen.Do(func() {
-		refBlank = !calc.refField.Enabled() && calc.refField.DrawOverCallback != nil
-		weightBlank = !calc.explosiveWeightField.Enabled() && calc.explosiveWeightField.DrawOverCallback != nil
-		countBlank = !calc.blastCountField.Enabled() || calc.blastCountField.DrawOverCallback != nil
-	})
-	c.True(refBlank, "a preset explosive's REF field is disabled and blank, since what is typed in it is not used")
-	c.True(weightBlank, "the weight is not used when working out the explosive a blast needs, so it is blank")
-	c.False(countBlank, "the blast multiplier is in use, so it is editable and shown")
-
 	// BX414: a 6dx2 blast reaches 24 yards, and 3 yards out the damage is divided by 9, which is 1/4/8.
 	screen.Do(func() {
 		calc.blastField.SetText("6dx2")
@@ -141,27 +131,58 @@ func TestExplosionCalculatorSources(t *testing.T) {
 		"Penetrating (average):", "42",
 	}, s.results, "the worked example on BX413 must come out 3 yards wide")
 
+	// BX414: an attack that misses by 3 at 10 yards scatters 3 yards, and one that misses by 3 with the miss squared
+	// would scatter 9 but is limited to half the distance.
+	scatter := dockable.scatter
+	selectCalculatorTab(t, screen, dockable, scatter)
+	causePopup, found := firstPanelOfType[*unison.PopupMenu[scatterCause]](scatter.content)
+	if !found {
+		t.Fatal("the calculator must offer a cause popup")
+	}
+	var scattered string
+	screen.Do(func() {
+		scatter.marginField.SetText("3")
+		scattered = scatter.result.String()
+	})
+	c.Equal("3 yards", scattered, "a miss scatters by its margin")
+	choosePopupItem(t, screen, wnd, causePopup, 1)
+	screen.Do(func() { scattered = scatter.result.String() })
+	c.Equal("5 yards (limited to half the distance)", scattered, "a squared miss is limited to half the distance")
+	captureScreen(t, c, screen, "scatter_calculator")
+
 	// BX415: a 6dx8 blast takes 16 lbs of TNT, or 20 lbs of dynamite, whose REF is 0.8.
-	explosivePopup, found := firstPanelOfType[*unison.PopupMenu[explosiveChoice]](calc.content)
+	demolition := dockable.demolition
+	selectCalculatorTab(t, screen, dockable, demolition)
+	var refBlank, weightBlank, countBlank bool
+	screen.Do(func() {
+		refBlank = !demolition.refField.Enabled() && demolition.refField.DrawOverCallback != nil
+		weightBlank = !demolition.explosiveWeightField.Enabled() && demolition.explosiveWeightField.DrawOverCallback != nil
+		countBlank = !demolition.blastCountField.Enabled() || demolition.blastCountField.DrawOverCallback != nil
+	})
+	c.True(refBlank, "a preset explosive's REF field is disabled and blank, since what is typed in it is not used")
+	c.True(weightBlank, "the weight is not used when working out the explosive a blast needs, so it is blank")
+	c.False(countBlank, "the blast multiplier is in use, so it is editable and shown")
+	explosivePopup, found := firstPanelOfType[*unison.PopupMenu[explosiveChoice]](demolition.content)
 	if !found {
 		t.Fatal("the calculator must offer an explosive popup")
 	}
+	choosePopupItem(t, screen, wnd, explosivePopup, slices.IndexFunc(explosiveChoices,
+		func(e explosiveChoice) bool { return e.title == "Dynamite" }))
 	var damage, tnt, explosiveLabel, explosiveWeight string
 	screen.Do(func() {
-		// The demolition section sits below the window, so its popup is chosen directly rather than clicked.
-		explosivePopup.SelectIndex(slices.IndexFunc(explosiveChoices,
-			func(e explosiveChoice) bool { return e.title == "Dynamite" }))
-		calc.blastCountField.SetText("8")
-		damage = calc.demolitionDamageResult.String()
-		tnt = calc.tntResult.String()
-		explosiveLabel = calc.explosiveWeightLabel.String()
-		explosiveWeight = calc.explosiveWeightResult.String()
+		demolition.blastCountField.SetText("8")
+		damage = demolition.damageResult.String()
+		tnt = demolition.tntResult.String()
+		explosiveLabel = demolition.explosiveWeightLabel.String()
+		explosiveWeight = demolition.explosiveWeightResult.String()
 	})
 	c.Equal("6dx8 cr ex", damage, "the blast is 6d times the multiplier")
 	c.Equal("16 lb", tnt, "a 6dx8 blast takes (8x8)/4 lbs of TNT")
 	c.Equal("Dynamite:", explosiveLabel, "the weight is labeled with the explosive it is of")
 	c.Equal("20 lb", explosiveWeight, "the worked example on BX415 must come out at 20 lbs of dynamite")
+	captureScreen(t, c, screen, "demolition_calculator")
 
+	selectCalculatorTab(t, screen, dockable, calc)
 	closeEditorWithoutPrompt(t, screen, sheet)
 	screen.Do(func() { calc.changed() })
 	s = current()
@@ -172,5 +193,5 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	c.True(s.drEnabled, "the DR must be typed in once the sheet is gone")
 	c.False(s.exposedEnabled, "without a sheet there are no locations to choose among")
 
-	closeEditorWithoutPrompt(t, screen, calc)
+	closeEditorWithoutPrompt(t, screen, dockable)
 }

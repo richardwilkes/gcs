@@ -21,7 +21,8 @@ import (
 )
 
 // TestCollisionCalculatorSources drives the collision calculator inside a headless workspace the way a user would: it
-// opens it from its menu action with a character sheet active, checks that the sheet is preselected as the faller with
+// opens the calculators from their menu action with a character sheet active, checks that the sheet is preselected as
+// the faller with
 // the fields it supplies locked and filled, switches the source to Manual and back through the popup, switches the
 // scenario and checks that the rows for it are swapped in, reads the damage from the worked example on BX431, and
 // finally closes the sheet and checks that the source drops back to Manual with the fields unlocked.
@@ -32,10 +33,9 @@ func TestCollisionCalculatorSources(t *testing.T) {
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
-	calc, ok := openedByAction(t, screen, collisionCalculatorAction).(*CollisionCalculator)
-	if !ok {
-		t.Fatal("the action must open the collision calculator")
-	}
+	dockable := openCalculator(t, screen)
+	calc := dockable.collision
+	selectCalculatorTab(t, screen, dockable, calc)
 
 	type state struct {
 		sheet                      *Sheet
@@ -149,5 +149,5 @@ func TestCollisionCalculatorSources(t *testing.T) {
 	c.Equal(0, s.sourceIndex, "the Source popup must show Manual once the sheet is gone")
 	c.True(s.hpEnabled, "the fields must be unlocked once the sheet is gone")
 
-	closeEditorWithoutPrompt(t, screen, calc)
+	closeEditorWithoutPrompt(t, screen, dockable)
 }

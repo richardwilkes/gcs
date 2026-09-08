@@ -11,27 +11,17 @@ package ux
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 )
 
-var (
-	_ unison.Dockable            = &ExplosionCalculator{}
-	_ unison.TabCloser           = &ExplosionCalculator{}
-	_ unison.UndoManagerProvider = &ExplosionCalculator{}
-)
+var _ calculatorTab = &explosionCalculator{}
 
 // The kinds of attack the calculator handles, in the order the attack type popup offers them.
 const (
@@ -47,15 +37,6 @@ const (
 	threwSelfOnExplosive
 	explosiveInsideTarget
 )
-
-// The directions the demolition section works in, in the order its mode popup offers them.
-const (
-	explosiveForBlastMode = iota
-	blastFromExplosiveMode
-)
-
-// demolitionDamageType is what an explosive charge inflicts: crushing damage with the Explosion modifier (BX415).
-const demolitionDamageType = "cr ex"
 
 var (
 	explosionAttackTypes = []explosionAttackType{
@@ -82,23 +63,6 @@ var (
 		{name: i18n.Text("Threw himself on the explosive")},
 		{name: i18n.Text("The explosive went off inside him")},
 	}
-
-	scatterCauses = []scatterCause{
-		{name: i18n.Text("Failed attack roll")},
-		{name: i18n.Text("Failed attack roll, squared miss"), squared: true},
-		{name: i18n.Text("Target dodged")},
-	}
-
-	demolitionModes = []demolitionMode{
-		{name: i18n.Text("Explosive needed for a blast")},
-		{name: i18n.Text("Blast from a quantity of explosive")},
-	}
-
-	explosiveChoices = newExplosiveChoices()
-
-	// defaultExplosiveIndex is TNT's place among the choices. The Relative Explosive Force Table measures every other
-	// explosive against TNT, so it is the one the calculator starts on.
-	defaultExplosiveIndex = slices.IndexFunc(explosiveChoices, func(e explosiveChoice) bool { return e.title == "TNT" })
 )
 
 type explosionAttackType struct {
@@ -139,51 +103,6 @@ func (s explosionSituation) String() string {
 	return s.name
 }
 
-// scatterCause is why the attack missed, which decides whether it scatters by the margin or by its square (BX414). A
-// dodge never squares the margin.
-type scatterCause struct {
-	name    string
-	squared bool
-}
-
-func (s scatterCause) String() string {
-	return s.name
-}
-
-type demolitionMode struct {
-	name string
-}
-
-func (m demolitionMode) String() string {
-	return m.name
-}
-
-// explosiveChoice is a row of the Relative Explosive Force Table (BX415), or the entry whose REF is typed in.
-type explosiveChoice struct {
-	name   string  // What the popup shows: the tech level, the name and the REF.
-	title  string  // The explosive's own name, which labels the weight it takes.
-	ref    fxp.Int // Its relative explosive force, with TNT as 1.
-	custom bool    // Whether the REF comes from the REF field rather than the table.
-}
-
-func (e explosiveChoice) String() string {
-	return e.name
-}
-
-// newExplosiveChoices returns the Relative Explosive Force Table (BX415) as popup entries, with a custom one at the end
-// for an explosive the table does not list.
-func newExplosiveChoices() []explosiveChoice {
-	choices := make([]explosiveChoice, 0, len(gurps.ExplosiveTypes)+1)
-	for _, one := range gurps.ExplosiveTypes {
-		choices = append(choices, explosiveChoice{
-			name:  fmt.Sprintf(i18n.Text("TL%d %s (REF %s)"), one.TL, one.Name, one.REF.Comma()),
-			title: one.Name,
-			ref:   one.REF,
-		})
-	}
-	return append(choices, explosiveChoice{name: i18n.Text("Custom"), title: i18n.Text("Explosive"), custom: true})
-}
-
 // weaponSource is an entry in the attack's Source popup: an explosive weapon on an open character sheet, or none for an
 // attack whose dice are typed in.
 type weaponSource struct {
@@ -207,71 +126,46 @@ func (e exposedChoice) String() string {
 	return e.name
 }
 
-// ExplosionCalculator works out what an explosion or an area attack does to something standing at a given distance
-// (BX413-BX415), how far a miss scatters, and how much explosive a blast of a given size needs. Unlike the per-sheet
-// Calculator it belongs to no document: the attack is either typed in or taken from an explosive weapon on any open
-// character sheet, and so is its target.
-type ExplosionCalculator struct {
-	unison.Panel
+// explosionCalculator works out what an explosion or an area attack does to something standing at a given distance
+// (BX413-BX415). The attack is either typed in or taken from an explosive weapon on any open character sheet, and so
+// is its target.
+type explosionCalculator struct {
 	calculatorContent
-	undoMgr                *unison.UndoManager
-	scroll                 *unison.ScrollPanel
-	attackSlot             *unison.Panel
-	explosionRows          *unison.Panel
-	coneRows               *unison.Panel
-	areaRows               *unison.Panel
-	results                *unison.Panel
-	notes                  *unison.Panel
-	demolitionWeightSlot   *unison.Panel
-	demolitionWeightRow    *unison.Panel
-	blastLabel             *textLabel
-	scatterResult          *unison.Label
-	demolitionDamageResult *unison.Label
-	tntResult              *unison.Label
-	explosiveWeightLabel   *textLabel
-	explosiveWeightResult  *unison.Label
-	blastField             *StringField
-	damageTypeField        *StringField
-	fragmentationField     *StringField
-	coneRangeField         *DecimalField
-	coneWidthField         *DecimalField
-	scatterMarginField     *IntegerField
-	scatterDistanceField   *DecimalField
-	blastCountField        *IntegerField
-	refField               *DecimalField
-	explosiveWeightField   *WeightField
-	weaponPopup            *unison.PopupMenu[weaponSource]
-	airburstBox            *unison.CheckBox
-	hotFragmentsBox        *unison.CheckBox
-	dissipatesBox          *unison.CheckBox
-	htResistedBox          *unison.CheckBox
-	target                 blastTarget
-	weaponSheet            *Sheet
-	weapon                 *gurps.Weapon
-	blastDice              dice.Dice
-	fragmentationDice      dice.Dice
-	coneMaxRange           fxp.Int
-	coneMaxWidth           fxp.Int
-	scatterDistance        fxp.Int
-	customREF              fxp.Int
-	explosiveWeight        fxp.Weight
-	blastSpec              string
-	damageType             string
-	fragmentationSpec      string
-	scale                  int
-	attackTypeIndex        int
-	environmentIndex       int
-	scatterCauseIndex      int
-	scatterMargin          int
-	demolitionModeIndex    int
-	explosiveIndex         int
-	blastCount             int
-	airburst               bool
-	hotFragments           bool
-	dissipates             bool
-	htResisted             bool
-	updating               bool
-	rebuilding             bool
+	attackSlot         *unison.Panel
+	explosionRows      *unison.Panel
+	coneRows           *unison.Panel
+	areaRows           *unison.Panel
+	results            *unison.Panel
+	notes              *unison.Panel
+	blastLabel         *textLabel
+	blastField         *StringField
+	damageTypeField    *StringField
+	fragmentationField *StringField
+	coneRangeField     *DecimalField
+	coneWidthField     *DecimalField
+	weaponPopup        *unison.PopupMenu[weaponSource]
+	airburstBox        *unison.CheckBox
+	hotFragmentsBox    *unison.CheckBox
+	dissipatesBox      *unison.CheckBox
+	htResistedBox      *unison.CheckBox
+	target             blastTarget
+	weaponSheet        *Sheet
+	weapon             *gurps.Weapon
+	blastDice          dice.Dice
+	fragmentationDice  dice.Dice
+	coneMaxRange       fxp.Int
+	coneMaxWidth       fxp.Int
+	blastSpec          string
+	damageType         string
+	fragmentationSpec  string
+	attackTypeIndex    int
+	environmentIndex   int
+	airburst           bool
+	hotFragments       bool
+	dissipates         bool
+	htResisted         bool
+	updating           bool
+	rebuilding         bool
 }
 
 // blastTarget is whatever the explosion or area attack is worked out against. Its numbers are either typed in or taken
@@ -280,7 +174,7 @@ type ExplosionCalculator struct {
 // circumstance rather than something a sheet knows.
 type blastTarget struct {
 	sheetSourcePicker
-	calc           *ExplosionCalculator
+	calc           *explosionCalculator
 	panel          *unison.Panel
 	situationSlot  *unison.Panel
 	situationRow   *unison.Panel
@@ -302,76 +196,44 @@ type blastTarget struct {
 	situationIndex int
 }
 
-// DisplayExplosionCalculator brings the explosion calculator forward, opening it if it is not already open. preselect,
-// when not nil, is the sheet the target starts out taking its numbers from; it is ignored when the calculator is
-// already open, so that re-choosing the menu item never disturbs what has been entered.
-func DisplayExplosionCalculator(preselect *Sheet) {
-	if activateDockable[*ExplosionCalculator](nil) {
-		return
+func newExplosionCalculator() *explosionCalculator {
+	c := &explosionCalculator{
+		coneMaxRange: fxp.Hundred,
+		coneMaxWidth: fxp.Five,
+		blastSpec:    "6d",
+		damageType:   "cr",
 	}
-	c := &ExplosionCalculator{
-		scale:           gurps.GlobalSettings().General.InitialEditorUIScale,
-		coneMaxRange:    fxp.Hundred,
-		coneMaxWidth:    fxp.Five,
-		scatterDistance: fxp.Ten,
-		customREF:       fxp.One,
-		explosiveWeight: fxp.Weight(fxp.One),
-		blastSpec:       "6d",
-		damageType:      "cr",
-		scatterMargin:   1,
-		explosiveIndex:  defaultExplosiveIndex,
-		blastCount:      1,
-	}
-	c.Self = c
 	c.blastDice = gurps.Roller.Parse(c.blastSpec)
 	c.target = blastTarget{calc: c, hp: fxp.Ten, distance: fxp.Five}
-
-	c.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
-	c.SetLayout(&unison.FlexLayout{Columns: 1})
-
 	c.createContent()
-
-	c.scroll = unison.NewScrollPanel()
-	c.scroll.SetContent(c.content, behavior.HintedFill, behavior.Fill)
-	c.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-
-	c.AddChild(c.createToolbar())
-	c.AddChild(c.scroll)
-	if preselect != nil {
-		c.target.sheet = preselect
-		c.target.selectSheet(preselect)
-		c.target.rebuild()
-	}
-	c.changed()
-	c.content.ValidateScrollRoot()
-	PlaceInDock(c, dgroup.Editors, false)
-	c.content.RequestFocus()
+	return c
 }
 
-// sheetChanged implements sheetSourceUser.
-func (c *ExplosionCalculator) sheetChanged(sheet *Sheet) {
+// title implements calculatorTab.
+func (c *explosionCalculator) title() string {
+	return i18n.Text("Explosions & Area Attacks")
+}
+
+// panel implements calculatorTab.
+func (c *explosionCalculator) panel() *unison.Panel {
+	return c.content
+}
+
+// preselect implements calculatorTab. The sheet becomes the target's source.
+func (c *explosionCalculator) preselect(sheet *Sheet) {
+	c.target.preselect(sheet)
+}
+
+// sheetChanged implements calculatorTab.
+func (c *explosionCalculator) sheetChanged(sheet *Sheet) {
 	if c.target.sheet == sheet || c.weaponSheet == sheet {
 		c.changed()
 	}
 }
 
-func (c *ExplosionCalculator) createToolbar() *unison.Panel {
-	toolbar := newToolbar()
-	toolbar.AddChild(NewDefaultInfoPop())
-	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
-		func() int { return c.scale }, func(scale int) { c.scale = scale }, false, c.scroll)
-	finishToolbarLayout(toolbar)
-	return toolbar
-}
-
-func (c *ExplosionCalculator) createContent() {
+func (c *explosionCalculator) createContent() {
 	c.initCalculatorContent()
-	c.content.AddChild(c.createHeader(i18n.Text("Explosions and Area Attacks"),
+	c.content.AddChild(c.createHeader(i18n.Text("Explosions & Area Attacks"),
 		[]linkSpec{
 			{pageRef: "BX413", highlight: "Area and Spreading Attacks"},
 			{pageRef: "BX414", highlight: "Explosions"},
@@ -387,24 +249,12 @@ func (c *ExplosionCalculator) createContent() {
 	c.addSubheader(i18n.Text("Target"))
 	c.target.createPanel(c.content)
 
-	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
-	divider.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	c.content.AddChild(divider)
-	c.addSubheader(i18n.Text("Results")).SetBorder(nil)
-	c.results = c.addRow(2)
-	c.results.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing * 2, VSpacing: unison.StdVSpacing})
-	c.notes = newRowGroup()
-	c.notes.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2, Left: unison.StdHSpacing * 2}))
-	c.content.AddChild(c.notes)
-
-	c.createScatterSection()
-	c.createDemolitionSection()
+	c.results, c.notes = c.addResultsSection()
 }
 
 // createAttackRows builds the rows describing the attack itself: where its numbers come from, the dice it rolls, and
 // the rows that only one kind of attack has, which live in a slot the attack type swaps.
-func (c *ExplosionCalculator) createAttackRows() {
+func (c *explosionCalculator) createAttackRows() {
 	group := newRowGroup()
 	c.content.AddChild(group)
 	rows := &calculatorContent{content: group}
@@ -449,7 +299,7 @@ func (c *ExplosionCalculator) createAttackRows() {
 
 // newSpecField returns a field holding a dice specification, which is parsed as it is typed so that the results always
 // follow the dice the spec actually names.
-func (c *ExplosionCalculator) newSpecField(undoTitle string, spec *string, parsed *dice.Dice) *StringField {
+func (c *explosionCalculator) newSpecField(undoTitle string, spec *string, parsed *dice.Dice) *StringField {
 	field := NewStringField(nil, "", undoTitle,
 		func() string { return *spec },
 		func(v string) {
@@ -468,7 +318,7 @@ func sizeStringField(field *StringField) {
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Start})
 }
 
-func (c *ExplosionCalculator) createExplosionRows() *unison.Panel {
+func (c *explosionCalculator) createExplosionRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
 	row := rows.addRow(2)
@@ -480,7 +330,7 @@ func (c *ExplosionCalculator) createExplosionRows() *unison.Panel {
 	return group
 }
 
-func (c *ExplosionCalculator) createConeRows() *unison.Panel {
+func (c *explosionCalculator) createConeRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
 	c.coneRangeField = sameWidth(NewDecimalField(nil, "", i18n.Text("Maximum Range"),
@@ -502,7 +352,7 @@ func (c *ExplosionCalculator) createConeRows() *unison.Panel {
 	return group
 }
 
-func (c *ExplosionCalculator) createAreaRows() *unison.Panel {
+func (c *explosionCalculator) createAreaRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
 	c.dissipatesBox = rows.addCheckBox(i18n.Text("The attack dissipates with distance (Dissipation)"), &c.dissipates,
@@ -683,104 +533,8 @@ func (t *blastTarget) posture() explosionPosture {
 	return explosionPostures[t.postureIndex]
 }
 
-// createScatterSection builds the rows that work out how far an attack that missed lands from where it was aimed.
-func (c *ExplosionCalculator) createScatterSection() {
-	c.content.AddChild(c.createHeader(i18n.Text("Scatter"), []linkSpec{{pageRef: "BX414", highlight: "Scatter"}},
-		unison.StdVSpacing*3))
-	row := c.addRow(2)
-	addPlainLabel(row, i18n.Text("Cause of the miss:"))
-	addIndexPopup(row, scatterCauses, &c.scatterCauseIndex, c.changed)
-	c.scatterMarginField = sameWidth(NewIntegerField(nil, "", i18n.Text("Margin"),
-		func() int { return c.scatterMargin },
-		func(v int) {
-			c.scatterMargin = v
-			c.changed()
-		},
-		0, 100, false, false))
-	c.addFieldRow(c.scatterMarginField, i18n.Text("points of margin"))
-	c.scatterDistanceField = sameWidth(NewDecimalField(nil, "", i18n.Text("Distance to Target"),
-		func() fxp.Int { return c.scatterDistance },
-		func(v fxp.Int) {
-			c.scatterDistance = v
-			c.changed()
-		},
-		0, fxp.Max, false, false))
-	c.addFieldRow(c.scatterDistanceField, i18n.Text("yards to the target"))
-	row = c.addResultRow()
-	addPlainLabel(row, i18n.Text("Scatter:"))
-	c.scatterResult = addResultLabel(row)
-	c.addNotes(
-		i18n.Text("The miss is squared when the target was flying or underwater, or when Artillery or Dropping was used against a target the attacker could not see; a dodge is never squared. When the target dodged, the margin is its margin of success."),
-		i18n.Text("Roll 1d for the direction: a 1 is the direction the attacker faces, and each higher number turns 60° further clockwise."),
-		fmt.Sprintf(i18n.Text("Deliberately attacking an area rather than a target standing in it is at %+d to hit. The area cannot defend, though anyone in it may dive for cover."),
-			gurps.AreaAttackBonus),
-	)
-}
-
-// createDemolitionSection builds the rows that convert between the size of a blast and the weight of explosive it
-// takes.
-func (c *ExplosionCalculator) createDemolitionSection() {
-	c.content.AddChild(c.createHeader(i18n.Text("Demolition"), []linkSpec{{pageRef: "BX415", highlight: "Demolition"}},
-		unison.StdVSpacing*3))
-	row := c.addRow(2)
-	addPlainLabel(row, i18n.Text("Mode:"))
-	addIndexPopup(row, demolitionModes, &c.demolitionModeIndex, c.changed)
-	row = c.addRow(2)
-	addPlainLabel(row, i18n.Text("Explosive:"))
-	addIndexPopup(row, explosiveChoices, &c.explosiveIndex, c.changed)
-	c.refField = sameWidth(NewDecimalField(nil, "", i18n.Text("Relative Explosive Force"),
-		func() fxp.Int { return c.customREF },
-		func(v fxp.Int) {
-			c.customREF = v
-			c.changed()
-		},
-		0, fxp.Max, false, false))
-	c.addFieldRow(c.refField, i18n.Text("relative explosive force (REF), with TNT as 1"))
-	c.blastCountField = sameWidth(NewIntegerField(nil, "", i18n.Text("Blast Multiplier"),
-		func() int { return c.blastCount },
-		func(v int) {
-			c.blastCount = v
-			c.changed()
-		},
-		0, 9999, false, false))
-	c.addFieldRow(c.blastCountField, i18n.Text("n, where the blast is 6dxn"))
-	c.explosiveWeightField = NewWeightField(nil, "", i18n.Text("Explosive Weight"), nil,
-		func() fxp.Weight { return c.explosiveWeight },
-		func(v fxp.Weight) {
-			c.explosiveWeight = v
-			c.changed()
-		},
-		0, fxp.Weight(fxp.Max), false)
-	c.addFieldRow(c.explosiveWeightField, i18n.Text("of the explosive"))
-
-	row = c.addResultRow()
-	addPlainLabel(row, i18n.Text("Damage:"))
-	c.demolitionDamageResult = addResultLabel(row)
-	c.demolitionWeightSlot = newRowGroup()
-	c.content.AddChild(c.demolitionWeightSlot)
-	weightRows := &calculatorContent{content: c.demolitionWeightSlot}
-	c.demolitionWeightRow = weightRows.addRow(4)
-	addPlainLabel(c.demolitionWeightRow, i18n.Text("TNT:"))
-	c.tntResult = addResultLabel(c.demolitionWeightRow)
-	c.explosiveWeightLabel = addPlainLabel(c.demolitionWeightRow, "")
-	c.explosiveWeightResult = addResultLabel(c.demolitionWeightRow)
-
-	c.addNotes(i18n.Text("Explosives normally do crushing damage with the Explosion modifier (B104), often with Fragmentation (B104)."))
-}
-
-// addNotes adds a bulleted note for each of the given texts, indented beneath the section they belong to.
-func (c *ExplosionCalculator) addNotes(notes ...string) {
-	group := newRowGroup()
-	group.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2, Left: unison.StdHSpacing * 2}))
-	for _, note := range notes {
-		group.AddChild(newNoteRow(note))
-	}
-	c.content.AddChild(group)
-}
-
-// changed is what every control runs once it has stored its value: the sources are re-read, the dependent controls are
-// brought into line, and the results are recomputed.
-func (c *ExplosionCalculator) changed() {
+// changed implements calculatorTab.
+func (c *explosionCalculator) changed() {
 	if c.updating {
 		return
 	}
@@ -794,7 +548,7 @@ func (c *ExplosionCalculator) changed() {
 // refreshSources re-reads the attack from the weapon it was taken from and the target from its sheet, dropping either
 // source that is no longer there. The weapon comes first, since the DR the target's sheet works out depends on the
 // damage type the weapon supplies.
-func (c *ExplosionCalculator) refreshSources() {
+func (c *explosionCalculator) refreshSources() {
 	c.rebuildWeaponSources()
 	c.pullFromWeapon()
 	c.target.update()
@@ -803,7 +557,7 @@ func (c *ExplosionCalculator) refreshSources() {
 // rebuildWeaponSources fills the attack's Source popup with the explosive weapons on the sheets that are open right
 // now, keeping the current weapon selected if it is still among them and otherwise dropping back to a typed-in attack,
 // which keeps the values last read from the weapon.
-func (c *ExplosionCalculator) rebuildWeaponSources() {
+func (c *explosionCalculator) rebuildWeaponSources() {
 	c.rebuilding = true
 	defer func() { c.rebuilding = false }()
 	c.weaponPopup.RemoveAllItems()
@@ -839,7 +593,7 @@ func (c *ExplosionCalculator) rebuildWeaponSources() {
 // pullFromWeapon fills the attack's fields from the weapon chosen as its source, and does nothing at all when the
 // attack is typed in. Each backing value is assigned before its field is synced, so that the setter the sync may run
 // sees nothing new and does not start another round of updates.
-func (c *ExplosionCalculator) pullFromWeapon() {
+func (c *explosionCalculator) pullFromWeapon() {
 	if c.weapon == nil {
 		return
 	}
@@ -864,7 +618,7 @@ func (c *ExplosionCalculator) pullFromWeapon() {
 
 // adjustControls shows the rows the attack type needs, locks the fields a source supplies and enables, disables and
 // retitles the rest to match the current choices.
-func (c *ExplosionCalculator) adjustControls() {
+func (c *explosionCalculator) adjustControls() {
 	explosion := c.attackTypeIndex == explosionAttack
 	area := c.attackTypeIndex == areaEffectAttack
 	switch c.attackTypeIndex {
@@ -912,23 +666,13 @@ func (c *ExplosionCalculator) adjustControls() {
 	}
 	adjustFieldBlank(c.target.distanceField, explosion && c.target.situationIndex != caughtInBlast)
 
-	explosive := explosiveChoices[c.explosiveIndex]
-	adjustFieldBlank(c.refField, !explosive.custom)
-	adjustFieldBlank(c.blastCountField, c.demolitionModeIndex != explosiveForBlastMode)
-	adjustFieldBlank(c.explosiveWeightField, c.demolitionModeIndex != blastFromExplosiveMode)
-	if c.demolitionModeIndex == explosiveForBlastMode {
-		fillSlot(c.demolitionWeightSlot, c.demolitionWeightRow)
-	} else {
-		fillSlot(c.demolitionWeightSlot)
-	}
-
 	c.content.MarkForLayoutRecursively()
 	c.content.MarkForLayoutRecursivelyUpward()
 	c.content.MarkForRedraw()
 }
 
-// updateResults recomputes every section's results and rewrites the notes that go with the attack.
-func (c *ExplosionCalculator) updateResults() {
+// updateResults recomputes the attack's results and rewrites the notes that go with it.
+func (c *explosionCalculator) updateResults() {
 	c.results.RemoveAllChildren()
 	var notes []string
 	if c.attackTypeIndex == explosionAttack {
@@ -936,37 +680,30 @@ func (c *ExplosionCalculator) updateResults() {
 	} else {
 		notes = c.updateAreaResults()
 	}
-	c.notes.RemoveAllChildren()
-	for _, note := range notes {
-		if note != "" {
-			c.notes.AddChild(newNoteRow(note))
-		}
-	}
-	c.updateScatterResult()
-	c.updateDemolitionResults()
+	setNotes(c.notes, notes)
 	c.results.MarkForLayoutRecursivelyUpward()
 	c.results.MarkForRedraw()
 }
 
 // addResult adds a labeled result to the results panel.
-func (c *ExplosionCalculator) addResult(label, value string) {
+func (c *explosionCalculator) addResult(label, value string) {
 	addResult(c.results, label, value)
 }
 
 // useExtraDice reports whether the dice are formatted with the target's preference for modifying dice plus adds.
-func (c *ExplosionCalculator) useExtraDice() bool {
+func (c *explosionCalculator) useExtraDice() bool {
 	return gurps.SheetSettingsFor(c.target.entity()).UseModifyingDicePlusAdds
 }
 
 // blastText returns the blast's dice as the roller normalizes them, which is how a specification that does not say what
 // the typist meant becomes visible.
-func (c *ExplosionCalculator) blastText() string {
+func (c *explosionCalculator) blastText() string {
 	return gurps.FormatDice(c.blastDice, c.useExtraDice())
 }
 
 // baseDamageType returns the first token of the attack's damage type, which is the type DR is looked up against: the
 // "cr" of "cr ex".
-func (c *ExplosionCalculator) baseDamageType() string {
+func (c *explosionCalculator) baseDamageType() string {
 	if fields := strings.Fields(c.damageType); len(fields) > 0 {
 		return fields[0]
 	}
@@ -975,7 +712,7 @@ func (c *ExplosionCalculator) baseDamageType() string {
 
 // attackDamageType returns the damage type to show for the attack. An explosion's type always carries the Explosion
 // modifier (B104), so it is spelled out for one that does not say so already.
-func (c *ExplosionCalculator) attackDamageType() string {
+func (c *explosionCalculator) attackDamageType() string {
 	damageType := strings.TrimSpace(c.damageType)
 	if c.attackTypeIndex != explosionAttack || gurps.IsExplosiveDamageType(damageType) {
 		return damageType
@@ -987,7 +724,7 @@ func (c *ExplosionCalculator) attackDamageType() string {
 }
 
 // damageText describes the dice and type an attack inflicts, with the divisor its distance imposes.
-func (c *ExplosionCalculator) damageText(divisor fxp.Int) string {
+func (c *explosionCalculator) damageText(divisor fxp.Int) string {
 	text := strings.TrimSpace(c.blastText() + " " + c.attackDamageType())
 	if divisor <= fxp.One {
 		return text
@@ -996,7 +733,7 @@ func (c *ExplosionCalculator) damageText(divisor fxp.Int) string {
 }
 
 // updateExplosionResults works out what an explosion does to the target and returns the notes that go with it (BX414).
-func (c *ExplosionCalculator) updateExplosionResults() []string {
+func (c *explosionCalculator) updateExplosionResults() []string {
 	radius := gurps.CollateralDamageRadius(c.blastDice)
 	c.addResult(i18n.Text("Collateral damage radius:"),
 		fmt.Sprintf(i18n.Text("%d yards (%d dice)"), radius, gurps.DiceOfDamage(c.blastDice)))
@@ -1038,7 +775,7 @@ func (c *ExplosionCalculator) updateExplosionResults() []string {
 
 // blastDivisor returns what the rolled damage is divided by for the target, the text explaining it, and whether the
 // target is close enough to be hurt at all (BX414-BX415).
-func (c *ExplosionCalculator) blastDivisor(radius int) (divisor fxp.Int, text string, inRange bool) {
+func (c *explosionCalculator) blastDivisor(radius int) (divisor fxp.Int, text string, inRange bool) {
 	switch c.target.situationIndex {
 	case struckDirectly:
 		return fxp.One, i18n.Text("None (struck directly)"), true
@@ -1069,7 +806,7 @@ func (c *ExplosionCalculator) blastDivisor(radius int) (divisor fxp.Int, text st
 
 // fragmentationResults adds the rows describing the fragments the explosion throws and returns the notes that go with
 // them (BX414-BX415). An explosion that lists no fragmentation gets a note about what it throws anyway.
-func (c *ExplosionCalculator) fragmentationResults() []string {
+func (c *explosionCalculator) fragmentationResults() []string {
 	if gurps.DiceOfDamage(c.fragmentationDice) <= 0 {
 		return []string{i18n.Text("An explosive that lists no fragmentation still throws whatever it was sitting on: 1d-4 for ordinary earth, up to 1d for loose scrap.")}
 	}
@@ -1126,7 +863,7 @@ func (c *ExplosionCalculator) fragmentationResults() []string {
 
 // updateAreaResults works out what an area-effect or cone attack does to the target and returns the notes that go with
 // it (BX413-BX414).
-func (c *ExplosionCalculator) updateAreaResults() []string {
+func (c *explosionCalculator) updateAreaResults() []string {
 	cone := c.attackTypeIndex == coneAttack
 	distance := c.target.distance
 	divisor := gurps.AreaDamageDivisor(distance)
@@ -1153,7 +890,7 @@ func (c *ExplosionCalculator) updateAreaResults() []string {
 	c.addResult(i18n.Text("Penetrating (average):"), fmt.Sprintf("%d", max(average-c.target.dr, 0)))
 	notes := []string{
 		i18n.Text("Large-Area Injury (BX400): treat the damage as a torso hit, with no hit location wounding modifier, unless only one location is exposed. Only the locations facing the attack are exposed; those behind cover or masked by the body are not."),
-		i18n.Text("An attack that misses an area scatters; the Scatter section below works out how far."),
+		i18n.Text("An attack that misses an area scatters; the Scatter calculator works out how far."),
 		i18n.Text("The only defense is Dodge and Drop (BX377): a dodge at +3 that leaves the target prone. With cover a step away, success reaches it in time; even without cover, the step puts the target a yard farther from the blast."),
 	}
 	if cone {
@@ -1162,95 +899,4 @@ func (c *ExplosionCalculator) updateAreaResults() []string {
 		notes = append(notes, i18n.Text("Area-effect damage does not usually decline with distance; only an attack that dissipates does."))
 	}
 	return notes
-}
-
-// updateScatterResult recomputes how far a miss lands from where it was aimed (BX414).
-func (c *ExplosionCalculator) updateScatterResult() {
-	yards, capped := gurps.ScatterDistance(c.scatterMargin, c.scatterDistance,
-		scatterCauses[c.scatterCauseIndex].squared)
-	text := fmt.Sprintf(i18n.Text("%s yards"), yards.Comma())
-	if capped {
-		text += i18n.Text(" (limited to half the distance)")
-	}
-	c.scatterResult.SetTitle(text)
-}
-
-// updateDemolitionResults recomputes the weight of explosive a blast takes, or the blast a weight of it makes (BX415).
-func (c *ExplosionCalculator) updateDemolitionResults() {
-	explosive := explosiveChoices[c.explosiveIndex]
-	ref := explosive.ref
-	if explosive.custom {
-		ref = c.customREF
-	}
-	c.explosiveWeightLabel.SetTitle(fmt.Sprintf(i18n.Text("%s:"), explosive.title))
-	if c.demolitionModeIndex == explosiveForBlastMode {
-		n := fxp.FromInteger(c.blastCount)
-		c.demolitionDamageResult.SetTitle(blastDamageText(n))
-		c.tntResult.SetTitle(explosiveWeightText(gurps.TNTForBlast(n)))
-		c.explosiveWeightResult.SetTitle(explosiveWeightText(gurps.ExplosiveForBlast(n, ref)))
-		return
-	}
-	c.demolitionDamageResult.SetTitle(blastDamageText(gurps.BlastForExplosive(fxp.Int(c.explosiveWeight), ref)))
-}
-
-// blastDamageText describes the 6dxn blast the demolition rules measure an explosive by. A weight of explosive rarely
-// works out to a whole number of multiples, so a fractional one is shown as it is, along with the dice it comes to.
-func blastDamageText(n fxp.Int) string {
-	if n <= 0 {
-		return i18n.Text("None")
-	}
-	if n == n.Floor() {
-		return gurps.FormatDice(dice.Dice{Count: 6, Sides: 6, Multiplier: n.AsInteger[int]()},
-			gurps.SheetSettingsFor(nil).UseModifyingDicePlusAdds) + " " + demolitionDamageType
-	}
-	return fmt.Sprintf(i18n.Text("6dx%s (about %dd) %s"), n.Mul(fxp.Hundred).Round().Div(fxp.Hundred).Comma(),
-		n.Mul(fxp.Six).Round().AsInteger[int](), demolitionDamageType)
-}
-
-// explosiveWeightText formats a weight of explosive, which the demolition rules always express in pounds, using the
-// weight units the global sheet settings prefer.
-func explosiveWeightText(pounds fxp.Int) string {
-	return gurps.SheetSettingsFor(nil).DefaultWeightUnits.Format(fxp.Weight(pounds))
-}
-
-// TitleIcon implements unison.Dockable
-func (c *ExplosionCalculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  svg.Calculator,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements unison.Dockable
-func (c *ExplosionCalculator) Title() string {
-	return i18n.Text("Explosion & Area Attack Calculator")
-}
-
-func (c *ExplosionCalculator) String() string {
-	return c.Title()
-}
-
-// Tooltip implements unison.Dockable
-func (c *ExplosionCalculator) Tooltip() string {
-	return ""
-}
-
-// Modified implements unison.Dockable
-func (c *ExplosionCalculator) Modified() bool {
-	return false
-}
-
-// MayAttemptClose implements unison.TabCloser
-func (c *ExplosionCalculator) MayAttemptClose() bool {
-	return true
-}
-
-// AttemptClose implements unison.TabCloser
-func (c *ExplosionCalculator) AttemptClose() bool {
-	return AttemptCloseForDockable(c)
-}
-
-// UndoManager implements unison.UndoManagerProvider
-func (c *ExplosionCalculator) UndoManager() *unison.UndoManager {
-	return c.undoMgr
 }

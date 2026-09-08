@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -21,6 +22,8 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/pathop"
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
@@ -34,23 +37,76 @@ type linkSpec struct {
 	highlight string
 }
 
-// calculatorContent is the column of sections a calculator dockable is built from, and the helpers that add rows to
-// it. The per-sheet Calculator and the standalone calculators all embed it, so they lay their sections out the same
-// way: a bold header, its controls indented beneath it, and the results set off by a divider.
+// calculatorContent is the column of sections a calculator is built from, and the helpers that add rows to it. Every
+// calculator the Calculator dockable shows embeds it, so they all lay their sections out the same way: a bold header,
+// its controls indented beneath it, and the results set off in a box of their own.
 type calculatorContent struct {
-	content *unison.Panel
+	content    *unison.Panel
+	resultsBox *unison.Panel
+	flush      bool // Whether rows sit flush with the content's edge rather than indented beneath a header.
 }
 
-// initCalculatorContent creates the content panel and gives it the margin and single-column layout that the sections
-// are added into.
+// initCalculatorContent creates the content panel and gives it the margin and the column layout that the sections are
+// added into. The Calculator's slot gives the content the full width of the view, so that the results box can span it.
 func (c *calculatorContent) initCalculatorContent() {
 	c.content = unison.NewPanel()
 	c.content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
-	c.content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	c.content.SetLayout(&columnLayout{VSpacing: unison.StdVSpacing})
+}
+
+// columnLayout stacks its children top to bottom, each as wide as the column, with VSpacing between them. The column
+// takes whatever width it is given, so that a results box spans the view and the notes wrap to it, but never reports
+// a width narrower than its widest child needs, so that the scroll panel around a calculator scrolls sideways rather
+// than clipping rows. A single-column FlexLayout would not do: a child that grabs the width sets no floor on how far
+// the column can shrink, and one that does not cannot be stretched to fill it.
+type columnLayout struct {
+	VSpacing float32
+}
+
+// LayoutSizes implements unison.Layout.
+func (l *columnLayout) LayoutSizes(target *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	var insets geom.Insets
+	if b := target.Border(); b != nil {
+		insets = b.Insets()
+	}
+	children := target.Children()
+	// The floor is the widest any child needs when it is not offered a width to fit. A child that grabs the width, as
+	// a row of wrapping notes does, takes whatever it is given and sets no floor, just as it would in a FlexLayout.
+	var floor float32
+	for _, child := range children {
+		if data, ok := child.LayoutData().(*unison.FlexLayoutData); ok && data.HGrab {
+			continue
+		}
+		childMin, _, _ := child.Sizes(geom.Size{})
+		floor = max(floor, childMin.Width)
+	}
+	width := max(hint.Width-insets.Width(), floor)
+	var height float32
+	for i, child := range children {
+		if i > 0 {
+			height += l.VSpacing
+		}
+		_, childPref, _ := child.Sizes(geom.NewSize(width, 0))
+		height += childPref.Height
+	}
+	prefSize = geom.NewSize(width, height).Add(insets.Size())
+	minSize = geom.NewSize(floor, height).Add(insets.Size())
+	return minSize, prefSize, unison.MaxSize(prefSize)
+}
+
+// PerformLayout implements unison.Layout.
+func (l *columnLayout) PerformLayout(target *unison.Panel) {
+	rect := target.ContentRect(false)
+	y := rect.Y
+	for i, child := range target.Children() {
+		if i > 0 {
+			y += l.VSpacing
+		}
+		_, childPref, _ := child.Sizes(geom.NewSize(rect.Width, 0))
+		// A child wider than the column is laid out at its own width, so that it is cut off rather than crushed.
+		child.SetFrameRect(geom.NewRect(rect.X, y, max(rect.Width, childPref.Width), childPref.Height))
+		y += childPref.Height
+	}
 }
 
 // newSectionIndent returns the border that sets a section's controls in from its header.
@@ -59,7 +115,7 @@ func newSectionIndent() unison.Border {
 }
 
 // addRow adds a row of controls with the given number of columns to the content, indented beneath its section's
-// header, and returns it.
+// header unless the content is flush, and returns it.
 func (c *calculatorContent) addRow(columns int) *unison.Panel {
 	row := unison.NewPanel()
 	row.SetLayout(&unison.FlexLayout{
@@ -67,7 +123,9 @@ func (c *calculatorContent) addRow(columns int) *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	row.SetBorder(newSectionIndent())
+	if !c.flush {
+		row.SetBorder(newSectionIndent())
+	}
 	c.content.AddChild(row)
 	return row
 }
@@ -80,19 +138,61 @@ func (c *calculatorContent) addFieldRow(field unison.Paneler, trailing string) *
 	return addPlainLabel(row, trailing)
 }
 
-// addResultRow adds a two-column row for a section's results, set off from the inputs above it by a divider, and
-// returns it.
+// resultsBoxMargin is the space between a calculator's inputs and the box its results are shown in.
+const resultsBoxMargin = unison.StdVSpacing * 2
+
+// addResultsBox adds the box a calculator's results are shown in, which sets them off from the inputs above it: a
+// rounded box on a surface of its own, with a line around it and a "Results" header band across its top in the header
+// colors. It returns the body of the box as content for the rows of results to be added to, flush with the body's
+// padding so that they line up with the indented rows above the box, and remembers the box in resultsBox.
+func (c *calculatorContent) addResultsBox() *calculatorContent {
+	box := unison.NewPanel()
+	box.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: resultsBoxMargin}))
+	box.SetLayout(&columnLayout{})
+	c.content.AddChild(box)
+	c.resultsBox = box
+
+	// The text takes its ink from the label as the title is set, so the ink comes first.
+	header := unison.NewLabel()
+	header.Font = subheaderFont
+	header.HAlign = align.Middle
+	header.OnBackgroundInk = colors.OnHeader
+	header.SetTitle(i18n.Text("Results"))
+	header.SetBorder(unison.NewEmptyBorder(unison.StdInsets()))
+	box.AddChild(header)
+
+	body := unison.NewPanel()
+	body.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
+	body.SetLayout(&columnLayout{VSpacing: unison.StdVSpacing})
+	box.AddChild(body)
+
+	box.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		r := box.ContentRect(true)
+		r.Y += resultsBoxMargin
+		r.Height -= resultsBoxMargin
+		radius := geom.NewUniformSize(8)
+		gc.DrawRoundedRect(r, radius, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
+		// The header's band runs the full width of the box, tucked under its rounded top corners, and the line along
+		// its bottom does the same. The label draws only its text, so the band shows through behind it.
+		band := r
+		band.Height = header.FrameRect().Bottom() - r.Y
+		gc.Save()
+		clip := unison.NewPath()
+		clip.RoundedRect(r, radius)
+		gc.ClipPath(clip, pathop.Intersect, true)
+		gc.DrawRect(band, colors.Header.Paint(gc, band, paintstyle.Fill))
+		gc.Restore()
+		edge := unison.ThemeSurfaceEdge.Paint(gc, r, paintstyle.Stroke)
+		edge.SetStrokeWidth(1)
+		gc.DrawLine(geom.NewPoint(band.X, band.Bottom()-0.5), geom.NewPoint(band.Right(), band.Bottom()-0.5), edge)
+		gc.DrawRoundedRect(r.Inset(geom.NewUniformInsets(0.5)), geom.NewUniformSize(7.5), edge)
+	}
+	return &calculatorContent{content: body, flush: true}
+}
+
+// addResultRow adds the results box and a two-column row inside it for a calculator's results, and returns the row.
 func (c *calculatorContent) addResultRow() *unison.Panel {
-	row := c.addRow(2)
-	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
-	divider.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	row.AddChild(divider)
-	return row
+	return c.addResultsBox().addRow(2)
 }
 
 // addCheckBox adds an indented checkbox with the given title to the content. Clicking it stores whether it is now
@@ -118,11 +218,10 @@ func newCheckBox(title string, flag *bool, changed func()) *unison.CheckBox {
 
 // newRowGroup returns a panel to hold a group of rows that come and go together as the choices change, or a slot that
 // holds whichever of those groups is in use. A group is added to and removed from its slot rather than hidden, since
-// unison's FlexLayout gives a hidden child a cell just the same, so a hidden group would leave a gap its own size.
+// a layout gives a hidden child its place just the same, so a hidden group would leave a gap its own size.
 func newRowGroup() *unison.Panel {
 	group := unison.NewPanel()
-	group.SetLayout(&unison.FlexLayout{Columns: 1, HSpacing: unison.StdHSpacing, VSpacing: unison.StdVSpacing})
-	group.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	group.SetLayout(&columnLayout{VSpacing: unison.StdVSpacing})
 	return group
 }
 
@@ -147,16 +246,19 @@ func fillSlot(slot *unison.Panel, panels ...*unison.Panel) {
 	}
 }
 
+// subheaderFont is the bold label font the parts a calculator's content is divided into are named in.
+var subheaderFont = &unison.DynamicFont{
+	Resolver: func() unison.FontDescriptor {
+		desc := unison.LabelFont.Descriptor()
+		desc.Weight = weight.Bold
+		return desc
+	},
+}
+
 // newSubheader returns a bold label naming one of the parts a calculator's content is divided into.
 func newSubheader(text string) *unison.Label {
 	label := unison.NewLabel()
-	label.Font = &unison.DynamicFont{
-		Resolver: func() unison.FontDescriptor {
-			desc := unison.LabelFont.Descriptor()
-			desc.Weight = weight.Bold
-			return desc
-		},
-	}
+	label.Font = subheaderFont
 	label.SetTitle(text)
 	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}))
 	return label
@@ -240,6 +342,44 @@ func newNoteRow(note string) *unison.Panel {
 	text.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	row.AddChild(text)
 	return row
+}
+
+// addNotes adds a bulleted note for each of the given texts, indented beneath the section they belong to.
+func (c *calculatorContent) addNotes(notes ...string) {
+	group := newRowGroup()
+	group.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2, Left: unison.StdHSpacing * 2}))
+	for _, note := range notes {
+		group.AddChild(newNoteRow(note))
+	}
+	c.content.AddChild(group)
+}
+
+// addResultsSection adds the results box, then inside it a two-column panel for results that are rewritten as a whole
+// and a group for the notes that go with them, and returns those.
+func (c *calculatorContent) addResultsSection() (results, notes *unison.Panel) {
+	box := c.addResultsBox()
+	results = box.addRow(2)
+	results.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing * 2, VSpacing: unison.StdVSpacing})
+	return results, box.addNotesGroup()
+}
+
+// addNotesGroup adds a group for the notes that go with a calculator's results, set a little apart from what is above
+// it, and returns it for setNotes to fill.
+func (c *calculatorContent) addNotesGroup() *unison.Panel {
+	notes := newRowGroup()
+	notes.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}))
+	c.content.AddChild(notes)
+	return notes
+}
+
+// setNotes makes the notes panel hold a bulleted row for each of the notes, skipping empty ones.
+func setNotes(panel *unison.Panel, notes []string) {
+	panel.RemoveAllChildren()
+	for _, note := range notes {
+		if note != "" {
+			panel.AddChild(newNoteRow(note))
+		}
+	}
 }
 
 // createHeader returns a section header holding the text, followed by the page references in parentheses, with the

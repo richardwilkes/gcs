@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -60,6 +61,16 @@ func (p *sheetSourcePicker) addRow(rows *calculatorContent, label string) {
 		p.changed()
 	}
 	row.AddChild(p.popup)
+	p.rebuild()
+}
+
+// preselect makes the sheet the source before the popup has ever been shown, reading the numbers from it as choosing it
+// would. It is for a calculator opened from a sheet, which starts out with that sheet chosen.
+func (p *sheetSourcePicker) preselect(sheet *Sheet) {
+	p.sheet = sheet
+	if p.selected != nil {
+		p.selected(sheet)
+	}
 	p.rebuild()
 }
 
@@ -139,6 +150,34 @@ func skillLevelOrDefault(entity *gurps.Entity, name, defaultAttrID string, modif
 		return 0
 	}
 	return level.AsInteger[int]()
+}
+
+// basicLiftFor returns the Basic Lift the entity has with the given ST, or the one a character typed in has with it
+// when the entity is nil, worked out under the global default sheet settings.
+func basicLiftFor(entity *gurps.Entity, st fxp.Int) fxp.Weight {
+	if entity != nil {
+		return entity.BasicLiftForST(st)
+	}
+	return gurps.BasicLiftForST(st, gurps.SheetSettingsFor(nil).DamageProgression)
+}
+
+// thrustFor returns the thrust damage for the given ST under the entity's damage progression, or the global default one
+// when the entity is nil.
+func thrustFor(entity *gurps.Entity, st fxp.Int) dice.Dice {
+	return gurps.SheetSettingsFor(entity).DamageProgression.Thrust(st.AsInteger[int]())
+}
+
+// newSourcedWeightField returns a weight field shown in the weight units the sheet settings of the entity that source
+// names prefer, or the global default ones when it names none. The units follow the source as it changes, so a field
+// whose source has just changed is synced to show the new ones.
+func newSourcedWeightField(undoTitle string, source func() *gurps.Entity, get func() fxp.Weight, set func(fxp.Weight), minValue, maxValue fxp.Weight) *WeightField {
+	return newUnitsField(nil, "", undoTitle, get, set,
+		func(value fxp.Weight) string {
+			return gurps.SheetSettingsFor(source()).DefaultWeightUnits.Format(value)
+		},
+		func(s string) (fxp.Weight, error) {
+			return fxp.WeightFromString(s, gurps.SheetSettingsFor(source()).DefaultWeightUnits)
+		}, minValue, maxValue, false)
 }
 
 // torsoDR returns the entity's total DR on the torso and the part of it that comes from armor.

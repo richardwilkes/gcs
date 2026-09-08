@@ -93,7 +93,7 @@ func TestPageRefPattern(t *testing.T) {
 		want []string
 	}{
 		{text: "see Dodge and Drop (BX377).", want: []string{"BX377"}},
-		{text: "Collisions and Falls (BX430-BX431)", want: []string{"BX430", "BX431"}},
+		{text: "Collisions & Falls (BX430-BX431)", want: []string{"BX430", "BX431"}},
 		{text: "Large-Area Injury (BX400): treat it as a torso hit", want: []string{"BX400"}},
 		{text: "the Explosion modifier (B104) from the Characters book", want: []string{"B104"}},
 		{text: "C4 at TL7, 6dx2 cr ex, SM +2 and HP 10 are not references"},

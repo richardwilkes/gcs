@@ -1295,11 +1295,19 @@ func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 			st = st.Floor() + fxp.One
 		}
 	}
+	return BasicLiftForST(st, e.SheetSettings.DamageProgression)
+}
+
+// BasicLiftForST returns the Basic Lift for the given ST under the given damage progression (BX17), for a character
+// that is not on a sheet. A sheet's character has its own BasicLiftForST, which also honors any threshold that halves
+// its ST.
+func BasicLiftForST(st fxp.Int, damageProgression progression.Option) fxp.Weight {
+	st = st.Floor()
 	if st < fxp.One {
 		return 0
 	}
 	var v fxp.Int
-	if e.SheetSettings.DamageProgression == progression.KnowingYourOwnStrength {
+	if damageProgression == progression.KnowingYourOwnStrength {
 		var diff fxp.Int
 		if st > fxp.Nineteen {
 			diff = st.Div(fxp.Ten).Floor() - fxp.One

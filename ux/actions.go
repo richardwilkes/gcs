@@ -30,11 +30,11 @@ var licenseMarkdownContent string
 var (
 	addNaturalAttacksAction        *unison.Action
 	applyTemplateAction            *unison.Action
+	calculatorAction               *unison.Action
 	clearPortraitAction            *unison.Action
 	clearSourceAction              *unison.Action
 	cloneSheetAction               *unison.Action
 	closeTabAction                 *unison.Action
-	collisionCalculatorAction      *unison.Action
 	colorSettingsAction            *unison.Action
 	convertToContainerAction       *unison.Action
 	convertToNonContainerAction    *unison.Action
@@ -52,7 +52,6 @@ var (
 	downloadRulesFileAction        *unison.Action
 	duplicateAction                *unison.Action
 	editSheetLayoutAction          *unison.Action
-	explosionCalculatorAction      *unison.Action
 	exportAsJPEGAction             *unison.Action
 	exportAsPDFAction              *unison.Action
 	exportAsPNGAction              *unison.Action
@@ -216,10 +215,10 @@ func registerActions() {
 			}
 		},
 	})
-	collisionCalculatorAction = registerKeyBindableAction("calculator.collision", &unison.Action{
-		ID:              CollisionCalculatorItemID,
-		Title:           i18n.Text("Collision & Falling Damage Calculator"),
-		ExecuteCallback: func(_ *unison.Action, _ any) { DisplayCollisionCalculator(ActiveSheet()) },
+	calculatorAction = registerKeyBindableAction("calculator", &unison.Action{
+		ID:              CalculatorItemID,
+		Title:           i18n.Text("Calculators"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { DisplayCalculator(ActiveSheet()) },
 	})
 	colorSettingsAction = registerKeyBindableAction("settings.colors", &unison.Action{
 		ID:              ColorSettingsItemID,
@@ -266,11 +265,6 @@ func registerActions() {
 		unison.KeyBinding{KeyCode: unison.KeyU, Modifiers: mod.OSMenuCommand()})
 	editSheetLayoutAction = registerFocusAction("edit.sheet.layout", EditSheetLayoutItemID,
 		i18n.Text("Edit Sheet Layout"), unison.KeyBinding{})
-	explosionCalculatorAction = registerKeyBindableAction("calculator.explosion", &unison.Action{
-		ID:              ExplosionCalculatorItemID,
-		Title:           i18n.Text("Explosion & Area Attack Calculator"),
-		ExecuteCallback: func(_ *unison.Action, _ any) { DisplayExplosionCalculator(ActiveSheet()) },
-	})
 	exportAsJPEGAction = registerFocusAction("export.jpeg", ExportAsJPEGItemID, i18n.Text("JPEG"), unison.KeyBinding{})
 	exportAsPDFAction = registerFocusAction("export.pdf", ExportAsPDFItemID, i18n.Text("PDF"),
 		unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: mod.Shift | mod.OSMenuCommand()})

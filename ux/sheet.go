@@ -342,14 +342,14 @@ func (s *Sheet) BackingFilePath() string {
 }
 
 // MarkModified implements ModifiableRoot. A sheet does more than the shared pageView.markModified: its entity has to
-// be recalculated first, its calculator brought up to date last, and a source that asks for it (see SkipDeepSync) is
-// spared the sync in between.
+// be recalculated first, the calculators drawing numbers from it brought up to date last, and a source that asks for
+// it (see SkipDeepSync) is spared the sync in between.
 func (s *Sheet) MarkModified(src unison.Paneler) {
 	if s.awaitingUpdate {
 		return
 	}
 	s.awaitingUpdate = true
-	// Everything below reads the derived state -- the panels, the tables, and the calculator all display skill levels,
+	// Everything below reads the derived state -- the panels, the tables, and the calculators all display skill levels,
 	// points and the like -- so the entity is brought up to date first.
 	s.entity.Recalculate()
 	s.bumpModificationTimestamp()
@@ -370,7 +370,6 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		//       to determine that the content of a table doesn't need to be refreshed.
 		s.resync(s, s.captureViewState())
 	}
-	UpdateCalculator(s)
 	UpdateCalculatorsForSheet(s)
 }
 
@@ -782,7 +781,6 @@ func (s *Sheet) Rebuild(full bool) {
 		s.layoutEditor.syncFrame()
 		s.layoutEditor.overlay.RequestFocus()
 	}
-	UpdateCalculator(s)
 	UpdateCalculatorsForSheet(s)
 }
 

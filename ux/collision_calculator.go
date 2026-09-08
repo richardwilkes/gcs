@@ -14,21 +14,11 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
-	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 )
 
-var (
-	_ unison.Dockable            = &CollisionCalculator{}
-	_ unison.TabCloser           = &CollisionCalculator{}
-	_ unison.UndoManagerProvider = &CollisionCalculator{}
-)
+var _ calculatorTab = &collisionCalculator{}
 
 // The scenarios the collision calculator handles, in the order the scenario popup offers them.
 const (
@@ -146,14 +136,10 @@ func (r collisionRestraint) String() string {
 	return r.name
 }
 
-// CollisionCalculator works out the damage from a collision or a fall (BX430-BX431). Unlike the per-sheet Calculator it
-// belongs to no document: each of the objects involved either has its numbers typed in or takes them from any open
-// character sheet.
-type CollisionCalculator struct {
-	unison.Panel
+// collisionCalculator works out the damage from a collision or a fall (BX430-BX431). Each of the objects involved
+// either has its numbers typed in or takes them from any open character sheet.
+type collisionCalculator struct {
 	calculatorContent
-	undoMgr             *unison.UndoManager
-	scroll              *unison.ScrollPanel
 	moverHeader         *unison.Label
 	sectionSlot         *unison.Panel
 	targetSlot          *unison.Panel
@@ -184,7 +170,6 @@ type CollisionCalculator struct {
 	customTerminal      fxp.Int
 	obstacleHP          fxp.Int
 	moverName           string
-	scale               int
 	scenarioIndex       int
 	terminalIndex       int
 	surfaceIndex        int
@@ -205,7 +190,7 @@ type CollisionCalculator struct {
 // since how fast something was going is a matter of circumstance.
 type collisionParticipant struct {
 	sheetSourcePicker
-	calc            *CollisionCalculator
+	calc            *collisionCalculator
 	panel           *unison.Panel
 	extras          *unison.Panel
 	hpField         *DecimalField
@@ -228,71 +213,45 @@ type collisionParticipant struct {
 	shapeIndex      int
 }
 
-// DisplayCollisionCalculator brings the collision calculator forward, opening it if it is not already open. preselect,
-// when not nil, is the sheet the moving object starts out taking its numbers from; it is ignored when the calculator
-// is already open, so that re-choosing the menu item never disturbs what has been entered.
-func DisplayCollisionCalculator(preselect *Sheet) {
-	if activateDockable[*CollisionCalculator](nil) {
-		return
-	}
-	c := &CollisionCalculator{
-		scale:          gurps.GlobalSettings().General.InitialEditorUIScale,
+func newCollisionCalculator() *collisionCalculator {
+	c := &collisionCalculator{
 		fallDistance:   fxp.Five,
 		gravity:        fxp.One,
 		pressure:       fxp.One,
 		customTerminal: fxp.FromInteger(200),
 		elasticDR:      5,
 	}
-	c.Self = c
 	c.mover = collisionParticipant{calc: c, hp: fxp.Ten, velocity: fxp.Five}
 	c.target = collisionParticipant{calc: c, hp: fxp.Ten}
-
-	c.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
-	c.SetLayout(&unison.FlexLayout{Columns: 1})
-
 	c.createContent()
-
-	c.scroll = unison.NewScrollPanel()
-	c.scroll.SetContent(c.content, behavior.HintedFill, behavior.Fill)
-	c.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-
-	c.AddChild(c.createToolbar())
-	c.AddChild(c.scroll)
-	if preselect != nil {
-		c.mover.sheet = preselect
-		c.mover.selectSheet(preselect)
-		c.mover.rebuild()
-	}
-	c.changed()
-	c.content.ValidateScrollRoot()
-	PlaceInDock(c, dgroup.Editors, false)
-	c.content.RequestFocus()
+	return c
 }
 
-// sheetChanged implements sheetSourceUser.
-func (c *CollisionCalculator) sheetChanged(sheet *Sheet) {
+// title implements calculatorTab.
+func (c *collisionCalculator) title() string {
+	return i18n.Text("Collisions & Falls")
+}
+
+// panel implements calculatorTab.
+func (c *collisionCalculator) panel() *unison.Panel {
+	return c.content
+}
+
+// preselect implements calculatorTab. The sheet becomes the moving object's source.
+func (c *collisionCalculator) preselect(sheet *Sheet) {
+	c.mover.preselect(sheet)
+}
+
+// sheetChanged implements calculatorTab.
+func (c *collisionCalculator) sheetChanged(sheet *Sheet) {
 	if c.mover.sheet == sheet || c.target.sheet == sheet {
 		c.changed()
 	}
 }
 
-func (c *CollisionCalculator) createToolbar() *unison.Panel {
-	toolbar := newToolbar()
-	toolbar.AddChild(NewDefaultInfoPop())
-	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
-		func() int { return c.scale }, func(scale int) { c.scale = scale }, false, c.scroll)
-	finishToolbarLayout(toolbar)
-	return toolbar
-}
-
-func (c *CollisionCalculator) createContent() {
+func (c *collisionCalculator) createContent() {
 	c.initCalculatorContent()
-	c.content.AddChild(c.createHeader(i18n.Text("Collisions and Falls"),
+	c.content.AddChild(c.createHeader(i18n.Text("Collisions & Falls"),
 		[]linkSpec{{pageRef: "BX430", highlight: "Collisions and Falls"}}, 0))
 
 	row := c.addRow(2)
@@ -316,16 +275,7 @@ func (c *CollisionCalculator) createContent() {
 	c.target.createPanel(c.targetSlot)
 	c.targetSlot.RemoveAllChildren()
 
-	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
-	divider.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	c.content.AddChild(divider)
-	c.addSubheader(i18n.Text("Results")).SetBorder(nil)
-	c.results = c.addRow(2)
-	c.results.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing * 2, VSpacing: unison.StdVSpacing})
-	c.notes = newRowGroup()
-	c.notes.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2, Left: unison.StdHSpacing * 2}))
-	c.content.AddChild(c.notes)
+	c.results, c.notes = c.addResultsSection()
 }
 
 // createPanel builds the participant's rows into a panel of its own, added to the parent.
@@ -486,7 +436,7 @@ func (p *collisionParticipant) shape() collisionShape {
 	return collisionShapes[p.shapeIndex]
 }
 
-func (c *CollisionCalculator) createFallRows() *unison.Panel {
+func (c *collisionCalculator) createFallRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
 	c.fallDistanceField = sameWidth(NewDecimalField(nil, "", i18n.Text("Distance Fallen"),
@@ -529,7 +479,7 @@ func (c *CollisionCalculator) createFallRows() *unison.Panel {
 	return group
 }
 
-func (c *CollisionCalculator) createSurfaceRows() *unison.Panel {
+func (c *collisionCalculator) createSurfaceRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
 	row := rows.addRow(2)
@@ -567,7 +517,7 @@ func (c *CollisionCalculator) createSurfaceRows() *unison.Panel {
 	return group
 }
 
-func (c *CollisionCalculator) createDropRows() *unison.Panel {
+func (c *collisionCalculator) createDropRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
 	rows.addCheckBox(i18n.Text("The striking object was dropped, and its velocity comes from the fall"), &c.dropped,
@@ -575,7 +525,7 @@ func (c *CollisionCalculator) createDropRows() *unison.Panel {
 	return group
 }
 
-func (c *CollisionCalculator) createAngleRows() *unison.Panel {
+func (c *collisionCalculator) createAngleRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
 	row := rows.addRow(2)
@@ -584,7 +534,7 @@ func (c *CollisionCalculator) createAngleRows() *unison.Panel {
 	return group
 }
 
-func (c *CollisionCalculator) createRestraintRows() *unison.Panel {
+func (c *collisionCalculator) createRestraintRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
 	row := rows.addRow(2)
@@ -593,9 +543,8 @@ func (c *CollisionCalculator) createRestraintRows() *unison.Panel {
 	return group
 }
 
-// changed is what every control runs once it has stored its value: the sources are re-read, the dependent controls are
-// brought into line, and the results are recomputed.
-func (c *CollisionCalculator) changed() {
+// changed implements calculatorTab.
+func (c *collisionCalculator) changed() {
 	if c.updating {
 		return
 	}
@@ -609,7 +558,7 @@ func (c *CollisionCalculator) changed() {
 
 // adjustControls shows the rows the scenario needs, locks the fields a sheet supplies and enables, disables and
 // retitles the rest to match the current choices.
-func (c *CollisionCalculator) adjustControls() {
+func (c *collisionCalculator) adjustControls() {
 	var groups []*unison.Panel
 	var moverRole string
 	showTarget := false
@@ -687,29 +636,29 @@ func (c *CollisionCalculator) adjustControls() {
 
 // velocityFromFall reports whether the moving object's velocity is the one it reaches in a fall rather than one that
 // is typed in.
-func (c *CollisionCalculator) velocityFromFall() bool {
+func (c *collisionCalculator) velocityFromFall() bool {
 	return c.scenarioIndex == fallScenario || (c.scenarioIndex == twoObjectScenario && c.dropped)
 }
 
 // inWater reports whether the moving object lands in water, where a clean dive is possible.
-func (c *CollisionCalculator) inWater() bool {
+func (c *collisionCalculator) inWater() bool {
 	return (c.scenarioIndex == fallScenario || c.scenarioIndex == immovableScenario) &&
 		collisionSurfaces[c.surfaceIndex].water
 }
 
 // controlledFallApplies reports whether the Acrobatics roll shortens the fall, which only a fall allows.
-func (c *CollisionCalculator) controlledFallApplies() bool {
+func (c *collisionCalculator) controlledFallApplies() bool {
 	return c.scenarioIndex == fallScenario && c.controlledFall
 }
 
 // diving reports whether a clean dive negates the damage: only in water, and not when the faller chose a controlled
 // fall instead, since the rules allow one or the other (BX431).
-func (c *CollisionCalculator) diving() bool {
+func (c *collisionCalculator) diving() bool {
 	return c.inWater() && c.cleanDive && !c.controlledFallApplies()
 }
 
 // moverVelocity returns the velocity the moving object hits at: its own, or the one it reaches in a fall.
-func (c *CollisionCalculator) moverVelocity() fxp.Int {
+func (c *collisionCalculator) moverVelocity() fxp.Int {
 	if c.scenarioIndex == fallScenario || (c.scenarioIndex == twoObjectScenario && c.dropped) {
 		v, _ := c.fallVelocity()
 		return v
@@ -718,7 +667,7 @@ func (c *CollisionCalculator) moverVelocity() fxp.Int {
 }
 
 // fallVelocity returns the velocity reached in the fall and the notes explaining anything that limited it.
-func (c *CollisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) {
+func (c *collisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) {
 	distance := c.fallDistance
 	if c.controlledFallApplies() {
 		distance = (distance - fxp.Five).Max(0)
@@ -750,7 +699,7 @@ func (c *CollisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) 
 }
 
 // updateResults recomputes the damage and rewrites the results and notes.
-func (c *CollisionCalculator) updateResults() {
+func (c *collisionCalculator) updateResults() {
 	c.results.RemoveAllChildren()
 	var notes []string
 	if c.scenarioIndex == twoObjectScenario {
@@ -758,18 +707,13 @@ func (c *CollisionCalculator) updateResults() {
 	} else {
 		notes = c.updateSurfaceResults()
 	}
-	c.notes.RemoveAllChildren()
-	for _, note := range notes {
-		if note != "" {
-			c.notes.AddChild(newNoteRow(note))
-		}
-	}
+	setNotes(c.notes, notes)
 	c.results.MarkForLayoutRecursivelyUpward()
 	c.results.MarkForRedraw()
 }
 
 // addResult adds a labeled result to the results panel.
-func (c *CollisionCalculator) addResult(label, value string) {
+func (c *collisionCalculator) addResult(label, value string) {
 	addResult(c.results, label, value)
 }
 
@@ -789,7 +733,7 @@ func damageText(entity *gurps.Entity, count fxp.Int, damageType string) string {
 
 // updateSurfaceResults handles the scenarios where the moving object hits something immovable: a fall, a collision with
 // an obstacle, and an occupant's sudden stop, which is a fall at the velocity lost.
-func (c *CollisionCalculator) updateSurfaceResults() []string {
+func (c *collisionCalculator) updateSurfaceResults() []string {
 	var notes []string
 	velocity := c.mover.velocity
 	if c.scenarioIndex == fallScenario {
@@ -848,7 +792,7 @@ func (c *CollisionCalculator) updateSurfaceResults() []string {
 }
 
 // swimmingNote describes the Swimming roll that would have made a clean dive.
-func (c *CollisionCalculator) swimmingNote() string {
+func (c *collisionCalculator) swimmingNote() string {
 	penalty := gurps.SpeedRangePenalty(c.moverVelocity())
 	roll := i18n.Text("Swimming roll")
 	if c.scenarioIndex == immovableScenario {
@@ -864,7 +808,7 @@ func (c *CollisionCalculator) swimmingNote() string {
 // armorNote describes how the mover's armor fares against falling damage: all of it counts as flexible, so it lets 1 HP
 // of injury through for every 5 full points it stops, even when it stops all of it (BX431). The most it can stop is its
 // own DR, which bounds the blunt trauma.
-func (c *CollisionCalculator) armorNote(count fxp.Int) string {
+func (c *collisionCalculator) armorNote(count fxp.Int) string {
 	if count <= 0 {
 		return ""
 	}
@@ -881,7 +825,7 @@ func (c *CollisionCalculator) armorNote(count fxp.Int) string {
 }
 
 // updateTwoObjectResults handles a collision between two objects, either of which may be moving (BX432).
-func (c *CollisionCalculator) updateTwoObjectResults() []string {
+func (c *collisionCalculator) updateTwoObjectResults() []string {
 	var notes []string
 	strikerVelocity := c.mover.velocity
 	if c.dropped {
@@ -927,46 +871,4 @@ func (c *CollisionCalculator) updateTwoObjectResults() []string {
 			striker, struck, st.Comma()))
 	}
 	return notes
-}
-
-// TitleIcon implements unison.Dockable
-func (c *CollisionCalculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
-	return &unison.DrawableSVG{
-		SVG:  svg.Calculator,
-		Size: suggestedSize,
-	}
-}
-
-// Title implements unison.Dockable
-func (c *CollisionCalculator) Title() string {
-	return i18n.Text("Collision & Falling Damage Calculator")
-}
-
-func (c *CollisionCalculator) String() string {
-	return c.Title()
-}
-
-// Tooltip implements unison.Dockable
-func (c *CollisionCalculator) Tooltip() string {
-	return ""
-}
-
-// Modified implements unison.Dockable
-func (c *CollisionCalculator) Modified() bool {
-	return false
-}
-
-// MayAttemptClose implements unison.TabCloser
-func (c *CollisionCalculator) MayAttemptClose() bool {
-	return true
-}
-
-// AttemptClose implements unison.TabCloser
-func (c *CollisionCalculator) AttemptClose() bool {
-	return AttemptCloseForDockable(c)
-}
-
-// UndoManager implements unison.UndoManagerProvider
-func (c *CollisionCalculator) UndoManager() *unison.UndoManager {
-	return c.undoMgr
 }

@@ -10,12 +10,6 @@
 package ux
 
 import (
-	"fmt"
-	"math"
-	"slices"
-	"strings"
-
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -29,145 +23,77 @@ import (
 
 var (
 	_ unison.Dockable            = &Calculator{}
+	_ unison.TabCloser           = &Calculator{}
 	_ unison.UndoManagerProvider = &Calculator{}
-	_ GroupedCloser              = &Calculator{}
-
-	terrain = []terrainModifier{
-		{Name: i18n.Text("Broken Ground"), Modifier: fxp.Half},
-		{Name: i18n.Text("Deep Snow"), Modifier: fxp.Fifth, IsSnow: true},
-		{Name: i18n.Text("Desert"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Desert, Hard-packed"), Modifier: fxp.OneAndAQuarter},
-		{Name: i18n.Text("Forest"), Modifier: fxp.Half},
-		{Name: i18n.Text("Forest, Dense"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Forest, Light"), Modifier: fxp.One},
-		{Name: i18n.Text("Frozen Lake"), Modifier: fxp.Half, IsIce: true},
-		{Name: i18n.Text("Frozen River"), Modifier: fxp.Half, IsIce: true},
-		{Name: i18n.Text("Hills, Rolling"), Modifier: fxp.One},
-		{Name: i18n.Text("Hills, Steep"), Modifier: fxp.Half},
-		{Name: i18n.Text("Jungle"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Mountains"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Mud"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Plains, Level"), Modifier: fxp.OneAndAQuarter},
-		{Name: i18n.Text("Road, Cobblestone"), Modifier: fxp.One, IsRoad: true},
-		{Name: i18n.Text("Road, Dirt"), Modifier: fxp.One, ModifierInRain: fxp.Fifth, IsRoad: true, Default: true},
-		{Name: i18n.Text("Road, Gravel"), Modifier: fxp.One, ModifierInRain: fxp.Fifth, IsRoad: true},
-		{Name: i18n.Text("Road, Paved"), Modifier: fxp.OneAndAQuarter, ModifierInRain: fxp.One, IsRoad: true},
-		{Name: i18n.Text("Sand"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Sand, Hard-packed"), Modifier: fxp.OneAndAQuarter},
-		{Name: i18n.Text("Swamp"), Modifier: fxp.Fifth},
-	}
-
-	weather = []terrainModifier{
-		{Name: i18n.Text("Normal"), Modifier: fxp.One, Default: true},
-		{Name: i18n.Text("Rain"), Modifier: fxp.Half, IsRain: true},
-		{Name: i18n.Text("Sleet"), Modifier: fxp.Half, IsIce: true},
-		{Name: i18n.Text("Snow"), Modifier: fxp.Half, IsSnow: true},
-		{Name: i18n.Text("Snow, Heavy"), Modifier: fxp.Quarter, IsSnow: true},
-	}
-
-	hikingIntensity = []hikingIntensityHours{
-		{Name: i18n.Text("Forced March"), HoursHiking: fxp.Sixteen},
-		{Name: i18n.Text("Long March"), HoursHiking: fxp.Twelve},
-		{Name: i18n.Text("Normal"), HoursHiking: fxp.Eight, Default: true},
-		{Name: i18n.Text("Foraging"), HoursHiking: fxp.Four},
-		{Name: i18n.Text("Custom"), IsCustom: true},
-	}
+	_ sheetSourceUser            = &Calculator{}
 )
 
-type terrainModifier struct {
-	Name           string
-	Modifier       fxp.Int
-	ModifierInRain fxp.Int
-	IsRoad         bool
-	IsRain         bool
-	IsSnow         bool
-	IsIce          bool
-	Default        bool
+// calculatorTab is one of the calculators the Calculator dockable holds, each shown on a tab of its own. A calculator
+// belongs to no document: whatever numbers it needs are either typed in or taken from any open character sheet.
+type calculatorTab interface {
+	// title returns what the calculator's tab is labeled.
+	title() string
+	// panel returns the calculator's content, which is shown while its tab is selected.
+	panel() *unison.Panel
+	// preselect makes the sheet the source of whichever numbers the calculator most naturally takes from the character
+	// it was opened for. It runs once, before the calculator is first shown; changed follows it.
+	preselect(sheet *Sheet)
+	// sheetChanged tells the calculator that the sheet's numbers have changed. One drawing its numbers from that sheet
+	// re-reads them; the rest do nothing.
+	sheetChanged(sheet *Sheet)
+	// changed re-reads the calculator's sources, brings its dependent controls into line, and recomputes its results.
+	// Every control runs it once it has stored its value, and the Calculator runs it whenever the calculator's tab is
+	// selected, since sheets may have come and gone while another tab was showing.
+	changed()
 }
 
-func (t terrainModifier) String() string {
-	return t.Name
-}
-
-type hikingIntensityHours struct {
-	Name        string
-	HoursHiking fxp.Int
-	IsCustom    bool
-	Default     bool
-}
-
-func (t hikingIntensityHours) String() string {
-	return t.Name
-}
-
-// Calculator provides calculations for various physical tasks, such as jumping.
+// Calculator holds the calculators for the rules that take some working out at the table, one to a tab: explosions &
+// area attacks, scatter and demolition, which come from the same rules, then collisions & falls, jumping, throwing and
+// hiking. The explosions come first because they make the tallest panel, so the dockable opens sized for the worst
+// case. Only one is open at a time; the sheet it is opened from, if any, is preselected as the source of the numbers
+// each calculator most naturally takes from a character.
 type Calculator struct {
 	unison.Panel
-	calculatorContent
-	sheet                        *Sheet
-	undoMgr                      *unison.UndoManager
-	scroll                       *unison.ScrollPanel
-	jumpingLabel                 *textLabel
-	highJumpResult               *unison.Label
-	broadJumpResult              *unison.Label
-	throwingDistanceResult       *unison.Label
-	throwingDamageResult         *unison.Label
-	hikingResult                 *unison.Label
-	hikingDistanceLabel          *textLabel
-	hikingTimeLabel              *unison.Label
-	hikingHoursField             *DecimalField
-	hikingExtraEffortField       *IntegerField
-	roadsAreClearedCheckBox      *unison.CheckBox
-	usingSkisCheckBox            *unison.CheckBox
-	usingSkatesCheckBox          *unison.CheckBox
-	successfulHikingRollCheckBox *unison.CheckBox
-	hikingRollPageLabel          *textLabel
-	scale                        int
-	jumpingRunningStartYards     fxp.Int
-	throwingObjectWeight         fxp.Weight
-	jumpingExtraEffortPenalty    int
-	throwingExtraEffortPenalty   int
-	hikingExtraEffortPenalty     int
-	terrainIndex                 int
-	weatherIndex                 int
-	hikingIntensityIndex         int
-	hikingHours                  fxp.Int
-	hikingDistance               fxp.Int
-	usingSkis                    bool
-	usingSkates                  bool
-	roadsAreCleared              bool
-	successfulHikingRoll         bool
+	undoMgr    *unison.UndoManager
+	scroll     *unison.ScrollPanel
+	slot       *unison.Panel
+	tabBar     *tabBar
+	tabs       []calculatorTab
+	collision  *collisionCalculator
+	jumping    *jumpingCalculator
+	throwing   *throwingCalculator
+	hiking     *hikingCalculator
+	explosion  *explosionCalculator
+	scatter    *scatterCalculator
+	demolition *demolitionCalculator
+	scale      int
 }
 
-// DisplayCalculator displays the calculator for the given Sheet.
-func DisplayCalculator(sheet *Sheet) {
-	if Activate(func(d unison.Dockable) bool {
-		if c, ok := d.AsPanel().Self.(*Calculator); ok {
-			return c.sheet == sheet
-		}
-		return false
-	}) {
+// DisplayCalculator brings the calculators forward, opening them if they are not already open. preselect, when not nil,
+// is the sheet each calculator starts out taking its numbers from; it is ignored when the calculators are already open,
+// so that re-choosing the menu item or clicking a sheet's calculator button never disturbs what has been entered.
+func DisplayCalculator(preselect *Sheet) {
+	if activateDockable[*Calculator](nil) {
 		return
 	}
-	c := &Calculator{
-		sheet:                sheet,
-		scale:                gurps.GlobalSettings().General.InitialEditorUIScale,
-		throwingObjectWeight: fxp.Weight(fxp.One),
-		terrainIndex:         slices.IndexFunc(terrain, func(t terrainModifier) bool { return t.Default }),
-		weatherIndex:         slices.IndexFunc(weather, func(t terrainModifier) bool { return t.Default }),
-		hikingIntensityIndex: slices.IndexFunc(hikingIntensity, func(t hikingIntensityHours) bool { return t.Default }),
-		hikingHours:          fxp.Eight,
-		hikingDistance:       0,
-	}
+	c := &Calculator{scale: gurps.GlobalSettings().General.InitialEditorUIScale}
 	c.Self = c
-
 	c.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	c.SetLayout(&unison.FlexLayout{Columns: 1})
 
-	c.createContent()
+	c.collision = newCollisionCalculator()
+	c.jumping = newJumpingCalculator()
+	c.throwing = newThrowingCalculator()
+	c.hiking = newHikingCalculator()
+	c.explosion = newExplosionCalculator()
+	c.scatter = newScatterCalculator()
+	c.demolition = newDemolitionCalculator()
+	c.tabs = []calculatorTab{c.explosion, c.scatter, c.demolition, c.collision, c.jumping, c.throwing, c.hiking}
 
+	c.slot = unison.NewPanel()
+	c.slot.SetLayout(&columnLayout{})
 	c.scroll = unison.NewScrollPanel()
-	c.scroll.SetContent(c.content, behavior.HintedFill, behavior.Fill)
+	c.scroll.SetContent(c.slot, behavior.HintedFill, behavior.Fill)
 	c.scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,
@@ -175,36 +101,47 @@ func DisplayCalculator(sheet *Sheet) {
 		VGrab:  true,
 	})
 
-	c.AddChild(c.createToolbar())
-	c.AddChild(c.scroll)
-	c.ClientData()[AssociatedIDKey] = sheet.Entity().ID
-	c.content.ValidateScrollRoot()
-	group := dgroup.Editors
-	p := sheet.AsPanel()
-	for p != nil {
-		if _, exists := p.ClientData()[AssociatedIDKey]; exists {
-			group = dgroup.SubEditors
-			break
-		}
-		p = p.Parent()
+	c.tabBar = newTabBar()
+	c.tabBar.SelectionChangedCallback = c.showTab
+	for _, tab := range c.tabs {
+		c.tabBar.addTab(tab.title())
 	}
-	PlaceInDock(c, group, false)
-	c.content.RequestFocus()
+
+	c.AddChild(c.createToolbar())
+	c.AddChild(c.tabBar)
+	c.AddChild(c.scroll)
+	for _, tab := range c.tabs {
+		if preselect != nil {
+			tab.preselect(preselect)
+		}
+		tab.changed()
+	}
+	c.tabBar.selectTab(0)
+	PlaceInDock(c, dgroup.Editors, false)
+	c.slot.RequestFocus()
+	// Taking the focus scrolls the control that got it into view, and the dock has not sized the calculators yet, so
+	// that scrolls them off the top and side of a view that is still too small. The view is put back at the start,
+	// where a first look belongs.
+	c.scroll.SetPosition(0, 0)
 }
 
-// UpdateCalculator refreshes the calculator open for the given sheet, if there is one.
-func UpdateCalculator(sheet *Sheet) {
-	for _, other := range AllDockables() {
-		c, ok := other.(*Calculator)
-		if !ok || c.sheet != sheet {
-			continue
-		}
-		c.updateJumpingResult()
-		c.updateThrowingResult()
-		c.updateHikingResult()
-		c.content.MarkForLayoutRecursively()
-		c.content.MarkForRedraw()
-		break
+// showTab puts the calculator at the given index into the slot beneath the tab bar, in place of whatever was there,
+// and brings it up to date, since sheets may have come and gone while another tab was showing.
+func (c *Calculator) showTab(index int) {
+	tab := c.tabs[index]
+	tab.changed()
+	fillSlot(c.slot, tab.panel())
+	c.slot.MarkForLayoutRecursively()
+	c.slot.MarkForLayoutRecursivelyUpward()
+	c.scroll.SetPosition(0, 0)
+	c.slot.ValidateScrollRoot()
+	c.MarkForRedraw()
+}
+
+// sheetChanged implements sheetSourceUser.
+func (c *Calculator) sheetChanged(sheet *Sheet) {
+	for _, tab := range c.tabs {
+		tab.sheetChanged(sheet)
 	}
 }
 
@@ -217,164 +154,6 @@ func (c *Calculator) createToolbar() *unison.Panel {
 	return toolbar
 }
 
-func (c *Calculator) createContent() {
-	c.initCalculatorContent()
-	c.addJumpingSection()
-	c.addThrowingSection()
-	c.addHikingSection()
-}
-
-func (c *Calculator) addJumpingSection() {
-	c.content.AddChild(c.createHeader(i18n.Text("Jumping"), []linkSpec{{pageRef: "BX352", highlight: "Jumping"}}, 0))
-	c.jumpingLabel = c.addFieldRow(NewDecimalField(nil, "", i18n.Text("Jump Running Start"),
-		func() fxp.Int { return c.jumpingRunningStartYards },
-		func(v fxp.Int) {
-			c.jumpingRunningStartYards = v
-			c.updateJumpingResult()
-		},
-		0, fxp.Max, false, false), "")
-	c.addFieldRow(NewIntegerField(nil, "", i18n.Text("Jumping Extra Effort Penalty"),
-		func() int { return c.jumpingExtraEffortPenalty },
-		func(v int) {
-			c.jumpingExtraEffortPenalty = v
-			c.updateJumpingResult()
-		},
-		-100, 0, false, false), i18n.Text("penalty for extra effort"))
-	row := c.addResultRow()
-	addPlainLabel(row, i18n.Text("High Jump:"))
-	c.highJumpResult = addResultLabel(row)
-	addPlainLabel(row, i18n.Text("Broad Jump:"))
-	c.broadJumpResult = addResultLabel(row)
-	c.updateJumpingResult()
-}
-
-func (c *Calculator) addThrowingSection() {
-	c.content.AddChild(c.createHeader(i18n.Text("Throwing"), []linkSpec{{pageRef: "BX355", highlight: "Throwing"}}, unison.StdVSpacing*3))
-	c.addFieldRow(NewWeightField(nil, "", i18n.Text("Object Weight"),
-		c.sheet.Entity(),
-		func() fxp.Weight { return c.throwingObjectWeight },
-		func(v fxp.Weight) {
-			c.throwingObjectWeight = v
-			c.updateThrowingResult()
-		},
-		0, fxp.Weight(fxp.Max), false), i18n.Text("object"))
-	c.addFieldRow(NewIntegerField(nil, "", i18n.Text("Throwing Extra Effort Penalty"),
-		func() int { return c.throwingExtraEffortPenalty },
-		func(v int) {
-			c.throwingExtraEffortPenalty = v
-			c.updateThrowingResult()
-		},
-		-100, 0, false, false), i18n.Text("penalty for extra effort"))
-	row := c.addResultRow()
-	addPlainLabel(row, i18n.Text("Distance:"))
-	c.throwingDistanceResult = addResultLabel(row)
-	addPlainLabel(row, i18n.Text("Damage:"))
-	c.throwingDamageResult = addResultLabel(row)
-	c.updateThrowingResult()
-}
-
-func (c *Calculator) addHikingSection() {
-	c.content.AddChild(c.createHeader(i18n.Text("Hiking"),
-		[]linkSpec{
-			{pageRef: "BX351", highlight: "Hiking"},
-			{pageRef: "HT55", highlight: "Hiking"},
-		},
-		unison.StdVSpacing*3))
-
-	row := c.addRow(2)
-	addPlainLabel(row, i18n.Text("Terrain:"))
-	addIndexPopup(row, terrain, &c.terrainIndex, c.hikingChanged)
-	addPlainLabel(row, i18n.Text("Weather:"))
-	addIndexPopup(row, weather, &c.weatherIndex, c.hikingChanged)
-	addPlainLabel(row, i18n.Text("Intensity:"))
-	addIndexPopup(row, hikingIntensity, &c.hikingIntensityIndex, c.hikingChanged)
-
-	c.roadsAreClearedCheckBox = c.addCheckBox(i18n.Text("Roads are cleared"), &c.roadsAreCleared, c.updateHikingResult)
-	c.usingSkisCheckBox = c.addCheckBox(i18n.Text("Using skis"), &c.usingSkis, c.hikingChanged)
-	c.usingSkatesCheckBox = c.addCheckBox(i18n.Text("Using skates"), &c.usingSkates, c.hikingChanged)
-	// The title names the skill the roll is against, which depends on the mode of travel, so adjustHikingControls
-	// sets it, along with the page the skill is on, which sits beside the checkbox as a link.
-	row = c.addRow(2)
-	c.successfulHikingRollCheckBox = newCheckBox("", &c.successfulHikingRoll, c.hikingChanged)
-	row.AddChild(c.successfulHikingRollCheckBox)
-	c.hikingRollPageLabel = addPlainLabel(row, "")
-
-	c.hikingHoursField = NewDecimalField(nil, "", i18n.Text("Traveling Hours per Day"),
-		func() fxp.Int { return c.hikingHours },
-		func(v fxp.Int) {
-			c.hikingHours = v
-			c.updateHikingResult()
-		},
-		0, fxp.TwentyFour, false, false)
-	c.addFieldRow(c.hikingHoursField, i18n.Text("hours of hiking per day"))
-	c.hikingExtraEffortField = NewIntegerField(nil, "", i18n.Text("Hiking Extra Effort Penalty"),
-		func() int { return c.hikingExtraEffortPenalty },
-		func(v int) {
-			c.hikingExtraEffortPenalty = v
-			c.updateHikingResult()
-		},
-		-100, 0, false, false)
-	c.addFieldRow(c.hikingExtraEffortField, i18n.Text("penalty for extra effort"))
-	c.hikingDistanceLabel = c.addFieldRow(NewDecimalField(nil, "", i18n.Text("Distance to Cover"),
-		func() fxp.Int { return c.hikingDistance },
-		func(v fxp.Int) {
-			c.hikingDistance = v
-			c.updateHikingResult()
-		},
-		0, fxp.Max, false, false), "")
-
-	row = c.addResultRow()
-	c.hikingResult = addResultLabel(row)
-	addPlainLabel(row, i18n.Text(" per day"))
-	c.hikingTimeLabel = addResultLabel(row)
-	addPlainLabel(row, i18n.Text(" to hike"))
-	c.hikingChanged()
-}
-
-// hikingChanged is what a hiking control runs once it has stored its value: it brings the dependent controls into
-// line, then recomputes the result.
-func (c *Calculator) hikingChanged() {
-	c.adjustHikingControls()
-	c.updateHikingResult()
-}
-
-// adjustHikingControls enables, disables and retitles the hiking controls to match the current selections: skis and
-// skates exclude one another and decide which skill the roll is against, the hours are only editable for a custom
-// intensity, roads can only be cleared of snow or ice, and extra effort needs a successful roll.
-func (c *Calculator) adjustHikingControls() {
-	switch {
-	case c.usingSkis:
-		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Skiing roll"))
-		c.hikingRollPageLabel.SetTitle("(B221)")
-		c.usingSkatesCheckBox.SetEnabled(false)
-	case c.usingSkates:
-		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Skating roll"))
-		c.hikingRollPageLabel.SetTitle("(B220)")
-		c.usingSkisCheckBox.SetEnabled(false)
-	default:
-		c.successfulHikingRollCheckBox.SetTitle(i18n.Text("Made a successful Hiking roll"))
-		c.hikingRollPageLabel.SetTitle("(B200)")
-		c.usingSkatesCheckBox.SetEnabled(true)
-		c.usingSkisCheckBox.SetEnabled(true)
-	}
-
-	i := hikingIntensity[c.hikingIntensityIndex]
-	c.hikingHoursField.SetEnabled(true)
-	if !i.IsCustom {
-		c.hikingHours = i.HoursHiking
-		c.hikingHoursField.Sync()
-		c.hikingHoursField.SetEnabled(false)
-	}
-
-	w := weather[c.weatherIndex]
-	c.roadsAreClearedCheckBox.SetEnabled(terrain[c.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
-	// The penalty is not used without a successful roll, so the field is blanked as well as disabled.
-	adjustFieldBlank(c.hikingExtraEffortField, !c.successfulHikingRoll)
-	c.content.MarkForLayoutRecursively()
-	c.content.MarkForLayoutRecursivelyUpward()
-	c.content.MarkForRedraw()
-}
-
 // TitleIcon implements unison.Dockable
 func (c *Calculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
@@ -385,7 +164,7 @@ func (c *Calculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 
 // Title implements unison.Dockable
 func (c *Calculator) Title() string {
-	return fmt.Sprintf(i18n.Text("Calculator for %s"), c.sheet.String())
+	return i18n.Text("Calculators")
 }
 
 func (c *Calculator) String() string {
@@ -402,364 +181,17 @@ func (c *Calculator) Modified() bool {
 	return false
 }
 
-// CloseWithGroup implements GroupedCloser
-func (c *Calculator) CloseWithGroup(other unison.Paneler) bool {
-	return c.sheet != nil && c.sheet == other
-}
-
-// MayAttemptClose implements GroupedCloser
+// MayAttemptClose implements unison.TabCloser
 func (c *Calculator) MayAttemptClose() bool {
-	return MayAttemptCloseOfGroup(c)
+	return true
 }
 
-// AttemptClose implements GroupedCloser
+// AttemptClose implements unison.TabCloser
 func (c *Calculator) AttemptClose() bool {
-	if !CloseGroup(c) {
-		return false
-	}
 	return AttemptCloseForDockable(c)
 }
 
 // UndoManager implements unison.UndoManagerProvider
 func (c *Calculator) UndoManager() *unison.UndoManager {
 	return c.undoMgr
-}
-
-func (c *Calculator) computeJump(broad bool) fxp.Int {
-	entity := c.sheet.Entity()
-	basicMove := entity.Attributes.Current(gurps.BasicMoveID)
-	basicMoveWithoutRun := basicMove
-
-	// Adjust Basic Move for running
-	if c.jumpingRunningStartYards > 0 {
-		enhMove, _ := entity.TraitLevels("enhanced move (ground)")
-		basicMove += c.jumpingRunningStartYards
-		if enhMove > 0 {
-			if adjusted := basicMoveWithoutRun.Mul(enhMove + fxp.One); adjusted > basicMove {
-				basicMove = adjusted
-			}
-		}
-	}
-
-	// Adjust Basic Move for Jumping skill
-	gurps.Traverse(func(s *gurps.Skill) bool {
-		if strings.EqualFold(s.NameWithReplacements(), "jumping") {
-			s.UpdateLevel()
-			level := s.LevelData.Level.Div(fxp.Two).Floor()
-			if level > basicMove {
-				basicMove = level
-			}
-			if level > basicMoveWithoutRun {
-				basicMoveWithoutRun = level
-			}
-			return true
-		}
-		return false
-	}, true, true, entity.Skills...)
-
-	// Adjust Basic Move for high strength
-	st := entity.LiftingStrength()
-	if c.jumpingExtraEffortPenalty < 0 {
-		st = st.Mul(fxp.FromInteger(-5*c.jumpingExtraEffortPenalty).Div(fxp.Hundred) + fxp.One).Floor()
-	}
-	if basicLift := entity.BasicLiftForST(st); basicLift > entity.Profile.Weight {
-		adjusted := st.Div(fxp.Four).Floor()
-		if adjusted > basicMove {
-			basicMove = adjusted
-		}
-		if adjusted > basicMoveWithoutRun {
-			basicMoveWithoutRun = adjusted
-		}
-	}
-
-	// Determine base distance
-	var multiplier, reduction fxp.Int
-	if broad {
-		multiplier = fxp.Two
-		reduction = fxp.Three
-	} else {
-		multiplier = fxp.Six
-		reduction = fxp.Ten
-	}
-
-	distance := (basicMove.Mul(multiplier) - reduction).Min((basicMoveWithoutRun.Mul(multiplier) - reduction).Mul(fxp.Two))
-
-	// Adjust for encumbrance
-	distance = distance.Mul(fxp.One - fxp.FromInteger(int(entity.EncumbranceLevel(false))).Mul(fxp.Two).Div(fxp.Ten))
-
-	// Adjust for Super Jump
-	if levels, _ := entity.TraitLevels("super jump"); levels > 0 {
-		distance = distance.Mul(fxp.FromFloat(math.Pow(2, levels.AsFloat[float64]())))
-	}
-	if broad {
-		distance = distance.Mul(fxp.Twelve)
-	}
-	return distance.Floor()
-}
-
-func (c *Calculator) updateJumpingResult() {
-	c.highJumpResult.SetTitle(c.distanceToText(c.computeJump(false)))
-	c.highJumpResult.MarkForLayoutRecursivelyUpward()
-	c.broadJumpResult.SetTitle(c.distanceToText(c.computeJump(true)))
-	c.broadJumpResult.MarkForLayoutRecursivelyUpward()
-	var units string
-	if c.useMeters() {
-		units = i18n.Text("meter")
-	} else {
-		units = i18n.Text("yard")
-	}
-	c.jumpingLabel.SetTitle(fmt.Sprintf(i18n.Text("%s running start"), units))
-	c.jumpingLabel.MarkForLayoutRecursivelyUpward()
-}
-
-func (c *Calculator) updateThrowingResult() {
-	if c.throwingObjectWeight <= 0 {
-		c.throwingDistanceResult.SetTitle(i18n.Text("None"))
-		c.throwingDamageResult.SetTitle(i18n.Text("None"))
-		return
-	}
-	entity := c.sheet.Entity()
-
-	// Determine bonuses for skills
-	var distanceBonus, damageBonus int
-	gurps.Traverse(func(s *gurps.Skill) bool {
-		switch strings.ToLower(s.NameWithReplacements()) {
-		case "throwing art":
-			s.UpdateLevel()
-			if s.LevelData.RelativeLevel >= fxp.One {
-				if distanceBonus < 2 {
-					distanceBonus = 2
-				}
-				if damageBonus < 2 {
-					damageBonus = 2
-				}
-			} else if s.LevelData.RelativeLevel >= 0 {
-				if distanceBonus < 1 {
-					distanceBonus = 1
-				}
-				if damageBonus < 1 {
-					damageBonus = 1
-				}
-			}
-		case "throwing":
-			s.UpdateLevel()
-			if s.LevelData.RelativeLevel >= fxp.Two {
-				if distanceBonus < 2 {
-					distanceBonus = 2
-				}
-			} else if s.LevelData.RelativeLevel >= fxp.One {
-				if distanceBonus < 1 {
-					distanceBonus = 1
-				}
-			}
-		}
-		return false
-	}, true, true, entity.Skills...)
-
-	// Determine distance modifier based on weight ratio
-	st := entity.LiftingStrength() - entity.LiftingStrengthBonus
-	if c.throwingExtraEffortPenalty < 0 {
-		st = st.Mul(fxp.FromInteger(-5*c.throwingExtraEffortPenalty).Div(fxp.Hundred) + fxp.One).Floor()
-	}
-	st += fxp.FromInteger(distanceBonus)
-	basicLift := entity.BasicLiftForST(st)
-	var weightRatio fxp.Int
-	if basicLift > 0 {
-		weightRatio = fxp.Int(c.throwingObjectWeight).Div(fxp.Int(basicLift))
-	}
-	var modifier fxp.Int
-	switch {
-	case weightRatio <= fxp.Twentieth:
-		modifier = fxp.ThreeAndAHalf
-	case weightRatio <= fxp.Tenth:
-		modifier = fxp.TwoAndAHalf
-	case weightRatio <= fxp.PointOneFive:
-		modifier = fxp.Two
-	case weightRatio <= fxp.Fifth:
-		modifier = fxp.OneAndAHalf
-	case weightRatio <= fxp.Quarter:
-		modifier = fxp.OnePointTwo
-	case weightRatio <= fxp.ThreeTenths:
-		modifier = fxp.OnePointOne
-	case weightRatio <= fxp.TwoFifths:
-		modifier = fxp.One
-	case weightRatio <= fxp.Half:
-		modifier = fxp.FourFifths
-	case weightRatio <= fxp.ThreeQuarters:
-		modifier = fxp.SevenTenths
-	case weightRatio <= fxp.One:
-		modifier = fxp.ThreeFifths
-	case weightRatio <= fxp.OneAndAHalf:
-		modifier = fxp.TwoFifths
-	case weightRatio <= fxp.Two:
-		modifier = fxp.ThreeTenths
-	case weightRatio <= fxp.TwoAndAHalf:
-		modifier = fxp.Quarter
-	case weightRatio <= fxp.Three:
-		modifier = fxp.Fifth
-	case weightRatio <= fxp.Four:
-		modifier = fxp.PointOneFive
-	case weightRatio <= fxp.Five:
-		modifier = fxp.PointOneTwo
-	case weightRatio <= fxp.Six:
-		modifier = fxp.Tenth
-	case weightRatio <= fxp.Seven:
-		modifier = fxp.PointZeroNine
-	case weightRatio <= fxp.Eight:
-		modifier = fxp.PointZeroEight
-	case weightRatio <= fxp.Nine:
-		modifier = fxp.PointZeroSeven
-	case weightRatio <= fxp.Ten:
-		modifier = fxp.PointZeroSix
-	case weightRatio <= fxp.Twelve:
-		modifier = fxp.Twentieth
-	}
-	inches := st.Mul(modifier).Mul(fxp.ThirtySix).Floor()
-	if inches <= fxp.One {
-		c.throwingDistanceResult.SetTitle(i18n.Text("The object is too heavy for you to throw"))
-		c.throwingDamageResult.SetTitle(i18n.Text("None"))
-		return
-	}
-
-	// Determine damage based on weight ratio
-	thrust := entity.Thrust()
-	thrust.Modifier += thrust.Count * damageBonus
-	basicLift = entity.BasicLiftForST(st - fxp.FromInteger(distanceBonus))
-	if basicLift > 0 {
-		weightRatio = fxp.Int(c.throwingObjectWeight).Div(fxp.Int(basicLift))
-	} else {
-		weightRatio = 0
-	}
-	switch {
-	case weightRatio <= fxp.Eighth:
-		thrust.Modifier -= thrust.Count * 2
-	case weightRatio <= fxp.Quarter:
-		thrust.Modifier -= thrust.Count
-	case weightRatio <= fxp.Half:
-	case weightRatio <= fxp.One:
-		thrust.Modifier += thrust.Count
-	case weightRatio <= fxp.Two:
-	case weightRatio <= fxp.Four:
-		thrust.Modifier -= thrust.Count / 2
-	default:
-		thrust.Modifier -= thrust.Count
-	}
-
-	c.throwingDistanceResult.SetTitle(c.distanceToText(inches))
-	c.throwingDamageResult.SetTitle(gurps.FormatDice(thrust, entity.SheetSettings.UseModifyingDicePlusAdds))
-	c.throwingDistanceResult.MarkForLayoutRecursivelyUpward()
-	c.throwingDamageResult.MarkForLayoutRecursivelyUpward()
-}
-
-func (c *Calculator) updateHikingResult() {
-	entity := c.sheet.Entity()
-	distance := fxp.FromInteger(entity.Move(entity.EncumbranceLevel(false)) * 10)
-
-	// Adjust for hours hiking
-	distance = distance.Mul(c.hikingHours).Div(fxp.Sixteen)
-
-	// Adjust for enhanced move (ground), if any
-	if enhMove, _ := entity.TraitLevels("enhanced move (ground)"); enhMove > 0 {
-		distance = distance.Mul(fxp.One + enhMove)
-	}
-
-	// Adjust for terrain
-	t := terrain[c.terrainIndex]
-	mod := t.Modifier
-	if t.IsIce && c.usingSkates {
-		mod = fxp.OneAndAQuarter
-	}
-	if t.IsSnow && c.usingSkis {
-		mod = fxp.One
-	}
-
-	// Adjust for weather
-	w := weather[c.weatherIndex]
-	switch {
-	case w.IsRain:
-		if t.IsRoad {
-			if t.ModifierInRain != 0 {
-				mod = t.ModifierInRain
-			}
-		} else {
-			mod = mod.Mul(w.Modifier)
-		}
-	case w.IsSnow:
-		if t.IsRoad {
-			mod = fxp.One
-		}
-		if (!t.IsRoad || !c.roadsAreCleared) && !c.usingSkis {
-			mod = mod.Mul(w.Modifier)
-		}
-	case w.IsIce:
-		if t.IsRoad {
-			mod = fxp.One
-		}
-		if (!t.IsRoad || !c.roadsAreCleared) && !c.usingSkates {
-			mod = mod.Mul(w.Modifier)
-		}
-	}
-	distance = distance.Mul(mod)
-
-	// Adjust for making the hiking/skiing/skating check
-	mod = fxp.One
-	if c.successfulHikingRoll {
-		mod = fxp.OnePointTwo
-		if c.hikingExtraEffortPenalty < 0 {
-			mod += fxp.FromInteger(-5 * c.hikingExtraEffortPenalty).Div(fxp.Hundred)
-		}
-	}
-	distance = distance.Mul(mod)
-
-	var units string
-	if c.useMeters() {
-		// miles -> inches -> GURPS kilometers
-		distance = fxp.Kilometer.FromInches(fxp.Mile.ToInches(distance))
-		if distance == fxp.One {
-			units = i18n.Text("kilometer")
-		} else {
-			units = i18n.Text("kilometers")
-		}
-	} else {
-		if distance == fxp.One {
-			units = i18n.Text("mile")
-		} else {
-			units = i18n.Text("miles")
-		}
-	}
-	c.hikingResult.SetTitle(fmt.Sprintf("%s %s", distance.Round().Comma(), units))
-	c.hikingDistanceLabel.SetTitle(fmt.Sprintf(i18n.Text("%s to travel"), units))
-
-	if timeInDays, ok := hikingTimeInDays(c.hikingDistance, distance); !ok {
-		// Ground can't be covered at 0 Move (very low DX/HT, heavy encumbrance, or a Move-reducing effect), so the
-		// travel time is undefined.
-		c.hikingTimeLabel.SetTitle("—")
-	} else if timeInDays == fxp.One {
-		c.hikingTimeLabel.SetTitle(i18n.Text("1 day"))
-	} else {
-		c.hikingTimeLabel.SetTitle(fmt.Sprintf(i18n.Text("%s days"), timeInDays))
-	}
-
-	c.hikingTimeLabel.MarkForLayoutRecursivelyUpward()
-}
-
-// hikingTimeInDays returns the number of days needed to cover distanceToCover while traveling distancePerDay each day,
-// rounded to a tenth of a day. ok is false when distancePerDay is 0, since no ground can be covered at 0 Move and the
-// travel time is therefore undefined; the guard also avoids a division by zero (fxp.Int.Div panics on a zero divisor
-// with a non-zero numerator).
-func hikingTimeInDays(distanceToCover, distancePerDay fxp.Int) (days fxp.Int, ok bool) {
-	if distancePerDay == 0 {
-		return 0, false
-	}
-	return distanceToCover.Mul(fxp.Ten).Div(distancePerDay).Round().Div(fxp.Ten), true
-}
-
-// useMeters returns true if lengths should be shown in metric units for the sheet the calculator was opened for.
-func (c *Calculator) useMeters() bool {
-	return useMetersFor(c.sheet.Entity())
-}
-
-// distanceToText formats the given distance, expressed in inches, using the length units the sheet prefers.
-func (c *Calculator) distanceToText(inches fxp.Int) string {
-	return lengthToText(c.sheet.Entity(), inches)
 }
