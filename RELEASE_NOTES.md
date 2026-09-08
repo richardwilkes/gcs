@@ -2,6 +2,13 @@
 
 ## New & Improved
 
+- Added a Collision & Falling Damage calculator, opened from View → Collision & Falling Damage Calculator, for the
+  Collisions and Falls rules (B430-B432). It handles a fall onto a surface, a collision with an immovable object, a
+  collision between two objects (including dropped objects, the angle of the collision and overruns), and the sudden
+  stop of a vehicle or elevator. Each object involved can take its HP, ST, Size Modifier, Acrobatics and Swimming
+  levels and torso DR from any open character sheet, or have them typed in, and the results note the Swimming roll
+  for a clean dive, the terminal velocity, the blunt trauma through armor, and the other special cases the rules call
+  out.
 - You can now choose how many decimal places the character sheet shows for the height and weight in the Description
   block, for equipment weights, and for equipment values. Each has its own setting in the sheet settings, from "As
   Needed" (every decimal place the value has, as before) down to whole numbers, along with an option to pad with

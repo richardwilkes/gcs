@@ -24,6 +24,8 @@ const (
 	BlockID            = "block"
 	DexterityID        = "dx"
 	DodgeID            = "dodge"
+	HealthID           = "ht"
+	HitPointsID        = "hp"
 	IntelligenceID     = "iq"
 	LiftingStrengthID  = "lifting_st"
 	MoveID             = "move"

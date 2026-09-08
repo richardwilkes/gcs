@@ -215,7 +215,7 @@ func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int,
 	}
 	cost := value.Mul(a.CostPerPoint)
 	if sizeModifier > 0 && a.CostAdjPercentPerSM > 0 &&
-		(a.DefID != "hp" || entity.SheetSettings.DamageProgression != progression.KnowingYourOwnStrength) {
+		(a.DefID != HitPointsID || entity.SheetSettings.DamageProgression != progression.KnowingYourOwnStrength) {
 		costReduction += fxp.FromInteger(sizeModifier).Mul(a.CostAdjPercentPerSM)
 	}
 	if costReduction > 0 {

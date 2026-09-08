@@ -251,3 +251,33 @@ func TestSSRTValueFromScriptIsArchitectureIndependent(t *testing.T) {
 func intFromScriptClampedToSSRT(value float64) int {
 	return min(max(intFromScript(value), minSSRTValue), maxSSRTValue)
 }
+
+// TestSpeedRangePenalty pins the Size and Speed/Range Table (B550) rows that a distance or a speed in yards reads off,
+// and verifies that the script binding measure.rangeModifier resolves to the same function, so the two cannot drift.
+func TestSpeedRangePenalty(t *testing.T) {
+	c := check.New(t)
+	var m scriptMeasurement
+	for _, tc := range []struct {
+		yards float64
+		want  int
+	}{
+		{yards: 2, want: 0},
+		{yards: 3, want: -1},
+		{yards: 5, want: -2},
+		{yards: 7, want: -3},
+		{yards: 10, want: -4},
+		{yards: 15, want: -5},
+		{yards: 19, want: -6}, // Falls in the same row as 20, since the rows step 10/15/20/30/50/70.
+		{yards: 20, want: -6},
+		{yards: 30, want: -7},
+		{yards: 50, want: -8},
+		{yards: 70, want: -9},
+		{yards: 100, want: -10},
+		{yards: 0, want: 0},
+		{yards: 1, want: 0},
+		{yards: -5, want: 0},
+	} {
+		c.Equal(tc.want, SpeedRangePenalty(fxp.FromFloat(tc.yards)), "%v yards", tc.yards)
+		c.Equal(tc.want, m.RangeModifier(tc.yards), "%v yards via measure.rangeModifier", tc.yards)
+	}
+}

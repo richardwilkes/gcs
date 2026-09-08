@@ -34,6 +34,7 @@ var (
 	clearSourceAction              *unison.Action
 	cloneSheetAction               *unison.Action
 	closeTabAction                 *unison.Action
+	collisionCalculatorAction      *unison.Action
 	colorSettingsAction            *unison.Action
 	convertToContainerAction       *unison.Action
 	convertToNonContainerAction    *unison.Action
@@ -213,6 +214,11 @@ func registerActions() {
 				}
 			}
 		},
+	})
+	collisionCalculatorAction = registerKeyBindableAction("calculator.collision", &unison.Action{
+		ID:              CollisionCalculatorItemID,
+		Title:           i18n.Text("Collision & Falling Damage Calculator"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { DisplayCollisionCalculator(ActiveSheet()) },
 	})
 	colorSettingsAction = registerKeyBindableAction("settings.colors", &unison.Action{
 		ID:              ColorSettingsItemID,

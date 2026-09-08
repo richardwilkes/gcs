@@ -43,7 +43,6 @@ const (
 	techLevelExportKey          = "TL"
 	typeExportKey               = "TYPE"
 	weightExportKey             = "WEIGHT"
-	hpAttrID                    = "hp"
 	fpAttrID                    = "fp"
 )
 
@@ -171,7 +170,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "IQ_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost(IntelligenceID).String())
 	case "HT_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost("ht").String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(HealthID).String())
 	case "PERCEPTION_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost("per").String())
 	case "WILL_POINTS":
@@ -179,7 +178,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "FP_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost(fpAttrID).String())
 	case "HP_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(hpAttrID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(HitPointsID).String())
 	case "BASIC_SPEED_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost(BasicSpeedID).String())
 	case "BASIC_MOVE_POINTS":
@@ -227,15 +226,15 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "IQ":
 		ex.writeEncodedText(ex.entity.Attributes.Current(IntelligenceID).String())
 	case "HT":
-		ex.writeEncodedText(ex.entity.Attributes.Current("ht").String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(HealthID).String())
 	case "FP":
 		ex.writeEncodedText(ex.entity.Attributes.Current(fpAttrID).String())
 	case "BASIC_FP":
 		ex.writeEncodedText(ex.entity.Attributes.Maximum(fpAttrID).String())
 	case "HP":
-		ex.writeEncodedText(ex.entity.Attributes.Current(hpAttrID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(HitPointsID).String())
 	case "BASIC_HP":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(hpAttrID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(HitPointsID).String())
 	case "WILL":
 		ex.writeEncodedText(ex.entity.Attributes.Current("will").String())
 	case "FRIGHT_CHECK":
@@ -295,19 +294,19 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "UNCONSCIOUS":
 		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "unconscious").String())
 	case "REELING":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "reeling").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "reeling").String())
 	case "HP_COLLAPSE":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "collapse").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "collapse").String())
 	case "DEATH_CHECK_1":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dying #1").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dying #1").String())
 	case "DEATH_CHECK_2":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dying #2").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dying #2").String())
 	case "DEATH_CHECK_3":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dying #3").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dying #3").String())
 	case "DEATH_CHECK_4":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dying #4").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dying #4").String())
 	case "DEAD":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dead").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dead").String())
 	case "BASIC_LIFT":
 		ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(ex.entity.BasicLift()))
 	case "ONE_HANDED_LIFT":

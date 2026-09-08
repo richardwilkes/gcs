@@ -25,8 +25,6 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
-	"github.com/richardwilkes/unison/enums/check"
-	"github.com/richardwilkes/unison/enums/weight"
 )
 
 var (
@@ -102,17 +100,12 @@ func (t hikingIntensityHours) String() string {
 	return t.Name
 }
 
-type linkSpec struct {
-	pageRef   string
-	highlight string
-}
-
 // Calculator provides calculations for various physical tasks, such as jumping.
 type Calculator struct {
 	unison.Panel
+	calculatorContent
 	sheet                        *Sheet
 	undoMgr                      *unison.UndoManager
-	content                      *unison.Panel
 	scroll                       *unison.ScrollPanel
 	jumpingLabel                 *unison.Label
 	highJumpResult               *unison.Label
@@ -224,13 +217,7 @@ func (c *Calculator) createToolbar() *unison.Panel {
 }
 
 func (c *Calculator) createContent() {
-	c.content = unison.NewPanel()
-	c.content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
-	c.content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
+	c.initCalculatorContent()
 	c.addJumpingSection()
 	c.addThrowingSection()
 	c.addHikingSection()
@@ -378,149 +365,6 @@ func (c *Calculator) adjustHikingControls() {
 	c.content.MarkForLayoutRecursively()
 	c.content.MarkForLayoutRecursivelyUpward()
 	c.content.MarkForRedraw()
-}
-
-// newSectionIndent returns the border that sets a section's controls in from its header.
-func newSectionIndent() unison.Border {
-	return unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2})
-}
-
-// addRow adds a row of controls with the given number of columns to the content, indented beneath its section's
-// header, and returns it.
-func (c *Calculator) addRow(columns int) *unison.Panel {
-	row := unison.NewPanel()
-	row.SetLayout(&unison.FlexLayout{
-		Columns:  columns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	row.SetBorder(newSectionIndent())
-	c.content.AddChild(row)
-	return row
-}
-
-// addFieldRow adds a row holding the field followed by a label with the given text, and returns the label so that a
-// caller passing no text can fill it in later.
-func (c *Calculator) addFieldRow(field unison.Paneler, trailing string) *unison.Label {
-	row := c.addRow(2)
-	row.AddChild(field)
-	return addPlainLabel(row, trailing)
-}
-
-// addResultRow adds a two-column row for a section's results, set off from the inputs above it by a divider, and
-// returns it.
-func (c *Calculator) addResultRow() *unison.Panel {
-	row := c.addRow(2)
-	divider := unison.NewSeparator()
-	divider.SetBorder(unison.NewEmptyBorder(geom.NewVerticalInsets(unison.StdVSpacing * 2)))
-	divider.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	row.AddChild(divider)
-	return row
-}
-
-// addCheckBox adds an indented checkbox with the given title to the content. Clicking it stores whether it is now
-// checked in *flag, then runs changed.
-func (c *Calculator) addCheckBox(title string, flag *bool, changed func()) *unison.CheckBox {
-	cb := unison.NewCheckBox()
-	cb.SetTitle(title)
-	cb.SetBorder(newSectionIndent())
-	cb.ClickCallback = func() {
-		*flag = cb.State == check.On
-		changed()
-	}
-	c.content.AddChild(cb)
-	return cb
-}
-
-// addIndexPopup adds a popup offering the items to the parent, with the one at *index selected. Choosing an item
-// stores its position in *index, then runs changed.
-func addIndexPopup[T comparable](parent *unison.Panel, items []T, index *int, changed func()) {
-	popup := unison.NewPopupMenu[T]()
-	popup.AddItem(items...)
-	popup.SelectIndex(*index)
-	popup.SelectionChangedCallback = func(_ *unison.PopupMenu[T]) {
-		*index = popup.SelectedIndex()
-		changed()
-	}
-	parent.AddChild(popup)
-}
-
-func addPlainLabel(parent *unison.Panel, text string) *unison.Label {
-	label := unison.NewLabel()
-	label.SetTitle(text)
-	parent.AddChild(label)
-	return label
-}
-
-// addResultLabel adds a bold label for showing a result to the parent and returns it.
-func addResultLabel(parent *unison.Panel) *unison.Label {
-	label := unison.NewLabel()
-	label.Font = &unison.DynamicFont{
-		Resolver: func() unison.FontDescriptor {
-			desc := unison.DefaultLabelTheme.Font.Descriptor()
-			desc.Weight = weight.Bold
-			return desc
-		},
-	}
-	parent.AddChild(label)
-	return label
-}
-
-func (c *Calculator) createHeader(text string, linkSpecs []linkSpec, topMargin float32) *unison.Panel {
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{Columns: 1 + 2*len(linkSpecs)})
-	if topMargin > 0 {
-		wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: topMargin}))
-	}
-
-	first := unison.NewLabel()
-	first.Font = &unison.DynamicFont{
-		Resolver: func() unison.FontDescriptor {
-			desc := unison.LabelFont.Descriptor()
-			desc.Size += 2
-			desc.Weight = weight.Bold
-			return desc
-		},
-	}
-	if len(linkSpecs) > 0 {
-		first.SetTitle(text + " (")
-		wrapper.AddChild(first)
-	} else {
-		first.SetTitle(text)
-		wrapper.AddChild(first)
-		return wrapper
-	}
-
-	linkTheme := unison.DefaultLinkTheme
-	linkTheme.Font = &unison.DynamicFont{
-		Resolver: func() unison.FontDescriptor {
-			desc := unison.LabelFont.Descriptor()
-			desc.Weight = weight.Bold
-			return desc
-		},
-	}
-	for index, linkSpec := range linkSpecs {
-		link := unison.NewLink(linkSpec.pageRef, "", linkSpec.pageRef, &linkTheme, func(_ unison.Paneler, _ string) {
-			OpenPageReference(linkSpec.pageRef, linkSpec.highlight, nil)
-		})
-		wrapper.AddChild(link)
-		if index < len(linkSpecs)-1 {
-			comma := unison.NewLabel()
-			comma.Font = first.Font
-			comma.SetTitle(", ")
-			wrapper.AddChild(comma)
-		}
-	}
-
-	last := unison.NewLabel()
-	last.Font = first.Font
-	last.SetTitle(")")
-	wrapper.AddChild(last)
-	return wrapper
 }
 
 // TitleIcon implements unison.Dockable
@@ -902,52 +746,12 @@ func hikingTimeInDays(distanceToCover, distancePerDay fxp.Int) (days fxp.Int, ok
 	return distanceToCover.Mul(fxp.Ten).Div(distancePerDay).Round().Div(fxp.Ten), true
 }
 
+// useMeters returns true if lengths should be shown in metric units for the sheet the calculator was opened for.
 func (c *Calculator) useMeters() bool {
-	units := c.sheet.Entity().SheetSettings.DefaultLengthUnits
-	return units == fxp.Centimeter || units == fxp.Meter || units == fxp.Kilometer
+	return useMetersFor(c.sheet.Entity())
 }
 
+// distanceToText formats the given distance, expressed in inches, using the length units the sheet prefers.
 func (c *Calculator) distanceToText(inches fxp.Int) string {
-	var buffer strings.Builder
-	if c.useMeters() {
-		meters := fxp.Meter.FromInches(inches).Mul(fxp.Hundred).Round().Div(fxp.Hundred)
-		if meters == fxp.One {
-			buffer.WriteString(i18n.Text("1 meter"))
-		} else {
-			fmt.Fprintf(&buffer, i18n.Text("%s meters"), meters.Comma())
-		}
-	} else {
-		if inches >= fxp.ThirtySix {
-			yards := inches.Div(fxp.ThirtySix).Floor()
-			if yards == fxp.One {
-				buffer.WriteString(i18n.Text("1 yard"))
-			} else {
-				fmt.Fprintf(&buffer, i18n.Text("%s yards"), yards.Comma())
-			}
-			inches -= yards.Mul(fxp.ThirtySix)
-		}
-		if inches >= fxp.Twelve {
-			if buffer.Len() > 0 {
-				buffer.WriteString(", ")
-			}
-			feet := inches.Div(fxp.Twelve).Floor()
-			if feet == fxp.One {
-				buffer.WriteString(i18n.Text("1 foot"))
-			} else {
-				fmt.Fprintf(&buffer, i18n.Text("%s feet"), feet.Comma())
-			}
-			inches -= feet.Mul(fxp.Twelve)
-		}
-		if inches > 0 || buffer.Len() == 0 {
-			if buffer.Len() > 0 {
-				buffer.WriteString(", ")
-			}
-			if inches == fxp.One {
-				buffer.WriteString(i18n.Text("1 inch"))
-			} else {
-				fmt.Fprintf(&buffer, i18n.Text("%s inches"), inches.Comma())
-			}
-		}
-	}
-	return buffer.String()
+	return lengthToText(c.sheet.Entity(), inches)
 }

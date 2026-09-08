@@ -50,7 +50,7 @@ func (s scriptMeasurement) StringWeightToPounds(str, defaultUnits string) float6
 }
 
 func (s scriptMeasurement) RangeModifier(yards float64) int {
-	return -ssrtInchesToValue(fxp.Yard.ToInches(fxp.FromFloat(yards)), false)
+	return SpeedRangePenalty(fxp.FromFloat(yards))
 }
 
 func (s scriptMeasurement) SizeModifier(yards float64) int {
@@ -88,6 +88,13 @@ func lengthUnitForScript(units string) fxp.LengthUnit {
 // everywhere.
 func (s scriptMeasurement) ModifierToYards(ssrtValue float64) float64 {
 	return ssrtToYards(intFromScript(ssrtValue)).AsFloat[float64]()
+}
+
+// SpeedRangePenalty returns the modifier from the Size and Speed/Range Table (B550) for a distance or a speed of the
+// given number of yards. The table is shared by both: a range in yards and a velocity in yards per second read off the
+// same rows, so a speed penalty is looked up exactly as a range penalty is. The result is zero or negative.
+func SpeedRangePenalty(yards fxp.Int) int {
+	return -ssrtInchesToValue(fxp.Yard.ToInches(yards), false)
 }
 
 func ssrtInchesToValue(inches fxp.Int, allowNegative bool) int {

@@ -130,6 +130,7 @@ const (
 	Scale600ItemID
 	EditSheetLayoutItemID
 	DockUnDockItemID
+	CollisionCalculatorItemID
 
 	FirstNonContainerMarker // Keep this block grouped together
 	NewCarriedEquipmentItemID
@@ -373,6 +374,8 @@ func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, scale600Action.NewMenuItem(f))
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, editSheetLayoutAction.NewMenuItem(f))
+	m.InsertSeparator(-1, false)
+	m.InsertItem(-1, collisionCalculatorAction.NewMenuItem(f))
 	platformViewMenuAddition(m)
 	return m
 }

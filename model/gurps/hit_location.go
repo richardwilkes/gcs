@@ -171,6 +171,25 @@ func (h *HitLocation) accumulateDR(entity *Entity, tooltip *xbytes.InsertBuffer,
 	return drMap
 }
 
+// ArmorDR computes the portion of this HitLocation's DR coverage that comes from worn armor, including the armor DR
+// contributed by the locations that own it. If 'drMap' isn't nil, the DR is added into it and it is the map that is
+// returned. The result is keyed exactly as DR's is, so subtracting one map from the other key by key yields the innate
+// DR.
+//
+// The location's own DR bonus is innate, so it is left out here, as is any DR granted by a trait, skill or spell. The
+// falling rules (B431) need the split, since armor DR counts as flexible armor and converts the damage it stops into
+// blunt trauma, while innate DR does not.
+func (h *HitLocation) ArmorDR(entity *Entity, drMap map[string]int) map[string]int {
+	if drMap == nil {
+		drMap = make(map[string]int)
+	}
+	drMap = entity.AddArmorDRBonusesFor(h.LocID, drMap)
+	if h.owningTable != nil && h.owningTable.owningLocation != nil {
+		drMap = h.owningTable.owningLocation.ArmorDR(entity, drMap)
+	}
+	return drMap
+}
+
 // DisplayDR returns the DR for this location, formatted as a string.
 func (h *HitLocation) DisplayDR(entity *Entity, tooltip *xbytes.InsertBuffer) string {
 	drMap := h.DR(entity, tooltip, nil)

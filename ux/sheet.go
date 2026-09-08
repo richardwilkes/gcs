@@ -371,6 +371,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		s.resync(s, s.captureViewState())
 	}
 	UpdateCalculator(s)
+	UpdateCollisionCalculators(s)
 }
 
 // bumpModificationTimestamp implements modificationTimestampBumper.
@@ -782,6 +783,7 @@ func (s *Sheet) Rebuild(full bool) {
 		s.layoutEditor.overlay.RequestFocus()
 	}
 	UpdateCalculator(s)
+	UpdateCollisionCalculators(s)
 }
 
 func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect geom.Rect, start, step int, overrideFunc func(rowIndex int, ink unison.Ink) unison.Ink) {
