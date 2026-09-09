@@ -248,7 +248,7 @@ func (s *Sheet) createToolbar() {
 	s.toolbar.AddChild(syncSourceButton)
 
 	calcButton := unison.NewSVGButton(svg.Calculator)
-	calcButton.Tooltip = newWrappedTooltip(i18n.Text("Calculators (jumping, throwing, hiking, etc.)"))
+	calcButton.Tooltip = newWrappedTooltip(i18n.Text("Calculators"))
 	calcButton.ClickCallback = func() { DisplayCalculator(s) }
 	s.toolbar.AddChild(calcButton)
 
