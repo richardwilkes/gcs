@@ -32,7 +32,7 @@ func main() {
 	early.Configure()
 	ux.LoadLanguageSetting()
 	unison.AttachConsole()
-	xflag.SetUsage(nil, ux.AppDescription(), i18n.Text("[file]..."))
+	xflag.SetUsage(nil, ux.AppDescription(), i18n.Text("[file]..."), updater.FinishFlag)
 	savedUsage := flag.CommandLine.Usage
 	flag.CommandLine.Usage = func() {
 		savedUsage()
@@ -70,7 +70,7 @@ func main() {
 	// Not meant to be typed by anyone. A copy of GCS is started this way to finish applying an update once the copy
 	// that prepared it has exited, since replacing a running application from within itself is not something any of
 	// the supported systems allow.
-	finishUpdate := flag.String("finish-update", "", i18n.Text("Internal use only. Finish applying a previously prepared update, using the state in the specified `file`"))
+	finishUpdate := flag.String(updater.FinishFlag, "", i18n.Text("Internal use only. Finish applying a previously prepared update, using the state in the specified `file`"))
 
 	var logCfg xslog.Config
 	logCfg.AddFlags()
