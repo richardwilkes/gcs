@@ -93,9 +93,10 @@ jobs:
           version: latest
           install-only: true
 
-      # `golangci-lint run` ignores the `formatters` section of .golangci.yml, so this pass is what actually enforces
-      # gofumpt and goimports. Formatting is neither OS- nor architecture-specific and the formatters do not evaluate
-      # build constraints, so this single runner covers every source file, including the per-platform ones.
+      # `golangci-lint run` enforces the `formatters` section of .golangci.yml too, but only for the files it loads, and
+      # the lint matrix never loads the files behind the race/!race build tags. `golangci-lint fmt` ignores build
+      # constraints and formatting is neither OS- nor architecture-specific, so this single runner is what covers every
+      # source file.
       - name: Check formatting
         env:
           GOEXPERIMENT: simd

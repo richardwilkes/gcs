@@ -70,7 +70,7 @@ for arg in "$@"; do
 		echo "$0 [options]"
 		echo "  -a, --all    Equivalent to --gen --go --fmt --lint --race"
 		echo "  -d, --dist   Create distribution"
-		echo "  -f, --fmt    Verify the source formatting (gofumpt and goimports)"
+		echo "  -f, --fmt    Verify the source formatting (gofumpt)"
 		echo "  -g, --go     Build the Go code"
 		echo "  -G, --gen    Generate the source"
 		echo "  -p, --genpkg Generate the icons and packaging.yml file"
@@ -162,8 +162,10 @@ ensure_golangci_lint() {
 	GOLANGCI_LINT="$TOOLS_DIR/golangci-lint"
 }
 
-# Formatting needs its own pass because `golangci-lint run` ignores the `formatters` section of .golangci.yml entirely
-# -- only `golangci-lint fmt` consults it -- so without this the gofumpt and goimports settings there enforce nothing.
+# `golangci-lint run` also enforces the `formatters` section of .golangci.yml, but only for the files it loads, and no
+# lint pass loads the files behind the race/!race build tags. `golangci-lint fmt` ignores build constraints, so this
+# pass is what covers every file. It is also the one that prints the actual diff rather than a single "not properly
+# formatted" issue per file.
 if [ "$FMT"x == "1x" ]; then
 	ensure_golangci_lint
 	echo -e "\033[33mChecking the formatting of the Go code...\033[0m"
