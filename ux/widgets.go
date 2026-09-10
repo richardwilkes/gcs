@@ -720,8 +720,8 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 
 // addWeightCriteriaPanel adds a weight criteria's comparison popup and qualifier field directly to the parent, which is
 // expected to lay them out itself.
-func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, entity *gurps.Entity, weightCriteria *criteria.Weight) (popup *unison.PopupMenu[string], field *WeightField) {
-	popup = newComparisonPopup(criteria.PrefixedNumericComparisonChoices(i18n.Text("which")),
+func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix string, entity *gurps.Entity, weightCriteria *criteria.Weight) (popup *unison.PopupMenu[string], field *WeightField) {
+	popup = newComparisonPopup(criteria.PrefixedNumericComparisonChoices(prefix),
 		int(weightCriteria.Compare.EnsureValid()))
 	parent.AddChild(popup)
 	field = addWeightField(parent, targetMgr, targetKey, i18n.Text("Weight Qualifier"), "", entity,

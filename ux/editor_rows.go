@@ -13,6 +13,7 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -153,6 +154,22 @@ func moveEntry[T any](list *[]T, from, to int) bool {
 	entry := (*list)[from]
 	*list = slices.Insert(slices.Delete(*list, from, from+1), to, entry)
 	return true
+}
+
+// noAndOr is the text of the label that joins a row to the siblings ahead of it when there are none.
+const noAndOr = ""
+
+// joiningText returns the text of the label that joins a row to the siblings ahead of it in a list of count rows:
+// nothing when it is the first of them or stands alone, "and" when every row has to be satisfied, and "or" when any
+// one of them will do.
+func joiningText(count int, isFirst, all bool) string {
+	if count < 2 || isFirst {
+		return noAndOr
+	}
+	if all {
+		return i18n.Text("and")
+	}
+	return i18n.Text("or")
 }
 
 // initTitledEditorSection sets up a panel as a titled section of an editor, such as its features or prerequisites,

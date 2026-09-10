@@ -31,6 +31,8 @@ type modifierProviderSpec[T gurps.Node[T]] struct {
 	newItem           func(owner gurps.DataOwner, parent T, container bool) T
 	edit              func(owner Rebuildable, item T)
 	menuActions       []*unison.Action
+	filterKey         string
+	filterFields      func() []*gurps.FilterField[T]
 }
 
 type modifiersProvider[T gurps.Node[T]] struct {
@@ -42,13 +44,15 @@ type modifiersProvider[T gurps.Node[T]] struct {
 func newModifiersProvider[T gurps.Node[T]](owner gurps.DataOwnerProvider, list func() []T, setList func([]T), headerData func(columnID int) gurps.HeaderData, forEditor bool, spec modifierProviderSpec[T]) *modifiersProvider[T] {
 	p := &modifiersProvider[T]{spec: spec, forEditor: forEditor}
 	p.listProvider = listProvider[T]{
-		dataOwner:  owner,
-		list:       list,
-		setList:    setList,
-		columnIDs:  p.ColumnIDs,
-		headerData: headerData,
-		newItem:    spec.newItem,
-		edit:       spec.edit,
+		dataOwner:    owner,
+		list:         list,
+		setList:      setList,
+		columnIDs:    p.ColumnIDs,
+		headerData:   headerData,
+		newItem:      spec.newItem,
+		edit:         spec.edit,
+		filterKey:    spec.filterKey,
+		filterFields: spec.filterFields,
 	}
 	return p
 }

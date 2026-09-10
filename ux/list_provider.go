@@ -41,6 +41,10 @@ type listProvider[T gurps.Node[T]] struct {
 	newItem    func(owner gurps.DataOwner, parent T, container bool) T
 	edit       func(owner Rebuildable, item T)
 	forPage    bool
+	// filterKey and filterFields are left unset by the providers whose lists never appear in a list dockable, which
+	// is what tells the dockable not to offer saved filters.
+	filterKey    string
+	filterFields func() []*gurps.FilterField[T]
 }
 
 // fileListProvider is the list behind a table dockable that shows a list file: a bare list of nodes with no data owner.
@@ -63,6 +67,19 @@ func (p *fileListProvider[T]) rows() []T {
 func (p *fileListProvider[T]) setRows(list []T) {
 	gurps.SetDataOwnerAll(nil, list)
 	p.list = list
+}
+
+// FilterKey implements TableProvider.
+func (p *listProvider[T]) FilterKey() string {
+	return p.filterKey
+}
+
+// FilterFields implements TableProvider. A provider without a filter key has no fields either.
+func (p *listProvider[T]) FilterFields() []*gurps.FilterField[T] {
+	if p.filterFields == nil {
+		return nil
+	}
+	return p.filterFields()
 }
 
 // AllTags returns every tag found on the nodes in the list, at any depth, in natural order. Node types without tags

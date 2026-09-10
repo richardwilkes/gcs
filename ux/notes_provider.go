@@ -27,14 +27,16 @@ type notesProvider struct {
 func NewNotesProvider(provider gurps.NoteListProvider, forPage bool) TableProvider[*gurps.Note] {
 	p := &notesProvider{}
 	p.listProvider = listProvider[*gurps.Note]{
-		dataOwner:  provider,
-		list:       provider.NoteList,
-		setList:    provider.SetNoteList,
-		columnIDs:  p.ColumnIDs,
-		headerData: gurps.NotesHeaderData,
-		newItem:    gurps.NewNote,
-		edit:       EditNote,
-		forPage:    forPage,
+		dataOwner:    provider,
+		list:         provider.NoteList,
+		setList:      provider.SetNoteList,
+		columnIDs:    p.ColumnIDs,
+		headerData:   gurps.NotesHeaderData,
+		newItem:      gurps.NewNote,
+		edit:         EditNote,
+		forPage:      forPage,
+		filterKey:    gurps.ListFilterKeyForExtension(gurps.NotesExt),
+		filterFields: gurps.NoteFilterFields,
 	}
 	return p
 }

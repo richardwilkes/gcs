@@ -30,14 +30,16 @@ type spellsProvider struct {
 func NewSpellsProvider(provider gurps.SpellListProvider, forPage bool) TableProvider[*gurps.Spell] {
 	p := &spellsProvider{provider: provider}
 	p.listProvider = listProvider[*gurps.Spell]{
-		dataOwner:  provider,
-		list:       provider.SpellList,
-		setList:    provider.SetSpellList,
-		columnIDs:  p.ColumnIDs,
-		headerData: gurps.SpellsHeaderData,
-		newItem:    gurps.NewSpell,
-		edit:       func(owner Rebuildable, item *gurps.Spell) { EditSpell(owner, item) },
-		forPage:    forPage,
+		dataOwner:    provider,
+		list:         provider.SpellList,
+		setList:      provider.SetSpellList,
+		columnIDs:    p.ColumnIDs,
+		headerData:   gurps.SpellsHeaderData,
+		newItem:      gurps.NewSpell,
+		edit:         func(owner Rebuildable, item *gurps.Spell) { EditSpell(owner, item) },
+		forPage:      forPage,
+		filterKey:    gurps.ListFilterKeyForExtension(gurps.SpellsExt),
+		filterFields: gurps.SpellFilterFields,
 	}
 	return p
 }

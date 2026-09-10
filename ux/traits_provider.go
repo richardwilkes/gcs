@@ -28,14 +28,16 @@ type traitsProvider struct {
 func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) TableProvider[*gurps.Trait] {
 	p := &traitsProvider{provider: provider}
 	p.listProvider = listProvider[*gurps.Trait]{
-		dataOwner:  provider,
-		list:       provider.TraitList,
-		setList:    provider.SetTraitList,
-		columnIDs:  p.ColumnIDs,
-		headerData: gurps.TraitsHeaderData,
-		newItem:    gurps.NewTrait,
-		edit:       func(owner Rebuildable, item *gurps.Trait) { EditTrait(owner, item) },
-		forPage:    forPage,
+		dataOwner:    provider,
+		list:         provider.TraitList,
+		setList:      provider.SetTraitList,
+		columnIDs:    p.ColumnIDs,
+		headerData:   gurps.TraitsHeaderData,
+		newItem:      gurps.NewTrait,
+		edit:         func(owner Rebuildable, item *gurps.Trait) { EditTrait(owner, item) },
+		forPage:      forPage,
+		filterKey:    gurps.ListFilterKeyForExtension(gurps.TraitsExt),
+		filterFields: gurps.TraitFilterFields,
 	}
 	return p
 }
