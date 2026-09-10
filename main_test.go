@@ -23,11 +23,31 @@ func TestExclusiveModeMsg(t *testing.T) {
 		wantContains []string
 		wantErr      bool
 	}{
-		{name: "none specified"},
-		{name: "one mode", modes: []string{"--convert"}},
-		{name: "two modes", modes: []string{"--convert", "--sync"}, wantErr: true, wantContains: []string{"--convert", "--sync"}},
-		{name: "four modes", modes: []string{"--convert", "--sync", "--text", "--finish-update"}, wantErr: true, wantContains: []string{"--convert", "--sync", "--text", "--finish-update"}},
-		{name: "five modes", modes: []string{"--convert", "--sync", "--text", "--finish-update", "--headless-api"}, wantErr: true, wantContains: []string{"--convert", "--sync", "--text", "--finish-update", "--headless-api"}},
+		{
+			name: "none specified",
+		},
+		{
+			name:  "one mode",
+			modes: []string{"convert"},
+		},
+		{
+			name:         "two modes",
+			modes:        []string{"convert", "sync"},
+			wantErr:      true,
+			wantContains: []string{"-convert", "-sync"},
+		},
+		{
+			name:         "four modes",
+			modes:        []string{"convert", "sync", "text", "finish-update"},
+			wantErr:      true,
+			wantContains: []string{"-convert", "-sync", "-text", "-finish-update"},
+		},
+		{
+			name:         "five modes",
+			modes:        []string{"convert", "sync", "text", "finish-update", "headless-api"},
+			wantErr:      true,
+			wantContains: []string{"-convert", "-sync", "-text", "-finish-update", "-headless-api"},
+		},
 	} {
 		msg := exclusiveModeMsg(tc.modes)
 		if tc.wantErr {
