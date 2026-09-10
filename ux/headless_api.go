@@ -460,6 +460,10 @@ func (s *headlessAPIServer) handleInspect(w http.ResponseWriter, r *http.Request
 	writeJSON(w, result)
 }
 
+// handleInspectFocus reports the focused panel of the focused window. It uses unison.Window.CurrentFocus rather than
+// Window.Focus because the latter assigns the focus to the window's first focusable panel when nothing holds it yet,
+// which is not something an "inspect" endpoint should be doing. A window that nothing in has been focused into
+// therefore reports no panel rather than acquiring one.
 func (s *headlessAPIServer) handleInspectFocus(w http.ResponseWriter, _ *http.Request) {
 	var result inspectResult
 	var ok bool
@@ -469,10 +473,10 @@ func (s *headlessAPIServer) handleInspectFocus(w http.ResponseWriter, _ *http.Re
 			return
 		}
 		ok = true
-		result = describeWindowAndPanel(wnd, wnd.Focus())
+		result = describeWindowAndPanel(wnd, wnd.CurrentFocus())
 	})
 	if !ok {
-		http.Error(w, "nothing is focused", http.StatusNotFound)
+		http.Error(w, "no window is focused", http.StatusNotFound)
 		return
 	}
 	writeJSON(w, result)

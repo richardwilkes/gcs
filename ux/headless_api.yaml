@@ -99,7 +99,8 @@ paths:
             description: >-
                 The same shape as GET /inspect, but for whatever panel currently holds keyboard focus -- in
                 whichever window currently has it, which may be a modal dialog (such as an error dialog a normal
-                user would see and dismiss) rather than the main window.
+                user would see and dismiss) rather than the main window. Purely a read: a window that nothing in
+                has been focused into reports no "panel" rather than acquiring one.
             responses:
                 "200":
                     description: OK
@@ -108,7 +109,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/InspectResult"
                 "404":
-                    description: Nothing is focused
+                    description: No window is focused
                     content:
                         text/plain:
                             schema:

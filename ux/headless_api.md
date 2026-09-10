@@ -84,7 +84,8 @@ over that spot instead, or outside the window entirely.
 
 The same shape as `GET /inspect`, but for whatever panel currently holds keyboard focus -- in whichever window
 currently has it, which may be a modal dialog (such as an error dialog a normal user would see and dismiss) rather
-than the main window. `404` if nothing is focused.
+than the main window. `404` if no window is focused. Purely a read: a window that nothing in has been focused into
+reports no `panel` rather than acquiring one.
 
 ## GET /screenshot
 
