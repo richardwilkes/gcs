@@ -43,5 +43,7 @@ func NewEquipmentModifiersProvider(provider gurps.EquipmentModifierListProvider,
 			newItem:      gurps.NewEquipmentModifier,
 			edit:         EditEquipmentModifier,
 			menuActions:  []*unison.Action{newEquipmentModifierAction, newEquipmentContainerModifierAction},
+			filterKey:    gurps.ListFilterKeyForExtension(gurps.EquipmentModifiersExt),
+			filterFields: gurps.EquipmentModifierFilterFields,
 		})
 }

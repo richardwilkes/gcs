@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
-	"github.com/richardwilkes/unison/enums/check"
 )
 
 var (
@@ -31,22 +30,23 @@ var (
 	_ Rebuildable                = &TableDockable[*gurps.Trait]{}
 	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
 	_ KeyedDockable              = &TableDockable[*gurps.Trait]{}
-	_ TagProvider                = &TableDockable[*gurps.Trait]{}
 	_ gurps.Hashable             = &TableDockable[*gurps.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
 type TableDockable[T gurps.Node[T]] struct {
 	fileBackedPanel
-	undoMgr           *unison.UndoManager
-	provider          TableProvider[T]
-	canCreateIDs      map[int]bool
-	filterField       *unison.Field
-	namesOnlyCheckBox *unison.CheckBox
-	scroll            *unison.ScrollPanel
-	tableHeader       *unison.TableHeader[*Node[T]]
-	table             *unison.Table[*Node[T]]
-	scale             int
+	undoMgr        *unison.UndoManager
+	provider       TableProvider[T]
+	canCreateIDs   map[int]bool
+	filterField    *unison.Field
+	filterPopup    *unison.PopupMenu[string]
+	savedFilters   *listFilterPopup
+	selectedFilter *gurps.ListFilter
+	scroll         *unison.ScrollPanel
+	tableHeader    *unison.TableHeader[*Node[T]]
+	table          *unison.Table[*Node[T]]
+	scale          int
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
@@ -108,7 +108,7 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 		func(_ any) { d.save(false) })
 	d.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { d.save(true) })
 	d.InstallCmdHandlers(JumpToSearchFilterItemID,
-		func(any) bool { return !d.filterField.Focused() },
+		func(any) bool { return d.filterField.Enabled() && !d.filterField.Focused() },
 		func(any) { d.filterField.RequestFocus() })
 	for _, id := range canCreateIDs {
 		variant := ItemVariant(-1)
@@ -141,15 +141,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
 	sizeToFitButton.ClickCallback = d.sizeToFit
 
-	filterPopup := NewTagFilterPopup(d)
-
-	d.filterField = NewSearchField(i18n.Text("Content Filter"), func(_, _ *unison.FieldState) {
-		d.ApplyFilter(SelectedTags(filterPopup))
-	})
-
-	d.namesOnlyCheckBox = unison.NewCheckBox()
-	d.namesOnlyCheckBox.SetTitle(i18n.Text("Names Only"))
-	d.namesOnlyCheckBox.ClickCallback = func() { d.ApplyFilter(SelectedTags(filterPopup)) }
+	d.filterField = NewSearchField(i18n.Text("Content Filter"), func(_, _ *unison.FieldState) { d.ApplyFilter() })
 
 	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -159,8 +151,18 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar.AddChild(noteToggleButton)
 	toolbar.AddChild(sizeToFitButton)
 	toolbar.AddChild(d.filterField)
-	toolbar.AddChild(d.namesOnlyCheckBox)
-	toolbar.AddChild(filterPopup)
+	// The weapon and conditional modifier providers have no filter key, since their lists are never shown in a list
+	// dockable, so they get no saved filter popup.
+	if key := d.provider.FilterKey(); key != "" {
+		d.savedFilters = newListFilterPopup(listFilterPopupSpec{
+			key:     key,
+			fields:  filterFieldInfos(d.provider.FilterFields()),
+			current: func() *gurps.ListFilter { return d.selectedFilter },
+			choose:  d.chooseFilter,
+		})
+		d.filterPopup = d.savedFilters.popup
+		toolbar.AddChild(d.filterPopup)
+	}
 	finishToolbarLayout(toolbar)
 	return toolbar
 }
@@ -239,7 +241,12 @@ func (d *TableDockable[T]) sizeToFit() {
 func (d *TableDockable[T]) Rebuild(_ bool) {
 	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()
-	syncTablePreservingSelection(d.table)
+	sel := d.table.CopySelectionMap()
+	d.table.SyncToModel()
+	// The rows the sync produced have not been through the filter, so it is applied again here. Before this, the
+	// filter was never re-run after a rebuild, leaving rows that no longer pass it on screen.
+	d.ApplyFilter()
+	d.table.SetSelectionMap(sel)
 	UpdateTitleForDockable(d)
 	d.scroll.SetPosition(h, v)
 }
@@ -254,35 +261,41 @@ func (d *TableDockable[T]) Hash(h hash.Hash) {
 	gurps.HashJSON(h, data)
 }
 
-// AllTags returns all tags currently present in the data.
-func (d *TableDockable[T]) AllTags() []string {
-	return d.provider.AllTags()
+// chooseFilter puts the given saved filter in force, or hands the list back to the quick filter when it is nil. The
+// quick filter's field is only usable while no saved filter is in force, since the two would otherwise disagree about
+// which rows to show.
+func (d *TableDockable[T]) chooseFilter(f *gurps.ListFilter) {
+	// The filter is recorded first because the SetText below re-enters ApplyFilter through the search field's
+	// ModifiedCallback.
+	d.selectedFilter = f
+	if f != nil {
+		d.filterField.SetText("")
+	}
+	adjustFieldBlank(d.filterField, f != nil)
+	d.ApplyFilter()
+}
+
+// listFiltersChanged implements listFilterObserver.
+func (d *TableDockable[T]) listFiltersChanged(key string, source *listFilterPopup) {
+	if d.savedFilters != nil && d.savedFilters != source && d.savedFilters.spec.key == key {
+		d.savedFilters.refresh()
+	}
 }
 
 // ApplyFilter applies the current filtering, if any.
-func (d *TableDockable[T]) ApplyFilter(tags []string) {
-	if d.filterField != nil {
-		text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text))
-		var f func(row *Node[T]) bool
-		if len(tags) != 0 || text != "" {
-			f = func(row *Node[T]) bool {
-				match := false
-				if d.namesOnlyCheckBox.State == check.On {
-					match = strings.Contains(strings.ToLower(row.data.String()), text)
-				} else {
-					match = row.PartialMatchExceptTag(text)
-				}
-				if match {
-					for _, tag := range tags {
-						if !row.HasTag(tag) {
-							return true
-						}
-					}
-					return false
-				}
-				return true
-			}
-		}
-		d.table.ApplyFilter(f)
+func (d *TableDockable[T]) ApplyFilter() {
+	if d.filterField == nil {
+		return
 	}
+	var f func(row *Node[T]) bool
+	if d.selectedFilter != nil {
+		// The fields are looked up once here rather than once per row.
+		m := gurps.NewListFilterMatcher(d.selectedFilter, d.provider.FilterFields())
+		f = func(row *Node[T]) bool { return !m(row.Data()) }
+	} else if text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text)); text != "" {
+		// Match, unlike the PartialMatchExceptTag that used to be called here, looks at the tags column too, now that
+		// the tag popup that once did the tag filtering is gone.
+		f = func(row *Node[T]) bool { return !row.Match(text) }
+	}
+	d.table.ApplyFilter(f)
 }

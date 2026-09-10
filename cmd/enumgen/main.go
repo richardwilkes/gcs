@@ -1124,6 +1124,30 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
+		Pkg:  "model/gurps/enums/filternode",
+		Name: "type",
+		Desc: "holds the type of a FilterNode",
+		Values: []*enumValue{
+			{
+				Name:   "Group",
+				Key:    "group",
+				String: "a group",
+			},
+			{
+				Name:   "Condition",
+				Key:    "condition",
+				String: "a condition",
+			},
+			{
+				Name:   "Unknown",
+				Key:    "unknown",
+				String: "an unknown filter node type",
+			},
+		},
+		DefaultLast:    true,
+		DefaultUnknown: true,
+	},
+	{
 		Pkg:  "model/gurps/enums/prereq",
 		Name: "type",
 		Desc: "holds the type of a Prereq",

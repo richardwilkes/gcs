@@ -30,14 +30,16 @@ type skillsProvider struct {
 func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) TableProvider[*gurps.Skill] {
 	p := &skillsProvider{provider: provider}
 	p.listProvider = listProvider[*gurps.Skill]{
-		dataOwner:  provider,
-		list:       provider.SkillList,
-		setList:    provider.SetSkillList,
-		columnIDs:  p.ColumnIDs,
-		headerData: gurps.SkillsHeaderData,
-		newItem:    gurps.NewSkill,
-		edit:       func(owner Rebuildable, item *gurps.Skill) { EditSkill(owner, item) },
-		forPage:    forPage,
+		dataOwner:    provider,
+		list:         provider.SkillList,
+		setList:      provider.SetSkillList,
+		columnIDs:    p.ColumnIDs,
+		headerData:   gurps.SkillsHeaderData,
+		newItem:      gurps.NewSkill,
+		edit:         func(owner Rebuildable, item *gurps.Skill) { EditSkill(owner, item) },
+		forPage:      forPage,
+		filterKey:    gurps.ListFilterKeyForExtension(gurps.SkillsExt),
+		filterFields: gurps.SkillFilterFields,
 	}
 	return p
 }

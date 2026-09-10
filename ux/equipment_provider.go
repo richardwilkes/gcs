@@ -41,9 +41,11 @@ func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage
 		headerData: func(columnID int) gurps.HeaderData {
 			return gurps.EquipmentHeaderData(columnID, provider, carried, forPage)
 		},
-		newItem: gurps.NewEquipment,
-		edit:    func(owner Rebuildable, item *gurps.Equipment) { EditEquipment(owner, item, carried) },
-		forPage: forPage,
+		newItem:      gurps.NewEquipment,
+		edit:         func(owner Rebuildable, item *gurps.Equipment) { EditEquipment(owner, item, carried) },
+		forPage:      forPage,
+		filterKey:    gurps.ListFilterKeyForExtension(gurps.EquipmentExt),
+		filterFields: gurps.EquipmentFilterFields,
 	}
 	return p
 }
