@@ -274,57 +274,13 @@ func parseButton(name string) int {
 	}
 }
 
-var namedKeys = map[string]unison.KeyCode{
-	"return": unison.KeyReturn, "enter": unison.KeyReturn,
-	"tab":       unison.KeyTab,
-	"escape":    unison.KeyEscape,
-	"esc":       unison.KeyEscape,
-	"backspace": unison.KeyBackspace,
-	"delete":    unison.KeyDelete,
-	"insert":    unison.KeyInsert,
-	"up":        unison.KeyUp,
-	"down":      unison.KeyDown,
-	"left":      unison.KeyLeft,
-	"right":     unison.KeyRight,
-	"home":      unison.KeyHome,
-	"end":       unison.KeyEnd,
-	"pageup":    unison.KeyPageUp,
-	"pagedown":  unison.KeyPageDown,
-	"space":     unison.KeySpace,
-	"f1":        unison.KeyF1,
-	"f2":        unison.KeyF2,
-	"f3":        unison.KeyF3,
-	"f4":        unison.KeyF4,
-	"f5":        unison.KeyF5,
-	"f6":        unison.KeyF6,
-	"f7":        unison.KeyF7,
-	"f8":        unison.KeyF8,
-	"f9":        unison.KeyF9,
-	"f10":       unison.KeyF10,
-	"f11":       unison.KeyF11,
-	"f12":       unison.KeyF12,
-}
-
-// resolveKeyCode resolves a "key" op's target key: an explicit numeric code takes precedence, then a name from
-// namedKeys, then a single ASCII letter or digit.
+// resolveKeyCode resolves a "key" op's target key: an explicit numeric code takes precedence, then unison.KeyCodeFromKey
 func resolveKeyCode(name string, code int) (unison.KeyCode, bool) {
 	if code != 0 {
 		return unison.KeyCode(code), true
 	}
-	if kc, ok := namedKeys[strings.ToLower(name)]; ok {
-		return kc, true
-	}
-	if len(name) == 1 {
-		switch ch := name[0]; {
-		case ch >= 'a' && ch <= 'z':
-			return unison.KeyA + unison.KeyCode(ch-'a'), true
-		case ch >= 'A' && ch <= 'Z':
-			return unison.KeyA + unison.KeyCode(ch-'A'), true
-		case ch >= '0' && ch <= '9':
-			return unison.Key0 + unison.KeyCode(ch-'0'), true
-		}
-	}
-	return 0, false
+	keyCode := unison.KeyCodeFromKey(name)
+	return keyCode, keyCode != unison.KeyNone
 }
 
 // --- /inspect and /inspect/focus -------------------------------------------
