@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+    title: GCS headless debug API
+    version: "1.0.0"
+    description: >-
+        Drives and inspects a headless GCS session: no real window is visible anywhere, but the full UI is
+        running. Only exists in builds compiled with the headlessapi build tag, via the hidden -headless-api
+        command line flag. GET / serves this document itself.
+
+        Coordinates everywhere in this API -- input points, inspected rects, screenshot rects -- are in the
+        same logical, screen-absolute space: the one /inspect and /inspect/focus report a widget's rect in is
+        exactly the one a screenshot rect or an input point should be given in. Windows other than the main
+        one (such as a modal error dialog) are positioned within this same space, not at their own private
+        origin. The virtual screen's size is fixed for the life of the session; there is no live resize.
+paths:
+    /:
+        get:
+            summary: API documentation
+            description: >-
+                This API's documentation. Content-negotiated via the Accept header: Markdown
+                ("text/markdown") by default, or this specification itself as YAML ("application/yaml" or
+                "application/x-yaml") or JSON ("application/json") if that's what the Accept header asks
+                for.
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        text/markdown:
+                            schema:
+                                type: string
+                        application/yaml:
+                            schema:
+                                type: string
+                        application/json:
+                            schema:
+                                type: object
+    /input:
+        get:
+            summary: Recognized key and modifier names
+            description: >-
+                The vocabulary POST /input's "key" and "mods" fields recognize, straight from unison's own
+                names. "key" is case-insensitive. A "mods" entry may also be a "+"-joined combination of
+                these names, e.g. "ctrl+shift".
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/InputVocabulary"
+        post:
+            summary: Inject one input event
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/InputRequest"
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/OK"
+                "400":
+                    description: Invalid request body, unknown op, or unrecognized key
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+    /inspect:
+        get:
+            summary: The widget at a point
+            description: >-
+                Reports the widget at (x, y): its type, absolute bounding rect, tooltip, enabled state and text,
+                along with the same for every ancestor up to the window's root.
+            parameters:
+                - $ref: "#/components/parameters/X"
+                - $ref: "#/components/parameters/Y"
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/InspectResult"
+                "404":
+                    description: No window at that point
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+    /inspect/focus:
+        get:
+            summary: The focused widget
+            description: >-
+                The same shape as GET /inspect, but for whatever panel currently holds keyboard focus -- in
+                whichever window currently has it, which may be a modal dialog (such as an error dialog a normal
+                user would see and dismiss) rather than the main window. Purely a read: a window that nothing in
+                has been focused into reports no "panel" rather than acquiring one.
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/InspectResult"
+                "404":
+                    description: No window is focused
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+    /screenshot:
+        get:
+            summary: A screenshot
+            description: >-
+                A PNG of the whole virtual screen, or -- with x, y, w and h all given -- a PNG cropped to that
+                absolute rectangle instead.
+            parameters:
+                - $ref: "#/components/parameters/BBOX"
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        image/png:
+                            schema:
+                                type: string
+                                format: binary
+                "400":
+                    description: x, y, w and h were not all given together, as numbers
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+    /console:
+        get:
+            summary: Log output and session errors
+            description: >-
+                Entries recorded since sequence number "since" (default 0 -- everything), for polling
+                incrementally. Does not include app-level errors surfaced after startup through the normal error
+                dialog (a failed file load, say) -- those still show up as a real modal dialog, findable and
+                dismissable through /inspect/focus, /input and /screenshot like any other UI state.
+            parameters:
+                - name: since
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      default: 0
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ConsoleLog"
+components:
+    parameters:
+        X:
+            name: x
+            in: query
+            required: true
+            schema:
+                type: number
+        Y:
+            name: y
+            in: query
+            required: true
+            schema:
+                type: number
+        BBOX:
+            name: bbox
+            in: query
+            style: form
+            explode: true
+            schema:
+                $ref: "#/components/schemas/Rect"
+    schemas:
+        OK:
+            type: object
+            properties:
+                ok:
+                    type: boolean
+        InputRequest:
+            type: object
+            required:
+                - op
+            properties:
+                op:
+                    type: string
+                    enum: [click, doubleclick, drag, wheel, type, key]
+                    description: Which input event to inject.
+                x:
+                    type: number
+                    description: click, doubleclick, drag (from), wheel
+                y:
+                    type: number
+                    description: click, doubleclick, drag (from), wheel
+                toX:
+                    type: number
+                    description: drag (to)
+                toY:
+                    type: number
+                    description: drag (to)
+                deltaX:
+                    type: number
+                    description: wheel
+                deltaY:
+                    type: number
+                    description: wheel
+                steps:
+                    type: integer
+                    description: drag -- number of intermediate move steps (default 1)
+                button:
+                    type: string
+                    enum: [left, right, middle]
+                    description: click (default left)
+                mods:
+                    type: array
+                    items:
+                        type: string
+                    description: click, wheel, key -- see GET /input for recognized names
+                text:
+                    type: string
+                    description: type -- typed one rune at a time, the way a person at a keyboard would
+                key:
+                    type: string
+                    description: key -- see GET /input
+                code:
+                    type: integer
+                    description: key -- a raw numeric key code; takes precedence over "key" if both are given
+        InputVocabulary:
+            type: object
+            properties:
+                keys:
+                    type: array
+                    items:
+                        type: string
+                modifiers:
+                    type: array
+                    items:
+                        type: string
+        Rect:
+            type: object
+            required:
+                - x
+                - y
+                - w
+                - h
+            properties:
+                x:
+                    type: number
+                y:
+                    type: number
+                w:
+                    type: number
+                h:
+                    type: number
+            additionalProperties: false
+        Window:
+            type: object
+            properties:
+                title:
+                    type: string
+                rect:
+                    $ref: "#/components/schemas/Rect"
+        Panel:
+            type: object
+            properties:
+                type:
+                    type: string
+                    description: The Go type of the widget, e.g. "*unison.Label".
+                rect:
+                    allOf:
+                        - $ref: "#/components/schemas/Rect"
+                    description: The widget's whole extent, which a scroll panel may show only part of.
+                visible:
+                    allOf:
+                        - $ref: "#/components/schemas/Rect"
+                    description: >-
+                        The part of "rect" that is actually on screen, after every ancestor has clipped it. Aim input
+                        here rather than at "rect": the center of a rect that is mostly clipped away lands on whatever
+                        is drawn over that spot instead, or outside the window entirely. Absent when none of the
+                        widget is showing, because it is hidden or scrolled out of sight.
+                tooltip:
+                    type: string
+                enabled:
+                    type: boolean
+                text:
+                    type: string
+        InspectResult:
+            type: object
+            properties:
+                window:
+                    $ref: "#/components/schemas/Window"
+                panel:
+                    $ref: "#/components/schemas/Panel"
+                ancestors:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Panel"
+        ConsoleEntry:
+            type: object
+            properties:
+                seq:
+                    type: integer
+                time:
+                    type: string
+                    format: date-time
+                source:
+                    type: string
+                    enum: [log, session]
+                    description: '"log" for slog output; "session" for a recovered panic or a refused request.'
+                level:
+                    type: string
+                message:
+                    type: string
+        ConsoleLog:
+            type: object
+            properties:
+                entries:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/ConsoleEntry"
