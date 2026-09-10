@@ -24,15 +24,17 @@ import (
 //go:embed images/app-256.png
 var appIconBytes []byte
 
-// Start the UI.
-func Start(files []string) {
+// StartOptions returns the options to pass to unison.Start for starting the GURPS Character Sheet UI.
+func StartOptions(files []string, enableHandoff bool) []unison.StartupOption {
 	readyChan := make(chan struct{})
 	pathsChan := make(chan []string, 32)
-	startHandoffService(readyChan, pathsChan, files)
+	if enableHandoff {
+		startHandoffService(readyChan, pathsChan, files)
+	}
 	if settings := gurps.GlobalSettings(); settings.General.LibraryUpdateCheck.ChecksAtLaunch() {
 		settings.Libraries.PerformUpdateChecks()
 	}
-	unison.Start(
+	return []unison.StartupOption{
 		unison.StartupFinishedCallback(func() {
 			unison.DefaultTableColumnHeaderTheme.OnBackgroundInk = colors.OnHeader
 			unison.DefaultMarkdownTheme.LinkHandler = HandleLink
@@ -59,11 +61,13 @@ func Start(files []string) {
 			SetupMenuBar(wnd)
 			InitWorkspace(wnd)
 			OpenFiles(files)
-			go func() {
-				for paths := range pathsChan {
-					unison.InvokeTask(func() { OpenFiles(paths) })
-				}
-			}()
+			if enableHandoff {
+				go func() {
+					for paths := range pathsChan {
+						unison.InvokeTask(func() { OpenFiles(paths) })
+					}
+				}()
+			}
 			unison.InvokeTask(performPlatformLateStartup)
 			unison.InvokeTask(func() { close(readyChan) })
 		}),
@@ -80,7 +84,7 @@ func Start(files []string) {
 		// unison.AttemptQuit does not return when the quit succeeds -- it reaches xos.Exit and the process ends. This
 		// callback is reached on every exit that still runs Go code, and does nothing unless an update is waiting.
 		unison.QuittingCallback(applyPendingUpdate),
-	) // Never returns
+	}
 }
 
 // AppDescription returns a description of the software.

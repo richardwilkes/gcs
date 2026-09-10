@@ -98,7 +98,7 @@ func main() {
 	if requestedRunMode != nil {
 		requestedRunMode.Start(fileList) // Never returns
 	}
-	ux.Start(fileList) // Never returns
+	unison.Start(ux.StartOptions(fileList, true)...) // Never returns
 }
 
 // exclusiveModeMsg returns a non-empty error message if more than one of the requested run mode names was specified.

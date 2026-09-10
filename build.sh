@@ -23,6 +23,15 @@ for arg in "$@"; do
 		PACKAGER=1
 		SOMETHING=1
 		;;
+	--headlessapi | -H)
+		# The headless debug API (see ux/headless_api.md) only exists behind the headlessapi build tag. Setting the tag
+		# through GOFLAGS puts it on every go invocation that follows -- the build, the tests and the linters -- so the
+		# files behind it are built, tested and linted alongside everything else.
+		export GOFLAGS="$GOFLAGS -tags=headlessapi"
+		BUILD_GO=1
+		PACKAGER=1
+		SOMETHING=1
+		;;
 	--gen | -G)
 		BUILD_GEN=1
 		SOMETHING=1
@@ -68,17 +77,18 @@ for arg in "$@"; do
 		;;
 	--help | -h)
 		echo "$0 [options]"
-		echo "  -a, --all    Equivalent to --gen --go --fmt --lint --race"
-		echo "  -d, --dist   Create distribution"
-		echo "  -f, --fmt    Verify the source formatting (gofumpt)"
-		echo "  -g, --go     Build the Go code"
-		echo "  -G, --gen    Generate the source"
-		echo "  -p, --genpkg Generate the icons and packaging.yml file"
-		echo "  -i, --i18n   Extract the localization template"
-		echo "  -l, --lint   Run the linters"
-		echo "  -r, --race   Run the tests, race-checking those that exercise concurrency"
-		echo "  -t, --test   Run the tests"
-		echo "  -h, --help   This help text"
+		echo "  -a, --all         Equivalent to --gen --go --fmt --lint --race"
+		echo "  -d, --dist        Create distribution"
+		echo "  -f, --fmt         Verify the source formatting (gofumpt)"
+		echo "  -g, --go          Build the Go code"
+		echo "  -G, --gen         Generate the source"
+		echo "  -H, --headlessapi Build the Go code with the headless debug API compiled in"
+		echo "  -p, --genpkg      Generate the icons and packaging.yml file"
+		echo "  -i, --i18n        Extract the localization template"
+		echo "  -l, --lint        Run the linters"
+		echo "  -r, --race        Run the tests, race-checking those that exercise concurrency"
+		echo "  -t, --test        Run the tests"
+		echo "  -h, --help        This help text"
 		exit 0
 		;;
 	*)

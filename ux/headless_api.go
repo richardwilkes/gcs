@@ -31,7 +31,6 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/runmode"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -147,9 +146,8 @@ func newHeadlessAPIRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	width := flagSet.Float64("headless-api-width", 1400, i18n.Text("Internal use only. Logical width of the virtual screen the headless debug API renders to"))
 	height := flagSet.Float64("headless-api-height", 900, i18n.Text("Internal use only. Logical height of the virtual screen the headless debug API renders to"))
 	return runmode.Mode{
-		Name:            "headless-api",
-		HiddenFlagNames: []string{"headless-api", "headless-api-width", "headless-api-height"},
-		Requested:       func() bool { return *addr != "" },
+		Name:      "headless-api",
+		Requested: func() bool { return *addr != "" },
 		Start: func(files []string) {
 			StartHeadlessAPI(*addr, float32(*width), float32(*height), files)
 		},
@@ -188,22 +186,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 
 	server := &headlessAPIServer{console: console}
 	screen, err := unison.StartHeadless(unison.HeadlessConfig{Width: width, Height: height},
-		unison.StartupFinishedCallback(func() {
-			unison.DefaultTableColumnHeaderTheme.OnBackgroundInk = colors.OnHeader
-			unison.DefaultMarkdownTheme.LinkHandler = HandleLink
-			unison.DefaultMarkdownTheme.WorkingDirProvider = WorkingDirProvider
-			unison.DefaultMarkdownTheme.AltLinkPrefixes = []string{"md:"}
-			wnd, wndErr := unison.NewWindow(xos.AppName)
-			if wndErr != nil {
-				errs.Log(wndErr)
-				xos.Exit(1)
-			}
-			registerWindowDragTypes(wnd)
-			SetupMenuBar(wnd)
-			InitWorkspace(wnd)
-			OpenFiles(files)
-		}),
-	)
+		StartOptions(files, false)...)
 	if err != nil {
 		xos.ExitWithMsg(fmt.Sprintf("unable to start the headless session: %v", err))
 	}
