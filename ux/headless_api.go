@@ -27,6 +27,10 @@ import (
 	"sync"
 	"time"
 
+	_ "embed"
+
+	"gopkg.in/yaml.v3"
+
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/runmode"
@@ -37,6 +41,93 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
+
+//go:embed headless_api.md
+var apiDocsMD string
+
+//go:embed headless_api.yaml
+var apiSpecYAML string
+
+// handleAPIDocs serves this API's documentation at the session's root, so a caller that only knows the address can
+// find out what it can do: the prose in headless_api.md by default, or this API's specification (headless_api.yaml)
+// itself, as YAML or as JSON converted from it on the fly, according to the request's Accept header.
+func handleAPIDocs(w http.ResponseWriter, r *http.Request) {
+	switch negotiateDocFormat(r.Header.Get("Accept")) {
+	case docFormatJSON:
+		var spec any
+		if err := yaml.Unmarshal([]byte(apiSpecYAML), &spec); err != nil {
+			errs.Log(err)
+			http.Error(w, "unable to convert the API specification to JSON", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(spec); err != nil {
+			errs.Log(err)
+		}
+	case docFormatYAML:
+		w.Header().Set("Content-Type", "application/yaml")
+		if _, err := w.Write([]byte(apiSpecYAML)); err != nil {
+			errs.Log(err)
+		}
+	default:
+		w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
+		if _, err := w.Write([]byte(apiDocsMD)); err != nil {
+			errs.Log(err)
+		}
+	}
+}
+
+// docFormat is which representation of the API documentation GET / should serve.
+type docFormat int
+
+const (
+	docFormatMD docFormat = iota
+	docFormatYAML
+	docFormatJSON
+)
+
+// negotiateDocFormat picks a docFormat from the value of an Accept header: docFormatJSON for application/json,
+// docFormatYAML for application/yaml or application/x-yaml, and docFormatMD -- the default -- for anything else,
+// including an empty or missing header, "*/*", or text/markdown itself. Ties (equal, and equal to the highest,
+// "q" value) are broken by whichever the header lists first.
+func negotiateDocFormat(accept string) docFormat {
+	best := docFormatMD
+	bestQ := -1.0
+	for entry := range strings.SplitSeq(accept, ",") {
+		mediaType, q := parseAcceptEntry(entry)
+		var format docFormat
+		switch mediaType {
+		case "application/json":
+			format = docFormatJSON
+		case "application/yaml", "application/x-yaml":
+			format = docFormatYAML
+		case "text/markdown":
+			format = docFormatMD
+		default:
+			continue
+		}
+		if q > bestQ {
+			best, bestQ = format, q
+		}
+	}
+	return best
+}
+
+// parseAcceptEntry parses one comma-separated entry of an Accept header, such as "application/json;q=0.9", into its
+// media type and "q" value (1, when absent).
+func parseAcceptEntry(entry string) (mediaType string, q float64) {
+	q = 1
+	fields := strings.Split(entry, ";")
+	mediaType = strings.TrimSpace(fields[0])
+	for _, param := range fields[1:] {
+		if v, ok := strings.CutPrefix(strings.TrimSpace(param), "q="); ok {
+			if parsed, err := strconv.ParseFloat(v, 64); err == nil {
+				q = parsed
+			}
+		}
+	}
+	return mediaType, q
+}
 
 // init registers the headless debug API as a runmode.Mode, which is how main learns about -headless-api at all: a
 // build compiled without the headlessapi tag never runs this file, so runmode.Factories stays empty and main has no
@@ -68,6 +159,7 @@ func newHeadlessAPIRunMode(flagSet *flag.FlagSet) runmode.Mode {
 // StartHeadlessAPI starts GCS headless -- no real window ever appears -- with a debug HTTP server listening on addr
 // that lets automated tooling drive and inspect the running app:
 //
+//   - GET  /           this documentation, or this API's specification (see headless_api.md, headless_api.yaml)
 //   - POST /input       inject a click, double-click, drag, wheel, key press or typed text
 //   - GET  /input       the canonical key and modifier names POST /input recognizes
 //   - GET  /inspect     the widget at a point: type, absolute bounding rect, tooltip, enabled state, text
@@ -119,6 +211,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 	xos.RunAtExit(screen.Stop)
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /{$}", handleAPIDocs)
 	mux.HandleFunc("GET /input", server.handleInputVocabulary)
 	mux.HandleFunc("POST /input", server.handleInput)
 	mux.HandleFunc("GET /inspect", server.handleInspect)
