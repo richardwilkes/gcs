@@ -258,20 +258,7 @@ func (s *headlessAPIServer) handleInput(w http.ResponseWriter, r *http.Request) 
 func parseMods(names []string) mod.Modifiers {
 	var m mod.Modifiers
 	for _, n := range names {
-		switch strings.ToLower(n) {
-		case "shift":
-			m |= mod.Shift
-		case "control", "ctrl":
-			m |= mod.Control
-		case "option", "alt":
-			m |= mod.Option
-		case "command", "cmd", "meta":
-			m |= mod.Command
-		case "capslock":
-			m |= mod.CapsLock
-		case "numlock":
-			m |= mod.NumLock
-		}
+		m |= mod.FromKey(n)
 	}
 	return m
 }
