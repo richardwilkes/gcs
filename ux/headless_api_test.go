@@ -15,6 +15,8 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/unison"
 )
 
 func TestNegotiateDocFormat(t *testing.T) {
@@ -44,4 +46,40 @@ func TestNegotiateDocFormat(t *testing.T) {
 	} {
 		c.Equal(tc.want, negotiateDocFormat(tc.accept), tc.name)
 	}
+}
+
+func TestClipToVisible(t *testing.T) {
+	c := check.New(t)
+
+	// A stack of panels the size of the outermost one: nothing clips anything.
+	outer := unison.NewPanel()
+	outer.SetFrameRect(geom.NewRect(0, 0, 100, 100))
+	inner := unison.NewPanel()
+	inner.SetFrameRect(geom.NewRect(0, 0, 100, 100))
+	outer.AddChild(inner)
+	c.Equal(geom.NewRect(0, 0, 100, 100), clipToVisible(inner, inner.RectToRoot(inner.ContentRect(false))),
+		"an unclipped panel is visible in full")
+
+	// A child hanging halfway out of its parent, the way a row scrolled to the edge of a scroll panel's view port
+	// does: only the half still inside can be seen, and only that half can be clicked.
+	half := unison.NewPanel()
+	half.SetFrameRect(geom.NewRect(0, 50, 100, 100))
+	outer.AddChild(half)
+	c.Equal(geom.NewRect(0, 50, 100, 50), clipToVisible(half, half.RectToRoot(half.ContentRect(false))),
+		"a partly clipped panel reports only the part still showing")
+
+	// A child entirely past its parent's bottom edge, the way a row scrolled out of view does.
+	past := unison.NewPanel()
+	past.SetFrameRect(geom.NewRect(0, 100, 100, 100))
+	outer.AddChild(past)
+	c.True(clipToVisible(past, past.RectToRoot(past.ContentRect(false))).Empty(),
+		"a panel clipped away entirely reports nothing visible")
+
+	// Hidden panels draw nothing, whether it is the panel itself or something it sits inside that is hidden.
+	inner.Hidden = true
+	c.True(clipToVisible(inner, inner.RectToRoot(inner.ContentRect(false))).Empty(), "a hidden panel is not visible")
+	inner.Hidden = false
+	outer.Hidden = true
+	c.True(clipToVisible(inner, inner.RectToRoot(inner.ContentRect(false))).Empty(),
+		"a panel inside a hidden panel is not visible")
 }

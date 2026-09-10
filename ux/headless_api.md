@@ -69,10 +69,16 @@ for every ancestor up to the window's root. `404` if there is no window at that 
 ```json
 {
   "window": {"title": "GCS", "rect": {"x": 0, "y": 0, "w": 1400, "h": 900}},
-  "panel": {"type": "*unison.Label", "rect": {"x": 8, "y": 28, "w": 115, "h": 17}, "enabled": true, "text": "..."},
-  "ancestors": [{"type": "...", "rect": {...}, "enabled": true}, ...]
+  "panel": {"type": "*unison.Label", "rect": {"x": 8, "y": 28, "w": 115, "h": 17},
+            "visible": {"x": 8, "y": 28, "w": 115, "h": 17}, "enabled": true, "text": "..."},
+  "ancestors": [{"type": "...", "rect": {...}, "visible": {...}, "enabled": true}, ...]
 }
 ```
+
+`rect` is the widget's whole extent; `visible` is the part of it that is actually on screen, after every ancestor has
+clipped it. Inside a scroll panel the two differ, and a widget scrolled out of sight has no `visible` at all. **Aim
+input at `visible`**, not at `rect`: the center of a `rect` that is mostly clipped away lands on whatever is drawn
+over that spot instead, or outside the window entirely.
 
 ## GET /inspect/focus
 

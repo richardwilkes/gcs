@@ -162,7 +162,7 @@ func newHeadlessAPIRunMode(flagSet *flag.FlagSet) runmode.Mode {
 //   - GET  /           this documentation, or this API's specification (see headless_api.md, headless_api.yaml)
 //   - POST /input       inject a click, double-click, drag, wheel, key press or typed text
 //   - GET  /input       the canonical key and modifier names POST /input recognizes
-//   - GET  /inspect     the widget at a point: type, absolute bounding rect, tooltip, enabled state, text
+//   - GET  /inspect     the widget at a point: type, absolute bounding and visible rects, tooltip, enabled, text
 //   - GET  /inspect/focus  the same, for whatever currently holds keyboard focus (e.g. an open error dialog)
 //   - GET  /screenshot  a PNG of the whole virtual screen, or of an absolute rectangle within it
 //   - GET  /console     log output and session errors recorded since a given sequence number
@@ -415,11 +415,12 @@ func rectFromGeom(r geom.Rect) rectDTO {
 }
 
 type panelDTO struct {
-	Type    string  `json:"type"`
-	Rect    rectDTO `json:"rect"`
-	Tooltip string  `json:"tooltip,omitempty"`
-	Enabled bool    `json:"enabled"`
-	Text    string  `json:"text,omitempty"`
+	Type    string   `json:"type"`
+	Rect    rectDTO  `json:"rect"`
+	Visible *rectDTO `json:"visible,omitempty"`
+	Tooltip string   `json:"tooltip,omitempty"`
+	Enabled bool     `json:"enabled"`
+	Text    string   `json:"text,omitempty"`
 }
 
 type windowDTO struct {
@@ -479,7 +480,8 @@ func (s *headlessAPIServer) handleInspectFocus(w http.ResponseWriter, _ *http.Re
 
 // describeWindowAndPanel must be called on the UI thread. It reports leaf's rect, and every ancestor's, translated by
 // wnd's position on the shared virtual screen -- the same absolute space /screenshot and /input use -- rather than in
-// wnd's own window-local space.
+// wnd's own window-local space. Alongside each full rect it reports the visible part of it, which is the one to aim
+// input at; see clipToVisible.
 func describeWindowAndPanel(wnd *unison.Window, leaf *unison.Panel) inspectResult {
 	origin := wnd.ContentRect().Point
 	result := inspectResult{Window: windowDTO{Title: wnd.Title(), Rect: rectFromGeom(wnd.ContentRect())}}
@@ -496,11 +498,17 @@ func describeWindowAndPanel(wnd *unison.Window, leaf *unison.Panel) inspectResul
 
 func describePanel(p *unison.Panel, origin geom.Point) panelDTO {
 	rect := p.RectToRoot(p.ContentRect(false))
+	visible := clipToVisible(p, rect)
 	rect.Point = rect.Point.Add(origin)
 	d := panelDTO{
 		Type:    fmt.Sprintf("%T", p.Self),
 		Rect:    rectFromGeom(rect),
 		Enabled: p.Enabled(),
+	}
+	if !visible.Empty() {
+		visible.Point = visible.Point.Add(origin)
+		v := rectFromGeom(visible)
+		d.Visible = &v
 	}
 	if p.Tooltip != nil {
 		d.Tooltip = tooltipOf(p.Tooltip)
@@ -512,6 +520,29 @@ func describePanel(p *unison.Panel, origin geom.Point) panelDTO {
 		d.Text = v.String()
 	}
 	return d
+}
+
+// clipToVisible returns the part of rect -- p's own rect, in root coordinates -- that is actually on screen. A panel's
+// rect is its whole extent, which inside a scroll panel can be far larger than the window, or scrolled entirely out
+// of sight; only what survives being clipped by every ancestor in turn, exactly as drawing clips it, can be seen or
+// aimed at. An empty result means none of the panel is showing, which is also what a hidden panel, or one below a
+// hidden ancestor, gets. Must be called on the UI thread.
+func clipToVisible(p *unison.Panel, rect geom.Rect) geom.Rect {
+	if p.Hidden {
+		return geom.Rect{}
+	}
+	for anc := p.Parent(); anc != nil; anc = anc.Parent() {
+		if anc.Hidden {
+			return geom.Rect{}
+		}
+		// The border is included because that is what clips: drawing hands a child the intersection of its frame with
+		// whatever the parent itself was given, and a parent's border is inside its frame, not outside it.
+		rect = rect.Intersect(anc.RectToRoot(anc.ContentRect(true)))
+		if rect.Empty() {
+			return geom.Rect{}
+		}
+	}
+	return rect
 }
 
 // tooltipOf returns the text of a tooltip panel built the way this app's tooltips are: one label per line.

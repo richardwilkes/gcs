@@ -271,7 +271,17 @@ components:
                     type: string
                     description: The Go type of the widget, e.g. "*unison.Label".
                 rect:
-                    $ref: "#/components/schemas/Rect"
+                    allOf:
+                        - $ref: "#/components/schemas/Rect"
+                    description: The widget's whole extent, which a scroll panel may show only part of.
+                visible:
+                    allOf:
+                        - $ref: "#/components/schemas/Rect"
+                    description: >-
+                        The part of "rect" that is actually on screen, after every ancestor has clipped it. Aim input
+                        here rather than at "rect": the center of a rect that is mostly clipped away lands on whatever
+                        is drawn over that spot instead, or outside the window entirely. Absent when none of the
+                        widget is showing, because it is hidden or scrolled out of sight.
                 tooltip:
                     type: string
                 enabled:
