@@ -73,6 +73,52 @@ func TestTableDockableRebuildKeepsFilter(t *testing.T) {
 	c.Equal([]string{"Fur", "Furry Coat"}, visibleTraitNames(d), "the added trait must be filtered along with the rest")
 }
 
+// TestTableDockableNewItemIsDisabledWhileFiltered verifies that a library list turns its new-item commands off while
+// a filter is hiding part of the list, since creating an item inserts a row and a filtered table may not have its rows
+// modified. Both the quick filter and a saved filter have to turn them off, and clearing either has to turn them back
+// on.
+func TestTableDockableNewItemIsDisabledWhileFiltered(t *testing.T) {
+	c := check.New(t)
+	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	f := gurps.NewListFilter("Combat")
+	condition := gurps.NewFilterCondition(f.Root, "name")
+	condition.Text.Compare = criteria.ContainsText
+	condition.Text.Qualifier = "combat"
+	f.Root.Children = append(f.Root.Children, condition)
+	gurps.GlobalSettings().AddListFilter(gurps.ListFilterKeyForExtension(gurps.TraitsExt), f)
+
+	d := newFilterTestTraitDockable()
+	ids := []int{NewTraitItemID, NewTraitContainerItemID}
+	for _, id := range ids {
+		c.True(d.AsPanel().CanPerformCmd(nil, id), "an unfiltered library list must be able to create items")
+	}
+
+	d.filterField.SetText("fur")
+	c.True(d.table.IsFiltered(), "typing in the content filter must filter the table")
+	for _, id := range ids {
+		c.False(d.AsPanel().CanPerformCmd(nil, id), "a list filtered by the quick filter must not offer new items")
+	}
+
+	d.filterField.SetText("")
+	c.False(d.table.IsFiltered(), "emptying the content filter must show everything")
+	for _, id := range ids {
+		c.True(d.AsPanel().CanPerformCmd(nil, id), "clearing the quick filter must make the commands available again")
+	}
+
+	d.chooseFilter(f)
+	c.True(d.table.IsFiltered(), "the saved filter must filter the table")
+	for _, id := range ids {
+		c.False(d.AsPanel().CanPerformCmd(nil, id), "a list filtered by a saved filter must not offer new items")
+	}
+
+	d.chooseFilter(nil)
+	c.False(d.table.IsFiltered(), "dropping the saved filter must show everything")
+	for _, id := range ids {
+		c.True(d.AsPanel().CanPerformCmd(nil, id), "dropping the saved filter must make the commands available again")
+	}
+	c.Equal(3, len(d.provider.RootData()), "no item may have been created along the way")
+}
+
 // TestTableDockableSavedFilterDisablesQuickFilter verifies that putting a saved filter in force takes over the list and
 // blanks the quick filter's field, and that dropping it hands the list back.
 func TestTableDockableSavedFilterDisablesQuickFilter(t *testing.T) {

@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/filternode"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
@@ -106,7 +107,7 @@ func (f *ListFilter) Clone() *ListFilter {
 }
 
 // EnsureValidity trims the name, makes sure there is a root group, and walks the tree to set each node's type and
-// parent, which the JSON doesn't carry.
+// parent.
 func (f *ListFilter) EnsureValidity() {
 	f.Name = strings.TrimSpace(f.Name)
 	if f.Root == nil {
@@ -121,7 +122,7 @@ func ensureFilterNodeValidity(node FilterNode, parent *FilterGroup) {
 	switch n := node.(type) {
 	case *FilterGroup:
 		n.Type = filternode.Group
-		n.Children = slices.DeleteFunc(n.Children, func(child FilterNode) bool { return child == nil })
+		n.Children = slices.DeleteFunc(n.Children, func(child FilterNode) bool { return xreflect.IsNil(child) })
 		for _, child := range n.Children {
 			ensureFilterNodeValidity(child, n)
 		}

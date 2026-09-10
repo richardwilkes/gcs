@@ -121,7 +121,12 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 			variant = AlternateItemVariant
 		}
 		if variant != -1 {
-			d.InstallCmdHandlers(id, unison.AlwaysEnabled,
+			// Creating an item inserts a row, which unison.Table.ApplyFilter says must not be done while a filter is
+			// applied, so the command is turned off whenever a filter is hiding part of the list, as Delete, Duplicate
+			// and the move commands are. Left on, the insert would clear the filter, open an editor on the new row and
+			// then have the rebuild that follows re-filter the row out from under that editor.
+			d.InstallCmdHandlers(id,
+				func(_ any) bool { return !d.table.IsFiltered() },
 				func(_ any) { d.provider.CreateItem(d, d.table, variant) })
 		}
 	}
