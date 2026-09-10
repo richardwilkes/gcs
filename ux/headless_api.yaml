@@ -39,8 +39,8 @@ paths:
             summary: Recognized key and modifier names
             description: >-
                 The vocabulary POST /input's "key" and "mods" fields recognize, straight from unison's own
-                names. "key" is case-insensitive. "mods" also tolerates a handful of longer aliases (e.g.
-                "control", "capslock") and "+"-joined combinations in one entry (e.g. "ctrl+shift").
+                names. "key" is case-insensitive. A "mods" entry may also be a "+"-joined combination of
+                these names, e.g. "ctrl+shift".
             responses:
                 "200":
                     description: OK

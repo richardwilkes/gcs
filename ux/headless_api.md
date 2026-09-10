@@ -25,9 +25,8 @@ tracks whatever GCS is built against, rather than being maintained by hand):
 {"keys": ["A", "B", ..., "return", "escape", ...], "modifiers": ["ctrl", "alt", "shift", "caps", "num", "cmd"]}
 ```
 
-`key` also tolerates other casings of these names (`"a"` and `"A"` both work; `"f1"` and `"F1"` both work). `mods`
-also tolerates a handful of longer aliases (`"control"`, `"option"`, `"command"`, `"capslock"`, `"numlock"`) and
-`"+"`-joined combinations of any of these names in one entry.
+`key` also tolerates other casings of these names (`"a"` and `"A"` both work; `"f1"` and `"F1"` both work). A `mods`
+entry may also be a `"+"`-joined combination of these names, e.g. `"ctrl+shift"`.
 
 ## POST /input
 

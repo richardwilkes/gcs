@@ -380,8 +380,8 @@ func resolveKeyCode(name string, code int) (unison.KeyCode, bool) {
 
 // handleInputVocabulary reports the canonical name -- unison.KeyCode.Key() and mod.Modifiers.Key(), respectively --
 // of every key and modifier POST /input recognizes, so a caller can discover the exact vocabulary rather than
-// guessing at it. resolveKeyCode and parseMods also tolerate other forms of these names -- any casing for keys, and
-// a handful of longer aliases plus "+"-joined combinations for modifiers.
+// guessing at it. resolveKeyCode also tolerates any casing of these names for keys, and a "mods" entry may be a
+// "+"-joined combination of these names, e.g. "ctrl+shift".
 func (s *headlessAPIServer) handleInputVocabulary(w http.ResponseWriter, _ *http.Request) {
 	keyCodeList := unison.KeyCodeList()
 	keys := make([]string, len(keyCodeList))
