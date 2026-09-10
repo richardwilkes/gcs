@@ -152,6 +152,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 
 	if err = httpServer.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		errs.Log(err)
+		xos.Exit(1)
 	}
 	xos.Exit(0)
 }
