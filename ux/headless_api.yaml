@@ -77,9 +77,7 @@ paths:
                 along with the same for every ancestor up to the window's root.
             parameters:
                 - $ref: "#/components/parameters/X"
-                  required: true
                 - $ref: "#/components/parameters/Y"
-                  required: true
             responses:
                 "200":
                     description: OK
@@ -163,11 +161,13 @@ components:
         X:
             name: x
             in: query
+            required: true
             schema:
                 type: number
         Y:
             name: y
             in: query
+            required: true
             schema:
                 type: number
         BBOX:
@@ -244,19 +244,20 @@ components:
                         type: string
         Rect:
             type: object
+            required:
+                - x
+                - y
+                - w
+                - h
             properties:
                 x:
                     type: number
-                    required: true
                 y:
                     type: number
-                    required: true
                 w:
                     type: number
-                    required: true
                 h:
                     type: number
-                    required: true
             additionalProperties: false
         Window:
             type: object
