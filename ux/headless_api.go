@@ -68,7 +68,8 @@ func newHeadlessAPIRunMode(flagSet *flag.FlagSet) runmode.Mode {
 // StartHeadlessAPI starts GCS headless -- no real window ever appears -- with a debug HTTP server listening on addr
 // that lets automated tooling drive and inspect the running app:
 //
-//   - POST /input      inject a click, double-click, drag, wheel, key press or typed text
+//   - POST /input       inject a click, double-click, drag, wheel, key press or typed text
+//   - GET  /input       the canonical key and modifier names POST /input recognizes
 //   - GET  /inspect     the widget at a point: type, absolute bounding rect, tooltip, enabled state, text
 //   - GET  /inspect/focus  the same, for whatever currently holds keyboard focus (e.g. an open error dialog)
 //   - GET  /screenshot  a PNG of the whole virtual screen, or of an absolute rectangle within it
@@ -118,6 +119,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 	xos.RunAtExit(screen.Stop)
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /input", server.handleInputVocabulary)
 	mux.HandleFunc("POST /input", server.handleInput)
 	mux.HandleFunc("GET /inspect", server.handleInspect)
 	mux.HandleFunc("GET /inspect/focus", server.handleInspectFocus)
@@ -281,6 +283,29 @@ func resolveKeyCode(name string, code int) (unison.KeyCode, bool) {
 	}
 	keyCode := unison.KeyCodeFromKey(name)
 	return keyCode, keyCode != unison.KeyNone
+}
+
+// handleInputVocabulary reports the canonical name -- unison.KeyCode.Key() and mod.Modifiers.Key(), respectively --
+// of every key and modifier POST /input recognizes, so a caller can discover the exact vocabulary rather than
+// guessing at it. resolveKeyCode and parseMods also tolerate other forms of these names -- any casing for keys, and
+// a handful of longer aliases plus "+"-joined combinations for modifiers.
+func (s *headlessAPIServer) handleInputVocabulary(w http.ResponseWriter, _ *http.Request) {
+	keyCodeList := unison.KeyCodeList()
+	keys := make([]string, len(keyCodeList))
+	for i, k := range keyCodeList {
+		keys[i] = k.Key()
+	}
+
+	modList := mod.List()
+	mods := make([]string, len(modList))
+	for i, m := range modList {
+		mods[i] = m.Key()
+	}
+
+	writeJSON(w, struct {
+		Keys      []string `json:"keys"`
+		Modifiers []string `json:"modifiers"`
+	}{Keys: keys, Modifiers: mods})
 }
 
 // --- /inspect and /inspect/focus -------------------------------------------
