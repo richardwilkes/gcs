@@ -108,10 +108,9 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 				errs.Log(wndErr)
 				xos.Exit(1)
 			}
-			server.wnd = wnd
-			registerWindowDragTypes(server.wnd)
-			SetupMenuBar(server.wnd)
-			InitWorkspace(server.wnd)
+			registerWindowDragTypes(wnd)
+			SetupMenuBar(wnd)
+			InitWorkspace(wnd)
 			OpenFiles(files)
 		}),
 	)
@@ -190,9 +189,7 @@ func saveSettings(screen *unison.HeadlessScreen) {
 }
 
 type headlessAPIServer struct {
-	screen *unison.HeadlessScreen
-	wnd    *unison.Window
-
+	screen   *unison.HeadlessScreen
 	console  *consoleBuffer
 	errMu    sync.Mutex
 	errCount int
