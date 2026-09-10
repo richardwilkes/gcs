@@ -22,7 +22,7 @@ func init() {
 	runmode.Factories = append(runmode.Factories, newConvertRunMode, newSyncRunMode, newExportSheetsRunMode)
 }
 
-// newConvertRunMode registers 'convert' on flag.CommandLine as a side effect of being called, and returns the
+// newConvertRunMode registers 'convert' on flagSet as a side effect of being called, and returns the
 // runmode.Mode that converts the files given on the command line to the current file format.
 func newConvertRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	if flagSet == nil {
@@ -41,7 +41,7 @@ func newConvertRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	}
 }
 
-// newSyncRunMode registers 'sync' on flag.CommandLine as a side effect of being called, and returns the runmode.Mode
+// newSyncRunMode registers 'sync' on flagSet as a side effect of being called, and returns the runmode.Mode
 // that syncs the files given on the command line with their library sources.
 func newSyncRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	if flagSet == nil {
@@ -60,7 +60,7 @@ func newSyncRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	}
 }
 
-// newExportSheetsRunMode registers 'text' on flag.CommandLine as a side effect of being called, and returns the
+// newExportSheetsRunMode registers 'text' on flagSet as a side effect of being called, and returns the
 // runmode.Mode that exports the sheets given on the command line using the specified text template.
 func newExportSheetsRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	if flagSet == nil {

@@ -22,7 +22,7 @@ func init() {
 	runmode.Factories = append(runmode.Factories, newFinishRunMode)
 }
 
-// newFinishRunMode registers the hidden -finish-update flag on flag.CommandLine as a side effect of being called,
+// newFinishRunMode registers the hidden -finish-update flag on flagSet as a side effect of being called,
 // and returns the runmode.Mode that finishes applying a staged update. Not meant to be typed by anyone: a copy of
 // GCS is started this way to finish applying an update once the copy that prepared it has exited, since replacing a
 // running application from within itself is not something any of the supported systems allow. Its Start must never

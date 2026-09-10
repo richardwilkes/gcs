@@ -15,7 +15,8 @@ import "flag"
 
 // Mode describes one alternate run mode.
 type Mode struct {
-	// Name identifies this mode in the "cannot combine modes" error.
+	// Name identifies this mode in the "cannot combine modes" error, where it is shown as a flag. It is therefore
+	// also the name of the flag that requests this mode.
 	Name string
 	// HiddenFlagNames lists the flags that xflag.SetUsage should hide.
 	HiddenFlagNames []string
@@ -25,8 +26,9 @@ type Mode struct {
 	Start func(files []string)
 }
 
-// Factory registers a run mode's command line flags as a side effect of being called, and returns the Mode
-// describing it. main calls every factory in Factories ahead of flag.Parse, exactly once each.
+// Factory registers a run mode's command line flags on the given flag set as a side effect of being called, and
+// returns the Mode describing it. main calls every factory in Factories with flag.CommandLine ahead of flag.Parse,
+// exactly once each.
 type Factory func(*flag.FlagSet) Mode
 
 // Factories holds the run mode factories registered by init functions elsewhere, typically one per package that

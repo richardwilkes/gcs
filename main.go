@@ -37,7 +37,7 @@ func main() {
 	runModes := make([]runmode.Mode, len(runmode.Factories))
 	var hiddenFlags []string
 	for i, newRunMode := range runmode.Factories {
-		runModes[i] = newRunMode(nil)
+		runModes[i] = newRunMode(flag.CommandLine)
 		hiddenFlags = append(hiddenFlags, runModes[i].HiddenFlagNames...)
 	}
 	xflag.SetUsage(nil, ux.AppDescription(), i18n.Text("[file]..."), hiddenFlags...)

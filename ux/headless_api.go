@@ -136,9 +136,8 @@ func init() {
 	runmode.Factories = append(runmode.Factories, newHeadlessAPIRunMode)
 }
 
-// newHeadlessAPIRunMode registers -headless-api, -headless-api-width and -headless-api-height on flag.CommandLine as
-// a side effect of being called, and returns the runmode.Mode that starts the headless debug API those flags
-// configure.
+// newHeadlessAPIRunMode registers -headless-api, -headless-api-width and -headless-api-height on flagSet as a side
+// effect of being called, and returns the runmode.Mode that starts the headless debug API those flags configure.
 func newHeadlessAPIRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	if flagSet == nil {
 		flagSet = flag.CommandLine
