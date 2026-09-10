@@ -227,12 +227,12 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 	httpServer := &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 
 	// The workspace's own settings-saving close handler (workspaceWillClose, in workspace.go) only ever runs when the
-	// main window is closed the normal way, and nothing here ever closes it -- the process just runs until killed.
-	// Without this, everything settings-backed (page reference mappings, recent files, window layout, and so on) that
-	// a session here changes is silently lost the moment the container stops, however it stops. A periodic autosave
-	// covers an unclean stop (SIGKILL, OOM, a crash); the signal handler below covers a clean one (SIGINT/SIGTERM,
-	// which is what "podman stop"/"docker stop" send, and Ctrl-C) by saving once more and only then letting the
-	// process exit, so the common case loses nothing at all.
+	// main window is closed the normal way, which a session driven purely through this API never does -- it just runs
+	// until stopped from outside. Without this, everything settings-backed (page reference mappings, recent files,
+	// window layout, and so on) that a session here changes is silently lost the moment the container stops, however
+	// it stops. A periodic autosave covers an unclean stop (SIGKILL, OOM, a crash); the signal handler below covers a
+	// clean one (SIGINT/SIGTERM, which is what "podman stop"/"docker stop" send, and Ctrl-C) by saving once more and
+	// only then letting the process exit, so the common case loses nothing at all.
 	stopAutosave := make(chan struct{})
 	go autosaveSettings(screen, stopAutosave)
 	xos.RunAtExit(func() {
@@ -245,9 +245,19 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 		}
 	})
 
-	if err = httpServer.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		errs.Log(err)
-		xos.Exit(1)
+	// The session can end without the server noticing: a quit driven through the app itself -- the Quit menu item, or
+	// a POST /input that reaches it -- ends it while Serve is still blocked on the listener, which would otherwise
+	// leave the server, and the process, running with no UI behind it. Waiting on the screen being done alongside
+	// Serve covers that; the exit handlers registered above shut the server down either way.
+	serveErr := make(chan error, 1)
+	go func() { serveErr <- httpServer.Serve(listener) }()
+	select {
+	case <-screen.Done():
+	case err = <-serveErr:
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errs.Log(err)
+			xos.Exit(1)
+		}
 	}
 	xos.Exit(0)
 }
