@@ -89,10 +89,11 @@ const (
 // negotiateDocFormat picks a docFormat from the value of an Accept header: docFormatJSON for application/json,
 // docFormatYAML for application/yaml or application/x-yaml, and docFormatMD -- the default -- for anything else,
 // including an empty or missing header, "*/*", or text/markdown itself. Ties (equal, and equal to the highest,
-// "q" value) are broken by whichever the header lists first.
+// "q" value) are broken by whichever the header lists first. A "q" of 0 means "not acceptable", so a format is
+// never chosen because it was the only one listed if the caller said it cannot handle it.
 func negotiateDocFormat(accept string) docFormat {
 	best := docFormatMD
-	bestQ := -1.0
+	bestQ := 0.0
 	for entry := range strings.SplitSeq(accept, ",") {
 		mediaType, q := parseAcceptEntry(entry)
 		var format docFormat
