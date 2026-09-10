@@ -13,6 +13,7 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/rpgtools/calendar"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
@@ -26,12 +27,12 @@ type CalendarRef struct {
 }
 
 // AvailableCalendarRefs scans the libraries and returns the available calendars.
-func AvailableCalendarRefs(libraries *Libraries) []*NamedFileSet {
-	return ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, CalendarExt)
+func AvailableCalendarRefs(libraries *library.Libraries) []*library.NamedFileSet {
+	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, CalendarExt)
 }
 
 // LookupCalendarRef returns the CalendarRef with the given name, or nil if there isn't one.
-func LookupCalendarRef(name string, libraries *Libraries) *CalendarRef {
+func LookupCalendarRef(name string, libraries *library.Libraries) *CalendarRef {
 	for _, lib := range AvailableCalendarRefs(libraries) {
 		for _, one := range lib.List {
 			if one.Name == name {

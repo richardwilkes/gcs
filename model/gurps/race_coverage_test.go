@@ -19,32 +19,9 @@ import "testing"
 // under the race detector (go test -race -run '^TestRace$' ./...). The build tag keeps the wrapper out of plain builds,
 // where the tests named here already run directly.
 //
-// When adding a test that involves concurrency — spawning goroutines itself, starting a library watch, or exercising a
-// script timeout — list it here as well so the race pass covers it.
+// When adding a test that involves concurrency — spawning goroutines itself or exercising a script timeout — list it
+// here as well so the race pass covers it.
 func TestRace(t *testing.T) {
-	t.Run("LibraryConcurrentAccess", TestLibraryConcurrentAccess)
-	t.Run("LibrarySetPathWhenWatchFails", TestLibrarySetPathWhenWatchFails)
-	t.Run("LibrarySetPathAfterWatchFailsRestartsWatch", TestLibrarySetPathAfterWatchFailsRestartsWatch)
-	t.Run("LibraryWatchDeliversNothingUntilSomethingHappens", TestLibraryWatchDeliversNothingUntilSomethingHappens)
-	t.Run("LibrarySetPathSyncsEachWatcherOnce", TestLibrarySetPathSyncsEachWatcherOnce)
-	t.Run("LibraryWatchReportsPathsAsTheLibraryNamesThem", TestLibraryWatchReportsPathsAsTheLibraryNamesThem)
-	t.Run("LibraryWatchSurvivesCaseMismatch", TestLibraryWatchSurvivesCaseMismatch)
-	t.Run("CheckForAvailableUpgradeJoinsACheckInFlight", TestCheckForAvailableUpgradeJoinsACheckInFlight)
-	t.Run("CheckForAvailableUpgradeWaiterHonorsItsContext", TestCheckForAvailableUpgradeWaiterHonorsItsContext)
-	t.Run("ConfigureDiscardsACheckInFlight", TestConfigureDiscardsACheckInFlight)
-	t.Run("ConfigureForKeyDiscardsChecksOfTheOldRepository", TestConfigureForKeyDiscardsChecksOfTheOldRepository)
-	t.Run("SetPathDiscardsACheckInFlight", TestSetPathDiscardsACheckInFlight)
-	t.Run("DownloadDiscardsACheckInFlight", TestDownloadDiscardsACheckInFlight)
-	t.Run("CheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded",
-		TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded)
-	t.Run("CheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsCanceled",
-		TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsCanceled)
-	t.Run("NotifyOfLibraryChangeConcurrent", TestNotifyOfLibraryChangeConcurrent)
-	t.Run("PerformUpdateChecksSnapshotsTheSet", TestPerformUpdateChecksSnapshotsTheSet)
-	t.Run("LibrariesAccessIsSafeForConcurrentMutation", TestLibrariesAccessIsSafeForConcurrentMutation)
-	t.Run("LibrariesRekeyNeverLeavesTheLibraryAbsent", TestLibrariesRekeyNeverLeavesTheLibraryAbsent)
-	t.Run("LibrariesMasterAndUserOnlyReadWhenPresent", TestLibrariesMasterAndUserOnlyReadWhenPresent)
-	t.Run("LibrariesMasterAndUserCreateOnce", TestLibrariesMasterAndUserCreateOnce)
 	t.Run("ScriptResolutionConcurrency", TestScriptResolutionConcurrency)
 	t.Run("ScriptObjectResultConcurrency", TestScriptObjectResultConcurrency)
 	t.Run("EntitylessScriptDepthIsPerGoroutine", TestEntitylessScriptDepthIsPerGoroutine)

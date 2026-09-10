@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -25,10 +25,10 @@ import (
 // repository has nothing to check and stays disabled.
 func TestLibraryUpdateButtonsEnabledBeforeAnyCheck(t *testing.T) {
 	c := check.New(t)
-	local := gurps.NewLibrary("Local", "", "", "local", t.TempDir())
+	local := library.NewLibrary("Local", "", "", "local", t.TempDir())
 	c.False(libraryUpdateButtonsEnabled(local), "a library without a repository has nothing to offer")
 
-	lib := gurps.NewLibrary("Test", "someone", "", "repo", t.TempDir())
+	lib := library.NewLibrary("Test", "someone", "", "repo", t.TempDir())
 	c.True(libraryUpdateButtonsEnabled(lib), "an unchecked library with a repository must be offered a check")
 
 	// A check that fails -- the context is already canceled, so no request is ever made -- must not disable the
@@ -43,7 +43,7 @@ func TestLibraryUpdateButtonsEnabledBeforeAnyCheck(t *testing.T) {
 // straight through, without the window that reports on a check being opened -- which, without a UI, it can't be.
 func TestCheckLibraryReleasesSkipsLibrariesWithNothingToCheck(t *testing.T) {
 	c := check.New(t)
-	local := gurps.NewLibrary("Local", "", "", "local", t.TempDir())
+	local := library.NewLibrary("Local", "", "", "local", t.TempDir())
 	c.True(checkLibraryReleases(nil))
-	c.True(checkLibraryReleases([]*gurps.Library{local}))
+	c.True(checkLibraryReleases([]*library.Library{local}))
 }

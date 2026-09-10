@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
@@ -442,7 +443,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 	index := 0
 	for _, lib := range gurps.GlobalSettings().Libraries.List() {
 		dir := lib.Path()
-		entries, err := fs.ReadDir(os.DirFS(dir), gurps.OutputTemplatesDirName)
+		entries, err := fs.ReadDir(os.DirFS(dir), library.OutputTemplatesDirName)
 		if err != nil {
 			if !errors.Is(err, fs.ErrNotExist) {
 				errs.Log(err, "dir", dir)
@@ -452,7 +453,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 		list := make([]string, 0, len(entries))
 		for _, entry := range entries {
 			name := entry.Name()
-			fullPath := filepath.Join(dir, gurps.OutputTemplatesDirName, name)
+			fullPath := filepath.Join(dir, library.OutputTemplatesDirName, name)
 			if !strings.HasPrefix(name, ".") && xos.FileExists(fullPath) {
 				list = append(list, fullPath)
 			}

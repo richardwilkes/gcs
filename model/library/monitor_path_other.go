@@ -9,7 +9,7 @@
 
 //go:build !darwin
 
-package gurps
+package library
 
 import "path/filepath"
 

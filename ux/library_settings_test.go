@@ -12,8 +12,8 @@ package ux
 import (
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -23,7 +23,7 @@ import (
 // buttons are clicked, and a check made here would be one the user has asked not to have.
 func TestLibraryCheckWantedAfterApply(t *testing.T) {
 	c := check.New(t)
-	unchecked := gurps.NewLibrary("Test", "someone", "", "repo", t.TempDir())
+	unchecked := library.NewLibrary("Test", "someone", "", "repo", t.TempDir())
 	c.True(unchecked.NeedsUpgradeCheck())
 	for _, option := range []updatecheck.Option{updatecheck.AtLaunch, updatecheck.Hourly, updatecheck.Daily} {
 		c.True(libraryCheckWantedAfterApply(unchecked, option), "an unchecked library must be checked under %s",
@@ -32,7 +32,7 @@ func TestLibraryCheckWantedAfterApply(t *testing.T) {
 	c.False(libraryCheckWantedAfterApply(unchecked, updatecheck.Never),
 		"with the checks off, an unchecked library is left for the on-click check")
 
-	local := gurps.NewLibrary("Local", "", "", "local", t.TempDir())
+	local := library.NewLibrary("Local", "", "", "local", t.TempDir())
 	c.False(local.NeedsUpgradeCheck())
 	for _, option := range updatecheck.Options {
 		c.False(libraryCheckWantedAfterApply(local, option), "a library with nothing to check must not be checked under %s",
@@ -52,21 +52,21 @@ func TestLibrarySettingsTitle(t *testing.T) {
 // account/repo pair another library already uses, which would silently replace that library in the global set.
 func TestLibraryKeyTakenByOther(t *testing.T) {
 	c := check.New(t)
-	libs := gurps.NewLibraries()
+	libs := library.NewLibraries()
 	dir := t.TempDir()
-	existing := gurps.NewLibrary("Existing", "someone", "", "stuff", dir)
+	existing := library.NewLibrary("Existing", "someone", "", "stuff", dir)
 	libs.Store(existing.Key(), existing)
 
 	// A library keeps its own key without it counting as a collision.
 	c.False(libraryKeyTakenByOther(libs, "someone", "stuff", existing))
 
 	// A different library pointed at that same account/repo pair collides.
-	other := gurps.NewLibrary("Other", "elsewhere", "", "misc", dir)
+	other := library.NewLibrary("Other", "elsewhere", "", "misc", dir)
 	c.True(libraryKeyTakenByOther(libs, "someone", "stuff", other))
 
 	// A brand new library (as created via Navigator.addLibrary) collides with any existing key, including the master
 	// and user library keys, but is free to take an unused one.
-	fresh := &gurps.Library{}
+	fresh := &library.Library{}
 	c.True(libraryKeyTakenByOther(libs, "someone", "stuff", fresh))
 	master := libs.Master()
 	masterConfig := master.Config()

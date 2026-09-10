@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package library
 
 import (
 	"archive/zip"
@@ -107,10 +107,10 @@ type libraryPersistentData struct {
 	UseLatest   bool     `json:"use_latest,omitzero"`
 }
 
-// LibraryConfig holds the Library fields the user is permitted to edit. The ID, the path on disk and the favorites are
+// Config holds the Library fields the user is permitted to edit. The ID, the path on disk and the favorites are
 // deliberately absent: an ID never changes once assigned, the path must go through SetPath() so that the filesystem
 // watches can be restarted, and the favorites have their own methods.
-type LibraryConfig struct {
+type Config struct {
 	Title             string
 	GitHubAccountName string
 	AccessToken       string
@@ -118,10 +118,10 @@ type LibraryConfig struct {
 	UseLatest         bool
 }
 
-// LibraryData is a snapshot of a Library's state, as returned by Data(). The favorites are not included, since they are
+// Data is a snapshot of a Library's state, as returned by Data(). The favorites are not included, since they are
 // a list that is manipulated independently; use Favorites() for those.
-type LibraryData struct {
-	LibraryConfig
+type Data struct {
+	Config
 	ID         tid.TID
 	PathOnDisk string
 }
@@ -184,31 +184,31 @@ func (l *Library) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 
 // Data returns a snapshot of this library's state. The returned value is a copy, so modifying it has no effect on the
 // library; use Configure(), SetID() or SetPath() to make changes.
-func (l *Library) Data() LibraryData {
+func (l *Library) Data() Data {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
 	return l.snapshot()
 }
 
-// snapshot builds the LibraryData for the current state. The library lock must be held when calling this.
-func (l *Library) snapshot() LibraryData {
-	return LibraryData{
-		LibraryConfig: l.config(),
-		ID:            l.data.ID,
-		PathOnDisk:    l.data.PathOnDisk,
+// snapshot builds the Data for the current state. The library lock must be held when calling this.
+func (l *Library) snapshot() Data {
+	return Data{
+		Config:     l.config(),
+		ID:         l.data.ID,
+		PathOnDisk: l.data.PathOnDisk,
 	}
 }
 
 // Config returns the portion of this library's state that the user is permitted to edit.
-func (l *Library) Config() LibraryConfig {
+func (l *Library) Config() Config {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
 	return l.config()
 }
 
 // config extracts the user-editable portion of this library's state. The library lock must be held when calling this.
-func (l *Library) config() LibraryConfig {
-	return LibraryConfig{
+func (l *Library) config() Config {
+	return Config{
 		Title:             l.data.Title,
 		GitHubAccountName: l.gitHubAccountName,
 		AccessToken:       l.data.AccessToken,
@@ -223,7 +223,7 @@ func (l *Library) config() LibraryConfig {
 // the releases are dropped, the library is left needing a check (see NeedsUpgradeCheck), a check still in flight for
 // the old repository is discarded when it finishes, and the version on disk is re-read, since whether the library is
 // the User Library can change along with the key.
-func (l *Library) Configure(config LibraryConfig) {
+func (l *Library) Configure(config Config) {
 	l.lock.Lock()
 	l.data.Title = config.Title
 	l.data.AccessToken = config.AccessToken
@@ -482,7 +482,7 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 
 // performCheck makes the request for the given check, which the caller has just registered as the one in flight, and
 // records what it finds. Whatever happens, the check is unregistered and its waiters released before this returns.
-func (l *Library) performCheck(ctx context.Context, client *http.Client, check *libraryCheck, data *LibraryData) {
+func (l *Library) performCheck(ctx context.Context, client *http.Client, check *libraryCheck, data *Data) {
 	answered := false
 	defer func() {
 		l.lock.Lock()
@@ -633,8 +633,8 @@ func (l *Library) refreshVersionOnDisk() {
 }
 
 // Download the release onto the local disk. progress, which may be nil, is called as the work proceeds; see
-// LibraryUpdateProgress for what it receives and what is required of it.
-func (l *Library) Download(ctx context.Context, client *http.Client, release *Release, progress LibraryUpdateProgress) error {
+// UpdateProgress for what it receives and what is required of it.
+func (l *Library) Download(ctx context.Context, client *http.Client, release *Release, progress UpdateProgress) error {
 	libData := l.Data() // Not named "data", since the byte buffers below already use that name
 	p := l.Path()
 	// What the last download transferred is the only basis there is for scaling the download portion of the bar, and it
@@ -649,7 +649,7 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 	// backwards, and it means the caller's function is never entered twice at once.
 	var lock sync.Mutex
 	var received int64
-	report := func(phase LibraryUpdatePhase, fraction float64) {
+	report := func(phase UpdatePhase, fraction float64) {
 		lock.Lock()
 		defer lock.Unlock()
 		if progress != nil {
@@ -661,7 +661,7 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 		defer lock.Unlock()
 		received += n
 		if progress != nil {
-			progress(LibraryUpdateDownloading, estimatedFraction(received, estimate))
+			progress(UpdateDownloading, estimatedFraction(received, estimate))
 		}
 	}
 	transferred := func() int64 {
@@ -669,7 +669,7 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 		defer lock.Unlock()
 		return received
 	}
-	report(LibraryUpdateDownloading, 0)
+	report(UpdateDownloading, 0)
 	tmpDir, err := os.MkdirTemp(filepath.Dir(p), filepath.Base(p)+"_*")
 	if err != nil {
 		return errs.NewWithCause("unable to create temporary directory", err)
@@ -777,13 +777,13 @@ func (e *libraryInstallEntry) write(dst string) (err error) {
 
 // installLibraryContent writes the entries out below root, reporting the install phase as it goes and closing that
 // phase out at its end. Only an entry that lands below root is written, since the paths come from a download.
-func installLibraryContent(ctx context.Context, root string, entries []libraryInstallEntry, total int64, report LibraryUpdateProgress) error {
+func installLibraryContent(ctx context.Context, root string, entries []libraryInstallEntry, total int64, report UpdateProgress) error {
 	rootWithTrailingSep := root
 	if !strings.HasSuffix(rootWithTrailingSep, string(filepath.Separator)) {
 		rootWithTrailingSep += string(filepath.Separator)
 	}
 	var written int64
-	report(LibraryUpdateInstalling, 0)
+	report(UpdateInstalling, 0)
 	for _, entry := range entries {
 		// Writing the content out is the half of the update the context would otherwise have no say over, and it is
 		// long enough to be worth interrupting, so each file is a chance to stop.
@@ -802,12 +802,12 @@ func installLibraryContent(ctx context.Context, root string, entries []libraryIn
 			return errs.NewWithCause("unable to create file "+fullPath, err)
 		}
 		written += entry.size
-		report(LibraryUpdateInstalling, exactFraction(written, total))
+		report(UpdateInstalling, exactFraction(written, total))
 	}
 	// The loop reports its progress as it goes, but it can't be relied upon to have finished on a whole number of
 	// anything -- a download holding no library content reports nothing at all -- so the phase is closed out here
 	// rather than leaving a bar that stops short of its end.
-	report(LibraryUpdateInstalling, 1)
+	report(UpdateInstalling, 1)
 	return nil
 }
 

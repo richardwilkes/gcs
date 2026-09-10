@@ -20,6 +20,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -37,7 +38,7 @@ type NavigatorNode struct {
 	id                       tid.TID
 	path                     string
 	nav                      *Navigator
-	library                  *gurps.Library
+	library                  *library.Library
 	parent                   *NavigatorNode
 	children                 []*NavigatorNode
 	updateCellReleaseVersion string
@@ -55,7 +56,7 @@ func NewFavoritesNode(nav *Navigator) *NavigatorNode {
 }
 
 // NewLibraryNode creates a new library node.
-func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
+func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 	var id tid.TID
 	switch {
 	case lib.IsMaster():
@@ -78,7 +79,7 @@ func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
 }
 
 // NewDirectoryNode creates a new DirectoryNode.
-func NewDirectoryNode(nav *Navigator, lib *gurps.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
+func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
 	pathForID := "@" + filepath.Join(lib.Path(), dirPath)
 	root := parent
 	for root.parent != nil {
@@ -101,7 +102,7 @@ func NewDirectoryNode(nav *Navigator, lib *gurps.Library, dirPath string, parent
 }
 
 // NewFileNode creates a new FileNode.
-func NewFileNode(lib *gurps.Library, filePath string, parent *NavigatorNode) *NavigatorNode {
+func NewFileNode(lib *library.Library, filePath string, parent *NavigatorNode) *NavigatorNode {
 	return &NavigatorNode{
 		id:      tid.MustNewTID(kinds.NavigatorFile),
 		path:    filePath,
@@ -302,7 +303,7 @@ func (n *NavigatorNode) Refresh() {
 	case n.IsFavorites():
 		type fav struct {
 			path    string
-			library *gurps.Library
+			library *library.Library
 		}
 		var favs []*fav
 		for _, lib := range gurps.GlobalSettings().Libraries.List() {
@@ -403,7 +404,7 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 				}
 			}
 			if isDir {
-				if !strings.EqualFold(p, gurps.SettingsDirName) && !strings.EqualFold(p, gurps.OutputTemplatesDirName) {
+				if !strings.EqualFold(p, library.SettingsDirName) && !strings.EqualFold(p, library.OutputTemplatesDirName) {
 					dirNode := NewDirectoryNode(n.nav, n.library, p, parent)
 					children = append(children, dirNode)
 				}

@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -44,7 +45,7 @@ func newAncestryDocument() {
 
 // openAncestryRef opens the ancestry the reference names in an editor of its own, or activates the editor already
 // showing it.
-func openAncestryRef(ref *gurps.NamedFileRef) (*ancestryEditorDockable, error) {
+func openAncestryRef(ref *library.NamedFileRef) (*ancestryEditorDockable, error) {
 	return openFileEditor(ref, newAncestryEditorDockable)
 }
 
@@ -76,7 +77,7 @@ func newAncestryEditorDockable() *ancestryEditorDockable {
 		readModel:    gurps.NewAncestryFromFile,
 		buildContent: d.buildContent,
 		fallbackName: func() string { return strings.TrimSpace(d.model.Name) },
-		openRef: func(ref *gurps.NamedFileRef) error {
+		openRef: func(ref *library.NamedFileRef) error {
 			_, err := openAncestryRef(ref)
 			return err
 		},

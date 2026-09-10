@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package library
 
 import (
 	"archive/zip"
@@ -66,7 +66,7 @@ func TestLibraryConcurrentAccess(t *testing.T) {
 		_, _ = lib.AvailableReleases()
 	})
 	for i := range 100 {
-		lib.Configure(LibraryConfig{
+		lib.Configure(Config{
 			Title:             fmt.Sprintf("Test %d", i),
 			GitHubAccountName: "someone",
 			AccessToken:       "token",
@@ -105,7 +105,7 @@ func TestLibraryDataIsACopy(t *testing.T) {
 	c.Equal([]string{"a.gcs"}, lib.Favorites())
 
 	// Configure() has no way to reach the ID, the path on disk or the favorites.
-	lib.Configure(LibraryConfig{
+	lib.Configure(Config{
 		Title:             "Renamed",
 		GitHubAccountName: "someone-else",
 		AccessToken:       "new-secret",
@@ -116,14 +116,14 @@ func TestLibraryDataIsACopy(t *testing.T) {
 	c.Equal(originalID, data.ID)
 	c.Equal(dir, data.PathOnDisk)
 	c.Equal([]string{"a.gcs"}, lib.Favorites())
-	c.Equal(LibraryConfig{
+	c.Equal(Config{
 		Title:             "Renamed",
 		GitHubAccountName: "someone-else",
 		AccessToken:       "new-secret",
 		RepoName:          "other-repo",
 		UseLatest:         true,
 	}, lib.Config())
-	c.Equal(lib.Config(), data.LibraryConfig)
+	c.Equal(lib.Config(), data.Config)
 }
 
 func TestLibraryFavorites(t *testing.T) {
@@ -736,11 +736,11 @@ func TestConfigureDiscardsChecksOfTheOldRepository(t *testing.T) {
 
 	for _, one := range []struct {
 		name   string
-		change func(config *LibraryConfig)
+		change func(config *Config)
 	}{
-		{name: "account", change: func(config *LibraryConfig) { config.GitHubAccountName += "x" }},
-		{name: "repo", change: func(config *LibraryConfig) { config.RepoName += "x" }},
-		{name: "use latest", change: func(config *LibraryConfig) { config.UseLatest = !config.UseLatest }},
+		{name: "account", change: func(config *Config) { config.GitHubAccountName += "x" }},
+		{name: "repo", change: func(config *Config) { config.RepoName += "x" }},
+		{name: "use latest", change: func(config *Config) { config.UseLatest = !config.UseLatest }},
 	} {
 		lib = NewLibrary("Test", "someone", "", "repo", t.TempDir())
 		lib.CheckForAvailableUpgrade(t.Context(), client)

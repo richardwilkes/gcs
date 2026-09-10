@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -61,13 +62,13 @@ func buildTestFileEditor[T fileEditorModel[T]](d *fileEditorDockable[T]) {
 	d.initContent(content)
 }
 
-func loadTestFileEditor[T fileEditorModel[T]](t *testing.T, c check.Checker, d *fileEditorDockable[T], ref *gurps.NamedFileRef) {
+func loadTestFileEditor[T fileEditorModel[T]](t *testing.T, c check.Checker, d *fileEditorDockable[T], ref *library.NamedFileRef) {
 	t.Helper()
 	c.NoError(d.load(ref))
 	buildTestFileEditor(d)
 }
 
-func loadedTestAncestryEditorDockable(t *testing.T, c check.Checker, ref *gurps.NamedFileRef, nameGeneratorChoices ...string) *ancestryEditorDockable {
+func loadedTestAncestryEditorDockable(t *testing.T, c check.Checker, ref *library.NamedFileRef, nameGeneratorChoices ...string) *ancestryEditorDockable {
 	t.Helper()
 	d := newAncestryEditorDockable()
 	d.nameGeneratorLookup = func() []string { return nameGeneratorChoices }
@@ -75,19 +76,19 @@ func loadedTestAncestryEditorDockable(t *testing.T, c check.Checker, ref *gurps.
 	return d
 }
 
-func ancestryFileRef(t *testing.T, c check.Checker, name, content string) *gurps.NamedFileRef {
+func ancestryFileRef(t *testing.T, c check.Checker, name, content string) *library.NamedFileRef {
 	t.Helper()
 	return testFileRef(t, c, name, gurps.AncestryExt, content)
 }
 
 // testFileRef writes the content to a file in a fresh temporary directory and returns a reference to it of the kind a
 // library scan or the toolbar menu's Open… produces.
-func testFileRef(t *testing.T, c check.Checker, name, ext, content string) *gurps.NamedFileRef {
+func testFileRef(t *testing.T, c check.Checker, name, ext, content string) *library.NamedFileRef {
 	t.Helper()
 	dir := t.TempDir()
 	fileName := name + ext
 	c.NoError(os.WriteFile(filepath.Join(dir, fileName), []byte(content), 0o640))
-	return &gurps.NamedFileRef{
+	return &library.NamedFileRef{
 		Name:       name,
 		FileSystem: os.DirFS(dir),
 		FilePath:   fileName,

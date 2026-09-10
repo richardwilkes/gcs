@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -26,7 +27,7 @@ import (
 func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
-	ref := &gurps.NamedFileRef{
+	ref := &library.NamedFileRef{
 		Name:       "Elf",
 		FileSystem: os.DirFS(dir),
 		FilePath:   "Elf.ancestry",
@@ -35,7 +36,7 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 	var loaderCalls, refLoaderCalls int
 	var gotFS fs.FS
 	var gotPath string
-	var gotRef *gurps.NamedFileRef
+	var gotRef *library.NamedFileRef
 	d := &SettingsDockable{
 		TabTitle: "Ancestry",
 		Loader: func(fileSystem fs.FS, filePath string) error {
@@ -44,7 +45,7 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 			gotPath = filePath
 			return nil
 		},
-		RefLoader: func(ref *gurps.NamedFileRef) error {
+		RefLoader: func(ref *library.NamedFileRef) error {
 			refLoaderCalls++
 			gotRef = ref
 			return nil
@@ -69,7 +70,7 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 		gotErr = err
 	})
 	boom := errors.New("boom")
-	d.RefLoader = func(_ *gurps.NamedFileRef) error { return boom }
+	d.RefLoader = func(_ *library.NamedFileRef) error { return boom }
 	d.doLoad(ref)
 	c.Equal("Unable to load Ancestry", gotMsg)
 	c.True(errors.Is(gotErr, boom), "the loader's error is passed through")
@@ -82,7 +83,7 @@ func TestSettingsDockableCanLoad(t *testing.T) {
 	c.False(d.canLoad(), "no loader")
 	d.Loader = func(_ fs.FS, _ string) error { return nil }
 	c.True(d.canLoad(), "Loader only")
-	d.RefLoader = func(_ *gurps.NamedFileRef) error { return nil }
+	d.RefLoader = func(_ *library.NamedFileRef) error { return nil }
 	c.True(d.canLoad(), "both loaders")
 	d.Loader = nil
 	c.True(d.canLoad(), "RefLoader only")

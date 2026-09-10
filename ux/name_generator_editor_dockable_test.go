@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -40,7 +41,7 @@ func newTestNameGeneratorEditorDockable(g *gurps.NameGenerator) *nameGeneratorEd
 
 // loadedTestNameGeneratorEditorDockable builds a name generator editor holding the generator in the file the reference
 // names; see loadTestFileEditor.
-func loadedTestNameGeneratorEditorDockable(t *testing.T, c check.Checker, ref *gurps.NamedFileRef) *nameGeneratorEditorDockable {
+func loadedTestNameGeneratorEditorDockable(t *testing.T, c check.Checker, ref *library.NamedFileRef) *nameGeneratorEditorDockable {
 	t.Helper()
 	d := newNameGeneratorEditorDockable()
 	loadTestFileEditor(t, c, &d.fileEditorDockable, ref)
@@ -49,7 +50,7 @@ func loadedTestNameGeneratorEditorDockable(t *testing.T, c check.Checker, ref *g
 
 // namesFileRef writes the content to a .names file in a fresh temporary directory and returns a reference to it of the
 // kind a library scan or the toolbar menu's Open… produces.
-func namesFileRef(t *testing.T, c check.Checker, name, content string) *gurps.NamedFileRef {
+func namesFileRef(t *testing.T, c check.Checker, name, content string) *library.NamedFileRef {
 	t.Helper()
 	return testFileRef(t, c, name, gurps.NamesExt, content)
 }

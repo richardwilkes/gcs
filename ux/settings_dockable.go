@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -38,7 +39,7 @@ type SettingsDockable struct {
 	Loader     func(fileSystem fs.FS, filePath string) error
 	// RefLoader is an alternative to Loader for dockables that need to know where the file lives on disk. When set, it
 	// is used in preference to Loader.
-	RefLoader func(ref *gurps.NamedFileRef) error
+	RefLoader func(ref *library.NamedFileRef) error
 	// LoadItemTitle is the title of the toolbar menu's item that loads a file chosen in a dialog. When empty, it is
 	// Import…, which suits a dockable that takes the file's contents into itself; the file editors, which open the
 	// chosen file in an editor of its own, call it Open… instead.
@@ -217,7 +218,7 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 	}
 	if d.canLoad() {
 		libraries := gurps.GlobalSettings().Libraries
-		sets := gurps.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
+		sets := library.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
 		if len(sets) != 0 {
 			m.InsertSeparator(-1, false)
 			for _, lib := range sets {
@@ -234,7 +235,7 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 	m.Popup(b.RectToRoot(b.ContentRect(true)), 0)
 }
 
-func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *gurps.NamedFileRef) {
+func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *library.NamedFileRef) {
 	m.InsertItem(-1, m.Factory().NewItem(id, "    "+ref.Name, unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
 		d.doLoad(ref)
 	}))
@@ -255,7 +256,7 @@ func (d *SettingsDockable) canLoad() bool {
 
 // doLoad hands the whole file reference to RefLoader when one is set, and otherwise its file system and path to Loader.
 // A failure is reported through the workspace's error handler.
-func (d *SettingsDockable) doLoad(ref *gurps.NamedFileRef) {
+func (d *SettingsDockable) doLoad(ref *library.NamedFileRef) {
 	var err error
 	if d.RefLoader != nil {
 		err = d.RefLoader(ref)

@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -23,10 +24,10 @@ import (
 // useTestLibraries points the global settings at a fresh library set rooted in a temporary directory, restoring the
 // original set when the test finishes. It returns the master and user libraries, both of which start out with no
 // "Output Templates" directory at all.
-func useTestLibraries(t *testing.T, c check.Checker) (master, user *gurps.Library) {
+func useTestLibraries(t *testing.T, c check.Checker) (master, user *library.Library) {
 	t.Helper()
 	global := gurps.GlobalSettings()
-	swapForTest(t, &global.Libraries, gurps.NewLibraries())
+	swapForTest(t, &global.Libraries, library.NewLibraries())
 	dir := t.TempDir()
 	master = global.Libraries.Master()
 	c.NoError(master.SetPath(filepath.Join(dir, "master")))
@@ -37,8 +38,8 @@ func useTestLibraries(t *testing.T, c check.Checker) (master, user *gurps.Librar
 
 // addOutputTemplates creates the library's "Output Templates" directory and populates it with the named files. Passing
 // no names leaves the directory empty.
-func addOutputTemplates(c check.Checker, lib *gurps.Library, names ...string) {
-	dir := filepath.Join(lib.Path(), gurps.OutputTemplatesDirName)
+func addOutputTemplates(c check.Checker, lib *library.Library, names ...string) {
+	dir := filepath.Join(lib.Path(), library.OutputTemplatesDirName)
 	c.NoError(os.MkdirAll(dir, 0o750))
 	for _, name := range names {
 		c.NoError(os.WriteFile(filepath.Join(dir, name), []byte("template"), 0o640))

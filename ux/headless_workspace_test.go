@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -429,7 +430,7 @@ func saveNewFileEditor[M fileEditorModel[M], T gurps.Hashable](t *testing.T, c c
 	dialogWnd, _ := modalDialog(t, screen, wnd)
 	fileNameField, fileName, dirName := saveDialogFields(t, screen, dialogWnd)
 	c.Equal(offeredName, fileName, "the save dialog offers %q as the %s's file name", offeredName, kind)
-	c.Equal(gurps.AncestriesDirName, dirName, "the dialog opens in the user library's ancestries folder")
+	c.Equal(library.AncestriesDirName, dirName, "the dialog opens in the user library's ancestries folder")
 	screen.Click(screen.PanelCenter(fileNameField))
 	name := offeredName
 	if saveAs != "" {

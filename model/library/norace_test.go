@@ -9,7 +9,7 @@
 
 //go:build !race
 
-package gurps
+package library
 
 // raceEnabled reports whether the test binary was built with the race detector, which also turns on the runtime's
 // checkptr instrumentation. See race_test.go for the other half.

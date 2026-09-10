@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package library
 
 import (
 	"archive/zip"
@@ -27,23 +27,23 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// progressStep is one call made to a LibraryUpdateProgress.
+// progressStep is one call made to a UpdateProgress.
 type progressStep struct {
-	phase    LibraryUpdatePhase
+	phase    UpdatePhase
 	fraction float64
 }
 
 // recordProgress returns a reporter that collects everything it is told, along with the slice it collects into. The
 // download runs on the calling goroutine, so no synchronization is needed here.
-func recordProgress() (LibraryUpdateProgress, *[]progressStep) {
+func recordProgress() (UpdateProgress, *[]progressStep) {
 	var steps []progressStep
-	return func(phase LibraryUpdatePhase, fraction float64) {
+	return func(phase UpdatePhase, fraction float64) {
 		steps = append(steps, progressStep{phase: phase, fraction: fraction})
 	}, &steps
 }
 
 // lastFraction returns the final fraction reported for the given phase, or -1 if the phase was never reported.
-func lastFraction(steps []progressStep, phase LibraryUpdatePhase) float64 {
+func lastFraction(steps []progressStep, phase UpdatePhase) float64 {
 	fraction := -1.0
 	for _, step := range steps {
 		if step.phase == phase {
@@ -54,7 +54,7 @@ func lastFraction(steps []progressStep, phase LibraryUpdatePhase) float64 {
 }
 
 // maxFraction returns the largest fraction reported for the given phase, or -1 if the phase was never reported.
-func maxFraction(steps []progressStep, phase LibraryUpdatePhase) float64 {
+func maxFraction(steps []progressStep, phase UpdatePhase) float64 {
 	fraction := -1.0
 	for _, step := range steps {
 		if step.phase == phase && step.fraction > fraction {
@@ -117,10 +117,10 @@ func TestLibraryDownloadReportsProgress(t *testing.T) {
 
 	c.True(len(*steps) > 1, "the update must report more than its completion")
 	seenInstalling := false
-	last := map[LibraryUpdatePhase]float64{}
+	last := map[UpdatePhase]float64{}
 	for _, step := range *steps {
 		c.True(step.fraction >= 0 && step.fraction <= 1, "fraction %v must be within 0 to 1", step.fraction)
-		if step.phase == LibraryUpdateInstalling {
+		if step.phase == UpdateInstalling {
 			seenInstalling = true
 		} else {
 			c.False(seenInstalling, "the phases must be reported in order")
@@ -132,7 +132,7 @@ func TestLibraryDownloadReportsProgress(t *testing.T) {
 		last[step.phase] = step.fraction
 	}
 	c.True(seenInstalling, "the install phase must be reported")
-	c.Equal(1.0, lastFraction(*steps, LibraryUpdateInstalling), "the install phase must finish at its end")
+	c.Equal(1.0, lastFraction(*steps, UpdateInstalling), "the install phase must finish at its end")
 }
 
 // TestLibraryCloneContentInstalls verifies that a clone's content is installed the way an archive's is: only what lies
@@ -173,7 +173,7 @@ func TestLibraryCloneContentInstalls(t *testing.T) {
 		c.True(os.IsNotExist(err), "%s does not belong in the library", name)
 	}
 	c.Equal(0.0, (*steps)[0].fraction, "the install phase must start at its beginning")
-	c.Equal(1.0, lastFraction(*steps, LibraryUpdateInstalling), "the install phase must finish at its end")
+	c.Equal(1.0, lastFraction(*steps, UpdateInstalling), "the install phase must finish at its end")
 }
 
 // TestInstallLibraryContentRefusesEscapingPaths verifies that an entry whose path would land outside the library's
@@ -187,7 +187,7 @@ func TestInstallLibraryContentRefusesEscapingPaths(t *testing.T) {
 		open: func() (io.ReadCloser, error) { return io.NopCloser(strings.NewReader("x")), nil },
 	}}
 	err := installLibraryContent(t.Context(), filepath.Join(dir, "lib"), entries, 1,
-		func(LibraryUpdatePhase, float64) {})
+		func(UpdatePhase, float64) {})
 	c.HasError(err)
 	_, err = os.Stat(filepath.Join(dir, "escaped.gct"))
 	c.True(os.IsNotExist(err), "nothing may be written outside the library")
@@ -211,7 +211,7 @@ func TestLibraryDownloadRecordsSize(t *testing.T) {
 	// download portion of the bar barely moves.
 	progress, steps := recordProgress()
 	c.NoError(lib.Download(t.Context(), srv.Client(), &release, progress))
-	c.True(maxFraction(*steps, LibraryUpdateDownloading) < 0.5,
+	c.True(maxFraction(*steps, UpdateDownloading) < 0.5,
 		"a guess this far off should not have produced a nearly complete bar")
 
 	// The version must still be the first thing in the file, since that is all VersionOnDisk() reads, and the size must
@@ -228,7 +228,7 @@ func TestLibraryDownloadRecordsSize(t *testing.T) {
 	release.Version = "1.1.0"
 	progress, steps = recordProgress()
 	c.NoError(lib.Download(t.Context(), srv.Client(), &release, progress))
-	c.Equal(maxEstimatedFraction, maxFraction(*steps, LibraryUpdateDownloading),
+	c.Equal(maxEstimatedFraction, maxFraction(*steps, UpdateDownloading),
 		"a download measured against its own recorded size should reach the clamp")
 	c.Equal(int64(len(archive)), lib.recordedDownloadSize())
 }
@@ -277,8 +277,8 @@ func TestLibraryDownloadCanceledWhileInstalling(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
-	err := lib.Download(ctx, srv.Client(), &release, func(phase LibraryUpdatePhase, _ float64) {
-		if phase == LibraryUpdateInstalling {
+	err := lib.Download(ctx, srv.Client(), &release, func(phase UpdatePhase, _ float64) {
+		if phase == UpdateInstalling {
 			cancel()
 		}
 	})
@@ -308,8 +308,8 @@ func TestLibraryDownloadCanceledWhileDownloading(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
-	err := lib.Download(ctx, srv.Client(), &release, func(phase LibraryUpdatePhase, _ float64) {
-		if phase == LibraryUpdateDownloading {
+	err := lib.Download(ctx, srv.Client(), &release, func(phase UpdatePhase, _ float64) {
+		if phase == UpdateDownloading {
 			cancel()
 		}
 	})

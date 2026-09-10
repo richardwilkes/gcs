@@ -11,6 +11,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -39,7 +40,7 @@ func newNameGeneratorDocument() {
 
 // openNameGeneratorRef opens the name generator the reference names in an editor of its own, or activates the editor
 // already showing it; see openFileEditor.
-func openNameGeneratorRef(ref *gurps.NamedFileRef) (*nameGeneratorEditorDockable, error) {
+func openNameGeneratorRef(ref *library.NamedFileRef) (*nameGeneratorEditorDockable, error) {
 	return openFileEditor(ref, newNameGeneratorEditorDockable)
 }
 
@@ -67,7 +68,7 @@ func OpenNameGeneratorInEditor(name string) {
 
 // nameGeneratorRefNamed returns the reference to the name generator with the given base name, or nil if no library
 // holds one.
-func nameGeneratorRefNamed(name string) *gurps.NamedFileRef {
+func nameGeneratorRefNamed(name string) *library.NamedFileRef {
 	for _, one := range gurps.AvailableNameGenerators(gurps.GlobalSettings().Libraries) {
 		if one.FileRef.Name == name {
 			return one.FileRef
@@ -93,7 +94,7 @@ func newNameGeneratorEditorDockable() *nameGeneratorEditorDockable {
 		newModel:     gurps.NewNameGenerator,
 		readModel:    gurps.ReadNameGeneratorFromFS,
 		buildContent: d.buildContent,
-		openRef: func(ref *gurps.NamedFileRef) error {
+		openRef: func(ref *library.NamedFileRef) error {
 			_, err := openNameGeneratorRef(ref)
 			return err
 		},

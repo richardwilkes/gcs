@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -28,7 +28,7 @@ import (
 // stops it.
 const libraryUpdateTimeout = 30 * time.Minute
 
-func initiateLibraryUpdate(lib *gurps.Library, rel *gurps.Release) bool {
+func initiateLibraryUpdate(lib *library.Library, rel *library.Release) bool {
 	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Update %s to %s?"), lib.Data().Title, filterVersion(rel.Version)),
 		i18n.Text(`Existing content for this library will be removed and replaced.
 Content in other libraries will not be modified`)) != unison.ModalResponseOK {
@@ -77,7 +77,7 @@ documents from the library are open.`))
 	canceling := false
 	progress := unison.NewProgressBar(progressResolution)
 	wnd, label, err := newProgressWindow(i18n.Text("Updating…"),
-		libraryPhaseTitle(gurps.LibraryUpdateDownloading, libData.Title, rel.Version), progress, func() {
+		libraryPhaseTitle(library.UpdateDownloading, libData.Title, rel.Version), progress, func() {
 			canceling = true
 			cancel()
 		})
@@ -110,7 +110,7 @@ documents from the library are open.`))
 	return true
 }
 
-func performLibraryUpdate(ctx context.Context, lib *gurps.Library, rel *gurps.Release, progress gurps.LibraryUpdateProgress) error {
+func performLibraryUpdate(ctx context.Context, lib *library.Library, rel *library.Release, progress library.UpdateProgress) error {
 	lib.StopAllWatches()
 	return lib.Download(ctx, &http.Client{}, rel, progress)
 }
@@ -119,10 +119,10 @@ func performLibraryUpdate(ctx context.Context, lib *gurps.Library, rel *gurps.Re
 // fraction it receives is relative to the phase it comes with, so the bar starts over each time the phase changes,
 // which is also when the label is rewritten to say what is now happening -- unless the user has asked to stop, in which
 // case the label already says so and must be left alone. canceling is only ever consulted on the UI thread.
-func libraryUpdateProgress(label *unison.Label, bar *unison.ProgressBar, title, version string, canceling func() bool) gurps.LibraryUpdateProgress {
+func libraryUpdateProgress(label *unison.Label, bar *unison.ProgressBar, title, version string, canceling func() bool) library.UpdateProgress {
 	post := throttledProgress(bar)
-	phase := gurps.LibraryUpdateDownloading
-	return func(current gurps.LibraryUpdatePhase, fraction float64) {
+	phase := library.UpdateDownloading
+	return func(current library.UpdatePhase, fraction float64) {
 		if current != phase {
 			phase = current
 			unison.InvokeTask(func() {
@@ -135,8 +135,8 @@ func libraryUpdateProgress(label *unison.Label, bar *unison.ProgressBar, title, 
 	}
 }
 
-func libraryPhaseTitle(phase gurps.LibraryUpdatePhase, title, version string) string {
-	if phase == gurps.LibraryUpdateInstalling {
+func libraryPhaseTitle(phase library.UpdatePhase, title, version string) string {
+	if phase == library.UpdateInstalling {
 		return fmt.Sprintf(i18n.Text("Installing %s %s…"), title, filterVersion(version))
 	}
 	return fmt.Sprintf(i18n.Text("Downloading %s %s…"), title, filterVersion(version))
@@ -147,7 +147,7 @@ func libraryPhaseTitle(phase gurps.LibraryUpdatePhase, title, version string) st
 // StopModal() mutates the window's modal fields and unison's package-global modal stack without any locking, while the
 // UI thread is spinning on them inside RunModal(). The release check is left here rather than posted along with the
 // teardown because it makes network calls that would otherwise stall the UI thread for up to a minute.
-func finishLibraryUpdate(wnd *unison.Window, lib *gurps.Library) {
+func finishLibraryUpdate(wnd *unison.Window, lib *library.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})

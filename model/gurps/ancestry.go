@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 )
@@ -43,12 +44,12 @@ type ancestryData struct {
 }
 
 // AvailableAncestries scans the libraries and returns the available ancestries.
-func AvailableAncestries(libraries *Libraries) []*NamedFileSet {
-	return ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, AncestryExt)
+func AvailableAncestries(libraries *library.Libraries) []*library.NamedFileSet {
+	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, AncestryExt)
 }
 
 // LookupAncestry returns the Ancestry with the given name, or nil if there isn't one.
-func LookupAncestry(name string, libraries *Libraries) *Ancestry {
+func LookupAncestry(name string, libraries *library.Libraries) *Ancestry {
 	for _, lib := range AvailableAncestries(libraries) {
 		for _, one := range lib.List {
 			if one.Name == name {

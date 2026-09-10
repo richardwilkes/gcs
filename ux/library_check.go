@@ -17,7 +17,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -32,7 +32,7 @@ const libraryCheckTimeout = time.Minute
 // for the given library: when a check has turned up a release to offer, or when no check has completed and there is a
 // repository to ask, so the buttons remain a way to get at a library's releases whatever the periodic checks are set
 // to. Clicking either button in that second state makes the check first (see checkLibraryReleases).
-func libraryUpdateButtonsEnabled(lib *gurps.Library) bool {
+func libraryUpdateButtonsEnabled(lib *library.Library) bool {
 	_, releases := lib.AvailableReleases()
 	return (len(releases) != 0 && releases[0].HasUpdate()) || lib.NeedsUpgradeCheck()
 }
@@ -44,8 +44,8 @@ func libraryUpdateButtonsEnabled(lib *gurps.Library) bool {
 // been reported. A library whose check is still in flight is waited on rather than asked again, since
 // Library.CheckForAvailableUpgrade() joins a check already under way instead of making a second request. Must be called
 // on the UI thread; it runs a modal loop while waiting on the checks.
-func checkLibraryReleases(libs []*gurps.Library) bool {
-	var pending []*gurps.Library
+func checkLibraryReleases(libs []*library.Library) bool {
+	var pending []*library.Library
 	for _, lib := range libs {
 		if lib.NeedsUpgradeCheck() {
 			pending = append(pending, lib)
@@ -87,7 +87,7 @@ func checkLibraryReleases(libs []*gurps.Library) bool {
 	return true
 }
 
-func libraryCheckTitle(libs []*gurps.Library) string {
+func libraryCheckTitle(libs []*library.Library) string {
 	if len(libs) == 1 {
 		return fmt.Sprintf(i18n.Text("Checking for %s updates…"), libs[0].Data().Title)
 	}
@@ -97,7 +97,7 @@ func libraryCheckTitle(libs []*gurps.Library) string {
 // reportNoLibraryReleases tells the user that a library they asked to update, or to see the release notes of, has no
 // release to offer. Until a check has been made the buttons are enabled on the strength of the repository alone, so
 // this is the first they hear of it.
-func reportNoLibraryReleases(lib *gurps.Library) {
+func reportNoLibraryReleases(lib *library.Library) {
 	unison.WarningDialogWithMessage(fmt.Sprintf(i18n.Text("No releases are available for %s"), lib.Data().Title),
 		xstrings.Wrap("", fmt.Sprintf(i18n.Text("The library's repository has no release that this version of %s can use."),
 			xos.AppName), 100))

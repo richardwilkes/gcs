@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -172,7 +173,7 @@ func (s *GeneralSettings) UpdateCursorSize() {
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
-func (s *GeneralSettings) CalendarRef(libraries *Libraries) *CalendarRef {
+func (s *GeneralSettings) CalendarRef(libraries *library.Libraries) *CalendarRef {
 	ref := LookupCalendarRef(s.CalendarName, libraries)
 	if ref == nil {
 		if ref = LookupCalendarRef("Gregorian", libraries); ref == nil {

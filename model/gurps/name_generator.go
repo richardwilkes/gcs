@@ -21,6 +21,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/rpgtools/names"
 	"github.com/richardwilkes/rpgtools/names/namesets/american"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -36,7 +37,7 @@ var (
 
 // NameGeneratorRef holds a reference to a NameGenerator.
 type NameGeneratorRef struct {
-	FileRef   *NamedFileRef
+	FileRef   *library.NamedFileRef
 	generator *NameGenerator
 }
 
@@ -79,10 +80,10 @@ type nameGeneratorData struct {
 }
 
 // AvailableNameGenerators scans the libraries and returns the available name generators.
-func AvailableNameGenerators(libraries *Libraries) []*NameGeneratorRef {
+func AvailableNameGenerators(libraries *library.Libraries) []*NameGeneratorRef {
 	var list []*NameGeneratorRef
 	seen := make(map[string]bool)
-	for _, set := range ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, NamesExt) {
+	for _, set := range library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, NamesExt) {
 		for _, one := range set.List {
 			if seen[one.Name] {
 				continue

@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package library
 
 import (
 	"os"
@@ -17,6 +17,9 @@ import (
 
 	"github.com/richardwilkes/toolbox/v2/check"
 )
+
+// testExt is the extension the scans below look for. Any extension will do, since the scanner treats them all alike.
+const testExt = ".ancestry"
 
 // Files are matched without regard to the case of their extension. The extension map is built from lowercased
 // extensions, but the file's own extension was looked up as-is, so anything with an upper or mixed-case extension was
@@ -29,7 +32,7 @@ func TestScanForNamedFileSetsIgnoresExtensionCase(t *testing.T) {
 		"Settings/Dwarf.Ancestry": {Data: []byte("{}")},
 		"Settings/Notes.txt":      {Data: []byte("{}")},
 	}
-	refs := scanForNamedFileSets(fileSystem, "Settings", "", []string{AncestryExt}, true, make(map[string]bool))
+	refs := scanForNamedFileSets(fileSystem, "Settings", "", []string{testExt}, true, make(map[string]bool))
 	names := make([]string, 0, len(refs))
 	for _, ref := range refs {
 		names = append(names, ref.Name)
@@ -49,13 +52,16 @@ func TestScanForNamedFileSetsRecordsDiskPath(t *testing.T) {
 	ancestriesDir := filepath.Join(userPath, SettingsDirName, AncestriesDirName)
 	c.NoError(os.MkdirAll(ancestriesDir, 0o750))
 	c.NoError(os.WriteFile(filepath.Join(ancestriesDir, "Elf.ancestry"), []byte(`{"version":5,"name":"Elf"}`), 0o640))
+	builtIn := fstest.MapFS{
+		"embedded_data/Human.ancestry": {Data: []byte(`{"version":5,"name":"Human"}`)},
+	}
 	var userRef, builtInRef *NamedFileRef
-	for _, set := range ScanForNamedFileSets(embeddedFS, "embedded_data", true, libs, AncestryExt) {
+	for _, set := range ScanForNamedFileSets(builtIn, "embedded_data", true, libs, testExt) {
 		for _, ref := range set.List {
 			switch {
 			case set.Name == libs.User().Data().Title && ref.Name == "Elf":
 				userRef = ref
-			case set.Name == "Built-in" && ref.Name == DefaultAncestry:
+			case set.Name == "Built-in" && ref.Name == "Human":
 				builtInRef = ref
 			}
 		}

@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package library
 
 import (
 	"bytes"
@@ -48,31 +48,31 @@ func TestLibrariesNilReadsBehaveLikeAnEmptySet(t *testing.T) {
 // race detector, this test fails if any of those accesses stop going through the lock.
 func TestLibrariesAccessIsSafeForConcurrentMutation(t *testing.T) {
 	c := check.New(t)
-	s := &Settings{Libraries: NewLibraries()}
+	libs := NewLibraries()
 	stable := NewLibrary("stable", "", "", "stable", t.TempDir())
-	s.Libraries.Store(stable.Key(), stable)
+	libs.Store(stable.Key(), stable)
 	churn := NewLibrary("churn", "", "", "churn", t.TempDir())
 
 	// Readers stand in for the deep search content loaders; the mutation loop below stands in for the UI thread
 	// re-keying a library in the library settings dialog or removing one in the navigator.
 	var missedStable atomic.Bool
 	stop := spinUntilStopped(4, func() {
-		if s.Libraries.Lookup(stable.Key()) == nil {
+		if libs.Lookup(stable.Key()) == nil {
 			missedStable.Store(true)
 		}
 	})
 	for range 1000 {
-		s.Libraries.Store(churn.Key(), churn)
-		s.Libraries.Remove(churn.Key())
+		libs.Store(churn.Key(), churn)
+		libs.Remove(churn.Key())
 	}
 	stop()
 	c.False(missedStable.Load(), "every lookup must find the library that was never removed")
 
 	// A snapshot is unaffected by mutations made after it was taken.
-	snapshot := s.Libraries.List()
-	s.Libraries.Store(churn.Key(), churn)
+	snapshot := libs.List()
+	libs.Store(churn.Key(), churn)
 	c.False(slices.Contains(snapshot, churn), "a library stored after the snapshot was taken must not appear in it")
-	c.NotNil(s.Libraries.Lookup(churn.Key()), "a fresh lookup must see the stored library")
+	c.NotNil(libs.Lookup(churn.Key()), "a fresh lookup must see the stored library")
 }
 
 // TestLibrariesRekeyNeverLeavesTheLibraryAbsent verifies that re-keying a library, as the library settings dialog does
@@ -87,7 +87,7 @@ func TestLibrariesRekeyNeverLeavesTheLibraryAbsent(t *testing.T) {
 	lib := NewLibrary("Test", "someone", "", "first", dir)
 	libs.Store(lib.Key(), lib)
 	size := libs.Len()
-	configs := []LibraryConfig{
+	configs := []Config{
 		{Title: "Test", GitHubAccountName: "someone", RepoName: "first"},
 		{Title: "Test", GitHubAccountName: "someone", RepoName: "second"},
 	}

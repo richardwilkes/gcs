@@ -24,6 +24,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -68,7 +69,7 @@ type Navigator struct {
 	appUpdateButton           *unison.Button
 	scroll                    *unison.ScrollPanel
 	table                     *unison.Table[*NavigatorNode]
-	tokens                    []*gurps.MonitorToken
+	tokens                    []*library.MonitorToken
 	deepSearch                map[string]bool
 	contentCache              map[string]*contentCacheEntry
 	lastBuild                 *contentCacheBuild
@@ -125,7 +126,7 @@ func newNavigator() *Navigator {
 	n.AddChild(n.scroll)
 
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
-	gurps.SetNotifyOfLibraryChangeFunc(n.EventuallyReload)
+	library.SetNotifyOfLibraryChangeFunc(n.EventuallyReload)
 	n.table.MouseDownCallback = n.mouseDown
 	n.table.SelectionChangedCallback = n.selectionChanged
 	n.table.KeyDownCallback = n.tableKeyDown
@@ -255,7 +256,7 @@ func (n *Navigator) InitialFocus() {
 }
 
 func (n *Navigator) addLibrary() {
-	ShowLibrarySettings(&gurps.Library{})
+	ShowLibrarySettings(&library.Library{})
 }
 
 func (n *Navigator) favoriteSelection() {
@@ -536,8 +537,8 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 }
 
 // selectedLibraries returns the libraries among the selected rows, in selection order.
-func (n *Navigator) selectedLibraries() []*gurps.Library {
-	var libs []*gurps.Library
+func (n *Navigator) selectedLibraries() []*library.Library {
+	var libs []*library.Library
 	for _, row := range n.table.SelectedRows(true) {
 		if row.IsLibrary() {
 			libs = append(libs, row.library)
@@ -599,7 +600,7 @@ func (n *Navigator) showSelectionReleaseNotes() {
 // checkLibraryReleases calls the package-level checkLibraryReleases and then brings the toolbar back into line: a check
 // that found nothing to offer leaves the buttons with nothing to do, and one that found an update reloads the tree on
 // its own.
-func (n *Navigator) checkLibraryReleases(libs []*gurps.Library) bool {
+func (n *Navigator) checkLibraryReleases(libs []*library.Library) bool {
 	ok := checkLibraryReleases(libs)
 	n.selectionChanged()
 	return ok
@@ -753,7 +754,7 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 // it is the cache key as is. A change that may have altered the tree is followed by a reload; a plain write to a file's
 // contents does not need one, and a file arriving in pieces would otherwise restart the reload's cache rebuild on every
 // piece.
-func (n *Navigator) watchCallback(_ *gurps.Library, fullPath string, what notify.Event) {
+func (n *Navigator) watchCallback(_ *library.Library, fullPath string, what notify.Event) {
 	n.invalidateContentCacheEntry(fullPath)
 	if what&^notify.Write != 0 {
 		n.EventuallyReload()

@@ -30,6 +30,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -85,7 +86,7 @@ type PDFInfo struct {
 type Settings struct {
 	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitzero"`
 	General            *GeneralSettings           `json:"general,omitzero"`
-	Libraries          *Libraries                 `json:"libraries,omitempty"`
+	Libraries          *library.Libraries         `json:"libraries,omitempty"`
 	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
 	ThemeMode          thememode.Enum             `json:"theme_mode"`
 	RecentFiles        []string                   `json:"recent_files,omitempty"`
@@ -164,7 +165,7 @@ func factorySettings() Settings {
 	return Settings{
 		LastSeenGCSVersion: xos.AppVersion,
 		General:            NewGeneralSettings(),
-		Libraries:          NewLibraries(),
+		Libraries:          library.NewLibraries(),
 		Sheet:              FactorySheetSettings(),
 	}
 }
@@ -246,7 +247,7 @@ func (s *Settings) EnsureValidity() {
 		s.General.EnsureValidity()
 	}
 	if s.Libraries.Len() == 0 {
-		s.Libraries = NewLibraries()
+		s.Libraries = library.NewLibraries()
 	}
 	if s.LastDirs == nil {
 		s.LastDirs = make(map[string]string)
@@ -298,7 +299,7 @@ func (s *Settings) LastDir(key string) string {
 		return last
 	}
 	if key == RulesLookupLastDirKey {
-		return DefaultUserLibraryPath()
+		return library.DefaultUserLibraryPath()
 	}
 	var home string
 	if u, err := user.Current(); err != nil {

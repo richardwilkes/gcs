@@ -20,6 +20,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/gcs/v5/updater"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -41,7 +42,7 @@ type appUpdater struct {
 	lock      sync.RWMutex
 	frequency func() updatecheck.Option // nil means the general settings' AppUpdateCheck; tests inject a value
 	result    string
-	releases  []gurps.Release
+	releases  []library.Release
 	updating  bool
 	quiet     bool // a quiet check is in flight
 	seq       int  // bumped by every visible check, so a quiet result that arrives late can be recognized as stale
@@ -67,7 +68,7 @@ func (u *appUpdater) Reset() bool {
 // Result returns what is currently known. Until a check has recorded something, the title says why there is nothing:
 // the checks are off, one is under way in the background, or none has run yet. The Help menu shows the title verbatim,
 // so it must never be blank.
-func (u *appUpdater) Result() (title string, releases []gurps.Release, updating bool) {
+func (u *appUpdater) Result() (title string, releases []library.Release, updating bool) {
 	u.lock.RLock()
 	defer u.lock.RUnlock()
 	if u.result == "" {
@@ -114,14 +115,14 @@ func (u *appUpdater) SetResult(str string) {
 }
 
 // SetReleases records the releases a visible check found.
-func (u *appUpdater) SetReleases(releases []gurps.Release) {
+func (u *appUpdater) SetReleases(releases []library.Release) {
 	u.lock.Lock()
 	u.setReleasesLocked(releases)
 	u.lock.Unlock()
 }
 
 // setReleasesLocked records the releases an update check found. The lock must already be held.
-func (u *appUpdater) setReleasesLocked(releases []gurps.Release) {
+func (u *appUpdater) setReleasesLocked(releases []library.Release) {
 	u.result = fmt.Sprintf(i18n.Text("%s %s is available!"), xos.AppName, filterVersion(releases[0].Version))
 	u.releases = releases
 	u.updating = false
@@ -161,7 +162,7 @@ func (u *appUpdater) beginQuiet() (seq int, ok bool) {
 // untouched, so a network hiccup can't erase an update the user has already been told about; the caller logs the
 // error. When nothing was known, though, there is nothing to protect, and the failure is recorded so that the Help
 // menu says the site couldn't be reached rather than that no check has run.
-func (u *appUpdater) finishQuiet(seq int, releases []gurps.Release, err error) {
+func (u *appUpdater) finishQuiet(seq int, releases []library.Release, err error) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
 	u.quiet = false
@@ -183,8 +184,8 @@ func (u *appUpdater) finishQuiet(seq int, releases []gurps.Release, err error) {
 }
 
 // loadAppReleases retrieves the releases newer than the running version.
-func loadAppReleases(ctx context.Context) ([]gurps.Release, error) {
-	return gurps.LoadReleases(ctx, &http.Client{}, "richardwilkes", "", "gcs", xos.AppVersion,
+func loadAppReleases(ctx context.Context) ([]library.Release, error) {
+	return library.LoadReleases(ctx, &http.Client{}, "richardwilkes", "", "gcs", xos.AppVersion,
 		func(version, _ string) bool {
 			// Don't bother showing changes from before 5.0.0, since those were the Java version
 			return xstrings.NaturalLess(version, "5.0.0", true)
@@ -329,7 +330,7 @@ func NotifyOfAppUpdate() {
 
 // planAppUpdate checks whether this installation can replace itself with the given release. It returns either a plan to
 // do so, or a message explaining why it cannot, which the dialog shows alongside the release notes.
-func planAppUpdate(release *gurps.Release) (plan *updater.Plan, unavailableMsg string) {
+func planAppUpdate(release *library.Release) (plan *updater.Plan, unavailableMsg string) {
 	assets := make([]updater.Asset, len(release.Assets))
 	for i := range release.Assets {
 		assets[i] = updater.Asset{
@@ -419,7 +420,7 @@ func outcomeMessage(reason updater.Reason) string {
 }
 
 // AppUpdateResult returns the current results of any outstanding app update check.
-func AppUpdateResult() (title string, releases []gurps.Release, updating bool) {
+func AppUpdateResult() (title string, releases []library.Release, updating bool) {
 	return appUpdate.Result()
 }
 

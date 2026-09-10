@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -164,7 +165,7 @@ func failOnWorkspaceError(t *testing.T) {
 
 // builtInAncestryRef returns a reference to an ancestry file that, like one built into the application, has no path on
 // disk.
-func builtInAncestryRef(t *testing.T, c check.Checker, name, content string) *gurps.NamedFileRef {
+func builtInAncestryRef(t *testing.T, c check.Checker, name, content string) *library.NamedFileRef {
 	t.Helper()
 	ref := ancestryFileRef(t, c, name, content)
 	ref.DiskPath = ""

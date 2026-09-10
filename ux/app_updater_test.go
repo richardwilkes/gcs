@@ -14,14 +14,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 // pendingAppRelease is the release the tests seed as one the user has already been told about. Its version is far
 // enough ahead of anything real that it can never coincide with the version the tests are built as.
-var pendingAppRelease = []gurps.Release{{Version: "99.0.0"}}
+var pendingAppRelease = []library.Release{{Version: "99.0.0"}}
 
 // TestQuietCheckFailureKeepsAKnownUpdate verifies that a background check which can't reach the update site leaves the
 // update the user already knows about on display. The quiet checks run unattended, so a network hiccup that quietly

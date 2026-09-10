@@ -12,7 +12,7 @@ package ux
 import (
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -21,8 +21,8 @@ import (
 // place.
 func TestLibraryPhaseTitleDistinguishesPhases(t *testing.T) {
 	c := check.New(t)
-	downloading := libraryPhaseTitle(gurps.LibraryUpdateDownloading, "Master Library", "5.13.0")
-	installing := libraryPhaseTitle(gurps.LibraryUpdateInstalling, "Master Library", "5.13.0")
+	downloading := libraryPhaseTitle(library.UpdateDownloading, "Master Library", "5.13.0")
+	installing := libraryPhaseTitle(library.UpdateInstalling, "Master Library", "5.13.0")
 	c.NotEqual(downloading, installing)
 	for _, title := range []string{downloading, installing} {
 		c.Contains(title, "Master Library")

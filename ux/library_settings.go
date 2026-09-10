@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -31,7 +32,7 @@ import (
 
 type librarySettingsDockable struct {
 	SettingsDockable
-	library       *gurps.Library
+	library       *library.Library
 	toolbar       *unison.Panel
 	applyButton   *unison.Button
 	cancelButton  *unison.Button
@@ -40,7 +41,7 @@ type librarySettingsDockable struct {
 	tokenField    *StringField
 	repoField     *StringField
 	pathField     *StringField
-	config        gurps.LibraryConfig
+	config        library.Config
 	path          string
 	special       bool
 	isUser        bool
@@ -48,7 +49,7 @@ type librarySettingsDockable struct {
 }
 
 // ShowLibrarySettings shows the Library Settings view for a specific library.
-func ShowLibrarySettings(lib *gurps.Library) {
+func ShowLibrarySettings(lib *library.Library) {
 	if activateDockable(func(d *librarySettingsDockable) bool { return d.library == lib }) {
 		return
 	}
@@ -219,8 +220,8 @@ func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {
 }
 
 func (d *librarySettingsDockable) checkForSpecial() bool {
-	return gurps.IsMasterLibraryKey(d.config.GitHubAccountName, d.config.RepoName) ||
-		gurps.IsUserLibraryKey(d.config.GitHubAccountName, d.config.RepoName)
+	return library.IsMasterLibraryKey(d.config.GitHubAccountName, d.config.RepoName) ||
+		library.IsUserLibraryKey(d.config.GitHubAccountName, d.config.RepoName)
 }
 
 // keyInUse returns true if the account/repo pair currently in the fields already belongs to a different library in the
@@ -232,7 +233,7 @@ func (d *librarySettingsDockable) keyInUse() bool {
 
 // libraryKeyTakenByOther returns true if the library key formed from the given account/repo pair belongs to a library
 // in the set other than the given one.
-func libraryKeyTakenByOther(libs *gurps.Libraries, gitHubAccountName, repoName string, lib *gurps.Library) bool {
+func libraryKeyTakenByOther(libs *library.Libraries, gitHubAccountName, repoName string, lib *library.Library) bool {
 	existing := libs.Lookup(gitHubAccountName + "/" + repoName)
 	return existing != nil && existing != lib
 }
@@ -307,7 +308,7 @@ func (d *librarySettingsDockable) willClose() bool {
 
 // closeLibrarySettings closes any open Library Settings dockable for the given library without prompting to save. For
 // use when the library has been removed from the global set, since a later apply from the dockable would put it back.
-func closeLibrarySettings(lib *gurps.Library) {
+func closeLibrarySettings(lib *library.Library) {
 	for _, dockable := range AllDockables() {
 		if d, ok := dockable.AsPanel().Self.(*librarySettingsDockable); ok && d.library == lib {
 			d.promptForSave = false
@@ -354,11 +355,11 @@ func (d *librarySettingsDockable) apply() bool {
 
 // libraryCheckWantedAfterApply returns true if applying the library's settings should be followed by a background check
 // of its releases.
-func libraryCheckWantedAfterApply(lib *gurps.Library, option updatecheck.Option) bool {
+func libraryCheckWantedAfterApply(lib *library.Library, option updatecheck.Option) bool {
 	return option != updatecheck.Never && lib.NeedsUpgradeCheck()
 }
 
-func checkForLibraryUpgrade(lib *gurps.Library) {
+func checkForLibraryUpgrade(lib *library.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})

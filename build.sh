@@ -184,7 +184,7 @@ fi
 
 # Race instrumentation slows the test packages down 3-10x, yet the detector can only ever report an access made while
 # two or more goroutines are live, which almost none of the tests produce. So the full suite runs uninstrumented and the
-# race pass is limited to the TestRace wrappers (see model/gurps/race_coverage_test.go), which re-run just the tests
+# race pass is limited to the TestRace wrappers (see the race_coverage_test.go files), which re-run just the tests
 # that actually put multiple goroutines over shared state.
 if [ "$TEST"x == "1x" ]; then
 	echo -e "\033[33mTesting...\033[0m"

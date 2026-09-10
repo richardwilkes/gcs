@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/uti"
@@ -53,12 +54,12 @@ func installTestSearchControls(n *Navigator) {
 }
 
 // newTestLibrary returns a library rooted in a fresh temporary directory.
-func newTestLibrary(t *testing.T) *gurps.Library {
-	return gurps.NewLibrary("Test", "test", "", "test", t.TempDir())
+func newTestLibrary(t *testing.T) *library.Library {
+	return library.NewLibrary("Test", "test", "", "test", t.TempDir())
 }
 
 // writeTestLibraryFile writes the data to the named file in the library's directory and returns the file's node.
-func writeTestLibraryFile(c check.Checker, lib *gurps.Library, fileName string, data []byte) *NavigatorNode {
+func writeTestLibraryFile(c check.Checker, lib *library.Library, fileName string, data []byte) *NavigatorNode {
 	c.NoError(os.WriteFile(filepath.Join(lib.Path(), fileName), data, 0o600))
 	return NewFileNode(lib, fileName, nil)
 }
@@ -72,7 +73,7 @@ func newTestCharacter(name string) *gurps.Entity {
 
 // saveTestSheet saves the character as a sheet in the named file in the library's directory and returns the file's
 // node.
-func saveTestSheet(c check.Checker, lib *gurps.Library, fileName string, entity *gurps.Entity) *NavigatorNode {
+func saveTestSheet(c check.Checker, lib *library.Library, fileName string, entity *gurps.Entity) *NavigatorNode {
 	c.NoError(entity.Save(filepath.Join(lib.Path(), fileName)))
 	return NewFileNode(lib, fileName, nil)
 }
@@ -540,23 +541,23 @@ func TestCollectDeepSearchPaths(t *testing.T) {
 	// path it is asked about in the global settings; only the shape of the tree matters here.
 	favorites := &NavigatorNode{id: tid.MustNewTID(kinds.NavigatorFavorites)}
 	favorites.children = []*NavigatorNode{NewFileNode(lib, shared, favorites)}
-	library := &NavigatorNode{id: tid.MustNewTID(kinds.NavigatorLibrary), library: lib}
+	libraryNode := &NavigatorNode{id: tid.MustNewTID(kinds.NavigatorLibrary), library: lib}
 	sub := &NavigatorNode{
 		id:      tid.MustNewTID(kinds.NavigatorDirectory),
 		path:    "sub",
 		library: lib,
-		parent:  library,
+		parent:  libraryNode,
 	}
 	sub.children = []*NavigatorNode{
 		NewFileNode(lib, nested, sub),
 		NewFileNode(lib, filepath.Join("sub", "excluded.txt"), sub),
 	}
-	library.children = []*NavigatorNode{
+	libraryNode.children = []*NavigatorNode{
 		sub,
-		NewFileNode(lib, shared, library), // The same file the favorites node holds
+		NewFileNode(lib, shared, libraryNode), // The same file the favorites node holds
 	}
 	paths := make(map[string]bool)
-	n.collectDeepSearchPaths([]*NavigatorNode{favorites, library}, paths)
+	n.collectDeepSearchPaths([]*NavigatorNode{favorites, libraryNode}, paths)
 	c.Equal(2, len(paths))
 	c.True(paths[filepath.Join(lib.Path(), shared)], "the file favorites repeats must be collected exactly once")
 	c.True(paths[filepath.Join(lib.Path(), nested)], "the file nested in a subdirectory must be reached by recursion")
@@ -639,8 +640,8 @@ func TestPrewarmWithNoDeepSearchPathsRerunsSearch(t *testing.T) {
 func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 	c := check.New(t)
 	relPath := filepath.Join("Notes", "foo.not")
-	lib1 := gurps.NewLibrary("One", "one", "", "one", t.TempDir())
-	lib2 := gurps.NewLibrary("Two", "two", "", "two", t.TempDir())
+	lib1 := library.NewLibrary("One", "one", "", "one", t.TempDir())
+	lib2 := library.NewLibrary("Two", "two", "", "two", t.TempDir())
 	rows := []*NavigatorNode{
 		NewFileNode(lib1, relPath, nil),
 		NewFileNode(lib2, relPath, nil),
@@ -651,7 +652,7 @@ func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 
 	// A repeated reference to the same file within one call must only toggle once, leaving it a favorite rather than
 	// toggling it back off.
-	lib3 := gurps.NewLibrary("Three", "three", "", "three", t.TempDir())
+	lib3 := library.NewLibrary("Three", "three", "", "three", t.TempDir())
 	c.True(toggleFavorites([]*NavigatorNode{
 		NewFileNode(lib3, relPath, nil),
 		NewFileNode(lib3, relPath, nil),

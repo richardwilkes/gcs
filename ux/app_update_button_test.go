@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
@@ -71,17 +71,17 @@ func TestPulseFractionWithoutPeriod(t *testing.T) {
 // setting at Never it is never shown, even for an update already known from an earlier or manual check.
 func TestShowAppUpdateButton(t *testing.T) {
 	c := check.New(t)
-	releases := []gurps.Release{{Version: "5.99.0"}}
+	releases := []library.Release{{Version: "5.99.0"}}
 	for _, one := range []struct {
 		name     string
-		releases []gurps.Release
+		releases []library.Release
 		option   updatecheck.Option
 		expected bool
 	}{
 		{name: "no update known", releases: nil, option: updatecheck.AtLaunch, expected: false},
 		{name: "no update known, never", releases: nil, option: updatecheck.Never, expected: false},
 		// The caller reads the first release, so an empty list must count as no update even though it isn't nil.
-		{name: "empty update list", releases: []gurps.Release{}, option: updatecheck.AtLaunch, expected: false},
+		{name: "empty update list", releases: []library.Release{}, option: updatecheck.AtLaunch, expected: false},
 		{name: "update known, at launch", releases: releases, option: updatecheck.AtLaunch, expected: true},
 		{name: "update known, hourly", releases: releases, option: updatecheck.Hourly, expected: true},
 		{name: "update known, daily", releases: releases, option: updatecheck.Daily, expected: true},
@@ -193,7 +193,7 @@ func TestAppUpdatePulseSettlesAndRestartsOnlyForANewRelease(t *testing.T) {
 
 // seedAppUpdate puts the given releases into the shared update state for the duration of the test, with nil meaning
 // that nothing is known, and restores what was there afterwards.
-func seedAppUpdate(t *testing.T, releases []gurps.Release) {
+func seedAppUpdate(t *testing.T, releases []library.Release) {
 	t.Helper()
 	appUpdate.lock.Lock()
 	savedResult, savedReleases, savedUpdating := appUpdate.result, appUpdate.releases, appUpdate.updating

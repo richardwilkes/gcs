@@ -12,7 +12,7 @@ package ux
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -22,14 +22,14 @@ import (
 
 type updatableLibraryCell struct {
 	unison.Panel
-	library           *gurps.Library
-	release           *gurps.Release
+	library           *library.Library
+	release           *library.Release
 	title             *unison.Label
 	button            *unison.Button
 	inButtonMouseDown bool
 }
 
-func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel *gurps.Release) *updatableLibraryCell {
+func newUpdatableLibraryCell(lib *library.Library, title *unison.Label, rel *library.Release) *updatableLibraryCell {
 	c := &updatableLibraryCell{
 		library: lib,
 		release: rel,

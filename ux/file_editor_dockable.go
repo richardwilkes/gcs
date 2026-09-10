@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
@@ -53,7 +54,7 @@ type fileEditorSpec[T fileEditorModel[T]] struct {
 	fallbackName func() string
 	// openRef opens the file the reference names in an editor of this kind, activating the editor already showing it if
 	// there is one; see openFileEditor. It is what the toolbar menu's Open… and library entries do.
-	openRef func(ref *gurps.NamedFileRef) error
+	openRef func(ref *library.NamedFileRef) error
 }
 
 // fileEditorDockable is the common part of the editors that edit a settings file of their own -- the ancestry and name
@@ -215,7 +216,7 @@ func (d *fileEditorDockable[T]) markSaved() {
 // the file's model, unmodified, with nothing to undo, as a sheet opened from a file does. A file that fails to load
 // changes nothing. The recorded path is empty for a built-in file, so that Save on one of those prompts for a location
 // rather than trying to write into the application.
-func (d *fileEditorDockable[T]) load(ref *gurps.NamedFileRef) error {
+func (d *fileEditorDockable[T]) load(ref *library.NamedFileRef) error {
 	model, err := d.spec.readModel(ref.FileSystem, ref.FilePath)
 	if err != nil {
 		return err
@@ -234,7 +235,7 @@ func (d *fileEditorDockable[T]) load(ref *gurps.NamedFileRef) error {
 
 // showsFile reports whether the editor holds the file the reference names, whether that is a file on disk or a
 // built-in one.
-func (d *fileEditorDockable[T]) showsFile(ref *gurps.NamedFileRef) bool {
+func (d *fileEditorDockable[T]) showsFile(ref *library.NamedFileRef) bool {
 	if ref.DiskPath != "" {
 		return d.path == ref.DiskPath
 	}
@@ -253,12 +254,12 @@ func (d *fileEditorDockable[T]) reset() {
 
 // diskFileRef returns a reference to a file on disk of the kind a library scan produces, so that a file chosen by the
 // user can be loaded the same way as one from a library. The path is made absolute when it can be.
-func diskFileRef(filePath string) *gurps.NamedFileRef {
+func diskFileRef(filePath string) *library.NamedFileRef {
 	if abs, err := filepath.Abs(filePath); err == nil {
 		filePath = abs
 	}
 	dir := filepath.Dir(filePath)
-	return &gurps.NamedFileRef{
+	return &library.NamedFileRef{
 		Name:       xfilepath.BaseName(filePath),
 		FileSystem: os.DirFS(dir),
 		FilePath:   filepath.Base(filePath),
@@ -281,16 +282,16 @@ func findDockable[T unison.Dockable](match func(T) bool) (T, bool) {
 // their embedded fileEditorDockable.
 type fileEditor interface {
 	unison.Dockable
-	load(ref *gurps.NamedFileRef) error
+	load(ref *library.NamedFileRef) error
 	show()
-	showsFile(ref *gurps.NamedFileRef) bool
+	showsFile(ref *library.NamedFileRef) bool
 }
 
 // openFileEditor opens the file the reference names in an editor of the kind newEditor makes. An editor already showing
 // the file is activated and returned rather than a second one being opened, so a file is never open in two editors at
 // once. Otherwise the file is loaded into a new editor, which is shown only if the load succeeds: a file that fails to
 // load opens nothing, and the error is returned for the caller to report.
-func openFileEditor[D fileEditor](ref *gurps.NamedFileRef, newEditor func() D) (D, error) {
+func openFileEditor[D fileEditor](ref *library.NamedFileRef, newEditor func() D) (D, error) {
 	if d, ok := findDockable(func(d D) bool { return d.showsFile(ref) }); ok {
 		ActivateDockable(d)
 		return d, nil

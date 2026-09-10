@@ -7,25 +7,25 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package library
 
 import "io"
 
-// LibraryUpdatePhase identifies the step a library update has reached, so the caller can say what is happening.
-type LibraryUpdatePhase byte
+// UpdatePhase identifies the step a library update has reached, so the caller can say what is happening.
+type UpdatePhase byte
 
 const (
-	// LibraryUpdateDownloading means the library's content is being retrieved.
-	LibraryUpdateDownloading LibraryUpdatePhase = iota
-	// LibraryUpdateInstalling means the retrieved content is being written into place.
-	LibraryUpdateInstalling
+	// UpdateDownloading means the library's content is being retrieved.
+	UpdateDownloading UpdatePhase = iota
+	// UpdateInstalling means the retrieved content is being written into place.
+	UpdateInstalling
 )
 
-// LibraryUpdateProgress reports how far a library update has gotten. fraction runs from 0 to 1 within the phase it is
+// UpdateProgress reports how far a library update has gotten. fraction runs from 0 to 1 within the phase it is
 // given, so a caller showing a progress bar should start the bar over whenever the phase changes. It is called often,
 // and from more than one goroutine, though never from two at once, so it must be cheap and must not block; throttling
 // and marshaling to a UI thread are the caller's business.
-type LibraryUpdateProgress func(phase LibraryUpdatePhase, fraction float64)
+type UpdateProgress func(phase UpdatePhase, fraction float64)
 
 // maxEstimatedFraction is as far as the download portion of the progress bar may advance while it is being measured
 // against an estimate. Holding it short of the end keeps an estimate that turns out to be too small from showing a
