@@ -17,9 +17,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/updater"
+	"github.com/richardwilkes/gcs/v5/runmode"
 	"github.com/richardwilkes/gcs/v5/ux"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xflag"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -32,7 +31,16 @@ func main() {
 	early.Configure()
 	ux.LoadLanguageSetting()
 	unison.AttachConsole()
-	xflag.SetUsage(nil, ux.AppDescription(), i18n.Text("[file]..."), updater.FinishFlag)
+	// Run each registered runmode.Factory now, ahead of flag parsing, since each one registers its own flags as a
+	// side effect of being called (see runmode.Factories). Which modes exist, if any beyond the ones this repo
+	// itself registers, is entirely up to what got compiled into this build.
+	runModes := make([]runmode.Mode, len(runmode.Factories))
+	var hiddenFlags []string
+	for i, newRunMode := range runmode.Factories {
+		runModes[i] = newRunMode(nil)
+		hiddenFlags = append(hiddenFlags, runModes[i].HiddenFlagNames...)
+	}
+	xflag.SetUsage(nil, ux.AppDescription(), i18n.Text("[file]..."), hiddenFlags...)
 	savedUsage := flag.CommandLine.Usage
 	flag.CommandLine.Usage = func() {
 		savedUsage()
@@ -61,17 +69,6 @@ func main() {
 	}
 	flag.StringVar(&gurps.SettingsPath, "settings", gurps.SettingsPath, i18n.Text("The `file` to load settings from and store them into"))
 
-	textTmplPath := flag.String("text", "", i18n.Text("Export sheets using the specified text template `file`"))
-
-	convertFiles := flag.Bool("convert", false, i18n.Text("Convert all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"))
-
-	syncToLibraryData := flag.Bool("sync", false, fmt.Sprintf(i18n.Text("Syncs all character sheet (%s), template (%s), and loot (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), gurps.SheetExt, gurps.TemplatesExt, gurps.LootExt))
-
-	// Not meant to be typed by anyone. A copy of GCS is started this way to finish applying an update once the copy
-	// that prepared it has exited, since replacing a running application from within itself is not something any of
-	// the supported systems allow.
-	finishUpdate := flag.String(updater.FinishFlag, "", i18n.Text("Internal use only. Finish applying a previously prepared update, using the state in the specified `file`"))
-
 	var logCfg xslog.Config
 	logCfg.AddFlags()
 
@@ -86,57 +83,29 @@ func main() {
 	ux.RegisterKnownFileTypes()
 	gurps.GlobalSettings() // Here to force early initialization
 
-	if msg := exclusiveModeMsg(*convertFiles, *syncToLibraryData, *textTmplPath, *finishUpdate); msg != "" {
+	var requestedRunMode *runmode.Mode
+	var requestedRunModeNames []string
+	for i := range runModes {
+		if runModes[i].Requested() {
+			requestedRunMode = &runModes[i]
+			requestedRunModeNames = append(requestedRunModeNames, runModes[i].Name)
+		}
+	}
+	if msg := exclusiveModeMsg(requestedRunModeNames); msg != "" {
 		xos.ExitWithMsg(msg)
 	}
 
-	switch {
-	case *finishUpdate != "":
-		// This must stay ahead of anything that could reach ux.Start: the helper's whole job is to wait for the
-		// single-instance service to let go of its port, so it must never try to join that protocol itself.
-		if err := updater.Finish(*finishUpdate); err != nil {
-			errs.Log(err)
-			xos.Exit(1)
-		}
-	case *convertFiles:
-		if err := gurps.Convert(fileList...); err != nil {
-			xos.ExitWithMsg(err.Error())
-		}
-	case *syncToLibraryData:
-		if err := gurps.SyncToLibraryData(fileList...); err != nil {
-			xos.ExitWithMsg(err.Error())
-		}
-	case *textTmplPath != "":
-		if len(fileList) == 0 {
-			xos.ExitWithMsg(i18n.Text("No files to process."))
-		}
-		if err := gurps.ExportSheets(*textTmplPath, fileList); err != nil {
-			xos.ExitWithMsg(err.Error())
-		}
-	default:
-		ux.Start(fileList) // Never returns
+	if requestedRunMode != nil {
+		requestedRunMode.Start(fileList) // Never returns
 	}
-	xos.Exit(0)
+	ux.Start(fileList) // Never returns
 }
 
-// exclusiveModeMsg returns a non-empty error message if more than one of --convert, --sync, --text and --finish-update
-// was specified. Each of these modes takes over the process and exits, so only one may be requested at a time.
-func exclusiveModeMsg(convert, sync bool, textTmplPath, finishUpdatePath string) string {
-	var modes []string
-	if convert {
-		modes = append(modes, "--convert")
-	}
-	if sync {
-		modes = append(modes, "--sync")
-	}
-	if textTmplPath != "" {
-		modes = append(modes, "--text")
-	}
-	if finishUpdatePath != "" {
-		modes = append(modes, "--finish-update")
-	}
-	if len(modes) > 1 {
-		return fmt.Sprintf(i18n.Text("Cannot specify more than one of %s"), strings.Join(modes, ", "))
+// exclusiveModeMsg returns a non-empty error message if more than one of the requested run mode names was specified.
+// Each run mode takes over the process and exits, so only one may be requested at a time.
+func exclusiveModeMsg(requestedModeNames []string) string {
+	if len(requestedModeNames) > 1 {
+		return fmt.Sprintf(i18n.Text("Cannot specify more than one of -%s"), strings.Join(requestedModeNames, ", -"))
 	}
 	return ""
 }

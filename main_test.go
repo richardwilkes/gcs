@@ -18,28 +18,18 @@ import (
 func TestExclusiveModeMsg(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
-		name             string
-		textTmplPath     string
-		finishUpdatePath string
-		wantContains     []string
-		convert          bool
-		sync             bool
-		wantErr          bool
+		name         string
+		modes        []string
+		wantContains []string
+		wantErr      bool
 	}{
 		{name: "none specified"},
-		{name: "convert only", convert: true},
-		{name: "sync only", sync: true},
-		{name: "text only", textTmplPath: "tmpl"},
-		{name: "finish-update only", finishUpdatePath: "state.json"},
-		{name: "convert and sync", convert: true, sync: true, wantErr: true, wantContains: []string{"--convert", "--sync"}},
-		{name: "convert and text", convert: true, textTmplPath: "tmpl", wantErr: true, wantContains: []string{"--convert", "--text"}},
-		{name: "sync and text", sync: true, textTmplPath: "tmpl", wantErr: true, wantContains: []string{"--sync", "--text"}},
-		{name: "finish-update and convert", convert: true, finishUpdatePath: "state.json", wantErr: true, wantContains: []string{"--convert", "--finish-update"}},
-		{name: "finish-update and text", textTmplPath: "tmpl", finishUpdatePath: "state.json", wantErr: true, wantContains: []string{"--text", "--finish-update"}},
-		{name: "all three", convert: true, sync: true, textTmplPath: "tmpl", wantErr: true, wantContains: []string{"--convert", "--sync", "--text"}},
-		{name: "all four", convert: true, sync: true, textTmplPath: "tmpl", finishUpdatePath: "state.json", wantErr: true, wantContains: []string{"--convert", "--sync", "--text", "--finish-update"}},
+		{name: "one mode", modes: []string{"--convert"}},
+		{name: "two modes", modes: []string{"--convert", "--sync"}, wantErr: true, wantContains: []string{"--convert", "--sync"}},
+		{name: "four modes", modes: []string{"--convert", "--sync", "--text", "--finish-update"}, wantErr: true, wantContains: []string{"--convert", "--sync", "--text", "--finish-update"}},
+		{name: "five modes", modes: []string{"--convert", "--sync", "--text", "--finish-update", "--headless-api"}, wantErr: true, wantContains: []string{"--convert", "--sync", "--text", "--finish-update", "--headless-api"}},
 	} {
-		msg := exclusiveModeMsg(tc.convert, tc.sync, tc.textTmplPath, tc.finishUpdatePath)
+		msg := exclusiveModeMsg(tc.modes)
 		if tc.wantErr {
 			c.NotEqual("", msg, tc.name)
 			for _, want := range tc.wantContains {
