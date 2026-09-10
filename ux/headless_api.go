@@ -332,7 +332,7 @@ func (s *headlessAPIServer) handleInspect(w http.ResponseWriter, r *http.Request
 		}
 		ok = true
 		local := pt.Sub(wnd.ContentRect().Point)
-		result = describeWindowAndPanel(wnd, wnd.Content().PanelAt(local))
+		result = describeWindowAndPanel(wnd, wnd.Content().Parent().PanelAt(local))
 	})
 	if !ok {
 		http.Error(w, "no window at that point", http.StatusNotFound)
