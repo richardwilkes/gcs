@@ -115,6 +115,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 		xos.ExitWithMsg(fmt.Sprintf("unable to start the headless session: %v", err))
 	}
 	server.screen = screen
+	xos.RunAtExit(screen.Stop)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /input", server.handleInput)
@@ -152,7 +153,6 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 	if err = httpServer.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		errs.Log(err)
 	}
-	screen.Stop()
 	xos.Exit(0)
 }
 
