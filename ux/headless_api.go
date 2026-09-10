@@ -22,12 +22,9 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
@@ -142,10 +139,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 	// process exit, so the common case loses nothing at all.
 	stopAutosave := make(chan struct{})
 	go autosaveSettings(screen, stopAutosave)
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-sigCh
+	xos.RunAtExit(func() {
 		close(stopAutosave)
 		saveSettings(screen)
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -153,7 +147,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 		if shutdownErr := httpServer.Shutdown(shutdownCtx); shutdownErr != nil {
 			errs.Log(shutdownErr)
 		}
-	}()
+	})
 
 	if err = httpServer.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		errs.Log(err)
