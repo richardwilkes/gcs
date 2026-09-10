@@ -96,6 +96,8 @@ func TestLibraryDataIsACopy(t *testing.T) {
 	snapshot := lib.Data()
 	snapshot.Title = "Mutated"
 	snapshot.PathOnDisk = "/mutated"
+	c.NotEqual(snapshot.Title, lib.Data().Title, "the library must keep its title")
+	c.NotEqual(snapshot.PathOnDisk, lib.Data().PathOnDisk, "the library must keep its path")
 	c.Equal("Original", lib.Data().Title)
 	c.Equal(dir, lib.Data().PathOnDisk)
 
