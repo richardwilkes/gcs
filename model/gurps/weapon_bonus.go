@@ -97,9 +97,12 @@ type WeaponBonusData struct { //nolint:govet // The field alignment here is poor
 	LeveledOwner                   LeveledOwner    `json:"-"`
 	DieCount                       fxp.Int         `json:"-"`
 	Amount                         fxp.Int         `json:"amount"`
-	PerLevel                       bool            `json:"leveled,omitzero"`
-	PerDie                         bool            `json:"per_die,omitzero"`
-	BonusOwner                     `json:"-"`
+	// Dice is the dice of a damage bonus, added to the weapon's damage dice alongside the flat Amount. Only a bonus of
+	// type feature.WeaponBonus may carry dice; it is cleared for every other type when loaded.
+	Dice       BonusDice `json:"dice,omitzero"`
+	PerLevel   bool      `json:"leveled,omitzero"`
+	PerDie     bool      `json:"per_die,omitzero"`
+	BonusOwner `json:"-"`
 }
 
 // NewWeaponBonus creates a new weapon bonus of the given type, which must satisfy feature.Type.IsWeaponBonus.
@@ -127,8 +130,17 @@ func (w *WeaponBonus) Clone() Feature {
 	return clonePtr(w)
 }
 
-// AdjustedAmountForWeapon returns the adjusted amount for the given weapon.
+// AdjustedAmountForWeapon returns the adjusted amount for the given weapon. As a side effect, it records the weapon's
+// die count, so AdjustedAmount reports the amount for the same weapon afterwards.
 func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
+	_, amt := w.AdjustedForWeapon(wpn)
+	return amt
+}
+
+// AdjustedForWeapon returns the dice and the amount, both adjusted for the given weapon: multiplied by its die count
+// when the bonus is per-die and by the level when it is per-level. As a side effect, it records the weapon's die count,
+// so AdjustedAmount reports the amount for the same weapon afterwards.
+func (w *WeaponBonus) AdjustedForWeapon(wpn *Weapon) (d BonusDice, amount fxp.Int) {
 	if w.Type == feature.WeaponMinSTBonus || w.Type == feature.WeaponEffectiveSTBonus {
 		// Can't call BaseDamageDice() here because that would cause an infinite loop, so we just don't permit use of
 		// the per-die feature for this bonus.
@@ -136,12 +148,13 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 	} else {
 		w.DieCount = fxp.FromInteger(wpn.Damage.BaseDamageDice().Count)
 	}
-	return w.AdjustedAmount()
+	return w.adjusted(w.DieCount, w.LeveledOwner)
 }
 
 // AdjustedAmount returns the amount, adjusted for the die count and level when the bonus is per-die or per-level.
 func (w *WeaponBonus) AdjustedAmount() fxp.Int {
-	return w.adjustedAmount(w.DieCount, w.LeveledOwner)
+	_, amt := w.adjusted(w.DieCount, w.LeveledOwner)
+	return amt
 }
 
 // resolveDieCount returns the die count to use for this bonus, only asking the supplier for it when the bonus actually
@@ -153,16 +166,28 @@ func (w *WeaponBonus) resolveDieCount(dieCount dieCountFunc) fxp.Int {
 	return dieCount()
 }
 
-// adjustedAmount returns the amount adjusted for the given die count and leveled owner. Taking these as parameters
-// rather than reading the DieCount/LeveledOwner scratch fields lets callers compute an amount without mutating the
-// shared bonus, which is not safe when the bonus may be read concurrently.
-func (w *WeaponBonus) adjustedAmount(dieCount fxp.Int, leveledOwner LeveledOwner) fxp.Int {
-	amt := w.Amount
+// adjusted returns the dice and the amount adjusted for the given die count and leveled owner, both scaled by the one
+// factor those produce. Taking them as parameters rather than reading the DieCount/LeveledOwner scratch fields lets
+// callers compute the adjusted values without mutating the shared bonus, which is not safe when the bonus may be read
+// concurrently.
+func (w *WeaponBonus) adjusted(dieCount fxp.Int, leveledOwner LeveledOwner) (d BonusDice, amount fxp.Int) {
+	factor, ok := w.scaleFactor(dieCount, leveledOwner)
+	if !ok {
+		return BonusDice{}, 0
+	}
+	return w.Dice.scaled(factor), w.Amount.Mul(factor)
+}
+
+// scaleFactor returns the factor the bonus is multiplied by: the die count when the bonus is per-die and the leveled
+// owner's level when it is per-level. It reports false when either of those is negative, in which case the bonus
+// contributes nothing.
+func (w *WeaponBonus) scaleFactor(dieCount fxp.Int, leveledOwner LeveledOwner) (fxp.Int, bool) {
+	factor := fxp.One
 	if w.PerDie {
 		if dieCount < 0 {
-			return 0
+			return 0, false
 		}
-		amt = amt.Mul(dieCount)
+		factor = factor.Mul(dieCount)
 	}
 	if w.PerLevel {
 		if leveledOwner == nil {
@@ -170,11 +195,11 @@ func (w *WeaponBonus) adjustedAmount(dieCount fxp.Int, leveledOwner LeveledOwner
 		}
 		level := leveledOwner.CurrentLevel()
 		if level < 0 {
-			return 0
+			return 0, false
 		}
-		amt = amt.Mul(level)
+		factor = factor.Mul(level)
 	}
-	return amt
+	return factor, true
 }
 
 // FillWithNameableKeys implements Feature.
@@ -201,12 +226,12 @@ func (w *WeaponBonus) SetLeveledOwner(owner LeveledOwner) {
 
 // AddToTooltip implements Bonus.
 func (w *WeaponBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
-	w.addToTooltip(w.AdjustedAmount(), buffer)
+	w.addToTooltip(w.DieCount, w.LeveledOwner, buffer)
 }
 
-// addToTooltip writes the tooltip using a pre-computed adjusted amount, so it has no dependence on the mutable
+// addToTooltip writes the tooltip using the given die count and leveled owner, so it has no dependence on the mutable
 // DieCount/LeveledOwner scratch fields.
-func (w *WeaponBonus) addToTooltip(adjustedAmount fxp.Int, buffer *xbytes.InsertBuffer) {
+func (w *WeaponBonus) addToTooltip(dieCount fxp.Int, leveledOwner LeveledOwner, buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
 		var buf strings.Builder
 		buf.WriteByte('\n')
@@ -215,8 +240,8 @@ func (w *WeaponBonus) addToTooltip(adjustedAmount fxp.Int, buffer *xbytes.Insert
 		if w.Type == feature.WeaponSwitch {
 			fmt.Fprintf(&buf, i18n.Text("%v set to %v"), w.SwitchType, w.SwitchTypeValue)
 		} else {
-			amt := w.Amount.StringWithSign()
-			adjustedAmt := adjustedAmount.StringWithSign()
+			amt := FormatWeaponDamageBonus(w.Dice, w.Amount)
+			adjustedAmt := FormatWeaponDamageBonus(w.adjusted(dieCount, leveledOwner))
 			if w.Percent {
 				amt += "%"
 				adjustedAmt += "%"
@@ -302,6 +327,7 @@ func (w *WeaponBonus) Hash(h hash.Hash) {
 	w.UsageCriteria.Hash(h)
 	w.TagsCriteria.Hash(h)
 	xhash.Num64(h, w.Amount)
+	w.Dice.Hash(h)
 	xhash.Bool(h, w.PerLevel)
 	xhash.Bool(h, w.PerDie)
 }
@@ -323,6 +349,14 @@ func (w *WeaponBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	w.WeaponBonusData = content.WeaponBonusData
 	if !w.PerDie && content.OldPerDie {
 		w.PerDie = true
+	}
+	if w.Type != feature.WeaponBonus {
+		w.Dice = BonusDice{}
+	} else if !w.Dice.IsZero() {
+		// A percentage of the damage cannot be expressed in dice, so a hand-edited bonus carrying both is not a
+		// percentage, just as entering dice in the editor turns the percentage option off. Left set, the flag would be
+		// ignored when the damage is resolved but still shown in the tooltip and the editor.
+		w.Percent = false
 	}
 	return nil
 }

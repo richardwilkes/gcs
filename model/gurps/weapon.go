@@ -836,8 +836,7 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 			replacements := w.NameableReplacements()
 			addTooltip := func() {
 				if tooltip != nil {
-					bonus.addToTooltip(bonus.adjustedAmount(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner()),
-						tooltip)
+					bonus.addToTooltip(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner(), tooltip)
 				}
 			}
 			switch bonus.SelectionType {

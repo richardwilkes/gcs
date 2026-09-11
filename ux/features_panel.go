@@ -718,20 +718,26 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 		})
 		panel.AddChild(wrapper)
 	} else {
-		field := NewDecimalField(nil, "", i18n.Text("Amount"),
-			func() fxp.Int { return wb.Amount },
-			func(value fxp.Int) {
-				wb.Amount = value
-				MarkModified(panel)
-			}, fxp.Min, fxp.Max, true, false)
-		focus = field
-		panel.AddChild(field)
+		var percentCheckBox *CheckBox
+		if wb.Type == feature.WeaponBonus {
+			focus = addWeaponDamageBonusField(panel, wb, func() { syncPercentCheckBox(percentCheckBox, wb) })
+		} else {
+			field := NewDecimalField(nil, "", i18n.Text("Amount"),
+				func() fxp.Int { return wb.Amount },
+				func(value fxp.Int) {
+					wb.Amount = value
+					MarkModified(panel)
+				}, fxp.Min, fxp.Max, true, false)
+			focus = field
+			panel.AddChild(field)
+		}
 		addCheckBox(panel, i18n.Text("per level"), &wb.PerLevel)
 		if wb.Type != feature.WeaponMinSTBonus && wb.Type != feature.WeaponEffectiveSTBonus {
 			// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on resolution.
 			addCheckBox(panel, i18n.Text("per die"), &wb.PerDie)
 		}
-		addCheckBox(panel, i18n.Text("as a %"), &wb.Percent)
+		percentCheckBox = addCheckBox(panel, i18n.Text("as a %"), &wb.Percent)
+		syncPercentCheckBox(percentCheckBox, wb)
 		addSwitchableCheckBox(panel, wb)
 	}
 	panel.SetLayout(&unison.FlexLayout{
@@ -745,6 +751,56 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 	})
 	parent.AddChild(panel)
 	return panel, focus
+}
+
+// addWeaponDamageBonusField adds the amount field of a weapon damage bonus, which accepts a dice specification as well
+// as a flat number, e.g. "+2", "-1d" or "+2d+1x3". Text in any other form is flagged and leaves the bonus unchanged.
+// changed is called after each change the field makes to the bonus.
+func addWeaponDamageBonusField(parent *unison.Panel, wb *gurps.WeaponBonus, changed func()) *StringField {
+	// A percentage of the damage can't be expressed in dice, so the "as a %" option is suspended, rather than turned
+	// off for good, while the field holds dice: it comes back when the dice go away again, whether a number is typed
+	// over them or the edit that entered them is undone, so the user never ends up with a choice they did not make.
+	var percentSuspended bool
+	field := NewStringField(nil, "", i18n.Text("Amount"),
+		func() string { return gurps.FormatWeaponDamageBonus(wb.Dice, wb.Amount) },
+		func(value string) {
+			d, amount, ok := gurps.ParseWeaponDamageBonus(value)
+			if !ok {
+				return
+			}
+			wb.Dice = d
+			wb.Amount = amount
+			switch {
+			case d.IsZero():
+				if percentSuspended {
+					wb.Percent = true
+					percentSuspended = false
+				}
+			case wb.Percent:
+				wb.Percent = false
+				percentSuspended = true
+			}
+			changed()
+			MarkModified(parent)
+		})
+	field.ValidateCallback = func() bool {
+		_, _, ok := gurps.ParseWeaponDamageBonus(field.Text())
+		return ok
+	}
+	field.SetMinimumTextWidthUsing("+99d+99.99")
+	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number or a dice specification, e.g. "+2", "-1d", "+1d+2" or "2dx3"`))
+	parent.AddChild(field)
+	return field
+}
+
+// syncPercentCheckBox keeps the "as a %" checkbox of a weapon bonus in step with its dice: a bonus that adds dice cannot
+// also be a percentage, so the checkbox is disabled while there are any.
+func syncPercentCheckBox(checkBox *CheckBox, wb *gurps.WeaponBonus) {
+	if checkBox == nil {
+		return
+	}
+	checkBox.SetEnabled(wb.Dice.IsZero())
+	checkBox.Sync()
 }
 
 func (p *featuresPanel) createSelectorOverridePanel(f *gurps.SelectorOverride) (main *unison.Panel, focus unison.Paneler) {

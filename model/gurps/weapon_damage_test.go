@@ -10,11 +10,13 @@
 package gurps_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -175,5 +177,150 @@ func TestResolvedWeaponDamageIsExplosive(t *testing.T) {
 		resolved := w.Damage.ResolveDamage(nil)
 		c.NotNil(resolved, tc.name)
 		c.Equal(tc.want, resolved.IsExplosive(), tc.name)
+	}
+}
+
+// TestWeaponDamageBonusDice verifies that a damage bonus given as dice is folded into the weapon's damage the way a
+// base damage specification is: dice add to the dice, a modifier and multiplier come along, dice with other sides are
+// averaged in, taking away every die leaves no damage, and a percentage bonus cannot carry dice.
+func TestWeaponDamageBonusDice(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		name    string
+		base    string
+		dice    string
+		percent bool
+		want    string
+	}{
+		{name: "adds a die", base: "1d", dice: "+1d", want: "2d cr"},
+		{name: "adds dice and a modifier", base: "1d", dice: "1d+2", want: "2d+2 cr"},
+		{name: "adds dice with a multiplier", base: "1d", dice: "2dx3", want: "3dx3 cr"},
+		{name: "adds dice, a modifier and a multiplier", base: "1d", dice: "2d+1x3", want: "3d+1x3 cr"},
+		{name: "takes a die away", base: "2d+1", dice: "-1d", want: "1d+1 cr"},
+		{name: "takes every die away", base: "1d", dice: "-1d", want: "cr"},
+		{name: "takes more dice away than there are", base: "1d+3", dice: "-2d", want: "cr"},
+		{name: "averages in dice with other sides", base: "1d", dice: "+1d3", want: "2d3+2 cr"},
+		{name: "ignores dice on a percentage bonus", base: "1d", dice: "+1d", percent: true, want: "1d cr"},
+	} {
+		bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+		bonus.Amount = 0
+		bonus.Percent = tc.percent
+		var ok bool
+		bonus.Dice, ok = gurps.ParseBonusDice(tc.dice)
+		c.True(ok, "%s: %q parses", tc.name, tc.dice)
+		w := newWeaponWithBonuses(false, bonus)
+		w.Damage.Base = tc.base
+		c.Equal(tc.want, w.Damage.ResolvedDamage(nil), tc.name)
+	}
+}
+
+// TestWeaponDamageBonusDiceScaled verifies that dice on a per-level or per-die damage bonus are multiplied the way a
+// flat amount is, that several dice bonuses add up, and that the tooltip reports the dice before and after scaling.
+func TestWeaponDamageBonusDiceScaled(t *testing.T) {
+	c := check.New(t)
+
+	perLevel := gurps.NewWeaponBonus(feature.WeaponBonus)
+	perLevel.Amount = 0
+	perLevel.Dice, _ = gurps.ParseBonusDice("1d+2")
+	perLevel.PerLevel = true
+	w := newWeaponWithBonuses(false, perLevel)
+	owner, ok := w.Owner.(*gurps.Trait)
+	c.True(ok)
+	owner.CanLevel = true
+	owner.Levels = fxp.Three
+	c.Equal("4d+6 cr", w.Damage.ResolvedDamage(nil), "a per-level dice bonus scales with the level")
+	tooltip := w.Damage.DamageTooltip()
+	c.True(strings.Contains(tooltip, "Gadget 3 [+3d+6 (+1d+2 per level) to damage]"),
+		"the tooltip reports the scaled and the per-level dice: %s", tooltip)
+
+	perDie := gurps.NewWeaponBonus(feature.WeaponBonus)
+	perDie.Amount = 0
+	perDie.Dice, _ = gurps.ParseBonusDice("1d")
+	perDie.PerDie = true
+	flat := gurps.NewWeaponBonus(feature.WeaponBonus)
+	flat.Amount = fxp.One
+	w = newWeaponWithBonuses(false, perDie, flat)
+	w.Damage.Base = "2d"
+	c.Equal("4d+1 cr", w.Damage.ResolvedDamage(nil),
+		"a per-die dice bonus adds a die for each base die, and a flat bonus still adds to the modifier")
+	tooltip = w.Damage.DamageTooltip()
+	c.True(strings.Contains(tooltip, "Gadget [+2d (+1d per die) to damage]"),
+		"the tooltip reports the scaled and the per-die dice: %s", tooltip)
+	c.True(strings.Contains(tooltip, "Gadget [+1 to damage]"), "the flat bonus reports as it always has: %s", tooltip)
+}
+
+// TestWeaponDamageBonusDiceAddedInBestOrder verifies that several dice bonuses are folded into the damage in the order
+// that rounds least: the dice with the base's sides first, so they add exactly, and the rest grouped by their sides and
+// summed before being averaged in, whatever order the bonuses were collected in.
+func TestWeaponDamageBonusDiceAddedInBestOrder(t *testing.T) {
+	c := check.New(t)
+	newDiceBonus := func(spec string) *gurps.WeaponBonus {
+		bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+		bonus.Amount = 0
+		var ok bool
+		bonus.Dice, ok = gurps.ParseBonusDice(spec)
+		c.True(ok, "%q parses", spec)
+		return bonus
+	}
+	for _, tc := range []struct {
+		name string
+		base string
+		dice []string
+		want string
+	}{
+		// 2d6+1d3 averages 9, which 4d3+1 is exactly; averaging the d3 in first would give 3d3+4, averaging 10.
+		{name: "matching dice first", base: "1d", dice: []string{"+1d3", "+1d"}, want: "4d3+1 cr"},
+		{name: "matching dice first, collected the other way round", base: "1d", dice: []string{"+1d", "+1d3"}, want: "4d3+1 cr"},
+		// 1d3+2d6 averages 9, which 4d3+1 is exactly; averaging the d6s in one at a time would give 4d3+2.
+		{name: "same-sided dice summed before averaging", base: "1d3", dice: []string{"+1d", "+1d"}, want: "4d3+1 cr"},
+		{name: "same-sided dice cancel before averaging", base: "1d3", dice: []string{"+1d", "-1d"}, want: "1d3 cr"},
+		{name: "matching dice taken away first", base: "2d", dice: []string{"+1d3", "-1d"}, want: "2d3+2 cr"},
+	} {
+		bonuses := make([]*gurps.WeaponBonus, 0, len(tc.dice))
+		for _, spec := range tc.dice {
+			bonuses = append(bonuses, newDiceBonus(spec))
+		}
+		w := newWeaponWithBonuses(false, bonuses...)
+		w.Damage.Base = tc.base
+		c.Equal(tc.want, w.Damage.ResolvedDamage(nil), tc.name)
+	}
+}
+
+// TestWeaponDamageBonusDicePhoenixFlame verifies that, under the Phoenix Flame D3 progression, the modifier of a
+// per-level or per-die dice bonus is halved the same way a flat per-level or per-die amount is, while its dice are
+// added in full.
+func TestWeaponDamageBonusDicePhoenixFlame(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		name     string
+		dice     string
+		amount   fxp.Int
+		perLevel bool
+		perDie   bool
+		want     string
+	}{
+		{name: "flat per-level amount is halved", amount: fxp.Two, perLevel: true, want: "2d3+3 cr"},
+		{name: "per-level dice keep their dice and halve their modifier", dice: "1d+2", perLevel: true, want: "7d3+4 cr"},
+		{name: "flat per-die amount is halved", amount: fxp.Two, perDie: true, want: "2d3+2 cr"},
+		{name: "per-die dice keep their dice and halve their modifier", dice: "1d+2", perDie: true, want: "5d3+3 cr"},
+		{name: "a plain dice bonus is untouched", dice: "1d+2", want: "3d3+4 cr"},
+	} {
+		bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+		bonus.Amount = tc.amount
+		bonus.PerLevel = tc.perLevel
+		bonus.PerDie = tc.perDie
+		if tc.dice != "" {
+			var ok bool
+			bonus.Dice, ok = gurps.ParseBonusDice(tc.dice)
+			c.True(ok, "%s: %q parses", tc.name, tc.dice)
+		}
+		w := newWeaponWithBonuses(false, bonus)
+		w.Damage.Base = "2d3"
+		owner, ok := w.Owner.(*gurps.Trait)
+		c.True(ok)
+		owner.CanLevel = true
+		owner.Levels = fxp.Three
+		w.Entity().SheetSettings.DamageProgression = progression.PhoenixFlameD3
+		c.Equal(tc.want, w.Damage.ResolvedDamage(nil), tc.name)
 	}
 }

@@ -2,6 +2,12 @@
 
 ## New & Improved
 
+- The "Gives a weapon damage modifier of" feature now accepts dice as well as a plain number, so a trait or modifier
+  can add "+1d" or "+2d+1x3" to a weapon's damage, or take "-1d" away from it. The dice combine with the weapon's own
+  damage the same way its base damage does, so a leading "-" takes away only the dice: "-1d+2" removes one die and
+  still adds 2, just as it would in the weapon's damage. The "per level" and "per die" options multiply the dice just
+  as they do a number. A percentage cannot be given in dice, so the "as a %" option is unavailable while the modifier
+  has dice in it.
 - Library lists can now be filtered with saved, reusable filters, chosen from the new Saved Filters popup in the
   list's toolbar. A filter combines conditions on the list's own fields, such as a trait's name, tags, points or
   self-control roll, or a piece of equipment's cost or weight, using "match all of" and "match any of" groups that can

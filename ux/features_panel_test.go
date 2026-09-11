@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -495,4 +496,96 @@ func TestFeaturesPanelSelectionRowBlanksNameFieldForAnyComparison(t *testing.T) 
 	namePopup.SelectionChangedCallback(namePopup)
 	c.Equal(criteria.IsText, f.NameCriteria.Compare, "picking a comparison must be stored on the feature")
 	c.True(nameCriteriaField(namePopup).Enabled(), "the name field is enabled once the comparison needs a qualifier")
+}
+
+// TestFeaturesPanelWeaponDamageBonusAcceptsDice verifies that the amount field of a weapon damage bonus takes a dice
+// specification as well as a number, keeping each in its own slot on the bonus; that the "as a %" checkbox is disabled
+// while the bonus carries dice, since a percentage cannot be expressed in dice; that text in any other form is flagged
+// and leaves the bonus alone; and that every other kind of weapon bonus keeps its numeric field.
+func TestFeaturesPanelWeaponDamageBonusAcceptsDice(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	f := gurps.NewWeaponBonus(feature.WeaponBonus)
+	f.SetOwner(trait)
+	f.SelectionType = wsel.ThisWeapon
+	features := gurps.Features{f}
+	panel := newFeaturesPanel(entity, trait, &features, false)
+	row := panel.Children()[1]
+	field, ok := firstPanelOfType[*StringField](row)
+	c.True(ok, "the damage bonus amount is a text field")
+	if !ok {
+		return
+	}
+	c.Equal("+1", field.Text(), "the field starts out showing the flat amount with its sign")
+	percent := findCheckBoxTitled(row, i18n.Text("as a %"))
+	c.NotNil(percent)
+	c.True(percent.Enabled(), "the percentage checkbox is available while the bonus has no dice")
+
+	field.SetText("2d+1x3")
+	expected, ok := gurps.ParseBonusDice("2d+1x3")
+	c.True(ok)
+	c.Equal(expected, f.Dice, "a dice specification is stored as the bonus's dice")
+	c.Equal(fxp.Int(0), f.Amount, "and clears the flat amount")
+	c.True(field.ValidateCallback(), "a dice specification is valid")
+	c.False(percent.Enabled(), "the percentage checkbox is disabled while the bonus has dice")
+
+	field.SetText("2d+1x3 cr")
+	c.Equal(expected, f.Dice, "text that is not a bonus leaves the dice alone")
+	c.False(field.ValidateCallback(), "and is flagged")
+
+	field.SetText("-0.5")
+	c.Equal(gurps.BonusDice{}, f.Dice, "a number clears the dice")
+	c.Equal(-fxp.Half, f.Amount, "and is stored as the flat amount")
+	c.True(percent.Enabled(), "the percentage checkbox is available again once the dice are gone")
+
+	acc := gurps.NewWeaponBonus(feature.WeaponAccBonus)
+	acc.SetOwner(trait)
+	features = gurps.Features{acc}
+	panel = newFeaturesPanel(entity, trait, &features, false)
+	_, ok = firstPanelOfType[*DecimalField](panel.Children()[1])
+	c.True(ok, "a weapon bonus other than the damage bonus keeps its numeric amount field")
+}
+
+// TestFeaturesPanelWeaponDamageBonusRestoresPercent verifies that the "as a %" option a weapon damage bonus had is
+// only suspended while dice are entered in its amount field, coming back once the dice go away again, which is also
+// what undoing the edit that entered them does, and that an option the user turned off themselves stays off.
+func TestFeaturesPanelWeaponDamageBonusRestoresPercent(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	f := gurps.NewWeaponBonus(feature.WeaponBonus)
+	f.SetOwner(trait)
+	f.SelectionType = wsel.ThisWeapon
+	f.Amount = fxp.Ten
+	f.Percent = true
+	features := gurps.Features{f}
+	panel := newFeaturesPanel(entity, trait, &features, false)
+	row := panel.Children()[1]
+	field, ok := firstPanelOfType[*StringField](row)
+	c.True(ok)
+	if !ok {
+		return
+	}
+	percent := findCheckBoxTitled(row, i18n.Text("as a %"))
+	c.NotNil(percent)
+	c.Equal(uncheck.On, percent.State)
+
+	field.SetText("+1d")
+	c.False(f.Percent, "entering dice turns the percentage off")
+	c.Equal(uncheck.Off, percent.State)
+	c.False(percent.Enabled())
+
+	field.SetText("+10")
+	c.True(f.Percent, "the percentage comes back once the dice are gone, as undoing the edit leaves it")
+	c.Equal(uncheck.On, percent.State)
+	c.True(percent.Enabled())
+
+	f.Percent = false // As if the user turned it off
+	percent.Sync()
+	field.SetText("+1d")
+	c.False(f.Percent)
+	field.SetText("+3")
+	c.False(f.Percent, "a percentage the user turned off is not turned back on")
+	c.Equal(uncheck.Off, percent.State)
 }

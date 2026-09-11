@@ -1085,7 +1085,7 @@ func addWeaponBonusToMap(bonus *WeaponBonus, dieCount dieCountFunc, tooltip *xby
 		return
 	}
 	if tooltip != nil {
-		bonus.addToTooltip(bonus.adjustedAmount(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner()), tooltip)
+		bonus.addToTooltip(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner(), tooltip)
 	}
 	m[bonus] = true
 }

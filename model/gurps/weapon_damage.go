@@ -10,9 +10,11 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -331,25 +333,25 @@ func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 	w.surfaceBaseDamageOverrides(tooltip)
 	adjustForPhoenixFlame := entity.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
+	var bonusDice []BonusDice // The dice contributed by the damage bonuses
 	armorDivisor := w.resolvedDamageNumeric(selector.WeaponArmorDivisor, w.ArmorDivisor, tooltip)
 	dieCount := fxp.FromInteger(base.Count) // Already resolved here, so hand it over rather than resolving it again
 	for _, bonus := range w.Owner.collectWeaponBonuses(func() fxp.Int { return dieCount }, tooltip, feature.WeaponBonus,
 		feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
-			amt := bonus.AdjustedAmountForWeapon(w.Owner)
+			d, amt := bonus.AdjustedForWeapon(w.Owner)
 			if bonus.Percent {
 				percentDamageBonus += amt
 			} else {
 				if adjustForPhoenixFlame {
-					if bonus.PerLevel {
-						amt = amt.Div(fxp.Two)
-					}
-					if bonus.PerDie {
-						amt = amt.Div(fxp.Two)
-					}
+					amt = halveForPhoenixFlame(bonus, amt)
+					d.Modifier = halveForPhoenixFlame(bonus, fxp.FromInteger(d.Modifier)).AsInteger[int]()
 				}
 				base.Modifier += amt.AsInteger[int]()
+				if !d.IsZero() {
+					bonusDice = append(bonusDice, d)
+				}
 			}
 		case feature.WeaponDRDivisorBonus:
 			amt := bonus.AdjustedAmountForWeapon(w.Owner)
@@ -368,6 +370,7 @@ func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 		}
 		base.Modifier += amt.AsInteger[int]()
 	}
+	base = addBonusDice(base, bonusDice)
 	if percentDamageBonus != 0 {
 		base = adjustDiceForPercentBonus(base, percentDamageBonus)
 	}
@@ -459,6 +462,51 @@ func multiplyDice(multiplier int, d dice.Dice) dice.Dice {
 	d.Count *= multiplier
 	d.Modifier *= multiplier
 	return d
+}
+
+// halveForPhoenixFlame halves a damage bonus amount once for each of the per-level and per-die options the bonus has
+// set, which is how those bonuses are adjusted for the Phoenix Flame D3 progression, whose base damage has twice as
+// many dice as the standard one. A dice bonus has only its modifier halved this way, so that "1d+2 per level" stays
+// in step with "+2 per level"; the dice themselves are left alone, since a die is a die whatever the progression.
+func halveForPhoenixFlame(bonus *WeaponBonus, amt fxp.Int) fxp.Int {
+	if bonus.PerLevel {
+		amt = amt.Div(fxp.Two)
+	}
+	if bonus.PerDie {
+		amt = amt.Div(fxp.Two)
+	}
+	return amt
+}
+
+// addBonusDice folds the dice contributed by the damage bonuses into the base dice. Adding dice whose sides differ
+// averages the two together, which rounds, so the dice are added in the order that averages as late and as rarely as
+// possible: those with the base's sides come first, since adding them is exact, and the rest are grouped by their
+// sides, each group summed exactly before it is averaged into the total. The order is fixed, so the result does not
+// depend on the order the bonuses were collected in. Dice that take the total below zero leave no damage at all, as
+// they do for the base damage itself.
+func addBonusDice(base dice.Dice, bonusDice []BonusDice) dice.Dice {
+	for i := range bonusDice {
+		bonusDice[i].Dice = Roller.Normalize(bonusDice[i].Dice)
+	}
+	slices.SortFunc(bonusDice, func(a, b BonusDice) int {
+		return cmp.Or(
+			cmp.Compare(boolToInt(a.Sides != base.Sides), boolToInt(b.Sides != base.Sides)),
+			compareBonusDice(a, b),
+		)
+	})
+	var sub bool
+	for i := 0; i < len(bonusDice); {
+		group := dice.Dice{Sides: bonusDice[i].Sides, Multiplier: 1}
+		var groupSub bool
+		for ; i < len(bonusDice) && bonusDice[i].Sides == group.Sides; i++ {
+			group, groupSub = addDice(group, bonusDice[i].Dice, groupSub, bonusDice[i].Sub)
+		}
+		base, sub = addDice(base, group, sub, groupSub)
+	}
+	if sub {
+		return dice.Dice{Sides: 6, Multiplier: 1}
+	}
+	return base
 }
 
 func addDice(left, right dice.Dice, leftSub, rightSub bool) (d dice.Dice, sub bool) {
