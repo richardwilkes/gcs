@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
@@ -581,8 +582,36 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	// display's clamp along, leaving the window shorter than its content asked for even though its eventual display
 	// had the room.
 	wnd.PackWithLocation(frame.Point)
+	widenToFitTooltips(wnd, panel)
 	placeWindowOver(wnd, frame)
 	return wnd, nil
+}
+
+// widenToFitTooltips widens the window, which must already be packed, so that its content is at least as wide as the
+// widest tooltip the panel or its descendants carry. A tooltip wider than the window it is shown in is squeezed into
+// that window's width, and an editor's tooltips are typically wider than the fields they explain, so a window packed
+// around the fields alone, as the ancestry and name generator editors' windows were, would show none of its longer
+// tooltips as written. The window is still clamped onto its display afterwards by placeWindowOver.
+func widenToFitTooltips(wnd *unison.Window, panel *unison.Panel) {
+	r := wnd.ContentRect()
+	if width := widestTooltipWidth(panel); r.Width < width {
+		r.Width = width
+		wnd.SetContentRect(r)
+	}
+}
+
+// widestTooltipWidth returns the preferred width of the widest tooltip the panel or any of its descendants carry, or 0
+// when none of them has one.
+func widestTooltipWidth(panel *unison.Panel) float32 {
+	var width float32
+	panel.HasInSelfOrDescendants(func(p *unison.Panel) bool {
+		if p.Tooltip != nil {
+			_, pref, _ := p.Tooltip.Sizes(geom.Size{})
+			width = max(width, pref.Width)
+		}
+		return false
+	})
+	return width
 }
 
 // DockContainerHasGroup returns true if the DockContainer contains at least one Dockable associated with the given
