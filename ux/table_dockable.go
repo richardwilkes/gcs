@@ -42,6 +42,7 @@ type TableDockable[T gurps.Node[T]] struct {
 	hierarchyButton  *unison.Button
 	noteToggleButton *unison.Button
 	filterField      *unison.Field
+	filterBanner     *filterBanner
 	savedFilters     *listFilterPopup
 	selectedFilter   *gurps.ListFilter
 	scroll           *unison.ScrollPanel
@@ -55,12 +56,13 @@ type TableDockable[T gurps.Node[T]] struct {
 func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
 	header, table := NewNodeTable(provider, nil)
 	d := &TableDockable[T]{
-		undoMgr:     unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		provider:    provider,
-		scroll:      unison.NewScrollPanel(),
-		tableHeader: header,
-		table:       table,
-		scale:       gurps.GlobalSettings().General.InitialListUIScale,
+		undoMgr:      unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
+		provider:     provider,
+		filterBanner: newFilterBanner(),
+		scroll:       unison.NewScrollPanel(),
+		tableHeader:  header,
+		table:        table,
+		scale:        gurps.GlobalSettings().General.InitialListUIScale,
 	}
 	d.Self = d
 	d.initFileEditor(d, filePath, extension, saver, d)
@@ -328,5 +330,21 @@ func (d *TableDockable[T]) applyFilter() (synced bool) {
 	filtered := d.table.IsFiltered()
 	d.hierarchyButton.SetEnabled(!filtered)
 	d.noteToggleButton.SetEnabled(!filtered)
+	d.showFilterBanner(filtered)
 	return true
+}
+
+// showFilterBanner puts the banner between the toolbar and the table, or takes it away again, and has the dockable
+// laid out afresh when that changes anything. The banner is added and removed rather than hidden, since a hidden panel
+// still takes up its space in a FlexLayout.
+func (d *TableDockable[T]) showFilterBanner(show bool) {
+	if show == (d.filterBanner.Parent() != nil) {
+		return
+	}
+	if show {
+		d.AddChildAtIndex(d.filterBanner, d.IndexOfChild(d.scroll))
+	} else {
+		d.filterBanner.RemoveFromParent()
+	}
+	d.MarkForLayoutAndRedraw()
 }
