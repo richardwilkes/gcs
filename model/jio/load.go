@@ -29,8 +29,8 @@ func InvalidFileData() string {
 }
 
 // LoadFromFile loads JSON data from the specified filesystem path. 'fileSystem' may be nil, in which case os.Open() is
-// used instead.
-func LoadFromFile(fileSystem fs.FS, path string, result any) error {
+// used instead. Any 'opts' are applied to the decode.
+func LoadFromFile(fileSystem fs.FS, path string, result any, opts ...json.Options) error {
 	var f fs.File
 	var err error
 	if fileSystem == nil {
@@ -46,7 +46,7 @@ func LoadFromFile(fileSystem fs.FS, path string, result any) error {
 	if r, err = xio.NewBOMStripper(f); err != nil {
 		return err
 	}
-	return UnmarshalRead(r, result)
+	return UnmarshalRead(r, result, opts...)
 }
 
 // LoadNew allocates a new T, loads the JSON file at path from fileSystem into it and returns it. As with LoadFromFile,
@@ -61,9 +61,10 @@ func LoadNew[T any](fileSystem fs.FS, path string) (*T, error) {
 
 // LoadVersionedFile loads the JSON file at path from fileSystem into data, reporting any failure to open or decode it
 // as InvalidFileData(), then checks that the data version it carries is one this release can load. 'version' must
-// point at the version field inside data, so that the check sees the value that was just read.
-func LoadVersionedFile(fileSystem fs.FS, path string, data any, version *int) error {
-	if err := LoadFromFile(fileSystem, path, data); err != nil {
+// point at the version field inside data, so that the check sees the value that was just read. Any 'opts' are applied
+// to the decode.
+func LoadVersionedFile(fileSystem fs.FS, path string, data any, version *int, opts ...json.Options) error {
+	if err := LoadFromFile(fileSystem, path, data, opts...); err != nil {
 		return errs.NewWithCause(InvalidFileData(), err)
 	}
 	return CheckVersion(*version)

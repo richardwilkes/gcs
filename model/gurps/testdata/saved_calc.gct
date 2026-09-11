@@ -1,0 +1,25 @@
+{
+	"version": 5,
+	"traits": [
+		{
+			"name": "Magery",
+			"levels": 3,
+			"can_level": true,
+			"calc": {
+				"points": 30,
+				"current_level": 5
+			}
+		}
+	],
+	"notes": [
+		{
+			"markdown": "ST <script>2+2</script>",
+			"calc": {
+				"resolved_text": "ST 42"
+			}
+		},
+		{
+			"markdown": "Plain note"
+		}
+	]
+}

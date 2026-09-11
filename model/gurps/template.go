@@ -49,8 +49,20 @@ type TemplateData struct {
 
 // NewTemplateFromFile loads a Template from a file.
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
+	return newTemplateFromFile(fileSystem, filePath)
+}
+
+// NewTemplateFromFileWithSavedCalc loads a Template from a file, keeping the derived values that the file's "calc"
+// objects record for its traits and notes (see Trait.StringWithSavedCalc and Note.StringWithSavedCalc), so that a
+// reader which only needs the text of the template need not run the scripts embedded in its notes. It is the
+// counterpart of NewEntityFromFileWithSavedCalc for templates.
+func NewTemplateFromFileWithSavedCalc(fileSystem fs.FS, filePath string) (*Template, error) {
+	return newTemplateFromFile(fileSystem, filePath, json.WithUnmarshalers(savedCalcMarker))
+}
+
+func newTemplateFromFile(fileSystem fs.FS, filePath string, opts ...json.Options) (*Template, error) {
 	var t Template
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &t, &t.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &t, &t.Version, opts...); err != nil {
 		return nil, err
 	}
 	return &t, nil

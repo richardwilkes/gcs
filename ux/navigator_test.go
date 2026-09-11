@@ -739,3 +739,27 @@ func TestNewFolderRejectsCollisionWithWhitespacePaddedName(t *testing.T) {
 	c.Equal(1, len(entries))
 	c.Equal("Notes", entries[0].Name())
 }
+
+// TestDeepSearchIndexesFromSavedCalc verifies that the content of a sheet, a note list, a template and a loot sheet is
+// indexed from what the file recorded rather than by deriving it: each fixture's "calc" objects hold a resolved note
+// text, and for the sheet and template a trait level, that deriving would not produce (see the fixtures' tests in the
+// gurps package), and those are what must be searchable.
+func TestDeepSearchIndexesFromSavedCalc(t *testing.T) {
+	c := check.New(t)
+	RegisterKnownFileTypes()
+	dir := filepath.Join("..", "model", "gurps", "testdata")
+	for _, ext := range []string{gurps.SheetExt, gurps.NotesExt, gurps.TemplatesExt, gurps.LootExt} {
+		content := extractContentForCache(filepath.Join(dir, "saved_calc"+ext))
+		c.Contains(content, "st 42", ext)
+		c.NotContains(content, "<script>", ext)
+		c.Contains(content, "plain note", ext)
+		if ext == gurps.SheetExt || ext == gurps.TemplatesExt {
+			c.Contains(content, "magery 5", ext)
+			c.NotContains(content, "magery 3", ext)
+		}
+	}
+	content := extractContentForCache(filepath.Join(dir, "saved_calc"+gurps.SheetExt))
+	c.Contains(content, "saved calc")
+	c.Contains(content, "combat reflexes")
+	c.Contains(content, "dormant 2")
+}

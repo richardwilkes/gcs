@@ -1,0 +1,45 @@
+{
+	"version": 5,
+	"profile": {
+		"name": "Saved Calc"
+	},
+	"traits": [
+		{
+			"name": "Magery",
+			"levels": 3,
+			"can_level": true,
+			"calc": {
+				"points": 30,
+				"current_level": 5
+			}
+		},
+		{
+			"name": "Combat Reflexes",
+			"base_points": 15,
+			"calc": {
+				"points": 15
+			}
+		},
+		{
+			"name": "Dormant",
+			"levels": 2,
+			"can_level": true,
+			"disabled": true,
+			"calc": {
+				"points": 0,
+				"current_level": 0
+			}
+		}
+	],
+	"notes": [
+		{
+			"markdown": "ST <script>2+2</script>",
+			"calc": {
+				"resolved_text": "ST 42"
+			}
+		},
+		{
+			"markdown": "Plain note"
+		}
+	]
+}

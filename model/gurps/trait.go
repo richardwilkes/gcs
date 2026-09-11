@@ -71,6 +71,9 @@ type Trait struct {
 	owner             DataOwner
 	UnsatisfiedReason string
 	resolvingLevel    bool
+	// savedCurrentLevel is the level recorded in the "calc" object of the file the trait was loaded from. It is only
+	// kept by a load that asks for it (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
+	savedCurrentLevel *fxp.Int
 }
 
 // TraitData holds the Trait data that is written to disk.
@@ -260,12 +263,17 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		Exotic       bool     `json:"exotic"`
 		Supernatural bool     `json:"supernatural"`
 		IsOpen       bool     `json:"open"`
+		// Written for third parties and normally ignored on load; see keepSavedCalc.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	open := fixupLegacyTID(&localData.TID, localData.Type, traitKind) && localData.IsOpen
 	t.TraitData = localData.TraitData
+	if keepSavedCalc(dec) {
+		t.savedCurrentLevel = savedCalc[savedTraitCalc](localData.Calc).CurrentLevel
+	}
 	t.Replacements = nameable.Normalize(t.Replacements)
 	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
 	if !t.Container() {
@@ -628,6 +636,24 @@ func (t *Trait) UserDescWithReplacements() string {
 // String implements fmt.Stringer.
 func (t *Trait) String() string {
 	return t.NameAndLevel(nil)
+}
+
+// StringWithSavedCalc returns what String returned when the trait was last saved: its name and, when it is leveled, the
+// level its file's "calc" object recorded, which includes the level bonuses that were in effect at the time. It is for
+// a trait loaded by one of the loaders that keep the saved calc (NewEntityFromFileWithSavedCalc and its counterpart for
+// templates), whose entity, if it has one, has not been recalculated and so cannot resolve those bonuses itself. A
+// trait loaded any other way, or from a file written before the level was recorded, falls back to its unadjusted
+// level. So does a disabled trait, whose recorded level is zero where String shows the level it would have if
+// enabled.
+func (t *Trait) StringWithSavedCalc() string {
+	if !t.IsLeveled() {
+		return t.NameWithReplacements()
+	}
+	level := t.Levels.Max(0)
+	if t.savedCurrentLevel != nil && t.Enabled() {
+		level = *t.savedCurrentLevel
+	}
+	return t.NameWithReplacements() + " " + level.String()
 }
 
 // NameAndLevel returns the name and level of the trait.

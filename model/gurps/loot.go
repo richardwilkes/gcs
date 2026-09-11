@@ -48,8 +48,20 @@ type LootData struct {
 
 // NewLootFromFile loads Loot from a file.
 func NewLootFromFile(fileSystem fs.FS, filePath string) (*Loot, error) {
+	return newLootFromFile(fileSystem, filePath)
+}
+
+// NewLootFromFileWithSavedCalc loads a Loot from a file, keeping the resolved text that the file's "calc" objects
+// record for its notes (see Note.StringWithSavedCalc), so that a reader which only needs the text of the loot sheet
+// need not run the scripts embedded in its notes. It is the counterpart of NewEntityFromFileWithSavedCalc for loot
+// sheets.
+func NewLootFromFileWithSavedCalc(fileSystem fs.FS, filePath string) (*Loot, error) {
+	return newLootFromFile(fileSystem, filePath, json.WithUnmarshalers(savedCalcMarker))
+}
+
+func newLootFromFile(fileSystem fs.FS, filePath string, opts ...json.Options) (*Loot, error) {
 	var l Loot
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &l, &l.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &l, &l.Version, opts...); err != nil {
 		return nil, err
 	}
 	return &l, nil

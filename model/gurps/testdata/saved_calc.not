@@ -1,0 +1,14 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"markdown": "ST <script>2+2</script>",
+			"calc": {
+				"resolved_text": "ST 42"
+			}
+		},
+		{
+			"markdown": "Plain note"
+		}
+	]
+}

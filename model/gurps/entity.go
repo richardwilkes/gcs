@@ -131,9 +131,23 @@ type Entity struct {
 
 // NewEntityFromFile loads an Entity from a file.
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
+	return newEntityFromFile(fileSystem, filePath)
+}
+
+// NewEntityFromFileWithSavedCalc loads an Entity from a file without recalculating it. The derived values that the
+// file's "calc" objects record for its traits and notes are kept instead (see Trait.StringWithSavedCalc and
+// Note.StringWithSavedCalc), so a reader that only needs the text of the sheet -- the navigator's deep search, which
+// indexes every sheet in the libraries -- is spared the cost of deriving them, which runs the scripts in the data. The
+// entity it returns has not had its items attached, its skills leveled or its features processed, and is not fit for
+// display, editing or saving.
+func NewEntityFromFileWithSavedCalc(fileSystem fs.FS, filePath string) (*Entity, error) {
+	return newEntityFromFile(fileSystem, filePath, json.WithUnmarshalers(savedCalcMarker))
+}
+
+func newEntityFromFile(fileSystem fs.FS, filePath string, opts ...json.Options) (*Entity, error) {
 	var e Entity
 	e.DiscardCaches()
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &e, &e.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &e, &e.Version, opts...); err != nil {
 		return nil, err
 	}
 	return &e, nil
@@ -249,7 +263,8 @@ func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, &data)
 }
 
-// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. The entity is recalculated once loaded, unless the unmarshal is
+// one that keeps the saved "calc" values instead (see NewEntityFromFileWithSavedCalc).
 func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content struct {
 		EntityData
@@ -288,7 +303,9 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		})
 		slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
 	}
-	e.Recalculate()
+	if !keepSavedCalc(dec) {
+		e.Recalculate()
+	}
 	return nil
 }
 

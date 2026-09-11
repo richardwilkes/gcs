@@ -42,6 +42,9 @@ const (
 type Note struct {
 	NoteData
 	owner DataOwner
+	// savedResolvedText is the resolved text recorded in the "calc" object of the file the note was loaded from. It is
+	// only kept by a load that asks for it (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
+	savedResolvedText string
 }
 
 // NoteData holds the Note data that is written to disk.
@@ -71,6 +74,13 @@ type NoteSyncData struct {
 // NewNotesFromFile loads a Note list from a file.
 func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
 	return loadRows[*Note](fileSystem, filePath)
+}
+
+// NewNotesFromFileWithSavedCalc loads a Note list from a file, keeping the resolved text that the file's "calc" objects
+// record (see StringWithSavedCalc), so that a reader which only needs the text of the notes need not run the scripts
+// embedded in them. It is the counterpart of NewEntityFromFileWithSavedCalc for note lists.
+func NewNotesFromFileWithSavedCalc(fileSystem fs.FS, filePath string) ([]*Note, error) {
+	return loadRows[*Note](fileSystem, filePath, json.WithUnmarshalers(savedCalcMarker))
 }
 
 // SaveNotes writes the Note list to the file as JSON.
@@ -179,12 +189,17 @@ func (n *Note) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		Type     string `json:"type"`
 		ExprText string `json:"text"`
 		IsOpen   bool   `json:"open"`
+		// Written for third parties and normally ignored on load; see keepSavedCalc.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	open := fixupLegacyTID(&localData.TID, localData.Type, noteKind) && localData.IsOpen
 	n.NoteData = localData.NoteData
+	if keepSavedCalc(dec) {
+		n.savedResolvedText = savedCalc[savedNoteCalc](localData.Calc).ResolvedText
+	}
 	n.Replacements = nameable.Normalize(n.Replacements)
 	migrateLegacyText(&n.MarkDown, localData.ExprText)
 	n.ClearUnusedFieldsForType()
@@ -199,6 +214,18 @@ func (n *Note) TextWithReplacements() string {
 
 func (n *Note) String() string {
 	return n.resolveText()
+}
+
+// StringWithSavedCalc returns what String returned when the note was last saved: its text with the embedded scripts
+// resolved, as its file's "calc" object recorded it. It is for a note loaded by one of the loaders that keep the saved
+// calc (NewEntityFromFileWithSavedCalc and its counterparts for note lists, templates and loot sheets), which spare
+// themselves running those scripts. A note whose file recorded nothing -- resolving changed nothing, or the file
+// predates the recording -- falls back to its text with the replacements applied.
+func (n *Note) StringWithSavedCalc() string {
+	if n.savedResolvedText != "" {
+		return n.savedResolvedText
+	}
+	return n.TextWithReplacements()
 }
 
 func (n *Note) resolveText() string {

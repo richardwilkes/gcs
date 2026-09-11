@@ -205,9 +205,9 @@ type listData[T any] struct {
 // attaches the weapons and modifiers throughout the tree, since SetDataOwner recurses into the children on its own.
 // Containers must not be skipped along the way: they carry their own weapons and modifiers, which would otherwise never
 // be attached.
-func loadRows[T Node[T]](fileSystem fs.FS, filePath string) ([]T, error) {
+func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options) ([]T, error) {
 	var data listData[T]
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version, opts...); err != nil {
 		return nil, err
 	}
 	SetDataOwnerAll(nil, data.Rows)

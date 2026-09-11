@@ -1051,9 +1051,15 @@ func prepareProfileForContentCache(profile *gurps.Profile) string {
 }
 
 func prepareForContentCache[T gurps.Node[T]](data []T) string {
+	return prepareForContentCacheWith(data, func(one T) string { return one.String() })
+}
+
+// prepareForContentCacheWith is prepareForContentCache with the text of each node taken from text rather than from its
+// String method.
+func prepareForContentCacheWith[T gurps.Node[T]](data []T, text func(T) string) string {
 	var buffer strings.Builder
 	gurps.Traverse(func(one T) bool {
-		buffer.WriteString(strings.ToLower(one.String()))
+		buffer.WriteString(strings.ToLower(text(one)))
 		buffer.WriteByte('\n')
 		return false
 	}, false, false, data...)
@@ -1120,11 +1126,16 @@ func extractContentForCache(p string) string {
 			content = prepareForContentCache(data)
 		}
 	case gurps.NotesExt:
-		if data, err := gurps.NewNotesFromFile(dir, fileName); err == nil {
-			content = prepareForContentCache(data)
+		// Notes are the one kind of item whose text is resolved by running the scripts embedded in it, so wherever they
+		// are loaded below, the resolved text the file recorded is used instead (see Note.StringWithSavedCalc).
+		if data, err := gurps.NewNotesFromFileWithSavedCalc(dir, fileName); err == nil {
+			content = prepareForContentCacheWith(data, (*gurps.Note).StringWithSavedCalc)
 		}
 	case gurps.SheetExt:
-		if data, err := gurps.NewEntityFromFile(dir, fileName); err == nil {
+		// The sheet is loaded without being recalculated, since only its text is wanted and recalculating -- which runs
+		// the scripts in the data -- costs far more than parsing it. The two strings that depend on derived values, a
+		// trait's level and a note's resolved text, come from what the file recorded instead (see the notes case).
+		if data, err := gurps.NewEntityFromFileWithSavedCalc(dir, fileName); err == nil {
 			for _, one := range data.Skills {
 				one.TechLevel = nil
 			}
@@ -1133,12 +1144,12 @@ func extractContentForCache(p string) string {
 			}
 			content = strings.Join([]string{
 				prepareProfileForContentCache(&data.Profile),
-				prepareForContentCache(data.Traits),
+				prepareForContentCacheWith(data.Traits, (*gurps.Trait).StringWithSavedCalc),
 				prepareForContentCache(data.Skills),
 				prepareForContentCache(data.Spells),
 				prepareForContentCache(data.CarriedEquipment),
 				prepareForContentCache(data.OtherEquipment),
-				prepareForContentCache(data.Notes),
+				prepareForContentCacheWith(data.Notes, (*gurps.Note).StringWithSavedCalc),
 			}, "\n")
 		}
 	case gurps.SkillsExt:
@@ -1156,7 +1167,7 @@ func extractContentForCache(p string) string {
 			content = prepareForContentCache(data)
 		}
 	case gurps.TemplatesExt:
-		if data, err := gurps.NewTemplateFromFile(dir, fileName); err == nil {
+		if data, err := gurps.NewTemplateFromFileWithSavedCalc(dir, fileName); err == nil {
 			for _, one := range data.Skills {
 				one.TechLevel = nil
 			}
@@ -1164,18 +1175,18 @@ func extractContentForCache(p string) string {
 				one.TechLevel = nil
 			}
 			content = strings.Join([]string{
-				prepareForContentCache(data.Traits),
+				prepareForContentCacheWith(data.Traits, (*gurps.Trait).StringWithSavedCalc),
 				prepareForContentCache(data.Skills),
 				prepareForContentCache(data.Spells),
 				prepareForContentCache(data.Equipment),
-				prepareForContentCache(data.Notes),
+				prepareForContentCacheWith(data.Notes, (*gurps.Note).StringWithSavedCalc),
 			}, "\n")
 		}
 	case gurps.LootExt:
-		if data, err := gurps.NewLootFromFile(dir, fileName); err == nil {
+		if data, err := gurps.NewLootFromFileWithSavedCalc(dir, fileName); err == nil {
 			content = strings.Join([]string{ //nolint:gocritic // Fine as-is
 				prepareForContentCache(data.Equipment),
-				prepareForContentCache(data.Notes),
+				prepareForContentCacheWith(data.Notes, (*gurps.Note).StringWithSavedCalc),
 			}, "\n")
 		}
 	// TODO: Re-enable Campaign files
