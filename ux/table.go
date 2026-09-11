@@ -69,7 +69,6 @@ type TableProvider[T gurps.Node[T]] interface {
 	Serialize() ([]byte, error)
 	Deserialize(data []byte) error
 	RefKey() string
-	AllTags() []string
 	// FilterKey returns the key the saved filters for this kind of list are stored under, which is the extension of
 	// its files without the leading dot, such as "adq". It is empty for a provider whose list is never shown in a list
 	// dockable, and such a list offers no saved filters.

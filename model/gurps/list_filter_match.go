@@ -9,14 +9,8 @@
 
 package gurps
 
-// MatchesListFilter returns true if the node passes the filter. A nil filter, or one without a root, passes
-// everything. Use NewListFilterMatcher instead when the same filter is applied to many nodes.
-func MatchesListFilter[T Node[T]](f *ListFilter, fields []*FilterField[T], node T) bool {
-	return NewListFilterMatcher(f, fields)(node)
-}
-
 // NewListFilterMatcher returns a function that reports whether a node passes the filter, with the fields the filter
-// refers to looked up once rather than for every node.
+// refers to looked up once rather than for every node. A nil filter, or one without a root, passes everything.
 func NewListFilterMatcher[T Node[T]](f *ListFilter, fields []*FilterField[T]) func(T) bool {
 	if f == nil || f.Root == nil {
 		return func(T) bool { return true }

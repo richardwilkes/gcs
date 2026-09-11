@@ -235,41 +235,11 @@ func (n *Node[T]) Data() T {
 	return n.data
 }
 
-// HasTag returns true if the specified tag is present on the node. An empty tag will match all nodes.
-func (n *Node[T]) HasTag(tag string) bool {
-	if tag == "" {
-		return true
-	}
-	if tagListable, ok := any(n.Data()).(tagLister); ok {
-		for _, one := range tagListable.TagList() {
-			if strings.EqualFold(tag, one) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// PartialMatchExceptTag returns true if the specified text is present in the node's displayable columns other than the
-// tags column. An empty text will match all nodes.
-func (n *Node[T]) PartialMatchExceptTag(text string) bool {
-	if text == "" {
-		return true
-	}
-	text = strings.ToLower(text)
-	for i := range n.table.Columns {
-		if n.columnContains(i, text, true) {
-			return true
-		}
-	}
-	return false
-}
-
 // Match returns true if the text is present in the node. The text must already have been lowercased by the caller.
 func (n *Node[T]) Match(text string) bool {
 	if text != "" {
 		for i := range n.table.Columns {
-			if n.columnContains(i, text, false) {
+			if n.columnContains(i, text) {
 				return true
 			}
 		}
@@ -277,16 +247,12 @@ func (n *Node[T]) Match(text string) bool {
 	return false
 }
 
-// columnContains returns true if the lowercased text is present in the given column's text, or, when exceptTags is
-// set, if it is present there and the column is not the tags column. On a page, both the exact text and the display
-// rendering are checked, so that a user can find a row by the rounded value they can see on the page as well as by the
-// exact value behind it, which is what the cell's tooltip shows. Off a page the two are the same, so the display
-// rendering is not computed a second time.
-func (n *Node[T]) columnContains(col int, text string, exceptTags bool) bool {
+// columnContains returns true if the lowercased text is present in the given column's text. On a page, both the exact
+// text and the display rendering are checked, so that a user can find a row by the rounded value they can see on the
+// page as well as by the exact value behind it, which is what the cell's tooltip shows. Off a page the two are the
+// same, so the display rendering is not computed a second time.
+func (n *Node[T]) columnContains(col int, text string) bool {
 	data := n.cellData(col, false)
-	if exceptTags && data.Type == cell.Tags {
-		return false
-	}
 	if strings.Contains(strings.ToLower(data.ForSort()), text) {
 		return true
 	}

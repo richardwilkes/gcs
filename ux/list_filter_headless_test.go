@@ -188,6 +188,22 @@ func conditionFieldPopup(t *testing.T, screen *unison.HeadlessScreen, row *uniso
 	return popup
 }
 
+// conditionComparisonPopup returns the popup that leads a condition row's criteria, which is the third of the row's
+// popups, exactly as readConditionRow finds it: the must/must not popup and the field popup come ahead of it.
+func conditionComparisonPopup(t *testing.T, screen *unison.HeadlessScreen, row *unison.Panel) *unison.PopupMenu[string] {
+	t.Helper()
+	var popup *unison.PopupMenu[string]
+	screen.Do(func() {
+		if popups := panelsOfType[*unison.PopupMenu[string]](row); len(popups) > 2 {
+			popup = popups[2]
+		}
+	})
+	if popup == nil {
+		t.Fatal("the condition row has no comparison popup")
+	}
+	return popup
+}
+
 // conditionRowShape is what a condition row holds once its field has been chosen: the criteria widgets the field's
 // kind calls for, the tooltips those widgets carry, where the criteria's comparison popup stands, and whether the
 // row's layout has been brought into line with the children it now has.
@@ -255,7 +271,7 @@ func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
 	choosePopupItem(t, screen, wnd, d.filterPopup, 2)
 	state = readListFilterState(screen, d)
 	c.Equal([]string{"Combat Reflexes"}, state.names, "only the traits the saved filter accepts may be shown")
-	c.Equal(mental, state.selected, "the saved filter must be the one in force")
+	c.True(mental == state.selected, "the saved filter itself must be the one in force")
 	c.Equal("Mental", state.popupText, "and the popup must show it")
 	c.False(state.fieldEnabled, "the quick filter's field must be unusable while a saved filter is in force")
 	c.True(state.filtered, "the saved filter must filter the table")
@@ -365,12 +381,13 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	c.Equal(1, len(saved[1].Root.Children), "the condition added in the editor must have been kept")
 
 	state := readListFilterState(screen, d)
-	c.Equal(saved[1], state.selected, "the new filter must be the one in force")
+	c.True(saved[1] == state.selected, "the new filter itself must be the one in force")
 	c.Equal("Ranged", state.popupText, "and the popup must show it")
 	c.Equal("", state.fieldText, "the quick filter's text must have been cleared, so the two cannot disagree")
 	c.False(state.fieldEnabled, "and its field must be unusable")
 	c.Equal(listFilterHeadlessTraitNames, state.names,
 		"the new filter's lone condition compares against nothing, so every trait passes it")
+	c.True(state.filtered, "the saved filter must be driving the rows even though every trait passes it")
 
 	editIndex, editTitle := popupItemIndexFromEnd(screen, d.filterPopup, 2)
 	deleteIndex, deleteTitle := popupItemIndexFromEnd(screen, d.filterPopup, 1)
@@ -396,7 +413,8 @@ func TestListFilterDeleteAsksAndFallsBackHeadless(t *testing.T) {
 	d := openListFilterTraitDockable(t, screen)
 
 	choosePopupItem(t, screen, wnd, d.filterPopup, 2)
-	c.Equal(mental, readListFilterState(screen, d).selected, "the saved filter must be in force before it is deleted")
+	c.True(mental == readListFilterState(screen, d).selected,
+		"the saved filter itself must be in force before it is deleted")
 	var itemCount int
 	screen.Do(func() { itemCount = d.filterPopup.ItemCount() })
 	deleteIndex, deleteTitle := popupItemIndexFromEnd(screen, d.filterPopup, 1)
@@ -411,7 +429,7 @@ func TestListFilterDeleteAsksAndFallsBackHeadless(t *testing.T) {
 	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
 	c.Equal(1, len(savedFilters()), "a refused deletion must remove nothing")
 	state := readListFilterState(screen, d)
-	c.Equal(mental, state.selected, "and must leave the filter in force")
+	c.True(mental == state.selected, "and must leave the filter itself in force")
 	c.Equal([]string{"Combat Reflexes"}, state.names, "so the list is still filtered by it")
 	c.False(state.fieldEnabled, "and the quick filter's field is still unusable")
 
@@ -479,6 +497,11 @@ func TestListFilterConditionRowRebuildsForFieldKindHeadless(t *testing.T) {
 	}
 	c.Equal(shape.children, shape.columns, "the row's layout must hold one column per child")
 
+	// Move the comparison off its default. A list field is compared through the same text criteria a text field is, so
+	// what the field changes below do to it shows when the name field is reached.
+	choosePopupItem(t, screen, dialogWnd, conditionComparisonPopup(t, screen, row), 1)
+	c.Equal(1, readConditionRow(screen, row).comparison, "the comparison must be the one just chosen")
+
 	// A yes/no field needs no criteria at all: the must/must not popup ahead of the field says all there is to say.
 	choosePopupItem(t, screen, dialogWnd, fieldPopup, traitFilterFieldIndex(t, containerFieldTitle))
 	shape = readConditionRow(screen, row)
@@ -494,6 +517,11 @@ func TestListFilterConditionRowRebuildsForFieldKindHeadless(t *testing.T) {
 	c.Equal(1, shape.decimals, "a number field is compared against a number")
 	c.Equal(0, shape.strings, "and against no text")
 	c.Equal(shape.children, shape.columns, "the row's layout must hold one column per child")
+
+	// Move this field's comparison off its default as well, so that the criteria the field change resets is not the
+	// text one alone.
+	choosePopupItem(t, screen, dialogWnd, conditionComparisonPopup(t, screen, row), 1)
+	c.Equal(1, readConditionRow(screen, row).comparison, "the comparison must be the one just chosen")
 
 	// A text field is compared against text, with the criteria reset rather than carried over from the field before.
 	choosePopupItem(t, screen, dialogWnd, fieldPopup, traitFilterFieldIndex(t, nameFieldTitle))
@@ -528,9 +556,9 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	choosePopupItem(t, screen, wnd, second.filterPopup, 2)
 	choosePopupItemDirectly(screen, first, 2)
 	state := readListFilterState(screen, second)
-	c.Equal(mental, state.selected, "the saved filter must be in force in the list in front")
+	c.True(mental == state.selected, "the saved filter itself must be in force in the list in front")
 	c.Equal([]string{"Combat Reflexes"}, state.names, "and filtering it")
-	c.Equal(mental, readListFilterState(screen, first).selected, "and in force in the list behind")
+	c.True(mental == readListFilterState(screen, first).selected, "and in force in the list behind")
 
 	// Rename the filter through the list behind. The one in front keeps it in force, under the new name.
 	swapForTest(t, &showFilterEditor,
@@ -541,7 +569,7 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	editIndex, _ := popupItemIndexFromEnd(screen, first.filterPopup, 2)
 	choosePopupItemDirectly(screen, first, editIndex)
 	state = readListFilterState(screen, second)
-	c.Equal(mental, state.selected, "the renamed filter must still be in force in the list in front")
+	c.True(mental == state.selected, "the renamed filter itself must still be in force in the list in front")
 	c.Equal("Mind", state.popupText, "under its new name")
 	c.Equal([]string{"Combat Reflexes"}, state.names, "and still filtering it")
 
@@ -562,7 +590,7 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 		editFilterItemTitle, deleteFilterItemTitle,
 	}, titles, "the popup in front must list the new filter")
 	state = readListFilterState(screen, second)
-	c.Equal(mental, state.selected, "the list in front must keep the filter it had in force")
+	c.True(mental == state.selected, "the list in front must keep the very filter it had in force")
 	c.Equal("Mind", state.popupText, "and show it")
 	widthAfterAdd := popupWidth(screen, second)
 	c.True(widthAfterAdd > widthBefore, "the popup in front must have been laid out again to fit the new item")

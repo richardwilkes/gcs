@@ -10,20 +10,11 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
-
-// tagLister is implemented by the node types that carry tags.
-type tagLister interface {
-	TagList() []string
-}
 
 // listProvider is the part of a TableProvider that is the same for every kind of node: everything that only delegates
 // to the list the rows come from, the owner of that list, and the header data for its columns, along with opening the
@@ -80,21 +71,6 @@ func (p *listProvider[T]) FilterFields() []*gurps.FilterField[T] {
 		return nil
 	}
 	return p.filterFields()
-}
-
-// AllTags returns every tag found on the nodes in the list, at any depth, in natural order. Node types without tags
-// yield nil.
-func (p *listProvider[T]) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(node T) bool {
-		if tagged, ok := any(node).(tagLister); ok {
-			for _, tag := range tagged.TagList() {
-				set[tag] = struct{}{}
-			}
-		}
-		return false
-	}, false, false, p.list()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
 }
 
 func (p *listProvider[T]) SetTable(table *unison.Table[*Node[T]]) {

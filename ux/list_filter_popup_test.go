@@ -11,6 +11,7 @@ package ux
 
 import (
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -129,7 +130,7 @@ func TestListFilterPopupItems(t *testing.T) {
 			saved := savedFilters()
 			for i := range p.filters {
 				if i > listFilterQuickIndex && i-2 >= 0 && i-2 < len(saved) {
-					c.Equal(saved[i-2], p.filters[i], "the item at %d must stand for the saved filter at %d", i, i-2)
+					c.True(saved[i-2] == p.filters[i], "the item at %d must stand for the saved filter at %d", i, i-2)
 				} else {
 					c.Nil(p.filters[i], "the item at %d stands for no filter", i)
 				}
@@ -160,7 +161,7 @@ func TestListFilterPopupChooseFilter(t *testing.T) {
 	c.Equal(3, p.popup.SelectedIndex(), "the chosen filter must become the selection")
 	chosen, ok := h.lastChosen()
 	c.True(ok, "choosing a filter must put one in force")
-	c.Equal(savedFilters()[1], chosen, "the filter put in force must be the one that was picked")
+	c.True(savedFilters()[1] == chosen, "the filter put in force must be the one that was picked")
 	c.True(p.popup.ItemEnabledAt(p.editIndex), "Edit Filter… must be available with a filter in force")
 	c.True(p.popup.ItemEnabledAt(p.deleteIndex), "Delete Filter… must be available with a filter in force")
 
@@ -189,7 +190,7 @@ func TestListFilterPopupNewFilter(t *testing.T) {
 	c.Equal("Zeta", saved[1].Name, "the name the editor set must have been kept")
 	chosen, ok := h.lastChosen()
 	c.True(ok, "a new filter must be put in force")
-	c.Equal(saved[1], chosen, "the filter put in force must be the new one")
+	c.True(saved[1] == chosen, "the filter put in force must be the new one")
 	c.Equal(3, h.popup.popup.SelectedIndex(), "the new filter's item, not the command, must be the selection")
 
 	swapForTest(t, &showFilterEditor,
@@ -197,7 +198,7 @@ func TestListFilterPopupNewFilter(t *testing.T) {
 	h.choose(h.popup.newIndex)
 	c.Equal(2, len(savedFilters()), "a canceled editor must save nothing")
 	chosen, _ = h.lastChosen()
-	c.Equal(saved[1], chosen, "a canceled editor must leave the filter in force alone")
+	c.True(saved[1] == chosen, "a canceled editor must leave the filter in force alone")
 }
 
 // TestListFilterPopupEditFilter verifies that accepting the editor copies the clone that was edited into the saved
@@ -210,8 +211,8 @@ func TestListFilterPopupEditFilter(t *testing.T) {
 	h.choose(2) // "alpha"
 	swapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, except *gurps.ListFilter) bool {
-			c.Equal(original, except, "the filter being edited may keep its own name")
-			c.NotEqual(original, filter, "a clone must be edited, so that a cancel changes nothing")
+			c.True(original == except, "the filter being edited may keep its own name")
+			c.True(original != filter, "a clone must be edited, so that a cancel changes nothing")
 			filter.Root.Children = append(filter.Root.Children, gurps.NewFilterCondition(filter.Root, "name"))
 			return true
 		})
@@ -219,13 +220,17 @@ func TestListFilterPopupEditFilter(t *testing.T) {
 
 	saved := savedFilters()
 	c.Equal(1, len(saved), "editing a filter must not add one")
-	c.Equal(original, saved[0], "the saved filter must keep its identity, since other dockables may hold it")
+	c.True(original == saved[0], "the saved filter must keep its identity, since other dockables may hold it")
 	c.Equal("alpha", saved[0].Name, "the name must be unchanged")
 	c.Equal(1, len(saved[0].Root.Children), "the edit must have been copied into it")
-	c.Equal(original.Root, original.Root.Children[0].ParentGroup(), "the copied tree must hang off the saved filter")
+	condition, isCondition := saved[0].Root.Children[0].(*gurps.FilterCondition)
+	c.True(isCondition, "the copied node must be the condition the editor added")
+	if isCondition {
+		c.Equal("name", condition.Field, "the condition the editor added must be the one the saved filter now holds")
+	}
 	chosen, ok := h.lastChosen()
 	c.True(ok, "an edited filter must be put in force again, since its contents changed")
-	c.Equal(original, chosen, "the saved filter must be the one in force")
+	c.True(original == chosen, "the saved filter must be the one in force")
 	c.Equal(2, h.popup.popup.SelectedIndex(), "its item must be the selection")
 
 	// Renaming moves the filter among its siblings, so the list has to be sorted again.
@@ -267,7 +272,7 @@ func TestListFilterPopupDeleteFilter(t *testing.T) {
 	h.choose(h.popup.deleteIndex)
 	c.Equal(2, len(savedFilters()), "a refused deletion must remove nothing")
 	chosen, _ := h.lastChosen()
-	c.Equal(original, chosen, "a refused deletion must leave the filter in force alone")
+	c.True(original == chosen, "a refused deletion must leave the filter in force alone")
 	c.Equal(2, h.popup.popup.SelectedIndex(), "a refused deletion must leave the selection alone")
 
 	confirm = true
@@ -279,6 +284,33 @@ func TestListFilterPopupDeleteFilter(t *testing.T) {
 	c.Nil(chosen, "the list must go back to the quick filter")
 	c.Equal(listFilterQuickIndex, h.popup.popup.SelectedIndex(), "the quick filter must become the selection")
 	c.False(h.popup.popup.ItemEnabledAt(h.popup.editIndex), "Edit Filter… must be off again")
+}
+
+// TestListFilterPopupCommandsNeedAFilterInForce verifies that Edit and Delete do nothing at all while the quick filter
+// has the list. They are turned off in that state, but the popup is driven by callbacks that a command could still
+// reach, so neither may put up its dialog or touch the saved filters.
+func TestListFilterPopupCommandsNeedAFilterInForce(t *testing.T) {
+	c := check.New(t)
+	h := newListFilterPopupHarness(t, "alpha")
+	swapForTest(t, &showFilterEditor,
+		func(_, _ string, _ *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
+			c.Fatal("the editor must not be put up with no filter in force")
+			return false
+		})
+	swapForTest(t, &confirmFilterDeletion, func(_ string) bool {
+		c.Fatal("a deletion must not be confirmed with no filter in force")
+		return false
+	})
+
+	h.choose(h.popup.editIndex)
+	h.choose(h.popup.deleteIndex)
+
+	c.Equal([]string{"alpha"}, listFilterNames(savedFilters()), "the saved filters must have been left alone")
+	_, chosen := h.lastChosen()
+	c.False(chosen, "neither command may put a filter in force")
+	c.Equal(listFilterQuickIndex, h.popup.popup.SelectedIndex(), "the quick filter must stay selected")
+	c.False(h.popup.popup.ItemEnabledAt(h.popup.editIndex), "Edit Filter… must still be off")
+	c.False(h.popup.popup.ItemEnabledAt(h.popup.deleteIndex), "Delete Filter… must still be off")
 }
 
 // TestListFilterPopupRebuildAfterExternalRemoval verifies that a rebuild reports the loss of a filter that was deleted
@@ -295,7 +327,34 @@ func TestListFilterPopupRebuildAfterExternalRemoval(t *testing.T) {
 	c.True(h.popup.rebuildItems(), "the filter in force is gone, so the rebuild must report it")
 	c.Equal(listFilterQuickIndex, h.popup.popup.SelectedIndex(), "the selection must fall back to the quick filter")
 	chosen, _ := h.lastChosen()
-	c.Equal(original, chosen, "the rebuild itself must not put a filter in force; the caller does that")
+	c.True(original == chosen, "the rebuild itself must not put a filter in force; the caller does that")
+}
+
+// TestListFilterPopupShowUpdatesItems verifies that opening the popup brings its items up to date, and that it hands
+// the list back to the quick filter when the filter that was in force has vanished behind its back, which is what
+// happens when another dockable showing the same list type deleted it.
+func TestListFilterPopupShowUpdatesItems(t *testing.T) {
+	c := check.New(t)
+	h := newListFilterPopupHarness(t, "alpha", "Beta")
+	original := savedFilters()[0]
+	h.choose(2) // "alpha"
+	count := len(h.chosen)
+
+	h.popup.popup.WillShowMenuCallback(h.popup.popup)
+	c.Equal(count, len(h.chosen), "the filter in force is still there, so showing the popup must put nothing in force")
+	c.Equal(2, h.popup.popup.SelectedIndex(), "the filter in force must stay selected")
+	c.True(h.popup.popup.ItemEnabledAt(h.popup.editIndex), "Edit Filter… must still be available")
+
+	gurps.GlobalSettings().RemoveListFilter(listFilterPopupTestKey, original)
+	h.popup.popup.WillShowMenuCallback(h.popup.popup)
+	c.Equal(count+1, len(h.chosen), "the loss of the filter in force must be reported")
+	chosen, _ := h.lastChosen()
+	c.Nil(chosen, "the list must fall back to the quick filter")
+	c.Equal(listFilterQuickIndex, h.popup.popup.SelectedIndex(), "the quick filter must become the selection")
+	c.False(h.popup.popup.ItemEnabledAt(h.popup.editIndex), "Edit Filter… must be off with no filter in force")
+	c.False(h.popup.popup.ItemEnabledAt(h.popup.deleteIndex), "Delete Filter… must be off with no filter in force")
+	c.False(slices.Contains(popupItemTitles(h.popup.popup), "alpha"),
+		"the filter that vanished must be gone from the items")
 }
 
 // TestListFilterPopupFilterNamedQuickFilter verifies that a saved filter that happens to bear the same name as the
@@ -312,7 +371,7 @@ func TestListFilterPopupFilterNamedQuickFilter(t *testing.T) {
 	h.choose(2)
 	chosen, ok := h.lastChosen()
 	c.True(ok, "the saved filter must be put in force")
-	c.Equal(savedFilters()[0], chosen, "the saved filter, not the quick filter, must be in force")
+	c.True(savedFilters()[0] == chosen, "the saved filter, not the quick filter, must be in force")
 	c.False(h.popup.rebuildItems(), "the saved filter is still there")
 	c.Equal(2, h.popup.popup.SelectedIndex(), "the saved filter's own item must stay selected")
 }

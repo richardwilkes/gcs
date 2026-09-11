@@ -67,7 +67,6 @@ func (p *fakeAltDropProvider) FilterKey() string                             { r
 
 func (p *fakeAltDropProvider) FilterFields() []*gurps.FilterField[*gurps.Trait] { return nil }
 
-func (p *fakeAltDropProvider) AllTags() []string { return nil }
 func (p *fakeAltDropProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Trait]] {
 	return nil
 }

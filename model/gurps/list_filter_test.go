@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"regexp"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -48,6 +49,22 @@ func newWeightFilterCondition(field string, compare criteria.NumericComparison, 
 	return cond
 }
 
+// matchesListFilter reports whether the node passes the filter, building a matcher for just that node. The tests
+// apply each filter to one node, so the matcher's once-per-filter field lookup buys them nothing.
+func matchesListFilter[T gurps.Node[T]](f *gurps.ListFilter, fields []*gurps.FilterField[T], node T) bool {
+	return gurps.NewListFilterMatcher(f, fields)(node)
+}
+
+// findFilterField returns the field with the given key, or nil if there is none.
+func findFilterField[T gurps.Node[T]](fields []*gurps.FilterField[T], key string) *gurps.FilterField[T] {
+	for _, field := range fields {
+		if field.Key == key {
+			return field
+		}
+	}
+	return nil
+}
+
 // newTestListFilter creates a filter whose root group requires all of the given nodes to match.
 func newTestListFilter(nodes ...gurps.FilterNode) *gurps.ListFilter {
 	f := gurps.NewListFilter("Test")
@@ -73,12 +90,12 @@ func checkFilterParents(c check.Checker, group *gurps.FilterGroup, path string) 
 }
 
 // TestListFilterJSONRoundTrip verifies that a filter holding every kind of node survives a save and load unchanged,
-// both in what it writes and in the parent links that the JSON doesn't carry and the load has to restore.
+// both in what it writes and in the parent links that the JSON doesn't carry and the load has to restore, and that a
+// padded name is trimmed on the way in.
 func TestListFilterJSONRoundTrip(t *testing.T) {
 	c := check.New(t)
 
-	// The name is deliberately padded, since loading trims it.
-	f := gurps.NewListFilter("  Round Trip  ")
+	f := gurps.NewListFilter("Round Trip")
 	textCond := newTextFilterCondition("name", criteria.ContainsText, "Alert")
 	listCond := newTextFilterCondition("tags", criteria.IsText, "Mental, Physical")
 	numberCond := newNumberFilterCondition("points", criteria.AtLeastNumber, fxp.FromInteger(5))
@@ -98,7 +115,7 @@ func TestListFilterJSONRoundTrip(t *testing.T) {
 
 	var restored gurps.ListFilter
 	c.NoError(jio.Unmarshal(data, &restored), "a filter should unmarshal")
-	c.Equal("Round Trip", restored.Name, "the name should survive the round trip, trimmed")
+	c.Equal("Round Trip", restored.Name, "the name should survive the round trip")
 	c.True(restored.Root.All, "the root group's combining mode should survive the round trip")
 	c.Equal(6, len(restored.Root.Children), "every child should survive the round trip")
 
@@ -145,6 +162,12 @@ func TestListFilterJSONRoundTrip(t *testing.T) {
 	c.Contains(whole, `"text":{"compare":"contains","qualifier":"Alert"}`, "a text criteria is written")
 	c.Contains(whole, `"number":{"compare":"at_least"`, "a number criteria is written")
 	c.Contains(whole, `"weight":{"compare":"at_most"`, "a weight criteria is written")
+
+	// A name padded with whitespace on disk, which NewListFilter would already have trimmed, is trimmed as it loads.
+	var padded gurps.ListFilter
+	c.NoError(jio.Unmarshal([]byte(`{"name": "  Padded  ", "root": {"type": "group", "all": true}}`), &padded),
+		"a filter with a padded name should unmarshal")
+	c.Equal("Padded", padded.Name, "loading trims the name")
 }
 
 // TestListFilterUnknownNodePreserved verifies that a filter node whose type this build doesn't recognize loads as an
@@ -155,9 +178,11 @@ func TestListFilterUnknownNodePreserved(t *testing.T) {
 
 	const knownChild = `{"type": "condition", "field": "name", "text": {"compare": "is", "qualifier": "Alertness"}}`
 	const unknownChild = `{"type": "future_node", "weird": [1, 2]}`
-	withUnknown := `{"name": "Filter", "root": {"type": "group", "all": true, "children": [` +
-		knownChild + `, ` + unknownChild + `]}}`
-	withoutUnknown := `{"name": "Filter", "root": {"type": "group", "all": true, "children": [` + knownChild + `]}}`
+	filterWith := func(children ...string) string {
+		return `{"name": "Filter", "root": {"type": "group", "all": true, "children": [` +
+			strings.Join(children, `, `) + `]}}`
+	}
+	withUnknown := filterWith(knownChild, unknownChild)
 
 	var f gurps.ListFilter
 	c.NoError(jio.Unmarshal([]byte(withUnknown), &f), "an unknown node type must not prevent loading")
@@ -179,9 +204,19 @@ func TestListFilterUnknownNodePreserved(t *testing.T) {
 	c.Equal(compactJSON(c, unknownChild), jsonArrayElement(c, string(out), 1),
 		"saving must reproduce the unknown node exactly")
 
-	var without gurps.ListFilter
-	c.NoError(jio.Unmarshal([]byte(withoutUnknown), &without), "the comparison filter should load")
-	c.NotEqual(gurps.Hash64(&without), gurps.Hash64(&f), "an unknown node must contribute to the filter's hash")
+	// The hash has to see inside the unknown node, so the comparison filters differ from f only in the unknown node's
+	// data, or only in its kind; a filter with one child fewer would hash differently on the count alone.
+	var otherData gurps.ListFilter
+	c.NoError(jio.Unmarshal([]byte(filterWith(knownChild, `{"type": "future_node", "weird": [1, 3]}`)), &otherData),
+		"the filter with other data in its unknown node should load")
+	c.NotEqual(gurps.Hash64(&otherData), gurps.Hash64(&f), "an unknown node's data must contribute to the filter's hash")
+	var otherKind gurps.ListFilter
+	c.NoError(jio.Unmarshal([]byte(filterWith(knownChild, `{"type": "other_future_node", "weird": [1, 2]}`)),
+		&otherKind), "the filter with another kind of unknown node should load")
+	c.NotEqual(gurps.Hash64(&otherKind), gurps.Hash64(&f), "an unknown node's kind must contribute to the filter's hash")
+	var same gurps.ListFilter
+	c.NoError(jio.Unmarshal([]byte(withUnknown), &same), "the filter should load a second time")
+	c.Equal(gurps.Hash64(&same), gurps.Hash64(&f), "the same unknown node hashes the same")
 
 	// A clone must carry the data along, since editors work on clones.
 	clone := f.Clone()
@@ -206,9 +241,21 @@ func TestEveryFilterNodeTypeDecodesToItsConcreteType(t *testing.T) {
 			if len(nodes) != 1 {
 				return
 			}
-			_, isUnknown := nodes[0].(*gurps.UnknownFilterNode)
-			c.Equal(one == filternode.Unknown, isUnknown, "unknown wrapper used")
-			c.Equal(one, nodes[0].NodeType(), "the node type round-trips")
+			// NodeType is a constant on each concrete type, so the decoded type is read from the struct itself.
+			switch node := nodes[0].(type) {
+			case *gurps.FilterGroup:
+				c.Equal(filternode.Group, one, "only a group decodes to a group")
+				c.Equal(one, node.Type, "the decoded type is kept on the group")
+			case *gurps.FilterCondition:
+				c.Equal(filternode.Condition, one, "only a condition decodes to a condition")
+				c.Equal(one, node.Type, "the decoded type is kept on the condition")
+			case *gurps.UnknownFilterNode:
+				c.Equal(filternode.Unknown, one, "only the reserved type decodes to the unknown wrapper")
+				c.Equal(one.Key(), node.Kind, "the unknown wrapper keeps the type it found")
+			default:
+				c.Errorf("unexpected node type %T", node)
+			}
+			c.Equal(one, nodes[0].NodeType(), "the node reports the type it was decoded as")
 		})
 	}
 }
@@ -297,7 +344,7 @@ func TestListFilterMatchesByKind(t *testing.T) {
 		{"bool, true", container, gurps.NewFilterCondition(nil, "container"), true},
 		{"bool, false", trait, gurps.NewFilterCondition(nil, "container"), false},
 	} {
-		c.Equal(one.want, gurps.MatchesListFilter(newTestListFilter(one.cond), gurps.TraitFilterFields(), one.trait),
+		c.Equal(one.want, matchesListFilter(newTestListFilter(one.cond), gurps.TraitFilterFields(), one.trait),
 			"%s", one.name)
 	}
 
@@ -322,7 +369,7 @@ func TestListFilterMatchesByKind(t *testing.T) {
 		{"weight anything", gurps.NewFilterCondition(nil, "weight"), true},
 	} {
 		c.Equal(one.want,
-			gurps.MatchesListFilter(newTestListFilter(one.cond), gurps.EquipmentFilterFields(), equipment),
+			matchesListFilter(newTestListFilter(one.cond), gurps.EquipmentFilterFields(), equipment),
 			"%s", one.name)
 	}
 }
@@ -337,9 +384,9 @@ func TestListFilterEmptyGroupMatchesEverything(t *testing.T) {
 	for _, all := range []bool{true, false} {
 		f := gurps.NewListFilter("Empty")
 		f.Root.All = all
-		c.True(gurps.MatchesListFilter(f, fields, trait), "an empty group with all=%v matches everything", all)
+		c.True(matchesListFilter(f, fields, trait), "an empty group with all=%v matches everything", all)
 		f.Root.Not = true
-		c.False(gurps.MatchesListFilter(f, fields, trait), "a negated empty group with all=%v matches nothing", all)
+		c.False(matchesListFilter(f, fields, trait), "a negated empty group with all=%v matches nothing", all)
 	}
 }
 
@@ -355,21 +402,21 @@ func TestListFilterNegation(t *testing.T) {
 	// On a condition.
 	matching := newTextFilterCondition("name", criteria.IsText, "Alertness")
 	matching.Not = true
-	c.False(gurps.MatchesListFilter(newTestListFilter(matching), fields, trait),
+	c.False(matchesListFilter(newTestListFilter(matching), fields, trait),
 		"negating a condition that matches rejects the node")
 	notMatching := newTextFilterCondition("name", criteria.IsText, "Acute Vision")
 	notMatching.Not = true
-	c.True(gurps.MatchesListFilter(newTestListFilter(notMatching), fields, trait),
+	c.True(matchesListFilter(newTestListFilter(notMatching), fields, trait),
 		"negating a condition that doesn't match accepts the node")
 
 	// On a group.
 	sub := gurps.NewFilterGroup(nil)
 	sub.Not = true
 	sub.Children = gurps.FilterNodes{newTextFilterCondition("name", criteria.IsText, "Alertness")}
-	c.False(gurps.MatchesListFilter(newTestListFilter(sub), fields, trait),
+	c.False(matchesListFilter(newTestListFilter(sub), fields, trait),
 		"negating a group whose children match rejects the node")
 	sub.Children = gurps.FilterNodes{newTextFilterCondition("name", criteria.IsText, "Acute Vision")}
-	c.True(gurps.MatchesListFilter(newTestListFilter(sub), fields, trait),
+	c.True(matchesListFilter(newTestListFilter(sub), fields, trait),
 		"negating a group whose children don't match accepts the node")
 
 	// A negated "is not" is just an "is".
@@ -378,24 +425,24 @@ func TestListFilterNegation(t *testing.T) {
 	plainIs := newTestListFilter(newTextFilterCondition("name", criteria.IsText, "Alertness"))
 	for _, name := range []string{"Alertness", "Acute Vision"} {
 		trait.Name = name
-		c.Equal(gurps.MatchesListFilter(plainIs, fields, trait),
-			gurps.MatchesListFilter(newTestListFilter(negatedIsNot), fields, trait),
+		c.Equal(matchesListFilter(plainIs, fields, trait),
+			matchesListFilter(newTestListFilter(negatedIsNot), fields, trait),
 			`a negated "is not" behaves as a plain "is" for %q`, name)
 	}
 	trait.Name = "Alertness"
 
 	// And on a list condition, where the criteria's own negation has list semantics of its own.
 	absent := newTextFilterCondition("tags", criteria.DoesNotContainText, "Social")
-	c.True(gurps.MatchesListFilter(newTestListFilter(absent), fields, trait),
+	c.True(matchesListFilter(newTestListFilter(absent), fields, trait),
 		`"does not contain" passes when no tag contains the qualifier`)
 	absent.Not = true
-	c.False(gurps.MatchesListFilter(newTestListFilter(absent), fields, trait),
+	c.False(matchesListFilter(newTestListFilter(absent), fields, trait),
 		`negating a passing "does not contain" rejects the node`)
 	present := newTextFilterCondition("tags", criteria.DoesNotContainText, "ment")
-	c.False(gurps.MatchesListFilter(newTestListFilter(present), fields, trait),
+	c.False(matchesListFilter(newTestListFilter(present), fields, trait),
 		`"does not contain" fails when a tag contains the qualifier`)
 	present.Not = true
-	c.True(gurps.MatchesListFilter(newTestListFilter(present), fields, trait),
+	c.True(matchesListFilter(newTestListFilter(present), fields, trait),
 		`negating a failing "does not contain" accepts the node`)
 }
 
@@ -409,16 +456,16 @@ func TestListFilterUnknownFieldNeverMatches(t *testing.T) {
 	fields := gurps.TraitFilterFields()
 
 	cond := newTextFilterCondition("field_from_a_newer_gcs", criteria.IsText, "Alertness")
-	c.False(gurps.MatchesListFilter(newTestListFilter(cond), fields, trait),
+	c.False(matchesListFilter(newTestListFilter(cond), fields, trait),
 		"a condition on an unknown field never matches")
 	cond.Not = true
-	c.False(gurps.MatchesListFilter(newTestListFilter(cond), fields, trait),
+	c.False(matchesListFilter(newTestListFilter(cond), fields, trait),
 		"negating a condition on an unknown field still never matches")
 
 	anything := gurps.NewFilterCondition(nil, "field_from_a_newer_gcs")
-	c.False(gurps.MatchesListFilter(newTestListFilter(anything), fields, trait),
+	c.False(matchesListFilter(newTestListFilter(anything), fields, trait),
 		"a condition on an unknown field never matches, even when its criteria accept anything")
-	c.Nil(gurps.FindFilterField(fields, "field_from_a_newer_gcs"), "the field really is unknown")
+	c.Nil(findFilterField(fields, "field_from_a_newer_gcs"), "the field really is unknown")
 }
 
 // TestListFilterUnknownNodeNeverMatches verifies that a node type this build doesn't understand never passes, so that
@@ -486,7 +533,7 @@ func TestListFilterUnknownNodeNeverMatches(t *testing.T) {
 		f.Root.Not = one.not
 		f.Root.Children = one.children
 		f.EnsureValidity()
-		c.Equal(one.want, gurps.MatchesListFilter(f, fields, trait), "%s", one.name)
+		c.Equal(one.want, matchesListFilter(f, fields, trait), "%s", one.name)
 	}
 }
 
@@ -520,9 +567,6 @@ func checkFilterFields[T gurps.Node[T]](c check.Checker, name string, fields []*
 		c.Equal(1, count, "%s: field %q should have exactly one accessor", name, field.Key)
 		c.True(present[field.Kind], "%s: field %q should have the accessor its kind names", name, field.Key)
 
-		c.True(gurps.FindFilterField(fields, field.Key) == field, "%s: field %q should be findable by key", name,
-			field.Key)
-
 		for i, sample := range samples {
 			c.NotPanics(func() {
 				switch field.Kind {
@@ -540,7 +584,6 @@ func checkFilterFields[T gurps.Node[T]](c check.Checker, name string, fields []*
 			}, "%s: field %q should evaluate against sample %d", name, field.Key, i)
 		}
 	}
-	c.Nil(gurps.FindFilterField(fields, "no_such_field"), "%s: an absent key should not be found", name)
 }
 
 // TestFilterFieldTablesAreWellFormed verifies that every list type's filter field table can be stored, shown and
@@ -679,55 +722,50 @@ func TestSettingsListFilterHelpers(t *testing.T) {
 	c.Nil(s.ListFiltersFor(key), "an unknown key has no filters")
 	c.Nil(s.ListFilters, "asking about an unknown key does not create the map")
 
-	// Filters are ordered by name, ignoring case, and numbers within a name compare as numbers.
-	for _, name := range []string{"b", "A", "c"} {
+	// Filters are ordered by name, ignoring case, and numbers within a name compare as numbers. The names are chosen
+	// so that a byte-wise sort, which puts every upper-case letter ahead of every lower-case one, would order them
+	// differently.
+	for _, name := range []string{"b", "A", "C"} {
 		s.AddListFilter(key, gurps.NewListFilter(name))
 	}
-	c.Equal([]string{"A", "b", "c"}, listFilterNames(s.ListFiltersFor(key)),
+	c.Equal([]string{"A", "b", "C"}, listFilterNames(s.ListFiltersFor(key)),
 		"saved filters are sorted without regard to case")
 	s.AddListFilter(key, gurps.NewListFilter("item10"))
 	s.AddListFilter(key, gurps.NewListFilter("item9"))
-	c.Equal([]string{"A", "b", "c", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
+	c.Equal([]string{"A", "b", "C", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
 		"saved filters are sorted naturally, so item9 precedes item10")
 
 	// The returned slice is a copy, so a caller can't reorder or shorten what is stored.
 	list := s.ListFiltersFor(key)
 	list = append(list, gurps.NewListFilter("intruder"))
 	list[0] = nil
-	c.Equal([]string{"A", "b", "c", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
+	c.Equal([]string{"A", "b", "C", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
 		"the returned slice is a copy of the stored one")
-
-	// Replacement is by pointer identity, and adds when the filter to replace isn't there.
-	old := s.ListFiltersFor(key)[0]
-	replacement := gurps.NewListFilter("A2")
-	s.ReplaceListFilter(key, old, replacement)
-	c.Equal([]string{"A2", "b", "c", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
-		"replacing swaps the filter in place")
-	c.Equal(-1, slices.Index(s.ListFiltersFor(key), old), "the replaced filter is gone")
-	s.ReplaceListFilter(key, gurps.NewListFilter("never stored"), gurps.NewListFilter("d"))
-	c.Equal([]string{"A2", "b", "c", "d", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
-		"replacing a filter that isn't stored adds the replacement")
 
 	// A filter renamed in place stays where it was until the list is sorted again.
 	s.ListFiltersFor(key)[1].Name = "zzz"
-	c.Equal([]string{"A2", "zzz", "c", "d", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
+	c.Equal([]string{"A", "zzz", "C", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
 		"renaming in place doesn't move the filter by itself")
 	s.ResortListFilters(key)
-	c.Equal([]string{"A2", "c", "d", "item9", "item10", "zzz"}, listFilterNames(s.ListFiltersFor(key)),
+	c.Equal([]string{"A", "C", "item9", "item10", "zzz"}, listFilterNames(s.ListFiltersFor(key)),
 		"re-sorting puts the renamed filter in its place")
-	s.ListFiltersFor(key)[5].Name = "b"
+	s.ListFiltersFor(key)[4].Name = "b"
 	s.ResortListFilters(key)
-	c.Equal([]string{"A2", "b", "c", "d", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
+	c.Equal([]string{"A", "b", "C", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
 		"re-sorting puts it back again")
 	s.ResortListFilters("never stored")
-	c.Nil(s.ListFilters["never stored"], "re-sorting a key that isn't stored doesn't create it")
+	_, exists := s.ListFilters["never stored"]
+	c.False(exists, "re-sorting a key that isn't stored doesn't create it")
 
-	s.RemoveListFilter(key, replacement)
-	c.Equal([]string{"b", "c", "d", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
+	// Removal is by pointer identity.
+	first := s.ListFiltersFor(key)[0]
+	s.RemoveListFilter(key, first)
+	c.Equal([]string{"b", "C", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
 		"removing drops just that filter")
-	s.RemoveListFilter(key, gurps.NewListFilter("never stored"))
-	c.Equal([]string{"b", "c", "d", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
-		"removing a filter that isn't stored changes nothing")
+	c.Equal(-1, slices.Index(s.ListFiltersFor(key), first), "the removed filter is gone")
+	s.RemoveListFilter(key, gurps.NewListFilter("b"))
+	c.Equal([]string{"b", "C", "item9", "item10"}, listFilterNames(s.ListFiltersFor(key)),
+		"removing a filter that isn't stored changes nothing, even when it bears a stored filter's name")
 
 	// Name collisions ignore case and surrounding whitespace, and the filter being edited doesn't collide with itself.
 	kept := s.ListFiltersFor(key)[0]
@@ -740,7 +778,7 @@ func TestSettingsListFilterHelpers(t *testing.T) {
 	for _, f := range s.ListFiltersFor(key) {
 		s.RemoveListFilter(key, f)
 	}
-	_, exists := s.ListFilters[key]
+	_, exists = s.ListFilters[key]
 	c.False(exists, "removing the last filter deletes the key")
 
 	// EnsureValidity prunes what can't be used and keeps what it doesn't recognize.

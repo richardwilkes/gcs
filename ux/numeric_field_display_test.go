@@ -253,23 +253,18 @@ func TestEquipmentPageCellDataRoundsOnlyForDisplay(t *testing.T) {
 }
 
 // TestEquipmentRowsMatchDisplayedAndExactText verifies that searching finds a page row by the rounded weight the user
-// can see as well as by the exact weight behind it, for both of the matchers the searches go through, while a row off
-// the page -- where the two renderings are the same -- matches only the exact text. The rounded text is chosen so that
-// it is not simply a prefix of the exact text.
+// can see as well as by the exact weight behind it, while a row off the page -- where the two renderings are the same
+// -- matches only the exact text. The rounded text is chosen so that it is not simply a prefix of the exact text.
 func TestEquipmentRowsMatchDisplayedAndExactText(t *testing.T) {
 	c := check.New(t)
 	node, _ := newEquipmentTable(t, true)
 	c.True(node.Match(roundedWeightText), "the sheet search must find the weight as displayed")
 	c.True(node.Match("7.5127"), "the sheet search must find the exact weight")
-	c.True(node.PartialMatchExceptTag(roundedWeightText), "the filter must find the weight as displayed")
-	c.True(node.PartialMatchExceptTag("7.5127"), "the filter must find the exact weight")
 	c.False(node.Match("7.52"), "a value that is neither rendering must not match")
 
 	node, _ = newEquipmentTable(t, false)
 	c.False(node.Match(roundedWeightText), "off the page, there is no rounded rendering to match")
 	c.True(node.Match("7.5127"), "off the page, the exact weight still matches")
-	c.False(node.PartialMatchExceptTag(roundedWeightText))
-	c.True(node.PartialMatchExceptTag("7.5127"))
 }
 
 // TestEquipmentPageHeaderSyncRefreshesTotalsTooltip verifies that syncing a page's equipment list refreshes the

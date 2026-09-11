@@ -101,14 +101,13 @@ func (p *listFilterPanel) createGroupPanel(depth int, group *gurps.FilterGroup) 
 
 // createConditionPanel creates the row for a condition: its buttons, its and/or label, the popup that inverts it, the
 // popup that chooses the field to test and, for every kind of field but a yes/no one, the criteria the field is
-// compared against.
+// compared against. A condition on a field this version of GCS doesn't know, which a filter written by a newer version
+// may hold, gets the same treatment as a node of an unknown kind: it is shown as it is, with nothing to edit, and
+// left exactly as it was, since it never matches now and rewriting it would quietly turn it into something that does.
 func (p *listFilterPanel) createConditionPanel(depth int, cond *gurps.FilterCondition) (main, focus unison.Paneler) {
-	// A filter written by a newer version of GCS may name a field this version has never heard of. Rather than drop
-	// the condition, point it at the first field and clear the criteria, so that what the editor shows is what the
-	// condition now does.
-	if p.fieldIndex(cond.Field) == -1 && len(p.fields) != 0 {
-		cond.Field = p.fields[0].key
-		resetFilterConditionCriteria(cond)
+	if p.fieldIndex(cond.Field) == -1 {
+		return p.createPreservedNodePanel(depth, cond,
+			fmt.Sprintf(i18n.Text("Condition on unknown field %q; it will be preserved, but never matches"), cond.Field))
 	}
 	row := p.beginFilterRow(depth, cond)
 	addNotPopup(row, &cond.Not)
@@ -122,10 +121,16 @@ func (p *listFilterPanel) createConditionPanel(depth int, cond *gurps.FilterCond
 // since we have no idea what the data means, but the row is shown so the node is visible and can be deleted
 // deliberately.
 func (p *listFilterPanel) createUnknownNodePanel(depth int, node *gurps.UnknownFilterNode) (main, focus unison.Paneler) {
+	return p.createPreservedNodePanel(depth, node,
+		fmt.Sprintf(i18n.Text("Unknown filter node type %q; it will be preserved, but never matches"), node.Kind))
+}
+
+// createPreservedNodePanel creates the row for a node the editor can't represent: its buttons, its and/or label and a
+// label saying what it is, and nothing that could alter it.
+func (p *listFilterPanel) createPreservedNodePanel(depth int, node gurps.FilterNode, text string) (main, focus unison.Paneler) {
 	row := p.beginFilterRow(depth, node)
-	label := NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Unknown filter node type %q; it will be preserved, but never matches"),
-		node.Kind), false)
-	label.Tooltip = newWrappedTooltip(i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this filter is saved."))
+	label := NewFieldLeadingLabel(text, false)
+	label.Tooltip = newWrappedTooltip(preservedFilterNodeTooltip())
 	row.AddChild(label)
 	setFilterRowLayout(row)
 	return row, row
@@ -167,6 +172,7 @@ func (p *listFilterPanel) createButtonsPanel(row *unison.Panel, depth int, node 
 	}
 	if parentGroup := node.ParentGroup(); parentGroup != nil {
 		deleteButton := unison.NewSVGButton(unison.TrashSVG)
+		deleteButton.Tooltip = newWrappedTooltip(deleteFilterNodeTooltip(node))
 		deleteButton.ClickCallback = func() {
 			p.removeFromGroup(row, parentGroup, node)
 		}
@@ -183,18 +189,27 @@ func (p *listFilterPanel) insertIntoGroup(row *unison.Panel, depth int, group *g
 	group.Children = slices.Insert(group.Children, 0, child)
 	p.addToGroup(row, depth+1, 0, child)
 	p.adjustAndOrForGroup(group)
-	MarkModified(p)
 }
 
-// removeFromGroup takes the node out of the group and its row out of the panel.
+// removeFromGroup takes the node out of the group and its row out of the panel, and forgets the and/or labels of the
+// node and, when it is a group, of everything below it.
 func (p *listFilterPanel) removeFromGroup(row *unison.Panel, group *gurps.FilterGroup, node gurps.FilterNode) {
 	if i := slices.IndexFunc(group.Children, func(elem gurps.FilterNode) bool { return elem == node }); i != -1 {
 		group.Children = slices.Delete(group.Children, i, i+1)
 	}
-	delete(p.andOrMap, node)
+	p.forgetAndOr(node)
 	row.RemoveFromParent()
 	p.adjustAndOrForGroup(group)
-	MarkModified(p)
+}
+
+// forgetAndOr drops the and/or label of the node and of every node below it.
+func (p *listFilterPanel) forgetAndOr(node gurps.FilterNode) {
+	delete(p.andOrMap, node)
+	if group, ok := node.(*gurps.FilterGroup); ok {
+		for _, child := range group.Children {
+			p.forgetAndOr(child)
+		}
+	}
 }
 
 // addToGroup builds the row for a child of a group and adds it to the group's row panel, either at the given position
@@ -252,7 +267,6 @@ func (p *listFilterPanel) addFieldPopup(row *unison.Panel, cond *gurps.FilterCon
 		p.addConditionCriteria(row, cond)
 		setFilterRowLayout(row)
 		markListFilterPanelForLayout(p)
-		MarkModified(p)
 	}
 	row.AddChild(popup)
 	return popup
@@ -297,7 +311,9 @@ func addListCriteriaPanel(parent *unison.Panel, text *criteria.Text) (*unison.Po
 
 // addNotPopup adds the popup that inverts a node's result. The value is stored as the negative, so that the common
 // case -- a node that has to match -- is the zero value and stays out of the JSON, which is why the second choice is
-// the one that sets it.
+// the one that sets it. Unlike the popups the editors in the workspace use, this one doesn't mark anything as
+// modified: the filter editor lives in a modal dialog, which has no ModifiableRoot above it to tell, and the filter is
+// only saved when the dialog is accepted.
 func addNotPopup(parent *unison.Panel, not *bool) *unison.PopupMenu[string] {
 	popup := unison.NewPopupMenu[string]()
 	popup.AddItem(i18n.Text("must"))
@@ -309,7 +325,6 @@ func addNotPopup(parent *unison.Panel, not *bool) *unison.PopupMenu[string] {
 	}
 	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
 		*not = pop.SelectedIndex() == 1
-		MarkModified(parent)
 	}
 	parent.AddChild(popup)
 	return popup
@@ -369,6 +384,25 @@ func markListFilterPanelForLayout(p unison.Paneler) {
 	panel.MarkForLayoutRecursively()
 	panel.MarkForLayoutRecursivelyUpward()
 	panel.MarkForRedraw()
+}
+
+// preservedFilterNodeTooltip returns the tooltip that explains a row the editor shows but can't edit. It is looked up
+// when needed rather than held in a variable, since the localization isn't in place when the package initializes.
+func preservedFilterNodeTooltip() string {
+	return i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this filter is saved.")
+}
+
+// deleteFilterNodeTooltip returns the tooltip for the button that deletes the node, which says what will go, since a
+// group takes everything below it along.
+func deleteFilterNodeTooltip(node gurps.FilterNode) string {
+	switch node.(type) {
+	case *gurps.FilterGroup:
+		return i18n.Text("Delete this group and everything in it")
+	case *gurps.FilterCondition:
+		return i18n.Text("Delete this condition")
+	default:
+		return i18n.Text("Delete this node")
+	}
 }
 
 // resetFilterConditionCriteria puts the condition's criteria back to the defaults that accept anything. Only the one

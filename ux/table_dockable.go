@@ -31,6 +31,7 @@ var (
 	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
 	_ KeyedDockable              = &TableDockable[*gurps.Trait]{}
 	_ gurps.Hashable             = &TableDockable[*gurps.Trait]{}
+	_ listFilterObserver         = &TableDockable[*gurps.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
@@ -146,7 +147,8 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
 	sizeToFitButton.ClickCallback = d.sizeToFit
 
-	d.filterField = NewSearchField(i18n.Text("Content Filter"), func(_, _ *unison.FieldState) { d.ApplyFilter() })
+	// The field is named the way the saved filter popup's entry for it is, since that entry is what hands it the list.
+	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.ApplyFilter() })
 
 	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -247,10 +249,13 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()
 	sel := d.table.CopySelectionMap()
-	d.table.SyncToModel()
-	// The rows the sync produced have not been through the filter, so it is applied again here. Before this, the
-	// filter was never re-run after a rebuild, leaving rows that no longer pass it on screen.
-	d.ApplyFilter()
+	// The rows have to be built afresh from the model and put through the filter, which is in force across a rebuild.
+	// Applying the filter syncs the table itself, over the rows that pass, so the sync is only done here when there is
+	// no filter to apply and none to clear, which is the one case where applying it leaves the table alone. Syncing
+	// first regardless would measure every row over the stale set of filtered rows only to throw that away.
+	if !d.applyFilter() {
+		d.table.SyncToModel()
+	}
 	d.table.SetSelectionMap(sel)
 	UpdateTitleForDockable(d)
 	d.scroll.SetPosition(h, v)
@@ -289,8 +294,14 @@ func (d *TableDockable[T]) listFiltersChanged(key string, source *listFilterPopu
 
 // ApplyFilter applies the current filtering, if any.
 func (d *TableDockable[T]) ApplyFilter() {
+	d.applyFilter()
+}
+
+// applyFilter applies the current filtering and reports whether the table was synced to its model as part of that,
+// which unison.Table.ApplyFilter does whenever it is given a filter or has one to clear.
+func (d *TableDockable[T]) applyFilter() (synced bool) {
 	if d.filterField == nil {
-		return
+		return false
 	}
 	var f func(row *Node[T]) bool
 	if d.selectedFilter != nil {
@@ -298,9 +309,13 @@ func (d *TableDockable[T]) ApplyFilter() {
 		m := gurps.NewListFilterMatcher(d.selectedFilter, d.provider.FilterFields())
 		f = func(row *Node[T]) bool { return !m(row.Data()) }
 	} else if text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text)); text != "" {
-		// Match, unlike the PartialMatchExceptTag that used to be called here, looks at the tags column too, now that
-		// the tag popup that once did the tag filtering is gone.
+		// Match looks at every column, the tags column included, now that the tag popup that once did the tag
+		// filtering is gone.
 		f = func(row *Node[T]) bool { return !row.Match(text) }
 	}
+	if f == nil && !d.table.IsFiltered() {
+		return false
+	}
 	d.table.ApplyFilter(f)
+	return true
 }

@@ -213,7 +213,9 @@ func (g *FilterGroup) Hash(h hash.Hash) {
 	hashList(h, g.Children)
 }
 
-// NewFilterCondition creates a new condition on the field with the given key that accepts anything.
+// NewFilterCondition creates a new condition on the field with the given key, with every criteria at its zero value.
+// For a text, list, number or weight field that means the condition accepts anything; for a yes/no field, which has
+// no criteria, it means the condition is satisfied when the value is true.
 func NewFilterCondition(parent *FilterGroup, fieldKey string) *FilterCondition {
 	return &FilterCondition{
 		Parent: parent,
@@ -377,18 +379,6 @@ func (s *Settings) SetListFiltersFor(key string, filters []*ListFilter) {
 // AddListFilter adds a saved filter for the list type with the given key.
 func (s *Settings) AddListFilter(key string, f *ListFilter) {
 	s.SetListFiltersFor(key, append(s.ListFiltersFor(key), f))
-}
-
-// ReplaceListFilter replaces the saved filter old with replacement for the list type with the given key. When old
-// isn't among the saved filters, replacement is simply added.
-func (s *Settings) ReplaceListFilter(key string, old, replacement *ListFilter) {
-	filters := s.ListFiltersFor(key)
-	if i := slices.Index(filters, old); i != -1 {
-		filters[i] = replacement
-	} else {
-		filters = append(filters, replacement)
-	}
-	s.SetListFiltersFor(key, filters)
 }
 
 // ResortListFilters puts the saved filters for the list type with the given key back into name order, which is

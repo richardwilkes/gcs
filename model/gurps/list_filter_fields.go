@@ -85,16 +85,6 @@ func NewBoolFilterField[T Node[T]](key, title string, f func(T) bool) *FilterFie
 	return &FilterField[T]{Key: key, Title: title, Kind: FilterFieldBool, Bool: f}
 }
 
-// FindFilterField returns the field with the given key, or nil if there is none.
-func FindFilterField[T Node[T]](fields []*FilterField[T], key string) *FilterField[T] {
-	for _, field := range fields {
-		if field.Key == key {
-			return field
-		}
-	}
-	return nil
-}
-
 // The accessors below use the *WithReplacements forms rather than Notes() and its kin: filtering runs them once per
 // row on every change, and the latter resolve embedded scripts, which is far too costly for that.
 

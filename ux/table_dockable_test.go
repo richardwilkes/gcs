@@ -28,15 +28,33 @@ func newFilterTestTrait(name string, tags ...string) *gurps.Trait {
 }
 
 // newFilterTestTraitDockable returns a trait library list dockable holding three traits with distinct names and tags,
-// enough for the filtering to be told apart row by row. Building the toolbar reaches for the bindable actions, so they
-// are registered first.
-func newFilterTestTraitDockable() *TableDockable[*gurps.Trait] {
+// enough for the filtering to be told apart row by row. The global settings are pointed at a file in the test's own
+// directory and given an empty set of saved filters, holding only the ones passed in, so that the saved filter popup
+// is never built out of whatever the developer running the tests happens to have saved. Building the toolbar reaches
+// for the bindable actions, so they are registered first.
+func newFilterTestTraitDockable(t *testing.T, filters ...*gurps.ListFilter) *TableDockable[*gurps.Trait] {
+	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
+	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	for _, f := range filters {
+		gurps.GlobalSettings().AddListFilter(gurps.ListFilterKeyForExtension(gurps.TraitsExt), f)
+	}
 	return NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{
 		newFilterTestTrait("Acute Vision", "Physical"),
 		newFilterTestTrait("Combat Reflexes", "Mental"),
 		newFilterTestTrait("Fur", "Physical", "Exotic"),
 	})
+}
+
+// newNameContainsFilter returns a saved filter with the given name that keeps the rows whose own name contains text.
+func newNameContainsFilter(name, text string) *gurps.ListFilter {
+	f := gurps.NewListFilter(name)
+	condition := gurps.NewFilterCondition(f.Root, "name")
+	condition.Text.Compare = criteria.ContainsText
+	condition.Text.Qualifier = text
+	f.Root.Children = append(f.Root.Children, condition)
+	return f
 }
 
 // visibleTraitNames returns the names of the rows the table is showing, which are the rows that passed the filter when
@@ -54,13 +72,22 @@ func visibleTraitNames(d *TableDockable[*gurps.Trait]) []string {
 // than showing everything again.
 func TestTableDockableRebuildKeepsFilter(t *testing.T) {
 	c := check.New(t)
-	d := newFilterTestTraitDockable()
+	d := newFilterTestTraitDockable(t)
 	c.Equal(3, len(visibleTraitNames(d)), "every trait is shown before any filtering")
 
 	d.filterField.SetText("fur")
-	c.True(d.table.IsFiltered(), "typing in the content filter must filter the table")
+	c.True(d.table.IsFiltered(), "typing in the quick filter must filter the table")
 	c.Equal([]string{"Fur"}, visibleTraitNames(d), "only the matching trait may be shown")
 
+	// The matching trait is renamed so that it no longer matches, which the rows the rebuild produces have to be put
+	// through the filter to notice. A rebuild that left the rows that last passed the filter in place would go on
+	// showing it under its new name.
+	d.provider.RootData()[2].Name = "Pelt"
+	d.Rebuild(false)
+	c.True(d.table.IsFiltered(), "the filter must still be in force after a rebuild")
+	c.Equal(0, len(visibleTraitNames(d)), "the renamed trait no longer matches, so nothing may be shown")
+
+	d.provider.RootData()[2].Name = "Fur"
 	d.Rebuild(false)
 	c.True(d.table.IsFiltered(), "the filter must still be in force after a rebuild")
 	c.Equal([]string{"Fur"}, visibleTraitNames(d), "the rebuilt rows must be filtered the same way")
@@ -79,28 +106,21 @@ func TestTableDockableRebuildKeepsFilter(t *testing.T) {
 // on.
 func TestTableDockableNewItemIsDisabledWhileFiltered(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
-	f := gurps.NewListFilter("Combat")
-	condition := gurps.NewFilterCondition(f.Root, "name")
-	condition.Text.Compare = criteria.ContainsText
-	condition.Text.Qualifier = "combat"
-	f.Root.Children = append(f.Root.Children, condition)
-	gurps.GlobalSettings().AddListFilter(gurps.ListFilterKeyForExtension(gurps.TraitsExt), f)
-
-	d := newFilterTestTraitDockable()
+	f := newNameContainsFilter("Combat", "combat")
+	d := newFilterTestTraitDockable(t, f)
 	ids := []int{NewTraitItemID, NewTraitContainerItemID}
 	for _, id := range ids {
 		c.True(d.AsPanel().CanPerformCmd(nil, id), "an unfiltered library list must be able to create items")
 	}
 
 	d.filterField.SetText("fur")
-	c.True(d.table.IsFiltered(), "typing in the content filter must filter the table")
+	c.True(d.table.IsFiltered(), "typing in the quick filter must filter the table")
 	for _, id := range ids {
 		c.False(d.AsPanel().CanPerformCmd(nil, id), "a list filtered by the quick filter must not offer new items")
 	}
 
 	d.filterField.SetText("")
-	c.False(d.table.IsFiltered(), "emptying the content filter must show everything")
+	c.False(d.table.IsFiltered(), "emptying the quick filter must show everything")
 	for _, id := range ids {
 		c.True(d.AsPanel().CanPerformCmd(nil, id), "clearing the quick filter must make the commands available again")
 	}
@@ -123,18 +143,11 @@ func TestTableDockableNewItemIsDisabledWhileFiltered(t *testing.T) {
 // blanks the quick filter's field, and that dropping it hands the list back.
 func TestTableDockableSavedFilterDisablesQuickFilter(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
-	f := gurps.NewListFilter("Combat")
-	condition := gurps.NewFilterCondition(f.Root, "name")
-	condition.Text.Compare = criteria.ContainsText
-	condition.Text.Qualifier = "combat"
-	f.Root.Children = append(f.Root.Children, condition)
-	gurps.GlobalSettings().AddListFilter(gurps.ListFilterKeyForExtension(gurps.TraitsExt), f)
-
-	d := newFilterTestTraitDockable()
+	f := newNameContainsFilter("Combat", "combat")
+	d := newFilterTestTraitDockable(t, f)
 	d.filterField.SetText("fur")
 	d.chooseFilter(f)
-	c.Equal(f, d.selectedFilter, "the saved filter must be the one in force")
+	c.True(f == d.selectedFilter, "the saved filter must be the one in force")
 	c.False(d.filterField.Enabled(), "the quick filter's field must be unusable while a saved filter is in force")
 	c.Equal("", d.filterField.Text(), "the quick filter's text must be cleared, so the two cannot disagree")
 	c.True(d.table.IsFiltered(), "the saved filter must filter the table")
@@ -151,9 +164,9 @@ func TestTableDockableSavedFilterDisablesQuickFilter(t *testing.T) {
 // it replaced used to be needed for.
 func TestTableDockableQuickFilterMatchesTags(t *testing.T) {
 	c := check.New(t)
-	d := newFilterTestTraitDockable()
+	d := newFilterTestTraitDockable(t)
 	d.filterField.SetText("mental")
-	c.True(d.table.IsFiltered(), "typing in the content filter must filter the table")
+	c.True(d.table.IsFiltered(), "typing in the quick filter must filter the table")
 	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "the trait tagged \"Mental\" must be kept")
 }
 
@@ -162,14 +175,12 @@ func TestTableDockableQuickFilterMatchesTags(t *testing.T) {
 // created, renamed or deleted filter changes its size, and the toolbar has to be laid out again to show it properly.
 func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
-	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
 	swapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
 			filter.Name = "A filter with a name long enough to widen the popup"
 			return true
 		})
-	d := newFilterTestTraitDockable()
+	d := newFilterTestTraitDockable(t)
 	c.NotNil(d.filterPopup, "a trait list must offer saved filters")
 	chain := []*unison.Panel{d.filterPopup.AsPanel()}
 	for p := d.filterPopup.Parent(); p != nil; p = p.Parent() {
@@ -185,4 +196,67 @@ func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
 	for _, p := range chain {
 		c.True(p.NeedsLayout, "%T must be marked for layout after the popup's items changed", p.Self)
 	}
+}
+
+// TestTableDockableJumpToSearchFilter verifies that the command that jumps to the quick filter's field follows whether
+// that field can be used at all, since a saved filter in force takes the field away.
+func TestTableDockableJumpToSearchFilter(t *testing.T) {
+	c := check.New(t)
+	f := newNameContainsFilter("Combat", "combat")
+	d := newFilterTestTraitDockable(t, f)
+	c.True(d.AsPanel().CanPerformCmd(nil, JumpToSearchFilterItemID),
+		"the quick filter's field must be reachable while it has the list")
+
+	d.chooseFilter(f)
+	c.False(d.AsPanel().CanPerformCmd(nil, JumpToSearchFilterItemID),
+		"the field is unusable while a saved filter is in force, so there is nothing to jump to")
+
+	d.chooseFilter(nil)
+	c.True(d.AsPanel().CanPerformCmd(nil, JumpToSearchFilterItemID),
+		"dropping the saved filter must make the field reachable again")
+
+	// The command asks for the focus, which a dockable that is in no window has nobody to ask.
+	c.NotPanics(func() { d.AsPanel().PerformCmd(nil, JumpToSearchFilterItemID) },
+		"performing the command outside of a window must not panic")
+	c.False(d.filterField.Focused(), "there is no window, so nothing can take the focus")
+}
+
+// newFilterTestWeapon returns a melee weapon with the given usage, which is one of the columns the quick filter looks
+// at.
+func newFilterTestWeapon(usage string) *gurps.Weapon {
+	w := gurps.NewWeapon(nil, true)
+	w.Usage = usage
+	return w
+}
+
+// TestTableDockableWithoutFilterKeyOmitsSavedFilters verifies that a list type with no filter key -- the weapon lists,
+// which are never shown in a library list dockable -- gets no saved filter popup, yet still filters through the quick
+// filter and takes the calls a popup would otherwise make without one.
+func TestTableDockableWithoutFilterKeyOmitsSavedFilters(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	lists := &listsForTest{melee: []*gurps.Weapon{newFilterTestWeapon("Punch"), newFilterTestWeapon("Kick")}}
+	d := NewTableDockable("test.wpn", ".wpn", NewWeaponsProvider(lists, true, false),
+		func(_ string) error { return nil })
+	c.Equal("", d.provider.FilterKey(), "the weapon lists have no saved filters of their own")
+	c.Nil(d.filterPopup, "a list type with no filter key must get no saved filter popup")
+	c.Nil(d.savedFilters, "nor anything driving one")
+	c.Nil(d.provider.FilterFields(), "nor any fields for a saved filter to test")
+	for _, popup := range panelsOfType[*unison.PopupMenu[string]](d.AsPanel()) {
+		c.NoPrefix(tooltipText(popup.Tooltip), "Saved Filters", "no popup in the toolbar may be the saved filter popup")
+	}
+
+	d.filterField.SetText("punch")
+	c.True(d.table.IsFiltered(), "the quick filter must work without a saved filter popup")
+	c.Equal(1, len(d.table.RootRows()), "only the matching weapon may be shown")
+
+	d.filterField.SetText("")
+	c.False(d.table.IsFiltered(), "emptying the quick filter must show everything")
+	c.Equal(2, len(d.table.RootRows()), "every weapon is shown again")
+
+	c.NotPanics(func() {
+		d.chooseFilter(nil)
+		d.listFiltersChanged(listFilterPopupTestKey, nil)
+		d.Rebuild(false)
+	}, "a list with no saved filter popup must take the filter calls all the same")
 }
