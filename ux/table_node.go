@@ -147,6 +147,12 @@ func (n *Node[T]) RefreshChildren() {
 func (n *Node[T]) cellData(col int, forDisplay bool) gurps.CellData {
 	data := gurps.CellData{ForPage: n.forPage && forDisplay}
 	n.data.CellData(n.table.Columns[col].ID, &data)
+	// A row that a filter shows only because a row beneath it matched is there for context rather than as a match, so
+	// it is dimmed the way a disabled row is, leaving the rows that matched to stand out. Only the display asks, since
+	// what a row is being shown for has no bearing on how it sorts or what it matches.
+	if forDisplay && n.table.IsFilterContextRow(n) {
+		data.Dim = true
+	}
 	return data
 }
 

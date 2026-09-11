@@ -120,10 +120,10 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 			variant = AlternateItemVariant
 		}
 		if variant != -1 {
-			// Creating an item inserts a row, which unison.Table.ApplyFilter says must not be done while a filter is
-			// applied, so the command is turned off whenever a filter is hiding part of the list, as Delete, Duplicate
-			// and the move commands are. Left on, the insert would clear the filter, open an editor on the new row and
-			// then have the rebuild that follows re-filter the row out from under that editor.
+			// Creating an item inserts a row, which unison.Table.ApplyHierarchicalFilter says must not be done while a
+			// filter is applied, so the command is turned off whenever a filter is hiding part of the list, as Delete,
+			// Duplicate and the move commands are. Left on, the insert would clear the filter, open an editor on the
+			// new row and then have the rebuild that follows re-filter the row out from under that editor.
 			d.InstallCmdHandlers(id,
 				func(_ any) bool { return !d.table.IsFiltered() },
 				func(_ any) { d.provider.CreateItem(d, d.table, variant) })
@@ -232,8 +232,9 @@ func (d *TableDockable[T]) ApplyNoteState(closed bool) {
 }
 
 // toggleHierarchy opens or closes every container in the table. Like the other row-affecting commands, it does nothing
-// while a filter is applied, since the table then holds only the rows that passed, as a flat list, and its button is
-// turned off along with the filter being applied.
+// while a filter is applied, and its button is turned off along with the filter being applied. The filtered view shows
+// every container it keeps as open whatever the container's own open state, so the toggle would change the open states
+// without anything to show for it until the filter was cleared.
 func (d *TableDockable[T]) toggleHierarchy() {
 	if d.table.IsFiltered() {
 		return
@@ -242,7 +243,8 @@ func (d *TableDockable[T]) toggleHierarchy() {
 	d.table.SyncToModel()
 }
 
-// toggleNotes shows or hides every note in the table. It is gated on the filter the same way toggleHierarchy is.
+// toggleNotes shows or hides every note in the table. It is gated on the filter the same way toggleHierarchy is, since
+// it would reach the notes of the rows the filter is hiding as well as those in view.
 func (d *TableDockable[T]) toggleNotes() {
 	if d.table.IsFiltered() {
 		return
@@ -308,7 +310,9 @@ func (d *TableDockable[T]) listFiltersChanged(key string, source *listFilterPopu
 }
 
 // applyFilter applies the current filtering and reports whether the table was synced to its model as part of that,
-// which unison.Table.ApplyFilter does whenever it is given a filter or has one to clear.
+// which unison.Table.ApplyHierarchicalFilter does whenever it is given a filter or has one to clear. The hierarchy is
+// kept so that a matching row is seen in context, beneath the containers that hold it. A container shown only for that
+// reason is dimmed (see Node.cellData), so the rows that actually matched stand out from those that are just context.
 func (d *TableDockable[T]) applyFilter() (synced bool) {
 	if d.filterField == nil {
 		return false
@@ -326,7 +330,7 @@ func (d *TableDockable[T]) applyFilter() (synced bool) {
 	if f == nil && !d.table.IsFiltered() {
 		return false
 	}
-	d.table.ApplyFilter(f)
+	d.table.ApplyHierarchicalFilter(f)
 	filtered := d.table.IsFiltered()
 	d.hierarchyButton.SetEnabled(!filtered)
 	d.noteToggleButton.SetEnabled(!filtered)

@@ -155,9 +155,9 @@ func TestTableDockableToggles(t *testing.T) {
 
 // TestTableDockableTogglesAreOffWhileFiltered verifies that a list dockable turns its hierarchy and note buttons off
 // while a filter is applied, and that the toggles leave the rows alone should they be reached all the same. A filtered
-// table shows the rows that passed as a flat list, so a toggle over them would silently change the disclosure state of
-// just those rows, which would only show once the filter was cleared. Both the quick filter and a saved filter have to
-// turn the buttons off, and clearing either has to turn them back on.
+// table shows every container it keeps as open whatever the container's own open state, so a toggle would silently
+// change the disclosure states without anything to show for it until the filter was cleared. Both the quick filter and
+// a saved filter have to turn the buttons off, and clearing either has to turn them back on.
 func TestTableDockableTogglesAreOffWhileFiltered(t *testing.T) {
 	c := check.New(t)
 	swapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)

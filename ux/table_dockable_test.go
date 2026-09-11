@@ -294,3 +294,53 @@ func TestTableDockableSavedFilterReplacingQuickFilterAppliesOnce(t *testing.T) {
 	d.chooseFilter(f)
 	c.Equal(2, counter.calls, "choosing the saved filter again, with the field already empty, applies it once more")
 }
+
+// TestTableDockableFilterKeepsHierarchy verifies that a filtered list keeps its hierarchy: a matching row is shown
+// beneath the containers that hold it, which are shown open regardless of their own open state and are dimmed when they
+// did not match themselves, and clearing the filter puts the list back the way it was.
+func TestTableDockableFilterKeepsHierarchy(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	container := gurps.NewTrait(nil, nil, true)
+	container.Name = "Exotic Features"
+	container.Tags = []string{"Exotic"}
+	vision := gurps.NewTrait(nil, container, false)
+	vision.Name = "Acute Vision"
+	fur := gurps.NewTrait(nil, container, false)
+	fur.Name = "Fur"
+	container.Children = []*gurps.Trait{vision, fur}
+	container.SetOpen(false)
+	d := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{
+		container,
+		newFilterTestTrait("Combat Reflexes", "Mental"),
+	})
+	c.Equal(2, d.table.LastRowIndex()+1, "the closed container hides its children before any filtering")
+
+	d.filterField.SetText("fur")
+	c.True(d.table.IsFiltered(), "typing in the quick filter must filter the table")
+	c.Equal([]string{"Exotic Features"}, visibleTraitNames(d), "the matching trait's container must be the only root")
+	c.Equal(2, d.table.LastRowIndex()+1, "the container and the matching trait beneath it must be shown")
+	containerRow := d.table.RowFromIndex(0)
+	furRow := d.table.RowFromIndex(1)
+	c.Equal("Exotic Features", containerRow.Data().NameWithReplacements())
+	c.Equal("Fur", furRow.Data().NameWithReplacements())
+	c.True(d.table.IsFilterContextRow(containerRow), "the container did not match, so it is only context")
+	c.False(d.table.IsFilterContextRow(furRow), "the trait matched, so it is not context")
+	c.True(containerRow.cellData(0, true).Dim, "a container shown only as context must be dimmed")
+	c.False(containerRow.cellData(0, false).Dim, "sorting and matching must not see the dimming")
+	c.False(furRow.cellData(0, true).Dim, "a matching trait must not be dimmed")
+	c.False(container.IsOpen(), "showing the rows beneath a closed container must not open it")
+
+	d.filterField.SetText("exotic")
+	c.Equal([]string{"Exotic Features"}, visibleTraitNames(d))
+	c.Equal(1, d.table.LastRowIndex()+1, "a matching container is shown without the children that did not match")
+	c.False(d.table.IsFilterContextRow(d.table.RowFromIndex(0)), "the container matched, so it is not context")
+	c.False(d.table.RowFromIndex(0).cellData(0, true).Dim, "a matching container must not be dimmed")
+
+	d.filterField.SetText("")
+	c.False(d.table.IsFiltered(), "emptying the quick filter must show everything")
+	c.Equal(2, d.table.LastRowIndex()+1, "the closed container must hide its children again")
+	c.False(container.IsOpen(), "the container must still be closed")
+}

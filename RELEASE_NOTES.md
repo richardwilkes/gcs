@@ -16,6 +16,9 @@
   looks at the tags column.
 - While a filter is applied, a hazard-striped banner across the top of the list notes that items cannot be added,
   removed or rearranged until the filter is cleared, since only part of the list is in view.
+- A filtered list now keeps its hierarchy, showing each matching item beneath the containers that hold it rather than
+  in a flat list, so you can see where a match sits. A container that is shown only because something inside it
+  matched is dimmed, so the actual matches stand out.
 - Deep search now indexes your libraries from the values recorded in each file when it was last saved, instead of
   recalculating every character sheet and running every note's scripts to build its index. Starting GCS, and each
   library update after that, now does far less work.
