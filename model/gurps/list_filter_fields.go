@@ -151,7 +151,6 @@ func SkillFilterFields() []*FilterField[*Skill] {
 			}
 			return s.Difficulty.Description(EntityFromNode(s))
 		}),
-		NewTextFilterField(filterFieldKeyTechLevel, i18n.Text("have a tech level"), (*Skill).TL),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Skill).RawPoints),
 		NewBoolFilterField("technique", i18n.Text("be a technique"), (*Skill).IsTechnique),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Skill).Container),
@@ -181,7 +180,6 @@ func SpellFilterFields() []*FilterField[*Spell] {
 			(*Spell).MaintenanceCostWithReplacements),
 		NewTextFilterField("casting_time", i18n.Text("have a casting time"), (*Spell).CastingTimeWithReplacements),
 		NewTextFilterField("duration", i18n.Text("have a duration"), (*Spell).DurationWithReplacements),
-		NewTextFilterField(filterFieldKeyTechLevel, i18n.Text("have a tech level"), (*Spell).TL),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Spell).RawPoints),
 		NewBoolFilterField("ritual_magic", i18n.Text("be ritual magic"), (*Spell).IsRitualMagic),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Spell).Container),
