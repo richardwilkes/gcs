@@ -93,6 +93,7 @@ type Settings struct {
 	DeepSearch         []string                   `json:"deep_search,omitempty"`
 	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
 	ColumnSizing       map[string]map[int]float32 `json:"column_sizing,omitempty"`
+	ListFilters        map[string][]*ListFilter   `json:"list_filters,omitempty"`
 	PageRefs           PageRefs                   `json:"page_refs,omitzero"`
 	KeyBindings        KeyBindings                `json:"key_bindings,omitzero"`
 	WorkspaceFrame     *geom.Rect                 `json:"workspace_frame,omitzero"`
@@ -264,6 +265,7 @@ func (s *Settings) EnsureValidity() {
 	maps.DeleteFunc(s.LibraryExplorer.Nodes, func(_ string, v *NavNodeInfo) bool { return v == nil })
 	maps.DeleteFunc(s.ColumnSizing, func(_ string, v map[int]float32) bool { return v == nil })
 	maps.DeleteFunc(s.PDFs, func(_ string, v *PDFInfo) bool { return v == nil })
+	s.ensureListFiltersValidity()
 	for _, v := range s.PDFs {
 		maps.DeleteFunc(v.TOC, func(_ string, m map[int]tid.TID) bool { return m == nil })
 	}

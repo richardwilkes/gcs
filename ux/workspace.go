@@ -295,11 +295,8 @@ func collectDockKeys(dockable unison.Dockable) string {
 
 func workspaceWillClose() {
 	frame := Workspace.Window.FrameRect()
-	global := gurps.GlobalSettings()
-	global.WorkspaceFrame = &frame
-	if err := global.Save(); err != nil {
-		Workspace.ErrorHandler(i18n.Text("Unable to save global settings"), err)
-	}
+	gurps.GlobalSettings().WorkspaceFrame = &frame
+	saveGlobalSettings()
 }
 
 // AllDockables returns all Dockables, whether in the workspace or in a separate window.

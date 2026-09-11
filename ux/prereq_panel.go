@@ -28,7 +28,6 @@ import (
 )
 
 const (
-	noAndOr = ""
 	// samePowerSourceIndex is the position of the "is the same as this spell's" choice within the power source popup
 	// menu, just after "is anything". It is only present when the prerequisite belongs to a spell.
 	samePowerSourceIndex = 1
@@ -219,13 +218,10 @@ func (p *prereqPanel) adjustAndOr(data gurps.Prereq) {
 
 func andOrText(pr gurps.Prereq) string {
 	list := pr.ParentList()
-	if list == nil || len(list.Prereqs) < 2 || list.Prereqs[0] == pr {
+	if list == nil {
 		return noAndOr
 	}
-	if list.All {
-		return i18n.Text("and")
-	}
-	return i18n.Text("or")
+	return joiningText(list.Prereqs, pr, list.All)
 }
 
 func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr gurps.Prereq) {
@@ -402,7 +398,7 @@ func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.Cont
 	row := p.beginPrereqRow(depth, pr, &pr.Has)
 	row.addTypeSwitcher()
 	addIndentedSubRow(row.panel, row.finish(), false, func(subRow *unison.Panel) {
-		_, focus = addWeightCriteriaPanel(subRow, nil, "", p.entity, &pr.WeightCriteria)
+		_, focus = addWeightCriteriaPanel(subRow, nil, "", i18n.Text("which"), p.entity, &pr.WeightCriteria)
 	})
 	return row.panel, focus
 }

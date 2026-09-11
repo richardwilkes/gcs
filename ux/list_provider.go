@@ -10,20 +10,11 @@
 package ux
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
-
-// tagLister is implemented by the node types that carry tags.
-type tagLister interface {
-	TagList() []string
-}
 
 // listProvider is the part of a TableProvider that is the same for every kind of node: everything that only delegates
 // to the list the rows come from, the owner of that list, and the header data for its columns, along with opening the
@@ -41,6 +32,10 @@ type listProvider[T gurps.Node[T]] struct {
 	newItem    func(owner gurps.DataOwner, parent T, container bool) T
 	edit       func(owner Rebuildable, item T)
 	forPage    bool
+	// filterKey and filterFields are left unset by the providers whose lists never appear in a list dockable, which
+	// is what tells the dockable not to offer saved filters.
+	filterKey    string
+	filterFields func() []*gurps.FilterField[T]
 }
 
 // fileListProvider is the list behind a table dockable that shows a list file: a bare list of nodes with no data owner.
@@ -65,19 +60,17 @@ func (p *fileListProvider[T]) setRows(list []T) {
 	p.list = list
 }
 
-// AllTags returns every tag found on the nodes in the list, at any depth, in natural order. Node types without tags
-// yield nil.
-func (p *listProvider[T]) AllTags() []string {
-	set := make(map[string]struct{})
-	gurps.Traverse(func(node T) bool {
-		if tagged, ok := any(node).(tagLister); ok {
-			for _, tag := range tagged.TagList() {
-				set[tag] = struct{}{}
-			}
-		}
-		return false
-	}, false, false, p.list()...)
-	return slices.SortedFunc(maps.Keys(set), func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
+// FilterKey implements TableProvider.
+func (p *listProvider[T]) FilterKey() string {
+	return p.filterKey
+}
+
+// FilterFields implements TableProvider. A provider without a filter key has no fields either.
+func (p *listProvider[T]) FilterFields() []*gurps.FilterField[T] {
+	if p.filterFields == nil {
+		return nil
+	}
+	return p.filterFields()
 }
 
 func (p *listProvider[T]) SetTable(table *unison.Table[*Node[T]]) {

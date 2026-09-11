@@ -63,7 +63,10 @@ func (p *fakeAltDropProvider) ContextMenuItems() []ContextMenuItem           { r
 func (p *fakeAltDropProvider) Serialize() ([]byte, error)                    { return nil, nil }
 func (p *fakeAltDropProvider) Deserialize(_ []byte) error                    { return nil }
 func (p *fakeAltDropProvider) RefKey() string                                { return "" }
-func (p *fakeAltDropProvider) AllTags() []string                             { return nil }
+func (p *fakeAltDropProvider) FilterKey() string                             { return "" }
+
+func (p *fakeAltDropProvider) FilterFields() []*gurps.FilterField[*gurps.Trait] { return nil }
+
 func (p *fakeAltDropProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Trait]] {
 	return nil
 }

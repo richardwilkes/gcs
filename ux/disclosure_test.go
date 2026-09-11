@@ -152,3 +152,51 @@ func TestTableDockableToggles(t *testing.T) {
 	c.Equal(0, dockable.FirstNoteState(), "with no note anywhere there is nothing to report")
 	dockable.toggleNotes() // Nothing to act on; must not panic or change anything.
 }
+
+// TestTableDockableTogglesAreOffWhileFiltered verifies that a list dockable turns its hierarchy and note buttons off
+// while a filter is applied, and that the toggles leave the rows alone should they be reached all the same. A filtered
+// table shows the rows that passed as a flat list, so a toggle over them would silently change the disclosure state of
+// just those rows, which would only show once the filter was cleared. Both the quick filter and a saved filter have to
+// turn the buttons off, and clearing either has to turn them back on.
+func TestTableDockableTogglesAreOffWhileFiltered(t *testing.T) {
+	c := check.New(t)
+	swapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	first := newTestContainer("First", true)
+	first.LocalNotes = "A note"
+	second := newTestContainer("Second", false)
+	dockable := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{first, second})
+	c.True(dockable.hierarchyButton.Enabled(), "the hierarchy button starts out on")
+	c.True(dockable.noteToggleButton.Enabled(), "the note button starts out on")
+
+	dockable.filterField.SetText("first")
+	c.True(dockable.table.IsFiltered(), "typing in the quick filter must filter the table")
+	c.False(dockable.hierarchyButton.Enabled(), "the hierarchy button must be off while the quick filter is applied")
+	c.False(dockable.noteToggleButton.Enabled(), "the note button must be off while the quick filter is applied")
+	dockable.toggleHierarchy()
+	c.True(first.IsOpen(), "the matched container must be left open")
+	c.False(second.IsOpen(), "the unmatched container must be left closed")
+	dockable.toggleNotes()
+	c.Equal(1, dockable.FirstNoteState(), "the note must be left shown")
+
+	dockable.filterField.SetText("")
+	c.False(dockable.table.IsFiltered(), "emptying the quick filter must show everything")
+	c.True(dockable.hierarchyButton.Enabled(), "clearing the quick filter must turn the hierarchy button back on")
+	c.True(dockable.noteToggleButton.Enabled(), "clearing the quick filter must turn the note button back on")
+
+	dockable.chooseFilter(newNameContainsFilter("First", "first"))
+	c.True(dockable.table.IsFiltered(), "the saved filter must filter the table")
+	c.False(dockable.hierarchyButton.Enabled(), "the hierarchy button must be off while a saved filter is applied")
+	c.False(dockable.noteToggleButton.Enabled(), "the note button must be off while a saved filter is applied")
+	dockable.toggleHierarchy()
+	c.True(first.IsOpen(), "the matched container must be left open under the saved filter as well")
+	c.False(second.IsOpen(), "the unmatched container must be left closed under the saved filter as well")
+
+	dockable.chooseFilter(nil)
+	c.False(dockable.table.IsFiltered(), "dropping the saved filter must show everything")
+	c.True(dockable.hierarchyButton.Enabled(), "dropping the saved filter must turn the hierarchy button back on")
+	c.True(dockable.noteToggleButton.Enabled(), "dropping the saved filter must turn the note button back on")
+	dockable.toggleHierarchy()
+	c.False(first.IsOpen(), "with no filter, the open first container sets the direction, so it must be closed")
+	c.False(second.IsOpen(), "and the second one must be closed along with it")
+}

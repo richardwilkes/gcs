@@ -62,23 +62,6 @@ func newTraitForTest(name string, parent *gurps.Trait, tags ...string) *gurps.Tr
 	return t
 }
 
-func TestListProviderAllTagsSpansContainersAndDedupes(t *testing.T) {
-	c := check.New(t)
-	container := gurps.NewTrait(nil, nil, true)
-	container.Tags = []string{"Zeta", "b10"}
-	container.Children = []*gurps.Trait{
-		newTraitForTest("child", container, "b2", "alpha"),
-		newTraitForTest("dup", container, "Zeta", "b10", "alpha"),
-	}
-	lists := &listsForTest{traits: []*gurps.Trait{container, newTraitForTest("top", nil, "B3")}}
-	p := NewTraitsProvider(lists, false)
-	c.Equal([]string{"alpha", "b2", "B3", "b10", "Zeta"}, p.AllTags(),
-		"tags must be gathered from every depth, deduplicated and naturally sorted, ignoring case")
-	lists.traits = nil
-	c.Nil(p.AllTags(), "an empty list must have no tags")
-	c.Nil(NewWeaponsProvider(lists, true, false).AllTags(), "a node type without tags must have no tags")
-}
-
 func TestListProviderRowsMirrorTheList(t *testing.T) {
 	c := check.New(t)
 	notes := []*gurps.Note{gurps.NewNote(nil, nil, false), gurps.NewNote(nil, nil, true)}
@@ -189,7 +172,6 @@ func TestCondModProviderIsReadOnly(t *testing.T) {
 	p.SetRootData(nil)
 	p.SetRootRows(nil)
 	c.Equal(1, len(lists.conditional), "the computed rows must not be replaceable")
-	c.Nil(p.AllTags())
 	_, err := p.Serialize()
 	c.HasError(err)
 	c.HasError(p.Deserialize(nil))
