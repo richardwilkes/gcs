@@ -24,6 +24,8 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
+const maxWeightedOptionValue = 999_999
+
 // weightedStringOptionsPanel edits a weighted string list: a header with an add button (and an import button, when the
 // spec provides an importer) and a button that removes the selected rows, plus a bordered container holding a row per
 // entry. The container is omitted for an empty list rather than drawn empty, so its children are always exactly the
@@ -233,7 +235,7 @@ func newWeightedStringOptionPanel(list *weightedStringOptionsPanel, option *gurp
 	mgr := d.targetManager()
 	weightField := NewIntegerField(mgr, option.KeyPrefix+"weight", i18n.Text("Weight"),
 		func() int { return option.Weight },
-		func(v int) { option.Weight = v }, 0, 9999, false, false)
+		func(v int) { option.Weight = v }, 0, maxWeightedOptionValue, false, false)
 	weightField.SetBaseTooltip(newWrappedTooltip(i18n.Text("The relative likelihood of this option being chosen. Only the ratio between the weights within the list matters.")))
 	p.AddChild(weightField)
 

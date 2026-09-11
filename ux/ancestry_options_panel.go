@@ -81,7 +81,7 @@ func (p *ancestryOptionsPanel) addGenderFields() {
 	addLabelAndTargetedIntegerField(p.AsPanel(), mgr, p.weighted.KeyPrefix+"weight", i18n.Text("Weight"),
 		i18n.Text("The relative likelihood of this gender being chosen when a random gender is generated. Only the ratio between the weights of the genders matters."),
 		func() int { return p.weighted.Weight },
-		func(v int) { p.weighted.Weight = v }, 0, 9999, false)
+		func(v int) { p.weighted.Weight = v }, 0, maxWeightedOptionValue, false)
 	addLabelAndTargetedStringField(p.AsPanel(), mgr, p.options.KeyPrefix+"name", i18n.Text("Name"),
 		i18n.Text("The name of this gender, as it will appear on the character sheet when chosen"), prototypeMinIDWidth,
 		func() string { return p.options.Name },
