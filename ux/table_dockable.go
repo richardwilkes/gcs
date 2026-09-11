@@ -37,38 +37,34 @@ var (
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
 type TableDockable[T gurps.Node[T]] struct {
 	fileBackedPanel
-	undoMgr        *unison.UndoManager
-	provider       TableProvider[T]
-	canCreateIDs   map[int]bool
-	filterField    *unison.Field
-	filterPopup    *unison.PopupMenu[string]
-	savedFilters   *listFilterPopup
-	selectedFilter *gurps.ListFilter
-	scroll         *unison.ScrollPanel
-	tableHeader    *unison.TableHeader[*Node[T]]
-	table          *unison.Table[*Node[T]]
-	scale          int
+	undoMgr          *unison.UndoManager
+	provider         TableProvider[T]
+	hierarchyButton  *unison.Button
+	noteToggleButton *unison.Button
+	filterField      *unison.Field
+	savedFilters     *listFilterPopup
+	selectedFilter   *gurps.ListFilter
+	scroll           *unison.ScrollPanel
+	tableHeader      *unison.TableHeader[*Node[T]]
+	table            *unison.Table[*Node[T]]
+	scale            int
+	choosingFilter   bool
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
 func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
 	header, table := NewNodeTable(provider, nil)
 	d := &TableDockable[T]{
-		undoMgr:      unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		provider:     provider,
-		canCreateIDs: make(map[int]bool),
-		scroll:       unison.NewScrollPanel(),
-		tableHeader:  header,
-		table:        table,
-		scale:        gurps.GlobalSettings().General.InitialListUIScale,
+		undoMgr:     unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
+		provider:    provider,
+		scroll:      unison.NewScrollPanel(),
+		tableHeader: header,
+		table:       table,
+		scale:       gurps.GlobalSettings().General.InitialListUIScale,
 	}
 	d.Self = d
 	d.initFileEditor(d, filePath, extension, saver, d)
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
-
-	for _, id := range canCreateIDs {
-		d.canCreateIDs[id] = true
-	}
 
 	d.table.SyncToModel()
 	d.table.SizeColumnsToFit(true)
@@ -135,27 +131,33 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 }
 
 func (d *TableDockable[T]) createToolbar() *unison.Panel {
-	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
-	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
-	hierarchyButton.ClickCallback = d.toggleHierarchy
+	// The hierarchy and note buttons are kept so that they can be turned off while a filter is applied, when the table
+	// shows a flat list of the rows that passed and a toggle over them would silently change just those rows.
+	d.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
+	d.hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
+	d.hierarchyButton.ClickCallback = d.toggleHierarchy
 
-	noteToggleButton := unison.NewSVGButton(svg.NotesToggle)
-	noteToggleButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all embedded notes"))
-	noteToggleButton.ClickCallback = d.toggleNotes
+	d.noteToggleButton = unison.NewSVGButton(svg.NotesToggle)
+	d.noteToggleButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all embedded notes"))
+	d.noteToggleButton.ClickCallback = d.toggleNotes
 
 	sizeToFitButton := unison.NewSVGButton(svg.SizeToFit)
 	sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
 	sizeToFitButton.ClickCallback = d.sizeToFit
 
 	// The field is named the way the saved filter popup's entry for it is, since that entry is what hands it the list.
-	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.ApplyFilter() })
+	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) {
+		if !d.choosingFilter {
+			d.applyFilter()
+		}
+	})
 
 	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
 	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialListUIScale },
 		func() int { return d.scale }, func(scale int) { d.scale = scale }, false, d.scroll)
-	toolbar.AddChild(hierarchyButton)
-	toolbar.AddChild(noteToggleButton)
+	toolbar.AddChild(d.hierarchyButton)
+	toolbar.AddChild(d.noteToggleButton)
 	toolbar.AddChild(sizeToFitButton)
 	toolbar.AddChild(d.filterField)
 	// The weapon and conditional modifier providers have no filter key, since their lists are never shown in a list
@@ -167,8 +169,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 			current: func() *gurps.ListFilter { return d.selectedFilter },
 			choose:  d.chooseFilter,
 		})
-		d.filterPopup = d.savedFilters.popup
-		toolbar.AddChild(d.filterPopup)
+		toolbar.AddChild(d.savedFilters.popup)
 	}
 	finishToolbarLayout(toolbar)
 	return toolbar
@@ -228,12 +229,22 @@ func (d *TableDockable[T]) ApplyNoteState(closed bool) {
 	applyTableNoteState(d.table, closed)
 }
 
+// toggleHierarchy opens or closes every container in the table. Like the other row-affecting commands, it does nothing
+// while a filter is applied, since the table then holds only the rows that passed, as a flat list, and its button is
+// turned off along with the filter being applied.
 func (d *TableDockable[T]) toggleHierarchy() {
+	if d.table.IsFiltered() {
+		return
+	}
 	toggleHierarchy(d)
 	d.table.SyncToModel()
 }
 
+// toggleNotes shows or hides every note in the table. It is gated on the filter the same way toggleHierarchy is.
 func (d *TableDockable[T]) toggleNotes() {
+	if d.table.IsFiltered() {
+		return
+	}
 	if toggleNotes(d) {
 		d.table.SyncToModel()
 	}
@@ -275,14 +286,16 @@ func (d *TableDockable[T]) Hash(h hash.Hash) {
 // quick filter's field is only usable while no saved filter is in force, since the two would otherwise disagree about
 // which rows to show.
 func (d *TableDockable[T]) chooseFilter(f *gurps.ListFilter) {
-	// The filter is recorded first because the SetText below re-enters ApplyFilter through the search field's
-	// ModifiedCallback.
 	d.selectedFilter = f
 	if f != nil {
+		// Emptying the field fires its ModifiedCallback whenever it held text, which would put the rows through the
+		// saved filter once here and once more below, so the callback is told to leave the filtering to this method.
+		d.choosingFilter = true
 		d.filterField.SetText("")
+		d.choosingFilter = false
 	}
 	adjustFieldBlank(d.filterField, f != nil)
-	d.ApplyFilter()
+	d.applyFilter()
 }
 
 // listFiltersChanged implements listFilterObserver.
@@ -290,11 +303,6 @@ func (d *TableDockable[T]) listFiltersChanged(key string, source *listFilterPopu
 	if d.savedFilters != nil && d.savedFilters != source && d.savedFilters.spec.key == key {
 		d.savedFilters.refresh()
 	}
-}
-
-// ApplyFilter applies the current filtering, if any.
-func (d *TableDockable[T]) ApplyFilter() {
-	d.applyFilter()
 }
 
 // applyFilter applies the current filtering and reports whether the table was synced to its model as part of that,
@@ -317,5 +325,8 @@ func (d *TableDockable[T]) applyFilter() (synced bool) {
 		return false
 	}
 	d.table.ApplyFilter(f)
+	filtered := d.table.IsFiltered()
+	d.hierarchyButton.SetEnabled(!filtered)
+	d.noteToggleButton.SetEnabled(!filtered)
 	return true
 }

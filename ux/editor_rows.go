@@ -159,11 +159,12 @@ func moveEntry[T any](list *[]T, from, to int) bool {
 // noAndOr is the text of the label that joins a row to the siblings ahead of it when there are none.
 const noAndOr = ""
 
-// joiningText returns the text of the label that joins a row to the siblings ahead of it in a list of count rows:
-// nothing when it is the first of them or stands alone, "and" when every row has to be satisfied, and "or" when any
-// one of them will do.
-func joiningText(count int, isFirst, all bool) string {
-	if count < 2 || isFirst {
+// joiningText returns the text of the label that joins a row to the siblings ahead of it: nothing when it is the
+// first of them or stands alone, "and" when every row has to be satisfied, and "or" when any one of them will do. The
+// row is looked for in the siblings only once there are at least two of them, so a row that has been taken out of its
+// list is safe to ask about.
+func joiningText[R comparable](siblings []R, row R, all bool) string {
+	if len(siblings) < 2 || siblings[0] == row {
 		return noAndOr
 	}
 	if all {

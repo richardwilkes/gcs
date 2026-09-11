@@ -26,7 +26,7 @@ const listFilterQuickIndex = 0
 var (
 	showFilterEditor      = showListFilterDialog
 	confirmFilterDeletion = func(name string) bool {
-		return unison.QuestionDialog(fmt.Sprintf(i18n.Text("Delete the filter %q?"), name),
+		return unison.QuestionDialog(fmt.Sprintf(i18n.Text("Delete the filter '%s'?"), name),
 			i18n.Text("This cannot be undone.")) == unison.ModalResponseOK
 	}
 )

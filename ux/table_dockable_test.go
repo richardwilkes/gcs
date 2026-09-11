@@ -181,9 +181,9 @@ func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
 			return true
 		})
 	d := newFilterTestTraitDockable(t)
-	c.NotNil(d.filterPopup, "a trait list must offer saved filters")
-	chain := []*unison.Panel{d.filterPopup.AsPanel()}
-	for p := d.filterPopup.Parent(); p != nil; p = p.Parent() {
+	c.NotNil(d.savedFilters.popup, "a trait list must offer saved filters")
+	chain := []*unison.Panel{d.savedFilters.popup.AsPanel()}
+	for p := d.savedFilters.popup.Parent(); p != nil; p = p.Parent() {
 		chain = append(chain, p)
 	}
 	c.True(len(chain) >= 3, "the popup must sit in a toolbar within the dockable")
@@ -191,7 +191,7 @@ func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
 		p.NeedsLayout = false
 	}
 
-	d.filterPopup.ChoiceMadeCallback(d.filterPopup, d.filterPopup.ItemCount()-3, "")
+	d.savedFilters.popup.ChoiceMadeCallback(d.savedFilters.popup, d.savedFilters.popup.ItemCount()-3, "")
 	c.NotNil(d.selectedFilter, "the new filter must be in force")
 	for _, p := range chain {
 		c.True(p.NeedsLayout, "%T must be marked for layout after the popup's items changed", p.Self)
@@ -239,8 +239,7 @@ func TestTableDockableWithoutFilterKeyOmitsSavedFilters(t *testing.T) {
 	d := NewTableDockable("test.wpn", ".wpn", NewWeaponsProvider(lists, true, false),
 		func(_ string) error { return nil })
 	c.Equal("", d.provider.FilterKey(), "the weapon lists have no saved filters of their own")
-	c.Nil(d.filterPopup, "a list type with no filter key must get no saved filter popup")
-	c.Nil(d.savedFilters, "nor anything driving one")
+	c.Nil(d.savedFilters, "a list type with no filter key must get no saved filter popup, nor anything driving one")
 	c.Nil(d.provider.FilterFields(), "nor any fields for a saved filter to test")
 	for _, popup := range panelsOfType[*unison.PopupMenu[string]](d.AsPanel()) {
 		c.NoPrefix(tooltipText(popup.Tooltip), "Saved Filters", "no popup in the toolbar may be the saved filter popup")
@@ -259,4 +258,39 @@ func TestTableDockableWithoutFilterKeyOmitsSavedFilters(t *testing.T) {
 		d.listFiltersChanged(listFilterPopupTestKey, nil)
 		d.Rebuild(false)
 	}, "a list with no saved filter popup must take the filter calls all the same")
+}
+
+// filterFieldsCounter wraps a table provider to count how often the fields a saved filter may test are asked for,
+// which the dockable does once each time it puts the rows through a saved filter.
+type filterFieldsCounter struct {
+	TableProvider[*gurps.Trait]
+	calls int
+}
+
+func (p *filterFieldsCounter) FilterFields() []*gurps.FilterField[*gurps.Trait] {
+	p.calls++
+	return p.TableProvider.FilterFields()
+}
+
+// TestTableDockableSavedFilterReplacingQuickFilterAppliesOnce verifies that putting a saved filter in force while the
+// quick filter holds text puts the rows through the saved filter once. Emptying the quick filter's field fires its
+// ModifiedCallback, which is not to apply the saved filter a first time before chooseFilter applies it, since each pass
+// walks every row and syncs and sorts the table.
+func TestTableDockableSavedFilterReplacingQuickFilterAppliesOnce(t *testing.T) {
+	c := check.New(t)
+	f := newNameContainsFilter("Combat", "combat")
+	d := newFilterTestTraitDockable(t, f)
+	counter := &filterFieldsCounter{TableProvider: d.provider}
+	d.provider = counter
+	d.filterField.SetText("fur")
+	c.Equal([]string{"Fur"}, visibleTraitNames(d), "only the trait the quick filter accepts may be shown")
+	c.Equal(0, counter.calls, "the quick filter has no saved filter to look the fields up for")
+
+	d.chooseFilter(f)
+	c.Equal(1, counter.calls, "the saved filter must be applied exactly once")
+	c.Equal("", d.filterField.Text(), "the quick filter's text must have been cleared")
+	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "only the trait the saved filter accepts may be shown")
+
+	d.chooseFilter(f)
+	c.Equal(2, counter.calls, "choosing the saved filter again, with the field already empty, applies it once more")
 }

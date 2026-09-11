@@ -530,3 +530,20 @@ func (n *testUnhandledFilterNode) Clone(parent *gurps.FilterGroup) gurps.FilterN
 // Hash implements gurps.FilterNode.
 func (n *testUnhandledFilterNode) Hash(_ hash.Hash) {
 }
+
+// TestFilterAndOrTextSurvivesAnEmptiedGroup verifies that the and/or label of a node that still points at its group
+// can be asked for after the group has been emptied, which is the same shape a prerequisite's label has to withstand.
+func TestFilterAndOrTextSurvivesAnEmptiedGroup(t *testing.T) {
+	c := check.New(t)
+	group := gurps.NewFilterGroup(nil)
+	one := gurps.NewFilterCondition(group, "name")
+	two := gurps.NewFilterCondition(group, "name")
+	group.Children = []gurps.FilterNode{one, two}
+	c.Equal(noAndOr, filterAndOrText(one), "the first of two nodes gets no label")
+	c.Equal(i18n.Text("and"), filterAndOrText(two), "the second of two nodes is joined to the first")
+
+	group.Children = nil
+	c.NotPanics(func() {
+		c.Equal(noAndOr, filterAndOrText(two), "a node whose group has been emptied gets no label")
+	}, "an emptied group must not be indexed")
+}

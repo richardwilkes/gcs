@@ -221,7 +221,7 @@ func andOrText(pr gurps.Prereq) string {
 	if list == nil {
 		return noAndOr
 	}
-	return joiningText(len(list.Prereqs), list.Prereqs[0] == pr, list.All)
+	return joiningText(list.Prereqs, pr, list.All)
 }
 
 func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr gurps.Prereq) {

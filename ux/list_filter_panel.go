@@ -363,7 +363,7 @@ func filterAndOrText(node gurps.FilterNode) string {
 	if group == nil {
 		return noAndOr
 	}
-	return joiningText(len(group.Children), group.Children[0] == node, group.All)
+	return joiningText(group.Children, node, group.All)
 }
 
 // setFilterRowLayout gives a row one column per child. A condition row's trailing criteria are thrown away and rebuilt

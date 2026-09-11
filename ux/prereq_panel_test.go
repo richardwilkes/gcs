@@ -160,3 +160,25 @@ func TestSpellPrereqPowerSourcePopupOffersTheOwningSpell(t *testing.T) {
 		}
 	}
 }
+
+// TestAndOrTextSurvivesAnEmptiedList verifies that the and/or label of a prerequisite that still points at its list
+// can be asked for after the list has been emptied, which happens between a prerequisite being taken out of its list
+// and its row going away.
+func TestAndOrTextSurvivesAnEmptiedList(t *testing.T) {
+	c := check.New(t)
+	list := gurps.NewPrereqList()
+	one := gurps.NewTraitPrereq()
+	one.Parent = list
+	list.Prereqs = []gurps.Prereq{one}
+	c.Equal(noAndOr, andOrText(one), "a prerequisite that stands alone gets no label")
+
+	two := gurps.NewTraitPrereq()
+	two.Parent = list
+	list.Prereqs = append(list.Prereqs, two)
+	c.Equal(i18n.Text("and"), andOrText(two), "the second of two prerequisites is joined to the first")
+
+	list.Prereqs = nil
+	c.NotPanics(func() {
+		c.Equal(noAndOr, andOrText(one), "a prerequisite whose list has been emptied gets no label")
+	}, "an emptied list must not be indexed")
+}
