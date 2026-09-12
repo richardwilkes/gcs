@@ -22,6 +22,10 @@
 - Deep search now indexes your libraries from the values recorded in each file when it was last saved, instead of
   recalculating every character sheet and running every note's scripts to build its index. Starting GCS, and each
   library update after that, now does far less work.
+- A new sheet setting, "Disable traits whose prerequisites are unsatisfied", treats any trait whose prerequisites are
+  not met, or whose level exceeds its maximum, as disabled: it contributes no points, features or weapons to the sheet
+  until they are met. The trait keeps its own enabled state and the warning that explains what is missing, and comes
+  back into play on its own once its prerequisites are satisfied. The setting is off by default.
 
 ## Bug Fixes
 

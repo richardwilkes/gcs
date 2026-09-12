@@ -71,6 +71,10 @@ type Trait struct {
 	owner             DataOwner
 	UnsatisfiedReason string
 	resolvingLevel    bool
+	// prereqDisabled is set by Entity.processPrereqs when the owning sheet enforces trait prerequisites and this
+	// trait's are unsatisfied. The trait then behaves as though it were disabled, without altering the Disabled flag
+	// the user controls. It is recomputed on every Recalculate and is never saved.
+	prereqDisabled bool
 	// savedCurrentLevel is the level recorded in the "calc" object of the file the trait was loaded from. It is only
 	// kept by a load that asks for it (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
 	savedCurrentLevel *fxp.Int
@@ -302,17 +306,29 @@ func (t *Trait) transferOldTypeFlagToTags(name string, flag bool) {
 
 // EffectivelyDisabled returns true if this node or a parent is disabled.
 func (t *Trait) EffectivelyDisabled() bool {
-	if t.Disabled {
-		return true
+	return !t.Enabled()
+}
+
+// DisabledByPrereqs returns true if this trait is enabled by the user but is being treated as disabled because the
+// sheet enforces trait prerequisites and this trait's are unsatisfied. Parents are not consulted.
+func (t *Trait) DisabledByPrereqs() bool {
+	return t.prereqDisabled && !t.Disabled
+}
+
+// setPrereqDisabled records whether the sheet is disabling this trait for unsatisfied prerequisites and returns true
+// if that changed.
+func (t *Trait) setPrereqDisabled(disabled bool) bool {
+	if t.prereqDisabled == disabled {
+		return false
 	}
-	p := t.Parent()
-	for p != nil {
-		if p.Disabled {
-			return true
-		}
-		p = p.Parent()
-	}
-	return false
+	t.prereqDisabled = disabled
+	return true
+}
+
+// selfDisabled returns true if this trait itself is disabled, either by the user or because the sheet enforces
+// prerequisites and this trait's are unsatisfied. Parents are not consulted; see Enabled for that.
+func (t *Trait) selfDisabled() bool {
+	return t.Disabled || t.prereqDisabled
 }
 
 // TemplatePickerData implements TemplatePickerProvider.
@@ -368,6 +384,9 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
 		data.UnsatisfiedReason = t.UnsatisfiedReason
+		if t.DisabledByPrereqs() {
+			data.UnsatisfiedReason += "\n\n" + i18n.Text("The sheet settings disable traits whose prerequisites are unsatisfied, so this trait is treated as disabled until they are met.")
+		}
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		if tooltip.Len() != 0 {
 			t := i18n.Text("Trait level adjustments:\n") + strings.ReplaceAll(tooltip.String(), "\n", "\n- ")
@@ -567,17 +586,14 @@ func (t *Trait) AllModifiers() []*TraitModifier {
 	return all
 }
 
-// Enabled returns true if this Trait and all of its parents are enabled.
+// Enabled returns true if this Trait and all of its parents are enabled. A trait the sheet has disabled for
+// unsatisfied prerequisites (see SheetSettings.EnforceTraitPrereqs) counts as disabled here, just as one the user
+// disabled does.
 func (t *Trait) Enabled() bool {
-	if t.Disabled {
-		return false
-	}
-	p := t.parent
-	for p != nil {
-		if p.Disabled {
+	for p := t; p != nil; p = p.parent {
+		if p.selfDisabled() {
 			return false
 		}
-		p = p.parent
 	}
 	return true
 }

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"slices"
 	"strconv"
 	"testing"
 
@@ -311,15 +312,213 @@ func TestEntityProcessPrereqsClearsUnsatisfiedReasonWhenDisabled(t *testing.T) {
 // newTraitNeedingMissingTrait creates a trait whose prerequisite requires another trait the entity doesn't have, so
 // that processPrereqs marks it unsatisfied.
 func newTraitNeedingMissingTrait(e *Entity, name string) *Trait {
+	return newTraitRequiring(e, name, "Combat Reflexes")
+}
+
+// newTraitRequiring creates a trait with the given name whose prerequisite requires a trait with the required name.
+// It is not added to the entity.
+func newTraitRequiring(e *Entity, name, required string) *Trait {
 	t := NewTrait(e, nil, false)
 	t.Name = name
+	t.Prereq = newPrereqListRequiringTrait(required)
+	return t
+}
+
+// newPrereqListRequiringTrait returns a prerequisite list satisfied only by a trait with the given name.
+func newPrereqListRequiringTrait(name string) *PrereqList {
 	list := NewPrereqList()
 	p := NewTraitPrereq()
 	p.Parent = list
-	p.NameCriteria.Qualifier = "Combat Reflexes"
+	p.NameCriteria.Qualifier = name
 	list.Prereqs = append(list.Prereqs, p)
-	t.Prereq = list
-	return t
+	return list
+}
+
+// TestEntityEnforceTraitPrereqsDisablesUnsatisfiedTraits verifies the sheet setting that disables traits whose
+// prerequisites are unsatisfied: the trait keeps its unsatisfied reason but is treated as disabled, so its points,
+// features and weapons drop out of the sheet, and it comes back on its own once the prerequisites are met or the
+// setting is turned off. The user's own enabled state on the trait is never touched.
+func TestEntityEnforceTraitPrereqsDisablesUnsatisfiedTraits(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait := newTraitNeedingMissingTrait(e, "Trained by a Master")
+	trait.BasePoints = fxp.Twenty
+	bonus := NewAttributeBonus(StrengthID)
+	bonus.Amount = fxp.Two
+	trait.Features = Features{bonus}
+	trait.Weapons = append(trait.Weapons, NewWeapon(trait, true))
+	e.Traits = append(e.Traits, trait)
+
+	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "the unmet prereq is flagged")
+	c.True(trait.Enabled(), "without the setting, the trait stays enabled")
+	c.False(trait.DisabledByPrereqs(), "without the setting, the trait is not disabled by its prereqs")
+	c.Equal(fxp.Twenty, trait.AdjustedPoints(), "without the setting, the trait's points count")
+	c.Equal(fxp.Twenty, e.PointsBreakdown().Advantages, "without the setting, the trait's points are in the total")
+	c.Equal(fxp.Two, e.AttributeBonusFor(StrengthID, stlimit.None, nil), "without the setting, its features apply")
+	// The entity starts out with the natural attacks, so the weapon counts are relative to those.
+	weaponCount := len(e.Weapons(true, false, false))
+	c.True(weaponCount > 0, "without the setting, its weapons are in play")
+
+	e.SheetSettings.EnforceTraitPrereqs = true
+	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "the reason is kept so the sheet can show why the trait is disabled")
+	c.False(trait.Enabled(), "the setting disables the trait")
+	c.True(trait.EffectivelyDisabled(), "the setting disables the trait")
+	c.True(trait.DisabledByPrereqs(), "the trait reports that its prereqs disabled it")
+	c.False(trait.Disabled, "the user's own enabled state is left alone")
+	c.Equal(fxp.Int(0), trait.AdjustedPoints(), "a disabled trait is worth no points")
+	c.Equal(fxp.Int(0), e.PointsBreakdown().Advantages, "a disabled trait's points leave the total")
+	c.Equal(fxp.Int(0), e.AttributeBonusFor(StrengthID, stlimit.None, nil), "its features are no longer active")
+	c.Equal(weaponCount-1, len(e.Weapons(true, false, false)), "its weapons are no longer in play")
+
+	// Satisfying the prerequisite brings the trait back without touching it.
+	combatReflexes := NewTrait(e, nil, false)
+	combatReflexes.Name = "Combat Reflexes"
+	e.Traits = append(e.Traits, combatReflexes)
+	e.Recalculate()
+	c.Equal("", trait.UnsatisfiedReason, "the prereq is met")
+	c.True(trait.Enabled(), "the trait is re-enabled once its prerequisite is met")
+	c.False(trait.DisabledByPrereqs(), "the trait no longer reports being disabled by its prereqs")
+	c.Equal(fxp.Twenty, trait.AdjustedPoints(), "its points count again")
+	c.Equal(fxp.Two, e.AttributeBonusFor(StrengthID, stlimit.None, nil), "its features apply again")
+
+	// Removing the prerequisite disables the trait again, and turning the setting off re-enables it.
+	e.Traits = slices.DeleteFunc(e.Traits, func(t *Trait) bool { return t == combatReflexes })
+	e.Recalculate()
+	c.False(trait.Enabled(), "losing the prerequisite disables the trait again")
+	e.SheetSettings.EnforceTraitPrereqs = false
+	e.Recalculate()
+	c.True(trait.Enabled(), "turning the setting off re-enables the trait")
+	c.NotEqual("", trait.UnsatisfiedReason, "the unmet prereq is still flagged")
+}
+
+// TestEntityEnforceTraitPrereqsCascades verifies that a trait disabled for unsatisfied prerequisites no longer
+// satisfies the prerequisites of other traits, which are disabled in turn within the same recalculation, and that
+// all of them come back together once the root prerequisite is met.
+func TestEntityEnforceTraitPrereqsCascades(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.SheetSettings.EnforceTraitPrereqs = true
+	// The dependent trait is listed first, so a single pass over the traits would still see the trait it needs as
+	// enabled; only a further pass notices that it has been disabled.
+	dependent := newTraitRequiring(e, "Weapon Master", "Trained by a Master")
+	needed := newTraitNeedingMissingTrait(e, "Trained by a Master")
+	e.Traits = append(e.Traits, dependent, needed)
+
+	e.Recalculate()
+	c.False(needed.Enabled(), "the trait with the unmet prereq is disabled")
+	c.False(dependent.Enabled(), "a trait whose prerequisite was disabled is disabled in turn")
+	c.NotEqual("", dependent.UnsatisfiedReason, "the dependent trait records why")
+
+	combatReflexes := NewTrait(e, nil, false)
+	combatReflexes.Name = "Combat Reflexes"
+	e.Traits = append(e.Traits, combatReflexes)
+	e.Recalculate()
+	c.True(needed.Enabled(), "meeting the root prerequisite re-enables the trait")
+	c.True(dependent.Enabled(), "and the trait that depends on it")
+	c.Equal("", dependent.UnsatisfiedReason, "the dependent trait's prereq is met")
+}
+
+// TestEntityEnforceTraitPrereqsHonorsUserDisabling verifies that the setting only acts on traits the user has left
+// enabled: a trait the user disabled has no prerequisites to enforce and no stale flag is left behind, and a trait
+// inside a container the user disabled is left alone too.
+func TestEntityEnforceTraitPrereqsHonorsUserDisabling(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.SheetSettings.EnforceTraitPrereqs = true
+	trait := newTraitNeedingMissingTrait(e, "Trained by a Master")
+	e.Traits = append(e.Traits, trait)
+
+	e.Recalculate()
+	c.True(trait.prereqDisabled, "an enabled trait with an unmet prereq is disabled by the setting")
+
+	trait.Disabled = true
+	e.Recalculate()
+	c.Equal("", trait.UnsatisfiedReason, "a trait the user disabled has no prerequisites to enforce")
+	c.False(trait.prereqDisabled, "disabling the trait clears the flag the setting had set")
+	c.False(trait.DisabledByPrereqs(), "a trait the user disabled is not reported as disabled by its prereqs")
+
+	trait.Disabled = false
+	e.Recalculate()
+	c.True(trait.DisabledByPrereqs(), "re-enabling the trait lets the setting disable it again")
+
+	e = NewEntity()
+	e.SheetSettings.EnforceTraitPrereqs = true
+	container := NewTrait(e, nil, true)
+	container.Name = "Martial Arts"
+	container.Disabled = true
+	nested := newTraitNeedingMissingTrait(e, "Weapon Master")
+	nested.SetParent(container)
+	container.Children = append(container.Children, nested)
+	e.Traits = append(e.Traits, container)
+
+	e.Recalculate()
+	c.Equal("", nested.UnsatisfiedReason, "a trait inside a disabled container has no prerequisites to enforce")
+	c.False(nested.prereqDisabled, "a trait inside a disabled container is not flagged by the setting")
+}
+
+// TestEntityEnforceTraitPrereqsContainers verifies that a container disabled for unsatisfied prerequisites takes
+// its children out of play with it, that those children have no prerequisites of their own to enforce while it is
+// disabled, and that they are checked again once the container's prerequisites are met.
+func TestEntityEnforceTraitPrereqsContainers(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.SheetSettings.EnforceTraitPrereqs = true
+	container := NewTrait(e, nil, true)
+	container.Name = "Martial Arts"
+	container.Prereq = newPrereqListRequiringTrait("Combat Reflexes")
+	plain := NewTrait(e, container, false)
+	plain.Name = "Weapon Bond"
+	plain.BasePoints = fxp.One
+	nested := newTraitRequiring(e, "Weapon Master", "Trained by a Master")
+	nested.SetParent(container)
+	container.Children = append(container.Children, plain, nested)
+	e.Traits = append(e.Traits, container)
+
+	e.Recalculate()
+	c.True(container.DisabledByPrereqs(), "the container with the unmet prereq is disabled")
+	c.False(plain.Enabled(), "a child of the disabled container is disabled with it")
+	c.False(plain.DisabledByPrereqs(), "the child itself is not the one the setting disabled")
+	c.Equal(fxp.Int(0), plain.AdjustedPoints(), "the child's points do not count")
+	c.Equal(fxp.Int(0), container.AdjustedPoints(), "the container's points do not count")
+	c.Equal(fxp.Int(0), e.PointsBreakdown().Total(), "nothing in the container counts toward the total")
+	c.Equal("", nested.UnsatisfiedReason, "a child of the disabled container has no prerequisites to enforce")
+	c.False(nested.prereqDisabled, "a child of the disabled container is not flagged by the setting")
+
+	combatReflexes := NewTrait(e, nil, false)
+	combatReflexes.Name = "Combat Reflexes"
+	e.Traits = append(e.Traits, combatReflexes)
+	e.Recalculate()
+	c.False(container.DisabledByPrereqs(), "meeting the prereq re-enables the container")
+	c.True(plain.Enabled(), "and its child")
+	c.Equal(fxp.One, plain.AdjustedPoints(), "the child's points count again")
+	c.True(nested.DisabledByPrereqs(), "the child with its own unmet prereq is checked again and disabled")
+	c.NotEqual("", nested.UnsatisfiedReason, "the child with its own unmet prereq records why")
+}
+
+// TestEntityEnforceTraitPrereqsMaxLevel verifies that a trait above its maximum level, which the sheet flags the same
+// way as an unmet prerequisite, is disabled by the setting as well, and re-enabled once its level is brought back
+// within the maximum.
+func TestEntityEnforceTraitPrereqsMaxLevel(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.SheetSettings.EnforceTraitPrereqs = true
+	trait := NewTrait(e, nil, false)
+	trait.Name = "Extra Arm"
+	trait.CanLevel = true
+	trait.Levels = fxp.Three
+	trait.MaxLevels = "2"
+	e.Traits = append(e.Traits, trait)
+
+	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "a trait above its maximum level is flagged")
+	c.True(trait.DisabledByPrereqs(), "a trait above its maximum level is disabled by the setting")
+
+	trait.Levels = fxp.Two
+	e.Recalculate()
+	c.Equal("", trait.UnsatisfiedReason, "a trait within its maximum level is not flagged")
+	c.False(trait.DisabledByPrereqs(), "a trait within its maximum level is enabled again")
 }
 
 // TestEntityReactionsUseResolvedSelfControl verifies that the reaction penalty derived from a trait's self-control

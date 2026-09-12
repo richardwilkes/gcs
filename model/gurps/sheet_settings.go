@@ -60,6 +60,7 @@ type SheetSettingsData struct {
 	ShowLiftingSTDamage           bool               `json:"show_lifting_st_damage,omitzero"`
 	ShowIQBasedDamage             bool               `json:"show_iq_based_damage,omitzero"`
 	HideZeroValueConditionalMods  bool               `json:"hide_zero_value_conditional_modifiers,omitzero"`
+	EnforceTraitPrereqs           bool               `json:"enforce_trait_prereqs,omitzero"`
 	HeightFormat                  fxp.NumberFormat   `json:"height_format,omitzero"`
 	BodyWeightFormat              fxp.NumberFormat   `json:"body_weight_format,omitzero"`
 	EquipmentWeightFormat         fxp.NumberFormat   `json:"equipment_weight_format,omitzero"`

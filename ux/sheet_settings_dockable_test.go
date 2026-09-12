@@ -108,6 +108,7 @@ func flipCheckboxOptions(s *gurps.SheetSettings) {
 	s.ShowLiftingSTDamage = !s.ShowLiftingSTDamage
 	s.ShowIQBasedDamage = !s.ShowIQBasedDamage
 	s.HideZeroValueConditionalMods = !s.HideZeroValueConditionalMods
+	s.EnforceTraitPrereqs = !s.EnforceTraitPrereqs
 	s.UseMultiplicativeModifiers = !s.UseMultiplicativeModifiers
 	s.UseHalfStatDefaults = !s.UseHalfStatDefaults
 	s.UseModifyingDicePlusAdds = !s.UseModifyingDicePlusAdds

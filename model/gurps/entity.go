@@ -333,13 +333,15 @@ func (e *Entity) Recalculate() {
 	for range 5 {
 		// Skill & spell levels and the features & prerequisites depend on each other, so the skills & spells must be
 		// updated at least twice. Once they no longer change, we can stop, but the iterations are capped to avoid an
-		// infinite loop.
+		// infinite loop. The same goes for a trait the sheet disables for unsatisfied prerequisites: its features
+		// were collected before its prerequisites were checked, and its absence may in turn leave another trait's
+		// prerequisites unsatisfied, so another pass is needed whenever that set changes.
 		e.processFeatures()
-		e.processPrereqs()
+		prereqsChanged := e.processPrereqs()
 		e.DiscardCaches()
 		skillsChanged := e.UpdateSkills()
 		spellsChanged := e.UpdateSpells()
-		if !skillsChanged && !spellsChanged {
+		if !skillsChanged && !spellsChanged && !prereqsChanged {
 			break
 		}
 	}
@@ -565,12 +567,22 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 // unsatisfiedReasonPrefix separates the individual reasons within an UnsatisfiedReason.
 const unsatisfiedReasonPrefix = "\n- "
 
-func (e *Entity) processPrereqs() {
+// processPrereqs evaluates the prerequisites of every trait, skill, spell and piece of equipment, recording the reason
+// each is unsatisfied. When the sheet enforces trait prerequisites, a trait whose prerequisites are unsatisfied is also
+// marked as disabled; the return value reports whether the set of traits disabled that way changed, since a change
+// alters which features are active and may leave other prerequisites unsatisfied in turn.
+func (e *Entity) processPrereqs() bool {
+	enforce := e.SheetSettings.EnforceTraitPrereqs
+	changed := false
 	// Traverse all traits, not just the enabled ones, so that a trait that becomes disabled has any previously
-	// recorded unsatisfied reason cleared. Prerequisites are only evaluated for enabled traits.
+	// recorded unsatisfied reason cleared. Prerequisites are only evaluated for traits the user has enabled that are
+	// not inside a disabled container. A trait's own prereqDisabled flag is deliberately not consulted here: it is
+	// what this pass computes, and honoring it would keep a trait disabled forever once its prerequisites had failed
+	// even once. The reason is kept for a trait disabled this way, so the sheet can show why it is disabled.
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
-		if !t.Enabled() {
+		if t.Disabled || (t.parent != nil && !t.parent.Enabled()) {
+			changed = t.setPrereqDisabled(false) || changed
 			return false
 		}
 		t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil, nil)
@@ -582,6 +594,7 @@ func (e *Entity) processPrereqs() {
 				t.UnsatisfiedReason += unsatisfiedReasonPrefix + reason
 			}
 		}
+		changed = t.setPrereqDisabled(enforce && t.UnsatisfiedReason != "") || changed
 		return false
 	}, false, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
@@ -627,6 +640,7 @@ func (e *Entity) processPrereqs() {
 	}
 	Traverse(equipmentFunc, false, false, e.CarriedEquipment...)
 	Traverse(equipmentFunc, false, false, e.OtherEquipment...)
+	return changed
 }
 
 // evaluatePrereqs evaluates the prerequisites, which may be nil, of the node given as exclude and returns the reason to
@@ -718,7 +732,7 @@ func (e *Entity) PointsBreakdown() *PointsBreakdown {
 }
 
 func calculateSingleTraitPoints(t *Trait, pb *PointsBreakdown) {
-	if t.Disabled {
+	if t.selfDisabled() {
 		return
 	}
 	if t.Container() {

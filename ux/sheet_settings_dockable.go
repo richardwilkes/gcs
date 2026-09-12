@@ -59,6 +59,7 @@ type sheetSettingsDockable struct {
 type sheetOption struct {
 	title    string
 	pageRef  string // a page reference to link to after the title, if any
+	tooltip  string // an explanation of the setting, if the title alone is not enough
 	field    func(s *gurps.SheetSettings) *bool
 	inverted bool // the setting hides what the checkbox offers to show, so the box is checked while the setting is off
 	fullSync bool // the setting can change the columns a sheet shows, which only a full rebuild can pick up
@@ -169,6 +170,12 @@ func sheetOptions() []sheetOption {
 			field:    func(s *gurps.SheetSettings) *bool { return &s.HideZeroValueConditionalMods },
 			fullSync: true,
 		},
+		{
+			title:    i18n.Text("Disable traits whose prerequisites are unsatisfied"),
+			tooltip:  i18n.Text("A trait whose prerequisites are not met, or whose level exceeds its maximum, is treated as disabled: it contributes no points, features or weapons to the sheet until they are met. The trait keeps its own enabled state and comes back into play on its own once its prerequisites are satisfied."),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.EnforceTraitPrereqs },
+			fullSync: true,
+		},
 	}
 }
 
@@ -268,6 +275,9 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 			option.apply(d.settings(), checked)
 			d.syncSheet(option.fullSync)
 		})
+		if option.tooltip != "" {
+			box.Tooltip = newWrappedTooltip(option.tooltip)
+		}
 		d.options = append(d.options, sheetOptionCheckBox{box: box, option: option})
 	}
 	content.AddChild(panel)
