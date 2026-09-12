@@ -49,7 +49,6 @@ type TableDockable[T gurps.Node[T]] struct {
 	tableHeader      *unison.TableHeader[*Node[T]]
 	table            *unison.Table[*Node[T]]
 	scale            int
-	choosingFilter   bool
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
@@ -107,7 +106,7 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 		func(_ any) { d.save(false) })
 	d.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { d.save(true) })
 	d.InstallCmdHandlers(JumpToSearchFilterItemID,
-		func(any) bool { return d.filterField.Enabled() && !d.filterField.Focused() },
+		func(any) bool { return !d.filterField.Focused() },
 		func(any) { d.filterField.RequestFocus() })
 	for _, id := range canCreateIDs {
 		variant := ItemVariant(-1)
@@ -147,12 +146,9 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
 	sizeToFitButton.ClickCallback = d.sizeToFit
 
-	// The field is named the way the saved filter popup's entry for it is, since that entry is what hands it the list.
-	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) {
-		if !d.choosingFilter {
-			d.applyFilter()
-		}
-	})
+	// The quick filter is always in play: what is typed here narrows the list on top of a saved filter when one is in
+	// force, and is all that filters the list otherwise.
+	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.applyFilter() })
 
 	toolbar := newToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -286,19 +282,11 @@ func (d *TableDockable[T]) Hash(h hash.Hash) {
 	gurps.HashJSON(h, data)
 }
 
-// chooseFilter puts the given saved filter in force, or hands the list back to the quick filter when it is nil. The
-// quick filter's field is only usable while no saved filter is in force, since the two would otherwise disagree about
-// which rows to show.
+// chooseFilter puts the given saved filter in force, or drops the one that was when it is nil. Whatever the quick
+// filter's field holds is left alone either way, since it narrows the list on top of the saved filter rather than
+// standing in for it.
 func (d *TableDockable[T]) chooseFilter(f *gurps.ListFilter) {
 	d.selectedFilter = f
-	if f != nil {
-		// Emptying the field fires its ModifiedCallback whenever it held text, which would put the rows through the
-		// saved filter once here and once more below, so the callback is told to leave the filtering to this method.
-		d.choosingFilter = true
-		d.filterField.SetText("")
-		d.choosingFilter = false
-	}
-	adjustFieldBlank(d.filterField, f != nil)
 	d.applyFilter()
 }
 
@@ -310,24 +298,36 @@ func (d *TableDockable[T]) listFiltersChanged(key string, source *listFilterPopu
 }
 
 // applyFilter applies the current filtering and reports whether the table was synced to its model as part of that,
-// which unison.Table.ApplyHierarchicalFilter does whenever it is given a filter or has one to clear. The hierarchy is
-// kept so that a matching row is seen in context, beneath the containers that hold it. A container shown only for that
-// reason is dimmed (see Node.cellData), so the rows that actually matched stand out from those that are just context.
+// which unison.Table.ApplyHierarchicalFilter does whenever it is given a filter or has one to clear. A saved filter in
+// force and the text in the quick filter's field are applied together: a row is shown only when it passes both. The
+// hierarchy is kept so that a matching row is seen in context, beneath the containers that hold it. A container shown
+// only for that reason is dimmed (see Node.cellData), so the rows that actually matched stand out from those that are
+// just context.
 func (d *TableDockable[T]) applyFilter() (synced bool) {
 	if d.filterField == nil {
 		return false
 	}
-	var f func(row *Node[T]) bool
+	// The table's filter is told which rows to drop, so each of these rejects the rows that fail its filter.
+	var saved, quick func(row *Node[T]) bool
 	if d.selectedFilter != nil {
 		// The fields are looked up once here rather than once per row.
 		m := gurps.NewListFilterMatcher(d.selectedFilter, d.provider.FilterFields())
-		f = func(row *Node[T]) bool { return !m(row.Data()) }
-	} else if text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text)); text != "" {
+		saved = func(row *Node[T]) bool { return !m(row.Data()) }
+	}
+	if text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text)); text != "" {
 		// Match looks at every column, the tags column included, now that the tag popup that once did the tag
 		// filtering is gone.
-		f = func(row *Node[T]) bool { return !row.Match(text) }
+		quick = func(row *Node[T]) bool { return !row.Match(text) }
 	}
-	if f == nil && !d.table.IsFiltered() {
+	var f func(row *Node[T]) bool
+	switch {
+	case saved != nil && quick != nil:
+		f = func(row *Node[T]) bool { return saved(row) || quick(row) }
+	case saved != nil:
+		f = saved
+	case quick != nil:
+		f = quick
+	case !d.table.IsFiltered():
 		return false
 	}
 	d.table.ApplyHierarchicalFilter(f)

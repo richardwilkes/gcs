@@ -13,7 +13,8 @@
   self-control roll, or a piece of equipment's cost or weight, using "match all of" and "match any of" groups that can
   be nested and negated. Filters are kept with your settings, so each one is available in every list of its kind. The
   "Names Only" checkbox and the tag popup have been removed; the search field still filters as you type and now also
-  looks at the tags column.
+  looks at the tags column. The search field stays available while a saved filter is chosen, and narrows the list
+  further: an item is shown only when it passes both the saved filter and what you have typed.
 - While a filter is applied, a hazard-striped banner across the top of the list notes that items cannot be added,
   removed or rearranged until the filter is cleared, since only part of the list is in view.
 - A filtered list now keeps its hierarchy, showing each matching item beneath the containers that hold it rather than

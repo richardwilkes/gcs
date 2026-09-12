@@ -49,8 +49,14 @@ func newFilterTestTraitDockable(t *testing.T, filters ...*gurps.ListFilter) *Tab
 
 // newNameContainsFilter returns a saved filter with the given name that keeps the rows whose own name contains text.
 func newNameContainsFilter(name, text string) *gurps.ListFilter {
+	return newContainsFilter(name, "name", text)
+}
+
+// newContainsFilter returns a saved filter with the given name that keeps the rows whose field with the given key
+// contains text.
+func newContainsFilter(name, fieldKey, text string) *gurps.ListFilter {
 	f := gurps.NewListFilter(name)
-	condition := gurps.NewFilterCondition(f.Root, "name")
+	condition := gurps.NewFilterCondition(f.Root, fieldKey)
 	condition.Text.Compare = criteria.ContainsText
 	condition.Text.Qualifier = text
 	f.Root.Children = append(f.Root.Children, condition)
@@ -139,24 +145,45 @@ func TestTableDockableNewItemIsDisabledWhileFiltered(t *testing.T) {
 	c.Equal(3, len(d.provider.RootData()), "no item may have been created along the way")
 }
 
-// TestTableDockableSavedFilterDisablesQuickFilter verifies that putting a saved filter in force takes over the list and
-// blanks the quick filter's field, and that dropping it hands the list back.
-func TestTableDockableSavedFilterDisablesQuickFilter(t *testing.T) {
+// TestTableDockableSavedFilterAndQuickFilterCombine verifies that a saved filter and the quick filter work together:
+// putting a saved filter in force leaves the quick filter's field usable and its text in place, a row has to pass both
+// to be shown, and each can be cleared on its own, leaving the other to filter the list alone.
+func TestTableDockableSavedFilterAndQuickFilterCombine(t *testing.T) {
 	c := check.New(t)
-	f := newNameContainsFilter("Combat", "combat")
-	d := newFilterTestTraitDockable(t, f)
+	physical := newContainsFilter("Physical", "tags", "physical")
+	d := newFilterTestTraitDockable(t, physical)
 	d.filterField.SetText("fur")
-	d.chooseFilter(f)
-	c.True(f == d.selectedFilter, "the saved filter must be the one in force")
-	c.False(d.filterField.Enabled(), "the quick filter's field must be unusable while a saved filter is in force")
-	c.Equal("", d.filterField.Text(), "the quick filter's text must be cleared, so the two cannot disagree")
-	c.True(d.table.IsFiltered(), "the saved filter must filter the table")
-	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "only the traits the saved filter accepts may be shown")
+	c.Equal([]string{"Fur"}, visibleTraitNames(d), "the quick filter alone keeps the one trait named for it")
 
+	d.chooseFilter(physical)
+	c.True(physical == d.selectedFilter, "the saved filter must be the one in force")
+	c.True(d.filterField.Enabled(), "the quick filter's field must stay usable while a saved filter is in force")
+	c.Equal("fur", d.filterField.Text(), "the quick filter's text must be kept, since it still applies")
+	c.True(d.table.IsFiltered(), "the two together must filter the table")
+	c.Equal([]string{"Fur"}, visibleTraitNames(d), "only the trait that passes both may be shown")
+
+	d.filterField.SetText("vision")
+	c.Equal([]string{"Acute Vision"}, visibleTraitNames(d),
+		"changing the quick filter while a saved filter is in force must narrow that filter's rows afresh")
+
+	d.filterField.SetText("combat")
+	c.True(d.table.IsFiltered(), "the two together still filter the table")
+	c.Equal(0, len(visibleTraitNames(d)),
+		"a trait that passes the quick filter but not the saved filter may not be shown")
+
+	d.filterField.SetText("")
+	c.True(d.table.IsFiltered(), "the saved filter still filters the table on its own")
+	c.Equal([]string{"Acute Vision", "Fur"}, visibleTraitNames(d), "every trait the saved filter accepts is shown")
+
+	d.filterField.SetText("fur")
 	d.chooseFilter(nil)
-	c.Nil(d.selectedFilter, "the list must go back to the quick filter")
-	c.True(d.filterField.Enabled(), "the quick filter's field must be usable again")
-	c.False(d.table.IsFiltered(), "the emptied quick filter shows everything")
+	c.Nil(d.selectedFilter, "no saved filter may be in force")
+	c.Equal("fur", d.filterField.Text(), "dropping the saved filter must leave the quick filter's text alone")
+	c.True(d.table.IsFiltered(), "the quick filter still filters the table on its own")
+	c.Equal([]string{"Fur"}, visibleTraitNames(d), "every trait the quick filter accepts is shown")
+
+	d.filterField.SetText("")
+	c.False(d.table.IsFiltered(), "with neither in play, nothing filters the table")
 	c.Equal(3, len(visibleTraitNames(d)), "every trait is shown again")
 }
 
@@ -198,22 +225,22 @@ func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
 	}
 }
 
-// TestTableDockableJumpToSearchFilter verifies that the command that jumps to the quick filter's field follows whether
-// that field can be used at all, since a saved filter in force takes the field away.
+// TestTableDockableJumpToSearchFilter verifies that the command that jumps to the quick filter's field is available
+// whether or not a saved filter is in force, since the field is usable either way.
 func TestTableDockableJumpToSearchFilter(t *testing.T) {
 	c := check.New(t)
 	f := newNameContainsFilter("Combat", "combat")
 	d := newFilterTestTraitDockable(t, f)
 	c.True(d.AsPanel().CanPerformCmd(nil, JumpToSearchFilterItemID),
-		"the quick filter's field must be reachable while it has the list")
+		"the quick filter's field must be reachable with no saved filter in force")
 
 	d.chooseFilter(f)
-	c.False(d.AsPanel().CanPerformCmd(nil, JumpToSearchFilterItemID),
-		"the field is unusable while a saved filter is in force, so there is nothing to jump to")
+	c.True(d.AsPanel().CanPerformCmd(nil, JumpToSearchFilterItemID),
+		"the field is still usable while a saved filter is in force, so it must still be reachable")
 
 	d.chooseFilter(nil)
 	c.True(d.AsPanel().CanPerformCmd(nil, JumpToSearchFilterItemID),
-		"dropping the saved filter must make the field reachable again")
+		"dropping the saved filter must leave the field reachable")
 
 	// The command asks for the focus, which a dockable that is in no window has nobody to ask.
 	c.NotPanics(func() { d.AsPanel().PerformCmd(nil, JumpToSearchFilterItemID) },
@@ -272,11 +299,10 @@ func (p *filterFieldsCounter) FilterFields() []*gurps.FilterField[*gurps.Trait] 
 	return p.TableProvider.FilterFields()
 }
 
-// TestTableDockableSavedFilterReplacingQuickFilterAppliesOnce verifies that putting a saved filter in force while the
-// quick filter holds text puts the rows through the saved filter once. Emptying the quick filter's field fires its
-// ModifiedCallback, which is not to apply the saved filter a first time before chooseFilter applies it, since each pass
-// walks every row and syncs and sorts the table.
-func TestTableDockableSavedFilterReplacingQuickFilterAppliesOnce(t *testing.T) {
+// TestTableDockableChoosingSavedFilterAppliesOnce verifies that putting a saved filter in force while the quick filter
+// holds text puts the rows through the saved filter once, with the quick filter's text narrowing them in the same
+// pass, since each pass walks every row and syncs and sorts the table.
+func TestTableDockableChoosingSavedFilterAppliesOnce(t *testing.T) {
 	c := check.New(t)
 	f := newNameContainsFilter("Combat", "combat")
 	d := newFilterTestTraitDockable(t, f)
@@ -288,11 +314,15 @@ func TestTableDockableSavedFilterReplacingQuickFilterAppliesOnce(t *testing.T) {
 
 	d.chooseFilter(f)
 	c.Equal(1, counter.calls, "the saved filter must be applied exactly once")
-	c.Equal("", d.filterField.Text(), "the quick filter's text must have been cleared")
-	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "only the trait the saved filter accepts may be shown")
+	c.Equal("fur", d.filterField.Text(), "the quick filter's text must have been kept")
+	c.Equal(0, len(visibleTraitNames(d)), "no trait passes both the saved filter and the quick filter")
 
 	d.chooseFilter(f)
-	c.Equal(2, counter.calls, "choosing the saved filter again, with the field already empty, applies it once more")
+	c.Equal(2, counter.calls, "choosing the saved filter again applies it once more")
+
+	d.filterField.SetText("reflexes")
+	c.Equal(3, counter.calls, "changing the quick filter puts the rows through the saved filter once more as well")
+	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "the trait that passes both is shown")
 }
 
 // TestTableDockableFilterKeepsHierarchy verifies that a filtered list keeps its hierarchy: a matching row is shown

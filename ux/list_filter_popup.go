@@ -19,8 +19,9 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// listFilterQuickIndex is the index of the "Quick Filter" entry, which is always the first item in the popup.
-const listFilterQuickIndex = 0
+// listFilterNoneIndex is the index of the "None" entry, which stands for no saved filter and is always the first item
+// in the popup.
+const listFilterNoneIndex = 0
 
 // Seams so the commands can be exercised without a window.
 var (
@@ -56,9 +57,9 @@ type listFilterPopupSpec struct {
 	key string
 	// fields are the fields a filter for this list type may test.
 	fields []filterFieldInfo
-	// current returns the filter in force, which is nil when the quick filter has the list.
+	// current returns the filter in force, which is nil when there is none.
 	current func() *gurps.ListFilter
-	// choose puts a filter in force. A nil filter hands the list back to the quick filter.
+	// choose puts a filter in force. A nil filter drops the one that was, leaving the list to the quick filter alone.
 	choose func(f *gurps.ListFilter)
 }
 
@@ -68,8 +69,8 @@ type listFilterPopupSpec struct {
 type listFilterPopup struct {
 	popup *unison.PopupMenu[string]
 	spec  listFilterPopupSpec
-	// filters runs parallel to the popup's items, holding the filter each item stands for. It is nil for the quick
-	// filter, the separators and the three commands, since separators occupy an index of their own.
+	// filters runs parallel to the popup's items, holding the filter each item stands for. It is nil for the None
+	// entry, the separators and the three commands, since separators occupy an index of their own.
 	filters     []*gurps.ListFilter
 	newIndex    int
 	editIndex   int
@@ -87,13 +88,12 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 	}
 	p.popup.WillShowMenuCallback = func(_ *unison.PopupMenu[string]) {
 		if p.rebuildItems() {
-			// The filter that was in force is gone, so the list falls back to the quick filter.
+			// The filter that was in force is gone, so the list falls back to the quick filter alone.
 			p.spec.choose(nil)
 		}
 	}
 	p.popup.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
-		// The commands act and leave the selection where it was; only a filter, or the quick filter, becomes the
-		// selection.
+		// The commands act and leave the selection where it was; only a filter, or None, becomes the selection.
 		switch index {
 		case p.newIndex:
 			p.newFilter()
@@ -110,7 +110,7 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 			return
 		}
 		i := popup.SelectedIndex()
-		p.enableCommands(i != listFilterQuickIndex)
+		p.enableCommands(i != listFilterNoneIndex)
 		p.spec.choose(p.filterAt(i))
 	}
 	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Saved Filters"),
@@ -119,14 +119,14 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	// Fill the popup in now so that it shows "Quick Filter" before it has ever been opened.
+	// Fill the popup in now so that it shows "None" before it has ever been opened.
 	p.rebuildItems()
 	return p
 }
 
 // rebuildItems replaces the popup's items with the saved filters as they now stand, keeping the filter in force
 // selected. It reports whether that filter is no longer among them, which happens when another dockable showing the
-// same list type deleted it, in which case the selection has fallen back to the quick filter.
+// same list type deleted it, in which case the selection has fallen back to None.
 func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	defer func(saved bool) { p.rebuilding = saved }(p.rebuilding)
 	p.rebuilding = true
@@ -143,8 +143,8 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 		p.popup.AddSeparator()
 		p.filters = append(p.filters, nil)
 	}
-	addItem(i18n.Text("Quick Filter"), nil)
-	index := listFilterQuickIndex
+	addItem(i18n.Text("None"), nil)
+	index := listFilterNoneIndex
 	if saved := gurps.GlobalSettings().ListFiltersFor(p.spec.key); len(saved) != 0 {
 		addSeparator()
 		for _, f := range saved {
@@ -160,17 +160,17 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	p.editIndex = addItem(i18n.Text("Edit Filter…"), nil)
 	p.deleteIndex = addItem(i18n.Text("Delete Filter…"), nil)
 	p.popup.SelectIndex(index)
-	p.enableCommands(index != listFilterQuickIndex)
+	p.enableCommands(index != listFilterNoneIndex)
 	// The popup is as wide as its widest item, so adding, removing or renaming a filter can change its size, and the
 	// toolbar it sits in has to be laid out again to make room. Marking the popup alone wouldn't do it: a parent that
 	// is laid out again doesn't revisit its children, so the whole chain up to the window is marked.
 	p.popup.MarkForLayoutRecursivelyUpward()
 	p.popup.MarkForRedraw()
-	return current != nil && index == listFilterQuickIndex
+	return current != nil && index == listFilterNoneIndex
 }
 
-// filterAt returns the filter the item at the given index stands for, or nil when the item is the quick filter, a
-// separator, a command or out of range.
+// filterAt returns the filter the item at the given index stands for, or nil when the item is None, a separator, a
+// command or out of range.
 func (p *listFilterPopup) filterAt(index int) *gurps.ListFilter {
 	if index < 0 || index >= len(p.filters) {
 		return nil
@@ -179,27 +179,27 @@ func (p *listFilterPopup) filterAt(index int) *gurps.ListFilter {
 }
 
 // enableCommands turns the Edit and Delete commands on or off. They only apply to a saved filter, so they are off
-// while the quick filter has the list.
+// while none is in force.
 func (p *listFilterPopup) enableCommands(enabled bool) {
 	p.popup.SetItemEnabledAt(p.editIndex, enabled)
 	p.popup.SetItemEnabledAt(p.deleteIndex, enabled)
 }
 
-// selectFilter rebuilds the popup around the given filter, selects it, and puts it in force. Pass nil to hand the list
-// back to the quick filter.
+// selectFilter rebuilds the popup around the given filter, selects it, and puts it in force. Pass nil to drop the
+// saved filter, leaving the list to the quick filter alone.
 func (p *listFilterPopup) selectFilter(f *gurps.ListFilter) {
 	func() {
 		defer func(saved bool) { p.rebuilding = saved }(p.rebuilding)
 		p.rebuilding = true
 		p.rebuildItems()
-		index := listFilterQuickIndex
+		index := listFilterNoneIndex
 		if f != nil {
 			if i := slices.Index(p.filters, f); i != -1 {
 				index = i
 			}
 		}
 		p.popup.SelectIndex(index)
-		p.enableCommands(index != listFilterQuickIndex)
+		p.enableCommands(index != listFilterNoneIndex)
 	}()
 	// The filter is put in force unconditionally: editing a filter without renaming it doesn't move the selection, so
 	// the selection callback would not fire, yet the contents changed and the list has to be filtered again.
@@ -207,8 +207,8 @@ func (p *listFilterPopup) selectFilter(f *gurps.ListFilter) {
 }
 
 // refresh brings the popup into line with the saved filters after they were changed elsewhere: the items are rebuilt,
-// and the filter in force is either put through again, since its contents may have changed, or dropped in favor of
-// the quick filter when it no longer exists.
+// and the filter in force is either put through again, since its contents may have changed, or dropped when it no
+// longer exists.
 func (p *listFilterPopup) refresh() {
 	if p.rebuildItems() {
 		p.spec.choose(nil)
