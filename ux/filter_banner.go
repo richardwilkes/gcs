@@ -50,21 +50,25 @@ func filterBannerText() string {
 	return i18n.Text("Adding, removing & rearranging items is disabled while filtering")
 }
 
-// filterBannerFont is the bold form of the label font. It is looked up each time rather than held, so that a change to
-// the label font in the settings is picked up by the next draw.
+// filterBannerFont is a bold, slightly reduced form of the label font, scaled the same way as the secondary text
+// elsewhere in the app so that the banner stays a notice rather than a heading. It is looked up each time rather than
+// held, so that a change to the label font in the settings is picked up by the next draw.
 func filterBannerFont() unison.Font {
 	desc := unison.LabelFont.Descriptor()
 	desc.Weight = weight.Bold
+	desc.Size *= 0.8
 	return desc.Font()
 }
 
-// sizes asks for a single line of the text, its plate and the banner's own insets. The minimum width is left at zero
-// so that the banner never makes the list wider than its table and toolbar would be on their own; when narrower than
-// the plate, the banner clips it evenly on both sides.
+// sizes asks for a single line of the text, its plate and a band of stripes above and below it. The banner is kept
+// short, with only enough stripe showing around the plate to read as hazard tape, so that it takes as little from the
+// list as it can. The minimum width is left at zero so that the banner never makes the list wider than its table and
+// toolbar would be on their own; when narrower than the plate, the banner clips it evenly on both sides.
 func (b *filterBanner) sizes(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
-	f := filterBannerFont()
-	prefSize.Width = f.SimpleWidth(filterBannerText()) + 4*unison.StdHSpacing
-	prefSize.Height = f.LineHeight() + 4*unison.StdVSpacing
+	plate := filterBannerPlateSize()
+	prefSize.Width = plate.Width + 2*unison.StdHSpacing
+	// Half a spacing above and below the plate, so that the stripes are visible
+	prefSize.Height = plate.Height + unison.StdVSpacing
 	if border := b.Border(); border != nil {
 		prefSize = prefSize.Add(border.Insets().Size())
 	}
@@ -82,7 +86,7 @@ func (b *filterBanner) draw(gc *unison.Canvas, _ geom.Rect) {
 	gc.DrawRect(rect, filterBannerAmber.Paint(gc, rect, paintstyle.Fill))
 	gc.DrawPath(filterBannerStripes(rect), filterBannerDark.Paint(gc, rect, paintstyle.Fill))
 	plate := filterBannerPlateRect(rect)
-	gc.DrawRoundedRect(plate, geom.NewSize(unison.StdHSpacing, unison.StdHSpacing),
+	gc.DrawRoundedRect(plate, geom.NewSize(unison.StdVSpacing, unison.StdVSpacing),
 		unison.Black.Paint(gc, plate, paintstyle.Fill))
 	f := filterBannerFont()
 	text := filterBannerText()
@@ -90,12 +94,16 @@ func (b *filterBanner) draw(gc *unison.Canvas, _ geom.Rect) {
 	gc.DrawSimpleString(text, pt, f, unison.White.Paint(gc, plate, paintstyle.Fill))
 }
 
-// filterBannerPlateRect returns the rect of the plate the text sits on, centered in the banner's rect and just large
-// enough to hold the text and its insets.
-func filterBannerPlateRect(rect geom.Rect) geom.Rect {
+// filterBannerPlateSize returns the size of the plate the text sits on: just large enough to hold a line of the text
+// with a full spacing to either side of it and half of one above and below.
+func filterBannerPlateSize() geom.Size {
 	f := filterBannerFont()
-	size := geom.NewSize(f.SimpleWidth(filterBannerText())+2*unison.StdHSpacing,
-		f.LineHeight()+2*unison.StdVSpacing)
+	return geom.NewSize(f.SimpleWidth(filterBannerText())+2*unison.StdHSpacing, f.LineHeight()+unison.StdVSpacing)
+}
+
+// filterBannerPlateRect returns the rect of the plate, centered in the banner's rect.
+func filterBannerPlateRect(rect geom.Rect) geom.Rect {
+	size := filterBannerPlateSize()
 	return geom.NewRect(rect.CenterX()-size.Width/2, rect.CenterY()-size.Height/2, size.Width, size.Height)
 }
 
