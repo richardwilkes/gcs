@@ -74,6 +74,24 @@ func TestLegacyExportSkillsLoopCount(t *testing.T) {
 	c.Equal("2|<GROUP><ITEM>", runLegacyExport(t, c, e, "@SKILLS_LOOP_COUNT|@SKILLS_LOOP_START<@TYPE>@SKILLS_LOOP_END"))
 }
 
+// TestLegacyExportConditionalModifierGroups verifies that the legacy exporter writes the reactions and conditional
+// modifiers out flat -- the loop counts and IDs cover the members, not the group containers -- and that a member can
+// name its group with @GROUP.
+func TestLegacyExportConditionalModifierGroups(t *testing.T) {
+	withGroupContainersOnSort(t, true)
+	c := check.New(t)
+	e := NewEntity()
+	addReaction(e, "A", "from everyone", "", fxp.One)
+	addReaction(e, "B", "from foes", "Combat", fxp.Two)
+	addReaction(e, "C", "from allies", "Combat", fxp.Three)
+	addGroupedConditionalModifier(e, "D", "to hit", "Combat", fxp.One)
+	addGroupedConditionalModifier(e, "E", "to dodge", "", fxp.Two)
+	c.Equal("3|<0:from allies|Combat|+3><1:from foes|Combat|+2><2:from everyone||+1>",
+		runLegacyExport(t, c, e, "@REACTION_LOOP_COUNT|@REACTION_LOOP_START<@ID:@SITUATION|@GROUP|@MODIFIER>@REACTION_LOOP_END"))
+	c.Equal("2|<0:to hit|Combat|+1><1:to dodge||+2>",
+		runLegacyExport(t, c, e, "@CONDITIONAL_MODIFIERS_LOOP_COUNT|@CONDITIONAL_MODIFIERS_LOOP_START<@ID:@SITUATION|@GROUP|@MODIFIER>@CONDITIONAL_MODIFIERS_LOOP_END"))
+}
+
 // TestLegacyExportLoopBodyKeyDetection verifies that the decision to treat '@' as the start of a key inside a loop body
 // is made from the loop body itself, not from a fixed byte in the outer template.
 func TestLegacyExportLoopBodyKeyDetection(t *testing.T) {

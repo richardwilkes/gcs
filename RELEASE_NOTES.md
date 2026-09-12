@@ -30,6 +30,13 @@
 - When the workspace arrangement is restored on start, the tab that had the keyboard focus when GCS was last quit is
   given the focus again, rather than the Library Explorer always starting with it. The files are also reopened in the
   order their tabs are laid out in, so the recent files list comes out the same from one start to the next.
+- The "Gives a reaction modifier of" and "Gives a conditional modifier of" features can now be given an optional
+  group. On the character sheet, entries with a group are gathered inside a collapsible container named for the group
+  in the Reaction Modifiers or Conditional Modifiers table, while entries without one stay where they were. The
+  "Group containers when sorting" general setting decides whether the groups are listed ahead of the ungrouped
+  entries or mixed in with them by name. The group may use the same @Name@ substitutions as the situation text. In
+  exports, each entry now also carries its group: as the Group field in Go templates, and as @GROUP in the legacy
+  text templates.
 
 ## Bug Fixes
 

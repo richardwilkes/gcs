@@ -101,7 +101,7 @@ func (p *condModProvider) ColumnIDs() []int {
 }
 
 func (p *condModProvider) HierarchyColumnID() int {
-	return -1
+	return gurps.ConditionalModifierDescriptionColumn
 }
 
 func (p *condModProvider) ExcessWidthColumnID() int {

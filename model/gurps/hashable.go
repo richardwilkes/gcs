@@ -142,10 +142,14 @@ func NodesToHashesByID[T Node[T]](result map[tid.TID]HashAndData, data ...T) {
 	}, false, false, data...)
 }
 
-// TIDFromHashedString creates a TID from a string.
-func TIDFromHashedString(kind byte, s string) tid.TID {
+// TIDFromHashedString creates a TID of the given kind from the given strings. Each string is hashed along with its
+// length, so two different splits of the same text produce different TIDs, and a single string produces the same TID it
+// always has.
+func TIDFromHashedString(kind byte, parts ...string) tid.TID {
 	h := xxh3.New()
-	xhash.StringWithLen(h, s)
+	for _, part := range parts {
+		xhash.StringWithLen(h, part)
+	}
 	buffer := h.Sum(make([]byte, 0, 12))
 	for len(buffer) < 12 {
 		buffer = append(buffer, 0)

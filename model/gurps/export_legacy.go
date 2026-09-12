@@ -425,11 +425,11 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "NOTES_LOOP_START":
 		ex.processNotesLoop(ex.extractUpToMarker("NOTES_LOOP_END"))
 	case "REACTION_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.Reactions())))
+		ex.writeEncodedText(strconv.Itoa(countConditionalModifiers(ex.entity.Reactions())))
 	case "REACTION_LOOP_START":
 		ex.processConditionalModifiersLoop(ex.entity.Reactions(), ex.extractUpToMarker("REACTION_LOOP_END"))
 	case "CONDITIONAL_MODIFIERS_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.ConditionalModifiers())))
+		ex.writeEncodedText(strconv.Itoa(countConditionalModifiers(ex.entity.ConditionalModifiers())))
 	case "CONDITIONAL_MODIFIERS_LOOP_START":
 		ex.processConditionalModifiersLoop(ex.entity.ConditionalModifiers(), ex.extractUpToMarker("CONDITIONAL_MODIFIERS_LOOP_END"))
 	case "PRIMARY_ATTRIBUTE_LOOP_COUNT":
@@ -1065,8 +1065,12 @@ func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 	}, false, false, ex.entity.Notes...)
 }
 
+// processConditionalModifiersLoop writes the modifiers out flat: the group containers are skipped and the modifiers
+// they hold take their place, each able to name its group, so that templates written before groups existed keep
+// working.
 func (ex *legacyExporter) processConditionalModifiersLoop(list []*ConditionalModifier, buffer []byte) {
-	for i, one := range list {
+	i := 0
+	Traverse(func(one *ConditionalModifier) bool {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idExportKey:
@@ -1075,12 +1079,22 @@ func (ex *legacyExporter) processConditionalModifiersLoop(list []*ConditionalMod
 				ex.writeEncodedText(one.Total().StringWithSign())
 			case "SITUATION":
 				ex.writeEncodedText(one.From)
+			case "GROUP":
+				ex.writeEncodedText(one.GroupName())
 			default:
 				ex.unidentifiedKey(key)
 			}
 			return index
 		})
-	}
+		i++
+		return false
+	}, false, true, list...)
+}
+
+// countConditionalModifiers returns the number of rows the modifier loops will write: the modifiers themselves, since
+// the group containers are not written out.
+func countConditionalModifiers(list []*ConditionalModifier) int {
+	return countNodes(list, false, func(one *ConditionalModifier) bool { return !one.Container() })
 }
 
 // attributeDefsOfKind returns the attribute definitions (excluding separators) that resolve to the given kind and have

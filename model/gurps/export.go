@@ -203,6 +203,7 @@ type exportedConditionalModifier struct {
 	ID        tid.TID
 	Total     fxp.Int
 	Situation string
+	Group     string
 	Sources   []*exportedSource
 }
 
@@ -714,12 +715,15 @@ func newExportedAttribute(def *AttributeDef, attr *Attribute) *exportedAttribute
 	}
 }
 
+// newExportedConditionalModifiers writes the modifiers out flat: the group containers are skipped and the modifiers
+// they hold take their place, each naming its group, so that templates written before groups existed keep working.
 func newExportedConditionalModifiers(list []*ConditionalModifier) []*exportedConditionalModifier {
 	result := make([]*exportedConditionalModifier, 0, len(list))
-	for _, one := range list {
+	Traverse(func(one *ConditionalModifier) bool {
 		r := &exportedConditionalModifier{
 			ID:        one.TID,
 			Situation: one.From,
+			Group:     one.GroupName(),
 			Total:     one.Total(),
 		}
 		r.Sources = make([]*exportedSource, 0, len(one.Sources))
@@ -730,7 +734,8 @@ func newExportedConditionalModifiers(list []*ConditionalModifier) []*exportedCon
 			})
 		}
 		result = append(result, r)
-	}
+		return false
+	}, false, true, list...)
 	return result
 }
 

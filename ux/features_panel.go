@@ -173,11 +173,19 @@ func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) (main
 func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModifierBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	p.addSituationAndGroupLines(panel, &f.Situation, &f.Group, i18n.Text("Triggering Condition"))
+	return panel, focus
+}
+
+// addSituationAndGroupLines adds the two rows the conditional modifier and reaction bonus panels share: the full-width
+// situation field, followed by the optional group the entry is filed under in the table that displays it. The base
+// panel's first column holds the delete button, so each row is preceded by a spacer. watermark is the placeholder for
+// the situation field, the only thing that differs between the two callers.
+func (p *featuresPanel) addSituationAndGroupLines(panel *unison.Panel, situation, group *string, watermark string) {
 	panel.AddChild(unison.NewPanel())
-	watermark := i18n.Text("Triggering Condition")
-	field := NewMultiLineStringField(nil, "", watermark, func() string { return f.Situation },
+	field := NewMultiLineStringField(nil, "", watermark, func() string { return *situation },
 		func(value string) {
-			f.Situation = value
+			*situation = value
 			panel.MarkForLayoutAndRedraw()
 			MarkModified(panel)
 		})
@@ -188,7 +196,25 @@ func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModif
 		HGrab:  true,
 	})
 	panel.AddChild(field)
-	return panel, focus
+
+	panel.AddChild(unison.NewPanel())
+	wrapper := unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.AddChild(NewFieldLeadingLabel(i18n.Text("in group"), false))
+	groupField := NewStringField(nil, "", i18n.Text("Group"), func() string { return *group },
+		func(value string) {
+			*group = value
+			MarkModified(wrapper)
+		})
+	groupField.Watermark = i18n.Text("optional")
+	// The longer of the two situation watermarks, so that the group field is the same width under either panel.
+	groupField.SetMinimumTextWidthUsing(i18n.Text("Triggering Condition"))
+	wrapper.AddChild(groupField)
+	panel.AddChild(wrapper)
 }
 
 func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) (main *unison.Panel, focus unison.Paneler) {
@@ -211,7 +237,7 @@ func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) (main *unison.Panel
 			MarkModified(wrapper)
 		})
 	field.Watermark = gurps.AllID
-	field.SetMinimumTextWidthUsing("Specialization")
+	field.SetMinimumTextWidthUsing(i18n.Text("Specialization"))
 	wrapper.AddChild(field)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("attacks"), false))
 	panel.AddChild(wrapper)
@@ -354,21 +380,7 @@ func (p *featuresPanel) isCurrentLocationList() bool {
 func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	panel.AddChild(unison.NewPanel())
-	watermark := i18n.Text("from/to target group")
-	field := NewMultiLineStringField(nil, "", watermark, func() string { return f.Situation },
-		func(value string) {
-			f.Situation = value
-			panel.MarkForLayoutAndRedraw()
-			MarkModified(panel)
-		})
-	field.Watermark = watermark
-	field.AutoScroll = false
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(field)
+	p.addSituationAndGroupLines(panel, &f.Situation, &f.Group, i18n.Text("from/to target"))
 	return panel, focus
 }
 

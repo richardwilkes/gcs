@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/uti"
@@ -87,8 +88,42 @@ func TestConditionalAndReactionProvidersUseTheirOwnSpec(t *testing.T) {
 			}
 			headers := p.Headers()
 			c.Equal(len(p.ColumnIDs()), len(headers))
+			c.Equal(gurps.ConditionalModifierDescriptionColumn, p.HierarchyColumnID(),
+				"the description column carries the disclosure triangles for the group containers")
 		})
 	}
 	// The two providers must not share row data even though they are built from the same list provider.
 	check.New(t).NotEqual(NewConditionalModifiersProvider(lists).RootRowCount(), NewReactionModifiersProvider(lists).RootRowCount())
+}
+
+// TestCondModProviderWrapsGroupChildren verifies that a group container row is wrapped as a node that can have
+// children, with its members wrapped beneath it in order, while an ungrouped row is a leaf.
+func TestCondModProviderWrapsGroupChildren(t *testing.T) {
+	c := check.New(t)
+	group := gurps.NewConditionalModifierGroup(gurps.NewEntity().ID, gurps.BlockReactionsKey, "Combat")
+	first := gurps.NewConditionalModifier("from trait A", "from allies", fxp.One)
+	second := gurps.NewConditionalModifier("from trait B", "from foes", fxp.Two)
+	for _, child := range []*gurps.ConditionalModifier{first, second} {
+		child.SetParent(group)
+		group.Children = append(group.Children, child)
+	}
+	leaf := gurps.NewConditionalModifier("from trait C", "from everyone", fxp.Three)
+	lists := &condModListsForTest{reactions: []*gurps.ConditionalModifier{group, leaf}}
+	p := NewReactionModifiersProvider(lists)
+	p.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.ConditionalModifier]]{}))
+	rows := p.RootRows()
+	c.Equal(2, len(rows))
+	if len(rows) != 2 {
+		return
+	}
+	c.True(rows[0].CanHaveChildren(), "the group row can have children")
+	children := rows[0].Children()
+	c.Equal(2, len(children), "the group's members are wrapped beneath it")
+	if len(children) == 2 {
+		c.True(first == children[0].Data(), "the members keep their order")
+		c.True(second == children[1].Data(), "the members keep their order")
+		c.True(rows[0] == children[0].Parent(), "a member's node knows its parent node")
+	}
+	c.False(rows[1].CanHaveChildren(), "an ungrouped row is a leaf")
+	c.Equal(0, len(rows[1].Children()))
 }

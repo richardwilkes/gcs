@@ -256,6 +256,29 @@ func addConditionalModifier(e *Entity, situation string, amt fxp.Int) {
 	addTraitWithFeatures(e, "", bonus)
 }
 
+// TestEntityHideZeroValueConditionalModifiersPrunesGroups verifies that hiding zero-value conditional modifiers is
+// applied to the members of a group, and that a group left with no members disappears along with them.
+func TestEntityHideZeroValueConditionalModifiersPrunesGroups(t *testing.T) {
+	withGroupContainersOnSort(t, true)
+	c := check.New(t)
+	e := NewEntity()
+	addGroupedConditionalModifier(e, "", "cancels out", "Mixed", fxp.One)
+	addGroupedConditionalModifier(e, "", "cancels out", "Mixed", fxp.NegOne)
+	addGroupedConditionalModifier(e, "", "still applies", "Mixed", fxp.Two)
+	addGroupedConditionalModifier(e, "", "also cancels out", "Empty", fxp.One)
+	addGroupedConditionalModifier(e, "", "also cancels out", "Empty", fxp.NegOne)
+	addConditionalModifier(e, "ungrouped", fxp.Three)
+	e.Recalculate()
+
+	e.SheetSettings.HideZeroValueConditionalMods = false
+	c.Equal([]string{"Empty[also cancels out]", "Mixed[cancels out,still applies]", "ungrouped"},
+		rowNames(e.ConditionalModifiers()), "everything listed when zero-value modifiers are shown")
+
+	e.SheetSettings.HideZeroValueConditionalMods = true
+	c.Equal([]string{"Mixed[still applies]", "ungrouped"}, rowNames(e.ConditionalModifiers()),
+		"zero-total members are omitted, and a group with none left is omitted with them")
+}
+
 // TestEntityProcessPrereqsClearsUnsatisfiedReasonWhenDisabled verifies that disabling a trait (directly or by
 // disabling one of its containers) clears any unsatisfied prerequisite reason it had accumulated, rather than leaving
 // the stale reason behind until the sheet is reloaded.

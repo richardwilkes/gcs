@@ -34,22 +34,60 @@ const (
 	ConditionalModifierDescriptionColumn
 )
 
-// ConditionalModifier holds data for a reaction or conditional modifier.
+// ConditionalModifier holds data for a reaction or conditional modifier, or for a group container that holds them. A
+// group container has no amounts or sources of its own; From is its name.
 type ConditionalModifier struct {
-	TID     tid.TID
-	From    string
-	Amounts []fxp.Int
-	Sources []string
+	TID      tid.TID
+	From     string
+	Amounts  []fxp.Int
+	Sources  []string
+	Children []*ConditionalModifier
+	parent   *ConditionalModifier
 }
 
-// NewConditionalModifier creates a new ConditionalModifier.
+// NewConditionalModifier creates a new ConditionalModifier that is not filed under a group.
 func NewConditionalModifier(source, from string, amt fxp.Int) *ConditionalModifier {
+	return newConditionalModifier(TIDFromHashedString(kinds.ConditionalModifier, from), source, from, amt)
+}
+
+// newConditionalModifierInGroup creates a ConditionalModifier filed under the named group. The group is mixed into the
+// TID, so the same situation appearing under two different groups yields two distinct rows rather than one. An empty
+// group takes the NewConditionalModifier path unchanged, so the IDs the exporters write for ungrouped rows are exactly
+// what they were before groups existed.
+func newConditionalModifierInGroup(source, group, from string, amt fxp.Int) *ConditionalModifier {
+	if group == "" {
+		return NewConditionalModifier(source, from, amt)
+	}
+	return newConditionalModifier(TIDFromHashedString(kinds.ConditionalModifier, group, from), source, from, amt)
+}
+
+func newConditionalModifier(id tid.TID, source, from string, amt fxp.Int) *ConditionalModifier {
 	return &ConditionalModifier{
-		TID:     TIDFromHashedString(kinds.ConditionalModifier, from),
+		TID:     id,
 		From:    from,
 		Amounts: []fxp.Int{amt},
 		Sources: []string{source},
 	}
+}
+
+// NewConditionalModifierGroup creates the container row that holds the modifiers filed under a group. entityID is the
+// ID of the entity the row is built for and namespace is the sheet block key the row belongs to. The TID is derived
+// from those and the name rather than generated, because these rows are rebuilt from scratch on every recalculation
+// while their disclosure state is stored globally by ID. Mixing in the entity keeps that state per sheet, as it is for
+// the other derived rows (attribute separators and hit location sub-tables), so collapsing a group on one character
+// does not collapse the same-named group on every other one.
+func NewConditionalModifierGroup(entityID tid.TID, namespace, group string) *ConditionalModifier {
+	return &ConditionalModifier{
+		TID:  TIDFromHashedString(kinds.ConditionalModifierContainer, string(entityID), namespace, group),
+		From: group,
+	}
+}
+
+func conditionalModifierKind(isContainer bool) byte {
+	if isContainer {
+		return kinds.ConditionalModifierContainer
+	}
+	return kinds.ConditionalModifier
 }
 
 // Add another source.
@@ -76,6 +114,51 @@ func (c *ConditionalModifier) Compare(other *ConditionalModifier) int {
 	return result
 }
 
+// compareCondModRows orders the rows within one level of a reaction or conditional modifier table. It is what produces
+// the final order for these tables, since their headers do not sort, which is also why it -- rather than Compare --
+// reads the general "group containers when sorting" setting: Compare is the plain comparison of two rows and must not
+// depend on a preference.
+func compareCondModRows(a, b *ConditionalModifier) int {
+	if GlobalSettings().General.GroupContainersOnSort {
+		if result := containersFirst(a, b); result != 0 {
+			return result
+		}
+	}
+	if result := xstrings.NaturalCmp(a.From, b.From, true); result != 0 {
+		return result
+	}
+	// With the setting off, a group and an ungrouped entry can carry the same name; the group goes first, whatever the
+	// entry's total, so that the order stays deterministic. This has to come before the totals are compared, since a
+	// group's total is always zero and would otherwise place it after a negative entry and before a positive one.
+	if result := containersFirst(a, b); result != 0 {
+		return result
+	}
+	return cmp.Compare(a.Total(), b.Total())
+}
+
+// containersFirst orders a container ahead of a non-container, and reports two rows of the same kind as equal.
+func containersFirst(a, b *ConditionalModifier) int {
+	if a.Container() == b.Container() {
+		return 0
+	}
+	if a.Container() {
+		return -1
+	}
+	return 1
+}
+
+// GroupName returns the name of the group this modifier is filed under, or an empty string if it isn't in one. A group
+// container reports its own name.
+func (c *ConditionalModifier) GroupName() string {
+	if c.Container() {
+		return c.From
+	}
+	if c.parent != nil {
+		return c.parent.From
+	}
+	return ""
+}
+
 // GetSource returns the source of this data.
 func (c *ConditionalModifier) GetSource() Source {
 	return Source{}
@@ -98,45 +181,61 @@ func (c *ConditionalModifier) ID() tid.TID {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (c *ConditionalModifier) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, c.From)
+	xhash.Bool(h, c.Container())
 	xhash.Num64(h, len(c.Amounts))
 	for _, amt := range c.Amounts {
 		xhash.Num64(h, amt)
 	}
 	hashStrings(h, c.Sources)
+	xhash.Num64(h, len(c.Children))
+	for _, child := range c.Children {
+		child.Hash(h)
+	}
 }
 
 // Clone implements Node.
-func (c *ConditionalModifier) Clone(_ LibraryFile, _ DataOwner, _ *ConditionalModifier, mode CloneMode) *ConditionalModifier {
+func (c *ConditionalModifier) Clone(from LibraryFile, owner DataOwner, parent *ConditionalModifier, mode CloneMode) *ConditionalModifier {
 	clone := &ConditionalModifier{
 		From:    c.From,
 		Amounts: slices.Clone(c.Amounts),
 		Sources: slices.Clone(c.Sources),
+		parent:  parent,
 	}
 	if mode == Copy {
 		clone.TID = c.TID
 	} else {
-		clone.TID = tid.MustNewTID(kinds.ConditionalModifier)
+		clone.TID = tid.MustNewTID(conditionalModifierKind(c.Container()))
+	}
+	if c.Container() {
+		clone.Children = make([]*ConditionalModifier, 0, len(c.Children))
+		for _, child := range c.Children {
+			clone.Children = append(clone.Children, child.Clone(from, owner, clone, mode))
+		}
 	}
 	return clone
 }
 
 // Kind returns the kind of data.
 func (c *ConditionalModifier) Kind() string {
+	if c.Container() {
+		return i18n.Text("Conditional Modifier Container")
+	}
 	return i18n.Text("Conditional Modifier")
 }
 
 // Container returns true if this is a container.
 func (c *ConditionalModifier) Container() bool {
-	return false
+	return tid.IsKind(c.TID, kinds.ConditionalModifierContainer)
 }
 
 // IsOpen returns true if this node is currently open.
 func (c *ConditionalModifier) IsOpen() bool {
-	return false
+	return IsNodeOpen(c)
 }
 
 // SetOpen sets the current open state for this node.
-func (c *ConditionalModifier) SetOpen(_ bool) {
+func (c *ConditionalModifier) SetOpen(open bool) {
+	SetNodeOpen(c, open)
 }
 
 // Enabled returns true if this node is enabled.
@@ -146,28 +245,33 @@ func (c *ConditionalModifier) Enabled() bool {
 
 // Parent returns the parent.
 func (c *ConditionalModifier) Parent() *ConditionalModifier {
-	return nil
+	return c.parent
 }
 
 // SetParent sets the parent.
-func (c *ConditionalModifier) SetParent(_ *ConditionalModifier) {
+func (c *ConditionalModifier) SetParent(parent *ConditionalModifier) {
+	c.parent = parent
 }
 
 // HasChildren returns true if this node has children.
 func (c *ConditionalModifier) HasChildren() bool {
-	return false
+	return c.Container() && len(c.Children) > 0
 }
 
 // NodeChildren returns the children of this node, if any.
 func (c *ConditionalModifier) NodeChildren() []*ConditionalModifier {
-	return nil
+	return c.Children
 }
 
 // SetChildren sets the children of this node.
-func (c *ConditionalModifier) SetChildren(_ []*ConditionalModifier) {
+func (c *ConditionalModifier) SetChildren(children []*ConditionalModifier) {
+	c.Children = children
 }
 
 func (c *ConditionalModifier) String() string {
+	if c.Container() {
+		return c.From
+	}
 	return fmt.Sprintf("%s %s", c.Total().StringWithSign(), c.From)
 }
 
@@ -207,8 +311,11 @@ func (c *ConditionalModifier) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case ConditionalModifierValueColumn:
 		data.Type = cell.Text
-		data.Primary = c.Total().StringWithSign()
 		data.Alignment = align.End
+		if c.Container() {
+			return // A group doesn't total up its members, since they apply in different situations.
+		}
+		data.Primary = c.Total().StringWithSign()
 		var buffer strings.Builder
 		for i, amt := range c.Amounts {
 			if i != 0 {
@@ -219,7 +326,7 @@ func (c *ConditionalModifier) CellData(columnID int, data *CellData) {
 		data.Tooltip = buffer.String()
 	case ConditionalModifierDescriptionColumn:
 		data.Type = cell.Markdown
-		data.Primary = c.From
+		data.Primary = c.From // the group name, for a container
 	case PageRefCellAlias:
 		data.Type = cell.PageRef
 	}

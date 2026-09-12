@@ -95,6 +95,34 @@ func TestExportTraitSelfControlAndFrequency(t *testing.T) {
 		cr+"\n"+fr+"|"+fr+"|"+cr+"|>>")
 }
 
+// TestExportConditionalModifierGroupsAreFlat verifies that the template exporter writes the reactions and conditional
+// modifiers out flat -- the group containers are skipped and their members take their place, each naming its group --
+// so that templates written before groups existed keep working.
+func TestExportConditionalModifierGroupsAreFlat(t *testing.T) {
+	withGroupContainersOnSort(t, true)
+	c := check.New(t)
+	entity := NewEntity()
+	addReaction(entity, "A", "from everyone", "", fxp.One)
+	addReaction(entity, "B", "from foes", "Combat", fxp.Two)
+	addReaction(entity, "C", "from allies", "Combat", fxp.Three)
+	addGroupedConditionalModifier(entity, "D", "to hit", "Combat", fxp.One)
+	addGroupedConditionalModifier(entity, "E", "to dodge", "", fxp.Two)
+	entity.Recalculate()
+
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.txt")
+	const tmpl = "GCS Text Template v1\n" +
+		"{{range .Reactions}}<<{{.Situation}}|{{.Group}}|{{.Total}}>>{{end}}\n" +
+		"{{range .ConditionalModifiers}}<<{{.Situation}}|{{.Group}}|{{.Total}}>>{{end}}\n"
+	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
+	outPath := filepath.Join(dir, "out.txt")
+	c.NoError(Export(entity, tmplPath, outPath))
+	data, err := os.ReadFile(outPath)
+	c.NoError(err)
+	c.Equal("<<from allies|Combat|3>><<from foes|Combat|2>><<from everyone||1>>\n"+
+		"<<to hit|Combat|1>><<to dodge||2>>\n", string(data))
+}
+
 func TestExportSheetsNoExportableFiles(t *testing.T) {
 	c := check.New(t)
 

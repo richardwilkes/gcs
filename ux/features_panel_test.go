@@ -357,6 +357,57 @@ func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
 	}
 }
 
+// TestFeaturesPanelSituationBonusGroupField verifies that the conditional modifier and reaction bonus rows carry a
+// field for the situation and a separate one for the optional group, each writing to its own part of the feature.
+func TestFeaturesPanelSituationBonusGroupField(t *testing.T) {
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	for _, one := range []struct {
+		name    string
+		feature gurps.Feature
+	}{
+		{name: "conditional modifier", feature: gurps.NewConditionalModifierBonus()},
+		{name: "reaction bonus", feature: gurps.NewReactionBonus()},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			var situation, group *string
+			switch f := one.feature.(type) {
+			case *gurps.ConditionalModifierBonus:
+				situation, group = &f.Situation, &f.Group
+				f.SetOwner(trait)
+			case *gurps.ReactionBonus:
+				situation, group = &f.Situation, &f.Group
+				f.SetOwner(trait)
+			}
+			c.NotNil(situation)
+			if situation == nil {
+				return
+			}
+			features := gurps.Features{one.feature}
+			panel := newFeaturesPanel(entity, trait, &features, false)
+			c.Equal(2, len(panel.Children()), "expected add button + one feature row")
+			fields := panelsOfType[*StringField](panel.Children()[1])
+			c.Equal(2, len(fields), "expected the situation field and the group field")
+			if len(fields) != 2 {
+				return
+			}
+			situationField, groupField := fields[0], fields[1]
+			c.Equal(*situation, situationField.Text(), "the situation field starts out showing the default situation")
+			c.Equal("", groupField.Text(), "the group field starts out empty")
+			c.Equal(i18n.Text("optional"), groupField.Watermark, "the group is marked as optional")
+
+			groupField.SetText("Combat")
+			c.Equal("Combat", *group, "typing into the group field sets the feature's group")
+			c.NotEqual("Combat", *situation, "and leaves the situation alone")
+
+			situationField.SetText("from foes")
+			c.Equal("from foes", *situation, "typing into the situation field sets the feature's situation")
+			c.Equal("Combat", *group, "and leaves the group alone")
+		})
+	}
+}
+
 // findPopups returns every popup of the given item type found anywhere beneath the given panel, in depth-first order.
 func findPopups[T comparable](p *unison.Panel) []*unison.PopupMenu[T] {
 	var popups []*unison.PopupMenu[T]

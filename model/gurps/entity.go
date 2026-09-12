@@ -1561,29 +1561,28 @@ func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 }
 
 // gatherConditionalModifiers walks the entity's active features, collecting conditional modifiers (or reactions) into
-// a sorted list. collectFromList extracts the relevant bonuses from a feature list into the working map, and perTrait,
-// if non-nil, contributes any additional modifiers for each enabled trait (used for self-control reaction penalties).
+// the root rows of the table that shows them. namespace is that table's block key. collectFromList extracts the
+// relevant bonuses from a feature list into the collector, and perTrait, if non-nil, contributes any additional
+// modifiers for each enabled trait (used for self-control reaction penalties). keep, if non-nil, selects the modifiers
+// to retain; it is applied before they are filed under their groups, so that a group emptied by it is dropped too.
 // Reactions and ConditionalModifiers share this so their selection of nodes and merge ordering stay identical.
 func (e *Entity) gatherConditionalModifiers(
-	collectFromList func(source string, features Features, m map[string]*ConditionalModifier),
-	perTrait func(source string, t *Trait, m map[string]*ConditionalModifier),
+	namespace string,
+	collectFromList func(source string, features Features, c *condModCollector),
+	perTrait func(source string, t *Trait, c *condModCollector),
+	keep func(*ConditionalModifier) bool,
 ) []*ConditionalModifier {
-	m := make(map[string]*ConditionalModifier)
+	collector := newCondModCollector(e.ID, namespace)
 	e.forEachActiveFeatureList(func(owner, _ fmt.Stringer, _ LeveledOwner, list Features) {
-		collectFromList(conditionalModifierSource(owner), list, m)
+		collectFromList(conditionalModifierSource(owner), list, collector)
 	})
 	if perTrait != nil {
 		Traverse(func(t *Trait) bool {
-			perTrait(conditionalModifierSource(t), t, m)
+			perTrait(conditionalModifierSource(t), t, collector)
 			return false
 		}, true, false, e.Traits...)
 	}
-	list := make([]*ConditionalModifier, 0, len(m))
-	for _, v := range m {
-		list = append(list, v)
-	}
-	slices.SortFunc(list, func(a, b *ConditionalModifier) int { return a.Compare(b) })
-	return list
+	return collector.rows(keep)
 }
 
 // conditionalModifierSource returns the text that names the owner of a conditional modifier or reaction in the list
@@ -1603,26 +1602,32 @@ func conditionalModifierSource(owner fmt.Stringer) string {
 	}
 }
 
-// Reactions returns the current set of reactions.
+// Reactions returns the current set of reactions. Those filed under a group are returned as the children of a container
+// row named for the group.
 func (e *Entity) Reactions() []*ConditionalModifier {
-	return e.gatherConditionalModifiers(situationModifiersFromFeatureList[*ReactionBonus],
-		func(source string, t *Trait, m map[string]*ConditionalModifier) {
+	return e.gatherConditionalModifiers(BlockReactionsKey, situationModifiersFromFeatureList[*ReactionBonus],
+		func(source string, t *Trait, c *condModCollector) {
 			resolvedSelfControl := t.ResolvedSelfControl(nil)
 			if resolvedSelfControl != selfctrl.None && t.ResolvedSelfControlAdjustment(nil) == selfctrl.ReactionPenalty {
-				addSituationModifier(m, source, fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String()),
+				// The self-control penalty is derived from the trait rather than from a bonus the user wrote, so there
+				// is no group for it to be filed under.
+				c.add(source, "", fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String()),
 					fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(resolvedSelfControl)))
 			}
-		})
+		}, nil)
 }
 
-// ConditionalModifiers returns the current set of conditional modifiers. If the sheet settings have
-// HideZeroValueConditionalMods enabled, modifiers whose amounts total to zero are omitted.
+// ConditionalModifiers returns the current set of conditional modifiers. Those filed under a group are returned as the
+// children of a container row named for the group. If the sheet settings have HideZeroValueConditionalMods enabled,
+// modifiers whose amounts total to zero are omitted, and a group left with no members by that is omitted along with
+// them.
 func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
-	list := e.gatherConditionalModifiers(situationModifiersFromFeatureList[*ConditionalModifierBonus], nil)
+	var keep func(*ConditionalModifier) bool
 	if SheetSettingsFor(e).HideZeroValueConditionalMods {
-		list = slices.DeleteFunc(list, func(c *ConditionalModifier) bool { return c.Total() == 0 })
+		keep = func(c *ConditionalModifier) bool { return c.Total() != 0 }
 	}
-	return list
+	return e.gatherConditionalModifiers(BlockConditionalModifiersKey,
+		situationModifiersFromFeatureList[*ConditionalModifierBonus], nil, keep)
 }
 
 // TraitList implements ListProvider
