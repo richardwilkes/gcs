@@ -99,6 +99,7 @@ type Settings struct {
 	WorkspaceFrame     *geom.Rect                 `json:"workspace_frame,omitzero"`
 	TopDockState       *unison.DockState          `json:"top_dock_state,omitzero"`
 	DocDockState       *unison.DockState          `json:"doc_dock_state,omitzero"`
+	FocusedDockKey     string                     `json:"focused_dock_key,omitzero"`
 	Colors             colors.Colors              `json:"theme_colors"`
 	Fonts              fonts.Fonts                `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitzero"`

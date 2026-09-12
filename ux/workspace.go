@@ -110,27 +110,33 @@ func InitWorkspace(wnd *unison.Window) {
 
 func finishInit() {
 	Workspace.Window.ResizedCallback = nil
+	focused := false
 	if gurps.GlobalSettings().General.RestoreWorkspaceOnStart {
-		xos.SafeCall(restoreDockState, func(err error) {
+		xos.SafeCall(func() { focused = restoreDockState() }, func(err error) {
 			slog.Warn("Unable to restore workspace state", "error", err)
 		})
 	} else {
 		Workspace.TopDock.RootDockLayout().SetDividerPosition(gurps.DefaultNavigatorDividerPosition)
 	}
-	Workspace.Navigator.InitialFocus()
+	if !focused {
+		Workspace.Navigator.InitialFocus()
+	}
 	Workspace.ErrorHandler = func(msg string, err error) { unison.ErrorDialogWithError(msg, err) }
 }
 
-func restoreDockState() {
+// restoreDockState puts the docks back the way they were when the workspace was last closed, reopening the files that
+// were open, and returns the focus to the tab that had it then. Reports whether the focus was given to something, so
+// that the caller can fall back to the navigator when it was not.
+func restoreDockState() bool {
 	global := gurps.GlobalSettings()
-	m := make(map[string]unison.Dockable)
-	extractDockKeys(m, global.TopDockState)
-	extractDockKeys(m, global.DocDockState)
-	if len(m) == 0 {
-		return
+	keys := slices.Concat(dockStateKeys(global.TopDockState), dockStateKeys(global.DocDockState))
+	if len(keys) == 0 {
+		return false
 	}
-	files := make([]string, 0, len(m))
-	for k := range m {
+	m := make(map[string]unison.Dockable, len(keys))
+	files := make([]string, 0, len(keys))
+	for _, k := range keys {
+		m[k] = nil
 		if strings.HasPrefix(k, filePrefix) {
 			files = append(files, k[len(filePrefix):])
 		}
@@ -163,18 +169,67 @@ func restoreDockState() {
 			return nil
 		})
 	}
+	return restoreFocusedDockable(global.FocusedDockKey, m)
 }
 
-func extractDockKeys(m map[string]unison.Dockable, dockState *unison.DockState) {
-	if dockState == nil {
-		return
+// focusedDockKey returns the dock key of the dockable that holds the workspace window's keyboard focus, or "" when the
+// focus is not within a keyed dockable, so that the tab the user was working in can be given the focus again when the
+// workspace is restored. The nearest keyed dockable is the one recorded, so the focus in a file's tab names that file
+// rather than the document dock that holds it, while the focus in the navigator names the navigator.
+func focusedDockKey() string {
+	focus := Workspace.Window.CurrentFocus()
+	if focus == nil {
+		return ""
 	}
+	if kd := unison.Ancestor[KeyedDockable](focus); !xreflect.IsNil(kd) {
+		return kd.DockKey()
+	}
+	return ""
+}
+
+// restoreFocusedDockable gives the keyboard focus to the dockable with the given key, found in m when it is one of the
+// file-backed dockables the dock state reopened, and reports whether the focus ended up within it. A dockable that
+// follows the toolbar and content convention has its content focused, just as it does when it is first opened, rather
+// than whatever focusable widget happens to come first in its toolbar. The navigator is focused the way it is when
+// nothing is restored.
+func restoreFocusedDockable(key string, m map[string]unison.Dockable) bool {
+	var d unison.Dockable
+	switch key {
+	case "":
+		return false
+	case NavigatorDockKey:
+		d = Workspace.Navigator
+		Workspace.Navigator.InitialFocus()
+	case DocumentsDockKey:
+		d = Workspace.DocumentDock
+		ActivateDockable(d)
+	default:
+		if d = m[key]; xreflect.IsNil(d) {
+			return false
+		}
+		ActivateDockable(d)
+		if children := d.AsPanel().Children(); len(children) > 1 {
+			FocusFirstContent(children[0], children[1])
+		}
+	}
+	return unison.DockableHasFocus(d)
+}
+
+// dockStateKeys returns the keys of the dockables the dock state records, in the order it records them, which is the
+// order their tabs are laid out in. Reopening the files in that order, rather than in whatever order a map hands them
+// back, keeps the recent files list and the order the tabs are created in the same from one start to the next.
+func dockStateKeys(dockState *unison.DockState) []string {
+	if dockState == nil {
+		return nil
+	}
+	var keys []string
 	if dockState.Type == unison.DockableType && dockState.Key != "" {
-		m[dockState.Key] = nil
+		keys = append(keys, dockState.Key)
 	}
 	for _, child := range dockState.Children {
-		extractDockKeys(m, child)
+		keys = append(keys, dockStateKeys(child)...)
 	}
+	return keys
 }
 
 // Activate activates and focuses the first dockable that 'matcher' returns true for, reporting whether one was found.
@@ -266,10 +321,14 @@ func isWorkspaceAllowedToClose() bool {
 		}
 	}
 
-	// Then, record the current dock state.
+	// Then, record the current dock state, along with which of the tabs it records has the focus. The focus is looked
+	// at only now, once the dockables that won't be restored have been closed, since closing one that had the focus
+	// moves the focus to a neighbor, and it is that neighbor the user will find themselves in when the workspace comes
+	// back.
 	global := gurps.GlobalSettings()
 	global.TopDockState = unison.NewDockState(Workspace.TopDock, collectDockKeys)
 	global.DocDockState = unison.NewDockState(Workspace.DocumentDock.Dock, collectDockKeys)
+	global.FocusedDockKey = focusedDockKey()
 
 	// Finally, close the remaining dockables; grouped ones are closed by the dockable they are grouped with.
 	for _, d := range AllDockables() {

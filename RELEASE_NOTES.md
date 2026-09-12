@@ -27,6 +27,9 @@
   not met, or whose level exceeds its maximum, as disabled: it contributes no points, features or weapons to the sheet
   until they are met. The trait keeps its own enabled state and the warning that explains what is missing, and comes
   back into play on its own once its prerequisites are satisfied. The setting is off by default.
+- When the workspace arrangement is restored on start, the tab that had the keyboard focus when GCS was last quit is
+  given the focus again, rather than the Library Explorer always starting with it. The files are also reopened in the
+  order their tabs are laid out in, so the recent files list comes out the same from one start to the next.
 
 ## Bug Fixes
 
