@@ -101,8 +101,7 @@ type features struct {
 	traitBonuses         []*TraitBonus
 	traitMaxLevelBonuses []*TraitMaxLevelBonus
 	weaponBonuses        []*WeaponBonus
-
-	selectorOverrides []*SelectorOverride
+	selectorOverrides    []*SelectorOverride
 }
 
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
