@@ -27,17 +27,19 @@ type Campaign struct {
 
 // CampaignData holds the campaign file data.
 type CampaignData struct {
-	Version       int            `json:"version"`
-	ID            tid.TID        `json:"id"`
-	SheetSettings *SheetSettings `json:"settings,omitzero"`
-	Traits        []*Trait       `json:"traits,omitempty"`
-	Skills        []*Skill       `json:"skills,omitempty"`
-	Spells        []*Spell       `json:"spells,omitempty"`
-	Equipment     []*Equipment   `json:"equipment,omitempty"`
-	Notes         []*Note        `json:"notes,omitempty"`
-	Templates     []*Template    `json:"templates,omitempty"`
-	Characters    []*Entity      `json:"characters,omitempty"`
-	Documents     []*Document    `json:"documents,omitempty"`
+	Version            int                  `json:"version"`
+	ID                 tid.TID              `json:"id"`
+	SheetSettings      *SheetSettings       `json:"settings,omitzero"`
+	Traits             []*Trait             `json:"traits,omitempty"`
+	TraitModifiers     []*TraitModifier     `json:"trait_modifiers,omitempty"`
+	Skills             []*Skill             `json:"skills,omitempty"`
+	Spells             []*Spell             `json:"spells,omitempty"`
+	Equipment          []*Equipment         `json:"equipment,omitempty"`
+	EquipmentModifiers []*EquipmentModifier `json:"equipment_modifiers,omitempty"`
+	Notes              []*Note              `json:"notes,omitempty"`
+	Templates          []*Template          `json:"templates,omitempty"`
+	Characters         []*Entity            `json:"characters,omitempty"`
+	Documents          []*Document          `json:"documents,omitempty"`
 }
 
 // NewCampaignFromFile loads a Campaign from a file.
