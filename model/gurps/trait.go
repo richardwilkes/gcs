@@ -20,6 +20,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
@@ -551,6 +552,14 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 	if !t.Container() {
 		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
 			t.SelfControl, t.Frequency, t.AllModifiers(), t.RoundCostDown)
+	}
+	if t.ContainerType == container.FixedCost {
+		if t.FixedPoints != nil {
+			return *t.FixedPoints
+		}
+		if t.TemplatePicker.Type == picker.Points && t.TemplatePicker.Qualifier.Compare == criteria.EqualsNumber {
+			return t.TemplatePicker.Qualifier.Qualifier
+		}
 	}
 	var points fxp.Int
 	if t.ContainerType == container.AlternativeAbilities {

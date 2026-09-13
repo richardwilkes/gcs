@@ -13,8 +13,10 @@ import (
 	"crypto/sha256"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -460,4 +462,47 @@ func TestTraitClearUnusedFixedPoints(t *testing.T) {
 		trait.ClearUnusedFieldsForType()
 		check.New(t).True(trait.FixedPoints == nil)
 	})
+}
+
+// TestTraitFixedCostAdjustedPoints covers modeled costs independently of picker selection validation.
+func TestTraitFixedCostAdjustedPoints(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		fixed      *fxp.Int
+		pickerType picker.Type
+		compare    criteria.NumericComparison
+		qualifier  fxp.Int
+		disabled   bool
+		want       fxp.Int
+	}{
+		{name: "manual overrides children and picker", fixed: new(fxp.Five), pickerType: picker.Points, compare: criteria.EqualsNumber, qualifier: fxp.Ten, want: fxp.Five},
+		{name: "manual without picker", fixed: new(fxp.Five), want: fxp.Five},
+		{name: "explicit zero overrides picker", fixed: new(fxp.Int(0)), pickerType: picker.Points, compare: criteria.EqualsNumber, qualifier: fxp.Ten},
+		{name: "negative manual value", fixed: new(-fxp.Five), want: -fxp.Five},
+		{name: "exact points picker", pickerType: picker.Points, compare: criteria.EqualsNumber, qualifier: fxp.Ten, want: fxp.Ten},
+		{name: "exact zero points picker", pickerType: picker.Points, compare: criteria.EqualsNumber},
+		{name: "no picker sums children", want: fxp.FromInteger(30)},
+		{name: "at most sums children", pickerType: picker.Points, compare: criteria.AtMostNumber, qualifier: fxp.Ten, want: fxp.FromInteger(30)},
+		{name: "at least sums children", pickerType: picker.Points, compare: criteria.AtLeastNumber, qualifier: fxp.Ten, want: fxp.FromInteger(30)},
+		{name: "not equals sums children", pickerType: picker.Points, compare: criteria.NotEqualsNumber, qualifier: fxp.Ten, want: fxp.FromInteger(30)},
+		{name: "count picker sums children", pickerType: picker.Count, compare: criteria.EqualsNumber, qualifier: fxp.Two, want: fxp.FromInteger(30)},
+		{name: "disabled manual container", fixed: new(fxp.Five), disabled: true},
+		{name: "disabled picker container", pickerType: picker.Points, compare: criteria.EqualsNumber, qualifier: fxp.Ten, disabled: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			trait := NewTrait(nil, nil, true)
+			trait.ContainerType = container.FixedCost
+			trait.FixedPoints = tc.fixed
+			trait.TemplatePicker.Type = tc.pickerType
+			trait.TemplatePicker.Qualifier.Compare = tc.compare
+			trait.TemplatePicker.Qualifier.Qualifier = tc.qualifier
+			trait.Disabled = tc.disabled
+			for _, points := range []fxp.Int{fxp.Ten, fxp.Twenty} {
+				child := NewTrait(nil, trait, false)
+				child.BasePoints = points
+				trait.Children = append(trait.Children, child)
+			}
+			check.New(t).Equal(tc.want, trait.AdjustedPoints())
+		})
+	}
 }
