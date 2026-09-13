@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // TestHasTag verifies that a tag matches either as a whole -- even when it contains colons -- or as one of the
@@ -555,6 +556,30 @@ func TestTraitFixedCostOwnership(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestTraitFixedCostReferenceCloneSyncStaysGroup(t *testing.T) {
+	c := check.New(t)
+	owner := NewEntity()
+	libFile := LibraryFile{Library: "Test Library", Path: "Test" + TraitsExt}
+
+	source := NewTrait(nil, nil, true)
+	source.ContainerType = container.FixedCost
+	source.FixedPoints = new(fxp.Five)
+
+	local := source.Clone(libFile, owner, nil, Reference)
+	owner.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
+		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
+	}
+
+	c.Equal(container.Group, local.ContainerType)
+	c.True(local.FixedPoints == nil)
+	c.Equal(Source{}, local.Source)
+
+	local.SyncWithSource()
+
+	c.Equal(container.Group, local.ContainerType)
+	c.True(local.FixedPoints == nil)
 }
 
 func TestTraitFixedCostInlineTag(t *testing.T) {

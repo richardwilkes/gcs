@@ -492,6 +492,7 @@ func (t *Trait) enforceFixedCostOwnership() {
 	if t.ContainerType == container.FixedCost && EntityFromNode(t) != nil {
 		t.ContainerType = container.Group
 		t.FixedPoints = nil
+		t.ClearSource()
 	}
 }
 
