@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -558,7 +559,7 @@ func TestTraitFixedCostOwnership(t *testing.T) {
 	}
 }
 
-func TestTraitFixedCostReferenceCloneSyncStaysGroup(t *testing.T) {
+func TestTraitFixedCostSourceSyncStaysGroup(t *testing.T) {
 	c := check.New(t)
 	owner := NewEntity()
 	libFile := LibraryFile{Library: "Test Library", Path: "Test" + TraitsExt}
@@ -567,19 +568,22 @@ func TestTraitFixedCostReferenceCloneSyncStaysGroup(t *testing.T) {
 	source.ContainerType = container.FixedCost
 	source.FixedPoints = new(fxp.Five)
 
-	local := source.Clone(libFile, owner, nil, Reference)
+	local := NewTrait(owner, nil, true)
+	local.Source = Source{LibraryFile: libFile, TID: source.TID}
 	owner.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
 		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
 	}
 
+	state, _ := owner.SourceMatcher().Match(local)
+	c.NotEqual(srcstate.Matched, state, "precondition: the local Group has drifted from its Fixed Cost source")
 	c.Equal(container.Group, local.ContainerType)
 	c.True(local.FixedPoints == nil)
-	c.Equal(Source{}, local.Source)
 
 	local.SyncWithSource()
 
 	c.Equal(container.Group, local.ContainerType)
 	c.True(local.FixedPoints == nil)
+	c.Equal(Source{}, local.Source)
 }
 
 func TestTraitFixedCostInlineTag(t *testing.T) {

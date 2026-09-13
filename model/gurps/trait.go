@@ -1052,6 +1052,7 @@ func (t *Trait) SyncWithSource() {
 			t.Weapons = CloneWeapons(other.Weapons, t, Reference)
 			t.Features = other.Features.Clone()
 		}
+		t.enforceFixedCostOwnership()
 	})
 }
 
