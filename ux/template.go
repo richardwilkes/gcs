@@ -281,7 +281,7 @@ Disable your character's existing Ancestry (%s)?`),
 		}
 	}
 	rows := &templateRows{
-		traits:    cloneRows(sheet.Traits.Table, t.Traits.Table.RootRows()),
+		traits:    t.cloneTraitsForPickers(sheet),
 		skills:    cloneRows(sheet.Skills.Table, t.Skills.Table.RootRows()),
 		spells:    cloneRows(sheet.Spells.Table, t.Spells.Table.RootRows()),
 		equipment: cloneRows(sheet.CarriedEquipment.Table, t.Equipment.Table.RootRows()),
@@ -290,6 +290,8 @@ Disable your character's existing Ancestry (%s)?`),
 	if !processPickers(rows) {
 		return false // A picker was canceled, so the sheet has been left untouched.
 	}
+	// Picker validation needs the template's fixed costs, but the sheet must charge for the selected children.
+	gurps.SetDataOwnerAll(e, ExtractNodeDataFromList(rows.traits))
 	// The sheet is modified from this point on.
 	if t.template.BodyType != nil {
 		e.SheetSettings.BodyType = t.template.BodyType.Clone(e, nil)
@@ -391,6 +393,16 @@ func updateWeightField(sheet *Sheet, refKey string, value fxp.Weight) {
 			sheet.undoMgr = saved
 		}
 	}
+}
+
+func (t *Template) cloneTraitsForPickers(sheet *Sheet) []*Node[*gurps.Trait] {
+	rows := t.Traits.Table.RootRows()
+	clones := make([]*Node[*gurps.Trait], 0, len(rows))
+	for _, row := range rows {
+		trait := row.Data().CloneForTemplateApplication(libraryFileFromTable(t.Traits.Table), sheet.Entity())
+		clones = append(clones, NewNode(sheet.Traits.Table, nil, trait, false))
+	}
+	return clones
 }
 
 func cloneRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) []*Node[T] {

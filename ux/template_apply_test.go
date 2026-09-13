@@ -134,8 +134,8 @@ func TestApplyTemplateFixedCostSelection(t *testing.T) {
 	applied := template.applyTemplateToSheetWithPickers(sheet, true, func(rows *templateRows) bool {
 		// Supply the user's selection at the dialog boundary; cloning and sheet insertion use the production path.
 		copied := ExtractNodeDataFromList(rows.traits)[0]
-		c.Equal(container.Group, copied.ContainerType)
-		c.True(copied.FixedPoints == nil)
+		c.Equal(container.FixedCost, copied.ContainerType)
+		c.Equal(new(fxp.FromInteger(30)), copied.FixedPoints)
 		copiedChoices := copied.Children[0]
 		selected := copiedChoices.Children[:2]
 		total, matches := pickerSelectionState(&copiedChoices.TemplatePicker, selected)
@@ -164,4 +164,95 @@ func TestApplyTemplateFixedCostSelection(t *testing.T) {
 	c.Equal(container.FixedCost, parent.ContainerType)
 	c.Equal(new(fxp.FromInteger(30)), parent.FixedPoints)
 	c.Equal(3, len(choices.Children), "the template retains all choices")
+}
+
+// An outer points picker must see a nested package's fixed cost before the mandatory inner choice is resolved.
+func TestApplyTemplateNestedFixedCostPicker(t *testing.T) {
+	for _, cancel := range []bool{false, true} {
+		name := "apply"
+		if cancel {
+			name = "cancel"
+		}
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			originalCount := len(sheet.Entity().Traits)
+			data := gurps.NewTemplate()
+			wrapper := gurps.NewTrait(data, nil, true)
+			wrapper.ContainerType = container.FixedCost
+			wrapper.FixedPoints = new(fxp.FromInteger(99))
+			outer := gurps.NewTrait(data, wrapper, true)
+			outer.TemplatePicker.Type = picker.Points
+			outer.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+			outer.TemplatePicker.Qualifier.Qualifier = fxp.Five
+			inner := gurps.NewTrait(data, outer, true)
+			inner.ContainerType = container.FixedCost
+			inner.FixedPoints = new(fxp.Five)
+			inner.TemplatePicker.Type = picker.Count
+			inner.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+			inner.TemplatePicker.Qualifier.Qualifier = fxp.One
+			for range 2 {
+				child := gurps.NewTrait(data, inner, false)
+				child.BasePoints = fxp.Five
+				inner.Children = append(inner.Children, child)
+			}
+			outer.Children = []*gurps.Trait{inner}
+			wrapper.Children = []*gurps.Trait{outer}
+			data.Traits = []*gurps.Trait{wrapper}
+			template := NewTemplate("test"+gurps.TemplatesExt, data)
+			called := false
+			applied := template.applyTemplateToSheetWithPickers(sheet, true, func(rows *templateRows) bool {
+				called = true
+				copiedWrapper := ExtractNodeDataFromList(rows.traits)[0]
+				copiedOuter := copiedWrapper.Children[0]
+				copiedInner := copiedOuter.Children[0]
+				c.True(copiedInner.DataOwner() == sheet.Entity(), "picker calculations retain the character context")
+				total, matches := pickerSelectionState(&copiedOuter.TemplatePicker, copiedOuter.Children)
+				c.Equal(fxp.Five, total, "use the fixed cost rather than summing all alternatives")
+				c.True(matches, "the outer picker must allow the package before opening its inner picker")
+				if !matches {
+					return false
+				}
+				selected := copiedInner.Children[:1]
+				total, matches = pickerSelectionState(&copiedInner.TemplatePicker, selected)
+				c.Equal(fxp.One, total)
+				c.True(matches)
+				// Simulate the two choice containers being replaced by their selected child.
+				copiedWrapper.SetChildren(selected)
+				SetParents(selected, copiedWrapper)
+				return !cancel
+			})
+			c.True(called)
+			c.Equal(!cancel, applied)
+			c.Equal(container.FixedCost, wrapper.ContainerType)
+			c.Equal(new(fxp.FromInteger(99)), wrapper.FixedPoints)
+			c.Equal(container.FixedCost, inner.ContainerType)
+			c.Equal(new(fxp.Five), inner.FixedPoints)
+			c.Equal(2, len(inner.Children), "applying or canceling must preserve the template's choices")
+			if cancel {
+				c.Equal(originalCount, len(sheet.Entity().Traits))
+				c.False(sheet.Modified())
+				c.False(sheet.undoMgr.CanUndo())
+				return
+			}
+			if len(sheet.Entity().Traits) != originalCount+1 {
+				t.Fatal("expected one added package")
+			}
+			copied := sheet.Entity().Traits[originalCount]
+			c.Equal(container.Group, copied.ContainerType)
+			c.True(copied.FixedPoints == nil)
+			c.Equal(fxp.Five, copied.AdjustedPoints(), "the sheet charges for the selected child, not the wrapper's fixed cost")
+			c.Equal(1, len(copied.Children))
+			c.True(copied.DataOwner() == sheet.Entity())
+			c.True(copied.Children[0].DataOwner() == sheet.Entity())
+			c.True(copied.Children[0].Parent() == copied)
+			sheet.undoMgr.Undo()
+			c.Equal(originalCount, len(sheet.Entity().Traits))
+			sheet.undoMgr.Redo()
+			copied = sheet.Entity().Traits[originalCount]
+			c.Equal(container.Group, copied.ContainerType)
+			c.True(copied.FixedPoints == nil)
+			c.Equal(fxp.Five, copied.AdjustedPoints())
+		})
+	}
 }

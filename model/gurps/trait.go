@@ -216,17 +216,30 @@ func (t *Trait) SetOpen(open bool) {
 
 // Clone implements Node.
 func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode CloneMode) *Trait {
+	return t.clone(from, owner, parent, mode, false)
+}
+
+// CloneForTemplateApplication clones a detached trait tree for picker processing. It retains fixed costs while
+// using the destination owner's character context for calculations. Call SetDataOwner on the resulting selections
+// before inserting them into the character sheet to convert any remaining fixed-cost containers to groups.
+func (t *Trait) CloneForTemplateApplication(from LibraryFile, owner DataOwner) *Trait {
+	return t.clone(from, owner, nil, Reference, true)
+}
+
+func (t *Trait) clone(from LibraryFile, owner DataOwner, parent *Trait, mode CloneMode, preserveFixedCost bool) *Trait {
 	other := NewTrait(owner, parent, t.Container())
 	other.AdjustSource(from, t.SourcedID, mode)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.copyFrom(other, &t.TraitEditData, false, mode)
-	other.enforceFixedCostOwnership()
+	if !preserveFixedCost {
+		other.enforceFixedCostOwnership()
+	}
 	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
 		for _, child := range t.Children {
-			other.Children = append(other.Children, child.Clone(from, owner, other, mode))
+			other.Children = append(other.Children, child.clone(from, owner, other, mode, preserveFixedCost))
 		}
 	}
 	return other
