@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -116,7 +117,11 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	var ancestryPopup *unison.PopupMenu[string]
 	var slotsField *IntegerField
 	if e.target.Container() {
-		addLabelAndPopup(content, i18n.Text("Container Type"), "", container.Types,
+		types := container.Types
+		if entity != nil {
+			types = slices.DeleteFunc(slices.Clone(types), func(kind container.Type) bool { return kind == container.FixedCost })
+		}
+		addLabelAndPopup(content, i18n.Text("Container Type"), "", types,
 			&e.editorData.ContainerType)
 		var choices []string
 		for _, lib := range gurps.AvailableAncestries(gurps.GlobalSettings().Libraries) {
