@@ -221,6 +221,7 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode Clo
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.copyFrom(other, &t.TraitEditData, false, mode)
+	other.enforceFixedCostOwnership()
 	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
@@ -468,6 +469,7 @@ func (t *Trait) DataOwner() DataOwner {
 // SetDataOwner sets the data owner and configures any sub-components as needed.
 func (t *Trait) SetDataOwner(owner DataOwner) {
 	t.owner = owner
+	t.enforceFixedCostOwnership()
 	if t.Container() {
 		for _, child := range t.Children {
 			child.SetDataOwner(owner)
@@ -480,6 +482,14 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 	for _, m := range t.Modifiers {
 		m.setTrait(t)
 		m.SetDataOwner(owner)
+	}
+}
+
+// enforceFixedCostOwnership limits fixed-cost containers to templates and libraries.
+func (t *Trait) enforceFixedCostOwnership() {
+	if t.ContainerType == container.FixedCost && EntityFromNode(t) != nil {
+		t.ContainerType = container.Group
+		t.FixedPoints = nil
 	}
 }
 

@@ -506,3 +506,53 @@ func TestTraitFixedCostAdjustedPoints(t *testing.T) {
 		})
 	}
 }
+
+func TestTraitFixedCostOwnership(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		owner DataOwner
+		want  container.Type
+	}{
+		{name: "character", owner: NewEntity(), want: container.Group},
+		{name: "template", owner: NewTemplate(), want: container.FixedCost},
+		{name: "library", want: container.FixedCost},
+	} {
+		for _, clone := range []bool{false, true} {
+			action := "assign"
+			if clone {
+				action = "clone"
+			}
+			t.Run(tc.name+"/"+action, func(t *testing.T) {
+				c := check.New(t)
+				source := NewTrait(NewTemplate(), nil, true)
+				source.ContainerType = container.FixedCost
+				source.FixedPoints = new(fxp.Five)
+				child := NewTrait(source.DataOwner(), source, true)
+				child.ContainerType = container.FixedCost
+				child.FixedPoints = new(fxp.Int(0))
+				source.Children = []*Trait{child}
+				result := source
+				if clone {
+					result = source.Clone(LibraryFile{}, tc.owner, nil, Reference)
+					c.Equal(container.FixedCost, source.ContainerType)
+					c.Equal(new(fxp.Five), source.FixedPoints)
+					c.Equal(container.FixedCost, child.ContainerType)
+					c.Equal(new(fxp.Int(0)), child.FixedPoints)
+				} else {
+					result.SetDataOwner(tc.owner)
+				}
+				c.Equal(tc.want, result.ContainerType)
+				c.Equal(tc.want, result.Children[0].ContainerType)
+				c.True(result.DataOwner() == tc.owner)
+				c.True(result.Children[0].DataOwner() == tc.owner)
+				if tc.want == container.Group {
+					c.True(result.FixedPoints == nil)
+					c.True(result.Children[0].FixedPoints == nil)
+				} else {
+					c.Equal(new(fxp.Five), result.FixedPoints)
+					c.Equal(new(fxp.Int(0)), result.Children[0].FixedPoints)
+				}
+			})
+		}
+	}
+}
