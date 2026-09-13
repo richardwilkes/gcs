@@ -100,3 +100,52 @@ func TestTraitEditorFixedPoints(t *testing.T) {
 	c.Equal("", field.Text())
 	c.True(e.editorData.FixedPoints == nil)
 }
+
+func TestTraitEditorClearFixedPoints(t *testing.T) {
+	for _, text := range []string{"5", "0"} {
+		t.Run(text, func(t *testing.T) {
+			c := check.New(t)
+			trait := gurps.NewTrait(gurps.NewTemplate(), nil, true)
+			trait.ContainerType = container.FixedCost
+			var update func()
+			e, content := buildEditorContent(nil, trait, func(e *editor[*gurps.Trait, *gurps.TraitEditData], p *unison.Panel) func() {
+				update = initTraitEditor(e, p)
+				return update
+			})
+			field := panelsOfType[*DecimalField](content)[0]
+			var clearButton *unison.Button
+			for _, button := range panelsOfType[*unison.Button](content) {
+				if button.Text.String() == "Clear" {
+					clearButton = button
+					break
+				}
+			}
+			if clearButton == nil {
+				t.Fatal("missing clear action")
+			}
+			c.True(clearButton.Enabled())
+			field.SetText(text)
+			c.True(e.editorData.FixedPoints != nil)
+			clearButton.ClickCallback()
+			c.Equal("", field.Text())
+			c.True(e.editorData.FixedPoints == nil)
+			field.lostFocus()
+			e.editorData.ApplyTo(trait)
+			c.True(trait.FixedPoints == nil)
+			field.SetText("0")
+			c.Equal(new(fxp.Int(0)), e.editorData.FixedPoints)
+			field.SetText("")
+			c.True(e.editorData.FixedPoints == nil)
+			field.SetText("0")
+			c.Equal(new(fxp.Int(0)), e.editorData.FixedPoints)
+			popup := panelsOfType[*unison.PopupMenu[container.Type]](content)[0]
+			popup.Select(container.Group)
+			update()
+			c.False(clearButton.Enabled())
+			c.True(e.editorData.FixedPoints == nil)
+			popup.Select(container.FixedCost)
+			update()
+			c.True(clearButton.Enabled())
+		})
+	}
+}
