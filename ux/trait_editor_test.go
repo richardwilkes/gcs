@@ -10,12 +10,13 @@
 package ux
 
 import (
+	"testing"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
-	"testing"
 )
 
 func TestTraitEditorContainerTypes(t *testing.T) {
