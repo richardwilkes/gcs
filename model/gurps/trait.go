@@ -1052,6 +1052,9 @@ func (t *Trait) SyncWithSource() {
 			t.Weapons = CloneWeapons(other.Weapons, t, Reference)
 			t.Features = other.Features.Clone()
 		}
+		// FixedPoints is a pointer so that an absent value can be distinguished from an explicit zero. Clone it to
+		// keep synchronized traits independent from their source.
+		t.FixedPoints = clonePtr(other.FixedPoints)
 		t.enforceFixedCostOwnership()
 	})
 }
@@ -1126,6 +1129,9 @@ func (t *TraitEditData) ApplyTo(other *Trait) {
 // a new one; Clone passes its own mode through.
 func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply bool, mode CloneMode) {
 	*t = *other
+	// FixedPoints is mutable despite being represented by a pointer for nil/zero distinction, so don't share it
+	// between the editor, clone, and source trait.
+	t.FixedPoints = clonePtr(other.FixedPoints)
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
 	// Each copy is pointed at the trait it belongs to, so that a "use level from owner" modifier can resolve its level.

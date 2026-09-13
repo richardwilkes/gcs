@@ -304,6 +304,24 @@ func TestTraitEditDataCopyLinksModifiers(t *testing.T) {
 		data.PointsPerLevel, data.SelfControl, data.Frequency, data.Modifiers, data.RoundCostDown), "10 + 2*3")
 }
 
+func TestTraitFixedPointsCopiesAreIndependent(t *testing.T) {
+	c := check.New(t)
+	source := NewTrait(nil, nil, true)
+	source.ContainerType = container.FixedCost
+	source.FixedPoints = new(fxp.FromInteger(5))
+
+	clone := source.Clone(LibraryFile{}, NewTemplate(), nil, Reference)
+	c.True(source.FixedPoints != clone.FixedPoints, "cloning must allocate an independent FixedPoints value")
+	*clone.FixedPoints = fxp.FromInteger(9)
+	c.Equal(fxp.FromInteger(5), *source.FixedPoints, "mutating a clone must not mutate its source")
+
+	var edit TraitEditData
+	edit.CopyFrom(source)
+	c.True(source.FixedPoints != edit.FixedPoints, "editor data must allocate an independent FixedPoints value")
+	*edit.FixedPoints = fxp.FromInteger(11)
+	c.Equal(fxp.FromInteger(5), *source.FixedPoints, "mutating editor data must not mutate its source")
+}
+
 // TestTraitEditDataCapturesMigratedReplacements verifies that populating an editor from a trait whose modifiers still
 // carry the legacy per-modifier replacements captures the migrated replacements in the editor's snapshot. Without that,
 // applying the editor's data back writes the pre-migration snapshot and silently drops them.
