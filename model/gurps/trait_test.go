@@ -10,12 +10,14 @@
 package gurps
 
 import (
+	"crypto/sha256"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -374,4 +376,88 @@ func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
 	c.Equal(1, len(clonedContainer.Children), "the child was cloned")
 	clonedChild := clonedContainer.Children[0]
 	c.True(clonedChild.Modifiers[0].OwningTrait() == clonedChild, "a cloned child's modifier belongs to that child")
+}
+
+func TestTraitFixedPointsRoundTrip(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		value *fxp.Int
+	}{
+		{name: "unset"},
+		{name: "zero", value: new(fxp.Int(0))},
+		{name: "positive", value: new(fxp.Five)},
+		{name: "negative", value: new(-fxp.Two)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			trait := NewTrait(nil, nil, true)
+			trait.ContainerType = container.FixedCost
+			trait.FixedPoints = tc.value
+			data, err := jio.Marshal(trait)
+			c.NoError(err)
+			if tc.value == nil {
+				c.NotContains(string(data), "fixed_points")
+			} else {
+				c.Contains(string(data), "fixed_points")
+			}
+			var restored Trait
+			c.NoError(jio.Unmarshal(data, &restored))
+			c.Equal(container.FixedCost, restored.ContainerType)
+			c.Equal(tc.value, restored.FixedPoints)
+		})
+	}
+}
+
+func TestTraitFixedPointsHash(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, true)
+	trait.ContainerType = container.FixedCost
+	hashTrait := func() []byte {
+		h := sha256.New()
+		trait.Hash(h)
+		return h.Sum(nil)
+	}
+	unset := hashTrait()
+	trait.FixedPoints = new(fxp.Int(0))
+	zero := hashTrait()
+	c.NotEqual(unset, zero, "unset and explicit zero must differ")
+	trait.FixedPoints = new(fxp.One)
+	one := hashTrait()
+	c.NotEqual(zero, one, "the value participates in the source hash")
+	trait.FixedPoints = new(fxp.One)
+	c.Equal(one, hashTrait(), "pointer identity does not affect the hash")
+	for _, kind := range container.Types {
+		if kind == container.FixedCost {
+			continue
+		}
+		trait.ContainerType = kind
+		trait.FixedPoints = nil
+		before := hashTrait()
+		trait.FixedPoints = new(fxp.One)
+		c.Equal(before, hashTrait(), "unused fixed points do not affect other container hashes")
+	}
+}
+
+func TestTraitClearUnusedFixedPoints(t *testing.T) {
+	for _, kind := range container.Types {
+		t.Run(kind.Key(), func(t *testing.T) {
+			c := check.New(t)
+			trait := NewTrait(nil, nil, true)
+			trait.ContainerType = kind
+			trait.FixedPoints = new(fxp.Int(0))
+			trait.ClearUnusedFieldsForType()
+			if kind == container.FixedCost {
+				c.Equal(new(fxp.Int(0)), trait.FixedPoints)
+			} else {
+				c.True(trait.FixedPoints == nil)
+			}
+		})
+	}
+	t.Run("non-container", func(t *testing.T) {
+		trait := NewTrait(nil, nil, false)
+		trait.ContainerType = container.FixedCost
+		trait.FixedPoints = new(fxp.One)
+		trait.ClearUnusedFieldsForType()
+		check.New(t).True(trait.FixedPoints == nil)
+	})
 }

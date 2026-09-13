@@ -137,6 +137,7 @@ type TraitContainerSyncData struct {
 	TemplatePicker   TemplatePicker `json:"template_picker,omitzero"`
 	ContainerType    container.Type `json:"container_type,omitzero"`
 	AlternativeSlots int            `json:"alternative_slots,omitzero"`
+	FixedPoints      *fxp.Int       `json:"fixed_points,omitempty"`
 }
 
 // NewTraitsFromFile loads a Trait list from a file.
@@ -984,6 +985,9 @@ func (t *Trait) Kind() string {
 func (t *Trait) ClearUnusedFieldsForType() {
 	if t.Container() {
 		t.TraitNonContainerOnlyEditData = TraitNonContainerOnlyEditData{}
+		if t.ContainerType != container.FixedCost {
+			t.FixedPoints = nil
+		}
 		if t.ContainerType != container.Ancestry {
 			t.Ancestry = ""
 		}
@@ -1064,6 +1068,11 @@ func (t *TraitContainerSyncData) hash(h hash.Hash) {
 		xhash.StringWithLen(h, t.Ancestry)
 	case container.AlternativeAbilities:
 		xhash.Num64(h, t.AlternativeSlots)
+	case container.FixedCost:
+		xhash.Bool(h, t.FixedPoints != nil)
+		if t.FixedPoints != nil {
+			xhash.Num64(h, *t.FixedPoints)
+		}
 	}
 }
 
