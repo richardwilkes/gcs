@@ -2,6 +2,10 @@
 
 ## New & Improved
 
+- Templates and traits libraries now support Fixed Cost trait containers, marked with a Fixed tag. Set Fixed Points
+  manually, or leave it unset to use an exact points choice and then the child total as a fallback. An explicit zero
+  remains a manual value; empty the textbox or click Clear to restore the unset state. Character sheets convert these
+  containers to ordinary Groups. See the [fixed-cost container guide](docs/fixed-cost-trait-containers.md).
 - The "Gives a weapon damage modifier of" feature now accepts dice as well as a plain number, so a trait or modifier
   can add "+1d" or "+2d+1x3" to a weapon's damage, or take "-1d" away from it. The dice combine with the weapon's own
   damage the same way its base damage does, so a leading "-" takes away only the dice: "-1d+2" removes one die and

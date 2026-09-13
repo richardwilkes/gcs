@@ -12,6 +12,11 @@ for the UI and OS integration. The [prerequisites](https://github.com/richardwil
 therefore the same as for that project. Once you have the prerequistes, you can build GCS by running the build script:
 `./build.sh`. Add a `-h` to see available options.
 
+## Feature guides
+
+- [Fixed-cost trait containers](docs/fixed-cost-trait-containers.md): author template packages with a manual cost,
+  an exact points choice, or a child-total fallback.
+
 ## Generative AI Use Policy
 
 Generative AI isn't forbidden in the GURPS Character Sheet project, and you're welcome to use it while preparing a
