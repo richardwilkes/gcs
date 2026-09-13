@@ -12,7 +12,11 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -102,4 +106,62 @@ func TestApplyTemplateWithoutBodyTypeLeavesBodyTypeAlone(t *testing.T) {
 
 	sheet.undoMgr.Undo()
 	c.Equal(originalBody.Name, entity.SheetSettings.BodyType.Name, "undo must leave the body type alone as well")
+}
+
+// The picker replaces its choice group with the selected children inside the fixed-cost parent.
+func TestApplyTemplateFixedCostSelection(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	originalCount := len(sheet.Entity().Traits)
+	data := gurps.NewTemplate()
+	parent := gurps.NewTrait(data, nil, true)
+	parent.Name = "Fixed package"
+	parent.ContainerType = container.FixedCost
+	parent.FixedPoints = new(fxp.FromInteger(30))
+	choices := gurps.NewTrait(data, parent, true)
+	choices.TemplatePicker.Type = picker.Points
+	choices.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	choices.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(30)
+	for _, cost := range []int{10, 20, 99} {
+		child := gurps.NewTrait(data, choices, false)
+		child.BasePoints = fxp.FromInteger(cost)
+		choices.Children = append(choices.Children, child)
+	}
+	parent.Children = []*gurps.Trait{choices}
+	data.Traits = []*gurps.Trait{parent}
+	template := NewTemplate("test"+gurps.TemplatesExt, data)
+	var validatedTotal fxp.Int
+	applied := template.applyTemplateToSheetWithPickers(sheet, true, func(rows *templateRows) bool {
+		// Supply the user's selection at the dialog boundary; cloning and sheet insertion use the production path.
+		copied := ExtractNodeDataFromList(rows.traits)[0]
+		c.Equal(container.Group, copied.ContainerType)
+		c.True(copied.FixedPoints == nil)
+		copiedChoices := copied.Children[0]
+		selected := copiedChoices.Children[:2]
+		total, matches := pickerSelectionState(&copiedChoices.TemplatePicker, selected)
+		validatedTotal = total
+		if !matches {
+			return false
+		}
+		copied.SetChildren(selected)
+		SetParents(selected, copied)
+		return true
+	})
+	c.True(applied)
+	if len(sheet.Entity().Traits) != originalCount+1 {
+		t.Fatalf("expected one added container, got %d", len(sheet.Entity().Traits)-originalCount)
+	}
+	copied := sheet.Entity().Traits[originalCount]
+	c.Equal(container.Group, copied.ContainerType)
+	c.True(copied.FixedPoints == nil)
+	c.Equal(2, len(copied.Children))
+	c.Equal(fxp.FromInteger(30), validatedTotal)
+	c.Equal(validatedTotal, copied.AdjustedPoints())
+	for _, child := range copied.Children {
+		c.True(child.Parent() == copied)
+		c.True(child.DataOwner() == sheet.Entity())
+	}
+	c.Equal(container.FixedCost, parent.ContainerType)
+	c.Equal(new(fxp.FromInteger(30)), parent.FixedPoints)
+	c.Equal(3, len(choices.Children), "the template retains all choices")
 }

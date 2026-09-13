@@ -95,19 +95,13 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	boxes := make([]*unison.CheckBox, 0, len(children))
 	var dialog *unison.Dialog
 	callback := func() {
-		var total fxp.Int
+		selected := make([]T, 0, len(boxes))
 		for i, box := range boxes {
 			if box.State == check.On {
-				switch tp.Type {
-				case picker.NotApplicable:
-				case picker.Count:
-					total += fxp.One
-				case picker.Points:
-					total += rawPoints(children[i])
-				}
+				selected = append(selected, children[i])
 			}
 		}
-		matches := tp.Qualifier.Matches(total)
+		total, matches := pickerSelectionState(tp, selected)
 		dialog.Button(unison.ModalResponseOK).SetEnabled(matches)
 		if tp.Type != picker.NotApplicable {
 			var img *unison.SVG
@@ -213,6 +207,20 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	}
 	SetParents(rowChildren, row.Parent())
 	return rowChildren, false
+}
+
+// pickerSelectionState computes progress from the selected children, independently of the parent container's cost.
+func pickerSelectionState[T gurps.Node[T]](tp *gurps.TemplatePicker, selected []T) (total fxp.Int, matches bool) {
+	for _, child := range selected {
+		switch tp.Type {
+		case picker.Count:
+			total += fxp.One
+		case picker.Points:
+			total += rawPoints(child)
+		default:
+		}
+	}
+	return total, tp.Qualifier.Matches(total)
 }
 
 func pickerMatchStateColor(matches bool) unison.Color {
