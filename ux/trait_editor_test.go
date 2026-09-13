@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -48,4 +49,53 @@ func TestTraitEditorContainerTypes(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTraitEditorFixedPoints(t *testing.T) {
+	c := check.New(t)
+	trait := gurps.NewTrait(gurps.NewTemplate(), nil, true)
+	trait.ContainerType = container.FixedCost
+	trait.FixedPoints = new(fxp.Five)
+	var update func()
+	e, content := buildEditorContent(nil, trait, func(e *editor[*gurps.Trait, *gurps.TraitEditData], p *unison.Panel) func() {
+		update = initTraitEditor(e, p)
+		return update
+	})
+	fields := panelsOfType[*DecimalField](content)
+	if len(fields) != 1 {
+		t.Fatalf("got %d decimal fields", len(fields))
+	}
+	field := fields[0]
+	c.True(field.Enabled())
+	c.Equal("5", field.Text())
+	field.SetText("12.5")
+	c.Equal(new(fxp.FromStringForced("12.5")), e.editorData.FixedPoints)
+	c.Equal(new(fxp.Five), trait.FixedPoints, "editing must not mutate the source")
+	field.SetText("")
+	c.True(e.editorData.FixedPoints == nil)
+	c.Equal("", field.tooltipTextForValidation())
+	field.SetText("0")
+	c.Equal(new(fxp.Int(0)), e.editorData.FixedPoints)
+	field.lostFocus()
+	c.Equal("0", field.Text())
+	e.editorData.ApplyTo(trait)
+	c.Equal(new(fxp.Int(0)), trait.FixedPoints)
+	field.SetText("-5")
+	c.Equal(new(-fxp.Five), e.editorData.FixedPoints)
+	popup := panelsOfType[*unison.PopupMenu[container.Type]](content)[0]
+	popup.Select(container.Group)
+	update()
+	c.False(field.Enabled())
+	c.True(e.editorData.FixedPoints == nil)
+	c.Equal("", field.Text())
+	popup.Select(container.FixedCost)
+	update()
+	c.True(field.Enabled())
+	c.True(e.editorData.FixedPoints == nil)
+	field.SetText("0")
+	c.Equal(new(fxp.Int(0)), e.editorData.FixedPoints)
+	field.SetText("")
+	field.lostFocus()
+	c.Equal("", field.Text())
+	c.True(e.editorData.FixedPoints == nil)
 }

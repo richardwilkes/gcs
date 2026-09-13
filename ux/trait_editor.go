@@ -12,6 +12,7 @@ package ux
 import (
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -116,6 +117,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addLabelAndPopup(content, i18n.Text("Frequency of Appearance"), "", frequency.Rolls, &e.editorData.Frequency)
 	var ancestryPopup *unison.PopupMenu[string]
 	var slotsField *IntegerField
+	var fixedPointsField *DecimalField
 	if e.target.Container() {
 		types := container.Types
 		if entity != nil {
@@ -135,6 +137,10 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			i18n.Text("How many of this container's children may be active at once; that many of the most expensive children are billed at full cost and the rest at 20%"),
 			&e.editorData.AlternativeSlots, 1, 20)
 		adjustFieldBlank(slotsField, e.editorData.ContainerType != container.AlternativeAbilities)
+		addLabel(content, i18n.Text("Fixed Points"), "")
+		fixedPointsField = newFixedPointsField(&e.editorData.FixedPoints)
+		content.AddChild(fixedPointsField)
+		adjustFieldBlank(fixedPointsField, e.editorData.ContainerType != container.FixedCost)
 	}
 	addChoices(e, content, true)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
@@ -182,6 +188,14 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 				adjustPopupBlank(ancestryPopup, true)
 			}
 		}
+		if fixedPointsField != nil {
+			blank := e.editorData.ContainerType != container.FixedCost
+			if blank {
+				e.editorData.FixedPoints = nil
+				fixedPointsField.SetText("")
+			}
+			adjustFieldBlank(fixedPointsField, blank)
+		}
 		if slotsField != nil {
 			if e.editorData.ContainerType == container.AlternativeAbilities {
 				if !slotsField.Enabled() {
@@ -202,4 +216,36 @@ func cloneTraitWithOverlay(t *gurps.Trait, overlay *gurps.TraitEditData) *gurps.
 	clone := t.Clone(t.Source.LibraryFile, t.DataOwner(), t.Parent(), gurps.Copy)
 	clone.TraitEditData = *overlay
 	return clone
+}
+
+// newFixedPointsField uses an out-of-range numeric exception to distinguish blank from an explicit zero.
+func newFixedPointsField(points **fxp.Int) *DecimalField {
+	field := NewNumericFieldWithException(nil, "", i18n.Text("Fixed Points"), fixedPointPrototypes[fxp.Int],
+		func() fxp.Int {
+			if *points == nil {
+				return fxp.Min
+			}
+			return **points
+		},
+		func(value fxp.Int) {
+			if value == fxp.Min {
+				*points = nil
+			} else {
+				*points = new(value)
+			}
+		},
+		func(value fxp.Int) string {
+			if value == fxp.Min {
+				return ""
+			}
+			return value.String()
+		},
+		func(text string) (fxp.Int, error) {
+			if strings.TrimSpace(text) == "" {
+				return fxp.Min, nil
+			}
+			return fxp.FromString(text)
+		}, -fxp.MaxBasePoints, fxp.MaxBasePoints, fxp.Min)
+	field.SetBaseTooltip(newWrappedTooltip(i18n.Text("Leave blank to use an exact points choice, or the total cost of the children")))
+	return field
 }
