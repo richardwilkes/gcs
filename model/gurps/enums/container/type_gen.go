@@ -25,6 +25,7 @@ const (
 	Ancestry
 	Attributes
 	MetaTrait
+	FixedCost
 )
 
 // DefaultType is the default value.
@@ -34,7 +35,7 @@ const DefaultType Type = Group
 const FirstType Type = Group
 
 // LastType is the last valid value.
-const LastType Type = MetaTrait
+const LastType Type = FixedCost
 
 // Types holds all possible values.
 var Types = []Type{
@@ -43,6 +44,7 @@ var Types = []Type{
 	Ancestry,
 	Attributes,
 	MetaTrait,
+	FixedCost,
 }
 
 // Type holds the type of a trait container.
@@ -69,6 +71,8 @@ func (enum Type) Key() string {
 		return "attributes"
 	case MetaTrait:
 		return "meta_trait"
+	case FixedCost:
+		return "fixed_cost"
 	default:
 		return DefaultType.Key()
 	}
@@ -85,6 +89,8 @@ func (enum Type) oldKeys() []string {
 	case Attributes:
 		return nil
 	case MetaTrait:
+		return nil
+	case FixedCost:
 		return nil
 	default:
 		return DefaultType.oldKeys()
@@ -104,6 +110,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Attributes`)
 	case MetaTrait:
 		return i18n.Text(`Meta-Trait`)
+	case FixedCost:
+		return i18n.Text(`Fixed Cost`)
 	default:
 		return DefaultType.String()
 	}

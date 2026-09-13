@@ -625,6 +625,7 @@ var allEnums = []*enumInfo{
 				Key:    "meta_trait",
 				String: "Meta-Trait",
 			},
+			{Key: "fixed_cost"},
 		},
 	},
 	{
