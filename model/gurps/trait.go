@@ -422,6 +422,8 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 				data.InlineTag = i18n.Text("Attribute")
 			case container.MetaTrait:
 				data.InlineTag = i18n.Text("Meta")
+			case container.FixedCost:
+				data.InlineTag = i18n.Text("Fixed")
 			default:
 			}
 		}

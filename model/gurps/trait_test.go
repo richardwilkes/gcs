@@ -556,3 +556,30 @@ func TestTraitFixedCostOwnership(t *testing.T) {
 		}
 	}
 }
+
+func TestTraitFixedCostInlineTag(t *testing.T) {
+	for _, tc := range []struct {
+		name         string
+		fixed        *fxp.Int
+		pointsPicker bool
+	}{
+		{name: "manual", fixed: new(fxp.Five)},
+		{name: "zero", fixed: new(fxp.Int(0))},
+		{name: "picker", pointsPicker: true},
+		{name: "children"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			trait := NewTrait(NewTemplate(), nil, true)
+			trait.ContainerType = container.FixedCost
+			trait.FixedPoints = tc.fixed
+			if tc.pointsPicker {
+				trait.TemplatePicker.Type = picker.Points
+				trait.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+				trait.TemplatePicker.Qualifier.Qualifier = fxp.Five
+			}
+			var data CellData
+			trait.CellData(TraitDescriptionColumn, &data)
+			check.New(t).Equal("Fixed", data.InlineTag)
+		})
+	}
+}
