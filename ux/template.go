@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -604,6 +605,9 @@ func rawPoints[T gurps.Node[T]](child T) fxp.Int {
 		return 0
 	}
 	if child.Container() {
+		if trait, ok := any(child).(*gurps.Trait); ok && trait.ContainerType == container.FixedCost && trait.FixedPoints != nil {
+			return trait.AdjustedPoints()
+		}
 		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
 			if _, tp := pickable.TemplatePickerData(); tp.Type == picker.Points {
 				if tp.Qualifier.Compare == criteria.EqualsNumber {

@@ -78,3 +78,24 @@ func TestPickerSelectionCountAndEmpty(t *testing.T) {
 	c.Equal(fxp.Int(0), total)
 	c.False(matches)
 }
+
+func TestNestedFixedCostPickerSelection(t *testing.T) {
+	for _, points := range []fxp.Int{fxp.Five, 0, -fxp.Five} {
+		t.Run(points.String(), func(t *testing.T) {
+			c := check.New(t)
+			child := gurps.NewTrait(gurps.NewTemplate(), nil, true)
+			child.ContainerType = container.FixedCost
+			child.FixedPoints = new(points)
+			child.TemplatePicker.Type = picker.Points
+			child.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+			child.TemplatePicker.Qualifier.Qualifier = fxp.Ten
+			parentPicker := child.TemplatePicker
+			parentPicker.Qualifier.Qualifier = points
+			total, matches := pickerSelectionState(&parentPicker, []*gurps.Trait{child})
+			c.Equal(points, total)
+			c.True(matches)
+			child.FixedPoints = nil
+			c.Equal(fxp.Ten, rawPoints(child))
+		})
+	}
+}
