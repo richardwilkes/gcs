@@ -1,7 +1,7 @@
 # Fixed-cost trait containers
 
 Choose **Fixed Cost** in a trait container's editor to give a package a fixed point cost while authoring a template
-or a traits library. Its row displays a **Fixed** tag. The **Fixed Points** field sits beside the container settings;
+or a trait library. Its row displays a **Fixed** tag. The **Fixed Points** field sits beside the container settings;
 the separate **Choices** controls still configure how children are selected when applying a template.
 
 ## How points are calculated
@@ -35,7 +35,7 @@ disables the field and its Clear button.
 
 ## Templates, libraries, and character sheets
 
-Fixed Cost is available for templates and traits libraries, not for character-sheet editing. Cloning or assigning
+Fixed Cost is available for templates and trait libraries, not for character-sheet editing. Cloning or assigning
 one to an owner with a character entity converts it to **Group** and clears Fixed Points, including for nested
 containers. Cloning it to a template or library preserves its fixed-cost settings.
 
