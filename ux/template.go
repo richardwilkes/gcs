@@ -291,7 +291,9 @@ Disable your character's existing Ancestry (%s)?`),
 		return false // A picker was canceled, so the sheet has been left untouched.
 	}
 	// Picker validation needs the template's fixed costs, but the sheet must charge for the selected children.
-	gurps.SetDataOwnerAll(e, ExtractNodeDataFromList(rows.traits))
+	for _, row := range rows.traits {
+		row.Data().SetDataOwner(e)
+	}
 	// The sheet is modified from this point on.
 	if t.template.BodyType != nil {
 		e.SheetSettings.BodyType = t.template.BodyType.Clone(e, nil)
@@ -398,8 +400,10 @@ func updateWeightField(sheet *Sheet, refKey string, value fxp.Weight) {
 func (t *Template) cloneTraitsForPickers(sheet *Sheet) []*Node[*gurps.Trait] {
 	rows := t.Traits.Table.RootRows()
 	clones := make([]*Node[*gurps.Trait], 0, len(rows))
+	from := libraryFileFromTable(t.Traits.Table)
+	owner := sheet.Entity()
 	for _, row := range rows {
-		trait := row.Data().CloneForTemplateApplication(libraryFileFromTable(t.Traits.Table), sheet.Entity())
+		trait := row.Data().CloneForTemplateApplication(from, owner)
 		clones = append(clones, NewNode(sheet.Traits.Table, nil, trait, false))
 	}
 	return clones

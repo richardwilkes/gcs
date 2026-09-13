@@ -93,9 +93,10 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		progress.DefaultDraw(gc, r)
 	}
 	boxes := make([]*unison.CheckBox, 0, len(children))
+	selected := make([]T, 0, len(children))
 	var dialog *unison.Dialog
 	callback := func() {
-		selected := make([]T, 0, len(boxes))
+		selected = selected[:0]
 		for i, box := range boxes {
 			if box.State == check.On {
 				selected = append(selected, children[i])
@@ -211,14 +212,14 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 
 // pickerSelectionState computes progress from the selected children, independently of the parent container's cost.
 func pickerSelectionState[T gurps.Node[T]](tp *gurps.TemplatePicker, selected []T) (total fxp.Int, matches bool) {
-	for _, child := range selected {
-		switch tp.Type {
-		case picker.Count:
-			total += fxp.One
-		case picker.Points:
+	switch tp.Type {
+	case picker.Count:
+		total = fxp.FromInteger(len(selected))
+	case picker.Points:
+		for _, child := range selected {
 			total += rawPoints(child)
-		default:
 		}
+	default:
 	}
 	return total, tp.Qualifier.Matches(total)
 }
