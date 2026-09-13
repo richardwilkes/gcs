@@ -138,16 +138,18 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			i18n.Text("How many of this container's children may be active at once; that many of the most expensive children are billed at full cost and the rest at 20%"),
 			&e.editorData.AlternativeSlots, 1, 20)
 		adjustFieldBlank(slotsField, e.editorData.ContainerType != container.AlternativeAbilities)
-		fixedPointsWrapper := addFlowWrapper(content, i18n.Text("Fixed Points"), 2)
-		fixedPointsField = newFixedPointsField(&e.editorData.FixedPoints)
-		fixedPointsWrapper.AddChild(fixedPointsField)
-		clearFixedPointsButton = unison.NewButton()
-		clearFixedPointsButton.SetTitle(i18n.Text("Clear"))
-		clearFixedPointsButton.Tooltip = newWrappedTooltip(i18n.Text("Clear the fixed points value to use the points choice or child total"))
-		clearFixedPointsButton.ClickCallback = func() { fixedPointsField.SetText("") }
-		clearFixedPointsButton.SetEnabled(e.editorData.ContainerType == container.FixedCost)
-		fixedPointsWrapper.AddChild(clearFixedPointsButton)
-		adjustFieldBlank(fixedPointsField, e.editorData.ContainerType != container.FixedCost)
+		if entity == nil {
+			fixedPointsWrapper := addFlowWrapper(content, i18n.Text("Fixed Points"), 2)
+			fixedPointsField = newFixedPointsField(&e.editorData.FixedPoints)
+			fixedPointsWrapper.AddChild(fixedPointsField)
+			clearFixedPointsButton = unison.NewButton()
+			clearFixedPointsButton.SetTitle(i18n.Text("Clear"))
+			clearFixedPointsButton.Tooltip = newWrappedTooltip(i18n.Text("Clear the fixed points value to use the points choice or child total"))
+			clearFixedPointsButton.ClickCallback = func() { fixedPointsField.SetText("") }
+			clearFixedPointsButton.SetEnabled(e.editorData.ContainerType == container.FixedCost)
+			fixedPointsWrapper.AddChild(clearFixedPointsButton)
+			adjustFieldBlank(fixedPointsField, e.editorData.ContainerType != container.FixedCost)
+		}
 	}
 	addChoices(e, content, true)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)

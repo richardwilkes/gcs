@@ -37,6 +37,20 @@ func TestTraitEditorContainerTypes(t *testing.T) {
 			if len(popups) != 1 {
 				t.Fatalf("got %d container popups", len(popups))
 			}
+			c.Equal(tc.fixed, len(panelsOfType[*DecimalField](content)) == 1)
+			var hasFixedLabel, hasClear bool
+			for _, label := range panelsOfType[*unison.Label](content) {
+				if label.Text.String() == "Fixed Points" {
+					hasFixedLabel = true
+				}
+			}
+			for _, button := range panelsOfType[*unison.Button](content) {
+				if button.Text.String() == "Clear" {
+					hasClear = true
+				}
+			}
+			c.Equal(tc.fixed, hasFixedLabel)
+			c.Equal(tc.fixed, hasClear)
 			popup := popups[0]
 			c.Equal(tc.fixed, popup.IndexOfItem(container.FixedCost) >= 0)
 			for _, kind := range container.Types {
