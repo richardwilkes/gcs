@@ -227,6 +227,12 @@ Add a parallel "Fixed Points" numeric field (nil-able, e.g. via a checkbox +
 - When the field is blank/disabled, `FixedPoints` stays `nil` and the
   container falls back to the `TemplatePicker` if it's configured as
   `picker.Points`, else sums children.
+- In addition to the existing blank-textbox behavior, provide an explicit
+  clear action that empties the field and sets `FixedPoints` to `nil`.
+- The explicit clear action is an additional route, not a replacement for
+  treating an empty textbox as `nil`; both behaviors must remain supported.
+- Preserve the distinction between clearing the field (`nil`) and entering
+  an explicit zero (`*fxp.Int` with value `0`).
 - The existing "Choices" template-picker UI in
   [ux/choices.go](../../ux/choices.go) already lets any
   `TemplatePickerProvider` configure a `picker.Points` picker; no changes
@@ -260,6 +266,19 @@ next to "Container Type", toggled via `adjustFieldBlank` the same way
   in-memory equality/ordinal comparisons (e.g. sorting `container.Types` in
   the UI popup). Still, appending at the end is the least surprising choice
   and matches how `MetaTrait` was added after the others.
+
+## Documentation
+
+The documentation is an additional deliverable because the feature is already
+largely implemented. Update the relevant project documentation to explain:
+
+- `FixedCost` is a template/library authoring feature and is demoted to
+  `Group` when copied onto a character.
+- The cost precedence is manual `FixedPoints`, an exact points picker value,
+  then the summed child cost.
+- An unset `FixedPoints` value (`nil`) is distinct from an explicit zero.
+- Users can clear the Fixed Points field either by leaving the textbox empty or
+  by using the explicit clear action; both routes produce `nil`.
 
 ## Testing
 

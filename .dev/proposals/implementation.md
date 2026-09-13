@@ -57,6 +57,14 @@ This is a UI-only change and should remain independently revertible.
 - Add tests for setting, clearing, and explicitly setting zero.
 - Confirm changing away from `FixedCost` clears the field.
 
+These are additional editor requirements to the largely implemented feature:
+
+- Keep the existing behavior where an empty textbox means `nil`.
+- Add an explicit clear action to the textbox so users have a second way to
+  clear the value and restore `nil` without manually deleting the text.
+- Test both the empty-textbox path and the explicit clear action, including
+  that neither path is confused with an explicitly entered zero.
+
 ## 7. Add the visible row tag
 
 - Update `Trait.CellData` / `TraitDescriptionColumn` to show a visible `Fixed` tag, matching the existing `Meta` presentation.
@@ -94,6 +102,16 @@ go test ./...
 ```
 
 Use the narrower tests after each implementation step; run the full build only after all slices are complete.
+
+## 10. Document the completed feature
+
+- Update the relevant project documentation to describe `FixedCost`, its
+  template-only ownership, its manual/picker/children precedence, and the
+  distinction between an unset value (`nil`) and an explicit zero.
+- Document both ways to clear the Fixed Points field: leaving the textbox
+  empty and using the explicit clear action.
+- Keep this documentation update additive and separate from the already
+  implemented model and UI behavior.
 
 ## Boundaries
 
