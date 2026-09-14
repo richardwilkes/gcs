@@ -127,22 +127,21 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
 	table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
-	// Template choices can only be managed on a template, so a drop that would carry them anywhere else is turned away
+
+	// Template choices can only be managed on a template, so a drop that would carry them anywhere else is handled
 	// here, before unison has inserted anything, rather than being unwound afterwards. The guard also decides whether
 	// a drop onto a sheet is to resolve those choices instead (see guardTemplatePickerDrop).
 	dropCallback := table.DropCallback
-	dragExitedCallback := table.DragExitedCallback
 	table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
-		// The drop feedback -- the dashed line showing where the rows would be inserted -- is erased up front, both so
-		// that it isn't left painted on the table when the drop is refused, since unison only erases it on the way out
-		// of the drop callback it never gets to run, and so that it isn't sitting behind the explanation. A drop that
-		// is allowed through re-establishes it immediately: unison's drop callback starts by updating the drag.
-		dragExitedCallback()
 		if !guardTemplatePickerDrop(table, provider, di) {
+			if table.DragExitedCallback != nil {
+				table.DragExitedCallback()
+			}
 			return false
 		}
 		return dropCallback(di, where, mods)
 	}
+
 	// The keyboard repositioning commands are the equivalents of a drag within the table, so they belong on exactly
 	// the tables that accept one.
 	InstallMoveSelectionHandlers(table)
