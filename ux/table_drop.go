@@ -127,6 +127,22 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
 	table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
+	// Template choices can only be managed on a template, so a drop that would carry them anywhere else is turned away
+	// here, before unison has inserted anything, rather than being unwound afterwards. The guard also decides whether
+	// a drop onto a sheet is to resolve those choices instead (see guardTemplatePickerDrop).
+	dropCallback := table.DropCallback
+	dragExitedCallback := table.DragExitedCallback
+	table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
+		// The drop feedback -- the dashed line showing where the rows would be inserted -- is erased up front, both so
+		// that it isn't left painted on the table when the drop is refused, since unison only erases it on the way out
+		// of the drop callback it never gets to run, and so that it isn't sitting behind the explanation. A drop that
+		// is allowed through re-establishes it immediately: unison's drop callback starts by updating the drag.
+		dragExitedCallback()
+		if !guardTemplatePickerDrop(table, provider, di) {
+			return false
+		}
+		return dropCallback(di, where, mods)
+	}
 	// The keyboard repositioning commands are the equivalents of a drag within the table, so they belong on exactly
 	// the tables that accept one.
 	InstallMoveSelectionHandlers(table)
@@ -259,6 +275,35 @@ func willDropCallback[T gurps.Node[T]](from, to *unison.Table[*Node[T]], move bo
 }
 
 func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+	// The rows that arrived are the ones the drop left selected, which is what the template choices the guard spotted
+	// have to be dealt with on (see guardTemplatePickerDrop).
+	switch pendingTemplatePickerAction {
+	case templatePickerCopyResolve:
+		// The drop was let through on the condition that the template choices it carries are made now, turning it into
+		// a partial template application.
+		pendingTemplatePickerAction = templatePickerCopyKeep
+		// unison doesn't erase the drop feedback until the drop callback this was reached from returns, which is well
+		// after the choice dialogs below have come and gone, so it is erased here rather than left behind them.
+		if to.DragExitedCallback != nil {
+			to.DragExitedCallback()
+		}
+		if !resolveTemplatePickers(to, to.SelectedRows(true), processPickerRows) {
+			// A choice was canceled, so the rows have been removed again and nothing was added after all. No undo edit
+			// is recorded for a drop that left no trace, but the owner still has to be rebuilt: the rows were in its
+			// lists, however briefly.
+			if rebuilder := dropRebuilder(to); rebuilder != nil {
+				rebuilder.Rebuild(true)
+			}
+			return
+		}
+		to = liveTable(to)
+	case templatePickerCopyStrip:
+		// The drop was let through on the condition that the template choices it carries are given up, which was
+		// confirmed before any of it happened.
+		pendingTemplatePickerAction = templatePickerCopyKeep
+		stripTemplatePickers(ExtractNodeDataFromList(to.SelectedRows(true)))
+	default:
+	}
 	if provider, ok := to.ClientData()[TableProviderClientKey]; ok {
 		var tableProvider TableProvider[T]
 		if tableProvider, ok = provider.(TableProvider[T]); ok {
