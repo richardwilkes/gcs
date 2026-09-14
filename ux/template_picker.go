@@ -12,7 +12,6 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -21,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -113,19 +113,21 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	boxes := make([]*unison.CheckBox, 0, len(children))
 	var dialog *unison.Dialog
 	callback := func() {
-		var total fxp.Int
+		// A picked row that presents choices of its own has no single cost yet, so the running total can be a range.
+		// The picker is satisfied while some way of making those remaining choices would satisfy it.
+		total := gurps.PointsRangeOf(0)
 		for i, box := range boxes {
 			if box.State == check.On {
 				switch tp.Type {
 				case picker.NotApplicable:
 				case picker.Count:
-					total += fxp.One
+					total = total.Add(gurps.PointsRangeOf(fxp.One))
 				case picker.Points:
-					total += rawPoints(children[i])
+					total = total.Add(pointsRangeFor(children[i]))
 				}
 			}
 		}
-		matches := tp.Qualifier.Matches(total)
+		matches := total.CanSatisfy(tp.Qualifier)
 		dialog.Button(unison.ModalResponseOK).SetEnabled(matches)
 		if tp.Type != picker.NotApplicable {
 			var img *unison.SVG
@@ -318,10 +320,13 @@ func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T
 	title := row.String()
 	switch pt {
 	case picker.Points:
-		points := rawPoints(row)
-		if points != 0 {
+		// A row that presents choices of its own is worth a range rather than a single cost, which is worth showing
+		// even though picking it leads to another dialog: it is what the row will add to the total.
+		points := pointsRangeFor(row)
+		value, settled := points.Settled()
+		if !settled || value != 0 {
 			pointsLabel := i18n.Text("points")
-			if points == fxp.One {
+			if settled && value == fxp.One {
 				pointsLabel = i18n.Text("point")
 			}
 			title += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
@@ -415,26 +420,37 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unis
 	checkBox.MarkForRedraw()
 }
 
-func rawPoints[T gurps.Node[T]](child T) fxp.Int {
+// pointsRangeFor returns the span of costs a picker may end up counting a row as being worth. A container is asked for
+// its range, which accounts for any choices it presents -- including the exact ones, which are worth what they ask for
+// rather than what their children add up to. A skill or spell is counted by its unadjusted points, since a picker
+// counts what is being bought rather than what the destination sheet's bonuses make of it, and a trait by its adjusted
+// points, which is the only cost a trait has.
+//
+// The two rules meet inside a container: the range of one is built from its children's adjusted points, so a skill
+// checked directly and the same skill inside a checked container are counted slightly differently on a sheet carrying
+// skill point bonuses. Templates, where these rows come from, have no bonuses for that to matter to.
+func pointsRangeFor[T gurps.Node[T]](child T) gurps.PointsRange {
 	if xreflect.IsNil(child) {
-		return 0
+		return gurps.PointsRangeOf(0)
 	}
 	if child.Container() {
-		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
-			if _, tp := pickable.TemplatePickerData(); tp.Type == picker.Points {
-				if tp.Qualifier.Compare == criteria.EqualsNumber {
-					return tp.Qualifier.Qualifier
-				}
-			}
+		// Covers traits, skills and spells
+		if rp, ok := any(child).(interface {
+			PointsRange(tooltip *xbytes.InsertBuffer) gurps.PointsRange
+		}); ok {
+			return rp.PointsRange(nil)
 		}
+		return gurps.PointsRangeOf(0)
 	}
 	// Covers skills and spells
 	if rp, ok := any(child).(interface{ RawPoints() fxp.Int }); ok {
-		return rp.RawPoints()
+		return gurps.PointsRangeOf(rp.RawPoints())
 	}
 	// Covers traits
-	if rp, ok := any(child).(interface{ AdjustedPoints() fxp.Int }); ok {
-		return rp.AdjustedPoints()
+	if rp, ok := any(child).(interface {
+		AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int
+	}); ok {
+		return gurps.PointsRangeOf(rp.AdjustedPoints(nil))
 	}
-	return 0
+	return gurps.PointsRangeOf(0)
 }
