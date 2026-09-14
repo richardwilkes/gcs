@@ -14,17 +14,16 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/uti"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/check"
@@ -599,28 +598,39 @@ func mergeNewlySelectedRows[T pointsMergeable[T]](table *unison.Table[*Node[T]])
 	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }
 
-func rawPoints[T gurps.Node[T]](child T) fxp.Int {
+// pointsRangeFor returns the span of costs a picker may end up counting a row as being worth. A container is asked for
+// its range, which accounts for any choices it presents -- including the exact ones, which are worth what they ask for
+// rather than what their children add up to. A skill or spell is counted by its unadjusted points, since a picker
+// counts what is being bought rather than what the destination sheet's bonuses make of it, and a trait by its adjusted
+// points, which is the only cost a trait has.
+//
+// The two rules meet inside a container: the range of one is built from its children's adjusted points, so a skill
+// checked directly and the same skill inside a checked container are counted slightly differently on a sheet carrying
+// skill point bonuses. Templates, where these rows come from, have no bonuses for that to matter to.
+func pointsRangeFor[T gurps.Node[T]](child T) gurps.PointsRange {
 	if xreflect.IsNil(child) {
-		return 0
+		return gurps.PointsRangeOf(0)
 	}
 	if child.Container() {
-		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
-			if _, tp := pickable.TemplatePickerData(); tp.Type == picker.Points {
-				if tp.Qualifier.Compare == criteria.EqualsNumber {
-					return tp.Qualifier.Qualifier
-				}
-			}
+		// Covers traits, skills and spells
+		if rp, ok := any(child).(interface {
+			PointsRange(tooltip *xbytes.InsertBuffer) gurps.PointsRange
+		}); ok {
+			return rp.PointsRange(nil)
 		}
+		return gurps.PointsRangeOf(0)
 	}
 	// Covers skills and spells
 	if rp, ok := any(child).(interface{ RawPoints() fxp.Int }); ok {
-		return rp.RawPoints()
+		return gurps.PointsRangeOf(rp.RawPoints())
 	}
 	// Covers traits
-	if rp, ok := any(child).(interface{ AdjustedPoints() fxp.Int }); ok {
-		return rp.AdjustedPoints()
+	if rp, ok := any(child).(interface {
+		AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int
+	}); ok {
+		return gurps.PointsRangeOf(rp.AdjustedPoints(nil))
 	}
-	return 0
+	return gurps.PointsRangeOf(0)
 }
 
 // Entity implements EntityPanel. A template has no entity, so nil is always returned.

@@ -362,6 +362,7 @@ func SkillsHeaderData(columnID int) HeaderData {
 	case SkillPointsColumn:
 		data.Title = i18n.Text("Pts")
 		data.Detail = i18n.Text("Points")
+		data.Less = PointsLessFromString
 	case SkillLibSrcColumn:
 		data = libSrcHeaderData()
 	case SkillSwitchColumn:
@@ -411,13 +412,12 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 			}
 		}
 	case SkillPointsColumn:
-		data.Type = cell.Text
 		var tooltip xbytes.InsertBuffer
-		data.Primary = s.AdjustedPoints(&tooltip).String()
-		data.Alignment = align.End
+		r := s.PointsRange(&tooltip)
 		if tooltip.Len() != 0 {
 			data.Tooltip = IncludesModifiersFrom() + ":" + tooltip.String()
 		}
+		fillPointsCell(data, r)
 	case SkillLibSrcColumn:
 		fillLibSrcCell(data, s.owner, s)
 	case SkillSwitchColumn:
@@ -644,9 +644,20 @@ func (s *Skill) SetRawPoints(points fxp.Int) bool {
 	return s.UpdateLevel()
 }
 
-// AdjustedPoints returns the points, adjusted for any bonuses.
+// AdjustedPoints returns the points, adjusted for any bonuses. A container presenting a choice every outcome of which
+// costs the same reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
+		// A container that presents a choice is never worth what its children add up to, since only some of them will
+		// be taken. When every way of making that choice costs the same -- "pick 20 points worth", most often -- that
+		// is what it is worth. When they don't, there is no single answer, and the total of the children is left as
+		// the answer it has always given here, with PointsRange holding the one that can be relied upon. The range is
+		// asked for without the tooltip, since the notes it would gather describe children that may not be taken.
+		if !s.TemplatePicker.IsZero() {
+			if value, settled := s.PointsRange(nil).Settled(); settled {
+				return value
+			}
+		}
 		var total fxp.Int
 		for _, one := range s.Children {
 			total += one.AdjustedPoints(tooltip)
@@ -668,6 +679,31 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 	}
 
 	return diff
+}
+
+// PointsRange returns the span of point costs this skill may end up being worth, once every choice it or anything
+// inside it presents has been made. For all but a container carrying template choices, the range is settled and holds
+// the same value AdjustedPoints returns.
+func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
+	if !s.Container() {
+		return PointsRangeOf(s.AdjustedPoints(tooltip))
+	}
+	if value, settled := settledPickerCost(s.TemplatePicker); settled {
+		return PointsRangeOf(value)
+	}
+	if !s.TemplatePicker.IsZero() {
+		// The notes the children would contribute describe items that may not be taken, so they are left out.
+		ranges := make([]PointsRange, len(s.Children))
+		for i, one := range s.Children {
+			ranges[i] = one.PointsRange(nil)
+		}
+		return pointsRangeForPicker(s.TemplatePicker, ranges)
+	}
+	ranges := make([]PointsRange, len(s.Children))
+	for i, one := range s.Children {
+		ranges[i] = one.PointsRange(tooltip)
+	}
+	return sumPointsRanges(ranges)
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.

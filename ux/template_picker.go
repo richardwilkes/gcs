@@ -95,19 +95,21 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	boxes := make([]*unison.CheckBox, 0, len(children))
 	var dialog *unison.Dialog
 	callback := func() {
-		var total fxp.Int
+		// A picked row that presents choices of its own has no single cost yet, so the running total can be a range.
+		// The picker is satisfied while some way of making those remaining choices would satisfy it.
+		total := gurps.PointsRangeOf(0)
 		for i, box := range boxes {
 			if box.State == check.On {
 				switch tp.Type {
 				case picker.NotApplicable:
 				case picker.Count:
-					total += fxp.One
+					total = total.Add(gurps.PointsRangeOf(fxp.One))
 				case picker.Points:
-					total += rawPoints(children[i])
+					total = total.Add(pointsRangeFor(children[i]))
 				}
 			}
 		}
-		matches := tp.Qualifier.Matches(total)
+		matches := total.CanSatisfy(tp.Qualifier)
 		dialog.Button(unison.ModalResponseOK).SetEnabled(matches)
 		if tp.Type != picker.NotApplicable {
 			var img *unison.SVG
@@ -300,10 +302,13 @@ func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T
 	title := row.String()
 	switch pt {
 	case picker.Points:
-		points := rawPoints(row)
-		if points != 0 {
+		// A row that presents choices of its own is worth a range rather than a single cost, which is worth showing
+		// even though picking it leads to another dialog: it is what the row will add to the total.
+		points := pointsRangeFor(row)
+		value, settled := points.Settled()
+		if !settled || value != 0 {
 			pointsLabel := i18n.Text("points")
-			if points == fxp.One {
+			if settled && value == fxp.One {
 				pointsLabel = i18n.Text("point")
 			}
 			title += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
