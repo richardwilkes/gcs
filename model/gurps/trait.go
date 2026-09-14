@@ -250,7 +250,7 @@ func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 		// The "calc" object is always written, even when empty.
 		unsatisfiedReason, contradiction := t.prereqStatus()
 		c := &calc{
-			Points:              t.AdjustedPoints(),
+			Points:              t.AdjustedPoints(nil),
 			UnsatisfiedReason:   unsatisfiedReason,
 			PrereqContradiction: contradiction,
 			ResolvedNotes:       resolvedNotesFor(t.ResolveLocalNotes(), t.LocalNotes),
@@ -466,8 +466,12 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		}
 	case TraitPointsColumn:
 		data.Type = cell.Text
-		data.Primary = t.AdjustedPoints().String()
+		var tooltip xbytes.InsertBuffer
+		data.Primary = t.AdjustedPoints(&tooltip).String()
 		data.Alignment = align.End
+		if tooltip.Len() != 0 {
+			data.Tooltip = IncludesModifiersFrom() + ":" + tooltip.String()
+		}
 	case TraitTagsColumn:
 		fillTagsCell(data, t.Tags)
 	case TraitReferenceColumn, PageRefCellAlias:
@@ -585,7 +589,7 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account.
-func (t *Trait) AdjustedPoints() fxp.Int {
+func (t *Trait) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if t.EffectivelyDisabled() {
 		return 0
 	}
@@ -597,7 +601,7 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 	if t.ContainerType == container.AlternativeAbilities {
 		values := make([]fxp.Int, len(t.Children))
 		for i, one := range t.Children {
-			values[i] = one.AdjustedPoints()
+			values[i] = one.AdjustedPoints(tooltip)
 		}
 		slices.SortFunc(values, func(a, b fxp.Int) int { return cmp.Compare(b, a) })
 		slots := min(t.ResolvedAlternativeSlots(), len(values))
@@ -610,7 +614,7 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 		}
 	} else {
 		for _, one := range t.Children {
-			points += one.AdjustedPoints()
+			points += one.AdjustedPoints(tooltip)
 		}
 	}
 	return points

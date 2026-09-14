@@ -568,27 +568,27 @@ func (ex *legacyExporter) includeByEquipmentTags(eqp *Equipment) bool {
 }
 
 func (ex *legacyExporter) includeAdvantages(t *Trait) bool {
-	return t.AdjustedPoints() > fxp.One && ex.includeByTraitTags(t)
+	return t.AdjustedPoints(nil) > fxp.One && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includePerks(t *Trait) bool {
-	return t.AdjustedPoints() == fxp.One && ex.includeByTraitTags(t)
+	return t.AdjustedPoints(nil) == fxp.One && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeAdvantagesAndPerks(t *Trait) bool {
-	return t.AdjustedPoints() > 0 && ex.includeByTraitTags(t)
+	return t.AdjustedPoints(nil) > 0 && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeDisadvantages(t *Trait) bool {
-	return t.AdjustedPoints() < -fxp.One && ex.includeByTraitTags(t)
+	return t.AdjustedPoints(nil) < -fxp.One && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeQuirks(t *Trait) bool {
-	return t.AdjustedPoints() == -fxp.One && ex.includeByTraitTags(t)
+	return t.AdjustedPoints(nil) == -fxp.One && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeDisadvantagesAndQuirks(t *Trait) bool {
-	return t.AdjustedPoints() < 0 && ex.includeByTraitTags(t)
+	return t.AdjustedPoints(nil) < 0 && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeLanguages(t *Trait) bool {
@@ -837,7 +837,7 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
 				case pointsExportKey:
-					ex.writeEncodedText(t.AdjustedPoints().String())
+					ex.writeEncodedText(t.AdjustedPoints(nil).String())
 				case "DESCRIPTION_USER":
 					ex.writeEncodedText(t.UserDescWithReplacements())
 				case "DESCRIPTION_USER_FORMATTED":

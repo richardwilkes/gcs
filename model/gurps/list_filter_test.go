@@ -269,7 +269,7 @@ func TestListFilterMatchesByKind(t *testing.T) {
 	trait.Name = "Alertness"
 	trait.Tags = []string{"Mental", "Physical"}
 	trait.BasePoints = fxp.FromInteger(5)
-	c.Equal(fxp.FromInteger(5), trait.AdjustedPoints(), "the trait should be worth the points it was given")
+	c.Equal(fxp.FromInteger(5), trait.AdjustedPoints(nil), "the trait should be worth the points it was given")
 
 	untagged := gurps.NewTrait(nil, nil, false)
 	untagged.Name = "Untagged"
