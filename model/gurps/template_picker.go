@@ -71,3 +71,36 @@ func (t TemplatePicker) Hash(h hash.Hash) {
 		t.Qualifier.Hash(h)
 	}
 }
+
+// HasTemplatePickerData returns true if any node or their child has non-zero template picker data
+func HasTemplatePickerData[T Node[T]](nodes ...T) bool {
+	for _, node := range nodes {
+		if !node.Container() {
+			continue
+		}
+		if tpp, ok := any(node).(TemplatePickerProvider); ok {
+			if _, data := tpp.TemplatePickerData(); data != nil && !data.IsZero() {
+				return true
+			}
+		}
+		if HasTemplatePickerData(node.NodeChildren()...) {
+			return true
+		}
+	}
+	return false
+}
+
+// ClearTemplatePickerData removes the template picker data from the nodes and their children
+func ClearTemplatePickerData[T Node[T]](nodes ...T) {
+	for _, node := range nodes {
+		if !node.Container() {
+			continue
+		}
+		if tpp, ok := any(node).(TemplatePickerProvider); ok {
+			if _, data := tpp.TemplatePickerData(); data != nil {
+				*data = TemplatePicker{}
+			}
+		}
+		ClearTemplatePickerData(node.NodeChildren()...)
+	}
+}
