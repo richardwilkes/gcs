@@ -885,22 +885,26 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 
 // UpdateLevel updates the level of the skill, returning true if it has changed.
 func (s *Skill) UpdateLevel() bool {
-	saved := s.LevelData
-	var defaultedFrom *SkillDefault
+	savedLevel := s.LevelData
+	savedDefaultedFrom := s.DefaultedFrom
 	var level Level
 	if anyScriptAbandonedDuring(EntityFromNode(s), func() {
-		defaultedFrom = s.bestDefaultWithPoints(nil)
+		// The default is put in place before the level is computed, since CalculateLevel reads it from the skill: the
+		// adjusted level and points it carries feed the skill's own level. Computing the level against the default of
+		// the previous pass would leave it a pass behind whenever the default is what drives it, and since
+		// Entity.Recalculate stops once the levels settle, that pass would never come.
+		s.DefaultedFrom = s.bestDefaultWithPoints(nil)
 		level = s.CalculateLevel(nil)
 	}) {
 		// A script was stopped before it could produce an answer, so both of these were computed from a stand-in. What
-		// is already here was arrived at when the scripts did finish, making it merely out of date, whereas storing
+		// was already here was arrived at when the scripts did finish, making it merely out of date, whereas keeping
 		// these would make it wrong -- and DefaultedFrom is written to disk, so it would be wrong there too. The next
 		// recalculation that gets through its scripts puts both right.
+		s.DefaultedFrom = savedDefaultedFrom
 		return false
 	}
-	s.DefaultedFrom = defaultedFrom
 	s.LevelData = level
-	return saved != s.LevelData
+	return savedLevel != s.LevelData
 }
 
 func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
