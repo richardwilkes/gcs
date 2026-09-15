@@ -109,6 +109,24 @@ func (enum Type) String() string {
 	}
 }
 
+// AltString returns the alternate string.
+func (enum Type) AltString() string {
+	switch enum {
+	case Group:
+		return i18n.Text(``)
+	case AlternativeAbilities:
+		return i18n.Text(`Alternate`)
+	case Ancestry:
+		return i18n.Text(`Ancestry`)
+	case Attributes:
+		return i18n.Text(`Attribute`)
+	case MetaTrait:
+		return i18n.Text(`Meta`)
+	default:
+		return DefaultType.AltString()
+	}
+}
+
 // MarshalText implements the encoding.TextMarshaler interface.
 func (enum Type) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil

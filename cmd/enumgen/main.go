@@ -615,16 +615,10 @@ var allEnums = []*enumInfo{
 		Desc: "holds the type of a trait container",
 		Values: []*enumValue{
 			{Key: "group"},
-			{Key: "alternative_abilities"},
-			{
-				Key:     "ancestry",
-				OldKeys: []string{"race"},
-			},
-			{Key: "attributes"},
-			{
-				Key:    "meta_trait",
-				String: "Meta-Trait",
-			},
+			{Key: "alternative_abilities", Alt: "Alternate"},
+			{Key: "ancestry", Alt: "Ancestry", OldKeys: []string{"race"}},
+			{Key: "attributes", Alt: "Attribute"},
+			{Key: "meta_trait", String: "Meta-Trait", Alt: "Meta"},
 		},
 	},
 	{

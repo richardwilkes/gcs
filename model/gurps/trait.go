@@ -406,20 +406,11 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		}
 		data.TemplateInfo = t.TemplatePicker.String()
 		if t.Container() {
-			switch t.ContainerType {
-			case container.AlternativeAbilities:
+			data.InlineTag = t.ContainerType.AltString()
+			if t.ContainerType == container.AlternativeAbilities {
 				if slots := t.ResolvedAlternativeSlots(); slots > 1 {
-					data.InlineTag = fmt.Sprintf(i18n.Text("Alternate x%d"), slots)
-				} else {
-					data.InlineTag = i18n.Text("Alternate")
+					data.InlineTag = fmt.Sprintf("%s x%d", data.InlineTag, slots)
 				}
-			case container.Ancestry:
-				data.InlineTag = i18n.Text("Ancestry")
-			case container.Attributes:
-				data.InlineTag = i18n.Text("Attribute")
-			case container.MetaTrait:
-				data.InlineTag = i18n.Text("Meta")
-			default:
 			}
 		}
 	case TraitPointsColumn:
