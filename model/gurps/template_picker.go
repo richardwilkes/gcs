@@ -26,6 +26,15 @@ type TemplatePickerProvider interface {
 	TemplatePickerData() ([]picker.Type, *TemplatePicker)
 }
 
+// TemplatePickerNode is a constraint for a Node that implements the TemplatePickerProvider interface
+type TemplatePickerNode[T TemplatePickerNode[T]] interface {
+	Node[T]
+	TemplatePickerProvider
+}
+
+// assertTemplatePickerNode causes a compile-time constraint validation
+func assertTemplatePickerNode[T TemplatePickerNode[T]]() {}
+
 // TemplatePicker holds the data necessary to allow a template choice to be made.
 type TemplatePicker struct {
 	Type      picker.Type     `json:"type"`

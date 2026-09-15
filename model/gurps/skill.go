@@ -39,6 +39,7 @@ import (
 
 var (
 	_ = assertNode[*Skill]
+	_ = assertTemplatePickerNode[*Skill]
 	_ = assertEditorData[*SkillEditData]
 
 	_ TechLevelProvider       = &Skill{}
