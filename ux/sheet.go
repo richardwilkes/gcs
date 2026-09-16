@@ -65,6 +65,7 @@ type Sheet struct {
 	layoutEditor         *sheetLayoutEditor
 	layoutButton         *unison.Button
 	layoutButtonGroup    *unison.Group
+	unsettledNotice      *unison.Tag
 	Reactions            *PageList[*gurps.ConditionalModifier]
 	ConditionalModifiers *PageList[*gurps.ConditionalModifier]
 	MeleeWeapons         *PageList[*gurps.Weapon]
@@ -254,7 +255,36 @@ func (s *Sheet) createToolbar() {
 
 	s.searchTracker = installListSearchTracker(s.toolbar, s.lists)
 
+	// The notice sits at the end of the toolbar, past the search controls, where it reads as a status rather than a
+	// command. It is only a child of the toolbar while there is something to say; see syncUnsettledNotice.
+	s.unsettledNotice = makeTagForNode(i18n.Text("Data never settles"), unison.ThemeWarning, unison.ThemeOnWarning,
+		unison.DefaultTagTheme.Font, unison.TriangleExclamationSVG)
+	s.unsettledNotice.Tooltip = newWrappedTooltip(i18n.Text("No state of this sheet satisfies all of its prerequisites, defaults, features and scripts at once, so it has been left in one of the states it cycles through. A trait caught in a contradiction among the prerequisites is flagged in the Traits table, but the cycle need not involve any trait, in which case this is the only sign of it. Look for prerequisites, defaults or scripts that depend on one another in a circle."))
+	if s.entity.Unsettled() {
+		s.toolbar.AddChild(s.unsettledNotice)
+	}
+
 	finishToolbarLayout(s.toolbar)
+}
+
+// syncUnsettledNotice shows the notice in the toolbar while the entity's data never settles (see
+// gurps.Entity.Unsettled) and removes it once it does. The toolbar's layout counts the children present when it is
+// finished, so it is finished again whenever the notice comes or goes; see finishToolbarLayout.
+func (s *Sheet) syncUnsettledNotice() {
+	if s.unsettledNotice == nil {
+		return
+	}
+	shown := s.unsettledNotice.Parent() != nil
+	if shown == s.entity.Unsettled() {
+		return
+	}
+	if shown {
+		s.unsettledNotice.RemoveFromParent()
+	} else {
+		s.toolbar.AddChild(s.unsettledNotice)
+	}
+	finishToolbarLayout(s.toolbar)
+	s.toolbar.MarkForLayoutAndRedraw()
 }
 
 // DataOwner implements gurps.DataOwnerProvider.
@@ -352,6 +382,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 	// Everything below reads the derived state -- the panels, the tables, and the calculators all display skill levels,
 	// points and the like -- so the entity is brought up to date first.
 	s.entity.Recalculate()
+	s.syncUnsettledNotice()
 	s.bumpModificationTimestamp()
 	skipDeepSync := false
 	if !xreflect.IsNil(src) {
@@ -769,6 +800,7 @@ func (s *Sheet) Rebuild(full bool) {
 	gurps.DiscardGlobalResolveCache()
 	state := s.captureViewState()
 	s.entity.Recalculate()
+	s.syncUnsettledNotice()
 	if full {
 		defer preserveSelections(s.lists)()
 		s.buildLayout()

@@ -69,18 +69,22 @@ func enabledHeaderData() HeaderData {
 
 // CellData holds data for creating a cell's visual representation.
 type CellData struct {
-	Self              any
-	Primary           string
-	Secondary         string
-	Tooltip           string
+	Self      any
+	Primary   string
+	Secondary string
+	Tooltip   string
+	// UnsatisfiedReason explains why the node's prerequisites are unmet.
 	UnsatisfiedReason string
-	TemplateInfo      string
-	InlineTag         string
-	Type              cell.Type
-	Disabled          bool
-	Dim               bool
-	Checked           bool
-	Alignment         align.Enum
+	// PrereqContradiction explains why a trait whose own prerequisites are met is nonetheless caught in a contradiction
+	// among the prerequisites; see Trait.prereqStatus. At most one of it and UnsatisfiedReason is set.
+	PrereqContradiction string
+	TemplateInfo        string
+	InlineTag           string
+	Type                cell.Type
+	Disabled            bool
+	Dim                 bool
+	Checked             bool
+	Alignment           align.Enum
 	// ForPage is the one input in this struct: the caller sets it before invoking a node's CellData method, and it
 	// is left untouched by that method. It is true when the cell is being displayed on a sheet, template or loot
 	// page, as opposed to an editor, a library list, or a request made only to sort the rows. Display preferences

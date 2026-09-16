@@ -395,16 +395,18 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 	} else {
 		n.addLabelCell(c, p, width, c.Primary, c.InlineTag, n.primaryFieldFont(), foreground, background, true)
 	}
-	tooltip := c.Tooltip
-	if c.UnsatisfiedReason != "" {
+	switch {
+	case c.UnsatisfiedReason != "":
 		p.AddChild(makeTagForNode(i18n.Text("Unsatisfied prerequisite(s)"), unison.ThemeError, unison.ThemeOnError,
 			n.secondaryFieldFont(), unison.TriangleExclamationSVG))
-		tooltip = c.UnsatisfiedReason
+	case c.PrereqContradiction != "":
+		p.AddChild(makeTagForNode(i18n.Text("Contradictory prerequisite(s)"), unison.ThemeWarning,
+			unison.ThemeOnWarning, n.secondaryFieldFont(), unison.TriangleExclamationSVG))
 	}
 	if c.TemplateInfo != "" {
 		p.AddChild(makeTagForNode(c.TemplateInfo, foreground, background, n.secondaryFieldFont(), svg.GCSTemplate))
 	}
-	if tooltip != "" {
+	if tooltip := labelCellTooltip(c); tooltip != "" {
 		var workingDir string
 		if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
 			if wdStr, ok2 := wd.(string); ok2 {
@@ -414,6 +416,24 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		p.Tooltip = newMarkdownTooltip(tooltip, workingDir)
 	}
 	return p
+}
+
+// labelCellTooltip returns the text of the tooltip a label cell shows. The reason for an unsatisfied prerequisite
+// replaces the cell's own tooltip, since the row is flagged as broken and the reason is what the user needs to put it
+// right. The explanation of a contradiction among the prerequisites is put ahead of the cell's own tooltip instead,
+// under the same separator Trait.CellData uses between the blocks of that tooltip, since the row is enabled and in
+// use, so what its own tooltip says still applies.
+func labelCellTooltip(c *gurps.CellData) string {
+	switch {
+	case c.UnsatisfiedReason != "":
+		return c.UnsatisfiedReason
+	case c.PrereqContradiction == "":
+		return c.Tooltip
+	case c.Tooltip == "":
+		return c.PrereqContradiction
+	default:
+		return c.PrereqContradiction + "\n---\n" + c.Tooltip
+	}
 }
 
 func makeTagForNode(title string, bg, fg unison.Ink, font unison.Font, img *unison.SVG) *unison.Tag {

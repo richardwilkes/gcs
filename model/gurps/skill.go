@@ -88,6 +88,10 @@ type Skill struct {
 	owner             DataOwner
 	LevelData         Level
 	UnsatisfiedReason string
+	// takesEquipmentPenalty records that the last recalculation pass found this skill's prerequisites unmet on account
+	// of an equipped-equipment prerequisite, so that the next pass applies the missing-equipment penalty to its level
+	// (see Entity.applyEquipmentPenalties). It is never saved.
+	takesEquipmentPenalty bool
 }
 
 // SkillData holds the Skill data that is written to disk.
@@ -633,7 +637,8 @@ func (s *Skill) RawPoints() fxp.Int {
 	return s.Points
 }
 
-// SetRawPoints sets the unadjusted points and updates the level. Returns true if the level changed.
+// SetRawPoints sets the unadjusted points and updates the level. Returns true if the level, or the default the skill
+// settled on, changed.
 func (s *Skill) SetRawPoints(points fxp.Int) bool {
 	s.Points = points
 	return s.UpdateLevel()
@@ -883,7 +888,7 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 	}
 }
 
-// UpdateLevel updates the level of the skill, returning true if it has changed.
+// UpdateLevel updates the level of the skill, returning true if it, or the default the skill settled on, has changed.
 func (s *Skill) UpdateLevel() bool {
 	savedLevel := s.LevelData
 	savedDefaultedFrom := s.DefaultedFrom
@@ -904,7 +909,17 @@ func (s *Skill) UpdateLevel() bool {
 		return false
 	}
 	s.LevelData = level
-	return savedLevel != s.LevelData
+	// A change to the default is reported too, since other skills read it: a skill judging whether it may default to
+	// this one, or a technique judging whether this one is usable as its base.
+	return savedLevel != s.LevelData || !sameSkillDefault(savedDefaultedFrom, s.DefaultedFrom)
+}
+
+// sameSkillDefault returns true if the two defaults, either of which may be nil, hold the same values.
+func sameSkillDefault(a, b *SkillDefault) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
 }
 
 func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {

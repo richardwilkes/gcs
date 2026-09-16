@@ -189,9 +189,12 @@ type exportedTrait struct {
 	ModifierNotesNoRolls string
 	Notes                string
 	UnsatisfiedReason    string
-	PageRef              string
-	Tags                 []string
-	Depth                int
+	// PrereqContradiction explains why a trait whose own prerequisites are met is nonetheless caught in a contradiction
+	// among the prerequisites; see Trait.prereqStatus. At most one of it and UnsatisfiedReason is set.
+	PrereqContradiction string
+	PageRef             string
+	Tags                []string
+	Depth               int
 }
 
 type exportedSource struct {
@@ -534,6 +537,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	Traverse(func(t *Trait) bool {
 		resolvedSelfControl := t.ResolvedSelfControl(nil)
 		resolvedFrequency := t.ResolvedFrequency(nil)
+		unsatisfiedReason, contradiction := t.prereqStatus()
 		trait := &exportedTrait{
 			ID:                   t.TID,
 			Points:               t.AdjustedPoints(),
@@ -546,7 +550,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			ModifierNotesNoFR:    t.modifierNotes(true, false),
 			ModifierNotesNoRolls: t.modifierNotes(false, false),
 			Notes:                t.Notes(),
-			UnsatisfiedReason:    t.UnsatisfiedReason,
+			UnsatisfiedReason:    unsatisfiedReason,
+			PrereqContradiction:  contradiction,
 			PageRef:              t.PageRef,
 			Tags:                 slices.Clone(t.Tags),
 			Depth:                t.Depth(),

@@ -71,10 +71,16 @@ type Trait struct {
 	owner             DataOwner
 	UnsatisfiedReason string
 	resolvingLevel    bool
-	// prereqDisabled is set by Entity.processPrereqs when the owning sheet enforces trait prerequisites and this
-	// trait's are unsatisfied. The trait then behaves as though it were disabled, without altering the Disabled flag
-	// the user controls. It is recomputed on every Recalculate and is never saved.
-	prereqDisabled bool
+	// prereqVerdict is what Entity.processTraitPrereqs last decided about this trait's prerequisites. When the owning
+	// sheet enforces trait prerequisites and this trait's are unsatisfied, the verdict is to disable it, and the trait
+	// then behaves as though it were disabled, without altering the Disabled flag the user controls. It is recomputed
+	// on every pass of Entity.Recalculate and is never saved.
+	prereqVerdict traitPrereqVerdict
+	// prereqContradicted is set by Entity.Recalculate when it finds this trait caught in a contradiction among the
+	// prerequisites, such that no choice of traits satisfies them all. The sheet then leaves the trait enabled, with
+	// any unmet prerequisite still shown, rather than disabling it. It is recomputed on every Recalculate and is never
+	// saved.
+	prereqContradicted bool
 	// savedCurrentLevel is the level recorded in the "calc" object of the file the trait was loaded from. It is only
 	// kept by a load that asks for it (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
 	savedCurrentLevel *fxp.Int
@@ -232,18 +238,21 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode Clo
 // MarshalJSONTo implements json.MarshalerTo.
 func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
-		Points            fxp.Int  `json:"points"`
-		UnsatisfiedReason string   `json:"unsatisfied_reason,omitzero"`
-		ResolvedNotes     string   `json:"resolved_notes,omitzero"`
-		CurrentLevel      *fxp.Int `json:"current_level,omitzero"`
+		Points              fxp.Int  `json:"points"`
+		UnsatisfiedReason   string   `json:"unsatisfied_reason,omitzero"`
+		PrereqContradiction string   `json:"prereq_contradiction,omitzero"`
+		ResolvedNotes       string   `json:"resolved_notes,omitzero"`
+		CurrentLevel        *fxp.Int `json:"current_level,omitzero"`
 	}
 	t.ClearUnusedFieldsForType()
 	return marshalNodeData(enc, &t.TraitData, func() *calc {
 		// The "calc" object is always written, even when empty.
+		unsatisfiedReason, contradiction := t.prereqStatus()
 		c := &calc{
-			Points:            t.AdjustedPoints(),
-			UnsatisfiedReason: t.UnsatisfiedReason,
-			ResolvedNotes:     resolvedNotesFor(t.ResolveLocalNotes(), t.LocalNotes),
+			Points:              t.AdjustedPoints(),
+			UnsatisfiedReason:   unsatisfiedReason,
+			PrereqContradiction: contradiction,
+			ResolvedNotes:       resolvedNotesFor(t.ResolveLocalNotes(), t.LocalNotes),
 		}
 		if t.IsLeveled() {
 			level := t.CurrentLevel()
@@ -309,26 +318,70 @@ func (t *Trait) EffectivelyDisabled() bool {
 	return !t.Enabled()
 }
 
+// traitPrereqVerdict is what Entity.processTraitPrereqs decided about a trait's prerequisites in the last pass of a
+// recalculation.
+type traitPrereqVerdict int8
+
+const (
+	// prereqsNotJudged means the trait's prerequisites were not judged, because the trait is disabled, itself or by way
+	// of a container above it, so they are moot. It is also every trait's verdict when a recalculation begins.
+	prereqsNotJudged traitPrereqVerdict = iota
+	// prereqsLeaveEnabled means the trait is left enabled: its prerequisites are met, or the sheet does not enforce
+	// them, or the trait is caught in a contradiction among them.
+	prereqsLeaveEnabled
+	// prereqsDisable means the sheet disables the trait, since it enforces trait prerequisites and this trait's are
+	// unmet.
+	prereqsDisable
+)
+
 // DisabledByPrereqs returns true if this trait is enabled by the user but is being treated as disabled because the
 // sheet enforces trait prerequisites and this trait's are unsatisfied. Parents are not consulted.
 func (t *Trait) DisabledByPrereqs() bool {
-	return t.prereqDisabled && !t.Disabled
+	return t.prereqVerdict == prereqsDisable && !t.Disabled
 }
 
-// setPrereqDisabled records whether the sheet is disabling this trait for unsatisfied prerequisites and returns true
-// if that changed.
-func (t *Trait) setPrereqDisabled(disabled bool) bool {
-	if t.prereqDisabled == disabled {
-		return false
-	}
-	t.prereqDisabled = disabled
-	return true
+// ContradictedPrereqs returns true if the sheet found this trait caught in a contradiction among the prerequisites,
+// such that no choice of traits satisfies them all, and so leaves it enabled although its own may be unsatisfied.
+func (t *Trait) ContradictedPrereqs() bool {
+	return t.prereqContradicted
+}
+
+func (t *Trait) setPrereqVerdict(verdict traitPrereqVerdict) {
+	t.prereqVerdict = verdict
+}
+
+// resetPrereqVerdict forgets what the sheet decided about this trait's prerequisites, so that a recalculation starts
+// from the sheet's data alone.
+func (t *Trait) resetPrereqVerdict() {
+	t.prereqVerdict = prereqsNotJudged
+	t.prereqContradicted = false
 }
 
 // selfDisabled returns true if this trait itself is disabled, either by the user or because the sheet enforces
 // prerequisites and this trait's are unsatisfied. Parents are not consulted; see Enabled for that.
 func (t *Trait) selfDisabled() bool {
-	return t.Disabled || t.prereqDisabled
+	return t.Disabled || t.prereqVerdict == prereqsDisable
+}
+
+// prereqStatus returns what to show for the trait's prerequisites, in the trait table, the "calc" object and the
+// exports alike. unsatisfiedReason is the reason they are unmet, followed by a note when the sheet disabled the trait
+// for it or found the trait caught in a contradiction among the prerequisites, and is empty when they are met.
+// contradiction explains, for a trait whose own prerequisites are met but which is nonetheless caught in a
+// contradiction, that they are met only while other traits whose prerequisites are unmet are left enabled, since
+// nothing would otherwise look amiss with the trait. It is empty otherwise, so at most one of the two is set. The two
+// are kept apart because whatever shows unsatisfiedReason flags it as an unsatisfied prerequisite, which the
+// contradiction is not.
+func (t *Trait) prereqStatus() (unsatisfiedReason, contradiction string) {
+	unsatisfiedReason = t.UnsatisfiedReason
+	switch {
+	case t.DisabledByPrereqs():
+		unsatisfiedReason += "\n\n" + i18n.Text("The sheet settings disable traits whose prerequisites are unsatisfied, so this trait is treated as disabled until they are met.")
+	case t.ContradictedPrereqs() && unsatisfiedReason != "":
+		unsatisfiedReason += "\n\n" + i18n.Text("This trait's prerequisites contradict those of other traits, so no choice among them satisfies every one. The traits caught in the contradiction are left enabled rather than disabling any of them.")
+	case t.ContradictedPrereqs():
+		contradiction = i18n.Text("This trait's prerequisites are met only while other traits whose prerequisites are unmet are left enabled: they contradict one another, so no choice among the traits caught in the contradiction satisfies every one, and all of them are left enabled rather than disabling any of them.")
+	}
+	return unsatisfiedReason, contradiction
 }
 
 // TemplatePickerData implements TemplatePickerProvider.
@@ -383,10 +436,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		}
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
-		data.UnsatisfiedReason = t.UnsatisfiedReason
-		if t.DisabledByPrereqs() {
-			data.UnsatisfiedReason += "\n\n" + i18n.Text("The sheet settings disable traits whose prerequisites are unsatisfied, so this trait is treated as disabled until they are met.")
-		}
+		data.UnsatisfiedReason, data.PrereqContradiction = t.prereqStatus()
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		if tooltip.Len() != 0 {
 			t := i18n.Text("Trait level adjustments:\n") + strings.ReplaceAll(tooltip.String(), "\n", "\n- ")

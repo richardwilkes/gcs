@@ -271,6 +271,46 @@ func TestSpellEquipmentPrereqPenaltyIsScopedToItsSpell(t *testing.T) {
 		"the spell with the unmet equipment prerequisite must be 5 levels lower")
 }
 
+// TestSpellEquipmentPrereqPenaltyHonorsAnyOfLists verifies that the equipment penalty follows the prerequisite list
+// as a whole: a spell whose unmet equipment prerequisite sits in an "any of" list alongside a met skill prerequisite
+// has satisfied prerequisites and so takes no penalty, and it takes the penalty once that skill prerequisite is no
+// longer met. Whether the alternative is met depends on a skill level, so this also checks that the penalty settles
+// correctly even though it is generated before the levels are updated.
+func TestSpellEquipmentPrereqPenaltyHonorsAnyOfLists(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	control := addTestSpell(e, "Ice Dagger", fxp.Four)
+	needsFocus := addTestSpell(e, "Fireball", fxp.Four)
+	needsFocus.Prereq = NewPrereqList()
+	needsFocus.Prereq.All = false
+	eqpPrereq := NewEquippedEquipmentPrereq()
+	eqpPrereq.Parent = needsFocus.Prereq
+	eqpPrereq.NameCriteria.Qualifier = "Wizard's Focus"
+	needsFocus.Prereq.Prereqs = append(needsFocus.Prereq.Prereqs, eqpPrereq)
+	addSkillPrereq(needsFocus.Prereq, "Thaumatology", fxp.Ten)
+	thaumatology := addTestSkill(e, "Thaumatology", "", "", fxp.Four) // IQ+1, so 11
+
+	e.Recalculate()
+	c.Equal("", needsFocus.UnsatisfiedReason, "the met skill prerequisite satisfies the list")
+	c.Equal(fxp.Int(0), e.SpellBonusFor(needsFocus.NameWithReplacements(), "", nil, nil, nil),
+		"a satisfied list carries no penalty")
+	c.Equal(control.LevelData.Level, needsFocus.LevelData.Level, "the level is not penalized")
+
+	thaumatology.Points = fxp.One // IQ-1, so 9, which no longer meets the alternative
+	e.Recalculate()
+	c.NotEqual("", needsFocus.UnsatisfiedReason, "with neither alternative met, the list is unsatisfied")
+	c.Equal(-fxp.Five, e.SpellBonusFor(needsFocus.NameWithReplacements(), "", nil, nil, nil),
+		"an unsatisfied list carries the penalty")
+	c.Equal(control.LevelData.Level-fxp.Five, needsFocus.LevelData.Level, "the level is penalized")
+	c.Equal(fxp.Int(0), e.SpellBonusFor(control.NameWithReplacements(), "", nil, nil, nil),
+		"an unrelated spell must not take the penalty")
+
+	thaumatology.Points = fxp.Four
+	e.Recalculate()
+	c.Equal("", needsFocus.UnsatisfiedReason, "meeting the alternative again satisfies the list")
+	c.Equal(control.LevelData.Level, needsFocus.LevelData.Level, "and lifts the penalty")
+}
+
 // TestSpellEquipmentPrereqPenaltyWithTechLevel verifies that the penalty generated for a spell whose equipment
 // prerequisite is unmet is -10 rather than -5 when the spell has a tech level, matching the rule applied to skills.
 func TestSpellEquipmentPrereqPenaltyWithTechLevel(t *testing.T) {

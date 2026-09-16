@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/uti"
 )
@@ -209,4 +211,84 @@ func TestExportAttributeKinds(t *testing.T) {
 	c.Equal("<st><dx><iq><ht><forced>|"+
 		"<will><fright_check><per><vision><hearing><taste_smell><touch><basic_speed><basic_move>|"+
 		"<fp:10/10><hp:10/10>", string(data))
+}
+
+// TestExportTraitPrereqContradiction verifies that the template export and the "calc" object written to disk carry
+// what the trait table shows for a trait caught in a contradiction among the prerequisites, when the sheet enforces
+// them: a trait whose own prerequisites are unmet has the contradiction explained within its unsatisfied reason, and
+// one whose own prerequisites are met has it explained in a field of its own. The "calc" object is written for every
+// trait, so it alone also covers a trait the sheet disabled, which has that explained within its reason; the export
+// leaves disabled traits out, as it always has.
+func TestExportTraitPrereqContradiction(t *testing.T) {
+	c := check.New(t)
+	countLogs(t, slog.LevelWarn)
+	entity := NewEntity()
+	entity.SheetSettings.EnforceTraitPrereqs = true
+	requires := newTraitRequiring(entity, "Requires", "Excludes")
+	excludes := NewTrait(entity, nil, false)
+	excludes.Name = "Excludes"
+	excludes.Prereq = newPrereqListForbiddingTrait("Requires")
+	unrelated := newTraitNeedingMissingTrait(entity, "Unrelated")
+	entity.Traits = append(entity.Traits, requires, excludes, unrelated)
+	entity.Recalculate()
+	c.True(requires.ContradictedPrereqs(), "precondition: the traits are caught in the contradiction")
+	c.True(unrelated.DisabledByPrereqs(), "precondition: the unrelated trait is disabled")
+
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.txt")
+	const tmpl = "GCS Text Template v1\n" +
+		"{{range .Traits}}<<{{.Description}}|{{.UnsatisfiedReason}}|{{.PrereqContradiction}}>>\n{{end}}"
+	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
+	outPath := filepath.Join(dir, "out.txt")
+	c.NoError(Export(entity, tmplPath, outPath))
+	data, err := os.ReadFile(outPath)
+	c.NoError(err)
+	out := string(data)
+	requiresReason, requiresContradiction := requires.prereqStatus()
+	c.Equal("", requiresReason, "the trait whose own prerequisites are met has no unsatisfied reason")
+	c.NotEqual("", requiresContradiction, "but is caught in the contradiction")
+	c.Contains(out, "<<Requires||"+requiresContradiction+">>", "which the export says in a field of its own")
+	excludesReason, excludesContradiction := excludes.prereqStatus()
+	c.True(strings.HasPrefix(excludesReason, excludes.UnsatisfiedReason) &&
+		len(excludesReason) > len(excludes.UnsatisfiedReason),
+		"the trait whose own prerequisites are unmet has the contradiction explained within its reason")
+	c.Equal("", excludesContradiction, "and not in the field of its own")
+	c.Contains(out, "<<Excludes|"+excludesReason+"|>>", "which the export carries")
+
+	// The "calc" object written to disk says the same for each of them, and alone covers the trait the sheet disabled.
+	c.False(unrelated.ContradictedPrereqs(), "precondition: the trait the sheet disabled is not caught in the contradiction")
+	unrelatedReason, unrelatedContradiction := unrelated.prereqStatus()
+	c.True(strings.HasPrefix(unrelatedReason, unrelated.UnsatisfiedReason) &&
+		len(unrelatedReason) > len(unrelated.UnsatisfiedReason),
+		"the trait the sheet disabled has that explained within its reason")
+	c.Equal("", unrelatedContradiction, "and nothing in the field of its own")
+	requiresCalc := savedPrereqStatus(c, requires)
+	c.Equal("", requiresCalc.UnsatisfiedReason, "the trait whose own prerequisites are met records no reason")
+	c.Equal(requiresContradiction, requiresCalc.PrereqContradiction, "and records the contradiction")
+	excludesCalc := savedPrereqStatus(c, excludes)
+	c.Equal(excludesReason, excludesCalc.UnsatisfiedReason,
+		"the trait whose own prerequisites are unmet records the reason, with the contradiction within it")
+	c.Equal("", excludesCalc.PrereqContradiction, "rather than alongside it")
+	unrelatedCalc := savedPrereqStatus(c, unrelated)
+	c.Equal(unrelatedReason, unrelatedCalc.UnsatisfiedReason,
+		"the trait the sheet disabled records the reason, with the sheet's disabling of it explained within")
+	c.Equal("", unrelatedCalc.PrereqContradiction, "and nothing in the field of its own")
+}
+
+// traitPrereqCalc is the part of a trait's "calc" object that records what the trait table shows for its prerequisites.
+type traitPrereqCalc struct {
+	UnsatisfiedReason   string `json:"unsatisfied_reason"`
+	PrereqContradiction string `json:"prereq_contradiction"`
+}
+
+// savedPrereqStatus returns the prerequisite status the "calc" object written to disk for the trait records.
+func savedPrereqStatus(c check.Checker, t *Trait) traitPrereqCalc {
+	c.Helper()
+	saved, err := jio.Marshal(t)
+	c.NoError(err)
+	var data struct {
+		Calc traitPrereqCalc `json:"calc"`
+	}
+	c.NoError(jio.Unmarshal(saved, &data))
+	return data.Calc
 }

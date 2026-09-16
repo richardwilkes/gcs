@@ -64,6 +64,22 @@ func TestEquippedCellClickRecalculatesTheSheet(t *testing.T) {
 	c.Equal(fxp.One, stBonusFor(entity), "redo must put the feature back into play")
 }
 
+// TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction verifies which tooltip a label cell shows: a
+// contradiction among the prerequisites is explained ahead of the cell's own tooltip rather than in place of it, since
+// the row is enabled and in use, while the reason for an unsatisfied prerequisite replaces it, since the row is flagged
+// as broken and the reason is what puts it right.
+func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) {
+	c := check.New(t)
+	c.Equal("", labelCellTooltip(&gurps.CellData{}), "a cell with nothing to say has no tooltip")
+	c.Equal("own", labelCellTooltip(&gurps.CellData{Tooltip: "own"}), "a cell shows its own tooltip")
+	c.Equal("why", labelCellTooltip(&gurps.CellData{Tooltip: "own", UnsatisfiedReason: "why"}),
+		"the reason for an unsatisfied prerequisite replaces the cell's own tooltip")
+	c.Equal("clash", labelCellTooltip(&gurps.CellData{PrereqContradiction: "clash"}),
+		"a contradiction is explained on its own when the cell has no tooltip of its own")
+	c.Equal("clash\n---\nown", labelCellTooltip(&gurps.CellData{Tooltip: "own", PrereqContradiction: "clash"}),
+		"a contradiction is explained ahead of the cell's own tooltip, not in place of it")
+}
+
 // TestCheckCellDrawsTheNewStateBeforeReportingTheClick verifies the order of operations within a check cell's click
 // handling. Reporting the click marks the owner as modified, which re-syncs the table and recreates every cell,
 // leaving the clicked label detached from the panel tree, where updating its drawable and marking it for layout and

@@ -83,7 +83,9 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
 	if !satisfied {
-		*hasEquipmentPenalty = true
+		if hasEquipmentPenalty != nil {
+			*hasEquipmentPenalty = true
+		}
 		if tooltip != nil {
 			fmt.Fprintf(tooltip, i18n.Text("%sHas equipment which is equipped and whose name %s %s"),
 				prefix, p.NameCriteria.String(replacements),

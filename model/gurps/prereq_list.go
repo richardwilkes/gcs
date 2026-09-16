@@ -96,7 +96,11 @@ func (p *PrereqList) FillWithNameableKeys(m, existing map[string]string) {
 	}
 }
 
-// Satisfied implements Prereq.
+// Satisfied implements Prereq. hasEquipmentPenalty, if not nil, is set to true when this list is unsatisfied and an
+// unmet equipped-equipment prerequisite is among what made it so: one of its own, or one reached through nested lists
+// that are each unsatisfied. An "all of" list that also fails for some other prerequisite sets it, while an unmet
+// equipment prerequisite inside a satisfied nested list, or in a list that does not apply at the sheet's tech level,
+// never does.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	if entity == nil {
 		return true
@@ -128,8 +132,8 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.Inser
 	}
 	satisfied := count == len(p.Prereqs) || (!p.All && count > 0)
 	if !satisfied {
-		if eqpPenalty {
-			*hasEquipmentPenalty = eqpPenalty
+		if eqpPenalty && hasEquipmentPenalty != nil {
+			*hasEquipmentPenalty = true
 		}
 		if buffer != nil && local != nil {
 			buffer.WriteString(prefix)

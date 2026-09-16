@@ -455,12 +455,6 @@ func (s *SkillDefault) Hash(h hash.Hash) {
 	xhash.Num64(h, s.Modifier)
 	s.Name.Hash(h)
 	s.Specialization.Hash(h)
-	if !s.WhenTL.IsZero() {
-		// Only hash when non-default, so that old files don't suddenly become marked as modified.
-		s.WhenTL.Hash(h)
-	}
-	if !s.Tags.IsZero() {
-		// Only hash when non-default, so that old files don't suddenly become marked as modified.
-		s.Tags.Hash(h)
-	}
+	s.WhenTL.Hash(h)
+	s.Tags.Hash(h)
 }

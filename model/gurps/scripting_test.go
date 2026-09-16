@@ -10,13 +10,11 @@
 package gurps
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
 	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -371,36 +369,11 @@ func TestScriptCacheIsBounded(t *testing.T) {
 	c.False(again == coldProgram, "the abandoned script must have been evicted from the cache")
 }
 
-// errorCountingHandler counts the error-level records it is asked to handle, so a test can observe whether a failed
-// script resolution logged an error without depending on the log's textual format.
-type errorCountingHandler struct {
-	count *atomic.Int32
-}
-
-func (h errorCountingHandler) Enabled(_ context.Context, level slog.Level) bool {
-	return level >= slog.LevelError
-}
-
-// Handle takes the record by value because the slog.Handler interface requires that signature.
-func (h errorCountingHandler) Handle(_ context.Context, record slog.Record) error { //nolint:gocritic // interface-mandated signature
-	if record.Level >= slog.LevelError {
-		h.count.Add(1)
-	}
-	return nil
-}
-
-func (h errorCountingHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
-
-func (h errorCountingHandler) WithGroup(_ string) slog.Handler { return h }
-
 // SuppressScriptResolveErrorLogging silences the error logging a failed script resolution would otherwise produce, only
 // within the dynamic scope of the supplied function (so failures elsewhere still log), and nests correctly.
 func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 	c := check.New(t)
-	var count atomic.Int32
-	prev := slog.Default()
-	slog.SetDefault(slog.New(errorCountingHandler{count: &count}))
-	defer slog.SetDefault(prev)
+	count := countLogs(t, slog.LevelError)
 
 	// The script resolved below produces a non-numeric string, so ResolveToNumber fails to parse it and would log an
 	// error.
@@ -716,11 +689,8 @@ func TestScriptBaselineIncludesHiddenSymbolGlobals(t *testing.T) {
 func TestScriptRestoreGlobalsDetectsBaselineDamage(t *testing.T) {
 	c := check.New(t)
 
-	// restoreGlobals logs a warning for each problem it finds; this handler drops anything below error level.
-	var count atomic.Int32
-	prev := slog.Default()
-	slog.SetDefault(slog.New(errorCountingHandler{count: &count}))
-	defer slog.SetDefault(prev)
+	// restoreGlobals logs a warning for each problem it finds; counting only the errors silences those.
+	countLogs(t, slog.LevelError)
 
 	for _, tc := range []struct {
 		name   string

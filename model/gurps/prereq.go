@@ -28,6 +28,9 @@ type Prereq interface {
 	Clone(parent *PrereqList) Prereq
 	// Satisfied returns true if this Prereq is satisfied by the specified Entity. 'buffer' will be used, if not nil, to
 	// write a description of what was unsatisfied. 'prefix' will be appended to each line of the description.
+	// 'hasEquipmentPenalty', if not nil, is set to true by an unmet equipped-equipment prerequisite and by an
+	// unsatisfied list one contributed to (see PrereqList.Satisfied), which is what earns a skill or spell the
+	// missing-equipment penalty. It is never set to false.
 	Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool
 	// Hash writes this object's contents into the hasher.
 	Hash(h hash.Hash)

@@ -26,7 +26,13 @@
 - A new sheet setting, "Disable traits whose prerequisites are unsatisfied", treats any trait whose prerequisites are
   not met, or whose level exceeds its maximum, as disabled: it contributes no points, features or weapons to the sheet
   until they are met. The trait keeps its own enabled state and the warning that explains what is missing, and comes
-  back into play on its own once its prerequisites are satisfied. The setting is off by default.
+  back into play on its own once its prerequisites are satisfied. Where prerequisites contradict one another, such as
+  two traits that each require the other's absence, no choice satisfies them all, so the traits caught in the
+  contradiction are left enabled and flagged as such, and the sheet's toolbar notes that its data never settles. The
+  setting is off by default. Saved sheets and Go template exports carry the explanations the Traits table shows: the
+  unsatisfied reason of a trait the sheet disabled, or whose own prerequisites are unmet within a contradiction, now
+  ends with a sentence saying so, and a trait whose own prerequisites are met but which is caught in a contradiction
+  has that explained in the new PrereqContradiction trait field.
 - When the workspace arrangement is restored on start, the tab that had the keyboard focus when GCS was last quit is
   given the focus again, rather than the Library Explorer always starting with it. The files are also reopened in the
   order their tabs are laid out in, so the recent files list comes out the same from one start to the next.

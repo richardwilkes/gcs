@@ -13,7 +13,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"sync/atomic"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/kinds"
@@ -22,22 +21,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
-// countErrorLogging installs a slog handler that counts error-level records for the duration of the test and returns
-// the counter.
-func countErrorLogging(t *testing.T) *atomic.Int32 {
-	t.Helper()
-	var count atomic.Int32
-	prev := slog.Default()
-	slog.SetDefault(slog.New(errorCountingHandler{count: &count}))
-	t.Cleanup(func() { slog.SetDefault(prev) })
-	return &count
-}
-
 // TestLoadSettingsOrDefaultsWithMissingFile verifies that the normal first-run case -- no settings file at all --
 // yields factory defaults without logging an error or leaving a stray backup behind.
 func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 	c := check.New(t)
-	count := countErrorLogging(t)
+	count := countLogs(t, slog.LevelError)
 	p := filepath.Join(t.TempDir(), "settings.json")
 	settings := loadSettingsOrDefaults(p)
 	c.NotNil(settings.General)
@@ -50,7 +38,7 @@ func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 
 func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
 	c := check.New(t)
-	count := countErrorLogging(t)
+	count := countLogs(t, slog.LevelError)
 	p := filepath.Join(t.TempDir(), "settings.json")
 	c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3","deep_search":["alpha"]}`), 0o600))
 	settings := loadSettingsOrDefaults(p)
@@ -66,7 +54,7 @@ func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
 // indistinguishable from a missing one and the next Save quietly overwrote whatever the user had.
 func TestLoadSettingsOrDefaultsWithCorruptFile(t *testing.T) {
 	c := check.New(t)
-	count := countErrorLogging(t)
+	count := countLogs(t, slog.LevelError)
 	p := filepath.Join(t.TempDir(), "settings.json")
 	const corrupt = `{"last_seen_gcs_version":"1.2.3",`
 	c.NoError(os.WriteFile(p, []byte(corrupt), 0o600))
@@ -91,7 +79,7 @@ func TestLoadSettingsOrDefaultsWithCorruptFile(t *testing.T) {
 // rather than leaving it with usable settings.
 func TestLoadSettingsOrDefaultsWithNullLibraryEntry(t *testing.T) {
 	c := check.New(t)
-	countErrorLogging(t)
+	countLogs(t, slog.LevelError)
 	p := filepath.Join(t.TempDir(), "settings.json")
 	c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3","libraries":{"a/b":null,`+
 		`"someone/repo":{"title":"Good","path":"/libs/good"}}}`), 0o600))
@@ -108,7 +96,7 @@ func TestLoadSettingsOrDefaultsWithNullLibraryEntry(t *testing.T) {
 // session's settings changes.
 func TestSettingsSaveWithNullMapEntries(t *testing.T) {
 	c := check.New(t)
-	countErrorLogging(t)
+	countLogs(t, slog.LevelError)
 	dir := t.TempDir()
 	p := filepath.Join(dir, "settings.json")
 	c.NoError(os.WriteFile(p, []byte(`{
@@ -177,7 +165,7 @@ func TestIDLookupsWithNullMapEntries(t *testing.T) {
 // an error log.
 func TestSetAsideDamagedSettingsWithMissingFile(t *testing.T) {
 	c := check.New(t)
-	count := countErrorLogging(t)
+	count := countLogs(t, slog.LevelError)
 	p := filepath.Join(t.TempDir(), "settings.json")
 	setAsideDamagedSettings(p)
 	c.Equal(int32(0), count.Load())
@@ -189,7 +177,7 @@ func TestSetAsideDamagedSettingsWithMissingFile(t *testing.T) {
 // clobbered: the new backup gets a timestamp added to its name instead.
 func TestSetAsideDamagedSettingsWithExistingBackup(t *testing.T) {
 	c := check.New(t)
-	count := countErrorLogging(t)
+	count := countLogs(t, slog.LevelError)
 	dir := t.TempDir()
 	p := filepath.Join(dir, "settings.json")
 	const older = `older damaged settings`

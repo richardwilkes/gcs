@@ -142,10 +142,10 @@ type leveledCalc struct {
 
 // newLeveledCalc builds the "calc" object for a skill or spell, or returns nil when there is nothing to record so the
 // caller's omitzero field drops it.
-func newLeveledCalc(container bool, level fxp.Int, rsl, unsatisfiedReason, resolvedNotes, localNotes string) *leveledCalc {
+func newLeveledCalc(container bool, level fxp.Int, rsl, unsatisfied, resolvedNotes, localNotes string) *leveledCalc {
 	calc := leveledCalc{
 		ResolvedNotes:     resolvedNotesFor(resolvedNotes, localNotes),
-		UnsatisfiedReason: unsatisfiedReason,
+		UnsatisfiedReason: unsatisfied,
 	}
 	if !container && level > 0 {
 		calc.Level = level

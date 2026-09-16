@@ -44,6 +44,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
+	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/zeebo/xxh3"
 )
 
 var (
@@ -126,6 +128,9 @@ type Entity struct {
 	basicLiftCache                 fxp.Weight
 	encumbranceLevelCache          encumbrance.Level
 	encumbranceLevelForSkillsCache encumbrance.Level
+	// unsettled records that the last recalculation found data that never settles (see Recalculate), so that it is
+	// logged once rather than on every edit.
+	unsettled bool
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -310,40 +315,328 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 
 // DiscardCaches discards the internal caches.
 func (e *Entity) DiscardCaches() {
+	e.discardCaches(false)
+}
+
+// discardCaches discards the internal caches. With keepAbandonedScripts set, the results recorded for scripts that
+// were stopped before they could produce an answer are kept, as a recalculation wants between its passes: such a
+// script would almost certainly be stopped again, and running it on every pass would make a recalculation that is
+// repeated on every edit take seconds. The kept result is still reported as abandoned to whatever reads it, and the
+// next recalculation runs the script again. The cost is that a script stopped once stays stopped for the rest of that
+// recalculation, so a skill or spell whose level it feeds keeps the level it had, since Skill.UpdateLevel and
+// Spell.UpdateLevel keep what was there rather than record a level computed from a stand-in, and the passes settle
+// with that level in place.
+func (e *Entity) discardCaches(keepAbandonedScripts bool) {
 	e.variableResolverExclusions = make(map[string]bool)
 	e.skillResolverExclusions = make(map[string]bool)
-	e.scriptCache = make(map[scriptResolveKey]scriptResolveResult)
+	scriptCache := make(map[scriptResolveKey]scriptResolveResult)
+	if keepAbandonedScripts {
+		for key, result := range e.scriptCache {
+			if result.abandoned {
+				scriptCache[key] = result
+			}
+		}
+	}
+	e.scriptCache = scriptCache
 	e.variableCache = make(map[string]string)
 	e.basicLiftCache = -1
 	e.encumbranceLevelCache = encumbrance.LastLevel + 1
 	e.encumbranceLevelForSkillsCache = encumbrance.LastLevel + 1
 }
 
+// maxRecalculationPasses caps the passes one round of recalculation makes before concluding that the sheet's data will
+// never settle. Legitimate data settles in a handful of passes: a pass carries each change one link along the chain of
+// things that depend on it, so a chain of n dependent traits settles in n+2 passes, one to disable each link in turn,
+// one for the levels to lose the features of the last, and one that finds nothing left to change, and the chains on a
+// real sheet are a few links long. Data that contradicts itself is normally caught sooner, when the passes repeat a
+// state, so the cap matters only for data that never repeats one, such as a prerequisite script that consults a random
+// number, and for a chain of more links than the cap allows for, which is stopped short and reported as data that
+// never settles; see recalculateUntilSettled for how the two are told apart. Every pass runs every script again, so
+// the cost of the cap is the cost of a pass on the sheet times this many, times the rounds the recalculation makes,
+// which maxRecalculationPassesInAll bounds.
+const maxRecalculationPasses = 32
+
+// maxRecalculationPassesInAll caps the passes all the rounds of one recalculation make between them; see Recalculate
+// for the rounds. Each round is capped by maxRecalculationPasses on its own, but a round that marks a trait as caught
+// in a contradiction is followed by another, so the rounds alone would let data that never repeats a state, such as
+// prerequisite scripts that consult a random number, cost a round for every trait it flips. A legitimate contradiction
+// is caught within a few passes per round and unwound in a few rounds, so this is only ever reached by such data, and
+// the round it stops is treated as one stopped at its own cap.
+const maxRecalculationPassesInAll = 4 * maxRecalculationPasses
+
 // Recalculate the statistics.
+//
+// The derived values depend on one another in cycles: the features in effect depend on which traits are enabled, the
+// attributes and the skill & spell levels depend on the features, the prerequisites depend on the levels and the
+// attributes, and when the sheet enforces trait prerequisites, which traits are enabled depends on the prerequisites.
+// Scripts may read any of it from anywhere. Rather than track those dependencies, the recalculation repeats passes
+// over everything until a pass changes nothing, at which point every derived value agrees with every other.
+//
+// Which traits the sheet disables is re-derived from the sheet's data alone: every trait the user has enabled starts
+// out contributing its features, whatever the previous recalculation decided. Starting from the previous decisions
+// would let history leak in: a trait whose own features are what satisfy its prerequisites would stay disabled once it
+// had been, while the same sheet loaded afresh would enable it. The skill and spell levels do start from those the
+// previous recalculation left, which are normally already right after an edit, since legitimate data settles at the
+// same levels from any start.
+//
+// Each pass judges the prerequisites of every trait against the same state of the sheet and applies the verdicts only
+// once all have been judged, so the outcome does not depend on the order in which the traits are listed.
+//
+// Data that contradicts itself, such as a trait that requires the absence of a trait that requires it, never settles:
+// the passes cycle through the same states. The traits whose enablement flips within that cycle are taken to be caught
+// in the contradiction, marked as such, and left enabled as the user set them, with any unmet prerequisite still
+// shown, since no choice among them satisfies the data. A trait whose prerequisites turn on one of those flips along
+// with it and is swept up too, since the passes cannot tell a trait the contradiction runs through from one that
+// merely follows it; a child of a flipping container is the exception, since it is judged only while the container is
+// enabled and so is not seen to flip (see markContradictedTraits). A further round then follows, in which the marked
+// traits stay enabled and every other trait is judged as usual against the traits in effect. A round that cycles again
+// marks the traits that flipped in it too, and the rounds end once one settles or marks nothing further. A cycle need
+// not involve any trait: two skills whose prerequisites each cap the other's level, and are each penalized while
+// unmet, cycle between both penalized and neither. The sheet is then left in a state of the cycle chosen by the cycle
+// alone, so that the same data comes out the same on every recalculation. Data that never repeats a state either, such
+// as a prerequisite script that consults a random number, is stopped at a cap, and the traits that flipped back and
+// forth over the later passes are treated the same way. The rounds such data prompts are stopped at a cap of their own
+// on the passes they make between them; see maxRecalculationPassesInAll. Whether the data settled is reported by
+// Unsettled.
 func (e *Entity) Recalculate() {
+	e.recalculate(maxRecalculationPassesInAll)
+}
+
+// recalculate is Recalculate with the cap on the passes all of its rounds make between them given rather than fixed,
+// and returns how many passes they made. Recalculate gives it maxRecalculationPassesInAll; a test may give it less to
+// see the rounds stopped short.
+func (e *Entity) recalculate(passBudget int) int {
 	if e == nil {
-		return
+		return 0
 	}
 	e.EnsureAttachments()
 	e.DiscardCaches()
 	e.SourceMatcher().PrepareHashes(e)
-	e.UpdateSkills()
-	e.UpdateSpells()
-	for range 5 {
-		// Skill & spell levels and the features & prerequisites depend on each other, so the skills & spells must be
-		// updated at least twice. Once they no longer change, we can stop, but the iterations are capped to avoid an
-		// infinite loop. The same goes for a trait the sheet disables for unsatisfied prerequisites: its features
-		// were collected before its prerequisites were checked, and its absence may in turn leave another trait's
-		// prerequisites unsatisfied, so another pass is needed whenever that set changes.
-		e.processFeatures()
-		prereqsChanged := e.processPrereqs()
-		e.DiscardCaches()
-		skillsChanged := e.UpdateSkills()
-		spellsChanged := e.UpdateSpells()
-		if !skillsChanged && !spellsChanged && !prereqsChanged {
+	Traverse(func(t *Trait) bool {
+		t.resetPrereqVerdict()
+		return false
+	}, false, false, e.Traits...)
+	contradicted := false
+	made := 0
+	for made < passBudget {
+		settled, newlyContradicted, passes := e.recalculateUntilSettled(min(passBudget-made, maxRecalculationPasses))
+		made += passes
+		if settled {
+			break
+		}
+		contradicted = true
+		if !newlyContradicted {
 			break
 		}
 	}
+	if contradicted && !e.unsettled {
+		slog.Warn("the sheet's data never settles: no state of the sheet satisfies all of its prerequisites, "+
+			"defaults, features and scripts at once", "name", e.Profile.Name)
+	}
+	e.unsettled = contradicted
+	return made
+}
+
+// Unsettled returns true if the last recalculation found that the sheet's data never settles: no state of the sheet
+// satisfies all of its prerequisites, defaults, features and scripts at once, so the sheet was left in one state of
+// the cycle they run through; see Recalculate. A trait caught in a contradiction among the prerequisites is marked as
+// such (see Trait.ContradictedPrereqs), but a cycle need not involve any trait, so this is the only sign of one that
+// does not.
+func (e *Entity) Unsettled() bool {
+	return e != nil && e.unsettled
+}
+
+// recalculateUntilSettled makes recalculation passes until one leaves the derived state as it found it and returns
+// settled. Otherwise the passes are found to be repeating a state, or the limit on them is reached first, and either
+// way the traits whose enablement flipped back and forth are marked as caught in a contradiction, with
+// newlyContradicted reporting whether any trait not already marked was, since a further round may then settle; see
+// Recalculate. passes is how many passes were made. A cycle is left in its canonical state, whatever state the passes
+// were in when it was found; see settleOnCanonicalCycleState. The limit is maxRecalculationPasses, or what is left of
+// maxRecalculationPassesInAll when that is less; see recalculate.
+//
+// Whether a pass changed anything is judged by comparing the derived state before and after it rather than by what
+// the pass itself saw change, since a script evaluated during the pass may recompute a level as it reads it, leaving
+// the pass to find that level already in place. A prerequisite judged against the level before the script ran would
+// otherwise be left standing, with nothing to prompt the pass that would judge it again.
+func (e *Entity) recalculateUntilSettled(limit int) (settled, newlyContradicted bool, passes int) {
+	// The state the passes begin from is kept along with those they reach, so that a pass that comes back to it is
+	// seen to, whether the data has settled or has cycled back.
+	states := [][]uint64{e.derivedState(0)}
+	var verdicts [][]traitPrereqVerdict
+	traitCount := 0
+	for passes < limit {
+		passes++
+		e.recalculationPass()
+		passVerdicts := e.traitPrereqVerdicts(traitCount)
+		traitCount = len(passVerdicts)
+		verdicts = append(verdicts, passVerdicts)
+		state := e.derivedState(len(states[0]))
+		if slices.Equal(states[len(states)-1], state) {
+			return true, false, passes
+		}
+		if i := slices.IndexFunc(states, func(seen []uint64) bool { return slices.Equal(seen, state) }); i >= 0 {
+			// The cycle is the states from index i on, and the verdicts of the passes made from them sit at the same
+			// indices, since a pass's verdicts are recorded at the index of the state it began from. The sheet is moved
+			// to the cycle's canonical state before any trait is marked, since marking one changes what the passes do.
+			e.settleOnCanonicalCycleState(states[i:])
+			return false, e.markContradictedTraits(verdicts[i:], true), passes
+		}
+		states = append(states, state)
+	}
+	// No state repeated, so the passes were stopped at the limit. Legitimate data has long since settled by the second
+	// half of them, so a trait that flipped back and forth over that half is taken to be caught in a contradiction. A
+	// trait that flipped only once over it is not: it is a link of a chain longer than the cap allows for, still
+	// settling, and is left as its last verdict had it, so that the chain is stopped short rather than given the wrong
+	// answer; see maxRecalculationPasses. A limit cut short by maxRecalculationPassesInAll is judged the same way, for
+	// want of anything better, and only ever falls to data that has been found never to settle already.
+	return false, e.markContradictedTraits(verdicts[len(verdicts)/2:], false), passes
+}
+
+// traitPrereqVerdicts returns the verdict the last pass reached for each trait, in traversal order. The capacity is a
+// hint for the length and may be zero.
+func (e *Entity) traitPrereqVerdicts(capacity int) []traitPrereqVerdict {
+	verdicts := make([]traitPrereqVerdict, 0, capacity)
+	Traverse(func(t *Trait) bool {
+		verdicts = append(verdicts, t.prereqVerdict)
+		return false
+	}, false, false, e.Traits...)
+	return verdicts
+}
+
+// markContradictedTraits marks as caught in a contradiction every trait that the verdicts, one set per pass in
+// traversal order, flipped back and forth, that is, changed more than once between disabling it and leaving it
+// enabled, and returns whether any trait not already marked was. With cyclic set, the verdicts are those of a cycle of
+// passes, so the change from the last set back to the first counts too. A trait is judged only while it is enabled,
+// itself and by way of the containers above it, so the verdict that it was not judged says nothing about it and is
+// passed over: a child of a container that flips is not itself flipping. A marked trait is left enabled from here on,
+// so that the next pass judges the others against it.
+func (e *Entity) markContradictedTraits(verdicts [][]traitPrereqVerdict, cyclic bool) bool {
+	marked := false
+	index := 0
+	Traverse(func(t *Trait) bool {
+		flips := 0
+		var first, last traitPrereqVerdict // prereqsNotJudged until a judged verdict is seen
+		for _, pass := range verdicts {
+			verdict := pass[index]
+			if verdict == prereqsNotJudged {
+				continue
+			}
+			if first == prereqsNotJudged {
+				first = verdict
+			} else if verdict != last {
+				flips++
+			}
+			last = verdict
+		}
+		if cyclic && last != first {
+			flips++
+		}
+		index++
+		if flips > 1 && !t.prereqContradicted {
+			t.prereqContradicted = true
+			t.setPrereqVerdict(prereqsLeaveEnabled)
+			marked = true
+		}
+		return false
+	}, false, false, e.Traits...)
+	return marked
+}
+
+// recalculationPass recomputes every derived value once, each in turn from those it is built on: the features in
+// effect, along with the missing-equipment penalties that the previous pass's judgment of the skill and spell
+// prerequisites earned; the prerequisites of the skills and spells, which decide the penalties for the next pass; the
+// skill and spell levels; and the prerequisites of the traits and equipment, which read those levels. Whatever reads a
+// value before the pass has recomputed it, such as a skill default resolved against the other skills' levels or a
+// script reading a level from anywhere, sees the previous pass's and is a pass behind until the next one, which is why
+// passes repeat until one changes nothing; see recalculateUntilSettled. The penalties are put in place before anything
+// in the pass is judged, rather than as each skill or spell is judged, so that everything in the pass sees the same set
+// of them: a script computes the level it reads from the penalties in place as it runs, so one judged early in the
+// walk would otherwise see fewer than one judged late, with nothing to prompt a further pass to put that right. The
+// caches are discarded first, so that nothing in the pass is computed from a variable, lift or script result the
+// previous pass cached, except for the results kept for the reason discardCaches gives.
+func (e *Entity) recalculationPass() {
+	e.discardCaches(true)
+	e.processFeatures()
+	e.applyEquipmentPenalties()
+	e.processSkillAndSpellPrereqs()
+	e.UpdateSkills()
+	e.UpdateSpells()
+	e.processTraitPrereqs()
+	e.processEquipmentPrereqs()
+}
+
+// settleOnCanonicalCycleState makes further passes until the sheet is in the canonical state of a cycle the passes
+// have been found to be repeating, given the states of the cycle in order, the first being the one the sheet is in.
+// Which state the passes are found repeating in depends on the levels they began from, which the previous
+// recalculation left, so a sheet whose levels cycle would otherwise change on every edit. The canonical state is chosen
+// by the parts of the derived state that differ within the cycle alone, so that it is the same whatever else is on the
+// sheet, with their values sorted, so that it depends on the identities of those parts rather than the order they are
+// listed in: it is the state whose sorted values come first. Two states sort alike only if fingerprints collide, in
+// which case the earlier state in the cycle is taken. Which state it is has no meaning beyond that, since no state of
+// the cycle satisfies the data.
+func (e *Entity) settleOnCanonicalCycleState(cycle [][]uint64) {
+	keys := make([][]uint64, len(cycle))
+	for i, first := range cycle[0] {
+		if slices.ContainsFunc(cycle[1:], func(state []uint64) bool { return state[i] != first }) {
+			for j, state := range cycle {
+				keys[j] = append(keys[j], state[i])
+			}
+		}
+	}
+	canonical := 0
+	for j, key := range keys {
+		slices.Sort(key)
+		if slices.Compare(key, keys[canonical]) < 0 {
+			canonical = j
+		}
+	}
+	for range canonical {
+		e.recalculationPass()
+	}
+}
+
+// derivedState fingerprints the derived state that one recalculation pass hands to the next, one fingerprint per
+// trait, skill and spell in traversal order: whether the sheet has disabled the trait, the level of the skill or spell
+// and whether it takes the missing-equipment penalty, and the default of the skill, each along with the ID of what it
+// describes. Everything else a pass reads is either the sheet's data or recomputed from these before it is read, so
+// two passes that begin from the same state end in the same one, and a state seen before means the passes have
+// entered a cycle they will never leave. Whether a trait was judged at all is left out, since the next pass reads only
+// whether it is enabled. The capacity is a hint for the length and may be zero.
+func (e *Entity) derivedState(capacity int) []uint64 {
+	state := make([]uint64, 0, capacity)
+	h := xxh3.New()
+	fingerprint := func(id tid.TID, hashContents func()) {
+		h.Reset()
+		xhash.StringWithLen(h, string(id))
+		hashContents()
+		state = append(state, h.Sum64())
+	}
+	Traverse(func(t *Trait) bool {
+		fingerprint(t.TID, func() { xhash.Bool(h, t.prereqVerdict == prereqsDisable) })
+		return false
+	}, false, false, e.Traits...)
+	Traverse(func(s *Skill) bool {
+		fingerprint(s.TID, func() {
+			s.LevelData.Hash(h)
+			xhash.Bool(h, s.takesEquipmentPenalty)
+			xhash.Bool(h, s.DefaultedFrom != nil)
+			if s.DefaultedFrom != nil {
+				s.DefaultedFrom.Hash(h)
+				xhash.Num64(h, s.DefaultedFrom.Level)
+				xhash.Num64(h, s.DefaultedFrom.Points)
+				xhash.Num64(h, s.DefaultedFrom.AdjLevel)
+			}
+		})
+		return false
+	}, false, true, e.Skills...)
+	Traverse(func(s *Spell) bool {
+		fingerprint(s.TID, func() {
+			s.LevelData.Hash(h)
+			xhash.Bool(h, s.takesEquipmentPenalty)
+		})
+		return false
+	}, false, true, e.Spells...)
+	return state
 }
 
 // EnsureAttachments ensures that all attachments have their owning entity set to the Entity.
@@ -566,42 +859,13 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 // unsatisfiedReasonPrefix separates the individual reasons within an UnsatisfiedReason.
 const unsatisfiedReasonPrefix = "\n- "
 
-// processPrereqs evaluates the prerequisites of every trait, skill, spell and piece of equipment, recording the reason
-// each is unsatisfied. When the sheet enforces trait prerequisites, a trait whose prerequisites are unsatisfied is also
-// marked as disabled; the return value reports whether the set of traits disabled that way changed, since a change
-// alters which features are active and may leave other prerequisites unsatisfied in turn.
-func (e *Entity) processPrereqs() bool {
-	enforce := e.SheetSettings.EnforceTraitPrereqs
-	changed := false
-	// Traverse all traits, not just the enabled ones, so that a trait that becomes disabled has any previously
-	// recorded unsatisfied reason cleared. Prerequisites are only evaluated for traits the user has enabled that are
-	// not inside a disabled container. A trait's own prereqDisabled flag is deliberately not consulted here: it is
-	// what this pass computes, and honoring it would keep a trait disabled forever once its prerequisites had failed
-	// even once. The reason is kept for a trait disabled this way, so the sheet can show why it is disabled.
-	Traverse(func(t *Trait) bool {
-		t.UnsatisfiedReason = ""
-		if t.Disabled || (t.parent != nil && !t.parent.Enabled()) {
-			changed = t.setPrereqDisabled(false) || changed
-			return false
-		}
-		t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil, nil)
-		if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
-			reason := i18n.Text("Level exceeds the maximum of ") + maximum.String()
-			if t.UnsatisfiedReason == "" {
-				t.UnsatisfiedReason = reason
-			} else {
-				t.UnsatisfiedReason += unsatisfiedReasonPrefix + reason
-			}
-		}
-		changed = t.setPrereqDisabled(enforce && t.UnsatisfiedReason != "") || changed
-		return false
-	}, false, false, e.Traits...)
+// applyEquipmentPenalties adds to the collected features the missing-equipment penalty of every skill and spell that
+// processSkillAndSpellPrereqs last found unsatisfied on account of an equipped-equipment prerequisite. It runs before
+// the prerequisites are judged again, so that every level computed during the pass counts the same penalties; see
+// recalculationPass.
+func (e *Entity) applyEquipmentPenalties() {
 	Traverse(func(s *Skill) bool {
-		s.UnsatisfiedReason = ""
-		if s.Container() {
-			return false
-		}
-		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, func() {
+		if s.takesEquipmentPenalty {
 			penalty := NewSkillBonus()
 			penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 			penalty.SpecializationCriteria.Compare = criteria.IsText
@@ -611,55 +875,132 @@ func (e *Entity) processPrereqs() bool {
 			penalty.Amount = missingEquipmentPenalty(s.TechLevel)
 			penalty.SetOwner(s)
 			e.features.skillBonuses = append(e.features.skillBonuses, penalty)
-		}, func(tooltip *xbytes.InsertBuffer) bool {
-			return !s.IsTechnique() || s.TechniqueSatisfied(tooltip, unsatisfiedReasonPrefix)
-		})
-		return false
-	}, false, false, e.Skills...)
-	Traverse(func(s *Spell) bool {
-		s.UnsatisfiedReason = ""
-		if s.Container() {
-			return false
 		}
-		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, func() {
+		return false
+	}, false, true, e.Skills...)
+	Traverse(func(s *Spell) bool {
+		if s.takesEquipmentPenalty {
 			penalty := NewSpellBonus()
 			penalty.SpellMatchType = spellmatch.Name
 			penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 			penalty.Amount = missingEquipmentPenalty(s.TechLevel)
 			penalty.SetOwner(s)
 			e.features.spellBonuses = append(e.features.spellBonuses, penalty)
-		}, func(tooltip *xbytes.InsertBuffer) bool {
-			return !s.IsRitualMagic() || s.RitualMagicSatisfied(tooltip, unsatisfiedReasonPrefix)
-		})
+		}
+		return false
+	}, false, true, e.Spells...)
+}
+
+// processSkillAndSpellPrereqs evaluates the prerequisites of every skill and spell, recording the reason each is
+// unsatisfied. A skill or spell left unsatisfied by an equipped-equipment prerequisite is noted as taking the
+// missing-equipment penalty to its level, which applyEquipmentPenalties adds to the collected features in the next
+// pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on.
+func (e *Entity) processSkillAndSpellPrereqs() {
+	Traverse(func(s *Skill) bool {
+		if s.Container() {
+			s.UnsatisfiedReason = ""
+			s.takesEquipmentPenalty = false
+			return false
+		}
+		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, &s.takesEquipmentPenalty)
+		if s.UnsatisfiedReason == "" && s.IsTechnique() {
+			s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
+				return s.TechniqueSatisfied(tooltip, unsatisfiedReasonPrefix)
+			})
+		}
+		return false
+	}, false, false, e.Skills...)
+	Traverse(func(s *Spell) bool {
+		if s.Container() {
+			s.UnsatisfiedReason = ""
+			s.takesEquipmentPenalty = false
+			return false
+		}
+		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, &s.takesEquipmentPenalty)
+		if s.UnsatisfiedReason == "" && s.IsRitualMagic() {
+			s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
+				return s.RitualMagicSatisfied(tooltip, unsatisfiedReasonPrefix)
+			})
+		}
 		return false
 	}, false, false, e.Spells...)
+}
+
+// processEquipmentPrereqs evaluates the prerequisites of every piece of equipment, recording the reason each is
+// unsatisfied.
+func (e *Entity) processEquipmentPrereqs() {
 	equipmentFunc := func(eqp *Equipment) bool {
-		eqp.UnsatisfiedReason = e.evaluatePrereqs(eqp.Prereq, eqp, nil, nil)
+		eqp.UnsatisfiedReason = e.evaluatePrereqs(eqp.Prereq, eqp, nil)
 		return false
 	}
 	Traverse(equipmentFunc, false, false, e.CarriedEquipment...)
 	Traverse(equipmentFunc, false, false, e.OtherEquipment...)
-	return changed
+}
+
+// processTraitPrereqs evaluates the prerequisites and maximum level of every trait, recording the reason each is
+// unsatisfied. When the sheet enforces trait prerequisites, a trait whose prerequisites are unmet is disabled, unless
+// it has been marked as caught in a contradiction, and one the sheet had disabled is re-enabled once its prerequisites
+// are met. Every trait is judged against the traits as they stood when the walk began, and the verdicts are applied
+// only after it, so the outcome does not depend on the order the traits are listed in; what one trait's disabling
+// means for another is discovered in the next pass.
+func (e *Entity) processTraitPrereqs() {
+	// Traverse all traits, not just the enabled ones, so that a trait that becomes disabled has any previously
+	// recorded unsatisfied reason cleared. Prerequisites are only judged for traits the user has enabled that are not
+	// inside a disabled container. That the sheet disabled a trait does not exempt it: the verdict is what this pass
+	// computes, and honoring the previous one would keep the trait disabled after its prerequisites are met. The
+	// reason is kept for a trait disabled this way, so the sheet can show why it is disabled.
+	enforce := e.SheetSettings.EnforceTraitPrereqs
+	var verdicts []traitPrereqVerdict
+	Traverse(func(t *Trait) bool {
+		t.UnsatisfiedReason = ""
+		verdict := prereqsNotJudged
+		if !t.Disabled && (t.parent == nil || t.parent.Enabled()) {
+			t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
+			if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
+				reason := levelExceedsMaximumReason(maximum)
+				if t.UnsatisfiedReason == "" {
+					t.UnsatisfiedReason = reason
+				} else {
+					t.UnsatisfiedReason += unsatisfiedReasonPrefix + reason
+				}
+			}
+			verdict = prereqsLeaveEnabled
+			if enforce && t.UnsatisfiedReason != "" && !t.prereqContradicted {
+				verdict = prereqsDisable
+			}
+		}
+		verdicts = append(verdicts, verdict)
+		return false
+	}, false, false, e.Traits...)
+	index := 0
+	Traverse(func(t *Trait) bool {
+		t.setPrereqVerdict(verdicts[index])
+		index++
+		return false
+	}, false, false, e.Traits...)
+}
+
+func levelExceedsMaximumReason(maximum fxp.Int) string {
+	return i18n.Text("Level exceeds the maximum of ") + maximum.String()
 }
 
 // evaluatePrereqs evaluates the prerequisites, which may be nil, of the node given as exclude and returns the reason to
-// record when they are not met, or "" when they are. onEquipmentPenalty, if non-nil, is called when the prerequisites
-// ask for the missing-equipment penalty. extra, if non-nil, performs a further check that runs only while the
-// prerequisites are still satisfied, appending its reasons to the tooltip when it fails.
-func (e *Entity) evaluatePrereqs(prereq *PrereqList, exclude any, onEquipmentPenalty func(), extra func(tooltip *xbytes.InsertBuffer) bool) string {
+// record when they are not met, or "" when they are. hasEquipmentPenalty, if non-nil, is set to whether they are unmet
+// on account of an equipped-equipment prerequisite, which is what earns a skill or spell the missing-equipment penalty.
+func (e *Entity) evaluatePrereqs(prereq *PrereqList, exclude any, hasEquipmentPenalty *bool) string {
+	if hasEquipmentPenalty != nil {
+		*hasEquipmentPenalty = false
+	}
+	return unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
+		return prereq == nil || prereq.Satisfied(e, exclude, tooltip, unsatisfiedReasonPrefix, hasEquipmentPenalty)
+	})
+}
+
+// unsatisfiedReason runs check, which appends its reasons to the tooltip when it fails, and returns the reason to
+// record when it fails, or "" when it passes.
+func unsatisfiedReason(check func(tooltip *xbytes.InsertBuffer) bool) string {
 	var tooltip xbytes.InsertBuffer
-	satisfied := true
-	if prereq != nil {
-		var eqpPenalty bool
-		satisfied = prereq.Satisfied(e, exclude, &tooltip, unsatisfiedReasonPrefix, &eqpPenalty)
-		if eqpPenalty && onEquipmentPenalty != nil {
-			onEquipmentPenalty()
-		}
-	}
-	if satisfied && extra != nil {
-		satisfied = extra(&tooltip)
-	}
-	if satisfied {
+	if check(&tooltip) {
 		return ""
 	}
 	return i18n.Text("Prerequisites have not been met:") + tooltip.String()
@@ -675,27 +1016,19 @@ func missingEquipmentPenalty(techLevel *string) fxp.Int {
 }
 
 // UpdateSkills updates the levels of all skills.
-func (e *Entity) UpdateSkills() bool {
-	changed := false
+func (e *Entity) UpdateSkills() {
 	Traverse(func(s *Skill) bool {
-		if s.UpdateLevel() {
-			changed = true
-		}
+		s.UpdateLevel()
 		return false
 	}, false, true, e.Skills...)
-	return changed
 }
 
 // UpdateSpells updates the levels of all spells.
-func (e *Entity) UpdateSpells() bool {
-	changed := false
+func (e *Entity) UpdateSpells() {
 	Traverse(func(s *Spell) bool {
-		if s.UpdateLevel() {
-			changed = true
-		}
+		s.UpdateLevel()
 		return false
 	}, false, true, e.Spells...)
-	return changed
 }
 
 // UnspentPoints returns the number of unspent points.

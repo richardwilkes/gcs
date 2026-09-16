@@ -9,13 +9,25 @@
 
 package gurps
 
-import "github.com/richardwilkes/gcs/v5/model/fxp"
+import (
+	"hash"
+
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox/v2/xhash"
+)
 
 // Level provides a level & relative level pair, plus a tooltip.
 type Level struct {
 	Level         fxp.Int
 	RelativeLevel fxp.Int
 	Tooltip       string
+}
+
+// Hash writes this object's contents into the hasher.
+func (l Level) Hash(h hash.Hash) {
+	xhash.Num64(h, l.Level)
+	xhash.Num64(h, l.RelativeLevel)
+	xhash.StringWithLen(h, l.Tooltip)
 }
 
 // LevelAsString returns the floored level as a string, or an empty string for a container and "-" when the level isn't

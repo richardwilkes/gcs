@@ -57,6 +57,6 @@ func TestRecalculateSettlesDefaultDrivenSkillLevel(t *testing.T) {
 		c.Equal(want, sk.CalculateLevel(nil).Level, "levels %v: the level computed on demand follows DX", levels)
 		c.Equal(want, sk.LevelData.Level, "levels %v: the stored level must not lag behind", levels)
 		c.Equal(want, w.SkillLevel(nil), "levels %v: the weapon's level must not lag behind", levels)
-		c.False(e.UpdateSkills(), "levels %v: a further pass must find nothing left to change", levels)
+		c.False(sk.UpdateLevel(), "levels %v: a further update must find nothing left to change", levels)
 	}
 }

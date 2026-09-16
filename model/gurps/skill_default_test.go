@@ -227,6 +227,74 @@ func TestSkillDefaultRemovesBonusUsingOtherSkillsTags(t *testing.T) {
 	c.Equal(fxp.Nine, shortsword.LevelData.Level, "Shortsword still earns the Combat bonus for itself")
 }
 
+// TestSkillUpdateLevelReportsDefaultChange verifies that updating a skill's level reports a change when only the
+// default it settled on changed. Other skills read the default in the next recalculation pass, to judge whether they
+// may default to this skill or use it as the base of a technique, so a pass that changes nothing but a default must not
+// be taken for one that changed nothing at all.
+func TestSkillUpdateLevelReportsDefaultChange(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addTestSkill(e, "Broadsword", "", "", fxp.One)
+	shortsword := addTestSkill(e, "Shortsword", "", "", 0)
+	shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Two)}
+	e.Recalculate()
+	c.NotNil(shortsword.DefaultedFrom, "Shortsword should have a resolved default")
+	c.False(shortsword.UpdateLevel(), "a settled skill reports no change")
+
+	settled := shortsword.DefaultedFrom
+	level := shortsword.LevelData
+	shortsword.DefaultedFrom = nil
+	c.True(shortsword.UpdateLevel(), "restoring the default is reported as a change even though the level is the same")
+	c.Equal(level, shortsword.LevelData, "the level is indeed the same")
+	c.NotNil(shortsword.DefaultedFrom, "the default is restored")
+	c.Equal(*settled, *shortsword.DefaultedFrom, "to what it was")
+	c.False(shortsword.UpdateLevel(), "after which there is no change to report")
+}
+
+// TestRecalculateSettlesWhenOnlyDefaultChanges verifies that a recalculation carries on when a pass changes nothing
+// but the default a skill settled on, since other skills read the default in the next pass. The technique "Kick" is
+// based on the best usable "Karate" skill, and a Karate skill that itself defaults to Kick is not usable, since the
+// two would then default to each other. "Karate/Sport" has points, so its level comes from them and its default only
+// records the skill it would fall back on: "Judo" until its default to Judo is edited away, then Kick. The pass in
+// which its default moves to Kick leaves every level as it was, so a recalculation that judged settling by the levels
+// alone would stop there, with Kick still based on Karate/Sport; it must instead go on to the pass in which Kick falls
+// back on "Karate/Combat". Kick is listed first, so that it is updated before the default moves within that pass.
+func TestRecalculateSettlesWhenOnlyDefaultChanges(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	kick := NewTechnique(e, nil, "Karate")
+	kick.Name = "Kick"
+	kick.TechniqueDefault.Modifier = -fxp.Two
+	e.Skills = append(e.Skills, kick)
+	sport := addTestSkill(e, "Karate", "Sport", "", fxp.Four) // IQ+1, so 11
+	sport.Defaults = []*SkillDefault{
+		newSkillDefaultTo("Judo", "", true, -fxp.Two),
+		newSkillDefaultTo("Kick", "", true, 0),
+	}
+	combat := addTestSkill(e, "Karate", "Combat", "", fxp.Two) // IQ+0, so 10
+	judo := addTestSkill(e, "Judo", "", "", fxp.Four)          // IQ+1, so 11
+
+	e.Recalculate()
+	c.Equal(fxp.Ten, kick.LevelData.Level, "Kick is based on Karate/Sport at 11, less 2, plus its one point")
+	c.Equal(fxp.Eleven, sport.LevelData.Level, "Karate/Sport's level comes from its points")
+	c.NotNil(sport.DefaultedFrom, "Karate/Sport records a default all the same")
+	c.Equal("Judo", sport.DefaultedFrom.Name.Qualifier, "the first of the two that give the same level")
+	c.Equal(fxp.Ten, combat.LevelData.Level, "Karate/Combat's level comes from its points")
+	c.Equal(fxp.Eleven, judo.LevelData.Level, "Judo's level comes from its points")
+	checkRecalculationConsistency(c, e, "before the edit")
+
+	sport.Defaults[0].Name.Qualifier = "Nothing"
+	e.Recalculate()
+	c.Equal(fxp.Eleven, sport.LevelData.Level, "Karate/Sport's level is unchanged by the edit")
+	c.NotNil(sport.DefaultedFrom, "Karate/Sport still records a default")
+	c.Equal("Kick", sport.DefaultedFrom.Name.Qualifier, "which has moved to Kick")
+	c.Equal(fxp.Ten, combat.LevelData.Level, "Karate/Combat's level is unchanged by the edit")
+	c.Equal(fxp.Eleven, judo.LevelData.Level, "Judo's level is unchanged by the edit")
+	c.Equal(fxp.Nine, kick.LevelData.Level,
+		"Kick can no longer be based on a skill that defaults to it, so is based on Karate/Combat at 10")
+	checkRecalculationConsistency(c, e, "after the edit")
+}
+
 // TestSkillDefaultTypeCaseInsensitive verifies that level resolution classifies the default type the same way
 // everything else does. Only SetType() sanitizes the type, so a data file not written by GCS can hold "Parry"; such a
 // default was displayed and treated as a parry default everywhere except in SkillLevel/SkillLevelFast, which switched

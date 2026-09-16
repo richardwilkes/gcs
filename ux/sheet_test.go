@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -131,4 +132,70 @@ func TestSheetRebuildCarriesTheSelectionToAReplacedList(t *testing.T) {
 	c.NotEqual(stale, sheet.Traits, "gaining the switch column must have replaced the traits list")
 	c.True(sheet.Traits.Table.CopySelectionMap()[plain.ID()],
 		"the selection must have followed the row into the replacement")
+}
+
+// newContradictoryTraitRing returns two traits that each require the other's absence, so that a sheet enforcing trait
+// prerequisites finds that its data never settles while both are enabled.
+func newContradictoryTraitRing(entity *gurps.Entity) []*gurps.Trait {
+	ring := make([]*gurps.Trait, 2)
+	for i := range ring {
+		ring[i] = gurps.NewTrait(entity, nil, false)
+		ring[i].Name = "Ring " + strconv.Itoa(i+1)
+		list := gurps.NewPrereqList()
+		prereq := gurps.NewTraitPrereq()
+		prereq.Parent = list
+		prereq.Has = false
+		prereq.NameCriteria.Qualifier = "Ring " + strconv.Itoa((i+1)%len(ring)+1)
+		list.Prereqs = append(list.Prereqs, prereq)
+		ring[i].Prereq = list
+	}
+	return ring
+}
+
+// toolbarColumns returns how many children the toolbar's layout was finished for; see finishToolbarLayout.
+func toolbarColumns(c check.Checker, toolbar *unison.Panel) int {
+	c.Helper()
+	layout, ok := toolbar.Layout().(*unison.FlexLayout)
+	c.True(ok, "the toolbar has a flex layout")
+	return layout.Columns
+}
+
+// TestSheetToolbarNotesUnsettledData verifies that the sheet's toolbar shows the notice that its data never settles
+// while the entity says so (see gurps.Entity.Unsettled), whether the sheet was opened that way or edited into it, and
+// takes the notice down again once the data settles, with the toolbar's layout kept in step with the children it has
+// either way.
+func TestSheetToolbarNotesUnsettledData(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	c.Nil(sheet.unsettledNotice.Parent(), "a new sheet's data settles, so the notice is not shown")
+	c.Equal(len(sheet.toolbar.Children()), toolbarColumns(c, sheet.toolbar), "and the toolbar lays out its children")
+
+	entity.SheetSettings.EnforceTraitPrereqs = true
+	ring := newContradictoryTraitRing(entity)
+	entity.Traits = ring
+	sheet.Rebuild(true)
+	c.True(entity.Unsettled(), "precondition: the ring leaves the data unable to settle")
+	c.Equal(sheet.toolbar.AsPanel(), sheet.unsettledNotice.Parent(), "the notice is shown once the data never settles")
+	c.Equal(len(sheet.toolbar.Children()), toolbarColumns(c, sheet.toolbar), "and the toolbar lays out the notice too")
+	c.Equal(sheet.unsettledNotice.AsPanel(), sheet.toolbar.Children()[len(sheet.toolbar.Children())-1],
+		"at the end of the toolbar")
+
+	ring[1].Disabled = true
+	sheet.MarkModified(nil)
+	c.False(entity.Unsettled(), "precondition: disabling one of the ring settles the data")
+	c.Nil(sheet.unsettledNotice.Parent(), "the notice is taken down once the data settles")
+	c.Equal(len(sheet.toolbar.Children()), toolbarColumns(c, sheet.toolbar), "and the toolbar lays out what is left")
+
+	// A sheet whose data never settles when it is opened shows the notice from the start.
+	opened := gurps.NewEntity()
+	opened.SheetSettings.EnforceTraitPrereqs = true
+	opened.Traits = newContradictoryTraitRing(opened)
+	opened.Recalculate()
+	c.True(opened.Unsettled(), "precondition: the ring leaves the data unable to settle")
+	openedSheet := NewSheet("opened"+gurps.SheetExt, opened)
+	c.Equal(openedSheet.toolbar.AsPanel(), openedSheet.unsettledNotice.Parent(),
+		"a sheet opened with data that never settles shows the notice from the start")
+	c.Equal(len(openedSheet.toolbar.Children()), toolbarColumns(c, openedSheet.toolbar),
+		"and its toolbar lays out the notice too")
 }

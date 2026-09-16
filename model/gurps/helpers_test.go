@@ -10,6 +10,12 @@
 package gurps
 
 import (
+	"context"
+	"log/slog"
+	"sync/atomic"
+	"testing"
+
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -63,6 +69,59 @@ func newSwitchableItemSet(e *Entity, features ...Feature) (*Trait, *Skill, *Spel
 	spell.Features = features
 	e.Spells = append(e.Spells, spell)
 	return trait, skill, spell, addCarriedEquipmentWithFeatures(e, "Amulet", features...)
+}
+
+// addSkillPrereq appends to the list a prerequisite for a skill with the given name at or above the given level, and
+// returns it.
+func addSkillPrereq(list *PrereqList, name string, level fxp.Int) *SkillPrereq {
+	p := NewSkillPrereq()
+	p.Parent = list
+	p.NameCriteria.Qualifier = name
+	p.LevelCriteria.Qualifier = level
+	list.Prereqs = append(list.Prereqs, p)
+	return p
+}
+
+// newSkillBonusTo returns a flat bonus to the skill with the given name.
+func newSkillBonusTo(name string, amount fxp.Int) *SkillBonus {
+	bonus := NewSkillBonus()
+	bonus.NameCriteria.Qualifier = name
+	bonus.Amount = amount
+	return bonus
+}
+
+// logCountingHandler counts the records at or above its level and prints nothing, so a test can observe whether
+// something was logged without depending on the log's textual format, and can silence what it expects to be logged.
+type logCountingHandler struct {
+	count *atomic.Int32
+	level slog.Level
+}
+
+func (h logCountingHandler) Enabled(_ context.Context, level slog.Level) bool {
+	return level >= h.level
+}
+
+// Handle takes the record by value because the slog.Handler interface requires that signature.
+func (h logCountingHandler) Handle(_ context.Context, record slog.Record) error { //nolint:gocritic // interface-mandated signature
+	if record.Level >= h.level {
+		h.count.Add(1)
+	}
+	return nil
+}
+
+func (h logCountingHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
+
+func (h logCountingHandler) WithGroup(_ string) slog.Handler { return h }
+
+// countLogs replaces the default logger for the rest of the test with one that only counts the records at or above
+// the given level, and returns the count.
+func countLogs(t *testing.T, level slog.Level) *atomic.Int32 {
+	t.Helper()
+	var count atomic.Int32
+	prev := slog.Default()
+	slog.SetDefault(slog.New(logCountingHandler{count: &count, level: level}))
+	t.Cleanup(func() { slog.SetDefault(prev) })
+	return &count
 }
 
 // reloadInto returns a loader that unmarshals the JSON it is given into a freshly zeroed value of T and hands back the

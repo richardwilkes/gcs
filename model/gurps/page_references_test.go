@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
@@ -61,7 +62,7 @@ func TestNewPageRefsFromFSWithNullEntry(t *testing.T) {
 // bypassed loadSettingsOrDefaults' recovery entirely and crashed GCS at startup.
 func TestLoadSettingsOrDefaultsWithNullPageRefEntry(t *testing.T) {
 	c := check.New(t)
-	countErrorLogging(t)
+	countLogs(t, slog.LevelError)
 	p := filepath.Join(t.TempDir(), "settings.json")
 	c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3","page_refs":{"B":null,`+
 		`"BX":{"path":"/refs/basic.pdf","offset":2}}}`), 0o600))

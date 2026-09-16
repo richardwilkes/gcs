@@ -172,7 +172,7 @@ func sheetOptions() []sheetOption {
 		},
 		{
 			title:    i18n.Text("Disable traits whose prerequisites are unsatisfied"),
-			tooltip:  i18n.Text("A trait whose prerequisites are not met, or whose level exceeds its maximum, is treated as disabled: it contributes no points, features or weapons to the sheet until they are met. The trait keeps its own enabled state and comes back into play on its own once its prerequisites are satisfied."),
+			tooltip:  i18n.Text("A trait whose prerequisites are not met, or whose level exceeds its maximum, is treated as disabled: it contributes no points, features or weapons to the sheet until they are met. The trait keeps its own enabled state and comes back into play on its own once its prerequisites are satisfied. Where prerequisites contradict one another, such as two traits that each require the other's absence, no choice satisfies them all, so the traits caught in the contradiction are left enabled and flagged as such."),
 			field:    func(s *gurps.SheetSettings) *bool { return &s.EnforceTraitPrereqs },
 			fullSync: true,
 		},

@@ -24,15 +24,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
-// newSpellFeatureTestSkillBonus returns a skill bonus suitable for hanging off a spell, naming the given skill.
-func newSpellFeatureTestSkillBonus(skillName string, amount fxp.Int) *SkillBonus {
-	bonus := NewSkillBonus()
-	bonus.NameCriteria.Compare = criteria.IsText
-	bonus.NameCriteria.Qualifier = skillName
-	bonus.Amount = amount
-	return bonus
-}
-
 // TestSpellFeaturesRoundTrip verifies that the features a spell now carries are written and read back, including the
 // switchable flag, and that a spell with none writes no "features" key at all.
 func TestSpellFeaturesRoundTrip(t *testing.T) {
@@ -45,7 +36,7 @@ func TestSpellFeaturesRoundTrip(t *testing.T) {
 	c.NoError(err, "a spell with no features should marshal")
 	c.NotContains(string(data), `"features"`, "a spell with no features writes no features key")
 
-	bonus := newSpellFeatureTestSkillBonus("Alchemy", fxp.Two)
+	bonus := newSkillBonusTo("Alchemy", fxp.Two)
 	bonus.Switchable = true
 	spell.Features = Features{bonus, NewAttributeBonus(StrengthID)}
 	data, err = jio.Marshal(spell)
@@ -84,7 +75,7 @@ func TestSpellEditDataCopiesFeatures(t *testing.T) {
 
 	spell := NewSpell(e, nil, false)
 	spell.Name = "Fireball"
-	spell.Features = Features{newSpellFeatureTestSkillBonus("Alchemy", fxp.Two)}
+	spell.Features = Features{newSkillBonusTo("Alchemy", fxp.Two)}
 
 	// What the editor is handed when it opens.
 	var edit SpellEditData
@@ -133,7 +124,7 @@ func TestSpellHashIncludesFeatures(t *testing.T) {
 	spell.Name = "Fireball"
 	before := Hash64(spell)
 
-	spell.Features = Features{newSpellFeatureTestSkillBonus("Alchemy", fxp.Two)}
+	spell.Features = Features{newSkillBonusTo("Alchemy", fxp.Two)}
 	withFeature := Hash64(spell)
 	c.NotEqual(before, withFeature, "adding a feature changes the spell's hash")
 
@@ -154,7 +145,7 @@ func TestSpellSyncWithSourceClonesFeatures(t *testing.T) {
 	// Stand in for the spell as it appears in a library file: same identity, but carrying a feature.
 	source := NewSpell(nil, nil, false)
 	source.Name = "Fireball"
-	bonus := newSpellFeatureTestSkillBonus("Alchemy", fxp.Two)
+	bonus := newSkillBonusTo("Alchemy", fxp.Two)
 	bonus.Switchable = true
 	source.Features = Features{bonus}
 
@@ -330,7 +321,7 @@ func TestSpellFillWithNameableKeysIncludesFeatures(t *testing.T) {
 
 	spell := NewSpell(nil, nil, false)
 	spell.Name = "Enhance @what@"
-	bonus := newSpellFeatureTestSkillBonus("@skill@", fxp.Two)
+	bonus := newSkillBonusTo("@skill@", fxp.Two)
 	bonus.SpecializationCriteria.Compare = criteria.IsText
 	bonus.SpecializationCriteria.Qualifier = "@spec@"
 	spell.Features = Features{bonus}
