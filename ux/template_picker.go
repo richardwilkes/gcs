@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -20,6 +21,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -27,6 +29,22 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/side"
 )
+
+// processTemplatePickers presents the template picker dialog for each row that has one, replacing the rows with the
+// resulting choices. It returns false if the user canceled one of them, in which case the rows must be discarded.
+func processTemplatePickers(rows *templateRows) bool {
+	var abort bool
+	if rows.traits, abort = processPickerRows(rows.traits); abort {
+		return false
+	}
+	if rows.skills, abort = processPickerRows(rows.skills); abort {
+		return false
+	}
+	if rows.spells, abort = processPickerRows(rows.spells); abort {
+		return false
+	}
+	return true
+}
 
 func processPickerRows[T gurps.Node[T]](rows []*Node[T]) (revised []*Node[T], abort bool) {
 	for _, one := range ExtractNodeDataFromList(rows) {
@@ -395,4 +413,28 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unis
 	callback()
 	checkBox.MarkForLayoutRecursivelyUpward()
 	checkBox.MarkForRedraw()
+}
+
+func rawPoints[T gurps.Node[T]](child T) fxp.Int {
+	if xreflect.IsNil(child) {
+		return 0
+	}
+	if child.Container() {
+		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
+			if _, tp := pickable.TemplatePickerData(); tp.Type == picker.Points {
+				if tp.Qualifier.Compare == criteria.EqualsNumber {
+					return tp.Qualifier.Qualifier
+				}
+			}
+		}
+	}
+	// Covers skills and spells
+	if rp, ok := any(child).(interface{ RawPoints() fxp.Int }); ok {
+		return rp.RawPoints()
+	}
+	// Covers traits
+	if rp, ok := any(child).(interface{ AdjustedPoints() fxp.Int }); ok {
+		return rp.AdjustedPoints()
+	}
+	return 0
 }

@@ -13,11 +13,9 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -222,22 +220,6 @@ type templateRows struct {
 	notes     []*Node[*gurps.Note]
 }
 
-// processTemplatePickers presents the template picker dialog for each row that has one, replacing the rows with the
-// resulting choices. It returns false if the user canceled one of them, in which case the rows must be discarded.
-func processTemplatePickers(rows *templateRows) bool {
-	var abort bool
-	if rows.traits, abort = processPickerRows(rows.traits); abort {
-		return false
-	}
-	if rows.skills, abort = processPickerRows(rows.skills); abort {
-		return false
-	}
-	if rows.spells, abort = processPickerRows(rows.spells); abort {
-		return false
-	}
-	return true
-}
-
 func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) bool {
 	return t.applyTemplateToSheetWithPickers(sheet, suppressRandomizePrompt, processTemplatePickers)
 }
@@ -419,30 +401,6 @@ func appendRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T])
 			tableProvider.ProcessDropData(nil, table)
 		}
 	}
-}
-
-func rawPoints[T gurps.Node[T]](child T) fxp.Int {
-	if xreflect.IsNil(child) {
-		return 0
-	}
-	if child.Container() {
-		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
-			if _, tp := pickable.TemplatePickerData(); tp.Type == picker.Points {
-				if tp.Qualifier.Compare == criteria.EqualsNumber {
-					return tp.Qualifier.Qualifier
-				}
-			}
-		}
-	}
-	// Covers skills and spells
-	if rp, ok := any(child).(interface{ RawPoints() fxp.Int }); ok {
-		return rp.RawPoints()
-	}
-	// Covers traits
-	if rp, ok := any(child).(interface{ AdjustedPoints() fxp.Int }); ok {
-		return rp.AdjustedPoints()
-	}
-	return 0
 }
 
 // Entity implements EntityPanel. A template has no entity, so nil is always returned.
