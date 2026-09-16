@@ -41,6 +41,11 @@ func processPickerRows[T gurps.Node[T]](rows []*Node[T]) (revised []*Node[T], ab
 	return revised, false
 }
 
+// templatePickerChoiceHook, when non-nil, stands in for the template choice dialog, answering with the indexes of the
+// children to keep or asking for the operation to be canceled. Headless tests set this, since they have no way to
+// respond to a modal dialog.
+var templatePickerChoiceHook func(row any, childCount int) (keep []int, cancel bool)
+
 func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	if !row.Container() {
 		return []T{row}, false
@@ -64,6 +69,14 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		row.SetChildren(rowChildren)
 		SetParents(rowChildren, row)
 		return []T{row}, false
+	}
+
+	if templatePickerChoiceHook != nil {
+		keep, cancel := templatePickerChoiceHook(row, len(children))
+		if cancel {
+			return nil, true
+		}
+		return collectPickedChildren(row, children, keep)
 	}
 
 	list := unison.NewPanel()
@@ -200,16 +213,28 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		return nil, true
 	}
 
-	rowChildren := make([]T, 0, len(children))
+	keep := make([]int, 0, len(boxes))
 	for i, box := range boxes {
 		if box.State == check.On {
-			var result []T
-			result, abort = processPickerRow(children[i])
-			if abort {
-				return nil, true
-			}
-			rowChildren = append(rowChildren, result...)
+			keep = append(keep, i)
 		}
+	}
+	return collectPickedChildren(row, children, keep)
+}
+
+// collectPickedChildren replaces a container that carries template choices with the children that were picked from it,
+// each of which is itself processed, since a picked child may carry choices of its own.
+func collectPickedChildren[T gurps.Node[T]](row T, children []T, keep []int) (revised []T, abort bool) {
+	rowChildren := make([]T, 0, len(keep))
+	for _, i := range keep {
+		if i < 0 || i >= len(children) {
+			continue
+		}
+		var result []T
+		if result, abort = processPickerRow(children[i]); abort {
+			return nil, true
+		}
+		rowChildren = append(rowChildren, result...)
 	}
 	SetParents(rowChildren, row.Parent())
 	return rowChildren, false
