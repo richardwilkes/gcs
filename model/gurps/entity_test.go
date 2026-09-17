@@ -654,7 +654,7 @@ func TestEntityEnforceTraitPrereqsDisablesUnsatisfiedTraits(t *testing.T) {
 	c.NotEqual("", trait.UnsatisfiedReason, "the unmet prereq is flagged")
 	c.True(trait.Enabled(), "without the setting, the trait stays enabled")
 	c.False(trait.DisabledByPrereqs(), "without the setting, the trait is not disabled by its prereqs")
-	c.Equal(fxp.Twenty, trait.AdjustedPoints(), "without the setting, the trait's points count")
+	c.Equal(fxp.Twenty, trait.AdjustedPoints(nil), "without the setting, the trait's points count")
 	c.Equal(fxp.Twenty, e.PointsBreakdown().Advantages, "without the setting, the trait's points are in the total")
 	c.Equal(fxp.Two, e.AttributeBonusFor(StrengthID, stlimit.None, nil), "without the setting, its features apply")
 	// The entity starts out with the natural attacks, so the weapon counts are relative to those.
@@ -668,7 +668,7 @@ func TestEntityEnforceTraitPrereqsDisablesUnsatisfiedTraits(t *testing.T) {
 	c.True(trait.EffectivelyDisabled(), "the setting disables the trait")
 	c.True(trait.DisabledByPrereqs(), "the trait reports that its prereqs disabled it")
 	c.False(trait.Disabled, "the user's own enabled state is left alone")
-	c.Equal(fxp.Int(0), trait.AdjustedPoints(), "a disabled trait is worth no points")
+	c.Equal(fxp.Int(0), trait.AdjustedPoints(nil), "a disabled trait is worth no points")
 	c.Equal(fxp.Int(0), e.PointsBreakdown().Advantages, "a disabled trait's points leave the total")
 	c.Equal(fxp.Int(0), e.AttributeBonusFor(StrengthID, stlimit.None, nil), "its features are no longer active")
 	c.Equal(weaponCount-1, len(e.Weapons(true, false, false)), "its weapons are no longer in play")
@@ -681,7 +681,7 @@ func TestEntityEnforceTraitPrereqsDisablesUnsatisfiedTraits(t *testing.T) {
 	c.Equal("", trait.UnsatisfiedReason, "the prereq is met")
 	c.True(trait.Enabled(), "the trait is re-enabled once its prerequisite is met")
 	c.False(trait.DisabledByPrereqs(), "the trait no longer reports being disabled by its prereqs")
-	c.Equal(fxp.Twenty, trait.AdjustedPoints(), "its points count again")
+	c.Equal(fxp.Twenty, trait.AdjustedPoints(nil), "its points count again")
 	c.Equal(fxp.Two, e.AttributeBonusFor(StrengthID, stlimit.None, nil), "its features apply again")
 
 	// Removing the prerequisite disables the trait again, and turning the setting off re-enables it.
@@ -1573,8 +1573,8 @@ func TestEntityEnforceTraitPrereqsContainers(t *testing.T) {
 	c.True(container.DisabledByPrereqs(), "the container with the unmet prereq is disabled")
 	c.False(plain.Enabled(), "a child of the disabled container is disabled with it")
 	c.False(plain.DisabledByPrereqs(), "the child itself is not the one the setting disabled")
-	c.Equal(fxp.Int(0), plain.AdjustedPoints(), "the child's points do not count")
-	c.Equal(fxp.Int(0), container.AdjustedPoints(), "the container's points do not count")
+	c.Equal(fxp.Int(0), plain.AdjustedPoints(nil), "the child's points do not count")
+	c.Equal(fxp.Int(0), container.AdjustedPoints(nil), "the container's points do not count")
 	c.Equal(fxp.Int(0), e.PointsBreakdown().Total(), "nothing in the container counts toward the total")
 	c.Equal("", nested.UnsatisfiedReason, "a child of the disabled container has no prerequisites to enforce")
 	c.Equal(prereqsNotJudged, nested.prereqVerdict, "a child of the disabled container is not judged by the setting")
@@ -1585,7 +1585,7 @@ func TestEntityEnforceTraitPrereqsContainers(t *testing.T) {
 	e.Recalculate()
 	c.False(container.DisabledByPrereqs(), "meeting the prereq re-enables the container")
 	c.True(plain.Enabled(), "and its child")
-	c.Equal(fxp.One, plain.AdjustedPoints(), "the child's points count again")
+	c.Equal(fxp.One, plain.AdjustedPoints(nil), "the child's points count again")
 	c.True(nested.DisabledByPrereqs(), "the child with its own unmet prereq is checked again and disabled")
 	c.NotEqual("", nested.UnsatisfiedReason, "the child with its own unmet prereq records why")
 }

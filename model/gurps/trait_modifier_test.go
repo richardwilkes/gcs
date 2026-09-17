@@ -84,14 +84,14 @@ func TestTraitModifierCostIgnoresLevel(t *testing.T) {
 
 	// With the flag off, -40% is multiplied by the trait's 3 levels, and the resulting -120% is clamped to -80% by
 	// AdjustedPoints: 15 - 12 = 3.
-	c.Equal(fxp.Three, trait.AdjustedPoints(), "-40% x 3 levels, clamped to -80% of 15 points")
+	c.Equal(fxp.Three, trait.AdjustedPoints(nil), "-40% x 3 levels, clamped to -80% of 15 points")
 	c.Equal("-120%", mod.CostDescription(), "the cost adjustment is multiplied by the level")
 	c.Equal(fxp.Three, mod.CurrentLevel(), "the modifier's level comes from the trait")
 
 	// With the flag on, the -40% applies once: 15 - 6 = 9.
 	mod.CostIgnoresLevel = true
 	e.Recalculate()
-	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(), "-40% applied once to 15 points")
+	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(nil), "-40% applied once to 15 points")
 	c.Equal("-40%", mod.CostDescription(), "the cost adjustment is applied once")
 	c.Equal(fxp.Three, mod.CurrentLevel(), "the modifier's level is still the trait's, so per-level features scale")
 }
@@ -105,7 +105,7 @@ func TestTraitModifierCostIgnoresLevelWithOwnLevels(t *testing.T) {
 	mod.CostIgnoresLevel = true
 	e.Recalculate()
 	c.Equal("-40%", mod.CostDescription(), "the modifier's own 2 levels don't multiply the cost")
-	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(), "-40% applied once to 15 points")
+	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(nil), "-40% applied once to 15 points")
 	c.Equal(fxp.Two, mod.CurrentLevel(), "the modifier keeps its own level")
 
 	// With the flag off, the cost is multiplied by the modifier's own 2 levels, not the trait's 3, which would have
@@ -113,7 +113,7 @@ func TestTraitModifierCostIgnoresLevelWithOwnLevels(t *testing.T) {
 	mod.CostIgnoresLevel = false
 	e.Recalculate()
 	c.Equal("-80%", mod.CostDescription(), "with the flag off, the modifier's own levels multiply the cost")
-	c.Equal(fxp.Three, trait.AdjustedPoints(), "-80% of 15 points")
+	c.Equal(fxp.Three, trait.AdjustedPoints(nil), "-80% of 15 points")
 }
 
 // TestTraitModifierCostDescriptionSimplifiesFraction verifies that a leveled fractional cost adjustment is reduced
@@ -218,7 +218,7 @@ func TestIssue1017LimitedDamageResistance(t *testing.T) {
 	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
 
-	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(), "the -40% is charged once, not once per level")
+	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(nil), "the -40% is charged once, not once per level")
 	drMap := e.AddDRBonusesFor(TorsoID, nil, nil)
 	c.Equal(0, drMap[AllID], "the modifier cancels the trait's DR against everything")
 	c.Equal(3, drMap["cold"], "the modifier grants DR 3 against the chosen damage type")

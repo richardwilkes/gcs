@@ -25,7 +25,7 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(trait.NameWithReplacements()) }
 	m["notes"] = scriptNotes(r, trait)
 	m["switchedOn"] = func() goja.Value { return r.ToValue(trait.SwitchedOn) }
-	m["points"] = func() goja.Value { return r.ToValue(trait.AdjustedPoints().AsFloat[float64]()) }
+	m["points"] = func() goja.Value { return r.ToValue(trait.AdjustedPoints(nil).AsFloat[float64]()) }
 	m["selfControl"] = func() goja.Value { return r.ToValue(trait.ResolvedSelfControl(nil).Number()) }
 	m["selfControlAdjustment"] = func() goja.Value {
 		return r.ToValue(trait.ResolvedSelfControlAdjustment(nil).Key())

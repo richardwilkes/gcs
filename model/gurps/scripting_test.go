@@ -144,7 +144,7 @@ func TestScriptTraitPoints(t *testing.T) {
 	altAbilities.Children = []*Trait{child1, child2}
 
 	for _, trait := range []*Trait{simple, leveled, altAbilities} {
-		want := trait.AdjustedPoints()
+		want := trait.AdjustedPoints(nil)
 		selfArg := ScriptArg{Name: "self", Value: func(r *goja.Runtime) any { return newScriptTrait(r, trait) }}
 		v, err := runScript(0, "self.points", selfArg)
 		c.NoError(err, "trait %q", trait.NameWithReplacements())
@@ -154,10 +154,10 @@ func TestScriptTraitPoints(t *testing.T) {
 	}
 
 	// Sanity checks on the expected values so the test is meaningful even if AdjustedPoints changes.
-	c.Equal(fxp.FromInteger(10), simple.AdjustedPoints())
-	c.Equal(fxp.FromInteger(15), leveled.AdjustedPoints())
+	c.Equal(fxp.FromInteger(10), simple.AdjustedPoints(nil))
+	c.Equal(fxp.FromInteger(15), leveled.AdjustedPoints(nil))
 	// 20 (the most expensive) + round(20% of 10) = 20 + 2 = 22.
-	c.Equal(fxp.FromInteger(22), altAbilities.AdjustedPoints())
+	c.Equal(fxp.FromInteger(22), altAbilities.AdjustedPoints(nil))
 }
 
 // The script skill-lookup bindings match a skill by its optional specialization as well as its required one. See GitHub

@@ -540,7 +540,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		unsatisfiedReason, contradiction := t.prereqStatus()
 		trait := &exportedTrait{
 			ID:                   t.TID,
-			Points:               t.AdjustedPoints(),
+			Points:               t.AdjustedPoints(nil),
 			Description:          t.String(),
 			UserDescription:      t.UserDescWithReplacements(),
 			CR:                   resolvedSelfControl.Number(),

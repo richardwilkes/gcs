@@ -1075,15 +1075,15 @@ func calculateSingleTraitPoints(t *Trait, pb *PointsBreakdown) {
 			}
 			return
 		case container.Ancestry:
-			pb.Ancestry += t.AdjustedPoints()
+			pb.Ancestry += t.AdjustedPoints(nil)
 			return
 		case container.Attributes:
-			pb.Attributes += t.AdjustedPoints()
+			pb.Attributes += t.AdjustedPoints(nil)
 			return
 		default:
 		}
 	}
-	pts := t.AdjustedPoints()
+	pts := t.AdjustedPoints(nil)
 	switch {
 	case pts == -fxp.One:
 		pb.Quirks += pts

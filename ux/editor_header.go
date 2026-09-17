@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"strings"
+
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -72,7 +74,27 @@ func NewEditorListSVGPairHeader[T gurps.Node[T]](leftSVG, rightSVG *unison.SVG, 
 	return header
 }
 
+// groupContainersFirst wraps a column's own comparison so that it sees the value a cell shows rather than the marker
+// CellDataForSort puts ahead of a container's while the "group containers on sort" preference is on. Without this, a
+// comparison that reads a number out of the text -- which every numeric column's does -- reads the marker instead and
+// reports every container as worth the same. The table's default comparison (flexibleLess) already does this for the
+// columns that supply no comparison of their own.
+func groupContainersFirst(less func(a, b string) bool) func(a, b string) bool {
+	if less == nil {
+		return nil
+	}
+	return func(a, b string) bool {
+		aContainer := strings.HasPrefix(a, containerMarker)
+		bContainer := strings.HasPrefix(b, containerMarker)
+		if aContainer != bContainer {
+			return aContainer
+		}
+		return less(strings.TrimPrefix(a, containerMarker), strings.TrimPrefix(b, containerMarker))
+	}
+}
+
 func headerFromData[T gurps.Node[T]](data gurps.HeaderData, forPage bool) unison.TableColumnHeader[*Node[T]] {
+	data.Less = groupContainersFirst(data.Less)
 	if data.TitleIsImageKey {
 		var img1, img2 *unison.SVG
 		switch data.Title {
