@@ -603,7 +603,7 @@ func (t *Trait) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	// has always given here, with PointsRange holding the one that can be relied upon. The range is asked for without
 	// the tooltip, since the notes it would gather describe children that may not be taken.
 	if !t.TemplatePicker.IsZero() {
-		if value, settled := t.PointsRange(nil).Settled(); settled {
+		if value, settled := t.PointsRange(tooltip).Settled(); settled {
 			return value
 		}
 	}
@@ -646,7 +646,7 @@ func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	}
 	ranges := make([]PointsRange, len(t.Children))
 	for i, one := range t.Children {
-		ranges[i] = one.PointsRange(tooltip)
+		ranges[i] = one.PointsRange(nil)
 	}
 	if t.ContainerType == container.AlternativeAbilities {
 		// Each end of the range is worked out from the matching end of the children's. That is a bound rather than an

@@ -655,7 +655,7 @@ func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		// the answer it has always given here, with PointsRange holding the one that can be relied upon. The range is
 		// asked for without the tooltip, since the notes it would gather describe children that may not be taken.
 		if !s.TemplatePicker.IsZero() {
-			if value, settled := s.PointsRange(nil).Settled(); settled {
+			if value, settled := s.PointsRange(tooltip).Settled(); settled {
 				return value
 			}
 		}
@@ -702,7 +702,7 @@ func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	}
 	ranges := make([]PointsRange, len(s.Children))
 	for i, one := range s.Children {
-		ranges[i] = one.PointsRange(tooltip)
+		ranges[i] = one.PointsRange(nil)
 	}
 	return sumPointsRanges(ranges)
 }
