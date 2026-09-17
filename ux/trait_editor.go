@@ -124,12 +124,20 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 				choices = append(choices, one.Name)
 			}
 		}
+		ancestry := e.editorData.Ancestry
 		ancestryPopup = addLabelAndPopup(content, i18n.Text("Ancestry"), "", choices, &e.editorData.Ancestry)
+		if e.editorData.ContainerType != container.Ancestry {
+			// The popup writes its first choice into the data when the ancestry is not among the choices, which is
+			// the case for every container that is not an ancestry one, since those hold no ancestry at all. Put the
+			// data back, so that an editor which has not been touched does not open already modified. The choice the
+			// popup shows does not matter, since it is blanked for such a container.
+			e.editorData.Ancestry = ancestry
+		}
 		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != container.Ancestry)
 		slotsField = addLabelAndIntegerField(content, nil, "", i18n.Text("Alternative Slots"),
 			i18n.Text("How many of this container's children may be active at once; that many of the most expensive children are billed at full cost and the rest at 20%"),
-			&e.editorData.AlternativeSlots, 1, 20)
-		adjustFieldBlank(slotsField, e.editorData.ContainerType != container.AlternativeAbilities)
+			&e.editorData.AlternativeSlots, 0, maxAlternativeSlots)
+		adjustSlotsField(slotsField, e.editorData.ContainerType)
 	}
 	addChoices(e, content, true)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
@@ -180,17 +188,37 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		if slotsField != nil {
 			if e.editorData.ContainerType == container.AlternativeAbilities {
 				if !slotsField.Enabled() {
-					adjustFieldBlank(slotsField, false)
 					if e.editorData.AlternativeSlots < 1 {
 						e.editorData.AlternativeSlots = 1
 					}
 					slotsField.SetText(strconv.Itoa(e.editorData.AlternativeSlots))
+					adjustSlotsField(slotsField, e.editorData.ContainerType)
 				}
 			} else {
-				adjustFieldBlank(slotsField, true)
+				adjustSlotsField(slotsField, e.editorData.ContainerType)
 			}
 		}
 	}
+}
+
+// maxAlternativeSlots is the most children an alternative abilities container may bill at full cost. The value selected
+// here is mostly arbitrary, but it is a reasonable upper limit for a container that holds alternative abilities, which
+// are usually a small set of mutually exclusive options. The limit is enforced in the editor, but not in the model, so
+// that a character file with a higher value can still be loaded.
+const maxAlternativeSlots = 20
+
+// adjustSlotsField enables the alternative slots field when the container holds alternative abilities and blanks it
+// otherwise. The field's minimum follows the container type: only an alternative abilities container needs at least one
+// slot, while every other type holds zero, which must not be flagged as invalid. Since the blanking overlay covers just
+// the field's content, an invalid field would otherwise leave its error color showing through the border insets.
+func adjustSlotsField(field *IntegerField, containerType container.Type) {
+	minSlots := 0
+	if containerType == container.AlternativeAbilities {
+		minSlots = 1
+	}
+	field.SetMinMax(minSlots, maxAlternativeSlots)
+	field.Validate()
+	adjustFieldBlank(field, containerType != container.AlternativeAbilities)
 }
 
 func cloneTraitWithOverlay(t *gurps.Trait, overlay *gurps.TraitEditData) *gurps.Trait {

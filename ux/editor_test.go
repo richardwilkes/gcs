@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -63,8 +64,9 @@ func TestEditorIsModifiedFollowsTheDataAlone(t *testing.T) {
 }
 
 // buildEditorContent fills in the content panel that displayEditor would hand to the given init function, without any
-// of the docking machinery that needs a window. It returns both the editor and its content, so a test can check what a
-// widget in the content does to the editor's copy of the data.
+// of the docking machinery that needs a window. The callback the init function returns is installed as it would be in
+// the real editor, so a change to one widget adjusts the others as it does there. It returns both the editor and its
+// content, so a test can check what a widget in the content does to the editor's copy of the data.
 func buildEditorContent[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, target N,
 	initContent func(*editor[N, D], *unison.Panel) func(),
 ) (*editor[N, D], *unison.Panel) {
@@ -83,7 +85,7 @@ func buildEditorContent[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildabl
 		VSpacing: unison.StdVSpacing,
 	})
 	e.AddChild(content)
-	initContent(e, content)
+	e.modificationCallback = initContent(e, content)
 	return e, content
 }
 
@@ -137,6 +139,73 @@ func TestTraitEditorHasSwitchedOnCheckBox(t *testing.T) {
 			c.False(e.editorData.SwitchedOn, "clearing the box must turn the switch back off")
 		})
 	}
+}
+
+// findIntegerFieldLabeled returns the integer field that follows the label bearing the given text among the panel's
+// direct children.
+func findIntegerFieldLabeled(p *unison.Panel, labelText string) *IntegerField {
+	children := p.Children()
+	for i, child := range children {
+		if label, ok := child.Self.(*unison.Label); ok && label.String() == labelText && i+1 < len(children) {
+			if field, ok2 := children[i+1].Self.(*IntegerField); ok2 {
+				return field
+			}
+		}
+	}
+	return nil
+}
+
+// A new trait container holds zero alternative slots, since only an alternative abilities container uses them, yet the
+// slots field used to demand at least one regardless of the container type. The field was blanked, but only over its
+// content, so the error color of the invalid zero showed through the border insets as a sliver of red. Worse, the
+// clamping done while the field was created quietly bumped the editor's copy to one, so the editor opened already
+// modified. The minimum must follow the container type instead.
+func TestTraitEditorAlternativeSlotsFollowContainerType(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	trait := gurps.NewTrait(sheet.Entity(), nil, true)
+	e, content := buildEditorContent(sheet, trait, initTraitEditor)
+	field := findIntegerFieldLabeled(content, i18n.Text("Alternative Slots"))
+	c.NotNil(field, "expected an Alternative Slots field in the trait container editor")
+	c.Equal(0, e.editorData.AlternativeSlots, "a new container holds no slots")
+	c.False(field.Invalid(), "zero slots is valid for a container that is not an alternative abilities one")
+	c.False(field.Enabled(), "the field is blanked for a container that is not an alternative abilities one")
+	c.Equal("", e.editorData.Ancestry, "a container that is not an ancestry one holds no ancestry")
+	c.False(e.isModified(), "opening the editor must not modify the data")
+
+	e.editorData.ContainerType = container.AlternativeAbilities
+	e.MarkModified(nil)
+	c.Equal(1, e.editorData.AlternativeSlots, "an alternative abilities container needs at least one slot")
+	c.Equal("1", field.Text(), "the field must show the slot it was given")
+	c.False(field.Invalid(), "one slot is valid")
+	c.True(field.Enabled(), "the field is usable for an alternative abilities container")
+	c.Equal(1, field.Min(), "an alternative abilities container may not have fewer than one slot")
+
+	field.SetText("0")
+	c.True(field.Invalid(), "zero slots is invalid for an alternative abilities container")
+	field.SetText("3")
+	c.False(field.Invalid(), "three slots is valid")
+	c.Equal(3, e.editorData.AlternativeSlots, "the slot count must reach the editor's data")
+
+	e.editorData.ContainerType = container.Group
+	e.MarkModified(nil)
+	c.False(field.Invalid(), "the slots are ignored for a group, so nothing in the field is invalid")
+	c.False(field.Enabled(), "the field is blanked again for a group")
+	c.Equal(0, field.Min(), "a group holds zero slots")
+}
+
+// Switching a container to an ancestry one gives it the default ancestry, since the empty ancestry it held until then
+// is not something the popup can show.
+func TestTraitEditorAncestryFollowsContainerType(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	trait := gurps.NewTrait(sheet.Entity(), nil, true)
+	e, _ := buildEditorContent(sheet, trait, initTraitEditor)
+	c.Equal("", e.editorData.Ancestry, "a group holds no ancestry")
+
+	e.editorData.ContainerType = container.Ancestry
+	e.MarkModified(nil)
+	c.Equal(gurps.DefaultAncestry, e.editorData.Ancestry, "an ancestry container starts with the default ancestry")
 }
 
 // Both container and non-container equipment offer the "Switched On" checkbox -- a container holds features of its own
