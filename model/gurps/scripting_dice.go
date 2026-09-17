@@ -69,10 +69,18 @@ func (d scriptDice) Subtract(left, right string) (string, error) {
 }
 
 // parseMatchingDice parses two dice specifications that are about to be combined, rejecting a pair whose sides differ,
-// and flattens each one's multiplier so that the two can be combined term by term.
+// and flattens each one's multiplier so that the two can be combined term by term. A specification with no dice in it,
+// such as a bare modifier ("+3") or "0", has no sides of its own and so combines with anything: it takes on the other's
+// sides so that dice.add("1d-2", "+3") is 1d+1 rather than an error.
 func parseMatchingDice(left, right string) (d1, d2 dice.Dice, err error) {
 	d1 = Roller.Parse(left)
 	d2 = Roller.Parse(right)
+	switch {
+	case d1.Count == 0:
+		d1.Sides = d2.Sides
+	case d2.Count == 0:
+		d2.Sides = d1.Sides
+	}
 	if d1.Sides != d2.Sides {
 		return dice.Dice{}, dice.Dice{}, errors.New("dice sides must match")
 	}

@@ -83,7 +83,8 @@ func diceOf(count, sides, modifier, multiplier int) dice.Dice {
 }
 
 // dice.add and dice.subtract combine two specifications term by term after flattening each one's multiplier,
-// subtraction never yields a negative count, and specifications with differing sides are refused.
+// subtraction never yields a negative count, and specifications with differing sides are refused. A specification
+// with no dice in it (a bare modifier, or nothing at all) has no sides to clash with, so it combines with any other.
 func TestScriptDiceAddSubtract(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -95,6 +96,21 @@ func TestScriptDiceAddSubtract(t *testing.T) {
 		{expr: `dice.subtract("3d6+2", "1d6+3")`, want: Roller.Format(diceOf(2, 6, -1, 1))},
 		{expr: `dice.subtract("1d6x2", "3d6")`, want: Roller.Format(diceOf(0, 6, 0, 1))},
 		{expr: `dice.subtract("2d6", "1d6x3")`, want: Roller.Format(diceOf(0, 6, 0, 1))},
+
+		// A bare modifier on either side, with either sign, and with a multiplier of its own. Issue #1138.
+		{expr: `dice.add("1d-2", "+3")`, want: Roller.Format(diceOf(1, 6, 1, 1))},
+		{expr: `dice.add("1d-2", "3")`, want: Roller.Format(diceOf(1, 6, 1, 1))},
+		{expr: `dice.add("-2", "1d8")`, want: Roller.Format(diceOf(1, 8, -2, 1))},
+		{expr: `dice.add("1d8", "+2x3")`, want: Roller.Format(diceOf(1, 8, 6, 1))},
+		{expr: `dice.subtract("1d6+1", "+3")`, want: Roller.Format(diceOf(1, 6, -2, 1))},
+		{expr: `dice.subtract("+3", "1d6+1")`, want: Roller.Format(diceOf(0, 6, 2, 1))},
+
+		// Neither side has any dice, or one side is empty.
+		{expr: `dice.add("+3", "-1")`, want: Roller.Format(diceOf(0, 0, 2, 1))},
+		{expr: `dice.subtract("+3", "+5")`, want: Roller.Format(diceOf(0, 0, -2, 1))},
+		{expr: `dice.add("2d6+1", "")`, want: Roller.Format(diceOf(2, 6, 1, 1))},
+		{expr: `dice.add("", "2d6+1")`, want: Roller.Format(diceOf(2, 6, 1, 1))},
+		{expr: `dice.add("0", "0")`, want: Roller.Format(diceOf(0, 0, 0, 1))},
 	} {
 		v, err := runScript(0, tc.expr)
 		c.NoError(err, "expr %q", tc.expr)

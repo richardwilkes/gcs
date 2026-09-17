@@ -46,4 +46,6 @@
 
 ## Bug Fixes
 
-- (none yet)
+- The script functions dice.add and dice.subtract now accept a bare modifier, such as "+3" or "-2", on either side, so
+  that dice.add("1d-2", "+3") gives "1d+1" instead of failing with "dice sides must match". Only two specifications
+  that both have dice of different sizes are still refused.
