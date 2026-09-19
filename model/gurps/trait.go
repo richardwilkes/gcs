@@ -587,7 +587,7 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 	return adj.apply(base)
 }
 
-// AdjustedPoints returns the total points, taking levels and modifiers into account. A container presenting a choice
+// AdjustedPoints returns the total points, taking levels and modifiers into account. Something presenting a choice
 // every outcome of which costs the same reports that cost; see PointsRange for one whose outcomes differ.
 func (t *Trait) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if t.EffectivelyDisabled() {
@@ -600,8 +600,8 @@ func (t *Trait) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	// A container that presents a choice is never worth what its children add up to, since only some of them will be
 	// taken. When every way of making that choice costs the same -- "pick 20 points worth", most often -- that is what
 	// it is worth. When they don't, there is no single answer, and the total of the children is left as the answer it
-	// has always given here, with PointsRange holding the one that can be relied upon. The range is asked for without
-	// the tooltip, since the notes it would gather describe children that may not be taken.
+	// has always given here, with PointsRange holding the one that can be relied upon. The tooltip is handed along, but
+	// a container never puts anything into it; see PointsRange for why.
 	if !t.TemplatePicker.IsZero() {
 		if value, settled := t.PointsRange(tooltip).Settled(); settled {
 			return value
@@ -623,8 +623,10 @@ func (t *Trait) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 }
 
 // PointsRange returns the span of point costs this trait may end up being worth, once every choice it or anything
-// inside it presents has been made. For all but a container carrying template choices, the range is settled and holds
-// the same value AdjustedPoints returns. The tooltip may be nil; see AdjustedPoints for what a trait does with it.
+// inside it presents has been made. With no choice left to make, the range is settled and holds the same value
+// AdjustedPoints returns. The tooltip may be nil, and only a non-container ever fills it: the notes name each bonus
+// source without saying which row it landed on, so rolling a container's children up into one list would give an
+// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it.
 func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	if !t.Container() {
 		// The disabled case is covered too: AdjustedPoints reports nothing for a trait that is switched off.
@@ -637,7 +639,6 @@ func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 		return PointsRangeOf(value)
 	}
 	if !t.TemplatePicker.IsZero() {
-		// The notes the children would contribute describe items that may not be taken, so they are left out.
 		ranges := make([]PointsRange, len(t.Children))
 		for i, one := range t.Children {
 			ranges[i] = one.PointsRange(nil)

@@ -903,15 +903,15 @@ func (s *Spell) SetRawPoints(points fxp.Int) bool {
 	return s.UpdateLevel()
 }
 
-// AdjustedPoints returns the points, adjusted for any bonuses. A container presenting a choice every outcome of which
+// AdjustedPoints returns the points, adjusted for any bonuses. Something presenting a choice every outcome of which
 // costs the same reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
 		// A container that presents a choice is never worth what its children add up to, since only some of them will
 		// be taken. When every way of making that choice costs the same -- "pick 20 points worth", most often -- that
-		// is what it is worth. When they don't, there is no single answer, and the total of the children is left as
-		// the answer it has always given here, with PointsRange holding the one that can be relied upon. The range is
-		// asked for without the tooltip, since the notes it would gather describe children that may not be taken.
+		// is what it is worth. When they don't, there is no single answer, and the total of the children is left as the
+		// answer it has always given here, with PointsRange holding the one that can be relied upon. The tooltip is
+		// handed along, but a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
 			if value, settled := s.PointsRange(tooltip).Settled(); settled {
 				return value
@@ -928,8 +928,10 @@ func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 }
 
 // PointsRange returns the span of point costs this spell may end up being worth, once every choice it or anything
-// inside it presents has been made. For all but a container carrying template choices, the range is settled and holds
-// the same value AdjustedPoints returns.
+// inside it presents has been made. With no choice left to make, the range is settled and holds the same value
+// AdjustedPoints returns. The tooltip may be nil, and only a non-container ever fills it: the notes name each bonus
+// source without saying which row it landed on, so rolling a container's children up into one list would give an
+// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it.
 func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	if !s.Container() {
 		return PointsRangeOf(s.AdjustedPoints(tooltip))
@@ -938,7 +940,6 @@ func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 		return PointsRangeOf(value)
 	}
 	if !s.TemplatePicker.IsZero() {
-		// The notes the children would contribute describe items that may not be taken, so they are left out.
 		ranges := make([]PointsRange, len(s.Children))
 		for i, one := range s.Children {
 			ranges[i] = one.PointsRange(nil)
