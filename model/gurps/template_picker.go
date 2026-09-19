@@ -43,14 +43,14 @@ type TemplatePicker struct {
 
 // IsZero implements json.isZero.
 func (t TemplatePicker) IsZero() bool {
-	return t.Type == picker.NotApplicable
+	return t.Type.EnsureValid() == picker.NotApplicable
 }
 
 func (t TemplatePicker) String() string {
 	if t.IsZero() {
 		return ""
 	}
-	switch t.Type {
+	switch t.Type.EnsureValid() {
 	case picker.Count:
 		return fmt.Sprintf(i18n.Text("Pick %s"), t.Qualifier.AltString())
 	case picker.Points:
