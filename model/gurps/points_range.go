@@ -189,76 +189,111 @@ func pointsRangeForPicker(tp TemplatePicker, children []PointsRange) PointsRange
 	if len(children) == 0 {
 		return PointsRangeOf(0)
 	}
-	compare := tp.Qualifier.Compare.EnsureValid()
 	switch tp.Type.EnsureValid() {
 	case picker.Count:
-		count := max(min(tp.Qualifier.Qualifier.AsInteger[int](), len(children)), 0)
-		cheapestFirst := byMin(children)
-		costliestFirst := byMax(children)
-		switch compare {
-		case criteria.EqualsNumber:
-			return PointsRange{
-				Min: totalOfMins(cheapestFirst[:count]).end(),
-				Max: totalOfMaxes(costliestFirst[:count]).end(),
-			}
-		case criteria.AtLeastNumber:
-			// The required count has to be taken whether it helps or not -- "pick at least 2" of a 10-point and a
-			// -5-point child is worth 5, not 10 -- and beyond it, anything that costs less than nothing still lowers
-			// the total while anything that costs more than nothing still raises it.
-			lower := totalOfMins(cheapestFirst[:count])
-			for _, one := range cheapestFirst[count:] {
-				if one.Min == nil || *one.Min < 0 {
-					lower = lower.add(one.Min)
-				}
-			}
-			upper := totalOfMaxes(costliestFirst[:count])
-			for _, one := range costliestFirst[count:] {
-				if one.Max == nil || *one.Max > 0 {
-					upper = upper.add(one.Max)
-				}
-			}
-			return PointsRange{Min: lower.end(), Max: upper.end()}
-		case criteria.AtMostNumber:
-			// Only what helps each end is taken, and no more of it than the picker allows.
-			return PointsRange{
-				Min: negativeCount(cheapestFirst, count).end(),
-				Max: positiveCount(costliestFirst, count).end(),
-			}
-		default: // Any number, or an "is not" that no selection is meaningfully constrained by.
-			return PointsRange{
-				Min: everythingNegative(children).end(),
-				Max: everythingPositive(children).end(),
-			}
-		}
+		return pointsRangeForPickerByCount(tp.Qualifier, children)
 	case picker.Points:
-		qualifier := tp.Qualifier.Qualifier
-		switch compare {
-		case criteria.EqualsNumber:
-			return PointsRangeOf(qualifier)
-		case criteria.AtLeastNumber:
-			upper := everythingPositive(children)
-			// Children that between them cost less than the picker asks for set no ceiling on it. That isn't a
-			// malformed template: the children of such a picker are typically skills or spells carrying no points at
-			// all, whose cost is assigned while picking (see ux.pickerRowPointEditor), and a leveled trait's cost can
-			// be raised there too. With nothing to bound it, the container is worth what it asks for or more.
-			if !upper.unlimited && upper.total < qualifier {
-				return pointsRangeAtLeast(qualifier)
-			}
-			return PointsRange{Min: &qualifier, Max: upper.end()}
-		case criteria.AtMostNumber:
-			upper := everythingPositive(children)
-			if !upper.unlimited && upper.total > qualifier {
-				upper.total = qualifier
-			}
-			return PointsRange{Min: everythingNegative(children).end(), Max: upper.end()}
-		default: // Any number, or an "is not" that no selection is meaningfully constrained by.
-			return PointsRange{
-				Min: everythingNegative(children).end(),
-				Max: everythingPositive(children).end(),
-			}
-		}
+		return pointsRangeForPickerByPoints(tp.Qualifier, children)
 	default:
 		return sumPointsRanges(children)
+	}
+}
+
+// pointsRangeForPickerByCount returns the range of a container whose picker constrains how many of its children are
+// taken. These cases are exact: the cheapest way to satisfy "pick 3" is the 3 cheapest children, and a child that costs
+// less than nothing is always worth taking when the picker allows more to be taken.
+func pointsRangeForPickerByCount(cq criteria.Number, children []PointsRange) PointsRange {
+	compare := cq.Compare.EnsureValid()
+	count := max(min(cq.Qualifier.AsInteger[int](), len(children)), 0)
+
+	if count == 0 {
+		switch compare {
+		case criteria.EqualsNumber, criteria.AtMostNumber:
+			return PointsRangeOf(0)
+		case criteria.AtLeastNumber:
+			compare = criteria.AnyNumber
+		}
+	}
+
+	cheapestFirst := byMin(children)
+	costliestFirst := byMax(children)
+
+	switch compare {
+	case criteria.EqualsNumber: // Expects and exact number of selections
+		// To get a valid range for an exact number of selections, we generate two sums.
+		// The first sum is the `Min` side and is the `Min` sum from the *cheapest* {count} children.
+		// The second sum is the `Max` side and is the `Max` sum from the *most expensive* {count} children.
+		// Both sums respect unbounded ranges
+		return PointsRange{
+			Min: totalOfMins(cheapestFirst[:count]).end(),
+			Max: totalOfMaxes(costliestFirst[:count]).end(),
+		}
+	case criteria.AtLeastNumber:
+		// To get a valid range for an number of selections or more, we generate two sums. {count} is a floor on how
+		// many are taken, not a ceiling, so each sum takes the {count} children that suit its end and then whatever
+		// of the rest still helps it.
+		// The first sum is the `Min` side and is the `Min` from the *cheapest* {count} children, plus the `Min` from
+		// the sum of the *remaining* children under 0 points.
+		// The second sum is the `Max` side and is the `Max` from the *most expensive* {count} children, plus the
+		// `Max` from the sum of the *remaining* children over 0 points.
+		// Both sums respect unbounded ranges
+		return PointsRange{
+			Min: totalOfMins(cheapestFirst[:count]).add(sumUnder(cheapestFirst[count:]).end()).end(),
+			Max: totalOfMaxes(costliestFirst[:count]).add(sumOver(costliestFirst[count:]).end()).end(),
+		}
+	case criteria.AtMostNumber:
+		// Only what helps each end is taken, and no more of it than the picker allows.
+		return PointsRange{
+			Min: sumUnder(cheapestFirst[:count]).end(),
+			Max: sumOver(costliestFirst[:count]).end(),
+		}
+	default: // Any number, or an "is not" that no selection is meaningfully constrained by.
+		return PointsRange{
+			Min: sumUnder(cheapestFirst).end(),
+			Max: sumOver(costliestFirst).end(),
+		}
+	}
+}
+
+// pointsRangeForPickerByPoints returns the range of a container whose picker constrains how many points are spent on
+// its children. These cases lean on the fact that a points picker measures the very quantity it constrains -- the cost
+// of what is picked -- so the qualifier bounds the container's total directly, with no need to search for a subset that
+// adds up to it.
+//
+// What the children can reach still matters at both ends. Taking nothing is always an option, so the cheapest pick can
+// never cost more than nothing and the costliest can never cost less; the qualifier binds only the end it constrains,
+// and only as far as the children allow. A qualifier the children cannot reach leaves its end open rather than
+// contradicting the other one: the children of such a picker are typically skills or spells carrying no points at all,
+// whose cost is assigned while picking (see ux.pickerRowPointEditor), and a leveled trait's cost can be raised there
+// too.
+func pointsRangeForPickerByPoints(cq criteria.Number, children []PointsRange) PointsRange {
+	// The cheapest and costliest a pick can be, taking only what helps that end. Both are reachable, since taking
+	// nothing is always allowed, so cheapest <= 0 <= costliest wherever they are bounded at all.
+	cheapest := everythingNegative(children).end()
+	costliest := everythingPositive(children).end()
+	switch cq.Compare.EnsureValid() {
+	case criteria.EqualsNumber: // The pick costs exactly the qualifier.
+		return PointsRangeOf(cq.Qualifier)
+	case criteria.AtLeastNumber: // The pick costs the qualifier or more.
+		if costliest != nil && *costliest < cq.Qualifier {
+			return pointsRangeAtLeast(cq.Qualifier) // The children set no ceiling on what the picker asks for.
+		}
+		minimum := cq.Qualifier
+		if cheapest != nil && *cheapest > minimum {
+			minimum = *cheapest // The qualifier asks for less than the cheapest pick already costs.
+		}
+		return PointsRange{Min: &minimum, Max: costliest}
+	case criteria.AtMostNumber: // The pick costs the qualifier or less.
+		maximum := cq.Qualifier
+		if costliest != nil && *costliest < maximum {
+			maximum = *costliest // The qualifier allows more than the costliest pick can spend.
+		}
+		if cheapest != nil && *cheapest > cq.Qualifier {
+			return pointsRangeAtMost(maximum) // The children set no floor under what the picker allows.
+		}
+		return PointsRange{Min: cheapest, Max: &maximum}
+	default: // Any number, or an "is not" that no selection is meaningfully constrained by.
+		return PointsRange{Min: cheapest, Max: costliest}
 	}
 }
 
@@ -318,11 +353,11 @@ func totalOfMaxes(ranges []PointsRange) pointsBound {
 	return result
 }
 
-// negativeCount returns the total of up to count children that cost less than nothing, which is the cheapest a picker
-// allowing at most that many can be. The children must already be ordered cheapest first.
-func negativeCount(cheapestFirst []PointsRange, count int) pointsBound {
+// sumUnder returns the total of the given children that cost less than nothing, which is the cheapest any pick that
+// may leave them out can be. The children must already be ordered cheapest first.
+func sumUnder(cheapestFirst []PointsRange) pointsBound {
 	var result pointsBound
-	for _, one := range cheapestFirst[:count] {
+	for _, one := range cheapestFirst {
 		if one.Min == nil {
 			result = result.add(nil)
 			continue
@@ -335,11 +370,11 @@ func negativeCount(cheapestFirst []PointsRange, count int) pointsBound {
 	return result
 }
 
-// positiveCount returns the total of up to count children that cost more than nothing, which is the costliest a picker
-// allowing at most that many can be. The children must already be ordered costliest first.
-func positiveCount(costliestFirst []PointsRange, count int) pointsBound {
+// sumOver returns the total of the given children that cost more than nothing, which is the costliest any pick that
+// may leave them out can be. The children must already be ordered costliest first.
+func sumOver(costliestFirst []PointsRange) pointsBound {
 	var result pointsBound
-	for _, one := range costliestFirst[:count] {
+	for _, one := range costliestFirst {
 		if one.Max == nil {
 			result = result.add(nil)
 			continue
