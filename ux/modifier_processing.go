@@ -35,8 +35,8 @@ func ProcessModifiersForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]
 
 // The modifier prompts are held in variables so that tests can substitute non-interactive implementations.
 var (
-	promptForTraitModifiers     = processModifiers[*gurps.TraitModifier]
-	promptForEquipmentModifiers = processModifiers[*gurps.EquipmentModifier]
+	promptForTraitModifiers     = promptForModifiers[*gurps.TraitModifier]
+	promptForEquipmentModifiers = promptForModifiers[*gurps.EquipmentModifier]
 )
 
 // ProcessModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
@@ -99,7 +99,7 @@ func minimalNodes[T gurps.Node[T]](rows []T) []T {
 	return minimal
 }
 
-func processModifiers[T gurps.Node[T]](title string, modifiers []T) bool {
+func promptForModifiers[T gurps.Node[T]](title string, modifiers []T) bool {
 	if len(modifiers) == 0 {
 		return false
 	}
