@@ -26,8 +26,8 @@ import (
 // The modifier prompts are held in variables so that tests can substitute non-interactive implementations. Each reports
 // whether any modifier was changed and whether the prompt was canceled.
 var (
-	promptForTraitModifiers     = processModifiers[*gurps.TraitModifier]
-	promptForEquipmentModifiers = processModifiers[*gurps.EquipmentModifier]
+	promptForTraitModifiers     = showModifiersDialog[*gurps.TraitModifier]
+	promptForEquipmentModifiers = showModifiersDialog[*gurps.EquipmentModifier]
 )
 
 // ProcessModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
@@ -101,7 +101,7 @@ func minimalNodes[T gurps.Node[T]](rows []T) []T {
 	return minimal
 }
 
-func processModifiers[T gurps.Node[T]](title string, modifiers []T) (changed, canceled bool) {
+func showModifiersDialog[T gurps.Node[T]](title string, modifiers []T) (changed, canceled bool) {
 	if len(modifiers) == 0 {
 		return false, false
 	}
