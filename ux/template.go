@@ -296,11 +296,11 @@ Disable your character's existing Ancestry (%s)?`),
 	ProcessNameablesForSelection(sheet.Traits.Table)
 	ProcessNameablesForSelection(sheet.CarriedEquipment.Table)
 	ProcessNameablesForSelection(sheet.Notes.Table)
-	clearPreconfiguredFlag(sheet.Traits.Table, sheet.Traits.Table.RootRows())
-	clearPreconfiguredFlag(sheet.Skills.Table, sheet.Skills.Table.RootRows())
-	clearPreconfiguredFlag(sheet.Spells.Table, sheet.Spells.Table.RootRows())
-	clearPreconfiguredFlag(sheet.CarriedEquipment.Table, sheet.CarriedEquipment.Table.RootRows())
-	clearPreconfiguredFlag(sheet.Notes.Table, sheet.Notes.Table.RootRows())
+	maybeClearPreconfiguredFlag(sheet.Traits.Table, sheet.Traits.Table.RootRows())
+	maybeClearPreconfiguredFlag(sheet.Skills.Table, sheet.Skills.Table.RootRows())
+	maybeClearPreconfiguredFlag(sheet.Spells.Table, sheet.Spells.Table.RootRows())
+	maybeClearPreconfiguredFlag(sheet.CarriedEquipment.Table, sheet.CarriedEquipment.Table.RootRows())
+	maybeClearPreconfiguredFlag(sheet.Notes.Table, sheet.Notes.Table.RootRows())
 
 	if len(templateAncestries) != 0 && gurps.GlobalSettings().General.AutoFillProfile {
 		randomize := true

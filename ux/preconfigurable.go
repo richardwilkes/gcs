@@ -46,19 +46,26 @@ func shouldClearPreconfiguredFlag(panel unison.Paneler) bool {
 	return true
 }
 
-func clearPreconfiguredFlag[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) bool {
+func maybeClearPreconfiguredFlag[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) bool {
 	if !shouldClearPreconfiguredFlag(table) {
 		return false
 	}
 	if rows == nil {
 		rows = table.SelectedRows(true)
 	}
+	return clearPreconfiguredFlag(rows)
+}
+
+func clearPreconfiguredFlag[T gurps.Node[T]](rows []*Node[T]) bool {
 	var changes bool
 	for _, row := range rows {
 		node := row.Data()
-		if tl, ok := any(node).(gurps.Preconfigurable); ok && !xreflect.IsNil(node) && tl.IsPreconfigured() {
+		if xreflect.IsNil(node) {
+			continue
+		}
+		if p, ok := any(node).(gurps.Preconfigurable); ok && p.IsPreconfigured() {
 			changes = true
-			tl.SetPreconfigured(false)
+			p.SetPreconfigured(false)
 		}
 	}
 	return changes

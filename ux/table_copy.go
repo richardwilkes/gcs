@@ -75,7 +75,7 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 		CopyRowsTo(target.Table, sel, func(rows []*Node[T]) {
 			target.provider.ProcessDropData(nil, target.Table)
 			processCopiedRows(table, target.Table)
-			clearPreconfiguredFlag(target.Table, rows)
+			maybeClearPreconfiguredFlag(target.Table, rows)
 		}, true)
 	}
 }

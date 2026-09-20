@@ -161,7 +161,7 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 	table.SyncToModel()
 	table.SetSelectionMap(selected)
 	provider.ProcessDropData(table, table)
-	clearPreconfiguredFlag(table, nil)
+	maybeClearPreconfiguredFlag(table, nil)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
 	commitTableUndo(table, undo)

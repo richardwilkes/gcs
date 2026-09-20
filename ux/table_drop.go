@@ -297,7 +297,7 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 			MergeAddedRows(to)
 		}
 	}
-	if clearPreconfiguredFlag(to, nil) {
+	if maybeClearPreconfiguredFlag(to, nil) {
 		to = liveTable(to)
 	}
 	finishDidDrop(undo, from, to, move)
