@@ -37,7 +37,15 @@ var promptForNameables = ShowNameablesDialog
 
 // ProcessNameables processes the rows and their children for any nameables.
 func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
-	ProcessNameableGroups(owner, []NameableGroup[T]{{Rows: rows}})
+	if processNameables(rows) {
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
+	}
+}
+
+// processNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
+// that covers all of the groups.
+func processNameables[T gurps.Node[T]](rows []T) bool {
+	return processNameableGroups([]NameableGroup[T]{{Rows: rows}})
 }
 
 // NameableGroup is a set of rows whose entries in the nameables prompt share a label. An entry is normally titled with
@@ -52,6 +60,14 @@ type NameableGroup[T gurps.Node[T]] struct {
 // ProcessNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
 // that covers all of the groups.
 func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []NameableGroup[T]) {
+	if processNameableGroups(groups) {
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
+	}
+}
+
+// processNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
+// that covers all of the groups.
+func processNameableGroups[T gurps.Node[T]](groups []NameableGroup[T]) bool {
 	var data []T
 	var titles []string
 	var nameables []map[string]string
@@ -83,20 +99,13 @@ func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []Namea
 			}, false, false, row)
 		}
 	}
-	if len(data) > 0 {
-		if promptForNameables(titles, nameables, visibleKeys) {
-			for i, row := range data {
-				row.ApplyNameableKeys(nameables[i])
-			}
-			// The owner is normally the table the rows live in, and a rebuild may have replaced that table before
-			// this was called, since a list can only change its columns by building a new table. An orphaned table
-			// has no Rebuildable above it, so the rebuild would silently be skipped, leaving the substitutions in the
-			// model while the list the user is looking at goes on showing the raw keys. The live table has to be
-			// looked up without regard for T, since on the very path this is here for the rows are the modifiers that
-			// were dropped and T is therefore not the row type of the table they landed in.
-			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
+	if len(data) > 0 && promptForNameables(titles, nameables, visibleKeys) {
+		for i, row := range data {
+			row.ApplyNameableKeys(nameables[i])
 		}
+		return true
 	}
+	return false
 }
 
 // missingNameableKeys returns the keys of nameables that have no explicit replacement recorded on row.
