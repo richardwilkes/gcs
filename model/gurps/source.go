@@ -236,6 +236,12 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 	return srcstate.Missing, nil
 }
 
+// setTID sets the TID. Every node type embeds SourcedID, so this promotes to all of them and lets generic
+// code over the Node constraint assign an ID, which the TID field alone does not allow.
+func (s *SourcedID) setTID(id tid.TID) {
+	s.TID = id
+}
+
 // AdjustSource adjusts TID and Source based on `original` and the clone `mode`.
 //
 // A 'Copy' keeps original's TID instead of minting a fresh one.
