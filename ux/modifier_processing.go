@@ -42,15 +42,20 @@ var (
 // ProcessModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
 // modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing.
 func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
-	rebuild := func() {
+	if processModifiers(rows) {
 		// The owner is normally the table the rows live in, and that table may have been replaced -- by a rebuild
 		// before this was called (the alternate drop path rebuilds before prompting) or by the rebuild an earlier
 		// prompt in this very loop asked for, since toggling a modifier can add or take away the switch column and a
 		// list can only change its columns by building a new table. An orphaned table has no Rebuildable above it, so
 		// the rebuild would silently be skipped; looking the live table up first keeps every prompt's answer reflected.
-		owner = liveOwner(owner)
-		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](owner), true)
+		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
 	}
+}
+
+// processModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
+// modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing.
+func processModifiers[T gurps.Node[T]](rows []T) bool {
+	var modified bool
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
 			if gurps.IsNodePreconfigured(row) {
@@ -59,16 +64,17 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 			switch t := any(row).(type) {
 			case *gurps.Trait:
 				if promptForTraitModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers) {
-					rebuild()
+					modified = true
 				}
 			case *gurps.Equipment:
 				if promptForEquipmentModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers) {
-					rebuild()
+					modified = true
 				}
 			}
 			return false
 		}, false, false, row)
 	}
+	return modified
 }
 
 // minimalNodes returns the given rows with any row that is a descendant of another of them left out. ProcessModifiers
