@@ -36,18 +36,25 @@ func addPreconfigurable[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D],
 	}
 }
 
+// allowPreconfiguredFlag reports whether rows landing on the given panel may keep their Preconfigured flag. Only the
+// instance documents -- a character sheet and a loot sheet -- clear it. Everywhere else the flag is authored data: a
+// template is where it is set in the first place, and a library list holds items that have been resolved once so that
+// they can be dropped onto a sheet without asking again. The test used to be "anywhere but a template", which meant a
+// drop into a library list quietly threw that away.
 func allowPreconfiguredFlag(panel unison.Paneler) bool {
 	if xreflect.IsNil(panel) {
-		return false
+		return true
 	}
 	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
-	case *Sheet, *LootSheet, nil:
+	case *Sheet, *LootSheet:
 		return false
 	default:
 		return true
 	}
 }
 
+// maybeClearPreconfiguredFlag clears the Preconfigured flag on the given rows, and everything beneath them, when the
+// table they landed in is one that doesn't allow the flag. Passing nil rows uses the table's selection.
 func maybeClearPreconfiguredFlag[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) bool {
 	if allowPreconfiguredFlag(table) {
 		return false
@@ -58,17 +65,28 @@ func maybeClearPreconfiguredFlag[T gurps.Node[T]](table *unison.Table[*Node[T]],
 	return clearPreconfiguredFlag(rows)
 }
 
+// clearPreconfiguredFlag clears the Preconfigured flag on the given rows and everything beneath them, returning
+// whether anything changed.
+//
+// The descent matters as much as the rows themselves. A selection holds only the shallowest rows of each branch, and
+// only those that are showing, so a row inside a closed container isn't in it at all -- yet the flag has to come off
+// everything that arrived, not just what the user can see. A container that is itself preconfigured is cleared and
+// then descended into as well: the flag says a node's own selections and substitutions are settled, and says nothing
+// about its children's.
 func clearPreconfiguredFlag[T gurps.Node[T]](rows []*Node[T]) bool {
-	var changes bool
+	nodes := make([]T, 0, len(rows))
 	for _, row := range rows {
-		node := row.Data()
-		if xreflect.IsNil(node) {
-			continue
+		if node := row.Data(); !xreflect.IsNil(node) {
+			nodes = append(nodes, node)
 		}
-		if p, ok := any(node).(gurps.Preconfigurable); ok && p.IsPreconfigured() {
+	}
+	var changes bool
+	gurps.Traverse(func(node T) bool {
+		if p, ok := any(node).(gurps.Preconfigurable); ok && !xreflect.IsNil(p) && p.IsPreconfigured() {
 			changes = true
 			p.SetPreconfigured(false)
 		}
-	}
+		return false
+	}, false, false, nodes...)
 	return changes
 }
