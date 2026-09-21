@@ -186,9 +186,6 @@ func sumPointsRanges(ranges []PointsRange) PointsRange {
 // minimum of 7, where the cheapest satisfying pick is really 10. Reporting the constraint the picker states is both
 // cheaper and closer to how the picker describes itself.
 func pointsRangeForPicker(tp TemplatePicker, children []PointsRange) PointsRange {
-	if len(children) == 0 {
-		return PointsRangeOf(0)
-	}
 	switch tp.Type.EnsureValid() {
 	case picker.Count:
 		return pointsRangeForPickerByCount(tp.Qualifier, children)
@@ -203,6 +200,11 @@ func pointsRangeForPicker(tp TemplatePicker, children []PointsRange) PointsRange
 // taken. These cases are exact: the cheapest way to satisfy "pick 3" is the 3 cheapest children, and a child that costs
 // less than nothing is always worth taking when the picker allows more to be taken.
 func pointsRangeForPickerByCount(cq criteria.Number, children []PointsRange) PointsRange {
+	// a picker authored with zero children will always be 0 points for count-based pickers
+	if len(children) == 0 {
+		return PointsRangeOf(0)
+	}
+
 	compare := cq.Compare.EnsureValid()
 	count := max(min(cq.Qualifier.AsInteger[int](), len(children)), 0)
 
