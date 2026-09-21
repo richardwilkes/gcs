@@ -661,7 +661,7 @@ func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		}
 		var total fxp.Int
 		for _, one := range s.Children {
-			total += one.AdjustedPoints(tooltip)
+			total += one.AdjustedPoints(nil)
 		}
 		return total
 	}

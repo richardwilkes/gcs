@@ -611,12 +611,12 @@ func (t *Trait) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if t.ContainerType == container.AlternativeAbilities {
 		values := make([]fxp.Int, len(t.Children))
 		for i, one := range t.Children {
-			values[i] = one.AdjustedPoints(tooltip)
+			values[i] = one.AdjustedPoints(nil)
 		}
 		points = alternativeAbilitiesPoints(values, t.ResolvedAlternativeSlots(), t.RoundCostDown)
 	} else {
 		for _, one := range t.Children {
-			points += one.AdjustedPoints(tooltip)
+			points += one.AdjustedPoints(nil)
 		}
 	}
 	return points
