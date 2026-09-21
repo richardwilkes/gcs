@@ -11,14 +11,11 @@ package ux
 
 import (
 	"fmt"
-	"maps"
 	"slices"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -223,22 +220,6 @@ type templateRows struct {
 	notes     []*Node[*gurps.Note]
 }
 
-// processTemplatePickers presents the template picker dialog for each row that has one, replacing the rows with the
-// resulting choices. It returns false if the user canceled one of them, in which case the rows must be discarded.
-func processTemplatePickers(rows *templateRows) bool {
-	var abort bool
-	if rows.traits, abort = processPickerRows(rows.traits); abort {
-		return false
-	}
-	if rows.skills, abort = processPickerRows(rows.skills); abort {
-		return false
-	}
-	if rows.spells, abort = processPickerRows(rows.spells); abort {
-		return false
-	}
-	return true
-}
-
 func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) bool {
 	return t.applyTemplateToSheetWithPickers(sheet, suppressRandomizePrompt, processTemplatePickers)
 }
@@ -420,207 +401,6 @@ func appendRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T])
 			tableProvider.ProcessDropData(nil, table)
 		}
 	}
-}
-
-// entityTechLevel returns the tech level of the entity that owns the table, or an empty string if there is none. This
-// is the value substituted for an empty tech level when merging rows, matching what the table providers do on drop.
-func entityTechLevel[T gurps.Node[T]](table *unison.Table[*Node[T]]) string {
-	if dataOwnerProvider := table.Ancestor[gurps.DataOwnerProvider](); !xreflect.IsNil(dataOwnerProvider) {
-		if dataOwner := dataOwnerProvider.DataOwner(); !xreflect.IsNil(dataOwner) {
-			if entity := dataOwner.OwningEntity(); entity != nil {
-				return entity.Profile.TechLevel
-			}
-		}
-	}
-	return ""
-}
-
-// resolveEmptyTechLevel replaces an empty (but present) tech level with defaultTechLevel. This is the substitution
-// performed when a row is dropped onto a sheet and when a template's rows are merged into one, so both must agree.
-func resolveEmptyTechLevel(item gurps.TechLevelProvider, defaultTechLevel string) {
-	if item.RequiresTL() && item.TL() == "" {
-		item.SetTL(defaultTechLevel)
-	}
-}
-
-// sameTechLevel reports whether two rows' tech levels match for merge purposes: both absent, or both present and equal.
-func sameTechLevel(a, b gurps.TechLevelProvider) bool {
-	if a.RequiresTL() != b.RequiresTL() {
-		return false
-	}
-	return !a.RequiresTL() || a.TL() == b.TL()
-}
-
-// pointsMergeable is the set of row types whose identical rows are merged by folding their points together: skills and
-// spells.
-type pointsMergeable[T gurps.Node[T]] interface {
-	gurps.Node[T]
-	gurps.TechLevelProvider
-	RawPoints() fxp.Int
-	SetRawPoints(points fxp.Int) bool
-	NameableReplacements() map[string]string
-}
-
-// mergeRowsFor bridges from a caller generic over any node type, which only knows the row type once it has switched on
-// the table's concrete type, to mergeRows, which needs that concrete type. The conversions cannot fail once the switch
-// has matched, but rows are returned untouched should one somehow not hold up.
-func mergeRowsFor[T pointsMergeable[T], U gurps.Node[U]](table *unison.Table[*Node[T]], existing, rows []*Node[U], selMap map[tid.TID]bool) []*Node[U] {
-	if existingNodes, ok := any(existing).([]*Node[T]); ok {
-		if rowNodes, ok2 := any(rows).([]*Node[T]); ok2 {
-			if merged, ok3 := any(mergeRows(table, existingNodes, rowNodes, selMap)).([]*Node[U]); ok3 {
-				return merged
-			}
-		}
-	}
-	return rows
-}
-
-// mergeRows folds the points of the incoming rows into matching existing rows (see mergePoints) and returns fresh
-// nodes for the incoming rows that survived, ready to be added to the table.
-func mergeRows[T pointsMergeable[T]](table *unison.Table[*Node[T]], existing, rows []*Node[T], selMap map[tid.TID]bool) []*Node[T] {
-	surviving := mergePoints(ExtractNodeDataFromList(existing), ExtractNodeDataFromList(rows), entityTechLevel(table),
-		selMap)
-	replacements := make([]*Node[T], 0, len(surviving))
-	for _, item := range surviving {
-		replacements = append(replacements, NewNode(table, nil, item, true))
-	}
-	return replacements
-}
-
-// mergePoints folds the points of each incoming row into a matching row, returning the incoming rows that had no match
-// (and should therefore be added as new rows). A match requires an identical hash, the same nameable replacements, and
-// the same tech level. Since neither the tech level nor the replacements are part of the hash, several rows can share
-// a hash, so all candidates for a hash are considered. An incoming row can match either an existing row or an earlier
-// incoming row, so a template containing two identical entries collapses them into one.
-//
-// An incoming row with an empty (but non-nil) tech level has it resolved to defaultTechLevel first, mirroring the
-// substitution performed on drop by the skills and spells providers. Without this, a template applied a second time
-// would compare the incoming empty tech level against the already-resolved tech level of the existing row, fail to
-// match, and add a duplicate row instead of merging.
-func mergePoints[T pointsMergeable[T]](existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T {
-	byHash := make(map[uint64][]T)
-	gurps.Traverse(func(item T) bool {
-		hash := gurps.Hash64(item)
-		byHash[hash] = append(byHash[hash], item)
-		return false
-	}, true, true, existing...)
-	pruneMap := make(map[T]bool)
-	gurps.Traverse(func(item T) bool {
-		resolveEmptyTechLevel(item, defaultTechLevel)
-		hash := gurps.Hash64(item)
-		matched := false
-		for _, candidate := range byHash[hash] {
-			if !maps.Equal(candidate.NameableReplacements(), item.NameableReplacements()) ||
-				!sameTechLevel(candidate, item) {
-				continue
-			}
-			pruneMap[item] = true
-			candidate.SetRawPoints(candidate.RawPoints() + item.RawPoints())
-			selMap[candidate.ID()] = true
-			matched = true
-			break
-		}
-		if !matched {
-			// Register this surviving incoming row so that any later identical incoming row merges into it.
-			byHash[hash] = append(byHash[hash], item)
-		}
-		return false
-	}, true, true, incoming...)
-	for item := range pruneMap {
-		isItem := func(other T) bool { return other == item }
-		if parent := item.Parent(); xreflect.IsNil(parent) {
-			incoming = slices.DeleteFunc(incoming, isItem)
-		} else {
-			parent.SetChildren(slices.DeleteFunc(parent.NodeChildren(), isItem))
-		}
-	}
-	return incoming
-}
-
-// MergeAddedRows folds the points of the newly-added, currently-selected top-level rows (and any rows nested within
-// them, such as the contents of an added container) into identical skill or spell rows already present in the sheet,
-// removing the now-redundant new rows, so that dragging or copying a skill or spell that already exists on the sheet
-// adds to its points rather than creating a duplicate. It must be called only after tech levels and nameables have
-// been resolved on the new rows, since the match includes both. Only skills and spells are affected.
-func MergeAddedRows[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	switch t := any(table).(type) {
-	case *unison.Table[*Node[*gurps.Skill]]:
-		mergeNewlySelectedRows(t)
-	case *unison.Table[*Node[*gurps.Spell]]:
-		mergeNewlySelectedRows(t)
-	}
-}
-
-func mergeNewlySelectedRows[T pointsMergeable[T]](table *unison.Table[*Node[T]]) {
-	sel := table.CopySelectionMap()
-	if len(sel) == 0 {
-		return
-	}
-	roots := table.RootRows()
-	existing := make([]T, 0, len(roots))
-	incoming := make([]T, 0, len(roots))
-	for _, node := range roots {
-		if sel[node.ID()] {
-			incoming = append(incoming, node.Data())
-		} else {
-			existing = append(existing, node.Data())
-		}
-	}
-	if len(existing) == 0 || len(incoming) == 0 {
-		return
-	}
-	newSel := make(map[tid.TID]bool)
-	surviving := mergePoints(existing, incoming, entityTechLevel(table), newSel)
-	if len(newSel) == 0 {
-		return // Nothing merged, so leave the table untouched.
-	}
-	// Comparing len(surviving) to len(incoming) is not a valid way to detect that nothing merged: a merged row nested
-	// inside an added container is pruned from the container's data without changing the top-level count, and the view
-	// must still be refreshed or the pruned row remains visible until the next rebuild.
-	survivingSet := make(map[T]bool, len(surviving))
-	for _, data := range surviving {
-		survivingSet[data] = true
-	}
-	newRoots := make([]*Node[T], 0, len(roots))
-	for _, node := range roots {
-		if sel[node.ID()] {
-			if !survivingSet[node.Data()] {
-				continue // This newly-added row was merged into an existing one, so drop it.
-			}
-			newSel[node.ID()] = true // Keep the surviving new rows selected alongside the rows they merged into.
-			// Rows nested inside this row may have been pruned by the merge, so discard any cached child nodes to
-			// force them to be rebuilt from the updated data.
-			node.RefreshChildren()
-		}
-		newRoots = append(newRoots, node)
-	}
-	table.SetRootRows(newRoots)
-	table.SetSelectionMap(newSel)
-	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
-}
-
-func rawPoints[T gurps.Node[T]](child T) fxp.Int {
-	if xreflect.IsNil(child) {
-		return 0
-	}
-	if child.Container() {
-		if pickable, ok := any(child).(gurps.TemplatePickerProvider); ok {
-			if _, tp := pickable.TemplatePickerData(); tp.Type == picker.Points {
-				if tp.Qualifier.Compare == criteria.EqualsNumber {
-					return tp.Qualifier.Qualifier
-				}
-			}
-		}
-	}
-	// Covers skills and spells
-	if rp, ok := any(child).(interface{ RawPoints() fxp.Int }); ok {
-		return rp.RawPoints()
-	}
-	// Covers traits
-	if rp, ok := any(child).(interface{ AdjustedPoints() fxp.Int }); ok {
-		return rp.AdjustedPoints()
-	}
-	return 0
 }
 
 // Entity implements EntityPanel. A template has no entity, so nil is always returned.

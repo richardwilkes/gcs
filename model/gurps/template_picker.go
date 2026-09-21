@@ -26,6 +26,15 @@ type TemplatePickerProvider interface {
 	TemplatePickerData() ([]picker.Type, *TemplatePicker)
 }
 
+// TemplatePickerNode is a constraint for a Node that implements the TemplatePickerProvider interface
+type TemplatePickerNode[T TemplatePickerNode[T]] interface {
+	Node[T]
+	TemplatePickerProvider
+}
+
+// assertTemplatePickerNode causes a compile-time constraint validation
+func assertTemplatePickerNode[T TemplatePickerNode[T]]() {}
+
 // TemplatePicker holds the data necessary to allow a template choice to be made.
 type TemplatePicker struct {
 	Type      picker.Type     `json:"type"`
@@ -61,4 +70,34 @@ func (t TemplatePicker) Hash(h hash.Hash) {
 	if t.Type.EnsureValid() != picker.NotApplicable {
 		t.Qualifier.Hash(h)
 	}
+}
+
+// HasTemplatePickerData returns true if any node or their child has non-zero template picker data
+func HasTemplatePickerData[T Node[T]](nodes ...T) bool {
+	var hasPickerData bool
+	Traverse(func(node T) bool {
+		if node.Container() {
+			if tpp, ok := any(node).(TemplatePickerProvider); ok {
+				if _, data := tpp.TemplatePickerData(); !data.IsZero() {
+					hasPickerData = true
+					return true
+				}
+			}
+		}
+		return false
+	}, false, false, nodes...)
+	return hasPickerData
+}
+
+// ClearTemplatePickerData removes the template picker data from the nodes and their children
+func ClearTemplatePickerData[T Node[T]](nodes ...T) {
+	Traverse(func(node T) bool {
+		if node.Container() {
+			if tpp, ok := any(node).(TemplatePickerProvider); ok {
+				_, data := tpp.TemplatePickerData()
+				*data = TemplatePicker{}
+			}
+		}
+		return false
+	}, false, false, nodes...)
 }

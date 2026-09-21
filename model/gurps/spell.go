@@ -38,6 +38,7 @@ import (
 
 var (
 	_ = assertNode[*Spell]
+	_ = assertTemplatePickerNode[*Spell]
 	_ = assertEditorData[*SpellEditData]
 
 	_ TechLevelProvider       = &Spell{}
