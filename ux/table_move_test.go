@@ -346,9 +346,11 @@ func TestMoveSelectionUnavailableWithoutSelectionOrWhileFiltered(t *testing.T) {
 	}
 }
 
-// TestMoveSelectionFinishesLikeADrop verifies that a move ends the way a drag within the same table does: the provider
-// gets to look over the rows that moved, which for a skill on a sheet fills in a blank tech level from the character,
-// and the Preconfigured flag is cleared on them -- except in a template, where the flag is there to be set.
+// TestMoveSelectionFinishesLikeADrop verifies that a move ends the way a drag within the same table does in the one
+// respect that applies to it: the provider gets to look over the rows that moved, which for a skill on a sheet fills
+// in a blank tech level from the character. The Preconfigured flag is left alone wherever the move happens, since a
+// move introduces no rows from elsewhere -- on a sheet the flag is already gone from anything living there, and in a
+// template or a library list it is authored data.
 func TestMoveSelectionFinishesLikeADrop(t *testing.T) {
 	c := check.New(t)
 	sheet, traits := newMoveTestSheet(t)
@@ -374,7 +376,7 @@ func TestMoveSelectionFinishesLikeADrop(t *testing.T) {
 	selectTraits(table, traits.first)
 	table.PerformCmd(table, MoveDownItemID)
 	c.Equal([]string{"Box", "First", "Last"}, traitNames(entity.Traits), "the trait must have moved")
-	c.False(traits.first.IsPreconfigured(), "moving a row on a sheet must clear its Preconfigured flag, as a drop does")
+	c.True(traits.first.IsPreconfigured(), "moving a row must leave its Preconfigured flag alone")
 
 	data := gurps.NewTemplate()
 	a := gurps.NewTrait(nil, nil, false)
@@ -388,7 +390,7 @@ func TestMoveSelectionFinishesLikeADrop(t *testing.T) {
 	selectTraits(table, a)
 	table.PerformCmd(table, MoveDownItemID)
 	c.Equal([]string{"B", "A"}, traitNames(data.Traits), "the move must happen in a template as well")
-	c.True(a.IsPreconfigured(), "moving a row in a template must leave its Preconfigured flag alone, as a drop does")
+	c.True(a.IsPreconfigured(), "moving a row in a template must leave its Preconfigured flag alone as well")
 }
 
 // TestMoveOutOfParentLeavesStrayRowAlone verifies that a row whose parent doesn't list it among its children -- which

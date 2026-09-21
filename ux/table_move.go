@@ -102,10 +102,11 @@ func CanMoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDi
 // a selected container.
 //
 // A drag within a table finishes by giving the provider a look at the rows that landed -- for skills and spells that
-// fills in a blank tech level from the entity and refreshes their levels -- and by clearing the Preconfigured flag on
-// them anywhere but in a template (see didDropCallback), so a move does the same to stay interchangeable with one. The
-// modifier and nameable prompts a drop may raise are left out: they configure rows arriving on a sheet, which a move
-// never brings.
+// fills in a blank tech level from the entity and refreshes their levels -- so a move does the same to stay
+// interchangeable with one. What a drop does beyond that is left out, since it all configures rows arriving from
+// somewhere else, which a move never brings: the modifier and nameable prompts, and the clearing of the Preconfigured
+// flag. The flag in particular is already gone from anything on a sheet, and in a library list it is authored data
+// that must be left alone.
 func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirection) {
 	provider, items, selected, ok := selectionToMove(table)
 	if !ok {
@@ -161,7 +162,6 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 	table.SyncToModel()
 	table.SetSelectionMap(selected)
 	provider.ProcessDropData(table, table)
-	maybeClearPreconfiguredFlag(table, nil)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
 	commitTableUndo(table, undo)

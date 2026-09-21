@@ -36,18 +36,20 @@ func addPreconfigurable[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D],
 	}
 }
 
-func shouldClearPreconfiguredFlag(panel unison.Paneler) bool {
+func allowPreconfiguredFlag(panel unison.Paneler) bool {
 	if xreflect.IsNil(panel) {
 		return false
 	}
-	if _, ok := unison.AncestorOrSelf[unison.Dockable](panel).(*Template); ok {
+	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
+	case *Sheet, *LootSheet, nil:
 		return false
+	default:
+		return true
 	}
-	return true
 }
 
 func maybeClearPreconfiguredFlag[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) bool {
-	if !shouldClearPreconfiguredFlag(table) {
+	if allowPreconfiguredFlag(table) {
 		return false
 	}
 	if rows == nil {
