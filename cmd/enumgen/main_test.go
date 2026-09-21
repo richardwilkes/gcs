@@ -56,7 +56,8 @@ func TestNoOrphanedGeneratedFiles(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
-			if d.Name() == ".git" {
+			// Skip dot-prefixed directories. The walk root arrives as ".", so exclude it.
+			if p != "." && strings.HasPrefix(d.Name(), ".") {
 				return filepath.SkipDir
 			}
 			return nil
