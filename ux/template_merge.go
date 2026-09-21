@@ -49,9 +49,9 @@ func sameTechLevel(a, b gurps.TechLevelProvider) bool {
 	return !a.RequiresTL() || a.TL() == b.TL()
 }
 
-// MergeableNode is the set of row types whose identical rows are merged by folding their points together: skills and
+// mergeableNode is the set of row types whose identical rows are merged by folding their points together: skills and
 // spells.
-type MergeableNode[T gurps.Node[T]] interface {
+type mergeableNode[T gurps.Node[T]] interface {
 	gurps.Node[T]
 	gurps.TechLevelProvider
 	RawPoints() fxp.Int
@@ -73,7 +73,7 @@ func MergeAddedRows[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	}
 }
 
-func mergeNewlySelectedRows[T MergeableNode[T]](table *unison.Table[*Node[T]]) {
+func mergeNewlySelectedRows[T mergeableNode[T]](table *unison.Table[*Node[T]]) {
 	sel := table.CopySelectionMap()
 	if len(sel) == 0 {
 		return
@@ -131,7 +131,7 @@ func mergeNewlySelectedRows[T MergeableNode[T]](table *unison.Table[*Node[T]]) {
 // substitution performed on drop by the skills and spells providers. Without this, a template applied a second time
 // would compare the incoming empty tech level against the already-resolved tech level of the existing row, fail to
 // match, and add a duplicate row instead of merging.
-func mergePoints[T MergeableNode[T]](existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T {
+func mergePoints[T mergeableNode[T]](existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T {
 	byHash := make(map[uint64][]T)
 	gurps.Traverse(func(item T) bool {
 		hash := gurps.Hash64(item)
@@ -174,7 +174,7 @@ func mergePoints[T MergeableNode[T]](existing, incoming []T, defaultTechLevel st
 // mergeRowsFor bridges from a caller generic over any node type, which only knows the row type once it has switched on
 // the table's concrete type, to mergeRows, which needs that concrete type. The conversions cannot fail once the switch
 // has matched, but rows are returned untouched should one somehow not hold up.
-func mergeRowsFor[T MergeableNode[T], U gurps.Node[U]](table *unison.Table[*Node[T]], existing, rows []*Node[U], selMap map[tid.TID]bool) []*Node[U] {
+func mergeRowsFor[T mergeableNode[T], U gurps.Node[U]](table *unison.Table[*Node[T]], existing, rows []*Node[U], selMap map[tid.TID]bool) []*Node[U] {
 	if existingNodes, ok := any(existing).([]*Node[T]); ok {
 		if rowNodes, ok2 := any(rows).([]*Node[T]); ok2 {
 			if merged, ok3 := any(mergeRows(table, existingNodes, rowNodes, selMap)).([]*Node[U]); ok3 {
@@ -187,7 +187,7 @@ func mergeRowsFor[T MergeableNode[T], U gurps.Node[U]](table *unison.Table[*Node
 
 // mergeRows folds the points of the incoming rows into matching existing rows (see mergePoints) and returns fresh
 // nodes for the incoming rows that survived, ready to be added to the table.
-func mergeRows[T MergeableNode[T]](table *unison.Table[*Node[T]], existing, rows []*Node[T], selMap map[tid.TID]bool) []*Node[T] {
+func mergeRows[T mergeableNode[T]](table *unison.Table[*Node[T]], existing, rows []*Node[T], selMap map[tid.TID]bool) []*Node[T] {
 	surviving := mergePoints(
 		ExtractNodeDataFromList(existing),
 		ExtractNodeDataFromList(rows),
