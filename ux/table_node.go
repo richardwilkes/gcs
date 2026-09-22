@@ -29,7 +29,25 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-const noInvertColorsMarker = "no_invert"
+const (
+	noInvertColorsMarker = "no_invert"
+	markdownCellInksKey  = "markdown_cell_inks"
+)
+
+// markdownCellInks holds the colors a markdown cell draws with. The markdown is handed these indirect colors when it is
+// created and they are re-pointed whenever its row is selected or deselected, so that the new colors take effect on the
+// next draw without rebuilding the markdown. A rebuild replaces every panel within it, which gives each a new
+// accessibility node and so tells assistive technologies that the cell changed, pulling a screen reader back to the
+// row being left each time the selection moves.
+type markdownCellInks struct {
+	foreground    unison.Ink
+	background    unison.Ink
+	onBackground  unison.IndirectColor
+	link          unison.IndirectColor
+	linkOnPressed unison.IndirectColor
+	selected      bool
+	initialized   bool
+}
 
 var _ unison.TableRowData[*Node[*gurps.Trait]] = &Node[*gurps.Trait]{}
 
@@ -186,7 +204,7 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, se
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink, selected bool) {
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
-		adjustMarkdownInk(part, foreground, background, selected, true)
+		adjustMarkdownInk(part, foreground, background, selected)
 		return
 	case *unison.Label:
 		if part.OnBackgroundInk != foreground {
@@ -296,42 +314,55 @@ func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.
 	if n.forPage {
 		adjustMarkdownThemeForPage(m, font)
 	}
-	adjustMarkdownInk(m, foreground, background, selected, false)
+	inks := &markdownCellInks{}
+	m.ClientData()[markdownCellInksKey] = inks
+	m.OnBackgroundInk = &inks.onBackground
+	m.LinkInk = &inks.link
+	m.LinkOnPressedInk = &inks.linkOnPressed
+	adjustMarkdownInk(m, foreground, background, selected)
 	m.SetContent(markdownHardLineBreaks(content), width)
 	return m
 }
 
-func adjustMarkdownInk(md *unison.Markdown, foreground, background unison.Ink, selected, okToRebuild bool) {
-	var onBackgroundInk, linkInk, linkOnPressedInk unison.Ink
+// adjustMarkdownInk re-points the colors of a markdown cell made by createMarkdownCell to suit its row's selection
+// state. See markdownCellInks.
+func adjustMarkdownInk(md *unison.Markdown, foreground, background unison.Ink, selected bool) {
+	inks, ok := md.ClientData()[markdownCellInksKey].(*markdownCellInks)
+	if !ok || (inks.initialized && inks.selected == selected && inks.foreground == foreground &&
+		inks.background == background) {
+		return
+	}
+	inks.initialized = true
+	inks.selected = selected
+	inks.foreground = foreground
+	inks.background = background
 	if selected {
-		c, ok := foreground.(*unison.ThemeColor)
-		if ok {
-			c = &unison.ThemeColor{
+		var link unison.ColorProvider
+		if c, isThemeColor := foreground.(*unison.ThemeColor); isThemeColor {
+			link = &unison.ThemeColor{
 				Light: c.Light.AdjustHue(180),
 				Dark:  c.Dark.AdjustHue(180),
 			}
 		} else {
-			c = &unison.ThemeColor{
-				Light: unison.Yellow,
-				Dark:  unison.Yellow,
-			}
+			link = unison.Yellow
 		}
-		onBackgroundInk = foreground
-		linkInk = c
-		linkOnPressedInk = background
+		inks.onBackground.Target = asColorProvider(foreground, unison.ThemeOnFocus)
+		inks.link.Target = link
+		inks.linkOnPressed.Target = asColorProvider(background, unison.ThemeFocus)
 	} else {
-		onBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
-		linkInk = unison.DefaultMarkdownTheme.LinkInk
-		linkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
+		inks.onBackground.Target = asColorProvider(unison.DefaultMarkdownTheme.OnBackgroundInk, unison.ThemeOnSurface)
+		inks.link.Target = asColorProvider(unison.DefaultMarkdownTheme.LinkInk, unison.ThemeFocus)
+		inks.linkOnPressed.Target = asColorProvider(unison.DefaultMarkdownTheme.LinkOnPressedInk, unison.ThemeOnFocus)
 	}
-	if md.OnBackgroundInk != onBackgroundInk {
-		md.OnBackgroundInk = onBackgroundInk
-		md.LinkInk = linkInk
-		md.LinkOnPressedInk = linkOnPressedInk
-		if okToRebuild {
-			md.Rebuild()
-		}
+}
+
+// asColorProvider returns the ink as a color provider, or the fallback if the ink is something else, such as a
+// gradient, which an indirect color cannot refer to.
+func asColorProvider(ink unison.Ink, fallback unison.ColorProvider) unison.ColorProvider {
+	if c, ok := ink.(unison.ColorProvider); ok {
+		return c
 	}
+	return fallback
 }
 
 func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {

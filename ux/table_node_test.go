@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -408,4 +409,68 @@ func TestToggleEquippedRebuildsConditionallyPresentLists(t *testing.T) {
 	c.False(eqp.Equipped, "the command must unequip the item again")
 	c.False(listAttachedToSheet(sheet, sheet.Reactions), "unequipping must take the Reactions list off the page")
 	c.Equal(1, counter.count, "unequipping must update the sheet exactly once")
+}
+
+// TestMarkdownCellKeepsItsPanelsWhenSelectionChanges verifies that selecting and deselecting a row re-colors the
+// markdown in its cells without rebuilding it. A rebuild replaces every panel within the markdown, which gives each a
+// new accessibility node and tells a screen reader that the row being left has changed, pulling it back there.
+func TestMarkdownCellKeepsItsPanelsWhenSelectionChanges(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Charisma"
+	trait.LocalNotes = "Some *notes* with a [link](https://gurpscharactersheet.com)"
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+
+	table := sheet.Traits.Table
+	col := -1
+	for i := range table.Columns {
+		if table.Columns[i].ID == gurps.TraitDescriptionColumn {
+			col = i
+			break
+		}
+	}
+	c.True(col >= 0, "the traits table must have a description column")
+	rows := table.RootRows()
+	c.Equal(1, len(rows), "the traits table must hold the one trait")
+
+	md := findMarkdown(rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel())
+	c.NotNil(md, "the description cell must show the notes as markdown")
+	children := slices.Clone(md.Children())
+	c.True(len(children) != 0, "the markdown must have built its content")
+	unselectedColor := markdownTextColor(c, md)
+
+	cell := rows[0].ColumnCell(0, col, unison.Red, unison.Blue, true, false, false).AsPanel()
+	c.Equal(md, findMarkdown(cell), "selecting the row must reuse the cached markdown")
+	c.Equal(children, md.Children(), "selecting the row must not rebuild the markdown")
+	c.Equal(unison.Red, markdownTextColor(c, md),
+		"the markdown must draw with the selection's foreground")
+
+	rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false)
+	c.Equal(children, md.Children(), "deselecting the row must not rebuild the markdown")
+	c.Equal(unselectedColor, markdownTextColor(c, md),
+		"the markdown must go back to its normal color")
+}
+
+func findMarkdown(panel *unison.Panel) *unison.Markdown {
+	if md, ok := panel.Self.(*unison.Markdown); ok {
+		return md
+	}
+	for _, child := range panel.Children() {
+		if md := findMarkdown(child); md != nil {
+			return md
+		}
+	}
+	return nil
+}
+
+func markdownTextColor(c check.Checker, md *unison.Markdown) unison.Color {
+	cp, ok := md.OnBackgroundInk.(unison.ColorProvider)
+	c.True(ok, "the markdown's text ink must be a color provider")
+	if !ok {
+		return 0
+	}
+	return cp.GetColor()
 }
