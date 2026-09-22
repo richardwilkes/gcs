@@ -445,6 +445,17 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 			0, 100, false,
 		},
 
+		// Pick at most 20 points from children that carry none: children that can only cost nothing take no side,
+		// and a picker with no side to take is worth nothing rather than what its qualifier names. Nothing on offer
+		// can be spent, so the cap bounds an end nothing reaches toward. Every comparison reaches the same place over
+		// such children -- the "at least" case below included.
+		{
+			"a maximum points picker over children carrying no points costs nothing",
+			criteria.AtMostNumber, 20,
+			[]int{0, 0, 0},
+			0, 0, true,
+		},
+
 		// A qualifier of 0 is the edge of each comparison: two of them forbid spending anything, while the third
 		// forbids nothing.
 		{
@@ -503,7 +514,9 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 	c.False(noCeiling.IsSettled(), "a cost with no upper limit is never settled")
 	c.Equal("100+", noCeiling.String(), "it renders as its minimum and a plus")
 
-	// A container of 0-point skills is a common form of that, and it must not report a settled cost.
+	// A container of 0-point skills is the other common form of that picker, and it parts ways with the case above:
+	// children that can only cost nothing leave the picker no side to take, so the qualifier binds neither end and
+	// the container is worth nothing until those children carry points of their own.
 	skills := NewSkill(nil, nil, true)
 	skills.TemplatePicker.Type = picker.Points
 	skills.TemplatePicker.Qualifier.Compare = criteria.AtLeastNumber
@@ -513,9 +526,9 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 		child.Points = 0
 		skills.Children = append(skills.Children, child)
 	}
-	c.Equal("16+", skills.PointsRange(nil).String(), "a points picker over skills carrying no points has no ceiling")
-	c.Equal(fxp.Int(0), skills.AdjustedPoints(nil),
-		"and it is left reporting the total of its children, since there is no single cost to collapse to")
+	c.Equal("0", skills.PointsRange(nil).String(),
+		"a points picker over skills carrying no points costs nothing")
+	c.Equal(fxp.Int(0), skills.AdjustedPoints(nil), "and its total agrees with the settled cost")
 
 	// Disadvantages: every choice returns points instead, which is the shape of the disadvantage packages templates
 	// use. Every end is the mirror of the advantage group: what is cheapest is taking the most.
@@ -586,18 +599,18 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 	})
 
 	// The would-be mirror of the "no ceiling" case, and where it stops being one. A picker has a side to take only
-	// when its children do, and a child carrying no points is read as costing nothing rather than returning it, so
-	// such children sit on the advantage side. A cap below nothing over them matches no side at all and is left
-	// constraining neither end -- where the same children under "at least 16" above leave only the ceiling open.
+	// when its children do, and children that can only cost nothing take neither side. A cap below nothing over them
+	// therefore binds no end at all, and the picker settles at nothing -- exactly where the same children under
+	// "at least 16" above settle, since which end the qualifier names stops mattering once no end is bound.
 	noFloor := newPickerRange(
 		picker.Points, criteria.AtMostNumber,
 		-50,
 		[]int{0, 0, 0},
 	)
-	c.Nil(noFloor.Min, "a cap below nothing over children carrying none has no lower limit")
-	c.Nil(noFloor.Max, "and no upper limit either, since nothing on offer says the cap applies")
-	c.False(noFloor.IsSettled(), "a cost with no limit at either end is never settled")
-	c.Equal("—", noFloor.String(), "it renders as a dash")
+	c.Equal(fxp.Int(0), *noFloor.Min, "a cap below nothing over children carrying none costs nothing")
+	c.Equal(fxp.Int(0), *noFloor.Max, "at both ends, since nothing on offer says the cap applies")
+	c.True(noFloor.IsSettled(), "a cost with nothing left to decide is settled")
+	c.Equal("0", noFloor.String(), "it renders as a single cost")
 
 	// Both at once, which for a points picker is rarer still -- 2 of the 1,126 pickers in the master library, both of
 	// them disadvantage packages offering something to spend the returned points on. Children reaching away from 0 in
@@ -674,19 +687,19 @@ func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 	c := check.New(t)
 
 	// "Pick at least 1 point" over advantages: no ceiling, since nothing the children can cost brings the high end
-	// back within a limit. Children carrying no points serve here, since that is the side they are read as sitting
-	// on, and it is the commonest shape of this picker -- their cost is assigned while picking.
+	// back within a limit. The children have to cost something for the qualifier to bind at all -- children that can
+	// only cost nothing leave the picker no side to take and settle it at nothing instead (see
+	// TestPointsRangeForPointsPicker).
 	noCeiling := func() *Trait {
 		return newPickerContainer(
 			picker.Points, criteria.AtLeastNumber,
 			1,
-			[]int{0, 0, 0},
+			[]int{5, 10},
 		)
 	}
 
 	// "Pick at most -1 point" over disadvantages: no floor, since nothing the children can return brings the low end
-	// back within a limit. The children have to sit on the side the picker asks for -- a picker whose children carry
-	// no points is read as offering advantages, and a cap below nothing over those bounds neither end.
+	// back within a limit. The children have to sit on the side the picker asks for here as well.
 	noFloor := func() *Trait {
 		return newPickerContainer(
 			picker.Points, criteria.AtMostNumber,
@@ -719,7 +732,7 @@ func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 		return newPickerContainer(
 			picker.Points, criteria.AtLeastNumber,
 			30,
-			[]int{0, 0, 0},
+			[]int{5, 10},
 		)
 	}
 	noFloorAt30 := func() *Trait {
@@ -989,6 +1002,45 @@ func TestPointsRangeForExactPointsPickerDirectly(t *testing.T) {
 	value, settled := settledPickerCost(tp)
 	c.True(settled, "the short circuit settles an exact points picker without looking at its children")
 	c.Equal(fxp.Twenty, value, "and settles it at the same cost the branch returns")
+}
+
+// TestPointsRangeForPointsPickerWithNoChildren verifies what a points picker authored with nothing to pick from
+// reports. Nothing on offer is nothing to take a side, so the qualifier binds neither end and the container can only
+// cost nothing -- the same answer a count picker gives when there is nothing to count (see
+// TestPointsRangeForCountPicker), and the same one the picker keeps while every choice on offer carries no points of
+// its own. An exact qualifier is the exception: it says what the container is worth without consulting its children
+// at all.
+func TestPointsRangeForPointsPickerWithNoChildren(t *testing.T) {
+	c := check.New(t)
+
+	r := newPickerRange(picker.Points, criteria.EqualsNumber, 20, nil)
+	checkRange(c, 20, 20, r, "an exact points picker with nothing to pick from is worth what it asks for")
+	c.True(r.IsSettled(), "and it is settled, since every way of meeting it costs the same")
+
+	// The short circuit answers this one without looking at the children, so it cannot help but agree -- which is
+	// the point: the branch that does look at them has to come back with the same answer.
+	var tp TemplatePicker
+	tp.Type = picker.Points
+	tp.Qualifier.Compare = criteria.EqualsNumber
+	tp.Qualifier.Qualifier = fxp.Twenty
+	value, settled := settledPickerCost(tp)
+	c.True(settled, "the short circuit settles an exact points picker with no children too")
+	c.Equal(fxp.Twenty, value, "at the same cost the branch returns")
+
+	r = newPickerRange(picker.Points, criteria.AtMostNumber, 20, nil)
+	checkRange(c, 0, 0, r, "a maximum points picker with nothing to pick from costs nothing")
+	c.True(r.IsSettled(), "and is settled, since there is nothing to spend the cap on")
+
+	r = newPickerRange(picker.Points, criteria.AtLeastNumber, 20, nil)
+	c.Equal("0", r.String(), "a minimum points picker with nothing to pick from costs nothing as well")
+	c.True(r.IsSettled(), "and is settled too")
+
+	// The same container once a single choice carrying no points is in place: the answers do not move, since a
+	// choice that can only cost nothing leaves the picker as sideless as no choice at all.
+	r = newPickerRange(picker.Points, criteria.AtMostNumber, 20, []int{0})
+	checkRange(c, 0, 0, r, "a maximum points picker does not change once a choice carrying no points is added")
+	r = newPickerRange(picker.Points, criteria.AtLeastNumber, 20, []int{0})
+	c.Equal("0", r.String(), "nor does a minimum points picker")
 }
 
 // TestPointsRangeForInvalidPicker verifies what a container carrying a picker type the app does not know reports.
@@ -1325,8 +1377,9 @@ func TestPointsRangeWithoutLimits(t *testing.T) {
 //
 // A range is positive when nothing it can cost is less than nothing, and negative when nothing it can cost is more.
 // An end with no limit is the side the range runs away toward, so one with no upper limit reaches above nothing and
-// one with no lower limit reaches below it. A range holding costs on both sides is mixed, and a picker over such
-// children has no side to take.
+// one with no lower limit reaches below it. A range that can only cost nothing is zero, which is no side of its own
+// but agrees with either. A range holding costs on both sides is mixed, and a picker over such children has no side
+// to take.
 func TestPointsRangeSign(t *testing.T) {
 	c := check.New(t)
 
@@ -1345,10 +1398,10 @@ func TestPointsRangeSign(t *testing.T) {
 		{"a range with no upper limit is positive", pointsRangeAtLeast(fxp.FromInteger(5)), PointsRangePositive},
 		{"a range with no upper limit starting at nothing is positive", pointsRangeAtLeast(0), PointsRangePositive},
 
-		// A settled cost of nothing has no side of its own and is taken as positive, which is the side every range
-		// that touches nothing without passing it falls on. It is what a child carrying no points reports, so a
-		// picker over such children is read as offering advantages.
-		{"a settled cost of nothing is positive", PointsRangeOf(0), PointsRangePositive},
+		// Zero: the range can only cost nothing, so it sits on neither side. It is what a child carrying no points
+		// reports, and having no side of its own is what lets it keep the company of either -- see
+		// TestSignForPointsRanges.
+		{"a settled cost of nothing is zero", PointsRangeOf(0), PointsRangeZero},
 
 		// Negative: nothing the range can cost is more than nothing.
 		{"a settled cost below nothing is negative", PointsRangeOf(fxp.FromInteger(-20)), PointsRangeNegative},
@@ -1386,8 +1439,9 @@ func TestPointsRangeSign(t *testing.T) {
 }
 
 // TestSignForPointsRanges verifies the side a whole set of children sits on, which is what a points picker actually
-// asks. The set has a side only when every range in it agrees; one range on the other side, or one that has no side
-// of its own, leaves the set with none.
+// asks. The set has a side only when every range in it agrees; one range on the other side, or one that reaches both
+// ways at once, leaves the set with none. A range that can only cost nothing is the exception: it takes no side, so
+// it contradicts neither, and a set of nothing but those is itself zero.
 func TestSignForPointsRanges(t *testing.T) {
 	c := check.New(t)
 
@@ -1403,8 +1457,8 @@ func TestSignForPointsRanges(t *testing.T) {
 		ranges []PointsRange
 		want   PointsRangeSign
 	}{
-		// A picker authored with no children at all has nothing to disagree, and is taken as positive.
-		{"no ranges at all are positive", nil, PointsRangePositive},
+		// A picker authored with no children at all has nothing to take a side, so the set is zero.
+		{"no ranges at all are zero", nil, PointsRangeZero},
 
 		{"a single advantage is positive", []PointsRange{advantage}, PointsRangePositive},
 		{
@@ -1444,13 +1498,13 @@ func TestSignForPointsRanges(t *testing.T) {
 			PointsRangeMixed,
 		},
 
-		// Children carrying no points are positive, so they agree with advantages and disagree with disadvantages.
-		// A picker over skills or spells that carry none is read as offering advantages, and one that offers them
-		// alongside a disadvantage package has no side at all.
+		// Children carrying no points take no side, so they leave the side of the set to whatever else is in it. A
+		// picker over skills or spells that carry none has no side at all, while one that offers them alongside a
+		// disadvantage package is still a disadvantage package.
 		{
-			"children carrying no points are positive",
+			"children carrying no points are zero",
 			[]PointsRange{noPoints, noPoints, noPoints},
-			PointsRangePositive,
+			PointsRangeZero,
 		},
 		{
 			"children carrying no points sit alongside advantages",
@@ -1458,9 +1512,9 @@ func TestSignForPointsRanges(t *testing.T) {
 			PointsRangePositive,
 		},
 		{
-			"children carrying no points do not sit alongside disadvantages",
+			"children carrying no points sit alongside disadvantages too",
 			[]PointsRange{disadvantage, noPoints},
-			PointsRangeMixed,
+			PointsRangeNegative,
 		},
 	} {
 		c.Equal(signName(tc.want), signName(SignForPointsRanges(tc.ranges...)), tc.msg)
@@ -1474,6 +1528,8 @@ func signName(s PointsRangeSign) string {
 		return "positive"
 	case PointsRangeNegative:
 		return "negative"
+	case PointsRangeZero:
+		return "zero"
 	case PointsRangeMixed:
 		return "mixed"
 	default:

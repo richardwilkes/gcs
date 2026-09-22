@@ -588,8 +588,10 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account. Something presenting a choice
-// every outcome of which costs the same reports that cost; see PointsRange for one whose outcomes differ.
-func (t *Trait) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
+// every outcome of which costs the same reports that cost; see PointsRange for one whose outcomes differ. The tooltip
+// is accepted so that every node's cost can be asked for the same way, but nothing here ever fills it: no feature
+// adds points to a trait the way one can to a skill or a spell, so there are no sources to name.
+func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 	if t.EffectivelyDisabled() {
 		return 0
 	}
@@ -597,36 +599,30 @@ func (t *Trait) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
 			t.SelfControl, t.Frequency, t.AllModifiers(), t.RoundCostDown)
 	}
-	// A container that presents a choice is never worth what its children add up to, since only some of them will be
-	// taken. When every way of making that choice costs the same -- "pick 20 points worth", most often -- that is what
-	// it is worth. When they don't, there is no single answer, and the total of the children is left as the answer it
-	// has always given here, with PointsRange holding the one that can be relied upon. The tooltip is handed along, but
-	// a container never puts anything into it; see PointsRange for why.
 	if !t.TemplatePicker.IsZero() {
-		if value, settled := t.PointsRange(tooltip).Settled(); settled {
-			return value
-		}
+		// See pickerContainerPoints for what a container presenting a choice is worth.
+		return pickerContainerPoints(t.TemplatePicker, t.Children)
 	}
-	var points fxp.Int
 	if t.ContainerType == container.AlternativeAbilities {
 		values := make([]fxp.Int, len(t.Children))
 		for i, one := range t.Children {
 			values[i] = one.AdjustedPoints(nil)
 		}
-		points = alternativeAbilitiesPoints(values, t.ResolvedAlternativeSlots(), t.RoundCostDown)
-	} else {
-		for _, one := range t.Children {
-			points += one.AdjustedPoints(nil)
-		}
+		return alternativeAbilitiesPoints(values, t.ResolvedAlternativeSlots(), t.RoundCostDown)
+	}
+	var points fxp.Int
+	for _, one := range t.Children {
+		points += one.AdjustedPoints(nil)
 	}
 	return points
 }
 
 // PointsRange returns the span of point costs this trait may end up being worth, once every choice it or anything
 // inside it presents has been made. With no choice left to make, the range is settled and holds the same value
-// AdjustedPoints returns. The tooltip may be nil, and only a non-container ever fills it: the notes name each bonus
+// AdjustedPoints returns. The tooltip may be nil, and is handed only to a non-container: the notes name each bonus
 // source without saying which row it landed on, so rolling a container's children up into one list would give an
-// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it.
+// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it. A trait leaves the
+// tooltip alone even then -- see AdjustedPoints -- but is asked for its cost the same way a skill or a spell is.
 func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	if !t.Container() {
 		// The disabled case is covered too: AdjustedPoints reports nothing for a trait that is switched off.
@@ -638,50 +634,47 @@ func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	if value, settled := settledPickerCost(t.TemplatePicker); settled {
 		return PointsRangeOf(value)
 	}
-	if !t.TemplatePicker.IsZero() {
-		ranges := make([]PointsRange, len(t.Children))
-		for i, one := range t.Children {
-			ranges[i] = one.PointsRange(nil)
-		}
-		return pointsRangeForPicker(t.TemplatePicker, ranges)
+	ranges := childPointsRanges(t.Children)
+	if t.TemplatePicker.IsZero() && t.ContainerType == container.AlternativeAbilities {
+		return t.alternativeAbilitiesPointsRange(ranges)
 	}
-	ranges := make([]PointsRange, len(t.Children))
-	for i, one := range t.Children {
-		ranges[i] = one.PointsRange(nil)
+	// A picker with nothing to pick from, and a container carrying no picker at all, both come back as the total of
+	// the children, which is what everything inside a container being taken costs.
+	return pointsRangeForPicker(t.TemplatePicker, ranges)
+}
+
+// alternativeAbilitiesPointsRange returns the span of costs a set of alternative abilities may be worth, given the
+// ranges of the abilities themselves. Each end is worked out from the matching end of the children's. That is a bound
+// rather than an exact answer when a child is itself unsettled, since the cheapest child need not be the cheapest one
+// to treat as the primary ability, but alternative abilities never hold template choices in practice.
+func (t *Trait) alternativeAbilitiesPointsRange(ranges []PointsRange) PointsRange {
+	var result PointsRange
+	mins := make([]fxp.Int, 0, len(ranges))
+	maxes := make([]fxp.Int, 0, len(ranges))
+	noLowerLimit := false
+	noUpperLimit := false
+	for _, one := range ranges {
+		if one.Min == nil {
+			noLowerLimit = true
+		} else {
+			mins = append(mins, *one.Min)
+		}
+		if one.Max == nil {
+			noUpperLimit = true
+		} else {
+			maxes = append(maxes, *one.Max)
+		}
 	}
-	if t.ContainerType == container.AlternativeAbilities {
-		// Each end of the range is worked out from the matching end of the children's. That is a bound rather than an
-		// exact answer when a child is itself unsettled, since the cheapest child need not be the cheapest one to
-		// treat as the primary ability, but alternative abilities never hold template choices in practice.
-		var result PointsRange
-		mins := make([]fxp.Int, 0, len(ranges))
-		maxes := make([]fxp.Int, 0, len(ranges))
-		noLowerLimit := false
-		noUpperLimit := false
-		for _, one := range ranges {
-			if one.Min == nil {
-				noLowerLimit = true
-			} else {
-				mins = append(mins, *one.Min)
-			}
-			if one.Max == nil {
-				noUpperLimit = true
-			} else {
-				maxes = append(maxes, *one.Max)
-			}
-		}
-		slots := t.ResolvedAlternativeSlots()
-		if !noLowerLimit {
-			minimum := alternativeAbilitiesPoints(mins, slots, t.RoundCostDown)
-			result.Min = &minimum
-		}
-		if !noUpperLimit {
-			maximum := alternativeAbilitiesPoints(maxes, slots, t.RoundCostDown)
-			result.Max = &maximum
-		}
-		return result
+	slots := t.ResolvedAlternativeSlots()
+	if !noLowerLimit {
+		minimum := alternativeAbilitiesPoints(mins, slots, t.RoundCostDown)
+		result.Min = &minimum
 	}
-	return sumPointsRanges(ranges)
+	if !noUpperLimit {
+		maximum := alternativeAbilitiesPoints(maxes, slots, t.RoundCostDown)
+		result.Max = &maximum
+	}
+	return result
 }
 
 // alternativeAbilitiesPoints returns what a set of alternative abilities costs: the slots most expensive of them at

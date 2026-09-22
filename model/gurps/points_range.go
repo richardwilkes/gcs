@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
@@ -41,6 +42,8 @@ const (
 	PointsRangePositive PointsRangeSign = iota
 	// PointsRangeNegative represents a PointsRange where Min/Max are both negative
 	PointsRangeNegative
+	// PointsRangeZero represents a PointsRange where Min/Max are both zero
+	PointsRangeZero
 	// PointsRangeMixed represents a PointsRange where Min/Max are split between positive and negative
 	PointsRangeMixed
 )
@@ -81,15 +84,24 @@ func (r PointsRange) Settled() (value fxp.Int, settled bool) {
 	return *r.Min, true
 }
 
-// Sign returns if the range is positive, negative, or mixed
+// Sign returns if the range is positive, negative, zero, or mixed
 func (r PointsRange) Sign() PointsRangeSign {
-	minPos := r.Min != nil && *r.Min >= 0
-	maxPos := r.Max == nil || *r.Max >= 0
-	if minPos == maxPos || (!minPos && r.Max != nil && *r.Max == 0) {
-		if minPos {
+	if r.Min != nil && r.Max != nil {
+		switch {
+		case *r.Min == 0 && *r.Max == 0:
+			return PointsRangeZero
+		case *r.Min >= 0 && *r.Max > 0:
 			return PointsRangePositive
+		case *r.Min < 0 && *r.Max <= 0:
+			return PointsRangeNegative
 		}
-		return PointsRangeNegative
+	} else {
+		switch {
+		case r.Min != nil && r.Max == nil && *r.Min >= 0:
+			return PointsRangePositive
+		case r.Min == nil && r.Max != nil && *r.Max <= 0:
+			return PointsRangeNegative
+		}
 	}
 	return PointsRangeMixed
 }
@@ -187,6 +199,58 @@ func settledPickerCost(tp TemplatePicker) (value fxp.Int, settled bool) {
 		return tp.Qualifier.Qualifier, true
 	}
 	return 0, false
+}
+
+// pointsRangeNode is a constraint for a Node whose cost can be asked for, which is every node a template picker can
+// appear on.
+type pointsRangeNode[T pointsRangeNode[T]] interface {
+	Node[T]
+	AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int
+	PointsRange(tooltip *xbytes.InsertBuffer) PointsRange
+}
+
+// childPointsRanges returns the range of every child. A container's own range, and the total it falls back to when
+// that range is left unsettled, are both worked out from these, so they are only ever built once per container.
+func childPointsRanges[T pointsRangeNode[T]](children []T) []PointsRange {
+	ranges := make([]PointsRange, len(children))
+	for i, one := range children {
+		ranges[i] = one.PointsRange(nil)
+	}
+	return ranges
+}
+
+// pickerContainerPoints returns what a container carrying the given picker is worth, which is never what its children
+// add up to, since only some of them will be taken. When every way of making the choice costs the same -- "pick 20
+// points worth", most often -- that is what it is worth. When they don't, there is no single answer, and the total of
+// the children is left as the answer AdjustedPoints has always given here, with PointsRange holding the one that can
+// be relied upon.
+//
+// The children are walked once. The range that comes out of that walk answers both questions: whether the choice has
+// a single cost after all, and, when it doesn't, what the children add up to.
+func pickerContainerPoints[T pointsRangeNode[T]](tp TemplatePicker, children []T) fxp.Int {
+	if value, settled := settledPickerCost(tp); settled {
+		return value
+	}
+	ranges := childPointsRanges(children)
+	if value, settled := pointsRangeForPicker(tp, ranges).Settled(); settled {
+		return value
+	}
+	return totalOfAdjustedPoints(children, ranges)
+}
+
+// totalOfAdjustedPoints returns the total the children cost, given the ranges already worked out for them. A settled
+// range is exactly what AdjustedPoints reports for that child, so only a child still presenting a choice of its own
+// has to be walked a second time.
+func totalOfAdjustedPoints[T pointsRangeNode[T]](children []T, ranges []PointsRange) fxp.Int {
+	var total fxp.Int
+	for i, one := range children {
+		if value, settled := ranges[i].Settled(); settled {
+			total += value
+			continue
+		}
+		total += one.AdjustedPoints(nil)
+	}
+	return total
 }
 
 // sumPointsRanges returns the total of the ranges, which is what a container that presents no choice costs: everything
@@ -290,11 +354,16 @@ func pointsRangeForPickerByCount(cq criteria.Number, children []PointsRange) Poi
 // What the children can reach still matters at both ends. Taking nothing is always an option, so the cheapest pick can
 // never cost more than nothing and the costliest can never cost less; the qualifier binds only the end it constrains,
 // and only as far as the children allow. A qualifier the children cannot reach leaves its end open rather than
-// contradicting the other one: the children of such a picker are typically skills or spells carrying no points at all,
-// whose cost is assigned while picking (see ux.pickerRowPointEditor), and a leveled trait's cost can be raised there
-// too.
+// contradicting the other one: such a picker offers a leveled trait whose cost can be raised while picking, or a skill
+// or spell whose points are assigned there (see ux.pickerRowPointEditor).
+//
+// Children that can only cost nothing -- and a picker authored with nothing to pick from -- leave it no side to take
+// at all, and a qualifier with no side to bind is not what the container is worth: it costs nothing until something
+// on offer can cost something. An exact qualifier is the exception, since it says what the container is worth without
+// consulting its children.
 func pointsRangeForPickerByPoints(cq criteria.Number, children []PointsRange) PointsRange {
-	if cq.Compare == criteria.EqualsNumber {
+	compare := cq.Compare.EnsureValid()
+	if compare == criteria.EqualsNumber {
 		return PointsRangeOf(cq.Qualifier)
 	}
 	switch SignForPointsRanges(children...) {
@@ -302,7 +371,7 @@ func pointsRangeForPickerByPoints(cq criteria.Number, children []PointsRange) Po
 		if cq.Qualifier < 0 {
 			break
 		}
-		switch cq.Compare {
+		switch compare {
 		case criteria.AtLeastNumber:
 			return pointsRangeAtLeast(cq.Qualifier)
 		case criteria.AtMostNumber:
@@ -314,7 +383,7 @@ func pointsRangeForPickerByPoints(cq criteria.Number, children []PointsRange) Po
 		if cq.Qualifier > 0 {
 			break
 		}
-		switch cq.Compare {
+		switch compare {
 		case criteria.AtLeastNumber:
 			return newPointsRange(cq.Qualifier, 0)
 		case criteria.AtMostNumber:
@@ -322,6 +391,8 @@ func pointsRangeForPickerByPoints(cq criteria.Number, children []PointsRange) Po
 		default:
 			return pointsRangeAtMost(0)
 		}
+	case PointsRangeZero:
+		return PointsRangeOf(0)
 	}
 
 	// This is the degenerate case and we return a fully unbounded range - ideally this never happens (but it could)
@@ -434,7 +505,7 @@ func SignForPointsRanges(ranges ...PointsRange) PointsRangeSign {
 				return PointsRangeMixed
 			}
 			negative = true
-		default:
+		case PointsRangeMixed:
 			return PointsRangeMixed
 		}
 	}
@@ -442,9 +513,12 @@ func SignForPointsRanges(ranges ...PointsRange) PointsRangeSign {
 	if negative {
 		return PointsRangeNegative
 	}
+	if positive {
+		return PointsRangePositive
+	}
 
-	// Defaults to positive when there are no ranges
-	return PointsRangePositive
+	// Every range agreed on nothing, or there were no ranges at all.
+	return PointsRangeZero
 }
 
 // How a range is punctuated. These are symbols rather than prose, so they are not run through i18n: a translated
@@ -488,6 +562,6 @@ func pointsSortValue(text string) (value fxp.Int, unlimited bool) {
 	if strings.HasPrefix(text, unboundedMinPrefix) || text == noLimitsAtAll {
 		return 0, true
 	}
-	value, _ = fxp.Extract(strings.ReplaceAll(text, ",", ""))
+	value, _ = fxp.Extract(text) // Extract reads the commas a rendered cost may carry
 	return value, false
 }

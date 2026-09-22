@@ -649,15 +649,10 @@ func (s *Skill) SetRawPoints(points fxp.Int) bool {
 // costs the same reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
-		// A container that presents a choice is never worth what its children add up to, since only some of them will
-		// be taken. When every way of making that choice costs the same -- "pick 20 points worth", most often -- that
-		// is what it is worth. When they don't, there is no single answer, and the total of the children is left as the
-		// answer it has always given here, with PointsRange holding the one that can be relied upon. The tooltip is
-		// handed along, but a container never puts anything into it; see PointsRange for why.
+		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
-			if value, settled := s.PointsRange(tooltip).Settled(); settled {
-				return value
-			}
+			// See pickerContainerPoints for what a container presenting a choice is worth.
+			return pickerContainerPoints(s.TemplatePicker, s.Children)
 		}
 		var total fxp.Int
 		for _, one := range s.Children {
@@ -694,18 +689,9 @@ func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	if value, settled := settledPickerCost(s.TemplatePicker); settled {
 		return PointsRangeOf(value)
 	}
-	if !s.TemplatePicker.IsZero() {
-		ranges := make([]PointsRange, len(s.Children))
-		for i, one := range s.Children {
-			ranges[i] = one.PointsRange(nil)
-		}
-		return pointsRangeForPicker(s.TemplatePicker, ranges)
-	}
-	ranges := make([]PointsRange, len(s.Children))
-	for i, one := range s.Children {
-		ranges[i] = one.PointsRange(nil)
-	}
-	return sumPointsRanges(ranges)
+	// A picker with nothing to pick from, and a container carrying no picker at all, both come back as the total of
+	// the children, which is what everything inside a container being taken costs.
+	return pointsRangeForPicker(s.TemplatePicker, childPointsRanges(s.Children))
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
