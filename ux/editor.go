@@ -259,6 +259,13 @@ func rowIndexForData[T gurps.Node[T]](table *unison.Table[*Node[T]], data T) int
 
 func (e *editor[N, D]) apply() {
 	e.Window().FocusNext() // Move the focus to flush any pending edits
+	e.applyEdit()
+}
+
+// applyEdit is everything an apply does once any pending field edit has been flushed: record the undo, write the
+// editor's data onto the target, and report the change. Split out from apply so that it can be driven without a
+// window. This split is primarily to allow for better testing.
+func (e *editor[N, D]) applyEdit() {
 	if e.preApplyCallback != nil {
 		e.preApplyCallback(e.editorData)
 	}
