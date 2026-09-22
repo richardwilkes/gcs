@@ -76,3 +76,23 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 
 	return typePopup, comparisonPopup, field
 }
+
+// templatePickerAdded reports whether an edit *added* valid template picker data
+func templatePickerAdded[N gurps.Node[N], D gurps.EditorData[N]](before, after D) bool {
+	beforePicker, ok := templatePickerOf(before)
+	if !ok || !beforePicker.IsZero() {
+		return false
+	}
+	afterPicker, ok := templatePickerOf(after)
+	return ok && !afterPicker.IsZero()
+}
+
+// templatePickerOf returns the template picker data held by the given editor data, if it has any.
+func templatePickerOf[N gurps.Node[N], D gurps.EditorData[N]](data D) (gurps.TemplatePicker, bool) {
+	if provider, ok := any(data).(gurps.TemplatePickerProvider); ok && !xreflect.IsNil(provider) {
+		if _, tp := provider.TemplatePickerData(); tp != nil {
+			return *tp, true
+		}
+	}
+	return gurps.TemplatePicker{}, false
+}

@@ -257,6 +257,14 @@ func rowIndexForData[T gurps.Node[T]](table *unison.Table[*Node[T]], data T) int
 	return -1
 }
 
+// sourcedTarget is the part of a node that carries a link back to the library item it was copied from. Every sourced
+// type embeds gurps.SourcedID and so satisfies this; weapons and conditional modifiers implement it themselves.
+type sourcedTarget interface {
+	GetSource() gurps.Source
+	SetSource(gurps.Source)
+	ClearSource()
+}
+
 func (e *editor[N, D]) apply() {
 	e.Window().FocusNext() // Move the focus to flush any pending edits
 	e.applyEdit()
@@ -269,18 +277,35 @@ func (e *editor[N, D]) applyEdit() {
 	if e.preApplyCallback != nil {
 		e.preApplyCallback(e.editorData)
 	}
+	// Authoring template picker choices onto a container means it is no longer a copy of the library item it came
+	// from, so it stops claiming to be one.
+	sourced, isSourced := any(e.target).(sourcedTarget)
+	clearSource := isSourced && templatePickerAdded(e.beforeData, e.editorData)
 	if mgr := unison.UndoManagerFor(e.owner); mgr != nil {
 		owner := e.owner
 		target := e.target
+		// The source has to be captured separately from the rest of the undo data. It lives on the node rather than in
+		// the editor's data, so BeforeData.ApplyTo(target) doesn't carry it, and undoing an edit that cleared it would
+		// otherwise leave the link gone for good -- saved file and all.
+		var beforeSource gurps.Source
+		if isSourced {
+			beforeSource = sourced.GetSource()
+		}
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
 			EditName: fmt.Sprintf(i18n.Text("%s Changes"), target.Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
+				if isSourced {
+					sourced.SetSource(beforeSource)
+				}
 				rebuildAsModified(owner, true)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.AfterData.ApplyTo(target)
+				if clearSource {
+					sourced.ClearSource()
+				}
 				rebuildAsModified(owner, true)
 			},
 			BeforeData: e.beforeData,
@@ -288,5 +313,8 @@ func (e *editor[N, D]) applyEdit() {
 		})
 	}
 	e.editorData.ApplyTo(e.target)
+	if clearSource {
+		sourced.ClearSource()
+	}
 	rebuildAsModified(e.owner, true)
 }
