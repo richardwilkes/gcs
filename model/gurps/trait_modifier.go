@@ -557,16 +557,6 @@ func (t *TraitModifier) ClearUnusedFieldsForType() {
 	}
 }
 
-// GetSource returns the source of this data.
-func (t *TraitModifier) GetSource() Source {
-	return t.Source
-}
-
-// ClearSource clears the source of this data.
-func (t *TraitModifier) ClearSource() {
-	t.Source = Source{}
-}
-
 // SyncWithSource synchronizes this data with the source.
 func (t *TraitModifier) SyncWithSource() {
 	syncFromSource(t, func(other *TraitModifier) {

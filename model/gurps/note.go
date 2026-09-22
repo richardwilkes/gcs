@@ -354,16 +354,6 @@ func (n *Note) ClearUnusedFieldsForType() {
 	}
 }
 
-// GetSource returns the source of this data.
-func (n *Note) GetSource() Source {
-	return n.Source
-}
-
-// ClearSource clears the source of this data.
-func (n *Note) ClearSource() {
-	n.Source = Source{}
-}
-
 // SyncWithSource synchronizes this data with the source.
 func (n *Note) SyncWithSource() {
 	syncFromSource(n, func(other *Note) {
