@@ -33,6 +33,18 @@ type PointsRange struct {
 	Max *fxp.Int
 }
 
+// PointsRangeSign is an enum for the sign of a PointsRange
+type PointsRangeSign byte
+
+const (
+	// PointsRangePositive represents a PointsRange where Min/Max are both positive
+	PointsRangePositive PointsRangeSign = iota
+	// PointsRangeNegative represents a PointsRange where Min/Max are both negative
+	PointsRangeNegative
+	// PointsRangeMixed represents a PointsRange where Min/Max are split between positive and negative
+	PointsRangeMixed
+)
+
 // PointsRangeOf returns the settled range for an item whose cost is already known.
 func PointsRangeOf(value fxp.Int) PointsRange {
 	minimum := value
@@ -67,6 +79,19 @@ func (r PointsRange) Settled() (value fxp.Int, settled bool) {
 		return 0, false
 	}
 	return *r.Min, true
+}
+
+// Sign returns if the range is positive, negative, or mixed
+func (r PointsRange) Sign() PointsRangeSign {
+	minPos := r.Min != nil && *r.Min >= 0
+	maxPos := r.Max == nil || *r.Max >= 0
+	if minPos == maxPos || (!minPos && r.Max != nil && *r.Max == 0) {
+		if minPos {
+			return PointsRangePositive
+		}
+		return PointsRangeNegative
+	}
+	return PointsRangeMixed
 }
 
 // Add returns the result of adding another range to this one. An end with no limit stays that way, since nothing that
@@ -221,7 +246,7 @@ func pointsRangeForPickerByCount(cq criteria.Number, children []PointsRange) Poi
 	costliestFirst := byMax(children)
 
 	switch compare {
-	case criteria.EqualsNumber: // Expects and exact number of selections
+	case criteria.EqualsNumber: // Expects an exact number of selections
 		// To get a valid range for an exact number of selections, we generate two sums.
 		// The first sum is the `Min` side and is the `Min` sum from the *cheapest* {count} children.
 		// The second sum is the `Max` side and is the `Max` sum from the *most expensive* {count} children.
@@ -269,34 +294,38 @@ func pointsRangeForPickerByCount(cq criteria.Number, children []PointsRange) Poi
 // whose cost is assigned while picking (see ux.pickerRowPointEditor), and a leveled trait's cost can be raised there
 // too.
 func pointsRangeForPickerByPoints(cq criteria.Number, children []PointsRange) PointsRange {
-	// The cheapest and costliest a pick can be, taking only what helps that end. Both are reachable, since taking
-	// nothing is always allowed, so cheapest <= 0 <= costliest wherever they are bounded at all.
-	cheapest := everythingNegative(children).end()
-	costliest := everythingPositive(children).end()
-	switch cq.Compare.EnsureValid() {
-	case criteria.EqualsNumber: // The pick costs exactly the qualifier.
+	if cq.Compare == criteria.EqualsNumber {
 		return PointsRangeOf(cq.Qualifier)
-	case criteria.AtLeastNumber: // The pick costs the qualifier or more.
-		if costliest != nil && *costliest < cq.Qualifier {
-			return pointsRangeAtLeast(cq.Qualifier) // The children set no ceiling on what the picker asks for.
-		}
-		minimum := cq.Qualifier
-		if cheapest != nil && *cheapest > minimum {
-			minimum = *cheapest // The qualifier asks for less than the cheapest pick already costs.
-		}
-		return PointsRange{Min: &minimum, Max: costliest}
-	case criteria.AtMostNumber: // The pick costs the qualifier or less.
-		maximum := cq.Qualifier
-		if costliest != nil && *costliest < maximum {
-			maximum = *costliest // The qualifier allows more than the costliest pick can spend.
-		}
-		if cheapest != nil && *cheapest > cq.Qualifier {
-			return pointsRangeAtMost(maximum) // The children set no floor under what the picker allows.
-		}
-		return PointsRange{Min: cheapest, Max: &maximum}
-	default: // Any number, or an "is not" that no selection is meaningfully constrained by.
-		return PointsRange{Min: cheapest, Max: costliest}
 	}
+	switch SignForPointsRanges(children...) {
+	case PointsRangePositive:
+		if cq.Qualifier < 0 {
+			break
+		}
+		switch cq.Compare {
+		case criteria.AtLeastNumber:
+			return pointsRangeAtLeast(cq.Qualifier)
+		case criteria.AtMostNumber:
+			return newPointsRange(0, cq.Qualifier)
+		default:
+			return pointsRangeAtLeast(0)
+		}
+	case PointsRangeNegative:
+		if cq.Qualifier > 0 {
+			break
+		}
+		switch cq.Compare {
+		case criteria.AtLeastNumber:
+			return newPointsRange(cq.Qualifier, 0)
+		case criteria.AtMostNumber:
+			return pointsRangeAtMost(cq.Qualifier)
+		default:
+			return pointsRangeAtMost(0)
+		}
+	}
+
+	// This is the degenerate case and we return a fully unbounded range - ideally this never happens (but it could)
+	return PointsRange{}
 }
 
 // byMin returns the ranges ordered from cheapest to costliest, one with no lower limit coming first, since nothing is
@@ -389,26 +418,33 @@ func sumOver(costliestFirst []PointsRange) pointsBound {
 	return result
 }
 
-// everythingNegative returns the total of every child that costs less than nothing.
-func everythingNegative(ranges []PointsRange) pointsBound {
-	var result pointsBound
-	for _, one := range ranges {
-		if one.Min == nil || *one.Min < 0 {
-			result = result.add(one.Min)
+// SignForPointsRanges returns the sign across a slice of ranges
+func SignForPointsRanges(ranges ...PointsRange) PointsRangeSign {
+	var positive bool
+	var negative bool
+	for _, r := range ranges {
+		switch r.Sign() {
+		case PointsRangePositive:
+			if negative {
+				return PointsRangeMixed
+			}
+			positive = true
+		case PointsRangeNegative:
+			if positive {
+				return PointsRangeMixed
+			}
+			negative = true
+		default:
+			return PointsRangeMixed
 		}
 	}
-	return result
-}
 
-// everythingPositive returns the total of every child that costs more than nothing.
-func everythingPositive(ranges []PointsRange) pointsBound {
-	var result pointsBound
-	for _, one := range ranges {
-		if one.Max == nil || *one.Max > 0 {
-			result = result.add(one.Max)
-		}
+	if negative {
+		return PointsRangeNegative
 	}
-	return result
+
+	// Defaults to positive when there are no ranges
+	return PointsRangePositive
 }
 
 // How a range is punctuated. These are symbols rather than prose, so they are not run through i18n: a translated
