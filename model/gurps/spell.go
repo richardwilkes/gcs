@@ -1113,16 +1113,6 @@ func (s *Spell) ClearUnusedFieldsForType() {
 	}
 }
 
-// GetSource returns the source of this data.
-func (s *Spell) GetSource() Source {
-	return s.Source
-}
-
-// ClearSource clears the source of this data.
-func (s *Spell) ClearSource() {
-	s.Source = Source{}
-}
-
 // SyncWithSource synchronizes this data with the source.
 func (s *Spell) SyncWithSource() {
 	syncFromSource(s, func(other *Spell) {

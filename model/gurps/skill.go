@@ -1422,16 +1422,6 @@ func (s *Skill) ClearUnusedFieldsForType() {
 	}
 }
 
-// GetSource returns the source of this data.
-func (s *Skill) GetSource() Source {
-	return s.Source
-}
-
-// ClearSource clears the source of this data.
-func (s *Skill) ClearSource() {
-	s.Source = Source{}
-}
-
 // SyncWithSource synchronizes this data with the source.
 func (s *Skill) SyncWithSource() {
 	syncFromSource(s, func(other *Skill) {

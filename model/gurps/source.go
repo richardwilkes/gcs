@@ -201,6 +201,21 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 	return srcstate.Missing, nil
 }
 
+// GetSource returns the source of this data.
+func (s *SourcedID) GetSource() Source {
+	return s.Source
+}
+
+// ClearSource clears the source of this data.
+func (s *SourcedID) ClearSource() {
+	s.Source = Source{}
+}
+
+// SetSource sets the source of this data.
+func (s *SourcedID) SetSource(src Source) {
+	s.Source = src
+}
+
 // AdjustSource adjusts TID and Source based on `original` and the clone `mode`.
 //
 // A 'Copy' keeps original's TID instead of minting a fresh one.
