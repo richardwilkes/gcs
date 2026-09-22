@@ -3,7 +3,7 @@ module github.com/richardwilkes/gcs/v5
 go 1.27.0
 
 require (
-	github.com/dop251/goja v0.0.0-20260911104922-fabc3b8078ad
+	github.com/dop251/goja v0.0.0-20260917113740-793a2a65c13b
 	github.com/go-git/go-billy/v6 v6.0.0-alpha.2
 	github.com/go-git/go-git/v6 v6.0.0-alpha.5
 	github.com/google/uuid v1.6.0
@@ -11,7 +11,7 @@ require (
 	github.com/richardwilkes/pdfview v0.8.1
 	github.com/richardwilkes/rpgtools v1.14.0
 	github.com/richardwilkes/toolbox/v2 v2.20.0
-	github.com/richardwilkes/unison v0.105.1-0.20260922205631-df6a6469516a
+	github.com/richardwilkes/unison v0.106.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.6
@@ -30,7 +30,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cloudflare/circl v1.6.5 // indirect
 	github.com/dlclark/regexp2/v2 v2.8.0 // indirect
-	github.com/ebitengine/purego v0.11.0 // indirect
+	github.com/ebitengine/purego v0.11.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
