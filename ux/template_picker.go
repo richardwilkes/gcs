@@ -30,17 +30,20 @@ import (
 	"github.com/richardwilkes/unison/enums/side"
 )
 
-// processTemplatePickers presents the template picker dialog for each row that has one, replacing the rows with the
+// processTemplatePartsFunc resolves the template choices the parts carry, answering false if one was canceled.
+type processTemplatePartsFunc func(*templateParts) bool
+
+// processTemplateParts presents the template picker dialog for each row that has one, replacing the rows with the
 // resulting choices. It returns false if the user canceled one of them, in which case the rows must be discarded.
-func processTemplatePickers(rows *templateRows) bool {
+func processTemplateParts(parts *templateParts) bool {
 	var abort bool
-	if rows.traits, abort = processPickerRows(rows.traits); abort {
+	if parts.traits, abort = processPickerRows(parts.traits); abort {
 		return false
 	}
-	if rows.skills, abort = processPickerRows(rows.skills); abort {
+	if parts.skills, abort = processPickerRows(parts.skills); abort {
 		return false
 	}
-	if rows.spells, abort = processPickerRows(rows.spells); abort {
+	if parts.spells, abort = processPickerRows(parts.spells); abort {
 		return false
 	}
 	return true

@@ -709,7 +709,7 @@ func newApplyTemplateMenuItem(f unison.MenuFactory, id *int, templatePath string
 	*id++
 	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, applyTemplateAction.Title,
 		unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
-			ApplyTemplate(templatePath)
+			ApplyTemplateFile(templatePath)
 		})
 }
 

@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -86,7 +85,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		notes:            func() itemCreator { return t.Notes },
 	})
 	installTraitListCmdHandlers(t, t.template, nil, func() *PageList[*gurps.Trait] { return t.Traits })
-	t.InstallCmdHandlers(ApplyTemplateItemID, t.canApplyTemplate, t.applyTemplate)
+	installTemplateApplyCmdHandler(t)
 	t.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, t.newSheetFromTemplate)
 	InstallExportCmdHandlers(t)
 
@@ -123,7 +122,7 @@ func (t *Template) createToolbar() {
 	applyTemplateButton.Tooltip = newWrappedTooltip(applyTemplateAction.Title)
 	applyTemplateButton.ClickCallback = func() {
 		if CanApplyTemplate() {
-			t.applyTemplate(nil)
+			ApplyTemplate(t, false)
 		}
 	}
 	t.toolbar.AddChild(applyTemplateButton)
@@ -157,15 +156,6 @@ func (t *Template) keyToPanel(key *uti.DataType) *unison.Panel {
 	return p.AsPanel()
 }
 
-// CanApplyTemplate returns true if a template can be applied.
-func CanApplyTemplate() bool {
-	return len(OpenSheets(nil)) > 0
-}
-
-func (t *Template) canApplyTemplate(_ any) bool {
-	return CanApplyTemplate()
-}
-
 // NewSheetFromTemplate loads the specified template file and creates a new character sheet from it.
 func NewSheetFromTemplate(filePath string) {
 	d, err := NewTemplateFromFile(filePath)
@@ -182,148 +172,11 @@ func (t *Template) newSheetFromTemplate(_ any) {
 	e := gurps.NewEntity()
 	sheet := NewSheet(e.Profile.Name+gurps.SheetExt, e)
 	DisplayNewDockable(sheet)
-	if t.applyTemplateToSheet(sheet, true) {
+	if ApplyTemplateToSheet(t, sheet, true) {
 		sheet.undoMgr.Clear()
 		sheet.hash = 0
 	}
 	sheet.SetBackingFilePath(e.Profile.Name + gurps.SheetExt)
-}
-
-// ApplyTemplate loads the specified template file and applies it to a sheet.
-func ApplyTemplate(filePath string) {
-	t, err := NewTemplateFromFile(filePath)
-	if err != nil {
-		Workspace.ErrorHandler(i18n.Text("Unable to load template"), err)
-		return
-	}
-	if CanApplyTemplate() {
-		if t, ok := t.(*Template); ok {
-			t.applyTemplate(nil)
-		}
-	}
-}
-
-func (t *Template) applyTemplate(suppressRandomizePromptAsBool any) {
-	//nolint:errcheck // The default of false on failure is acceptable
-	suppressRandomizePrompt, _ := suppressRandomizePromptAsBool.(bool)
-	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
-		t.applyTemplateToSheet(sheet, suppressRandomizePrompt)
-	}
-}
-
-// templateRows holds the rows cloned from a template for insertion into a sheet.
-type templateRows struct {
-	traits    []*Node[*gurps.Trait]
-	skills    []*Node[*gurps.Skill]
-	spells    []*Node[*gurps.Spell]
-	equipment []*Node[*gurps.Equipment]
-	notes     []*Node[*gurps.Note]
-}
-
-func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) bool {
-	return t.applyTemplateToSheetWithPickers(sheet, suppressRandomizePrompt, processTemplatePickers)
-}
-
-// applyTemplateToSheetWithPickers applies the template to the sheet, using processPickers to resolve any template
-// pickers the template's rows contain. The picker processing is passed in so that headless tests, which have no way to
-// respond to the dialogs it would otherwise present, can substitute their own.
-func (t *Template) applyTemplateToSheetWithPickers(sheet *Sheet, suppressRandomizePrompt bool, processPickers func(rows *templateRows) bool) bool {
-	var undo *unison.UndoEdit[*ApplyTemplateUndoEditData]
-	mgr := unison.UndoManagerFor(sheet)
-	if mgr != nil {
-		if beforeData, err := NewApplyTemplateUndoEditData(sheet); err != nil {
-			errs.Log(err)
-			mgr = nil
-		} else {
-			undo = &unison.UndoEdit[*ApplyTemplateUndoEditData]{
-				ID:         unison.NextUndoID(),
-				EditName:   i18n.Text("Apply Template"),
-				UndoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.BeforeData.Apply() },
-				RedoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.AfterData.Apply() },
-				AbsorbFunc: func(_ *unison.UndoEdit[*ApplyTemplateUndoEditData], _ unison.Undoable) bool { return false },
-				BeforeData: beforeData,
-			}
-		}
-	}
-	e := sheet.Entity()
-	// Nothing from here until the pickers have been dealt with may modify the sheet: canceling a picker abandons the
-	// entire operation, which must leave the sheet exactly as it was. That includes the Ancestry question below, which
-	// is asked here to preserve the order the questions are presented in, but not acted upon until the operation is
-	// known to be going through.
-	disableExistingAncestries := false
-	templateAncestries := gurps.ActiveAncestries(ExtractNodeDataFromList(t.Traits.Table.RootRows()))
-	if len(templateAncestries) != 0 {
-		entityAncestries := gurps.ActiveAncestries(e.Traits)
-		if len(entityAncestries) != 0 {
-			disableExistingAncestries = unison.YesNoDialog(fmt.Sprintf(i18n.Text(`The template contains an Ancestry (%s).
-Disable your character's existing Ancestry (%s)?`),
-				templateAncestries[0].Name, entityAncestries[0].Name), "") == unison.ModalResponseOK
-		}
-	}
-	rows := &templateRows{
-		traits:    cloneRows(sheet.Traits.Table, t.Traits.Table.RootRows()),
-		skills:    cloneRows(sheet.Skills.Table, t.Skills.Table.RootRows()),
-		spells:    cloneRows(sheet.Spells.Table, t.Spells.Table.RootRows()),
-		equipment: cloneRows(sheet.CarriedEquipment.Table, t.Equipment.Table.RootRows()),
-		notes:     cloneRows(sheet.Notes.Table, t.Notes.Table.RootRows()),
-	}
-	if !processPickers(rows) {
-		return false // A picker was canceled, so the sheet has been left untouched.
-	}
-	// The sheet is modified from this point on.
-	if t.template.BodyType != nil {
-		e.SheetSettings.BodyType = t.template.BodyType.Clone(e, nil)
-	}
-	if disableExistingAncestries {
-		for _, one := range gurps.ActiveAncestryTraits(e.Traits) {
-			one.Disabled = true
-		}
-	}
-	// Skills and spells merge points with identical existing rows during appendRows, and the merge match includes the
-	// nameable replacements. Since they have no modifiers to toggle, resolve their nameables up front so the merge
-	// compares against the final replacements; otherwise re-applying a template would compare empty replacements
-	// against the already-resolved existing rows and add duplicates instead of merging.
-	ProcessNameables(sheet.Skills.Table, ExtractNodeDataFromList(rows.skills), true)
-	ProcessNameables(sheet.Spells.Table, ExtractNodeDataFromList(rows.spells), true)
-	appendRows(sheet.Traits.Table, rows.traits)
-	appendRows(sheet.Skills.Table, rows.skills)
-	appendRows(sheet.Spells.Table, rows.spells)
-	appendRows(sheet.CarriedEquipment.Table, rows.equipment)
-	appendRows(sheet.Notes.Table, rows.notes)
-	rebuildAsModified(sheet, true)
-	ProcessModifiersForSelection(sheet.Traits.Table, true)
-	ProcessModifiersForSelection(sheet.CarriedEquipment.Table, true)
-	ProcessNameablesForSelection(sheet.Traits.Table, true)
-	ProcessNameablesForSelection(sheet.CarriedEquipment.Table, true)
-	ProcessNameablesForSelection(sheet.Notes.Table, true)
-	maybeClearPreconfiguredFlag(sheet.Traits.Table, sheet.Traits.Table.RootRows())
-	maybeClearPreconfiguredFlag(sheet.Skills.Table, sheet.Skills.Table.RootRows())
-	maybeClearPreconfiguredFlag(sheet.Spells.Table, sheet.Spells.Table.RootRows())
-	maybeClearPreconfiguredFlag(sheet.CarriedEquipment.Table, sheet.CarriedEquipment.Table.RootRows())
-	maybeClearPreconfiguredFlag(sheet.Notes.Table, sheet.Notes.Table.RootRows())
-
-	if len(templateAncestries) != 0 && gurps.GlobalSettings().General.AutoFillProfile {
-		randomize := true
-		if !suppressRandomizePrompt {
-			randomize = unison.YesNoDialog(i18n.Text("Would you like to apply the initial randomization again?"), "") == unison.ModalResponseOK
-		}
-		if randomize {
-			e.Profile.ApplyRandomizers(e)
-			updateRandomizedProfileFieldsWithoutUndo(sheet)
-			rebuildAsModified(sheet, true)
-		}
-	}
-	if mgr != nil && undo != nil {
-		var err error
-		if undo.AfterData, err = NewApplyTemplateUndoEditData(sheet); err != nil {
-			errs.Log(err)
-		} else {
-			mgr.Add(undo)
-		}
-	}
-	sheet.Window().ToFront()
-	sheet.RequestFocus()
-	return true
 }
 
 func updateRandomizedProfileFieldsWithoutUndo(sheet *Sheet) {

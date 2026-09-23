@@ -563,7 +563,7 @@ func TestUndoOfApplyTemplateSyncsTheSheetOnlyOnce(t *testing.T) {
 	entity := sheet.Entity()
 	traitCount := len(entity.Traits)
 	template := newTestTemplateWithBodyType("Template Body")
-	c.True(template.applyTemplateToSheet(sheet, true), "the template must be applied")
+	c.True(ApplyTemplateToSheet(template, sheet, true), "the template must be applied")
 	c.Equal(traitCount+1, len(entity.Traits), "the template's trait must have been added to the sheet")
 	c.True(sheet.undoMgr.CanUndo(), "applying a template must be undoable")
 	counter := installSyncCounter(sheet)
