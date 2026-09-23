@@ -288,19 +288,19 @@ func TestEquipmentPageHeaderSyncRefreshesTotalsTooltip(t *testing.T) {
 	headers := provider.Headers()
 	header, ok := headers[slices.Index(ids, gurps.EquipmentDescriptionColumn)].(*PageTableColumnHeader[*gurps.Equipment])
 	c.True(ok, "the page's description column must have a page header")
-	c.Equal("CARRIED EQUIPMENT (7.5127 LB; $0)", header.Text.String())
+	c.Equal("Carried Equipment (7.5127 lb; $0)", header.Text.String())
 	c.Equal("", header.TooltipText(), "with no display preference, there are no exact totals to offer")
 	c.Nil(header.Tooltip)
 
 	entity.SheetSettings.EquipmentWeightFormat = fxp.NumberFormat{Places: fxp.TwoPlaces}
 	provider.SyncHeader(headers)
-	c.Equal("CARRIED EQUIPMENT (7.51 LB; $0)", header.Text.String())
+	c.Equal("Carried Equipment (7.51 lb; $0)", header.Text.String())
 	c.Equal("7.5127 lb; $0", header.TooltipText(), "syncing must offer the exact totals once the formats round them")
 	c.NotNil(header.Tooltip)
 
 	entity.SheetSettings.EquipmentWeightFormat = fxp.NumberFormat{}
 	provider.SyncHeader(headers)
-	c.Equal("CARRIED EQUIPMENT (7.5127 LB; $0)", header.Text.String())
+	c.Equal("Carried Equipment (7.5127 lb; $0)", header.Text.String())
 	c.Equal("", header.TooltipText(), "syncing must remove the tooltip once there is nothing to add")
 	c.Nil(header.Tooltip)
 }

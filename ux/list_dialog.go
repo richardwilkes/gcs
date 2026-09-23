@@ -47,6 +47,10 @@ func newListQuestionPanel(header string, list unison.Paneler, extraHeaders ...*u
 	label := unison.NewLabel()
 	label.SetTitle(header)
 	panel.AddChild(label)
+	// The list sits inside a scroll panel, so it does not follow the header label as a sibling would.
+	if lp := list.AsPanel(); lp.Accessibility.LabeledBy == nil {
+		lp.Accessibility.LabeledBy = label
+	}
 	for _, extra := range extraHeaders {
 		panel.AddChild(extra)
 	}

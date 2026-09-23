@@ -9,7 +9,10 @@
 
 package ux
 
-import "github.com/richardwilkes/unison"
+import (
+	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
+)
 
 // undoableFieldSelf is what a field that embeds an undoableField provides to it: the steps the base dispatches to the
 // embedding field, so that whatever the embedding field layers on top of the base's versions of them is not bypassed.
@@ -66,7 +69,22 @@ func (f *undoableField[T]) init(self undoableFieldSelf, field *unison.Field, tar
 	f.LostFocusCallback = self.lostFocus
 	unison.InstallDefaultFieldBorder(f, f)
 	f.ModifiedCallback = f.modified
+	f.Accessibility.Callback = accessibilityNameFallback(undoTitle)
 	setTargetRefKey(f, targetMgr, targetKey)
+}
+
+// accessibilityNameFallback returns an Accessibility.Callback that names a control after the given title when nothing
+// else has: the callback runs after the label laid out before the control, the one it points at with LabeledBy and any
+// Accessibility.Name of its own have all had their say, so those still win. The undo title a field or popup is given
+// is what the Undo menu calls a change to it, which makes it a serviceable name for a control whose layout has left it
+// with none -- a criteria qualifier that follows its comparison popup, say -- while a control whose title reads badly
+// as a name should still be given one outright.
+func accessibilityNameFallback(title string) func(node *accessibility.Node) {
+	return func(node *accessibility.Node) {
+		if node.Name == "" {
+			node.Name = title
+		}
+	}
 }
 
 func (f *undoableField[T]) gainedFocus() {

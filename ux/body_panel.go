@@ -54,6 +54,8 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 		Bottom: 1,
 		Right:  2,
 	})), 8, false, colors.TintBody)
+	// The block's title is drawn by its border, so the block is given it as its name as well.
+	p.Accessibility.Name = locations.Name
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 		r := p.Children()[0].FrameRect()
@@ -207,6 +209,8 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		notesField := NewStringPageField(p.targetMgr, bodyLocationRefKey(indexes), title,
 			func() string { return location.Notes }, func(value string) { location.Notes = value })
 		notesField.Tooltip = newMarkdownTooltip(title, "")
+		// The undo title, which the field would otherwise be named after, carries markdown for the tooltip.
+		notesField.Accessibility.Name = fmt.Sprintf(i18n.Text("Notes for the %s hit location"), location.TableName)
 		// The notes column takes up whatever width the block has beyond what the other columns need, so that a block
 		// made wider than its content fills out rather than leaving its notes fields at their natural width.
 		notesField.SetLayoutData(&unison.FlexLayoutData{
@@ -259,6 +263,7 @@ func (p *BodyPanel) sync(force bool) {
 	if hash := gurps.Hash64(locations); force || hash != p.hash {
 		p.hash = hash
 		p.titledBorder.Title = locations.Name
+		p.Accessibility.Name = locations.Name
 		p.addContent(locations)
 		MarkForLayoutWithinDockable(p)
 	}

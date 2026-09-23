@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/blendmode"
@@ -32,6 +33,7 @@ import (
 	"github.com/richardwilkes/unison/enums/mipmapmode"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 const (
@@ -366,6 +368,8 @@ the page instead.`), mod.Option.String()))
 		d.docScroll.MarkForRedraw()
 		d.scheduleViewSync()
 	})
+	// The popup follows the scale field it governs rather than a label of its own.
+	d.autoScalingPopup.Accessibility.Name = i18n.Text("PDF Auto Scaling")
 	first.AddChild(d.autoScalingPopup)
 
 	pageLabel := unison.NewLabel()
@@ -483,6 +487,7 @@ func (d *PDFDockable) syncPageCountDependents() {
 
 func (d *PDFDockable) createTOC() {
 	d.tocPanel = unison.NewTable(&unison.SimpleTableModel[*tocNode]{})
+	d.tocPanel.Accessibility.Name = i18n.Text("Table of Contents")
 	d.tocPanel.Columns = make([]unison.ColumnInfo, 1)
 	d.tocPanel.ShowFirstColumnDivider = false
 	d.tocPanel.ShowLastColumnDivider = false
@@ -541,6 +546,10 @@ func (d *PDFDockable) createContent() {
 	d.docPanel.MouseUpCallback = d.mouseUp
 	d.docPanel.UpdateCursorCallback = d.updateCursor
 	d.docPanel.SetFocusable(true)
+	// The pages are drawn by hand, so a screen reader is told outright that this is a document, and which one. The
+	// name is looked up each time the panel is described, since the file can be renamed while it is open.
+	d.docPanel.Accessibility.Role = role.Document
+	d.docPanel.Accessibility.Callback = func(node *accessibility.Node) { node.Name = d.Title() }
 	d.docPanel.InstallCmdHandlers(unison.CopyItemID,
 		func(_ any) bool { return d.hasSelectionRange() },
 		func(_ any) { d.copySelection() })

@@ -26,10 +26,12 @@ import (
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/imgfmt"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 const (
@@ -91,6 +93,10 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	d.drawablePanel.SetSizer(d.imageSizer)
 	d.drawablePanel.DrawCallback = d.draw
 	d.drawablePanel.SetFocusable(true)
+	// The image is drawn by hand, so a screen reader is told outright that it is an image, and which one. The name is
+	// looked up each time the panel is described, since the file can be renamed while it is open.
+	d.drawablePanel.Accessibility.Role = role.Image
+	d.drawablePanel.Accessibility.Callback = func(node *accessibility.Node) { node.Name = d.Title() }
 
 	d.scroll = unison.NewScrollPanel()
 	d.scroll.SetLayoutData(&unison.FlexLayoutData{

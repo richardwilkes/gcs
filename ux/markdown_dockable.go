@@ -118,6 +118,8 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 			d.editor.MarkForLayoutAndRedraw()
 			MarkModified(d.editor)
 		})
+	// The editor fills the view with no label beside it.
+	d.editor.Accessibility.Name = i18n.Text("Markdown")
 	unison.UninstallFocusBorders(d.editor, d.editor)
 	d.editor.SetBorder(unison.NewEmptyBorder(insets))
 	d.editor.NoSelectAllOnFocus = true

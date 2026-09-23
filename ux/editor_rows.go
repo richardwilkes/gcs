@@ -200,11 +200,12 @@ func initTitledEditorSection(p unison.Paneler, title string) {
 	}
 }
 
-// newSectionAddButton returns the add button of an editor section. Clicking it calls insert, which adds a new item and
-// a row for it to the head of the section's list and reports whether it did so; when it did, the section is laid out
-// again and marked as modified.
-func newSectionAddButton(section unison.Paneler, insert func() bool) *unison.Button {
+// newSectionAddButton returns the add button of an editor section, with the given tooltip, which is also what a screen
+// reader calls the button. Clicking it calls insert, which adds a new item and a row for it to the head of the
+// section's list and reports whether it did so; when it did, the section is laid out again and marked as modified.
+func newSectionAddButton(section unison.Paneler, tooltip string, insert func() bool) *unison.Button {
 	button := unison.NewSVGButton(unison.CircledAddSVG)
+	button.Tooltip = newWrappedTooltip(tooltip)
 	button.ClickCallback = func() {
 		if insert() {
 			MarkRootAncestorForLayoutRecursively(section)

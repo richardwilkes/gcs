@@ -73,6 +73,9 @@ type CellData struct {
 	Primary   string
 	Secondary string
 	Tooltip   string
+	// Name is what an assistive technology calls a cell whose content has no words of its own, such as the check box
+	// of a toggle or switch column.
+	Name string
 	// UnsatisfiedReason explains why the node's prerequisites are unmet.
 	UnsatisfiedReason string
 	// PrereqContradiction explains why a trait whose own prerequisites are met is nonetheless caught in a contradiction

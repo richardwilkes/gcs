@@ -244,6 +244,9 @@ func newWeightedStringOptionPanel(list *weightedStringOptionsPanel, option *gurp
 		func(s string) { option.Value = s })
 	valueField.SetMinimumTextWidthUsing(prototypeMinIDWidth)
 	valueField.Tooltip = newWrappedTooltip(spec.valueTooltip)
+	// The value is named for the list it belongs to, since "Value" says nothing about which of the lists in an editor
+	// the row is in.
+	valueField.Accessibility.Name = spec.title
 	p.AddChild(valueField)
 	return p
 }

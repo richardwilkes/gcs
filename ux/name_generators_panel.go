@@ -134,7 +134,8 @@ func newNameGeneratorRefPanel(list *nameGeneratorsPanel, index int) *nameGenerat
 
 	// The setter and getter check the index, since a popup's callbacks can outlive the entry they were built for when
 	// an undo shortens the list before the panels are rebuilt.
-	p.popup = NewPopup(d.targetMgr, nameGeneratorKey(options, index), i18n.Text("Name Generator"),
+	title := i18n.Text("Name Generator")
+	p.popup = NewPopup(d.targetMgr, nameGeneratorKey(options, index), title,
 		func() string {
 			if index < len(options.NameGenerators) {
 				return options.NameGenerators[index]
@@ -148,6 +149,8 @@ func newNameGeneratorRefPanel(list *nameGeneratorsPanel, index int) *nameGenerat
 		},
 		nameGeneratorPopupItems(d.nameGeneratorChoices, options.NameGenerators[index])...)
 	p.popup.Tooltip = newWrappedTooltip(i18n.Text("A name generator, identified by the base name of its .names file. A generator not found in any library is listed so it can be kept or replaced, but produces nothing."))
+	// Only the delete button comes before the popup, so it is named outright; the name also titles the menu it opens.
+	p.popup.Accessibility.Name = title
 	p.AddChild(p.popup)
 
 	p.editButton = unison.NewSVGButton(svg.Edit)

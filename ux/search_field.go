@@ -24,6 +24,9 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 	if watermark != "" {
 		f.Watermark = watermark
 		f.Tooltip = newWrappedTooltip(watermark)
+		// The watermark is only a placeholder to a screen reader, and the field sits among toolbar buttons with no
+		// label to name it, so the watermark serves as its name too.
+		f.Accessibility.Name = watermark
 	}
 	f.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

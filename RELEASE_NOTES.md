@@ -43,6 +43,7 @@
   entries or mixed in with them by name. The group may use the same @Name@ substitutions as the situation text. In
   exports, each entry now also carries its group: as the Group field in Go templates, and as @GROUP in the legacy
   text templates.
+- GCS now works with screen readers: VoiceOver on macOS, Narrator, NVDA and JAWS on Windows, and Orca on Linux.
 
 ## Bug Fixes
 

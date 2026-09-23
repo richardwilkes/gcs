@@ -47,8 +47,12 @@ func ShowFontSettings() {
 func (d *fontSettingsDockable) initContent(content *unison.Panel) {
 	d.content = initSettingsContent(content, 3)
 	for i, one := range fonts.CurrentFonts() {
-		d.content.AddChild(NewFieldTrailingLabel(one.Title, false))
+		label := NewFieldTrailingLabel(one.Title, false)
+		d.content.AddChild(label)
 		fp := d.createFontPanel(i)
+		// The font panel names its own controls only by what they set, such as "Font Size", so the group they sit in is
+		// what says which font they set.
+		fp.Accessibility.LabeledBy = label
 		d.fontPanels = append(d.fontPanels, fp)
 		d.createResetField(i, fp)
 	}
@@ -77,7 +81,7 @@ func (d *fontSettingsDockable) createFontPanel(index int) *unison.FontPanel {
 
 func (d *fontSettingsDockable) createResetField(index int, fp *unison.FontPanel) {
 	b := unison.NewSVGButton(svg.Reset)
-	b.Tooltip = newWrappedTooltip("Reset this font")
+	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this font"))
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"),
 			fonts.CurrentFonts()[index].Title), "") == unison.ModalResponseOK {

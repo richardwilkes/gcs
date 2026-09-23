@@ -60,9 +60,10 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 
 func (p *prereqPanel) createPrereqListPanel(depth int, list *gurps.PrereqList) (main, focus unison.Paneler) {
 	row := p.beginPrereqRow(depth, list, nil)
-	_, focus = addNumericCriteriaPanel(row.panel, nil, "", i18n.Text("When the Tech Level"), i18n.Text("When Tech Level"),
+	_, focus = addNumericCriteriaPanel(row.panel, nil, "", i18n.Text("When the Tech Level"), i18n.Text("Tech Level"),
 		&list.WhenTL, 0, fxp.Twelve, 1, true, true)
 	popup := addBoolPopup(row.panel, i18n.Text("requires all of:"), i18n.Text("requires at least one of:"), &list.All)
+	popup.Accessibility.Name = i18n.Text("Requirement")
 	callback := popup.SelectionChangedCallback
 	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
 		callback(pop)
@@ -143,6 +144,7 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 	parent.AddChild(buttons)
 	if prereqList, ok := data.(*gurps.PrereqList); ok {
 		addPrereqButton := unison.NewSVGButton(unison.CircledAddSVG)
+		addPrereqButton.Tooltip = newWrappedTooltip(i18n.Text("Add a prerequisite"))
 		addPrereqButton.ClickCallback = func() {
 			if created := p.createPrereqForType(lastPrereqTypeUsed, prereqList); created != nil {
 				prereqList.Prereqs = slices.Insert(prereqList.Prereqs, 0, created)
@@ -155,6 +157,7 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 		buttons.AddChild(addPrereqButton)
 
 		addPrereqListButton := unison.NewSVGButton(svg.CircledVerticalEllipsis)
+		addPrereqListButton.Tooltip = newWrappedTooltip(i18n.Text("Add a prerequisite list"))
 		addPrereqListButton.ClickCallback = func() {
 			newList := gurps.NewPrereqList()
 			newList.Parent = prereqList
@@ -169,6 +172,7 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 	parentList := data.ParentList()
 	if parentList != nil {
 		deleteButton := unison.NewSVGButton(unison.TrashSVG)
+		deleteButton.Tooltip = newWrappedTooltip(deletePrereqTooltip(data))
 		deleteButton.ClickCallback = func() {
 			delete(p.andOrMap, data)
 			if i := slices.IndexFunc(parentList.Prereqs, func(elem gurps.Prereq) bool { return elem == data }); i != -1 {
@@ -184,6 +188,15 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 	buttons.SetLayout(&unison.FlexLayout{
 		Columns: len(buttons.Children()),
 	})
+}
+
+// deletePrereqTooltip returns the tooltip for the button that deletes the prerequisite, which says what will go, since
+// a list takes everything in it along.
+func deletePrereqTooltip(data gurps.Prereq) string {
+	if _, ok := data.(*gurps.PrereqList); ok {
+		return i18n.Text("Delete this prerequisite list and everything in it")
+	}
+	return i18n.Text("Delete this prerequisite")
 }
 
 func (p *prereqPanel) addAndOr(parent *unison.Panel, data gurps.Prereq) {
@@ -227,6 +240,9 @@ func andOrText(pr gurps.Prereq) string {
 func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr gurps.Prereq) {
 	prereqType := pr.PrereqType()
 	popup := addPopup(parent, p.permittedChoices, &prereqType)
+	// Named explicitly: nothing ahead of it in the row labels it, and where that is the "and" or "or" label that joins
+	// the row to the one ahead of it, that label would otherwise be taken as its name.
+	popup.Accessibility.Name = i18n.Text("Prerequisite Type")
 	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[prereq.Type]) {
 		if item, ok := pop.Selected(); ok {
 			parentList := pr.ParentList()
@@ -378,9 +394,10 @@ func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributeP
 	row.addTypeSwitcher()
 	addIndentedSubRow(row.panel, row.finish(), false, func(subRow *unison.Panel) {
 		extra := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
-		addAttributeChoicePopup(subRow, p.entity, noAndOr, &pr.Which, extra)
-		addAttributeChoicePopup(subRow, p.entity, i18n.Text("combined with"), &pr.CombinedWith, extra|gurps.BlankFlag)
-		_, focus = addNumericCriteriaPanel(subRow, nil, "", i18n.Text("which"), i18n.Text("Attribute Qualifier"),
+		addAttributeChoicePopup(subRow, p.entity, noAndOr, &pr.Which, extra).Accessibility.Name = i18n.Text("Attribute")
+		addAttributeChoicePopup(subRow, p.entity, i18n.Text("combined with"), &pr.CombinedWith,
+			extra|gurps.BlankFlag).Accessibility.Name = i18n.Text("Combined With")
+		_, focus = addNumericCriteriaPanel(subRow, nil, "", i18n.Text("which"), i18n.Text("Attribute"),
 			&pr.QualifierCriteria, fxp.Min, fxp.Max, 1, false, false)
 	})
 	return row.panel, focus
@@ -429,7 +446,8 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) (
 	columns := row.finish()
 	addIndentedSubRow(row.panel, columns, true, func(subRow *unison.Panel) {
 		subTypePopup := addPopup(subRow, spellcmp.Types, &pr.SubType)
-		popup, field := addStringCriteriaPanel(subRow, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
+		subTypePopup.Accessibility.Name = i18n.Text("Spell Match")
+		popup, field := addStringCriteriaPanel(subRow, "", "", i18n.Text("Spell"), &pr.QualifierCriteria, 1, false)
 		// Neither "any" nor a college count has a qualifier to match against.
 		adjustQualifier := func() {
 			blank := pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount
@@ -467,7 +485,8 @@ func (p *prereqPanel) addPowerSourceCriteriaPanel(parent *unison.Panel, pr *gurp
 		choices = slices.Insert(choices, samePowerSourceIndex, prefix+" "+i18n.Text("is the same as this spell's"))
 	}
 	var criteriaField *StringField
-	popup := newComparisonPopup(choices, p.powerSourceComparisonIndex(pr))
+	comparisonName, undoTitle := criteriaTitles(i18n.Text("Power Source"))
+	popup := newComparisonPopup(comparisonName, choices, p.powerSourceComparisonIndex(pr))
 	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
 		i := pop.SelectedIndex()
 		pr.SamePowerSource = p.ownerIsSpell && i == samePowerSourceIndex
@@ -483,7 +502,7 @@ func (p *prereqPanel) addPowerSourceCriteriaPanel(parent *unison.Panel, pr *gurp
 		MarkModified(panel)
 	}
 	panel.AddChild(popup)
-	criteriaField = addStringField(panel, i18n.Text("Power Source Qualifier"), "", &pr.PowerSourceCriteria.Qualifier)
+	criteriaField = addStringField(panel, undoTitle, "", &pr.PowerSourceCriteria.Qualifier)
 	adjustFieldBlank(criteriaField, pr.SamePowerSource || pr.PowerSourceCriteria.Compare == criteria.AnyText)
 }
 

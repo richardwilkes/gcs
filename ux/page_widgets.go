@@ -29,9 +29,15 @@ func newTitledPageBorder(title string) unison.Border {
 	return unison.NewCompoundBorder(&TitledBorder{Title: title}, unison.NewEmptyBorder(titledPagePanelInsets))
 }
 
-// initTitledPagePanel sets up a panel as a sheet page block with the given title. See initPagePanel for the rest.
+// initTitledPagePanel sets up a panel as a sheet page block with the given title. The title is drawn by the block's
+// border, which a screen reader knows nothing of, so it is also made the block's accessible name, which is what the
+// block is then announced as when the focus moves into it. See initPagePanel for the rest.
 func initTitledPagePanel(p unison.Paneler, title string, columns int, banded bool, tint *unison.ThemeColor) (*unison.FlexLayout, *unison.FlexLayoutData) {
-	return initPagePanel(p, newTitledPageBorder(title), columns, banded, tint)
+	layout, layoutData := initPagePanel(p, newTitledPageBorder(title), columns, banded, tint)
+	if title != "" {
+		p.AsPanel().Accessibility.Name = title
+	}
+	return layout, layoutData
 }
 
 // initPagePanel sets up a panel as a block of a sheet page: it becomes its own Self and is given the border, a grid of

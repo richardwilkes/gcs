@@ -270,6 +270,7 @@ func (t *TraitModifier) CellData(columnID int, data *CellData) {
 	case TraitModifierEnabledColumn:
 		if !t.Container() {
 			data.Type = cell.Toggle
+			data.Name = i18n.Text("Enabled")
 			data.Checked = t.Enabled()
 			data.Alignment = align.Middle
 		}

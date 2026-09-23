@@ -253,24 +253,28 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 	wrapper.AddChild(checkBox)
 	boxes = append(boxes, checkBox)
 	var onClick func()
+	var editTooltip string
 	pageRef := ""
 	pageRefHighlight := ""
 	switch actual := any(row).(type) {
 	case *gurps.Trait:
 		if actual.IsLeveled() {
 			onClick = func() { pickerRowLevelEditor(actual, checkBox, pt, callback) }
+			editTooltip = i18n.Text("Edit level")
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Skill:
 		if !actual.Container() {
 			onClick = func() { pickerRowPointEditor(actual, checkBox, pt, callback) }
+			editTooltip = i18n.Text("Edit points")
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Spell:
 		if !actual.Container() {
 			onClick = func() { pickerRowPointEditor(actual, checkBox, pt, callback) }
+			editTooltip = i18n.Text("Edit points")
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
@@ -308,6 +312,7 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 		parent.AddChild(label)
 	} else {
 		button := NewSVGButtonForFont(svg.Edit, checkBox.Font, -2)
+		button.Tooltip = newWrappedTooltip(editTooltip)
 		button.ClickCallback = onClick
 		parent.AddChild(button)
 	}

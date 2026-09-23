@@ -44,7 +44,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	var maxLevelField *StringField
 	entity := gurps.EntityFromNode(e.target)
 	if !e.target.Container() {
-		wrapper := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
+		wrapper, _ := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
 			field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
 				e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency, e.editorData.Modifiers,
@@ -79,9 +79,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			fxp.MaxBasePoints, false)
 		perLevelField = addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Cost Per Level"), "",
 			&e.editorData.PointsPerLevel, -fxp.MaxBasePoints, fxp.MaxBasePoints)
-		maxLevelLabel := i18n.Text("Maximum Level")
-		content.AddChild(NewFieldLeadingLabel(maxLevelLabel, false))
-		maxLevelField = addScriptField(content, nil, "", maxLevelLabel,
+		maxLevelField = addLabelAndScriptField(content, nil, "", i18n.Text("Maximum Level"),
 			i18n.Text("The maximum level allowed for this trait. May be a number or a script expression. Leave blank for no maximum."),
 			func() string { return e.editorData.MaxLevels },
 			func(value string) {

@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/printing"
 )
 
@@ -230,6 +231,8 @@ func (s *Sheet) createToolbar() {
 	s.layoutButton.Sticky = true
 	s.layoutButtonGroup = unison.NewGroup(s.layoutButton)
 	s.layoutButton.Tooltip = newWrappedTooltip(i18n.Text("Edit the sheet's block layout"))
+	// A latching button in a group reads as a radio button, but this one is on or off by itself.
+	s.layoutButton.Accessibility.Role = role.ToggleButton
 	s.layoutButton.ClickCallback = s.toggleLayoutEditing
 	s.toolbar.AddChild(s.layoutButton)
 

@@ -74,7 +74,7 @@ func (d *menuKeySettingsDockable) fill() {
 func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 	b := unison.NewButton()
 	b.Font = unison.KeyboardFont
-	b.SetTitle(binding.Action.KeyBinding.String())
+	setBindingButtonKey(b, binding)
 	b.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -84,6 +84,12 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 		capturePanel := unison.NewLabel()
 		capturePanel.Font = unison.KeyboardFont
 		capturePanel.SetTitle(binding.KeyBinding.String())
+		// The label shows only the key combination, which is empty when there is none, so it has to say what it is for
+		// itself. The combination captured so far goes in its description and is announced as each one is pressed,
+		// since nothing else would tell someone who cannot see the label that their key press registered.
+		capturePanel.Accessibility.Name = fmt.Sprintf(i18n.Text("Press the new key combination for %s"),
+			binding.Action.Title)
+		capturePanel.Accessibility.Description = describeKeyBinding(localBinding)
 		capturePanel.HAlign = align.Middle
 		unison.InstallDefaultFieldBorder(capturePanel, capturePanel)
 		capturePanel.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
@@ -94,7 +100,9 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 			localBinding.KeyCode = keyCode
 			localBinding.Modifiers = mods
 			capturePanel.SetTitle(localBinding.String())
+			capturePanel.Accessibility.Description = describeKeyBinding(localBinding)
 			capturePanel.MarkForRedraw()
+			unison.AnnounceForAccessibility(capturePanel.Accessibility.Description)
 			return true
 		}
 		capturePanel.SetFocusable(true)
@@ -134,8 +142,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 				g := gurps.GlobalSettings()
 				g.KeyBindings.Set(binding.ID, localBinding)
 				g.KeyBindings.MakeCurrent()
-				b.SetTitle(localBinding.String())
-				b.MarkForRedraw()
+				setBindingButtonKey(b, binding)
 			default:
 			}
 		}
@@ -143,9 +150,26 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 	d.content.AddChild(b)
 }
 
+// setBindingButtonKey shows the binding's key combination on the button that displays it. The button is named after the
+// action as well, since the combination alone would not say which action it belongs to, and an action with no key would
+// leave the button with no name at all.
+func setBindingButtonKey(b *unison.Button, binding *gurps.Binding) {
+	b.SetTitle(binding.KeyBinding.String())
+	b.Accessibility.Name = fmt.Sprintf(i18n.Text("%s: %s"), binding.Action.Title, describeKeyBinding(binding.KeyBinding))
+	b.MarkForRedraw()
+}
+
+// describeKeyBinding returns the key combination as it should be spoken, which is how it is drawn unless there is none.
+func describeKeyBinding(keyBinding unison.KeyBinding) string {
+	if s := keyBinding.String(); s != "" {
+		return s
+	}
+	return i18n.Text("no key")
+}
+
 func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 	b := unison.NewSVGButton(svg.Reset)
-	b.Tooltip = newWrappedTooltip("Reset this key binding")
+	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this key binding"))
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset '%s'?"), binding.Action.Title), "") == unison.ModalResponseOK {
 			d.resetBinding(binding, b)
@@ -165,8 +189,7 @@ func (d *menuKeySettingsDockable) resetBinding(binding *gurps.Binding, resetButt
 	g.KeyBindings.MakeCurrent()
 	binding.KeyBinding = g.KeyBindings.Current(binding.ID)
 	if other := bindingButtonForResetButton(resetButton); other != nil {
-		other.SetTitle(binding.KeyBinding.String())
-		other.MarkForRedraw()
+		setBindingButtonKey(other, binding)
 	}
 }
 

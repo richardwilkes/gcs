@@ -42,8 +42,8 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		prereqCount := i18n.Text("Prerequisite Count")
 		if e.target.IsRitualMagic() {
 			addLabelAndStringField(content, i18n.Text("Base Skill"), "", &e.editorData.RitualSkillName)
-			wrapper := addFlowWrapper(content, i18n.Text("Difficulty"), 3)
-			addPopup(wrapper, difficulty.TechniqueLevels, &e.editorData.Difficulty.Difficulty)
+			wrapper, diffLabel := addFlowWrapper(content, i18n.Text("Difficulty"), 3)
+			labelControl(addPopup(wrapper, difficulty.TechniqueLevels, &e.editorData.Difficulty.Difficulty), diffLabel)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(prereqCount, false))
 			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.PrereqCount, 0, 999)
 		} else {
@@ -52,7 +52,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		}
 		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
-			wrapper := addFlowWrapper(content, pointsLabel, 3)
+			wrapper, _ := addFlowWrapper(content, pointsLabel, 3)
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints, false)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {

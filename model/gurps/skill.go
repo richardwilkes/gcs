@@ -424,6 +424,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillSwitchColumn:
 		if s.HasSwitchableFeatures() {
 			data.Type = cell.Switch
+			data.Name = SwitchCellName()
 			data.Checked = s.SwitchedOn
 			data.Alignment = align.Middle
 			// A container never gets here (see HasSwitchableFeatures), so there are never contents to cascade to.

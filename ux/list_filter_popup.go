@@ -113,8 +113,11 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		p.enableCommands(i != listFilterNoneIndex)
 		p.spec.choose(p.filterAt(i))
 	}
-	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Saved Filters"),
+	savedFilters := i18n.Text("Saved Filters")
+	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(savedFilters,
 		i18n.Text("Choose a saved filter, or create, edit and delete them"))
+	// The popup follows the quick filter field in the toolbar, with no label of its own to name it by.
+	p.popup.Accessibility.Name = savedFilters
 	p.popup.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,

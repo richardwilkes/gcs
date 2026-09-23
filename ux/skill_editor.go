@@ -55,7 +55,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				// work with rather than crashing.
 				e.editorData.TechniqueDefault = &gurps.SkillDefault{DefaultType: gurps.SkillID}
 			}
-			wrapper := addFlowWrapper(content, i18n.Text("Defaults To"), 4)
+			wrapper, defaultsLabel := addFlowWrapper(content, i18n.Text("Defaults To"), 4)
 			wrapper.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: align.Fill,
 				HGrab:  true,
@@ -63,7 +63,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			choices, attrChoice := gurps.AttributeChoices(entity, "",
 				gurps.TenFlag|gurps.SkillFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.DodgeFlag,
 				e.editorData.TechniqueDefault.DefaultType)
-			attrChoicePopup := addPopup(wrapper, choices, &attrChoice)
+			attrChoicePopup := labelControl(addPopup(wrapper, choices, &attrChoice), defaultsLabel)
 			e.editorData.TechniqueDefault.Name.Compare = criteria.IsText
 			skillDefNameField := addStringField(wrapper, i18n.Text("Technique Default Skill Name"),
 				i18n.Text("Skill Name"), &e.editorData.TechniqueDefault.Name.Qualifier)
@@ -79,7 +79,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			var specPanel *unison.Panel
 			addSpecPanel := func() {
 				prefix := i18n.Text("whose specialization")
-				addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Specialization Qualifier"),
+				addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Specialization"),
 					&e.editorData.TechniqueDefault.Specialization, 1, false)
 				children := wrapper.Children()
 				specPanel = children[len(children)-1]
@@ -111,7 +111,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					MarkModified(content)
 				}
 			}
-			wrapper2 := addFlowWrapper(content, "", 2)
+			wrapper2, _ := addFlowWrapper(content, "", 2)
 			limitField := NewDecimalField(nil, "", i18n.Text("Limit"),
 				func() fxp.Int {
 					if e.editorData.TechniqueLimitModifier != nil {
@@ -158,10 +158,11 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				}
 			}
 		} else {
-			diffWrapper := addFlowWrapper(content, i18n.Text("Difficulty"), 5)
-			addAttributeChoicePopup(diffWrapper, entity, "", &e.editorData.Difficulty.Attribute, gurps.TenFlag)
+			diffWrapper, diffLabel := addFlowWrapper(content, i18n.Text("Difficulty"), 5)
+			labelControl(addAttributeChoicePopup(diffWrapper, entity, "", &e.editorData.Difficulty.Attribute,
+				gurps.TenFlag), diffLabel)
 			diffWrapper.AddChild(NewFieldTrailingLabel("/", false))
-			addPopup(diffWrapper, difficulty.Levels, &e.editorData.Difficulty.Difficulty)
+			addDifficultyLevelPopup(diffWrapper, &e.editorData.Difficulty.Difficulty)
 			diffWrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Adjusted Difficulty"), false))
 			adjustedDiffField := NewNonEditableField(func(field *NonEditableField) {
 				localOptSpec := nameable.Apply(e.editorData.OptionalSpecialization, e.target.Replacements)
@@ -175,14 +176,14 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			diffWrapper.AddChild(adjustedDiffField)
 
 			encLabel := i18n.Text("Encumbrance Penalty")
-			wrapper := addFlowWrapper(content, encLabel, 2)
+			wrapper, _ := addFlowWrapper(content, encLabel, 2)
 			addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine, false)
 			wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("times the current encumbrance level"), false))
 		}
 
 		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
-			wrapper := addFlowWrapper(content, pointsLabel, 3)
+			wrapper, _ := addFlowWrapper(content, pointsLabel, 3)
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints, false)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {

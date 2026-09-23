@@ -34,7 +34,7 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 		defaults: defaults,
 	}
 	initTitledEditorSection(p, i18n.Text("Defaults"))
-	p.AddChild(newSectionAddButton(p, func() bool {
+	p.AddChild(newSectionAddButton(p, i18n.Text("Add a default"), func() bool {
 		def := &gurps.SkillDefault{DefaultType: lastDefaultTypeUsed}
 		// See the comment for the delete button as to why we don't just use slices.Insert here.
 		defs := make([]*gurps.SkillDefault, len(*p.defaults)+1)
@@ -60,6 +60,7 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 	})
 
 	deleteButton := unison.NewSVGButton(unison.TrashSVG)
+	deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove this default"))
 	deleteButton.ClickCallback = func() {
 		if i := slices.IndexFunc(*p.defaults, func(elem *gurps.SkillDefault) bool { return elem == def }); i != -1 {
 			// Cannot use this here: *p.defaults = slices.Delete(*p.defaults, i, i+1)
@@ -79,6 +80,7 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 
 	attrChoicePopup := addAttributeChoicePopup(panel, p.entity, "", &def.DefaultType,
 		gurps.TenFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.SkillFlag)
+	attrChoicePopup.Accessibility.Name = i18n.Text("Default Type")
 	addLabel(panel, i18n.Text("Modifier"), "")
 	addDecimalField(panel, nil, "", i18n.Text("Modifier"), "", &def.Modifier, -fxp.Thousand, fxp.Thousand, true)
 
@@ -95,7 +97,7 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 			panel.AddChild(unison.NewPanel())
 			addTagCriteriaPanel(panel, &def.Tags, 3, false)
 		}
-		addNumericCriteriaPanel(panel, nil, "", i18n.Text("when the Tech Level"), i18n.Text("When Tech Level"),
+		addNumericCriteriaPanel(panel, nil, "", i18n.Text("when the Tech Level"), i18n.Text("Tech Level"),
 			&def.WhenTL, 0, fxp.Twelve, 3, true, true)
 	}
 	callback := attrChoicePopup.SelectionChangedCallback

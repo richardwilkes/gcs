@@ -128,9 +128,11 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
 	d.createScrollWheelMultiplierField(content)
-	d.createPathInfoField(content, i18n.Text("Settings Path"), gurps.SettingsPath)
-	d.createPathInfoField(content, i18n.Text("Translations Path"), i18n.Dir)
-	d.createPathInfoField(content, i18n.Text("Log Path"), PathToLog)
+	d.createPathInfoField(content, i18n.Text("Settings Path"), i18n.Text("Copy the settings path to the clipboard"),
+		gurps.SettingsPath)
+	d.createPathInfoField(content, i18n.Text("Translations Path"),
+		i18n.Text("Copy the translations path to the clipboard"), i18n.Dir)
+	d.createPathInfoField(content, i18n.Text("Log Path"), i18n.Text("Copy the log path to the clipboard"), PathToLog)
 	d.createExternalPDFCmdLineField(content)
 	d.createLocaleField(content)
 	d.createDeepSearchCheckboxes(content)
@@ -251,6 +253,7 @@ func (d *generalSettingsDockable) createInitialScaleFields(content *unison.Panel
 	d.addInitialScaleField(content, i18n.Text("Initial Sheet Scale"), &gs.InitialSheetUIScale)
 	d.autoScalingPopup = newPopupMenu(autoscale.Options, gs.PDFAutoScaling,
 		func(mode autoscale.Option) { gurps.GlobalSettings().General.PDFAutoScaling = mode })
+	d.autoScalingPopup.Accessibility.Name = i18n.Text("PDF Auto Scaling")
 	d.addInitialScaleField(content, i18n.Text("Initial PDF Scale"), &gs.InitialPDFUIScale, d.autoScalingPopup)
 	d.addInitialScaleField(content, i18n.Text("Initial Markdown Scale"), &gs.InitialMarkdownUIScale)
 	d.addInitialScaleField(content, i18n.Text("Initial Image Scale"), &gs.InitialImageUIScale)
@@ -355,28 +358,32 @@ func (d *generalSettingsDockable) createCursorSizeField(content *unison.Panel) {
 }
 
 // addLabeledSettingField adds a row to the three-column content: a leading label with the title, then the field
-// spanning the remaining two columns. Any trailing panels share the field's span, following it on the same row.
+// spanning the remaining two columns. Any trailing panels share the field's span, following it on the same row, in a
+// wrapper that separates the field from its label, so the field is pointed at the label explicitly.
 func addLabeledSettingField(content *unison.Panel, title string, field unison.Paneler, trailing ...unison.Paneler) {
-	content.AddChild(NewFieldLeadingLabel(title, false))
+	label := NewFieldLeadingLabel(title, false)
+	content.AddChild(label)
 	if len(trailing) == 0 {
 		field.AsPanel().SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 		content.AddChild(field)
 		return
 	}
-	content.AddChild(WrapWithSpan(2, append([]unison.Paneler{field}, trailing...)...))
+	content.AddChild(WrapWithSpan(2, append([]unison.Paneler{labelControl(field, label)}, trailing...)...))
 }
 
-func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, title, value string) {
+// createPathInfoField adds a row showing the path, with a button that copies it to the clipboard. The button is named
+// by copyTooltip, which has to say which path it copies, since the buttons of the rows would otherwise sound alike.
+func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, title, copyTooltip, value string) {
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	content.AddChild(NewNonEditableField(func(field *NonEditableField) {
 		field.SetTitle(value)
 	}))
-	addButton := unison.NewSVGButton(svg.Copy)
-	addButton.Tooltip = newWrappedTooltip(i18n.Text("Copy to clipboard"))
-	addButton.ClickCallback = func() {
+	copyButton := unison.NewSVGButton(svg.Copy)
+	copyButton.Tooltip = newWrappedTooltip(copyTooltip)
+	copyButton.ClickCallback = func() {
 		unison.ClipboardSetText(value)
 	}
-	content.AddChild(addButton)
+	content.AddChild(copyButton)
 }
 
 func (d *generalSettingsDockable) createExternalPDFCmdLineField(content *unison.Panel) {
@@ -458,6 +465,8 @@ func addMembershipCheckBoxPanel[T cmp.Ordered](content *unison.Panel, title stri
 		VSpacing: unison.StdVSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	// The title is drawn by the border, which nothing reads, so the group is named with it as well.
+	panel.Accessibility.Name = title
 	items = slices.Clone(items)
 	xslices.ColumnSort(items, 2, compare)
 	boxes := make([]membershipCheckBox[T], 0, len(items))
