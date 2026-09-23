@@ -131,6 +131,19 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
 	table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
+	// Template choices can only be managed on a template, so a drop that would carry them anywhere else is handled
+	// here, before unison has inserted anything, rather than being unwound afterwards. The guard also decides whether
+	// a drop onto a sheet is to resolve those choices instead (see guardTemplatePickerDrop).
+	dropCallback := table.DropCallback
+	table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
+		if !guardTemplatePickerDrop(table, provider, di) {
+			if table.DragExitedCallback != nil {
+				table.DragExitedCallback()
+			}
+			return false
+		}
+		return dropCallback(di, where, mods)
+	}
 	// The keyboard repositioning commands are the equivalents of a drag within the table, so they belong on exactly
 	// the tables that accept one.
 	InstallMoveSelectionHandlers(table)
@@ -263,6 +276,15 @@ func willDropCallback[T gurps.Node[T]](from, to *unison.Table[*Node[T]], move bo
 }
 
 func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+	// The guard let this drop through on the condition that its template choices be given up (see
+	// guardTemplatePickerDrop), which can only be honored now that the rows have landed. The other outcomes never
+	// reach here: the guard performs a partial template application itself and turns the drop away, as it does a
+	// refusal, and choices that are being kept need nothing done to them.
+	if pendingTemplatePickerAction == templatePickerCopyStrip {
+		gurps.ClearTemplatePickerData(ExtractNodeDataFromList(to.SelectedRows(true))...)
+	}
+	pendingTemplatePickerAction = templatePickerCopyKeep
+
 	if provider, ok := to.ClientData()[TableProviderClientKey]; ok {
 		var tableProvider TableProvider[T]
 		if tableProvider, ok = provider.(TableProvider[T]); ok {

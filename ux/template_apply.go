@@ -204,3 +204,36 @@ Disable your character's existing Ancestry (%s)?`),
 	sheet.RequestFocus()
 	return true
 }
+
+// templatePartsFromRows gathers the rows of a copy or a drag into the parts of a template application, cloned into the
+// destination sheet's tables. The rows of a single transfer are always of one type -- a drag carries a single drag key
+// and a copy a single block key -- so exactly one of the parts is ever filled in. Only traits, skills and spells can
+// carry template choices today, so a row type that cannot is not a partial template application and returns nil; an
+// equipment case belongs here once equipment gains choices of its own.
+func templatePartsFromRows[T gurps.Node[T]](sheet *Sheet, rows []*Node[T]) *templateParts {
+	var parts templateParts
+	switch typed := any(rows).(type) {
+	case []*Node[*gurps.Trait]:
+		parts.traits = cloneRows(sheet.Traits.Table, typed)
+	case []*Node[*gurps.Skill]:
+		parts.skills = cloneRows(sheet.Skills.Table, typed)
+	case []*Node[*gurps.Spell]:
+		parts.spells = cloneRows(sheet.Spells.Table, typed)
+	default:
+		return nil
+	}
+	return &parts
+}
+
+// applyPartialTemplate applies a selection of a template's rows to a sheet as a partial template application: the same
+// pipeline a whole template runs, carrying only the parts the selection holds and leaving the body type alone. This is
+// what a copy or a drag of rows bearing template choices onto a sheet performs, so that the one way choices are made
+// is the one the template tier already uses. Returns false if a choice was canceled, in which case the sheet has been
+// left untouched.
+func applyPartialTemplate[T gurps.Node[T]](sheet *Sheet, rows []*Node[T]) bool {
+	parts := templatePartsFromRows(sheet, rows)
+	if parts == nil {
+		return false
+	}
+	return ApplyTemplateParts(parts, sheet, processTemplateParts, false)
+}

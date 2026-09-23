@@ -467,3 +467,20 @@ func rawPoints[T gurps.Node[T]](child T) fxp.Int {
 	}
 	return 0
 }
+
+// templatePickerCopyAction is what a copy of rows carrying template choices does when it reaches its destination. The
+// choices attached to a container can only be managed on a template, so everywhere else either makes them at once or
+// lets them go.
+type templatePickerCopyAction uint8
+
+const (
+	// templatePickerCopyRefuse abandons the copy, which is what declining to give up the choices amounts to.
+	templatePickerCopyRefuse templatePickerCopyAction = iota
+	// templatePickerCopyKeep carries the choices over untouched. Only a template can do this.
+	templatePickerCopyKeep
+	// templatePickerCopyResolve turns the copy into a partial template application: the same choice dialogs an applied
+	// template presents are shown, and each container carrying choices is replaced by what was picked.
+	templatePickerCopyResolve
+	// templatePickerCopyStrip removes the choices from the copy, leaving the rows otherwise as they were.
+	templatePickerCopyStrip
+)

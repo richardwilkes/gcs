@@ -62,17 +62,44 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 	}
 	sel := table.SelectedRows(true)
 	key := blockKeyForRow(sel[0].Data())
+	hasTemplatePickerData := gurps.HasTemplatePickerData(ExtractNodeDataFromList(sel)...)
 	for _, d := range destinations {
+		// Template choices can only be managed on a template, so what becomes of them is settled before anything is
+		// copied. Every destination of a single copy is of the same kind, but each is asked separately, just as
+		// applying a template to several sheets asks for each.
+		pickerAction := templatePickerCopyKeep
+		if hasTemplatePickerData {
+			if pickerAction = decideTemplatePickerCopy(d); pickerAction == templatePickerCopyRefuse {
+				continue
+			}
+		}
 		// The assertion fails for a key that isn't a block key of this destination, since its list then comes back as
 		// an untyped nil, and for a destination that hasn't built the list yet, whose list is a typed nil.
 		target, ok := d.list(key).(*PageList[T])
 		if !ok || target == nil {
 			continue
 		}
+		toCopy := sel
+		switch pickerAction {
+		case templatePickerCopyResolve:
+			// Copying rows that carry choices onto a sheet is a partial template application, so it hands off to the
+			// template pipeline rather than copying anything itself: the choices, the modifier prompts and the
+			// nameables all happen there, in that order, exactly as they do for a whole template. A canceled choice
+			// leaves that sheet untouched.
+			if sheet, isSheet := any(d).(*Sheet); isSheet {
+				applyPartialTemplate(sheet, sel)
+			}
+			continue
+		case templatePickerCopyStrip:
+			// The rows are copied without their choices and otherwise unchanged. The clone is stripped rather than the
+			// selection, which belongs to the list being copied from and must be left alone.
+			toCopy = cloneRows(target.Table, sel)
+			gurps.ClearTemplatePickerData(ExtractNodeDataFromList(toCopy)...)
+		}
 		// All processing must happen inside the postProcessor so it is captured by the undo edit's after-state
 		// (CopyRowsTo records that after the postProcessor runs); otherwise redo would not restore the resolved tech
 		// levels, nameables, or the merged points.
-		CopyRowsTo(target.Table, sel, func(rows []*Node[T]) {
+		CopyRowsTo(target.Table, toCopy, func(rows []*Node[T]) {
 			target.provider.ProcessDropData(nil, target.Table)
 			processCopiedRows(table, target.Table)
 			maybeClearPreconfiguredFlag(target.Table, rows)
