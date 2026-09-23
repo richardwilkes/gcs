@@ -152,23 +152,31 @@ Disable your character's existing Ancestry (%s)?`),
 			}
 		}
 	}
-	// Skills and spells merge points with identical existing rows during appendRows, and the merge match includes the
-	// nameable replacements. Since they have no modifiers to toggle, resolve their nameables up front so the merge
-	// compares against the final replacements; otherwise re-applying a template would compare empty replacements
-	// against the already-resolved existing rows and add duplicates instead of merging.
-	ProcessNameables(sheet.Skills.Table, ExtractNodeDataFromList(parts.skills), true)
-	ProcessNameables(sheet.Spells.Table, ExtractNodeDataFromList(parts.spells), true)
 	appendRows(sheet.Traits.Table, parts.traits)
 	appendRows(sheet.Skills.Table, parts.skills)
 	appendRows(sheet.Spells.Table, parts.spells)
 	appendRows(sheet.CarriedEquipment.Table, parts.equipment)
 	appendRows(sheet.Notes.Table, parts.notes)
 	rebuildAsModified(sheet, true)
-	ProcessModifiersForSelection(sheet.Traits.Table, true)
-	ProcessModifiersForSelection(sheet.CarriedEquipment.Table, true)
-	ProcessNameablesForSelection(sheet.Traits.Table, true)
-	ProcessNameablesForSelection(sheet.CarriedEquipment.Table, true)
-	ProcessNameablesForSelection(sheet.Notes.Table, true)
+
+	// Present the decisions the added rows carry by the same route a copy or a drop takes, which is what puts the
+	// modifier prompt ahead of the nameables one (see promptForAddedRows). Every list is asked about, not just the
+	// ones that were being asked about before: a skill, a spell or a note arriving from a template can carry nameable
+	// keys as readily as a trait can.
+	promptForAddedRows(sheet.Traits.Table)
+	promptForAddedRows(sheet.Skills.Table)
+	promptForAddedRows(sheet.Spells.Table)
+	promptForAddedRows(sheet.CarriedEquipment.Table)
+	promptForAddedRows(sheet.Notes.Table)
+
+	// Merge the added rows into identical existing ones now that their decisions are settled, since the merge match
+	// includes the nameable replacements. This is why the prompts have to come first: merging before them would
+	// compare empty replacements against the already-resolved existing rows and add duplicates instead of merging.
+	MergeAddedRows(sheet.Traits.Table)
+	MergeAddedRows(sheet.Skills.Table)
+	MergeAddedRows(sheet.Spells.Table)
+	MergeAddedRows(sheet.CarriedEquipment.Table)
+	MergeAddedRows(sheet.OtherEquipment.Table)
 	maybeClearPreconfiguredFlag(sheet.Traits.Table, sheet.Traits.Table.RootRows())
 	maybeClearPreconfiguredFlag(sheet.Skills.Table, sheet.Skills.Table.RootRows())
 	maybeClearPreconfiguredFlag(sheet.Spells.Table, sheet.Spells.Table.RootRows())

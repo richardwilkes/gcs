@@ -170,33 +170,3 @@ func mergePoints[T mergeableNode[T]](existing, incoming []T, defaultTechLevel st
 	}
 	return incoming
 }
-
-// mergeRowsFor bridges from a caller generic over any node type, which only knows the row type once it has switched on
-// the table's concrete type, to mergeRows, which needs that concrete type. The conversions cannot fail once the switch
-// has matched, but rows are returned untouched should one somehow not hold up.
-func mergeRowsFor[T mergeableNode[T], U gurps.Node[U]](table *unison.Table[*Node[T]], existing, rows []*Node[U], selMap map[tid.TID]bool) []*Node[U] {
-	if existingNodes, ok := any(existing).([]*Node[T]); ok {
-		if rowNodes, ok2 := any(rows).([]*Node[T]); ok2 {
-			if merged, ok3 := any(mergeRows(table, existingNodes, rowNodes, selMap)).([]*Node[U]); ok3 {
-				return merged
-			}
-		}
-	}
-	return rows
-}
-
-// mergeRows folds the points of the incoming rows into matching existing rows (see mergePoints) and returns fresh
-// nodes for the incoming rows that survived, ready to be added to the table.
-func mergeRows[T mergeableNode[T]](table *unison.Table[*Node[T]], existing, rows []*Node[T], selMap map[tid.TID]bool) []*Node[T] {
-	surviving := mergePoints(
-		ExtractNodeDataFromList(existing),
-		ExtractNodeDataFromList(rows),
-		entityTechLevel(table),
-		selMap,
-	)
-	replacements := make([]*Node[T], 0, len(surviving))
-	for _, item := range surviving {
-		replacements = append(replacements, NewNode(table, nil, item, true))
-	}
-	return replacements
-}

@@ -103,3 +103,64 @@ func TestApplyTemplateWithoutBodyTypeLeavesBodyTypeAlone(t *testing.T) {
 	sheet.undoMgr.Undo()
 	c.Equal(originalBody.Name, entity.SheetSettings.BodyType.Name, "undo must leave the body type alone as well")
 }
+
+// TestApplyTemplateAsksForTheNameablesOfAModifierEnabledDuringTheApply verifies that the two prompts an applied
+// template presents run in the order that makes the second one complete: modifiers first, then nameables. Only an
+// enabled modifier contributes nameable keys -- FillWithNameableKeys traverses a row's modifiers with onlyEnabled set
+// -- so asking for the names first would never ask about a modifier the user turns on at the prompt, leaving raw
+// @Key@ text on it with no way to fill it in afterwards.
+func TestApplyTemplateAsksForTheNameablesOfAModifierEnabledDuringTheApply(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Trained By A Master"
+	modifier := gurps.NewTraitModifier(nil, nil, false)
+	modifier.Name = "@Style@ Training"
+	modifier.Disabled = true // Contributes no nameable keys until the modifier prompt turns it on.
+	trait.Modifiers = []*gurps.TraitModifier{modifier}
+	templateData := gurps.NewTemplate()
+	templateData.SetTraitList([]*gurps.Trait{trait})
+	template := newTestTemplateDockable("Source", templateData)
+
+	modifiersShown := stubTraitModifierPrompt(t, enableAllModifiers)
+	nameablesShown := stubNameablesPrompt(t, fillNameables("Style", "Karate"))
+
+	c.True(ApplyTemplateToSheet(template, sheet, true), "the template must be applied")
+	c.Equal(1, *modifiersShown, "the modifier prompt must have been presented")
+	c.Equal(1, *nameablesShown, "the nameables prompt must have been presented after it")
+
+	applied := entity.Traits[len(entity.Traits)-1]
+	c.Equal("Trained By A Master", applied.Name, "the template's trait must have been added")
+	c.Equal(1, len(applied.Modifiers), "the trait must have kept its modifier")
+	c.False(applied.Modifiers[0].Disabled, "the modifier prompt must have enabled the modifier")
+	// The answers are reduced onto the row that owns the modifier, not onto the modifier itself, since a modifier's
+	// markers are resolved through its owner's replacement map (Trait.ApplyNameableKeys).
+	c.Equal("Karate", applied.Replacements["Style"],
+		"the nameables of a modifier enabled during the apply must have been asked for and recorded")
+}
+
+// TestApplyTemplateAsksForTheNameablesOfANote verifies that a note arriving from a template is asked about like every
+// other row. Notes were left out of the prompt for a while, which landed them on the sheet with their raw @Key@ text
+// showing and no way to fill it in short of editing the note by hand.
+func TestApplyTemplateAsksForTheNameablesOfANote(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+
+	note := gurps.NewNote(nil, nil, false)
+	note.MarkDown = "Sworn to @Patron@"
+	templateData := gurps.NewTemplate()
+	templateData.SetNoteList([]*gurps.Note{note})
+	template := newTestTemplateDockable("Source", templateData)
+
+	shown := stubNameablesPrompt(t, fillNameables("Patron", "The Duke"))
+
+	c.True(ApplyTemplateToSheet(template, sheet, true), "the template must be applied")
+	c.Equal(1, *shown, "the note's nameable key must have been prompted for")
+
+	applied := entity.Notes[len(entity.Notes)-1]
+	c.Equal("Sworn to The Duke", applied.TextWithReplacements(),
+		"the answer must have been recorded on the note")
+}

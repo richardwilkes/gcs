@@ -237,12 +237,6 @@ func cloneRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) 
 func appendRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) {
 	selMap := make(map[tid.TID]bool)
 	orig := slices.Clone(table.RootRows())
-	switch t := any(table).(type) {
-	case *unison.Table[*Node[*gurps.Skill]]:
-		rows = mergeRowsFor(t, orig, rows, selMap)
-	case *unison.Table[*Node[*gurps.Spell]]:
-		rows = mergeRowsFor(t, orig, rows, selMap)
-	}
 	table.SetRootRows(append(orig, rows...))
 	for _, row := range rows {
 		selMap[row.ID()] = true
