@@ -229,75 +229,86 @@ func TestMergeSpellPoints(t *testing.T) {
 	})
 }
 
-func newSkillTable(skills ...*gurps.Skill) (*unison.Table[*Node[*gurps.Skill]], []*Node[*gurps.Skill]) {
-	table := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
-	nodes := make([]*Node[*gurps.Skill], len(skills))
-	for i, s := range skills {
-		nodes[i] = NewNode(table, nil, s, false)
-	}
-	table.SetRootRows(nodes)
-	return table, nodes
+// placeSkills places the added skills after the existing ones already on a sheet, the way any rows arriving on a sheet
+// are placed, returning the sheet's skills table afterwards.
+func placeSkills(t *testing.T, existing []*gurps.Skill, added ...*gurps.Skill) (*gurps.Entity, *unison.Table[*Node[*gurps.Skill]]) {
+	t.Helper()
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	entity.Skills = existing
+	sheet.Rebuild(true)
+	part := applyPart[*gurps.Skill]{table: sheet.Skills.Table, rows: added, index: -1}
+	part.place(true)
+	return entity, liveTable(sheet.Skills.Table)
 }
 
-// The rows added by a drag or copy are the ones left selected, which is how MergeAddedRows tells them from the rows
-// that were already there.
-func TestMergeAddedRows(t *testing.T) {
+// Placing rows merges any that duplicate a row already present into that row, while the rows already present never
+// merge with each other.
+func TestPlaceMergesIntoExistingRows(t *testing.T) {
 	c := check.New(t)
 
-	t.Run("adding an identical skill merges into the existing one", func(_ *testing.T) {
+	t.Run("adding an identical skill merges into the existing one", func(t *testing.T) {
 		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
 		added := newTestSkill("Brawling", fxp.FromInteger(2), nil)
-		table, nodes := newSkillTable(existing, added)
-		table.SetSelectionMap(map[tid.TID]bool{nodes[1].ID(): true})
-		MergeAddedRows(table)
-		roots := table.RootRows()
-		c.Equal(1, len(roots))
-		c.Equal(existing, roots[0].Data())
+		entity, table := placeSkills(t, []*gurps.Skill{existing}, added)
+		c.Equal(1, len(entity.Skills))
+		c.Equal(existing, table.RootRows()[0].Data())
 		c.Equal(fxp.FromInteger(6), existing.Points)
 	})
 
-	t.Run("adding a distinct skill keeps both rows", func(_ *testing.T) {
+	t.Run("adding a distinct skill keeps both rows", func(t *testing.T) {
 		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
 		added := newTestSkill("Climbing", fxp.FromInteger(2), nil)
-		table, nodes := newSkillTable(existing, added)
-		table.SetSelectionMap(map[tid.TID]bool{nodes[1].ID(): true})
-		MergeAddedRows(table)
-		c.Equal(2, len(table.RootRows()))
+		entity, _ := placeSkills(t, []*gurps.Skill{existing}, added)
+		c.Equal(2, len(entity.Skills))
 		c.Equal(fxp.FromInteger(4), existing.Points)
 	})
 
-	// Only the newly-added (selected) row is treated as incoming; two identical existing rows must not merge with each
-	// other, and an added row must merge into the first matching existing candidate.
-	t.Run("added row merges into an existing row that shares a hash", func(_ *testing.T) {
+	// Two identical existing rows must not merge with each other, and an added row must merge into the matching
+	// candidate among the rows sharing its hash.
+	t.Run("added row merges into an existing row that shares a hash", func(t *testing.T) {
 		existingTL8 := newTestSkill("Guns", fxp.FromInteger(4), new("8"))
 		existingTL9 := newTestSkill("Guns", fxp.FromInteger(1), new("9"))
 		added := newTestSkill("Guns", fxp.FromInteger(2), new("9"))
-		table, nodes := newSkillTable(existingTL8, existingTL9, added)
-		table.SetSelectionMap(map[tid.TID]bool{nodes[2].ID(): true})
-		MergeAddedRows(table)
-		c.Equal(2, len(table.RootRows()))
+		entity, _ := placeSkills(t, []*gurps.Skill{existingTL8, existingTL9}, added)
+		c.Equal(2, len(entity.Skills))
 		c.Equal(fxp.FromInteger(4), existingTL8.Points)
 		c.Equal(fxp.FromInteger(3), existingTL9.Points)
 	})
 
+	// A row dropped into a container arrives already parented to it, though not yet among its children, and the merge
+	// used to take it out of the container's children -- where it wasn't -- rather than out of the rows to be placed,
+	// so its points were added to the existing row and the row was placed as well.
+	t.Run("a skill dropped into a container merges without also being placed", func(t *testing.T) {
+		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
+		group := gurps.NewSkill(nil, nil, true)
+		group.Name = "Combat Skills"
+		sheet := newTestSheetForTemplate(t)
+		entity := sheet.Entity()
+		entity.Skills = []*gurps.Skill{existing, group}
+		sheet.Rebuild(true)
+		added := newTestSkill("Brawling", fxp.FromInteger(2), nil)
+		added.SetParent(group)
+		part := applyPart[*gurps.Skill]{table: sheet.Skills.Table, rows: []*gurps.Skill{added}, parent: group, index: 0}
+		part.place(true)
+		c.Equal(fxp.FromInteger(6), existing.Points, "the existing skill must absorb the dropped skill's points")
+		c.Equal(0, len(group.Children), "the merged skill must not also be placed into the container")
+		c.Equal(0, len(part.placed))
+		table, _ := part.changed()
+		c.NotNil(table, "a merge changes the row merged into, so the change must still be reported")
+	})
+
 	// Regression test for #1066: a row nested inside an added container (as when a template is added to the sheet by
 	// dragging it in) merges into an identical existing row, and the now-redundant nested row must leave the table's
-	// view immediately. It used to be pruned from the data only, remaining visible until something else caused the
-	// table to reload, because the merge bailed out early when the top-level row count was unchanged.
-	t.Run("a skill inside an added container merges and its row leaves the view", func(_ *testing.T) {
+	// view immediately rather than remaining visible until something else causes the table to reload.
+	t.Run("a skill inside an added container merges and its row leaves the view", func(t *testing.T) {
 		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
 		container := gurps.NewSkill(nil, nil, true)
 		container.Name = "Combat Skills"
 		child := newTestSkill("Brawling", fxp.FromInteger(2), nil)
 		child.SetParent(container)
 		container.Children = []*gurps.Skill{child}
-		table := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
-		existingNode := NewNode(table, nil, existing, false)
-		containerNode := NewNode(table, nil, container, false)
-		table.SetRootRows([]*Node[*gurps.Skill]{existingNode, containerNode})
-		c.Equal(3, table.LastRowIndex()+1, "the open container's child must be showing before the merge")
-		table.SetSelectionMap(map[tid.TID]bool{containerNode.ID(): true})
-		MergeAddedRows(table)
+		_, table := placeSkills(t, []*gurps.Skill{existing}, container)
 		c.Equal(fxp.FromInteger(6), existing.Points, "the existing skill must absorb the nested skill's points")
 		c.Equal(0, len(container.Children), "the merged child must be pruned from the container's data")
 		roots := table.RootRows()
@@ -311,7 +322,7 @@ func TestMergeAddedRows(t *testing.T) {
 
 	// Same as above, but nested two container levels deep, so that both the merge traversal and the view refresh are
 	// shown to handle arbitrary nesting rather than just direct children of an added container.
-	t.Run("a skill nested two levels deep in an added container merges and its row leaves the view", func(_ *testing.T) {
+	t.Run("a skill nested two levels deep in an added container merges and its row leaves the view", func(t *testing.T) {
 		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
 		container := gurps.NewSkill(nil, nil, true)
 		container.Name = "Combat Skills"
@@ -321,13 +332,7 @@ func TestMergeAddedRows(t *testing.T) {
 		child := newTestSkill("Brawling", fxp.FromInteger(2), nil)
 		child.SetParent(subContainer)
 		subContainer.Children = []*gurps.Skill{child}
-		table := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Skill]]{})
-		existingNode := NewNode(table, nil, existing, false)
-		containerNode := NewNode(table, nil, container, false)
-		table.SetRootRows([]*Node[*gurps.Skill]{existingNode, containerNode})
-		c.Equal(4, table.LastRowIndex()+1, "all nested rows must be showing before the merge")
-		table.SetSelectionMap(map[tid.TID]bool{containerNode.ID(): true})
-		MergeAddedRows(table)
+		_, table := placeSkills(t, []*gurps.Skill{existing}, container)
 		c.Equal(fxp.FromInteger(6), existing.Points, "the existing skill must absorb the deeply nested skill's points")
 		c.Equal(0, len(subContainer.Children), "the merged child must be pruned from the sub-container's data")
 		c.Equal(1, len(container.Children), "the sub-container itself must remain in the added container")

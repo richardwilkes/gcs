@@ -10,7 +10,10 @@
 package ux
 
 import (
+	"fmt"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -50,8 +53,9 @@ func canCopySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[
 }
 
 // copySelectionTo copies the table's selected rows onto each of the destinations the user picks from those given (see
-// PromptForDestination), landing them in the destination's list for the rows' type and resolving them the way a drop
-// onto a sheet would (see processCopiedRows).
+// PromptForDestination), landing them in the destination's list for the rows' type and applying them there the way any
+// rows arriving in that destination are (see applyTransfer). Each destination is applied to independently, so canceling
+// one of them leaves the others alone.
 func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*Node[T]], destinations []D) {
 	if !table.HasSelection() {
 		return
@@ -62,6 +66,7 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 	}
 	sel := table.SelectedRows(true)
 	key := blockKeyForRow(sel[0].Data())
+	editName := fmt.Sprintf(i18n.Text("Insert %s"), sel[0].Data().Kind())
 	for _, d := range destinations {
 		// The assertion fails for a key that isn't a block key of this destination, since its list then comes back as
 		// an untyped nil, and for a destination that hasn't built the list yet, whose list is a typed nil.
@@ -69,37 +74,7 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 		if !ok || target == nil {
 			continue
 		}
-		// All processing must happen inside the postProcessor so it is captured by the undo edit's after-state
-		// (CopyRowsTo records that after the postProcessor runs); otherwise redo would not restore the resolved tech
-		// levels, nameables, or the merged points.
-		CopyRowsTo(target.Table, sel, func(rows []*Node[T]) {
-			target.provider.ProcessDropData(nil, target.Table)
-			processCopiedRows(table, target.Table)
-			clearPreconfiguredFlag(target.Table, rows)
-		}, true)
-	}
-}
-
-// processCopiedRows resolves the just-copied, currently-selected rows of a sheet's or template's table the same way a
-// drop onto one does: prompting for the modifiers and nameables of rows that arrived from somewhere other than a
-// sheet, then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
-// destination isn't a character sheet, loot sheet or template.
-func processCopiedRows[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
-	if shouldProcessModifiersAndNameablesTo(target) {
-		if shouldProcessModifiersAndNameablesFrom(source) {
-			// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us:
-			// only enabled modifiers count toward a row having switchable features, so toggling one can add or take
-			// away the switch column, and a list can only change its columns by building a new table. An orphaned table
-			// has no Rebuildable above it and reports its own rows as selected rather than the ones the user is now
-			// looking at, both of which the steps below depend upon. Applying nameable substitutions rebuilds as well,
-			// so look it up again afterwards too.
-			ProcessModifiersForSelection(target)
-			target = liveTable(target)
-			ProcessNameablesForSelection(target)
-			target = liveTable(target)
-		}
-		// The copy always adds rows to a different sheet, so merge points into identical existing rows even when
-		// copying from another sheet.
-		MergeAddedRows(target)
+		applyTransfer(target.Table, newApplyParts(newAppendPart(target.Table, sel)),
+			applyOptionsFor(table, target.Table), editName)
 	}
 }

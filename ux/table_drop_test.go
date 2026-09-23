@@ -82,7 +82,10 @@ func (p *fakeAltDropProvider) CreateItem(_ Rebuildable, _ *unison.Table[*Node[*g
 func (p *fakeAltDropProvider) AltDropSupport() *AltDropSupport {
 	return &AltDropSupport{
 		DragKey: traitModifierDragKey,
-		Drop:    func(rowIndexes []int, _ any) { p.altDrops = append(p.altDrops, rowIndexes) },
+		Drop: func(rowIndexes []int, _ any) bool {
+			p.altDrops = append(p.altDrops, rowIndexes)
+			return true
+		},
 	}
 }
 
@@ -331,26 +334,44 @@ func TestAltDropNotifiesTheTable(t *testing.T) {
 	c.Equal(1, notified, "a declined drop must not notify the table")
 }
 
-// TestShouldProcessModifiersAndNameables verifies that a copy is prompted for modifiers and nameables when it lands on
-// a sheet, loot sheet or template and comes from anywhere except a sheet or loot sheet -- including a template, which
-// a prior refactor collapsed into a single predicate shared by both the source and destination checks. That shared
-// predicate answered true for a template on either side, so a copy from a template onto a sheet was mistaken for one
-// arriving from a sheet and silently skipped its prompts.
-func TestShouldProcessModifiersAndNameables(t *testing.T) {
+// TestApplyOptionsFor verifies what rows arriving in each kind of document go through, depending on where they came
+// from. A template counts as a source of rows to be applied, just as a library does; a prior refactor once collapsed the
+// source and destination checks into a single predicate that answered true for a template on either side, so a copy
+// from a template onto a sheet was mistaken for one arriving from a sheet and silently skipped its prompts.
+func TestApplyOptionsFor(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	loot := newTestLootSheet(t)
 	template := newTestTemplateWithBodyType("")
+	library := newLibraryStyleTraitsTable()
 
-	c.False(shouldProcessModifiersAndNameablesFrom(sheet.Traits.Table), "copying from a sheet")
-	c.False(shouldProcessModifiersAndNameablesFrom(loot.Equipment.Table), "copying from a loot sheet")
-	c.True(shouldProcessModifiersAndNameablesFrom(template.Traits.Table), "copying from a template")
-	c.True(shouldProcessModifiersAndNameablesFrom(newLibraryStyleTraitsTable()), "copying from a library list")
+	c.Equal(transferSheet, transferKindOf(sheet.Traits.Table))
+	c.Equal(transferSheet, transferKindOf(loot.Equipment.Table), "a loot sheet is a sheet")
+	c.Equal(transferTemplate, transferKindOf(template.Traits.Table))
+	c.Equal(transferLibrary, transferKindOf(library))
 
-	c.True(shouldProcessModifiersAndNameablesTo(sheet.Traits.Table), "copying to a sheet")
-	c.True(shouldProcessModifiersAndNameablesTo(loot.Equipment.Table), "copying to a loot sheet")
-	c.True(shouldProcessModifiersAndNameablesTo(template.Traits.Table), "copying to a template")
-	c.False(shouldProcessModifiersAndNameablesTo(newLibraryStyleTraitsTable()), "copying to a library list")
+	full := applyOptions{
+		resolvePickers:     true,
+		askAncestry:        true,
+		promptForChoices:   true,
+		randomize:          true,
+		clearPreconfigured: true,
+		merge:              true,
+	}
+	c.Equal(full, applyOptionsFor(library, sheet.Traits.Table), "a library to a sheet")
+	c.Equal(full, applyOptionsFor(template.Traits.Table, sheet.Traits.Table), "a template to a sheet")
+	c.Equal(full, applyOptionsFor(library, loot.Equipment.Table), "a library to a loot sheet")
+	c.Equal(applyOptions{resolvePickers: true, askAncestry: true, clearPreconfigured: true, merge: true},
+		applyOptionsFor(loot.Equipment.Table, sheet.CarriedEquipment.Table),
+		"a sheet to a sheet is a plain copy, save for what a sheet can't hold and the ancestry question")
+	c.Equal(applyOptions{promptForChoices: true, merge: true}, applyOptionsFor(library, template.Traits.Table),
+		"a library to a template prompts for modifiers and nameables only")
+	c.Equal(applyOptions{merge: true}, applyOptionsFor(template.Traits.Table, template.Traits.Table),
+		"a template to a template is a plain copy")
+	c.Equal(applyOptions{merge: true}, applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
+		"a sheet to a template is a plain copy")
+	c.Equal(applyOptions{stripPickers: true, clearPreconfigured: true}, applyOptionsFor(template.Traits.Table, library),
+		"anything to a library is a plain copy, save for the choices only a template can hold")
 }
 
 // TestDropWithinASheetSurvivesTheSourceTableBeingReplaced verifies that a drag from one list on a sheet to another is
@@ -461,12 +482,12 @@ func newLibraryStyleTraitsTable(traits ...*gurps.Trait) *unison.Table[*Node[*gur
 func stubTraitModifierPrompt(t *testing.T, respond func(modifiers []*gurps.TraitModifier) bool) *int {
 	t.Helper()
 	shown := 0
-	swapForTest(t, &promptForTraitModifiers, func(_ string, modifiers []*gurps.TraitModifier) bool {
+	swapForTest(t, &promptForTraitModifiers, func(_ string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		if len(modifiers) == 0 {
-			return false // The real prompt has nothing to show in this case, so it can't change anything either.
+			return false, false // The real prompt has nothing to show in this case, so it can't change anything either.
 		}
 		shown++
-		return respond(modifiers)
+		return respond(modifiers), false
 	})
 	return &shown
 }
@@ -480,12 +501,12 @@ func enableAllModifiers(modifiers []*gurps.TraitModifier) bool {
 	return true
 }
 
-// TestDropPromptingForModifiersSurvivesTheDestinationTableBeingReplaced verifies that a drop arriving from a library
-// list completes against the list that is on screen even though answering the modifier prompt replaces it partway
-// through. Only the modifiers that are enabled count toward a row having switchable features, so turning one on brings
-// the switch column into view, and a list can only gain a column by being built anew -- leaving the table the drop was
-// handed orphaned, with no sheet above it from which to reach the undo manager or ask for a rebuild.
-func TestDropPromptingForModifiersSurvivesTheDestinationTableBeingReplaced(t *testing.T) {
+// TestDropFromLibraryEndsUpInTheListOnScreen verifies that a drop arriving from a library list completes against the
+// list that is on screen even though the change it makes replaces the list it was dropped into. Only the modifiers that
+// are enabled count toward a row having switchable features, so turning one on brings the switch column into view, and
+// a list can only gain a column by being built anew -- leaving the table the drop was aimed at an orphan, with no sheet
+// above it from which to reach the undo manager.
+func TestDropFromLibraryEndsUpInTheListOnScreen(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
@@ -502,23 +523,19 @@ func TestDropPromptingForModifiersSurvivesTheDestinationTableBeingReplaced(t *te
 	from := newLibraryStyleTraitsTable(trait)
 	shown := stubTraitModifierPrompt(t, enableAllModifiers)
 
-	// Drive the drop the way unison's drop handling does: collect the undo data, add the row to the model, bring the
-	// destination up to date and select the new row, then hand off to the drop completion.
-	undo := willDropCallback(from, to, false)
-	c.NotNil(undo, "the drop must be undoable")
-	entity.Traits = append(entity.Traits, trait)
-	to.SyncToModel()
-	to.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
-	didDropCallback(undo, from, to, false)
+	c.True(applyDrop(&unison.TableDragData[*Node[*gurps.Trait]]{Table: from, Rows: from.RootRows()}, to, nil, -1),
+		"the drop must go through")
 
 	c.Equal(1, *shown, "a drop from a library must prompt for the dropped row's modifiers")
+	c.Equal(originalTraits+1, len(entity.Traits), "the trait must have been dropped onto the sheet")
 	live := sheet.Traits.Table
 	c.NotEqual(to, live, "gaining the switch column must replace the traits table")
 	c.False(columnsOutOfSync(sheet.Traits.provider.ColumnIDs(), live.Columns),
 		"the live traits list must show the columns its content calls for")
 	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
 		"enabling the switchable modifier must bring the switch column into view")
-	c.True(live.CopySelectionMap()[trait.ID()], "the dropped row must be selected in the list the user is looking at")
+	c.True(live.CopySelectionMap()[entity.Traits[len(entity.Traits)-1].ID()],
+		"the dropped row must be selected in the list the user is looking at")
 	c.True(mgr.CanUndo(), "the drop must have registered an undo edit")
 
 	mgr.Undo()
@@ -527,64 +544,18 @@ func TestDropPromptingForModifiersSurvivesTheDestinationTableBeingReplaced(t *te
 		"undo must take the switch column away again")
 }
 
-// TestCopyRowsToRebuildsTheListThatReplacedTheOneItWasGiven verifies that the work CopyRowsTo does once its
-// post-processing has finished -- scrolling to the new rows, recording the undo edit and rebuilding the owner -- is
-// aimed at the table that is on screen. The post-processing prompts for modifiers, and answering that prompt rebuilds
-// the sheet; since only enabled modifiers count toward a row having switchable features, the switch column can come or
-// go, and a list can only change its columns by being built anew. Whatever the post-processing does after that point
-// -- the remaining rows' prompts, the nameable substitutions, the point merge -- only reaches the screen if the
-// closing rebuild does, and an orphaned table has no sheet above it to rebuild.
-func TestCopyRowsToRebuildsTheListThatReplacedTheOneItWasGiven(t *testing.T) {
+// TestCopyToSheetSurvivesTheTargetTableBeingReplaced verifies that everything a copy onto a sheet does after prompting
+// for the incoming rows' modifiers -- the nameable substitutions, recording the undo edit and rebuilding the owner --
+// is aimed at the list that is on screen. Answering the prompt rebuilds the sheet, and since only enabled modifiers
+// count toward a row having switchable features, that replaces the table when the toggled modifier carries a
+// switchable feature; an orphaned table has no sheet above it to rebuild or to find the undo manager through.
+func TestCopyToSheetSurvivesTheTargetTableBeingReplaced(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	target := sheet.Traits.Table
 	mgr := unison.UndoManagerFor(target)
 	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	originalTraits := len(entity.Traits) // A new entity may come with traits of its own, such as the natural attacks.
-
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Claws"
-	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
-	source := newLibraryStyleTraitsTable(trait)
-
-	var copied *gurps.Trait
-	CopyRowsTo(target, source.RootRows(), func(rows []*Node[*gurps.Trait]) {
-		copied = rows[0].Data()
-		// Stand in for the modifier prompt: turning the modifier on gives the trait a switchable feature, so the
-		// traits list needs the switch column and can only get it by being built anew. The table CopyRowsTo is holding
-		// is an orphan from here on.
-		copied.Modifiers[0].Disabled = false
-		sheet.Rebuild(true)
-		// Stand in for everything the post-processing does after that prompt. It changes the model again -- here by
-		// turning the modifier back off, which takes the switch column away again -- and counts on the rebuild at the
-		// end of the copy to put the list back in step with its content.
-		copied.Modifiers[0].Disabled = true
-	}, true)
-
-	live := sheet.Traits.Table
-	c.NotEqual(target, live, "gaining the switch column must replace the traits table")
-	c.False(columnsOutOfSync(sheet.Traits.provider.ColumnIDs(), live.Columns),
-		"the copy must rebuild the list that replaced the one it was handed")
-	c.Equal(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
-		"the switch column must go away again once nothing is switchable")
-	c.True(live.CopySelectionMap()[copied.ID()], "the copied row must be selected in the list the user is looking at")
-	c.True(mgr.CanUndo(), "the copy must have registered an undo edit")
-
-	mgr.Undo()
-	c.Equal(originalTraits, len(entity.Traits), "undo must take the copied trait back off the sheet")
-}
-
-// TestCopyToSheetPostProcessingSurvivesTheTargetTableBeingReplaced verifies that the post-processing performed for a
-// copy onto a sheet keeps working with the list that is on screen. It starts by prompting for the modifiers of the
-// incoming rows, and answering that prompt rebuilds the sheet, which replaces the table when the toggled modifier
-// carries a switchable feature; the nameable substitutions and the point merge that follow have to be applied to the
-// list that took its place rather than to the orphan.
-func TestCopyToSheetPostProcessingSurvivesTheTargetTableBeingReplaced(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	target := sheet.Traits.Table
 	c.Equal(-1, switchColumnIndex(target.Columns, gurps.TraitSwitchColumn),
 		"the traits list must start out without the switch column")
 	originalTraits := len(entity.Traits) // A new entity may come with traits of its own, such as the natural attacks.
@@ -593,11 +564,10 @@ func TestCopyToSheetPostProcessingSurvivesTheTargetTableBeingReplaced(t *testing
 	trait.Name = "Claws"
 	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
 	source := newLibraryStyleTraitsTable(trait)
+	source.SelectAll()
 	shown := stubTraitModifierPrompt(t, enableAllModifiers)
 
-	CopyRowsTo(target, source.RootRows(), func(_ []*Node[*gurps.Trait]) {
-		processCopiedRows(source, target)
-	}, true)
+	copySelectionTo(source, []*Sheet{sheet})
 
 	c.Equal(1, *shown, "a copy from a library must prompt for the copied row's modifiers")
 	c.Equal(originalTraits+1, len(entity.Traits), "the trait must have been copied onto the sheet")
@@ -609,4 +579,10 @@ func TestCopyToSheetPostProcessingSurvivesTheTargetTableBeingReplaced(t *testing
 		"enabling the switchable modifier must bring the switch column into view")
 	c.True(live.CopySelectionMap()[entity.Traits[len(entity.Traits)-1].ID()],
 		"the copied row must be selected in the list the user is looking at")
+	c.True(mgr.CanUndo(), "the copy must have registered an undo edit")
+
+	mgr.Undo()
+	c.Equal(originalTraits, len(entity.Traits), "undo must take the copied trait back off the sheet")
+	c.Equal(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
+		"undo must take the switch column away again")
 }

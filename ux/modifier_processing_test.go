@@ -30,21 +30,21 @@ type modifierPrompt struct {
 func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 	t.Helper()
 	var prompts []modifierPrompt
-	swapForTest(t, &promptForTraitModifiers, func(title string, modifiers []*gurps.TraitModifier) bool {
+	swapForTest(t, &promptForTraitModifiers, func(title string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
 			p.modifiers = append(p.modifiers, one.Name)
 		}
 		prompts = append(prompts, p)
-		return false
+		return false, false
 	})
-	swapForTest(t, &promptForEquipmentModifiers, func(title string, modifiers []*gurps.EquipmentModifier) bool {
+	swapForTest(t, &promptForEquipmentModifiers, func(title string, modifiers []*gurps.EquipmentModifier) (changed, canceled bool) {
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
 			p.modifiers = append(p.modifiers, one.Name)
 		}
 		prompts = append(prompts, p)
-		return false
+		return false, false
 	})
 	return &prompts
 }

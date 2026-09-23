@@ -30,31 +30,23 @@ import (
 	"github.com/richardwilkes/unison/enums/side"
 )
 
-// processTemplatePickers presents the template picker dialog for each row that has one, replacing the rows with the
-// resulting choices. It returns false if the user canceled one of them, in which case the rows must be discarded.
-func processTemplatePickers(rows *templateRows) bool {
-	var abort bool
-	if rows.traits, abort = processPickerRows(rows.traits); abort {
-		return false
-	}
-	if rows.skills, abort = processPickerRows(rows.skills); abort {
-		return false
-	}
-	if rows.spells, abort = processPickerRows(rows.spells); abort {
-		return false
-	}
-	return true
+// The picker processing is held in a variable so that tests, which have no way to respond to the dialogs it presents, can
+// substitute their own.
+var promptForPickers = processPickers
+
+// processPickers presents the template picker dialog for each row of the parts that has one, replacing the rows with
+// the resulting choices. It returns false if the user canceled one of them, in which case the parts must be discarded.
+func processPickers(parts *applyParts) bool {
+	return parts.all(applyPartOps.resolvePickers)
 }
 
-func processPickerRows[T gurps.Node[T]](rows []*Node[T]) (revised []*Node[T], abort bool) {
-	for _, one := range ExtractNodeDataFromList(rows) {
+func processPickerRows[T gurps.Node[T]](rows []T) (revised []T, abort bool) {
+	for _, one := range rows {
 		result, cancel := processPickerRow(one)
 		if cancel {
 			return nil, true
 		}
-		for _, replacement := range result {
-			revised = append(revised, NewNodeLike(rows[0], replacement))
-		}
+		revised = append(revised, result...)
 	}
 	return revised, false
 }

@@ -509,11 +509,6 @@ func applyToSelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], undoTit
 	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }
 
-// CopyRowsTo copies the provided rows to the target table and reports the change by rebuilding the table's owner.
-func CopyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T]), recordUndo bool) {
-	copyRowsTo(table, rows, postProcessor, recordUndo, true)
-}
-
 // copyRowsTo copies the provided rows to the target table. When report is true, the change is reported by rebuilding
 // the table's owner; when it is false, the caller takes that on, for when the copy is only one part of a larger edit
 // whose parts should be reported once, together (see moveSelectedEquipment).
