@@ -157,7 +157,6 @@ Disable your character's existing Ancestry (%s)?`),
 	appendRows(sheet.Spells.Table, parts.spells)
 	appendRows(sheet.CarriedEquipment.Table, parts.equipment)
 	appendRows(sheet.Notes.Table, parts.notes)
-	rebuildAsModified(sheet, true)
 
 	// Present the decisions the added rows carry by the same route a copy or a drop takes, which is what puts the
 	// modifier prompt ahead of the nameables one (see promptForAddedRows). Every list is asked about, not just the
@@ -195,9 +194,12 @@ Disable your character's existing Ancestry (%s)?`),
 		if randomize {
 			e.Profile.ApplyRandomizers(e)
 			updateRandomizedProfileFieldsWithoutUndo(sheet)
-			rebuildAsModified(sheet, true)
 		}
 	}
+	// One rebuild covers the whole application. The prompts above rebuild as they are answered, which can leave this
+	// sheet an orphan, so the rebuild is aimed at whatever is live rather than at the sheet this started with.
+	rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(sheet)), true)
+
 	sheet.Window().ToFront()
 	sheet.RequestFocus()
 	return true
