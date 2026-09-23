@@ -95,6 +95,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	editButton.ClickCallback = func() {
 		displayPointsEditor(p.AncestorOrSelf[Rebuildable](), p.entity)
 	}
+	editButton.Accessibility.Name = i18n.Text("Edit points")
 	hdri.AddChild(editButton)
 	p.AddChild(hdr)
 
