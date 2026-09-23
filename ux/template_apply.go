@@ -123,30 +123,33 @@ func ApplyTemplateParts(parts *templateParts, sheet *Sheet, processPickers proce
 // applyTemplateParts does the work of an application, without the undo bookkeeping ApplyTemplateParts wraps it in.
 func applyTemplateParts(parts *templateParts, sheet *Sheet, processPickers processTemplatePartsFunc, suppressRandomizePrompt bool) bool {
 	e := sheet.Entity()
-	// Nothing from here until the pickers have been dealt with may modify the sheet: canceling a picker abandons the
-	// entire operation, which must leave the sheet exactly as it was. That includes the Ancestry question below, which
-	// is asked here to preserve the order the questions are presented in, but not acted upon until the operation is
-	// known to be going through.
-	disableExistingAncestries := false
+
+	// Nothing until the pickers have been dealt with may modify the sheet: canceling a picker abandons the entire
+	// operation, which must leave the sheet exactly as it was.
+	if !processPickers(parts) {
+		return false
+	}
+
+	// The sheet is modified from this point on.
+
+	if parts.body != nil {
+		e.SheetSettings.BodyType = parts.body.Clone(e, nil)
+	}
+
+	// The Ancestry question is asked about what survived the pickers, not about what the template arrived with. A
+	// template whose Ancestry sits inside a picker only has one if the user picked it, and asking before the pickers
+	// ran meant being asked to disable an existing Ancestry to make way for one that was then discarded.
 	templateAncestries := gurps.ActiveAncestries(ExtractNodeDataFromList(parts.traits))
 	if len(templateAncestries) != 0 {
 		entityAncestries := gurps.ActiveAncestries(e.Traits)
 		if len(entityAncestries) != 0 {
-			disableExistingAncestries = unison.YesNoDialog(fmt.Sprintf(i18n.Text(`The template contains an Ancestry (%s).
+			if unison.YesNoDialog(fmt.Sprintf(i18n.Text(`The template contains an Ancestry (%s).
 Disable your character's existing Ancestry (%s)?`),
-				templateAncestries[0].Name, entityAncestries[0].Name), "") == unison.ModalResponseOK
-		}
-	}
-	if !processPickers(parts) {
-		return false // A picker was canceled, so the sheet has been left untouched.
-	}
-	// The sheet is modified from this point on.
-	if parts.body != nil {
-		e.SheetSettings.BodyType = parts.body.Clone(e, nil)
-	}
-	if disableExistingAncestries {
-		for _, one := range gurps.ActiveAncestryTraits(e.Traits) {
-			one.Disabled = true
+				templateAncestries[0].Name, entityAncestries[0].Name), "") == unison.ModalResponseOK {
+				for _, one := range gurps.ActiveAncestryTraits(e.Traits) {
+					one.Disabled = true
+				}
+			}
 		}
 	}
 	// Skills and spells merge points with identical existing rows during appendRows, and the merge match includes the
