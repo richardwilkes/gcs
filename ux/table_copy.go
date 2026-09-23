@@ -93,9 +93,9 @@ func processCopiedRows[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) 
 			// has no Rebuildable above it and reports its own rows as selected rather than the ones the user is now
 			// looking at, both of which the steps below depend upon. Applying nameable substitutions rebuilds as well,
 			// so look it up again afterwards too.
-			ProcessModifiersForSelection(target)
+			ProcessModifiersForSelection(target, true)
 			target = liveTable(target)
-			ProcessNameablesForSelection(target)
+			ProcessNameablesForSelection(target, true)
 			target = liveTable(target)
 		}
 		// The copy always adds rows to a different sheet, so merge points into identical existing rows even when

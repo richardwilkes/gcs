@@ -116,8 +116,12 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 				//
 				// ProcessModifiers is given the rows the modifiers were dropped onto, since modifiers themselves
 				// aren't something it can process, and only the topmost of them, since it walks descendants as well.
-				ProcessModifiers(liveTable(p.table), minimalNodes(targets))
-				ProcessNameableGroups(liveTable(p.table), groups)
+				//
+				// Both prompts pass false for skipPreconfigured. That flag says the decisions a row arrived with are
+				// settled, and these modifiers did not arrive with it: they are being attached now, by hand, to a row
+				// already in place, so no author ever ruled on them and the flag has nothing to say about them.
+				ProcessModifiers(liveTable(p.table), minimalNodes(targets), false)
+				ProcessNameableGroups(liveTable(p.table), groups, false)
 			}
 		},
 	}
@@ -284,10 +288,10 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 			// on or off can add or take away the switch column. An orphaned table has no Rebuildable above it and
 			// reports its own rows as selected rather than the ones the user is now looking at, both of which the steps
 			// below depend upon. Applying nameable substitutions rebuilds as well, so refresh again afterwards.
-			ProcessModifiersForSelection(to)
+			ProcessModifiersForSelection(to, true)
 			from = liveTable(from)
 			to = liveTable(to)
-			ProcessNameablesForSelection(to)
+			ProcessNameablesForSelection(to, true)
 			from = liveTable(from)
 			to = liveTable(to)
 		}

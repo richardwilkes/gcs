@@ -139,7 +139,7 @@ func TestProcessNameablesRebuildsThroughAReplacedTable(t *testing.T) {
 
 	counter := installSyncCounter(sheet)
 	shown := stubNameablesPrompt(t, fillNameables("Adjective", "Sharp"))
-	ProcessNameables(stale, []*gurps.Trait{trait})
+	ProcessNameables(stale, []*gurps.Trait{trait}, true)
 
 	c.Equal(1, *shown, "the trait's nameable key must be prompted for")
 	c.Equal("Sharp Claws", trait.NameWithReplacements(), "the substitution must be applied to the trait")
@@ -157,7 +157,7 @@ func TestProcessNameablesRebuildsThroughAReplacedTableForModifierRows(t *testing
 
 	counter := installSyncCounter(sheet)
 	shown := stubNameablesPrompt(t, fillNameables("Material", "Steel"))
-	ProcessNameables(stale, []*gurps.TraitModifier{modifier})
+	ProcessNameables(stale, []*gurps.TraitModifier{modifier}, true)
 
 	c.Equal(1, *shown, "the modifier's nameable key must be prompted for")
 	c.Equal("Steel Coating", modifier.NameWithReplacements(), "the substitution must be applied to the modifier")
@@ -263,4 +263,38 @@ func TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy(t *testing.T) {
 		"the first copy must get the first answer")
 	c.Equal("Silver Coating", targets[1].Modifiers[0].NameWithReplacements(),
 		"the second copy must get its own answer rather than the first one's")
+}
+
+// TestProcessNameablesPreconfiguredSkipIsCallerControlled verifies both sides of the skipPreconfigured switch. Unlike
+// the modifier prompt, which passes a marked row over entirely, the nameables prompt narrows it to the keys with no
+// replacement recorded -- so honoring the flag hides the answered keys rather than the row. Ignoring it prompts for
+// the row in full, which is what a caller attaching something the flag was never set against needs.
+func TestProcessNameablesPreconfiguredSkipIsCallerControlled(t *testing.T) {
+	c := check.New(t)
+	panel := unison.NewPanel()
+
+	newMarkedTrait := func() *gurps.Trait {
+		trait := gurps.NewTrait(nil, nil, false)
+		trait.Name = "@Answered@ and @Unanswered@"
+		trait.Replacements = map[string]string{"Answered": "Known"}
+		trait.SetPreconfigured(true)
+		return trait
+	}
+
+	var honored [][]string
+	swapForTest(t, &promptForNameables, func(_ []string, _ []map[string]string, visibleKeys [][]string) bool {
+		honored = visibleKeys
+		return false
+	})
+	ProcessNameables(panel, []*gurps.Trait{newMarkedTrait()}, true)
+	c.Equal([][]string{{"Unanswered"}}, honored,
+		"honoring the flag must narrow a marked row to the keys with no replacement recorded")
+
+	var ignored [][]string
+	swapForTest(t, &promptForNameables, func(_ []string, _ []map[string]string, visibleKeys [][]string) bool {
+		ignored = visibleKeys
+		return false
+	})
+	ProcessNameables(panel, []*gurps.Trait{newMarkedTrait()}, false)
+	c.Equal([][]string{nil}, ignored, "ignoring the flag must offer every key, which a nil entry denotes")
 }

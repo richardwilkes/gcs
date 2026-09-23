@@ -23,29 +23,34 @@ import (
 )
 
 // ProcessNameablesForSelection processes the selected rows and their children for any nameables.
-func ProcessNameablesForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
+func ProcessNameablesForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], skipPreconfigured bool) {
 	rows := table.SelectedRows(true)
 	data := make([]T, 0, len(rows))
 	for _, row := range rows {
 		data = append(data, row.Data())
 	}
-	ProcessNameables(table, data)
+	ProcessNameables(table, data, skipPreconfigured)
 }
 
 // The nameables prompt is held in a variable so that tests can substitute a non-interactive implementation.
 var promptForNameables = ShowNameablesDialog
 
 // ProcessNameables processes the rows and their children for any nameables.
-func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
-	if processNameables(rows) {
+//
+// skipPreconfigured says whether the Preconfigured flag on a row is honored. The flag means the decisions a row
+// *arrived with* are settled, so the transfer paths pass true: a marked row is then narrowed to the keys that have no
+// replacement recorded, and passed over entirely when none are missing. A caller that introduces keys the flag was
+// never set against passes false, and the row is prompted for in full, like any other.
+func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T, skipPreconfigured bool) {
+	if processNameables(rows, skipPreconfigured) {
 		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
 	}
 }
 
 // processNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
 // that covers all of the groups.
-func processNameables[T gurps.Node[T]](rows []T) bool {
-	return processNameableGroups([]NameableGroup[T]{{Rows: rows}})
+func processNameables[T gurps.Node[T]](rows []T, skipPreconfigured bool) bool {
+	return processNameableGroups([]NameableGroup[T]{{Rows: rows}}, skipPreconfigured)
 }
 
 // NameableGroup is a set of rows whose entries in the nameables prompt share a label. An entry is normally titled with
@@ -59,15 +64,15 @@ type NameableGroup[T gurps.Node[T]] struct {
 
 // ProcessNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
 // that covers all of the groups.
-func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []NameableGroup[T]) {
-	if processNameableGroups(groups) {
+func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []NameableGroup[T], skipPreconfigured bool) {
+	if processNameableGroups(groups, skipPreconfigured) {
 		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
 	}
 }
 
 // processNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
 // that covers all of the groups.
-func processNameableGroups[T gurps.Node[T]](groups []NameableGroup[T]) bool {
+func processNameableGroups[T gurps.Node[T]](groups []NameableGroup[T], skipPreconfigured bool) bool {
 	var data []T
 	var titles []string
 	var nameables []map[string]string
@@ -81,7 +86,7 @@ func processNameableGroups[T gurps.Node[T]](groups []NameableGroup[T]) bool {
 					return false
 				}
 				var keys []string
-				if gurps.IsNodePreconfigured(row) {
+				if skipPreconfigured && gurps.IsNodePreconfigured(row) {
 					// Only prompt for keys with no replacement recorded; the rest were already resolved.
 					if keys = missingNameableKeys(row, m); len(keys) == 0 {
 						return false

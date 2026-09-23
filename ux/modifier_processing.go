@@ -24,13 +24,13 @@ import (
 )
 
 // ProcessModifiersForSelection processes the selected rows for modifiers that can be toggled on or off.
-func ProcessModifiersForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
+func ProcessModifiersForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], skipPreconfigured bool) {
 	rows := table.SelectedRows(true)
 	data := make([]T, 0, len(rows))
 	for _, row := range rows {
 		data = append(data, row.Data())
 	}
-	ProcessModifiers(table, data)
+	ProcessModifiers(table, data, skipPreconfigured)
 }
 
 // The modifier prompts are held in variables so that tests can substitute non-interactive implementations.
@@ -41,8 +41,14 @@ var (
 
 // ProcessModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
 // modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing.
-func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
-	if processModifiers(rows) {
+//
+// skipPreconfigured says whether a row marked Preconfigured is passed over. The flag means the decisions a row
+// *arrived with* are settled, so the transfer paths -- applying a template, copying rows, dropping rows -- pass true
+// and honor it. A caller that introduces a decision the flag was never set against passes false: dropping a modifier
+// onto a row that is already in place adds something no author ever ruled on, so the flag has nothing to say about it
+// and must not suppress the question.
+func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T, skipPreconfigured bool) {
+	if processModifiers(rows, skipPreconfigured) {
 		// The owner is normally the table the rows live in, and that table may have been replaced -- by a rebuild
 		// before this was called (the alternate drop path rebuilds before prompting) or by the rebuild an earlier
 		// prompt in this very loop asked for, since toggling a modifier can add or take away the switch column and a
@@ -54,11 +60,11 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 
 // processModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
 // modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing.
-func processModifiers[T gurps.Node[T]](rows []T) bool {
+func processModifiers[T gurps.Node[T]](rows []T, skipPreconfigured bool) bool {
 	var modified bool
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
-			if gurps.IsNodePreconfigured(row) {
+			if skipPreconfigured && gurps.IsNodePreconfigured(row) {
 				return false
 			}
 			switch t := any(row).(type) {

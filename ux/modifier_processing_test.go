@@ -115,16 +115,16 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
-	ProcessModifiers(panel, []*gurps.TraitModifier{traitMod})
+	ProcessModifiers(panel, []*gurps.TraitModifier{traitMod}, true)
 	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
 	equipmentMod.Name = "Equipment Modifier"
-	ProcessModifiers(panel, []*gurps.EquipmentModifier{equipmentMod})
+	ProcessModifiers(panel, []*gurps.EquipmentModifier{equipmentMod}, true)
 	c.Equal(0, len(*prompts), "modifier rows have no modifiers of their own to prompt for")
 
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Trait"
 	trait.Modifiers = []*gurps.TraitModifier{traitMod}
-	ProcessModifiers(panel, []*gurps.Trait{trait})
+	ProcessModifiers(panel, []*gurps.Trait{trait}, true)
 	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
 		"a trait must be prompted for with its own modifiers")
 }
@@ -353,7 +353,7 @@ func TestProcessModifiersRebuildsThroughAReplacedTable(t *testing.T) {
 	// is asked for through a table that the first answer orphaned.
 	shown := stubTraitModifierPrompt(t, enableAllModifiers)
 	entity.ModifiedOn = jio.Time{}
-	ProcessModifiers(stale, []*gurps.Trait{first, second})
+	ProcessModifiers(stale, []*gurps.Trait{first, second}, true)
 	c.Equal(2, *shown, "both traits must have been prompted for")
 	c.NotEqual(jio.Time{}, entity.ModifiedOn,
 		"an answer that changes a modifier is an edit, so it must bump the modification timestamp")
@@ -364,4 +364,30 @@ func TestProcessModifiersRebuildsThroughAReplacedTable(t *testing.T) {
 	c.Equal(fxp.One, stBonusFor(entity),
 		"the rebuild after the second answer must have recalculated the entity, bringing the enabled bonus into play")
 	c.True(columnsMatchProvider(sheet.Traits.Table), "the live table's columns must match its provider")
+}
+
+// TestProcessModifiersPreconfiguredSkipIsCallerControlled verifies both sides of the skipPreconfigured switch on one
+// row. The flag records that the decisions a row arrived with are settled, so a transfer passes true and asks nothing.
+// An alternate drop attaches a modifier the flag was never set against, so it passes false and must ask even though
+// the row is marked.
+func TestProcessModifiersPreconfiguredSkipIsCallerControlled(t *testing.T) {
+	c := check.New(t)
+	prompts := captureModifierPrompts(t)
+	entity := gurps.NewEntity()
+	panel := unison.NewPanel()
+
+	modifier := gurps.NewTraitModifier(entity, nil, false)
+	modifier.Name = "Trait Modifier"
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Trait"
+	trait.Modifiers = []*gurps.TraitModifier{modifier}
+	trait.SetPreconfigured(true)
+	c.True(gurps.IsNodePreconfigured(trait), "the test requires the row to be marked preconfigured")
+
+	ProcessModifiers(panel, []*gurps.Trait{trait}, true)
+	c.Equal(0, len(*prompts), "a transfer must honor the flag and leave a preconfigured row alone")
+
+	ProcessModifiers(panel, []*gurps.Trait{trait}, false)
+	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
+		"a caller introducing a new decision must ask regardless of the flag")
 }
