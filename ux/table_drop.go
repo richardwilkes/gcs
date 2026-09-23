@@ -282,6 +282,11 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 	// refusal, and choices that are being kept need nothing done to them.
 	if pendingTemplatePickerAction == templatePickerCopyStrip {
 		gurps.ClearTemplatePickerData(ExtractNodeDataFromList(to.SelectedRows(true))...)
+		// The rows were inserted, and their heights measured, while the choices were still attached, and the tag those
+		// choices put in the cell is part of that height. Clearing the data doesn't invalidate what unison cached, and
+		// a library list is not rebuilt after a drop (see dropRebuilder), so without this the space for a tag stays
+		// reserved on a row that no longer draws one.
+		to.SyncToModel()
 	}
 	pendingTemplatePickerAction = templatePickerCopyKeep
 

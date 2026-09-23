@@ -238,3 +238,32 @@ func TestDidDropStripsTemplateChoices(t *testing.T) {
 	c.Equal("Keep me", landed.LocalNotes, "everything else must be untouched")
 	c.Equal(2, len(landed.Children), "the children must have come along")
 }
+
+// TestDidDropStrippingTemplateChoicesRemeasuresTheRow verifies that the row a strip landed is measured again
+// afterwards. The rows are inserted, and their heights cached, while the choices are still attached, and the tag those
+// choices put in the cell is part of that height. A library list is not rebuilt after a drop, so nothing else refreshes
+// the cache: the row went on reserving the space for a tag it no longer draws, leaving a blank gap under its name.
+func TestDidDropStrippingTemplateChoicesRemeasuresTheRow(t *testing.T) {
+	c := check.New(t)
+	dockable := newTestTraitTableDockable()
+	table := dockable.table
+	originalRows := len(dockable.provider.RootData())
+
+	choices := newTemplateChoiceTrait("Pick One", "First", "Second")
+	dockable.provider.SetRootData(append(dockable.provider.RootData(), choices))
+	table.SyncToModel()
+	table.SetSelectionMap(map[tid.TID]bool{choices.ID(): true})
+	withChoices := table.RowFrame(originalRows).Height
+	pendingTemplatePickerAction = templatePickerCopyStrip
+	defer func() { pendingTemplatePickerAction = templatePickerCopyKeep }()
+
+	didDropCallback(willDropCallback(nil, table, false), nil, table, false)
+
+	stripped := table.RowFrame(originalRows).Height
+	c.True(stripped > 0, "the test requires the row to have been measured at all")
+	c.True(stripped < withChoices,
+		"the row must be shorter without the tag the choices added; was %v, still %v", withChoices, stripped)
+	table.SyncToModel()
+	c.Equal(stripped, table.RowFrame(originalRows).Height,
+		"the cached height must already match what a fresh sync measures")
+}
