@@ -331,26 +331,29 @@ func TestAltDropNotifiesTheTable(t *testing.T) {
 	c.Equal(1, notified, "a declined drop must not notify the table")
 }
 
-// TestShouldProcessModifiersAndNameables verifies that a copy is prompted for modifiers and nameables when it lands on
-// a sheet, loot sheet or template and comes from anywhere except a sheet or loot sheet -- including a template, which
+// TestLandedRowPromptPredicates verifies that a copy is prompted for modifiers and nameables when it lands on a
+// sheet, loot sheet or template and comes from anywhere except a sheet or loot sheet -- including a template, which
 // a prior refactor collapsed into a single predicate shared by both the source and destination checks. That shared
 // predicate answered true for a template on either side, so a copy from a template onto a sheet was mistaken for one
 // arriving from a sheet and silently skipped its prompts.
-func TestShouldProcessModifiersAndNameables(t *testing.T) {
+//
+// The two are deliberately separate questions and keep separate names: whether a destination prompts for rows landing
+// in it, and whether rows leaving a source may still carry unresolved decisions.
+func TestLandedRowPromptPredicates(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	loot := newTestLootSheet(t)
 	template := newTestTemplateWithBodyType("")
 
-	c.False(shouldProcessModifiersAndNameablesFrom(sheet.Traits.Table), "copying from a sheet")
-	c.False(shouldProcessModifiersAndNameablesFrom(loot.Equipment.Table), "copying from a loot sheet")
-	c.True(shouldProcessModifiersAndNameablesFrom(template.Traits.Table), "copying from a template")
-	c.True(shouldProcessModifiersAndNameablesFrom(newLibraryStyleTraitsTable()), "copying from a library list")
+	c.False(rowsArriveUnresolvedFrom(sheet.Traits.Table), "copying from a sheet")
+	c.False(rowsArriveUnresolvedFrom(loot.Equipment.Table), "copying from a loot sheet")
+	c.True(rowsArriveUnresolvedFrom(template.Traits.Table), "copying from a template")
+	c.True(rowsArriveUnresolvedFrom(newLibraryStyleTraitsTable()), "copying from a library list")
 
-	c.True(shouldProcessModifiersAndNameablesTo(sheet.Traits.Table), "copying to a sheet")
-	c.True(shouldProcessModifiersAndNameablesTo(loot.Equipment.Table), "copying to a loot sheet")
-	c.True(shouldProcessModifiersAndNameablesTo(template.Traits.Table), "copying to a template")
-	c.False(shouldProcessModifiersAndNameablesTo(newLibraryStyleTraitsTable()), "copying to a library list")
+	c.True(promptsForLandedRows(sheet.Traits.Table), "copying to a sheet")
+	c.True(promptsForLandedRows(loot.Equipment.Table), "copying to a loot sheet")
+	c.True(promptsForLandedRows(template.Traits.Table), "copying to a template")
+	c.False(promptsForLandedRows(newLibraryStyleTraitsTable()), "copying to a library list")
 }
 
 // TestDropWithinASheetSurvivesTheSourceTableBeingReplaced verifies that a drag from one list on a sheet to another is

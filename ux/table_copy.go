@@ -85,18 +85,9 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 // sheet, then folding the points of rows that duplicate ones already present into those rows. Does nothing when the
 // destination isn't a character sheet, loot sheet or template.
 func processCopiedRows[T gurps.Node[T]](source, target *unison.Table[*Node[T]]) {
-	if shouldProcessModifiersAndNameablesTo(target) {
-		if shouldProcessModifiersAndNameablesFrom(source) {
-			// Answering the modifier prompt rebuilds the owner, and that rebuild can replace the table underneath us:
-			// only enabled modifiers count toward a row having switchable features, so toggling one can add or take
-			// away the switch column, and a list can only change its columns by building a new table. An orphaned table
-			// has no Rebuildable above it and reports its own rows as selected rather than the ones the user is now
-			// looking at, both of which the steps below depend upon. Applying nameable substitutions rebuilds as well,
-			// so look it up again afterwards too.
-			ProcessModifiersForSelection(target, true)
-			target = liveTable(target)
-			ProcessNameablesForSelection(target, true)
-			target = liveTable(target)
+	if promptsForLandedRows(target) {
+		if rowsArriveUnresolvedFrom(source) {
+			target = promptForAddedRows(target)
 		}
 		// The copy always adds rows to a different sheet, so merge points into identical existing rows even when
 		// copying from another sheet.

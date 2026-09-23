@@ -281,19 +281,12 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		from = liveTable(from)
 		to = liveTable(to)
 	}
-	if shouldProcessModifiersAndNameablesTo(to) {
-		if shouldProcessModifiersAndNameablesFrom(from) {
-			// Answering the modifier prompt rebuilds the owner again, and that rebuild can replace the tables just as
-			// the one above did: only enabled modifiers count toward a row having switchable features, so turning one
-			// on or off can add or take away the switch column. An orphaned table has no Rebuildable above it and
-			// reports its own rows as selected rather than the ones the user is now looking at, both of which the steps
-			// below depend upon. Applying nameable substitutions rebuilds as well, so refresh again afterwards.
-			ProcessModifiersForSelection(to, true)
+	if promptsForLandedRows(to) {
+		if rowsArriveUnresolvedFrom(from) {
+			to = promptForAddedRows(to)
+			// The rebuilds those prompts trigger can replace the source table too, and the comparison below depends on
+			// both being the tables the user is now looking at.
 			from = liveTable(from)
-			to = liveTable(to)
-			ProcessNameablesForSelection(to, true)
-			from = liveTable(from)
-			to = liveTable(to)
 		}
 		// Merge points into identical existing rows whenever rows are actually being added (from a different table),
 		// including a drag from another sheet. A drag within the same table is only a reorder, so it is left alone.
@@ -331,9 +324,29 @@ func dropRebuilder(table unison.Paneler) Rebuildable {
 	return unison.Ancestor[Rebuildable](table)
 }
 
-// shouldProcessModifiersAndNameablesFrom reports whether rows coming from the given panel need their modifiers and
-// nameables processed. Rows that were already on a sheet or loot sheet have been through that.
-func shouldProcessModifiersAndNameablesFrom(panel unison.Paneler) bool {
+// promptForAddedRows presents the decisions that rows which have just been added to a table -- and are still the
+// table's selection -- carry with them, and returns the table to carry on with.
+//
+// The order is load-bearing and is the reason this lives in one place. Only an *enabled* modifier contributes nameable
+// keys, since FillWithNameableKeys traverses a row's modifiers with onlyEnabled set (model/gurps/trait.go), so the
+// modifiers have to be settled before the names are asked for. Reversing the two silently leaves raw @Key@ text on
+// every modifier the user turned on.
+//
+// Each prompt rebuilds the owner, and that rebuild can replace the table: only enabled modifiers count toward a row
+// having switchable features, so toggling one can add or take away the switch column, and a list can only change its
+// columns by building a new table. An orphaned table has no Rebuildable above it and reports its own rows as selected
+// rather than the ones the user is now looking at, so the live table is looked up between the prompts and returned.
+func promptForAddedRows[T gurps.Node[T]](table *unison.Table[*Node[T]]) *unison.Table[*Node[T]] {
+	// These rows have just arrived, so a Preconfigured flag among them is an authored answer that stands.
+	ProcessModifiersForSelection(table, true)
+	table = liveTable(table)
+	ProcessNameablesForSelection(table, true)
+	return liveTable(table)
+}
+
+// rowsArriveUnresolvedFrom reports whether rows coming from the given panel may still carry unresolved modifier and
+// nameable decisions. Rows that were already on a sheet or loot sheet have been through that, so they arrive settled.
+func rowsArriveUnresolvedFrom(panel unison.Paneler) bool {
 	if xreflect.IsNil(panel) {
 		return false
 	}
@@ -345,9 +358,13 @@ func shouldProcessModifiersAndNameablesFrom(panel unison.Paneler) bool {
 	}
 }
 
-// shouldProcessModifiersAndNameablesTo reports whether rows landing on the given panel need their modifiers and
-// nameables processed. Only a sheet, loot sheet or template prompts for them.
-func shouldProcessModifiersAndNameablesTo(panel unison.Paneler) bool {
+// promptsForLandedRows reports whether the given panel prompts for the modifiers and nameables of rows that land in
+// it. Only a sheet, loot sheet or template does.
+//
+// This is specifically about rows landing -- a copy, a drop, or a template being applied. It is not the general
+// question of whether a document ever prompts: the alternate modifier drop attaches modifiers to rows already in
+// place and decides for itself (see modifierAltDropSupport), so it does not consult this.
+func promptsForLandedRows(panel unison.Paneler) bool {
 	if xreflect.IsNil(panel) {
 		return false
 	}
