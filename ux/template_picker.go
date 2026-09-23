@@ -33,6 +33,11 @@ import (
 // processTemplatePartsFunc resolves the template choices the parts carry, answering false if one was canceled.
 type processTemplatePartsFunc func(*templateParts) bool
 
+// templatePickerChoiceHook, when non-nil, stands in for the template choice dialog, answering with the indexes of the
+// children to keep or asking for the operation to be canceled. Headless tests set this, since they have no way to
+// respond to a modal dialog.
+var templatePickerChoiceHook func(row any, childCount int) (keep []int, cancel bool)
+
 // processTemplateParts presents the template picker dialog for each row that has one, replacing the rows with the
 // resulting choices. It returns false if the user canceled one of them, in which case the rows must be discarded.
 func processTemplateParts(parts *templateParts) bool {
@@ -85,6 +90,14 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		row.SetChildren(rowChildren)
 		SetParents(rowChildren, row)
 		return []T{row}, false
+	}
+
+	if templatePickerChoiceHook != nil {
+		keep, cancel := templatePickerChoiceHook(row, len(children))
+		if cancel {
+			return nil, true
+		}
+		return collectPickedChildren(row, children, keep)
 	}
 
 	list := unison.NewPanel()
@@ -221,16 +234,29 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		return nil, true
 	}
 
-	rowChildren := make([]T, 0, len(children))
+	keep := make([]int, 0, len(boxes))
 	for i, box := range boxes {
 		if box.State == check.On {
-			var result []T
-			result, abort = processPickerRow(children[i])
-			if abort {
-				return nil, true
-			}
-			rowChildren = append(rowChildren, result...)
+			keep = append(keep, i)
 		}
+	}
+	return collectPickedChildren(row, children, keep)
+}
+
+// collectPickedChildren replaces a container that carries template choices with the children that were picked from it,
+// each of which is itself processed, since a picked child may carry choices of its own. Indexes that aren't a child's
+// are ignored, so that a substituted answer cannot reach past the children it was asked about.
+func collectPickedChildren[T gurps.Node[T]](row T, children []T, keep []int) (revised []T, abort bool) {
+	rowChildren := make([]T, 0, len(keep))
+	for _, i := range keep {
+		if i < 0 || i >= len(children) {
+			continue
+		}
+		var result []T
+		if result, abort = processPickerRow(children[i]); abort {
+			return nil, true
+		}
+		rowChildren = append(rowChildren, result...)
 	}
 	SetParents(rowChildren, row.Parent())
 	return rowChildren, false
