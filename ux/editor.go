@@ -281,5 +281,20 @@ func (e *editor[N, D]) apply() {
 		})
 	}
 	e.editorData.ApplyTo(e.target)
+	clearSourceOfTemplatePicker(e.target)
 	rebuildAsModified(e.owner, true)
+}
+
+// clearSourceOfTemplatePicker clears the source of a container that carries template picker data. Only a template may
+// hold picker data and a template is never a source, so the source such a container points at can't have it, and
+// syncing with that source would quietly take the choices away.
+func clearSourceOfTemplatePicker[N gurps.Node[N]](target N) {
+	if xreflect.IsNil(target) || !target.Container() {
+		return
+	}
+	if tpp, ok := any(target).(gurps.TemplatePickerProvider); ok {
+		if _, tp := tpp.TemplatePickerData(); !tp.IsZero() {
+			target.ClearSource()
+		}
+	}
 }
