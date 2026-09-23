@@ -177,11 +177,15 @@ Disable your character's existing Ancestry (%s)?`),
 	MergeAddedRows(sheet.Spells.Table)
 	MergeAddedRows(sheet.CarriedEquipment.Table)
 	MergeAddedRows(sheet.OtherEquipment.Table)
-	maybeClearPreconfiguredFlag(sheet.Traits.Table, sheet.Traits.Table.RootRows())
-	maybeClearPreconfiguredFlag(sheet.Skills.Table, sheet.Skills.Table.RootRows())
-	maybeClearPreconfiguredFlag(sheet.Spells.Table, sheet.Spells.Table.RootRows())
-	maybeClearPreconfiguredFlag(sheet.CarriedEquipment.Table, sheet.CarriedEquipment.Table.RootRows())
-	maybeClearPreconfiguredFlag(sheet.Notes.Table, sheet.Notes.Table.RootRows())
+	// A sheet never allows the Preconfigured flag, so there is no question to ask about whether to clear it here --
+	// unlike a copy or a drop, which can land in a document that does allow it. The sweep covers every list on the
+	// sheet rather than only the ones an apply adds to, so that it stays right regardless of where rows end up.
+	clearPreconfiguredFlag(sheet.Traits.Table.RootRows())
+	clearPreconfiguredFlag(sheet.Skills.Table.RootRows())
+	clearPreconfiguredFlag(sheet.Spells.Table.RootRows())
+	clearPreconfiguredFlag(sheet.CarriedEquipment.Table.RootRows())
+	clearPreconfiguredFlag(sheet.OtherEquipment.Table.RootRows())
+	clearPreconfiguredFlag(sheet.Notes.Table.RootRows())
 
 	if len(templateAncestries) != 0 && gurps.GlobalSettings().General.AutoFillProfile {
 		randomize := true
