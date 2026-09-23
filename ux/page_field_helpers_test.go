@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 )
 
 // randomizedFieldCount is the number of randomizer buttons the Description and Identity blocks hold between them:
@@ -148,4 +149,57 @@ func TestPageFieldRowsAlternateLabelsAndFields(t *testing.T) {
 			}
 		}
 	}
+}
+
+// TestRandomizedPageFieldsAreNamedByTheirLabels verifies that an assistive technology names every randomized field on
+// the Description and Identity blocks after the label in the randomizer wrapper before it, and reports that label as
+// what names the field. The sibling-label convention cannot do this on its own, since the field's preceding sibling is
+// the wrapper rather than the label. It also verifies that each randomizer button is still described, rather than
+// being folded away into a label.
+func TestRandomizedPageFieldsAreNamedByTheirLabels(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	var wnd *unison.Window
+	var rows []randomizedRow
+	screen.Do(func() {
+		entity := gurps.NewEntity()
+		root := newPageUndoRoot()
+		root.SetLayout(&unison.FlexLayout{Columns: 1})
+		targetMgr := NewTargetMgr(root)
+		root.AddChild(NewDescriptionPanel(entity, targetMgr))
+		root.AddChild(NewIdentityPanel(entity, targetMgr))
+		rows = randomizedRows(t, root.AsPanel())
+		w, err := unison.NewWindow("Randomized Fields")
+		if err != nil {
+			t.Errorf("unable to create the window: %v", err)
+			return
+		}
+		w.Content().SetLayout(&unison.FlexLayout{Columns: 1})
+		w.Content().AddChild(root)
+		w.Pack()
+		w.ToFront()
+		wnd = w
+	})
+	if wnd == nil {
+		t.Fatal("the window was not created")
+	}
+	c.Equal(randomizedFieldCount, len(rows), "every randomizable field has a randomizer button")
+	c.NotNil(screen.AccessibilityTree(wnd), "the window is described")
+	for _, row := range rows {
+		fieldNode := screen.AccessibilityNodeFor(row.field)
+		if fieldNode == nil {
+			t.Fatalf("the %q field is not described", row.title)
+		}
+		c.Equal(row.title, fieldNode.Name, "the %q field is named after its label", row.title)
+		var label *unison.Label
+		screen.Do(func() { label, _ = firstPanelOfType[*unison.Label](row.button.Parent()) })
+		labelNode := screen.AccessibilityNodeFor(label)
+		if labelNode == nil {
+			t.Fatalf("the %q label is not described", row.title)
+		}
+		c.Equal([]accessibility.NodeID{labelNode.ID}, fieldNode.LabeledBy, "the %q field is labeled by its label",
+			row.title)
+		c.NotNil(screen.AccessibilityNodeFor(row.button), "the %q randomizer button is described", row.title)
+	}
+	screen.Do(func() { wnd.Dispose() })
 }

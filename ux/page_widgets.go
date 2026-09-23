@@ -136,9 +136,10 @@ func NewPageLabelCenter(title string) *unison.Label {
 }
 
 // NewPageLabelWithRandomizer creates a new end-aligned field label for a sheet page that includes a randomization
-// button.
-func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) *unison.Panel {
-	wrapper := unison.NewPanel()
+// button. It returns the wrapper holding both, which is what gets added to the page, along with the label within it,
+// which is what the field it names should set as its Accessibility.LabeledBy, since the wrapper is not itself a label.
+func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) (wrapper *unison.Panel, label *unison.Label) {
+	wrapper = unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: 4,
@@ -155,8 +156,9 @@ func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) *un
 	b.ClickCallback = clickCallback
 	b.SetLayoutData(&unison.FlexLayoutData{HGrab: true})
 	wrapper.AddChild(b)
-	wrapper.AddChild(NewPageLabelEnd(title))
-	return wrapper
+	label = NewPageLabelEnd(title)
+	wrapper.AddChild(label)
+	return wrapper, label
 }
 
 // NewStringPageField creates a new text entry field for a sheet page.
@@ -198,8 +200,11 @@ func addRandomizedStringPageField(parent unison.Paneler, targetMgr *TargetMgr, t
 // fields hold have no bearing on the rest of the sheet.
 func addRandomizedPageField[F SelectableTextField](parent unison.Paneler, field F, title, tooltip string, randomize func() string) F {
 	p := parent.AsPanel()
-	p.AddChild(NewPageLabelWithRandomizer(title, tooltip, func() { SetTextAndMarkModified(field, randomize()) }))
-	field.AsPanel().ClientData()[SkipDeepSync] = true
+	wrapper, label := NewPageLabelWithRandomizer(title, tooltip, func() { SetTextAndMarkModified(field, randomize()) })
+	p.AddChild(wrapper)
+	fp := field.AsPanel()
+	fp.Accessibility.LabeledBy = label
+	fp.ClientData()[SkipDeepSync] = true
 	p.AddChild(field)
 	return field
 }
