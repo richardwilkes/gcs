@@ -316,11 +316,17 @@ func (a *axNameAudit) check(view string, root unison.Paneler) {
 // announced by name. A table's rows and cells are where its keyboard focus is reported, so they are focusable without
 // being controls: a cell with nothing in it is rightly announced as blank, and one with a control in it is checked
 // through that control.
+//
+// A document is listed outright rather than left to the focusable fallback, because whether it is focusable depends on
+// the platform: on Windows and Linux a markdown view takes the keyboard focus while a screen reader is running, so that
+// the reader's cursor can be moved into it, and it is then announced by name on landing there; on macOS it never does.
+// Naming it here keeps the check the same everywhere, so that a markdown view left unnamed fails on the machine the
+// change was made on rather than only in CI.
 func axNodeNeedsAName(node *accessibility.Node) bool {
 	switch node.Role {
 	case role.TextField, role.TextArea, role.SpinButton, role.ComboBox, role.PopupButton, role.Slider,
 		role.ProgressBar, role.ColorWell, role.List, role.Table, role.Tree, role.Button, role.CheckBox,
-		role.RadioButton, role.ToggleButton, role.Link, role.ColumnHeader:
+		role.RadioButton, role.ToggleButton, role.Link, role.ColumnHeader, role.Document:
 		return true
 	case role.Row, role.Cell:
 		return false

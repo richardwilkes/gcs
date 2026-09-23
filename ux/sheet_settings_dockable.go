@@ -245,6 +245,9 @@ func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	desc := unison.NewMarkdown(true)
+	// The description sits under the popup with no label of its own, so it is named outright for the screen readers
+	// whose cursor moves into a document.
+	desc.Accessibility.Name = i18n.Text("Damage Progression Description")
 	desc.SetContent(s.DamageProgression.AltString(), -1)
 	d.damageProgressionPopup = d.createSettingPopup(panel, i18n.Text("Damage Progression"),
 		progression.Options, s.DamageProgression,
