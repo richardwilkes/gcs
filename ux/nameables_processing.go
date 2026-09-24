@@ -22,22 +22,13 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// ProcessNameablesForSelection processes the selected rows and their children for any nameables.
-func ProcessNameablesForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	rows := table.SelectedRows(true)
-	data := make([]T, 0, len(rows))
-	for _, row := range rows {
-		data = append(data, row.Data())
-	}
-	ProcessNameables(table, data)
-}
-
 // The nameables prompt is held in a variable so that tests can substitute a non-interactive implementation.
 var promptForNameables = ShowNameablesDialog
 
-// ProcessNameables processes the rows and their children for any nameables.
-func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) {
-	ProcessNameableGroups(owner, []NameableGroup[T]{{Rows: rows}})
+// ProcessNameables processes the rows and their children for any nameables. Returns false if the user canceled the
+// prompt, in which case the caller is expected to abandon the whole operation the prompt was part of.
+func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) bool {
+	return ProcessNameableGroups(owner, []NameableGroup[T]{{Rows: rows}})
 }
 
 // NameableGroup is a set of rows whose entries in the nameables prompt share a label. An entry is normally titled with
@@ -50,8 +41,10 @@ type NameableGroup[T gurps.Node[T]] struct {
 }
 
 // ProcessNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
-// that covers all of the groups.
-func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []NameableGroup[T]) {
+// that covers all of the groups. Returns false if the user canceled the prompt, in which case the caller is expected to
+// abandon the whole operation the prompt was part of. The owner is rebuilt once the answers have been applied; it may be
+// nil for rows that aren't in a table yet, leaving nothing to rebuild.
+func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []NameableGroup[T]) bool {
 	var data []T
 	var titles []string
 	var nameables []map[string]string
@@ -84,19 +77,23 @@ func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []Namea
 		}
 	}
 	if len(data) > 0 {
-		if promptForNameables(titles, nameables, visibleKeys) {
-			for i, row := range data {
-				row.ApplyNameableKeys(nameables[i])
-			}
-			// The owner is normally the table the rows live in, and a rebuild may have replaced that table before
-			// this was called, since a list can only change its columns by building a new table. An orphaned table
-			// has no Rebuildable above it, so the rebuild would silently be skipped, leaving the substitutions in the
-			// model while the list the user is looking at goes on showing the raw keys. The live table has to be
-			// looked up without regard for T, since on the very path this is here for the rows are the modifiers that
-			// were dropped and T is therefore not the row type of the table they landed in.
+		if !promptForNameables(titles, nameables, visibleKeys) {
+			return false
+		}
+		for i, row := range data {
+			row.ApplyNameableKeys(nameables[i])
+		}
+		// The owner is normally the table the rows live in, and a rebuild may have replaced that table before this was
+		// called, since a list can only change its columns by building a new table. An orphaned table has no
+		// Rebuildable above it, so the rebuild would silently be skipped, leaving the substitutions in the model while
+		// the list the user is looking at goes on showing the raw keys. The live table has to be looked up without
+		// regard for T, since on the very path this is here for the rows are the modifiers that were dropped and T is
+		// therefore not the row type of the table they landed in.
+		if !xreflect.IsNil(owner) {
 			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
 		}
 	}
+	return true
 }
 
 // missingNameableKeys returns the keys of nameables that have no explicit replacement recorded on row.

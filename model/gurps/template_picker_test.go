@@ -67,6 +67,28 @@ func TestClearTemplatePickerData(t *testing.T) {
 	c.Equal(2, len(inner.Children), "clearing must not disturb anything else")
 }
 
+// TestClearTemplatePickerDataClearsSource verifies that a container losing its choices also loses its source, while
+// the rest of the subtree keeps theirs. Only a template may hold choices and a template is never a source, so the source
+// a container with choices points at can't have them, and syncing with it would quietly take them away.
+func TestClearTemplatePickerDataClearsSource(t *testing.T) {
+	c := check.New(t)
+	outer := NewTrait(nil, nil, true)
+	outer.Name = "Advantages"
+	outer.Source = Source{Library: "lib", Path: "outer.adq", TID: outer.ID()}
+	inner := newTemplateChoiceTrait("Pick One", "First", "Second")
+	inner.Source = Source{Library: "lib", Path: "inner.adq", TID: inner.ID()}
+	inner.SetParent(outer)
+	outer.Children = []*Trait{inner}
+	child := inner.Children[0]
+	child.Source = Source{Library: "lib", Path: "child.adq", TID: child.ID()}
+
+	ClearTemplatePickerData(outer)
+
+	c.Equal(Source{}, inner.Source, "the container that lost its choices must lose its source as well")
+	c.NotEqual(Source{}, outer.Source, "a container that had no choices must keep its source")
+	c.NotEqual(Source{}, child.Source, "an option must keep its source")
+}
+
 // newTemplateChoiceTrait returns a trait container carrying template choices, holding a child for each of the given
 // names.
 func newTemplateChoiceTrait(name string, childNames ...string) *Trait {

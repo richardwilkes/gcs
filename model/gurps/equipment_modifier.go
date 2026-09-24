@@ -640,16 +640,6 @@ func (e *EquipmentModifier) ClearUnusedFieldsForType() {
 	}
 }
 
-// GetSource returns the source of this data.
-func (e *EquipmentModifier) GetSource() Source {
-	return e.Source
-}
-
-// ClearSource clears the source of this data.
-func (e *EquipmentModifier) ClearSource() {
-	e.Source = Source{}
-}
-
 // SyncWithSource synchronizes this data with the source.
 func (e *EquipmentModifier) SyncWithSource() {
 	syncFromSource(e, func(other *EquipmentModifier) {

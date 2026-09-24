@@ -50,6 +50,15 @@
   holds the range of what is inside it. Ranges sort by their lower end, and the template picker dialog's running total
   shows a range while a picked choice still presents choices of its own.
 - GCS now works with screen readers: VoiceOver on macOS, Narrator, NVDA and JAWS on Windows, and Orca on Linux.
+- Copying or dragging items from a template or library onto a character sheet or loot sheet now goes through the same
+  steps as applying a template, in the same order: the template choices, the modifiers, the @Name@ substitutions, the
+  ancestry question and the offer to randomize the profile again. Every question is asked before anything is added,
+  so canceling any of them leaves the sheet exactly as it was, and the whole addition is undone in a single step.
+  Dragged items land where they were dropped, including inside a container, rather than always at the end of the list.
+- Copying or dragging items from one character sheet to another, or from one template to another, now copies them as
+  they are, without asking about their modifiers or @Name@ substitutions again. Copying items from a character sheet
+  onto another still asks whether to disable the existing ancestry when an ancestry is among them, and offers to
+  randomize the profile again.
 
 ## Bug Fixes
 
@@ -59,3 +68,17 @@
 - With the "Group containers when sorting" general setting turned on, sorting a list by one of its numeric columns no
   longer treats every container as worth the same. The marker that groups the containers ahead of the other rows was
   left in the text the column sorts by, so a comparison that reads a number out of that text found no number at all.
+- Copying or dragging a template's choice container, such as "Pick 60 points worth", onto a character sheet or loot
+  sheet no longer brings the container across with every option still in it and nothing left to make the choice. The
+  choice is now made on the way, just as when applying the template, and only the options chosen arrive. Dragging a
+  choice container into a library now asks first, and removes the choices if you continue, since only a template can
+  hold them.
+- A container given choices in a template no longer keeps the library source it was copied from. Syncing with that
+  source would have quietly removed the choices, since the library's copy has none.
+- The question of whether to disable the character's existing ancestry, and the offer to randomize the profile again,
+  are no longer put when the only new ancestry is one of the options of a template choice that was not chosen.
+- The question of whether to disable the character's existing ancestry now names the ancestry containers involved, as
+  they appear in the Traits list, rather than the ancestry each one uses. Several containers can use the same ancestry
+  with details of their own, and it was impossible to tell which was which when both were shown as "Human".
+- Items dropped into a closed container on a character sheet are now asked about their modifiers and @Name@
+  substitutions like any others; they used to be skipped.

@@ -23,26 +23,23 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// ProcessModifiersForSelection processes the selected rows for modifiers that can be toggled on or off.
-func ProcessModifiersForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	rows := table.SelectedRows(true)
-	data := make([]T, 0, len(rows))
-	for _, row := range rows {
-		data = append(data, row.Data())
-	}
-	ProcessModifiers(table, data)
-}
-
-// The modifier prompts are held in variables so that tests can substitute non-interactive implementations.
+// The modifier prompts are held in variables so that tests can substitute non-interactive implementations. Each reports
+// whether any modifier was changed and whether the prompt was canceled.
 var (
 	promptForTraitModifiers     = processModifiers[*gurps.TraitModifier]
 	promptForEquipmentModifiers = processModifiers[*gurps.EquipmentModifier]
 )
 
 // ProcessModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
-// modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing.
-func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
+// modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing. Returns false if
+// the user canceled one of the prompts, in which case no further prompts are shown and the caller is expected to
+// abandon the whole operation the prompts were part of. The owner is rebuilt after each answer that changes something;
+// it may be nil for rows that aren't in a table yet, leaving nothing to rebuild.
+func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) bool {
 	rebuild := func() {
+		if xreflect.IsNil(owner) {
+			return
+		}
 		// The owner is normally the table the rows live in, and that table may have been replaced -- by a rebuild
 		// before this was called (the alternate drop path rebuilds before prompting) or by the rebuild an earlier
 		// prompt in this very loop asked for, since toggling a modifier can add or take away the switch column and a
@@ -51,24 +48,29 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) {
 		owner = liveOwner(owner)
 		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](owner), true)
 	}
+	canceled := false
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
 			if gurps.IsNodePreconfigured(row) {
 				return false
 			}
+			var changed bool
 			switch t := any(row).(type) {
 			case *gurps.Trait:
-				if promptForTraitModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers) {
-					rebuild()
-				}
+				changed, canceled = promptForTraitModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers)
 			case *gurps.Equipment:
-				if promptForEquipmentModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers) {
-					rebuild()
-				}
+				changed, canceled = promptForEquipmentModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers)
 			}
-			return false
+			if changed {
+				rebuild()
+			}
+			return canceled
 		}, false, false, row)
+		if canceled {
+			return false
+		}
 	}
+	return true
 }
 
 // minimalNodes returns the given rows with any row that is a descendant of another of them left out. ProcessModifiers
@@ -99,9 +101,9 @@ func minimalNodes[T gurps.Node[T]](rows []T) []T {
 	return minimal
 }
 
-func processModifiers[T gurps.Node[T]](title string, modifiers []T) bool {
+func processModifiers[T gurps.Node[T]](title string, modifiers []T) (changed, canceled bool) {
 	if len(modifiers) == 0 {
-		return false
+		return false, false
 	}
 	list := unison.NewPanel()
 	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
@@ -165,7 +167,7 @@ func processModifiers[T gurps.Node[T]](title string, modifiers []T) bool {
 	}, false, false, modifiers...)
 	children := list.Children()
 	if len(children) == 0 {
-		return false
+		return false, false
 	}
 	if border, ok := children[len(children)-1].Border().(*unison.EmptyBorder); ok {
 		insets := border.Insets()
@@ -175,15 +177,14 @@ func processModifiers[T gurps.Node[T]](title string, modifiers []T) bool {
 	label := unison.NewLabel()
 	label.Font = unison.SystemFont
 	label.SetTitle(title)
-	if showListQuestionDialog(i18n.Text("Select Modifiers for:"), list, label) {
-		changed := false
-		for cb, gm := range tracker {
-			if on := cb.State == check.On; gm.Enabled() != on {
-				gm.SetEnabled(on)
-				changed = true
-			}
-		}
-		return changed
+	if !showListQuestionDialog(i18n.Text("Select Modifiers for:"), list, label) {
+		return false, true
 	}
-	return false
+	for cb, gm := range tracker {
+		if on := cb.State == check.On; gm.Enabled() != on {
+			gm.SetEnabled(on)
+			changed = true
+		}
+	}
+	return changed, false
 }

@@ -33,7 +33,8 @@ const TableProviderClientKey = "table-provider"
 // rebuilding the table's owner, which replaces the table and leaves the indexes pointing into an orphan.
 type AltDropSupport struct {
 	DragKey *uti.DataType
-	Drop    func(rowIndexes []int, data any)
+	// Drop returns false if the user canceled a prompt along the way, in which case the drop is undone.
+	Drop func(rowIndexes []int, data any) bool
 }
 
 // altDropTargets returns the rows that an alternate drop released over the row at the given index applies to. Releasing
@@ -71,10 +72,10 @@ func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int)
 func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T], dragKey *uti.DataType, attach func(target T, clones []M)) *AltDropSupport {
 	return &AltDropSupport{
 		DragKey: dragKey,
-		Drop: func(rowIndexes []int, data any) {
+		Drop: func(rowIndexes []int, data any) bool {
 			tableDragData, ok := data.(*unison.TableDragData[*Node[M]])
 			if !ok {
-				return
+				return true
 			}
 			// Every target is resolved up front, since the rebuild below can replace this table, leaving it an orphan
 			// whose rows are no longer the ones on screen, so the row indexes only mean something before it runs. The
@@ -86,7 +87,7 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 				}
 			}
 			if len(targets) == 0 {
-				return
+				return true
 			}
 			dataOwner := p.DataOwner()
 			libraryFile := libraryFileFromTable(tableDragData.Table)
@@ -116,9 +117,12 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 				//
 				// ProcessModifiers is given the rows the modifiers were dropped onto, since modifiers themselves
 				// aren't something it can process, and only the topmost of them, since it walks descendants as well.
-				ProcessModifiers(liveTable(p.table), minimalNodes(targets))
-				ProcessNameableGroups(liveTable(p.table), groups)
+				if !ProcessModifiers(liveTable(p.table), minimalNodes(targets)) ||
+					!ProcessNameableGroups(liveTable(p.table), groups) {
+					return false
+				}
 			}
+			return true
 		},
 	}
 }
@@ -126,7 +130,9 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
-	table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
+	drop := table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
+		didDropCallback[T])
+	installApplyingDrop(drop, provider)
 	// The keyboard repositioning commands are the equivalents of a drag within the table, so they belong on exactly
 	// the tables that accept one.
 	InstallMoveSelectionHandlers(table)
@@ -194,12 +200,16 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 				handled := false
 				if len(altDropTargetIndexes) != 0 {
 					undo := willDropCallback(nil, table, false)
-					altDropSupport.Drop(altDropTargetIndexes, draggedTableData)
-					// Notify the table the same way unison does for a normal drop. The providers' drop handlers only
-					// rebuild when the data owner has an owning entity, so without this the dockable holding a
-					// template or a traits/equipment list would go on showing itself as unmodified.
-					unison.SafeCall(table.DropOccurredCallback)
-					finishDidDrop(undo, nil, table, false)
+					if altDropSupport.Drop(altDropTargetIndexes, draggedTableData) {
+						// Notify the table the same way unison does for a normal drop. The providers' drop handlers
+						// only rebuild when the data owner has an owning entity, so without this the dockable holding
+						// a template or a traits/equipment list would go on showing itself as unmodified.
+						unison.SafeCall(table.DropOccurredCallback)
+						finishDidDrop(undo, nil, table, false)
+					} else if undo != nil {
+						// A prompt was canceled, so the drop is undone as though it had never happened.
+						undo.BeforeData.Apply()
+					}
 					altDropTargetIndexes = nil
 					flushDragFeedback(table.AsPanel())
 					handled = true
@@ -272,35 +282,54 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		// The rebuild covers the whole owner, so it may have replaced either table: adding rows to one list and
 		// removing them from another can change which columns each needs, and a list can only change its columns by
 		// building a new table. Everything from here on has to work with the tables that took their place rather than
-		// the orphaned ones the drag started and finished on. Refreshing both keeps them comparable: two tables that
-		// were the same resolve to the same replacement, and two that differed have different reference keys.
+		// the orphaned ones the drag started and finished on.
 		from = liveTable(from)
 		to = liveTable(to)
-	}
-	if shouldProcessModifiersAndNameablesTo(to) {
-		if shouldProcessModifiersAndNameablesFrom(from) {
-			// Answering the modifier prompt rebuilds the owner again, and that rebuild can replace the tables just as
-			// the one above did: only enabled modifiers count toward a row having switchable features, so turning one
-			// on or off can add or take away the switch column. An orphaned table has no Rebuildable above it and
-			// reports its own rows as selected rather than the ones the user is now looking at, both of which the steps
-			// below depend upon. Applying nameable substitutions rebuilds as well, so refresh again afterwards.
-			ProcessModifiersForSelection(to)
-			from = liveTable(from)
-			to = liveTable(to)
-			ProcessNameablesForSelection(to)
-			from = liveTable(from)
-			to = liveTable(to)
-		}
-		// Merge points into identical existing rows whenever rows are actually being added (from a different table),
-		// including a drag from another sheet. A drag within the same table is only a reorder, so it is left alone.
-		if from != to {
-			MergeAddedRows(to)
-		}
 	}
 	if clearPreconfiguredFlag(to, nil) {
 		to = liveTable(to)
 	}
 	finishDidDrop(undo, from, to, move)
+}
+
+// installApplyingDrop takes over from unison the drops that copy rows of the types a sheet or template holds into a
+// table from another document. unison would add the copies to the table before handing off to didDropCallback, but
+// rows arriving in a document are applied to it first (see applyTransfer), which may ask the user questions and may be
+// canceled, so the copies must not reach the table until every answer is in. Everything else -- a move within a
+// document, or rows of any other type -- is left to unison.
+func installApplyingDrop[T gurps.Node[T]](drop *unison.TableDrop[*Node[T], *TableDragUndoEditData[T]], provider TableProvider[T]) {
+	var zero T
+	if blockKeyForRow(zero) == "" {
+		return
+	}
+	table := drop.Table
+	unisonDrop := table.DropCallback
+	table.DropCallback = func(di drag.Info, where geom.Point, mods mod.Modifiers) bool {
+		data, ok := draggedTableData.(*unison.TableDragData[*Node[T]])
+		if !ok || !di.HasDataType(provider.DragKey().UTI) || provider.DropShouldMoveData(data.Table, table) {
+			return unisonDrop(di, where, mods)
+		}
+		// Settle where the rows are going the same way unison would, then take the drop feedback down before any
+		// question is put to the user.
+		op := drop.DragUpdatedCallback(di, where, mods)
+		parent, index := drop.TargetParent, drop.TargetIndex
+		drop.DragExitCallback()
+		if op == drag.None || !applyDrop(data, table, parent, index) {
+			return false
+		}
+		unison.SafeCall(table.DropOccurredCallback)
+		return true
+	}
+}
+
+// applyDrop copies the dragged rows into the table as children of parent at index, or at the top level when parent is
+// nil, applying them to the table's document on the way (see applyTransfer). Returns false if the user canceled.
+func applyDrop[T gurps.Node[T]](data *unison.TableDragData[*Node[T]], table *unison.Table[*Node[T]], parent *Node[T], index int) bool {
+	part := applyPart[T]{table: table, parent: parent.Data(), index: index}
+	for _, row := range data.Rows {
+		part.rows = append(part.rows, row.CloneForTarget(table, parent).Data())
+	}
+	return applyTransfer(table, newApplyParts(part), applyOptionsFor(data.Table, table), i18n.Text("Drag"))
 }
 
 // dropRebuilder returns the owner that a drop into the given table is reported to by rebuilding it, or nil if the drop
@@ -325,34 +354,6 @@ func dropRebuilder(table unison.Paneler) Rebuildable {
 		return nil
 	}
 	return unison.Ancestor[Rebuildable](table)
-}
-
-// shouldProcessModifiersAndNameablesFrom reports whether rows coming from the given panel need their modifiers and
-// nameables processed. Rows that were already on a sheet or loot sheet have been through that.
-func shouldProcessModifiersAndNameablesFrom(panel unison.Paneler) bool {
-	if xreflect.IsNil(panel) {
-		return false
-	}
-	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
-	case *Sheet, *LootSheet:
-		return false
-	default:
-		return true
-	}
-}
-
-// shouldProcessModifiersAndNameablesTo reports whether rows landing on the given panel need their modifiers and
-// nameables processed. Only a sheet, loot sheet or template prompts for them.
-func shouldProcessModifiersAndNameablesTo(panel unison.Paneler) bool {
-	if xreflect.IsNil(panel) {
-		return false
-	}
-	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
-	case *Sheet, *LootSheet, *Template:
-		return true
-	default:
-		return false
-	}
 }
 
 func finishDidDrop[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {

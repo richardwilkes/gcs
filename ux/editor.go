@@ -259,27 +259,64 @@ func rowIndexForData[T gurps.Node[T]](table *unison.Table[*Node[T]], data T) int
 
 func (e *editor[N, D]) apply() {
 	e.Window().FocusNext() // Move the focus to flush any pending edits
+	e.applyEdits()
+}
+
+// applyEdits commits the editor's data to its target and records the change as an undoable edit.
+func (e *editor[N, D]) applyEdits() {
 	if e.preApplyCallback != nil {
 		e.preApplyCallback(e.editorData)
 	}
-	if mgr := unison.UndoManagerFor(e.owner); mgr != nil {
-		owner := e.owner
-		target := e.target
+	owner := e.owner
+	target := e.target
+	// The source isn't part of the editor's data, so the undo edit has to carry it itself should applying the edit
+	// have cleared it (see clearSourceOfTemplatePicker).
+	sourceBefore := target.GetSource()
+	e.editorData.ApplyTo(target)
+	clearSourceOfTemplatePicker(target)
+	sourceAfter := target.GetSource()
+	if mgr := unison.UndoManagerFor(owner); mgr != nil {
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
 			EditName: fmt.Sprintf(i18n.Text("%s Changes"), target.Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
+				restoreSource(target, sourceBefore, sourceAfter)
 				rebuildAsModified(owner, true)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.AfterData.ApplyTo(target)
+				restoreSource(target, sourceAfter, sourceBefore)
 				rebuildAsModified(owner, true)
 			},
 			BeforeData: e.beforeData,
 			AfterData:  e.editorData,
 		})
 	}
-	e.editorData.ApplyTo(e.target)
-	rebuildAsModified(e.owner, true)
+	rebuildAsModified(owner, true)
+}
+
+// restoreSource sets the target's source to want when applying an edit changed it from other, leaving it alone
+// otherwise, so that undoing or redoing an edit that didn't touch the source can't disturb it.
+func restoreSource[N gurps.Node[N]](target N, want, other gurps.Source) {
+	if want == other {
+		return
+	}
+	if setter, ok := any(target).(interface{ SetSource(src gurps.Source) }); ok {
+		setter.SetSource(want)
+	}
+}
+
+// clearSourceOfTemplatePicker clears the source of a container that carries template picker data. Only a template may
+// hold picker data and a template is never a source, so the source such a container points at can't have it, and
+// syncing with that source would quietly take the choices away.
+func clearSourceOfTemplatePicker[N gurps.Node[N]](target N) {
+	if xreflect.IsNil(target) || !target.Container() {
+		return
+	}
+	if tpp, ok := any(target).(gurps.TemplatePickerProvider); ok {
+		if _, tp := tpp.TemplatePickerData(); !tp.IsZero() {
+			target.ClearSource()
+		}
+	}
 }

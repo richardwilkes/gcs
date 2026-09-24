@@ -50,8 +50,8 @@ func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	originalTraitCount := len(entity.Traits)
 	template := newTestTemplateWithBodyType("Template Body")
 
-	c.False(template.applyTemplateToSheetWithPickers(sheet, true, func(_ *templateRows) bool { return false }),
-		"a canceled picker must report that the template was not applied")
+	swapForTest(t, &promptForPickers, func(_ *applyParts) bool { return false })
+	c.False(template.applyTemplateToSheet(sheet, true), "a canceled picker must report that the template was not applied")
 	c.Equal(originalBody, entity.SheetSettings.BodyType, "the body type must not have been replaced")
 	c.Equal(originalTraitCount, len(entity.Traits), "no traits must have been added")
 	c.Equal(originalTraitCount, len(sheet.Traits.Table.RootRows()), "no rows must have been added to the traits table")
