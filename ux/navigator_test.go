@@ -78,6 +78,19 @@ func saveTestSheet(c check.Checker, lib *library.Library, fileName string, entit
 	return NewFileNode(lib, fileName, nil)
 }
 
+// TestNavigatorNodeSortTextIsTheTextShown verifies that a navigator row's sort text, which a screen reader is given as
+// the row's name, is the text the row shows with no ordering rank ahead of it.
+func TestNavigatorNodeSortTextIsTheTextShown(t *testing.T) {
+	c := check.New(t)
+	n := newDeepSearchNavigator()
+	lib := newTestLibrary(t)
+	libNode := NewLibraryNode(n, lib)
+	c.Equal("Test", libNode.CellDataForSort(0), "a library row is named by its title alone")
+	c.Equal("", libNode.CellDataForSort(1), "the navigator has only one column")
+	fileNode := writeTestLibraryFile(c, lib, "Conan.gcs", []byte("{}"))
+	c.Equal("Conan", fileNode.CellDataForSort(0), "a file row is named by its file name without the extension")
+}
+
 // TestPrepareProfileForContentCache verifies that every profile field placed into the deep search content cache is
 // lowercased, since the search text is lowercased before the comparison is made.
 func TestPrepareProfileForContentCache(t *testing.T) {

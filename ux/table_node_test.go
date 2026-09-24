@@ -21,6 +21,37 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
+// TestCellDataForAccessibilityLeavesOutTheContainerMarker verifies that a screen reader is given a container's cell
+// text without the marker the sort text keeps to group containers ahead of the other rows.
+func TestCellDataForAccessibilityLeavesOutTheContainerMarker(t *testing.T) {
+	c := check.New(t)
+	settings := gurps.GlobalSettings()
+	saved := settings.General.GroupContainersOnSort
+	settings.General.GroupContainersOnSort = true
+	t.Cleanup(func() { settings.General.GroupContainersOnSort = saved })
+
+	entity := gurps.NewEntity()
+	container := gurps.NewEquipment(entity, nil, true)
+	container.Name = "Backpack"
+	entity.CarriedEquipment = []*gurps.Equipment{container}
+	provider := NewEquipmentProvider(entity, true, false)
+	table := newProviderTable(provider)
+	ids := provider.ColumnIDs()
+	table.Columns = make([]unison.ColumnInfo, len(ids))
+	for i, id := range ids {
+		table.Columns[i].ID = id
+	}
+	rows := table.RootRows()
+	c.Equal(1, len(rows), "the table must hold the single container")
+	col := slices.Index(ids, gurps.EquipmentDescriptionColumn)
+	c.True(col != -1, "the table must have a description column")
+
+	c.Equal(containerMarker+"Backpack", rows[0].CellDataForSort(col),
+		"the sort text carries the marker that groups containers first")
+	c.Equal("Backpack", rows[0].CellDataForAccessibility(col),
+		"a screen reader is given the text the cell shows, without the marker")
+}
+
 // TestEquippedCellClickRecalculatesTheSheet verifies that clicking the equipped checkbox brings the item's features
 // into play and that undoing takes them back out. The recalculation is left to the sheet, which performs it as part of
 // the rebuild the click asks for, so this covers the path where the cell itself no longer asks for one.
@@ -145,12 +176,11 @@ func TestCheckCellDrawsTheNewStateBeforeReportingTheClick(t *testing.T) {
 	c.True(neededLayout, "the layout must be requested before the click is reported")
 }
 
-// TestCheckCellLeavesNonPrimaryPressesToTheTable verifies that only the primary button works a check cell. The switch
-// column sits at the very front of the traits, skills and spells page lists, which makes it a natural right-click
-// target, and the table runs the cell first and then pops up its context menu: a cell that consumed a right-press
-// would throw the switch and hand the user the context menu anyway. The drag and up callbacks have to pass the gesture
-// through too, since the table keeps routing them to whichever panel saw the press go down, whether that panel
-// consumed the press or not.
+// TestCheckCellLeavesNonPrimaryPressesToTheTable verifies that only the primary button works a check cell. A right
+// press reaches the cell only as a right-drag unison hands back to the table, and a cell that consumed it would throw
+// the switch for a drag. The drag and up callbacks have to pass the gesture through too, since the table keeps routing
+// them to whichever panel saw the press go down, whether that panel consumed it or not.
+// TestCheckCellRightClickOpensMenuHeadless covers the right-click itself.
 func TestCheckCellLeavesNonPrimaryPressesToTheTable(t *testing.T) {
 	t.Run("switch cell", func(t *testing.T) {
 		c := check.New(t)
@@ -168,7 +198,7 @@ func TestCheckCellLeavesNonPrimaryPressesToTheTable(t *testing.T) {
 			c.True(ok, "the switch cell must be a label")
 			table.AddChild(label)
 			c.False(label.MouseDownCallback(geom.Point{}, button, 1, mod.None),
-				"a non-primary press must be left for the table, which selects the row and pops up its context menu")
+				"a non-primary press must be left for the table, as a right-drag handed back to it is")
 			c.False(trait.SwitchedOn, "a non-primary press must not throw the switch")
 			c.Equal(fxp.Int(0), stBonusFor(sheet.Entity()), "a non-primary press must not bring the bonus into play")
 			c.False(mgr.CanUndo(), "a non-primary press must not register an undo edit")
@@ -214,7 +244,7 @@ func TestCheckCellLeavesNonPrimaryPressesToTheTable(t *testing.T) {
 			c.True(ok, "the equipped cell must be a label")
 			table.AddChild(label)
 			c.False(label.MouseDownCallback(geom.Point{}, button, 1, mod.None),
-				"a non-primary press must be left for the table, which selects the row and pops up its context menu")
+				"a non-primary press must be left for the table, as a right-drag handed back to it is")
 			c.False(eqp.Equipped, "a non-primary press must not equip the item")
 			c.False(mgr.CanUndo(), "a non-primary press must not register an undo edit")
 			c.False(label.MouseDragCallback(geom.Point{}, button, mod.None),

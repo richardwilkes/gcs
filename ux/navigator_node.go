@@ -164,26 +164,13 @@ func (n *NavigatorNode) IsFavorites() bool {
 	return tid.IsKind(n.id, kinds.NavigatorFavorites)
 }
 
-// CellDataForSort implements unison.TableRowData.
+// CellDataForSort implements unison.TableRowData. Nothing sorts the navigator, but a screen reader names each row by
+// this text, so it is the text the row shows.
 func (n *NavigatorNode) CellDataForSort(col int) string {
 	if col != 0 {
 		return ""
 	}
-	text := n.primaryColumnText()
-	switch {
-	case n.IsFavorites():
-		return "0/" + text
-	case n.IsLibrary():
-		if n.library.IsUser() {
-			return "1/" + text
-		}
-		if n.library.IsMaster() {
-			return "3/" + text
-		}
-		return "2/" + text
-	default:
-		return text
-	}
+	return n.primaryColumnText()
 }
 
 func filterVersion(version string) string {

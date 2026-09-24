@@ -50,6 +50,9 @@
   holds the range of what is inside it. Ranges sort by their lower end, and the template picker dialog's running total
   shows a range while a picked choice still presents choices of its own.
 - GCS now works with screen readers: VoiceOver on macOS, Narrator, NVDA and JAWS on Windows, and Orca on Linux.
+- Context menus no longer need a mouse. Press shift+F10 or the Menu key while a list, the Library Explorer, a text field
+  or a sheet whose layout is being edited has the keyboard focus to open its context menu. Screen readers now also offer
+  the context menu as an action on lists and their rows, the Library Explorer, document tabs and text fields.
 - Copying or dragging items from a template or library onto a character sheet or loot sheet now goes through the same
   steps as applying a template, in the same order: the template choices, the modifiers, the @Name@ substitutions, the
   ancestry question and the offer to randomize the profile again. Every question is asked before anything is added,
@@ -65,6 +68,8 @@
 - The script functions dice.add and dice.subtract now accept a bare modifier, such as "+3" or "-2", on either side, so
   that dice.add("1d-2", "+3") gives "1d+1" instead of failing with "dice sides must match". Only two specifications
   that both have dice of different sizes are still refused.
+- Right-clicking one of several selected rows on Windows and Linux no longer reduces the selection to that row, so the
+  context menu's commands act on everything that was selected.
 - With the "Group containers when sorting" general setting turned on, sorting a list by one of its numeric columns no
   longer treats every container as worth the same. The marker that groups the containers ahead of the other rows was
   left in the text the column sorts by, so a comparison that reads a number out of that text found no number at all.

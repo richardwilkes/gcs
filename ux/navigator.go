@@ -128,8 +128,8 @@ func newNavigator() *Navigator {
 
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
 	library.SetNotifyOfLibraryChangeFunc(n.EventuallyReload)
-	n.table.MouseDownCallback = n.mouseDown
 	n.table.SelectionChangedCallback = n.selectionChanged
+	n.table.ContextMenuCallback = n.contextMenu
 	n.table.KeyDownCallback = n.tableKeyDown
 
 	n.installJumpToSearchHandlers(n.AsPanel())
@@ -630,61 +630,47 @@ func (n *Navigator) tableKeyDown(keyCode unison.KeyCode, mods mod.Modifiers, rep
 	}
 }
 
-func (n *Navigator) mouseDown(where geom.Point, button, clickCount int, mods mod.Modifiers) bool {
-	stop := n.table.DefaultMouseDown(where, button, clickCount, mods)
-	if button == unison.ButtonRight && clickCount == 1 {
-		if sel := n.table.SelectedRows(false); len(sel) != 0 {
-			f := unison.DefaultMenuFactory()
-			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
-			id := 1
-			for _, one := range sel {
-				if one.IsFile() || one.IsDirectory() {
-					cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.favoriteButton))
-					cm.InsertSeparator(-1, true)
-					break
-				}
-			}
-			if len(sel) == 1 && sel[0].IsFile() {
-				p := sel[0].Path()
-				switch filepath.Ext(p) {
-				case gurps.SheetExt:
-					cm.InsertItem(-1, cloneSheetMenuItem(f, &id, p))
-					cm.InsertSeparator(-1, true)
-				case gurps.TemplatesExt:
-					cm.InsertItem(-1, newSheetFromTemplateMenuItem(f, &id, p))
-					if CanApplyTemplate() {
-						cm.InsertItem(-1, newApplyTemplateMenuItem(f, &id, p))
-					}
-					cm.InsertSeparator(-1, true)
-				}
-			}
-			cm.InsertItem(-1, newShowNodeOnDiskMenuItem(f, &id, sel))
+// contextMenu builds the menu for the selected rows, or nothing while none is selected. unison opens it for a
+// right-click, shift+F10, the Menu key and a screen reader's request.
+func (n *Navigator) contextMenu(_ geom.Point) unison.Menu {
+	sel := n.table.SelectedRows(false)
+	if len(sel) == 0 {
+		return nil
+	}
+	f := unison.DefaultMenuFactory()
+	cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
+	id := 1
+	for _, one := range sel {
+		if one.IsFile() || one.IsDirectory() {
+			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.favoriteButton))
 			cm.InsertSeparator(-1, true)
-			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.libraryReleaseNotesButton))
-			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.configLibraryButton))
-			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.downloadLibraryButton))
-			cm.InsertSeparator(-1, true)
-			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.newFolderButton))
-			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.renameButton))
-			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.deleteButton))
-			count := cm.Count()
-			if count > 0 {
-				count--
-				if cm.ItemAtIndex(count).IsSeparator() {
-					cm.RemoveItem(count)
-				}
-				n.FlushDrawing()
-				cm.Popup(geom.Rect{
-					Point:  n.table.PointToRoot(where),
-					Width:  1,
-					Height: 1,
-				}, 0)
-			}
-			cm.Dispose()
-			stop = true
+			break
 		}
 	}
-	return stop
+	if len(sel) == 1 && sel[0].IsFile() {
+		p := sel[0].Path()
+		switch filepath.Ext(p) {
+		case gurps.SheetExt:
+			cm.InsertItem(-1, cloneSheetMenuItem(f, &id, p))
+			cm.InsertSeparator(-1, true)
+		case gurps.TemplatesExt:
+			cm.InsertItem(-1, newSheetFromTemplateMenuItem(f, &id, p))
+			if CanApplyTemplate() {
+				cm.InsertItem(-1, newApplyTemplateMenuItem(f, &id, p))
+			}
+			cm.InsertSeparator(-1, true)
+		}
+	}
+	cm.InsertItem(-1, newShowNodeOnDiskMenuItem(f, &id, sel))
+	cm.InsertSeparator(-1, true)
+	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.libraryReleaseNotesButton))
+	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.configLibraryButton))
+	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.downloadLibraryButton))
+	cm.InsertSeparator(-1, true)
+	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.newFolderButton))
+	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.renameButton))
+	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.deleteButton))
+	return cm
 }
 
 func cloneSheetMenuItem(f unison.MenuFactory, id *int, sheetPath string) unison.MenuItem {

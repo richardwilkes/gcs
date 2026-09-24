@@ -364,17 +364,27 @@ func closeEditorWithoutPrompt(t *testing.T, screen *unison.HeadlessScreen, d int
 
 // dockTabTitle returns the text of the tab the dock shows for the dockable, or "" if it cannot be found. The tab's
 // label is the one within the dockable's dock container that ends with the dockable's title, since a modified
-// dockable's tab is prefixed with an asterisk.
+// dockable's tab is prefixed with an asterisk. unison does not export the label's type, so it is told apart by what it
+// does: alone among a dock container's panels, it both has a title to set and withholds its context menu
+// (unison.ContextMenuWithholder).
 func dockTabTitle(d unison.Dockable) string {
 	dc := unison.Ancestor[*unison.DockContainer](d)
 	if dc == nil {
 		return ""
 	}
 	title := d.Title()
-	for _, label := range panelsOfType[*unison.Label](dc.AsPanel()) {
-		if text := label.String(); strings.HasSuffix(text, title) {
-			return text
+	var text string
+	dc.AsPanel().HasInSelfOrDescendants(func(p *unison.Panel) bool {
+		label, ok := p.Self.(interface {
+			String() string
+			SetTitle(string)
+			WithholdsContextMenu() bool
+		})
+		if !ok || !strings.HasSuffix(label.String(), title) {
+			return false
 		}
-	}
-	return ""
+		text = label.String()
+		return true
+	})
+	return text
 }

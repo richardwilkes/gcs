@@ -80,7 +80,6 @@ const (
 	layoutDraggingBlock
 	layoutDraggingDivider
 	layoutDraggingBottom
-	layoutContextPending
 )
 
 // layoutLeafRegion is one block of the layout as it appears on the page, in the overlay's coordinates. The ancestors
@@ -213,14 +212,13 @@ type sheetLayoutEditor struct {
 	bottom       layoutLeafRegion
 	target       dropTarget
 	hoverPt      geom.Point
-	dragPt       geom.Point
+	dragPt       geom.Point // Where the drag under way last put the pointer; see mouseUp
 	pressPt      geom.Point
 	grabOffset   geom.Point
 	dragKey      string
 	pressKey     string
 	closeKey     string
 	squareKey    string
-	button       int // The mouse button that began the gesture under way, if any
 	mode         layoutEditMode
 	hovering     bool
 }
@@ -264,6 +262,7 @@ func (e *sheetLayoutEditor) start() {
 		return true
 	}
 	overlay.KeyDownCallback = e.keyDown
+	overlay.ContextMenuCallback = e.contextMenu
 	e.overlay = overlay
 	// Index 0 is drawn last and hit-tested first, so the overlay covers the page no matter what else is added to the
 	// content later.
@@ -900,20 +899,17 @@ func (e *sheetLayoutEditor) leafAt(where geom.Point) *layoutLeafRegion {
 // small and sit on top of a block, so they are asked about first; a press on a block itself only becomes a move once
 // the pointer has traveled far enough for it to be a drag rather than a click.
 //
-// The window delivers every press to the panel under the pointer, whichever buttons are already down, so a second
-// button pressed while a gesture is under way arrives here too. It is ignored: it may neither abandon the gesture --
-// which would leave whatever a drag had already written into the layout in place, with nothing recorded to undo it --
-// nor start another on top of it. The gesture belongs to the button that began it, and only its release ends it.
+// Only the left button begins a gesture. A right press seldom arrives: the overlay has a context menu, so unison takes
+// a right-click for it, delivering neither the press nor its release, and drops a right press made while another button
+// is down; only a window that is not the active one delivers it like any other. A second button pressed while a
+// gesture is under way is ignored: it may neither abandon the gesture -- which would leave what a drag had already
+// written into the layout, with nothing recorded to undo it -- nor start another on top of it. Only the left release
+// ends the gesture, the person's own or the one unison synthesizes outside every panel before opening a context menu
+// for the keyboard or a screen reader; see mouseUp. A second button pressed once the pointer has been dragged off the
+// overlay is the exception: the window routes the rest of the gesture to the panel under the pointer, so the left
+// release never arrives and the drag goes on until Escape abandons it.
 func (e *sheetLayoutEditor) mouseDown(where geom.Point, button int) {
-	if e.mode != layoutIdle {
-		return
-	}
-	e.button = button
-	if button == unison.ButtonRight {
-		e.mode = layoutContextPending
-		return
-	}
-	if button != unison.ButtonLeft {
+	if e.mode != layoutIdle || button != unison.ButtonLeft {
 		return
 	}
 	e.closeKey = ""
@@ -963,17 +959,22 @@ func (e *sheetLayoutEditor) mouseDrag(where geom.Point) {
 	}
 }
 
-// mouseUp finishes whatever gesture was under way, provided it is the button that began it that was released; see
-// mouseDown for why the release of any other button is ignored.
+// mouseUp finishes whatever gesture was under way, provided it is the left button, which began it, that was released;
+// see mouseDown for why the release of any other button is ignored.
+//
+// A divider or bottom-edge drag ends where its last drag put the pointer rather than at the release. The two are the
+// same for a release the person makes, but not for the one unison synthesizes, outside every panel, to end a press held
+// when a context menu is asked for with the keyboard or by a screen reader: following it there would commit the
+// narrowest width or the natural height in place of the size the person was looking at. A block is dropped at the
+// release, so that release drops it nowhere and the block stays put, and a press that never became a drag is no click
+// there.
 func (e *sheetLayoutEditor) mouseUp(where geom.Point, button int) {
-	if button != e.button {
+	if button != unison.ButtonLeft {
 		return
 	}
 	mode := e.mode
 	e.mode = layoutIdle
 	switch mode {
-	case layoutContextPending:
-		e.showContextMenu(where)
 	case layoutPressed:
 		closeKey := e.closeKey
 		squareKey := e.squareKey
@@ -994,9 +995,9 @@ func (e *sheetLayoutEditor) mouseUp(where geom.Point, button int) {
 	case layoutDraggingBlock:
 		e.endBlockDrag(where)
 	case layoutDraggingDivider:
-		e.endDividerDrag(where)
+		e.endDividerDrag(e.dragPt)
 	case layoutDraggingBottom:
-		e.endBottomDrag(where)
+		e.endBottomDrag(e.dragPt)
 	default:
 	}
 }
@@ -1099,6 +1100,7 @@ func (e *sheetLayoutEditor) beginDividerDrag(divider *layoutDividerRegion, where
 // updateDividerDrag gives the two blocks either side of the divider the shares of the row the pointer calls for. The
 // two weights always add up to what they added up to before, so nothing else in the row changes width.
 func (e *sheetLayoutEditor) updateDividerDrag(where geom.Point) {
+	e.dragPt = where
 	divider := &e.divider
 	span := divider.rightRect.Right() - divider.leftRect.X
 	if span <= 0 {
@@ -1195,6 +1197,7 @@ func (e *sheetLayoutEditor) beginBottomDrag(leaf *layoutLeafRegion, where geom.P
 // without taking it off its square. That is what the gesture asks for, so the flag is left alone -- it is the divider,
 // which asks for a width the height can't give, that takes it off.
 func (e *sheetLayoutEditor) updateBottomDrag(where geom.Point) {
+	e.dragPt = where
 	leaf := &e.bottom
 	height := max(where.Y-leaf.rect.Y, 0)
 	if height <= leaf.naturalHeight+layoutMinHeightSlop {
@@ -1481,10 +1484,16 @@ func (e *sheetLayoutEditor) cancelDrag() {
 	e.markForRedraw()
 }
 
-// showContextMenu pops up the block layout menu, with the block that was clicked on as the one that can be hidden.
-func (e *sheetLayoutEditor) showContextMenu(where geom.Point) {
-	if e.overlay == nil || e.overlay.Window() == nil {
-		return
+// contextMenu builds the block layout menu, with the block at the given point as the one that can be hidden. unison
+// opens it for a right-click on the overlay, for shift+F10 or the Menu key while the overlay has the focus, and for a
+// screen reader's request; the last two have no pointer, so the menu opens in the middle of what can be seen of the
+// page and offers to hide the block it opens over. A gesture under way when one of those asks has been ended by the
+// release unison delivers first (see mouseUp), so the menu opens over the layout the gesture arrived at. Nothing is
+// offered in the one state a gesture outlives its press (see mouseDown), since the menu's commands would act on a
+// layout the gesture is still changing.
+func (e *sheetLayoutEditor) contextMenu(where geom.Point) unison.Menu {
+	if e.mode != layoutIdle {
+		return nil
 	}
 	hideKey := ""
 	if leaf := e.leafAt(where); leaf != nil {
@@ -1494,9 +1503,7 @@ func (e *sheetLayoutEditor) showContextMenu(where geom.Point) {
 	m := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 	id := 1
 	e.sheet.appendLayoutMenuItems(f, m, &id, hideKey)
-	e.overlay.FlushDrawing()
-	m.Popup(geom.Rect{Point: e.overlay.PointToRoot(where), Width: 1, Height: 1}, 0)
-	m.Dispose()
+	return m
 }
 
 // cursorAt returns the cursor that says what the pointer would do where it is.

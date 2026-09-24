@@ -22,11 +22,10 @@ import (
 
 type updatableLibraryCell struct {
 	unison.Panel
-	library           *library.Library
-	release           *library.Release
-	title             *unison.Label
-	button            *unison.Button
-	inButtonMouseDown bool
+	library *library.Library
+	release *library.Release
+	title   *unison.Label
+	button  *unison.Button
 }
 
 func newUpdatableLibraryCell(lib *library.Library, title *unison.Label, rel *library.Release) *updatableLibraryCell {
@@ -55,38 +54,22 @@ func newUpdatableLibraryCell(lib *library.Library, title *unison.Label, rel *lib
 	}
 	c.button.SetTitle(version)
 	c.button.ClickCallback = func() { initiateLibraryUpdate(c.library, c.release) }
+	// Only the primary button works the button: unison hands a right-drag on the row back to the table, which forwards
+	// it here like any other press, and the default handling would fire the click for any button released over it.
+	c.button.MouseDownCallback = func(where geom.Point, btn, clickCount int, mods mod.Modifiers) bool {
+		return btn == unison.ButtonLeft && c.button.DefaultMouseDown(where, btn, clickCount, mods)
+	}
+	c.button.MouseDragCallback = func(where geom.Point, btn int, mods mod.Modifiers) bool {
+		return btn == unison.ButtonLeft && c.button.DefaultMouseDrag(where, btn, mods)
+	}
+	c.button.MouseUpCallback = func(where geom.Point, btn int, mods mod.Modifiers) bool {
+		return btn == unison.ButtonLeft && c.button.DefaultMouseUp(where, btn, mods)
+	}
 	c.AddChild(c.button)
-
-	c.MouseDownCallback = c.mouseDown
-	c.MouseDragCallback = c.mouseDrag
-	c.MouseUpCallback = c.mouseUp
 	return c
 }
 
 func (c *updatableLibraryCell) updateForeground(fg unison.Ink) {
 	c.title.OnBackgroundInk = fg
 	c.title.SetTitle(c.title.String())
-}
-
-func (c *updatableLibraryCell) mouseDown(where geom.Point, btn, clickCount int, mods mod.Modifiers) bool {
-	if !where.In(c.button.FrameRect()) {
-		return false
-	}
-	c.inButtonMouseDown = true
-	return c.button.DefaultMouseDown(c.button.PointFromRoot(c.PointToRoot(where)), btn, clickCount, mods)
-}
-
-func (c *updatableLibraryCell) mouseDrag(where geom.Point, btn int, mods mod.Modifiers) bool {
-	if !c.inButtonMouseDown {
-		return false
-	}
-	return c.button.DefaultMouseDrag(c.button.PointFromRoot(c.PointToRoot(where)), btn, mods)
-}
-
-func (c *updatableLibraryCell) mouseUp(where geom.Point, btn int, mods mod.Modifiers) bool {
-	if !c.inButtonMouseDown {
-		return false
-	}
-	c.inButtonMouseDown = false
-	return c.button.DefaultMouseUp(c.button.PointFromRoot(c.PointToRoot(where)), btn, mods)
 }

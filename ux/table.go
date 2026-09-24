@@ -148,35 +148,20 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 		}
 	}
 
-	table.MouseDownCallback = func(where geom.Point, button, clickCount int, mods mod.Modifiers) bool {
-		stop := table.DefaultMouseDown(where, button, clickCount, mods)
-		if button == unison.ButtonRight && clickCount == 1 {
-			f := unison.DefaultMenuFactory()
-			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
-			id := 1
-			for _, one := range provider.ContextMenuItems() {
-				if one.ID == -1 {
-					cm.InsertSeparator(-1, true)
-				} else {
-					InsertCmdContextMenuItem(table, one.Title, one.ID, &id, cm)
-				}
+	// unison strips the separators left at either end by commands that cannot be performed just now, and opens nothing
+	// when no command is left.
+	table.ContextMenuCallback = func(_ geom.Point) unison.Menu {
+		f := unison.DefaultMenuFactory()
+		cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
+		id := 1
+		for _, one := range provider.ContextMenuItems() {
+			if one.ID == -1 {
+				cm.InsertSeparator(-1, true)
+			} else {
+				InsertCmdContextMenuItem(table, one.Title, one.ID, &id, cm)
 			}
-			count := cm.Count()
-			if count > 0 {
-				count--
-				if cm.ItemAtIndex(count).IsSeparator() {
-					cm.RemoveItem(count)
-				}
-				table.FlushDrawing()
-				cm.Popup(geom.Rect{
-					Point:  table.PointToRoot(where),
-					Width:  1,
-					Height: 1,
-				}, 0)
-			}
-			cm.Dispose()
 		}
-		return stop
+		return cm
 	}
 
 	table.InstallCmdHandlers(CopyToSheetItemID,

@@ -743,7 +743,7 @@ func (s *Sheet) showLayoutMenu(b *unison.Button) {
 
 // appendLayoutMenuItems adds the block layout commands to the given menu, numbering the items it makes from the given
 // counter. A non-empty hideKey adds the command that hides that particular block, which the overlay's context menu
-// supplies and the toolbar's menu does not, since only the overlay knows which block was clicked on.
+// supplies and the toolbar's menu does not, since only the overlay knows which block the menu opens over.
 func (s *Sheet) appendLayoutMenuItems(f unison.MenuFactory, m unison.Menu, id *int, hideKey string) {
 	editItem := f.NewItem(nextLayoutMenuItemID(id), i18n.Text("Edit Layout"), unison.KeyBinding{}, nil,
 		func(_ unison.MenuItem) { s.toggleLayoutEditing() })

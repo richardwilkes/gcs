@@ -187,6 +187,13 @@ func (n *Node[T]) CellDataForSort(index int) string {
 	return s
 }
 
+// CellDataForAccessibility implements unison.TableRowAccessibleText: the cell's text without the marker CellDataForSort
+// adds to group containers ahead of the other rows, which only the sort has a use for.
+func (n *Node[T]) CellDataForAccessibility(col int) string {
+	data := n.cellData(col, true)
+	return data.ForSort()
+}
+
 // ColumnCell implements unison.TableRowData.
 func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, selected, indirectlySelected, _ bool) unison.Paneler {
 	cellData := n.cellData(col, true)
@@ -557,12 +564,13 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 // down at the time of the click, after c.Checked has been updated to its new state. onClick returns whether it took the
 // change; if it didn't, the cell is put back the way it was, so that it never shows a state the model didn't take on.
 //
-// Only a single click of the primary button toggles the cell. A press of any other button is deliberately left
-// unconsumed, so that the table selects the row and pops up its context menu -- these cells sit at the very front of
-// the page lists, where they are a natural right-click target. A primary press with any other click count is consumed
-// but doesn't toggle: the second click of a double-click would otherwise flip the state straight back at the cost of
-// two undo edits. The drag and up callbacks report the same consumption as the press they belong to, so that a press
-// the cell didn't take is left to the table from beginning to end.
+// Only a single click of the primary button toggles the cell. A press of any other button is left unconsumed for the
+// table. A right-click never reaches the cell, although these cells sit at the front of the page lists where one is
+// likely: unison takes it for the table's context menu and the table selects the row as the press lands (see
+// unison.ContextMenuPressHandler); only a right-drag hands the press back. A primary press with any other click count
+// is consumed but doesn't toggle, or the second click of a double-click would flip the state straight back at the cost
+// of two undo edits. The drag and up callbacks report the same consumption as their press, so a press the cell didn't
+// take is the table's from beginning to end.
 func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor func(on bool) *unison.SVG,
 	onClick func(label *unison.Label, mods mod.Modifiers) bool,
 ) *unison.Label {

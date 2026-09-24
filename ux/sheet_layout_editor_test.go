@@ -729,44 +729,79 @@ func TestPageFooterNumberingIgnoresTheOverlay(t *testing.T) {
 // TestSecondButtonDuringAGestureIsIgnored checks that a press of another button while a divider drag is under way
 // neither abandons the drag -- which would leave the weights it had already written in place with nothing recorded to
 // undo them -- nor commits it on that button's release, and that the release of the button that began the drag still
-// commits it as one undoable edit. The reverse holds too: a press while a context menu is pending starts nothing.
+// commits it as one undoable edit. The press is handed straight to the editor: a middle press reaches it this way in
+// the real application, and a right press does in a window that is not the active one.
 func TestSecondButtonDuringAGestureIsIgnored(t *testing.T) {
+	for name, button := range map[string]int{"middle": unison.ButtonMiddle, "right": unison.ButtonRight} {
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			sheet, editor := newTestSheetForLayoutEditing(t)
+			mgr := sheet.UndoManager()
+			divider := findTestDivider(editor.ensureRegions(), gurps.BlockTraitsKey)
+			c.NotNil(divider, "the traits and skills blocks must have a divider between them")
+			start := divider.rect.Center()
+			moved := geom.NewPoint(start.X+40, start.Y)
+
+			editor.mouseDown(start, unison.ButtonLeft)
+			c.Equal(layoutDraggingDivider, editor.mode, "a press on the divider must begin a drag")
+			editor.mouseDrag(moved)
+			c.NotNil(editor.beforeLayout, "the drag must be holding the layout it started from")
+			editor.mouseDown(moved, button)
+			c.Equal(layoutDraggingDivider, editor.mode, "a second button must not abandon the drag")
+			c.NotNil(editor.beforeLayout, "nor throw away the layout it started from")
+			editor.mouseUp(moved, button)
+			c.Equal(layoutDraggingDivider, editor.mode, "nor may its release end the drag")
+			c.False(mgr.CanUndo(), "nothing may be recorded before the button that began the drag is released")
+			editor.mouseUp(moved, unison.ButtonLeft)
+			c.Equal(layoutIdle, editor.mode, "the release of the button that began the drag must end it")
+			c.Nil(editor.beforeLayout, "and leave nothing of it behind")
+			c.Equal(1, undoEditCount(mgr), "the resize must be recorded as one undoable edit")
+			traits, _, _ := sheet.Entity().SheetSettings.Layout.Find(gurps.BlockTraitsKey)
+			c.True(traits.Weight > fxp.One, "the resize must have been kept")
+		})
+	}
+}
+
+// TestDragEndsWhereThePointerWas checks that a divider or bottom-edge drag ends where its last drag put the pointer
+// rather than at the release, which unison delivers outside every panel to end a press held when a context menu is
+// asked for with the keyboard or by a screen reader. TestSheetLayoutEditorMenuDuringADragHeadless drives that through
+// unison itself.
+func TestDragEndsWhereThePointerWas(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
 	mgr := sheet.UndoManager()
+	// Counting the undo edits replaces the layout with the copy each edit recorded, so it is looked up afresh.
+	layout := func() *gurps.SheetLayout { return sheet.Entity().SheetSettings.Layout }
+	farAway := geom.NewPoint(-1e6, -1e6)
+
 	divider := findTestDivider(editor.ensureRegions(), gurps.BlockTraitsKey)
 	c.NotNil(divider, "the traits and skills blocks must have a divider between them")
 	start := divider.rect.Center()
-	moved := geom.NewPoint(start.X+40, start.Y)
-
 	editor.mouseDown(start, unison.ButtonLeft)
-	c.Equal(layoutDraggingDivider, editor.mode, "a press on the divider must begin a drag")
-	editor.mouseDrag(moved)
-	c.NotNil(editor.beforeLayout, "the drag must be holding the layout it started from")
-	editor.mouseDown(moved, unison.ButtonRight)
-	c.Equal(layoutDraggingDivider, editor.mode, "a second button must not abandon the drag")
-	c.NotNil(editor.beforeLayout, "nor throw away the layout it started from")
-	editor.mouseUp(moved, unison.ButtonRight)
-	c.Equal(layoutDraggingDivider, editor.mode, "nor may its release end the drag")
-	c.False(mgr.CanUndo(), "nothing may be recorded before the button that began the drag is released")
-	editor.mouseUp(moved, unison.ButtonLeft)
-	c.Equal(layoutIdle, editor.mode, "the release of the button that began the drag must end it")
-	c.Nil(editor.beforeLayout, "and leave nothing of it behind")
+	editor.mouseDrag(geom.NewPoint(start.X+40, start.Y))
+	traits, _, _ := layout().Find(gurps.BlockTraitsKey)
+	dragged := traits.Weight
+	c.True(dragged > fxp.One, "the drag must have widened the traits block")
+	editor.mouseUp(farAway, unison.ButtonLeft)
+	c.Equal(layoutIdle, editor.mode, "the release must end the drag")
+	traits, _, _ = layout().Find(gurps.BlockTraitsKey)
+	c.Equal(dragged, traits.Weight, "the divider must stay where the drag last put it")
 	c.Equal(1, undoEditCount(mgr), "the resize must be recorded as one undoable edit")
-	traits, _, _ := sheet.Entity().SheetSettings.Layout.Find(gurps.BlockTraitsKey)
-	c.True(traits.Weight > fxp.One, "the resize must have been kept")
 
-	editor.mouseDown(start, unison.ButtonRight)
-	c.Equal(layoutContextPending, editor.mode, "a right press must wait for its release to show the context menu")
-	editor.mouseDown(start, unison.ButtonLeft)
-	c.Equal(layoutContextPending, editor.mode, "a second button must not start a gesture on top of that")
-	editor.mouseDrag(moved)
-	c.Equal(layoutContextPending, editor.mode, "nor may dragging it")
-	editor.mouseUp(moved, unison.ButtonLeft)
-	c.Equal(layoutContextPending, editor.mode, "nor may its release end what the right button began")
-	editor.mouseUp(start, unison.ButtonRight)
-	c.Equal(layoutIdle, editor.mode, "the release of the right button must end it")
-	c.Equal(1, undoEditCount(mgr), "and nothing may have been resized along the way")
+	leaf := leafOnPage(t, editor.ensureRegions(), gurps.BlockNotesKey)
+	bottom := leaf.bottomRect.Center()
+	editor.mouseDown(bottom, unison.ButtonLeft)
+	c.Equal(layoutDraggingBottom, editor.mode, "a press on the bottom edge must begin a drag")
+	// A bottom edge within the slop past the natural height asks for the natural height, so the drag goes well past it.
+	editor.mouseDrag(geom.NewPoint(bottom.X, leaf.rect.Y+leaf.naturalHeight+100))
+	notes, _, _ := layout().Find(gurps.BlockNotesKey)
+	wanted := notes.MinHeight
+	c.True(wanted.Pixels() > 0, "the drag must have set a minimum height")
+	editor.mouseUp(farAway, unison.ButtonLeft)
+	c.Equal(layoutIdle, editor.mode, "the release must end the drag")
+	notes, _, _ = layout().Find(gurps.BlockNotesKey)
+	c.Equal(wanted, notes.MinHeight, "the bottom edge must stay where the drag last put it")
+	c.Equal(2, undoEditCount(mgr), "the height must be recorded as one more undoable edit")
 }
 
 // TestSeamBelongsToTheContainerItLiesIn checks that the seam between two blocks names, as its parent, the container the
