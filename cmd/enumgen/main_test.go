@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // repoRoot is the repository root, relative to this package's directory, which is where the test runs.
@@ -111,4 +112,52 @@ func TestEnumInfoAccessors(t *testing.T) {
 
 	// Neither value needs localizing: b has both flags set and z has no alt.
 	c.False((&enumInfo{Values: []*enumValue{b, z}}).NeedI18N())
+}
+
+// TestFindRepoRoot verifies that the root is recognized by the module its go.mod declares, whatever the directory is
+// called, and that a directory holding some other module, or none, is refused.
+func TestFindRepoRoot(t *testing.T) {
+	c := check.New(t)
+	root := filepath.Join(t.TempDir(), "any-name")
+	sub := filepath.Join(root, "cmd", "enumgen")
+	c.NoError(os.MkdirAll(sub, 0o750))
+	c.NoError(os.WriteFile(filepath.Join(root, "go.mod"), []byte("module "+modulePath+"\n\ngo 1.27.0\n"), 0o640))
+
+	found, err := findRepoRoot(root)
+	c.NoError(err)
+	c.Equal(root, found)
+
+	t.Chdir(sub)
+	found, err = findRepoRoot("")
+	c.NoError(err)
+	c.Equal(root, found)
+
+	other := t.TempDir()
+	c.NoError(os.WriteFile(filepath.Join(other, "go.mod"), []byte("module example.com/other\n"), 0o640))
+	_, err = findRepoRoot(other)
+	c.HasError(err)
+	_, err = findRepoRoot(t.TempDir())
+	c.HasError(err)
+}
+
+// TestRemoveExistingGenFilesLeavesOtherCheckoutsAlone verifies that only this tree's generated files are removed, and
+// not those of a worktree or a nested module kept inside it.
+func TestRemoveExistingGenFilesLeavesOtherCheckoutsAlone(t *testing.T) {
+	c := check.New(t)
+	root := t.TempDir()
+	write := func(rel string) string {
+		p := filepath.Join(root, filepath.FromSlash(rel))
+		c.NoError(os.MkdirAll(filepath.Dir(p), 0o750))
+		c.NoError(os.WriteFile(p, nil, 0o640))
+		return p
+	}
+	ours := write("model/one" + genSuffix)
+	worktree := write(".claude/worktrees/w/model/one" + genSuffix)
+	write("nested/go.mod")
+	nested := write("nested/model/one" + genSuffix)
+
+	removeExistingGenFiles(root)
+	c.False(xos.FileExists(ours))
+	c.True(xos.FileExists(worktree))
+	c.True(xos.FileExists(nested))
 }

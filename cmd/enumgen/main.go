@@ -13,8 +13,10 @@ package main
 //go:generate go run main.go
 
 import (
+	"bufio"
 	"bytes"
 	_ "embed"
+	"flag"
 	"fmt"
 	"go/format"
 	"io"
@@ -27,14 +29,16 @@ import (
 	"unicode"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
-const genSuffix = "_gen.go"
+const (
+	genSuffix  = "_gen.go"
+	modulePath = "github.com/richardwilkes/gcs/v5"
+)
 
 //go:embed enum.go.tmpl
 var enumTmplData string
@@ -61,36 +65,82 @@ type enumInfo struct {
 }
 
 func main() {
-	wd, err := os.Getwd()
+	rootDir := flag.String("root", "", "The `dir`ectory at the root of the GCS source tree. Defaults to the nearest "+
+		"directory at or above the working directory that holds a go.mod")
+	flag.Parse()
+	root, err := findRepoRoot(*rootDir)
 	xos.ExitIfErr(err)
-	originalWD := wd
-	if xfilepath.BaseName(wd) == "enumgen" {
-		wd = filepath.Dir(wd)
-		if xfilepath.BaseName(wd) == "cmd" {
-			wd = filepath.Dir(wd)
-		}
-	}
-	if xfilepath.BaseName(wd) != "gcs" {
-		xos.ExitWithMsg("unexpected working directory: " + originalWD)
-	}
-	removeExistingGenFiles(wd)
+	removeExistingGenFiles(root)
 	for _, one := range allEnums {
-		processEnumTemplate(wd, one)
+		processEnumTemplate(root, one)
 	}
 }
 
+// findRepoRoot returns the absolute path of the root of the GCS source tree: dir if given, otherwise the nearest
+// directory at or above the working directory that holds a go.mod. Every generated file beneath the root is deleted
+// before regenerating, so the root is required to hold the go.mod of the GCS module itself. The name of the directory
+// says nothing about that, since a clone or a worktree may be called anything.
+func findRepoRoot(dir string) (string, error) {
+	if dir == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", errs.Wrap(err)
+		}
+		dir = wd
+		for !xos.FileExists(filepath.Join(dir, "go.mod")) {
+			parent := filepath.Dir(dir)
+			if parent == dir {
+				return "", errs.New("no go.mod found at or above " + wd)
+			}
+			dir = parent
+		}
+	}
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		return "", errs.Wrap(err)
+	}
+	var module string
+	if module, err = readModulePath(filepath.Join(dir, "go.mod")); err != nil {
+		return "", err
+	}
+	if module != modulePath {
+		return "", errs.New(dir + " holds module " + module + " rather than " + modulePath)
+	}
+	return dir, nil
+}
+
+// readModulePath returns the module path declared by the go.mod file at path.
+func readModulePath(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", errs.Wrap(err)
+	}
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) >= 2 && fields[0] == "module" {
+			return strings.Trim(fields[1], "\"`"), nil
+		}
+	}
+	return "", errs.New("no module directive in " + path)
+}
+
+// removeExistingGenFiles removes every generated file in the source tree at rootDir. Dot-prefixed directories and
+// directories holding a go.mod of their own are skipped: neither is part of this module's source, and a worktree kept
+// inside the tree (such as those under .claude/worktrees) is a separate checkout whose files must be left alone.
 func removeExistingGenFiles(rootDir string) {
-	root, err := filepath.Abs(rootDir)
-	xos.ExitIfErr(err)
-	xos.ExitIfErr(fs.WalkDir(os.DirFS(root), ".", func(path string, d fs.DirEntry, _ error) error {
-		name := d.Name()
+	xos.ExitIfErr(fs.WalkDir(os.DirFS(rootDir), ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		switch {
 		case d.IsDir():
-			if name == ".git" {
+			if path != "." && (strings.HasPrefix(d.Name(), ".") ||
+				xos.FileExists(filepath.Join(rootDir, path, "go.mod"))) {
 				return filepath.SkipDir
 			}
-		case strings.HasSuffix(name, genSuffix):
-			xos.ExitIfErr(os.Remove(filepath.Join(root, path)))
+		case strings.HasSuffix(d.Name(), genSuffix):
+			xos.ExitIfErr(os.Remove(filepath.Join(rootDir, path)))
 		}
 		return nil
 	}))
