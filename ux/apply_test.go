@@ -335,6 +335,50 @@ func TestDropOnLibraryAsksBeforeRemovingPickers(t *testing.T) {
 	}
 }
 
+// TestEditorUndoRestoresSourceClearedByTemplatePicker verifies that undoing an edit that gave a container template
+// choices, and with them cost it its source, puts the source back along with everything else, and that redoing it
+// takes the source away again. An edit that leaves the source alone must leave it alone when undone and redone, too.
+func TestEditorUndoRestoresSourceClearedByTemplatePicker(t *testing.T) {
+	c := check.New(t)
+	trait := gurps.NewTrait(nil, nil, true)
+	trait.Name = "Advantages"
+	source := gurps.Source{Library: "lib", Path: "x.adq", TID: trait.ID()}
+	trait.Source = source
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{trait}
+	template := newTestTemplateDockable("Source", data)
+	mgr := unison.UndoManagerFor(template)
+	c.NotNil(mgr, "the template must have an undo manager")
+
+	e, _ := buildEditorContent(template, trait, initTraitEditor)
+	_, tp := e.editorData.TemplatePickerData()
+	tp.Type = picker.Count
+	tp.Qualifier.Compare = criteria.EqualsNumber
+	tp.Qualifier.Qualifier = fxp.One
+	e.applyEdits()
+	c.False(trait.TemplatePicker.IsZero(), "the choices must have been applied")
+	c.Equal(gurps.Source{}, trait.Source, "a container given choices must lose its source")
+
+	mgr.Undo()
+	c.True(trait.TemplatePicker.IsZero(), "undo must take the choices away")
+	c.Equal(source, trait.Source, "undo must give the source back")
+
+	mgr.Redo()
+	c.False(trait.TemplatePicker.IsZero(), "redo must bring the choices back")
+	c.Equal(gurps.Source{}, trait.Source, "redo must take the source away again")
+
+	mgr.Undo()
+	e, _ = buildEditorContent(template, trait, initTraitEditor)
+	e.editorData.Name = "Renamed"
+	e.applyEdits()
+	c.Equal(source, trait.Source, "an edit giving no choices must leave the source alone")
+	mgr.Undo()
+	c.Equal("Advantages", trait.Name)
+	c.Equal(source, trait.Source, "undoing an edit that left the source alone must leave it alone")
+	mgr.Redo()
+	c.Equal(source, trait.Source, "redoing an edit that left the source alone must leave it alone")
+}
+
 // TestEditorApplyClearsSourceOfTemplatePicker verifies that a container given template choices loses its source, while
 // one without them keeps it.
 func TestEditorApplyClearsSourceOfTemplatePicker(t *testing.T) {
