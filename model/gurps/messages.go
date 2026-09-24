@@ -24,7 +24,7 @@ func IncludesModifiersFrom() string {
 // PointsRangeTooltip returns the standard tooltip text for a point cost that is still a range, explaining why it
 // isn't the single number every other row shows.
 func PointsRangeTooltip() string {
-	return i18n.Text("This item presents choices that haven't been made yet, so what it costs depends on what is picked. The choices are made when the template is applied to a character sheet.")
+	return i18n.Text("This item presents choices that haven't been made yet, so what it costs depends on what is picked. The choices are made when it is added to a character sheet.")
 }
 
 // PageRefTooltip returns the standard tooltip text for a page reference.
