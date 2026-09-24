@@ -1237,6 +1237,35 @@ func TestPointsLessFromString(t *testing.T) {
 	c.True(PointsLessFromString("≤0", "-100"), "a range open below nothing still sorts ahead of everything")
 }
 
+// TestRawPointsRangeLeavesOutBonuses verifies that the range a template picker counts a skill container by is built
+// from the raw points of the skills inside it, just as a skill checked on its own is counted, rather than from the
+// points the sheet's bonuses make of them.
+func TestRawPointsRangeLeavesOutBonuses(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	bonus := NewSkillPointBonus()
+	bonus.NameCriteria.Qualifier = "Guns"
+	bonus.Amount = fxp.Two
+	addTraitWithFeatures(e, "Gun Talent", bonus)
+
+	guns := NewSkill(e, nil, true)
+	guns.TemplatePicker.Type = picker.Count
+	guns.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	guns.TemplatePicker.Qualifier.Qualifier = fxp.One
+	for _, points := range []int{1, 2} {
+		child := NewSkill(e, guns, false)
+		child.Name = "Guns"
+		child.Points = fxp.FromInteger(points)
+		guns.Children = append(guns.Children, child)
+	}
+	e.SetSkillList([]*Skill{guns})
+	e.Recalculate()
+
+	c.Equal("3~4", guns.PointsRange(nil).String(), "the range shown on a sheet includes its bonuses")
+	c.Equal("1~2", guns.RawPointsRange().String(), "the range a picker counts leaves them out")
+	c.Equal("2", guns.Children[1].RawPointsRange().String(), "a skill on its own is counted by its raw points")
+}
+
 // TestPointsCellForPickers verifies what the points column of a table shows for a container presenting choices: the
 // range, explained in the tooltip, or the settled cost with nothing added to the tooltip.
 func TestPointsCellForPickers(t *testing.T) {

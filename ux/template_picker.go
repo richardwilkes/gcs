@@ -420,37 +420,25 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unis
 	checkBox.MarkForRedraw()
 }
 
-// pointsRangeFor returns the span of costs a picker may end up counting a row as being worth. A container is asked for
-// its range, which accounts for any choices it presents -- including the exact ones, which are worth what they ask for
-// rather than what their children add up to. A skill or spell is counted by its unadjusted points, since a picker
-// counts what is being bought rather than what the destination sheet's bonuses make of it, and a trait by its adjusted
-// points, which is the only cost a trait has.
-//
-// The two rules meet inside a container: the range of one is built from its children's adjusted points, so a skill
-// checked directly and the same skill inside a checked container are counted slightly differently on a sheet carrying
-// skill point bonuses. Templates, where these rows come from, have no bonuses for that to matter to.
+// pointsRangeFor returns the span of costs a picker may end up counting a row as being worth. A skill or spell is
+// counted by its raw points, inside a container as much as on its own, since a picker counts what is being bought
+// rather than what the destination sheet's bonuses make of it. The rows are already owned by that sheet by the time
+// the picker is shown, so its bonuses would otherwise be counted. A trait is counted by its adjusted points, which is
+// the only cost a trait has. Either way a container accounts for any choices it presents -- including the exact ones,
+// which are worth what they ask for rather than what their children add up to.
 func pointsRangeFor[T gurps.Node[T]](child T) gurps.PointsRange {
 	if xreflect.IsNil(child) {
 		return gurps.PointsRangeOf(0)
 	}
-	if child.Container() {
-		// Covers traits, skills and spells
-		if rp, ok := any(child).(interface {
-			PointsRange(tooltip *xbytes.InsertBuffer) gurps.PointsRange
-		}); ok {
-			return rp.PointsRange(nil)
-		}
-		return gurps.PointsRangeOf(0)
-	}
 	// Covers skills and spells
-	if rp, ok := any(child).(interface{ RawPoints() fxp.Int }); ok {
-		return gurps.PointsRangeOf(rp.RawPoints())
+	if rp, ok := any(child).(interface{ RawPointsRange() gurps.PointsRange }); ok {
+		return rp.RawPointsRange()
 	}
 	// Covers traits
 	if rp, ok := any(child).(interface {
-		AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int
+		PointsRange(tooltip *xbytes.InsertBuffer) gurps.PointsRange
 	}); ok {
-		return gurps.PointsRangeOf(rp.AdjustedPoints(nil))
+		return rp.PointsRange(nil)
 	}
 	return gurps.PointsRangeOf(0)
 }

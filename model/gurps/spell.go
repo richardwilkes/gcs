@@ -939,6 +939,16 @@ func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	return pointsRangeForPicker(s.TemplatePicker, childPointsRanges(s.Children))
 }
 
+// RawPointsRange returns the same span as PointsRange, but with every spell in it counted by its raw points rather than
+// its adjusted ones. This is what a template picker counts, since it measures what is being bought rather than what
+// the sheet's bonuses make of it.
+func (s *Spell) RawPointsRange() PointsRange {
+	if !s.Container() {
+		return PointsRangeOf(s.RawPoints())
+	}
+	return containerRawPointsRange(s.TemplatePicker, s.Children)
+}
+
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
 func AdjustedPointsForNonContainerSpell(e *Entity, points fxp.Int, name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if e != nil {

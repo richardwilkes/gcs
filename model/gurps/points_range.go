@@ -219,6 +219,26 @@ func childPointsRanges[T pointsRangeNode[T]](children []T) []PointsRange {
 	return ranges
 }
 
+// rawPointsRangeNode is a constraint for a Node whose cost before any bonus can be asked for, which is every skill and
+// spell.
+type rawPointsRangeNode[T rawPointsRangeNode[T]] interface {
+	Node[T]
+	RawPointsRange() PointsRange
+}
+
+// containerRawPointsRange returns the range of a container carrying the given picker, worked out as PointsRange works
+// it out, but from what its children cost before any bonus the sheet they are on grants them.
+func containerRawPointsRange[T rawPointsRangeNode[T]](tp TemplatePicker, children []T) PointsRange {
+	if value, settled := settledPickerCost(tp); settled {
+		return PointsRangeOf(value)
+	}
+	ranges := make([]PointsRange, len(children))
+	for i, one := range children {
+		ranges[i] = one.RawPointsRange()
+	}
+	return pointsRangeForPicker(tp, ranges)
+}
+
 // pickerContainerPoints returns what a container carrying the given picker is worth, which is never what its children
 // add up to, since only some of them will be taken. When every way of making the choice costs the same -- "pick 20
 // points worth", most often -- that is what it is worth. When they don't, there is no single answer, and the total of

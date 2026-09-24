@@ -694,6 +694,16 @@ func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 	return pointsRangeForPicker(s.TemplatePicker, childPointsRanges(s.Children))
 }
 
+// RawPointsRange returns the same span as PointsRange, but with every skill in it counted by its raw points rather than
+// its adjusted ones. This is what a template picker counts, since it measures what is being bought rather than what
+// the sheet's bonuses make of it.
+func (s *Skill) RawPointsRange() PointsRange {
+	if !s.Container() {
+		return PointsRangeOf(s.RawPoints())
+	}
+	return containerRawPointsRange(s.TemplatePicker, s.Children)
+}
+
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
 func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if e != nil {
