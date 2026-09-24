@@ -375,7 +375,9 @@ func pointsRangeForPickerByCount(cq criteria.Number, children []PointsRange) Poi
 // never cost more than nothing and the costliest can never cost less; the qualifier binds only the end it constrains,
 // and only as far as the children allow. A qualifier the children cannot reach leaves its end open rather than
 // contradicting the other one: such a picker offers a leveled trait whose cost can be raised while picking, or a skill
-// or spell whose points are assigned there (see ux.pickerRowPointEditor).
+// or spell whose points are assigned there (see ux.pickerRowPointEditor). A qualifier on the far side of nothing from
+// every child is different: that is an invalid picker, even where every pick would happen to meet it, and it is left
+// open at both ends so that it stands out rather than passing for an unconstrained one.
 //
 // Children that can only cost nothing -- and a picker authored with nothing to pick from -- leave it no side to take
 // at all, and a qualifier with no side to bind is not what the container is worth: it costs nothing until something

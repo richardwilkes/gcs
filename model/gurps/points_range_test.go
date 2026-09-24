@@ -675,6 +675,36 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 			"—",
 		},
 	})
+
+	// A qualifier on the far side of nothing from every child is an authoring error, not a constraint to work around,
+	// even where every pick would happen to meet it. It is left open at both ends, so it stands out rather than passing
+	// for the unconstrained picker it most resembles.
+	checkOpenRangeCases(c, picker.Points, []openRangeCase{
+		{
+			"a minimum below nothing over advantages is open at both ends",
+			criteria.AtLeastNumber, -20,
+			[]int{10, 20, 40},
+			"—",
+		},
+		{
+			"a maximum below nothing over advantages is open at both ends",
+			criteria.AtMostNumber, -20,
+			[]int{10, 20, 40},
+			"—",
+		},
+		{
+			"a minimum above nothing over disadvantages is open at both ends",
+			criteria.AtLeastNumber, 20,
+			[]int{-10, -20, -40},
+			"—",
+		},
+		{
+			"a maximum above nothing over disadvantages is open at both ends",
+			criteria.AtMostNumber, 20,
+			[]int{-10, -20, -40},
+			"—",
+		},
+	})
 }
 
 // TestPointsRangeForPickerWithOpenEnds verifies the ranges the tables above cannot express: those with no limit at
