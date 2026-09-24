@@ -131,6 +131,7 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 		return table.DefaultKeyDown(keyCode, mods, repeat)
 	}
 	singular, plural := provider.ItemNames()
+	table.Accessibility.Name = plural
 	table.InstallDragSupport(provider.DragSVG(), provider.DragKey(), singular, plural)
 	// Mirror the dragged rows into our own storage, since unison only retains them internally, so that alternate drop
 	// handlers -- which deal with a different row type than the destination table -- can reach them.

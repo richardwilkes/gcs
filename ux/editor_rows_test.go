@@ -359,7 +359,7 @@ func TestNewSectionAddButton(t *testing.T) {
 	root.AddChild(section)
 	inserted := 0
 	added := true
-	button := newSectionAddButton(section, func() bool {
+	button := newSectionAddButton(section, "Add a thing", func() bool {
 		inserted++
 		return added
 	})

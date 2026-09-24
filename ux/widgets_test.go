@@ -192,7 +192,7 @@ func TestNewCriteriaPanel(t *testing.T) {
 func TestNewComparisonPopup(t *testing.T) {
 	c := check.New(t)
 	choices := []string{"is anything", "is", "starts with"}
-	popup := newComparisonPopup(choices, 2)
+	popup := newComparisonPopup("Test Comparison", choices, 2)
 	c.Equal(len(choices), popup.ItemCount(), "all choices should be offered")
 	for i, want := range choices {
 		item, ok := popup.ItemAt(i)

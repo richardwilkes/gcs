@@ -173,12 +173,19 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 				if open = def.IsOpen(a.entity, currentSepCount); open {
 					rotation = 90
 				}
+				title := def.CombinedName()
 				button := unison.NewButton()
 				button.SetFocusable(false)
 				button.SetLayoutData(&unison.FlexLayoutData{
 					HAlign: align.Middle,
 					VAlign: align.Middle,
 				})
+				// The button is nothing but its chevron, so its tooltip is also what a screen reader calls it.
+				if title == "" {
+					button.Tooltip = newWrappedTooltip(i18n.Text("Show or hide this section"))
+				} else {
+					button.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Show or hide %s"), title))
+				}
 				button.HideBase = true
 				button.HMargin = 0
 				button.VMargin = 0
@@ -194,7 +201,6 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					unison.InvokeTaskAfter(a.Window().UpdateCursorNow, time.Millisecond)
 				}
 				panel.AddChild(button)
-				title := def.CombinedName()
 				if title == "" {
 					sep := unison.NewSeparator()
 					sep.SetLayoutData(&unison.FlexLayoutData{
@@ -251,19 +257,24 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 							return attr.Current()
 						},
 						func(v fxp.Int) { attr.Damage = (attr.Maximum() - v).Max(0) }, fxp.Min, attr.Maximum(), true)
+					// The fields of a pool row sit on either side of the word "of", with the pool's name only after
+					// both of them, so each is named outright.
+					currentField.Accessibility.Name = fmt.Sprintf(i18n.Text("Current %s"), def.ResolveFullName())
 					a.AddChild(currentField)
 
 					a.AddChild(NewPageLabel(i18n.Text("of")))
 
 					var maximumField unison.Paneler
 					if def.Type == attribute.Pool {
-						maximumField = NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":max",
+						field := NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":max",
 							i18n.Text("Point Pool Maximum"), func() fxp.Int { return attr.Maximum() },
 							func(v fxp.Int) {
 								attr.SetMaximum(v)
 								currentField.SetMinMax(currentField.Min(), v)
 								currentField.Sync()
 							}, fxp.Min, fxp.Max, true)
+						field.Accessibility.Name = fmt.Sprintf(i18n.Text("Maximum %s"), def.ResolveFullName())
+						maximumField = field
 					} else {
 						maximumField = NewNonEditablePageFieldEndFor(func() string { return attr.Maximum().String() })
 					}
@@ -281,6 +292,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					a.stateLabels[def.ID()] = state
 				} else {
 					var valueField unison.Paneler
+					editable := false
 					if def.Type == attribute.IntegerRef || def.Type == attribute.DecimalRef {
 						field := NewNonEditablePageFieldEndFor(func() string { return attr.Maximum().String() })
 						field.SetLayoutData(&unison.FlexLayoutData{
@@ -291,6 +303,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 						valueField = field
 					} else {
 						a.AddChild(a.createPointsField(attr))
+						editable = true
 						if def.AllowsDecimal() {
 							valueField = NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
 								func() fxp.Int { return attr.Maximum() },
@@ -308,6 +321,11 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					a.AddChild(name)
 					a.nameLabels[def.ID()] = name
 					a.updateBonusTooltips(def.ID(), attr)
+					if editable {
+						// The attribute's name is laid out after its value rather than before it. A non-editable value
+						// is left alone, since it is static text whose name is the value it shows.
+						valueField.AsPanel().Accessibility.LabeledBy = name
+					}
 				}
 			}
 		}

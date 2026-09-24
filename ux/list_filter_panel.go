@@ -78,6 +78,7 @@ func (p *listFilterPanel) createGroupPanel(depth int, group *gurps.FilterGroup) 
 	row := p.beginFilterRow(depth, group)
 	addNotPopup(row, &group.Not)
 	popup := addBoolPopup(row, i18n.Text("match all of:"), i18n.Text("match any of:"), &group.All)
+	popup.Accessibility.Name = i18n.Text("Match")
 	callback := popup.SelectionChangedCallback
 	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
 		callback(pop)
@@ -249,6 +250,7 @@ func (p *listFilterPanel) addFieldPopup(row *unison.Panel, cond *gurps.FilterCon
 		titles[i] = info.title
 	}
 	popup := unison.NewPopupMenu[string]()
+	popup.Accessibility.Name = i18n.Text("Field")
 	popup.AddItem(titles...)
 	popup.SelectIndex(p.fieldIndex(cond.Field))
 	popup.Tooltip = newWrappedTooltip(i18n.Text("The field to test"))
@@ -284,11 +286,11 @@ func (p *listFilterPanel) addConditionCriteria(row *unison.Panel, cond *gurps.Fi
 	prefix := i18n.Text("that")
 	switch info.kind {
 	case gurps.FilterFieldText:
-		addStringCriteriaPanel(row, prefix, prefix, i18n.Text("Text Qualifier"), &cond.Text, 1, false)
+		addStringCriteriaPanel(row, prefix, prefix, i18n.Text("Text"), &cond.Text, 1, false)
 	case gurps.FilterFieldList:
 		addListCriteriaPanel(row, &cond.Text)
 	case gurps.FilterFieldNumber:
-		addNumericCriteriaPanel(row, nil, "", prefix, i18n.Text("Number Qualifier"), &cond.Number, fxp.Min, fxp.Max, 1,
+		addNumericCriteriaPanel(row, nil, "", prefix, i18n.Text("Number"), &cond.Number, fxp.Min, fxp.Max, 1,
 			false, false)
 	case gurps.FilterFieldWeight:
 		// A weight criteria adds its parts directly to what it is given, so it needs a panel of its own to sit in.
@@ -304,7 +306,7 @@ func (p *listFilterPanel) addConditionCriteria(row *unison.Panel, cond *gurps.Fi
 // gets.
 func addListCriteriaPanel(parent *unison.Panel, text *criteria.Text) (*unison.PopupMenu[string], *StringField) {
 	popup, field := addStringCriteriaPanel(parent, i18n.Text("where at least one"), i18n.Text("where all"),
-		i18n.Text("List Qualifier"), text, 1, false)
+		i18n.Text("List"), text, 1, false)
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple values with commas to match any one of them, e.g. "Sword, Axe"`))
 	return popup, field
 }
@@ -313,9 +315,11 @@ func addListCriteriaPanel(parent *unison.Panel, text *criteria.Text) (*unison.Po
 // case -- a node that has to match -- is the zero value and stays out of the JSON, which is why the second choice is
 // the one that sets it. Unlike the popups the editors in the workspace use, this one doesn't mark anything as
 // modified: the filter editor lives in a modal dialog, which has no ModifiableRoot above it to tell, and the filter is
-// only saved when the dialog is accepted.
+// only saved when the dialog is accepted. It is named for a screen reader, since the label ahead of it is the "and" or
+// "or" that joins the row to the one ahead of it, which would otherwise be taken as its name.
 func addNotPopup(parent *unison.Panel, not *bool) *unison.PopupMenu[string] {
 	popup := unison.NewPopupMenu[string]()
+	popup.Accessibility.Name = i18n.Text("Requirement")
 	popup.AddItem(i18n.Text("must"))
 	popup.AddItem(i18n.Text("must not"))
 	if *not {

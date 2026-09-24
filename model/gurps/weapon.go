@@ -1007,6 +1007,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case WeaponHideColumn:
 		data.Type = cell.Toggle
+		data.Name = i18n.Text("Hidden")
 		data.Checked = w.Hide
 		data.Alignment = align.Middle
 	case WeaponDescriptionColumn:

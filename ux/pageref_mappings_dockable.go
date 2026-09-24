@@ -340,6 +340,8 @@ func (d *pageRefMappingsDockable) createOffsetField(ref *gurps.PageRef) {
 			gurps.GlobalSettings().PageRefs.Set(ref)
 		}, -9999, 9999, true, false)
 	p.Tooltip = newWrappedTooltip(i18n.Text(`If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate.`))
+	// Named explicitly, since the key it follows would otherwise name it.
+	p.Accessibility.Name = fmt.Sprintf(i18n.Text("Page offset for %s"), ref.ID)
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -360,6 +362,7 @@ func (d *pageRefMappingsDockable) createNameField(ref *gurps.PageRef) {
 
 func (d *pageRefMappingsDockable) createEditField(ref *gurps.PageRef) {
 	b := unison.NewSVGButton(svg.Edit)
+	b.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Choose the PDF for %s"), ref.ID))
 	b.ClickCallback = func() {
 		askUserForPageRefPath(ref.ID, ref.Offset)
 	}
@@ -372,6 +375,7 @@ func (d *pageRefMappingsDockable) createEditField(ref *gurps.PageRef) {
 
 func (d *pageRefMappingsDockable) createTrashField(ref *gurps.PageRef) {
 	b := unison.NewSVGButton(unison.TrashSVG)
+	b.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Remove the mapping for %s"), ref.ID))
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to remove\n%s (%s)?"), ref.ID,
 			filepath.Base(ref.Path)), "") == unison.ModalResponseOK {

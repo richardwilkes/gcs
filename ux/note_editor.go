@@ -121,6 +121,9 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	)
 	content.AddChild(label)
 
+	// A document is not named by the label before it the way a field is, so the preview is pointed at its heading
+	// outright: on the platforms where a screen reader's cursor moves into a document, that is what it is announced as.
+	markdown.Accessibility.LabeledBy = label
 	markdown.SetContent(gurps.ResolveText(gurps.EntityFromNode(e.target), gurps.ScriptSelfProvider{},
 		e.editorData.MarkDown), 0)
 	content.AddChild(markdown)

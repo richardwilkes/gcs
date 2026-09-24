@@ -257,6 +257,7 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 	case EquipmentModifierEnabledColumn:
 		if !e.Container() {
 			data.Type = cell.Toggle
+			data.Name = i18n.Text("Enabled")
 			data.Checked = e.Enabled()
 			data.Alignment = align.Middle
 		}

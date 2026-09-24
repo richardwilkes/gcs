@@ -49,6 +49,7 @@
   known. A library item that requires a selection before its cost is known shows a range the same way, and a container
   holds the range of what is inside it. Ranges sort by their lower end, and the template picker dialog's running total
   shows a range while a picked choice still presents choices of its own.
+- GCS now works with screen readers: VoiceOver on macOS, Narrator, NVDA and JAWS on Windows, and Orca on Linux.
 
 ## Bug Fixes
 

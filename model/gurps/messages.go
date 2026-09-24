@@ -47,6 +47,11 @@ func SwitchHeaderTooltip() string {
 	return i18n.Text("Whether the switchable features of an item are currently on. Features marked as switchable only take effect while the item's switch is on. Items with no switchable features have nothing to switch, so this column is blank for them.")
 }
 
+// SwitchCellName returns the name an assistive technology announces for a switch column cell.
+func SwitchCellName() string {
+	return i18n.Text("Switched On")
+}
+
 // SwitchCellTooltip returns the standard tooltip text for a switch column cell. The Option/Alt-click hint is only
 // included for a container, since that is the only kind of row with contents for the change to be applied to.
 func SwitchCellTooltip(container bool) string {

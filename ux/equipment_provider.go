@@ -95,7 +95,10 @@ func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
 }
 
 func (p *equipmentProvider) ItemNames() (singular, plural string) {
-	return i18n.Text("Equipment Item"), i18n.Text("Equipment Items")
+	if p.carried {
+		return i18n.Text("Carried Equipment Item"), i18n.Text("Carried Equipment Items")
+	}
+	return i18n.Text("Other Equipment Item"), i18n.Text("Other Equipment Items")
 }
 
 func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[*gurps.Equipment]]) {
@@ -165,12 +168,14 @@ func (p *equipmentProvider) ExcessWidthColumnID() int {
 func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	if p.carried {
-		list = append(list,
+		list = append(
+			list,
 			contextMenuItemFor(newCarriedEquipmentAction),
 			contextMenuItemFor(newCarriedEquipmentContainerAction),
 		)
 	} else {
-		list = append(list,
+		list = append(
+			list,
 			contextMenuItemFor(newOtherEquipmentAction),
 			contextMenuItemFor(newOtherEquipmentContainerAction),
 		)

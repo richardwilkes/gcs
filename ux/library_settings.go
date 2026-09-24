@@ -168,7 +168,8 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	content.AddChild(checkbox)
 
 	title = i18n.Text("Path")
-	content.AddChild(NewFieldLeadingLabel(title, false))
+	pathLabel := NewFieldLeadingLabel(title, false)
+	content.AddChild(pathLabel)
 	d.pathField = NewStringField(nil, "", title,
 		func() string { return d.path },
 		func(s string) {
@@ -183,6 +184,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	}
 
 	locateButton := unison.NewSVGButton(svg.ClosedFolder)
+	locateButton.Tooltip = newWrappedTooltip(i18n.Text("Choose a folder"))
 	locateButton.ClickCallback = d.choosePath
 
 	wrapper := unison.NewPanel()
@@ -194,7 +196,8 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	wrapper.AddChild(d.pathField)
+	// The wrapper separates the field from its label, so the field is pointed at the label explicitly.
+	wrapper.AddChild(labelControl(d.pathField, pathLabel))
 	wrapper.AddChild(locateButton)
 
 	content.AddChild(wrapper)

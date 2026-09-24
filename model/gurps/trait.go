@@ -481,6 +481,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		// Only items with something to switch get a cell; the rest are left blank.
 		if t.HasSwitchableFeatures() {
 			data.Type = cell.Switch
+			data.Name = SwitchCellName()
 			data.Checked = t.SwitchedOn
 			data.Alignment = align.Middle
 			data.Tooltip = SwitchCellTooltip(t.Container())

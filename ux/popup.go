@@ -36,6 +36,7 @@ func NewPopup[T comparable](targetMgr *TargetMgr, targetKey, undoTitle string, g
 		last:      get(),
 	}
 	p.Self = p
+	p.Accessibility.Callback = accessibilityNameFallback(undoTitle)
 	for _, item := range items {
 		p.AddItem(item)
 	}

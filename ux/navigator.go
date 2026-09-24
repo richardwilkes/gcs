@@ -97,6 +97,7 @@ func newNavigator() *Navigator {
 
 	n.setupToolBar()
 
+	n.table.Accessibility.Name = n.Title()
 	n.table.PreventUserColumnResize = true
 	n.table.ShowFirstColumnDivider = false
 	n.table.ShowLastColumnDivider = false

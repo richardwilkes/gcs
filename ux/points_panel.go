@@ -88,6 +88,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	editButton := unison.NewSVGButton(svg.Edit)
 	editButton.OnBackgroundInk = colors.OnHeader
 	editButton.OnSelectionInk = colors.OnHeader
+	editButton.Tooltip = newWrappedTooltip(i18n.Text("Edit points"))
 	editButton.Font = fonts.PageLabelPrimary
 	if dsvg, ok := editButton.Drawable.(*unison.DrawableSVG); ok {
 		dsvg.Size = geom.NewSize(height, height)

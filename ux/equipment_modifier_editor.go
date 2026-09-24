@@ -54,7 +54,7 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 
 func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]) {
 	label := i18n.Text("Cost Modifier")
-	wrapper := addFlowWrapper(parent, label, 4)
+	wrapper, _ := addFlowWrapper(parent, label, 4)
 	field := NewStringField(nil, "", label,
 		func() string { return e.editorData.CostType.Format(e.editorData.CostAmount) },
 		func(value string) {
@@ -68,6 +68,7 @@ func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModi
 		popup.AddItem(one.StringWithExample())
 	}
 	popup.SelectIndex(int(e.editorData.CostType))
+	popup.Accessibility.Name = i18n.Text("Cost Modifier Type")
 	wrapper.AddChild(popup)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		e.editorData.CostType = emcost.Types[p.SelectedIndex()]
@@ -85,7 +86,7 @@ func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModi
 func addEquipmentWeightFields(parent *unison.Panel, e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]) {
 	units := gurps.SheetSettingsFor(gurps.EntityFromNode(e.target)).DefaultWeightUnits
 	label := i18n.Text("Weight Modifier")
-	wrapper := addFlowWrapper(parent, label, 3)
+	wrapper, _ := addFlowWrapper(parent, label, 3)
 	field := NewStringField(nil, "", label,
 		func() string { return e.editorData.WeightType.Format(e.editorData.WeightAmount, units) },
 		func(value string) {
@@ -99,6 +100,7 @@ func addEquipmentWeightFields(parent *unison.Panel, e *editor[*gurps.EquipmentMo
 		popup.AddItem(one.StringWithExample())
 	}
 	popup.SelectIndex(int(e.editorData.WeightType))
+	popup.Accessibility.Name = i18n.Text("Weight Modifier Type")
 	wrapper.AddChild(popup)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		e.editorData.WeightType = emweight.Types[p.SelectedIndex()]

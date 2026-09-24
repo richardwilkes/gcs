@@ -190,9 +190,7 @@ func addPageRefHighlightLabelAndField(parent *unison.Panel, fieldData *string) {
 }
 
 func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
-	labelText := i18n.Text("Notes")
-	addLabel(parent, labelText, "")
-	addScriptField(parent, nil, "", labelText,
+	addLabelAndScriptField(parent, nil, "", i18n.Text("Notes"),
 		i18n.Text("These notes may have scripts embedded in them by wrapping each script in <script>your script goes here</script> tags."),
 		func() string { return *fieldData },
 		func(value string) {
@@ -217,7 +215,7 @@ func addUserDescLabelAndField(parent *unison.Panel, fieldData *string) {
 func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet bool) {
 	tl := i18n.Text("Tech Level")
 	var field *StringField
-	wrapper := addFlowWrapper(parent, tl, 2)
+	wrapper, label := addFlowWrapper(parent, tl, 2)
 	field = NewStringField(nil, "", tl, func() string {
 		if *fieldData == nil {
 			return ""
@@ -239,6 +237,7 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet
 		field.SetEnabled(false)
 	}
 	field.SetMinimumTextWidthUsing("12^")
+	field.Accessibility.LabeledBy = label
 	wrapper.AddChild(field)
 	parent = wrapper
 	last := *fieldData
@@ -278,10 +277,18 @@ func addAttributeChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix 
 }
 
 func addDifficultyLabelAndFields(parent *unison.Panel, entity *gurps.Entity, attrDiff *gurps.AttributeDifficulty) {
-	wrapper := addFlowWrapper(parent, i18n.Text("Difficulty"), 3)
-	addAttributeChoicePopup(wrapper, entity, "", &attrDiff.Attribute, gurps.TenFlag)
+	wrapper, label := addFlowWrapper(parent, i18n.Text("Difficulty"), 3)
+	addAttributeChoicePopup(wrapper, entity, "", &attrDiff.Attribute, gurps.TenFlag).Accessibility.LabeledBy = label
 	wrapper.AddChild(NewFieldTrailingLabel("/", false))
-	addPopup(wrapper, difficulty.Levels, &attrDiff.Difficulty)
+	addDifficultyLevelPopup(wrapper, &attrDiff.Difficulty)
+}
+
+// addDifficultyLevelPopup adds the popup for the level half of a difficulty, naming it for a screen reader, since the
+// "/" label that separates it from the attribute half would otherwise be taken as its name.
+func addDifficultyLevelPopup(parent *unison.Panel, level *difficulty.Level) *unison.PopupMenu[difficulty.Level] {
+	popup := addPopup(parent, difficulty.Levels, level)
+	popup.Accessibility.Name = i18n.Text("Difficulty Level")
+	return popup
 }
 
 func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {
@@ -415,8 +422,11 @@ func addLabelAndTargetedPopup[T comparable](parent *unison.Panel, targetMgr *Tar
 // addLabelAndScriptField adds a label and a script field, as addScriptField does, whose undo title is the label's
 // text.
 func addLabelAndScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, get func() string, set func(string), includeMarkdownButton bool) *StringField {
-	addLabel(parent, labelText, "")
-	return addScriptField(parent, targetMgr, targetKey, labelText, tooltip, get, set, includeMarkdownButton)
+	label := addLabel(parent, labelText, "")
+	field := addScriptField(parent, targetMgr, targetKey, labelText, tooltip, get, set, includeMarkdownButton)
+	// The field shares a wrapper with its help buttons, so the label is not its sibling and has to be pointed at.
+	field.Accessibility.LabeledBy = label
+	return field
 }
 
 func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
@@ -452,8 +462,10 @@ func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 		tooltip)
 }
 
-func addLabel(parent *unison.Panel, labelText, tooltip string) {
-	installField(parent, NewFieldLeadingLabel(labelText, false), tooltip)
+// addLabel adds a leading label for a field and returns it, for a caller whose field will not be the label's sibling
+// to point the field at with Accessibility.LabeledBy.
+func addLabel(parent *unison.Panel, labelText, tooltip string) *unison.Label {
+	return installField(parent, NewFieldLeadingLabel(labelText, false), tooltip)
 }
 
 func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
@@ -498,9 +510,14 @@ func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool
 	return checkBox
 }
 
-func addFlowWrapper(parent *unison.Panel, labelText string, count int) *unison.Panel {
-	parent.AddChild(NewFieldLeadingLabel(labelText, false))
-	wrapper := unison.NewPanel()
+// addFlowWrapper adds a leading label and, beside it, a wrapper laid out in the given number of columns for the
+// controls the label describes. It returns both: the label is not a sibling of anything placed in the wrapper, so the
+// control it names should set it as its Accessibility.LabeledBy (see labelControl), or be named some other way when
+// the label text is empty.
+func addFlowWrapper(parent *unison.Panel, labelText string, count int) (wrapper *unison.Panel, label *unison.Label) {
+	label = NewFieldLeadingLabel(labelText, false)
+	parent.AddChild(label)
+	wrapper = unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  count,
 		HSpacing: unison.StdHSpacing,
@@ -508,17 +525,27 @@ func addFlowWrapper(parent *unison.Panel, labelText string, count int) *unison.P
 		VAlign:   align.Middle,
 	})
 	parent.AddChild(wrapper)
-	return wrapper
+	return wrapper, label
 }
 
-func addFillWrapper(parent *unison.Panel, labelText string, count int) *unison.Panel {
-	wrapper := addFlowWrapper(parent, labelText, count)
+// addFillWrapper is addFlowWrapper for a wrapper that fills the width it is given.
+func addFillWrapper(parent *unison.Panel, labelText string, count int) (wrapper *unison.Panel, label *unison.Label) {
+	wrapper, label = addFlowWrapper(parent, labelText, count)
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 		HGrab:  true,
 	})
-	return wrapper
+	return wrapper, label
+}
+
+// labelControl points a control at the label that names it, for a control that is not the label's sibling -- one placed
+// in the wrapper addFlowWrapper adds beside the label, say. A label with no text names nothing and is left out of it.
+func labelControl[C unison.Paneler](control C, label *unison.Label) C {
+	if label != nil && label.String() != "" {
+		control.AsPanel().Accessibility.LabeledBy = label
+	}
+	return control
 }
 
 func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip string, choices []T, fieldData *T) *unison.PopupMenu[T] {
@@ -576,7 +603,9 @@ func addBoolPopup(parent *unison.Panel, trueChoice, falseChoice string, fieldDat
 }
 
 func addHasPopup(parent *unison.Panel, has *bool) {
-	addBoolPopup(parent, i18n.Text("has"), i18n.Text("doesn't have"), has)
+	// The popup begins a row that reads as a sentence, so nothing before it serves as a label -- and on rows after the
+	// first, the "and" or "or" that joins them sits there and would be taken as one.
+	addBoolPopup(parent, i18n.Text("has"), i18n.Text("doesn't have"), has).Accessibility.Name = i18n.Text("Has")
 }
 
 func adjustFieldBlank(field unison.Paneler, blank bool) {
@@ -611,33 +640,37 @@ func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 
 func addNameCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
 	prefix := i18n.Text("whose name")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Name Qualifier"), strCriteria, hSpan,
-		includeEmptyFiller)
+	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Name"), strCriteria, hSpan, includeEmptyFiller)
 }
 
 func addSpecializationCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
 	prefix := i18n.Text("and whose specialization")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Specialization Qualifier"), strCriteria, hSpan,
+	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Specialization"), strCriteria, hSpan,
 		includeEmptyFiller)
 }
 
 func addUsageCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
 	prefix := i18n.Text("and whose usage")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Usage Qualifier"), strCriteria, hSpan,
-		includeEmptyFiller)
+	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Usage"), strCriteria, hSpan, includeEmptyFiller)
 }
 
 func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
 	popup, field := addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"),
-		i18n.Text("Tag Qualifier"), strCriteria, hSpan, includeEmptyFiller)
+		i18n.Text("Tag"), strCriteria, hSpan, includeEmptyFiller)
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
 	return popup, field
 }
 
 func addNotesCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
 	prefix := i18n.Text("and whose notes")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Notes Qualifier"), strCriteria, hSpan,
-		includeEmptyFiller)
+	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Notes"), strCriteria, hSpan, includeEmptyFiller)
+}
+
+// criteriaTitles returns what a criteria's two controls are called, from the subject they qualify: the comparison
+// popup's accessible name, and the qualifier field's undo title, which also serves as its accessible name. The
+// controls sit in a row that reads as a sentence, with nothing before either that could name it.
+func criteriaTitles(subject string) (comparisonName, qualifierTitle string) {
+	return fmt.Sprintf(i18n.Text("%s Comparison"), subject), fmt.Sprintf(i18n.Text("%s Qualifier"), subject)
 }
 
 // newCriteriaPanel adds a two-column panel to the parent for a criteria's comparison popup and qualifier field,
@@ -663,20 +696,24 @@ func newCriteriaPanel(parent *unison.Panel, hSpan int, includeEmptyFiller bool) 
 	return panel
 }
 
-// newComparisonPopup creates the popup menu for a criteria's comparison, offering the choices in order with the one at
-// selectedIndex chosen. No selection callback is installed, since installing one first would have it called by the
-// initial selection; the caller adds its own afterwards.
-func newComparisonPopup(choices []string, selectedIndex int) *unison.PopupMenu[string] {
+// newComparisonPopup creates the popup menu for a criteria's comparison, named for a screen reader as given and
+// offering the choices in order with the one at selectedIndex chosen. No selection callback is installed, since
+// installing one first would have it called by the initial selection; the caller adds its own afterwards.
+func newComparisonPopup(name string, choices []string, selectedIndex int) *unison.PopupMenu[string] {
 	popup := unison.NewPopupMenu[string]()
+	popup.Accessibility.Name = name
 	popup.AddItem(choices...)
 	popup.SelectIndex(selectedIndex)
 	return popup
 }
 
-func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle string, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
+// addStringCriteriaPanel adds a text criteria's comparison popup and qualifier field, titled for the subject they
+// qualify; see criteriaTitles.
+func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, subject string, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
 	panel := newCriteriaPanel(parent, hSpan, includeEmptyFiller)
 	var criteriaField *StringField
-	popup := newComparisonPopup(criteria.PrefixedStringComparisonChoices(prefix, notPrefix),
+	comparisonName, undoTitle := criteriaTitles(subject)
+	popup := newComparisonPopup(comparisonName, criteria.PrefixedStringComparisonChoices(prefix, notPrefix),
 		int(strCriteria.Compare.EnsureValid()))
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		strCriteria.Compare = criteria.StringComparisons[p.SelectedIndex()]
@@ -690,13 +727,17 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 }
 
 func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *criteria.Number, hSpan int, includeEmptyFiller bool) {
-	addNumericCriteriaPanel(parent, targetMgr, targetKey, i18n.Text("and whose level"), i18n.Text("Level Qualifier"),
-		numCriteria, 0, fxp.Thousand, hSpan, false, includeEmptyFiller)
+	addNumericCriteriaPanel(parent, targetMgr, targetKey, i18n.Text("and whose level"), i18n.Text("Level"), numCriteria,
+		0, fxp.Thousand, hSpan, false, includeEmptyFiller)
 }
 
-func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, undoTitle string, numCriteria *criteria.Number, minValue, maxValue fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
+// addNumericCriteriaPanel adds a numeric criteria's comparison popup and qualifier field, titled for the subject they
+// qualify; see criteriaTitles.
+func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, subject string, numCriteria *criteria.Number, minValue, maxValue fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
 	panel := newCriteriaPanel(parent, hSpan, includeEmptyFiller)
-	popup = newComparisonPopup(criteria.PrefixedNumericComparisonChoices(prefix), int(numCriteria.Compare.EnsureValid()))
+	comparisonName, undoTitle := criteriaTitles(subject)
+	popup = newComparisonPopup(comparisonName, criteria.PrefixedNumericComparisonChoices(prefix),
+		int(numCriteria.Compare.EnsureValid()))
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		numCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
 		adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
@@ -721,11 +762,11 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 // addWeightCriteriaPanel adds a weight criteria's comparison popup and qualifier field directly to the parent, which is
 // expected to lay them out itself.
 func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix string, entity *gurps.Entity, weightCriteria *criteria.Weight) (popup *unison.PopupMenu[string], field *WeightField) {
-	popup = newComparisonPopup(criteria.PrefixedNumericComparisonChoices(prefix),
+	comparisonName, undoTitle := criteriaTitles(i18n.Text("Weight"))
+	popup = newComparisonPopup(comparisonName, criteria.PrefixedNumericComparisonChoices(prefix),
 		int(weightCriteria.Compare.EnsureValid()))
 	parent.AddChild(popup)
-	field = addWeightField(parent, targetMgr, targetKey, i18n.Text("Weight Qualifier"), "", entity,
-		&weightCriteria.Qualifier, false)
+	field = addWeightField(parent, targetMgr, targetKey, undoTitle, "", entity, &weightCriteria.Qualifier, false)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		weightCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
 		adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
@@ -748,7 +789,8 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 	case criteria.AtMostNumber:
 		selectedIndex = 2
 	}
-	popup = newComparisonPopup(choices, selectedIndex)
+	comparisonName, undoTitle := criteriaTitles(i18n.Text("Quantity"))
+	popup = newComparisonPopup(comparisonName, choices, selectedIndex)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		switch p.SelectedIndex() {
 		case 0:
@@ -761,7 +803,7 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 		MarkModified(parent)
 	}
 	parent.AddChild(popup)
-	field = NewIntegerField(targetMgr, targetKey, i18n.Text("Quantity Criteria"),
+	field = NewIntegerField(targetMgr, targetKey, undoTitle,
 		func() int { return numCriteria.Qualifier.AsInteger[int]() },
 		func(value int) {
 			numCriteria.Qualifier = fxp.FromInteger(value)

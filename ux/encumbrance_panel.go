@@ -40,8 +40,10 @@ type EncumbrancePanel struct {
 func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	p := &EncumbrancePanel{entity: entity}
 	// There are no insets, since the header row that comes first should touch the border.
-	_, layoutData := initPagePanel(p, &TitledBorder{Title: i18n.Text("Encumbrance, Move & Dodge")}, 9, false,
-		colors.TintEncumbrance)
+	title := i18n.Text("Encumbrance, Move & Dodge")
+	_, layoutData := initPagePanel(p, &TitledBorder{Title: title}, 9, false, colors.TintEncumbrance)
+	// The block's title is drawn by its border, so the block is given it as its name as well.
+	p.Accessibility.Name = title
 	layoutData.HGrab = true
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		r := p.Children()[0].FrameRect()

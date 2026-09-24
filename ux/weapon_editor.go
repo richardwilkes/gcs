@@ -118,35 +118,36 @@ func (we *weaponEditor) addBlockBlock(w *gurps.Weapon, content *unison.Panel) {
 
 func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 	damage := &w.Damage
-	wrapper := addFillWrapper(content, i18n.Text("Damage"), 4)
-	addPopup(wrapper, filteredDamageOptions(), &damage.StrengthType)
+	wrapper, _ := addFillWrapper(content, i18n.Text("Damage"), 4)
+	strengthBasis := addPopup(wrapper, filteredDamageOptions(), &damage.StrengthType)
+	strengthBasis.Accessibility.Name = i18n.Text("Damage Strength Basis")
 	addCheckBox(wrapper, i18n.Text("Leveled"), &damage.Leveled)
 
-	wrapper = addFillWrapper(content, "", 2)
+	wrapper, _ = addFillWrapper(content, "", 2)
 	addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Multiply ST used for sw or thr damage calculation by"), "",
 		&damage.StrengthMultiplier, fxp.Tenth, fxp.BillionMinusOne)
 
-	wrapper = addFillWrapper(content, "", 2)
+	wrapper, _ = addFillWrapper(content, "", 2)
 	text := i18n.Text("Non-Leveled Damage Modifier")
 	addScriptField(wrapper, nil, "", text, text,
 		func() string { return damage.Base },
 		func(s string) { damage.Base = strings.TrimSpace(s) }, false)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(unaffected by levels)"), false))
 
-	wrapper = addFillWrapper(content, "", 2)
+	wrapper, _ = addFillWrapper(content, "", 2)
 	text = i18n.Text("Leveled Damage Modifier")
 	addScriptField(wrapper, nil, "", text, text,
 		func() string { return damage.BaseLeveled },
 		func(s string) { damage.BaseLeveled = strings.TrimSpace(s) }, false)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per level"), false))
 
-	wrapper = addFillWrapper(content, "", 2)
+	wrapper, _ = addFillWrapper(content, "", 2)
 	text = i18n.Text("Damage Modifier Per Die")
 	addDecimalField(wrapper, nil, "", text, text, &damage.ModifierPerDie, -fxp.BillionMinusOne,
 		fxp.BillionMinusOne, true)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per die"), false))
 
-	wrapper = addFillWrapper(content, "", 4)
+	wrapper, _ = addFillWrapper(content, "", 4)
 	armorDivisor := i18n.Text("Armor Divisor")
 	addLabelAndDecimalField(wrapper, nil, "", armorDivisor, armorDivisor, &damage.ArmorDivisor, 0, fxp.MillionMinusOne)
 	typeText := i18n.Text("Type")
@@ -154,17 +155,20 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 	wrapper.AddChild(NewFieldTrailingLabel(typeText, false))
 	addStringField(wrapper, text, text, &damage.Type)
 
-	wrapper = addFillWrapper(content, i18n.Text("Fragmentation"), 5)
+	wrapper, _ = addFillWrapper(content, i18n.Text("Fragmentation"), 5)
 	text = i18n.Text("Fragmentation Base Damage")
 	addScriptField(wrapper, nil, "", text, text,
 		func() string { return damage.Fragmentation },
 		func(s string) { damage.Fragmentation = strings.TrimSpace(s) }, false)
 	wrapper.AddChild(NewFieldTrailingLabel(armorDivisor, false))
+	// The fragmentation fields follow the same "Armor Divisor" and "Type" labels the damage fields do, which would
+	// leave a screen reader with two of each, so they are named in full.
 	text = i18n.Text("Fragmentation Armor Divisor")
-	addDecimalField(wrapper, nil, "", text, text, &damage.FragmentationArmorDivisor, 0, fxp.MillionMinusOne, false)
+	addDecimalField(wrapper, nil, "", text, text, &damage.FragmentationArmorDivisor, 0, fxp.MillionMinusOne,
+		false).Accessibility.Name = text
 	wrapper.AddChild(NewFieldTrailingLabel(typeText, false))
 	text = i18n.Text("Fragmentation Type")
-	addStringField(wrapper, text, text, &damage.FragmentationType)
+	addStringField(wrapper, text, text, &damage.FragmentationType).Accessibility.Name = text
 }
 
 func filteredDamageOptions() []stdmg.Option {
@@ -180,20 +184,20 @@ func filteredDamageOptions() []stdmg.Option {
 
 func (we *weaponEditor) addReachBlock(w *gurps.Weapon, content *unison.Panel) {
 	reach := &w.Reach
-	wrapper := addFlowWrapper(content, i18n.Text("Reach"), 3)
+	wrapper, _ := addFlowWrapper(content, i18n.Text("Reach"), 3)
 	text := i18n.Text("Maximum Reach")
 	addDecimalField(wrapper, nil, "", text, text, &reach.Max, 0, fxp.Thousand, false)
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Minimum"), false))
 	text = i18n.Text("Minimum Reach")
 	addDecimalField(wrapper, nil, "", text, text, &reach.Min, 0, fxp.Thousand, false)
-	wrapper = addFlowWrapper(content, "", 2)
+	wrapper, _ = addFlowWrapper(content, "", 2)
 	addCheckBox(wrapper, i18n.Text("Close Combat"), &reach.CloseCombat)
 	addCheckBox(wrapper, i18n.Text("Reach Change Requires Ready"), &reach.ChangeRequiresReady)
 }
 
 func (we *weaponEditor) addAccuracyBlock(w *gurps.Weapon, content *unison.Panel) {
 	accuracy := &w.Accuracy
-	wrapper := addFlowWrapper(content, i18n.Text("Accuracy"), 4)
+	wrapper, _ := addFlowWrapper(content, i18n.Text("Accuracy"), 4)
 	text := i18n.Text("Weapon Accuracy")
 	base := addDecimalField(wrapper, nil, "", text, text, &accuracy.Base, 0, fxp.MillionMinusOne, false)
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Scope"), false))
@@ -205,7 +209,7 @@ func (we *weaponEditor) addAccuracyBlock(w *gurps.Weapon, content *unison.Panel)
 
 func (we *weaponEditor) addRangeBlock(w *gurps.Weapon, content *unison.Panel) {
 	weaponRange := &w.Range
-	wrapper := addFlowWrapper(content, i18n.Text("Range"), 5)
+	wrapper, _ := addFlowWrapper(content, i18n.Text("Range"), 5)
 	text := i18n.Text("Maximum Range")
 	addDecimalField(wrapper, nil, "", text, text, &weaponRange.Max, 0, fxp.BillionMinusOne, false)
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("½ Damage"), false))
@@ -214,7 +218,7 @@ func (we *weaponEditor) addRangeBlock(w *gurps.Weapon, content *unison.Panel) {
 	text = i18n.Text("Minimum Range")
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Minimum"), false))
 	addDecimalField(wrapper, nil, "", text, text, &weaponRange.Min, 0, fxp.BillionMinusOne, false)
-	wrapper = addFlowWrapper(content, "", 2)
+	wrapper, _ = addFlowWrapper(content, "", 2)
 	addCheckBox(wrapper, i18n.Text("Muscle-powered"), &weaponRange.MusclePowered)
 	addCheckBox(wrapper, i18n.Text("Ranges are in miles"), &weaponRange.InMiles)
 }
@@ -228,18 +232,22 @@ func (we *weaponEditor) addRateOfFireBlock(w *gurps.Weapon, content *unison.Pane
 func (we *weaponEditor) addRateOfFireModeBlock(content *unison.Panel, mode *gurps.WeaponRoFMode, modeNum int) {
 	var wrapper *unison.Panel
 	if modeNum == 1 {
-		wrapper = addFlowWrapper(content, i18n.Text("Rate of Fire"), 5)
+		wrapper, _ = addFlowWrapper(content, i18n.Text("Rate of Fire"), 5)
 	} else {
-		wrapper = addFlowWrapper(content, "", 5)
+		wrapper, _ = addFlowWrapper(content, "", 5)
 	}
 	wrapper.AddChild(NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Mode %d"), modeNum), false))
+	// The row reads as a sentence, so the labels around the fields are not their names: the first would be called
+	// "Mode 1" and the second "per attack with".
 	text := i18n.Text("Shots Per Attack")
 	spa := addDecimalField(wrapper, nil, "", text, text, &mode.ShotsPerAttack, 0, fxp.MillionMinusOne, false)
+	spa.Accessibility.Name = fmt.Sprintf(i18n.Text("Mode %d Shots Per Attack"), modeNum)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per attack with"), false))
 	text = i18n.Text("Secondary Projectiles")
 	sp := addDecimalField(wrapper, nil, "", text, text, &mode.SecondaryProjectiles, 0, fxp.MillionMinusOne, false)
+	sp.Accessibility.Name = fmt.Sprintf(i18n.Text("Mode %d Secondary Projectiles"), modeNum)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("secondary projectiles"), false))
-	wrapper = addFlowWrapper(content, "", 2)
+	wrapper, _ = addFlowWrapper(content, "", 2)
 	auto := addCheckBox(wrapper, i18n.Text("Fully Automatic Only"), &mode.FullAutoOnly)
 	hccb := addCheckBox(wrapper, i18n.Text("High-cyclic Controlled Bursts"), &mode.HighCyclicControlledBursts)
 	we.panelsControlledByJet = append(we.panelsControlledByJet, spa, auto, sp, hccb)
@@ -248,7 +256,7 @@ func (we *weaponEditor) addRateOfFireModeBlock(content *unison.Panel, mode *gurp
 func (we *weaponEditor) addShotsBlock(w *gurps.Weapon, content *unison.Panel) {
 	shots := &w.Shots
 	text := i18n.Text("Shots")
-	wrapper := addFlowWrapper(content, text, 5)
+	wrapper, _ := addFlowWrapper(content, text, 5)
 	addDecimalField(wrapper, nil, "", text, text, &shots.Count, 0, fxp.MillionMinusOne, false)
 	text = i18n.Text("In Chamber")
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(text, false))
@@ -256,7 +264,7 @@ func (we *weaponEditor) addShotsBlock(w *gurps.Weapon, content *unison.Panel) {
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Duration"), false))
 	text = i18n.Text("Shot Duration")
 	addDecimalField(wrapper, nil, "", text, text, &shots.Duration, 0, fxp.Thousand, false)
-	wrapper = addFlowWrapper(content, "", 4)
+	wrapper, _ = addFlowWrapper(content, "", 4)
 	text = i18n.Text("Reload Time")
 	addLabelAndDecimalField(wrapper, nil, "", text, text, &shots.ReloadTime, 0, fxp.Thousand)
 	addCheckBox(wrapper, i18n.Text("Per Shot"), &shots.ReloadTimeIsPerShot)
@@ -265,7 +273,7 @@ func (we *weaponEditor) addShotsBlock(w *gurps.Weapon, content *unison.Panel) {
 
 func (we *weaponEditor) addBulkBlock(w *gurps.Weapon, content *unison.Panel) {
 	bulk := &w.Bulk
-	wrapper := addFlowWrapper(content, i18n.Text("Bulk"), 4)
+	wrapper, _ := addFlowWrapper(content, i18n.Text("Bulk"), 4)
 	text := i18n.Text("Normal Bulk")
 	addDecimalField(wrapper, nil, "", text, text, &bulk.Normal, -fxp.Thousand, 0, false)
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("For Giants"), false))
@@ -276,7 +284,7 @@ func (we *weaponEditor) addBulkBlock(w *gurps.Weapon, content *unison.Panel) {
 
 func (we *weaponEditor) addRecoilBlock(w *gurps.Weapon, content *unison.Panel) {
 	recoil := &w.Recoil
-	wrapper := addFlowWrapper(content, i18n.Text("Recoil"), 3)
+	wrapper, _ := addFlowWrapper(content, i18n.Text("Recoil"), 3)
 	text := i18n.Text("Shot Recoil")
 	addDecimalField(wrapper, nil, "", text, text, &recoil.Shot, 0, fxp.Thousand, false)
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("For Slugs"), false))
@@ -287,12 +295,12 @@ func (we *weaponEditor) addRecoilBlock(w *gurps.Weapon, content *unison.Panel) {
 func (we *weaponEditor) addStrengthBlock(w *gurps.Weapon, content *unison.Panel) {
 	strength := &w.Strength
 	text := i18n.Text("Minimum ST")
-	wrapper := addFlowWrapper(content, text, 3)
+	wrapper, _ := addFlowWrapper(content, text, 3)
 	addDecimalField(wrapper, nil, "", text, text, &strength.Min, 0, fxp.MillionMinusOne, false)
 	addCheckBox(wrapper, i18n.Text("Two-handed"), &strength.TwoHanded)
 	addCheckBox(wrapper, i18n.Text("Two-handed & unready"), &strength.TwoHandedUnready)
 	if w.IsRanged() {
-		wrapper = addFlowWrapper(content, "", 3)
+		wrapper, _ = addFlowWrapper(content, "", 3)
 		addCheckBox(wrapper, i18n.Text("Has bipod"), &strength.Bipod)
 		addCheckBox(wrapper, i18n.Text("Mounted"), &strength.Mounted)
 		addCheckBox(wrapper, i18n.Text("Uses a musket rest"), &strength.MusketRest)

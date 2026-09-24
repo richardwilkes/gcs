@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // defaultWrappingLabelWidth is the width a textLabel wraps to when its layout has not offered it one.
@@ -68,6 +69,9 @@ func newTextLabel(wrap bool) *textLabel {
 	l.Self = l
 	l.SetSizer(l.sizes)
 	l.DrawCallback = l.draw
+	// The text is drawn by hand, so a screen reader is told outright that this is a label and what it says; declaring
+	// the role also lets it name the control laid out after it, as a unison.Label would.
+	l.Accessibility.Role = role.Label
 	return l
 }
 
@@ -90,6 +94,7 @@ func (l *textLabel) String() string {
 func (l *textLabel) setText(text string, ink unison.Ink) {
 	l.text = text
 	l.ink = ink
+	l.Accessibility.Name = text
 	l.MarkForLayoutRecursivelyUpward()
 	l.MarkForRedraw()
 }

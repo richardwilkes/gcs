@@ -36,7 +36,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		content.AddChild(unison.NewPanel())
 		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
 		costLabel := i18n.Text("Cost")
-		wrapper := addFlowWrapper(content, costLabel, 2)
+		wrapper, _ := addFlowWrapper(content, costLabel, 2)
 		field := NewStringField(nil, "", costLabel,
 			func() string {
 				v := emweight.ValueFromString(e.editorData.CostAdj)
@@ -51,8 +51,9 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		field.Tooltip = newWrappedTooltip(i18n.Text("Enter a cost adjustment, such as +5, -5, +50%, -25%, x2, x2/3, x10%."))
 		wrapper.AddChild(field)
 		affectsPopup := addPopup(wrapper, affects.Options, &e.editorData.Affects)
+		affectsPopup.Accessibility.Name = i18n.Text("Cost Affects")
 		levelLabel := i18n.Text("Level")
-		wrapper = addFlowWrapper(content, levelLabel, 3)
+		wrapper, _ = addFlowWrapper(content, levelLabel, 3)
 		levels := addDecimalField(wrapper, nil, "", levelLabel, "", &e.editorData.Levels, 0, fxp.Thousand, false)
 		box := addCheckBox(wrapper, i18n.Text("Use level from owner"), &e.editorData.UseLevelFromTrait)
 		box.OnSet = func() { adjustFieldBlank(levels, e.editorData.UseLevelFromTrait) }

@@ -398,6 +398,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case EquipmentEquippedColumn:
 		data.Type = cell.Toggle
+		data.Name = i18n.Text("Equipped")
 		data.Checked = e.Equipped
 		data.Alignment = align.Middle
 		data.Tooltip = i18n.Text("Click to toggle whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character. Note that if a parent container is not equipped, none of its contents are considered to be equipped either and any checkmark here will be dimmed to reflect this.")
@@ -439,6 +440,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	case EquipmentSwitchColumn:
 		if e.HasSwitchableFeatures() {
 			data.Type = cell.Switch
+			data.Name = SwitchCellName()
 			data.Checked = e.SwitchedOn
 			data.Alignment = align.Middle
 			data.Tooltip = SwitchCellTooltip(e.Container())

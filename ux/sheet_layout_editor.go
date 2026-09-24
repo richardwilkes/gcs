@@ -234,6 +234,9 @@ func newSheetLayoutEditor(sheet *Sheet) *sheetLayoutEditor {
 func (e *sheetLayoutEditor) start() {
 	overlay := unison.NewPanel()
 	overlay.SetFocusable(true)
+	// The overlay takes the keyboard focus, so it has to say what it is and how to leave it.
+	overlay.Accessibility.Name = i18n.Text("Sheet Layout Editor")
+	overlay.Accessibility.Description = i18n.Text("Drag blocks to rearrange them; press Escape to finish")
 	// The sheet reroutes an item drop to whichever list it belongs in. Editing the layout suspends everything else the
 	// page can do, so it suspends that as well rather than letting a drop land on a block that is being moved.
 	overlay.CanAcceptDropCallback = func(_ drag.Info) bool { return false }

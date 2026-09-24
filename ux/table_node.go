@@ -25,11 +25,32 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
-const noInvertColorsMarker = "no_invert"
+const (
+	noInvertColorsMarker = "no_invert"
+	markdownCellInksKey  = "markdown_cell_inks"
+)
+
+// markdownCellInks holds the colors a markdown cell draws with. The markdown is handed these indirect colors when it is
+// created and they are re-pointed whenever its row is selected or deselected, so that the new colors take effect on the
+// next draw without rebuilding the markdown. A rebuild replaces every panel within it, which gives each a new
+// accessibility node and so tells assistive technologies that the cell changed, pulling a screen reader back to the
+// row being left each time the selection moves.
+type markdownCellInks struct {
+	foreground    unison.Ink
+	background    unison.Ink
+	onBackground  unison.IndirectColor
+	link          unison.IndirectColor
+	linkOnPressed unison.IndirectColor
+	selected      bool
+	initialized   bool
+}
 
 var _ unison.TableRowData[*Node[*gurps.Trait]] = &Node[*gurps.Trait]{}
 
@@ -186,7 +207,7 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, se
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink, selected bool) {
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
-		adjustMarkdownInk(part, foreground, background, selected, true)
+		adjustMarkdownInk(part, foreground, background, selected)
 		return
 	case *unison.Label:
 		if part.OnBackgroundInk != foreground {
@@ -296,42 +317,55 @@ func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.
 	if n.forPage {
 		adjustMarkdownThemeForPage(m, font)
 	}
-	adjustMarkdownInk(m, foreground, background, selected, false)
+	inks := &markdownCellInks{}
+	m.ClientData()[markdownCellInksKey] = inks
+	m.OnBackgroundInk = &inks.onBackground
+	m.LinkInk = &inks.link
+	m.LinkOnPressedInk = &inks.linkOnPressed
+	adjustMarkdownInk(m, foreground, background, selected)
 	m.SetContent(markdownHardLineBreaks(content), width)
 	return m
 }
 
-func adjustMarkdownInk(md *unison.Markdown, foreground, background unison.Ink, selected, okToRebuild bool) {
-	var onBackgroundInk, linkInk, linkOnPressedInk unison.Ink
+// adjustMarkdownInk re-points the colors of a markdown cell made by createMarkdownCell to suit its row's selection
+// state. See markdownCellInks.
+func adjustMarkdownInk(md *unison.Markdown, foreground, background unison.Ink, selected bool) {
+	inks, ok := md.ClientData()[markdownCellInksKey].(*markdownCellInks)
+	if !ok || (inks.initialized && inks.selected == selected && inks.foreground == foreground &&
+		inks.background == background) {
+		return
+	}
+	inks.initialized = true
+	inks.selected = selected
+	inks.foreground = foreground
+	inks.background = background
 	if selected {
-		c, ok := foreground.(*unison.ThemeColor)
-		if ok {
-			c = &unison.ThemeColor{
+		var link unison.ColorProvider
+		if c, isThemeColor := foreground.(*unison.ThemeColor); isThemeColor {
+			link = &unison.ThemeColor{
 				Light: c.Light.AdjustHue(180),
 				Dark:  c.Dark.AdjustHue(180),
 			}
 		} else {
-			c = &unison.ThemeColor{
-				Light: unison.Yellow,
-				Dark:  unison.Yellow,
-			}
+			link = unison.Yellow
 		}
-		onBackgroundInk = foreground
-		linkInk = c
-		linkOnPressedInk = background
+		inks.onBackground.Target = asColorProvider(foreground, unison.ThemeOnFocus)
+		inks.link.Target = link
+		inks.linkOnPressed.Target = asColorProvider(background, unison.ThemeFocus)
 	} else {
-		onBackgroundInk = unison.DefaultMarkdownTheme.OnBackgroundInk
-		linkInk = unison.DefaultMarkdownTheme.LinkInk
-		linkOnPressedInk = unison.DefaultMarkdownTheme.LinkOnPressedInk
+		inks.onBackground.Target = asColorProvider(unison.DefaultMarkdownTheme.OnBackgroundInk, unison.ThemeOnSurface)
+		inks.link.Target = asColorProvider(unison.DefaultMarkdownTheme.LinkInk, unison.ThemeFocus)
+		inks.linkOnPressed.Target = asColorProvider(unison.DefaultMarkdownTheme.LinkOnPressedInk, unison.ThemeOnFocus)
 	}
-	if md.OnBackgroundInk != onBackgroundInk {
-		md.OnBackgroundInk = onBackgroundInk
-		md.LinkInk = linkInk
-		md.LinkOnPressedInk = linkOnPressedInk
-		if okToRebuild {
-			md.Rebuild()
-		}
+}
+
+// asColorProvider returns the ink as a color provider, or the fallback if the ink is something else, such as a
+// gradient, which an indirect color cannot refer to.
+func asColorProvider(ink unison.Ink, fallback unison.ColorProvider) unison.ColorProvider {
+	if c, ok := ink.(unison.ColorProvider); ok {
+		return c
 	}
+	return fallback
 }
 
 func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {
@@ -366,10 +400,14 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		key := n.noteKey()
 		isClosed := gurps.IsClosed(key)
 		var s *unison.SVG
+		// The button is nothing but its icon, so its tooltip is also what a screen reader calls it. Clicking it
+		// rebuilds the rows, and with them this button, so the tooltip never needs to change once set.
 		if isClosed {
 			s = svg.NotesExpand
+			button.Tooltip = newWrappedTooltip(i18n.Text("Show notes"))
 		} else {
 			s = svg.NotesCollapse
+			button.Tooltip = newWrappedTooltip(i18n.Text("Hide notes"))
 		}
 		button.Drawable = &unison.DrawableSVG{
 			SVG:  s,
@@ -552,6 +590,15 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 	if c.Tooltip != "" {
 		label.Tooltip = newWrappedTooltip(c.Tooltip)
 	}
+	// The cell is drawn as a label holding a checkmark, or nothing at all, so a screen reader is told outright that it
+	// is a check box, what it is called and whether it is checked. c.Checked is read when the cell is described rather
+	// than now, since a click changes it in place.
+	label.Accessibility.Role = role.CheckBox
+	label.Accessibility.Name = c.Name
+	label.Accessibility.Callback = func(node *accessibility.Node) {
+		node.HasCheck = true
+		node.Checked = check.FromBool(c.Checked)
+	}
 	tookPress := false
 	label.MouseDownCallback = func(_ geom.Point, button, clickCount int, mods mod.Modifiers) bool {
 		tookPress = button == unison.ButtonLeft
@@ -581,7 +628,7 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 }
 
 func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
-	check := n.newCheckCell(c, foreground,
+	toggle := n.newCheckCell(c, foreground,
 		func(on bool) *unison.SVG {
 			if on {
 				return unison.CheckmarkSVG
@@ -595,9 +642,9 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 			return true
 		})
 	if c.Checked {
-		check.SetEnabled(!c.Dim)
+		toggle.SetEnabled(!c.Dim)
 	}
-	return check
+	return toggle
 }
 
 // createSwitchCell creates the cell for a switch column. Unlike a toggle cell, the "off" state is drawn (as a dash), so
@@ -630,17 +677,17 @@ func (n *Node[T]) createSwitchCell(c *gurps.CellData, foreground unison.Ink) uni
 // versus merely marking it as modified. It returns true if it has already reported the change to the item's owner, in
 // which case the caller must not mark the owner as modified on top of that; false means the caller has to do the
 // reporting, which is also what happens when there is no owner to report to.
-func handleCheck(data any, check unison.Paneler, checked bool) bool {
-	owner := unison.AncestorOrSelf[Rebuildable](check)
+func handleCheck(data any, toggle unison.Paneler, checked bool) bool {
+	owner := unison.AncestorOrSelf[Rebuildable](toggle)
 	switch item := data.(type) {
 	case *gurps.Equipment:
-		adjustEquipped(owner, check, item, checked)
+		adjustEquipped(owner, toggle, item, checked)
 	case *gurps.TraitModifier:
-		adjustModifierEnabled(owner, check, item, checked)
+		adjustModifierEnabled(owner, toggle, item, checked)
 	case *gurps.EquipmentModifier:
-		adjustModifierEnabled(owner, check, item, checked)
+		adjustModifierEnabled(owner, toggle, item, checked)
 	case *gurps.Weapon:
-		adjustHidden(owner, check, item, checked)
+		adjustHidden(owner, toggle, item, checked)
 	default:
 		return false
 	}
@@ -749,6 +796,11 @@ func (n *Node[T]) createPageRefLink(c *gurps.CellData, ref string, font unison.F
 		link.Tooltip = newWrappedTooltip(tooltip)
 	}
 	link.SetEnabled(!c.Dim && (title != "" || icon != nil))
+	if ref == "" {
+		// A row with no page reference shows nothing, so there is no link for a screen reader to offer; the cell is
+		// announced as blank instead.
+		link.Accessibility.Role = role.None
+	}
 	return link
 }
 

@@ -512,6 +512,8 @@ func (c *collisionCalculator) createSurfaceRows() *unison.Panel {
 			c.changed()
 		},
 		0, 10000, false, false))
+	// The "HP" caption that closes the field before this one would otherwise be taken as this field's name.
+	c.obstacleDRField.Accessibility.Name = i18n.Text("Obstacle DR")
 	row.AddChild(c.obstacleDRField)
 	addPlainLabel(row, i18n.Text("DR of the breakable surface"))
 	return group

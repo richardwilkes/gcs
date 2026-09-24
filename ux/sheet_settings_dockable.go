@@ -245,6 +245,9 @@ func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	desc := unison.NewMarkdown(true)
+	// The description sits under the popup with no label of its own, so it is named outright for the screen readers
+	// whose cursor moves into a document.
+	desc.Accessibility.Name = i18n.Text("Damage Progression Description")
 	desc.SetContent(s.DamageProgression.AltString(), -1)
 	d.damageProgressionPopup = d.createSettingPopup(panel, i18n.Text("Damage Progression"),
 		progression.Options, s.DamageProgression,
@@ -369,6 +372,8 @@ func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, t
 		format(d.settings()).PadWithZeros = checked
 		d.syncSheet(false)
 	})
+	// Every row's checkbox shows the same title, so each is named for the value it pads.
+	row.pad.Accessibility.Name = fmt.Sprintf(i18n.Text("Pad %s with zeros"), title)
 	row.pad.Tooltip = newWrappedTooltip(i18n.Text(`Show trailing zeros out to the number of decimal places chosen, e.g. "7.50" rather than "7.5" at 2 decimal places. Has no effect when "As Needed" or "0" is chosen.`))
 	return row
 }
@@ -419,7 +424,8 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 }
 
 func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, current string, set func(value string)) *unison.Field {
-	panel.AddChild(NewFieldLeadingLabel(i18n.Text("Paper Size"), false))
+	label := NewFieldLeadingLabel(i18n.Text("Paper Size"), false)
+	panel.AddChild(label)
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -430,7 +436,8 @@ func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, curren
 		HGrab:  true,
 	})
 	panel.AddChild(wrapper)
-	field := unison.NewField()
+	// The wrapper separates the field from its label, so the field is pointed at the label explicitly.
+	field := labelControl(unison.NewField(), label)
 	field.SetText(current)
 	field.ValidateCallback = func() bool {
 		_, _, valid := gurps.ParsePageSize(field.Text())

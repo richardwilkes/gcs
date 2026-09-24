@@ -47,7 +47,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.S
 	})
 	p.AddChild(top)
 
-	top.AddChild(newSectionAddButton(p, func() bool {
+	top.AddChild(newSectionAddButton(p, i18n.Text("Add a study entry"), func() bool {
 		def := &gurps.Study{Type: lastStudyTypeUsed}
 		*s = slices.Insert(*s, 0, def)
 		p.insertStudyEntry(1, def, true)
@@ -63,6 +63,8 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.S
 	topRight.AddChild(p.total)
 
 	hoursNeededPopup := addPopup(topRight, study.Levels, studyNeeded)
+	// The progress label before the popup would otherwise be taken as its name.
+	hoursNeededPopup.Accessibility.Name = i18n.Text("Study Hours Needed per Point")
 	hoursNeededPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[study.Level]) {
 		if needed, ok := popup.Selected(); ok {
 			*studyNeeded = needed
@@ -85,6 +87,7 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 	panel := unison.NewPanel()
 
 	deleteButton := unison.NewSVGButton(unison.TrashSVG)
+	deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove this study entry"))
 	deleteButton.ClickCallback = func() {
 		if i := slices.IndexFunc(*p.study, func(one *gurps.Study) bool { return one == entry }); i != -1 {
 			*p.study = slices.Delete(*p.study, i, i+1)
@@ -101,6 +104,7 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 	info := NewInfoPop()
 	updateLimitations(info, entry.Type)
 	typePopup := addPopup(panel, study.Types, &entry.Type)
+	typePopup.Accessibility.Name = i18n.Text("Study Type")
 	typePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[study.Type]) {
 		if studyType, ok := popup.Selected(); ok {
 			entry.Type = studyType

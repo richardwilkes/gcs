@@ -41,9 +41,9 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 	}
 
 	last := tp.Type
-	wrapper := addFlowWrapper(parent, i18n.Text("Choices"), 3)
-	typePopup = addPopup(wrapper, types, &tp.Type)
-	text := i18n.Text("Choice Quantifier")
+	wrapper, label := addFlowWrapper(parent, i18n.Text("Choices"), 3)
+	typePopup = labelControl(addPopup(wrapper, types, &tp.Type), label)
+	text := i18n.Text("Choice")
 	comparisonPopup, field = addNumericCriteriaPanel(wrapper, nil, "", "", text, &tp.Qualifier, fxp.Min, fxp.Max, 1, false, false)
 
 	// A picker that isn't in use has nothing to quantify, so both the comparison and the qualifier are blanked out. The

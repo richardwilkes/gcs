@@ -104,8 +104,9 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		attribute.Types...)
 
 	if !p.def.IsSeparator() {
-		content.AddChild(NewFieldLeadingLabel(i18n.Text("Placement"), false))
-		content.AddChild(p.createPlacementPanel())
+		label := NewFieldLeadingLabel(i18n.Text("Placement"), false)
+		content.AddChild(label)
+		content.AddChild(p.createPlacementPanel(label))
 	}
 
 	const nameKey = "name"
@@ -153,8 +154,10 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 // createPlacementPanel builds the content that follows the "Placement" label. When the placement is Hidden, it expands
 // to read "[Hidden] unless trait [trait name] is present, then [placement]", allowing an attribute to be revealed with
-// an alternate placement whenever the character has the named trait. An empty trait name keeps it hidden.
-func (p *attrDefSettingsPanel) createPlacementPanel() *unison.Panel {
+// an alternate placement whenever the character has the named trait. An empty trait name keeps it hidden. Each control
+// is named explicitly, since the first sits apart from its label and the others follow bits of that sentence, which
+// would otherwise name them.
+func (p *attrDefSettingsPanel) createPlacementPanel(label *unison.Label) *unison.Panel {
 	panel := unison.NewPanel()
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 
@@ -164,7 +167,7 @@ func (p *attrDefSettingsPanel) createPlacementPanel() *unison.Panel {
 	} else {
 		placements = attribute.Placements
 	}
-	panel.AddChild(
+	panel.AddChild(labelControl(
 		NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement", i18n.Text("Placement"),
 			func() attribute.Placement { return p.def.Placement },
 			func(placement attribute.Placement) {
@@ -172,7 +175,8 @@ func (p *attrDefSettingsPanel) createPlacementPanel() *unison.Panel {
 				p.dockable.sync()
 			},
 			placements...),
-	)
+		label,
+	))
 
 	columns := 1
 	if p.def.Placement == attribute.Hidden {
@@ -182,27 +186,28 @@ func (p *attrDefSettingsPanel) createPlacementPanel() *unison.Panel {
 		field := NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"placement_trait", text,
 			func() string { return p.def.PlacementTrait },
 			func(s string) { p.def.PlacementTrait = s })
+		field.Accessibility.Name = text
 		field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
 		field.Tooltip = newWrappedTooltip(i18n.Text("The name of a trait that, when present on the character, changes this attribute's placement to the value on the right. Leave empty to always keep the attribute hidden."))
 		panel.AddChild(field)
 
 		panel.AddChild(NewFieldTrailingLabel(i18n.Text("is present, then"), false))
+		text = i18n.Text("Placement When Present")
 		var whenPresentPopup *Popup[attribute.Placement]
 		if p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef {
-			whenPresentPopup = NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement_when_present",
-				i18n.Text("Placement When Present"),
+			whenPresentPopup = NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement_when_present", text,
 				func() attribute.Placement { return attribute.Automatic },
 				func(_ attribute.Placement) {},
 				attribute.Automatic)
 			whenPresentPopup.SetEnabled(false)
 		} else {
-			whenPresentPopup = NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement_when_present",
-				i18n.Text("Placement When Present"),
+			whenPresentPopup = NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement_when_present", text,
 				func() attribute.Placement { return p.def.PlacementWhenPresent },
 				func(placement attribute.Placement) { p.def.PlacementWhenPresent = placement },
 				attribute.Automatic, attribute.Primary, attribute.Secondary)
 		}
+		whenPresentPopup.Accessibility.Name = text
 		panel.AddChild(whenPresentPopup)
 		columns = 5
 	}

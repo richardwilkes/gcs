@@ -114,12 +114,16 @@ func (d *colorSettingsDockable) createHeader(title string, topMargin float32, sm
 	d.content.AddChild(label)
 }
 
+// createColorWellField adds the well that edits the light or dark mode variant of the color. Each well is named for
+// both the color and the mode, since only the first of the two follows the label that names the row, and it would take
+// the label's text as its name while the second went without one.
 func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, light bool) {
 	w := unison.NewWell()
 	w.Mask = unison.ColorWellMask
 	if light {
 		w.SetInk(c.Color.Light)
 		w.Tooltip = newWrappedTooltip(i18n.Text("Light Mode Color"))
+		w.Accessibility.Name = fmt.Sprintf(i18n.Text("%s (Light Mode)"), c.Title)
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Light = clr
@@ -129,6 +133,7 @@ func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, ligh
 	} else {
 		w.SetInk(c.Color.Dark)
 		w.Tooltip = newWrappedTooltip(i18n.Text("Dark Mode Color"))
+		w.Accessibility.Name = fmt.Sprintf(i18n.Text("%s (Dark Mode)"), c.Title)
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Dark = clr
@@ -141,7 +146,7 @@ func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, ligh
 
 func (d *colorSettingsDockable) createResetField(c *colors.ThemedColor) {
 	b := unison.NewSVGButton(svg.Reset)
-	b.Tooltip = newWrappedTooltip("Reset this color")
+	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this color"))
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"), c.Title), "") == unison.ModalResponseOK {
 			for _, v := range colors.Factory() {

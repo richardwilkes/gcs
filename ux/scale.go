@@ -83,6 +83,8 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 		}, minValue, maxValue, false, false)
 	scaleField.SetMarksModified(false)
 	scaleField.Tooltip = newWrappedTooltip(scaleTitle)
+	// The field sits among icon buttons in a toolbar, with no label of its own for a screen reader to name it by.
+	scaleField.Accessibility.Name = scaleTitle
 	scroller.ContentView().MouseWheelCallback = func(where, delta geom.Point, mods mod.Modifiers) bool {
 		if !mods.OptionDown() || !scaleField.Enabled() {
 			return false

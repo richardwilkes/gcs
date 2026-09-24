@@ -39,15 +39,13 @@ func initEquipmentEditor(carried bool) func(e *editor[*gurps.Equipment, *gurps.E
 			&e.editorData.LegalityClass)
 		qtyLabel := i18n.Text("Quantity")
 		if carried {
-			wrapper := addFlowWrapper(content, qtyLabel, 2)
+			wrapper, _ := addFlowWrapper(content, qtyLabel, 2)
 			addDecimalField(wrapper, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1, false)
 			addCheckBox(wrapper, i18n.Text("Equipped"), &e.editorData.Equipped)
 		} else {
 			addLabelAndDecimalField(content, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
 		}
-		valueLabel := i18n.Text("Value")
-		content.AddChild(NewFieldLeadingLabel(valueLabel, false))
-		addScriptField(content, nil, "", valueLabel,
+		addLabelAndScriptField(content, nil, "", i18n.Text("Value"),
 			i18n.Text("The value, which may be a number or a script expression"),
 			func() string { return e.editorData.BaseValue },
 			func(value string) {
@@ -61,9 +59,7 @@ func initEquipmentEditor(carried bool) func(e *editor[*gurps.Equipment, *gurps.E
 			field.SetTitle(extendedValueForEditor(e.target, e.editorData).Comma())
 			field.MarkForLayoutAndRedraw()
 		}))
-		weightLabel := i18n.Text("Weight")
-		content.AddChild(NewFieldLeadingLabel(weightLabel, false))
-		addScriptField(content, nil, "", weightLabel,
+		addLabelAndScriptField(content, nil, "", i18n.Text("Weight"),
 			i18n.Text("The weight, which may be a number with optional units or a script expression"),
 			func() string { return e.editorData.BaseWeight },
 			func(value string) {
@@ -83,7 +79,7 @@ func initEquipmentEditor(carried bool) func(e *editor[*gurps.Equipment, *gurps.E
 		addPreconfigurable(e, content)
 		resolvedMaxUses := func() int { return cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedMaxUses() }
 		usesLabel := i18n.Text("Uses Left")
-		wrapper := addFlowWrapper(content, usesLabel, 5)
+		wrapper, _ := addFlowWrapper(content, usesLabel, 5)
 		usesField := addIntegerField(wrapper, nil, "", usesLabel, "", &e.editorData.Uses, 0,
 			gurps.MaxEquipmentMaxUses)
 		maxUsesLabel := i18n.Text("Maximum Uses")

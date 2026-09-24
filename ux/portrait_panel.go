@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/unison/enums/mipmapmode"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 	"golang.org/x/image/draw"
 )
 
@@ -52,7 +53,14 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 	p := &PortraitPanel{entity: entity}
 	p.Self = p
 	p.SetSizer(p.sizer)
-	p.SetBorder(&TitledBorder{Title: i18n.Text("Portrait")})
+	title := i18n.Text("Portrait")
+	p.SetBorder(&TitledBorder{Title: title})
+	// The portrait is drawn by hand, so a screen reader is told outright that it is a picture and what of. How to
+	// change it is shown over the portrait while the mouse is over it, which a screen reader cannot see, so the same
+	// words are given to it as the portrait's description rather than as a tooltip that would repeat them on screen.
+	p.Accessibility.Role = role.Image
+	p.Accessibility.Name = title
+	p.Accessibility.Description = portraitChangeText()
 	p.DrawCallback = p.drawSelf
 	p.CanAcceptDropCallback = p.acceptableDrag
 	p.DragEnteredCallback = p.dragOver
@@ -115,11 +123,10 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	}
 	if p.mouseIsOver {
 		gc.DrawRect(r, unison.Black.SetAlphaIntensity(0.3).Paint(gc, r, paintstyle.Fill))
-		text := unison.NewTextWrappedLines(i18n.Text("Drop an image here or double-click to change the portrait"),
-			&unison.TextDecoration{
-				Font:            fonts.PageFieldPrimary,
-				OnBackgroundInk: unison.White,
-			}, r.Width-unison.StdHSpacing*2)
+		text := unison.NewTextWrappedLines(portraitChangeText(), &unison.TextDecoration{
+			Font:            fonts.PageFieldPrimary,
+			OnBackgroundInk: unison.White,
+		}, r.Width-unison.StdHSpacing*2)
 		var height float32
 		for _, line := range text {
 			height += line.Height()
@@ -132,6 +139,11 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 			pt.Y += size.Height
 		}
 	}
+}
+
+// portraitChangeText returns the words that say how the portrait is changed.
+func portraitChangeText() string {
+	return i18n.Text("Drop an image here or double-click to change the portrait")
 }
 
 // Sync the panel to the current data.
