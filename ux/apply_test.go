@@ -182,6 +182,31 @@ func TestAncestryQuestionOnlyForChosenAncestry(t *testing.T) {
 	}
 }
 
+// TestRandomizationSeesTheArrivingTraits verifies that the profile is randomized against the character as it is once
+// the rows have arrived. The Human ancestry derives height from ST, and a template raising ST by 10 moves the range of
+// heights it can give from 63-73 inches to 83-93, so a height drawn against the ST the character had beforehand is
+// told apart from one drawn against the ST it has now.
+func TestRandomizationSeesTheArrivingTraits(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	strong := gurps.NewTrait(nil, nil, false)
+	strong.Name = "Increased Strength"
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.Amount = fxp.FromInteger(10)
+	strong.Features = gurps.Features{bonus}
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{newAncestryTrait("Human"), strong}
+	template := newTestTemplateDockable("Strong", data)
+
+	c.True(template.applyTemplateToSheet(sheet, true), "the template must be applied")
+
+	entity := sheet.Entity()
+	c.Equal(fxp.FromInteger(20), entity.ResolveAttributeCurrent(gurps.StrengthID), "the template must raise ST to 20")
+	height := fxp.Int(entity.Profile.Height)
+	c.True(height >= fxp.FromInteger(83) && height <= fxp.FromInteger(93),
+		"the height must have been drawn for ST 20, not ST 10, got "+height.String()+" inches")
+}
+
 // TestCanceledModifierPromptLeavesSheetUntouched verifies that canceling the modifier prompt of a copy onto a sheet
 // abandons the copy, leaving the sheet exactly as it was and nothing to undo.
 func TestCanceledModifierPromptLeavesSheetUntouched(t *testing.T) {

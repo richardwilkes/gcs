@@ -346,6 +346,10 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 		changed.add(part.changed())
 	})
 	if randomize {
+		// The randomizers work from the character as it now is -- the ancestry's scripts derive height and weight from
+		// ST, which the rows just placed may have raised -- so the entity is brought up to date with them first rather
+		// than being left for the rebuild below.
+		entity.Recalculate()
 		entity.Profile.ApplyRandomizers(entity)
 		updateRandomizedProfileFieldsWithoutUndo(sheet)
 	}
