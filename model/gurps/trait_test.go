@@ -138,7 +138,7 @@ func TestTraitModifierCostUsesPurchasedLevels(t *testing.T) {
 	e.Recalculate()
 
 	// 3 purchased levels at 10 points each, enhanced by 3 * 10%: 30 + 30*30/100.
-	c.Equal(fxp.FromInteger(39), trait.AdjustedPoints(), "10/level x 3 levels, +30%")
+	c.Equal(fxp.FromInteger(39), trait.AdjustedPoints(nil), "10/level x 3 levels, +30%")
 	c.Equal(fxp.Three, mod.CurrentLevel(), "the modifier's level matches the trait's")
 
 	// A TraitBonus grants 2 free levels. Those raise the trait's current level, but not what was paid for, so neither
@@ -150,7 +150,7 @@ func TestTraitModifierCostUsesPurchasedLevels(t *testing.T) {
 	e.Recalculate()
 
 	c.Equal(fxp.Five, trait.CurrentLevel(), "the bonus raises the trait's current level to 5")
-	c.Equal(fxp.FromInteger(39), trait.AdjustedPoints(),
+	c.Equal(fxp.FromInteger(39), trait.AdjustedPoints(nil),
 		"bonus-granted levels are free, so the enhancement stays at +30%")
 	c.Equal(fxp.Five, mod.CurrentLevel(),
 		"the modifier's level still tracks the trait's current level, for its per-level features and display")
@@ -194,15 +194,15 @@ func TestAlternativeAbilitiesCost(t *testing.T) {
 	}
 
 	// -5 is the most expensive, so it is billed in full and the others at 20%: -5 + -4 + -2.
-	c.Equal(fxp.FromInteger(-11), newAltContainer(-20, -10, -5).AdjustedPoints(),
+	c.Equal(fxp.FromInteger(-11), newAltContainer(-20, -10, -5).AdjustedPoints(nil),
 		"all-negative children still bill the most expensive one at full cost")
 
 	// 20 is the most expensive, so it is billed in full and the other at 20%: 20 + 2.
-	c.Equal(fxp.FromInteger(22), newAltContainer(20, 10).AdjustedPoints(),
+	c.Equal(fxp.FromInteger(22), newAltContainer(20, 10).AdjustedPoints(nil),
 		"positive children bill the most expensive one at full cost")
 
 	// A mix behaves the same way: 10 + -4 + 0.
-	c.Equal(fxp.FromInteger(6), newAltContainer(10, -20, 0).AdjustedPoints(),
+	c.Equal(fxp.FromInteger(6), newAltContainer(10, -20, 0).AdjustedPoints(nil),
 		"mixed children bill the most expensive one at full cost")
 }
 
@@ -224,15 +224,15 @@ func TestAlternativeAbilitiesMultipleSlots(t *testing.T) {
 	}
 
 	// A stored value of 0 means "unset" and behaves like a single slot: 20 + 2.
-	c.Equal(fxp.FromInteger(22), newAltContainer(0, 20, 10).AdjustedPoints(),
+	c.Equal(fxp.FromInteger(22), newAltContainer(0, 20, 10).AdjustedPoints(nil),
 		"an unset slot count resolves to a single slot")
 
 	// With 2 slots, the two most expensive children (20 and 10) are billed in full and the rest at 20%: 20 + 10 + 1.
-	c.Equal(fxp.FromInteger(31), newAltContainer(2, 20, 10, 5).AdjustedPoints(),
+	c.Equal(fxp.FromInteger(31), newAltContainer(2, 20, 10, 5).AdjustedPoints(nil),
 		"two slots bill the two most expensive children at full cost")
 
 	// A slot count larger than the number of children bills every child in full: 20 + 10 + 5.
-	c.Equal(fxp.FromInteger(35), newAltContainer(5, 20, 10, 5).AdjustedPoints(),
+	c.Equal(fxp.FromInteger(35), newAltContainer(5, 20, 10, 5).AdjustedPoints(nil),
 		"a slot count exceeding the child count bills every child at full cost")
 }
 
@@ -264,9 +264,9 @@ func TestInheritedModifiersAreNotRepointed(t *testing.T) {
 	second := newChild("Second", 5)
 	parent.SetDataOwner(nil)
 
-	c.Equal(fxp.FromInteger(16), first.AdjustedPoints(), "10 + 2*3")
-	c.Equal(fxp.FromInteger(20), second.AdjustedPoints(), "10 + 2*5")
-	c.Equal(fxp.FromInteger(16), first.AdjustedPoints(), "the first child's cost is unaffected by the second's")
+	c.Equal(fxp.FromInteger(16), first.AdjustedPoints(nil), "10 + 2*3")
+	c.Equal(fxp.FromInteger(20), second.AdjustedPoints(nil), "10 + 2*5")
+	c.Equal(fxp.FromInteger(16), first.AdjustedPoints(nil), "the first child's cost is unaffected by the second's")
 
 	c.Equal(parent, mod.OwningTrait(), "the inherited modifier still belongs to the container")
 	c.Equal("Fire Attack", mod.NameWithReplacements(),
@@ -359,10 +359,10 @@ func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
 	c.Equal("Ice Only", clone.Modifiers[0].NameWithReplacements(),
 		"the copy resolves names against the clone's replacements")
 	c.Equal(fxp.Five, clone.Modifiers[0].CurrentLevel(), "the copy takes its level from the clone")
-	c.Equal(fxp.FromInteger(20), clone.AdjustedPoints(), "10 + 2*5")
+	c.Equal(fxp.FromInteger(20), clone.AdjustedPoints(nil), "10 + 2*5")
 	c.Equal("Fire Only", mod.NameWithReplacements(), "the original's modifier is unaffected")
 	c.Equal(fxp.Three, mod.CurrentLevel(), "the original's modifier still reports the original's level")
-	c.Equal(fxp.FromInteger(16), source.AdjustedPoints(), "10 + 2*3")
+	c.Equal(fxp.FromInteger(16), source.AdjustedPoints(nil), "10 + 2*3")
 
 	// Children are cloned the same way, so their modifiers must follow the same rule.
 	parent := NewTrait(nil, nil, true)

@@ -360,6 +360,7 @@ func SpellsHeaderData(columnID int) HeaderData {
 	case SpellPointsColumn:
 		data.Title = i18n.Text("Pts")
 		data.Detail = i18n.Text("Points")
+		data.Less = PointsLessFromString
 	case SpellLibSrcColumn:
 		data = libSrcHeaderData()
 	case SpellSwitchColumn:
@@ -453,13 +454,12 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			}
 		}
 	case SpellPointsColumn:
-		data.Type = cell.Text
 		var tooltip xbytes.InsertBuffer
-		data.Primary = s.AdjustedPoints(&tooltip).String()
-		data.Alignment = align.End
+		r := s.PointsRange(&tooltip)
 		if tooltip.Len() != 0 {
 			data.Tooltip = IncludesModifiersFrom() + ":" + tooltip.String()
 		}
+		fillPointsCell(data, r)
 	case SpellDescriptionForPageColumn:
 		s.CellData(SpellDescriptionColumn, data)
 		if !s.Container() {
@@ -904,17 +904,50 @@ func (s *Spell) SetRawPoints(points fxp.Int) bool {
 	return s.UpdateLevel()
 }
 
-// AdjustedPoints returns the points, adjusted for any bonuses.
+// AdjustedPoints returns the points, adjusted for any bonuses. Something presenting a choice every outcome of which
+// costs the same reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
+		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
+		if !s.TemplatePicker.IsZero() {
+			// See pickerContainerPoints for what a container presenting a choice is worth.
+			return pickerContainerPoints(s.TemplatePicker, s.Children)
+		}
 		var total fxp.Int
 		for _, one := range s.Children {
-			total += one.AdjustedPoints(tooltip)
+			total += one.AdjustedPoints(nil)
 		}
 		return total
 	}
 	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points, s.NameWithReplacements(),
 		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, tooltip)
+}
+
+// PointsRange returns the span of point costs this spell may end up being worth, once every choice it or anything
+// inside it presents has been made. With no choice left to make, the range is settled and holds the same value
+// AdjustedPoints returns. The tooltip may be nil, and only a non-container ever fills it: the notes name each bonus
+// source without saying which row it landed on, so rolling a container's children up into one list would give an
+// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it.
+func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
+	if !s.Container() {
+		return PointsRangeOf(s.AdjustedPoints(tooltip))
+	}
+	if value, settled := settledPickerCost(s.TemplatePicker); settled {
+		return PointsRangeOf(value)
+	}
+	// A picker with nothing to pick from, and a container carrying no picker at all, both come back as the total of
+	// the children, which is what everything inside a container being taken costs.
+	return pointsRangeForPicker(s.TemplatePicker, childPointsRanges(s.Children))
+}
+
+// RawPointsRange returns the same span as PointsRange, but with every spell in it counted by its raw points rather than
+// its adjusted ones. This is what a template picker counts, since it measures what is being bought rather than what
+// the sheet's bonuses make of it.
+func (s *Spell) RawPointsRange() PointsRange {
+	if !s.Container() {
+		return PointsRangeOf(s.RawPoints())
+	}
+	return containerRawPointsRange(s.TemplatePicker, s.Children)
 }
 
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.

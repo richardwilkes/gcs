@@ -250,7 +250,7 @@ func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 		// The "calc" object is always written, even when empty.
 		unsatisfiedReason, contradiction := t.prereqStatus()
 		c := &calc{
-			Points:              t.AdjustedPoints(),
+			Points:              t.AdjustedPoints(nil),
 			UnsatisfiedReason:   unsatisfiedReason,
 			PrereqContradiction: contradiction,
 			ResolvedNotes:       resolvedNotesFor(t.ResolveLocalNotes(), t.LocalNotes),
@@ -400,7 +400,7 @@ func TraitsHeaderData(columnID int) HeaderData {
 	case TraitPointsColumn:
 		data.Title = i18n.Text("Pts")
 		data.Detail = i18n.Text("Points")
-		data.Less = fxp.IntLessFromString
+		data.Less = PointsLessFromString
 	case TraitTagsColumn:
 		data = tagsHeaderData()
 	case TraitReferenceColumn:
@@ -465,9 +465,12 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 			}
 		}
 	case TraitPointsColumn:
-		data.Type = cell.Text
-		data.Primary = t.AdjustedPoints().String()
-		data.Alignment = align.End
+		var tooltip xbytes.InsertBuffer
+		r := t.PointsRange(&tooltip)
+		if tooltip.Len() != 0 {
+			data.Tooltip = IncludesModifiersFrom() + ":" + tooltip.String()
+		}
+		fillPointsCell(data, r)
 	case TraitTagsColumn:
 		fillTagsCell(data, t.Tags)
 	case TraitReferenceColumn, PageRefCellAlias:
@@ -585,8 +588,11 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 	return adj.apply(base)
 }
 
-// AdjustedPoints returns the total points, taking levels and modifiers into account.
-func (t *Trait) AdjustedPoints() fxp.Int {
+// AdjustedPoints returns the total points, taking levels and modifiers into account. Something presenting a choice
+// every outcome of which costs the same reports that cost; see PointsRange for one whose outcomes differ. The tooltip
+// is accepted so that every node's cost can be asked for the same way, but nothing here ever fills it: no feature
+// adds points to a trait the way one can to a skill or a spell, so there are no sources to name.
+func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 	if t.EffectivelyDisabled() {
 		return 0
 	}
@@ -594,24 +600,95 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
 			t.SelfControl, t.Frequency, t.AllModifiers(), t.RoundCostDown)
 	}
-	var points fxp.Int
+	if !t.TemplatePicker.IsZero() {
+		// See pickerContainerPoints for what a container presenting a choice is worth.
+		return pickerContainerPoints(t.TemplatePicker, t.Children)
+	}
 	if t.ContainerType == container.AlternativeAbilities {
 		values := make([]fxp.Int, len(t.Children))
 		for i, one := range t.Children {
-			values[i] = one.AdjustedPoints()
+			values[i] = one.AdjustedPoints(nil)
 		}
-		slices.SortFunc(values, func(a, b fxp.Int) int { return cmp.Compare(b, a) })
-		slots := min(t.ResolvedAlternativeSlots(), len(values))
-		for i, v := range values {
-			if i < slots {
-				points += v
-			} else {
-				points += fxp.ApplyRounding(v.Mul(fxp.Twenty).Div(fxp.Hundred), t.RoundCostDown)
-			}
+		return alternativeAbilitiesPoints(values, t.ResolvedAlternativeSlots(), t.RoundCostDown)
+	}
+	var points fxp.Int
+	for _, one := range t.Children {
+		points += one.AdjustedPoints(nil)
+	}
+	return points
+}
+
+// PointsRange returns the span of point costs this trait may end up being worth, once every choice it or anything
+// inside it presents has been made. With no choice left to make, the range is settled and holds the same value
+// AdjustedPoints returns. The tooltip may be nil, and is handed only to a non-container: the notes name each bonus
+// source without saying which row it landed on, so rolling a container's children up into one list would give an
+// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it. A trait leaves the
+// tooltip alone even then -- see AdjustedPoints -- but is asked for its cost the same way a skill or a spell is.
+func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
+	if !t.Container() {
+		// The disabled case is covered too: AdjustedPoints reports nothing for a trait that is switched off.
+		return PointsRangeOf(t.AdjustedPoints(tooltip))
+	}
+	if t.EffectivelyDisabled() {
+		return PointsRangeOf(0)
+	}
+	if value, settled := settledPickerCost(t.TemplatePicker); settled {
+		return PointsRangeOf(value)
+	}
+	ranges := childPointsRanges(t.Children)
+	if t.TemplatePicker.IsZero() && t.ContainerType == container.AlternativeAbilities {
+		return t.alternativeAbilitiesPointsRange(ranges)
+	}
+	// A picker with nothing to pick from, and a container carrying no picker at all, both come back as the total of
+	// the children, which is what everything inside a container being taken costs.
+	return pointsRangeForPicker(t.TemplatePicker, ranges)
+}
+
+// alternativeAbilitiesPointsRange returns the span of costs a set of alternative abilities may be worth, given the
+// ranges of the abilities themselves. Each end is worked out from the matching end of the children's. That is a bound
+// rather than an exact answer when a child is itself unsettled, since the cheapest child need not be the cheapest one
+// to treat as the primary ability, but alternative abilities never hold template choices in practice.
+func (t *Trait) alternativeAbilitiesPointsRange(ranges []PointsRange) PointsRange {
+	var result PointsRange
+	mins := make([]fxp.Int, 0, len(ranges))
+	maxes := make([]fxp.Int, 0, len(ranges))
+	noLowerLimit := false
+	noUpperLimit := false
+	for _, one := range ranges {
+		if one.Min == nil {
+			noLowerLimit = true
+		} else {
+			mins = append(mins, *one.Min)
 		}
-	} else {
-		for _, one := range t.Children {
-			points += one.AdjustedPoints()
+		if one.Max == nil {
+			noUpperLimit = true
+		} else {
+			maxes = append(maxes, *one.Max)
+		}
+	}
+	slots := t.ResolvedAlternativeSlots()
+	if !noLowerLimit {
+		minimum := alternativeAbilitiesPoints(mins, slots, t.RoundCostDown)
+		result.Min = &minimum
+	}
+	if !noUpperLimit {
+		maximum := alternativeAbilitiesPoints(maxes, slots, t.RoundCostDown)
+		result.Max = &maximum
+	}
+	return result
+}
+
+// alternativeAbilitiesPoints returns what a set of alternative abilities costs: the slots most expensive of them at
+// full price and the rest at a fifth of theirs. values is sorted in place.
+func alternativeAbilitiesPoints(values []fxp.Int, slots int, roundCostDown bool) fxp.Int {
+	slices.SortFunc(values, func(a, b fxp.Int) int { return cmp.Compare(b, a) })
+	slots = min(slots, len(values))
+	var points fxp.Int
+	for i, v := range values {
+		if i < slots {
+			points += v
+		} else {
+			points += fxp.ApplyRounding(v.Mul(fxp.Twenty).Div(fxp.Hundred), roundCostDown)
 		}
 	}
 	return points

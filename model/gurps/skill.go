@@ -363,6 +363,7 @@ func SkillsHeaderData(columnID int) HeaderData {
 	case SkillPointsColumn:
 		data.Title = i18n.Text("Pts")
 		data.Detail = i18n.Text("Points")
+		data.Less = PointsLessFromString
 	case SkillLibSrcColumn:
 		data = libSrcHeaderData()
 	case SkillSwitchColumn:
@@ -412,13 +413,12 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 			}
 		}
 	case SkillPointsColumn:
-		data.Type = cell.Text
 		var tooltip xbytes.InsertBuffer
-		data.Primary = s.AdjustedPoints(&tooltip).String()
-		data.Alignment = align.End
+		r := s.PointsRange(&tooltip)
 		if tooltip.Len() != 0 {
 			data.Tooltip = IncludesModifiersFrom() + ":" + tooltip.String()
 		}
+		fillPointsCell(data, r)
 	case SkillLibSrcColumn:
 		fillLibSrcCell(data, s.owner, s)
 	case SkillSwitchColumn:
@@ -646,12 +646,18 @@ func (s *Skill) SetRawPoints(points fxp.Int) bool {
 	return s.UpdateLevel()
 }
 
-// AdjustedPoints returns the points, adjusted for any bonuses.
+// AdjustedPoints returns the points, adjusted for any bonuses. Something presenting a choice every outcome of which
+// costs the same reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
+		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
+		if !s.TemplatePicker.IsZero() {
+			// See pickerContainerPoints for what a container presenting a choice is worth.
+			return pickerContainerPoints(s.TemplatePicker, s.Children)
+		}
 		var total fxp.Int
 		for _, one := range s.Children {
-			total += one.AdjustedPoints(tooltip)
+			total += one.AdjustedPoints(nil)
 		}
 		return total
 	}
@@ -670,6 +676,33 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 	}
 
 	return diff
+}
+
+// PointsRange returns the span of point costs this skill may end up being worth, once every choice it or anything
+// inside it presents has been made. With no choice left to make, the range is settled and holds the same value
+// AdjustedPoints returns. The tooltip may be nil, and only a non-container ever fills it: the notes name each bonus
+// source without saying which row it landed on, so rolling a container's children up into one list would give an
+// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it.
+func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
+	if !s.Container() {
+		return PointsRangeOf(s.AdjustedPoints(tooltip))
+	}
+	if value, settled := settledPickerCost(s.TemplatePicker); settled {
+		return PointsRangeOf(value)
+	}
+	// A picker with nothing to pick from, and a container carrying no picker at all, both come back as the total of
+	// the children, which is what everything inside a container being taken costs.
+	return pointsRangeForPicker(s.TemplatePicker, childPointsRanges(s.Children))
+}
+
+// RawPointsRange returns the same span as PointsRange, but with every skill in it counted by its raw points rather than
+// its adjusted ones. This is what a template picker counts, since it measures what is being bought rather than what
+// the sheet's bonuses make of it.
+func (s *Skill) RawPointsRange() PointsRange {
+	if !s.Container() {
+		return PointsRangeOf(s.RawPoints())
+	}
+	return containerRawPointsRange(s.TemplatePicker, s.Children)
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.

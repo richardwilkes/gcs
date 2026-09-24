@@ -297,7 +297,7 @@ func TestOrganizeTraitsDisabledTrait(t *testing.T) {
 	e := NewEntity()
 	disabled := newOrganizableTrait(e, "Sleepy", -10)
 	disabled.Disabled = true
-	c.Equal(fxp.Int(0), disabled.AdjustedPoints(), "a disabled trait reports no cost")
+	c.Equal(fxp.Int(0), disabled.AdjustedPoints(nil), "a disabled trait reports no cost")
 	organized, changed := OrganizeTraits(e, []*Trait{disabled})
 	c.True(changed, "filing the trait changes the list")
 	c.Equal([]string{"Disadvantages"}, organizedNames(organized), "a disabled disadvantage is still a disadvantage")
@@ -356,7 +356,7 @@ func TestOrganizeTraitsClassifiesBeforeMoving(t *testing.T) {
 	c.True(changed, "filing the loose trait changes the list")
 	c.Equal([]string{"Advantages"}, organizedNames(organized), "the trait was filed as an advantage")
 	c.Equal([]string{"Four Points"}, organizedNames(organized[0].Children), "the 4-point trait went to the advantages")
-	c.Equal(fxp.One, loose.AdjustedPoints(),
+	c.Equal(fxp.One, loose.AdjustedPoints(nil),
 		"the container's limitation really does drop the trait to a perk's worth of points once it is inside")
 }
 

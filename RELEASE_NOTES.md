@@ -43,6 +43,12 @@
   entries or mixed in with them by name. The group may use the same @Name@ substitutions as the situation text. In
   exports, each entry now also carries its group: as the Group field in Go templates, and as @GROUP in the legacy
   text templates.
+- The points column now shows a range rather than a single number for an item whose cost is not settled yet. This is
+  most common on a template, where a choice container offers options of differing cost. Until the choice is made the
+  exact cost is unknown, so a range such as "20~45" is shown. "10+" or "≤-30" is shown where only one end of it is
+  known. A library item that requires a selection before its cost is known shows a range the same way, and a container
+  holds the range of what is inside it. Ranges sort by their lower end, and the template picker dialog's running total
+  shows a range while a picked choice still presents choices of its own.
 - GCS now works with screen readers: VoiceOver on macOS, Narrator, NVDA and JAWS on Windows, and Orca on Linux.
 
 ## Bug Fixes
@@ -50,3 +56,6 @@
 - The script functions dice.add and dice.subtract now accept a bare modifier, such as "+3" or "-2", on either side, so
   that dice.add("1d-2", "+3") gives "1d+1" instead of failing with "dice sides must match". Only two specifications
   that both have dice of different sizes are still refused.
+- With the "Group containers when sorting" general setting turned on, sorting a list by one of its numeric columns no
+  longer treats every container as worth the same. The marker that groups the containers ahead of the other rows was
+  left in the text the column sorts by, so a comparison that reads a number out of that text found no number at all.

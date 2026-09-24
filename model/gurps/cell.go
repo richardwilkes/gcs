@@ -101,6 +101,23 @@ func fillTagsCell(data *CellData, tags []string) {
 	data.Primary = CombineTags(tags)
 }
 
+// fillPointsCell fills in the cell data for a points column. A range that is still open is explained in the tooltip,
+// since a cell showing two numbers where every other row shows one is otherwise a puzzle. Any tooltip the caller has
+// already gathered -- the bonuses folded into a skill's or spell's cost, say -- is kept alongside it.
+func fillPointsCell(data *CellData, r PointsRange) {
+	data.Type = cell.Text
+	data.Primary = r.String()
+	data.Alignment = align.End
+	if r.IsSettled() {
+		return
+	}
+	if data.Tooltip == "" {
+		data.Tooltip = PointsRangeTooltip()
+	} else {
+		data.Tooltip = PointsRangeTooltip() + "\n---\n" + data.Tooltip
+	}
+}
+
 // fillPageRefCell fills in the cell data for a page reference column: the reference itself, plus the text to look for
 // on the page -- highlight when the node has one, otherwise what fallback produces (normally the node's name). fallback
 // is only called when it is needed, since resolving a node's text can be costly and this runs for every row on each
