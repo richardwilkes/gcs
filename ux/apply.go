@@ -283,27 +283,12 @@ func (p *applyPart[T]) changed() (unison.Paneler, Rebuildable) {
 // applyTransfer applies the parts to the destination -- a sheet having a template applied to it, or the table rows are
 // being copied or dropped into -- going through the steps opts selects. It works in two phases. First, every question
 // is put to the user against the incoming rows alone, before they have been added to anything: the template choices,
-// the ancestry question, the modifiers, the nameables and the randomization. Canceling any of them discards the rows,
+// the modifiers, the nameables, the ancestry question and the randomization. Canceling any of them discards the rows,
 // leaving the destination exactly as it was, and returns false. Only once every answer is in is the destination
 // changed, all at once, and the change is recorded as a single undo edit with the given name.
 func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOptions, editName string) bool {
 	if opts.resolvePickers && !promptForPickers(parts) {
 		return false
-	}
-	// The ancestries arriving are only known once the template choices have been settled, since an ancestry may be one
-	// of the options of a choice and not be chosen.
-	sheet, isSheet := unison.AncestorOrSelf[unison.Dockable](destination).(*Sheet)
-	var entity *gurps.Entity
-	var incomingAncestries []*gurps.Ancestry
-	if isSheet {
-		entity = sheet.Entity()
-		incomingAncestries = gurps.ActiveAncestries(parts.traits.rows)
-	}
-	disableExistingAncestries := false
-	if opts.askAncestry && len(incomingAncestries) != 0 {
-		if existing := gurps.ActiveAncestries(entity.Traits); len(existing) != 0 {
-			disableExistingAncestries = askToDisableExistingAncestry(incomingAncestries[0].Name, existing[0].Name)
-		}
 	}
 	stripPickers := opts.stripPickers && parts.hasPickerData()
 	if stripPickers && !confirmTemplatePickerDataRemoval() {
@@ -313,6 +298,24 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 		!(parts.all(func(part applyPartOps) bool { return part.promptForModifiers() }) &&
 			parts.all(func(part applyPartOps) bool { return part.promptForNameables() })) {
 		return false
+	}
+	// The ancestries arriving are only known once the template choices have been settled, since an ancestry may be one
+	// of the options of a choice and not be chosen. They are named by their containers rather than by the ancestries
+	// the containers link to, since many containers may link to the same ancestry, each with details of its own, and
+	// the names are only final once the nameables have been settled.
+	sheet, isSheet := unison.AncestorOrSelf[unison.Dockable](destination).(*Sheet)
+	var entity *gurps.Entity
+	var incomingAncestries []*gurps.Trait
+	if isSheet {
+		entity = sheet.Entity()
+		incomingAncestries = gurps.ActiveAncestryTraits(parts.traits.rows)
+	}
+	disableExistingAncestries := false
+	if opts.askAncestry && len(incomingAncestries) != 0 {
+		if existing := gurps.ActiveAncestryTraits(entity.Traits); len(existing) != 0 {
+			disableExistingAncestries = askToDisableExistingAncestry(incomingAncestries[0].NameWithReplacements(),
+				existing[0].NameWithReplacements())
+		}
 	}
 	randomize := opts.randomize && len(incomingAncestries) != 0 && gurps.GlobalSettings().General.AutoFillProfile &&
 		(opts.suppressRandomizePrompt || askToRandomizeAgain())

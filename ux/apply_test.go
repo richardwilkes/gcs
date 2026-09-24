@@ -182,6 +182,43 @@ func TestAncestryQuestionOnlyForChosenAncestry(t *testing.T) {
 	}
 }
 
+// TestAncestryQuestionNamesTheContainers verifies that the question of disabling the character's existing ancestry
+// names the ancestry containers, not the ancestry they link to, since many containers may link to the same one, and
+// that the name of the arriving container is the one its nameables settled on.
+func TestAncestryQuestionNamesTheContainers(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	existing := newAncestryTrait("Human")
+	existing.Name = "Northern Human"
+	existing.SetDataOwner(entity)
+	entity.Traits = append(entity.Traits, existing)
+	sheet.Rebuild(true)
+	arriving := newAncestryTrait("Human")
+	arriving.Name = "Desert Human (@Tribe@)"
+	template := newTestTemplateWithTraits(arriving)
+	swapForTest(t, &promptForNameables, func(_ []string, nameables []map[string]string, _ [][]string) bool {
+		for _, m := range nameables {
+			for k := range m {
+				m[k] = "Sand"
+			}
+		}
+		return true
+	})
+	var incomingName, existingName string
+	swapForTest(t, &askToDisableExistingAncestry, func(incoming, existing string) bool {
+		incomingName = incoming
+		existingName = existing
+		return false
+	})
+	swapForTest(t, &askToRandomizeAgain, func() bool { return false })
+
+	copySelectionTo(template.Traits.Table, []*Sheet{sheet})
+
+	c.Equal("Desert Human (Sand)", incomingName, "the arriving container must be named, with its nameables settled")
+	c.Equal("Northern Human", existingName, "the existing container must be named")
+}
+
 // TestRandomizationSeesTheArrivingTraits verifies that the profile is randomized against the character as it is once
 // the rows have arrived. The Human ancestry derives height from ST, and a template raising ST by 10 moves the range of
 // heights it can give from 63-73 inches to 83-93, so a height drawn against the ST the character had beforehand is
