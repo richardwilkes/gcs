@@ -204,11 +204,12 @@ func ApplyTemplate(filePath string) {
 	}
 }
 
-func (t *Template) applyTemplate(suppressRandomizePromptAsBool any) {
-	//nolint:errcheck // The default of false on failure is acceptable
-	suppressRandomizePrompt, _ := suppressRandomizePromptAsBool.(bool)
+// applyTemplate applies the template to the sheets the user picks. The parameter is only there to fit the command
+// handler signature; command dispatch passes the action's source, never anything that asks for the randomize prompt to
+// be suppressed, so it is always offered here.
+func (t *Template) applyTemplate(_ any) {
 	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
-		t.applyTemplateToSheet(sheet, suppressRandomizePrompt)
+		t.applyTemplateToSheet(sheet, false)
 	}
 }
 
