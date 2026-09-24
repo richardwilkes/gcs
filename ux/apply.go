@@ -69,15 +69,22 @@ type applyOptions struct {
 
 // applyOptionsFor returns the steps that rows moving from the source's document into the destination's go through.
 // Rows arriving on a sheet from anywhere but another sheet are fully applied; from another sheet they are a plain copy,
-// save for settling any template choices a sheet can't hold and the ancestry question. Rows arriving on a template are
-// kept as authored, save that those from a library have their modifiers and nameables prompted for. Rows arriving in a
-// library are kept as they are, save for the template choices, which only a template can hold.
+// save for settling any template choices a sheet can't hold, the ancestry question and the offer to randomize. Rows
+// arriving on a template are kept as authored, save that those from a library have their modifiers and nameables
+// prompted for. Rows arriving in a library are kept as they are, save for the template choices, which only a template
+// can hold.
 func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 	from := transferKindOf(source)
 	switch transferKindOf(destination) {
 	case transferSheet:
 		if from == transferSheet {
-			return applyOptions{resolvePickers: true, askAncestry: true, clearPreconfigured: true, merge: true}
+			return applyOptions{
+				resolvePickers:     true,
+				askAncestry:        true,
+				randomize:          true,
+				clearPreconfigured: true,
+				merge:              true,
+			}
 		}
 		return applyOptions{
 			resolvePickers:     true,

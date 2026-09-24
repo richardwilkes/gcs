@@ -361,9 +361,9 @@ func TestApplyOptionsFor(t *testing.T) {
 	c.Equal(full, applyOptionsFor(library, sheet.Traits.Table), "a library to a sheet")
 	c.Equal(full, applyOptionsFor(template.Traits.Table, sheet.Traits.Table), "a template to a sheet")
 	c.Equal(full, applyOptionsFor(library, loot.Equipment.Table), "a library to a loot sheet")
-	c.Equal(applyOptions{resolvePickers: true, askAncestry: true, clearPreconfigured: true, merge: true},
+	c.Equal(applyOptions{resolvePickers: true, askAncestry: true, randomize: true, clearPreconfigured: true, merge: true},
 		applyOptionsFor(loot.Equipment.Table, sheet.CarriedEquipment.Table),
-		"a sheet to a sheet is a plain copy, save for what a sheet can't hold and the ancestry question")
+		"a sheet to a sheet is a plain copy, save for what a sheet can't hold and the ancestry questions")
 	c.Equal(applyOptions{promptForChoices: true, merge: true}, applyOptionsFor(library, template.Traits.Table),
 		"a library to a template prompts for modifiers and nameables only")
 	c.Equal(applyOptions{merge: true}, applyOptionsFor(template.Traits.Table, template.Traits.Table),

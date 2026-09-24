@@ -57,7 +57,8 @@
   Dragged items land where they were dropped, including inside a container, rather than always at the end of the list.
 - Copying or dragging items from one character sheet to another, or from one template to another, now copies them as
   they are, without asking about their modifiers or @Name@ substitutions again. Copying items from a character sheet
-  onto another still asks whether to disable the existing ancestry when an ancestry is among them.
+  onto another still asks whether to disable the existing ancestry when an ancestry is among them, and offers to
+  randomize the profile again.
 
 ## Bug Fixes
 

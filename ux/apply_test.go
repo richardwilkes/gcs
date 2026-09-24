@@ -219,6 +219,28 @@ func TestAncestryQuestionNamesTheContainers(t *testing.T) {
 	c.Equal("Northern Human", existingName, "the existing container must be named")
 }
 
+// TestCopyOfAncestryBetweenSheetsOffersRandomization verifies that an ancestry copied from one sheet to another brings
+// the offer to randomize the profile again, just as one arriving from a template or library does.
+func TestCopyOfAncestryBetweenSheetsOffersRandomization(t *testing.T) {
+	c := check.New(t)
+	source := newTestSheetForTemplate(t)
+	ancestry := newAncestryTrait("Human")
+	ancestry.SetDataOwner(source.Entity())
+	source.Entity().Traits = []*gurps.Trait{ancestry}
+	source.Rebuild(true)
+	source.Traits.Table.SelectAll()
+	destination := newTestSheetForTemplate(t)
+	offered := 0
+	swapForTest(t, &askToRandomizeAgain, func() bool {
+		offered++
+		return false
+	})
+
+	copySelectionTo(source.Traits.Table, []*Sheet{destination})
+
+	c.Equal(1, offered, "copying an ancestry between sheets must offer to randomize the profile again")
+}
+
 // TestRandomizationSeesTheArrivingTraits verifies that the profile is randomized against the character as it is once
 // the rows have arrived. The Human ancestry derives height from ST, and a template raising ST by 10 moves the range of
 // heights it can give from 63-73 inches to 83-93, so a height drawn against the ST the character had beforehand is
