@@ -543,7 +543,7 @@ func SignForPointsRanges(ranges ...PointsRange) PointsRangeSign {
 
 // How a range is punctuated. These are symbols rather than prose, so they are not run through i18n: a translated
 // "%s%s" would be a catalog key with no content to translate, and reordering its two ends would silently break
-// PointsLessFromString, which reads the lower end back out of the rendered text.
+// PointsLessFromString, which reads the ends back out of the rendered text.
 const (
 	// rangeSeparator parts the two ends of a range. Either end can be negative, and a dash between two of them --
 	// "-30--20" -- is unreadable, while a dash between two positive costs is easily taken for a single negative one.
@@ -560,28 +560,66 @@ const (
 )
 
 // PointsLessFromString orders the text of two point costs, which is all a table column has to sort by. A range sorts
-// by its lower end, ties falling to the text itself, so that "10" comes ahead of "10~15" and both come ahead of "20".
-// A plain numeric comparison cannot be used: it reads the whole string, so every range would come back as zero and
-// sort as equal.
+// by its lower end, then by its upper end, ties falling to the text itself, so that "10" comes ahead of "10~15", which
+// comes ahead of "10+", and all of them come ahead of "20". An end with no limit sorts beyond every finite one. A plain
+// numeric comparison cannot be used: it reads the whole string, so every range would come back as zero and sort as
+// equal.
 func PointsLessFromString(a, b string) bool {
-	aValue, aUnlimited := pointsSortValue(a)
-	bValue, bUnlimited := pointsSortValue(b)
-	if aUnlimited != bUnlimited {
-		return aUnlimited
+	aKey := pointsSortKeyOf(a)
+	bKey := pointsSortKeyOf(b)
+	if result := compareSortEnds(aKey.lower, bKey.lower, -1); result != 0 {
+		return result < 0
 	}
-	if !aUnlimited && aValue != bValue {
-		return aValue < bValue
+	if result := compareSortEnds(aKey.upper, bKey.upper, 1); result != 0 {
+		return result < 0
 	}
 	return xstrings.NaturalLess(a, b, true)
 }
 
-// pointsSortValue returns the lower end of a rendered point cost, along with whether that end has no limit, in which
-// case nothing finite sorts ahead of it.
-func pointsSortValue(text string) (value fxp.Int, unlimited bool) {
+// pointsSortKey is the two ends of a rendered point cost, each nil where that end has no limit.
+type pointsSortKey struct {
+	lower *fxp.Int
+	upper *fxp.Int
+}
+
+// pointsSortKeyOf reads the ends back out of a rendered point cost.
+func pointsSortKeyOf(text string) pointsSortKey {
 	text = strings.TrimSpace(text)
-	if strings.HasPrefix(text, unboundedMinPrefix) || text == noLimitsAtAll {
-		return 0, true
+	switch {
+	case text == noLimitsAtAll:
+		return pointsSortKey{}
+	case strings.HasPrefix(text, unboundedMinPrefix):
+		return pointsSortKey{upper: extractSortEnd(strings.TrimPrefix(text, unboundedMinPrefix))}
+	case strings.HasSuffix(text, unboundedMaxSuffix):
+		return pointsSortKey{lower: extractSortEnd(strings.TrimSuffix(text, unboundedMaxSuffix))}
 	}
-	value, _ = fxp.Extract(text) // Extract reads the commas a rendered cost may carry
-	return value, false
+	lower, upper, found := strings.Cut(text, rangeSeparator)
+	key := pointsSortKey{lower: extractSortEnd(lower)}
+	if found {
+		key.upper = extractSortEnd(upper)
+	} else {
+		key.upper = key.lower
+	}
+	return key
+}
+
+// extractSortEnd reads one end of a rendered point cost.
+func extractSortEnd(text string) *fxp.Int {
+	value, _ := fxp.Extract(text) // Extract reads the commas a rendered cost may carry
+	return &value
+}
+
+// compareSortEnds compares the same end of two rendered point costs. An end with no limit sorts to the side given by
+// unlimited: -1 ahead of every finite end, 1 after them.
+func compareSortEnds(a, b *fxp.Int, unlimited int) int {
+	switch {
+	case a == nil && b == nil:
+		return 0
+	case a == nil:
+		return unlimited
+	case b == nil:
+		return -unlimited
+	default:
+		return cmp.Compare(*a, *b)
+	}
 }

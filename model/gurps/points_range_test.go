@@ -1235,6 +1235,15 @@ func TestPointsLessFromString(t *testing.T) {
 	c.True(PointsLessFromString("10", "10+"), "an unbounded upper end sorts after the same cost on its own")
 	c.True(PointsLessFromString("0", "0+"), "the same holds where that cost is nothing")
 	c.True(PointsLessFromString("≤0", "-100"), "a range open below nothing still sorts ahead of everything")
+
+	c.True(PointsLessFromString("≤-100", "≤-5"), "ranges with no lower limit sort by their upper ends")
+	c.False(PointsLessFromString("≤-5", "≤-100"), "ranges with no lower limit sort by their upper ends, from either side")
+	c.True(PointsLessFromString("≤-5", "≤0"), "an upper end below nothing sorts ahead of one at nothing")
+	c.True(PointsLessFromString("≤15", "—"), "a range with no limits at all sorts after one with an upper limit")
+	c.True(PointsLessFromString("—", "-100"), "a range with no limits at all still sorts ahead of every lower limit")
+	c.True(PointsLessFromString("10~15", "10+"), "a range with no upper limit sorts after one starting at the same cost")
+	c.True(PointsLessFromString("10~15", "10~20"), "ranges starting at the same cost sort by their upper ends")
+	c.True(PointsLessFromString("1,000~1,500", "1,000~2,000"), "separators don't alter the order of upper ends")
 }
 
 // TestRawPointsRangeLeavesOutBonuses verifies that the range a template picker counts a skill container by is built
