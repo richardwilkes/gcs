@@ -110,6 +110,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"DFM3:":   "Dungeon Fantasy Monsters 3: Born of Myth & Magic",
 	"DFM4:":   "Dungeon Fantasy Monsters 4: Dragons",
 	"DFM5:":   "Dungeon Fantasy Monsters 5: Demons",
+	"DFM6:":   "Dungeon Fantasy Monsters 6: Tiny Terrors",
 	"DFMI1:":  "Dungeon Fantasy RPG: Magic Items 1",
 	"DFMI2:":  "Dungeon Fantasy RPG: Magic Items 2",
 	"DFRC1:":  "Dungeon Fantasy RPG: Companion 1",
