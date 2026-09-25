@@ -179,10 +179,14 @@ func (t *Template) newSheetFromTemplate(_ any) {
 	e := gurps.NewEntity()
 	sheet := NewSheet(e.Profile.Name+gurps.SheetExt, e)
 	DisplayNewDockable(sheet)
-	if t.applyTemplateToSheet(sheet, true) {
-		sheet.undoMgr.Clear()
-		sheet.hash = 0
+	if !t.applyTemplateToSheet(sheet, true) {
+		// A picker was canceled, which abandons the new character too, not just the template. The sheet has been
+		// left untouched, so it closes without asking about saving.
+		sheet.AttemptClose()
+		return
 	}
+	sheet.undoMgr.Clear()
+	sheet.hash = 0
 	sheet.SetBackingFilePath(e.Profile.Name + gurps.SheetExt)
 }
 
