@@ -28,6 +28,9 @@ tracks whatever GCS is built against, rather than being maintained by hand):
 `key` also tolerates other casings of these names (`"a"` and `"A"` both work; `"f1"` and `"F1"` both work). A `mods`
 entry may also be a `"+"`-joined combination of these names, e.g. `"ctrl+shift"`.
 
+The session follows the keyboard convention Windows and Linux share whatever the host is, so the menu command key is
+`"ctrl"` even on macOS: a menu shortcut is `"ctrl"` plus its key, and `"cmd"` is never the way to reach one.
+
 ## POST /input
 
 Injects one input event. JSON body:

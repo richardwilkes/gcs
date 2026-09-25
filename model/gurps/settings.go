@@ -157,13 +157,13 @@ func loadSettingsOrDefaults(filePath string) Settings {
 			errs.Log(errs.NewWithCause("unable to load settings; reverting to factory defaults", err), "path", filePath)
 			setAsideDamagedSettings(filePath)
 		}
-		return factorySettings()
+		return FactorySettings()
 	}
 	return settings
 }
 
-// factorySettings returns the settings used when no usable settings file is available.
-func factorySettings() Settings {
+// FactorySettings returns the settings used when no usable settings file is available.
+func FactorySettings() Settings {
 	return Settings{
 		LastSeenGCSVersion: xos.AppVersion,
 		General:            NewGeneralSettings(),

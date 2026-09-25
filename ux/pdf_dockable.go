@@ -23,7 +23,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
-	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
@@ -1006,7 +1005,7 @@ func (d *PDFDockable) mouseUp(where geom.Point, button int, _ mod.Modifiers) boo
 		if button == unison.ButtonLeft && d.link != nil {
 			if d.link.PageNumber >= 0 {
 				d.ScrollToPage(d.link.PageNumber, true)
-			} else if err := xos.OpenBrowser(d.link.URI); err != nil {
+			} else if err := unison.OpenBrowser(d.link.URI); err != nil {
 				Workspace.ErrorHandler(i18n.Text("Unable to open link"), err)
 			}
 		}

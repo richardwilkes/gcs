@@ -728,7 +728,7 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 				m[p] = struct{}{}
 			}
 			for p := range m {
-				if err := xos.OpenBrowser(p); err != nil {
+				if err := unison.OpenBrowser(p); err != nil {
 					Workspace.ErrorHandler(i18n.Text("Unable to show location on disk"), err)
 				}
 			}

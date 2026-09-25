@@ -665,7 +665,7 @@ func actionEnabledForSheet(_ *unison.Action, _ any) bool {
 }
 
 func showWebPage(uri string) {
-	if err := xos.OpenBrowser(uri); err != nil {
+	if err := unison.OpenBrowser(uri); err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to open link"), err)
 	}
 }

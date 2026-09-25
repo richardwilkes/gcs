@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // ciScriptExecTimeLimit is the per-script execution time limit, in seconds, the tests run with under CI. It matches
@@ -25,11 +26,20 @@ var ciScriptExecTimeLimit = fxp.FromInteger(30)
 // model/gurps/main_test.go does and for the same reason: the sheets and templates these tests load resolve scripts as
 // they are recalculated, and the production default is small enough that some CI runners cannot always finish even a
 // trivial script within it.
+//
+// It also selects the platform-neutral modifier convention for the whole run, which is the one a headless session
+// uses on every host: the menu command key is Control rather than macOS's Command. The actions registerActions builds
+// bake mod.OSMenuCommand() into their key bindings, and they are built once per process by whichever test gets there
+// first. Left to the host's convention, a plain test registering them on macOS would leave every menu shortcut bound to
+// Command, and the headless tests that follow, whose sessions press Control, would never reach the menu items. Pinning
+// the convention here means the bindings match whatever the order the tests run in, and the tests that never start a
+// session behave the same on every host too.
 func TestMain(m *testing.M) {
 	limit := gurps.PermittedScriptExecTimeMax
 	if os.Getenv("CI") != "" {
 		limit = ciScriptExecTimeLimit
 	}
 	gurps.SetScriptExecTimeLimitForTesting(limit)
+	mod.SetPlatformNeutral(true)
 	os.Exit(m.Run())
 }

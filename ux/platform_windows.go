@@ -41,7 +41,10 @@ var (
 	softwareClasses    = `Software\Classes\`
 )
 
-func performPlatformLateStartup() {
+func performPlatformLateStartup(updateDesktopInfo bool) {
+	if !updateDesktopInfo {
+		return
+	}
 	if err := configureRegistry(); err != nil {
 		errs.Log(err)
 	}

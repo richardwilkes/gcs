@@ -24,11 +24,38 @@ import (
 //go:embed images/app-256.png
 var appIconBytes []byte
 
+// GCSStartupConfig contains configuration for starting the GURPS Character Sheet UI.
+type GCSStartupConfig struct {
+	// EnableHandoff indicates whether the handoff service should be started. It should be true for the main UI and
+	// false for headless sessions.
+	EnableHandoff bool
+	// UpdateDesktopInfo indicates whether the desktop info (app icons, registry entries, etc) should be updated. It
+	// should be true for the main UI and false for headless sessions.
+	UpdateDesktopInfo bool
+}
+
+// DefaultGCSStartupConfig returns a GCSStartupConfig suitable for starting the main GURPS Character Sheet UI.
+func DefaultGCSStartupConfig() *GCSStartupConfig {
+	return &GCSStartupConfig{
+		EnableHandoff:     true,
+		UpdateDesktopInfo: true,
+	}
+}
+
+// DefaultHeadlessGCSStartupConfig returns a GCSStartupConfig suitable for starting a headless GURPS Character Sheet
+// session.
+func DefaultHeadlessGCSStartupConfig() *GCSStartupConfig {
+	return &GCSStartupConfig{
+		EnableHandoff:     false,
+		UpdateDesktopInfo: false,
+	}
+}
+
 // StartOptions returns the options to pass to unison.Start for starting the GURPS Character Sheet UI.
-func StartOptions(files []string, enableHandoff bool) []unison.StartupOption {
+func StartOptions(files []string, config *GCSStartupConfig) []unison.StartupOption {
 	readyChan := make(chan struct{})
 	pathsChan := make(chan []string, 32)
-	if enableHandoff {
+	if config.EnableHandoff {
 		startHandoffService(readyChan, pathsChan, files)
 	}
 	if settings := gurps.GlobalSettings(); settings.General.LibraryUpdateCheck.ChecksAtLaunch() {
@@ -61,14 +88,14 @@ func StartOptions(files []string, enableHandoff bool) []unison.StartupOption {
 			SetupMenuBar(wnd)
 			InitWorkspace(wnd)
 			OpenFiles(files)
-			if enableHandoff {
+			if config.EnableHandoff {
 				go func() {
 					for paths := range pathsChan {
 						unison.InvokeTask(func() { OpenFiles(paths) })
 					}
 				}()
 			}
-			unison.InvokeTask(performPlatformLateStartup)
+			unison.InvokeTask(func() { performPlatformLateStartup(config.UpdateDesktopInfo) })
 			unison.InvokeTask(func() { close(readyChan) })
 		}),
 		unison.OpenFilesCallback(OpenFiles),

@@ -27,6 +27,8 @@ func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c := check.New(t)
 	settings := gurps.GlobalSettings().SheetSettings()
 	swapForTest(t, &settings.HideTLColumn, false)
+	// Creating an item opens its editor, which looks for a dock to go into.
+	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 
 	data := gurps.NewTemplate()
 	template := newTestTemplateDockable("My Template", data)

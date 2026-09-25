@@ -322,7 +322,7 @@ func NotifyOfAppUpdate() {
 	case unison.ModalResponseOK:
 		InitiateAppUpdate(plan)
 	case downloadPageResponse:
-		if err = xos.OpenBrowser("https://" + WebSiteDomain); err != nil {
+		if err = unison.OpenBrowser("https://" + WebSiteDomain); err != nil {
 			Workspace.ErrorHandler(i18n.Text("Unable to open web page for download"), err)
 		}
 	}

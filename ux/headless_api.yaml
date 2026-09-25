@@ -40,7 +40,9 @@ paths:
             description: >-
                 The vocabulary POST /input's "key" and "mods" fields recognize, straight from unison's own
                 names. "key" is case-insensitive. A "mods" entry may also be a "+"-joined combination of
-                these names, e.g. "ctrl+shift".
+                these names, e.g. "ctrl+shift". The session follows the keyboard convention Windows and
+                Linux share whatever the host is, so the menu command key is "ctrl" even on macOS: a menu
+                shortcut is "ctrl" plus its key, never "cmd".
             responses:
                 "200":
                     description: OK

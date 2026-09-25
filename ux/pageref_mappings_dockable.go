@@ -52,7 +52,7 @@ func ExtractPageReferences(s string) []string {
 func OpenPageReference(ref, highlight string, promptContext map[string]bool) bool {
 	switch {
 	case unison.HasURLPrefix(ref):
-		if err := xos.OpenBrowser(ref); err != nil {
+		if err := unison.OpenBrowser(ref); err != nil {
 			Workspace.ErrorHandler(i18n.Text("Unable to open ")+ref, err)
 		}
 		return false

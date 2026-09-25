@@ -186,7 +186,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 
 	server := &headlessAPIServer{console: console}
 	screen, err := unison.StartHeadless(unison.HeadlessConfig{Width: width, Height: height},
-		StartOptions(files, false)...)
+		StartOptions(files, ux.DefaultHeadlessGCSStartupConfig())...)
 	if err != nil {
 		xos.ExitWithMsg(fmt.Sprintf("unable to start the headless session: %v", err))
 	}
