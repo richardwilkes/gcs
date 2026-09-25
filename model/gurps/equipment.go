@@ -793,7 +793,6 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 		}
 	}
 	Traverse(func(mod *EquipmentModifier) bool {
-		mod.SetTarget(equipment)
 		for _, f := range mod.Features.Active(switchedOn) {
 			if cwr, ok := f.(*ContainedWeightReduction); ok {
 				if cwr.IsPercentageReduction() {
