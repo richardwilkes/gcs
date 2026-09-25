@@ -1,0 +1,5633 @@
+{
+	"version": 5,
+	"id": "B0kQjfpUMweys7KlO",
+	"traits": [
+		{
+			"id": "TW2vcdtTqUtB51WIu",
+			"name": "Knight",
+			"reference": "DFA27",
+			"children": [
+				{
+					"id": "Tym_60gc_d8U46w1Q",
+					"name": "Attributes",
+					"children": [
+						{
+							"id": "tdCxh196tFrWk_z4D",
+							"name": "Increased Strength",
+							"reference": "DFA8",
+							"tags": [
+								"Advantage",
+								"Attribute",
+								"Physical"
+							],
+							"points_per_level": 10,
+							"features": [
+								{
+									"type": "attribute_bonus",
+									"attribute": "st",
+									"amount": 1,
+									"per_level": true
+								}
+							],
+							"can_level": true,
+							"levels": 4,
+							"calc": {
+								"points": 40,
+								"current_level": 4
+							}
+						},
+						{
+							"id": "tA7hiyihWUcZougbC",
+							"name": "Increased Dexterity",
+							"reference": "DFA8",
+							"tags": [
+								"Advantage",
+								"Attribute",
+								"Physical"
+							],
+							"points_per_level": 20,
+							"features": [
+								{
+									"type": "attribute_bonus",
+									"attribute": "dx",
+									"amount": 1,
+									"per_level": true
+								}
+							],
+							"can_level": true,
+							"levels": 4,
+							"calc": {
+								"points": 80,
+								"current_level": 4
+							}
+						},
+						{
+							"id": "tXoxRFGlJd0VKhjpa",
+							"name": "Increased Health",
+							"reference": "DFA8",
+							"tags": [
+								"Advantage",
+								"Attribute",
+								"Physical"
+							],
+							"points_per_level": 10,
+							"features": [
+								{
+									"type": "attribute_bonus",
+									"attribute": "ht",
+									"amount": 1,
+									"per_level": true
+								}
+							],
+							"can_level": true,
+							"levels": 3,
+							"calc": {
+								"points": 30,
+								"current_level": 3
+							}
+						}
+					],
+					"calc": {
+						"points": 150
+					}
+				},
+				{
+					"id": "TnAfwihBL0fTzdJqS",
+					"name": "Secondary Characteristics",
+					"children": [
+						{
+							"id": "tU76EnztLVHgCoLSJ",
+							"name": "Decreased Basic Speed",
+							"reference": "DFA11",
+							"tags": [
+								"Attribute",
+								"Disadvantage",
+								"Physical"
+							],
+							"points_per_level": -5,
+							"features": [
+								{
+									"type": "attribute_bonus",
+									"attribute": "basic_speed",
+									"amount": -0.25,
+									"per_level": true
+								}
+							],
+							"can_level": true,
+							"levels": 3,
+							"calc": {
+								"points": -15,
+								"current_level": 3
+							}
+						}
+					],
+					"calc": {
+						"points": -15
+					}
+				},
+				{
+					"id": "TcsHtIInIcnaCnIz3",
+					"name": "Class Advantages",
+					"children": [
+						{
+							"id": "t6BrnDFonMGvpfja5",
+							"name": "Born War Leader",
+							"reference": "DFA47",
+							"tags": [
+								"Advantage",
+								"Physical"
+							],
+							"points_per_level": 5,
+							"features": [
+								{
+									"type": "skill_bonus",
+									"selection_type": "skills_with_name",
+									"name": {
+										"compare": "is",
+										"qualifier": "leadership"
+									},
+									"amount": 1,
+									"per_level": true
+								},
+								{
+									"type": "skill_bonus",
+									"selection_type": "skills_with_name",
+									"name": {
+										"compare": "is",
+										"qualifier": "strategy"
+									},
+									"amount": 1,
+									"per_level": true
+								},
+								{
+									"type": "skill_bonus",
+									"selection_type": "skills_with_name",
+									"name": {
+										"compare": "starts_with",
+										"qualifier": "tactics"
+									},
+									"amount": 1,
+									"per_level": true
+								},
+								{
+									"type": "skill_bonus",
+									"selection_type": "skills_with_name",
+									"name": {
+										"compare": "is",
+										"qualifier": "Connoisseur"
+									},
+									"specialization": {
+										"compare": "is",
+										"qualifier": "Weapons"
+									},
+									"amount": 1,
+									"per_level": true
+								},
+								{
+									"type": "skill_bonus",
+									"selection_type": "skills_with_name",
+									"name": {
+										"compare": "is",
+										"qualifier": "savoir-faire"
+									},
+									"amount": 1,
+									"per_level": true
+								}
+							],
+							"can_level": true,
+							"levels": 2,
+							"calc": {
+								"points": 10,
+								"current_level": 2
+							}
+						},
+						{
+							"id": "t6eUOdn0o65mmbbBB",
+							"name": "Combat Reflexes",
+							"reference": "DFA48",
+							"local_notes": "Never freeze",
+							"tags": [
+								"Advantage",
+								"Mental"
+							],
+							"prereqs": {
+								"type": "prereq_list",
+								"all": true,
+								"prereqs": [
+									{
+										"type": "trait_prereq",
+										"has": false,
+										"name": {
+											"compare": "is",
+											"qualifier": "Enhanced Time Sense"
+										}
+									}
+								]
+							},
+							"base_points": 15,
+							"features": [
+								{
+									"type": "skill_bonus",
+									"selection_type": "skills_with_name",
+									"name": {
+										"compare": "starts_with",
+										"qualifier": "fast-draw"
+									},
+									"amount": 1
+								},
+								{
+									"type": "attribute_bonus",
+									"attribute": "dodge",
+									"amount": 1
+								},
+								{
+									"type": "attribute_bonus",
+									"attribute": "parry",
+									"amount": 1
+								},
+								{
+									"type": "attribute_bonus",
+									"attribute": "block",
+									"amount": 1
+								},
+								{
+									"type": "attribute_bonus",
+									"attribute": "fright_check",
+									"amount": 2
+								},
+								{
+									"type": "conditional_modifier",
+									"situation": "on all IQ rolls to wake up or to recover from surprise or mental stun",
+									"amount": 6
+								},
+								{
+									"type": "conditional_modifier",
+									"situation": "to initiative rolls for your side (+2 if you are the leader)",
+									"amount": 1
+								}
+							],
+							"calc": {
+								"points": 15
+							}
+						},
+						{
+							"id": "tKaWIU3VmuUDMf0Qn",
+							"name": "High Pain Threshold",
+							"reference": "DFA50",
+							"local_notes": "Never suffer shock penalties when injured",
+							"tags": [
+								"Advantage",
+								"Physical"
+							],
+							"base_points": 10,
+							"features": [
+								{
+									"type": "conditional_modifier",
+									"situation": "on all HT rolls to avoid knockdown and stunning",
+									"amount": 3
+								},
+								{
+									"type": "conditional_modifier",
+									"situation": "to resist torture",
+									"amount": 3
+								}
+							],
+							"calc": {
+								"points": 10
+							}
+						},
+						{
+							"id": "T_5nY3qhmz07XsNRd",
+							"name": "60 Points From",
+							"template_picker": {
+								"type": "points",
+								"qualifier": {
+									"compare": "is",
+									"qualifier": 60
+								}
+							},
+							"children": [
+								{
+									"id": "tvVMQ4THJsjFGxI8x",
+									"name": "Increased Strength",
+									"reference": "DFA8",
+									"tags": [
+										"Advantage",
+										"Attribute",
+										"Physical"
+									],
+									"points_per_level": 10,
+									"features": [
+										{
+											"type": "attribute_bonus",
+											"attribute": "st",
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 10,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "tpDN5JTO6ifg4wQBb",
+									"name": "Increased Dexterity",
+									"reference": "DFA8",
+									"tags": [
+										"Advantage",
+										"Attribute",
+										"Physical"
+									],
+									"points_per_level": 20,
+									"features": [
+										{
+											"type": "attribute_bonus",
+											"attribute": "dx",
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 20,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "tDQvPvwB1hiIsXSPf",
+									"name": "Increased Health",
+									"reference": "DFA8",
+									"tags": [
+										"Advantage",
+										"Attribute",
+										"Physical"
+									],
+									"points_per_level": 10,
+									"features": [
+										{
+											"type": "attribute_bonus",
+											"attribute": "ht",
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 10,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "t-kC-ejTcfNTrDXig",
+									"name": "Extra Hit Points",
+									"reference": "DFA10",
+									"tags": [
+										"Advantage",
+										"Attribute",
+										"Physical"
+									],
+									"points_per_level": 2,
+									"features": [
+										{
+											"type": "attribute_bonus",
+											"attribute": "hp",
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 2,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "tuIG-hTR5vvrauCS2",
+									"name": "Increased Basic Speed",
+									"reference": "DFA11",
+									"tags": [
+										"Advantage",
+										"Attribute",
+										"Physical"
+									],
+									"points_per_level": 5,
+									"features": [
+										{
+											"type": "attribute_bonus",
+											"attribute": "basic_speed",
+											"amount": 0.25,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 5,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "t-F8IQQZI_CCDwTmF",
+									"name": "Armor Mastery",
+									"reference": "DFA28",
+									"tags": [
+										"Advantage",
+										"Exotic",
+										"Physical"
+									],
+									"base_points": 5,
+									"features": [
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"eye"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"skull"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"face"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"neck"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"torso"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"vitals"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"groin"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"arm"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"hand"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"leg"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"foot"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"tail"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"wing"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"fin"
+											],
+											"amount": 1
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"brain"
+											],
+											"amount": 1
+										}
+									],
+									"calc": {
+										"points": 5
+									}
+								},
+								{
+									"id": "td8E4EnWe-FKj2aUm",
+									"name": "Born War Leader",
+									"reference": "DFA47",
+									"tags": [
+										"Advantage",
+										"Physical"
+									],
+									"points_per_level": 5,
+									"features": [
+										{
+											"type": "skill_bonus",
+											"selection_type": "skills_with_name",
+											"name": {
+												"compare": "is",
+												"qualifier": "leadership"
+											},
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "skill_bonus",
+											"selection_type": "skills_with_name",
+											"name": {
+												"compare": "is",
+												"qualifier": "strategy"
+											},
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "skill_bonus",
+											"selection_type": "skills_with_name",
+											"name": {
+												"compare": "starts_with",
+												"qualifier": "tactics"
+											},
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "skill_bonus",
+											"selection_type": "skills_with_name",
+											"name": {
+												"compare": "is",
+												"qualifier": "Connoisseur"
+											},
+											"specialization": {
+												"compare": "is",
+												"qualifier": "Weapons"
+											},
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "skill_bonus",
+											"selection_type": "skills_with_name",
+											"name": {
+												"compare": "is",
+												"qualifier": "savoir-faire"
+											},
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 5,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "t1O7MDFGuWiKjbimy",
+									"name": "Enhanced Block (Cloak)",
+									"reference": "DFA49",
+									"tags": [
+										"Advantage",
+										"Mental"
+									],
+									"base_points": 5,
+									"features": [
+										{
+											"type": "attribute_bonus",
+											"attribute": "block",
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 5,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "tbWgrIugJ0YZtnI_-",
+									"name": "Enhanced Block (Shield)",
+									"reference": "DFA49",
+									"tags": [
+										"Advantage",
+										"Mental"
+									],
+									"base_points": 5,
+									"features": [
+										{
+											"type": "attribute_bonus",
+											"attribute": "block",
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 5,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "t8T-s8a-V2QGnTkwu",
+									"source": {
+										"library": "richardwilkes/gcs_master_library",
+										"path": "Dungeon Fantasy RPG/Dungeon Fantasy RPG Traits.adq",
+										"id": "tfE1xvUa4a3Ppo5aq"
+									},
+									"name": "Enhanced Parry (@Melee weapon skill Or Unarmed@)",
+									"reference": "DFA49",
+									"tags": [
+										"Advantage",
+										"Mental"
+									],
+									"points_per_level": 5,
+									"features": [
+										{
+											"type": "weapon_parry_bonus",
+											"selection_type": "weapons_with_required_skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "@Melee weapon skill Or Unarmed@"
+											},
+											"amount": 1,
+											"leveled": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 5,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "tnnHpaq8R-kFj0Kdc",
+									"name": "Extra Attack",
+									"reference": "DFA49",
+									"tags": [
+										"Advantage",
+										"Physical"
+									],
+									"points_per_level": 25,
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 25,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "tSVJdUOkinEElqnCM",
+									"name": "Fearlessness",
+									"reference": "DFA49",
+									"tags": [
+										"Advantage",
+										"Mental"
+									],
+									"points_per_level": 2,
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 2,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "t0YsjLnIV2ffby2vS",
+									"name": "Fit, Very",
+									"reference": "DFA49",
+									"local_notes": "Recover FP at twice the normal rate; lose FP at half the normal rate (in both cases, not FP spent for spells or psi powers)",
+									"tags": [
+										"Advantage",
+										"Physical"
+									],
+									"base_points": 15,
+									"features": [
+										{
+											"type": "conditional_modifier",
+											"situation": "+2 to all HT rolls to stay conscious, avoid death, resist disease, resist poison",
+											"amount": 2
+										}
+									],
+									"calc": {
+										"points": 15
+									}
+								},
+								{
+									"id": "tURWEMCxgcTQahC5B",
+									"name": "Fit",
+									"reference": "DFA49",
+									"local_notes": "Recover FP at twice the normal rate (but not FP spent for spells or psi powers)",
+									"tags": [
+										"Advantage",
+										"Physical"
+									],
+									"base_points": 5,
+									"features": [
+										{
+											"type": "conditional_modifier",
+											"situation": "to all HT rolls to stay conscious, avoid death, resist disease, resist poison",
+											"amount": 1
+										}
+									],
+									"calc": {
+										"points": 5
+									}
+								},
+								{
+									"id": "tUj2qedS4kHcbuKfx",
+									"name": "Hard to Kill",
+									"reference": "DFA50",
+									"tags": [
+										"Advantage",
+										"Physical"
+									],
+									"points_per_level": 2,
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 2,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "tOuDAv4_EiUrDvQze",
+									"name": "Hard to Subdue",
+									"reference": "DFA50",
+									"tags": [
+										"Advantage",
+										"Physical"
+									],
+									"points_per_level": 2,
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 2,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "thVHSSqhlyBPBYo_P",
+									"name": "Luck",
+									"reference": "DFA51",
+									"local_notes": "Usable once per hour of play",
+									"tags": [
+										"Advantage",
+										"Mental"
+									],
+									"prereqs": {
+										"type": "prereq_list",
+										"all": true,
+										"prereqs": [
+											{
+												"type": "trait_prereq",
+												"has": false,
+												"name": {
+													"compare": "starts_with",
+													"qualifier": "Luck"
+												}
+											}
+										]
+									},
+									"base_points": 15,
+									"calc": {
+										"points": 15
+									}
+								},
+								{
+									"id": "tk16rFwIjmtbotbc5",
+									"name": "Luck, Extraordinary",
+									"reference": "DFA51",
+									"local_notes": "Usable once per 30 minutes of play",
+									"tags": [
+										"Advantage",
+										"Mental"
+									],
+									"prereqs": {
+										"type": "prereq_list",
+										"all": true,
+										"prereqs": [
+											{
+												"type": "trait_prereq",
+												"has": false,
+												"name": {
+													"compare": "starts_with",
+													"qualifier": "Luck"
+												}
+											}
+										]
+									},
+									"base_points": 30,
+									"calc": {
+										"points": 30
+									}
+								},
+								{
+									"id": "t-hQMTXkf9-Z_ztrk",
+									"name": "Penetrating Voice",
+									"reference": "DFA52",
+									"tags": [
+										"Perk",
+										"Physical"
+									],
+									"base_points": 1,
+									"calc": {
+										"points": 1
+									}
+								},
+								{
+									"id": "tlij4WWIaK8Cp1wQk",
+									"name": "Rallying Cry",
+									"reference": "DFA28",
+									"tags": [
+										"Advantage",
+										"Mental"
+									],
+									"base_points": 5,
+									"calc": {
+										"points": 5
+									}
+								},
+								{
+									"id": "tedL22sBam6hgWW2S",
+									"name": "Recovery",
+									"reference": "DFA52",
+									"tags": [
+										"Advantage",
+										"Exotic",
+										"Physical"
+									],
+									"base_points": 10,
+									"calc": {
+										"points": 10
+									}
+								},
+								{
+									"id": "td85k4mbgOC2ddV_P",
+									"name": "Sacrificial Block",
+									"reference": "DFA28",
+									"tags": [
+										"Advantage",
+										"Perk",
+										"Physical"
+									],
+									"base_points": 1,
+									"calc": {
+										"points": 1
+									}
+								},
+								{
+									"id": "thS_7DydnvL-0NGmF",
+									"name": "Rapid Healing",
+									"reference": "DFA52",
+									"tags": [
+										"Advantage",
+										"Physical"
+									],
+									"prereqs": {
+										"type": "prereq_list",
+										"all": true,
+										"prereqs": [
+											{
+												"type": "attribute_prereq",
+												"has": true,
+												"qualifier": {
+													"compare": "at_least",
+													"qualifier": 10
+												},
+												"which": "ht"
+											}
+										]
+									},
+									"base_points": 5,
+									"calc": {
+										"points": 5
+									}
+								},
+								{
+									"id": "ttVTX87aSt3adxU9S",
+									"name": "Sacrificial Parry",
+									"reference": "DFA29",
+									"tags": [
+										"Advantage",
+										"Perk",
+										"Physical"
+									],
+									"base_points": 1,
+									"calc": {
+										"points": 1
+									}
+								},
+								{
+									"id": "tEFkFZPSYOIjPw8-n",
+									"name": "Shield Mastery",
+									"reference": "DFA29",
+									"tags": [
+										"Advantage",
+										"Exotic",
+										"Physical"
+									],
+									"base_points": 15,
+									"features": [
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"eye"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"skull"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"face"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"neck"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"torso"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"vitals"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"groin"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"arm"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"hand"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"leg"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"foot"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"tail"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"wing"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"fin"
+											],
+											"amount": 1,
+											"per_level": true
+										},
+										{
+											"type": "dr_bonus",
+											"locations": [
+												"brain"
+											],
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"calc": {
+										"points": 15
+									}
+								},
+								{
+									"id": "t9evXfw-GGIwRSw4S",
+									"name": "Shield-Wall Training",
+									"reference": "DFA29",
+									"tags": [
+										"Advantage",
+										"Perk",
+										"Physical"
+									],
+									"base_points": 1,
+									"calc": {
+										"points": 1
+									}
+								},
+								{
+									"id": "t6o_8sqYba7rziQvg",
+									"name": "Signature Gear (@Item@)",
+									"reference": "DFA53",
+									"tags": [
+										"Advantage",
+										"Social"
+									],
+									"base_points": 1,
+									"calc": {
+										"points": 1
+									}
+								},
+								{
+									"id": "tHg8bovMjT50qt2I7",
+									"name": "Striking ST",
+									"reference": "DFA53",
+									"tags": [
+										"Advantage",
+										"Exotic",
+										"Physical"
+									],
+									"points_per_level": 5,
+									"features": [
+										{
+											"type": "attribute_bonus",
+											"limitation": "striking_only",
+											"attribute": "st",
+											"amount": 1,
+											"per_level": true
+										}
+									],
+									"can_level": true,
+									"levels": 1,
+									"calc": {
+										"points": 5,
+										"current_level": 1
+									}
+								},
+								{
+									"id": "tbZXZRTOTRUiFeuMY",
+									"name": "Trademark Move",
+									"reference": "DFA53",
+									"local_notes": "@One turn of detailed combat actions@",
+									"tags": [
+										"Perk",
+										"Physical"
+									],
+									"base_points": 1,
+									"features": [
+										{
+											"type": "conditional_modifier",
+											"situation": "to @One turn of detailed combat actions@",
+											"amount": 1
+										}
+									],
+									"calc": {
+										"points": 1
+									}
+								},
+								{
+									"id": "t93OYbgp0uVzvkthr",
+									"name": "Weapon Bond (@Specific Weapon@)",
+									"reference": "DFA54",
+									"tags": [
+										"Perk",
+										"Physical"
+									],
+									"base_points": 1,
+									"features": [
+										{
+											"type": "skill_bonus",
+											"selection_type": "weapons_with_name",
+											"name": {
+												"compare": "is",
+												"qualifier": "@Specific Weapon@"
+											},
+											"amount": 1
+										}
+									],
+									"calc": {
+										"points": 1
+									}
+								},
+								{
+									"id": "tXKrz2BWqqoMnAgop",
+									"name": "Weapon Master",
+									"reference": "DFA54",
+									"tags": [
+										"Advantage",
+										"Mental"
+									],
+									"modifiers": [
+										{
+											"id": "mJf4P3aqYQ6M9wPuX",
+											"name": "All weapons!",
+											"reference": "DFA54",
+											"cost_adj": "45",
+											"features": [
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Axe/Mace"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Axe/Mace"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Broadsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Broadsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Flail"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Flail"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Garrote"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Garrote"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Jitte/Sai"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Jitte/Sai"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Kusari"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Kusari"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Main-Gauche"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Main-Gauche"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Polearm"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Polearm"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Rapier"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Rapier"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Saber"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Saber"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Shield"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Shield"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Shortsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Shortsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Smallsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Smallsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Spear"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Spear"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Staff"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Staff"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Tonfa"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Tonfa"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Two-Handed Axe/Mace"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Two-Handed Axe/Mace"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Two-Handed Flail"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Two-Handed Flail"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Two-Handed Sword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Two-Handed Sword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Whip"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Whip"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Knife"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Knife"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Bow"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Bow"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Crossbow"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Crossbow"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Lasso"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Lasso"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Net"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Net"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Sling"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Sling"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Spear Thrower"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Spear Thrower"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Thrown Weapon"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Thrown Weapon"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												}
+											],
+											"disabled": true
+										},
+										{
+											"id": "mn3EPEP--wGJ7DPIA",
+											"name": "One weapon (@Weapon@)",
+											"reference": "DFA54",
+											"cost_adj": "20",
+											"features": [
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "@Weapon@"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "@Weapon@"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												}
+											],
+											"disabled": true
+										},
+										{
+											"id": "m_pMLv4XGs3suqq4x",
+											"name": "Two weapons (@First Weapon@ & @Second Weapon@)",
+											"reference": "DFA54",
+											"cost_adj": "25",
+											"features": [
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "@First Weapon@"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "@First Weapon@"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "@Second Weapon@"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "@Second Weapon@"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												}
+											],
+											"disabled": true
+										},
+										{
+											"id": "mJCZQZiA1WNaxzZ4Q",
+											"name": "Fencing Weapons",
+											"reference": "DFA54",
+											"cost_adj": "30",
+											"features": [
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Main-Gauche"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Main-Gauche"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Rapier"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Rapier"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Saber"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Saber"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Smallsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Smallsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												}
+											],
+											"disabled": true
+										},
+										{
+											"id": "mMQ5YHPic2ZkulOze",
+											"name": "Kinghtly Weapons",
+											"reference": "DFA54",
+											"cost_adj": "30",
+											"features": [
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Axe/Mace"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Axe/Mace"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Broadsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Broadsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Flail"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Flail"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Shield"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Shield"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												}
+											],
+											"disabled": true
+										},
+										{
+											"id": "mTj2j4lUCJS0LBma7",
+											"name": "Bow",
+											"reference": "DFA54",
+											"cost_adj": "20",
+											"features": [
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Bow"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Bow"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												}
+											],
+											"disabled": true
+										},
+										{
+											"id": "mU-8ESDZ5tuxEKtNT",
+											"name": "Knives",
+											"reference": "DFA54",
+											"cost_adj": "20",
+											"features": [
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Knife"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Knife"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Main-Gauche"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Main-Gauche"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												}
+											],
+											"disabled": true
+										},
+										{
+											"id": "m-y2AEQetdGndJEfL",
+											"name": "Swords",
+											"reference": "DFA54",
+											"cost_adj": "35",
+											"features": [
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Broadsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Broadsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Knife"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Knife"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Main-Gauche"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Main-Gauche"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Rapier"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Rapier"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Saber"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Saber"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Shortsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Shortsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Smallsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Smallsword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Two-Handed Sword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 1
+													},
+													"amount": 1,
+													"per_die": true
+												},
+												{
+													"type": "weapon_bonus",
+													"selection_type": "weapons_with_required_skill",
+													"name": {
+														"compare": "is",
+														"qualifier": "Two-Handed Sword"
+													},
+													"level": {
+														"compare": "at_least",
+														"qualifier": 2
+													},
+													"amount": 1,
+													"per_die": true
+												}
+											],
+											"disabled": true
+										}
+									],
+									"calc": {
+										"points": 0
+									}
+								}
+							],
+							"calc": {
+								"points": 215
+							}
+						}
+					],
+					"calc": {
+						"points": 250
+					}
+				},
+				{
+					"id": "TyQmUPOjbCzGjIuik",
+					"name": "Class Disadvantages",
+					"children": [
+						{
+							"id": "TSS0xPGZzzgyvjWjH",
+							"name": "-15 points from here or the other group",
+							"template_picker": {
+								"type": "points",
+								"qualifier": {
+									"compare": "is",
+									"qualifier": -15
+								}
+							},
+							"children": [
+								{
+									"id": "tBn-9wyXW6TPXaVfq",
+									"name": "Bully",
+									"reference": "DFA57",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -10,
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "t9pwNcS_D39DFgekZ",
+									"name": "Compulsive Carousing",
+									"reference": "DFA59",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -5,
+									"calc": {
+										"points": -5
+									}
+								},
+								{
+									"id": "tHksj_OoxZOJpwfVI",
+									"name": "Greed",
+									"reference": "DFA60",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -15,
+									"calc": {
+										"points": -15
+									}
+								},
+								{
+									"id": "txmP0fBbChRHfGdaJ",
+									"name": "Honesty",
+									"reference": "DFA61",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -10,
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tWbYWe5KQN8cJx4Yg",
+									"name": "Lecherousness",
+									"reference": "DFA62",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -15,
+									"calc": {
+										"points": -15
+									}
+								},
+								{
+									"id": "t3zA6BBdXZaCbNU6X",
+									"name": "Overconfidence",
+									"reference": "DFA64",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -5,
+									"calc": {
+										"points": -5
+									}
+								},
+								{
+									"id": "tZjJ4KxAxUp4zhOie",
+									"name": "Sense of Duty",
+									"reference": "DFA65",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"modifiers": [
+										{
+											"id": "mFbcizzG6A3wEbUDx",
+											"name": "Adventuring Companions",
+											"reference": "DFA65",
+											"cost_adj": "-5"
+										},
+										{
+											"id": "mOTfkq-6Ss5k87lOM",
+											"name": "Nation",
+											"reference": "DFA65",
+											"cost_adj": "-10",
+											"disabled": true
+										},
+										{
+											"id": "mtl9hvOcQdhT9pY4I",
+											"name": "Coreligionists",
+											"reference": "DFA65",
+											"cost_adj": "-10",
+											"disabled": true
+										},
+										{
+											"id": "mHYCps_DgkpZdTypl",
+											"name": "Good Entities",
+											"reference": "DFA65",
+											"cost_adj": "-10",
+											"disabled": true
+										},
+										{
+											"id": "m5PIvw_W6fa4kKma6",
+											"name": "Nature",
+											"reference": "DFA66",
+											"cost_adj": "-15",
+											"disabled": true
+										}
+									],
+									"calc": {
+										"points": -5
+									}
+								},
+								{
+									"id": "t4esvmX8IXk8DQYIh",
+									"name": "Bad Temper",
+									"reference": "DFA57",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -10,
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tJweXBQVBeNV1yarI",
+									"name": "Bloodlust",
+									"reference": "DFA57",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -10,
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tYSZObdEOPrChGtjQ",
+									"name": "Code of Honor (Outlaw's)",
+									"reference": "DFA58",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"base_points": -5,
+									"calc": {
+										"points": -5
+									}
+								},
+								{
+									"id": "tCsLIWGo9caR6vVCL",
+									"name": "Code of Honor (Soldier's)",
+									"reference": "DFA58",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"base_points": -10,
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tyfdrmhkiXZyoOZv2",
+									"name": "Code of Honor (Chivalry)",
+									"reference": "DFA58",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"base_points": -15,
+									"calc": {
+										"points": -15
+									}
+								},
+								{
+									"id": "twXTHuZ6F7fEze59G",
+									"name": "Obsession",
+									"reference": "DFA63",
+									"local_notes": "Slay @Monster@",
+									"tags": [
+										"Disadvantage",
+										"Physical"
+									],
+									"modifiers": [
+										{
+											"id": "mu5HG3JZdDS6iVPgK",
+											"name": "Short term",
+											"reference": "B146",
+											"cost_adj": "-5"
+										},
+										{
+											"id": "mc52W2S056uiHR3Qh",
+											"name": "Long term",
+											"reference": "B146",
+											"cost_adj": "-10",
+											"disabled": true
+										}
+									],
+									"calc": {
+										"points": -5
+									}
+								},
+								{
+									"id": "tHAT-M_tATNPq7-x5",
+									"name": "One Eye",
+									"reference": "DFA63",
+									"tags": [
+										"Disadvantage",
+										"Physical"
+									],
+									"base_points": -15,
+									"calc": {
+										"points": -15
+									}
+								},
+								{
+									"id": "tZn8b-vajlAeTgUTi",
+									"name": "Sense of Duty",
+									"reference": "DFA65",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"modifiers": [
+										{
+											"id": "m5S0h4W1auVDfRloa",
+											"name": "Adventuring Companions",
+											"reference": "DFA65",
+											"cost_adj": "-5",
+											"disabled": true
+										},
+										{
+											"id": "mEaE9hCs57b6N1esN",
+											"name": "Nation",
+											"reference": "DFA65",
+											"cost_adj": "-10"
+										},
+										{
+											"id": "muQ2EEcyEW_KPr9CB",
+											"name": "Coreligionists",
+											"reference": "DFA65",
+											"cost_adj": "-10",
+											"disabled": true
+										},
+										{
+											"id": "mINysJtNbC_cLgy1D",
+											"name": "Good Entities",
+											"reference": "DFA65",
+											"cost_adj": "-10",
+											"disabled": true
+										},
+										{
+											"id": "mmZv6LCoFpKfca_rr",
+											"name": "Nature",
+											"reference": "DFA66",
+											"cost_adj": "-15",
+											"disabled": true
+										}
+									],
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tUMkMJZQgwoBeXem1",
+									"name": "Vow (Never refuse a challenge to combat)",
+									"reference": "DFA67",
+									"tags": [
+										"Disadvantage",
+										"Physical"
+									],
+									"modifiers": [
+										{
+											"id": "mtlJkthUl1bRQdHPW",
+											"name": "Minor",
+											"reference": "B161",
+											"cost_adj": "-5",
+											"disabled": true
+										},
+										{
+											"id": "maGJPCEc9Jerics4D",
+											"name": "Major",
+											"reference": "B161",
+											"cost_adj": "-10"
+										},
+										{
+											"id": "mbETmX906wSsauHhR",
+											"name": "Great",
+											"reference": "B161",
+											"cost_adj": "-15",
+											"disabled": true
+										}
+									],
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tt4msGN8KCiYYyzqA",
+									"name": "Wounded",
+									"reference": "DFA67",
+									"tags": [
+										"Disadvantage",
+										"Physical"
+									],
+									"base_points": -5,
+									"calc": {
+										"points": -5
+									}
+								}
+							],
+							"calc": {
+								"points": -160
+							}
+						},
+						{
+							"id": "TEn3FCzwC3R3DnDPY",
+							"name": "-20 points from",
+							"template_picker": {
+								"type": "points",
+								"qualifier": {
+									"compare": "is",
+									"qualifier": -20
+								}
+							},
+							"children": [
+								{
+									"id": "tXwjpsOFPZj5sotiI",
+									"name": "Bad Temper",
+									"reference": "DFA57",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -10,
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tq7zBUewzvN0cycmt",
+									"name": "Bloodlust",
+									"reference": "DFA57",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"cr": 12,
+									"base_points": -10,
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tURDFGFwmxQhBIscd",
+									"name": "Code of Honor (Outlaw's)",
+									"reference": "DFA58",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"base_points": -5,
+									"calc": {
+										"points": -5
+									}
+								},
+								{
+									"id": "tTJCPfZekxri3YVIR",
+									"name": "Code of Honor (Soldier's)",
+									"reference": "DFA58",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"base_points": -10,
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "tXJLvvAQgK9s_gLDK",
+									"name": "Code of Honor (Chivalry)",
+									"reference": "DFA58",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"base_points": -15,
+									"calc": {
+										"points": -15
+									}
+								},
+								{
+									"id": "tgubV8OA596yeo8Ao",
+									"name": "Obsession",
+									"reference": "DFA63",
+									"local_notes": "Slay @Monster@",
+									"tags": [
+										"Disadvantage",
+										"Physical"
+									],
+									"modifiers": [
+										{
+											"id": "moAWE275ppi1rvRsk",
+											"name": "Short term",
+											"reference": "B146",
+											"cost_adj": "-5"
+										},
+										{
+											"id": "mjGZRBc7mZ2y1uixD",
+											"name": "Long term",
+											"reference": "B146",
+											"cost_adj": "-10",
+											"disabled": true
+										}
+									],
+									"calc": {
+										"points": -5
+									}
+								},
+								{
+									"id": "t2rAV8zaZXKw6U8Ol",
+									"name": "One Eye",
+									"reference": "DFA63",
+									"tags": [
+										"Disadvantage",
+										"Physical"
+									],
+									"base_points": -15,
+									"calc": {
+										"points": -15
+									}
+								},
+								{
+									"id": "tCRKkewITGPi-MxVg",
+									"name": "Sense of Duty",
+									"reference": "DFA65",
+									"tags": [
+										"Disadvantage",
+										"Mental"
+									],
+									"modifiers": [
+										{
+											"id": "mxwSbYTkWYbMHcdA2",
+											"name": "Adventuring Companions",
+											"reference": "DFA65",
+											"cost_adj": "-5",
+											"disabled": true
+										},
+										{
+											"id": "mq_aSfahxKQrCIUxw",
+											"name": "Nation",
+											"reference": "DFA65",
+											"cost_adj": "-10"
+										},
+										{
+											"id": "msFeVkBjJlsHMm_py",
+											"name": "Coreligionists",
+											"reference": "DFA65",
+											"cost_adj": "-10",
+											"disabled": true
+										},
+										{
+											"id": "mnYgHGadXu2OP1d1r",
+											"name": "Good Entities",
+											"reference": "DFA65",
+											"cost_adj": "-10",
+											"disabled": true
+										},
+										{
+											"id": "mriFDUcT4j9OoeE7F",
+											"name": "Nature",
+											"reference": "DFA66",
+											"cost_adj": "-15",
+											"disabled": true
+										}
+									],
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "t2TmhHRKP_iD1T5JT",
+									"name": "Vow (Never refuse a challenge to combat)",
+									"reference": "DFA67",
+									"tags": [
+										"Disadvantage",
+										"Physical"
+									],
+									"modifiers": [
+										{
+											"id": "mg1U-paw8k-npayn_",
+											"name": "Minor",
+											"reference": "B161",
+											"cost_adj": "-5",
+											"disabled": true
+										},
+										{
+											"id": "m8Qj4kIcFdwgaL0d2",
+											"name": "Major",
+											"reference": "B161",
+											"cost_adj": "-10"
+										},
+										{
+											"id": "mFjfYImtRAGBEDqoc",
+											"name": "Great",
+											"reference": "B161",
+											"cost_adj": "-15",
+											"disabled": true
+										}
+									],
+									"calc": {
+										"points": -10
+									}
+								},
+								{
+									"id": "taLmNsE6v4C4taYFq",
+									"name": "Wounded",
+									"reference": "DFA67",
+									"tags": [
+										"Disadvantage",
+										"Physical"
+									],
+									"base_points": -5,
+									"calc": {
+										"points": -5
+									}
+								}
+							],
+							"calc": {
+								"points": -95
+							}
+						}
+					],
+					"calc": {
+						"points": -255
+					}
+				}
+			],
+			"calc": {
+				"points": 130
+			}
+		}
+	],
+	"skills": [
+		{
+			"id": "S34RhUq2Pneqk4dFl",
+			"name": "Knight",
+			"children": [
+				{
+					"id": "S8g3dCdNFjXcsv-Zg",
+					"name": "One Of the Following Melee Packages",
+					"local_notes": "Should be 24 Points",
+					"template_picker": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "SSDNHT1ZjlXkDKgBw",
+							"name": "Choose only one",
+							"template_picker": {
+								"type": "count",
+								"qualifier": {
+									"compare": "is",
+									"qualifier": 1
+								}
+							},
+							"children": [
+								{
+									"id": "s5LPDc27_xocQ7A9H",
+									"name": "Axe/Mace",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Axe/Mace"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Flail"
+											},
+											"modifier": -4
+										}
+									],
+									"points": 24
+								},
+								{
+									"id": "sTRi1A7Mva75uVuPE",
+									"name": "Broadsword",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Rapier"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Saber"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Shortsword"
+											},
+											"modifier": -2
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 24
+								},
+								{
+									"id": "s4GSBZjDVHqcPDRbV",
+									"name": "Flail",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/h",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -6
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Axe/Mace"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Flail"
+											},
+											"modifier": -3
+										}
+									],
+									"points": 24
+								},
+								{
+									"id": "sKCAX4Me0oXmj9xmD",
+									"name": "Polearm",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Spear"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Staff"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Axe/Mace"
+											},
+											"modifier": -4
+										}
+									],
+									"points": 24
+								},
+								{
+									"id": "sxqmF7ZZEvuxE66BF",
+									"name": "Shortsword",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Broadsword"
+											},
+											"modifier": -2
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Jitte/Sai"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Knife"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Saber"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Smallsword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Tonfa"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 24
+								},
+								{
+									"id": "s6dF9OspWLCeCyicB",
+									"name": "Spear",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Polearm"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Staff"
+											},
+											"modifier": -2
+										}
+									],
+									"points": 24
+								},
+								{
+									"id": "sbHmpTp7q8WzVXP8A",
+									"name": "Two-Handed Sword",
+									"reference": "DFA82",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Broadsword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 24
+								}
+							]
+						},
+						{
+							"id": "S_pbk-gAmElW3JOwD",
+							"name": "Choose Two",
+							"template_picker": {
+								"type": "count",
+								"qualifier": {
+									"compare": "is",
+									"qualifier": 2
+								}
+							},
+							"children": [
+								{
+									"id": "sKSPm3O7Z0LTWvfI4",
+									"name": "Axe/Mace",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Axe/Mace"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Flail"
+											},
+											"modifier": -4
+										}
+									],
+									"points": 12
+								},
+								{
+									"id": "s7vCd6t9LcZRwtbJR",
+									"name": "Broadsword",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Rapier"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Saber"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Shortsword"
+											},
+											"modifier": -2
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 12
+								},
+								{
+									"id": "si2kx_9qNdNA27Vd4",
+									"name": "Flail",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/h",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -6
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Axe/Mace"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Flail"
+											},
+											"modifier": -3
+										}
+									],
+									"points": 12
+								},
+								{
+									"id": "s4B36dIsB9b6X_8F6",
+									"name": "Polearm",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Spear"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Staff"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Axe/Mace"
+											},
+											"modifier": -4
+										}
+									],
+									"points": 12
+								},
+								{
+									"id": "stYI414-1TMW9MKpF",
+									"name": "Shortsword",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Broadsword"
+											},
+											"modifier": -2
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Jitte/Sai"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Knife"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Saber"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Smallsword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Tonfa"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 12
+								},
+								{
+									"id": "sdhDNXKe1VqeJ9n7h",
+									"name": "Spear",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Polearm"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Staff"
+											},
+											"modifier": -2
+										}
+									],
+									"points": 12
+								},
+								{
+									"id": "s4UWFU3gZV1Ii5UyC",
+									"name": "Two-Handed Sword",
+									"reference": "DFA82",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Broadsword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 12
+								}
+							]
+						},
+						{
+							"id": "SxgcchJdfzKanDZid",
+							"name": "Choose Three",
+							"template_picker": {
+								"type": "count",
+								"qualifier": {
+									"compare": "is",
+									"qualifier": 3
+								}
+							},
+							"children": [
+								{
+									"id": "sLBxkCL06g_T1Anrr",
+									"name": "Axe/Mace",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Axe/Mace"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Flail"
+											},
+											"modifier": -4
+										}
+									],
+									"points": 8
+								},
+								{
+									"id": "sWWMhF8w5egOq2xD6",
+									"name": "Broadsword",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Rapier"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Saber"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Shortsword"
+											},
+											"modifier": -2
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 8
+								},
+								{
+									"id": "sV1hbU282py6VzBx-",
+									"name": "Flail",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/h",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -6
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Axe/Mace"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Flail"
+											},
+											"modifier": -3
+										}
+									],
+									"points": 8
+								},
+								{
+									"id": "sgusvKgngo9YSJqdl",
+									"name": "Polearm",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Spear"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Staff"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Two-Handed Axe/Mace"
+											},
+											"modifier": -4
+										}
+									],
+									"points": 8
+								},
+								{
+									"id": "sHihL4uhTdAUT4N2V",
+									"name": "Shortsword",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Broadsword"
+											},
+											"modifier": -2
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Jitte/Sai"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Knife"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Saber"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Smallsword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Tonfa"
+											},
+											"modifier": -3
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 8
+								},
+								{
+									"id": "sy3vwCwpOB9U5HEJh",
+									"name": "Spear",
+									"reference": "DFA81",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "dx",
+											"modifier": -5
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Polearm"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Staff"
+											},
+											"modifier": -2
+										}
+									],
+									"points": 8
+								},
+								{
+									"id": "s0VOu6FzyjYbdL-iI",
+									"name": "Two-Handed Sword",
+									"reference": "DFA82",
+									"tags": [
+										"Combat",
+										"Melee Combat",
+										"Weapon"
+									],
+									"difficulty": "dx/a",
+									"defaults": [
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Broadsword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "skill",
+											"name": {
+												"compare": "is",
+												"qualifier": "Force Sword"
+											},
+											"modifier": -4
+										},
+										{
+											"type": "dx",
+											"modifier": -5
+										}
+									],
+									"points": 8
+								}
+							]
+						}
+					]
+				},
+				{
+					"id": "SQtxLf072csiXZruw",
+					"name": "One Ranged Skill",
+					"template_picker": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "sbTk9BoDuCv0a4jvn",
+							"name": "Bow",
+							"reference": "DFA83",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -5
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "sg1Cs9wVX-FYZPsub",
+							"name": "Crossbow",
+							"reference": "DFA83",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/e",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -4
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "s1w2OABueNATWz4Lz",
+							"name": "Sling",
+							"reference": "DFA83",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/h",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -6
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "sH4O5FC9dsy6Q-jOg",
+							"name": "Throwing",
+							"reference": "DFA91",
+							"tags": [
+								"Athletic",
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -3
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Dropping"
+									},
+									"modifier": -4
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "sym019ds6lFVV768s",
+							"name": "Thrown Weapon",
+							"reference": "DFA91",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"specialization": "Axe/Mace",
+							"difficulty": "dx/e",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -4
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "sBaTN7hUkrQk3hqZf",
+							"name": "Thrown Weapon",
+							"reference": "DFA91",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"specialization": "Spear",
+							"difficulty": "dx/e",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Spear Thrower"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Thrown Weapon"
+									},
+									"specialization": {
+										"compare": "is",
+										"qualifier": "Harpoon"
+									},
+									"modifier": -2
+								}
+							],
+							"points": 4
+						}
+					]
+				},
+				{
+					"id": "SNWtNJWosv_NDHwJy",
+					"name": "Shield Option",
+					"local_notes": "Take Shield, or invest points in a two-handed weapon or ranged weapon",
+					"template_picker": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "smMbrXuQxMHGNOqKH",
+							"name": "Shield",
+							"reference": "DFA88",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"specialization": "Shield",
+							"difficulty": "dx/e",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Shield"
+									},
+									"modifier": -2
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "s9n-ZXFa9JwgABzt3",
+							"name": "Axe/Mace",
+							"reference": "DFA81",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Two-Handed Axe/Mace"
+									},
+									"modifier": -3
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Flail"
+									},
+									"modifier": -4
+								}
+							],
+							"points": 24
+						},
+						{
+							"id": "s3ioglwYzwZYah9hB",
+							"name": "Broadsword",
+							"reference": "DFA81",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Force Sword"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Rapier"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Saber"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Shortsword"
+									},
+									"modifier": -2
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Two-Handed Sword"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "dx",
+									"modifier": -5
+								}
+							],
+							"points": 24
+						},
+						{
+							"id": "sC7STCN4r3vmpCdR9",
+							"name": "Flail",
+							"reference": "DFA81",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/h",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -6
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Axe/Mace"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Two-Handed Flail"
+									},
+									"modifier": -3
+								}
+							],
+							"points": 24
+						},
+						{
+							"id": "sNQoXSR2mbSZnyhSj",
+							"name": "Polearm",
+							"reference": "DFA81",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Spear"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Staff"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Two-Handed Axe/Mace"
+									},
+									"modifier": -4
+								}
+							],
+							"points": 24
+						},
+						{
+							"id": "s_h6G_3J93jzE_z-P",
+							"name": "Shortsword",
+							"reference": "DFA81",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Broadsword"
+									},
+									"modifier": -2
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Force Sword"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Jitte/Sai"
+									},
+									"modifier": -3
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Knife"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Saber"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Smallsword"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Tonfa"
+									},
+									"modifier": -3
+								},
+								{
+									"type": "dx",
+									"modifier": -5
+								}
+							],
+							"points": 24
+						},
+						{
+							"id": "setOJQzIEgKuWTGzM",
+							"name": "Spear",
+							"reference": "DFA81",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Polearm"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Staff"
+									},
+									"modifier": -2
+								}
+							],
+							"points": 24
+						},
+						{
+							"id": "sEu3S3wn-0CO0lXFE",
+							"name": "Two-Handed Sword",
+							"reference": "DFA82",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Broadsword"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Force Sword"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "dx",
+									"modifier": -5
+								}
+							],
+							"points": 24
+						},
+						{
+							"id": "syS9gXCmpOAV19qUc",
+							"name": "Bow",
+							"reference": "DFA83",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -5
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "sfAoxc3wZqZa7CcrV",
+							"name": "Crossbow",
+							"reference": "DFA83",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/e",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -4
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "sWE3HZS4Q3v1wpCDh",
+							"name": "Sling",
+							"reference": "DFA83",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/h",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -6
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "s0y7pGbjpCDH3SzIZ",
+							"name": "Throwing",
+							"reference": "DFA91",
+							"tags": [
+								"Athletic",
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -3
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Dropping"
+									},
+									"modifier": -4
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "sZdy9XoAXAjov8E5e",
+							"name": "Thrown Weapon",
+							"reference": "DFA91",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"specialization": "Axe/Mace",
+							"difficulty": "dx/e",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -4
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "ss9nCGQ2q9Wi3RLCn",
+							"name": "Thrown Weapon",
+							"reference": "DFA91",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"specialization": "Spear",
+							"difficulty": "dx/e",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Spear Thrower"
+									},
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Thrown Weapon"
+									},
+									"specialization": {
+										"compare": "is",
+										"qualifier": "Harpoon"
+									},
+									"modifier": -2
+								}
+							],
+							"points": 4
+						}
+					]
+				},
+				{
+					"id": "SYxxhS69GaqlYb8BZ",
+					"name": "Mandatory Skills",
+					"children": [
+						{
+							"id": "siPV7ZAH5-7Wrlj2b",
+							"name": "Connoisseur",
+							"reference": "DFA74",
+							"tags": [
+								"Arts",
+								"Entertainment",
+								"Knowledge",
+								"Social"
+							],
+							"specialization": "Weapons",
+							"difficulty": "iq/a",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -5
+								}
+							],
+							"points": 2
+						},
+						{
+							"id": "sO69bWfgaP13eu9nm",
+							"name": "Knife",
+							"reference": "DFA81",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/e",
+							"defaults": [
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Force Sword"
+									},
+									"modifier": -3
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Main-Gauche"
+									},
+									"modifier": -3
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Shortsword"
+									},
+									"modifier": -3
+								},
+								{
+									"type": "dx",
+									"modifier": -4
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "sIKiZ565caYbKEHYh",
+							"name": "Fast-Draw",
+							"reference": "DFA76",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"specialization": "@any@",
+							"difficulty": "dx/e",
+							"points": 1
+						},
+						{
+							"id": "sA8OJiNVCh2_j7Ouv",
+							"name": "Leadership",
+							"reference": "DFA80",
+							"tags": [
+								"Military",
+								"Social"
+							],
+							"difficulty": "iq/a",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -5
+								}
+							],
+							"points": 2
+						},
+						{
+							"id": "sYIyBnoHMfQ1Szy9t",
+							"name": "Strategy",
+							"reference": "DFA90",
+							"tags": [
+								"Military"
+							],
+							"difficulty": "iq/h",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -6
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Intelligence Analysis"
+									},
+									"modifier": -6
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Tactics"
+									},
+									"modifier": -6
+								}
+							],
+							"points": 2
+						},
+						{
+							"id": "s-6rvMGGvFtlzEzmH",
+							"name": "Tactics",
+							"reference": "DFA91",
+							"tags": [
+								"Military",
+								"Police"
+							],
+							"difficulty": "iq/h",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -6
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Strategy"
+									},
+									"modifier": -6
+								}
+							],
+							"points": 2
+						}
+					]
+				},
+				{
+					"id": "SuAbHeN57ysU-M2p2",
+					"name": "One Unarmed Striking Skill",
+					"template_picker": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "svVItJwAOk3CVuvCb",
+							"name": "Boxing",
+							"reference": "DFA93",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"features": [
+								{
+									"type": "weapon_bonus",
+									"selection_type": "weapons_with_required_skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Boxing"
+									},
+									"level": {
+										"compare": "at_least",
+										"qualifier": 1
+									},
+									"amount": 1,
+									"per_die": true
+								},
+								{
+									"type": "weapon_bonus",
+									"selection_type": "weapons_with_required_skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Boxing"
+									},
+									"level": {
+										"compare": "at_least",
+										"qualifier": 2
+									},
+									"amount": 1,
+									"per_die": true
+								}
+							],
+							"points": 2
+						},
+						{
+							"id": "sEgEZmVag4xZsa5Yc",
+							"name": "Brawling",
+							"reference": "DFA93",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/e",
+							"features": [
+								{
+									"type": "weapon_bonus",
+									"selection_type": "weapons_with_required_skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Brawling"
+									},
+									"level": {
+										"compare": "at_least",
+										"qualifier": 2
+									},
+									"amount": 1,
+									"per_die": true
+								}
+							],
+							"points": 2
+						}
+					]
+				},
+				{
+					"id": "S4PjvqsU462Q6Mu4l",
+					"name": "One Armory Specialty",
+					"template_picker": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "si4vgasyINKcc0fuZ",
+							"name": "Armory",
+							"reference": "DFA73",
+							"tags": [
+								"Maintainance",
+								"Military",
+								"Repair"
+							],
+							"specialization": "Body Armor",
+							"difficulty": "iq/a",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Engineer"
+									},
+									"specialization": {
+										"compare": "is",
+										"qualifier": "Body Armor"
+									},
+									"modifier": -4
+								}
+							],
+							"points": 4
+						},
+						{
+							"id": "szYLAJ3Kow5vvzRDq",
+							"name": "Armory",
+							"reference": "DFA73",
+							"tags": [
+								"Maintainance",
+								"Military",
+								"Repair"
+							],
+							"specialization": "Melee Weapons",
+							"difficulty": "iq/a",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Engineer"
+									},
+									"specialization": {
+										"compare": "is",
+										"qualifier": "Melee Weapons"
+									},
+									"modifier": -4
+								}
+							],
+							"points": 4
+						}
+					]
+				},
+				{
+					"id": "SUg0TtE7TmYrBprEQ",
+					"name": "One Grappling Skill",
+					"template_picker": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "srSMEOcagNnL4L0BQ",
+							"name": "Sumo Wrestling",
+							"reference": "DFA92",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"points": 2
+						},
+						{
+							"id": "so6BiYPIyjzDt0Ygz",
+							"name": "Wrestling",
+							"reference": "DFA93",
+							"tags": [
+								"Combat",
+								"Melee Combat",
+								"Weapon"
+							],
+							"difficulty": "dx/a",
+							"points": 2
+						}
+					]
+				},
+				{
+					"id": "SREyAJ2w4Xc-wenbm",
+					"name": "Choose Five",
+					"template_picker": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 5
+						}
+					},
+					"children": [
+						{
+							"id": "sel3NnVjw-JxUNaFo",
+							"name": "Carousing",
+							"reference": "DFA73",
+							"tags": [
+								"Criminal",
+								"Social",
+								"Street"
+							],
+							"difficulty": "ht/e",
+							"defaults": [
+								{
+									"type": "ht",
+									"modifier": -4
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "s_OxKFVz4pyt7KbnN",
+							"name": "Climbing",
+							"reference": "DFA74",
+							"tags": [
+								"Athletic",
+								"Criminal",
+								"Exploration",
+								"Outdoor",
+								"Street"
+							],
+							"difficulty": "dx/a",
+							"encumbrance_penalty_multiplier": 1,
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -5
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "smwhvPpIZpV7Y4qj_",
+							"name": "Fast-Draw",
+							"reference": "DFA76",
+							"tags": [
+								"Combat",
+								"Ranged Combat",
+								"Weapon"
+							],
+							"specialization": "@another@",
+							"difficulty": "dx/e",
+							"points": 1
+						},
+						{
+							"id": "sabUzpZk6h8UdJqRK",
+							"name": "First Aid",
+							"reference": "DFA76",
+							"tags": [
+								"Everyman",
+								"Medical"
+							],
+							"difficulty": "iq/e",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -4
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Esoteric Medicine"
+									}
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Physician"
+									}
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Veterinary"
+									},
+									"modifier": -4
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "s5P8nBoY2p4f6PByK",
+							"name": "Forced Entry",
+							"reference": "DFA77",
+							"tags": [
+								"Criminal",
+								"Police",
+								"Spy",
+								"Street"
+							],
+							"difficulty": "dx/e",
+							"points": 1
+						},
+						{
+							"id": "s8PiMrfV9gQYFrVs6",
+							"name": "Gambling",
+							"reference": "DFA77",
+							"tags": [
+								"Criminal",
+								"Social",
+								"Street"
+							],
+							"difficulty": "iq/a",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Mathematics"
+									},
+									"specialization": {
+										"compare": "is",
+										"qualifier": "Statistics"
+									},
+									"modifier": -5
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "smGPWa4ZUgC-1oBVB",
+							"name": "Gesture",
+							"reference": "DFA77",
+							"tags": [
+								"Social"
+							],
+							"difficulty": "iq/e",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -4
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "sVbb2Z0TZRvm5gh6q",
+							"name": "Heraldry",
+							"reference": "DFA77",
+							"tags": [
+								"Knowledge",
+								"Social"
+							],
+							"difficulty": "iq/a",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Savoir-Faire"
+									},
+									"modifier": -3
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "s76E53_RoIF5ZXQoe",
+							"name": "Hiking",
+							"reference": "DFA78",
+							"tags": [
+								"Athletic",
+								"Exploration",
+								"Outdoor"
+							],
+							"difficulty": "ht/a",
+							"defaults": [
+								{
+									"type": "ht",
+									"modifier": -5
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "s1iA6XbwMNIsOsTAW",
+							"name": "Intimidation",
+							"reference": "DFA79",
+							"tags": [
+								"Criminal",
+								"Police",
+								"Social",
+								"Street"
+							],
+							"difficulty": "will/a",
+							"defaults": [
+								{
+									"type": "will",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Acting"
+									},
+									"modifier": -3
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "s017FpomkFK9xb3f-",
+							"name": "Observation",
+							"reference": "DFA84",
+							"tags": [
+								"Criminal",
+								"Military",
+								"Police",
+								"Spy",
+								"Street"
+							],
+							"difficulty": "per/a",
+							"defaults": [
+								{
+									"type": "per",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Shadowing"
+									},
+									"modifier": -5
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "sGVqpRLr13UElh_rp",
+							"name": "Riding",
+							"reference": "DFA87",
+							"tags": [
+								"Animal"
+							],
+							"specialization": "Horse",
+							"difficulty": "dx/a",
+							"defaults": [
+								{
+									"type": "dx",
+									"modifier": -5
+								},
+								{
+									"type": "skill",
+									"name": {
+										"compare": "is",
+										"qualifier": "Animal Handling"
+									},
+									"specialization": {
+										"compare": "is",
+										"qualifier": "Horse"
+									},
+									"modifier": -3
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "sZayfAHP6BzZfs7RV",
+							"name": "Savoir-Faire",
+							"reference": "DFA87",
+							"tags": [
+								"Business",
+								"Knowledge",
+								"Social"
+							],
+							"difficulty": "iq/e",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -4
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "sEdWvnQnXZ-bkh_65",
+							"name": "Scrounging",
+							"reference": "DFA88",
+							"tags": [
+								"Criminal",
+								"Street"
+							],
+							"difficulty": "per/e",
+							"defaults": [
+								{
+									"type": "per",
+									"modifier": -4
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "sNbzcUDZsfVkcUJgK",
+							"name": "Stealth",
+							"reference": "DFA89",
+							"tags": [
+								"Criminal",
+								"Police",
+								"Spy",
+								"Street"
+							],
+							"difficulty": "dx/a",
+							"encumbrance_penalty_multiplier": 1,
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -5
+								},
+								{
+									"type": "dx",
+									"modifier": -5
+								}
+							],
+							"points": 1
+						},
+						{
+							"id": "so2WyfSaGeTdkFqUG",
+							"name": "Streetwise",
+							"reference": "DFA90",
+							"tags": [
+								"Criminal",
+								"Police",
+								"Social",
+								"Street"
+							],
+							"difficulty": "iq/a",
+							"defaults": [
+								{
+									"type": "iq",
+									"modifier": -5
+								}
+							],
+							"points": 1
+						}
+					]
+				}
+			]
+		}
+	]
+}
