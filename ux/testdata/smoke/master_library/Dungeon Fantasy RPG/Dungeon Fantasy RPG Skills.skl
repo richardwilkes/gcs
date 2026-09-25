@@ -1,0 +1,6639 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "scuenh7R9rYWqfYAS",
+			"name": "Acrobatics",
+			"reference": "DFA72",
+			"tags": [
+				"Athletic"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Aerobatics"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Aquabatics"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s67lKFVlidABAXphP",
+			"name": "Acting",
+			"reference": "DFA72",
+			"tags": [
+				"Social",
+				"Spy"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Performance"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Public Speaking"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sJLYZTE4QWPQ1g2SM",
+			"name": "Alchemy",
+			"reference": "DFA72",
+			"tags": [
+				"Magical",
+				"Natural Science",
+				"Occult"
+			],
+			"difficulty": "iq/vh",
+			"points": 1
+		},
+		{
+			"id": "s5-0fzlVirsDluibQ",
+			"name": "Animal Handling",
+			"reference": "DFA72",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "@Specialty@",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sH0Y5YrG49Fh2sXg_",
+			"name": "Animal Handling",
+			"reference": "DFA72",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "Canines",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sv-Dusgp3VSM0RXfL",
+			"name": "Animal Handling",
+			"reference": "DFA72",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "Equines",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sf9OkLTEsul__vfYP",
+			"name": "Animal Handling",
+			"reference": "DFA72",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "Felines",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sgxI7FZFinBlFEdoP",
+			"name": "Animal Handling",
+			"reference": "DFA72",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "Snakes",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s8Z_Fqc5F4jKvCJ3E",
+			"name": "Armory",
+			"reference": "DFA73",
+			"tags": [
+				"Maintenance",
+				"Military",
+				"Repair"
+			],
+			"specialization": "Body Armor",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Engineer"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Body Armor"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sv2cn5HXFG3hzzX2I",
+			"name": "Armory",
+			"reference": "DFA73",
+			"tags": [
+				"Maintenance",
+				"Military",
+				"Repair"
+			],
+			"specialization": "Melee Weapons",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Engineer"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Melee Weapons"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sgbWsoZDJKKa6ShB4",
+			"name": "Armory",
+			"reference": "DFA73",
+			"tags": [
+				"Maintenance",
+				"Military",
+				"Repair"
+			],
+			"specialization": "Missile Weapons",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Engineer"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Missile Weapons"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "siZd3zhb_ugHSt6Y_",
+			"name": "Autohypnosis",
+			"reference": "DFA31",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "will/h",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Meditation"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sJWXHIqO1bo3Y5r62",
+			"name": "Axe/Mace",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Two-Handed Axe/Mace"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Flail"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "srbrKKfl5M7g669cs",
+			"name": "Blind Fighting",
+			"reference": "DFA32",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "per/vh",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": false,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "weapon master"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sIFnUEojIsUlx7qhk",
+			"name": "Blowpipe",
+			"reference": "DFA83",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sjE-a4j6eg2QtqXiR",
+			"name": "Boating",
+			"reference": "DFA73",
+			"tags": [
+				"Vehicle"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Boating"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Motorboat"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Boating"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Sailboat"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Boating"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Unpowered"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Seamanship"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sfotW1jUBUNHSK51i",
+			"name": "Body Control",
+			"reference": "DFA32",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "ht/vh",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "smphq3VtmqOdGE61p",
+			"name": "Body Sense",
+			"reference": "DFA73",
+			"tags": [
+				"Athletic"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Acrobatics"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sFJjexRTguaUFx_dl",
+			"name": "Bolas",
+			"reference": "DFA73",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"points": 1
+		},
+		{
+			"id": "sYDZCCmi6CWN3HSlo",
+			"name": "Bow",
+			"reference": "DFA83",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "skT71ydKUK_2EU6B1",
+			"name": "Boxing",
+			"reference": "DFA93",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"features": [
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Boxing"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 1
+					},
+					"amount": 1,
+					"per_die": true
+				},
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Boxing"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 2
+					},
+					"amount": 1,
+					"per_die": true
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sUMFlX9EbNGNn31gm",
+			"name": "Brawling",
+			"reference": "DFA93",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/e",
+			"features": [
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Brawling"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 2
+					},
+					"amount": 1,
+					"per_die": true
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s29yjGowjbicQUwaG",
+			"name": "Breaking Blow",
+			"reference": "DFA32",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "iq/h",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sm6EZOxbHH6F6GqTQ",
+			"name": "Breath Control",
+			"reference": "DFA32",
+			"tags": [
+				"Athletic"
+			],
+			"difficulty": "ht/h",
+			"points": 1
+		},
+		{
+			"id": "sIPa439w__PRt4CT8",
+			"name": "Broadsword",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Force Sword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Rapier"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Saber"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shortsword"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Two-Handed Sword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sZLnZWB3740TBxm6-",
+			"name": "Camouflage",
+			"reference": "DFA73",
+			"tags": [
+				"Exploration",
+				"Military",
+				"Outdoor"
+			],
+			"difficulty": "iq/e",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sDK0NQcN7R8H53sSc",
+			"name": "Carousing",
+			"reference": "DFA73",
+			"tags": [
+				"Criminal",
+				"Social",
+				"Street"
+			],
+			"difficulty": "ht/e",
+			"defaults": [
+				{
+					"type": "ht",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sAmWj8wv68nVjwKIM",
+			"name": "Cartography",
+			"reference": "DFA74",
+			"tags": [
+				"Exploration",
+				"Humanities",
+				"Outdoor",
+				"Social Sciences"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Geography"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Mathematics"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Surveying"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Navigation"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s_noq8s2p_bxQytbs",
+			"name": "Climbing",
+			"reference": "DFA74",
+			"tags": [
+				"Athletic",
+				"Criminal",
+				"Exploration",
+				"Outdoor",
+				"Street"
+			],
+			"difficulty": "dx/a",
+			"encumbrance_penalty_multiplier": 1,
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sZETcI3EbwyhIamKv",
+			"name": "Cloak",
+			"reference": "DFA74",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Net"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shield"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s9gY7RC0V8Jdo9cpE",
+			"name": "Connoisseur",
+			"reference": "DFA74",
+			"tags": [
+				"Arts",
+				"Entertainment",
+				"Knowledge",
+				"Social"
+			],
+			"specialization": "Art",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s1K_U0THgztbFCNtj",
+			"name": "Connoisseur",
+			"reference": "DFA74",
+			"tags": [
+				"Arts",
+				"Entertainment",
+				"Knowledge",
+				"Social"
+			],
+			"specialization": "Luxuries",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Savoir-Faire"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sJTFFVKYH-2Xxr-pw",
+			"name": "Connoisseur",
+			"reference": "DFA74",
+			"tags": [
+				"Arts",
+				"Entertainment",
+				"Knowledge",
+				"Social"
+			],
+			"specialization": "Weapons",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s70cKDBsRiMLViRMx",
+			"name": "Counterfeiting",
+			"reference": "DFA74",
+			"tags": [
+				"Criminal",
+				"Street"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Forgery"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "siLtfKMGscHt8l2zM",
+			"name": "Crossbow",
+			"reference": "DFA83",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s2G9OlzNlfKvxYDFo",
+			"name": "Current Affairs",
+			"reference": "DFA74",
+			"tags": [
+				"Business",
+				"Everyman",
+				"Knowledge",
+				"Social"
+			],
+			"difficulty": "iq/e",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Research"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s3kVmce-oqMSkyUPb",
+			"name": "Dancing",
+			"reference": "DFA75",
+			"tags": [
+				"Arts",
+				"Entertainment"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s1GWiEqszAubxZ2YM",
+			"name": "Detect Lies",
+			"reference": "DFA75",
+			"tags": [
+				"Police",
+				"Social",
+				"Spy"
+			],
+			"difficulty": "per/h",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Body Language"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Psychology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sHBR8-qBolR8VMvGf",
+			"name": "Diagnosis",
+			"reference": "DFA75",
+			"tags": [
+				"Medical"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "First Aid"
+					},
+					"modifier": -8
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Veterinary"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sKBtvjjiGTwJHZsqN",
+			"name": "Diplomacy",
+			"reference": "DFA75",
+			"tags": [
+				"Business",
+				"Police",
+				"Social"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Politics"
+					},
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sliWIXKbdefJb-9R7",
+			"name": "Disguise",
+			"reference": "DFA75",
+			"tags": [
+				"Criminal",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Makeup"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s76ker5E-2TV8TWhE",
+			"name": "Disguise",
+			"reference": "DFA75",
+			"tags": [
+				"Criminal",
+				"Spy",
+				"Street"
+			],
+			"specialization": "Animals",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Makeup"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sxZAG2jOCxkvonZX5",
+			"name": "Escape",
+			"reference": "DFA75",
+			"tags": [
+				"Criminal",
+				"Street"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sKai8Gf7KzBVsR3ec",
+			"name": "Esoteric Medicine",
+			"reference": "DFA32",
+			"tags": [
+				"Esoteric",
+				"Medical"
+			],
+			"specialization": "Chi",
+			"difficulty": "per/h",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sRj4WIrK9KYwbMo1x",
+			"name": "Esoteric Medicine",
+			"reference": "DFA25",
+			"tags": [
+				"Esoteric",
+				"Medical"
+			],
+			"specialization": "Druidic",
+			"difficulty": "per/h",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s0ztzpfld76TeAS9Y",
+			"name": "Esoteric Medicine",
+			"reference": "DFA22",
+			"tags": [
+				"Esoteric",
+				"Medical"
+			],
+			"specialization": "Holy",
+			"difficulty": "per/h",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "scnHgLmBtcRP6UEJc",
+			"name": "Exorcism",
+			"reference": "DFA22",
+			"tags": [
+				"Magical",
+				"Occult"
+			],
+			"difficulty": "will/h",
+			"defaults": [
+				{
+					"type": "will",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Religious Ritual"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Ritual Magic"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Theology"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sY9q_60yrVFk1zB9C",
+			"name": "Fast-Draw",
+			"reference": "DFA76",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "@Item@",
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "spl6HsONkP4U_yiGF",
+			"name": "Fast-Draw",
+			"reference": "DFA76",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Arrow",
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "sbp0ZIqSgDOsmzl0k",
+			"name": "Fast-Draw",
+			"reference": "DFA76",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"specialization": "Knife",
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "sNMgBBvMxAf6BFBVp",
+			"name": "Fast-Draw",
+			"reference": "DFA76",
+			"tags": [
+				"Combat",
+				"Weapon"
+			],
+			"specialization": "Potion",
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "sewtBLqFyrI5BPm0X",
+			"name": "Fast-Draw",
+			"reference": "DFA76",
+			"tags": [
+				"Combat",
+				"Weapon"
+			],
+			"specialization": "Scroll",
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "sBJfuSGVIOG2aV5YG",
+			"name": "Fast-Draw",
+			"reference": "DFA76",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"specialization": "Sword",
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "sfZexpOBE4RZpeXe8",
+			"name": "Fast-Draw",
+			"reference": "DFA76",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"specialization": "Two-Handed Sword",
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "sHxEYw40DSWqj2ZD3",
+			"name": "Fast-Talk",
+			"reference": "DFA76",
+			"tags": [
+				"Criminal",
+				"Social",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Acting"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sk8jngq4i_93uMUrB",
+			"name": "Filch",
+			"reference": "DFA76",
+			"tags": [
+				"Criminal",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Pickpocket"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sleight of Hand"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s59NHp3Wau4GDTEeO",
+			"name": "First Aid",
+			"reference": "DFA76",
+			"tags": [
+				"Everyman",
+				"Medical"
+			],
+			"difficulty": "iq/e",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Esoteric Medicine"
+					}
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					}
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Veterinary"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sG3-E99nCGihbTn9_",
+			"name": "Fishing",
+			"reference": "DFA76",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"difficulty": "per/e",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s6XXNwVPKmu2l0SjG",
+			"name": "Flail",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Axe/Mace"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Two-Handed Flail"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sYRTFenqR5dpngPHr",
+			"name": "Forced Entry",
+			"reference": "DFA77",
+			"tags": [
+				"Criminal",
+				"Police",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "sMRZA1-ZUBf12iVPu",
+			"name": "Forgery",
+			"reference": "DFA77",
+			"tags": [
+				"Criminal",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Counterfeiting"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "shJf8lLKy947H7d0b",
+			"name": "Gambling",
+			"reference": "DFA77",
+			"tags": [
+				"Criminal",
+				"Social",
+				"Street"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Mathematics"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Statistics"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sAo8rd_Q17KHFt1tW",
+			"name": "Garrote",
+			"reference": "DFA77",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s0fGXPFQBrn-2nCCQ",
+			"name": "Gesture",
+			"reference": "DFA77",
+			"tags": [
+				"Social"
+			],
+			"difficulty": "iq/e",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sEAu1XYjd5duNVqLn",
+			"name": "Hazardous Materials",
+			"reference": "DFA77",
+			"tags": [
+				"Technical"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "scNmo5iFXnzAikCe9",
+			"name": "Heraldry",
+			"reference": "DFA77",
+			"tags": [
+				"Knowledge",
+				"Social"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Savoir-Faire"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sep3N-F3gABEfbCG0",
+			"name": "Herb Lore",
+			"reference": "DFA25",
+			"tags": [
+				"Plant"
+			],
+			"difficulty": "iq/vh",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "contains",
+							"qualifier": "naturalist"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "szduoweOKHuXYupsk",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "@Subject@",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "s93dju3_AZjBq4jVs",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Demons",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "sBaaAbNoFkJm-pzPA",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Divine Servitors",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "sZwZhkSM27pK_88fL",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Elder Things",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "sVqZpCcD9_GA8zTjx",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Elementals",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "sxofTahrAJo0ywaVO",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Faeries",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "s0-Zk1S2z3CRwT1wJ",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Lost Civilizations",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "s-MEhNfA6OTh74Dzd",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Magic Items",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "skFOwFc3sfXMtNQ8X",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Magical Writings",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "s7I37830-MJpAD10o",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Nature Spirits",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "s6lOlxM4QoTHqLsiE",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Spirits",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "s1SzOr_KN7LHiJD9x",
+			"name": "Hidden Lore",
+			"reference": "DFA78",
+			"tags": [
+				"Knowledge"
+			],
+			"specialization": "Undead",
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "sP9sehCsobGK78Xe8",
+			"name": "Hiking",
+			"reference": "DFA78",
+			"tags": [
+				"Athletic",
+				"Exploration",
+				"Outdoor"
+			],
+			"difficulty": "ht/a",
+			"defaults": [
+				{
+					"type": "ht",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "slE70WvZeRkRia75D",
+			"name": "Holdout",
+			"reference": "DFA78",
+			"tags": [
+				"Criminal",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sleight of Hand"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "siz7jKedKDHX6cp84",
+			"name": "Immovable Stance",
+			"reference": "DFA32",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "dx/h",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sP6PrubUhdfApOLJV",
+			"name": "Innate Attack",
+			"reference": "DFA79",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Beam",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Innate Attack"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "srloP_cQrM1vsJ9rD",
+			"name": "Innate Attack",
+			"reference": "DFA79",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Breath",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Innate Attack"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s7FtqjzkLrie3HBkO",
+			"name": "Innate Attack",
+			"reference": "DFA79",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Gaze",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Innate Attack"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sSGn4bdE1np_4JpBO",
+			"name": "Innate Attack",
+			"reference": "DFA79",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Projectile",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Innate Attack"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sfbRFVYjdOwhqV3Vi",
+			"name": "Interrogation",
+			"reference": "DFA79",
+			"tags": [
+				"Military",
+				"Police",
+				"Spy"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Intimidation"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Psychology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sMr2Nh2BPvr-6pRxQ",
+			"name": "Intimidation",
+			"reference": "DFA79",
+			"tags": [
+				"Criminal",
+				"Police",
+				"Social",
+				"Street"
+			],
+			"difficulty": "will/a",
+			"defaults": [
+				{
+					"type": "will",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Acting"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sYTrvMtG2jRQBtu_P",
+			"name": "Jitte/Sai",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Force Sword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Main-Gauche"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shortsword"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sgvqfuWOgyGJOh1jP",
+			"name": "Judo",
+			"reference": "DFA92",
+			"local_notes": "Allows parrying two different attacks per turn, one with each hand.",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"encumbrance_penalty_multiplier": 1,
+			"points": 1
+		},
+		{
+			"id": "suSyUUdWZczFn4d5U",
+			"name": "Jumping",
+			"reference": "DFA79",
+			"tags": [
+				"Athletic"
+			],
+			"difficulty": "dx/e",
+			"points": 1
+		},
+		{
+			"id": "sg1d7jOYs9rc3eZ-U",
+			"name": "Karate",
+			"reference": "DFA94",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"encumbrance_penalty_multiplier": 1,
+			"features": [
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Karate"
+					},
+					"level": {
+						"compare": "at_least"
+					},
+					"amount": 1,
+					"per_die": true
+				},
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Karate"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 1
+					},
+					"amount": 1,
+					"per_die": true
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sKAhgFMvxMPXHSuki",
+			"name": "Kiai",
+			"reference": "DFA32",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "ht/h",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": false,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "weapon master"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sGMuuC-kk-56K3Qf2",
+			"name": "Knife",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Force Sword"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Main-Gauche"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shortsword"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "dx",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s4sDEVZKdD0T0VBnJ",
+			"name": "Knot-Tying",
+			"reference": "DFA79",
+			"tags": [
+				"Everyman"
+			],
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Climbing"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Seamanship"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s0tPCgdAoREgWqZIg",
+			"name": "Kusari",
+			"reference": "DFA82",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Force Whip"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Monowire Whip"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Whip"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Two-Handed Flail"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "siGeFFoCAvEPuROH-",
+			"name": "Lasso",
+			"reference": "DFA80",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"points": 1
+		},
+		{
+			"id": "s6U6i0W8Oj1FnQT7E",
+			"name": "Leadership",
+			"reference": "DFA80",
+			"tags": [
+				"Military",
+				"Social"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "snd5gURyz8oqypWXS",
+			"name": "Lifting",
+			"reference": "DFA80",
+			"tags": [
+				"Athletic"
+			],
+			"difficulty": "ht/a",
+			"points": 1
+		},
+		{
+			"id": "sOsF5xG64rfsFpE7s",
+			"name": "Light Walk",
+			"reference": "DFA33",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "dx/h",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "stealth"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 14
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "acrobatics"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 14
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sQHxZPcbfISu1LNRJ",
+			"name": "Lip Reading",
+			"reference": "DFA80",
+			"tags": [
+				"Spy"
+			],
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -10
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sRpMQBA-i4fplBfDJ",
+			"name": "Lockpicking",
+			"reference": "DFA80",
+			"tags": [
+				"Criminal",
+				"Police",
+				"Spy",
+				"Street",
+				"Technical"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sKl5_DLlGCMU7G7zk",
+			"name": "Main-Gauche",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Jitte/Sai"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Knife"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Rapier"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Saber"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Smallsword"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s1UY7J8jpGz4oQv2I",
+			"name": "Meditation",
+			"reference": "DFA80",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "will/h",
+			"defaults": [
+				{
+					"type": "will",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Autohypnosis"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "szUodsYzhPPqJilZW",
+			"name": "Mental Strength",
+			"reference": "DFA33",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "will/e",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": false,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "weapon master"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sJ-Mdf4Vf_PbzgFBS",
+			"name": "Merchant",
+			"reference": "DFA82",
+			"tags": [
+				"Business",
+				"Social"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Finance"
+					},
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Market Analysis"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sasEWTBVDToCkZgd7",
+			"name": "Mimicry",
+			"reference": "DFA83",
+			"tags": [
+				"Animal",
+				"Arts",
+				"Entertainment",
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Animal Sounds",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Mimicry"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Bird Calls"
+					},
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sMPapGNAja_8ehSTg",
+			"name": "Mimicry",
+			"reference": "DFA83",
+			"tags": [
+				"Animal",
+				"Arts",
+				"Entertainment",
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Bird Calls",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Mimicry"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Animal Sounds"
+					},
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sF4QwhcH8Io3d6CX1",
+			"name": "Mimicry",
+			"reference": "DFA83",
+			"tags": [
+				"Arts",
+				"Entertainment"
+			],
+			"specialization": "Speech",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Acting"
+					},
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sGb47X57CztSk5_QC",
+			"name": "Mind Block",
+			"reference": "DFA33",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "will/a",
+			"defaults": [
+				{
+					"type": "will",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Meditation"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sBeWwsTrNaEaptPgs",
+			"name": "Musical Composition",
+			"reference": "DFA83",
+			"tags": [
+				"Arts",
+				"Entertainment"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Musical Instrument"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Poetry"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sR2oibWbTiIkxJrJp",
+			"name": "Musical Instrument",
+			"reference": "DFA83",
+			"tags": [
+				"Arts",
+				"Entertainment"
+			],
+			"specialization": "@Specialty@",
+			"difficulty": "iq/h",
+			"points": 1
+		},
+		{
+			"id": "sMZGDT1J-tTSqOoqf",
+			"name": "Naturalist",
+			"reference": "DFA83",
+			"tags": [
+				"Animal",
+				"Exploration",
+				"Natural Science",
+				"Outdoor",
+				"Plant"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Biology"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sY7B2-iueQMixijmH",
+			"name": "Navigation",
+			"reference": "DFA84",
+			"tags": [
+				"Exploration",
+				"Outdoor",
+				"Technical",
+				"Vehicle"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Cartography"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Seamanship"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sZoNkW0Seu6Iy40ZF",
+			"name": "Net",
+			"reference": "DFA84",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Cloak"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "svTpWWT9dvgcgBlnd",
+			"name": "Observation",
+			"reference": "DFA84",
+			"tags": [
+				"Criminal",
+				"Military",
+				"Police",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shadowing"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sHcmWeTDgGyRDKTdF",
+			"name": "Occultism",
+			"reference": "DFA84",
+			"tags": [
+				"Magical",
+				"Occult"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sBzLXA69M_AiZmmIz",
+			"name": "Panhandling",
+			"reference": "DFA84",
+			"tags": [
+				"Criminal",
+				"Social",
+				"Street"
+			],
+			"difficulty": "iq/e",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fast Talk"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Public Speaking"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s9jNIB0FmoVgdt2ky",
+			"name": "Parry Missile-Weapons",
+			"reference": "DFA33",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"points": 1
+		},
+		{
+			"id": "sTCVWPVC9p-A8xSqA",
+			"name": "Performance",
+			"reference": "DFA84",
+			"tags": [
+				"Arts",
+				"Entertainment"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Acting"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Public Speaking"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s6OY3-_51fIBpUIJy",
+			"name": "Pharmacy",
+			"reference": "DFA85",
+			"tags": [
+				"Design",
+				"Invention",
+				"Medical",
+				"Plant"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Biology"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Herb Lore"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -5
+				}
+			],
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "naturalist"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "seUvUs272kXMrn8kV",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "@Specialty@",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "swkojEOpeCdjVGSkp",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "Animals",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "saGZWGOpaJoIHnSOY",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "Constructs",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sTapQXf_vUfqQ4sFz",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "Demons",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sg2FK6QXcC6YI91KQ",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "Elementals",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sninxx38w0NwPYxEY",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "Faeries",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sHtMGKXgEs3fccdDs",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "Hybrids",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sS7e5O92FHxMh6YMG",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "Plants",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s78aEoTl2PodAOKZg",
+			"name": "Physiology",
+			"reference": "DFA85",
+			"tags": [
+				"Medical",
+				"Natural Science"
+			],
+			"specialization": "Undead",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Diagnosis"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s8woV_CN7MpqWhKeR",
+			"name": "Pickpocket",
+			"reference": "DFA85",
+			"tags": [
+				"Criminal",
+				"Street"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Filch"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sleight of Hand"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "st_dFfcYZMqJ0x2X4",
+			"name": "Poetry",
+			"reference": "DFA85",
+			"tags": [
+				"Arts",
+				"Entertainment"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Writing"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sdCxwV_3hVKSqFI_D",
+			"name": "Poisons",
+			"reference": "DFA85",
+			"tags": [
+				"Criminal",
+				"Medical",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Chemistry"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Pharmacy"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s2TRfOszdn6Fj48XX",
+			"name": "Polearm",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Spear"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Staff"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Two-Handed Axe/Mace"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sw8ILbSxP32kuY3Io",
+			"name": "Power Blow",
+			"reference": "DFA33",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "will/h",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": false,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "weapon master"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sSwjghdbPi_LBpjNS",
+			"name": "Pressure Points",
+			"reference": "DFA33",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "iq/h",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": false,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "weapon master"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sOnnzVQLqxW-ZYzn5",
+			"name": "Propaganda",
+			"reference": "DFA86",
+			"tags": [
+				"Business",
+				"Military",
+				"Social",
+				"Spy"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Merchant"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Psychology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sCJnE65Cw1V7mPVjX",
+			"name": "Prospecting",
+			"reference": "DFA86",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Geology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sBBc8Wnwoz4U2-6b8",
+			"name": "Psychology",
+			"reference": "DFA86",
+			"tags": [
+				"Humanities",
+				"Social Sciences"
+			],
+			"specialization": "@Specialty@",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sociology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sRIpwO4cRfNcyPoxA",
+			"name": "Psychology",
+			"reference": "DFA86",
+			"tags": [
+				"Humanities",
+				"Social Sciences"
+			],
+			"specialization": "Constructs",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sociology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s2VRslPIZ_xcE4GSj",
+			"name": "Psychology",
+			"reference": "DFA86",
+			"tags": [
+				"Humanities",
+				"Social Sciences"
+			],
+			"specialization": "Demons",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sociology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sX5mhj-90odRSFsc3",
+			"name": "Psychology",
+			"reference": "DFA86",
+			"tags": [
+				"Humanities",
+				"Social Sciences"
+			],
+			"specialization": "Elementals",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sociology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "svbmguWl7xKUYK1lP",
+			"name": "Psychology",
+			"reference": "DFA86",
+			"tags": [
+				"Humanities",
+				"Social Sciences"
+			],
+			"specialization": "Faeries",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sociology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sREhRSZB1iizxsZ4B",
+			"name": "Psychology",
+			"reference": "DFA86",
+			"tags": [
+				"Humanities",
+				"Social Sciences"
+			],
+			"specialization": "Undead",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Sociology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "suNSfuNWmbFctebp-",
+			"name": "Public Speaking",
+			"reference": "DFA86",
+			"tags": [
+				"Business",
+				"Scholarly",
+				"Social"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Acting"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Performance"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Politics"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sbRUS4r1mTnwOdh27",
+			"name": "Push",
+			"reference": "DFA33",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "dx/h",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sIzhGG9-301PPDuRu",
+			"name": "Rapier",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Main-Gauche"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Saber"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Smallsword"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sRgusEGq6h_CRTvPf",
+			"name": "Religious Ritual",
+			"reference": "DFA86",
+			"tags": [
+				"Magical",
+				"Occult"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Ritual Magic"
+					},
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Theology"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sTLBD9ksUJqw4RB8Q",
+			"name": "Religious Ritual",
+			"reference": "DFA86",
+			"tags": [
+				"Magical",
+				"Occult"
+			],
+			"specialization": "Druidic",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Ritual Magic"
+					},
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Theology"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Druidic"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sYSyBf8Oq9-Gn9dPn",
+			"name": "Research",
+			"reference": "DFA86",
+			"tags": [
+				"Scholarly",
+				"Spy"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Writing"
+					},
+					"modifier": -3
+				}
+			],
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "is",
+							"qualifier": "Illiteracy"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sWbDCV2vyN4WxxovU",
+			"name": "Riding",
+			"reference": "DFA87",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "@Specialty@",
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Animal Handling"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "@Specialty@"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sgorQVrs_WSUmrLDI",
+			"name": "Riding",
+			"reference": "DFA87",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "Camel",
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Animal Handling"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Camel"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sisQl5NtplCWwDQiC",
+			"name": "Riding",
+			"reference": "DFA87",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "Dolphin",
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Animal Handling"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Dolphin"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sU257QMN_ho_RHkiv",
+			"name": "Riding",
+			"reference": "DFA87",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "Dragon",
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Animal Handling"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Dragon"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sd1l8K1hIHriVLA67",
+			"name": "Riding",
+			"reference": "DFA87",
+			"tags": [
+				"Animal"
+			],
+			"specialization": "Horse",
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Animal Handling"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Horse"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sIQzmwfTiPgBNF7eD",
+			"name": "Running",
+			"reference": "DFA87",
+			"tags": [
+				"Athletic"
+			],
+			"difficulty": "ht/a",
+			"defaults": [
+				{
+					"type": "ht",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "smMdtUOUAPQA6C9-Z",
+			"name": "Saber",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shortswort"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Main-Gauche"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Rapier"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Smallsword"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sWH4lgAIKHRw533bR",
+			"name": "Savoir-Faire",
+			"reference": "DFA87",
+			"tags": [
+				"Business",
+				"Knowledge",
+				"Social"
+			],
+			"difficulty": "iq/e",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "svvcgYfqQ_YmPwvLg",
+			"name": "Scrounging",
+			"reference": "DFA88",
+			"tags": [
+				"Criminal",
+				"Street"
+			],
+			"difficulty": "per/e",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sYFMwBBxQ-cmtYHmi",
+			"name": "Seamanship",
+			"reference": "DFA88",
+			"tags": [
+				"Vehicle"
+			],
+			"difficulty": "iq/e",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s6XVV_CP08wpVXHkg",
+			"name": "Search",
+			"reference": "DFA88",
+			"tags": [
+				"Police",
+				"Spy"
+			],
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Criminology"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sFUunF4AukFGnIB8z",
+			"name": "Sex Appeal",
+			"reference": "DFA88",
+			"tags": [
+				"Social"
+			],
+			"difficulty": "ht/a",
+			"defaults": [
+				{
+					"type": "ht",
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sFvt-3VkevZwkf0uk",
+			"name": "Shadowing",
+			"reference": "DFA88",
+			"tags": [
+				"Criminal",
+				"Police",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Observation"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Stealth"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sb31vE_obEUqvCSW1",
+			"name": "Shield",
+			"reference": "DFA88",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"specialization": "Buckler",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shield"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sxrJ0547O4bP-EuZX",
+			"name": "Shield",
+			"reference": "DFA88",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"specialization": "Shield",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shield"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sREf0R4fH6zX2LRi2",
+			"name": "Shortsword",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Force Sword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Jitte/Sai"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Knife"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Saber"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Smallsword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Tonfa"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s7YZY5L7fStA8i6cQ",
+			"name": "Singing",
+			"reference": "DFA89",
+			"tags": [
+				"Arts",
+				"Entertainment"
+			],
+			"difficulty": "ht/e",
+			"defaults": [
+				{
+					"type": "ht",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s5h-X2wL8GwPIiuhb",
+			"name": "Skiing",
+			"reference": "DFA89",
+			"tags": [
+				"Athletic",
+				"Exploration",
+				"Outdoor"
+			],
+			"difficulty": "ht/h",
+			"defaults": [
+				{
+					"type": "ht",
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "siu1HBesg5UEGmw-j",
+			"name": "Sleight of Hand",
+			"reference": "DFA89",
+			"tags": [
+				"Arts",
+				"Criminal",
+				"Entertainment",
+				"Street"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Filch"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sShSlwZ4dPx-_E_wX",
+			"name": "Sling",
+			"reference": "DFA83",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "shd2T3Rmivpbf6QJ_",
+			"name": "Smallsword",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shortsword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Main-Gauche"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Rapier"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Saber"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "szmlj4f_mXeUfRJEP",
+			"name": "Smuggling",
+			"reference": "DFA89",
+			"tags": [
+				"Criminal",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sNk63TpccCvsiXKd0",
+			"name": "Spear",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Polearm"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Staff"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sMa_w6SbyAhh9y3Bl",
+			"name": "Spear Thrower",
+			"reference": "DFA83",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Thrown Weapon"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Spear"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sjt9rwP25CIFBw-QH",
+			"name": "Speed-Reading",
+			"reference": "DFA89",
+			"tags": [
+				"Scholarly"
+			],
+			"difficulty": "iq/a",
+			"points": 1
+		},
+		{
+			"id": "soilUSeitMyIlPAtg",
+			"name": "Staff",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Polearm"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Spear"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "stWUM31sKZ3luEMy2",
+			"name": "Stealth",
+			"reference": "DFA89",
+			"tags": [
+				"Criminal",
+				"Police",
+				"Spy",
+				"Street"
+			],
+			"difficulty": "dx/a",
+			"encumbrance_penalty_multiplier": 1,
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s0pHY2syssWuCG-qz",
+			"name": "Strategy",
+			"reference": "DFA90",
+			"tags": [
+				"Military"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Intelligence Analysis"
+					},
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Tactics"
+					},
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "su--hvhfgXX1hdu1b",
+			"name": "Streetwise",
+			"reference": "DFA90",
+			"tags": [
+				"Criminal",
+				"Police",
+				"Social",
+				"Street"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s-frTjkdCJ6_KKlLd",
+			"name": "Sumo Wrestling",
+			"reference": "DFA92",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"points": 1
+		},
+		{
+			"id": "sGh3GER1SZtvucXxe",
+			"name": "Surgery",
+			"reference": "DFA90",
+			"tags": [
+				"Medical"
+			],
+			"difficulty": "iq/vh",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "First Aid"
+					},
+					"modifier": -12
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physician"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Physiology"
+					},
+					"modifier": -8
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Veterinary"
+					},
+					"modifier": -5
+				}
+			],
+			"prereqs": {
+				"type": "prereq_list",
+				"all": false,
+				"prereqs": [
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "first aid"
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "physician"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sufMXklhL_DULnwUL",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "@Environment@",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Bank"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Deep Ocean Vent"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Fresh-Water Lake"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Open Ocean"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Reef"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "River/Stream"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Tropical Lagoon"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s4aln9Gc_vs6hIpmG",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Arctic",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Desert"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Island/Beach"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Jungle"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Mountain"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Plains"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Swamplands"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Woodlands"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sB9sAjKAm6R7wEO8x",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Desert",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Arctic"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Island/Beach"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Jungle"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Mountain"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Plains"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Swampland"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Woodlands"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "spTOxX0AX2W846i1D",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Island/Beach",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Tropical Lagoon"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Arctic"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Desert"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Jungle"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Mountain"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Plains"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Swampland"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Woodlands"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "szPW4iOeooiXKBRuX",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Jungle",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Arctic"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Desert"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Mountain"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Plains"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Swampland"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Island/Beach"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Woodlands"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sXukGKNUeV2QMns-i",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Mountain",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Arctic"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Desert"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Island/Beach"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Jungle"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Plains"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Swampland"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Woodlands"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sKcSyx4z_9fqdD6Dx",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Plains",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Arctic"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Desert"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Island/Beach"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Jungle"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Mountain"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Swampland"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Woodlands"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "syYMmCQdPn1AfDIbJ",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Swampland",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "River/Stream"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Arctic"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Desert"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Jungle"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Mountain"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Plains"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Island/Beach"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Woodlands"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sxLoT5ATvUrYEuYih",
+			"name": "Survival",
+			"reference": "DFA90",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"specialization": "Woodlands",
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Arctic"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Desert"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Island/Beach"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Jungle"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Mountain"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Plains"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Survival"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Swampland"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sK3qkLzqKpXsXZsdn",
+			"name": "Swimming",
+			"reference": "DFA90",
+			"tags": [
+				"Athletic",
+				"Exploration",
+				"Outdoor"
+			],
+			"difficulty": "ht/e",
+			"encumbrance_penalty_multiplier": 2,
+			"defaults": [
+				{
+					"type": "ht",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sqbg3yPHHTT0fHqmM",
+			"name": "Tactics",
+			"reference": "DFA91",
+			"tags": [
+				"Military",
+				"Police"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Strategy"
+					},
+					"modifier": -6
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sn9OTSgO-Jdi56lMa",
+			"name": "Teaching",
+			"reference": "DFA91",
+			"tags": [
+				"Scholarly",
+				"Social"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sfJVhPubH7UwxqhFN",
+			"name": "Thaumatology",
+			"reference": "DFA91",
+			"tags": [
+				"Magical",
+				"Occult"
+			],
+			"difficulty": "iq/vh",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -7
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sac4DNizYhFnr5ncu",
+			"name": "Theology",
+			"reference": "DFA91",
+			"tags": [
+				"Humanities",
+				"Social Sciences"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Religious Ritual"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sI1AA9rTg_Admq8ur",
+			"name": "Theology",
+			"reference": "DFA91",
+			"tags": [
+				"Humanities",
+				"Social Sciences"
+			],
+			"specialization": "Druidic",
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Religious Ritual"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Druidic"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sQK-KUH0dR_mN9MQP",
+			"name": "Throwing",
+			"reference": "DFA91",
+			"tags": [
+				"Athletic",
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Dropping"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sFfdzEum64ltmyfti",
+			"name": "Throwing Art",
+			"reference": "DFA34",
+			"tags": [
+				"Esoteric"
+			],
+			"difficulty": "dx/h",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": false,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "weapon master"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "trained by a master"
+						}
+					}
+				]
+			},
+			"points": 1
+		},
+		{
+			"id": "sfIBMIcJimmn5pfKb",
+			"name": "Thrown Weapon",
+			"reference": "DFA91",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "@Specialty@",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s4m9kK3YxR976CoPq",
+			"name": "Thrown Weapon",
+			"reference": "DFA91",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Axe/Mace",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sYUO1vNflndTvzMrZ",
+			"name": "Thrown Weapon",
+			"reference": "DFA91",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Dart",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Throwing"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "szmD99yJ2Es1Pz073",
+			"name": "Thrown Weapon",
+			"reference": "DFA91",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Harpoon",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Thrown Weapon"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Spear"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sSg3_t4o1EY_D2rUk",
+			"name": "Thrown Weapon",
+			"reference": "DFA91",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Knife",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "szhrMhk40Z91o5EVk",
+			"name": "Thrown Weapon",
+			"reference": "DFA91",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Shuriken",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Throwing"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "se0Y7kYJUaeXFj5Ns",
+			"name": "Thrown Weapon",
+			"reference": "DFA91",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Spear",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Spear Thrower"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Thrown Weapon"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Harpoon"
+					},
+					"modifier": -2
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s4rogZ8xmgXgQVGPl",
+			"name": "Thrown Weapon",
+			"reference": "DFA91",
+			"tags": [
+				"Combat",
+				"Ranged Combat",
+				"Weapon"
+			],
+			"specialization": "Stick",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s-qaex6gJlE3JswZv",
+			"name": "Tonfa",
+			"reference": "DFA82",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shortsword"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sDMrCpmUtQNn3Zd9d",
+			"name": "Tracking",
+			"reference": "DFA92",
+			"tags": [
+				"Exploration",
+				"Outdoor"
+			],
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Naturalist"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "swvLN9P0plvDUXQaI",
+			"name": "Traps",
+			"reference": "DFA92",
+			"tags": [
+				"Criminal",
+				"Military",
+				"Street"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Lockpicking"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sRxrEmc3lfEEy4VAa",
+			"name": "Two-Handed Axe/Mace",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Axe/Mace"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Polearm"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Two-Handed Flail"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sZFEG08s5VXd1ZIMn",
+			"name": "Two-Handed Flail",
+			"reference": "DFA81",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Flail"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Kusari"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Two-Handed Axe/Mace"
+					},
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "snAFDxOB3UqelcxN5",
+			"name": "Two-Handed Sword",
+			"reference": "DFA82",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Force Sword"
+					},
+					"modifier": -4
+				},
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sVZ-LBm5Azv2yoGD5",
+			"name": "Urban Survival",
+			"reference": "DFA94",
+			"tags": [
+				"Criminal",
+				"Police",
+				"Street"
+			],
+			"difficulty": "per/a",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "saUwoycDfZev9u_Jd",
+			"name": "Ventriloquism",
+			"reference": "DFA94",
+			"tags": [
+				"Arts",
+				"Entertainment"
+			],
+			"difficulty": "iq/h",
+			"points": 1
+		},
+		{
+			"id": "sOt0ouAuX_84rlANE",
+			"name": "Veterinary",
+			"reference": "DFA94",
+			"tags": [
+				"Animal",
+				"Medical"
+			],
+			"difficulty": "iq/h",
+			"defaults": [
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Animal Handling"
+					},
+					"modifier": -6
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Esoteric Medicine"
+					},
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Surgery"
+					},
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "ssI3x02A9luuseRDy",
+			"name": "Weather Sense",
+			"reference": "DFA94",
+			"tags": [
+				"Everyman",
+				"Exploration",
+				"Outdoor"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s2u7PEdv1s5_cIKdV",
+			"name": "Whip",
+			"reference": "DFA82",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Force Whip"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Kusari"
+					},
+					"modifier": -3
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Monowire Whip"
+					},
+					"modifier": -3
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "s6iSa3lbnEODwEzdw",
+			"name": "Wrestling",
+			"reference": "DFA93",
+			"tags": [
+				"Combat",
+				"Melee Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"points": 1
+		},
+		{
+			"id": "slGB9sfhyga7dcVS4",
+			"name": "Writing",
+			"reference": "DFA94",
+			"tags": [
+				"Arts",
+				"Entertainment",
+				"Scholarly"
+			],
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		}
+	]
+}

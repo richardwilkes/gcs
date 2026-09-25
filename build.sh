@@ -76,6 +76,10 @@ while [ $# -gt 0 ]; do
 		RACE=-race
 		SOMETHING=1
 		;;
+	--smoke | -s)
+		SMOKE=1
+		SOMETHING=1
+		;;
 	--i18n | -i)
 		I18N=1
 		SOMETHING=1
@@ -124,6 +128,8 @@ while [ $# -gt 0 ]; do
 		echo "  -i, --i18n           Extract the localization template"
 		echo "  -l, --lint           Run the linters"
 		echo "  -r, --race           Run the tests, race-checking those that exercise concurrency"
+		echo "  -s, --smoke          Run the headless smoke tests. With GCS_SMOKE_WARN_ONLY set, a failure is only a"
+		echo "                       warning"
 		echo "  -t, --test           Run the tests"
 		echo "  -T, --target OS/ARCH Build the application for another platform, e.g. windows/amd64. GOOS and GOARCH"
 		echo "                       set in the environment work too. Packaging is only possible for this machine's"
@@ -342,6 +348,23 @@ if [ "$TEST"x == "1x" ]; then
 	if [ -n "$RACE" ]; then
 		echo -e "\033[33mRace-checking the concurrency tests...\033[0m"
 		go test -race -run '^TestRace$' ./... | grep -Ev "no test files|no tests to run"
+	fi
+fi
+
+# The smoke tests start the whole application headless against a fixed set of fixtures and compare what it shows with
+# golden files (see ux/smoke_harness_test.go). They are compiled only with the smoke build tag, so the run above leaves
+# them out. CI sets GCS_SMOKE_WARN_ONLY, which reports a failure as a warning rather than failing the build.
+if [ "$SMOKE"x == "1x" ]; then
+	echo -e "\033[33mRunning the smoke tests...\033[0m"
+	if ! go test -tags smoke -run '^TestSmoke' ./ux; then
+		if [ -z "$GCS_SMOKE_WARN_ONLY" ]; then
+			echo -e "\033[33;5mThe smoke tests failed\033[0m"
+			exit 1
+		fi
+		echo -e "\033[33mThe smoke tests failed; continuing, since GCS_SMOKE_WARN_ONLY is set\033[0m"
+		if [ -n "$GITHUB_ACTIONS" ]; then
+			echo "::warning title=Smoke tests::The smoke tests failed. See the build log, and the smoke test artifact for what they saw."
+		fi
 	fi
 fi
 

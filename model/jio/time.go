@@ -22,9 +22,12 @@ const timeLayout = "Jan _2, 2006, 3:04 PM"
 // Time is a time.Time that has been tailored to be used with JSON in this application.
 type Time time.Time
 
+// Clock supplies the time Now reports. Tests replace it to pin the time; nothing else should.
+var Clock = time.Now
+
 // Now returns the current local time.
 func Now() Time {
-	return Time(time.Now())
+	return Time(Clock())
 }
 
 // NewTimeFrom returns a time & date from a string.

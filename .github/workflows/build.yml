@@ -43,13 +43,30 @@ jobs:
           sudo apt-get install -y --no-install-recommends libx11-6 libgl1
 
       - name: Build
+        env:
+          # The smoke tests run on the linux/amd64 runner alone, and a failure there is a warning rather than a failed
+          # build. What a failing test saw is kept here, for the upload below.
+          GCS_SMOKE_WARN_ONLY: 1
+          GCS_SMOKE_ARTIFACTS: ${{ runner.temp }}/smoke
         run: |
+          smoke=
+          if [ "$RUNNER_OS" = "Linux" ] && [ "$RUNNER_ARCH" = "X64" ]; then
+            smoke=--smoke
+          fi
           # The race detector supports only windows/amd64 on Windows, so build & test without it on windows/arm64.
           if [ "$RUNNER_OS" = "Windows" ] && [ "$RUNNER_ARCH" = "ARM64" ]; then
-            ./build.sh --go --test
+            ./build.sh --go --test $smoke
           else
-            ./build.sh --go --race
+            ./build.sh --go --race $smoke
           fi
+
+      - name: Upload smoke test failures
+        if: ${{ always() && runner.os == 'Linux' && runner.arch == 'X64' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-test-failures
+          path: ${{ runner.temp }}/smoke
+          if-no-files-found: ignore
 
       - name: Stage artifact
         id: stage

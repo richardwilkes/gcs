@@ -1,0 +1,84 @@
+window "GCS" [focused]
+  menu-bar
+    menu-item "File" [collapsed]
+    menu-item "Edit" [collapsed]
+    menu-item "Item" [collapsed]
+    menu-item "Settings" [collapsed]
+    menu-item "View" [collapsed]
+    menu-item "Window" [collapsed]
+    menu-item "Help" [collapsed]
+  group
+    group "Library Explorer"
+      tab-list
+        tab "Library Explorer" [selected]
+        button "Maximize"
+      tab-panel "Library Explorer"
+        image "Holding down the Alt+ key while using the mouse wheel will change the scale."
+        button "Help"
+        text-field "Scale" value="100%"
+        button "Opens/closes all hierarchical rows"
+        separator
+        button "Add Library"
+        button "Update" [disabled]
+        button "Release Notes" [disabled]
+        button "Configure" [disabled]
+        separator
+        button "New Folder" [disabled]
+        button "Rename" [disabled]
+        button "Delete" [disabled]
+        button "Toggle Favorite" [disabled]
+        button "Previous Match" [disabled]
+        button "Next Match" [disabled]
+        text-field "Search" desc="Search\nPress RETURN to select the next match\nPress SHIFT-RETURN to select the previous match" placeholder="Search"
+          button "Clear" [disabled]
+        label "-" text="-" desc="Number of matches found"
+        scroll-area
+          tree "Library Explorer" [focused]
+            row "Favorites" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "Favorites" text="Favorites"
+            row "User Library" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "User Library" text="User Library"
+            row "Master Library" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "Master Library" text="Master Library"
+            row "Dungeon Fantasy RPG" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "Dungeon Fantasy RPG" text="Dungeon Fantasy RPG"
+            row "Classes" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "Classes" text="Classes"
+            row "Knight"
+              cell
+                label "Knight" text="Knight"
+            row "Dungeon Fantasy RPG Equipment"
+              cell
+                label "Dungeon Fantasy RPG Equipment" text="Dungeon Fantasy RPG Equipment"
+            row "Dungeon Fantasy RPG Skills"
+              cell
+                label "Dungeon Fantasy RPG Skills" text="Dungeon Fantasy RPG Skills"
+            row "Dungeon Fantasy RPG Traits"
+              cell
+                label "Dungeon Fantasy RPG Traits" text="Dungeon Fantasy RPG Traits"
+            row "Races" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "Races" text="Races"
+            row "Dwarf"
+              cell
+                label "Dwarf" text="Dwarf"
+            row "Elf"
+              cell
+                label "Elf" text="Elf"
+    group "Document Workspace"
+      tab-list
+        tab "Document Workspace" [selected]
+        button "Maximize"
+      tab-panel "Document Workspace"
+        group
