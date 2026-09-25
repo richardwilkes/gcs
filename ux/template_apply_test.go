@@ -59,6 +59,21 @@ func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	c.False(sheet.undoMgr.CanUndo(), "nothing was changed, so there must be nothing to undo")
 }
 
+// Creating a character from a template used to leave the new, empty sheet open when a picker was canceled, even though
+// canceling abandons the whole operation.
+func TestNewSheetFromTemplateCanceledPickerClosesTheSheet(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	template := newTestTemplateWithBodyType("Template Body")
+	swapForTest(t, &promptForPickers, func(_ *applyParts) bool { return false })
+	var open int
+	screen.Do(func() {
+		template.newSheetFromTemplate(nil)
+		open = len(AllDockables())
+	})
+	c.Equal(0, open, "canceling a picker must close the new sheet")
+}
+
 // The undo data used to preserve only the profile randomizer fields and the five table data sets, leaving the
 // character permanently stuck with the template's body type.
 func TestApplyTemplateUndoRestoresBodyType(t *testing.T) {
