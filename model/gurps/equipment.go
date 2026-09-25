@@ -538,10 +538,7 @@ func (e *Equipment) SetDataOwner(owner DataOwner) {
 			child.SetDataOwner(owner)
 		}
 	}
-	for _, m := range e.Modifiers {
-		m.SetTarget(e)
-		m.SetDataOwner(owner)
-	}
+	attachModifiers(e, e.Modifiers)
 }
 
 // IsLeveled returns true if the equipment is capable of having levels.
@@ -1071,8 +1068,7 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	// Each copy is pointed at the equipment it belongs to, so its nameable placeholders resolve with that equipment's
 	// replacements. Without this, the copies held in an editor show their raw placeholders (e.g. "@Material@"), since
 	// the accessors fall back to the unsubstituted text when there is no equipment.
-	e.Modifiers = cloneModifiers(other.Modifiers, equipment, mode,
-		func(m *EquipmentModifier) { m.SetTarget(equipment) })
+	e.Modifiers = cloneModifiers(other.Modifiers, equipment, mode)
 	// SetTarget() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't the
 	// holder of this data when an editor is being populated, so pick up anything it added. This is a no-op when this
 	// data is the equipment's own, since both maps are then the same one.
@@ -1093,19 +1089,13 @@ func (e *Equipment) ModifierList() []*EquipmentModifier {
 }
 
 // SetModifiers sets the list of modifiers
-func (e *Equipment) SetModifiers(all []*EquipmentModifier) {
-	for _, m := range all {
-		m.SetDataOwner(e.owner)
-		m.SetTarget(e)
-	}
-	e.Modifiers = all
+func (e *Equipment) SetModifiers(mods []*EquipmentModifier) {
+	attachModifiers(e, mods)
+	e.Modifiers = mods
 }
 
 // AddModifiers adds a modifier to the list
 func (e *Equipment) AddModifiers(mods ...*EquipmentModifier) {
-	for _, m := range mods {
-		m.SetDataOwner(e.owner)
-		m.SetTarget(e)
-	}
+	attachModifiers(e, mods)
 	e.Modifiers = append(e.Modifiers, mods...)
 }

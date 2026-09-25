@@ -297,15 +297,9 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 	return tags
 }
 
-// modifierHolder is what cloneModifiers needs from the trait or piece of equipment whose modifiers are being cloned.
-type modifierHolder interface {
-	DataOwnerProvider
-	GetSource() Source
-}
-
 // cloneModifiers clones the modifiers held by a trait or piece of equipment for a copy of that holder -- a clone of it,
-// or the editor data staged from or committed back to it -- and hands each copy to attach, which points it at the
-// holder. It returns nil when there is nothing to clone.
+// or the editor data staged from or committed back to it -- and points each copy at the holder. It returns nil when
+// there is nothing to clone.
 //
 // The LibraryFile for each clone must come from the holder rather than from the modifier being cloned. This covers the
 // case where the source data *is* the authoritative source and therefore carries no source information of its own: the
@@ -315,18 +309,16 @@ type modifierHolder interface {
 // Background: when GCS clones an item from one library into another location (as opposed to duplicating in place), it
 // passes the *source* library as the first argument to Clone. That path, combined with the IDs from the source nodes,
 // is what builds the `source` values for the clone.
-func cloneModifiers[M Node[M]](modifiers []M, holder modifierHolder, mode CloneMode, attach func(M)) []M {
+func cloneModifiers[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, holder T, mode CloneMode) S {
 	if len(modifiers) == 0 {
 		return nil
 	}
 	from := holder.GetSource().LibraryFile
 	owner := holder.DataOwner()
 	var noParent M
-	result := make([]M, 0, len(modifiers))
+	result := make(S, 0, len(modifiers))
 	for _, one := range modifiers {
-		cloned := one.Clone(from, owner, noParent, mode)
-		attach(cloned)
-		result = append(result, cloned)
+		result = append(result, one.Clone(from, owner, noParent, mode).SetTarget(holder))
 	}
 	return result
 }

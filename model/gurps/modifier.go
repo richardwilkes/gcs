@@ -60,9 +60,18 @@ type Modifier[M Modifier[M, T], T Modifiable[T, M]] interface {
 	GeneralModifier
 }
 
+// attachModifiers points each of the modifiers at the target and gives them the target's data owner.
+func attachModifiers[T ModifiableNode[T, M], M ModifierNode[M, T], S ~[]M](target T, modifiers S) {
+	owner := target.DataOwner()
+	for _, m := range modifiers {
+		m.SetDataOwner(owner)
+		m.SetTarget(target)
+	}
+}
+
 // mergeReplacements folds src into dst, keeping whatever value dst already holds for a key, and returns the result. A
 // nil dst takes a copy of src rather than src itself, so that the result never shares storage with src.
-func mergeReplacements(dst, src map[string]string) map[string]string {
+func mergeReplacements[M ~map[string]string](dst, src M) M {
 	if len(src) == 0 {
 		return dst
 	}

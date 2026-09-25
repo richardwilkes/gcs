@@ -65,11 +65,10 @@ func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int)
 }
 
 // modifierAltDropSupport returns the alternate drop support for a provider whose rows carry modifiers -- traits and
-// equipment -- which attaches the dragged modifiers to the rows they are dropped onto. attach is given each target
-// row along with the clones of the dragged modifiers that are that row's to keep, and appends them to the row's
-// modifiers. The provider is consulted for its table at drop time rather than up front, since the table is assigned
-// after the provider is built.
-func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T], dragKey *uti.DataType, attach func(target T, clones []M)) *AltDropSupport {
+// equipment -- which attaches the dragged modifiers to the rows they are dropped onto. Each target row gets its own
+// clones of the dragged modifiers, appended to its modifiers. The provider is consulted for its table at drop time
+// rather than up front, since the table is assigned after the provider is built.
+func modifierAltDropSupport[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](p *listProvider[T], dragKey *uti.DataType) *AltDropSupport {
 	return &AltDropSupport{
 		DragKey: dragKey,
 		Drop: func(rowIndexes []int, data any) bool {
@@ -101,7 +100,7 @@ func modifierAltDropSupport[T gurps.Node[T], M gurps.Node[M]](p *listProvider[T]
 					var noParent M
 					clones = append(clones, row.Data().Clone(libraryFile, dataOwner, noParent, gurps.Reference))
 				}
-				attach(target, clones)
+				target.AddModifiers(clones...)
 				groups = append(groups, NameableGroup[M]{Label: target.String(), Rows: clones})
 			}
 			p.table.SyncToModel()

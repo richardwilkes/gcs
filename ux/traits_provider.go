@@ -55,10 +55,7 @@ func (p *traitsProvider) DragSVG() *unison.SVG {
 }
 
 func (p *traitsProvider) AltDropSupport() *AltDropSupport {
-	return modifierAltDropSupport(&p.listProvider, traitModifierDragKey,
-		func(target *gurps.Trait, clones []*gurps.TraitModifier) {
-			target.AddModifiers(clones...)
-		})
+	return modifierAltDropSupport(&p.listProvider, traitModifierDragKey)
 }
 
 func (p *traitsProvider) ItemNames() (singular, plural string) {

@@ -523,10 +523,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 			w.SetOwner(t)
 		}
 	}
-	for _, m := range t.Modifiers {
-		m.SetTarget(t)
-		m.SetDataOwner(owner)
-	}
+	attachModifiers(t, t.Modifiers)
 }
 
 // IsLeveled returns true if the Trait is capable of having levels.
@@ -1209,7 +1206,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
 	// Each copy is pointed at the trait it belongs to, so that a "use level from owner" modifier can resolve its level.
-	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode, func(m *TraitModifier) { m.SetTarget(trait) })
+	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode)
 	// SetTarget() migrates a modifier's legacy replacements into the trait it was pointed at, which isn't the holder of
 	// this data when an editor is being populated, so pick up anything it added. This is a no-op when this data is the
 	// trait's own, since both maps are then the same one.
@@ -1231,19 +1228,13 @@ func (t *Trait) ModifierList() []*TraitModifier {
 }
 
 // SetModifiers sets the list of modifiers
-func (t *Trait) SetModifiers(all []*TraitModifier) {
-	for _, m := range all {
-		m.SetDataOwner(t.owner)
-		m.SetTarget(t)
-	}
-	t.Modifiers = all
+func (t *Trait) SetModifiers(mods []*TraitModifier) {
+	attachModifiers(t, mods)
+	t.Modifiers = mods
 }
 
 // AddModifiers adds a modifier to the list
 func (t *Trait) AddModifiers(mods ...*TraitModifier) {
-	for _, m := range mods {
-		m.SetDataOwner(t.owner)
-		m.SetTarget(t)
-	}
+	attachModifiers(t, mods)
 	t.Modifiers = append(t.Modifiers, mods...)
 }
