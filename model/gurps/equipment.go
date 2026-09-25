@@ -900,10 +900,7 @@ func (e *Equipment) FillWithNameableKeys(m, existing map[string]string) {
 	for _, one := range e.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
-	Traverse(func(mod *EquipmentModifier) bool {
-		mod.FillWithNameableKeys(m, existing)
-		return false
-	}, true, false, e.Modifiers...)
+	fillWithModifierNameableKeys(e.Modifiers, m, existing)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -934,28 +931,12 @@ func (e *Equipment) DisplayLegalityClass() string {
 
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
 func (e *Equipment) ActiveModifierFor(name string) *EquipmentModifier {
-	var found *EquipmentModifier
-	Traverse(func(mod *EquipmentModifier) bool {
-		if strings.EqualFold(mod.NameWithReplacements(), name) {
-			found = mod
-			return true
-		}
-		return false
-	}, true, true, e.Modifiers...)
-	return found
+	return activeModifierFor(e.Modifiers, name)
 }
 
 // ModifierNotes returns the notes due to modifiers.
 func (e *Equipment) ModifierNotes() string {
-	var buffer strings.Builder
-	Traverse(func(mod *EquipmentModifier) bool {
-		if buffer.Len() != 0 {
-			buffer.WriteString("; ")
-		}
-		buffer.WriteString(mod.FullDescription())
-		return false
-	}, true, true, e.Modifiers...)
-	return buffer.String()
+	return modifierDescriptions(e.Modifiers)
 }
 
 // TL implements TechLevelProvider.

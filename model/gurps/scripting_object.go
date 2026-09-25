@@ -227,20 +227,23 @@ func scriptNameTagFinder(r *goja.Runtime, find func(name, tag string) goja.Value
 }
 
 // addScriptActiveModifiers installs the findActiveModifier and activeModifiers properties on the wrapper of a node
-// that carries modifiers: find looks an active modifier up by name and all yields the node's modifiers, of which only
-// the active, non-container ones are listed. The name a script passes is trimmed, as it is for the entity's hasTrait,
-// traitLevel and skillLevel.
-func addScriptActiveModifiers[M Node[M]](r *goja.Runtime, m map[string]func() goja.Value, find func(string) M,
-	all func() []M, ctor func(*goja.Runtime, M) *goja.Object,
+// that carries modifiers: findActiveModifier looks an active modifier up by name and activeModifiers lists the active,
+// non-container ones. The name a script passes is trimmed, as it is for the entity's hasTrait, traitLevel and
+// skillLevel.
+func addScriptActiveModifiers[T ModifiableNode[T, M], M ModifierNode[M, T]](
+	r *goja.Runtime,
+	m map[string]func() goja.Value,
+	target T,
+	ctor func(*goja.Runtime, M) *goja.Object,
 ) {
 	var zero M
 	m["findActiveModifier"] = func() goja.Value {
 		return r.ToValue(func(call goja.FunctionCall) goja.Value {
-			if mod := find(callArgAsTrimmedString(call, 0)); mod != zero {
+			if mod := activeModifierFor(target.ModifierList(), callArgAsTrimmedString(call, 0)); mod != zero {
 				return ctor(r, mod)
 			}
 			return goja.Null()
 		})
 	}
-	m["activeModifiers"] = func() goja.Value { return traversedScriptObjects(r, nil, true, ctor, all()...) }
+	m["activeModifiers"] = func() goja.Value { return traversedScriptObjects(r, nil, true, ctor, target.ModifierList()...) }
 }

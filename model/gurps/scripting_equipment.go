@@ -51,8 +51,7 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 		return findScriptEquipment(r, name, tag, item.Children...)
 	})
 	addScriptWeapons(r, m, func() []*Weapon { return item.Weapons })
-	addScriptActiveModifiers(r, m, item.ActiveModifierFor, func() []*EquipmentModifier { return item.Modifiers },
-		newScriptEquipmentModifier)
+	addScriptActiveModifiers(r, m, item, newScriptEquipmentModifier)
 	if item.Container() {
 		m["children"] = func() goja.Value { return scriptObjects(r, item.Children, hasQuantity, newScriptEquipment) }
 	}

@@ -864,10 +864,7 @@ func (t *Trait) FillWithNameableKeys(m, existing map[string]string) {
 	for _, one := range t.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
-	Traverse(func(mod *TraitModifier) bool {
-		mod.FillWithNameableKeys(m, existing)
-		return false
-	}, true, false, t.Modifiers...)
+	fillWithModifierNameableKeys(t.Modifiers, m, existing)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -879,15 +876,7 @@ func (t *Trait) ApplyNameableKeys(m map[string]string) {
 
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
 func (t *Trait) ActiveModifierFor(name string) *TraitModifier {
-	var found *TraitModifier
-	Traverse(func(mod *TraitModifier) bool {
-		if strings.EqualFold(mod.NameWithReplacements(), name) {
-			found = mod
-			return true
-		}
-		return false
-	}, true, true, t.Modifiers...)
-	return found
+	return activeModifierFor(t.Modifiers, name)
 }
 
 // ModifierNotes returns the notes due to modifiers, including the self-control and frequency rolls, if any.
@@ -914,16 +903,8 @@ func (t *Trait) modifierNotes(includeSelfControl, includeFrequency bool) string 
 	if resolvedFrequency := t.ResolvedFrequency(nil); includeFrequency && resolvedFrequency != frequency.None {
 		lines = append(lines, fmt.Sprintf(i18n.Text("Frequency Roll (FR): %s"), resolvedFrequency))
 	}
-	var buffer strings.Builder
-	Traverse(func(mod *TraitModifier) bool {
-		if buffer.Len() != 0 {
-			buffer.WriteString("; ")
-		}
-		buffer.WriteString(mod.FullDescription())
-		return false
-	}, true, true, t.Modifiers...)
-	if buffer.Len() != 0 {
-		lines = append(lines, buffer.String())
+	if descriptions := modifierDescriptions(t.Modifiers); descriptions != "" {
+		lines = append(lines, descriptions)
 	}
 	if len(lines) == 0 {
 		return ""

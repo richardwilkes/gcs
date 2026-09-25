@@ -65,8 +65,8 @@ func anyModifierSwitchable[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M]
 // visitEnabledModifiers calls visit for each enabled, non-container modifier among the given ones, at any depth, in
 // Traverse order, handing it the modifier's features that take effect for the given state of the switch on the item the
 // modifiers belong to (see Features.Active).
-func visitEnabledModifiers[T Node[T]](modifiers []T, switchedOn bool, features func(T) Features, visit func(mod T, active Features)) {
-	Traverse(func(mod T) bool {
+func visitEnabledModifiers[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, switchedOn bool, features func(M) Features, visit func(mod M, active Features)) {
+	Traverse(func(mod M) bool {
 		visit(mod, features(mod).Active(switchedOn))
 		return false
 	}, true, true, modifiers...)
