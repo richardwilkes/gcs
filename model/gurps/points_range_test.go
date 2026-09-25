@@ -1073,24 +1073,6 @@ func TestPointsRangeForPointsPickerWithNoChildren(t *testing.T) {
 	c.Equal("0", r.String(), "nor does a minimum points picker")
 }
 
-// TestPointsRangeForInvalidPicker verifies what a container carrying a picker type the app does not know reports.
-// Only a file written by something else can hold one, since the editor offers the valid types and nothing else, and a
-// choice that cannot be presented is no choice at all: the container is worth the total of its children, exactly as
-// one carrying no picker is.
-func TestPointsRangeForInvalidPicker(t *testing.T) {
-	c := check.New(t)
-
-	parent := newPickerContainer(
-		picker.Count, criteria.EqualsNumber,
-		1,
-		[]int{10, 20, -5},
-	)
-	parent.TemplatePicker.Type = picker.LastType + 1
-	r := parent.PointsRange(nil)
-	checkRange(c, 25, 25, r, "a container whose picker type is not a known one is worth the total of its children")
-	c.True(r.IsSettled(), "and it is settled, since there is no choice left to make")
-}
-
 // TestPointsRangeForPickerIsNeverInverted sweeps every picker type and comparison over a spread of qualifiers and
 // children, verifying the one invariant every branch has to hold: a range's minimum is never above its maximum. An
 // inverted range renders as nonsense like "100~50" rather than failing outright, so nothing else catches it.

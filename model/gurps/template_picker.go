@@ -43,14 +43,14 @@ type TemplatePicker struct {
 
 // IsZero implements json.isZero.
 func (t TemplatePicker) IsZero() bool {
-	return t.Type.EnsureValid() == picker.NotApplicable
+	return t.Type == picker.NotApplicable
 }
 
 func (t TemplatePicker) String() string {
 	if t.IsZero() {
 		return ""
 	}
-	switch t.Type.EnsureValid() {
+	switch t.Type {
 	case picker.Count:
 		return fmt.Sprintf(i18n.Text("Pick %s"), t.Qualifier.AltString())
 	case picker.Points:
@@ -67,7 +67,7 @@ func (t TemplatePicker) String() string {
 // Hash writes this object's contents into the hasher.
 func (t TemplatePicker) Hash(h hash.Hash) {
 	xhash.Num8(h, t.Type)
-	if t.Type.EnsureValid() != picker.NotApplicable {
+	if t.Type != picker.NotApplicable {
 		t.Qualifier.Hash(h)
 	}
 }

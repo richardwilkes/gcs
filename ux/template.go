@@ -204,9 +204,10 @@ func ApplyTemplate(filePath string) {
 	}
 }
 
-// applyTemplate applies the template to the sheets the user picks. The parameter is only there to fit the command
-// handler signature; command dispatch passes the action's source, never anything that asks for the randomize prompt to
-// be suppressed, so it is always offered here.
+// applyTemplate applies the template to the sheets the user picks, offering to randomize the profile again when the
+// template brings an ancestry. The parameter is only there to fit the command handler signature and is ignored.
+// Creating a new sheet from a template is the one path that skips that offer, which it does by calling
+// applyTemplateToSheet directly.
 func (t *Template) applyTemplate(_ any) {
 	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
 		t.applyTemplateToSheet(sheet, false)
