@@ -84,7 +84,7 @@ func TestAttributeBonusTooltipTraitModifierSource(t *testing.T) {
 	mod := NewTraitModifier(e, nil, false)
 	mod.Name = "Cybernetic"
 	mod.Features = Features{modBonus}
-	trait.AddModifiers(mod.SetTarget(trait))
+	trait.AddModifiers(mod)
 
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nIncreased Strength [+2]\nIncreased Strength (Cybernetic) [+1]",
