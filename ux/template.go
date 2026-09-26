@@ -204,11 +204,13 @@ func ApplyTemplate(filePath string) {
 	}
 }
 
-func (t *Template) applyTemplate(suppressRandomizePromptAsBool any) {
-	//nolint:errcheck // The default of false on failure is acceptable
-	suppressRandomizePrompt, _ := suppressRandomizePromptAsBool.(bool)
+// applyTemplate applies the template to the sheets the user picks, offering to randomize the profile again when the
+// template brings an ancestry. The parameter is only there to fit the command handler signature and is ignored.
+// Creating a new sheet from a template is the one path that skips that offer, which it does by calling
+// applyTemplateToSheet directly.
+func (t *Template) applyTemplate(_ any) {
 	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
-		t.applyTemplateToSheet(sheet, suppressRandomizePrompt)
+		t.applyTemplateToSheet(sheet, false)
 	}
 }
 

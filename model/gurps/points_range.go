@@ -195,7 +195,7 @@ func (b pointsBound) end() *fxp.Int {
 // is satisfied. It is the most common picker there is, and answering it without descending into the children spares
 // every render and every sort comparison that walk.
 func settledPickerCost(tp TemplatePicker) (value fxp.Int, settled bool) {
-	if tp.Type.EnsureValid() == picker.Points && tp.Qualifier.Compare.EnsureValid() == criteria.EqualsNumber {
+	if tp.Type == picker.Points && tp.Qualifier.Compare.EnsureValid() == criteria.EqualsNumber {
 		return tp.Qualifier.Qualifier, true
 	}
 	return 0, false
@@ -295,7 +295,7 @@ func sumPointsRanges(ranges []PointsRange) PointsRange {
 // minimum of 7, where the cheapest satisfying pick is really 10. Reporting the constraint the picker states is both
 // cheaper and closer to how the picker describes itself.
 func pointsRangeForPicker(tp TemplatePicker, children []PointsRange) PointsRange {
-	switch tp.Type.EnsureValid() {
+	switch tp.Type {
 	case picker.Count:
 		return pointsRangeForPickerByCount(tp.Qualifier, children)
 	case picker.Points:

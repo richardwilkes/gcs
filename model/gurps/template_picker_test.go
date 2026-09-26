@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -17,6 +18,17 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
+
+// TestTemplatePickerLoadsUnknownTypeAsNotApplicable verifies what lets the rest of the code read a picker's type
+// without checking it first: a type this version doesn't know, as a newer or hand-edited file might hold, loads as
+// NotApplicable, leaving the container with no picker at all rather than one with a type nothing can handle.
+func TestTemplatePickerLoadsUnknownTypeAsNotApplicable(t *testing.T) {
+	c := check.New(t)
+	var tp TemplatePicker
+	c.NoError(json.Unmarshal([]byte(`{"type":"not_a_real_picker_type"}`), &tp))
+	c.Equal(picker.NotApplicable, tp.Type)
+	c.True(tp.IsZero())
+}
 
 // TestHasTemplatePickerData verifies that a node carrying template choices is spotted
 func TestHasTemplatePickerData(t *testing.T) {
