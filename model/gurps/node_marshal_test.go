@@ -49,14 +49,14 @@ func TestMarshalNodeDataEnvelope(t *testing.T) {
 	c.False(strings.Contains(marshaled(tm), `"calc"`), "a trait modifier with unchanged notes has no calc")
 	trait := NewTrait(nil, nil, false)
 	trait.Replacements = map[string]string{"when": "raining"}
-	tm.setTrait(trait)
+	tm.SetTarget(trait)
 	out = marshaled(tm)
 	c.True(strings.Contains(out, `"calc":{"resolved_notes":"Only while raining"}`), "trait modifier notes: %s", out)
 	em := NewEquipmentModifier(nil, nil, false)
 	em.LocalNotes = "Only while @when@"
 	eqp := NewEquipment(nil, nil, false)
 	eqp.Replacements = map[string]string{"when": "raining"}
-	em.setEquipment(eqp)
+	em.SetTarget(eqp)
 	out = marshaled(em)
 	c.True(strings.Contains(out, `"calc":{"resolved_notes":"Only while raining"}`), "equipment modifier notes: %s", out)
 

@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"maps"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
@@ -18,9 +19,96 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
+// assertModifiableNode is used at compile time to check a *constraint*
+func assertModifiableNode[T ModifiableNode[T, M], M ModifierNode[M, T]]() {}
+
+// ModifiableNode is a Node constraint, narrowed for the Modifiable interface
+type ModifiableNode[T ModifiableNode[T, M], M ModifierNode[M, T]] interface {
+	Node[T]
+	Modifiable[T, M]
+}
+
+// Modifiable is an interface for a type designed to have a matching Modifier
+type Modifiable[T Modifiable[T, M], M Modifier[M, T]] interface {
+	ModifierList() []M
+	SetModifiers([]M)
+	AddModifiers(...M)
+}
+
+// GeneralModifier is used for common access to modifiers.
+type GeneralModifier interface {
+	Container() bool
+	Depth() int
+	NameWithReplacements() string
+	FullDescription() string
+	FullCostDescription() string
+	Enabled() bool
+	SetEnabled(enabled bool)
+}
+
+// assertModifierNode is used at compile time to check a *constraint*
+func assertModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]]() {}
+
+// ModifierNode is Node constraint, narrowed for the Modifier interface
+type ModifierNode[M ModifierNode[M, T], T ModifiableNode[T, M]] interface {
+	Node[M]
+	Modifier[M, T]
+}
+
+// Modifier is an interface for a type designed to have a matching Modifiable
+type Modifier[M Modifier[M, T], T Modifiable[T, M]] interface {
+	Target() T
+	SetTarget(T) M
+	GeneralModifier
+}
+
+// attachModifiers points each of the modifiers at the target and gives them the target's data owner.
+func attachModifiers[T ModifiableNode[T, M], M ModifierNode[M, T], S ~[]M](target T, modifiers S) {
+	owner := target.DataOwner()
+	for _, m := range modifiers {
+		m.SetDataOwner(owner)
+		m.SetTarget(target)
+	}
+}
+
+// activeModifierFor returns the first enabled, non-container modifier whose name matches (case-insensitive), or the
+// zero value if there is none.
+func activeModifierFor[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, name string) M {
+	var found M
+	Traverse(func(mod M) bool {
+		if strings.EqualFold(mod.NameWithReplacements(), name) {
+			found = mod
+			return true
+		}
+		return false
+	}, true, true, modifiers...)
+	return found
+}
+
+// modifierDescriptions returns the full descriptions of the enabled, non-container modifiers, separated by "; ".
+func modifierDescriptions[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S) string {
+	var buffer strings.Builder
+	Traverse(func(mod M) bool {
+		if buffer.Len() != 0 {
+			buffer.WriteString("; ")
+		}
+		buffer.WriteString(mod.FullDescription())
+		return false
+	}, true, true, modifiers...)
+	return buffer.String()
+}
+
+// fillWithModifierNameableKeys adds the nameable keys of the enabled modifiers, containers included, to m.
+func fillWithModifierNameableKeys[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, m, existing map[string]string) {
+	Traverse(func(mod M) bool {
+		mod.FillWithNameableKeys(m, existing)
+		return false
+	}, true, false, modifiers...)
+}
+
 // mergeReplacements folds src into dst, keeping whatever value dst already holds for a key, and returns the result. A
 // nil dst takes a copy of src rather than src itself, so that the result never shares storage with src.
-func mergeReplacements(dst, src map[string]string) map[string]string {
+func mergeReplacements[M ~map[string]string](dst, src M) M {
 	if len(src) == 0 {
 		return dst
 	}

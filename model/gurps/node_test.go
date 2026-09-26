@@ -56,9 +56,9 @@ func TestNewTraitsFromFileAttachesContainerModifiers(t *testing.T) {
 	loadedChild := loadedContainer.Children[0]
 	c.True(loadedContainer.Container(), "the top-level row is a container")
 	c.True(loadedChild.Parent() == loadedContainer, "the child points back at its parent")
-	c.True(loadedContainer.Modifiers[0].OwningTrait() == loadedContainer,
+	c.True(loadedContainer.Modifiers[0].Target() == loadedContainer,
 		"the container's modifier belongs to the container")
-	c.True(loadedChild.Modifiers[0].OwningTrait() == loadedChild, "the child's modifier belongs to the child")
+	c.True(loadedChild.Modifiers[0].Target() == loadedChild, "the child's modifier belongs to the child")
 	c.Equal("Fire Only", loadedContainer.Modifiers[0].NameWithReplacements(),
 		"the container's modifier resolves the container's replacements")
 	c.Equal("Ice Only", loadedChild.Modifiers[0].NameWithReplacements(),

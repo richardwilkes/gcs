@@ -44,7 +44,7 @@ func TestAttributeBonusTooltipListsSources(t *testing.T) {
 	mod.Name = "AR software"
 	mod.Features = Features{modBonus}
 	eqp := addCarriedEquipmentWithFeatures(e, "Smart Gloves")
-	eqp.Modifiers = []*EquipmentModifier{mod}
+	eqp.AddModifiers(mod)
 
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nIncreased Strength [+2]\nSmart Gloves (AR software) [+1]", st.BonusTooltip(),
@@ -84,7 +84,7 @@ func TestAttributeBonusTooltipTraitModifierSource(t *testing.T) {
 	mod := NewTraitModifier(e, nil, false)
 	mod.Name = "Cybernetic"
 	mod.Features = Features{modBonus}
-	trait.Modifiers = []*TraitModifier{mod}
+	trait.AddModifiers(mod)
 
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nIncreased Strength [+2]\nIncreased Strength (Cybernetic) [+1]",

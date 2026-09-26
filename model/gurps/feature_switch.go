@@ -58,15 +58,15 @@ type FeatureSwitcher interface {
 // anyModifierSwitchable returns true if any of the given modifiers has a switchable feature. Only enabled,
 // non-container modifiers are considered, matching what is collected for a character (see Entity.processFeatures), so
 // this always agrees with what will actually be applied.
-func anyModifierSwitchable[T Node[T]](modifiers []T, features func(T) Features) bool {
-	return anyEnabledNonContainerModifier(modifiers, func(mod T) bool { return features(mod).AnySwitchable() })
+func anyModifierSwitchable[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, features func(M) Features) bool {
+	return anyEnabledNonContainerModifier(modifiers, func(mod M) bool { return features(mod).AnySwitchable() })
 }
 
 // visitEnabledModifiers calls visit for each enabled, non-container modifier among the given ones, at any depth, in
 // Traverse order, handing it the modifier's features that take effect for the given state of the switch on the item the
 // modifiers belong to (see Features.Active).
-func visitEnabledModifiers[T Node[T]](modifiers []T, switchedOn bool, features func(T) Features, visit func(mod T, active Features)) {
-	Traverse(func(mod T) bool {
+func visitEnabledModifiers[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, switchedOn bool, features func(M) Features, visit func(mod M, active Features)) {
+	Traverse(func(mod M) bool {
 		visit(mod, features(mod).Active(switchedOn))
 		return false
 	}, true, true, modifiers...)
@@ -77,7 +77,7 @@ func visitEnabledModifiers[T Node[T]](modifiers []T, switchedOn bool, features f
 // true, modifiers...) visits. It is a plain recursion rather than a Traverse call, since Traverse clones the children
 // of every container it descends into and this runs from CellData for every row on every sort and every keystroke of a
 // search.
-func anyEnabledNonContainerModifier[T Node[T]](modifiers []T, predicate func(T) bool) bool {
+func anyEnabledNonContainerModifier[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, predicate func(M) bool) bool {
 	for _, mod := range modifiers {
 		if !mod.Enabled() {
 			continue

@@ -165,7 +165,7 @@ func TestLegacyExportModifierNotesLineBreaks(t *testing.T) {
 	trait.SelfControl = selfctrl.CR12
 	mod := NewTraitModifier(e, nil, false)
 	mod.Name = "Mitigator"
-	trait.Modifiers = append(trait.Modifiers, mod)
+	trait.AddModifiers(mod)
 	e.Traits = append(e.Traits, trait)
 	out := runLegacyExport(t, c, e, "@ADVANTAGES_LOOP_START[@DESCRIPTION_MODIFIER_NOTES_BRACKET]@ADVANTAGES_LOOP_END")
 	c.Contains(out, "Self-Control Roll (CR): 12 or less (Resist quite often)<br>Mitigator")
@@ -262,8 +262,7 @@ func TestLegacyExportHitLocationEquipmentFromModifier(t *testing.T) {
 	e := NewEntity()
 	helm := NewEquipment(e, nil, false)
 	helm.Name = "Helmet"
-	helm.Modifiers = append(helm.Modifiers, newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID,
-		"skull")))
+	helm.AddModifiers(newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID, "skull")))
 	e.CarriedEquipment = append(e.CarriedEquipment, helm)
 	e.Recalculate()
 
@@ -295,14 +294,13 @@ func TestLegacyExportHitLocationEquipment(t *testing.T) {
 
 	// DR that only reaches the skull through an enabled modifier.
 	helm := addCarriedEquipmentWithFeatures(e, "Helmet")
-	helm.Modifiers = append(helm.Modifiers, newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID,
-		"skull")))
+	helm.AddModifiers(newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID, "skull")))
 
 	// A disabled modifier contributes nothing, exactly as it does when features are collected.
 	cloak := addCarriedEquipmentWithFeatures(e, "Cloak")
 	disabled := newTestDRBonusModifier(e, "Hood", newTestDRBonus(fxp.Five, AllID, "skull"))
 	disabled.Disabled = true
-	cloak.Modifiers = append(cloak.Modifiers, disabled)
+	cloak.AddModifiers(disabled)
 
 	// Switchable bonuses, on the item and on one of its modifiers, only count while the item's switch is on.
 	switchable := newTestDRBonus(fxp.Seven, AllID, "skull")
@@ -310,12 +308,12 @@ func TestLegacyExportHitLocationEquipment(t *testing.T) {
 	cape := addCarriedEquipmentWithFeatures(e, "Cape", switchable)
 	switchableOnMod := newTestDRBonus(fxp.Nine, AllID, "skull")
 	switchableOnMod.Switchable = true
-	cape.Modifiers = append(cape.Modifiers, newTestDRBonusModifier(e, "Lining", switchableOnMod))
+	cape.AddModifiers(newTestDRBonusModifier(e, "Lining", switchableOnMod))
 
 	// A "this armor" bonus needs no examination of its own: it covers the locations the item's and its modifiers'
 	// located bonuses name, and those are what get scanned, so the modifier's skull bonus is what lists the robe.
 	robe := addCarriedEquipmentWithFeatures(e, "Robe", newTestDRBonus(fxp.Six, AllID)) // no locations, i.e. "this armor"
-	robe.Modifiers = append(robe.Modifiers, newTestDRBonusModifier(e, "Cowl", newTestDRBonus(fxp.One, AllID, "skull")))
+	robe.AddModifiers(newTestDRBonusModifier(e, "Cowl", newTestDRBonus(fxp.One, AllID, "skull")))
 
 	// Neither an unequipped carried item nor an item in the other equipment list contributes DR to the character.
 	addCarriedEquipmentWithFeatures(e, "Stowed Helm", newTestDRBonus(fxp.Eight, AllID, "skull")).Equipped = false

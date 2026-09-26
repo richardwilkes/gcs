@@ -357,7 +357,7 @@ func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
 		newTestDRBonus(fxp.Two, AllID, "arm"),
 		newTestDRBonus(fxp.Three, AllID, "Torso"), // repeats a location the equipment covers, with a different case
 	}
-	eqp.Modifiers = []*EquipmentModifier{mod}
+	eqp.AddModifiers(mod)
 	e.Recalculate()
 
 	c.Equal(8, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
@@ -382,7 +382,7 @@ func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
 		newTestDRBonus(fxp.Two, AllID, "arm"),
 		newTestDRBonus(fxp.One, AllID), // no locations, i.e. "this armor"
 	}
-	eqp.Modifiers = []*EquipmentModifier{mod}
+	eqp.AddModifiers(mod)
 	e.Recalculate()
 
 	c.Equal(5, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],

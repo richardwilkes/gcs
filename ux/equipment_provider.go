@@ -88,10 +88,7 @@ func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*Node[*gurps.
 }
 
 func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
-	return modifierAltDropSupport(&p.listProvider, equipmentModifierDragKey,
-		func(target *gurps.Equipment, clones []*gurps.EquipmentModifier) {
-			target.Modifiers = append(target.Modifiers, clones...)
-		})
+	return modifierAltDropSupport(&p.listProvider, equipmentModifierDragKey)
 }
 
 func (p *equipmentProvider) ItemNames() (singular, plural string) {

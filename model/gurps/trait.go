@@ -43,6 +43,7 @@ import (
 
 var (
 	_ = assertNode[*Trait]
+	_ = assertModifiableNode[*Trait]
 	_ = assertTemplatePickerNode[*Trait]
 	_ = assertEditorData[*TraitEditData]
 
@@ -106,6 +107,7 @@ type TraitEditData struct {
 	SelfControl  selfctrl.Roll     `json:"cr,omitzero"`
 	Frequency    frequency.Roll    `json:"frequency,omitzero"`
 	Disabled     bool              `json:"disabled,omitzero"`
+
 	ItemSwitch
 	preconfigurable
 	TraitNonContainerOnlyEditData
@@ -521,10 +523,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 			w.SetOwner(t)
 		}
 	}
-	for _, m := range t.Modifiers {
-		m.setTrait(t)
-		m.SetDataOwner(owner)
-	}
+	attachModifiers(t, t.Modifiers)
 }
 
 // IsLeveled returns true if the Trait is capable of having levels.
@@ -865,10 +864,7 @@ func (t *Trait) FillWithNameableKeys(m, existing map[string]string) {
 	for _, one := range t.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
-	Traverse(func(mod *TraitModifier) bool {
-		mod.FillWithNameableKeys(m, existing)
-		return false
-	}, true, false, t.Modifiers...)
+	fillWithModifierNameableKeys(t.Modifiers, m, existing)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -880,15 +876,7 @@ func (t *Trait) ApplyNameableKeys(m map[string]string) {
 
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
 func (t *Trait) ActiveModifierFor(name string) *TraitModifier {
-	var found *TraitModifier
-	Traverse(func(mod *TraitModifier) bool {
-		if strings.EqualFold(mod.NameWithReplacements(), name) {
-			found = mod
-			return true
-		}
-		return false
-	}, true, true, t.Modifiers...)
-	return found
+	return activeModifierFor(t.Modifiers, name)
 }
 
 // ModifierNotes returns the notes due to modifiers, including the self-control and frequency rolls, if any.
@@ -915,16 +903,8 @@ func (t *Trait) modifierNotes(includeSelfControl, includeFrequency bool) string 
 	if resolvedFrequency := t.ResolvedFrequency(nil); includeFrequency && resolvedFrequency != frequency.None {
 		lines = append(lines, fmt.Sprintf(i18n.Text("Frequency Roll (FR): %s"), resolvedFrequency))
 	}
-	var buffer strings.Builder
-	Traverse(func(mod *TraitModifier) bool {
-		if buffer.Len() != 0 {
-			buffer.WriteString("; ")
-		}
-		buffer.WriteString(mod.FullDescription())
-		return false
-	}, true, true, t.Modifiers...)
-	if buffer.Len() != 0 {
-		lines = append(lines, buffer.String())
+	if descriptions := modifierDescriptions(t.Modifiers); descriptions != "" {
+		lines = append(lines, descriptions)
 	}
 	if len(lines) == 0 {
 		return ""
@@ -1207,8 +1187,8 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
 	// Each copy is pointed at the trait it belongs to, so that a "use level from owner" modifier can resolve its level.
-	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode, func(m *TraitModifier) { m.setTrait(trait) })
-	// setTrait() migrates a modifier's legacy replacements into the trait it was pointed at, which isn't the holder of
+	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode)
+	// SetTarget() migrates a modifier's legacy replacements into the trait it was pointed at, which isn't the holder of
 	// this data when an editor is being populated, so pick up anything it added. This is a no-op when this data is the
 	// trait's own, since both maps are then the same one.
 	t.Replacements = mergeReplacements(t.Replacements, trait.Replacements)
@@ -1221,4 +1201,21 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 // CanPreconfigureContainer implements Preconfigurable.
 func (t *TraitEditData) CanPreconfigureContainer() bool {
 	return true
+}
+
+// ModifierList returns the list of modifiers
+func (t *Trait) ModifierList() []*TraitModifier {
+	return t.Modifiers
+}
+
+// SetModifiers sets the list of modifiers
+func (t *Trait) SetModifiers(mods []*TraitModifier) {
+	attachModifiers(t, mods)
+	t.Modifiers = mods
+}
+
+// AddModifiers adds a modifier to the list
+func (t *Trait) AddModifiers(mods ...*TraitModifier) {
+	attachModifiers(t, mods)
+	t.Modifiers = append(t.Modifiers, mods...)
 }

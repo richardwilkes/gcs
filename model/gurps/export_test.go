@@ -160,7 +160,7 @@ func TestExportModifierNotesLineBreaks(t *testing.T) {
 	trait.SelfControl = selfctrl.CR12
 	mod := NewTraitModifier(entity, nil, false)
 	mod.Name = `Mitigator <"&">`
-	trait.Modifiers = append(trait.Modifiers, mod)
+	trait.AddModifiers(mod)
 	entity.Traits = append(entity.Traits, trait)
 
 	dir := t.TempDir()

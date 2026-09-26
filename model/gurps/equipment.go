@@ -36,6 +36,7 @@ import (
 
 var (
 	_ = assertNode[*Equipment]
+	_ = assertModifiableNode[*Equipment]
 	_ = assertEditorData[*EquipmentEditData]
 
 	_ WeaponOwner       = &Equipment{}
@@ -92,6 +93,7 @@ type EquipmentEditData struct {
 	Level        fxp.Int              `json:"level,omitzero"`
 	Uses         int                  `json:"uses,omitzero"`
 	Equipped     bool                 `json:"equipped,omitzero"`
+
 	ItemSwitch
 	preconfigurable
 }
@@ -536,10 +538,7 @@ func (e *Equipment) SetDataOwner(owner DataOwner) {
 			child.SetDataOwner(owner)
 		}
 	}
-	for _, m := range e.Modifiers {
-		m.setEquipment(e)
-		m.SetDataOwner(owner)
-	}
+	attachModifiers(e, e.Modifiers)
 }
 
 // IsLeveled returns true if the equipment is capable of having levels.
@@ -794,7 +793,6 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 		}
 	}
 	Traverse(func(mod *EquipmentModifier) bool {
-		mod.setEquipment(equipment)
 		for _, f := range mod.Features.Active(switchedOn) {
 			if cwr, ok := f.(*ContainedWeightReduction); ok {
 				if cwr.IsPercentageReduction() {
@@ -901,10 +899,7 @@ func (e *Equipment) FillWithNameableKeys(m, existing map[string]string) {
 	for _, one := range e.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
-	Traverse(func(mod *EquipmentModifier) bool {
-		mod.FillWithNameableKeys(m, existing)
-		return false
-	}, true, false, e.Modifiers...)
+	fillWithModifierNameableKeys(e.Modifiers, m, existing)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -935,28 +930,12 @@ func (e *Equipment) DisplayLegalityClass() string {
 
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
 func (e *Equipment) ActiveModifierFor(name string) *EquipmentModifier {
-	var found *EquipmentModifier
-	Traverse(func(mod *EquipmentModifier) bool {
-		if strings.EqualFold(mod.NameWithReplacements(), name) {
-			found = mod
-			return true
-		}
-		return false
-	}, true, true, e.Modifiers...)
-	return found
+	return activeModifierFor(e.Modifiers, name)
 }
 
 // ModifierNotes returns the notes due to modifiers.
 func (e *Equipment) ModifierNotes() string {
-	var buffer strings.Builder
-	Traverse(func(mod *EquipmentModifier) bool {
-		if buffer.Len() != 0 {
-			buffer.WriteString("; ")
-		}
-		buffer.WriteString(mod.FullDescription())
-		return false
-	}, true, true, e.Modifiers...)
-	return buffer.String()
+	return modifierDescriptions(e.Modifiers)
 }
 
 // TL implements TechLevelProvider.
@@ -1069,9 +1048,8 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	// Each copy is pointed at the equipment it belongs to, so its nameable placeholders resolve with that equipment's
 	// replacements. Without this, the copies held in an editor show their raw placeholders (e.g. "@Material@"), since
 	// the accessors fall back to the unsubstituted text when there is no equipment.
-	e.Modifiers = cloneModifiers(other.Modifiers, equipment, mode,
-		func(m *EquipmentModifier) { m.setEquipment(equipment) })
-	// setEquipment() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't the
+	e.Modifiers = cloneModifiers(other.Modifiers, equipment, mode)
+	// SetTarget() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't the
 	// holder of this data when an editor is being populated, so pick up anything it added. This is a no-op when this
 	// data is the equipment's own, since both maps are then the same one.
 	e.Replacements = mergeReplacements(e.Replacements, equipment.Replacements)
@@ -1083,4 +1061,21 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 // CanPreconfigureContainer implements Preconfigurable.
 func (e *EquipmentEditData) CanPreconfigureContainer() bool {
 	return true
+}
+
+// ModifierList returns the list of modifiers
+func (e *Equipment) ModifierList() []*EquipmentModifier {
+	return e.Modifiers
+}
+
+// SetModifiers sets the list of modifiers
+func (e *Equipment) SetModifiers(mods []*EquipmentModifier) {
+	attachModifiers(e, mods)
+	e.Modifiers = mods
+}
+
+// AddModifiers adds a modifier to the list
+func (e *Equipment) AddModifiers(mods ...*EquipmentModifier) {
+	attachModifiers(e, mods)
+	e.Modifiers = append(e.Modifiers, mods...)
 }
