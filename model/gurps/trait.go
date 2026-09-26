@@ -45,6 +45,7 @@ var (
 	_ = assertNode[*Trait]
 	_ = assertModifiableNode[*Trait]
 	_ = assertTemplatePickerNode[*Trait]
+	_ = assertModifiableTemplatePickerNode[*Trait]
 	_ = assertEditorData[*TraitEditData]
 
 	_ WeaponOwner            = &Trait{}
@@ -150,7 +151,14 @@ type TraitContainerSyncData struct {
 
 // NewTraitsFromFile loads a Trait list from a file.
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
-	return loadRows[*Trait](fileSystem, filePath)
+	traits, err := loadRows[*Trait](fileSystem, filePath)
+	if err != nil {
+		return nil, err
+	}
+	// Choice containers are not supported outside of templates. This is only here to repair legacy trait lists that
+	// still carry them, so that their modifiers aren't lost when such a list is copied into a template.
+	projectPickerModifiersDownward(traits)
+	return traits, nil
 }
 
 // SaveTraits writes the Trait list to the file as JSON.

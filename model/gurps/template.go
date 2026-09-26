@@ -99,6 +99,7 @@ func (t *Template) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		t.ID = tid.MustNewTID(kinds.Template)
 	}
 	t.EnsureAttachments()
+	projectPickerModifiersDownward(t.Traits)
 	return nil
 }
 
