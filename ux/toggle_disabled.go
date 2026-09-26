@@ -15,8 +15,10 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// disabledExtractor accepts every trait except an enabled template choice container. A choice's editor offers no way to
+// enable it again, so one may not be disabled here, but one disabled by an older version may still be enabled.
 func disabledExtractor(t *gurps.Trait) (*gurps.Trait, bool) {
-	return t, t != nil
+	return t, t != nil && (t.Disabled || !gurps.IsTemplateChoiceContainer(t))
 }
 
 func canToggleDisabled(table *unison.Table[*Node[*gurps.Trait]]) bool {

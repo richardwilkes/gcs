@@ -36,6 +36,7 @@ func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) TableProv
 		columnIDs:    p.ColumnIDs,
 		headerData:   gurps.SkillsHeaderData,
 		newItem:      gurps.NewSkill,
+		newChoice:    gurps.NewSkillChoiceContainer,
 		edit:         func(owner Rebuildable, item *gurps.Skill) { EditSkill(owner, item) },
 		forPage:      forPage,
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.SkillsExt),
@@ -113,7 +114,7 @@ func (p *skillsProvider) ExcessWidthColumnID() int {
 // creates.
 func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Skill]], variant ItemVariant) {
 	switch variant {
-	case NoItemVariant, ContainerItemVariant:
+	case NoItemVariant, ContainerItemVariant, ChoiceContainerItemVariant:
 		p.listProvider.CreateItem(owner, table, variant)
 	case AlternateItemVariant:
 		p.createItem(owner, table, gurps.NewTechnique(p.DataOwner(), nil, ""))
@@ -126,6 +127,7 @@ func (p *skillsProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
 		contextMenuItemFor(newSkillAction),
 		contextMenuItemFor(newSkillContainerAction),
+		contextMenuItemFor(newSkillChoiceContainerAction),
 		contextMenuItemFor(newTechniqueAction),
 	})
 }

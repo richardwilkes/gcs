@@ -72,19 +72,38 @@ func (t TemplatePicker) Hash(h hash.Hash) {
 	}
 }
 
+// newTemplateChoicePicker returns the picker data a new template choice container starts with: pick exactly one of its
+// children.
+func newTemplateChoicePicker() TemplatePicker {
+	return TemplatePicker{
+		Type: picker.Count,
+		Qualifier: criteria.Number{NumberData: criteria.NumberData{
+			Compare:   criteria.EqualsNumber,
+			Qualifier: fxp.One,
+		}},
+	}
+}
+
+// IsTemplateChoiceContainer returns true if the node is a template choice container, that is, a container with non-zero
+// template picker data. Such a container only declares the choice and holds the options for it, dissolving into the
+// options chosen when the template is applied.
+func IsTemplateChoiceContainer[T Node[T]](node T) bool {
+	if !node.Container() {
+		return false
+	}
+	if tpp, ok := any(node).(TemplatePickerProvider); ok {
+		_, data := tpp.TemplatePickerData()
+		return !data.IsZero()
+	}
+	return false
+}
+
 // HasTemplatePickerData returns true if any node or their child has non-zero template picker data
 func HasTemplatePickerData[T Node[T]](nodes ...T) bool {
 	var hasPickerData bool
 	Traverse(func(node T) bool {
-		if node.Container() {
-			if tpp, ok := any(node).(TemplatePickerProvider); ok {
-				if _, data := tpp.TemplatePickerData(); !data.IsZero() {
-					hasPickerData = true
-					return true
-				}
-			}
-		}
-		return false
+		hasPickerData = IsTemplateChoiceContainer(node)
+		return hasPickerData
 	}, false, false, nodes...)
 	return hasPickerData
 }
@@ -103,4 +122,79 @@ func ClearTemplatePickerData[T Node[T]](nodes ...T) {
 		}
 		return false
 	}, false, false, nodes...)
+}
+
+// templateChoiceConvertible is implemented by the node types whose containers can be converted to and from template
+// choice containers.
+type templateChoiceConvertible interface {
+	TemplatePickerProvider
+	// canBecomeTemplateChoiceContainer returns true if this container is of a kind that may become a choice container.
+	canBecomeTemplateChoiceContainer() bool
+	// templateChoiceContainerExclusions returns a description of each piece of data this container holds that a choice
+	// container can't.
+	templateChoiceContainerExclusions() []string
+	// clearTemplateChoiceContainerExclusions removes the data templateChoiceContainerExclusions describes.
+	clearTemplateChoiceContainerExclusions()
+	// normalizeTemplateChoiceContainer brings this choice container into line with what a choice container may be.
+	normalizeTemplateChoiceContainer()
+}
+
+// normalizeTemplateChoiceContainers brings every template choice container among the nodes and their children into
+// line with what a choice container may be.
+func normalizeTemplateChoiceContainers[T Node[T]](nodes ...T) {
+	Traverse(func(node T) bool {
+		if IsTemplateChoiceContainer(node) {
+			if tc, ok := any(node).(templateChoiceConvertible); ok {
+				tc.normalizeTemplateChoiceContainer()
+			}
+		}
+		return false
+	}, false, false, nodes...)
+}
+
+// CanConvertToTemplateChoiceContainer returns true if the node is a container that can be converted to a template
+// choice container.
+func CanConvertToTemplateChoiceContainer[T Node[T]](node T) bool {
+	if !node.Container() || IsTemplateChoiceContainer(node) {
+		return false
+	}
+	tc, ok := any(node).(templateChoiceConvertible)
+	return ok && tc.canBecomeTemplateChoiceContainer()
+}
+
+// TemplateChoiceConversionLosses returns a description of each piece of data the node would lose by being converted to
+// a template choice container. A choice container never has a source, so a source is among them.
+func TemplateChoiceConversionLosses[T Node[T]](node T) []string {
+	tc, ok := any(node).(templateChoiceConvertible)
+	if !ok {
+		return nil
+	}
+	losses := tc.templateChoiceContainerExclusions()
+	if node.GetSource() != (Source{}) {
+		losses = append(losses, i18n.Text("library source"))
+	}
+	return losses
+}
+
+// ConvertToTemplateChoiceContainer converts the node to a template choice container, if it can be, discarding the data
+// TemplateChoiceConversionLosses describes. The new choice asks for exactly one of the container's children.
+func ConvertToTemplateChoiceContainer[T Node[T]](node T) {
+	if !CanConvertToTemplateChoiceContainer(node) {
+		return
+	}
+	tc := any(node).(templateChoiceConvertible) //nolint:errcheck // CanConvertToTemplateChoiceContainer checked this
+	tc.clearTemplateChoiceContainerExclusions()
+	_, data := tc.TemplatePickerData()
+	*data = newTemplateChoicePicker()
+	node.ClearSource()
+}
+
+// ConvertFromTemplateChoiceContainer converts a template choice container back into a plain container, discarding its
+// choice.
+func ConvertFromTemplateChoiceContainer[T Node[T]](node T) {
+	if !IsTemplateChoiceContainer(node) {
+		return
+	}
+	_, data := any(node).(TemplatePickerProvider).TemplatePickerData() //nolint:errcheck // IsTemplateChoiceContainer checked this
+	*data = TemplatePicker{}
 }

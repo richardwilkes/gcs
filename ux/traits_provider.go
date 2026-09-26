@@ -34,6 +34,7 @@ func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) TableProv
 		columnIDs:    p.ColumnIDs,
 		headerData:   gurps.TraitsHeaderData,
 		newItem:      gurps.NewTrait,
+		newChoice:    gurps.NewTraitChoiceContainer,
 		edit:         func(owner Rebuildable, item *gurps.Trait) { EditTrait(owner, item) },
 		forPage:      forPage,
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.TraitsExt),
@@ -90,6 +91,7 @@ func (p *traitsProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
 		contextMenuItemFor(newTraitAction),
 		contextMenuItemFor(newTraitContainerAction),
+		contextMenuItemFor(newTraitChoiceContainerAction),
 		contextMenuItemFor(addNaturalAttacksAction),
 		contextMenuItemFor(organizeTraitsAction),
 	})

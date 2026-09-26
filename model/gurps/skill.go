@@ -42,12 +42,13 @@ var (
 	_ = assertTemplatePickerNode[*Skill]
 	_ = assertEditorData[*SkillEditData]
 
-	_ TechLevelProvider       = &Skill{}
-	_ SkillAdjustmentProvider = &Skill{}
-	_ TemplatePickerProvider  = &Skill{}
-	_ FeatureSwitcher         = &Skill{}
-	_ LeveledOwner            = &Skill{}
-	_ SkillLevelStepper       = &Skill{}
+	_ TechLevelProvider         = &Skill{}
+	_ SkillAdjustmentProvider   = &Skill{}
+	_ TemplatePickerProvider    = &Skill{}
+	_ templateChoiceConvertible = &Skill{}
+	_ FeatureSwitcher           = &Skill{}
+	_ LeveledOwner              = &Skill{}
+	_ SkillLevelStepper         = &Skill{}
 
 	_ TemplatePickerProvider = &SkillData{}
 	_ TemplatePickerProvider = &SkillEditData{}
@@ -170,6 +171,29 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 // SaveSkills writes the Skill list to the file as JSON.
 func SaveSkills(skills []*Skill, filePath string) error {
 	return saveRows(filePath, skills)
+}
+
+// NewSkillChoiceContainer creates a new template choice container for skills.
+func NewSkillChoiceContainer(owner DataOwner, parent *Skill) *Skill {
+	s := NewSkill(owner, parent, true)
+	s.TemplatePicker = newTemplateChoicePicker()
+	s.Name = s.Kind()
+	return s
+}
+
+func (s *Skill) canBecomeTemplateChoiceContainer() bool {
+	return true
+}
+
+// templateChoiceContainerExclusions returns nothing, since a skill container holds nothing a choice container can't.
+func (s *Skill) templateChoiceContainerExclusions() []string {
+	return nil
+}
+
+func (s *Skill) clearTemplateChoiceContainerExclusions() {
+}
+
+func (s *Skill) normalizeTemplateChoiceContainer() {
 }
 
 // NewSkill creates a new Skill.
@@ -1396,6 +1420,9 @@ func (s *Skill) Kind() string {
 		return i18n.Text("Technique")
 	}
 	if s.Container() {
+		if !s.TemplatePicker.IsZero() {
+			return i18n.Text("Skill Choice")
+		}
 		return i18n.Text("Skill Container")
 	}
 	return i18n.Text("Skill")

@@ -43,6 +43,8 @@ const (
 	NoItemVariant ItemVariant = iota
 	ContainerItemVariant
 	AlternateItemVariant
+	// ChoiceContainerItemVariant is a template choice container, which only a template may hold.
+	ChoiceContainerItemVariant
 )
 
 // TableProvider defines the methods a table provider must contain.

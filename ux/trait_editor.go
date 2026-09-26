@@ -31,15 +31,20 @@ func EditTrait(owner Rebuildable, t *gurps.Trait) *editor[*gurps.Trait, *gurps.T
 }
 
 func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *unison.Panel) func() {
+	// A choice container dissolves into the options chosen from it when the template is applied, so the fields that
+	// only matter to a trait that reaches a sheet are left out of its editor.
+	choice := gurps.IsTemplateChoiceContainer(e.target)
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	addUserDescLabelAndField(content, &e.editorData.UserDesc)
 	addTagsLabelAndField(content, &e.editorData.Tags)
-	addPreconfigurable(e, content)
-	content.AddChild(unison.NewPanel())
-	addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
-	addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
+	if !choice {
+		addPreconfigurable(e, content)
+		content.AddChild(unison.NewPanel())
+		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
+		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
+	}
 	var perLevelField, levelField *DecimalField
 	var maxLevelField *StringField
 	entity := gurps.EntityFromNode(e.target)
@@ -104,16 +109,20 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		adjustFieldBlank(levelField, !e.editorData.CanLevel)
 		adjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
 	}
-	addLabelAndPopup(content, i18n.Text("Self-Control"), "", selfctrl.Rolls, &e.editorData.SelfControl)
-	adjustment := i18n.Text("Self-Control Adjustment")
-	crAdjPopup := addLabelAndPopup(content, adjustment, adjustment, selfctrl.Adjustments, &e.editorData.SelfControlAdj)
-	if e.editorData.SelfControl == selfctrl.None {
-		crAdjPopup.SetEnabled(false)
+	var crAdjPopup *unison.PopupMenu[selfctrl.Adjustment]
+	if !choice {
+		addLabelAndPopup(content, i18n.Text("Self-Control"), "", selfctrl.Rolls, &e.editorData.SelfControl)
+		adjustment := i18n.Text("Self-Control Adjustment")
+		crAdjPopup = addLabelAndPopup(content, adjustment, adjustment, selfctrl.Adjustments,
+			&e.editorData.SelfControlAdj)
+		if e.editorData.SelfControl == selfctrl.None {
+			crAdjPopup.SetEnabled(false)
+		}
+		addLabelAndPopup(content, i18n.Text("Frequency of Appearance"), "", frequency.Rolls, &e.editorData.Frequency)
 	}
-	addLabelAndPopup(content, i18n.Text("Frequency of Appearance"), "", frequency.Rolls, &e.editorData.Frequency)
 	var ancestryPopup *unison.PopupMenu[string]
 	var slotsField *IntegerField
-	if e.target.Container() {
+	if e.target.Container() && !choice {
 		addLabelAndPopup(content, i18n.Text("Container Type"), "", container.Types,
 			&e.editorData.ContainerType)
 		var choices []string
@@ -140,14 +149,21 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addChoices(e, content, true)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addSourceFields(content, &e.target.SourcedID)
-	modifiersPanel := newTraitModifiersPanel(e, entity, &e.editorData.Modifiers)
-	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
+	if choice {
+		addIDField(content, &e.target.SourcedID)
+	} else {
+		addSourceFields(content, &e.target.SourcedID)
+	}
+	if !choice {
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
+	}
 	if e.target.Container() {
-		content.AddChild(modifiersPanel)
+		if !choice {
+			content.AddChild(newTraitModifiersPanel(e, entity, &e.editorData.Modifiers))
+		}
 	} else {
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
-		content.AddChild(modifiersPanel)
+		content.AddChild(newTraitModifiersPanel(e, entity, &e.editorData.Modifiers))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 		content.AddChild(e.meleeWeapons)
 		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
@@ -164,11 +180,13 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		if maxLevelField != nil {
 			adjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
 		}
-		if e.editorData.SelfControl == selfctrl.None {
-			crAdjPopup.SetEnabled(false)
-			crAdjPopup.Select(selfctrl.NoAdjustment)
-		} else {
-			crAdjPopup.SetEnabled(true)
+		if crAdjPopup != nil {
+			if e.editorData.SelfControl == selfctrl.None {
+				crAdjPopup.SetEnabled(false)
+				crAdjPopup.Select(selfctrl.NoAdjustment)
+			} else {
+				crAdjPopup.SetEnabled(true)
+			}
 		}
 		if ancestryPopup != nil {
 			if e.editorData.ContainerType == container.Ancestry {

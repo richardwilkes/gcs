@@ -47,9 +47,16 @@ type AltDropSupport struct {
 // container alone, so its children are no more a target here. Scanning the disclosed rows rather than the selection map
 // also leaves out a selected row tucked inside a closed container: one that can't be highlighted while dragging
 // shouldn't be quietly modified by the drop either.
+//
+// A template choice container is never a target. It dissolves into the options chosen from it, so modifiers attached
+// to it would only change the cost of those options on the template, and its editor offers no way to remove them.
 func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int) []int {
 	if hovered == -1 {
 		return nil
+	}
+	accepts := func(i int) bool {
+		row := table.RowFromIndex(i)
+		return row != nil && !gurps.IsTemplateChoiceContainer(row.Data())
 	}
 	var selected []int
 	rowCount := table.LastRowIndex() + 1
@@ -59,7 +66,10 @@ func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int)
 		}
 	}
 	if len(selected) > 1 && slices.Contains(selected, hovered) {
-		return selected
+		return slices.DeleteFunc(selected, func(i int) bool { return !accepts(i) })
+	}
+	if !accepts(hovered) {
+		return nil
 	}
 	return []int{hovered}
 }

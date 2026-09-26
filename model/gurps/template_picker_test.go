@@ -15,6 +15,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -104,17 +106,125 @@ func TestClearTemplatePickerDataClearsSource(t *testing.T) {
 // newTemplateChoiceTrait returns a trait container carrying template choices, holding a child for each of the given
 // names.
 func newTemplateChoiceTrait(name string, childNames ...string) *Trait {
-	container := NewTrait(nil, nil, true)
-	container.Name = name
-	container.TemplatePicker.Type = picker.Count
-	container.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
-	container.TemplatePicker.Qualifier.Qualifier = fxp.One
+	group := NewTrait(nil, nil, true)
+	group.Name = name
+	group.TemplatePicker.Type = picker.Count
+	group.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	group.TemplatePicker.Qualifier.Qualifier = fxp.One
 	children := make([]*Trait, 0, len(childNames))
 	for _, childName := range childNames {
-		child := NewTrait(nil, container, false)
+		child := NewTrait(nil, group, false)
 		child.Name = childName
 		children = append(children, child)
 	}
-	container.Children = children
-	return container
+	group.Children = children
+	return group
+}
+
+// TestNewChoiceContainers verifies that each kind of choice container is created as a container that holds choices,
+// asking for exactly one of its children, and named after what it is.
+func TestNewChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	trait := NewTraitChoiceContainer(nil, nil)
+	c.True(IsTemplateChoiceContainer(trait))
+	c.Equal("Pick 1", trait.TemplatePicker.String())
+	c.Equal("Trait Choice", trait.Name)
+	c.Equal(container.Group, trait.ContainerType)
+
+	skill := NewSkillChoiceContainer(nil, nil)
+	c.True(IsTemplateChoiceContainer(skill))
+	c.Equal("Skill Choice", skill.Name)
+
+	spell := NewSpellChoiceContainer(nil, nil)
+	c.True(IsTemplateChoiceContainer(spell))
+	c.Equal("Spell Choice", spell.Name)
+
+	c.False(IsTemplateChoiceContainer(NewTrait(nil, nil, true)), "a plain container holds no choices")
+	plain := NewTrait(nil, nil, false)
+	plain.TemplatePicker.Type = picker.Count
+	c.False(IsTemplateChoiceContainer(plain), "only a container may hold choices")
+}
+
+// TestTemplateLoadNormalizesChoiceContainers verifies that loading a template turns a choice container of any other
+// type into a plain group, dropping what only that type used, and removes its modifiers, while leaving every other
+// container's type and modifiers alone.
+func TestTemplateLoadNormalizesChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	outer := NewTrait(nil, nil, true)
+	outer.Name = "Lens"
+	outer.ContainerType = container.MetaTrait
+	choice := newTemplateChoiceTrait("Pick One", "First", "Second")
+	choice.ContainerType = container.Ancestry
+	choice.Ancestry = "Human"
+	choice.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
+	choice.SetParent(outer)
+	outer.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
+	outer.Children = []*Trait{choice}
+	alternatives := newTemplateChoiceTrait("Pick Another", "Third", "Fourth")
+	alternatives.ContainerType = container.AlternativeAbilities
+	alternatives.AlternativeSlots = 2
+	abilities := NewTrait(nil, nil, true)
+	abilities.Name = "Abilities"
+	abilities.ContainerType = container.AlternativeAbilities
+	abilities.AlternativeSlots = 2
+	tmpl := NewTemplate()
+	tmpl.Traits = []*Trait{outer, alternatives, abilities}
+
+	data, err := json.Marshal(tmpl)
+	c.NoError(err)
+	var loaded Template
+	c.NoError(json.Unmarshal(data, &loaded))
+	c.Equal(3, len(loaded.Traits))
+
+	c.Equal(container.MetaTrait, loaded.Traits[0].ContainerType, "a container without choices keeps its type")
+	c.Equal(1, len(loaded.Traits[0].Modifiers), "a container without choices keeps its modifiers")
+	loadedChoice := loaded.Traits[0].Children[0]
+	c.Equal(0, len(loadedChoice.Modifiers), "a choice container must not keep modifiers")
+	c.Equal(container.Group, loadedChoice.ContainerType, "a nested choice container must become a group")
+	c.Equal("", loadedChoice.Ancestry, "a choice container no longer an ancestry must not keep one")
+	c.True(IsTemplateChoiceContainer(loadedChoice), "the choices themselves must survive")
+
+	c.Equal(container.Group, loaded.Traits[1].ContainerType, "a choice container must become a group")
+	c.Equal(0, loaded.Traits[1].AlternativeSlots, "a choice container no longer holding alternatives must not keep slots")
+
+	c.Equal(container.AlternativeAbilities, loaded.Traits[2].ContainerType, "a container without choices keeps its type")
+	c.Equal(2, loaded.Traits[2].AlternativeSlots)
+}
+
+// TestTemplateChoiceConversion verifies which containers may become choice containers, what the conversion reports it
+// will lose, and that converting back only removes the choice.
+func TestTemplateChoiceConversion(t *testing.T) {
+	c := check.New(t)
+	meta := NewTrait(nil, nil, true)
+	meta.ContainerType = container.MetaTrait
+	c.False(CanConvertToTemplateChoiceContainer(meta), "only a group may become a choice container")
+	c.False(CanConvertToTemplateChoiceContainer(NewTrait(nil, nil, false)), "only a container may become one")
+	c.False(CanConvertToTemplateChoiceContainer(NewTraitChoiceContainer(nil, nil)), "a choice container already is one")
+	c.True(CanConvertToTemplateChoiceContainer(NewSkill(nil, nil, true)), "any skill container may become one")
+
+	group := NewTrait(nil, nil, true)
+	c.Equal(0, len(TemplateChoiceConversionLosses(group)), "a bare group loses nothing")
+	group.Frequency = frequency.FR9
+	group.Preconfigured = true
+	group.Disabled = true
+	group.SwitchedOn = true
+	group.Prereq = NewPrereqList()
+	group.Prereq.Prereqs = append(group.Prereq.Prereqs, NewTraitPrereq())
+	group.Source = Source{Library: "lib", Path: "group.adq", TID: group.ID()}
+	c.Equal(6, len(TemplateChoiceConversionLosses(group)))
+
+	ConvertToTemplateChoiceContainer(group)
+	c.True(IsTemplateChoiceContainer(group))
+	c.Equal("Pick 1", group.TemplatePicker.String())
+	c.Equal(frequency.None, group.Frequency)
+	c.False(group.Preconfigured)
+	c.False(group.Disabled)
+	c.False(group.SwitchedOn)
+	c.True(group.Prereq.IsZero())
+	c.Equal(Source{}, group.Source)
+
+	ConvertFromTemplateChoiceContainer(group)
+	c.False(IsTemplateChoiceContainer(group))
+	c.True(group.Container(), "it must still be a container")
+	c.Equal(container.Group, group.ContainerType)
 }

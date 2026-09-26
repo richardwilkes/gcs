@@ -149,10 +149,7 @@ func rebuildAsModified(owner Rebuildable, full bool) {
 }
 
 func addSourceFields(parent *unison.Panel, source *gurps.SourcedID) {
-	parent.AddChild(NewFieldLeadingLabel(i18n.Text("ID"), false))
-	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
-		f.SetTitle(string(source.TID))
-	}))
+	addIDField(parent, source)
 	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source ID"), false))
 	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
 		f.SetTitle(string(source.Source.TID))
@@ -164,6 +161,15 @@ func addSourceFields(parent *unison.Panel, source *gurps.SourcedID) {
 	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source Path"), false))
 	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
 		f.SetTitle(source.Source.Path)
+	}))
+}
+
+// addIDField adds the node's own ID, without the fields describing its source. A template choice container shows only
+// this, since it can only exist in a template and a template is never a source.
+func addIDField(parent *unison.Panel, source *gurps.SourcedID) {
+	parent.AddChild(NewFieldLeadingLabel(i18n.Text("ID"), false))
+	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
+		f.SetTitle(string(source.TID))
 	}))
 }
 

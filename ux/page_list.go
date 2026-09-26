@@ -100,6 +100,22 @@ func installListItemCmdHandlers(owner Rebuildable, creators listItemCreators) {
 	install(NewNoteItemID, NewNoteContainerItemID, creators.notes)
 }
 
+// installChoiceContainerCmdHandlers installs on the owner the handlers for the "New ... Choice" commands for each of
+// the lists it has whose nodes may be one. Only a template may hold template choices, so only a template installs
+// these, which keeps the commands disabled, and out of the context menus, everywhere else.
+func installChoiceContainerCmdHandlers(owner Rebuildable, creators listItemCreators) {
+	p := owner.AsPanel()
+	install := func(id int, creator func() itemCreator) {
+		if creator != nil {
+			p.InstallCmdHandlers(id, unison.AlwaysEnabled,
+				func(_ any) { creator().CreateItem(owner, ChoiceContainerItemVariant) })
+		}
+	}
+	install(NewTraitChoiceContainerItemID, creators.traits)
+	install(NewSkillChoiceContainerItemID, creators.skills)
+	install(NewSpellChoiceContainerItemID, creators.spells)
+}
+
 // installTraitListCmdHandlers installs on the owner the handlers for the commands that act on its trait list as a
 // whole: adding the natural attacks and organizing the traits. The list is looked up when a command is invoked, for
 // the same reason as in installNewItemCmdHandlers. The entity is the one the natural attacks are made for, and is nil
@@ -174,6 +190,7 @@ func NewTraitsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList
 	p.installToggleDisabledHandler(owner)
 	p.installIncrementLevelHandler(owner)
 	p.installDecrementLevelHandler(owner)
+	installChoiceConversionHandlers[*gurps.Trait, *gurps.TraitEditData](p, owner)
 	InstallTintFunc(p, colors.TintTraits)
 	return p
 }
@@ -212,6 +229,7 @@ func NewSkillsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList
 	p.installDecrementSkillHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
+	installChoiceConversionHandlers[*gurps.Skill, *gurps.SkillEditData](p, owner)
 	InstallTintFunc(p, colors.TintSkills)
 	return p
 }
@@ -223,6 +241,7 @@ func NewSpellsPageList(owner Rebuildable, provider gurps.SpellListProvider) *Pag
 	p.installDecrementPointsHandler(owner)
 	p.installIncrementSkillHandler(owner)
 	p.installDecrementSkillHandler(owner)
+	installChoiceConversionHandlers[*gurps.Spell, *gurps.SpellEditData](p, owner)
 	InstallTintFunc(p, colors.TintSpells)
 	return p
 }

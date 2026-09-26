@@ -586,3 +586,18 @@ func TestCopyToSheetSurvivesTheTargetTableBeingReplaced(t *testing.T) {
 	c.Equal(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
 		"undo must take the switch column away again")
 }
+
+// TestAltDropSkipsChoiceContainers verifies that a template choice container is never a target for an alternate drop,
+// whether it is the row under the pointer or one of several selected rows.
+func TestAltDropSkipsChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	provider := &fakeAltDropProvider{}
+	first := gurps.NewTrait(nil, nil, false)
+	choice := gurps.NewTraitChoiceContainer(nil, nil)
+	last := gurps.NewTrait(nil, nil, false)
+	table := newAltDropTestTable(provider, first, choice, last)
+	c.Equal(0, len(altDropTargets(table, 1)), "a choice under the pointer must not be targeted")
+
+	table.SelectByIndex(0, 1, 2)
+	c.Equal([]int{0, 2}, altDropTargets(table, 0), "a selected choice must be left out of the batch")
+}

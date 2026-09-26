@@ -62,6 +62,17 @@
   they are, without asking about their modifiers or @Name@ substitutions again. Copying items from a character sheet
   onto another still asks whether to disable the existing ancestry when an ancestry is among them, and offers to
   randomize the profile again.
+- Template choices now live in their own kind of container, a choice. In a template, the new "New Trait Choice", "New
+  Skill Choice" and "New Spell Choice" commands add one, and "Convert to Choice" and "Convert to Group" turn a group
+  into a choice and back. Both conversions warn before removing anything. Since a choice is replaced by the options
+  chosen from it when the template is applied, a trait choice's editor leaves out the container type, ancestry,
+  alternative slots, modifiers, self-control roll, frequency of appearance, preconfigured, enabled, switched on and
+  prerequisite settings. No choice's editor shows the library source fields, since only a template can hold one and a
+  template is never a source.
+- Modifiers on a template choice are not supported. A choice is dissolved when the template is applied, and anything on
+  it, modifiers included, is left behind, so a modifier placed on one never reached the character. Loading a template
+  now removes any modifiers a choice holds and makes any trait choice a plain group, since the container type means
+  nothing for one either. Put a modifier meant for every option on each option instead.
 
 ## Bug Fixes
 

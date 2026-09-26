@@ -38,6 +38,8 @@ var (
 	colorSettingsAction            *unison.Action
 	convertToContainerAction       *unison.Action
 	convertToNonContainerAction    *unison.Action
+	convertToChoiceContainerAction *unison.Action
+	convertToGroupContainerAction  *unison.Action
 	copyToSheetAction              *unison.Action
 	copyToTemplateAction           *unison.Action
 	decreaseEquipmentLevelAction   *unison.Action
@@ -97,13 +99,16 @@ var (
 	newSheetFromTemplateAction          *unison.Action
 	newSkillAction                      *unison.Action
 	newSkillContainerAction             *unison.Action
+	newSkillChoiceContainerAction       *unison.Action
 	newSkillsLibraryAction              *unison.Action
 	newSpellAction                      *unison.Action
 	newSpellContainerAction             *unison.Action
+	newSpellChoiceContainerAction       *unison.Action
 	newSpellsLibraryAction              *unison.Action
 	newTechniqueAction                  *unison.Action
 	newTraitAction                      *unison.Action
 	newTraitContainerAction             *unison.Action
+	newTraitChoiceContainerAction       *unison.Action
 	newTraitContainerModifierAction     *unison.Action
 	newTraitModifierAction              *unison.Action
 	newTraitModifiersLibraryAction      *unison.Action
@@ -229,6 +234,10 @@ func registerActions() {
 		i18n.Text("Convert to Container"), unison.KeyBinding{})
 	convertToNonContainerAction = registerFocusAction("convert.to_non_container", ConvertToNonContainerItemID,
 		i18n.Text("Convert to Non-Container"), unison.KeyBinding{})
+	convertToChoiceContainerAction = registerFocusAction("convert.to_choice", ConvertToChoiceContainerItemID,
+		i18n.Text("Convert to Choice"), unison.KeyBinding{})
+	convertToGroupContainerAction = registerFocusAction("convert.to_group", ConvertToGroupContainerItemID,
+		i18n.Text("Convert to Group"), unison.KeyBinding{})
 	copyToSheetAction = registerFocusAction("copy.to_sheet", CopyToSheetItemID, i18n.Text("Copy to Character Sheet"),
 		unison.KeyBinding{KeyCode: unison.KeyC, Modifiers: mod.Shift | mod.OSMenuCommand()})
 	copyToTemplateAction = registerFocusAction("copy.to_template", CopyToTemplateItemID, i18n.Text("Copy to Template"),
@@ -403,6 +412,8 @@ func registerActions() {
 	newSkillContainerAction = registerFocusAction("new.skl.container", NewSkillContainerItemID,
 		i18n.Text("New Skill Container"),
 		unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: mod.Shift | mod.OSMenuCommand()})
+	newSkillChoiceContainerAction = registerFocusAction("new.skl.choice", NewSkillChoiceContainerItemID,
+		i18n.Text("New Skill Choice"), unison.KeyBinding{})
 	newSkillsLibraryAction = registerLibraryAction("new.skl.lib", NewSkillsLibraryItemID,
 		i18n.Text("New Skills Library"), "Skills"+gurps.SkillsExt, NewSkillTableDockable)
 	newSpellAction = registerFocusAction("new.spl", NewSpellItemID, i18n.Text("New Spell"),
@@ -410,6 +421,8 @@ func registerActions() {
 	newSpellContainerAction = registerFocusAction("new.spl.container", NewSpellContainerItemID,
 		i18n.Text("New Spell Container"),
 		unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: mod.Shift | mod.OSMenuCommand()})
+	newSpellChoiceContainerAction = registerFocusAction("new.spl.choice", NewSpellChoiceContainerItemID,
+		i18n.Text("New Spell Choice"), unison.KeyBinding{})
 	newSpellsLibraryAction = registerLibraryAction("new.spl.lib", NewSpellsLibraryItemID,
 		i18n.Text("New Spells Library"), "Spells"+gurps.SpellsExt, NewSpellTableDockable)
 	newTechniqueAction = registerFocusAction("new.skl.technique", NewTechniqueItemID, i18n.Text("New Technique"),
@@ -419,6 +432,8 @@ func registerActions() {
 	newTraitContainerAction = registerFocusAction("new.adq.container", NewTraitContainerItemID,
 		i18n.Text("New Trait Container"),
 		unison.KeyBinding{KeyCode: unison.KeyD, Modifiers: mod.Shift | mod.OSMenuCommand()})
+	newTraitChoiceContainerAction = registerFocusAction("new.adq.choice", NewTraitChoiceContainerItemID,
+		i18n.Text("New Trait Choice"), unison.KeyBinding{})
 	newTraitContainerModifierAction = registerFocusAction("new.adm.container", NewTraitContainerModifierItemID,
 		i18n.Text("New Trait Modifier Container"),
 		unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})
