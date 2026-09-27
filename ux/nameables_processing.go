@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -27,8 +29,8 @@ var promptForNameables = ShowNameablesDialog
 
 // ProcessNameables processes the rows and their children for any nameables. Returns false if the user canceled the
 // prompt, in which case the caller is expected to abandon the whole operation the prompt was part of.
-func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) bool {
-	return ProcessNameableGroups(owner, []NameableGroup[T]{{Rows: rows}})
+func ProcessNameables[T gurps.Node[T]](rows []T) bool {
+	return ProcessNameableGroups([]NameableGroup[T]{{Rows: rows}})
 }
 
 // NameableGroup is a set of rows whose entries in the nameables prompt share a label. An entry is normally titled with
@@ -38,18 +40,33 @@ func ProcessNameables[T gurps.Node[T]](owner unison.Paneler, rows []T) bool {
 type NameableGroup[T gurps.Node[T]] struct {
 	Label string
 	Rows  []T
+	// SharedReplacements indicates the rows keep their replacements in one place, as the modifiers of one trait or
+	// piece of equipment do, so a key used by more than one row is asked about once, under the first of them, and that
+	// answer is applied to all of them.
+	SharedReplacements bool
+}
+
+// sharedNameableKey records a key used by the entry at 'entry' but asked about under the entry at 'from', whose answer
+// it takes (see NameableGroup.SharedReplacements).
+type sharedNameableKey struct {
+	entry int
+	from  int
+	key   string
 }
 
 // ProcessNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
-// that covers all of the groups. Returns false if the user canceled the prompt, in which case the caller is expected to
-// abandon the whole operation the prompt was part of. The owner is rebuilt once the answers have been applied; it may be
-// nil for rows that aren't in a table yet, leaving nothing to rebuild.
-func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []NameableGroup[T]) bool {
+// that covers all of the groups. Nothing is rebuilt or reported here; the caller does that once the answers are in.
+// Returns false if the user canceled the prompt, in which case the caller is expected to abandon the whole operation
+// the prompt was part of.
+func ProcessNameableGroups[T gurps.Node[T]](groups []NameableGroup[T]) bool {
 	var data []T
 	var titles []string
 	var nameables []map[string]string
 	var visibleKeys [][]string
+	var shared []sharedNameableKey
 	for _, group := range groups {
+		// For a group with shared replacements, the entry each key was first asked about under.
+		askedUnder := make(map[string]int)
 		for _, row := range group.Rows {
 			gurps.Traverse(func(row T) bool {
 				m := make(map[string]string)
@@ -63,6 +80,31 @@ func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []Namea
 					if keys = missingNameableKeys(row, m); len(keys) == 0 {
 						return false
 					}
+				}
+				if group.SharedReplacements {
+					// A key an earlier row already asks about is left out of this row's fields and takes that row's
+					// answer instead, since an untouched second field would put its starting value back over the first
+					// answer. A row with nothing left to ask about is left out of the prompt.
+					if keys == nil {
+						keys = slices.Sorted(maps.Keys(m))
+					}
+					own := make([]string, 0, len(keys))
+					var taken []sharedNameableKey
+					for _, k := range keys {
+						if from, asked := askedUnder[k]; asked {
+							taken = append(taken, sharedNameableKey{entry: len(data), from: from, key: k})
+						} else {
+							own = append(own, k)
+						}
+					}
+					if len(own) == 0 {
+						return false
+					}
+					shared = append(shared, taken...)
+					for _, k := range own {
+						askedUnder[k] = len(data)
+					}
+					keys = own
 				}
 				title := row.String()
 				if group.Label != "" {
@@ -80,17 +122,15 @@ func ProcessNameableGroups[T gurps.Node[T]](owner unison.Paneler, groups []Namea
 		if !promptForNameables(titles, nameables, visibleKeys) {
 			return false
 		}
+		for _, one := range shared {
+			if v, ok := nameables[one.from][one.key]; ok {
+				nameables[one.entry][one.key] = v
+			} else {
+				delete(nameables[one.entry], one.key) // Cleared under the entry it was asked about, so cleared here too.
+			}
+		}
 		for i, row := range data {
 			row.ApplyNameableKeys(nameables[i])
-		}
-		// The owner is normally the table the rows live in, and a rebuild may have replaced that table before this was
-		// called, since a list can only change its columns by building a new table. An orphaned table has no
-		// Rebuildable above it, so the rebuild would silently be skipped, leaving the substitutions in the model while
-		// the list the user is looking at goes on showing the raw keys. The live table has to be looked up without
-		// regard for T, since on the very path this is here for the rows are the modifiers that were dropped and T is
-		// therefore not the row type of the table they landed in.
-		if !xreflect.IsNil(owner) {
-			rebuildAsModified(unison.AncestorOrSelf[Rebuildable](liveOwner(owner)), true)
 		}
 	}
 	return true

@@ -902,11 +902,10 @@ func (e *Equipment) FillWithNameableKeys(m, existing map[string]string) {
 	fillWithModifierNameableKeys(e.Modifiers, m, existing)
 }
 
-// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
+// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map, keeping the
+// replacements held for disabled modifiers (see ownerNameableReplacements).
 func (e *Equipment) ApplyNameableKeys(m map[string]string) {
-	needed := make(map[string]string)
-	e.FillWithNameableKeys(needed, nil)
-	e.Replacements = nameable.Reduce(needed, m)
+	e.Replacements = ownerNameableReplacements(e, e.Replacements, m)
 }
 
 // DisplayLegalityClass returns a display version of the LegalityClass.

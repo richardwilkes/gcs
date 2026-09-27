@@ -92,6 +92,7 @@ const (
 	CopyToSheetItemID
 	CopyToTemplateItemID
 	ApplyTemplateItemID
+	ApplyModifierItemID
 	NewSheetFromTemplateItemID
 	OpenOnePageReferenceItemID
 	OpenEachPageReferenceItemID
@@ -265,6 +266,7 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, copyToSheetAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, copyToTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, applyTemplateAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, applyModifierAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newSheetFromTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, cloneSheetAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, organizeTraitsAction.NewMenuItem(f))
@@ -539,6 +541,7 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		contextMenuItemFor(copyToSheetAction),
 		contextMenuItemFor(copyToTemplateAction),
 		contextMenuItemFor(applyTemplateAction),
+		contextMenuItemFor(applyModifierAction),
 		contextMenuItemFor(newSheetFromTemplateAction),
 		contextMenuItemFor(cloneSheetAction),
 		ContextMenuItem{"", -1},

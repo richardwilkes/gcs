@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -375,4 +376,40 @@ func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
 	c.Equal(1, len(clonedContainer.Children), "the child was cloned")
 	clonedChild := clonedContainer.Children[0]
 	c.True(clonedChild.Modifiers[0].Target() == clonedChild, "a cloned child's modifier belongs to that child")
+}
+
+// TestTraitApplyNameableKeysKeepsAnswersForDisabledModifiers verifies that applying the replacements for the keys a
+// trait has in use keeps those held for its disabled modifiers, which are never offered, while dropping any that
+// nothing uses any more.
+func TestTraitApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.Name = "@Foo@ Sword"
+	finish := NewTraitModifier(nil, nil, false)
+	finish.Name = "@Finish@ Coating"
+	finish.Disabled = true
+	color := NewTraitModifier(nil, nil, false)
+	color.Name = "@Color@ Paint"
+	trait.AddModifiers(finish, color)
+	trait.Replacements = map[string]string{"Foo": "Bar", "Finish": "Gilded", "Stale": "Unused"}
+
+	m := make(map[string]string)
+	trait.FillWithNameableKeys(m, nil)
+	c.Equal(map[string]string{"Foo": "Bar", "Color": nameable.Unset}, m,
+		"only the keys in use are offered, the switched-off modifier's among the ones left out")
+	m["Color"] = "Red"
+	trait.ApplyNameableKeys(m)
+	c.Equal(map[string]string{"Foo": "Bar", "Color": "Red", "Finish": "Gilded"}, trait.Replacements,
+		"the answers are applied, the switched-off modifier's answer is kept and the unused one is dropped")
+	finish.Disabled = false
+	c.Equal("Gilded Coating", finish.NameWithReplacements(), "switching the modifier back on must find its answer")
+
+	// With nothing in use and nothing held for a disabled modifier, nothing is held at all.
+	finish.Disabled = true
+	trait.Name = "Sword"
+	trait.ApplyNameableKeys(map[string]string{})
+	c.Equal(map[string]string{"Finish": "Gilded"}, trait.Replacements, "the switched-off modifier's answer survives")
+	trait.SetModifiers(nil)
+	trait.ApplyNameableKeys(map[string]string{})
+	c.Nil(trait.Replacements, "nothing left to hold must be held as nothing")
 }

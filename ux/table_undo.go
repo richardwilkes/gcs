@@ -151,6 +151,18 @@ func newTablesUndoData(lists []syncableList) *tablesUndoData {
 	return data
 }
 
+// newTablesUndoDataForTables collects the undo edit data for each of the given tables, which must all belong to one
+// owner, since restoring reports the change once for all of them. A table whose data can't be collected is skipped.
+func newTablesUndoDataForTables[T gurps.Node[T]](tables []*unison.Table[*Node[T]]) *tablesUndoData {
+	data := &tablesUndoData{restorers: make([]tableRestorer, 0, len(tables))}
+	for _, table := range tables {
+		if restorer := NewTableUndoEditData(table); restorer != nil {
+			data.restorers = append(data.restorers, restorer)
+		}
+	}
+	return data
+}
+
 // Apply the undo edit data to the tables.
 func (d *tablesUndoData) Apply() {
 	// Every list is put back before any of them is reported, so that the undo updates the document once rather than
@@ -228,15 +240,24 @@ func (r *restoredTables) report() {
 
 // liveTable returns the table that is currently showing the data the given table was created for. An owner that has to
 // alter its set of columns can only do so by replacing the table entirely, which leaves any table captured earlier
-// orphaned: applying data to it would update the model but leave the table the user is looking at untouched. A nil
-// table is returned as-is, since callers that may not have a source table at all (the alternate drop path, for one)
-// pass one through here. This is the typed counterpart of liveOwner.
+// orphaned: applying data to it would update the model but leave the table on screen untouched, and a rebuild asked
+// for through it would be skipped, since an orphan has no Rebuildable above it. The replacement is found through the
+// owner recorded on the table, under the reference key the two share. A table with no owner recorded, or whose owner
+// holds nothing under that key, is returned as-is, as is a nil table.
 func liveTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) *unison.Table[*Node[T]] {
-	if table == nil {
-		return nil
+	if table == nil || table.RefKey == "" {
+		return table
 	}
-	if current, ok := liveOwner(table).(*unison.Table[*Node[T]]); ok {
-		return current
+	rebuildable, found := table.ClientData()[TableOwnerClientKey].(Rebuildable)
+	if !found || xreflect.IsNil(rebuildable) {
+		return table
+	}
+	current := rebuildable.AsPanel().FindRefKey(table.RefKey)
+	if current == nil {
+		return table
+	}
+	if live, ok := current.Self.(*unison.Table[*Node[T]]); ok {
+		return live
 	}
 	return table
 }

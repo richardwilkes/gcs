@@ -2,6 +2,16 @@
 
 ## New & Improved
 
+- Modifiers can now be applied to traits and equipment without drag & drop. Select the modifiers in a modifier library
+  and choose Apply Modifier from the Edit menu or the library's context menu. You are asked which open character sheet,
+  template, loot sheet or library list to apply them to (skipped when only one qualifies), then which of its traits or
+  equipment should receive them. Each receives its own enabled copy of the modifiers and is selected and scrolled into
+  view afterwards. A container of modifiers applied to a character sheet asks which of its contents should be enabled.
+  The prompts work with a screen reader, which reads out the containers each row sits in.
+- Dropping modifiers onto traits or equipment on a character sheet no longer asks which of their modifiers should be
+  enabled: the dropped copies are simply enabled. Dropping a container of modifiers still asks which of its contents
+  should be enabled, and traits or equipment that arrive with modifiers of their own, as when a template is applied,
+  are asked about as before.
 - The "Gives a weapon damage modifier of" feature now accepts dice as well as a plain number, so a trait or modifier
   can add "+1d" or "+2d+1x3" to a weapon's damage, or take "-1d" away from it. The dice combine with the weapon's own
   damage the same way its base damage does, so a leading "-" takes away only the dice: "-1d+2" removes one die and
@@ -20,9 +30,8 @@
 - A filtered list now keeps its hierarchy, showing each matching item beneath the containers that hold it rather than
   in a flat list, so you can see where a match sits. A container that is shown only because something inside it
   matched is dimmed, so the actual matches stand out.
-- Deep search now indexes your libraries from the values recorded in each file when it was last saved, instead of
-  recalculating every character sheet and running every note's scripts to build its index. Starting GCS, and each
-  library update after that, now does far less work.
+- Deep search now builds its index from the values saved in each library file rather than recalculating every
+  character sheet and running every note's scripts, so starting GCS and updating libraries is much faster.
 - A new sheet setting, "Disable traits whose prerequisites are unsatisfied", treats any trait whose prerequisites are
   not met, or whose level exceeds its maximum, as disabled: it contributes no points, features or weapons to the sheet
   until they are met. The trait keeps its own enabled state and the warning that explains what is missing, and comes
@@ -65,14 +74,19 @@
 
 ## Bug Fixes
 
+- Providing @Name@ substitutions for a modifier dropped onto or applied to a trait or piece of equipment on a character
+  sheet no longer discards the substitutions that trait or equipment already had, including those for the other
+  modifiers applied with it and for its disabled modifiers. A substitution shared by several of the new modifiers is
+  now asked for once. The "Set Substitutions" button in the trait and equipment editors, and applying a template,
+  likewise no longer discard the substitutions of a disabled modifier, which showed its raw @Name@ markers when it was
+  re-enabled.
 - The script functions dice.add and dice.subtract now accept a bare modifier, such as "+3" or "-2", on either side, so
   that dice.add("1d-2", "+3") gives "1d+1" instead of failing with "dice sides must match". Only two specifications
   that both have dice of different sizes are still refused.
 - Right-clicking one of several selected rows on Windows and Linux no longer reduces the selection to that row, so the
   context menu's commands act on everything that was selected.
-- With the "Group containers when sorting" general setting turned on, sorting a list by one of its numeric columns no
-  longer treats every container as worth the same. The marker that groups the containers ahead of the other rows was
-  left in the text the column sorts by, so a comparison that reads a number out of that text found no number at all.
+- With the "Group containers when sorting" general setting turned on, sorting a list by a numeric column now orders the
+  containers by their values rather than treating them all as equal.
 - Copying or dragging a template's choice container, such as "Pick 60 points worth", onto a character sheet or loot
   sheet no longer brings the container across with every option still in it and nothing left to make the choice. The
   choice is now made on the way, just as when applying the template, and only the options chosen arrive. Dragging a

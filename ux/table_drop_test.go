@@ -476,9 +476,8 @@ func newLibraryStyleTraitsTable(traits ...*gurps.Trait) *unison.Table[*Node[*gur
 }
 
 // stubTraitModifierPrompt substitutes a non-interactive trait modifier prompt that hands the modifiers it was asked to
-// show to the given responder and reports back whatever the responder returns, letting a test drive the rebuild that
-// answering the prompt triggers. The count of prompts actually shown is returned, and the real prompt is restored when
-// the test finishes.
+// show to the given responder and reports whatever the responder returns as whether it changed anything. The count of
+// prompts actually shown is returned, and the real prompt is restored when the test finishes.
 func stubTraitModifierPrompt(t *testing.T, respond func(modifiers []*gurps.TraitModifier) bool) *int {
 	t.Helper()
 	shown := 0
@@ -493,7 +492,7 @@ func stubTraitModifierPrompt(t *testing.T, respond func(modifiers []*gurps.Trait
 }
 
 // enableAllModifiers is a stubTraitModifierPrompt responder standing in for the user turning on every modifier the
-// prompt offers, and reporting the change so that the owner is rebuilt.
+// prompt offers, and reporting that it changed them, as the real prompt would.
 func enableAllModifiers(modifiers []*gurps.TraitModifier) bool {
 	for _, one := range modifiers {
 		one.Disabled = false

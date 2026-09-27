@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -335,4 +336,40 @@ func TestEquipmentDisplayFormatsWithoutEntityUseDefaultSheetSettings(t *testing.
 	header = EquipmentHeaderData(EquipmentDescriptionColumn, loot, false, true)
 	c.Equal("Equipment (8.0 lb; $1,235)", header.Title)
 	c.Equal("8 lb; $1,234.5678", header.Detail)
+}
+
+// TestEquipmentApplyNameableKeysKeepsAnswersForDisabledModifiers verifies that applying the replacements for the keys
+// a piece of equipment has in use keeps those held for its disabled modifiers, which are never offered, while dropping
+// any that nothing uses any more.
+func TestEquipmentApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T) {
+	c := check.New(t)
+	equipment := NewEquipment(nil, nil, false)
+	equipment.Name = "@Foo@ Sword"
+	finish := NewEquipmentModifier(nil, nil, false)
+	finish.Name = "@Finish@ Coating"
+	finish.Disabled = true
+	color := NewEquipmentModifier(nil, nil, false)
+	color.Name = "@Color@ Paint"
+	equipment.AddModifiers(finish, color)
+	equipment.Replacements = map[string]string{"Foo": "Bar", "Finish": "Gilded", "Stale": "Unused"}
+
+	m := make(map[string]string)
+	equipment.FillWithNameableKeys(m, nil)
+	c.Equal(map[string]string{"Foo": "Bar", "Color": nameable.Unset}, m,
+		"only the keys in use are offered, the switched-off modifier's among the ones left out")
+	m["Color"] = "Red"
+	equipment.ApplyNameableKeys(m)
+	c.Equal(map[string]string{"Foo": "Bar", "Color": "Red", "Finish": "Gilded"}, equipment.Replacements,
+		"the answers are applied, the switched-off modifier's answer is kept and the unused one is dropped")
+	finish.Disabled = false
+	c.Equal("Gilded Coating", finish.NameWithReplacements(), "switching the modifier back on must find its answer")
+
+	// With nothing in use and nothing held for a disabled modifier, nothing is held at all.
+	finish.Disabled = true
+	equipment.Name = "Sword"
+	equipment.ApplyNameableKeys(map[string]string{})
+	c.Equal(map[string]string{"Finish": "Gilded"}, equipment.Replacements, "the switched-off modifier's answer survives")
+	equipment.SetModifiers(nil)
+	equipment.ApplyNameableKeys(map[string]string{})
+	c.Nil(equipment.Replacements, "nothing left to hold must be held as nothing")
 }

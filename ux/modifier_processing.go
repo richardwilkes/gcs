@@ -13,9 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xmath"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -30,39 +28,23 @@ var (
 	promptForEquipmentModifiers = showModifiersDialog[*gurps.EquipmentModifier]
 )
 
-// ProcessModifiers processes the rows for modifiers that can be toggled on or off. Note that only rows that can hold
-// modifiers (traits and equipment) are considered -- passing in the modifiers themselves does nothing. Returns false if
-// the user canceled one of the prompts, in which case no further prompts are shown and the caller is expected to
-// abandon the whole operation the prompts were part of. The owner is rebuilt after each answer that changes something;
-// it may be nil for rows that aren't in a table yet, leaving nothing to rebuild.
-func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) bool {
-	rebuild := func() {
-		if xreflect.IsNil(owner) {
-			return
-		}
-		// The owner is normally the table the rows live in, and that table may have been replaced -- by a rebuild
-		// before this was called (the alternate drop path rebuilds before prompting) or by the rebuild an earlier
-		// prompt in this very loop asked for, since toggling a modifier can add or take away the switch column and a
-		// list can only change its columns by building a new table. An orphaned table has no Rebuildable above it, so
-		// the rebuild would silently be skipped; looking the live table up first keeps every prompt's answer reflected.
-		owner = liveOwner(owner)
-		rebuildAsModified(unison.AncestorOrSelf[Rebuildable](owner), true)
-	}
+// ProcessModifiers prompts for which modifiers to enable on each row that can hold them (traits and equipment) and on
+// every row below it. Other rows, the modifiers themselves included, and preconfigured rows are skipped. Nothing is
+// rebuilt here; the caller reports the change once the answers are in (see applyTransfer). Returns false if the user
+// canceled a prompt, in which case no further prompts are shown and the caller is expected to abandon the whole
+// operation the prompts were part of.
+func ProcessModifiers[T gurps.Node[T]](rows []T) bool {
 	canceled := false
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
 			if gurps.IsNodePreconfigured(row) {
 				return false
 			}
-			var changed bool
 			switch t := any(row).(type) {
 			case *gurps.Trait:
-				changed, canceled = promptForTraitModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers)
+				_, canceled = promptForTraitModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers)
 			case *gurps.Equipment:
-				changed, canceled = promptForEquipmentModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers)
-			}
-			if changed {
-				rebuild()
+				_, canceled = promptForEquipmentModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers)
 			}
 			return canceled
 		}, false, false, row)
@@ -71,34 +53,6 @@ func ProcessModifiers[T gurps.Node[T]](owner unison.Paneler, rows []T) bool {
 		}
 	}
 	return true
-}
-
-// minimalNodes returns the given rows with any row that is a descendant of another of them left out. ProcessModifiers
-// walks everything below each row it is handed, so a container and one of its own descendants both being present would
-// prompt for that descendant twice. This is the same reduction SelectedRows(true) makes for the selection-driven
-// callers; a caller that assembles its own list of rows -- the alternate drop handlers -- has to make it for itself.
-func minimalNodes[T gurps.Node[T]](rows []T) []T {
-	if len(rows) < 2 {
-		return rows
-	}
-	present := make(map[tid.TID]bool, len(rows))
-	for _, row := range rows {
-		present[row.ID()] = true
-	}
-	minimal := make([]T, 0, len(rows))
-	for _, row := range rows {
-		descendant := false
-		for parent := row.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
-			if present[parent.ID()] {
-				descendant = true
-				break
-			}
-		}
-		if !descendant {
-			minimal = append(minimal, row)
-		}
-	}
-	return minimal
 }
 
 func showModifiersDialog[T gurps.Node[T]](title string, modifiers []T) (changed, canceled bool) {
