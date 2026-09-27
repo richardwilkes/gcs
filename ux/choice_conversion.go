@@ -36,7 +36,17 @@ type choiceConversionList[T gurps.Node[T], D gurps.EditorData[T]] struct {
 	list  []*choiceConversion[T, D]
 }
 
+// apply puts the targets back the way they were before the conversion when undo is true, and the way they were after it
+// otherwise. Any editor open on a target is discarded first: it was opened on the other kind of container, so it shows
+// the wrong fields, and applying it would silently convert the target back. Its pending changes are dropped rather than
+// applied, since they were made to a state the target is no longer in, and asking would put up a prompt in the middle
+// of an undo.
 func (c *choiceConversionList[T, D]) apply(undo bool) {
+	ids := make(map[tid.TID]bool, len(c.list))
+	for _, one := range c.list {
+		ids[one.target.ID()] = true
+	}
+	discardEditorsFor(ids)
 	for _, one := range c.list {
 		if undo {
 			one.before.ApplyTo(one.target)
@@ -83,10 +93,12 @@ func choiceConvertibleSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], 
 
 // convertChoiceContainers converts the selected rows that can be converted in the given direction, after warning about
 // any data the conversion discards, recording a single undo edit for the whole selection. Any editor open on one of the
-// rows is closed first, since the fields it shows depend on whether the row is a choice container.
+// rows is closed first, since the fields it shows depend on whether the row is a choice container. That happens before
+// the warning is worked out, since closing an editor can apply its pending changes, which the warning must cover, and
+// can even leave a row no longer convertible, so the targets are looked at again afterward.
 func convertChoiceContainers[T gurps.Node[T], D gurps.EditorData[T]](owner Rebuildable, table *unison.Table[*Node[T]], toChoice bool) {
 	targets := choiceConvertibleSelection(table, toChoice)
-	if len(targets) == 0 || !confirmChoiceConversion(targets, toChoice) {
+	if len(targets) == 0 {
 		return
 	}
 	ids := make(map[tid.TID]bool, len(targets))
@@ -94,6 +106,11 @@ func convertChoiceContainers[T gurps.Node[T], D gurps.EditorData[T]](owner Rebui
 		ids[target.ID()] = true
 	}
 	if !CloseID(ids) {
+		return
+	}
+	table = liveTable(table)
+	targets = choiceConvertibleSelection(table, toChoice)
+	if len(targets) == 0 || !confirmChoiceConversion(targets, toChoice) {
 		return
 	}
 	newData := newEditorData[T, D]

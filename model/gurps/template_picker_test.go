@@ -213,6 +213,38 @@ func TestTemplateLoadNormalizesChoiceContainers(t *testing.T) {
 	c.Equal(2, loaded.Traits[2].AlternativeSlots)
 }
 
+// TestTemplateLoadNormalizesSkillAndSpellChoices verifies that loading a template strips skill and spell choice
+// containers too, while leaving ordinary skill and spell containers alone.
+func TestTemplateLoadNormalizesSkillAndSpellChoices(t *testing.T) {
+	c := check.New(t)
+	skillChoice := NewSkillChoiceContainer(nil, nil)
+	skillChoice.VTTNotes = "vtt"
+	skillChoice.Tags = []string{"Combat"}
+	skillGroup := NewSkill(nil, nil, true)
+	skillGroup.Tags = []string{"Combat"}
+	spellChoice := NewSpellChoiceContainer(nil, nil)
+	spellChoice.VTTNotes = "vtt"
+	spellChoice.Tags = []string{"Fire"}
+	spellGroup := NewSpell(nil, nil, true)
+	spellGroup.Tags = []string{"Fire"}
+	tmpl := NewTemplate()
+	tmpl.Skills = []*Skill{skillChoice, skillGroup}
+	tmpl.Spells = []*Spell{spellChoice, spellGroup}
+
+	data, err := json.Marshal(tmpl)
+	c.NoError(err)
+	var loaded Template
+	c.NoError(json.Unmarshal(data, &loaded))
+	c.True(IsTemplateChoiceContainer(loaded.Skills[0]), "the skill choice must survive")
+	c.Equal("", loaded.Skills[0].VTTNotes, "a skill choice must not keep VTT notes")
+	c.Equal(0, len(loaded.Skills[0].Tags), "a skill choice must not keep tags")
+	c.Equal([]string{"Combat"}, loaded.Skills[1].Tags, "an ordinary skill container keeps its tags")
+	c.True(IsTemplateChoiceContainer(loaded.Spells[0]), "the spell choice must survive")
+	c.Equal("", loaded.Spells[0].VTTNotes, "a spell choice must not keep VTT notes")
+	c.Equal(0, len(loaded.Spells[0].Tags), "a spell choice must not keep tags")
+	c.Equal([]string{"Fire"}, loaded.Spells[1].Tags, "an ordinary spell container keeps its tags")
+}
+
 // TestTemplateChoiceConversion verifies which containers may become choice containers, what the conversion reports it
 // will lose, and that converting back only removes the choice.
 func TestTemplateChoiceConversion(t *testing.T) {
@@ -274,12 +306,16 @@ func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 
 	entity := NewEntity()
 	entity.Traits = []*Trait{choices}
+	entity.Skills = []*Skill{NewSkillChoiceContainer(entity, nil)}
+	entity.Spells = []*Spell{NewSpellChoiceContainer(entity, nil)}
 	data, err := json.Marshal(entity)
 	c.NoError(err)
 	var loadedEntity Entity
 	c.NoError(json.Unmarshal(data, &loadedEntity))
 	c.Equal(1, len(loadedEntity.Traits))
 	c.False(HasTemplatePickerData(loadedEntity.Traits...), "a character sheet must not keep picker data")
+	c.False(HasTemplatePickerData(loadedEntity.Skills...), "a character sheet must not keep skill picker data")
+	c.False(HasTemplatePickerData(loadedEntity.Spells...), "a character sheet must not keep spell picker data")
 	c.True(loadedEntity.Traits[0].Source.IsZero(), "the container that lost its picker data must lose its source")
 	c.Equal(2, len(loadedEntity.Traits[0].Children), "the options must be left alone")
 

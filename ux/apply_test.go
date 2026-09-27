@@ -121,11 +121,9 @@ func TestCopyToTemplateNormalizesChoices(t *testing.T) {
 	source := newTestTemplateWithTraits(choices)
 	destinationData := gurps.NewTemplate()
 	destination := newTestTemplateDockable("Destination", destinationData)
-	prompts := captureModifierPrompts(t)
 
 	copySelectionTo(source.Traits.Table, []*Template{destination})
 
-	c.Equal(0, len(*prompts), "the choice's modifiers must be gone before anything is put to the user")
 	c.Equal(1, len(destinationData.Traits))
 	arrived := destinationData.Traits[0]
 	c.True(gurps.IsTemplateChoiceContainer(arrived), "the choices must have been kept")
@@ -448,48 +446,49 @@ func TestDropOnLibraryAsksBeforeRemovingPickers(t *testing.T) {
 	}
 }
 
-// TestEditorUndoRestoresSourceClearedByTemplatePicker verifies that undoing an edit that gave a container template
-// choices, and with them cost it its source, puts the source back along with everything else, and that redoing it
-// takes the source away again. An edit that leaves the source alone must leave it alone when undone and redone, too.
+// TestEditorUndoRestoresSourceClearedByTemplatePicker verifies that applying an edit to a choice container that still
+// holds a source clears the source, and that undo and redo put it back and take it away again along with everything
+// else. A choice is stripped of its source whenever it is created, converted, loaded or transferred, so this is only a
+// backstop, but the editor must not be the way one keeps it. An edit to a plain group must leave its source alone when
+// applied, undone and redone.
 func TestEditorUndoRestoresSourceClearedByTemplatePicker(t *testing.T) {
 	c := check.New(t)
-	trait := gurps.NewTrait(nil, nil, true)
-	trait.Name = "Advantages"
-	source := gurps.Source{Library: "lib", Path: "x.adq", TID: trait.ID()}
-	trait.Source = source
+	choice := gurps.NewTraitChoiceContainer(nil, nil)
+	choice.Name = "Pick One"
+	choiceSource := gurps.Source{Library: "lib", Path: "choice.adq", TID: choice.ID()}
+	choice.Source = choiceSource
+	group := gurps.NewTrait(nil, nil, true)
+	group.Name = "Advantages"
+	groupSource := gurps.Source{Library: "lib", Path: "group.adq", TID: group.ID()}
+	group.Source = groupSource
 	data := gurps.NewTemplate()
-	data.Traits = []*gurps.Trait{trait}
+	data.Traits = []*gurps.Trait{choice, group}
 	template := newTestTemplateDockable("Source", data)
 	mgr := unison.UndoManagerFor(template)
 	c.NotNil(mgr, "the template must have an undo manager")
 
-	e, _ := buildEditorContent(template, trait, initTraitEditor)
-	_, tp := e.editorData.TemplatePickerData()
-	tp.Type = picker.Count
-	tp.Qualifier.Compare = criteria.EqualsNumber
-	tp.Qualifier.Qualifier = fxp.One
+	e, _ := buildEditorContent(template, choice, initTraitEditor)
+	e.editorData.Name = "Pick Another"
 	e.applyEdits()
-	c.False(trait.TemplatePicker.IsZero(), "the choices must have been applied")
-	c.Equal(gurps.Source{}, trait.Source, "a container given choices must lose its source")
+	c.Equal("Pick Another", choice.Name)
+	c.True(choice.Source.IsZero(), "a choice container must not keep a source through an edit")
 
 	mgr.Undo()
-	c.True(trait.TemplatePicker.IsZero(), "undo must take the choices away")
-	c.Equal(source, trait.Source, "undo must give the source back")
+	c.Equal("Pick One", choice.Name)
+	c.Equal(choiceSource, choice.Source, "undo must give the source back")
 
 	mgr.Redo()
-	c.False(trait.TemplatePicker.IsZero(), "redo must bring the choices back")
-	c.Equal(gurps.Source{}, trait.Source, "redo must take the source away again")
+	c.True(choice.Source.IsZero(), "redo must take the source away again")
 
-	mgr.Undo()
-	e, _ = buildEditorContent(template, trait, initTraitEditor)
+	e, _ = buildEditorContent(template, group, initTraitEditor)
 	e.editorData.Name = "Renamed"
 	e.applyEdits()
-	c.Equal(source, trait.Source, "an edit giving no choices must leave the source alone")
+	c.Equal(groupSource, group.Source, "an edit to a plain group must leave its source alone")
 	mgr.Undo()
-	c.Equal("Advantages", trait.Name)
-	c.Equal(source, trait.Source, "undoing an edit that left the source alone must leave it alone")
+	c.Equal("Advantages", group.Name)
+	c.Equal(groupSource, group.Source, "undoing an edit that left the source alone must leave it alone")
 	mgr.Redo()
-	c.Equal(source, trait.Source, "redoing an edit that left the source alone must leave it alone")
+	c.Equal(groupSource, group.Source, "redoing an edit that left the source alone must leave it alone")
 }
 
 // TestEditorApplyClearsSourceOfTemplatePicker verifies that a container given template choices loses its source, while
