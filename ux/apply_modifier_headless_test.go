@@ -32,7 +32,7 @@ import (
 func rowInView[T gurps.Node[T]](table *unison.Table[*Node[T]], row int) bool {
 	frame := table.RectToRoot(table.RowFrame(row))
 	visible := visibleRect(table.AsPanel())
-	return frame.Y >= visible.Y && frame.Bottom() <= visible.Bottom()
+	return frame.Y >= visible.Y-viewSlop && frame.Bottom() <= visible.Bottom()+viewSlop
 }
 
 // TestApplyModifierHeadless drives the Apply Modifier command through its menus and dialogs with a sheet, a template

@@ -760,13 +760,20 @@ func (n *Navigator) EventuallyReload() {
 	})
 }
 
-// Reload the content of the navigator view.
+// Reload the content of the navigator view. A navigator that is no longer in a window has been discarded along with its
+// workspace (the headless tests start a workspace per test), yet the reload it scheduled and the library watches it
+// holds still fire into unison's process-wide task queue. Were it to reload, it would rebuild its rows from the live
+// libraries, find none of them among the paths its old rows had disclosed, and close them all; library rows share
+// their disclosure keys, so that would close the live navigator's rows too. It stops its watches and does nothing else.
 func (n *Navigator) Reload() {
 	n.needReload = false
 	for _, token := range n.tokens {
 		token.Stop()
 	}
 	n.tokens = nil
+	if n.Window() == nil {
+		return
+	}
 	disclosed := n.DisclosedPaths()
 	selection := n.SelectedPaths()
 	n.table.SetRootRows(n.populateRows())
