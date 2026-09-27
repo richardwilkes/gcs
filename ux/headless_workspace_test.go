@@ -154,7 +154,7 @@ func dragRowAheadOf(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Win
 		handleVisible = fullyVisible(handle)
 		targetRect := targetRow.RectToRoot(targetRow.ContentRect(false))
 		visible := visibleRect(targetRow)
-		targetVisible = visible.Y == targetRect.Y && visible.Height >= 16
+		targetVisible = visible.Y-targetRect.Y <= viewSlop && visible.Height >= 16
 		target = screenPoint(wnd, geom.NewPoint(visible.CenterX(), visible.Y+8))
 	})
 	if from < 0 || from >= count || to < 0 || to >= count {
@@ -476,9 +476,21 @@ func visibleRect(p *unison.Panel) geom.Rect {
 	return r.Intersect(view.RectToRoot(view.ContentRect(false)))
 }
 
+// viewSlop is the tolerance, in root coordinates, allowed when judging whether something lies within view. Root
+// coordinates come from multiplying by the sheet's scale and adding the frame offset, which arm64 fuses into a single
+// rounding and amd64 rounds twice, so an edge scrolled exactly to the edge of the view can land an ULP past it on one
+// of them.
+const viewSlop = 0.01
+
+// nearlyWithin reports whether inner lies within outer, allowing viewSlop past each edge.
+func nearlyWithin(inner, outer geom.Rect) bool {
+	return inner.X >= outer.X-viewSlop && inner.Y >= outer.Y-viewSlop &&
+		inner.Right() <= outer.Right()+viewSlop && inner.Bottom() <= outer.Bottom()+viewSlop
+}
+
 // fullyVisible reports whether all of p's content area is within view; see visibleRect.
 func fullyVisible(p *unison.Panel) bool {
-	return visibleRect(p) == p.RectToRoot(p.ContentRect(false))
+	return nearlyWithin(p.RectToRoot(p.ContentRect(false)), visibleRect(p))
 }
 
 // screenPoint converts a point in the root coordinate space of wnd into the screen's logical coordinate space, which

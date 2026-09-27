@@ -101,6 +101,15 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 	d.AddChild(d.scroll)
 
 	installStandardTableCmdHandlers(d, d.table, d.provider, func() Rebuildable { return d }, true)
+	// Installed here rather than in NewNodeTable, since only library lists can be a source: modifiers applied from the
+	// list inside a trait or equipment editor to the item being edited would be lost when the editor applies its
+	// changes, which replace the item's modifiers wholesale.
+	switch t := any(d.table).(type) {
+	case *unison.Table[*Node[*gurps.TraitModifier]]:
+		installApplyModifierHandler(d, t, traitModifierTargetKind())
+	case *unison.Table[*Node[*gurps.EquipmentModifier]]:
+		installApplyModifierHandler(d, t, equipmentModifierTargetKind())
+	}
 	d.InstallCmdHandlers(SaveItemID,
 		func(_ any) bool { return d.Modified() },
 		func(_ any) { d.save(false) })

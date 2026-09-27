@@ -458,28 +458,35 @@ func (e *EquipmentModifier) LocalNotesWithReplacements() string {
 	return applyOwnerReplacements(e.LocalNotes, e.equipment)
 }
 
-// FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map. Containers take
-// part too, since their name and notes are displayed with replacements applied just as a leaf modifier's are.
+// FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map, provided it is
+// enabled. Containers take part too, since their name and notes are displayed with replacements applied just as a leaf
+// modifier's are.
 func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) {
 	if e.Enabled() {
-		if existing == nil {
-			existing = e.NameableReplacements()
-		}
-		nameable.Extract(
-			m, existing,
-			e.Name,
-			e.LocalNotes,
-		)
-		for _, one := range e.Features {
-			one.FillWithNameableKeys(m, existing)
-		}
+		e.fillWithNameableKeysEvenIfDisabled(m, existing)
 	}
 }
 
-// ApplyNameableKeys passes this up to the owning equipment to handle.
+// fillWithNameableKeysEvenIfDisabled implements Modifier.
+func (e *EquipmentModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[string]string) {
+	if existing == nil {
+		existing = e.NameableReplacements()
+	}
+	nameable.Extract(
+		m, existing,
+		e.Name,
+		e.LocalNotes,
+	)
+	for _, one := range e.Features {
+		one.FillWithNameableKeys(m, existing)
+	}
+}
+
+// ApplyNameableKeys merges the values for this modifier's keys into the owning equipment's replacements, which is
+// where they are kept (see modifierNameableReplacements).
 func (e *EquipmentModifier) ApplyNameableKeys(m map[string]string) {
-	if len(m) != 0 && e.equipment != nil {
-		e.equipment.ApplyNameableKeys(m)
+	if e.equipment != nil {
+		e.equipment.Replacements = modifierNameableReplacements(e.equipment.Replacements, e, m)
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -639,7 +640,7 @@ func TestUndoRestoresAConditionallyPresentList(t *testing.T) {
 // exhausted by that one undo, and the redo stack by the one redo.
 func TestAltDropOntoASelectionIsASingleUndoableEdit(t *testing.T) {
 	c := check.New(t)
-	captureModifierPrompts(t) // The drop prompts for the targets' modifiers and must not put up a real dialog.
+	forbidModifierPrompts(t)
 	swapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
 	swapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
 
@@ -692,4 +693,56 @@ func TestAltDropOntoASelectionIsASingleUndoableEdit(t *testing.T) {
 		c.Equal(1, len(trait.Modifiers), "a single redo must put the modifier back on every trait: "+trait.Name)
 	}
 	c.False(mgr.CanRedo(), "one redo must exhaust the drop's edits, since it was recorded as a single edit")
+}
+
+// TestAltDropWithACanceledPromptLeavesNothingBehind verifies that a modifier drop whose nameables prompt is canceled
+// leaves nothing behind: the target keeps the modifiers it had, no edit is recorded, and the sheet is neither marked
+// as modified, rebuilt, re-synced nor timestamped.
+func TestAltDropWithACanceledPromptLeavesNothingBehind(t *testing.T) {
+	c := check.New(t)
+	forbidModifierPrompts(t)
+	swapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
+	swapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
+	shown := 0
+	swapForTest(t, &promptForNameables, func(_ []string, _ []map[string]string, _ [][]string) bool {
+		shown++
+		return false
+	})
+
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Claws"
+	existing := gurps.NewTraitModifier(nil, nil, false)
+	existing.Name = "Sharp"
+	trait.AddModifiers(existing)
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	sheet.markUnmodified()
+	stamp := jio.Time(time.Date(2020, time.January, 2, 3, 4, 5, 0, time.UTC))
+	entity.ModifiedOn = stamp
+	table := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	counter := installSyncCounter(sheet)
+
+	// The nameable key brings the prompt up; the switchable feature would make a premature rebuild replace the table.
+	dropped := newSwitchableTraitModifier("@Material@ Coating")
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	draggedTableData = &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
+	}
+	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+	where := geom.Point{X: 1, Y: table.RowFrame(0).CenterY()}
+	c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None), "entering over a row must offer to copy the modifier")
+	c.True(table.DropCallback(di, where, mod.None), "the drop must be handled, canceled or not")
+
+	c.Equal(1, shown, "the nameables prompt must have been shown")
+	c.Equal([]string{"Sharp"}, appliedModifierNames(trait.Modifiers), "the target must keep the modifiers it had")
+	c.False(mgr.CanUndo(), "a canceled drop must leave nothing to undo")
+	c.False(sheet.Modified(), "a canceled drop must leave the sheet unmodified")
+	c.Equal(stamp, entity.ModifiedOn, "a canceled drop must not bump the modification timestamp")
+	c.Equal(0, counter.count, "a canceled drop must not re-sync the sheet")
+	c.Equal(table, sheet.Traits.Table, "a canceled drop must not rebuild the sheet")
 }

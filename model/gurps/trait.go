@@ -935,11 +935,10 @@ func (t *Trait) FillWithNameableKeys(m, existing map[string]string) {
 	fillWithModifierNameableKeys(t.Modifiers, m, existing)
 }
 
-// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
+// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map, keeping the
+// replacements held for disabled modifiers (see ownerNameableReplacements).
 func (t *Trait) ApplyNameableKeys(m map[string]string) {
-	needed := make(map[string]string)
-	t.FillWithNameableKeys(needed, nil)
-	t.Replacements = nameable.Reduce(needed, m)
+	t.Replacements = ownerNameableReplacements(t, t.Replacements, m)
 }
 
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).

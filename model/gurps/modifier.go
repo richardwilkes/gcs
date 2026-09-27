@@ -60,6 +60,8 @@ type Modifier[M Modifier[M, T], T Modifiable[T, M]] interface {
 	Target() T
 	SetTarget(T) M
 	GeneralModifier
+	// fillWithNameableKeysEvenIfDisabled is FillWithNameableKeys without the enabled check.
+	fillWithNameableKeysEvenIfDisabled(m, existing map[string]string)
 }
 
 // attachModifiers points each of the modifiers at the target and gives them the target's data owner.
@@ -106,6 +108,36 @@ func fillWithModifierNameableKeys[M ModifierNode[M, T], T ModifiableNode[T, M], 
 	}, true, false, modifiers...)
 }
 
+// ownerNameableReplacements returns the replacements a trait or piece of equipment should hold after applying m, the
+// answers for the keys it has in use: those answers, reduced to the keys in use, plus whatever it already holds for
+// keys only its disabled modifiers use, since those are wanted again when such a modifier is re-enabled. Anything else
+// held for a key no longer in use is dropped. Returns nil when there is nothing to hold.
+func ownerNameableReplacements[T ModifiableNode[T, M], M ModifierNode[M, T]](owner T, existing, m map[string]string) map[string]string {
+	inUse := make(map[string]string)
+	owner.FillWithNameableKeys(inUse, nil)
+	result := nameable.Reduce(inUse, m)
+	if len(existing) == 0 {
+		return result
+	}
+	all := make(map[string]string)
+	Traverse(func(mod M) bool {
+		mod.fillWithNameableKeysEvenIfDisabled(all, existing)
+		return false
+	}, false, false, owner.ModifierList()...)
+	for k := range all {
+		if _, used := inUse[k]; used {
+			continue
+		}
+		if v, held := existing[k]; held {
+			if result == nil {
+				result = make(map[string]string)
+			}
+			result[k] = v
+		}
+	}
+	return result
+}
+
 // mergeReplacements folds src into dst, keeping whatever value dst already holds for a key, and returns the result. A
 // nil dst takes a copy of src rather than src itself, so that the result never shares storage with src.
 func mergeReplacements[M ~map[string]string](dst, src M) M {
@@ -121,6 +153,34 @@ func mergeReplacements[M ~map[string]string](dst, src M) M {
 		}
 	}
 	return dst
+}
+
+// modifierNameableReplacements returns the replacements a modifier's target should hold after applying m, the answers
+// for the modifier's own keys. A modifier keeps no replacements of its own, so the answers are merged into a copy of
+// what the target holds rather than replacing it: an answer overrides the target's value, a key left at nameable.Unset
+// keeps it, and a key of the modifier's missing from m (a substitution the user cleared) is removed. Everything else
+// the target holds is kept, including answers for disabled modifiers. Returns nil when there is nothing to hold.
+func modifierNameableReplacements(existing map[string]string, modifier nameable.Filler, m map[string]string) map[string]string {
+	merged := maps.Clone(existing)
+	if merged == nil {
+		merged = make(map[string]string, len(m))
+	}
+	for k, v := range m {
+		if v != nameable.Unset {
+			merged[k] = v
+		}
+	}
+	own := make(map[string]string)
+	modifier.FillWithNameableKeys(own, nil)
+	for k := range own {
+		if _, answered := m[k]; !answered {
+			delete(merged, k)
+		}
+	}
+	if len(merged) == 0 {
+		return nil
+	}
+	return merged
 }
 
 // applyOwnerReplacements applies the nameable replacements of the trait or equipment that owns a modifier to s. A

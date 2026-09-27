@@ -204,14 +204,14 @@ func (p *applyPart[T]) stripPickers() {
 	gurps.ClearTemplatePickerData(p.rows...)
 }
 
-// promptForModifiers and promptForNameables are handed no owner, since the rows aren't in any table yet and so there is
-// nothing to rebuild when an answer is given.
+// promptForModifiers and promptForNameables put up the prompts for the rows' modifiers and nameable keys. Neither
+// rebuilds or reports anything: the rows aren't in a table yet, and applyTransfer does both once the answers are in.
 func (p *applyPart[T]) promptForModifiers() bool {
-	return ProcessModifiers(nil, p.rows)
+	return ProcessModifiers(p.rows)
 }
 
 func (p *applyPart[T]) promptForNameables() bool {
-	return ProcessNameables(nil, p.rows)
+	return ProcessNameables(p.rows)
 }
 
 // place puts the rows into their table and leaves them selected. With merge, the points of any row that duplicates one

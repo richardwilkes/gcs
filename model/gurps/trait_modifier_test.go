@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -222,4 +223,104 @@ func TestIssue1017LimitedDamageResistance(t *testing.T) {
 	drMap := e.AddDRBonusesFor(TorsoID, nil, nil)
 	c.Equal(0, drMap[AllID], "the modifier cancels the trait's DR against everything")
 	c.Equal(3, drMap["cold"], "the modifier grants DR 3 against the chosen damage type")
+}
+
+// TestTraitModifierApplyNameableKeysKeepsOtherReplacements verifies that applying one modifier's replacements keeps
+// the trait's existing replacements and those applied for its other modifiers.
+func TestTraitModifierApplyNameableKeysKeepsOtherReplacements(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.Name = "@Foo@ Thing"
+	trait.Replacements = map[string]string{"Foo": "Bar"}
+	material := NewTraitModifier(nil, nil, false)
+	material.Name = "@Material@ Coating"
+	color := NewTraitModifier(nil, nil, false)
+	color.Name = "@Color@ Paint"
+	trait.AddModifiers(material, color)
+
+	// As the prompt does: collect every modifier's keys first, then apply them in turn.
+	materialKeys := make(map[string]string)
+	material.FillWithNameableKeys(materialKeys, nil)
+	colorKeys := make(map[string]string)
+	color.FillWithNameableKeys(colorKeys, nil)
+	materialKeys["Material"] = "Steel"
+	colorKeys["Color"] = "Red"
+	material.ApplyNameableKeys(materialKeys)
+	color.ApplyNameableKeys(colorKeys)
+
+	c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel", "Color": "Red"}, trait.Replacements)
+	c.Equal("Bar Thing", trait.NameWithReplacements())
+	c.Equal("Steel Coating", material.NameWithReplacements())
+	c.Equal("Red Paint", color.NameWithReplacements())
+}
+
+// TestTraitModifierApplyNameableKeysUnsetAndCleared verifies that a key left at nameable.Unset keeps the trait's value
+// and a key left out of the map (cleared by the user) is removed.
+func TestTraitModifierApplyNameableKeysUnsetAndCleared(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.Name = "@Material@ Sword"
+	trait.Replacements = map[string]string{"Material": "Iron"}
+	first := NewTraitModifier(nil, nil, false)
+	first.Name = "@Finish@ Coating"
+	second := NewTraitModifier(nil, nil, false)
+	second.Name = "@Finish@ Trim"
+	trait.AddModifiers(first, second)
+
+	firstKeys := make(map[string]string)
+	first.FillWithNameableKeys(firstKeys, nil)
+	secondKeys := make(map[string]string)
+	second.FillWithNameableKeys(secondKeys, nil)
+	c.Equal(nameable.Unset, secondKeys["Finish"], "the key starts out unanswered")
+	firstKeys["Finish"] = "Gilded"
+	first.ApplyNameableKeys(firstKeys)
+	second.ApplyNameableKeys(secondKeys)
+	c.Equal(map[string]string{"Material": "Iron", "Finish": "Gilded"}, trait.Replacements,
+		"an unanswered key keeps the answer given for the other modifier")
+
+	clearing := NewTraitModifier(nil, nil, false)
+	clearing.Name = "@Material@ Inlay"
+	trait.AddModifiers(clearing)
+	clearingKeys := make(map[string]string)
+	clearing.FillWithNameableKeys(clearingKeys, nil)
+	c.Equal("Iron", clearingKeys["Material"], "the prompt starts out on the trait's value")
+	delete(clearingKeys, "Material")
+	clearing.ApplyNameableKeys(clearingKeys)
+	c.Equal(map[string]string{"Finish": "Gilded"}, trait.Replacements, "a cleared key is removed")
+}
+
+// TestTraitModifierApplyNameableKeysKeepsAnswersForDisabledModifiers verifies that applying one modifier's
+// replacements keeps those held for the trait's disabled modifiers.
+func TestTraitModifierApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.Name = "Sword"
+	finish := NewTraitModifier(nil, nil, false)
+	finish.Name = "@Finish@ Coating"
+	trait.AddModifiers(finish)
+	trait.Replacements = map[string]string{"Finish": "Gilded"}
+	finish.Disabled = true
+	color := NewTraitModifier(nil, nil, false)
+	color.Name = "@Color@ Paint"
+	trait.AddModifiers(color)
+
+	colorKeys := make(map[string]string)
+	color.FillWithNameableKeys(colorKeys, nil)
+	colorKeys["Color"] = "Red"
+	color.ApplyNameableKeys(colorKeys)
+
+	c.Equal(map[string]string{"Finish": "Gilded", "Color": "Red"}, trait.Replacements,
+		"the answer held for the switched-off modifier must survive")
+	finish.Disabled = false
+	c.Equal("Gilded Coating", finish.NameWithReplacements(), "switching the modifier back on must find its answer")
+
+	// Clearing every replacement leaves nil rather than an empty map.
+	delete(colorKeys, "Color")
+	color.ApplyNameableKeys(colorKeys)
+	c.Equal(map[string]string{"Finish": "Gilded"}, trait.Replacements, "the cleared key must be removed")
+	finishKeys := make(map[string]string)
+	finish.FillWithNameableKeys(finishKeys, nil)
+	delete(finishKeys, "Finish")
+	finish.ApplyNameableKeys(finishKeys)
+	c.Nil(trait.Replacements, "nothing left to hold must be held as nothing")
 }

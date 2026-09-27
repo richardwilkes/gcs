@@ -503,28 +503,35 @@ func (t *TraitModifier) NameableReplacements() map[string]string {
 	return t.trait.Replacements
 }
 
-// FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map. Containers take part
-// too, since their name and notes are displayed with replacements applied just as a leaf modifier's are.
+// FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map, provided it is enabled.
+// Containers take part too, since their name and notes are displayed with replacements applied just as a leaf
+// modifier's are.
 func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
 	if t.Enabled() {
-		if existing == nil {
-			existing = t.NameableReplacements()
-		}
-		nameable.Extract(
-			m, existing,
-			t.Name,
-			t.LocalNotes,
-		)
-		for _, one := range t.Features {
-			one.FillWithNameableKeys(m, existing)
-		}
+		t.fillWithNameableKeysEvenIfDisabled(m, existing)
 	}
 }
 
-// ApplyNameableKeys passes this up to the owning trait to handle.
+// fillWithNameableKeysEvenIfDisabled implements Modifier.
+func (t *TraitModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[string]string) {
+	if existing == nil {
+		existing = t.NameableReplacements()
+	}
+	nameable.Extract(
+		m, existing,
+		t.Name,
+		t.LocalNotes,
+	)
+	for _, one := range t.Features {
+		one.FillWithNameableKeys(m, existing)
+	}
+}
+
+// ApplyNameableKeys merges the values for this modifier's keys into the owning trait's replacements, which is where
+// they are kept (see modifierNameableReplacements).
 func (t *TraitModifier) ApplyNameableKeys(m map[string]string) {
-	if len(m) != 0 && t.trait != nil {
-		t.trait.ApplyNameableKeys(m)
+	if t.trait != nil {
+		t.trait.Replacements = modifierNameableReplacements(t.trait.Replacements, t, m)
 	}
 }
 

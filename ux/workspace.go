@@ -825,6 +825,23 @@ func saveDockableAs(d FileBackedDockable, extension string, fallbackDir func() s
 // PromptForDestination puts up a modal dialog to choose one or more destinations when choices holds more than one, and
 // returns choices unchanged otherwise. Returns nil if the dialog was canceled or nothing was selected.
 func PromptForDestination[T FileBackedDockable](choices []T) []T {
+	return promptForDestinations(choices, true)
+}
+
+// promptForSingleDestination puts up a modal dialog to choose exactly one destination when choices holds more than one,
+// and returns the one choice without asking otherwise. Reports false if there was nothing to choose from or the dialog
+// was canceled.
+func promptForSingleDestination[T FileBackedDockable](choices []T) (T, bool) {
+	if result := promptForDestinations(choices, false); len(result) != 0 {
+		return result[0], true
+	}
+	var zero T
+	return zero, false
+}
+
+// promptForDestinations is shared by PromptForDestination and promptForSingleDestination. With multiple false, the
+// first choice starts out selected, so that Return alone accepts it and a screen reader lands on a row.
+func promptForDestinations[T FileBackedDockable](choices []T, multiple bool) []T {
 	if len(choices) < 2 {
 		return choices
 	}
@@ -836,15 +853,37 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 		}
 		return xstrings.NaturalCmp(ta, tb, true)
 	})
+	list := newChoiceList[T](multiple)
+	list.Append(choices...)
+	header := i18n.Text("Choose a destination:")
+	if multiple {
+		header = i18n.Text("Choose one or more destinations:")
+	} else {
+		list.Select(false, 0)
+	}
+	if !showListQuestionDialog(header, list) {
+		return nil
+	}
+	return pickFromList(list, choices)
+}
+
+// newChoiceList returns a list for a question dialog to offer choices in, with a double-click on a row standing in for
+// the OK button.
+func newChoiceList[T any](multiple bool) *unison.List[T] {
 	list := unison.NewList[T]()
-	list.SetAllowMultipleSelection(true)
+	list.SetAllowMultipleSelection(multiple)
 	list.DoubleClickCallback = func() {
 		if dialog, ok := list.Window().ClientData()[unison.DialogClientDataKey].(*unison.Dialog); ok {
 			dialog.Button(unison.ModalResponseOK).Click()
 		}
 	}
-	list.Append(choices...)
-	if !showListQuestionDialog(i18n.Text("Choose one or more destinations:"), list) || list.Selection.Count() == 0 {
+	return list
+}
+
+// pickFromList returns the choices at the list's selected indexes, in list order, or nil if nothing is selected. The
+// choices must be the ones the list was filled with, in the same order.
+func pickFromList[T any](list *unison.List[T], choices []T) []T {
+	if list.Selection.Count() == 0 {
 		return nil
 	}
 	result := make([]T, 0, list.Selection.Count())

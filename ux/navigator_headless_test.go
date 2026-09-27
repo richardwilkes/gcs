@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -100,4 +101,38 @@ func TestPromptForFileSystemNameGatesOKOnTarget(t *testing.T) {
 	c.Equal("", path)
 	_, err := os.Stat(filepath.Join(dir, "new folder"))
 	c.True(os.IsNotExist(err), "the prompt itself creates nothing")
+}
+
+// TestReloadOfADiscardedNavigatorLeavesTheLiveOneAlone verifies that a navigator left behind by a workspace that has
+// since been torn down (each headless test starts its own) does nothing when the reload it had scheduled finally runs
+// during a later workspace: it must not close the live navigator's library rows, whose disclosure keys it shares, and
+// it must have let go of its library watches.
+func TestReloadOfADiscardedNavigatorLeavesTheLiveOneAlone(t *testing.T) {
+	c := check.New(t)
+	swapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	var discarded *Navigator
+	t.Run("earlier workspace", func(t *testing.T) {
+		screen, _ := startHeadlessWorkspace(t, check.New(t))
+		screen.Do(func() { discarded = Workspace.Navigator })
+	})
+	if discarded == nil {
+		t.Fatal("the earlier workspace must have had a navigator")
+	}
+	screen, _ := startHeadlessWorkspace(t, c)
+	var discardedInWindow bool
+	var watches int
+	var closedLibraries []string
+	screen.Do(func() {
+		discardedInWindow = discarded.Window() != nil
+		discarded.Reload()
+		watches = len(discarded.tokens)
+		for _, row := range Workspace.Navigator.table.RootRows() {
+			if row.IsLibrary() && !row.IsOpen() {
+				closedLibraries = append(closedLibraries, row.Path())
+			}
+		}
+	})
+	c.False(discardedInWindow, "the navigator of a torn-down workspace must no longer be in a window")
+	c.Equal(0, watches, "the discarded navigator must have stopped watching the libraries")
+	c.Equal(0, len(closedLibraries), "the live navigator's library rows must stay open; closed: %v", closedLibraries)
 }

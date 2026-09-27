@@ -33,7 +33,8 @@ const TableProviderClientKey = "table-provider"
 // rebuilding the table's owner, which replaces the table and leaves the indexes pointing into an orphan.
 type AltDropSupport struct {
 	DragKey *uti.DataType
-	// Drop returns false if the user canceled a prompt along the way, in which case the drop is undone.
+	// Drop returns false if nothing was changed (a prompt was canceled or there was nothing to do), in which case it
+	// must have left everything as it was, since the drop is then abandoned without being recorded or reported.
 	Drop func(rowIndexes []int, data any) bool
 }
 
@@ -75,20 +76,18 @@ func altDropTargets[T gurps.Node[T]](table *unison.Table[*Node[T]], hovered int)
 }
 
 // modifierAltDropSupport returns the alternate drop support for a provider whose rows carry modifiers -- traits and
-// equipment -- which attaches the dragged modifiers to the rows they are dropped onto. Each target row gets its own
-// clones of the dragged modifiers, appended to its modifiers. The provider is consulted for its table at drop time
-// rather than up front, since the table is assigned after the provider is built.
+// equipment -- which attaches clones of the dragged modifiers to the rows they are dropped onto (see
+// attachModifierClones). The provider is consulted for its table at drop time rather than up front, since the table is
+// assigned after the provider is built.
 func modifierAltDropSupport[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](p *listProvider[T], dragKey *uti.DataType) *AltDropSupport {
 	return &AltDropSupport{
 		DragKey: dragKey,
 		Drop: func(rowIndexes []int, data any) bool {
 			tableDragData, ok := data.(*unison.TableDragData[*Node[M]])
 			if !ok {
-				return true
+				return false
 			}
-			// Every target is resolved up front, since the rebuild below can replace this table, leaving it an orphan
-			// whose rows are no longer the ones on screen, so the row indexes only mean something before it runs. The
-			// sync in between is harmless: attaching modifiers adds and removes no rows and changes no disclosure.
+			// Resolved up front, since attaching the modifiers can rebuild the owner and replace this table.
 			targets := make([]T, 0, len(rowIndexes))
 			for _, rowIndex := range rowIndexes {
 				if row := p.table.RowFromIndex(rowIndex); row != nil {
@@ -96,42 +95,14 @@ func modifierAltDropSupport[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 				}
 			}
 			if len(targets) == 0 {
-				return true
+				return false
 			}
-			dataOwner := p.DataOwner()
-			libraryFile := libraryFileFromTable(tableDragData.Table)
-			// Each target gets its own clones, since they are separate modifiers from here on -- enabled, renamed and
-			// edited independently. They are kept grouped by target for the nameables prompt below, which would
-			// otherwise show the copies of one modifier as identically titled sections with nothing to tell them apart.
-			groups := make([]NameableGroup[M], 0, len(targets))
-			for _, target := range targets {
-				clones := make([]M, 0, len(tableDragData.Rows))
-				for _, row := range tableDragData.Rows {
-					var noParent M
-					clones = append(clones, row.Data().Clone(libraryFile, dataOwner, noParent, gurps.Reference))
-				}
-				target.AddModifiers(clones...)
-				groups = append(groups, NameableGroup[M]{Label: target.String(), Rows: clones})
+			modifiers := make([]M, 0, len(tableDragData.Rows))
+			for _, row := range tableDragData.Rows {
+				modifiers = append(modifiers, row.Data())
 			}
-			p.table.SyncToModel()
-			if !xreflect.IsNil(dataOwner) && dataOwner.OwningEntity() != nil {
-				// Rebuilding is also what reports the drop when the rows belong to an entity (see dropRebuilder), so
-				// the owner is rebuilt as modified rather than just rebuilt.
-				rebuildAsModified(dropRebuilder(p.table), true)
-				// That rebuild can have replaced this very list -- an enabled modifier carrying a switchable feature
-				// brings the switch column into view, and a list can only change its columns by building a new table
-				// -- and p's table field is never updated, so each prompt below has to be aimed at the table that took
-				// its place; an orphan has no Rebuildable above it, so the rebuild its answer asks for would silently
-				// be skipped. The lookup is made twice because answering the modifier prompt rebuilds as well.
-				//
-				// ProcessModifiers is given the rows the modifiers were dropped onto, since modifiers themselves
-				// aren't something it can process, and only the topmost of them, since it walks descendants as well.
-				if !ProcessModifiers(liveTable(p.table), minimalNodes(targets)) ||
-					!ProcessNameableGroups(liveTable(p.table), groups) {
-					return false
-				}
-			}
-			return true
+			return attachModifierClones([]*unison.Table[*Node[T]]{p.table}, p.DataOwner(), targets, modifiers,
+				libraryFileFromTable(tableDragData.Table))
 		},
 	}
 }
@@ -209,15 +180,13 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 				handled := false
 				if len(altDropTargetIndexes) != 0 {
 					undo := willDropCallback(nil, table, false)
+					// A drop that changed nothing (see AltDropSupport) leaves nothing to report or record.
 					if altDropSupport.Drop(altDropTargetIndexes, draggedTableData) {
 						// Notify the table the same way unison does for a normal drop. The providers' drop handlers
 						// only rebuild when the data owner has an owning entity, so without this the dockable holding
 						// a template or a traits/equipment list would go on showing itself as unmodified.
 						unison.SafeCall(table.DropOccurredCallback)
 						finishDidDrop(undo, nil, table, false)
-					} else if undo != nil {
-						// A prompt was canceled, so the drop is undone as though it had never happened.
-						undo.BeforeData.Apply()
 					}
 					altDropTargetIndexes = nil
 					flushDragFeedback(table.AsPanel())
@@ -348,8 +317,9 @@ func applyDrop[T gurps.Node[T]](data *unison.TableDragData[*Node[T]], table *uni
 // something to put in them, and the switch column comes and goes with the presence of switchable features, neither of
 // which anything short of a rebuild re-creates. Everywhere else -- a template, a loot sheet, a library list, or a table
 // in an editor whose item has no entity -- marking the table as modified covers everything a drop can change. Both drop
-// paths and the table's drop notification decide with this, so the three always agree. The entity is taken from the
-// table's own provider. Nil, typed or otherwise, is accepted, since the alternate drop path may have no source table.
+// paths, the table's drop notification and the Apply Modifier command decide with this, so they always agree. The
+// entity is taken from the table's own provider. Nil, typed or otherwise, is accepted, since the alternate drop path
+// may have no source table.
 func dropRebuilder(table unison.Paneler) Rebuildable {
 	if xreflect.IsNil(table) {
 		return nil
