@@ -9,7 +9,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package picker
+package eqcontainer
 
 import (
 	"strings"
@@ -19,61 +19,26 @@ import (
 
 // Possible values.
 const (
-	NotApplicable Type = iota
-	Count
-	Points
-	Value
-	Weight
+	Container Type = iota
+	Group
 )
 
 // DefaultType is the default value.
-const DefaultType Type = NotApplicable
+const DefaultType Type = Container
 
 // FirstType is the first valid value.
-const FirstType Type = NotApplicable
+const FirstType Type = Container
 
 // LastType is the last valid value.
-const LastType Type = Weight
+const LastType Type = Group
 
 // Types holds all possible values.
 var Types = []Type{
-	NotApplicable,
-	Count,
-	Points,
-	Value,
-	Weight,
+	Container,
+	Group,
 }
 
-// TypesForEquipment holds the Types valid for the "equipment" group.
-var TypesForEquipment = []Type{
-	NotApplicable,
-	Count,
-	Value,
-	Weight,
-}
-
-// TypesForSkills holds the Types valid for the "skills" group.
-var TypesForSkills = []Type{
-	NotApplicable,
-	Count,
-	Points,
-}
-
-// TypesForSpells holds the Types valid for the "spells" group.
-var TypesForSpells = []Type{
-	NotApplicable,
-	Count,
-	Points,
-}
-
-// TypesForTraits holds the Types valid for the "traits" group.
-var TypesForTraits = []Type{
-	NotApplicable,
-	Count,
-	Points,
-}
-
-// Type holds the type of template picker.
+// Type holds the type of an equipment container.
 type Type byte
 
 // EnsureValid ensures this is of a known value.
@@ -87,16 +52,10 @@ func (enum Type) EnsureValid() Type {
 // Key returns the key used in serialization.
 func (enum Type) Key() string {
 	switch enum {
-	case NotApplicable:
-		return "not_applicable"
-	case Count:
-		return "count"
-	case Points:
-		return "points"
-	case Value:
-		return "value"
-	case Weight:
-		return "weight"
+	case Container:
+		return "container"
+	case Group:
+		return "group"
 	default:
 		return DefaultType.Key()
 	}
@@ -105,16 +64,10 @@ func (enum Type) Key() string {
 // String implements fmt.Stringer.
 func (enum Type) String() string {
 	switch enum {
-	case NotApplicable:
-		return i18n.Text(`Not Applicable`)
-	case Count:
-		return i18n.Text(`Count`)
-	case Points:
-		return i18n.Text(`Points`)
-	case Value:
-		return i18n.Text(`Value`)
-	case Weight:
-		return i18n.Text(`Weight`)
+	case Container:
+		return i18n.Text(`Container`)
+	case Group:
+		return i18n.Text(`Group`)
 	default:
 		return DefaultType.String()
 	}

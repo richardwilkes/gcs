@@ -64,8 +64,9 @@ func NewEquipmentTableDockable(filePath string, equipment []*gurps.Equipment) *T
 	provider := &equipmentListProvider{other: fileListProvider[*gurps.Equipment]{list: equipment}}
 	d := NewTableDockable(filePath, gurps.EquipmentExt, NewEquipmentProvider(provider, false, false),
 		func(path string) error { return gurps.SaveEquipment(provider.OtherEquipmentList(), path) },
-		NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID)
+		NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, NewOtherEquipmentGroupItemID)
 	InstallContainerConversionHandlers(d, d, d.table)
+	installEquipmentContainerConversionHandlers(d, d.table, d)
 	d.InstallCmdHandlers(IncrementTechLevelItemID,
 		func(_ any) bool { return canAdjustTechLevel(d.table, fxp.One) },
 		func(_ any) { adjustTechLevel(d, d.table, fxp.One) })

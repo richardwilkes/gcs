@@ -30,88 +30,130 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 // it is parameterized: only carried equipment can be equipped, so only it gets the "Equipped" checkbox.
 func initEquipmentEditor(carried bool) func(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel) func() {
 	return func(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel) func() {
-		addNameLabelAndField(content, &e.editorData.Name)
-		addNotesLabelAndField(content, &e.editorData.LocalNotes)
-		addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
-		addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo(), &e.editorData.TechLevel)
-		addLabelAndStringField(content, i18n.Text("Legality Class"),
-			i18n.Text("LC0: Banned\nLC1: Military\nLC2: Restricted\nLC3: Licensed\nLC4: Open"),
-			&e.editorData.LegalityClass)
-		qtyLabel := i18n.Text("Quantity")
-		if carried {
-			wrapper, _ := addFlowWrapper(content, qtyLabel, 2)
-			addDecimalField(wrapper, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1, false)
-			addCheckBox(wrapper, i18n.Text("Equipped"), &e.editorData.Equipped)
-		} else {
-			addLabelAndDecimalField(content, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
-		}
-		addLabelAndScriptField(content, nil, "", i18n.Text("Value"),
-			i18n.Text("The value, which may be a number or a script expression"),
-			func() string { return e.editorData.BaseValue },
-			func(value string) {
-				e.editorData.BaseValue = value
-				MarkModified(content)
-			}, false)
-		entity := gurps.EntityFromNode(e.target)
-		extendedValueLabel := i18n.Text("Extended Value")
-		content.AddChild(NewFieldLeadingLabel(extendedValueLabel, false))
-		content.AddChild(NewNonEditableField(func(field *NonEditableField) {
-			field.SetTitle(extendedValueForEditor(e.target, e.editorData).Comma())
-			field.MarkForLayoutAndRedraw()
-		}))
-		addLabelAndScriptField(content, nil, "", i18n.Text("Weight"),
-			i18n.Text("The weight, which may be a number with optional units or a script expression"),
-			func() string { return e.editorData.BaseWeight },
-			func(value string) {
-				e.editorData.BaseWeight = value
-				MarkModified(content)
-			}, false)
-		extendedWeightLabel := i18n.Text("Extended Weight")
-		content.AddChild(NewFieldLeadingLabel(extendedWeightLabel, false))
-		content.AddChild(NewNonEditableField(func(field *NonEditableField) {
-			defUnits := gurps.SheetSettingsFor(entity).DefaultWeightUnits
-			field.SetTitle(defUnits.Format(extendedWeightForEditor(e.target, e.editorData, defUnits)))
-			field.MarkForLayoutAndRedraw()
-		}))
-		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Ignore weight for skills"), &e.editorData.WeightIgnoredForSkills)
-		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
-		addPreconfigurable(e, content)
-		resolvedMaxUses := func() int { return cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedMaxUses() }
-		usesLabel := i18n.Text("Uses Left")
-		wrapper, _ := addFlowWrapper(content, usesLabel, 5)
-		usesField := addIntegerField(wrapper, nil, "", usesLabel, "", &e.editorData.Uses, 0,
-			gurps.MaxEquipmentMaxUses)
-		maxUsesLabel := i18n.Text("Maximum Uses")
-		wrapper.AddChild(NewFieldInteriorLeadingLabel(maxUsesLabel, false))
-		addIntegerField(wrapper, nil, "", maxUsesLabel, "", &e.editorData.MaxUses, 0, gurps.MaxEquipmentMaxUses)
-		wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Adjusted Maximum Uses"), false))
-		wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
-			field.SetTitle(strconv.Itoa(resolvedMaxUses()))
-			field.MarkForLayoutAndRedraw()
-		}))
-		addLabelAndDecimalField(content, nil, "", i18n.Text("Rated ST"), i18n.Text("Equipment with a rated ST use this value instead of the user's ST"), &e.editorData.RatedST, 0, fxp.Max)
-		addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), i18n.Text("Level can be used with features and modifiers that have per-level effects"), &e.editorData.Level, 0, fxp.Max)
-		addTagsLabelAndField(content, &e.editorData.Tags)
-		addPageRefLabelAndField(content, &e.editorData.PageRef)
-		addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-		addSourceFields(content, &e.target.SourcedID)
-		adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false))
-		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
-		content.AddChild(newEquipmentModifiersPanel(e, entity, &e.editorData.Modifiers))
-		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
-		content.AddChild(e.meleeWeapons)
-		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
-		content.AddChild(e.rangedWeapons)
-		return func() {
-			maxUses := resolvedMaxUses()
-			if e.editorData.Uses > maxUses {
-				usesField.SetText(strconv.Itoa(maxUses))
-			}
-			adjustFieldBlank(usesField, maxUses <= 0)
+		switch {
+		case gurps.IsTemplateChoiceContainer(e.target):
+			initEquipmentChoiceEditor(e, content)
+			return nil
+		case e.target.IsGroup():
+			initEquipmentGroupEditor(e, content, carried)
+			return nil
+		default:
+			return initEquipmentItemEditor(e, content, carried)
 		}
 	}
+}
+
+// initEquipmentItemEditor fills in the content of the editor for a piece of equipment or a physical container.
+func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel, carried bool) func() {
+	addNameLabelAndField(content, &e.editorData.Name)
+	addNotesLabelAndField(content, &e.editorData.LocalNotes)
+	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
+	addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo(), &e.editorData.TechLevel)
+	addLabelAndStringField(content, i18n.Text("Legality Class"),
+		i18n.Text("LC0: Banned\nLC1: Military\nLC2: Restricted\nLC3: Licensed\nLC4: Open"),
+		&e.editorData.LegalityClass)
+	qtyLabel := i18n.Text("Quantity")
+	if carried {
+		wrapper, _ := addFlowWrapper(content, qtyLabel, 2)
+		addDecimalField(wrapper, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1, false)
+		addCheckBox(wrapper, i18n.Text("Equipped"), &e.editorData.Equipped)
+	} else {
+		addLabelAndDecimalField(content, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
+	}
+	addLabelAndScriptField(content, nil, "", i18n.Text("Value"),
+		i18n.Text("The value, which may be a number or a script expression"),
+		func() string { return e.editorData.BaseValue },
+		func(value string) {
+			e.editorData.BaseValue = value
+			MarkModified(content)
+		}, false)
+	entity := gurps.EntityFromNode(e.target)
+	extendedValueLabel := i18n.Text("Extended Value")
+	content.AddChild(NewFieldLeadingLabel(extendedValueLabel, false))
+	content.AddChild(NewNonEditableField(func(field *NonEditableField) {
+		field.SetTitle(extendedValueForEditor(e.target, e.editorData).Comma())
+		field.MarkForLayoutAndRedraw()
+	}))
+	addLabelAndScriptField(content, nil, "", i18n.Text("Weight"),
+		i18n.Text("The weight, which may be a number with optional units or a script expression"),
+		func() string { return e.editorData.BaseWeight },
+		func(value string) {
+			e.editorData.BaseWeight = value
+			MarkModified(content)
+		}, false)
+	extendedWeightLabel := i18n.Text("Extended Weight")
+	content.AddChild(NewFieldLeadingLabel(extendedWeightLabel, false))
+	content.AddChild(NewNonEditableField(func(field *NonEditableField) {
+		defUnits := gurps.SheetSettingsFor(entity).DefaultWeightUnits
+		field.SetTitle(defUnits.Format(extendedWeightForEditor(e.target, e.editorData, defUnits)))
+		field.MarkForLayoutAndRedraw()
+	}))
+	content.AddChild(unison.NewPanel())
+	addCheckBox(content, i18n.Text("Ignore weight for skills"), &e.editorData.WeightIgnoredForSkills)
+	addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
+	addPreconfigurable(e, content)
+	resolvedMaxUses := func() int { return cloneEquipmentWithOverlay(e.target, e.editorData).ResolvedMaxUses() }
+	usesLabel := i18n.Text("Uses Left")
+	wrapper, _ := addFlowWrapper(content, usesLabel, 5)
+	usesField := addIntegerField(wrapper, nil, "", usesLabel, "", &e.editorData.Uses, 0,
+		gurps.MaxEquipmentMaxUses)
+	maxUsesLabel := i18n.Text("Maximum Uses")
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(maxUsesLabel, false))
+	addIntegerField(wrapper, nil, "", maxUsesLabel, "", &e.editorData.MaxUses, 0, gurps.MaxEquipmentMaxUses)
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Adjusted Maximum Uses"), false))
+	wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
+		field.SetTitle(strconv.Itoa(resolvedMaxUses()))
+		field.MarkForLayoutAndRedraw()
+	}))
+	addLabelAndDecimalField(content, nil, "", i18n.Text("Rated ST"), i18n.Text("Equipment with a rated ST use this value instead of the user's ST"), &e.editorData.RatedST, 0, fxp.Max)
+	addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), i18n.Text("Level can be used with features and modifiers that have per-level effects"), &e.editorData.Level, 0, fxp.Max)
+	addTagsLabelAndField(content, &e.editorData.Tags)
+	addPageRefLabelAndField(content, &e.editorData.PageRef)
+	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addSourceFields(content, &e.target.SourcedID)
+	adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
+	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false))
+	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
+	content.AddChild(newEquipmentModifiersPanel(e, entity, &e.editorData.Modifiers))
+	e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
+	content.AddChild(e.meleeWeapons)
+	e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
+	content.AddChild(e.rangedWeapons)
+	return func() {
+		maxUses := resolvedMaxUses()
+		if e.editorData.Uses > maxUses {
+			usesField.SetText(strconv.Itoa(maxUses))
+		}
+		adjustFieldBlank(usesField, maxUses <= 0)
+	}
+}
+
+// initEquipmentGroupEditor fills in the content of the editor for a group, which only organizes the equipment it holds,
+// so it has none of the fields that would make it a piece of equipment in its own right.
+func initEquipmentGroupEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel, carried bool) {
+	addNameLabelAndField(content, &e.editorData.Name)
+	addNotesLabelAndField(content, &e.editorData.LocalNotes)
+	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
+	if carried {
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Equipped"), &e.editorData.Equipped)
+	}
+	addTagsLabelAndField(content, &e.editorData.Tags)
+	addPageRefLabelAndField(content, &e.editorData.PageRef)
+	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addSourceFields(content, &e.target.SourcedID)
+}
+
+// initEquipmentChoiceEditor fills in the content of the editor for a template choice container. It dissolves into the
+// options chosen from it when the template is applied, so it has nothing but what describes the choice, and no source
+// fields, since only a template may hold one and a template is never a source.
+func initEquipmentChoiceEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel) {
+	addNameLabelAndField(content, &e.editorData.Name)
+	addNotesLabelAndField(content, &e.editorData.LocalNotes)
+	addChoices(e, content)
+	addPageRefLabelAndField(content, &e.editorData.PageRef)
+	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addIDField(content, &e.target.SourcedID)
 }
 
 // extendedValueForEditor computes the Extended Value preview for the equipment editor. The overlaid clone is used as

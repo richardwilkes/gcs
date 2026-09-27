@@ -76,13 +76,25 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		return []T{row}, false
 	}
 
+	headers := pickerRowDetailHeaders(row)
 	list := unison.NewPanel()
 	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
 	list.SetLayout(&unison.FlexLayout{
-		Columns:  2,
+		Columns:  2 + len(headers),
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
+	if len(headers) != 0 {
+		list.AddChild(unison.NewPanel())
+		for _, header := range headers {
+			label := unison.NewLabel()
+			label.Font = fonts.FieldSecondary
+			label.SetTitle(header)
+			label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
+			list.AddChild(label)
+		}
+		list.AddChild(unison.NewPanel())
+	}
 
 	progress := unison.NewLabel()
 	progressBackground := pickerMatchStateColor(tp.Qualifier.Matches(0))
@@ -116,6 +128,8 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 					total = total.Add(gurps.NumericRangeOf(fxp.One))
 				case picker.Points:
 					total = total.Add(pointsRangeFor(children[i]))
+				case picker.Value, picker.Weight:
+					total = total.Add(pickerMeasureRange(children[i], tp.Type))
 				}
 			}
 		}
@@ -135,7 +149,7 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 			}
 			progressBackground = pickerMatchStateColor(matches)
 			progress.OnBackgroundInk = progressBackground.On()
-			progress.SetTitle(total.Comma())
+			progress.SetTitle(formatPickerTotal(row, tp.Type, total))
 			progress.MarkForLayoutRecursivelyUpward()
 			progress.MarkForRedraw()
 		}
@@ -178,7 +192,7 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		}
 	}
 	label = unison.NewLabel()
-	label.SetTitle(tp.String())
+	label.SetTitle(tp.StringWithUnits(pickerWeightUnits(row)))
 	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}))
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Start,
@@ -193,8 +207,7 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	panel.AddChild(scroll)
 
 	var err error
-	dialog, err = unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
-		unison.DefaultDialogTheme.QuestionIconInk, panel,
+	dialog, err = unison.NewDialog(nil, nil, panel,
 		[]*unison.DialogButtonInfo{
 			unison.NewCancelButtonInfo(),
 			{
@@ -240,6 +253,11 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 	})
+	// The wrapper fills its column so that the page reference it ends with lines up along the right edge.
+	wrapper.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
 	parent.AddChild(wrapper)
 	checkBox := unison.NewCheckBox()
 	updatePickerCheckBoxTitle(checkBox, row, pt)
@@ -248,6 +266,7 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 	boxes = append(boxes, checkBox)
 	var onClick func()
 	var editTooltip string
+	var details []*unison.Label
 	pageRef := ""
 	pageRefHighlight := ""
 	switch actual := any(row).(type) {
@@ -272,6 +291,15 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
+	case *gurps.Equipment:
+		// A choice made by value or weight may take more than one of an option, so its quantity may be set while
+		// picking. A group has no quantity of its own to set.
+		if (pt == picker.Value || pt == picker.Weight) && !actual.IsGroup() {
+			onClick = func() { pickerRowQuantityEditor(actual, &details, callback) }
+			editTooltip = i18n.Text("Edit quantity")
+		}
+		pageRef = actual.PageRef
+		pageRefHighlight = actual.PageRefHighlight
 	}
 	if pageRef != "" {
 		if pageRefs := ExtractPageReferences(pageRef); len(pageRefs) > 0 {
@@ -291,6 +319,10 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 				OpenPageReference(pageRefs[0], pageRefHighlight, nil)
 			})
 			link.VAlign = align.Start
+			link.SetLayoutData(&unison.FlexLayoutData{
+				HAlign: align.End,
+				HGrab:  true,
+			})
 			if icon != nil {
 				link.Drawable = icon
 			}
@@ -299,6 +331,15 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 			}
 			wrapper.AddChild(link)
 		}
+	}
+	rowDetails := pickerRowDetails(row)
+	details = make([]*unison.Label, 0, len(rowDetails))
+	for _, detail := range rowDetails {
+		label := unison.NewLabel()
+		label.SetTitle(detail)
+		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
+		parent.AddChild(label)
+		details = append(details, label)
 	}
 	if onClick == nil {
 		label := unison.NewLabel()
@@ -311,6 +352,113 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 		parent.AddChild(button)
 	}
 	return boxes
+}
+
+// pickerRowDetailHeaders returns the headings of the columns of details shown for each option of the picker container,
+// if its options have any. Only equipment has them: an option's quantity, and the value and weight of all of it.
+func pickerRowDetailHeaders[T gurps.Node[T]](container T) []string {
+	if _, ok := any(container).(*gurps.Equipment); ok {
+		return []string{i18n.Text("Qty"), i18n.Text("Value"), i18n.Text("Weight")}
+	}
+	return nil
+}
+
+// pickerRowDetails returns the details shown for an option in the columns pickerRowDetailHeaders names. The value and
+// weight are ranges when the option presents a choice of its own.
+func pickerRowDetails[T gurps.Node[T]](row T) []string {
+	eqp, ok := any(row).(*gurps.Equipment)
+	if !ok {
+		return nil
+	}
+	defUnits := pickerWeightUnits(eqp)
+	quantity := ""
+	if !eqp.IsGroup() {
+		quantity = eqp.Quantity.Comma()
+	}
+	return []string{
+		quantity,
+		"$" + gurps.FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma),
+		gurps.FormatWeightRange(eqp.ExtendedWeightRange(defUnits), defUnits.Format),
+	}
+}
+
+// pickerMeasureRange returns what an option counts toward a choice made by value or weight: the range of its extended
+// value or weight, which takes its quantity into account.
+func pickerMeasureRange[T gurps.Node[T]](row T, pt picker.Type) gurps.NumericRange {
+	eqp, ok := any(row).(*gurps.Equipment)
+	if !ok || xreflect.IsNil(eqp) {
+		return gurps.NumericRangeOf(0)
+	}
+	if pt == picker.Weight {
+		return eqp.ExtendedWeightRange(pickerWeightUnits(eqp))
+	}
+	return eqp.ExtendedValueRange()
+}
+
+// pickerWeightUnits returns the units the picker dialog shows weights in: those of the sheet the row being picked from
+// is headed for, since it is already owned by that sheet while the dialog is shown, or the default ones otherwise.
+func pickerWeightUnits[T gurps.Node[T]](row T) fxp.WeightUnit {
+	var entity *gurps.Entity
+	if !xreflect.IsNil(row) {
+		entity = gurps.EntityFromNode(row)
+	}
+	return gurps.SheetSettingsFor(entity).DefaultWeightUnits
+}
+
+// formatPickerTotal renders the running total of the options picked, as a value or a weight when the choice is made by
+// one.
+func formatPickerTotal[T gurps.Node[T]](row T, pt picker.Type, total gurps.NumericRange) string {
+	switch pt {
+	case picker.Value:
+		return "$" + gurps.FormatValueRange(total, fxp.Int.Comma)
+	case picker.Weight:
+		return gurps.FormatWeightRange(total, pickerWeightUnits(row).Format)
+	default:
+		return total.Comma()
+	}
+}
+
+// pickerRowQuantityEditor asks for a new quantity of an option of a choice made by value or weight, updating the
+// option's details and the running total to match.
+func pickerRowQuantityEditor(eqp *gurps.Equipment, details *[]*unison.Label, callback func()) {
+	quantity := eqp.Quantity
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VAlign:   align.Middle,
+	})
+	label := unison.NewLabel()
+	label.SetTitle(fmt.Sprintf(i18n.Text("%s Quantity"), eqp.String()))
+	panel.AddChild(label)
+	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return quantity },
+		func(value fxp.Int) { quantity = value }, fxp.One, fxp.Max-1, false, false))
+	dialog, err := unison.NewDialog(nil, nil, panel,
+		[]*unison.DialogButtonInfo{
+			unison.NewCancelButtonInfo(),
+			unison.NewOKButtonInfo(),
+		})
+	if err != nil {
+		errs.Log(err)
+		return
+	}
+	if dialog.RunModal() != unison.ModalResponseOK {
+		return
+	}
+	setPickerRowQuantity(eqp, quantity, *details)
+	callback()
+}
+
+// setPickerRowQuantity sets the quantity of an option of a choice, updating the details shown for it to match.
+func setPickerRowQuantity(eqp *gurps.Equipment, quantity fxp.Int, details []*unison.Label) {
+	eqp.Quantity = quantity
+	for i, detail := range pickerRowDetails(eqp) {
+		if i < len(details) {
+			details[i].SetTitle(detail)
+			details[i].MarkForLayoutRecursivelyUpward()
+			details[i].MarkForRedraw()
+		}
+	}
 }
 
 func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T, pt picker.Type) {
@@ -359,8 +507,7 @@ func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, pt pick
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return levels },
 		func(value fxp.Int) { levels = value }, 0, fieldMax, false, false))
-	dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
-		unison.DefaultDialogTheme.QuestionIconInk, panel,
+	dialog, err := unison.NewDialog(nil, nil, panel,
 		[]*unison.DialogButtonInfo{
 			unison.NewCancelButtonInfo(),
 			unison.NewOKButtonInfo(),
@@ -397,8 +544,7 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unis
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return points },
 		func(value fxp.Int) { points = value }, 0, fxp.MaxBasePoints, false, false))
-	dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
-		unison.DefaultDialogTheme.QuestionIconInk, panel,
+	dialog, err := unison.NewDialog(nil, nil, panel,
 		[]*unison.DialogButtonInfo{
 			unison.NewCancelButtonInfo(),
 			unison.NewOKButtonInfo(),

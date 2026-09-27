@@ -35,6 +35,18 @@ type Modifiable[T Modifiable[T, M], M Modifier[M, T]] interface {
 	AddModifiers(...M)
 }
 
+// CanTakeModifiers returns true if modifiers may be attached to the node. A template choice container can't take them,
+// since it dissolves into the options chosen from it, so modifiers attached to it would only change the cost of those
+// options on the template, and its editor offers no way to remove them. An equipment group can't either: it only
+// organizes what it holds, so it keeps nothing of its own, modifiers included (see Equipment.ClearUnusedFieldsForType).
+func CanTakeModifiers[T Node[T]](node T) bool {
+	if xreflect.IsNil(node) || IsTemplateChoiceContainer(node) {
+		return false
+	}
+	eqp, isEquipment := any(node).(*Equipment)
+	return !isEquipment || !eqp.IsGroup()
+}
+
 // GeneralModifier is used for common access to modifiers.
 type GeneralModifier interface {
 	Container() bool

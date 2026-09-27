@@ -22,7 +22,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
@@ -37,12 +39,19 @@ import (
 var (
 	_ = assertNode[*Equipment]
 	_ = assertModifiableNode[*Equipment]
+	_ = assertTemplatePickerNode[*Equipment]
 	_ = assertEditorData[*EquipmentEditData]
 
-	_ WeaponOwner       = &Equipment{}
-	_ LeveledOwner      = &Equipment{}
-	_ TechLevelProvider = &Equipment{}
-	_ FeatureSwitcher   = &Equipment{}
+	_ WeaponOwner               = &Equipment{}
+	_ LeveledOwner              = &Equipment{}
+	_ TechLevelProvider         = &Equipment{}
+	_ FeatureSwitcher           = &Equipment{}
+	_ TemplatePickerProvider    = &Equipment{}
+	_ templateChoiceConvertible = &Equipment{}
+
+	_ TemplatePickerProvider = &EquipmentData{}
+	_ TemplatePickerProvider = &EquipmentEditData{}
+	_ TemplatePickerProvider = &EquipmentContainerSyncData{}
 )
 
 // Columns that can be used with the equipment method .CellData()
@@ -85,6 +94,7 @@ type EquipmentData struct {
 // EquipmentEditData holds the Equipment data that can be edited by the UI detail editor.
 type EquipmentEditData struct {
 	EquipmentSyncData
+	EquipmentContainerSyncData
 	VTTNotes     string               `json:"vtt_notes,omitzero"`
 	Replacements map[string]string    `json:"replacements,omitempty"`
 	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
@@ -116,6 +126,12 @@ type EquipmentSyncData struct {
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
 }
 
+// EquipmentContainerSyncData holds the equipment sync data that is only applicable to equipment that are containers.
+type EquipmentContainerSyncData struct {
+	TemplatePicker TemplatePicker   `json:"template_picker,omitzero"`
+	ContainerType  eqcontainer.Type `json:"container_type,omitzero"`
+}
+
 // NewEquipmentFromFile loads an Equipment list from a file.
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
 	return loadRows[*Equipment](fileSystem, filePath)
@@ -127,18 +143,144 @@ func SaveEquipment(equipment []*Equipment, filePath string) error {
 	return saveRows(filePath, equipment)
 }
 
+// defaultLegalityClass is the legality class new equipment starts out with.
+const defaultLegalityClass = "4"
+
 // NewEquipment creates a new Equipment.
 func NewEquipment(owner DataOwner, parent *Equipment, container bool) *Equipment {
 	var e Equipment
 	e.TID = tid.MustNewTID(equipmentKind(container))
 	e.Name = e.Kind()
-	e.LegalityClass = "4"
+	e.LegalityClass = defaultLegalityClass
 	e.Quantity = fxp.One
 	e.Equipped = true
 	e.parent = parent
 	e.owner = owner
 	e.SetOpen(container)
 	return &e
+}
+
+// NewEquipmentGroup creates a new equipment group: a container that only organizes the equipment it holds, having no
+// value, weight or anything else of its own.
+func NewEquipmentGroup(owner DataOwner, parent *Equipment) *Equipment {
+	e := NewEquipment(owner, parent, true)
+	e.ContainerType = eqcontainer.Group
+	e.ClearUnusedFieldsForType()
+	e.Name = e.Kind()
+	return e
+}
+
+// NewEquipmentChoiceContainer creates a new template choice container for equipment.
+func NewEquipmentChoiceContainer(owner DataOwner, parent *Equipment) *Equipment {
+	e := NewEquipmentGroup(owner, parent)
+	e.TemplatePicker = newTemplateChoicePicker()
+	e.Name = e.Kind()
+	return e
+}
+
+// IsGroup returns true if this is a group, that is, a container that only organizes the equipment it holds. A template
+// choice container for equipment is always a group.
+func (e *Equipment) IsGroup() bool {
+	return e.Container() && e.ContainerType == eqcontainer.Group
+}
+
+// IsPhysicalContainer returns true if this is a container that is itself a piece of equipment, such as a backpack,
+// with a value, weight and so on of its own in addition to those of the equipment it holds.
+func (e *Equipment) IsPhysicalContainer() bool {
+	return e.Container() && e.ContainerType == eqcontainer.Container
+}
+
+// CanConvertToGroup returns true if this is a container that can be converted to a group.
+func (e *Equipment) CanConvertToGroup() bool {
+	return e.IsPhysicalContainer()
+}
+
+// GroupConversionLosses returns a description of each piece of data this container would lose by being converted to a
+// group.
+func (e *Equipment) GroupConversionLosses() []string {
+	var list []string
+	add := func(has bool, what string) {
+		if has {
+			list = append(list, what)
+		}
+	}
+	add(e.Quantity != fxp.One, i18n.Text("quantity"))
+	add(e.BaseValue != "", i18n.Text("value"))
+	add(e.BaseWeight != "", i18n.Text("weight"))
+	add(e.TechLevel != "", i18n.Text("tech level"))
+	// Every new piece of equipment starts out with the default legality class, so only one that was changed from it is
+	// worth a warning.
+	add(e.LegalityClass != "" && e.LegalityClass != defaultLegalityClass, i18n.Text("legality class"))
+	add(e.MaxUses != 0 || e.Uses != 0, i18n.Text("uses"))
+	add(e.RatedST != 0, i18n.Text("rated ST"))
+	add(e.Level != 0, i18n.Text("level"))
+	add(e.WeightIgnoredForSkills, i18n.Text("ignore weight for skills"))
+	add(e.SwitchedOn, i18n.Text("switched on state"))
+	add(e.Preconfigured, i18n.Text("preconfigured mark"))
+	add(!e.Prereq.IsZero(), i18n.Text("prerequisites"))
+	add(len(e.Features) != 0, i18n.Text("features"))
+	add(len(e.Modifiers) != 0, i18n.Text("modifiers"))
+	add(len(e.Weapons) != 0, i18n.Text("weapons"))
+	return list
+}
+
+// ConvertToGroup converts this container to a group, if it can be, discarding the data GroupConversionLosses describes.
+func (e *Equipment) ConvertToGroup() {
+	if e.CanConvertToGroup() {
+		e.ContainerType = eqcontainer.Group
+		e.ClearUnusedFieldsForType()
+	}
+}
+
+// CanConvertToPhysicalContainer returns true if this is a group, other than a template choice container, that can be
+// converted to a physical container. Nothing is lost by doing so.
+func (e *Equipment) CanConvertToPhysicalContainer() bool {
+	return e.IsGroup() && e.TemplatePicker.IsZero()
+}
+
+// ConvertToPhysicalContainer converts this group to a physical container, if it can be. The container starts out with
+// no value or weight of its own, and with the legality class new equipment starts out with, which converting to a group
+// removes without a warning.
+func (e *Equipment) ConvertToPhysicalContainer() {
+	if e.CanConvertToPhysicalContainer() {
+		e.ContainerType = eqcontainer.Container
+		if e.LegalityClass == "" {
+			e.LegalityClass = defaultLegalityClass
+		}
+	}
+}
+
+func (e *Equipment) canBecomeTemplateChoiceContainer() bool {
+	return e.IsGroup()
+}
+
+// templateChoiceContainerExclusions describes what a group may hold that a choice container can't. A choice container
+// is replaced by the options chosen from it, which keep their own equipped state.
+func (e *Equipment) templateChoiceContainerExclusions() []string {
+	var list []string
+	if e.VTTNotes != "" {
+		list = append(list, i18n.Text("VTT notes"))
+	}
+	if len(e.Tags) != 0 {
+		list = append(list, i18n.Text("tags"))
+	}
+	if !e.Equipped {
+		list = append(list, i18n.Text("unequipped state"))
+	}
+	return list
+}
+
+// clearTemplateChoiceContainerExclusions also makes the container a group, clearing everything a group doesn't hold,
+// since a choice container only declares the choice and holds the options for it, and so has nothing of its own a
+// physical container would.
+func (e *Equipment) clearTemplateChoiceContainerExclusions() {
+	if e.ContainerType != eqcontainer.Group {
+		e.ContainerType = eqcontainer.Group
+		e.ClearUnusedFieldsForType()
+	}
+	e.VTTNotes = ""
+	e.Tags = nil
+	e.Equipped = true
 }
 
 func equipmentKind(container bool) byte {
@@ -316,14 +458,14 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 	case EquipmentExtendedCostColumn:
 		data = imageHeaderData(HeaderStackedCoins,
 			i18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"))
-		data.Less = fxp.IntLessFromString
+		data.Less = ValueRangeLessFromString
 	case EquipmentWeightColumn:
 		data = imageHeaderData(HeaderWeight, i18n.Text("The weight of one of these pieces of equipment"))
 		data.Less = fxp.WeightLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentExtendedWeightColumn:
 		data = imageHeaderData(HeaderStackedWeight,
 			i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment"))
-		data.Less = fxp.WeightLessFromStringFunc(settings.DefaultWeightUnits)
+		data.Less = WeightRangeLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentTagsColumn:
 		data = tagsHeaderData()
 	case EquipmentReferenceColumn:
@@ -339,18 +481,14 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 // equipmentTotalsTitle returns the header title for an equipment list on a page, with the list's total weight and value
 // appended using the sheet's display formats. When those formats change the rendering of either total, the exact totals
 // are returned as well, for the header's tooltip: a total is rounded once after summing, so what shows need not match
-// either the exact total or the sum of the rounded rows.
+// either the exact total or the sum of the rounded rows. A template's totals may be ranges, when it offers choices whose
+// options differ in weight or value.
 func equipmentTotalsTitle(title string, list []*Equipment, settings *SheetSettings) (fullTitle, exactTotals string) {
-	var weight fxp.Weight
-	var value fxp.Int
-	for _, one := range list {
-		weight += one.ExtendedWeight(false, settings.DefaultWeightUnits)
-		value += one.ExtendedValue()
-	}
-	shownWeight := settings.FormatEquipmentWeight(weight)
-	shownValue := settings.FormatEquipmentValue(value)
-	exactWeight := settings.DefaultWeightUnits.Format(weight)
-	exactValue := value.Comma()
+	weight, value := equipmentRangeTotals(list, settings.DefaultWeightUnits)
+	shownWeight := FormatWeightRange(weight, settings.FormatEquipmentWeight)
+	shownValue := FormatValueRange(value, settings.FormatEquipmentValue)
+	exactWeight := FormatWeightRange(weight, settings.DefaultWeightUnits.Format)
+	exactValue := FormatValueRange(value, fxp.Int.Comma)
 	fullTitle = fmt.Sprintf(i18n.Text("%s (%s; $%s)"), title, shownWeight, shownValue)
 	if shownWeight != exactWeight || shownValue != exactValue {
 		exactTotals = fmt.Sprintf(i18n.Text("%s; $%s"), exactWeight, exactValue)
@@ -397,8 +535,15 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		e1 = e1.parent
 		data.Dim = e1.Quantity == 0
 	}
+	// A group has no quantity, value or weight of its own to show, and a template choice container is replaced by the
+	// options chosen from it, so it has no equipped state that means anything either. Its totals are shown as the range
+	// of what the options chosen from it may come to.
+	choice := IsTemplateChoiceContainer(e)
 	switch columnID {
 	case EquipmentEquippedColumn:
+		if choice {
+			break
+		}
 		data.Type = cell.Toggle
 		data.Name = i18n.Text("Equipped")
 		data.Checked = e.Equipped
@@ -408,6 +553,9 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Dim = true
 		}
 	case EquipmentQuantityColumn:
+		if e.IsGroup() {
+			break
+		}
 		data.Type = cell.Text
 		data.Primary = e.Quantity.Comma()
 		data.Alignment = align.End
@@ -417,6 +565,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.TemplateInfo = e.TemplatePicker.String()
 	case EquipmentTLColumn:
 		data.Type = cell.Text
 		data.Primary = e.TechLevel
@@ -426,13 +575,19 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Primary = e.LegalityClass
 		data.Alignment = align.End
 	case EquipmentCostColumn:
+		if e.IsGroup() {
+			break
+		}
 		e.valueCellData(data, e.AdjustedValue())
 	case EquipmentExtendedCostColumn:
-		e.valueCellData(data, e.ExtendedValue())
+		e.valueRangeCellData(data, e.ExtendedValueRange())
 	case EquipmentWeightColumn:
+		if e.IsGroup() {
+			break
+		}
 		e.weightCellData(data, e.AdjustedWeight)
 	case EquipmentExtendedWeightColumn:
-		e.weightCellData(data, e.ExtendedWeight)
+		e.weightRangeCellData(data, e.ExtendedWeightRange)
 	case EquipmentTagsColumn:
 		fillTagsCell(data, e.Tags)
 	case EquipmentReferenceColumn, PageRefCellAlias:
@@ -780,6 +935,29 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 	for _, one := range children {
 		contained += fxp.Int(one.ExtendedWeight(forSkills, defUnits))
 	}
+	return containedWeightReductionFor(equipment, defUnits, modifiers, features).apply(fxp.Weight(contained))
+}
+
+// containedWeightReduction is the reduction a container's features and modifiers make to the weight of its contents.
+type containedWeightReduction struct {
+	percentage fxp.Int
+	fixed      fxp.Int
+}
+
+// apply returns the weight of the contents after the reduction.
+func (r containedWeightReduction) apply(contained fxp.Weight) fxp.Weight {
+	value := fxp.Int(contained)
+	if r.percentage >= fxp.Hundred {
+		value = 0
+	} else if r.percentage > 0 {
+		value -= value.Mul(r.percentage).Div(fxp.Hundred)
+	}
+	return fxp.Weight((value - r.fixed).Max(0))
+}
+
+// containedWeightReductionFor returns the reduction the features and modifiers make to the weight of the contents of
+// the equipment.
+func containedWeightReductionFor(equipment *Equipment, defUnits fxp.WeightUnit, modifiers []*EquipmentModifier, features Features) containedWeightReduction {
 	// Switchable reductions, whether on the equipment or its modifiers, only apply while the equipment's switch is on.
 	switchedOn := equipment != nil && equipment.SwitchedOn
 	var percentage, reduction fxp.Int
@@ -804,12 +982,7 @@ func ContainedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weig
 		}
 		return false
 	}, true, true, modifiers...)
-	if percentage >= fxp.Hundred {
-		contained = 0
-	} else if percentage > 0 {
-		contained -= contained.Mul(percentage).Div(fxp.Hundred)
-	}
-	return fxp.Weight((contained - reduction).Max(0))
+	return containedWeightReduction{percentage: percentage, fixed: reduction}
 }
 
 // ResolvedMaxUses returns the MaxUses adjusted by any applicable EquipmentMaxUsesBonus features, clamped to the range
@@ -942,9 +1115,9 @@ func (e *Equipment) TL() string {
 	return e.TechLevel
 }
 
-// RequiresTL implements TechLevelProvider.
+// RequiresTL implements TechLevelProvider. A group has no tech level of its own.
 func (e *Equipment) RequiresTL() bool {
-	return true
+	return !e.IsGroup()
 }
 
 // SetTL implements TechLevelProvider.
@@ -957,9 +1130,11 @@ func (e *Equipment) Enabled() bool {
 	return true
 }
 
-// CanConvertToFromContainer returns true if this node can be converted to/from a container.
+// CanConvertToFromContainer returns true if this node can be converted to/from a container. A template choice container
+// can't be, since it would leave its choice behind on a piece of equipment that isn't a container; it must first be
+// converted to a group.
 func (e *Equipment) CanConvertToFromContainer() bool {
-	return !e.Container() || !e.HasChildren()
+	return !e.Container() || (!e.HasChildren() && !IsTemplateChoiceContainer(e))
 }
 
 // ConvertToContainer converts this node to a container.
@@ -969,21 +1144,54 @@ func (e *Equipment) ConvertToContainer() {
 
 // ConvertToNonContainer converts this node to a non-container.
 func (e *Equipment) ConvertToNonContainer() {
+	// A group has no legality class of its own, so the piece of equipment it becomes starts out with the one new
+	// equipment does, just as a physical container converted from a group does.
+	if e.IsGroup() && e.LegalityClass == "" {
+		e.LegalityClass = defaultLegalityClass
+	}
 	e.TID = tid.TID(kinds.Equipment) + e.TID[1:]
 }
 
 // Kind returns the kind of data.
 func (e *Equipment) Kind() string {
 	if e.Container() {
+		if e.ContainerType == eqcontainer.Group {
+			if !e.TemplatePicker.IsZero() {
+				return i18n.Text("Equipment Choice")
+			}
+			return i18n.Text("Equipment Group")
+		}
 		return i18n.Text("Equipment Container")
 	}
 	return i18n.Text("Equipment")
 }
 
-// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (non-container, physical
+// container or group). A group keeps only what organizes the equipment it holds; everything that would make it a piece
+// of equipment in its own right is cleared, and its quantity is always one.
 func (e *Equipment) ClearUnusedFieldsForType() {
 	if !e.Container() {
+		e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
 		e.Children = nil
+		return
+	}
+	if e.ContainerType == eqcontainer.Group {
+		e.Quantity = fxp.One
+		e.BaseValue = ""
+		e.BaseWeight = ""
+		e.TechLevel = ""
+		e.LegalityClass = ""
+		e.MaxUses = 0
+		e.Uses = 0
+		e.RatedST = 0
+		e.Level = 0
+		e.WeightIgnoredForSkills = false
+		e.ItemSwitch = ItemSwitch{}
+		e.Preconfigured = false
+		e.Prereq = nil
+		e.Features = nil
+		e.Modifiers = nil
+		e.Weapons = nil
 	}
 }
 
@@ -991,17 +1199,35 @@ func (e *Equipment) ClearUnusedFieldsForType() {
 func (e *Equipment) SyncWithSource() {
 	syncFromSource(e, func(other *Equipment) {
 		e.EquipmentSyncData = other.EquipmentSyncData
+		if e.Container() {
+			e.EquipmentContainerSyncData = other.EquipmentContainerSyncData
+		}
 		e.Tags = slices.Clone(other.Tags)
 		e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 		e.Weapons = CloneWeapons(other.Weapons, e, Reference)
 		e.Features = other.Features.Clone()
+		// The source may be of another kind of container than this one was, so what that kind can't hold must go.
+		e.ClearUnusedFieldsForType()
 	})
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
-	e.hash(h)
+	e.EquipmentSyncData.hash(h)
+	if e.Container() {
+		e.EquipmentContainerSyncData.hash(h)
+	}
+}
+
+func (e *EquipmentContainerSyncData) hash(h hash.Hash) {
+	e.TemplatePicker.Hash(h)
+	xhash.Num8(h, e.ContainerType)
+}
+
+// TemplatePickerData implements TemplatePickerProvider.
+func (e *EquipmentContainerSyncData) TemplatePickerData() ([]picker.Type, *TemplatePicker) {
+	return picker.TypesForEquipment, &e.TemplatePicker
 }
 
 func (e *EquipmentSyncData) hash(h hash.Hash) {
@@ -1057,9 +1283,10 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	e.Features = other.Features.Clone()
 }
 
-// CanPreconfigureContainer implements Preconfigurable.
+// CanPreconfigureContainer implements Preconfigurable. Only a physical container has modifiers of its own to
+// preconfigure.
 func (e *EquipmentEditData) CanPreconfigureContainer() bool {
-	return true
+	return e.ContainerType == eqcontainer.Container
 }
 
 // ModifierList returns the list of modifiers

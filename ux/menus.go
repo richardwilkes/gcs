@@ -158,6 +158,11 @@ const (
 	NewTraitContainerModifierItemID
 	LastContainerMarker
 
+	FirstGroupContainerMarker // Keep this block grouped together
+	NewCarriedEquipmentGroupItemID
+	NewOtherEquipmentGroupItemID
+	LastGroupContainerMarker
+
 	FirstAlternateNonContainerMarker // Keep this block grouped together
 	NewRitualMagicSpellItemID
 	NewTechniqueItemID
@@ -165,6 +170,7 @@ const (
 
 	// These are only offered by templates, the only place template choices may be made, so they must stay outside the
 	// container block above, which the library tables install all of.
+	NewEquipmentChoiceContainerItemID
 	NewSkillChoiceContainerItemID
 	NewSpellChoiceContainerItemID
 	NewTraitChoiceContainerItemID
@@ -336,8 +342,11 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, newCarriedEquipmentAction.NewMenuItem(f))
 	m.InsertItem(-1, newCarriedEquipmentContainerAction.NewMenuItem(f))
+	m.InsertItem(-1, newCarriedEquipmentGroupAction.NewMenuItem(f))
+	m.InsertItem(-1, newEquipmentChoiceContainerAction.NewMenuItem(f))
 	m.InsertItem(-1, newOtherEquipmentAction.NewMenuItem(f))
 	m.InsertItem(-1, newOtherEquipmentContainerAction.NewMenuItem(f))
+	m.InsertItem(-1, newOtherEquipmentGroupAction.NewMenuItem(f))
 	m.InsertItem(-1, newEquipmentModifierAction.NewMenuItem(f))
 	m.InsertItem(-1, newEquipmentContainerModifierAction.NewMenuItem(f))
 
@@ -527,10 +536,14 @@ func (s menuBarScope) appendDisabledMenuItem(menu unison.Menu, title string) {
 	menu.InsertItem(-1, item)
 }
 
-// contextMenuItemFor returns the context menu item that invokes action, so that the menu shows the action's own title
-// and the two can never drift apart. The action must already have been registered (see registerActions), which
-// SetupMenuBar ensures before any window, and so any context menu, exists.
+// contextMenuItemFor returns the context menu item that invokes action, so that the menu shows the action's own title,
+// or the shorter one registered for it in contextMenuShortTitles, and the two can never drift apart. The action must already
+// have been registered (see registerActions), which SetupMenuBar ensures before any window, and so any context menu,
+// exists.
 func contextMenuItemFor(action *unison.Action) ContextMenuItem {
+	if title, ok := contextMenuShortTitles[action.ID]; ok {
+		return ContextMenuItem{Title: title, ID: action.ID}
+	}
 	return ContextMenuItem{Title: action.Title, ID: action.ID}
 }
 

@@ -113,17 +113,9 @@ func canConvertContainers[T gurps.Node[T]](table *unison.Table[*Node[T]], toCont
 // convertContainers converts any selected rows in the given direction, if possible, recording a single undo edit for
 // the whole selection.
 func convertContainers[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], toContainer bool) {
-	targets := convertibleSelection(table, toContainer)
-	if len(targets) == 0 {
+	before, after := convertContainersWithoutUndo(owner, table, toContainer)
+	if before == nil {
 		return
-	}
-	before := &containerConversionList{Owner: owner}
-	after := &containerConversionList{Owner: owner}
-	for _, data := range targets {
-		conv := newContainerConversion(data, toContainer)
-		before.List = append(before.List, newContainerConversion(data, !toContainer))
-		after.List = append(after.List, conv)
-		conv.Apply()
 	}
 	if mgr := unison.UndoManagerFor(table); mgr != nil {
 		action := convertToNonContainerAction
@@ -140,4 +132,23 @@ func convertContainers[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*
 		})
 	}
 	rebuildAsModified(owner, true)
+}
+
+// convertContainersWithoutUndo converts any selected rows in the given direction, if possible, returning the
+// conversions that undo and redo it, or nils if nothing was converted. Recording the undo edit and rebuilding are left
+// to the caller.
+func convertContainersWithoutUndo[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], toContainer bool) (before, after *containerConversionList) {
+	targets := convertibleSelection(table, toContainer)
+	if len(targets) == 0 {
+		return nil, nil
+	}
+	before = &containerConversionList{Owner: owner}
+	after = &containerConversionList{Owner: owner}
+	for _, data := range targets {
+		conv := newContainerConversion(data, toContainer)
+		before.List = append(before.List, newContainerConversion(data, !toContainer))
+		after.List = append(after.List, conv)
+		conv.Apply()
+	}
+	return before, after
 }

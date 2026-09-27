@@ -49,19 +49,41 @@ func TestChoicesOnlyForChoiceContainers(t *testing.T) {
 	c.Equal(-1, typePopup.IndexOfItem(picker.NotApplicable), "a choice container must not offer to stop being one")
 }
 
-// TestChoicesOpeningState verifies that a freshly opened editor blanks the picker's qualifier field exactly when its
-// comparison takes no qualifier.
-func TestChoicesOpeningState(t *testing.T) {
+// TestChoicesForEquipment verifies that an equipment choice container's editor offers choices by count, value or
+// weight, taking a weight with its units, and that a group's does not.
+func TestChoicesForEquipment(t *testing.T) {
 	c := check.New(t)
-	_, comparison, field := newChoices(newChoiceContainer(picker.Count, criteria.AnyNumber))
-	c.True(comparison.Enabled(), "a choice container must offer a comparison")
-	c.False(field.AsPanel().Enabled(), "a comparison that takes no qualifier must not offer one")
+	newEquipmentChoices := func(eqp *gurps.Equipment) (*unison.PopupMenu[picker.Type], unison.Paneler, *unison.Panel) {
+		e := &editor[*gurps.Equipment, *gurps.EquipmentEditData]{target: eqp, editorData: &gurps.EquipmentEditData{}}
+		e.editorData.CopyFrom(eqp)
+		parent := unison.NewPanel()
+		typePopup, _, field := addChoices(e, parent)
+		return typePopup, field, parent
+	}
+	typePopup, _, _ := newEquipmentChoices(gurps.NewEquipmentGroup(nil, nil))
+	c.Nil(typePopup, "a group must not offer choices")
 
-	_, comparison, field = newChoices(newChoiceContainer(picker.Points, criteria.AtLeastNumber))
-	c.True(comparison.Enabled(), "a choice container must offer a comparison")
-	c.True(field.AsPanel().Enabled(), "a comparison that takes a qualifier must offer one")
+	typePopup, field, _ := newEquipmentChoices(gurps.NewEquipmentChoiceContainer(nil, nil))
+	c.NotNil(typePopup, "a choice container must offer choices")
+	c.Equal(3, typePopup.ItemCount(), "equipment must be picked by count, value or weight")
+	c.Equal(-1, typePopup.IndexOfItem(picker.Points), "equipment has no points to pick by")
+	_, isWeight := field.(*WeightField)
+	c.False(isWeight, "a count is not a weight")
 
-	_, comparison, field = newChoices(newChoiceContainer(picker.Count, criteria.AnyNumber))
-	comparison.SelectIndex(int(criteria.EqualsNumber))
-	c.True(field.AsPanel().Enabled(), "choosing a comparison that takes a qualifier must offer one")
+	wrapper := field.AsPanel().Parent().Parent()
+	weightFieldIn := func() bool {
+		found := false
+		for _, one := range wrapper.Children() {
+			for _, child := range one.Children() {
+				if _, ok := child.Self.(*WeightField); ok {
+					found = true
+				}
+			}
+		}
+		return found
+	}
+	typePopup.Select(picker.Weight)
+	c.True(weightFieldIn(), "a weight must be entered with its units")
+	typePopup.Select(picker.Value)
+	c.False(weightFieldIn(), "a value is not a weight")
 }
