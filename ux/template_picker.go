@@ -107,13 +107,13 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	callback := func() {
 		// A picked row that presents choices of its own has no single cost yet, so the running total can be a range.
 		// The picker is satisfied while some way of making those remaining choices would satisfy it.
-		total := gurps.PointsRangeOf(0)
+		total := gurps.NumericRangeOf(0)
 		for i, box := range boxes {
 			if box.State == check.On {
 				switch tp.Type {
 				case picker.NotApplicable:
 				case picker.Count:
-					total = total.Add(gurps.PointsRangeOf(fxp.One))
+					total = total.Add(gurps.NumericRangeOf(fxp.One))
 				case picker.Points:
 					total = total.Add(pointsRangeFor(children[i]))
 				}
@@ -423,19 +423,19 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unis
 // the picker is shown, so its bonuses would otherwise be counted. A trait is counted by its adjusted points, which is
 // the only cost a trait has. Either way a container accounts for any choices it presents -- including the exact ones,
 // which are worth what they ask for rather than what their children add up to.
-func pointsRangeFor[T gurps.Node[T]](child T) gurps.PointsRange {
+func pointsRangeFor[T gurps.Node[T]](child T) gurps.NumericRange {
 	if xreflect.IsNil(child) {
-		return gurps.PointsRangeOf(0)
+		return gurps.NumericRangeOf(0)
 	}
 	// Covers skills and spells
-	if rp, ok := any(child).(interface{ RawPointsRange() gurps.PointsRange }); ok {
+	if rp, ok := any(child).(interface{ RawPointsRange() gurps.NumericRange }); ok {
 		return rp.RawPointsRange()
 	}
 	// Covers traits
 	if rp, ok := any(child).(interface {
-		PointsRange(tooltip *xbytes.InsertBuffer) gurps.PointsRange
+		PointsRange(tooltip *xbytes.InsertBuffer) gurps.NumericRange
 	}); ok {
 		return rp.PointsRange(nil)
 	}
-	return gurps.PointsRangeOf(0)
+	return gurps.NumericRangeOf(0)
 }

@@ -623,16 +623,16 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 // source without saying which row it landed on, so rolling a container's children up into one list would give an
 // unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it. A trait leaves the
 // tooltip alone even then -- see AdjustedPoints -- but is asked for its cost the same way a skill or a spell is.
-func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
+func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 	if !t.Container() {
 		// The disabled case is covered too: AdjustedPoints reports nothing for a trait that is switched off.
-		return PointsRangeOf(t.AdjustedPoints(tooltip))
+		return NumericRangeOf(t.AdjustedPoints(tooltip))
 	}
 	if t.EffectivelyDisabled() {
-		return PointsRangeOf(0)
+		return NumericRangeOf(0)
 	}
 	if value, settled := settledPickerCost(t.TemplatePicker); settled {
-		return PointsRangeOf(value)
+		return NumericRangeOf(value)
 	}
 	ranges := childPointsRanges(t.Children)
 	if t.TemplatePicker.IsZero() && t.ContainerType == container.AlternativeAbilities {
@@ -647,8 +647,8 @@ func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) PointsRange {
 // ranges of the abilities themselves. Each end is worked out from the matching end of the children's. That is a bound
 // rather than an exact answer when a child is itself unsettled, since the cheapest child need not be the cheapest one
 // to treat as the primary ability, but alternative abilities never hold template choices in practice.
-func (t *Trait) alternativeAbilitiesPointsRange(ranges []PointsRange) PointsRange {
-	var result PointsRange
+func (t *Trait) alternativeAbilitiesPointsRange(ranges []NumericRange) NumericRange {
+	var result NumericRange
 	mins := make([]fxp.Int, 0, len(ranges))
 	maxes := make([]fxp.Int, 0, len(ranges))
 	noLowerLimit := false

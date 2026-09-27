@@ -996,7 +996,7 @@ func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 	})
 }
 
-// TestPointsRangeForExactPointsPickerDirectly verifies the one branch of pointsRangeForPickerByPoints that no
+// TestPointsRangeForExactPointsPickerDirectly verifies the one branch of rangeForPickerByMeasure that no
 // container reaches: an exact points picker is settled at its qualifier by settledPickerCost, which every PointsRange
 // consults before walking any children, so nothing that arrives here carries that comparison. The branch has to
 // answer anyway, and has to answer the same thing the short circuit does, since a change to either could make it the
@@ -1012,17 +1012,17 @@ func TestPointsRangeForExactPointsPickerDirectly(t *testing.T) {
 	}
 	// Children that reach nowhere near the qualifier, one of them without an upper limit at all: none of it matters,
 	// since the qualifier is the cost.
-	children := []PointsRange{
-		PointsRangeOf(fxp.Five),
-		PointsRangeOf(fxp.FromInteger(-40)),
-		pointsRangeAtLeast(fxp.Ten),
+	children := []NumericRange{
+		NumericRangeOf(fxp.Five),
+		NumericRangeOf(fxp.FromInteger(-40)),
+		numericRangeAtLeast(fxp.Ten),
 	}
 
-	r := pointsRangeForPickerByPoints(exact(20), children)
+	r := rangeForPickerByMeasure(exact(20), children)
 	checkRange(c, 20, 20, r, "an exact points picker is worth its qualifier whatever its children can reach")
 	c.True(r.IsSettled(), "an exact points picker is settled")
 
-	r = pointsRangeForPickerByPoints(exact(-50), children)
+	r = rangeForPickerByMeasure(exact(-50), children)
 	checkRange(c, -50, -50, r, "an exact points picker asking for disadvantages is worth its qualifier too")
 
 	// The short circuit that normally answers first has to agree with it.
@@ -1208,23 +1208,23 @@ func TestAdjustedPointsCollapsesSettledPickers(t *testing.T) {
 		"a container that no longer presents a choice is worth the total of its children again")
 }
 
-// TestPointsRangeFormatting verifies how a range renders, which is what every points column shows.
-func TestPointsRangeFormatting(t *testing.T) {
+// TestNumericRangeFormatting verifies how a range renders, which is what every points column shows.
+func TestNumericRangeFormatting(t *testing.T) {
 	c := check.New(t)
 
-	c.Equal("10", PointsRangeOf(fxp.Ten).String(), "a settled range renders as the bare cost")
-	c.Equal("-1", PointsRangeOf(fxp.NegOne).String(), "a settled negative range renders as the bare cost")
-	c.Equal("10~15", newPointsRange(fxp.Ten, fxp.Fifteen).String(), "a range renders both ends")
+	c.Equal("10", NumericRangeOf(fxp.Ten).String(), "a settled range renders as the bare cost")
+	c.Equal("-1", NumericRangeOf(fxp.NegOne).String(), "a settled negative range renders as the bare cost")
+	c.Equal("10~15", newNumericRange(fxp.Ten, fxp.Fifteen).String(), "a range renders both ends")
 	c.Equal("-30~-20",
-		newPointsRange(fxp.FromInteger(-30), fxp.FromInteger(-20)).String(),
+		newNumericRange(fxp.FromInteger(-30), fxp.FromInteger(-20)).String(),
 		"a range of disadvantages stays readable, with no sign to confuse the separator for")
-	c.Equal("10+", pointsRangeAtLeast(fxp.Ten).String(), "a range with no upper limit renders as a plus")
-	c.Equal("≤15", pointsRangeAtMost(fxp.Fifteen).String(), "a range with no lower limit renders as a cap")
-	c.Equal("0+", pointsRangeAtLeast(0).String(), "an end open above nothing still renders as a plus")
-	c.Equal("≤0", pointsRangeAtMost(0).String(), "an end open below nothing still renders as a cap")
-	c.Equal("—", PointsRange{}.String(), "a range with no limits at all renders as a dash")
+	c.Equal("10+", numericRangeAtLeast(fxp.Ten).String(), "a range with no upper limit renders as a plus")
+	c.Equal("≤15", numericRangeAtMost(fxp.Fifteen).String(), "a range with no lower limit renders as a cap")
+	c.Equal("0+", numericRangeAtLeast(0).String(), "an end open above nothing still renders as a plus")
+	c.Equal("≤0", numericRangeAtMost(0).String(), "an end open below nothing still renders as a cap")
+	c.Equal("—", NumericRange{}.String(), "a range with no limits at all renders as a dash")
 	c.Equal("1,500~2,000",
-		newPointsRange(fxp.FromInteger(1500), fxp.FromInteger(2000)).Comma(),
+		newNumericRange(fxp.FromInteger(1500), fxp.FromInteger(2000)).Comma(),
 		"Comma renders both ends with separators")
 }
 
@@ -1325,9 +1325,9 @@ func TestPointsCellForPickers(t *testing.T) {
 	c.Equal("1~4", data.Primary, "a skill container presenting choices shows the range too")
 }
 
-// TestPointsRangeCanSatisfy verifies the question a picker dialog asks of a partly-made selection: could what is left
+// TestNumericRangeCanSatisfy verifies the question a picker dialog asks of a partly-made selection: could what is left
 // to decide still satisfy the constraint?
-func TestPointsRangeCanSatisfy(t *testing.T) {
+func TestNumericRangeCanSatisfy(t *testing.T) {
 	c := check.New(t)
 
 	newCriteria := func(compare criteria.NumericComparison, qualifier int) criteria.Number {
@@ -1336,7 +1336,7 @@ func TestPointsRangeCanSatisfy(t *testing.T) {
 		n.Qualifier = fxp.FromInteger(qualifier)
 		return n
 	}
-	open := newPointsRange(fxp.Ten, fxp.FromInteger(40))
+	open := newNumericRange(fxp.Ten, fxp.FromInteger(40))
 
 	c.True(open.CanSatisfy(newCriteria(criteria.EqualsNumber, 20)), "an exact cost within the range can still be met")
 	c.False(open.CanSatisfy(newCriteria(criteria.EqualsNumber, 50)), "an exact cost beyond the range cannot be met")
@@ -1347,16 +1347,16 @@ func TestPointsRangeCanSatisfy(t *testing.T) {
 	c.True(open.CanSatisfy(newCriteria(criteria.AnyNumber, 0)), "an unconstrained picker is always satisfied")
 
 	// A settled range is the plain comparison, which is what every picker that holds no further choices does.
-	settled := PointsRangeOf(fxp.Twenty)
+	settled := NumericRangeOf(fxp.Twenty)
 	c.True(settled.CanSatisfy(newCriteria(criteria.EqualsNumber, 20)), "a settled cost meets an exact match")
 	c.False(settled.CanSatisfy(newCriteria(criteria.EqualsNumber, 21)), "a settled cost fails an exact mismatch")
-	nothing := PointsRangeOf(0)
+	nothing := NumericRangeOf(0)
 	c.False(nothing.CanSatisfy(newCriteria(criteria.EqualsNumber, 1)), "picking nothing doesn't satisfy a picker")
 	c.True(nothing.CanSatisfy(newCriteria(criteria.AtMostNumber, 5)), "picking nothing satisfies a maximum")
 
 	// A range with no upper limit -- the everyday "pick at least N points" over children carrying no points -- can
 	// still reach anything above its lower limit, but nothing below it.
-	atLeast := pointsRangeAtLeast(fxp.Ten)
+	atLeast := numericRangeAtLeast(fxp.Ten)
 	c.True(atLeast.CanSatisfy(newCriteria(criteria.EqualsNumber, 1000)),
 		"an exact cost above a range with no upper limit can still be met")
 	c.False(atLeast.CanSatisfy(newCriteria(criteria.EqualsNumber, 5)),
@@ -1369,7 +1369,7 @@ func TestPointsRangeCanSatisfy(t *testing.T) {
 		"a maximum below the lower limit cannot be met")
 
 	// The mirror of that: a range with no lower limit can reach anything below its upper limit.
-	atMost := pointsRangeAtMost(fxp.Fifteen)
+	atMost := numericRangeAtMost(fxp.Fifteen)
 	c.True(atMost.CanSatisfy(newCriteria(criteria.EqualsNumber, -1000)),
 		"an exact cost below a range with no lower limit can still be met")
 	c.False(atMost.CanSatisfy(newCriteria(criteria.EqualsNumber, 20)),
@@ -1382,7 +1382,7 @@ func TestPointsRangeCanSatisfy(t *testing.T) {
 		"a minimum above the upper limit cannot be met")
 
 	// A range with no limits at all cannot rule anything out.
-	var unlimited PointsRange
+	var unlimited NumericRange
 	c.True(unlimited.CanSatisfy(newCriteria(criteria.EqualsNumber, 20)), "a range with no limits meets any exact cost")
 	c.True(unlimited.CanSatisfy(newCriteria(criteria.AtLeastNumber, 20)), "a range with no limits meets any minimum")
 	c.True(unlimited.CanSatisfy(newCriteria(criteria.AtMostNumber, 20)), "a range with no limits meets any maximum")
@@ -1396,18 +1396,18 @@ func TestPointsRangeCanSatisfy(t *testing.T) {
 		"a settled cost cannot avoid itself")
 }
 
-// TestPointsRangeWithoutLimits verifies how a range with no limit at one end composes and compares, since nothing that
+// TestNumericRangeWithoutLimits verifies how a range with no limit at one end composes and compares, since nothing that
 // is added to such an end brings it back within one.
-func TestPointsRangeWithoutLimits(t *testing.T) {
+func TestNumericRangeWithoutLimits(t *testing.T) {
 	c := check.New(t)
 
-	open := pointsRangeAtLeast(fxp.Ten)
+	open := numericRangeAtLeast(fxp.Ten)
 	c.Nil(open.Max, "a range with no upper limit has none")
 	c.False(open.IsSettled(), "a range with no upper limit is never settled")
 	_, settled := open.Settled()
 	c.False(settled, "a range with no upper limit has no single cost")
 
-	sum := open.Add(PointsRangeOf(fxp.Five))
+	sum := open.Add(NumericRangeOf(fxp.Five))
 	c.NotNil(sum.Min, "adding a cost to a range with no upper limit still has a lower one")
 	c.Equal(fxp.Fifteen, *sum.Min, "adding a cost raises the lower limit")
 	c.Nil(sum.Max, "adding a cost to a range with no upper limit leaves it without one")
@@ -1418,11 +1418,11 @@ func TestPointsRangeWithoutLimits(t *testing.T) {
 	child.BasePoints = fxp.Ten
 	parent.Children = append(parent.Children, child)
 	c.True(parent.PointsRange(nil).IsSettled(), "a container of settled children is settled")
-	c.Nil(sumPointsRanges([]PointsRange{PointsRangeOf(fxp.Ten), pointsRangeAtLeast(fxp.Five)}).Max,
+	c.Nil(sumNumericRanges([]NumericRange{NumericRangeOf(fxp.Ten), numericRangeAtLeast(fxp.Five)}).Max,
 		"a total that includes a cost with no upper limit has none")
 }
 
-// TestPointsRangeSign verifies which side of nothing a single range sits on. A points picker consults this to decide
+// TestNumericRangeSign verifies which side of nothing a single range sits on. A points picker consults this to decide
 // whether its qualifier constrains its children at all: a qualifier only binds children that reach toward it.
 //
 // A range is positive when nothing it can cost is less than nothing, and negative when nothing it can cost is more.
@@ -1430,122 +1430,122 @@ func TestPointsRangeWithoutLimits(t *testing.T) {
 // one with no lower limit reaches below it. A range that can only cost nothing is zero, which is no side of its own
 // but agrees with either. A range holding costs on both sides is mixed, and a picker over such children has no side
 // to take.
-func TestPointsRangeSign(t *testing.T) {
+func TestNumericRangeSign(t *testing.T) {
 	c := check.New(t)
 
 	for _, tc := range []struct {
 		msg  string
-		r    PointsRange
-		want PointsRangeSign
+		r    NumericRange
+		want NumericRangeSign
 	}{
 		// Positive: nothing the range can cost is less than nothing.
-		{"a settled cost above nothing is positive", PointsRangeOf(fxp.FromInteger(20)), PointsRangePositive},
+		{"a settled cost above nothing is positive", NumericRangeOf(fxp.FromInteger(20)), NumericRangePositive},
 		{
 			"a range between two costs above nothing is positive",
-			newPointsRange(fxp.FromInteger(5), fxp.FromInteger(20)), PointsRangePositive,
+			newNumericRange(fxp.FromInteger(5), fxp.FromInteger(20)), NumericRangePositive,
 		},
-		{"a range reaching up from nothing is positive", newPointsRange(0, fxp.FromInteger(20)), PointsRangePositive},
-		{"a range with no upper limit is positive", pointsRangeAtLeast(fxp.FromInteger(5)), PointsRangePositive},
-		{"a range with no upper limit starting at nothing is positive", pointsRangeAtLeast(0), PointsRangePositive},
+		{"a range reaching up from nothing is positive", newNumericRange(0, fxp.FromInteger(20)), NumericRangePositive},
+		{"a range with no upper limit is positive", numericRangeAtLeast(fxp.FromInteger(5)), NumericRangePositive},
+		{"a range with no upper limit starting at nothing is positive", numericRangeAtLeast(0), NumericRangePositive},
 
 		// Zero: the range can only cost nothing, so it sits on neither side. It is what a child carrying no points
 		// reports, and having no side of its own is what lets it keep the company of either -- see
-		// TestSignForPointsRanges.
-		{"a settled cost of nothing is zero", PointsRangeOf(0), PointsRangeZero},
+		// TestSignForNumericRanges.
+		{"a settled cost of nothing is zero", NumericRangeOf(0), NumericRangeZero},
 
 		// Negative: nothing the range can cost is more than nothing.
-		{"a settled cost below nothing is negative", PointsRangeOf(fxp.FromInteger(-20)), PointsRangeNegative},
+		{"a settled cost below nothing is negative", NumericRangeOf(fxp.FromInteger(-20)), NumericRangeNegative},
 		{
 			"a range between two costs below nothing is negative",
-			newPointsRange(fxp.FromInteger(-20), fxp.FromInteger(-5)), PointsRangeNegative,
+			newNumericRange(fxp.FromInteger(-20), fxp.FromInteger(-5)), NumericRangeNegative,
 		},
-		{"a range with no lower limit is negative", pointsRangeAtMost(fxp.FromInteger(-5)), PointsRangeNegative},
+		{"a range with no lower limit is negative", numericRangeAtMost(fxp.FromInteger(-5)), NumericRangeNegative},
 
 		// A range capped at exactly nothing is the disadvantage package that need not be taken: every cost it can
 		// reach returns points, and the one that does not returns none. That is the negative side, not both sides.
 		{
 			"a range reaching down from nothing is negative",
-			newPointsRange(fxp.FromInteger(-20), 0), PointsRangeNegative,
+			newNumericRange(fxp.FromInteger(-20), 0), NumericRangeNegative,
 		},
-		{"a range with no lower limit capped at nothing is negative", pointsRangeAtMost(0), PointsRangeNegative},
+		{"a range with no lower limit capped at nothing is negative", numericRangeAtMost(0), NumericRangeNegative},
 
 		// Mixed: the range holds costs on both sides of nothing, so neither side describes it.
 		{
 			"a range straddling nothing is mixed",
-			newPointsRange(fxp.FromInteger(-20), fxp.FromInteger(5)), PointsRangeMixed,
+			newNumericRange(fxp.FromInteger(-20), fxp.FromInteger(5)), NumericRangeMixed,
 		},
 		{
 			"a range with no lower limit reaching above nothing is mixed",
-			pointsRangeAtMost(fxp.FromInteger(5)), PointsRangeMixed,
+			numericRangeAtMost(fxp.FromInteger(5)), NumericRangeMixed,
 		},
 		{
 			"a range with no upper limit reaching below nothing is mixed",
-			pointsRangeAtLeast(fxp.FromInteger(-20)), PointsRangeMixed,
+			numericRangeAtLeast(fxp.FromInteger(-20)), NumericRangeMixed,
 		},
-		{"a range with no limit at either end is mixed", PointsRange{}, PointsRangeMixed},
+		{"a range with no limit at either end is mixed", NumericRange{}, NumericRangeMixed},
 	} {
 		c.Equal(signName(tc.want), signName(tc.r.Sign()), tc.msg)
 	}
 }
 
-// TestSignForPointsRanges verifies the side a whole set of children sits on, which is what a points picker actually
+// TestSignForNumericRanges verifies the side a whole set of children sits on, which is what a points picker actually
 // asks. The set has a side only when every range in it agrees; one range on the other side, or one that reaches both
 // ways at once, leaves the set with none. A range that can only cost nothing is the exception: it takes no side, so
 // it contradicts neither, and a set of nothing but those is itself zero.
-func TestSignForPointsRanges(t *testing.T) {
+func TestSignForNumericRanges(t *testing.T) {
 	c := check.New(t)
 
-	advantage := PointsRangeOf(fxp.FromInteger(20))
-	otherAdvantage := PointsRangeOf(fxp.FromInteger(5))
-	disadvantage := PointsRangeOf(fxp.FromInteger(-20))
-	otherDisadvantage := PointsRangeOf(fxp.FromInteger(-5))
-	noPoints := PointsRangeOf(0)
-	straddling := newPointsRange(fxp.FromInteger(-20), fxp.FromInteger(5))
+	advantage := NumericRangeOf(fxp.FromInteger(20))
+	otherAdvantage := NumericRangeOf(fxp.FromInteger(5))
+	disadvantage := NumericRangeOf(fxp.FromInteger(-20))
+	otherDisadvantage := NumericRangeOf(fxp.FromInteger(-5))
+	noPoints := NumericRangeOf(0)
+	straddling := newNumericRange(fxp.FromInteger(-20), fxp.FromInteger(5))
 
 	for _, tc := range []struct {
 		msg    string
-		ranges []PointsRange
-		want   PointsRangeSign
+		ranges []NumericRange
+		want   NumericRangeSign
 	}{
 		// A picker authored with no children at all has nothing to take a side, so the set is zero.
-		{"no ranges at all are zero", nil, PointsRangeZero},
+		{"no ranges at all are zero", nil, NumericRangeZero},
 
-		{"a single advantage is positive", []PointsRange{advantage}, PointsRangePositive},
+		{"a single advantage is positive", []NumericRange{advantage}, NumericRangePositive},
 		{
 			"advantages throughout are positive",
-			[]PointsRange{advantage, otherAdvantage},
-			PointsRangePositive,
+			[]NumericRange{advantage, otherAdvantage},
+			NumericRangePositive,
 		},
-		{"a single disadvantage is negative", []PointsRange{disadvantage}, PointsRangeNegative},
+		{"a single disadvantage is negative", []NumericRange{disadvantage}, NumericRangeNegative},
 		{
 			"disadvantages throughout are negative",
-			[]PointsRange{disadvantage, otherDisadvantage},
-			PointsRangeNegative,
+			[]NumericRange{disadvantage, otherDisadvantage},
+			NumericRangeNegative,
 		},
 
 		// One child on the other side is enough, whichever order the two arrive in.
 		{
 			"a disadvantage among advantages is mixed",
-			[]PointsRange{advantage, otherAdvantage, disadvantage},
-			PointsRangeMixed,
+			[]NumericRange{advantage, otherAdvantage, disadvantage},
+			NumericRangeMixed,
 		},
 		{
 			"an advantage among disadvantages is mixed",
-			[]PointsRange{disadvantage, otherDisadvantage, advantage},
-			PointsRangeMixed,
+			[]NumericRange{disadvantage, otherDisadvantage, advantage},
+			NumericRangeMixed,
 		},
 
 		// A child with no side of its own gives the set none either, since nothing it reaches can be ruled out.
-		{"a single range straddling nothing is mixed", []PointsRange{straddling}, PointsRangeMixed},
+		{"a single range straddling nothing is mixed", []NumericRange{straddling}, NumericRangeMixed},
 		{
 			"a range straddling nothing among advantages is mixed",
-			[]PointsRange{advantage, straddling},
-			PointsRangeMixed,
+			[]NumericRange{advantage, straddling},
+			NumericRangeMixed,
 		},
 		{
 			"a range straddling nothing among disadvantages is mixed",
-			[]PointsRange{disadvantage, straddling},
-			PointsRangeMixed,
+			[]NumericRange{disadvantage, straddling},
+			NumericRangeMixed,
 		},
 
 		// Children carrying no points take no side, so they leave the side of the set to whatever else is in it. A
@@ -1553,34 +1553,34 @@ func TestSignForPointsRanges(t *testing.T) {
 		// disadvantage package is still a disadvantage package.
 		{
 			"children carrying no points are zero",
-			[]PointsRange{noPoints, noPoints, noPoints},
-			PointsRangeZero,
+			[]NumericRange{noPoints, noPoints, noPoints},
+			NumericRangeZero,
 		},
 		{
 			"children carrying no points sit alongside advantages",
-			[]PointsRange{advantage, noPoints},
-			PointsRangePositive,
+			[]NumericRange{advantage, noPoints},
+			NumericRangePositive,
 		},
 		{
 			"children carrying no points sit alongside disadvantages too",
-			[]PointsRange{disadvantage, noPoints},
-			PointsRangeNegative,
+			[]NumericRange{disadvantage, noPoints},
+			NumericRangeNegative,
 		},
 	} {
-		c.Equal(signName(tc.want), signName(SignForPointsRanges(tc.ranges...)), tc.msg)
+		c.Equal(signName(tc.want), signName(SignForNumericRanges(tc.ranges...)), tc.msg)
 	}
 }
 
 // signName names a sign, so that a failure above reads as the side it expected rather than as a number.
-func signName(s PointsRangeSign) string {
+func signName(s NumericRangeSign) string {
 	switch s {
-	case PointsRangePositive:
+	case NumericRangePositive:
 		return "positive"
-	case PointsRangeNegative:
+	case NumericRangeNegative:
 		return "negative"
-	case PointsRangeZero:
+	case NumericRangeZero:
 		return "zero"
-	case PointsRangeMixed:
+	case NumericRangeMixed:
 		return "mixed"
 	default:
 		return fmt.Sprintf("unknown(%d)", byte(s))
@@ -1603,12 +1603,12 @@ func newPickerContainer(pt picker.Type, compare criteria.NumericComparison, qual
 }
 
 // newPickerRange is newPickerContainer for the common case of only wanting the container's resulting range.
-func newPickerRange(pt picker.Type, compare criteria.NumericComparison, qualifier int, childPoints []int) PointsRange {
+func newPickerRange(pt picker.Type, compare criteria.NumericComparison, qualifier int, childPoints []int) NumericRange {
 	return newPickerContainer(pt, compare, qualifier, childPoints).PointsRange(nil)
 }
 
 // checkRange verifies both ends of a range against whole-number expectations, neither of which may be unlimited.
-func checkRange(c check.Checker, minimum, maximum int, r PointsRange, msg string) {
+func checkRange(c check.Checker, minimum, maximum int, r NumericRange, msg string) {
 	c.Helper()
 	c.NotNil(r.Min, msg+" (has a lower limit)")
 	c.NotNil(r.Max, msg+" (has an upper limit)")
@@ -1672,7 +1672,7 @@ func checkOpenRangeCases(c check.Checker, pt picker.Type, cases []openRangeCase)
 // newNestedPickerRange returns the range of a count picker presenting the given containers as the choices it offers.
 // A container is the only thing that produces a range of its own today -- no item node does yet -- so nesting one
 // inside a picker is the only way to reach a range that is open at an end, or at both.
-func newNestedPickerRange(compare criteria.NumericComparison, qualifier int, inner ...*Trait) PointsRange {
+func newNestedPickerRange(compare criteria.NumericComparison, qualifier int, inner ...*Trait) NumericRange {
 	outer := NewTrait(nil, nil, true)
 	outer.TemplatePicker.Type = picker.Count
 	outer.TemplatePicker.Qualifier.Compare = compare
