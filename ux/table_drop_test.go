@@ -602,3 +602,37 @@ func TestAltDropSkipsChoiceContainers(t *testing.T) {
 	table.SelectByIndex(0, 1, 2)
 	c.Equal([]int{0, 2}, altDropTargets(table, 0), "a selected choice must be left out of the batch")
 }
+
+// TestApplyModifierSkipsChoiceContainers verifies that the Apply Modifier command never gives a template choice
+// container modifiers either: its target prompt leaves the choice out while still offering the options within it, and
+// the shared attach step skips a choice handed to it anyway.
+func TestApplyModifierSkipsChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	forbidModifierPrompts(t)
+	choice := gurps.NewTraitChoiceContainer(nil, nil)
+	option := gurps.NewTrait(nil, choice, false)
+	option.Name = "Option"
+	choice.Children = []*gurps.Trait{option}
+	plain := gurps.NewTrait(nil, nil, false)
+	plain.Name = "Plain"
+	template := newTestTemplateWithTraits(choice, plain)
+
+	lists := traitModifierTargetKind().lists(template)
+	c.Equal(1, len(lists))
+	labels := make([]string, 0, 2)
+	for _, one := range modifierTargetChoices(lists) {
+		labels = append(labels, one.String())
+	}
+	c.Equal([]string{"Option (in Trait Choice)", "Plain"}, labels,
+		"the choice must be left out of the prompt, but its option must still be offered")
+
+	ranged := gurps.NewTraitModifier(nil, nil, false)
+	ranged.Name = "Ranged"
+	tables := []*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table}
+	c.True(attachModifierClones(tables, template.template, []*gurps.Trait{choice, plain}, []*gurps.TraitModifier{ranged},
+		gurps.LibraryFile{}))
+	c.Equal(0, len(choice.Modifiers), "the choice must not be given the modifier")
+	c.Equal([]string{"Ranged"}, appliedModifierNames(plain.Modifiers), "the other target must still get it")
+	c.False(attachModifierClones(tables, template.template, []*gurps.Trait{choice}, []*gurps.TraitModifier{ranged},
+		gurps.LibraryFile{}), "a choice alone leaves nothing to do")
+}
