@@ -25,7 +25,7 @@ import (
 func newChoices(trait *gurps.Trait) (typePopup *unison.PopupMenu[picker.Type], comparisonPopup *unison.PopupMenu[string], field unison.Paneler) {
 	e := &editor[*gurps.Trait, *gurps.TraitEditData]{target: trait, editorData: &gurps.TraitEditData{}}
 	e.editorData.CopyFrom(trait)
-	return addChoices(e, unison.NewPanel(), false)
+	return addChoices(e, unison.NewPanel())
 }
 
 // newChoiceContainer returns a trait choice container whose picker is set as given.

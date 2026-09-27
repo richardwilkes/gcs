@@ -108,6 +108,35 @@ func TestCopyFromTemplateToTemplateKeepsPickers(t *testing.T) {
 	c.True(gurps.HasTemplatePickerData(destinationData.Traits...), "the choices must have been kept")
 }
 
+// TestCopyToTemplateNormalizesChoices verifies that a choice container copied into a template arrives stripped of
+// everything a choice container doesn't use, just as it would have been had the template loaded it, while the rows
+// being copied are left alone.
+func TestCopyToTemplateNormalizesChoices(t *testing.T) {
+	c := check.New(t)
+	choices := newChoiceTrait("Pick One", "First", "Second")
+	choices.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
+	choices.Tags = []string{"Advantage"}
+	choices.VTTNotes = "vtt"
+	choices.Source = gurps.Source{Library: "lib", Path: "choices.adq", TID: choices.ID()}
+	source := newTestTemplateWithTraits(choices)
+	destinationData := gurps.NewTemplate()
+	destination := newTestTemplateDockable("Destination", destinationData)
+	prompts := captureModifierPrompts(t)
+
+	copySelectionTo(source.Traits.Table, []*Template{destination})
+
+	c.Equal(0, len(*prompts), "the choice's modifiers must be gone before anything is put to the user")
+	c.Equal(1, len(destinationData.Traits))
+	arrived := destinationData.Traits[0]
+	c.True(gurps.IsTemplateChoiceContainer(arrived), "the choices must have been kept")
+	c.Equal(0, len(arrived.Modifiers), "the choice must arrive without modifiers")
+	c.Equal(0, len(arrived.Tags), "the choice must arrive without tags")
+	c.Equal("", arrived.VTTNotes, "the choice must arrive without VTT notes")
+	c.True(arrived.Source.IsZero(), "the choice must arrive without a source")
+	c.Equal(1, len(choices.Modifiers), "the rows copied from must be left alone")
+	c.Equal(1, len(choices.Tags), "the rows copied from must be left alone")
+}
+
 // TestCopyFromSheetToSheetIsAPlainCopy verifies that rows copied from one sheet to another aren't applied again: their
 // modifiers were settled when they arrived on the first sheet.
 func TestCopyFromSheetToSheetIsAPlainCopy(t *testing.T) {

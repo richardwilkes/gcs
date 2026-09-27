@@ -36,10 +36,10 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	choice := gurps.IsTemplateChoiceContainer(e.target)
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
-	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
-	addUserDescLabelAndField(content, &e.editorData.UserDesc)
-	addTagsLabelAndField(content, &e.editorData.Tags)
 	if !choice {
+		addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
+		addUserDescLabelAndField(content, &e.editorData.UserDesc)
+		addTagsLabelAndField(content, &e.editorData.Tags)
 		addPreconfigurable(e, content)
 		content.AddChild(unison.NewPanel())
 		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
@@ -146,7 +146,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			&e.editorData.AlternativeSlots, 0, maxAlternativeSlots)
 		adjustSlotsField(slotsField, e.editorData.ContainerType)
 	}
-	addChoices(e, content, true)
+	addChoices(e, content)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if choice {

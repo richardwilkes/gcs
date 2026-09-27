@@ -11,12 +11,12 @@ package ux
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
@@ -82,18 +82,21 @@ func choiceConvertibleSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], 
 }
 
 // convertChoiceContainers converts the selected rows that can be converted in the given direction, after warning about
-// any data the conversion discards, recording a single undo edit for the whole selection.
+// any data the conversion discards, recording a single undo edit for the whole selection. Any editor open on one of the
+// rows is closed first, since the fields it shows depend on whether the row is a choice container.
 func convertChoiceContainers[T gurps.Node[T], D gurps.EditorData[T]](owner Rebuildable, table *unison.Table[*Node[T]], toChoice bool) {
 	targets := choiceConvertibleSelection(table, toChoice)
 	if len(targets) == 0 || !confirmChoiceConversion(targets, toChoice) {
 		return
 	}
-	newData := func(target T) D {
-		var data D
-		reflect.ValueOf(&data).Elem().Set(reflect.New(reflect.TypeFor[D]().Elem()))
-		data.CopyFrom(target)
-		return data
+	ids := make(map[tid.TID]bool, len(targets))
+	for _, target := range targets {
+		ids[target.ID()] = true
 	}
+	if !CloseID(ids) {
+		return
+	}
+	newData := newEditorData[T, D]
 	edits := &choiceConversionList[T, D]{owner: owner}
 	for _, target := range targets {
 		conv := &choiceConversion[T, D]{
@@ -156,7 +159,7 @@ func confirmChoiceConversion[T gurps.Node[T]](targets []T, toChoice bool) bool {
 var askToConvertChoiceContainers = func(title, message string) bool {
 	convert := unison.NewOKButtonInfo()
 	convert.Title = i18n.Text("Convert")
-	dialog, err := unison.NewDialog(unison.DefaultDialogTheme.ErrorIcon, unison.DefaultDialogTheme.ErrorIconInk,
+	dialog, err := unison.NewDialog(unison.DefaultDialogTheme.WarningIcon, unison.DefaultDialogTheme.WarningIconInk,
 		unison.NewMessagePanel(title, message), []*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), convert})
 	if err != nil {
 		errs.Log(err)

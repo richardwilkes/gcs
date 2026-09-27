@@ -65,14 +65,13 @@
 - Template choices now live in their own kind of container, a choice. In a template, the new "New Trait Choice", "New
   Skill Choice" and "New Spell Choice" commands add one, and "Convert to Choice" and "Convert to Group" turn a group
   into a choice and back. Both conversions warn before removing anything. Since a choice is replaced by the options
-  chosen from it when the template is applied, a trait choice's editor leaves out the container type, ancestry,
-  alternative slots, modifiers, self-control roll, frequency of appearance, preconfigured, enabled, switched on and
-  prerequisite settings. No choice's editor shows the library source fields, since only a template can hold one and a
-  template is never a source.
-- Modifiers on a template choice are not supported. A choice is dissolved when the template is applied, and anything on
-  it, modifiers included, is left behind, so a modifier placed on one never reached the character. Loading a template
-  now removes any modifiers a choice holds and makes any trait choice a plain group, since the container type means
-  nothing for one either. Put a modifier meant for every option on each option instead.
+  chosen from it when the template is applied, its editor shows only its name, notes, choices and page references.
+- Modifiers on a template choice are not supported, nor is anything else a choice has no use for. A choice is dissolved
+  when the template is applied, and anything on it is left behind, so a modifier placed on one never reached the
+  character. Loading a template, or copying or dragging rows into one, now removes from each choice its modifiers, VTT
+  notes, user description, tags, self-control roll, frequency of appearance, prerequisites, library source and its
+  preconfigured, disabled and switched on settings, and makes a trait choice a plain group. Put a modifier meant for
+  every option on each option instead.
 
 ## Bug Fixes
 
@@ -89,6 +88,8 @@
   choice is now made on the way, just as when applying the template, and only the options chosen arrive. Dragging a
   choice container into a library now asks first, and removes the choices if you continue, since only a template can
   hold them.
+- Character sheets and libraries that already hold template choices, left there by older versions, now have the choices
+  removed when they are opened, since only a template can hold them. The options inside are kept.
 - A container given choices in a template no longer keeps the library source it was copied from. Syncing with that
   source would have quietly removed the choices, since the library's copy has none.
 - The question of whether to disable the character's existing ancestry, and the offer to randomize the profile again,

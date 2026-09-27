@@ -112,13 +112,10 @@ func HasTemplatePickerData[T Node[T]](nodes ...T) bool {
 // picker data also loses its source, since only a template may hold picker data and a template is never a source.
 func ClearTemplatePickerData[T Node[T]](nodes ...T) {
 	Traverse(func(node T) bool {
-		if node.Container() {
-			if tpp, ok := any(node).(TemplatePickerProvider); ok {
-				if _, data := tpp.TemplatePickerData(); !data.IsZero() {
-					*data = TemplatePicker{}
-					node.ClearSource()
-				}
-			}
+		if IsTemplateChoiceContainer(node) {
+			_, data := any(node).(TemplatePickerProvider).TemplatePickerData() //nolint:errcheck // IsTemplateChoiceContainer checked this
+			*data = TemplatePicker{}
+			node.ClearSource()
 		}
 		return false
 	}, false, false, nodes...)
@@ -133,23 +130,31 @@ type templateChoiceConvertible interface {
 	// templateChoiceContainerExclusions returns a description of each piece of data this container holds that a choice
 	// container can't.
 	templateChoiceContainerExclusions() []string
-	// clearTemplateChoiceContainerExclusions removes the data templateChoiceContainerExclusions describes.
+	// clearTemplateChoiceContainerExclusions removes the data templateChoiceContainerExclusions describes, along with
+	// anything else a choice container doesn't use.
 	clearTemplateChoiceContainerExclusions()
-	// normalizeTemplateChoiceContainer brings this choice container into line with what a choice container may be.
-	normalizeTemplateChoiceContainer()
 }
 
-// normalizeTemplateChoiceContainers brings every template choice container among the nodes and their children into
-// line with what a choice container may be.
-func normalizeTemplateChoiceContainers[T Node[T]](nodes ...T) {
+// NormalizeTemplateChoiceContainers strips every template choice container among the nodes and their children of
+// everything a choice container doesn't use, its source included. A choice container dissolves into the options
+// chosen from it when the template is applied, and nothing on it reaches the sheet, so anything else it holds would
+// only be hidden from its editor while still affecting the template. A template does this whenever rows arrive in it,
+// whether loaded from its file or transferred from elsewhere.
+func NormalizeTemplateChoiceContainers[T Node[T]](nodes ...T) {
 	Traverse(func(node T) bool {
 		if IsTemplateChoiceContainer(node) {
-			if tc, ok := any(node).(templateChoiceConvertible); ok {
-				tc.normalizeTemplateChoiceContainer()
-			}
+			normalizeTemplateChoiceContainer(node)
 		}
 		return false
 	}, false, false, nodes...)
+}
+
+// normalizeTemplateChoiceContainer strips a single choice container of everything a choice container doesn't use.
+func normalizeTemplateChoiceContainer[T Node[T]](node T) {
+	if tc, ok := any(node).(templateChoiceConvertible); ok {
+		tc.clearTemplateChoiceContainerExclusions()
+	}
+	node.ClearSource()
 }
 
 // CanConvertToTemplateChoiceContainer returns true if the node is a container that can be converted to a template
@@ -170,7 +175,7 @@ func TemplateChoiceConversionLosses[T Node[T]](node T) []string {
 		return nil
 	}
 	losses := tc.templateChoiceContainerExclusions()
-	if node.GetSource() != (Source{}) {
+	if !node.GetSource().IsZero() {
 		losses = append(losses, i18n.Text("library source"))
 	}
 	return losses
@@ -182,11 +187,9 @@ func ConvertToTemplateChoiceContainer[T Node[T]](node T) {
 	if !CanConvertToTemplateChoiceContainer(node) {
 		return
 	}
-	tc := any(node).(templateChoiceConvertible) //nolint:errcheck // CanConvertToTemplateChoiceContainer checked this
-	tc.clearTemplateChoiceContainerExclusions()
-	_, data := tc.TemplatePickerData()
+	_, data := any(node).(templateChoiceConvertible).TemplatePickerData() //nolint:errcheck // CanConvertToTemplateChoiceContainer checked this
 	*data = newTemplateChoicePicker()
-	node.ClearSource()
+	normalizeTemplateChoiceContainer(node)
 }
 
 // ConvertFromTemplateChoiceContainer converts a template choice container back into a plain container, discarding its

@@ -48,6 +48,9 @@ func transferKindOf(panel unison.Paneler) transferKind {
 
 // applyOptions selects the steps of applyTransfer that rows arriving in a document go through.
 type applyOptions struct {
+	// normalizeChoices strips the template choice containers among the rows of everything a choice container doesn't
+	// use (see gurps.NormalizeTemplateChoiceContainers), as a template does to the rows it loads.
+	normalizeChoices bool
 	// resolvePickers asks the user to settle the template choices the rows carry, which the destination can't hold.
 	resolvePickers bool
 	// askAncestry offers to disable the character's existing ancestry when the rows bring one of their own.
@@ -70,8 +73,8 @@ type applyOptions struct {
 // applyOptionsFor returns the steps that rows moving from the source's document into the destination's go through.
 // Rows arriving on a sheet from anywhere but another sheet are fully applied; from another sheet they are a plain copy,
 // save for settling any template choices a sheet can't hold, the ancestry question and the offer to randomize. Rows
-// arriving on a template are kept as authored, save that those from a library have their modifiers and nameables
-// prompted for. Rows arriving in a library are kept as they are, save for the template choices, which only a template
+// arriving on a template are kept as authored, save that their choice containers are normalized and those from a
+// library have their modifiers and nameables prompted for. Rows arriving in a library are kept as they are, save for the template choices, which only a template
 // can hold.
 func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 	from := transferKindOf(source)
@@ -95,7 +98,7 @@ func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 			merge:              true,
 		}
 	case transferTemplate:
-		return applyOptions{promptForChoices: from == transferLibrary, merge: true}
+		return applyOptions{normalizeChoices: true, promptForChoices: from == transferLibrary, merge: true}
 	default:
 		return applyOptions{stripPickers: true, clearPreconfigured: true}
 	}
@@ -116,6 +119,7 @@ type applyPart[T gurps.Node[T]] struct {
 
 // applyPartOps is what applyTransfer needs of each part, whatever its row type.
 type applyPartOps interface {
+	normalizeChoices()
 	resolvePickers() bool
 	hasPickerData() bool
 	stripPickers()
@@ -177,6 +181,10 @@ func (a *applyParts) each(fn func(part applyPartOps)) {
 // hasPickerData returns true if any of the parts' rows carry template picker data.
 func (a *applyParts) hasPickerData() bool {
 	return !a.all(func(part applyPartOps) bool { return !part.hasPickerData() })
+}
+
+func (p *applyPart[T]) normalizeChoices() {
+	gurps.NormalizeTemplateChoiceContainers(p.rows...)
 }
 
 func (p *applyPart[T]) resolvePickers() bool {
@@ -294,6 +302,11 @@ func (p *applyPart[T]) changed() (unison.Paneler, Rebuildable) {
 // leaving the destination exactly as it was, and returns false. Only once every answer is in is the destination
 // changed, all at once, and the change is recorded as a single undo edit with the given name.
 func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOptions, editName string) bool {
+	// The incoming rows are clones, so normalizing them changes nothing elsewhere, even if a later prompt is canceled. It
+	// comes first so that no prompt asks about modifiers or nameables a choice container is about to lose.
+	if opts.normalizeChoices {
+		parts.each(applyPartOps.normalizeChoices)
+	}
 	if opts.resolvePickers && !promptForPickers(parts) {
 		return false
 	}

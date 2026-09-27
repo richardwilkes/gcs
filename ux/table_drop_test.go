@@ -364,12 +364,14 @@ func TestApplyOptionsFor(t *testing.T) {
 	c.Equal(applyOptions{resolvePickers: true, askAncestry: true, randomize: true, clearPreconfigured: true, merge: true},
 		applyOptionsFor(loot.Equipment.Table, sheet.CarriedEquipment.Table),
 		"a sheet to a sheet is a plain copy, save for what a sheet can't hold and the ancestry questions")
-	c.Equal(applyOptions{promptForChoices: true, merge: true}, applyOptionsFor(library, template.Traits.Table),
-		"a library to a template prompts for modifiers and nameables only")
-	c.Equal(applyOptions{merge: true}, applyOptionsFor(template.Traits.Table, template.Traits.Table),
-		"a template to a template is a plain copy")
-	c.Equal(applyOptions{merge: true}, applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
-		"a sheet to a template is a plain copy")
+	c.Equal(applyOptions{normalizeChoices: true, promptForChoices: true, merge: true},
+		applyOptionsFor(library, template.Traits.Table),
+		"a library to a template normalizes choice containers and prompts for modifiers and nameables only")
+	c.Equal(applyOptions{normalizeChoices: true, merge: true},
+		applyOptionsFor(template.Traits.Table, template.Traits.Table),
+		"a template to a template is a plain copy, save for normalizing choice containers")
+	c.Equal(applyOptions{normalizeChoices: true, merge: true}, applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
+		"a sheet to a template is a plain copy, save for normalizing choice containers")
 	c.Equal(applyOptions{stripPickers: true, clearPreconfigured: true}, applyOptionsFor(template.Traits.Table, library),
 		"anything to a library is a plain copy, save for the choices only a template can hold")
 }

@@ -185,15 +185,20 @@ func (s *Skill) canBecomeTemplateChoiceContainer() bool {
 	return true
 }
 
-// templateChoiceContainerExclusions returns nothing, since a skill container holds nothing a choice container can't.
 func (s *Skill) templateChoiceContainerExclusions() []string {
-	return nil
+	var list []string
+	if s.VTTNotes != "" {
+		list = append(list, i18n.Text("VTT notes"))
+	}
+	if len(s.Tags) != 0 {
+		list = append(list, i18n.Text("tags"))
+	}
+	return list
 }
 
 func (s *Skill) clearTemplateChoiceContainerExclusions() {
-}
-
-func (s *Skill) normalizeTemplateChoiceContainer() {
+	s.VTTNotes = ""
+	s.Tags = nil
 }
 
 // NewSkill creates a new Skill.

@@ -12,12 +12,15 @@ package gurps
 import (
 	"encoding/json/v2"
 	"testing"
+	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -157,8 +160,18 @@ func TestTemplateLoadNormalizesChoiceContainers(t *testing.T) {
 	choice.ContainerType = container.Ancestry
 	choice.Ancestry = "Human"
 	choice.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
+	choice.VTTNotes = "vtt"
+	choice.UserDesc = "desc"
+	choice.Tags = []string{"Advantage"}
+	choice.SelfControl = selfctrl.CR12
+	choice.Frequency = frequency.FR9
+	choice.Disabled = true
+	choice.Prereq = NewPrereqList()
+	choice.Prereq.Prereqs = append(choice.Prereq.Prereqs, NewTraitPrereq())
+	choice.Source = Source{Library: "lib", Path: "choice.adq", TID: choice.ID()}
 	choice.SetParent(outer)
 	outer.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
+	outer.Tags = []string{"Lens"}
 	outer.Children = []*Trait{choice}
 	alternatives := newTemplateChoiceTrait("Pick Another", "Third", "Fourth")
 	alternatives.ContainerType = container.AlternativeAbilities
@@ -178,8 +191,17 @@ func TestTemplateLoadNormalizesChoiceContainers(t *testing.T) {
 
 	c.Equal(container.MetaTrait, loaded.Traits[0].ContainerType, "a container without choices keeps its type")
 	c.Equal(1, len(loaded.Traits[0].Modifiers), "a container without choices keeps its modifiers")
+	c.Equal([]string{"Lens"}, loaded.Traits[0].Tags, "a container without choices keeps its tags")
 	loadedChoice := loaded.Traits[0].Children[0]
 	c.Equal(0, len(loadedChoice.Modifiers), "a choice container must not keep modifiers")
+	c.Equal("", loadedChoice.VTTNotes, "a choice container must not keep VTT notes")
+	c.Equal("", loadedChoice.UserDesc, "a choice container must not keep a user description")
+	c.Equal(0, len(loadedChoice.Tags), "a choice container must not keep tags")
+	c.Equal(selfctrl.None, loadedChoice.SelfControl, "a choice container must not keep a self-control roll")
+	c.Equal(frequency.None, loadedChoice.Frequency, "a choice container must not keep a frequency")
+	c.False(loadedChoice.Disabled, "a choice container must not stay disabled")
+	c.True(loadedChoice.Prereq.IsZero(), "a choice container must not keep prerequisites")
+	c.True(loadedChoice.Source.IsZero(), "a choice container must not keep a source")
 	c.Equal(container.Group, loadedChoice.ContainerType, "a nested choice container must become a group")
 	c.Equal("", loadedChoice.Ancestry, "a choice container no longer an ancestry must not keep one")
 	c.True(IsTemplateChoiceContainer(loadedChoice), "the choices themselves must survive")
@@ -227,4 +249,44 @@ func TestTemplateChoiceConversion(t *testing.T) {
 	c.False(IsTemplateChoiceContainer(group))
 	c.True(group.Container(), "it must still be a container")
 	c.Equal(container.Group, group.ContainerType)
+}
+
+// TestSkillChoiceConversionLosses verifies that a skill choice container can't keep VTT notes or tags either.
+func TestSkillChoiceConversionLosses(t *testing.T) {
+	c := check.New(t)
+	group := NewSkill(nil, nil, true)
+	c.Equal(0, len(TemplateChoiceConversionLosses(group)), "a bare skill container loses nothing")
+	group.VTTNotes = "vtt"
+	group.Tags = []string{"Combat"}
+	c.Equal(2, len(TemplateChoiceConversionLosses(group)))
+	ConvertToTemplateChoiceContainer(group)
+	c.True(IsTemplateChoiceContainer(group))
+	c.Equal("", group.VTTNotes)
+	c.Equal(0, len(group.Tags))
+}
+
+// TestLoadingOutsideATemplateClearsPickerData verifies that only a template keeps template picker data when loaded: a
+// character sheet and a standalone list both have it removed, along with the source of each container that had it.
+func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
+	c := check.New(t)
+	choices := newTemplateChoiceTrait("Pick One", "First", "Second")
+	choices.Source = Source{Library: "lib", Path: "choices.adq", TID: choices.ID()}
+
+	entity := NewEntity()
+	entity.Traits = []*Trait{choices}
+	data, err := json.Marshal(entity)
+	c.NoError(err)
+	var loadedEntity Entity
+	c.NoError(json.Unmarshal(data, &loadedEntity))
+	c.Equal(1, len(loadedEntity.Traits))
+	c.False(HasTemplatePickerData(loadedEntity.Traits...), "a character sheet must not keep picker data")
+	c.True(loadedEntity.Traits[0].Source.IsZero(), "the container that lost its picker data must lose its source")
+	c.Equal(2, len(loadedEntity.Traits[0].Children), "the options must be left alone")
+
+	list, err := json.Marshal(&listData[*Trait]{Version: jio.CurrentDataVersion, Rows: []*Trait{choices}})
+	c.NoError(err)
+	rows, err := NewTraitsFromFile(fstest.MapFS{"list.adq": &fstest.MapFile{Data: list}}, "list.adq")
+	c.NoError(err)
+	c.Equal(1, len(rows))
+	c.False(HasTemplatePickerData(rows...), "a standalone list must not keep picker data")
 }

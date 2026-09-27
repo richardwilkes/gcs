@@ -23,14 +23,12 @@ import (
 // addChoices adds the "Choices" row to the editor of a template choice container, and nothing to any other editor. The
 // row doesn't offer to take the picker out of use, since that would leave a plain container behind; turning a choice
 // container back into a group is the job of the "Convert to Group" command, which warns before removing the choices.
-func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent *unison.Panel, templateOnly bool) (
+// Only a template may hold a choice container, so the row needs no check of where the editor was opened.
+func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent *unison.Panel) (
 	typePopup *unison.PopupMenu[picker.Type],
 	comparisonPopup *unison.PopupMenu[string],
 	field unison.Paneler,
 ) {
-	if templateOnly && !HasOwner[*Template](parent) {
-		return typePopup, comparisonPopup, field
-	}
 	if xreflect.IsNil(e.target) || !gurps.IsTemplateChoiceContainer(e.target) {
 		return typePopup, comparisonPopup, field
 	}

@@ -184,6 +184,15 @@ func (t *Trait) canBecomeTemplateChoiceContainer() bool {
 
 func (t *Trait) templateChoiceContainerExclusions() []string {
 	var list []string
+	if t.VTTNotes != "" {
+		list = append(list, i18n.Text("VTT notes"))
+	}
+	if t.UserDesc != "" {
+		list = append(list, i18n.Text("user description"))
+	}
+	if len(t.Tags) != 0 {
+		list = append(list, i18n.Text("tags"))
+	}
 	if len(t.Modifiers) != 0 {
 		list = append(list, i18n.Text("modifiers"))
 	}
@@ -208,18 +217,16 @@ func (t *Trait) templateChoiceContainerExclusions() []string {
 	return list
 }
 
-// normalizeTemplateChoiceContainer makes this choice container a plain group and removes its modifiers. Neither the
-// container type nor modifiers mean anything to a container that dissolves into the choices made from it: only the
-// chosen children reach the sheet, and modifiers on a choice container are not supported.
-func (t *Trait) normalizeTemplateChoiceContainer() {
+// clearTemplateChoiceContainerExclusions also makes the container a plain group. The container type means nothing to a
+// container that dissolves into the choices made from it, and only a group may become a choice container anyway.
+func (t *Trait) clearTemplateChoiceContainerExclusions() {
 	if t.ContainerType != container.Group {
 		t.ContainerType = container.Group
 		t.ClearUnusedFieldsForType()
 	}
-	t.Modifiers = nil
-}
-
-func (t *Trait) clearTemplateChoiceContainerExclusions() {
+	t.VTTNotes = ""
+	t.UserDesc = ""
+	t.Tags = nil
 	t.Modifiers = nil
 	t.SelfControl = selfctrl.None
 	t.SelfControlAdj = selfctrl.NoAdjustment
