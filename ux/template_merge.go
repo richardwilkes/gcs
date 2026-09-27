@@ -65,6 +65,11 @@ type mergeableNode[T gurps.Node[T]] interface {
 // a hash, so all candidates for a hash are considered. An incoming row can match either an existing row or an earlier
 // incoming row, so a template containing two identical entries collapses them into one.
 //
+// A row within a template choice container is one option among several rather than something the template always
+// grants, so it takes no part in merging, in either direction: points are never folded into an option, which would
+// turn a required row into an optional one, and an incoming option is never folded away into a row already present,
+// which would take it out of its choice.
+//
 // An incoming row with an empty (but non-nil) tech level has it resolved to defaultTechLevel first, mirroring the
 // substitution performed on drop by the skills and spells providers. Without this, a template applied a second time
 // would compare the incoming empty tech level against the already-resolved tech level of the existing row, fail to
@@ -72,6 +77,9 @@ type mergeableNode[T gurps.Node[T]] interface {
 func mergePoints[T mergeableNode[T]](existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T {
 	byHash := make(map[uint64][]T)
 	gurps.Traverse(func(item T) bool {
+		if isChoiceOption(item) {
+			return false
+		}
 		hash := gurps.Hash64(item)
 		byHash[hash] = append(byHash[hash], item)
 		return false
@@ -79,6 +87,9 @@ func mergePoints[T mergeableNode[T]](existing, incoming []T, defaultTechLevel st
 	pruneMap := make(map[T]bool)
 	gurps.Traverse(func(item T) bool {
 		resolveEmptyTechLevel(item, defaultTechLevel)
+		if isChoiceOption(item) {
+			return false
+		}
 		hash := gurps.Hash64(item)
 		matched := false
 		for _, candidate := range byHash[hash] {
@@ -107,6 +118,16 @@ func mergePoints[T mergeableNode[T]](existing, incoming []T, defaultTechLevel st
 		}
 	}
 	return incoming
+}
+
+// isChoiceOption returns true if the node sits within a template choice container, at any depth.
+func isChoiceOption[T gurps.Node[T]](node T) bool {
+	for parent := node.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
+		if gurps.IsTemplateChoiceContainer(parent) {
+			return true
+		}
+	}
+	return false
 }
 
 // mergeIncoming folds the points of the incoming rows into identical skill or spell rows already present in the table
