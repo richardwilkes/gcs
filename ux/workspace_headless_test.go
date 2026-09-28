@@ -122,6 +122,46 @@ func TestWorkspaceRestoresTheFocusedTab(t *testing.T) {
 	screen.Do(func() { isWorkspaceAllowedToClose() }) // Leave nothing open for the session to stop with.
 }
 
+// TestClosingTheLastTabFocusesTheNavigator verifies that closing the tab that holds the keyboard focus hands the focus
+// to a neighboring tab while there is one, and to the navigator's table once there is none, rather than leaving the
+// window with nothing focused, which left the keyboard with nothing to act on until the mouse put the focus somewhere.
+func TestClosingTheLastTabFocusesTheNavigator(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	swapForTest(t, &gurps.GlobalSettings().OpenInWindow, nil) // The sheets must land in the dock to be tabs.
+
+	dir := t.TempDir()
+	first := filepath.Join(dir, "first"+gurps.SheetExt)
+	second := filepath.Join(dir, "second"+gurps.SheetExt)
+	c.NoError(gurps.NewEntity().Save(first))
+	c.NoError(gurps.NewEntity().Save(second))
+
+	var firstSheet, secondSheet FileBackedDockable
+	var focusedPath string
+	screen.Do(func() {
+		OpenFiles([]string{first, second})
+		firstSheet = LocateFileBackedDockable(first)
+		secondSheet = LocateFileBackedDockable(second)
+		ActivateDockable(firstSheet)
+		focusedPath = focusedFilePath(wnd)
+	})
+	if xreflect.IsNil(firstSheet) || xreflect.IsNil(secondSheet) {
+		t.Fatal("the sheets were not opened")
+	}
+	c.Equal(first, focusedPath, "the first sheet starts out with the focus")
+
+	// With another tab beside it, the focus passes to that tab.
+	closeEditorWithoutPrompt(t, screen, firstSheet)
+	screen.Do(func() { focusedPath = focusedFilePath(wnd) })
+	c.Equal(second, focusedPath, "closing the focused tab hands the focus to the remaining tab")
+
+	// With no tab left, the focus goes to the navigator's table, as at startup.
+	var navigatorTableFocused bool
+	closeEditorWithoutPrompt(t, screen, secondSheet)
+	screen.Do(func() { navigatorTableFocused = wnd.CurrentFocus() == Workspace.Navigator.table.AsPanel() })
+	c.True(navigatorTableFocused, "closing the last tab hands the focus to the navigator's table")
+}
+
 // dockContainerCount returns the number of containers in the document dock.
 func dockContainerCount() int {
 	count := 0

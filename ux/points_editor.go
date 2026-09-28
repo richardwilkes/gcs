@@ -253,7 +253,7 @@ func (e *pointsEditor) AttemptClose() bool {
 		return false
 	}
 	if dc := e.Ancestor[*unison.DockContainer](); dc != nil {
-		dc.Close(e)
+		closeTab(dc, e)
 		e.returnToPrevious()
 		return true
 	}

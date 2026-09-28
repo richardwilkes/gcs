@@ -101,3 +101,6 @@
   with details of their own, and it was impossible to tell which was which when both were shown as "Human".
 - Items dropped into a closed container on a character sheet are now asked about their modifiers and @Name@
   substitutions like any others; they used to be skipped.
+- Closing the last tab in the workspace now moves the keyboard focus to the Library Explorer instead of leaving
+  nothing focused, and pressing Tab when nothing has the focus now brings the focus back into the window rather than
+  doing nothing.

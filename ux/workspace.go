@@ -513,7 +513,7 @@ func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
 		return wnd, nil
 	}
 	if dc := unison.Ancestor[*unison.DockContainer](dockable); dc != nil {
-		dc.Close(dockable)
+		closeTab(dc, dockable)
 	} else {
 		panel.RemoveFromParent()
 	}
@@ -923,13 +923,24 @@ func UpdateTitleForDockable(d unison.Dockable) {
 // AttemptCloseForDockable attempts to close a dockable.
 func AttemptCloseForDockable(d unison.Dockable) bool {
 	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.Close(d)
+		closeTab(dc, d)
 		return true
 	}
 	if wnd := d.AsPanel().Window(); wnd != nil {
 		return wnd.AttemptClose()
 	}
 	return true
+}
+
+// closeTab closes d, a tab of dc, and keeps the keyboard focus somewhere it can be used from. The dock hands the focus
+// d held to a neighboring tab, but when d was the last tab in the document dock there is no neighbor to hand it to,
+// and the focus goes to the navigator instead, as it does at startup, rather than nowhere.
+func closeTab(dc *unison.DockContainer, d unison.Dockable) {
+	wnd := dc.Window() // Looked up first, since closing the last tab takes the container out of the window.
+	dc.Close(d)
+	if wnd != nil && wnd == Workspace.Window && wnd.CurrentFocus() == nil {
+		Workspace.Navigator.InitialFocus()
+	}
 }
 
 type saveable interface {
