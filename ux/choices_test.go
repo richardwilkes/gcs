@@ -87,3 +87,49 @@ func TestChoicesForEquipment(t *testing.T) {
 	typePopup.Select(picker.Value)
 	c.False(weightFieldIn(), "a value is not a weight")
 }
+
+// TestChoiceQualifierMinimum verifies that only a choice made by points may ask for less than nothing: a count, a value
+// or a weight can't, so its field won't go below zero, and changing a choice to one of those raises a qualifier that
+// is below zero to zero.
+func TestChoiceQualifierMinimum(t *testing.T) {
+	c := check.New(t)
+	decimalFieldIn := func(wrapper *unison.Panel) *DecimalField {
+		var found *DecimalField
+		for _, one := range wrapper.Children() {
+			for _, child := range one.Children() {
+				if field, ok := child.Self.(*DecimalField); ok {
+					found = field
+				}
+			}
+		}
+		return found
+	}
+
+	trait := newChoiceContainer(picker.Points, criteria.AtMostNumber)
+	trait.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(-10)
+	e := &editor[*gurps.Trait, *gurps.TraitEditData]{target: trait, editorData: &gurps.TraitEditData{}}
+	e.editorData.CopyFrom(trait)
+	typePopup, _, field := addChoices(e, unison.NewPanel())
+	wrapper := field.AsPanel().Parent().Parent()
+	c.Equal(fxp.Min, decimalFieldIn(wrapper).Min(), "points may be less than nothing")
+
+	typePopup.Select(picker.Count)
+	c.Equal(fxp.Int(0), decimalFieldIn(wrapper).Min(), "a count may not be less than nothing")
+	c.Equal(fxp.Int(0), e.editorData.TemplatePicker.Qualifier.Qualifier, "the qualifier must be raised to zero")
+
+	eqp := gurps.NewEquipmentChoiceContainer(nil, nil)
+	eqp.TemplatePicker.Type = picker.Value
+	eqpEditor := &editor[*gurps.Equipment, *gurps.EquipmentEditData]{target: eqp, editorData: &gurps.EquipmentEditData{}}
+	eqpEditor.editorData.CopyFrom(eqp)
+	_, _, field = addChoices(eqpEditor, unison.NewPanel())
+	decimal, ok := field.(*DecimalField)
+	c.True(ok, "a value is entered as a number")
+	c.Equal(fxp.Int(0), decimal.Min(), "a value may not be less than nothing")
+
+	eqp.TemplatePicker.Type = picker.Weight
+	eqpEditor.editorData.CopyFrom(eqp)
+	_, _, field = addChoices(eqpEditor, unison.NewPanel())
+	weight, ok := field.(*WeightField)
+	c.True(ok, "a weight is entered with its units")
+	c.Equal(fxp.Weight(0), weight.Min(), "a weight may not be less than nothing")
+}
