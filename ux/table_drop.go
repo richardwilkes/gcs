@@ -272,6 +272,9 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 			tableProvider.ProcessDropData(from, to)
 		}
 	}
+	// Settled before the owner is rebuilt, so that what the rebuild shows, such as an editor's Point Cost, counts only
+	// the option each choice keeps.
+	settleModifierChoices(to)
 	if rebuilder := dropRebuilder(to); rebuilder != nil {
 		// This is also what reports the drop (see DropOccurredCallback in InstallTableDropSupport), which is why the
 		// owner is rebuilt as modified rather than just rebuilt.

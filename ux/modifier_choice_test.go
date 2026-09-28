@@ -786,3 +786,66 @@ func TestPromptRequiresPicksOnlyForSheets(t *testing.T) {
 	c.True(toLoot.promptForModifiers(promptOperation{}, 0, 1))
 	c.Equal([]bool{true}, equipmentAsked, "a loot sheet requires it")
 }
+
+// simulateMoveDrop drags the top-level row of the table with the given ID into the container row with the other ID,
+// at the given index among its children, doing what unison does for a drop that moves rows within a table and then
+// finishing it with the table's own drop callbacks.
+func simulateMoveDrop[T gurps.Node[T]](table *unison.Table[*Node[T]], moved, into tid.TID, index int) {
+	undo := willDropCallback(table, table, true)
+	var row, parent *Node[T]
+	for _, one := range table.RootRows() {
+		switch one.ID() {
+		case moved:
+			row = one
+		case into:
+			parent = one
+		}
+	}
+	table.SetRootRows(slices.DeleteFunc(slices.Clone(table.RootRows()), func(one *Node[T]) bool { return one.ID() == moved }))
+	table.ClearSelection()
+	table.SyncToModel()
+	row.SetParent(parent)
+	parent.SetChildren(slices.Insert(slices.Clone(parent.Children()), index, row))
+	table.SyncToModel()
+	table.SetSelectionMap(map[tid.TID]bool{moved: true})
+	revealModifierDropTarget(table, parent)
+	didDropCallback(undo, table, table, true)
+}
+
+// TestDropIntoAChoiceInAnEditorShowsTheSettledCost verifies that a modifier dropped into a choice in the editor of a
+// trait on a sheet is settled before the editor is rebuilt, so that the Point Cost it shows counts only the option the
+// choice keeps, and that undo takes the drop back.
+func TestDropIntoAChoiceInAnEditorShowsTheSettledCost(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	moved := gurps.NewTraitModifier(entity, nil, false)
+	moved.Name = "M"
+	moved.CostAdj = "+10"
+	choice := newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")
+	choice.Children[0].CostAdj = "+5"
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.BasePoints = fxp.FromInteger(10)
+	trait.Modifiers = []*gurps.TraitModifier{moved, choice}
+	e, content := buildEditorContent(sheet, trait, initTraitEditor)
+	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
+	c.True(ok)
+	table := panel.table
+	// The Point Cost field is the first of the editor's non-editable fields.
+	pointCost := panelsOfType[*NonEditableField](content)[0]
+	c.Equal("25", pointCost.String())
+
+	simulateMoveDrop(table, e.editorData.Modifiers[0].ID(), e.editorData.Modifiers[1].ID(), 0)
+	c.Equal(1, len(e.editorData.Modifiers))
+	options := e.editorData.Modifiers[0].Children
+	c.Equal(3, len(options))
+	c.False(options[0].Enabled(), "the dropped modifier arrives turned off")
+	c.True(options[1].Enabled(), "the choice keeps its pick")
+	c.Equal("15", pointCost.String(), "the cost counts only the pick")
+
+	unison.UndoManagerFor(table).Undo()
+	roots := liveTable(table).RootRows()
+	c.Equal(2, len(roots), "undo takes the drop back")
+	c.True(roots[0].Data().Enabled(), "and turns the modifier back on")
+	c.Equal("25", pointCost.String())
+}
