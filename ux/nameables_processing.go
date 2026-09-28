@@ -191,7 +191,7 @@ func showNameablesDialog(op promptOperation, sections []nameablesSection) bool {
 			})
 			list.AddChild(sep)
 		}
-		header := newTruncatedLabel(section.Title, 60, unison.SystemFont)
+		header := newTruncatedLabel(section.Title, maxRowNameLength, unison.SystemFont)
 		header.SetLayoutData(&unison.FlexLayoutData{
 			HSpan:  2,
 			HAlign: align.Fill,
@@ -200,7 +200,7 @@ func showNameablesDialog(op promptOperation, sections []nameablesSection) bool {
 		})
 		list.AddChild(header)
 		if section.Location != "" {
-			location := newTruncatedLabel(section.Location, 80, fonts.FieldSecondary)
+			location := newTruncatedLabel(section.Location, maxContextLineLength, fonts.FieldSecondary)
 			location.SetLayoutData(&unison.FlexLayoutData{
 				HSpan:  2,
 				HAlign: align.Fill,
@@ -215,7 +215,7 @@ func showNameablesDialog(op promptOperation, sections []nameablesSection) bool {
 				continue
 			}
 			label := unison.NewLabel()
-			title := xstrings.Truncate(marker.Label, 60, true)
+			title := xstrings.Truncate(marker.Label, maxFieldLabelLength, true)
 			tooltip := marker.Tooltip
 			if title != marker.Label {
 				tooltip = strings.TrimSpace(marker.Label + "\n\n" + tooltip)

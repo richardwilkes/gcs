@@ -185,9 +185,9 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 	if info.steps > 1 {
 		header = fmt.Sprintf(i18n.Text("Select Modifiers (%d of %d) for:"), info.step, info.steps)
 	}
-	extraHeaders := []*unison.Label{newTruncatedLabel(info.name, 60, unison.SystemFont)}
+	extraHeaders := []*unison.Label{newTruncatedLabel(info.name, maxRowNameLength, unison.SystemFont)}
 	if info.location != "" {
-		extraHeaders = append(extraHeaders, newTruncatedLabel(info.location, 80, fonts.FieldSecondary))
+		extraHeaders = append(extraHeaders, newTruncatedLabel(info.location, maxContextLineLength, fonts.FieldSecondary))
 	}
 	if !showListQuestionDialog(info.op.at(promptstep.Modifiers), header, list, extraHeaders...) {
 		return false, true

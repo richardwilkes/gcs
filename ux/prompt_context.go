@@ -35,6 +35,13 @@ const (
 	maxNameLength = 40
 	// maxLocationLength is how long the containers above a row may run before the ones in the middle are left out.
 	maxLocationLength = 60
+	// maxRowNameLength is how much of a row's name a prompt shows as the heading for the row it asks about.
+	maxRowNameLength = 60
+	// maxFieldLabelLength is how much of the label beside a field a prompt shows, such as a substitution's marker.
+	maxFieldLabelLength = 60
+	// maxContextLineLength is how much of a context line a prompt shows: the operation's description or a row's
+	// location. Either is cut short with the whole of it in a tooltip (see newTruncatedLabel).
+	maxContextLineLength = 80
 )
 
 // promptOperation describes the operation a prompt is part of. Any of its fields may be left at its zero value.
@@ -199,7 +206,7 @@ func newOperationLabel(op promptOperation) *unison.Label {
 	if op.description == "" {
 		return nil
 	}
-	return newTruncatedLabel(op.description, 80, fonts.FieldSecondary)
+	return newTruncatedLabel(op.description, maxContextLineLength, fonts.FieldSecondary)
 }
 
 // newOperationMessagePanel returns a message panel with the primary and detail text, beneath the operation's

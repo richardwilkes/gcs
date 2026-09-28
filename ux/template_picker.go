@@ -191,7 +191,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 	// A choice nested within another is put to the user only once its enclosing choice has been answered, so the
 	// containers above it are named to tie it back to the answer that brought it up.
 	if location := rowLocation(row); location != "" {
-		label = newTruncatedLabel(location, 80, fonts.FieldSecondary)
+		label = newTruncatedLabel(location, maxContextLineLength, fonts.FieldSecondary)
 		label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 		panel.AddChild(label)
 	}
