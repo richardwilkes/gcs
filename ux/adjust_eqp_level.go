@@ -17,7 +17,7 @@ import (
 
 func equipmentLevelExtractor(amount fxp.Int) func(*gurps.Equipment) (*gurps.Equipment, bool) {
 	return func(eqp *gurps.Equipment) (*gurps.Equipment, bool) {
-		if eqp != nil && (amount > 0 || eqp.Level > 0) {
+		if eqp != nil && !eqp.IsGroup() && (amount > 0 || eqp.Level > 0) {
 			return eqp, true
 		}
 		return nil, false

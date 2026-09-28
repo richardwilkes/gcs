@@ -124,6 +124,8 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 			variant = NoItemVariant
 		case id > FirstContainerMarker && id < LastContainerMarker:
 			variant = ContainerItemVariant
+		case id > FirstGroupContainerMarker && id < LastGroupContainerMarker:
+			variant = GroupContainerItemVariant
 		case id > FirstAlternateNonContainerMarker && id < LastAlternateNonContainerMarker:
 			variant = AlternateItemVariant
 		}

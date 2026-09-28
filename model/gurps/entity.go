@@ -289,6 +289,8 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	ClearTemplatePickerData(e.Traits...)
 	ClearTemplatePickerData(e.Skills...)
 	ClearTemplatePickerData(e.Spells...)
+	ClearTemplatePickerData(e.CarriedEquipment...)
+	ClearTemplatePickerData(e.OtherEquipment...)
 	ClearPreconfigured(e.Traits...)
 	ClearPreconfigured(e.Skills...)
 	ClearPreconfigured(e.Spells...)

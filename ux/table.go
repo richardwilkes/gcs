@@ -45,6 +45,9 @@ const (
 	AlternateItemVariant
 	// ChoiceContainerItemVariant is a template choice container, which only a template may hold.
 	ChoiceContainerItemVariant
+	// GroupContainerItemVariant is a container that only organizes what it holds, for the node types whose plain
+	// container is something more than that.
+	GroupContainerItemVariant
 )
 
 // TableProvider defines the methods a table provider must contain.

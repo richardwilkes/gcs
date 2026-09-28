@@ -14,7 +14,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 // settledPickerCost returns what a container carrying the given picker is worth no matter which of its children are
@@ -127,15 +126,7 @@ func pointsRangeForPicker(tp TemplatePicker, children []NumericRange) NumericRan
 // numeric comparison cannot be used: it reads the whole string, so every range would come back as zero and sort as
 // equal.
 func PointsLessFromString(a, b string) bool {
-	aKey := rangeSortKeyOf(a)
-	bKey := rangeSortKeyOf(b)
-	if result := compareSortEnds(aKey.lower, bKey.lower, -1); result != 0 {
-		return result < 0
-	}
-	if result := compareSortEnds(aKey.upper, bKey.upper, 1); result != 0 {
-		return result < 0
-	}
-	return xstrings.NaturalLess(a, b, true)
+	return rangeLessFromString(a, b, extractSortEnd)
 }
 
 // extractSortEnd reads one end of a rendered point cost.

@@ -164,3 +164,17 @@ func TestInstallChoiceContainerCmdHandlers(t *testing.T) {
 	c.Equal([]ItemVariant{ChoiceContainerItemVariant}, traits.variants, "the trait list must be asked for one")
 	c.Equal([]ItemVariant{ChoiceContainerItemVariant}, skills.variants, "the skill list must be asked for one")
 }
+
+// TestInstallListItemCmdHandlersForEquipmentGroups verifies that the "New ... Equipment Group" commands are installed
+// only for the equipment lists the owner has, and ask those lists for a group.
+func TestInstallListItemCmdHandlersForEquipmentGroups(t *testing.T) {
+	c := check.New(t)
+	owner := &stubRebuildable{}
+	owner.Self = owner
+	carried := &recordingItemCreator{}
+	installListItemCmdHandlers(owner, listItemCreators{carriedEquipment: func() itemCreator { return carried }})
+	c.False(owner.CanPerformCmd(nil, NewOtherEquipmentGroupItemID), "a list the owner lacks gets no command")
+
+	owner.PerformCmd(nil, NewCarriedEquipmentGroupItemID)
+	c.Equal([]ItemVariant{GroupContainerItemVariant}, carried.variants, "the carried list must be asked for a group")
+}

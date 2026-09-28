@@ -42,6 +42,8 @@ func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage
 			return gurps.EquipmentHeaderData(columnID, provider, carried, forPage)
 		},
 		newItem:      gurps.NewEquipment,
+		newGroup:     gurps.NewEquipmentGroup,
+		newChoice:    gurps.NewEquipmentChoiceContainer,
 		edit:         func(owner Rebuildable, item *gurps.Equipment) { EditEquipment(owner, item, carried) },
 		forPage:      forPage,
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.EquipmentExt),
@@ -169,12 +171,15 @@ func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 			list,
 			contextMenuItemFor(newCarriedEquipmentAction),
 			contextMenuItemFor(newCarriedEquipmentContainerAction),
+			contextMenuItemFor(newCarriedEquipmentGroupAction),
+			contextMenuItemFor(newEquipmentChoiceContainerAction),
 		)
 	} else {
 		list = append(
 			list,
 			contextMenuItemFor(newOtherEquipmentAction),
 			contextMenuItemFor(newOtherEquipmentContainerAction),
+			contextMenuItemFor(newOtherEquipmentGroupAction),
 		)
 	}
 	return AppendDefaultContextMenuItems(list)

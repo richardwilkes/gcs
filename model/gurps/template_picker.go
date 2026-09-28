@@ -46,7 +46,14 @@ func (t TemplatePicker) IsZero() bool {
 	return t.Type == picker.NotApplicable
 }
 
+// String returns a description of the picker. A weight is described in the default sheet settings' units, since only a
+// template keeps a picker and a template has no entity; see StringWithUnits for describing it in another's.
 func (t TemplatePicker) String() string {
+	return t.StringWithUnits(SheetSettingsFor(nil).DefaultWeightUnits)
+}
+
+// StringWithUnits returns a description of the picker, describing a weight in the given units.
+func (t TemplatePicker) StringWithUnits(units fxp.WeightUnit) string {
 	if t.IsZero() {
 		return ""
 	}
@@ -59,6 +66,11 @@ func (t TemplatePicker) String() string {
 			points = i18n.Text("point")
 		}
 		return fmt.Sprintf(i18n.Text("Pick %s %s worth"), t.Qualifier.AltString(), points)
+	case picker.Value:
+		return fmt.Sprintf(i18n.Text("Pick %s worth"), t.Qualifier.Compare.AltDescribeWith("$"+t.Qualifier.Qualifier.Comma()))
+	case picker.Weight:
+		return fmt.Sprintf(i18n.Text("Pick %s in weight"),
+			t.Qualifier.Compare.AltDescribeWith(units.Format(fxp.Weight(t.Qualifier.Qualifier))))
 	default:
 		return ""
 	}

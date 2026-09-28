@@ -80,6 +80,8 @@ var (
 	// newCampaignAction                   *unison.Action
 	newCarriedEquipmentAction           *unison.Action
 	newCarriedEquipmentContainerAction  *unison.Action
+	newCarriedEquipmentGroupAction      *unison.Action
+	newEquipmentChoiceContainerAction   *unison.Action
 	newCharacterSheetAction             *unison.Action
 	newCharacterTemplateAction          *unison.Action
 	newLootSheetAction                  *unison.Action
@@ -95,6 +97,7 @@ var (
 	newNotesLibraryAction               *unison.Action
 	newOtherEquipmentAction             *unison.Action
 	newOtherEquipmentContainerAction    *unison.Action
+	newOtherEquipmentGroupAction        *unison.Action
 	newRangedWeaponAction               *unison.Action
 	newRitualMagicSpellAction           *unison.Action
 	newSheetFromTemplateAction          *unison.Action
@@ -158,6 +161,12 @@ var (
 	webSiteAction            *unison.Action
 	userGuideAction          *unison.Action
 )
+
+// contextMenuShortTitles holds, by action ID, the title a context menu shows for an action whose own title says more
+// than a context menu needs to. The menu bar's "New ... Equipment" commands name the list they add to, since both
+// lists are reachable from it, but a list's own context menu can only add to that list, and its first item already
+// names what the list holds. It is filled in by registerActions.
+var contextMenuShortTitles map[int]string
 
 func registerActions() {
 	// Standard actions that may be assigned a key binding
@@ -336,6 +345,10 @@ func registerActions() {
 	newCarriedEquipmentContainerAction = registerFocusAction("new.eqp.container", NewCarriedEquipmentContainerItemID,
 		i18n.Text("New Carried Equipment Container"),
 		unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.Shift | mod.OSMenuCommand()})
+	newCarriedEquipmentGroupAction = registerFocusAction("new.eqp.group", NewCarriedEquipmentGroupItemID,
+		i18n.Text("New Carried Equipment Group"), unison.KeyBinding{})
+	newEquipmentChoiceContainerAction = registerFocusAction("new.eqp.choice", NewEquipmentChoiceContainerItemID,
+		i18n.Text("New Equipment Choice"), unison.KeyBinding{})
 	newCharacterSheetAction = registerKeyBindableAction("new.char.sheet", &unison.Action{
 		ID:         NewSheetItemID,
 		Title:      i18n.Text("New Character Sheet"),
@@ -405,6 +418,20 @@ func registerActions() {
 	newOtherEquipmentContainerAction = registerFocusAction("new.eqp.other.container", NewOtherEquipmentContainerItemID,
 		i18n.Text("New Other Equipment Container"),
 		unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})
+	newOtherEquipmentGroupAction = registerFocusAction("new.eqp.other.group", NewOtherEquipmentGroupItemID,
+		i18n.Text("New Other Equipment Group"), unison.KeyBinding{})
+	container := i18n.Text("New Container")
+	choice := i18n.Text("New Choice")
+	group := i18n.Text("New Group")
+	contextMenuShortTitles = map[int]string{
+		NewCarriedEquipmentItemID:          i18n.Text("New Equipment"),
+		NewOtherEquipmentItemID:            i18n.Text("New Equipment"),
+		NewCarriedEquipmentContainerItemID: container,
+		NewOtherEquipmentContainerItemID:   container,
+		NewCarriedEquipmentGroupItemID:     group,
+		NewOtherEquipmentGroupItemID:       group,
+		NewEquipmentChoiceContainerItemID:  choice,
+	}
 	newRangedWeaponAction = registerFocusAction("new.ranged", NewRangedWeaponItemID, i18n.Text("New Ranged Weapon"),
 		unison.KeyBinding{KeyCode: unison.KeyR, Modifiers: mod.Shift | mod.OSMenuCommand()})
 	newRitualMagicSpellAction = registerFocusAction("new.spl.ritual", NewRitualMagicSpellItemID,

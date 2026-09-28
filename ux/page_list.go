@@ -98,6 +98,15 @@ func installListItemCmdHandlers(owner Rebuildable, creators listItemCreators) {
 	install(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID, creators.carriedEquipment)
 	install(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, creators.otherEquipment)
 	install(NewNoteItemID, NewNoteContainerItemID, creators.notes)
+	installGroup := func(id int, creator func() itemCreator) {
+		if creator != nil {
+			p := owner.AsPanel()
+			p.InstallCmdHandlers(id, unison.AlwaysEnabled,
+				func(_ any) { creator().CreateItem(owner, GroupContainerItemVariant) })
+		}
+	}
+	installGroup(NewCarriedEquipmentGroupItemID, creators.carriedEquipment)
+	installGroup(NewOtherEquipmentGroupItemID, creators.otherEquipment)
 }
 
 // installChoiceContainerCmdHandlers installs on the owner the handlers for the "New ... Choice" commands for each of
@@ -112,6 +121,7 @@ func installChoiceContainerCmdHandlers(owner Rebuildable, creators listItemCreat
 		}
 	}
 	install(NewTraitChoiceContainerItemID, creators.traits)
+	install(NewEquipmentChoiceContainerItemID, creators.carriedEquipment)
 	install(NewSkillChoiceContainerItemID, creators.skills)
 	install(NewSpellChoiceContainerItemID, creators.spells)
 }
@@ -202,6 +212,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
+	installEquipmentContainerConversionHandlers(p, p.Table, owner)
 	p.installMoveToOtherEquipmentHandler(owner)
 	installEquipmentLevelHandlers(p, owner)
 	InstallTintFunc(p, colors.TintCarriedEquipment)
@@ -214,6 +225,7 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
+	installEquipmentContainerConversionHandlers(p, p.Table, owner)
 	p.installMoveToCarriedEquipmentHandler(owner)
 	installEquipmentLevelHandlers(p, owner)
 	InstallTintFunc(p, colors.TintOtherEquipment)

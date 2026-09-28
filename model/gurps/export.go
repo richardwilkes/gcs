@@ -749,7 +749,7 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 	Traverse(func(e *Equipment) bool {
 		equipment := &exportedEquipment{
 			ID:                e.TID,
-			Type:              groupOrItem(e.Container()),
+			Type:              groupOrItem(false),
 			Quantity:          e.Quantity,
 			Description:       e.String(),
 			ModifierNotes:     e.ModifierNotes(),
@@ -770,6 +770,9 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 		}
 		if parent := e.Parent(); parent != nil {
 			equipment.ParentID = parent.TID
+		}
+		if e.Container() {
+			equipment.Type = e.ContainerType.Key()
 		}
 		result = append(result, equipment)
 		return false

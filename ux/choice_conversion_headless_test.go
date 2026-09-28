@@ -56,7 +56,7 @@ func TestChoiceConversionClosesEditors(t *testing.T) {
 	screen.Do(func() {
 		table := template.Traits.Table
 		table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
-		convertChoiceContainers[*gurps.Trait, *gurps.TraitEditData](template, table, true)
+		convertSelectedContainers[*gurps.Trait, *gurps.TraitEditData](template, table, choiceContainerKind)
 	})
 	c.True(gurps.IsTemplateChoiceContainer(group), "the group must have become a choice")
 	c.Equal(0, editorsOpen(), "converting must close the group's editor")

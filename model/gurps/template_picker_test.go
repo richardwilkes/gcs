@@ -21,7 +21,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // TestTemplatePickerLoadsUnknownTypeAsNotApplicable verifies what lets the rest of the code read a picker's type
@@ -325,4 +327,31 @@ func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 	c.NoError(err)
 	c.Equal(1, len(rows))
 	c.False(HasTemplatePickerData(rows...), "a standalone list must not keep picker data")
+}
+
+// TestLoadingDropsPickerTypesANodeDoesNotAllow verifies that a picker of a type that means nothing for its node, as
+// only a hand-edited or foreign file can hold, is dropped when the node is loaded, while one of a type the node allows
+// is kept.
+func TestLoadingDropsPickerTypesANodeDoesNotAllow(t *testing.T) {
+	c := check.New(t)
+	load := func(pickerType string, node any) {
+		c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.TraitContainer))+
+			`","template_picker":{"type":"`+pickerType+`"}}`), node))
+	}
+	var trait Trait
+	load("weight", &trait)
+	c.Equal(picker.NotApplicable, trait.TemplatePicker.Type, "a trait has no weight to pick by")
+	load("points", &trait)
+	c.Equal(picker.Points, trait.TemplatePicker.Type, "a trait may be picked by points")
+
+	loadEquipment := func(pickerType string) *Equipment {
+		var eqp Equipment
+		c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.EquipmentContainer))+
+			`","container_type":"group","template_picker":{"type":"`+pickerType+`"}}`), &eqp))
+		return &eqp
+	}
+	eqp := loadEquipment("points")
+	c.Equal(picker.NotApplicable, eqp.TemplatePicker.Type, "equipment has no points to pick by")
+	c.True(eqp.IsGroup(), "it must be left a plain group")
+	c.Equal(picker.Weight, loadEquipment("weight").TemplatePicker.Type, "equipment may be picked by weight")
 }

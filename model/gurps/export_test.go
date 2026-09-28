@@ -292,3 +292,27 @@ func savedPrereqStatus(c check.Checker, t *Trait) traitPrereqCalc {
 	c.NoError(jio.Unmarshal(saved, &data))
 	return data.Calc
 }
+
+// TestExportEquipmentContainerType verifies that the template exporter tells a group from a physical container, as it
+// tells trait containers apart by their type.
+func TestExportEquipmentContainerType(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	backpack := NewEquipment(entity, nil, true)
+	backpack.Name = "Backpack"
+	group := NewEquipmentGroup(entity, nil)
+	group.Name = "Kit"
+	rope := NewEquipment(entity, nil, false)
+	rope.Name = "Rope"
+	entity.CarriedEquipment = []*Equipment{backpack, group, rope}
+
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.txt")
+	const tmpl = "GCS Text Template v1\n{{range .Equipment.Carried}}<<{{.Description}}|{{.Type}}>>{{end}}"
+	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
+	outPath := filepath.Join(dir, "out.txt")
+	c.NoError(Export(entity, tmplPath, outPath))
+	data, err := os.ReadFile(outPath)
+	c.NoError(err)
+	c.Equal("<<Backpack|container>><<Kit|group>><<Rope|item>>", string(data))
+}

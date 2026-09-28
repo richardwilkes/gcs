@@ -12,6 +12,7 @@ package ux
 import (
 	"slices"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
@@ -40,7 +41,59 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 	types = slices.DeleteFunc(slices.Clone(types), func(one picker.Type) bool { return one == picker.NotApplicable })
 	wrapper, label := addFlowWrapper(parent, i18n.Text("Choices"), 3)
 	typePopup = labelControl(addPopup(wrapper, types, &tp.Type), label)
-	comparisonPopup, field = addNumericCriteriaPanel(wrapper, nil, "", "", i18n.Text("Choice"), &tp.Qualifier, fxp.Min,
-		fxp.Max, 1, false, false)
+	entity := gurps.EntityFromNode(e.target)
+	comparisonPopup, field = addChoiceQualifier(wrapper, entity, tp)
+	// The qualifier's field depends on the type: a weight is entered with its units, and only points may be less than
+	// nothing. So the field is rebuilt whenever the type changes. The qualifier itself is kept as it is, since it is a
+	// bare number either way, a weight being held in canonical units, unless it is below what the new type allows.
+	current := field
+	selected := typePopup.SelectionChangedCallback
+	typePopup.SelectionChangedCallback = func(p *unison.PopupMenu[picker.Type]) {
+		was := tp.Type
+		selected(p)
+		if tp.Type != was {
+			tp.Qualifier.Qualifier = max(tp.Qualifier.Qualifier, choiceQualifierMinimum(tp.Type))
+			current.AsPanel().Parent().RemoveFromParent()
+			_, current = addChoiceQualifier(wrapper, entity, tp)
+			wrapper.MarkForLayoutRecursivelyUpward()
+		}
+	}
 	return typePopup, comparisonPopup, field
+}
+
+// choiceQualifierMinimum returns the least a picker of the given type may ask for. Only points may be less than
+// nothing, since a disadvantage costs negative points; a count, a value or a weight never can be.
+func choiceQualifierMinimum(pickerType picker.Type) fxp.Int {
+	if pickerType == picker.Points {
+		return fxp.Min
+	}
+	return 0
+}
+
+// addChoiceQualifier adds the comparison and the qualifier the picker is to meet, the qualifier being entered as a
+// weight when the picker is made by weight.
+func addChoiceQualifier(parent *unison.Panel, entity *gurps.Entity, tp *gurps.TemplatePicker) (popup *unison.PopupMenu[string], field unison.Paneler) {
+	if tp.Type != picker.Weight {
+		return addNumericCriteriaPanel(parent, nil, "", "", i18n.Text("Choice"), &tp.Qualifier,
+			choiceQualifierMinimum(tp.Type), fxp.Max, 1, false, false)
+	}
+	panel := newCriteriaPanel(parent, 1, false)
+	comparisonName, undoTitle := criteriaTitles(i18n.Text("Choice"))
+	popup = newComparisonPopup(comparisonName, criteria.PrefixedNumericComparisonChoices(""),
+		int(tp.Qualifier.Compare.EnsureValid()))
+	panel.AddChild(popup)
+	weightField := NewWeightField(nil, "", undoTitle, entity,
+		func() fxp.Weight { return fxp.Weight(tp.Qualifier.Qualifier) },
+		func(value fxp.Weight) {
+			tp.Qualifier.Qualifier = fxp.Int(value)
+			MarkModified(panel)
+		}, 0, fxp.Weight(fxp.Max), false)
+	panel.AddChild(weightField)
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		tp.Qualifier.Compare = criteria.NumericComparisons[p.SelectedIndex()]
+		adjustFieldBlank(weightField, tp.Qualifier.Compare == criteria.AnyNumber)
+		MarkModified(panel)
+	}
+	adjustFieldBlank(weightField, tp.Qualifier.Compare == criteria.AnyNumber)
+	return popup, weightField
 }

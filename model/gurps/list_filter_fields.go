@@ -204,6 +204,12 @@ func EquipmentFilterFields() []*FilterField[*Equipment] {
 		NewWeightFilterField(filterFieldKeyWeight, i18n.Text("have a weight"), func(e *Equipment) fxp.Weight {
 			return e.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits)
 		}),
+		NewTextFilterField("container_type", i18n.Text("have a container type"), func(e *Equipment) string {
+			if !e.Container() {
+				return ""
+			}
+			return e.ContainerType.String()
+		}),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Equipment).Container),
 	}
 }

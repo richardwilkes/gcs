@@ -148,3 +148,30 @@ func TestExtendedPreviewsWithZeroQuantity(t *testing.T) {
 	c.Equal(fxp.Int(0), extendedValueForEditor(equipment, data), "zero quantity yields no value")
 	c.Equal(fxp.Weight(0), extendedWeightForEditor(equipment, data, fxp.Pound), "zero quantity yields no weight")
 }
+
+// TestExtendedPreviewsShowAChoicesRange verifies that the editor of a container holding a choice yet to be made
+// previews the range the choice may come to, as the list does, while a container holding no choice previews a single
+// value and weight.
+func TestExtendedPreviewsShowAChoicesRange(t *testing.T) {
+	c := check.New(t)
+	backpack := gurps.NewEquipment(nil, nil, true)
+	backpack.BaseValue = "5"
+	backpack.BaseWeight = "2 lb"
+	choice := gurps.NewEquipmentChoiceContainer(nil, backpack)
+	for _, one := range []struct{ value, weight string }{{"10", "1 lb"}, {"30", "3 lb"}} {
+		option := gurps.NewEquipment(nil, choice, false)
+		option.BaseValue = one.value
+		option.BaseWeight = one.weight
+		choice.Children = append(choice.Children, option)
+	}
+	backpack.Children = []*gurps.Equipment{choice}
+	var data gurps.EquipmentEditData
+	data.CopyFrom(backpack)
+	c.Equal("15~35", extendedValueTextForEditor(backpack, &data))
+	c.Equal("3~5 lb", extendedWeightTextForEditor(backpack, &data, fxp.Pound))
+
+	backpack.Children = nil
+	data.CopyFrom(backpack)
+	c.Equal("5", extendedValueTextForEditor(backpack, &data))
+	c.Equal("2 lb", extendedWeightTextForEditor(backpack, &data, fxp.Pound))
+}

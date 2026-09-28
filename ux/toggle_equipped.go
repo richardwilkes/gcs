@@ -15,8 +15,10 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// equippedExtractor accepts every piece of equipment except an equipped template choice container. A choice's editor
+// offers no way to equip it again, so one may not be unequipped here, but one left unequipped may still be equipped.
 func equippedExtractor(eqp *gurps.Equipment) (*gurps.Equipment, bool) {
-	return eqp, eqp != nil
+	return eqp, eqp != nil && (!eqp.Equipped || !gurps.IsTemplateChoiceContainer(eqp))
 }
 
 func canToggleEquipped(table *unison.Table[*Node[*gurps.Equipment]]) bool {

@@ -19,8 +19,9 @@ import (
 )
 
 // TestContextMenuItemsMatchTheirActions checks that every item a table provider puts in its context menu names a
-// registered action and carries that action's own title, so that a menu can never show a stale copy of a title that
-// was changed on the action. Separators are the only items that name no action.
+// registered action and carries that action's own title, or the one contextMenuShortTitles registers for it, so that a
+// menu can never show a stale copy of a title that was changed on the action. Separators are the only items that name
+// no action.
 func TestContextMenuItemsMatchTheirActions(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
@@ -61,7 +62,11 @@ func TestContextMenuItemsMatchTheirActions(t *testing.T) {
 				t.Errorf("%s: no registered action has ID %d", where, item.ID)
 				continue
 			}
-			c.Equal(action.Title, item.Title, "%s: the item carries its action's title", where)
+			want := action.Title
+			if title, has := contextMenuShortTitles[item.ID]; has {
+				want = title
+			}
+			c.Equal(want, item.Title, "%s: the item carries its action's title", where)
 		}
 	}
 }

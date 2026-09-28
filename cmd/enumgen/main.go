@@ -672,6 +672,15 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
+		Pkg:  "model/gurps/enums/eqcontainer",
+		Name: "type",
+		Desc: "holds the type of an equipment container",
+		Values: []*enumValue{
+			{Key: "container"},
+			{Key: "group"},
+		},
+	},
+	{
 		Pkg:  "model/gurps/enums/dgroup",
 		Name: "group",
 		Desc: "holds the set of dockable groupings",
@@ -1165,6 +1174,8 @@ var allEnums = []*enumInfo{
 			{Key: "not_applicable", Groups: []string{"*"}},
 			{Key: "count", Groups: []string{"*"}},
 			{Key: "points", Groups: []string{"traits", "skills", "spells"}},
+			{Key: "value", Groups: []string{"equipment"}},
+			{Key: "weight", Groups: []string{"equipment"}},
 		},
 	},
 	{

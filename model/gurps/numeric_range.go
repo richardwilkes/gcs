@@ -16,12 +16,13 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
-// NumericRange is the span of values something may end up having once every choice it defines has been made, such as
-// the points an item costs. On a character sheet every such choice has already been made, so a range there is always
-// settled; it is in a library or on a template that an item can still be worth "20 to 45 points", depending on what the
-// player picks.
+// NumericRange is the span of values something may end up having once every choice it defines has been made: the
+// points an item costs, or the extended value or weight of a piece of equipment. On a character sheet every such
+// choice has already been made, so a range there is always settled; it is in a library or on a template that an item
+// can still be worth "20 to 45 points", depending on what the player picks.
 //
 // A settled range -- one whose minimum and maximum are the same known value -- is what the vast majority of items
 // report, and it displays exactly as the bare value always has.
@@ -261,9 +262,9 @@ func rangeForPickerByCount(cq criteria.Number, children []NumericRange) NumericR
 }
 
 // rangeForPickerByMeasure returns the range of a container whose picker constrains the total of the very quantity the
-// range measures, such as the points spent on its children. These cases lean on the fact that such a picker measures
-// the very quantity it constrains, so the qualifier bounds the container's total directly, with no need to search for a
-// subset that adds up to it.
+// range measures: the points spent on its children, or the value or weight of the equipment taken from them. These
+// cases lean on the fact that such a picker measures the very quantity it constrains, so the qualifier bounds the
+// container's total directly, with no need to search for a subset that adds up to it.
 //
 // What the children can reach still matters at both ends. Taking nothing is always an option, so the cheapest pick can
 // never cost more than nothing and the costliest can never cost less; the qualifier binds only the end it constrains,
@@ -455,27 +456,41 @@ const (
 	noLimitsAtAll = "—"
 )
 
+// rangeLessFromString orders the text of two ranges as PointsLessFromString does, using extract to read each end of
+// them back out.
+func rangeLessFromString(a, b string, extract func(text string) *fxp.Int) bool {
+	aKey := rangeSortKeyOf(a, extract)
+	bKey := rangeSortKeyOf(b, extract)
+	if result := compareSortEnds(aKey.lower, bKey.lower, -1); result != 0 {
+		return result < 0
+	}
+	if result := compareSortEnds(aKey.upper, bKey.upper, 1); result != 0 {
+		return result < 0
+	}
+	return xstrings.NaturalLess(a, b, true)
+}
+
 // rangeSortKey is the two ends of a rendered range, each nil where that end has no limit.
 type rangeSortKey struct {
 	lower *fxp.Int
 	upper *fxp.Int
 }
 
-// rangeSortKeyOf reads the ends back out of a rendered point cost.
-func rangeSortKeyOf(text string) rangeSortKey {
+// rangeSortKeyOf reads the ends back out of a rendered range, using extract to read each of them.
+func rangeSortKeyOf(text string, extract func(text string) *fxp.Int) rangeSortKey {
 	text = strings.TrimSpace(text)
 	switch {
 	case text == noLimitsAtAll:
 		return rangeSortKey{}
 	case strings.HasPrefix(text, unboundedMinPrefix):
-		return rangeSortKey{upper: extractSortEnd(strings.TrimPrefix(text, unboundedMinPrefix))}
+		return rangeSortKey{upper: extract(strings.TrimPrefix(text, unboundedMinPrefix))}
 	case strings.HasSuffix(text, unboundedMaxSuffix):
-		return rangeSortKey{lower: extractSortEnd(strings.TrimSuffix(text, unboundedMaxSuffix))}
+		return rangeSortKey{lower: extract(strings.TrimSuffix(text, unboundedMaxSuffix))}
 	}
 	lower, upper, found := strings.Cut(text, rangeSeparator)
-	key := rangeSortKey{lower: extractSortEnd(lower)}
+	key := rangeSortKey{lower: extract(lower)}
 	if found {
-		key.upper = extractSortEnd(upper)
+		key.upper = extract(upper)
 	} else {
 		key.upper = key.lower
 	}
