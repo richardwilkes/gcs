@@ -1138,18 +1138,42 @@ func (e *Equipment) CanConvertToFromContainer() bool {
 }
 
 // ConvertToContainer converts this node to a container.
+// The container it becomes is always a physical container, since the piece of equipment it was already has everything
+// one holds.
 func (e *Equipment) ConvertToContainer() {
 	e.TID = tid.TID(kinds.EquipmentContainer) + e.TID[1:]
+	e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
 }
 
-// ConvertToNonContainer converts this node to a non-container.
+// ConvertToNonContainer converts this node to a non-container. A group has no legality class of its own, so the piece
+// of equipment it becomes starts out with the one new equipment does, just as a physical container converted from a
+// group does.
 func (e *Equipment) ConvertToNonContainer() {
-	// A group has no legality class of its own, so the piece of equipment it becomes starts out with the one new
-	// equipment does, just as a physical container converted from a group does.
 	if e.IsGroup() && e.LegalityClass == "" {
 		e.LegalityClass = defaultLegalityClass
 	}
 	e.TID = tid.TID(kinds.Equipment) + e.TID[1:]
+	e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
+}
+
+// equipmentContainerConversionState is what converting equipment to or from a container changes besides its kind.
+type equipmentContainerConversionState struct {
+	container     EquipmentContainerSyncData
+	legalityClass string
+}
+
+// ContainerConversionState returns what converting this equipment to or from a container changes besides its kind, so
+// that undoing the conversion can put it back (see RestoreContainerConversionState).
+func (e *Equipment) ContainerConversionState() any {
+	return equipmentContainerConversionState{container: e.EquipmentContainerSyncData, legalityClass: e.LegalityClass}
+}
+
+// RestoreContainerConversionState puts back what ContainerConversionState returned.
+func (e *Equipment) RestoreContainerConversionState(state any) {
+	if s, ok := state.(equipmentContainerConversionState); ok {
+		e.EquipmentContainerSyncData = s.container
+		e.LegalityClass = s.legalityClass
+	}
 }
 
 // Kind returns the kind of data.

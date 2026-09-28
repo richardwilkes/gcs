@@ -11,6 +11,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
@@ -24,12 +25,26 @@ type ConvertableContainer interface {
 	ConvertToNonContainer()
 }
 
+// containerConversionStateKeeper is implemented by nodes whose conversion to or from a container changes more than
+// their kind, such as equipment, whose kind of container and legality class change too, so that undoing and redoing
+// a conversion can put that back as well.
+type containerConversionStateKeeper interface {
+	ContainerConversionState() any
+	RestoreContainerConversionState(state any)
+}
+
 type containerConversionList struct {
 	Owner Rebuildable
 	List  []*containerConversion
+	// ids holds the IDs of the converted rows.
+	ids map[tid.TID]bool
 }
 
+// Apply carries out the conversions. Any editor open on one of the rows is discarded first: it was opened on the other
+// kind of row, so it shows the wrong fields, and applying it would undo the conversion again. Its pending changes are
+// dropped rather than applied, since they were made to a state the row is no longer in.
 func (c *containerConversionList) Apply() {
+	discardEditorsFor(c.ids)
 	for _, one := range c.List {
 		one.Apply()
 	}
@@ -39,6 +54,10 @@ func (c *containerConversionList) Apply() {
 type containerConversion struct {
 	Target      ConvertableContainer
 	ToContainer bool
+	// state, when hasState is true, is what the target is left holding once converted (see
+	// containerConversionStateKeeper).
+	state    any
+	hasState bool
 }
 
 func newContainerConversion(target ConvertableContainer, toContainer bool) *containerConversion {
@@ -53,6 +72,11 @@ func (c *containerConversion) Apply() {
 		c.Target.ConvertToContainer()
 	} else {
 		c.Target.ConvertToNonContainer()
+	}
+	if c.hasState {
+		if keeper, ok := c.Target.(containerConversionStateKeeper); ok {
+			keeper.RestoreContainerConversionState(c.state)
+		}
 	}
 }
 
@@ -93,11 +117,12 @@ func ConvertToNonContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Tab
 
 // convertibleSelection returns the selected rows' data that can be converted in the given direction: to a container
 // when toContainer is true, to a non-container otherwise.
-func convertibleSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], toContainer bool) []ConvertableContainer {
-	var list []ConvertableContainer
+func convertibleSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], toContainer bool) []T {
+	var list []T
 	for _, row := range table.SelectedRows(false) {
-		if data, ok := any(row.Data()).(ConvertableContainer); ok && !xreflect.IsNil(data) &&
-			data.CanConvertToFromContainer() && data.Container() != toContainer {
+		data := row.Data()
+		if c, ok := any(data).(ConvertableContainer); ok && !xreflect.IsNil(data) &&
+			c.CanConvertToFromContainer() && c.Container() != toContainer {
 			list = append(list, data)
 		}
 	}
@@ -111,8 +136,17 @@ func canConvertContainers[T gurps.Node[T]](table *unison.Table[*Node[T]], toCont
 }
 
 // convertContainers converts any selected rows in the given direction, if possible, recording a single undo edit for
-// the whole selection.
+// the whole selection. Any editor open on one of the rows is closed first, since the fields it shows depend on whether
+// the row is a container (see closeEditorsBeforeConversion).
 func convertContainers[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], toContainer bool) {
+	targets := convertibleSelection(table, toContainer)
+	if len(targets) == 0 {
+		return
+	}
+	table, ok := closeEditorsBeforeConversion(table, targets)
+	if !ok {
+		return
+	}
 	before, after := convertContainersWithoutUndo(owner, table, toContainer)
 	if before == nil {
 		return
@@ -142,13 +176,24 @@ func convertContainersWithoutUndo[T gurps.Node[T]](owner Rebuildable, table *uni
 	if len(targets) == 0 {
 		return nil, nil
 	}
-	before = &containerConversionList{Owner: owner}
-	after = &containerConversionList{Owner: owner}
+	ids := make(map[tid.TID]bool, len(targets))
+	before = &containerConversionList{Owner: owner, ids: ids}
+	after = &containerConversionList{Owner: owner, ids: ids}
 	for _, data := range targets {
-		conv := newContainerConversion(data, toContainer)
-		before.List = append(before.List, newContainerConversion(data, !toContainer))
-		after.List = append(after.List, conv)
-		conv.Apply()
+		ids[data.ID()] = true
+		target := any(data).(ConvertableContainer) //nolint:errcheck // convertibleSelection checked this
+		undo := newContainerConversion(target, !toContainer)
+		redo := newContainerConversion(target, toContainer)
+		keeper, keeps := target.(containerConversionStateKeeper)
+		if keeps {
+			undo.state, undo.hasState = keeper.ContainerConversionState(), true
+		}
+		redo.Apply()
+		if keeps {
+			redo.state, redo.hasState = keeper.ContainerConversionState(), true
+		}
+		before.List = append(before.List, undo)
+		after.List = append(after.List, redo)
 	}
 	return before, after
 }

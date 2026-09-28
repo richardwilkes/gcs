@@ -464,3 +464,23 @@ func TestFormatWeightRange(t *testing.T) {
 	c.Equal("8 oz~2 lb", FormatWeightRange(newNumericRange(fxp.Half, lb(2)), mixed),
 		"ends in different units must each keep their own")
 }
+
+// TestEquipmentGroupRoundTripsThroughAnItem verifies that a group converted to a plain item and back comes back as a
+// physical container, since the item it became is a piece of equipment in its own right, and that the item keeps no
+// trace of having been a group.
+func TestEquipmentGroupRoundTripsThroughAnItem(t *testing.T) {
+	c := check.New(t)
+	group := NewEquipmentGroup(nil, nil)
+	group.ConvertToNonContainer()
+	c.Equal(eqcontainer.Container, group.ContainerType, "the item must not keep the group's container type")
+	group.BaseValue = "10"
+	group.ConvertToContainer()
+	c.True(group.IsPhysicalContainer(), "an item must become a physical container")
+	c.Equal("10", group.BaseValue, "the value the item was given must be kept")
+	c.Equal(fxp.FromInteger(10), group.ExtendedValue())
+
+	state := group.ContainerConversionState()
+	group.ConvertToGroup()
+	group.RestoreContainerConversionState(state)
+	c.True(group.IsPhysicalContainer(), "restoring the state must put the container type back")
+}
