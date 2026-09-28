@@ -175,3 +175,56 @@ func TestExtendedPreviewsShowAChoicesRange(t *testing.T) {
 	c.Equal("5", extendedValueTextForEditor(backpack, &data))
 	c.Equal("2 lb", extendedWeightTextForEditor(backpack, &data, fxp.Pound))
 }
+
+// newEditorEquipmentWithChoice creates a $100, 2 lb piece of equipment outside a sheet whose only modifier is a
+// mandatory choice yet to be made, with an option for each of the given cost and weight pairs, then returns both it and
+// an editor data overlay copied from it.
+func newEditorEquipmentWithChoice(options ...[2]string) (*gurps.Equipment, *gurps.EquipmentEditData) {
+	return newEditorEquipmentWith(func(e *gurps.Equipment) {
+		choice := gurps.NewEquipmentModifierChoice(nil, nil)
+		for _, one := range options {
+			option := gurps.NewEquipmentModifier(nil, choice, false)
+			option.CostType = emcost.Original
+			option.CostAmount = one[0]
+			option.WeightType = emweight.Original
+			option.WeightAmount = one[1]
+			option.Disabled = true
+			choice.Children = append(choice.Children, option)
+		}
+		e.Modifiers = []*gurps.EquipmentModifier{choice}
+	})
+}
+
+// newEditorEquipmentWith creates a $100, 2 lb piece of equipment, lets mutate adjust it, then returns both it and an
+// editor data overlay copied from it.
+func newEditorEquipmentWith(mutate func(e *gurps.Equipment)) (*gurps.Equipment, *gurps.EquipmentEditData) {
+	equipment := gurps.NewEquipment(nil, nil, false)
+	equipment.Quantity = fxp.One
+	equipment.BaseValue = "100"
+	equipment.BaseWeight = "2 lb"
+	mutate(equipment)
+	var data gurps.EquipmentEditData
+	data.CopyFrom(equipment)
+	return equipment, &data
+}
+
+// TestExtendedPreviewsCountAnOpenChoiceAsTheList verifies that the editor of equipment with a mandatory modifier
+// choice yet to be made, whose options all come to the same, previews what the list shows. The previews used to leave
+// the choice's options out altogether, as though it could be left unmade.
+func TestExtendedPreviewsCountAnOpenChoiceAsTheList(t *testing.T) {
+	c := check.New(t)
+	equipment, data := newEditorEquipmentWithChoice([2]string{"+10", "+1 lb"}, [2]string{"+10", "+1 lb"})
+	c.Equal(fxp.FromInteger(110), equipment.ExtendedValue(), "the list counts the choice")
+	c.Equal(fxp.WeightFromInteger(3, fxp.Pound), equipment.ExtendedWeight(false, fxp.Pound), "the list weighs it")
+	c.Equal("110", extendedValueTextForEditor(equipment, data))
+	c.Equal("3 lb", extendedWeightTextForEditor(equipment, data, fxp.Pound))
+}
+
+// TestExtendedPreviewsShowAnOpenModifierChoicesRange verifies that the editor of equipment with a mandatory modifier
+// choice yet to be made, whose options come to different amounts, previews the range the choice may come to.
+func TestExtendedPreviewsShowAnOpenModifierChoicesRange(t *testing.T) {
+	c := check.New(t)
+	equipment, data := newEditorEquipmentWithChoice([2]string{"+10", "+1 lb"}, [2]string{"+30", "+3 lb"})
+	c.Equal("110~130", extendedValueTextForEditor(equipment, data))
+	c.Equal("3~5 lb", extendedWeightTextForEditor(equipment, data, fxp.Pound))
+}

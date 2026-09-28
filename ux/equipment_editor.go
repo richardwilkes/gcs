@@ -158,31 +158,17 @@ func initEquipmentChoiceEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditD
 
 // extendedValueForEditor computes the Extended Value preview for the equipment editor. The overlaid clone is used as
 // the modifier context, not the unedited target, so that cost modifiers whose multiplier depends on the equipment
-// itself (per level, per pound) see the editor's pending values.
+// itself (per level, per pound) see the editor's pending values. It is costed just as the list costs it, so an open
+// mandatory modifier choice counts as the least it may come to there too.
 func extendedValueForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData) fxp.Int {
-	if overlay.Quantity <= 0 {
-		return 0
-	}
-	clone := cloneEquipmentWithOverlay(target, overlay)
-	value := gurps.ValueAdjustedForModifiers(clone, clone.ResolvedBaseValue(), overlay.Modifiers)
-	if target.Container() {
-		for _, one := range target.Children {
-			value += one.ExtendedValue()
-		}
-	}
-	return value.Mul(overlay.Quantity)
+	return cloneEquipmentWithOverlay(target, overlay).ExtendedValue()
 }
 
 // extendedWeightForEditor computes the Extended Weight preview for the equipment editor. As with
 // extendedValueForEditor, the overlaid clone is the modifier context so that per-level weight modifiers see the
-// editor's pending values.
+// editor's pending values, and it is weighed just as the list weighs it.
 func extendedWeightForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData, defUnits fxp.WeightUnit) fxp.Weight {
-	if overlay.Quantity <= 0 {
-		return 0
-	}
-	clone := cloneEquipmentWithOverlay(target, overlay)
-	return gurps.ExtendedWeightAdjustedForModifiers(clone, defUnits, overlay.Quantity, clone.ResolvedBaseWeight(),
-		overlay.Modifiers, overlay.Features, target.Children, false, false)
+	return cloneEquipmentWithOverlay(target, overlay).ExtendedWeight(false, defUnits)
 }
 
 // extendedValueTextForEditor renders the Extended Value preview for the equipment editor. A container holding a choice
