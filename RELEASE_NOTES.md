@@ -84,6 +84,8 @@
 
 ## Bug Fixes
 
+- The tag describing a template choice, such as "Pick 1", no longer keeps a selected row's colors after its row is
+  deselected. This happened when the choice was edited while its row was selected.
 - The Preconfigured setting, which marks an item whose modifiers and @Name@ substitutions are already settled so that
   they are not asked about again, can now be set in a library as well as in a template, and is kept when items are
   copied into a library, or from a library into a template. It is never shown on a character or loot sheet, where it

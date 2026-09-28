@@ -504,3 +504,43 @@ func markdownTextColor(c check.Checker, md *unison.Markdown) unison.Color {
 	}
 	return cp.GetColor()
 }
+
+// TestChoiceTagFollowsTheRowColors verifies that the tag describing a template choice is drawn in the row's current
+// colors when a cached cell is reused, so a choice whose cell was built while its row was selected doesn't keep the
+// selected colors once the row is deselected. The prerequisite tags keep their own fixed colors.
+func TestChoiceTagFollowsTheRowColors(t *testing.T) {
+	c := check.New(t)
+	choice := gurps.NewTraitChoiceContainer(nil, nil)
+	unsatisfied := gurps.NewTrait(nil, nil, false)
+	unsatisfied.UnsatisfiedReason = "reason"
+	template := newTestTemplateWithTraits(choice, unsatisfied)
+	table := template.Traits.Table
+	rows := table.RootRows()
+	c.Equal(2, len(rows))
+	findTag := func(cell unison.Paneler) *unison.Tag {
+		var found *unison.Tag
+		var walk func(p *unison.Panel)
+		walk = func(p *unison.Panel) {
+			if tag, ok := p.Self.(*unison.Tag); ok && found == nil {
+				found = tag
+			}
+			for _, child := range p.Children() {
+				walk(child)
+			}
+		}
+		walk(cell.AsPanel())
+		return found
+	}
+
+	tag := findTag(rows[0].ColumnCell(0, 0, unison.White, unison.Blue, true, false, false))
+	c.NotNil(tag, "the choice's cell must hold its tag")
+	c.Equal(unison.Ink(unison.White), tag.BackgroundInk, "a selected row's tag must be drawn in its colors")
+	tag = findTag(rows[0].ColumnCell(0, 0, unison.Black, unison.White, false, false, false))
+	c.Equal(unison.Ink(unison.Black), tag.BackgroundInk, "the tag must follow the row once it is deselected")
+	c.Equal(unison.Ink(unison.White), tag.OnBackgroundInk)
+
+	rows[1].ColumnCell(1, 0, unison.White, unison.Blue, true, false, false)
+	tag = findTag(rows[1].ColumnCell(1, 0, unison.Black, unison.White, false, false, false))
+	c.NotNil(tag, "the unsatisfied trait's cell must hold its tag")
+	c.Equal(unison.Ink(unison.ThemeError), tag.BackgroundInk, "a prerequisite tag must keep its own colors")
+}
