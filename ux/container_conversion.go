@@ -36,7 +36,8 @@ type containerConversionStateKeeper interface {
 type containerConversionList struct {
 	Owner Rebuildable
 	List  []*containerConversion
-	// ids holds the IDs of the converted rows.
+	// ids holds the IDs of the converted rows, both before and after their conversion, since converting a row to or from
+	// a container changes its ID's kind, and an editor may be open on either.
 	ids map[tid.TID]bool
 }
 
@@ -189,6 +190,7 @@ func convertContainersWithoutUndo[T gurps.Node[T]](owner Rebuildable, table *uni
 			undo.state, undo.hasState = keeper.ContainerConversionState(), true
 		}
 		redo.Apply()
+		ids[data.ID()] = true
 		if keeps {
 			redo.state, redo.hasState = keeper.ContainerConversionState(), true
 		}
