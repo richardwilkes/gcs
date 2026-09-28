@@ -229,7 +229,7 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	e.ClearUnusedFieldsForType()
 	finishNodeUnmarshal(e, &e.Tags, localData.Categories, open)
 	// No more than one option of a choice may be enabled, which data edited by hand may not have kept to.
-	settleLoadedModifierChoices(e)
+	SettleModifierChoices(nil, e)
 	return nil
 }
 

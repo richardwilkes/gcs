@@ -237,7 +237,7 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	t.ClearUnusedFieldsForType()
 	finishNodeUnmarshal(t, &t.Tags, localData.Categories, open)
 	// No more than one option of a choice may be enabled, which data edited by hand may not have kept to.
-	settleLoadedModifierChoices(t)
+	SettleModifierChoices(nil, t)
 	return nil
 }
 

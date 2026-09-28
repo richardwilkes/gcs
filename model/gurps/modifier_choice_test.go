@@ -539,7 +539,8 @@ func TestSyncSettlesTheOuterChoice(t *testing.T) {
 }
 
 // TestLoadingKeepsThePicksOfUnsupportedForms verifies that loading keeps a choice held in a supported form to one
-// enabled option, but leaves the options of one held in a form a newer version may allow several picks for as they are.
+// enabled option, but leaves the options of one held in a form a newer version may allow several picks for as they are,
+// and so does any later settling, as a table edit beside the choice does, until the choice is edited.
 func TestLoadingKeepsThePicksOfUnsupportedForms(t *testing.T) {
 	c := check.New(t)
 	load := func(tp TemplatePicker) *TraitModifier {
@@ -562,6 +563,11 @@ func TestLoadingKeepsThePicksOfUnsupportedForms(t *testing.T) {
 	loaded := load(atLeastOne)
 	c.True(loaded.Children[0].Enabled() && loaded.Children[1].Enabled(), "a form this version doesn't support keeps its picks")
 	c.Equal(atLeastOne, loaded.Choice)
+	c.False(SettleModifierChoices(nil, loaded), "settling leaves it alone too")
+	c.True(loaded.Children[0].Enabled() && loaded.Children[1].Enabled())
+	loaded.SetMandatoryChoice(false)
+	c.True(SettleModifierChoices(nil, loaded), "once edited, it is settled like any other")
+	c.False(loaded.Children[1].Enabled())
 	loaded = load(newModifierChoicePicker(false))
 	c.True(loaded.Children[0].Enabled())
 	c.False(loaded.Children[1].Enabled(), "a supported form keeps no more than one")

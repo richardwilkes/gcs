@@ -352,27 +352,17 @@ func IsLockedModifierChoiceSelection[T Node[T]](mod T) bool {
 	return ok && IsMandatoryModifierChoice(choice)
 }
 
-// settleLoadedModifierChoices keeps each modifier choice among the nodes and their children that is held in a form this
-// version supports to no more than one enabled option, as SettleModifierChoices does. A choice held in another form, as
-// a newer version may have saved it, keeps its options as they are, since that version may allow it more than one.
-func settleLoadedModifierChoices[T Node[T]](nodes ...T) {
-	Traverse(func(node T) bool {
-		if data := modifierChoiceData(node); data != nil && data.isSupportedChoice() {
-			settleModifierChoice(nil, node)
-		}
-		return false
-	}, false, false, nodes...)
-}
-
 // SettleModifierChoices turns off all but one of the enabled options of each modifier choice among the nodes and their
 // children, since a choice never has more than one enabled. The one kept is the first enabled option that incoming
 // doesn't report as having just arrived, so that the pick a choice already had survives an option being added, moved
-// or pasted into it, or failing that the first enabled option. A nil incoming reports nothing as having arrived.
-// Returns true if anything was turned off.
+// or pasted into it, or failing that the first enabled option. A nil incoming reports nothing as having arrived. A
+// choice held in a form this version doesn't support keeps its options as they are, since the newer version that saved
+// it may allow it more than one, until the choice is edited. Returns true if anything was turned off.
 func SettleModifierChoices[T Node[T]](incoming func(T) bool, nodes ...T) bool {
 	changed := false
 	Traverse(func(node T) bool {
-		if IsModifierChoice(node) && settleModifierChoice(incoming, node) {
+		if data := modifierChoiceData(node); data != nil && data.isSupportedChoice() &&
+			settleModifierChoice(incoming, node) {
 			changed = true
 		}
 		return false
