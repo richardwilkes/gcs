@@ -924,7 +924,7 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.
 // ExtendedWeightRange for the whole of what it may come to.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
 	if e.Quantity > 0 && (IsTemplateChoiceContainer(e) || hasOpenMandatoryModifierChoice(e, e.Modifiers)) {
-		return fxp.Weight(lowerEndOf(e.ExtendedWeightRange(defUnits)))
+		return fxp.Weight(lowerEndOf(e.extendedWeightRange(forSkills, defUnits)))
 	}
 	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.ResolvedBaseWeight(), e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.ReallyEquipped())
 }

@@ -407,6 +407,33 @@ func TestPerPoundCostFollowsEachOptionsWeight(t *testing.T) {
 		"the heavier option costs more per pound")
 }
 
+// TestWeightIgnoredForSkillsWithAnOpenChoice verifies that equipment whose weight is ignored for skills weighs nothing
+// for them while a choice is still to be made, whether it is a mandatory choice among its own modifiers or a template
+// choice holding it, just as it does once the choice is made.
+func TestWeightIgnoredForSkillsWithAnOpenChoice(t *testing.T) {
+	c := check.New(t)
+	eqp := newEquipmentItem("Armor", "100", "3 lb")
+	eqp.Equipped = true
+	eqp.WeightIgnoredForSkills = true
+	c.Equal(fxp.Weight(0), eqp.ExtendedWeight(true, fxp.Pound))
+	choice := NewEquipmentModifierChoice(nil, nil)
+	for _, weight := range []string{"+1 lb", "+2 lb"} {
+		option := NewEquipmentModifier(nil, choice, false)
+		option.WeightAmount = weight
+		option.SetEnabled(false)
+		choice.Children = append(choice.Children, option)
+	}
+	eqp.AddModifiers(choice)
+	c.Equal(fxp.Weight(0), eqp.ExtendedWeight(true, fxp.Pound), "an open modifier choice doesn't change that")
+	c.Equal(fxp.Weight(fxp.FromInteger(4)), eqp.ExtendedWeight(false, fxp.Pound))
+
+	pick := newEquipmentChoice()
+	eqp.SetParent(pick)
+	pick.Children = []*Equipment{eqp}
+	c.Equal(fxp.Weight(0), pick.ExtendedWeight(true, fxp.Pound), "nor does a template choice holding it")
+	c.Equal(fxp.Weight(fxp.FromInteger(4)), pick.ExtendedWeight(false, fxp.Pound))
+}
+
 // TestLootIsASheet verifies that equipment on a loot sheet has its modifier choices made, just as it would on a
 // character sheet, since both ask for them on arrival.
 func TestLootIsASheet(t *testing.T) {

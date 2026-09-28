@@ -84,6 +84,12 @@ func (e *Equipment) ExtendedValueRange() NumericRange {
 // ExtendedWeightRange returns the span of extended weights this equipment may end up having once every choice within
 // it has been made, a mandatory choice among its modifiers included.
 func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
+	return e.extendedWeightRange(false, defUnits)
+}
+
+// extendedWeightRange returns what ExtendedWeightRange does, or, when forSkills is true, the span of weights that count
+// for skills, which leave out the weight of equipped equipment that is ignored for them, as ExtendedWeight does.
+func (e *Equipment) extendedWeightRange(forSkills bool, defUnits fxp.WeightUnit) NumericRange {
 	if e.Quantity <= 0 {
 		return NumericRangeOf(0)
 	}
@@ -91,10 +97,11 @@ func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 	if e.Container() {
 		children := make([]NumericRange, len(e.Children))
 		for i, one := range e.Children {
-			children[i] = one.ExtendedWeightRange(defUnits)
+			children[i] = one.extendedWeightRange(forSkills, defUnits)
 		}
 		contents = equipmentContentsRange(e, picker.Weight, children)
 	}
+	ignoreOwnWeight := forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped()
 	// The modifiers weigh on the contents as well as on the equipment itself, since they may reduce the weight of what
 	// it holds.
 	weigh := func(modifiers []*EquipmentModifier) NumericRange {
@@ -111,13 +118,16 @@ func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 			value := fxp.Int(reduction.apply(fxp.Weight(*end)))
 			return &value
 		}
-		base := WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)
+		var base fxp.Weight
+		if !ignoreOwnWeight {
+			base = WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)
+		}
 		return NumericRangeOf(fxp.Int(base)).Add(NumericRange{Min: reduce(contents.Min), Max: reduce(contents.Max)})
 	}
 	r, open := modifierChoiceRange(e, e.Modifiers, weigh)
 	if !open {
 		if !e.Container() {
-			return NumericRangeOf(fxp.Int(e.ExtendedWeight(false, defUnits)))
+			return NumericRangeOf(fxp.Int(e.ExtendedWeight(forSkills, defUnits)))
 		}
 		r = weigh(e.Modifiers)
 	}
