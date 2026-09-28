@@ -104,7 +104,7 @@ func fillTagsCell(data *CellData, tags []string) {
 // fillPointsCell fills in the cell data for a points column. A range that is still open is explained in the tooltip,
 // since a cell showing two numbers where every other row shows one is otherwise a puzzle. Any tooltip the caller has
 // already gathered -- the bonuses folded into a skill's or spell's cost, say -- is kept alongside it.
-func fillPointsCell(data *CellData, r PointsRange) {
+func fillPointsCell(data *CellData, r NumericRange) {
 	data.Type = cell.Text
 	data.Primary = r.String()
 	data.Alignment = align.End
