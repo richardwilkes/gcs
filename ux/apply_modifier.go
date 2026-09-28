@@ -260,7 +260,7 @@ func selectModifierTargets[T gurps.Node[T]](tables []*unison.Table[*Node[T]], ta
 // modifiers onto rows and the Apply Modifier command end here. A modifier pointed at directly is enabled, since the
 // user has just said to apply it. A container's contents are a set to choose from, so when the rows belong to an
 // entity or a loot sheet each target receiving a container is asked which of its new modifiers should be enabled (see
-// processModifiers); elsewhere they are left as they came and the choice is made when the row reaches a sheet (see
+// promptForClonedModifiers); elsewhere they are left as they came and the choice is made when the row reaches a sheet (see
 // applyTransfer). For an entity the nameables prompt follows, before anything is shown or reported, so that a cancel
 // only has to take the clones back off and the owner is rebuilt once, with the answers in place; that rebuild is also
 // what reports the change (see dropRebuilder). Elsewhere reporting is left to the caller. The tables are the ones the

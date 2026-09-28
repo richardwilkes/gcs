@@ -631,6 +631,11 @@ func TestEmptyMandatoryChoiceDoesNotHoldThePromptOpen(t *testing.T) {
 	c.NotNil(s)
 	c.True(s.complete())
 	c.Nil(s.choices[0].status, "nothing is flagged")
+	for _, row := range s.list.Children() {
+		layout, ok := row.Layout().(*unison.FlexLayout)
+		c.True(ok)
+		c.Equal(len(row.Children()), layout.Columns, "each row has a column for each of its parts")
+	}
 }
 
 // TestApplyingAChoiceToLootAsksForItsPick verifies that applying a container of modifiers to equipment on a loot sheet

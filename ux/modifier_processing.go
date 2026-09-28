@@ -264,9 +264,12 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 				return false
 			}
 			choice := &choiceRadioGroup{
-				group:     unison.NewGroup(),
-				options:   make(map[*unison.RadioButton]gurps.GeneralModifier),
-				mandatory: requirePicks && gurps.IsMandatoryModifierChoice(m),
+				group:   unison.NewGroup(),
+				options: make(map[*unison.RadioButton]gurps.GeneralModifier),
+				// A choice with no options has nothing to pick from, so it can't hold the prompt open, and isn't
+				// flagged.
+				mandatory: requirePicks && gurps.IsMandatoryModifierChoice(m) &&
+					len(gurps.ModifierChoiceOptions(m)) != 0,
 			}
 			choices[m] = choice
 			s.choices = append(s.choices, choice)
@@ -305,15 +308,6 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 		s.addRow(gm.Depth(), text, cb, nil)
 		return false
 	}, false, false, modifiers...)
-	// A choice with no options has nothing to pick from, so it can't hold the prompt open, and isn't flagged.
-	for _, choice := range s.choices {
-		if choice.mandatory && len(choice.options) == 0 {
-			choice.mandatory = false
-			choice.status.RemoveFromParent()
-			choice.status = nil
-			choice.updateStatus = nil
-		}
-	}
 	children := s.list.Children()
 	if len(children) == 0 {
 		return nil
