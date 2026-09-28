@@ -113,7 +113,7 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 	var drop *unison.TableDrop[*Node[T], *TableDragUndoEditData[T]]
 	drop = table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
 		func(undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
-			revealModifierDropTarget(to, drop.TargetParent)
+			revealModifierDropTargetUndoably(undo, to, drop.TargetParent)
 			didDropCallback(undo, from, to, move)
 		})
 	installApplyingDrop(drop, provider)
@@ -235,15 +235,38 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 // revealModifierDropTarget opens the modifier container rows were just dropped into, if it was closed, as moving rows
 // into a container does. The rows would otherwise be hidden, and the selection can only hold rows that are showing,
 // yet it is what tells which rows arrived when the choices the drop may have added options to are settled (see
-// settleModifierChoices). Other tables are left as they are.
-func revealModifierDropTarget[T gurps.Node[T]](table *unison.Table[*Node[T]], parent *Node[T]) {
+// settleModifierChoices). Other tables are left as they are. It returns the container it opened, if any.
+func revealModifierDropTarget[T gurps.Node[T]](table *unison.Table[*Node[T]], parent *Node[T]) (opened T, ok bool) {
 	var zero T
-	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || parent == nil {
-		return
+	if _, ok = any(zero).(gurps.ModifierChoiceProvider); !ok || parent == nil {
+		return zero, false
 	}
 	if data := parent.Data(); !xreflect.IsNil(data) && data.Container() && !data.IsOpen() {
 		data.SetOpen(true)
 		table.SyncToModel()
+		return data, true
+	}
+	return zero, false
+}
+
+// revealModifierDropTargetUndoably is revealModifierDropTarget for a drop recorded by the given undo edit, which it
+// has close the container it opened before undo puts the data back, so that undo leaves no trace, and reopen it before
+// redo does, as MoveSelection does. The open state is kept under the container's ID, so it makes no difference that
+// the object itself is replaced when the data is deserialized.
+func revealModifierDropTargetUndoably[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], table *unison.Table[*Node[T]], parent *Node[T]) {
+	opened, ok := revealModifierDropTarget(table, parent)
+	if !ok || undo == nil {
+		return
+	}
+	undoFunc := undo.UndoFunc
+	redoFunc := undo.RedoFunc
+	undo.UndoFunc = func(e *unison.UndoEdit[*TableDragUndoEditData[T]]) {
+		opened.SetOpen(false)
+		undoFunc(e)
+	}
+	undo.RedoFunc = func(e *unison.UndoEdit[*TableDragUndoEditData[T]]) {
+		opened.SetOpen(true)
+		redoFunc(e)
 	}
 }
 

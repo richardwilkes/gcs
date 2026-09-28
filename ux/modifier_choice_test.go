@@ -808,7 +808,7 @@ func simulateMoveDrop[T gurps.Node[T]](table *unison.Table[*Node[T]], moved, int
 	parent.SetChildren(slices.Insert(slices.Clone(parent.Children()), index, row))
 	table.SyncToModel()
 	table.SetSelectionMap(map[tid.TID]bool{moved: true})
-	revealModifierDropTarget(table, parent)
+	revealModifierDropTargetUndoably(undo, table, parent)
 	didDropCallback(undo, table, table, true)
 }
 
@@ -848,4 +848,34 @@ func TestDropIntoAChoiceInAnEditorShowsTheSettledCost(t *testing.T) {
 	c.Equal(2, len(roots), "undo takes the drop back")
 	c.True(roots[0].Data().Enabled(), "and turns the modifier back on")
 	c.Equal("25", pointCost.String())
+}
+
+// TestUndoingADropClosesTheChoiceItOpened verifies that undoing a drop into a closed choice, which the drop opened to
+// show what arrived, closes it again, and that redo opens it again.
+func TestUndoingADropClosesTheChoiceItOpened(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	moved := gurps.NewTraitModifier(nil, nil, false)
+	choice := newTraitModifierChoiceFor(nil, false, []string{"X"}, "X")
+	choice.SetOpen(false)
+	library := NewTraitModifierTableDockable("mods"+gurps.TraitModifiersExt, []*gurps.TraitModifier{moved, choice})
+	table := library.table
+	simulateMoveDrop(table, moved.ID(), choice.ID(), 0)
+	c.True(choice.IsOpen(), "the drop opens the choice")
+	c.Equal(1, len(table.RootRows()))
+	isOpen := func() bool {
+		for _, row := range liveTable(table).RootRows() {
+			if row.ID() == choice.ID() {
+				return row.Data().IsOpen()
+			}
+		}
+		t.Fatal("the choice is missing")
+		return false
+	}
+	mgr := unison.UndoManagerFor(table)
+	mgr.Undo()
+	c.Equal(2, len(liveTable(table).RootRows()), "undo takes the drop back")
+	c.False(isOpen(), "and closes the choice again")
+	mgr.Redo()
+	c.True(isOpen(), "redo opens it again")
 }
