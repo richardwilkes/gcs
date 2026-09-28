@@ -857,40 +857,19 @@ func (e *Equipment) AdjustedValue() fxp.Int {
 	return ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), e.Modifiers)
 }
 
-// ExtendedValue returns the extended value. A template choice container that is yet to be made counts as the least it
-// may come to, as does anything holding one; see ExtendedValueRange for the whole of what it may come to.
+// ExtendedValue returns the extended value. It is the single value ExtendedValueRange stands for (see singleValueOf):
+// a choice yet to be made counts as the least it may come to, as does anything holding one.
 func (e *Equipment) ExtendedValue() fxp.Int {
-	if e.Quantity <= 0 {
-		return 0
-	}
-	if IsTemplateChoiceContainer(e) {
-		return lowerEndOf(e.ExtendedValueRange())
-	}
-	value := e.AdjustedValue()
-	if e.Container() {
-		for _, one := range e.Children {
-			value += one.ExtendedValue()
-		}
-	}
-	return value.Mul(e.Quantity)
+	return singleValueOf(e.ExtendedValueRange())
 }
 
 // ExtendedValueOfJustOne returns the extended value of just one piece of this equipment, including the value of
-// children. A template choice container is a group, so there is only ever one of it.
+// children, or nothing when there are none of it at all.
 func (e *Equipment) ExtendedValueOfJustOne() fxp.Int {
 	if e.Quantity <= 0 {
 		return 0
 	}
-	if IsTemplateChoiceContainer(e) {
-		return e.ExtendedValue()
-	}
-	value := e.AdjustedValue()
-	if e.Container() {
-		for _, one := range e.Children {
-			value += one.ExtendedValue()
-		}
-	}
-	return value
+	return singleValueOf(equipmentValue().rangeOf(e, fxp.One))
 }
 
 // BaseWeightWithReplacements returns the base weight with any replacements applied.
@@ -913,11 +892,14 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.
 	return WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits)
 }
 
-// ExtendedWeight returns the extended weight. A template choice container that is yet to be made counts as the least it
-// may come to, as does anything holding one; see ExtendedWeightRange for the whole of what it may come to.
+// ExtendedWeight returns the extended weight. It is the single value ExtendedWeightRange stands for (see
+// singleValueOf): a choice yet to be made counts as the least it may come to, as does anything holding one. The weight
+// that counts toward the encumbrance for skills (forSkills) leaves out equipped equipment marked "Ignore weight for
+// skills", which the range doesn't, so it is worked out on its own. Only a template can hold a choice, and a template
+// has no encumbrance.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
-	if e.Quantity > 0 && IsTemplateChoiceContainer(e) {
-		return fxp.Weight(lowerEndOf(e.ExtendedWeightRange(defUnits)))
+	if !forSkills || IsTemplateChoiceContainer(e) {
+		return fxp.Weight(singleValueOf(e.ExtendedWeightRange(defUnits)))
 	}
 	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.ResolvedBaseWeight(), e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.ReallyEquipped())
 }

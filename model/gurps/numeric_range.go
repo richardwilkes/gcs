@@ -26,6 +26,12 @@ import (
 //
 // A settled range -- one whose minimum and maximum are the same known value -- is what the vast majority of items
 // report, and it displays exactly as the bare value always has.
+//
+// Where a single number has to stand for a range that isn't settled, as in the calc block written to a file, points and
+// equipment differ for now. A points choice counts as the total of its options (see pickerContainerPoints), which is
+// what points always reported. An equipment choice counts as the least it may come to (see singleValueOf), which is
+// what can be relied upon being there. The two are to be brought together once choices can be left open outside of
+// templates.
 type NumericRange struct {
 	// Min is the least the item can cost, or nil if there is no lower limit.
 	Min *fxp.Int

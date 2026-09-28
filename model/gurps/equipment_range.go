@@ -36,11 +36,37 @@ func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 	return equipmentWeight(defUnits).rangeOf(e, e.Quantity)
 }
 
+// AdjustedValueRange returns the span of values a single piece of this equipment may have, not counting anything it
+// holds. Nothing about equipment's own value can be left to choose yet, so this is always the settled AdjustedValue. It
+// is a range so that everything worked out from it, which is every other value range and so ExtendedValue too, will
+// already follow once something can.
+func (e *Equipment) AdjustedValueRange() NumericRange {
+	return NumericRangeOf(e.AdjustedValue())
+}
+
+// AdjustedWeightRange returns the span of weights a single piece of this equipment may have, not counting anything it
+// holds. As with AdjustedValueRange, it is always settled for now.
+func (e *Equipment) AdjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
+	return NumericRangeOf(fxp.Int(e.AdjustedWeight(false, defUnits)))
+}
+
+// singleValueOf returns the one value a range stands for where a single number is needed: the value itself when the
+// range is settled, and otherwise the least it may come to, a value or weight never being less than nothing. This is
+// how an equipment choice yet to be made counts in the calc block written to a file, in scripts and in exports. A
+// points choice counts differently, as the total of its options (see pickerContainerPoints), since that is what points
+// always reported; the two are to be brought together once choices can be left open outside of templates.
+func singleValueOf(r NumericRange) fxp.Int {
+	if value, settled := r.Settled(); settled {
+		return value
+	}
+	return lowerEndOf(r)
+}
+
 // equipmentMeasure is a quantity a choice of equipment may be made by, other than a count: its value or its weight.
 type equipmentMeasure struct {
 	kind picker.Type
 	// own returns the measure of a single piece of the equipment, not counting anything it holds.
-	own func(e *Equipment) fxp.Int
+	own func(e *Equipment) NumericRange
 	// reduce returns the measure of what a single piece of the equipment holds, given the range of it before any
 	// reduction the equipment makes to it.
 	reduce func(e *Equipment, contents NumericRange) NumericRange
@@ -50,7 +76,7 @@ type equipmentMeasure struct {
 func equipmentValue() equipmentMeasure {
 	return equipmentMeasure{
 		kind:   picker.Value,
-		own:    (*Equipment).AdjustedValue,
+		own:    (*Equipment).AdjustedValueRange,
 		reduce: func(_ *Equipment, contents NumericRange) NumericRange { return contents },
 	}
 }
@@ -59,9 +85,7 @@ func equipmentValue() equipmentMeasure {
 func equipmentWeight(defUnits fxp.WeightUnit) equipmentMeasure {
 	return equipmentMeasure{
 		kind: picker.Weight,
-		own: func(e *Equipment) fxp.Int {
-			return fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits))
-		},
+		own:  func(e *Equipment) NumericRange { return e.AdjustedWeightRange(defUnits) },
 		reduce: func(e *Equipment, contents NumericRange) NumericRange {
 			reduction := containedWeightReductionFor(e, defUnits, e.Modifiers, e.Features)
 			reduce := func(end *fxp.Int) *fxp.Int {
@@ -86,7 +110,7 @@ func (m equipmentMeasure) rangeOf(e *Equipment, quantity fxp.Int) NumericRange {
 	if quantity <= 0 {
 		return NumericRangeOf(0)
 	}
-	one := NumericRangeOf(m.own(e))
+	one := m.own(e)
 	if e.Container() {
 		one = one.Add(m.reduce(e, m.contentsOf(e)))
 	}
