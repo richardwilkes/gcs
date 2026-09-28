@@ -569,3 +569,41 @@ func TestEquipmentHasOwnQuantity(t *testing.T) {
 	c.False(NewEquipmentGroup(nil, nil).HasOwnQuantity(), "a group's quantity is always one")
 	c.False(NewEquipmentChoiceContainer(nil, nil).HasOwnQuantity(), "a choice is a group")
 }
+
+// TestEquipmentChoiceOptionWithNoQuantity verifies that an option starting out with a quantity of nothing still counts
+// as able to add to a choice made by value or weight, since its quantity may be raised while picking.
+func TestEquipmentChoiceOptionWithNoQuantity(t *testing.T) {
+	c := check.New(t)
+	choice := NewEquipmentChoiceContainer(nil, nil)
+	choice.TemplatePicker.Type = picker.Value
+	choice.TemplatePicker.Qualifier.Compare = criteria.AtLeastNumber
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(50)
+	rope := item(choice, "Rope", "5", "2 lb")
+	rope.Quantity = 0
+	c.Equal("50+", choice.ExtendedValueRange().String(), "any pick must come to at least the qualifier")
+	c.Equal("0 lb+", FormatWeightRange(choice.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format),
+		"the rope's quantity may be raised, so there is no upper limit to the weight")
+}
+
+// TestEquipmentChoiceCappedAtWhatItsOptionsReach verifies that a choice made by value, none of whose options can be
+// raised while picking, is held to what its options can come to together, while a qualifier they can't reach at all
+// still gives the range it states.
+func TestEquipmentChoiceCappedAtWhatItsOptionsReach(t *testing.T) {
+	c := check.New(t)
+	rangeFor := func(compare criteria.NumericComparison, qualifier int64) string {
+		choice := NewEquipmentChoiceContainer(nil, nil)
+		choice.TemplatePicker.Type = picker.Value
+		choice.TemplatePicker.Qualifier.Compare = compare
+		choice.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(qualifier)
+		for _, value := range []string{"20", "30"} {
+			group := NewEquipmentGroup(nil, choice)
+			item(group, "Gear", value, "1 lb")
+			choice.Children = append(choice.Children, group)
+		}
+		return choice.ExtendedValueRange().String()
+	}
+	c.Equal("0~50", rangeFor(criteria.AnyNumber, 0))
+	c.Equal("0~50", rangeFor(criteria.AtMostNumber, 100))
+	c.Equal("10~50", rangeFor(criteria.AtLeastNumber, 10))
+	c.Equal("100+", rangeFor(criteria.AtLeastNumber, 100), "a qualifier nothing can reach still gives its own range")
+}
