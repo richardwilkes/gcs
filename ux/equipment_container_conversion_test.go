@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -379,4 +380,41 @@ func TestConvertToContainerInALibrary(t *testing.T) {
 	mgr.Undo()
 	c.True(group.IsGroup(), "undo must turn the group back")
 	c.False(item.Container(), "the same undo must turn the item back")
+}
+
+// TestCopyToTemplateNormalizesEquipmentChoices verifies that an equipment choice copied into a template arrives
+// normalized, just as it would have been had the template loaded it: a physical container carrying template choices
+// becomes a group, and loses its VTT notes, tags and source, while being left equipped. The rows being copied are left
+// alone.
+func TestCopyToTemplateNormalizesEquipmentChoices(t *testing.T) {
+	c := check.New(t)
+	choices := gurps.NewEquipment(nil, nil, true)
+	choices.Name = "Pick One"
+	choices.TemplatePicker.Type = picker.Count
+	choices.TemplatePicker.Qualifier.Qualifier = fxp.One
+	choices.VTTNotes = "vtt"
+	choices.Tags = []string{"Gear"}
+	choices.Source = gurps.Source{Library: "lib", Path: "choices.eqp", TID: choices.ID()}
+	choices.Equipped = false
+	option := gurps.NewEquipment(nil, choices, false)
+	option.Name = "Rope"
+	choices.Children = []*gurps.Equipment{option}
+	source := newTestTemplateWithEquipment(choices)
+	source.Equipment.Table.SelectAll()
+	destinationData := gurps.NewTemplate()
+	destination := newTestTemplateDockable("Destination", destinationData)
+
+	copySelectionTo(source.Equipment.Table, []*Template{destination})
+
+	c.Equal(1, len(destinationData.Equipment))
+	arrived := destinationData.Equipment[0]
+	c.True(gurps.IsTemplateChoiceContainer(arrived), "the choices must have been kept")
+	c.Equal(eqcontainer.Group, arrived.ContainerType, "the choice must arrive as a group")
+	c.Equal("", arrived.VTTNotes, "the choice must arrive without VTT notes")
+	c.Equal(0, len(arrived.Tags), "the choice must arrive without tags")
+	c.True(arrived.Source.IsZero(), "the choice must arrive without a source")
+	c.True(arrived.Equipped, "the choice must arrive equipped")
+	c.Equal(1, len(arrived.Children), "the options must have been kept")
+	c.Equal(eqcontainer.Container, choices.ContainerType, "the rows copied from must be left alone")
+	c.Equal(1, len(choices.Tags), "the rows copied from must be left alone")
 }
