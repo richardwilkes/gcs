@@ -127,3 +127,26 @@ func TestLootSheetIgnoresAnotherEntitySheetSettings(t *testing.T) {
 	sheet.SheetSettingsUpdated(nil, true)
 	c.NotEqual(jio.Time{}, sheet.loot.ModifiedOn, "a global settings change must be reported to the loot sheet")
 }
+
+// TestLootCandidatesUseWhatGroupsHold verifies that treasure is generated from what a group holds, in nested groups
+// too, rather than from the group itself, while a physical container is a candidate as it stands.
+func TestLootCandidatesUseWhatGroupsHold(t *testing.T) {
+	c := check.New(t)
+	gems := gurps.NewEquipmentGroup(nil, nil)
+	ruby := gurps.NewEquipment(nil, gems, false)
+	ruby.Name = "Ruby"
+	rare := gurps.NewEquipmentGroup(nil, gems)
+	diamond := gurps.NewEquipment(nil, rare, false)
+	diamond.Name = "Diamond"
+	rare.Children = []*gurps.Equipment{diamond}
+	gems.Children = []*gurps.Equipment{ruby, rare}
+	chest := gurps.NewEquipment(nil, nil, true)
+	chest.Name = "Chest"
+	chest.Children = []*gurps.Equipment{gurps.NewEquipment(nil, chest, false)}
+	candidates := lootCandidates([]*gurps.Equipment{gems, chest})
+	names := make([]string, 0, len(candidates))
+	for _, one := range candidates {
+		names = append(names, one.Name)
+	}
+	c.Equal([]string{"Ruby", "Diamond", "Chest"}, names)
+}

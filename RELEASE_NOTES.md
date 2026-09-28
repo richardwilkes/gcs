@@ -90,7 +90,8 @@
   whether by dropping them onto it or with "Apply Modifier". In exports, an equipment container's type is now
   "container" or "group", rather than always "group", just as a trait container's is its container type, and the legacy
   text export leaves a group's quantity, value and weight empty. Saved list filters can test an equipment container's
-  type, and scripts can read it as its kind.
+  type, and scripts can read it as its kind. Generating treasure from a loot sheet picks from what a group holds rather
+  than from the group itself.
 - Equipment can now be offered as a template choice. In a template, "New Equipment Choice" adds one, and "Convert to
   Choice" turns an equipment group into one. An equipment choice is picked by count, by value or by weight, and its
   editor shows only the name, notes, choice and page reference. A choice picked by value or weight lets the
