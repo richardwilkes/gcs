@@ -909,3 +909,73 @@ func TestUndoingADropClosesTheChoiceItOpened(t *testing.T) {
 	mgr.Redo()
 	c.True(isOpen(), "redo opens it again")
 }
+
+// insertNewTraitModifier inserts a new trait modifier into an editor's table of modifiers, as "New Trait Modifier"
+// does, without opening an editor for it, and returns it.
+func insertNewTraitModifier(t *testing.T, owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]]) *gurps.TraitModifier {
+	t.Helper()
+	provider, ok := table.Model.(*modifiersProvider[*gurps.TraitModifier])
+	if !ok {
+		t.Fatal("expected a trait modifiers provider")
+	}
+	item := gurps.NewTraitModifier(provider.DataOwner(), nil, false)
+	item.Name = "New"
+	provider.insertItems(owner, table, item)
+	return item
+}
+
+// TestNewModifierInAClosedGroupInAChoice verifies that a new modifier inserted into a closed group within a choice
+// opens the group, so that it is shown and selected, and arrives turned off, leaving the choice its pick, and that
+// undo closes the group again.
+func TestNewModifierInAClosedGroupInAChoice(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	choice := newTraitModifierChoiceFor(entity, true, []string{"y"}, "y")
+	group := gurps.NewTraitModifier(entity, choice, true)
+	x := gurps.NewTraitModifier(entity, group, false)
+	x.Name = "x"
+	x.SetEnabled(false)
+	group.Children = []*gurps.TraitModifier{x}
+	group.SetOpen(false)
+	choice.Children = slices.Insert(choice.Children, 0, group)
+	e, table := traitEditorOnSheet(t, sheet, choice)
+	groupCopy := e.editorData.Modifiers[0].Children[0]
+	c.False(groupCopy.IsOpen())
+	table.SetSelectionMap(map[tid.TID]bool{groupCopy.ID(): true})
+	item := insertNewTraitModifier(t, e, table)
+	c.Equal(item, groupCopy.Children[1], "the new modifier goes into the group")
+	c.True(groupCopy.IsOpen(), "the group is opened to show it")
+	c.Equal(map[tid.TID]bool{item.ID(): true}, table.CopySelectionMap(), "the new modifier is selected")
+	c.False(item.Enabled(), "the new modifier arrives turned off")
+	c.True(e.editorData.Modifiers[0].Children[1].Enabled(), "y stays the pick")
+
+	unison.UndoManagerFor(table).Undo()
+	restored := liveTable(table).RootRows()[0].Data().Children[0]
+	c.Equal(1, len(restored.Children), "undo takes the new modifier away")
+	c.False(restored.IsOpen(), "and closes the group again")
+}
+
+// TestNewModifierInAChoiceWithoutAPick verifies that a new modifier inserted into a choice with no pick arrives turned
+// off, even into a mandatory choice on a sheet, which is left without its pick and flagged.
+func TestNewModifierInAChoiceWithoutAPick(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	e, table := traitEditorOnSheet(t, sheet,
+		newTraitModifierChoiceFor(entity, false, []string{"a"}),
+		newTraitModifierChoiceFor(entity, true, []string{"b"}))
+	optional := e.editorData.Modifiers[0]
+	table.SetSelectionMap(map[tid.TID]bool{optional.ID(): true})
+	item := insertNewTraitModifier(t, e, table)
+	c.Equal(item, optional.Children[1])
+	c.False(item.Enabled(), "the new modifier arrives turned off in an optional choice")
+
+	mandatory := e.editorData.Modifiers[1]
+	table.SetSelectionMap(map[tid.TID]bool{mandatory.Children[0].ID(): true})
+	item = insertNewTraitModifier(t, e, table)
+	c.Equal(item, mandatory.Children[1])
+	c.False(item.Enabled(), "and in a mandatory one")
+	c.Equal([]*gurps.TraitModifier{mandatory}, gurps.UnresolvedModifierChoices(e.editorData.Modifiers...),
+		"which is left without its pick")
+}
