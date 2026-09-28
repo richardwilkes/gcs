@@ -14,6 +14,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
@@ -56,10 +58,12 @@ func (m *ModifierContainerSyncData) IsChoice() bool {
 }
 
 // IsMandatoryChoice returns true if the container is a choice that asks for exactly one of its options. A choice held
-// in a form this version doesn't support is read as the nearer of the two that are: an exact count as exactly one, and
-// any other as at most one, the choice that asks the least of whoever makes it.
+// in a form this version doesn't support is read as the nearer of the two that are: an exact count of one or more as
+// exactly one, and any other, such as a number of points or a count of none, as at most one, the choice that asks the
+// least of whoever makes it.
 func (m *ModifierContainerSyncData) IsMandatoryChoice() bool {
-	return m.IsChoice() && m.Choice.Qualifier.Compare.EnsureValid() == criteria.EqualsNumber
+	return m.IsChoice() && m.Choice.Type.EnsureValid() == picker.Count &&
+		m.Choice.Qualifier.Compare.EnsureValid() == criteria.EqualsNumber && m.Choice.Qualifier.Qualifier >= fxp.One
 }
 
 // SetMandatoryChoice makes the container a choice that asks for exactly one of its options when mandatory is true, and

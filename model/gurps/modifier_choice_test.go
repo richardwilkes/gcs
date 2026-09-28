@@ -73,8 +73,8 @@ func TestModifierContainerKinds(t *testing.T) {
 }
 
 // TestModifierChoiceReadsUnsupportedFormsAsTheNearest verifies that a choice held in a form this version doesn't
-// support is read, and described, as the nearer of the two it does, an exact count as exactly one and any other as at
-// most one, yet kept as it is through a save, so that a newer version's choice isn't lost, until the choice is edited.
+// support is read, and described, as the nearer of the two it does, an exact count of one or more as exactly one and any
+// other as at most one, yet kept as it is through a save, so that a newer version's choice isn't lost, until the choice is edited.
 // Neither a modifier that isn't a container nor a group keeps picker data, nor a container its VTT notes.
 func TestModifierChoiceReadsUnsupportedFormsAsTheNearest(t *testing.T) {
 	c := check.New(t)
@@ -102,6 +102,17 @@ func TestModifierChoiceReadsUnsupportedFormsAsTheNearest(t *testing.T) {
 	c.True(IsModifierChoice(byPoints))
 	c.False(IsMandatoryModifierChoice(byPoints), "any other count is read as at most one")
 	c.Equal("Pick at most 1", ModifierChoiceDescription(byPoints))
+
+	for _, tp := range []TemplatePicker{
+		{Type: picker.Points, Qualifier: number(criteria.EqualsNumber, 10)},
+		{Type: picker.Count, Qualifier: number(criteria.EqualsNumber, 0)},
+	} {
+		other := load(true, tp)
+		c.True(IsModifierChoice(other))
+		c.False(IsMandatoryModifierChoice(other), "only an exact count of one or more is read as exactly one")
+		c.Equal("Pick at most 1", ModifierChoiceDescription(other))
+		c.False(other.isSupportedChoice())
+	}
 
 	group := load(true, TemplatePicker{Qualifier: number(criteria.AtMostNumber, 2)})
 	c.False(IsModifierChoice(group))
