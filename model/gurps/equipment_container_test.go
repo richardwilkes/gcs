@@ -510,3 +510,53 @@ func TestEquipmentChoiceCountsAsItsLowerEnd(t *testing.T) {
 	c.True(strings.Contains(string(data), `"extended_value":15,`),
 		"the file must record the least the backpack may come to: %s", string(data))
 }
+
+// TestEquipmentRangeThroughAFullReduction verifies that a container whose contents weigh nothing, however much they
+// weigh, settles at its own weight even when a choice inside it has no upper limit to its weight.
+func TestEquipmentRangeThroughAFullReduction(t *testing.T) {
+	c := check.New(t)
+	bag := NewEquipment(nil, nil, true)
+	bag.BaseWeight = "1 lb"
+	cwr := NewContainedWeightReduction()
+	cwr.Reduction = "100%"
+	bag.Features = Features{cwr}
+	choice := newRangeTestChoice(picker.Value, criteria.AtMostNumber, fxp.FromInteger(50))
+	choice.SetParent(bag)
+	bag.Children = []*Equipment{choice}
+	c.Equal("0+", choice.ExtendedWeightRange(fxp.Pound).String(), "precondition: the choice's weight has no upper limit")
+	c.Equal("1 lb", FormatWeightRange(bag.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
+}
+
+// TestEquipmentChoiceOtherMeasureWithGroups verifies that a choice picked by one measure has an upper limit to the other
+// when every option with something to raise is a group, whose quantity can't be raised while picking.
+func TestEquipmentChoiceOtherMeasureWithGroups(t *testing.T) {
+	c := check.New(t)
+	choice := NewEquipmentChoiceContainer(nil, nil)
+	choice.TemplatePicker.Type = picker.Value
+	choice.TemplatePicker.Qualifier.Compare = criteria.AtMostNumber
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(100)
+	for _, weight := range []string{"2 lb", "3 lb"} {
+		group := NewEquipmentGroup(nil, choice)
+		item(group, "Gear", "10", weight)
+		choice.Children = append(choice.Children, group)
+	}
+	free := newEquipmentItem("Advice", "0", "0 lb")
+	free.SetParent(choice)
+	choice.Children = append(choice.Children, free)
+	c.Equal("0~5 lb", FormatWeightRange(choice.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format),
+		"groups can only be taken or left, and an option weighing nothing adds nothing however many are taken")
+
+	rope := newEquipmentItem("Rope", "5", "2 lb")
+	rope.SetParent(choice)
+	choice.Children = append(choice.Children, rope)
+	c.Equal("0 lb+", FormatWeightRange(choice.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format),
+		"an option whose quantity may be raised leaves no upper limit")
+}
+
+// item adds a piece of equipment with the given name, value and weight to the parent.
+func item(parent *Equipment, name, value, weight string) *Equipment {
+	one := newEquipmentItem(name, value, weight)
+	one.SetParent(parent)
+	parent.Children = append(parent.Children, one)
+	return one
+}

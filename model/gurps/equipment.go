@@ -955,6 +955,11 @@ type containedWeightReduction struct {
 	fixed      fxp.Int
 }
 
+// removesEverything returns true if the reduction leaves the contents weighing nothing, whatever they weigh.
+func (r containedWeightReduction) removesEverything() bool {
+	return r.percentage >= fxp.Hundred
+}
+
 // apply returns the weight of the contents after the reduction.
 func (r containedWeightReduction) apply(contained fxp.Weight) fxp.Weight {
 	value := fxp.Int(contained)

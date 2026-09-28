@@ -12,6 +12,7 @@ package gurps
 import (
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
@@ -57,7 +58,12 @@ func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 	reduction := containedWeightReductionFor(e, defUnits, e.Modifiers, e.Features)
 	reduce := func(end *fxp.Int) *fxp.Int {
 		if end == nil {
-			return nil
+			// A reduction that takes away everything leaves nothing, however much there was to begin with.
+			if !reduction.removesEverything() {
+				return nil
+			}
+			var nothing fxp.Int
+			return &nothing
 		}
 		value := fxp.Int(reduction.apply(fxp.Weight(*end)))
 		return &value
@@ -72,8 +78,9 @@ func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 //
 // A choice picked by count takes its options as they are, so its range is worked out just as it is for points. A
 // choice picked by the same measure is bounded by its qualifier directly, just as a points choice is by its own. A
-// choice picked by the other measure lets the quantity of each option be raised while picking, so there is no upper
-// limit to what it may hold, unless nothing it offers has anything to raise.
+// choice picked by the other measure lets the quantity of each option be raised while picking, save for a group, which
+// has no quantity to raise. So there is no upper limit to what it may hold once any option but a group has something
+// to raise; otherwise it may hold anything from none of its options to all of them.
 func equipmentContentsRange(e *Equipment, measure picker.Type, children []NumericRange) NumericRange {
 	if !IsTemplateChoiceContainer(e) {
 		return sumNumericRanges(children)
@@ -84,10 +91,12 @@ func equipmentContentsRange(e *Equipment, measure picker.Type, children []Numeri
 	case measure:
 		return rangeForPickerByMeasure(e.TemplatePicker.Qualifier, children)
 	default:
-		if SignForNumericRanges(children...) == NumericRangeZero {
-			return NumericRangeOf(0)
+		for i, one := range e.Children {
+			if !one.IsGroup() && SignForNumericRanges(children[i]) != NumericRangeZero {
+				return numericRangeAtLeast(0)
+			}
 		}
-		return numericRangeAtLeast(0)
+		return rangeForPickerByCount(criteria.Number{Compare: criteria.AnyNumber}, children)
 	}
 }
 
