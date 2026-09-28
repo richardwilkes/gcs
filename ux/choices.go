@@ -52,22 +52,13 @@ func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent 
 		was := tp.Type
 		selected(p)
 		if tp.Type != was {
-			tp.Qualifier.Qualifier = max(tp.Qualifier.Qualifier, choiceQualifierMinimum(tp.Type))
+			tp.Qualifier.Qualifier = max(tp.Qualifier.Qualifier, gurps.TemplatePickerQualifierMinimum(tp.Type))
 			current.AsPanel().Parent().RemoveFromParent()
 			_, current = addChoiceQualifier(wrapper, entity, tp)
 			wrapper.MarkForLayoutRecursivelyUpward()
 		}
 	}
 	return typePopup, comparisonPopup, field
-}
-
-// choiceQualifierMinimum returns the least a picker of the given type may ask for. Only points may be less than
-// nothing, since a disadvantage costs negative points; a count, a value or a weight never can be.
-func choiceQualifierMinimum(pickerType picker.Type) fxp.Int {
-	if pickerType == picker.Points {
-		return fxp.Min
-	}
-	return 0
 }
 
 // addChoiceQualifier adds the comparison and the qualifier the picker is to meet, the qualifier being entered as a
@@ -84,7 +75,7 @@ func addChoiceQualifier(parent *unison.Panel, entity *gurps.Entity, tp *gurps.Te
 		int(tp.Qualifier.Compare.EnsureValid()))
 	panel.AddChild(popup)
 	set := func(value fxp.Int) {
-		tp.Qualifier.Qualifier = max(value, choiceQualifierMinimum(tp.Type))
+		tp.Qualifier.Qualifier = max(value, gurps.TemplatePickerQualifierMinimum(tp.Type))
 		MarkModified(panel)
 	}
 	if tp.Type == picker.Weight {
@@ -93,7 +84,7 @@ func addChoiceQualifier(parent *unison.Panel, entity *gurps.Entity, tp *gurps.Te
 			func(value fxp.Weight) { set(fxp.Int(value)) }, 0, fxp.Weight(fxp.Max), false)
 	} else {
 		field = NewDecimalField(nil, "", undoTitle, func() fxp.Int { return tp.Qualifier.Qualifier }, set,
-			choiceQualifierMinimum(tp.Type), fxp.Max, false, false)
+			gurps.TemplatePickerQualifierMinimum(tp.Type), fxp.Max, false, false)
 	}
 	panel.AddChild(field)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {

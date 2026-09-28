@@ -84,6 +84,15 @@ func (t TemplatePicker) Hash(h hash.Hash) {
 	}
 }
 
+// TemplatePickerQualifierMinimum returns the least a picker of the given type may ask for. Only points may be less than
+// nothing, since a disadvantage costs negative points; a count, a value or a weight never can be.
+func TemplatePickerQualifierMinimum(pickerType picker.Type) fxp.Int {
+	if pickerType == picker.Points {
+		return fxp.Min
+	}
+	return 0
+}
+
 // newTemplateChoicePicker returns the picker data a new template choice container starts with: pick exactly one of its
 // children.
 func newTemplateChoicePicker() TemplatePicker {

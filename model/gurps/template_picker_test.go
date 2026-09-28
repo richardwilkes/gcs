@@ -355,3 +355,19 @@ func TestLoadingDropsPickerTypesANodeDoesNotAllow(t *testing.T) {
 	c.True(eqp.IsGroup(), "it must be left a plain group")
 	c.Equal(picker.Weight, loadEquipment("weight").TemplatePicker.Type, "equipment may be picked by weight")
 }
+
+// TestLoadingHoldsQualifiersToTheirTypesMinimum verifies that a count, value or weight qualifier below nothing, as only
+// a hand-edited or foreign file can hold, is raised to nothing when loaded, while a points qualifier, which may be less
+// than nothing, is kept.
+func TestLoadingHoldsQualifiersToTheirTypesMinimum(t *testing.T) {
+	c := check.New(t)
+	var eqp Equipment
+	c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.EquipmentContainer))+
+		`","container_type":"group","template_picker":{"type":"value","qualifier":{"compare":"is","qualifier":-5}}}`),
+		&eqp))
+	c.Equal(fxp.Int(0), eqp.TemplatePicker.Qualifier.Qualifier, "a value may not be less than nothing")
+	var trait Trait
+	c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.TraitContainer))+
+		`","template_picker":{"type":"points","qualifier":{"compare":"at_most","qualifier":-5}}}`), &trait))
+	c.Equal(fxp.FromInteger(-5), trait.TemplatePicker.Qualifier.Qualifier, "points may be less than nothing")
+}
