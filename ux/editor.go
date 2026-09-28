@@ -277,8 +277,9 @@ func (e *editor[N, D]) applyEdits() {
 	if _, ok := gurps.ModifierChoiceFor(target); ok {
 		changesEnabled = e.changesEnabled()
 	}
+	pickerBefore := modifierChoicePicker(target)
 	e.editorData.ApplyTo(target)
-	applyModifierChoiceRulesAfterEdit(target, wasEnabled, changesEnabled)
+	applyModifierChoiceRulesAfterEdit(target, wasEnabled, changesEnabled, modifierChoicePicker(target) != pickerBefore)
 	clearSourceOfTemplatePicker(target)
 	sourceAfter := target.GetSource()
 	optionsAfter := choiceOptionStates(target)
@@ -327,14 +328,27 @@ func (e *editor[N, D]) changesEnabled() bool {
 	return scratch.Enabled() != before
 }
 
+// modifierChoicePicker returns what the node, if it is a modifier container, holds to say which kind of choice it is.
+// A group holds the zero value, as does a node that isn't a modifier container.
+func modifierChoicePicker[N gurps.Node[N]](node N) gurps.TemplatePicker {
+	if provider, ok := any(node).(gurps.ModifierChoiceProvider); ok && !xreflect.IsNil(node) && node.Container() {
+		return provider.ModifierChoiceData().Choice
+	}
+	return gurps.TemplatePicker{}
+}
+
 // applyModifierChoiceRulesAfterEdit applies the rules of a modifier choice after an editor's data has been applied to
 // the target. For an option of a choice, the rules only follow a change the editor made to whether it is enabled; the
 // state the editor opened with is otherwise put back, since the option may have been picked, or had another picked
-// over it, since then. A choice itself is brought into line with the rules, which it may no longer be in after, say,
-// being made mandatory on a sheet with nothing picked.
-func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled bool) {
+// over it, since then. A choice itself is brought into line with the rules only when the editor changed what it asks
+// for, which it may then no longer be in line with after, say, being made mandatory on a sheet with nothing picked. An
+// edit that leaves that alone leaves its options alone too: one flagged for want of a pick stays that way, and one
+// held in a form this version doesn't support keeps the options that form allows.
+func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled, choiceChanged bool) {
 	if gurps.IsModifierChoice(target) {
-		gurps.EnsureModifierChoiceRules(target)
+		if choiceChanged {
+			gurps.EnsureModifierChoiceRules(target)
+		}
 		return
 	}
 	if _, ok := gurps.ModifierChoiceFor(target); !ok {
