@@ -6,12 +6,12 @@
   and choose Apply Modifier from the Edit menu or the library's context menu. You are asked which open character sheet,
   template, loot sheet or library list to apply them to (skipped when only one qualifies), then which of its traits or
   equipment should receive them. Each receives its own enabled copy of the modifiers and is selected and scrolled into
-  view afterwards. A container of modifiers applied to a character sheet asks which of its contents should be enabled.
-  The prompts work with a screen reader, which reads out the containers each row sits in.
+  view afterwards. A group or choice of modifiers applied to a character or loot sheet asks which of its contents
+  should be enabled. The prompts work with a screen reader, which reads out the containers each row sits in.
 - Dropping modifiers onto traits or equipment on a character sheet no longer asks which of their modifiers should be
-  enabled: the dropped copies are simply enabled. Dropping a container of modifiers still asks which of its contents
-  should be enabled, and traits or equipment that arrive with modifiers of their own, as when a template is applied,
-  are asked about as before.
+  enabled: the dropped copies are simply enabled. Dropping a group or choice of modifiers onto a character or loot
+  sheet asks which of its contents should be enabled, and traits or equipment that arrive with modifiers of their own,
+  as when a template is applied, are asked about as before.
 - The "Gives a weapon damage modifier of" feature now accepts dice as well as a plain number, so a trait or modifier
   can add "+1d" or "+2d+1x3" to a weapon's damage, or take "-1d" away from it. The dice combine with the weapon's own
   damage the same way its base damage does, so a leading "-" takes away only the dice: "-1d+2" removes one die and
@@ -101,19 +101,26 @@
   of its modifiers, such as the one that sets the price of a trait whose cost varies, and an optional choice asks for at
   most one, which makes its modifiers mutually exclusive. "New Trait Modifier Choice" and "New Equipment Modifier
   Choice" add one, and "Convert to Choice" and "Convert to Group" turn a group into a choice and back, in a modifier
-  library or in a trait or equipment editor. Unlike a template choice, a modifier choice keeps all of its modifiers
-  wherever it goes; the one picked is the one enabled, and no more than one is ever enabled: turning one on, in the list
-  or in its editor, turns off the one that was on, and a modifier added, duplicated, moved or dropped into a choice that
-  already has its pick arrives turned off. When modifiers are asked about, a choice's modifiers are offered as radio
-  buttons, and an optional choice adds "None". When a trait or piece of equipment is added to a character or loot sheet,
-  a mandatory choice must be made before the prompt can be accepted; elsewhere, such as in a template, it may be left
-  without a pick. A trait or piece of equipment marked preconfigured takes the picks its choices already have and is
-  only asked about a mandatory choice that has none. On a character or loot sheet a mandatory choice must always have
-  its pick: it can be changed but not turned off, making a choice mandatory there, by converting a group or in its
-  editor, picks its first option, and one otherwise left without a pick, as a library sync can leave it, is flagged,
-  both on the item and on the choice. Until a mandatory choice is made, a template or library shows the points a trait
-  may cost as a range, and the value and weight of a piece of equipment, and counts the least of them wherever a single
-  figure is needed.
+  library or in a trait or equipment editor.
+- Unlike a template choice, a modifier choice keeps all of its modifiers wherever it goes. The one picked is the one
+  enabled, and no more than one is ever enabled: turning one on, in the list or in its editor, turns off the one that
+  was on. A new modifier added to a choice arrives turned off, and so does one duplicated, moved or dropped into a
+  choice that already has its pick.
+- When modifiers are asked about, a choice's modifiers are offered as radio buttons, and an optional choice adds
+  "None". When a trait or piece of equipment is added to a character or loot sheet, a mandatory choice must be made
+  before the prompt can be accepted; elsewhere, such as in a template, it may be left without a pick. A trait or piece
+  of equipment marked preconfigured takes the picks its choices already have and is only asked about a mandatory choice
+  that has none.
+- On a character or loot sheet a mandatory choice always needs its pick. The pick can be changed but not turned off,
+  so its Enabled box is disabled in the modifier's editor, and making a choice mandatory there, by converting a group
+  or in the choice's editor, picks its first option. A mandatory choice left without a pick for any other reason, such
+  as a library sync or deleting, moving or dragging its pick away, is flagged on both the item and the choice for you
+  to resolve.
+- In a template or library, a mandatory choice on an item that isn't marked preconfigured is asked about again when
+  the item reaches a sheet, so any pick it has is only a default. Until then the points a trait may cost, and the value
+  and weight of a piece of equipment, are shown as a range, in the lists and in the trait and equipment editors, and a
+  trait container counts the same pick for everything inside it. A preconfigured item whose mandatory choices all have
+  their picks shows a single figure. Wherever a single figure is needed, as in the totals, the least is counted.
 - The editor for a modifier group or choice now shows only the name, notes, choice, tags, page reference and library
   source. The other fields only ever applied to a modifier, and a group's VTT notes are no longer kept.
 
