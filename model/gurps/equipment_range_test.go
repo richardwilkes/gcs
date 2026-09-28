@@ -138,3 +138,14 @@ func TestEquipmentTotalsAgreeWithTheirRanges(t *testing.T) {
 	c.Equal(fxp.Weight(fxp.FromInteger(5)), pack.ExtendedWeight(true, fxp.Pound),
 		"the armor's weight must not count for skills")
 }
+
+// TestRangesWhoseEndsRenderAlike verifies that a range whose ends render the same, as they can when a display format
+// rounds them, is shown as that one rendering rather than as a range from it to itself.
+func TestRangesWhoseEndsRenderAlike(t *testing.T) {
+	c := check.New(t)
+	r := newNumericRange(fxp.FromStringForced("1.2"), fxp.FromStringForced("1.4"))
+	whole := func(value fxp.Int) string { return value.Round().String() }
+	c.Equal("1", FormatValueRange(r, whole))
+	c.Equal("1 lb", FormatWeightRange(r, func(w fxp.Weight) string { return whole(fxp.Int(w)) + " lb" }))
+	c.Equal("1.2~1.4 lb", FormatWeightRange(r, fxp.Pound.Format), "ends that render differently remain a range")
+}

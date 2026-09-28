@@ -153,7 +153,8 @@ func (r NumericRange) Comma() string {
 }
 
 // format renders the range, using f to render each end of it. A settled range renders as the bare number, so that
-// everything which isn't a choice looks exactly as it always has.
+// everything which isn't a choice looks exactly as it always has, and so does a range whose ends render the same, as
+// they can when f rounds: "1~1" would say nothing "1" doesn't.
 func (r NumericRange) format(f func(fxp.Int) string) string {
 	switch {
 	case r.Min == nil && r.Max == nil:
@@ -165,7 +166,12 @@ func (r NumericRange) format(f func(fxp.Int) string) string {
 	case *r.Min == *r.Max:
 		return f(*r.Min)
 	default:
-		return f(*r.Min) + rangeSeparator + f(*r.Max)
+		lower := f(*r.Min)
+		upper := f(*r.Max)
+		if lower == upper {
+			return lower
+		}
+		return lower + rangeSeparator + upper
 	}
 }
 

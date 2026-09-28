@@ -214,6 +214,9 @@ func FormatWeightRange(r NumericRange, format func(fxp.Weight) string) string {
 	if r.Min != nil && r.Max != nil && *r.Min != *r.Max {
 		lower := format(fxp.Weight(*r.Min))
 		upper := format(fxp.Weight(*r.Max))
+		if lower == upper {
+			return upper
+		}
 		if number, units, found := strings.Cut(lower, " "); found {
 			if _, upperUnits, upperFound := strings.Cut(upper, " "); upperFound && units == upperUnits {
 				return number + rangeSeparator + upper
