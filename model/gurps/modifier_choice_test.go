@@ -466,16 +466,18 @@ func TestKeepModifierChoiceRules(t *testing.T) {
 }
 
 // TestModifierEnabledChanges verifies the changes worked out for setting modifiers' enabled states: turning an option
-// on turns the choice's other options off, the later of two turned on together winning, and a request to turn off the
-// pick of a mandatory choice on a sheet is left out.
+// on turns the choice's other options off, the later of two turned on together winning, a modifier whose state doesn't
+// change is left out, and so is a request to turn off the pick of a mandatory choice on a sheet.
 func TestModifierEnabledChanges(t *testing.T) {
 	c := check.New(t)
 	choice := newTraitModifierChoiceWith(false, "+1", "+2", "+3")
 	a, b, cc := choice.Children[0], choice.Children[1], choice.Children[2]
 	a.SetEnabled(true)
 	targets, enabled := ModifierEnabledChanges([]*TraitModifier{b, cc}, func(*TraitModifier) bool { return true })
-	c.Equal([]*TraitModifier{a, b, cc}, targets)
-	c.Equal(map[*TraitModifier]bool{a: false, b: false, cc: true}, enabled)
+	c.Equal([]*TraitModifier{a, cc}, targets, "b is turned on and off again, so it doesn't change")
+	c.Equal(map[*TraitModifier]bool{a: false, cc: true}, enabled)
+	targets, _ = ModifierEnabledChanges([]*TraitModifier{a}, func(*TraitModifier) bool { return true })
+	c.Equal(0, len(targets), "a modifier already in the state asked for doesn't change")
 
 	trait := NewTrait(NewEntity(), nil, false)
 	onSheet := newTraitModifierChoiceWith(true, "+1")

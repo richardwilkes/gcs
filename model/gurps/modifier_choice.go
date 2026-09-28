@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -189,6 +190,14 @@ func ModifierEnabledChanges[T Node[T]](modifiers []T, want func(T) bool) (target
 		}
 		set(node, on)
 	}
+	// A modifier asked for the state it is already in, or turned on and then off again by a later pick, doesn't change.
+	targets = slices.DeleteFunc(targets, func(node T) bool {
+		if enabled[node] == node.Enabled() {
+			delete(enabled, node)
+			return true
+		}
+		return false
+	})
 	return targets, enabled
 }
 
