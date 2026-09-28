@@ -122,10 +122,26 @@ func (s *editorShell) addApplyAndCancelButtons(toolbar *unison.Panel, apply func
 			apply()
 			return true
 		},
-		func() {
-			s.promptForSave = false
-			s.editor().AttemptClose()
-		})
+		s.discardAndClose)
+}
+
+// discardAndClose closes the editor, dropping any pending changes without asking about them.
+func (s *editorShell) discardAndClose() {
+	s.promptForSave = false
+	s.editor().AttemptClose()
+}
+
+// discardEditorsFor closes the editors open on any of the given IDs, dropping their pending changes without asking
+// about them (see discardAndClose). It is for when the item an editor was opened on has changed out from under it in a
+// way that makes the editor's data wrong, where CloseID's offer to save the changes would do harm.
+func discardEditorsFor(ids map[tid.TID]bool) {
+	for _, d := range AllDockables() {
+		if closer, ok := d.(interface{ discardAndClose() }); ok {
+			if id, ok2 := d.AsPanel().ClientData()[AssociatedIDKey].(tid.TID); ok2 && ids[id] {
+				closer.discardAndClose()
+			}
+		}
+	}
 }
 
 // placeInDock records the ID of what the editor edits, so that closing that item's dockable closes the editor too (see

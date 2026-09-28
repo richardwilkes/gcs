@@ -364,14 +364,16 @@ func TestApplyOptionsFor(t *testing.T) {
 	c.Equal(applyOptions{resolvePickers: true, askAncestry: true, randomize: true, clearPreconfigured: true, merge: true},
 		applyOptionsFor(loot.Equipment.Table, sheet.CarriedEquipment.Table),
 		"a sheet to a sheet is a plain copy, save for what a sheet can't hold and the ancestry questions")
-	c.Equal(applyOptions{promptForChoices: true, merge: true}, applyOptionsFor(library, template.Traits.Table),
-		"a library to a template prompts for modifiers and nameables only")
-	c.Equal(applyOptions{merge: true}, applyOptionsFor(template.Traits.Table, template.Traits.Table),
-		"a template to a template is a plain copy")
-	c.Equal(applyOptions{merge: true}, applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
-		"a sheet to a template is a plain copy")
-	c.Equal(applyOptions{stripPickers: true, clearPreconfigured: true}, applyOptionsFor(template.Traits.Table, library),
-		"anything to a library is a plain copy, save for the choices only a template can hold")
+	c.Equal(applyOptions{normalizeChoices: true, promptForChoices: true, merge: true},
+		applyOptionsFor(library, template.Traits.Table),
+		"a library to a template normalizes choice containers and prompts for modifiers and nameables only")
+	c.Equal(applyOptions{normalizeChoices: true, merge: true},
+		applyOptionsFor(template.Traits.Table, template.Traits.Table),
+		"a template to a template is a plain copy, save for normalizing choice containers")
+	c.Equal(applyOptions{normalizeChoices: true, merge: true}, applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
+		"a sheet to a template is a plain copy, save for normalizing choice containers")
+	c.Equal(applyOptions{stripPickers: true}, applyOptionsFor(template.Traits.Table, library),
+		"anything to a library is a plain copy, Preconfigured flag included, save for the choices only a template can hold")
 }
 
 // TestDropWithinASheetSurvivesTheSourceTableBeingReplaced verifies that a drag from one list on a sheet to another is
@@ -584,4 +586,53 @@ func TestCopyToSheetSurvivesTheTargetTableBeingReplaced(t *testing.T) {
 	c.Equal(originalTraits, len(entity.Traits), "undo must take the copied trait back off the sheet")
 	c.Equal(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
 		"undo must take the switch column away again")
+}
+
+// TestAltDropSkipsChoiceContainers verifies that a template choice container is never a target for an alternate drop,
+// whether it is the row under the pointer or one of several selected rows.
+func TestAltDropSkipsChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	provider := &fakeAltDropProvider{}
+	first := gurps.NewTrait(nil, nil, false)
+	choice := gurps.NewTraitChoiceContainer(nil, nil)
+	last := gurps.NewTrait(nil, nil, false)
+	table := newAltDropTestTable(provider, first, choice, last)
+	c.Equal(0, len(altDropTargets(table, 1)), "a choice under the pointer must not be targeted")
+
+	table.SelectByIndex(0, 1, 2)
+	c.Equal([]int{0, 2}, altDropTargets(table, 0), "a selected choice must be left out of the batch")
+}
+
+// TestApplyModifierSkipsChoiceContainers verifies that the Apply Modifier command never gives a template choice
+// container modifiers either: its target prompt leaves the choice out while still offering the options within it, and
+// the shared attach step skips a choice handed to it anyway.
+func TestApplyModifierSkipsChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	forbidModifierPrompts(t)
+	choice := gurps.NewTraitChoiceContainer(nil, nil)
+	option := gurps.NewTrait(nil, choice, false)
+	option.Name = "Option"
+	choice.Children = []*gurps.Trait{option}
+	plain := gurps.NewTrait(nil, nil, false)
+	plain.Name = "Plain"
+	template := newTestTemplateWithTraits(choice, plain)
+
+	lists := traitModifierTargetKind().lists(template)
+	c.Equal(1, len(lists))
+	labels := make([]string, 0, 2)
+	for _, one := range modifierTargetChoices(lists) {
+		labels = append(labels, one.String())
+	}
+	c.Equal([]string{"Option (in Trait Choice)", "Plain"}, labels,
+		"the choice must be left out of the prompt, but its option must still be offered")
+
+	ranged := gurps.NewTraitModifier(nil, nil, false)
+	ranged.Name = "Ranged"
+	tables := []*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table}
+	c.True(attachModifierClones(tables, template.template, []*gurps.Trait{choice, plain}, []*gurps.TraitModifier{ranged},
+		gurps.LibraryFile{}))
+	c.Equal(0, len(choice.Modifiers), "the choice must not be given the modifier")
+	c.Equal([]string{"Ranged"}, appliedModifierNames(plain.Modifiers), "the other target must still get it")
+	c.False(attachModifierClones(tables, template.template, []*gurps.Trait{choice}, []*gurps.TraitModifier{ranged},
+		gurps.LibraryFile{}), "a choice alone leaves nothing to do")
 }

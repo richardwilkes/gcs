@@ -211,9 +211,10 @@ func hasAnyTag(candidates, tags []string) bool {
 	return false
 }
 
-// isOrganizeContainerFor returns true if the trait is a plain group container named for the given category.
+// isOrganizeContainerFor returns true if the trait is a plain group container named for the given category. A template
+// choice container never is one, however it is named, since a trait filed into it would become one of its options.
 func isOrganizeContainerFor(t *Trait, name string) bool {
-	return t.Container() && t.ContainerType == container.Group &&
+	return t.Container() && t.ContainerType == container.Group && !IsTemplateChoiceContainer(t) &&
 		strings.EqualFold(strings.TrimSpace(t.NameWithReplacements()), name)
 }
 

@@ -144,3 +144,23 @@ func TestInstallNewItemCmdHandlers(t *testing.T) {
 	c.Equal([]ItemVariant{NoItemVariant}, replacement.variants,
 		"the list must be looked up when the command is invoked, not when the handler was installed")
 }
+
+// TestInstallChoiceContainerCmdHandlers verifies that the "New ... Choice" commands are installed only for the lists
+// the owner has, and ask those lists for a choice container.
+func TestInstallChoiceContainerCmdHandlers(t *testing.T) {
+	c := check.New(t)
+	owner := &stubRebuildable{}
+	owner.Self = owner
+	traits := &recordingItemCreator{}
+	skills := &recordingItemCreator{}
+	installChoiceContainerCmdHandlers(owner, listItemCreators{
+		traits: func() itemCreator { return traits },
+		skills: func() itemCreator { return skills },
+	})
+	c.False(owner.CanPerformCmd(nil, NewSpellChoiceContainerItemID), "a list the owner lacks gets no command")
+
+	owner.PerformCmd(nil, NewTraitChoiceContainerItemID)
+	owner.PerformCmd(nil, NewSkillChoiceContainerItemID)
+	c.Equal([]ItemVariant{ChoiceContainerItemVariant}, traits.variants, "the trait list must be asked for one")
+	c.Equal([]ItemVariant{ChoiceContainerItemVariant}, skills.variants, "the skill list must be asked for one")
+}

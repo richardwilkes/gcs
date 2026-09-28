@@ -10,7 +10,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
@@ -19,60 +20,27 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent *unison.Panel, templateOnly bool) (
+// addChoices adds the "Choices" row to the editor of a template choice container, and nothing to any other editor. The
+// row doesn't offer to take the picker out of use, since that would leave a plain container behind; turning a choice
+// container back into a group is the job of the "Convert to Group" command, which warns before removing the choices.
+// Only a template may hold a choice container, so the row needs no check of where the editor was opened.
+func addChoices[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent *unison.Panel) (
 	typePopup *unison.PopupMenu[picker.Type],
 	comparisonPopup *unison.PopupMenu[string],
 	field unison.Paneler,
 ) {
-	if templateOnly && !HasOwner[*Template](parent) {
+	if xreflect.IsNil(e.target) || !gurps.IsTemplateChoiceContainer(e.target) {
 		return typePopup, comparisonPopup, field
 	}
-
-	if xreflect.IsNil(e.target) || !e.target.Container() {
+	pickable, ok := any(e.editorData).(gurps.TemplatePickerProvider)
+	if !ok {
 		return typePopup, comparisonPopup, field
 	}
-
-	var types []picker.Type
-	var tp *gurps.TemplatePicker
-	if pickable, ok := any(e.editorData).(gurps.TemplatePickerProvider); ok {
-		types, tp = pickable.TemplatePickerData()
-	} else {
-		return typePopup, comparisonPopup, field
-	}
-
-	last := tp.Type
+	types, tp := pickable.TemplatePickerData()
+	types = slices.DeleteFunc(slices.Clone(types), func(one picker.Type) bool { return one == picker.NotApplicable })
 	wrapper, label := addFlowWrapper(parent, i18n.Text("Choices"), 3)
 	typePopup = labelControl(addPopup(wrapper, types, &tp.Type), label)
-	text := i18n.Text("Choice")
-	comparisonPopup, field = addNumericCriteriaPanel(wrapper, nil, "", "", text, &tp.Qualifier, fxp.Min, fxp.Max, 1, false, false)
-
-	// A picker that isn't in use has nothing to quantify, so both the comparison and the qualifier are blanked out. The
-	// qualifier is blanked as well whenever the comparison doesn't use one. The opening state must be settled the same
-	// way the selection callback settles it, or an untouched editor lets the user alter a picker that will be dropped
-	// on save, or refuses edits to one that will be kept.
-	adjust := func(pickerType picker.Type) {
-		notApplicable := pickerType == picker.NotApplicable
-		adjustPopupBlank(comparisonPopup, notApplicable)
-		adjustFieldBlank(field, notApplicable || tp.Qualifier.Compare == criteria.AnyNumber)
-	}
-
-	typePopup.SelectionChangedCallback = func(p *unison.PopupMenu[picker.Type]) {
-		if item, selected := p.Selected(); selected {
-			tp.Type = item
-			if last == picker.NotApplicable && item != picker.NotApplicable {
-				tp.Qualifier.Qualifier = fxp.One
-				comparisonPopup.SelectIndex(int(criteria.AnyNumber))
-				if syncer, ok := field.(Syncer); ok {
-					syncer.Sync()
-				}
-			}
-			last = item
-			adjust(item)
-			MarkModified(parent)
-		}
-	}
-
-	adjust(tp.Type)
-
+	comparisonPopup, field = addNumericCriteriaPanel(wrapper, nil, "", "", i18n.Text("Choice"), &tp.Qualifier, fxp.Min,
+		fxp.Max, 1, false, false)
 	return typePopup, comparisonPopup, field
 }

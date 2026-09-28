@@ -15,8 +15,10 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// addPreconfigurable adds the Preconfigured check box, when the item may be marked preconfigured, anywhere but on a sheet,
+// where the item's modifiers and nameables have already been settled and the mark is cleared.
 func addPreconfigurable[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], parent *unison.Panel) {
-	if !HasOwner[*Template](parent) {
+	if HasOwner[*Sheet](parent) || HasOwner[*LootSheet](parent) {
 		return
 	}
 	if p, ok := any(e.editorData).(gurps.Preconfigurable); ok && !xreflect.IsNil(p) {
@@ -36,14 +38,10 @@ func addPreconfigurable[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D],
 	}
 }
 
+// shouldClearPreconfiguredFlag returns true if the panel belongs to a sheet, the one place the Preconfigured flag means
+// nothing. Templates and libraries keep it, so that it is honored when their rows are copied onward.
 func shouldClearPreconfiguredFlag(panel unison.Paneler) bool {
-	if xreflect.IsNil(panel) {
-		return false
-	}
-	if _, ok := unison.AncestorOrSelf[unison.Dockable](panel).(*Template); ok {
-		return false
-	}
-	return true
+	return !xreflect.IsNil(panel) && transferKindOf(panel) == transferSheet
 }
 
 func clearPreconfiguredFlag[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T]) bool {

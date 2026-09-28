@@ -12,6 +12,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
@@ -30,8 +31,10 @@ type listProvider[T gurps.Node[T]] struct {
 	columnIDs  func() []int
 	headerData func(columnID int) gurps.HeaderData
 	newItem    func(owner gurps.DataOwner, parent T, container bool) T
-	edit       func(owner Rebuildable, item T)
-	forPage    bool
+	// newChoice creates a template choice container, and is left unset by the providers whose node type can't be one.
+	newChoice func(owner gurps.DataOwner, parent T) T
+	edit      func(owner Rebuildable, item T)
+	forPage   bool
 	// filterKey and filterFields are left unset by the providers whose lists never appear in a list dockable, which
 	// is what tells the dockable not to offer saved filters.
 	filterKey    string
@@ -183,10 +186,19 @@ func (p *listProvider[T]) OpenEditor(owner Rebuildable, table *unison.Table[*Nod
 	OpenEditor(table, func(item T) { p.edit(owner, item) })
 }
 
-// CreateItem creates a new item, or a new container when the variant asks for one, adds it to the table and opens its
-// editor. A provider whose node type has an alternate variant overrides this and uses createItem for the shared tail.
+// CreateItem creates a new item, or a new container or template choice container when the variant asks for one, adds it
+// to the table and opens its editor. A provider whose node type has an alternate variant overrides this and uses
+// createItem for the shared tail.
 func (p *listProvider[T]) CreateItem(owner Rebuildable, table *unison.Table[*Node[T]], variant ItemVariant) {
 	var noParent T
+	if variant == ChoiceContainerItemVariant {
+		if p.newChoice == nil {
+			errs.Log(errs.New("choice containers are not supported for this list"))
+			return
+		}
+		p.createItem(owner, table, p.newChoice(p.DataOwner(), noParent))
+		return
+	}
 	p.createItem(owner, table, p.newItem(p.DataOwner(), noParent, variant == ContainerItemVariant))
 }
 

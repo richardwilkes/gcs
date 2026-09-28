@@ -72,11 +72,8 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	}
 	e.Self = e
 
-	reflect.ValueOf(&e.beforeData).Elem().Set(reflect.New(reflect.TypeOf(e.beforeData).Elem()))
-	e.beforeData.CopyFrom(target)
-
-	reflect.ValueOf(&e.editorData).Elem().Set(reflect.New(reflect.TypeOf(e.editorData).Elem()))
-	e.editorData.CopyFrom(target)
+	e.beforeData = newEditorData[N, D](target)
+	e.editorData = newEditorData[N, D](target)
 
 	content := e.setUp(2)
 	e.AddChild(e.createToolbar(helpMD, initToolbar))
@@ -307,16 +304,19 @@ func restoreSource[N gurps.Node[N]](target N, want, other gurps.Source) {
 	}
 }
 
+// newEditorData returns new editor data holding a copy of the target's data.
+func newEditorData[N gurps.Node[N], D gurps.EditorData[N]](target N) D {
+	var data D
+	reflect.ValueOf(&data).Elem().Set(reflect.New(reflect.TypeFor[D]().Elem()))
+	data.CopyFrom(target)
+	return data
+}
+
 // clearSourceOfTemplatePicker clears the source of a container that carries template picker data. Only a template may
 // hold picker data and a template is never a source, so the source such a container points at can't have it, and
 // syncing with that source would quietly take the choices away.
 func clearSourceOfTemplatePicker[N gurps.Node[N]](target N) {
-	if xreflect.IsNil(target) || !target.Container() {
-		return
-	}
-	if tpp, ok := any(target).(gurps.TemplatePickerProvider); ok {
-		if _, tp := tpp.TemplatePickerData(); !tp.IsZero() {
-			target.ClearSource()
-		}
+	if !xreflect.IsNil(target) && gurps.IsTemplateChoiceContainer(target) {
+		target.ClearSource()
 	}
 }

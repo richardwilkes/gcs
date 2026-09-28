@@ -95,6 +95,9 @@ func (t *Template) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if t.Traits == nil && content.OldTraits != nil {
 		t.Traits = content.OldTraits
 	}
+	NormalizeTemplateChoiceContainers(t.Traits...)
+	NormalizeTemplateChoiceContainers(t.Skills...)
+	NormalizeTemplateChoiceContainers(t.Spells...)
 	if !tid.IsKindAndValid(t.ID, kinds.Template) {
 		t.ID = tid.MustNewTID(kinds.Template)
 	}

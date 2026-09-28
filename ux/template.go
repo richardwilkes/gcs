@@ -75,13 +75,15 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t.initPageDockable(t, filePath, gurps.TemplatesExt, template.Save, template)
 	t.finishPageDockable(t, t.createContent())
 
-	installListItemCmdHandlers(t, listItemCreators{
+	creators := listItemCreators{
 		traits:           func() itemCreator { return t.Traits },
 		skills:           func() itemCreator { return t.Skills },
 		spells:           func() itemCreator { return t.Spells },
 		carriedEquipment: func() itemCreator { return t.Equipment },
 		notes:            func() itemCreator { return t.Notes },
-	})
+	}
+	installListItemCmdHandlers(t, creators)
+	installChoiceContainerCmdHandlers(t, creators)
 	installTraitListCmdHandlers(t, t.template, nil, func() *PageList[*gurps.Trait] { return t.Traits })
 	t.InstallCmdHandlers(ApplyTemplateItemID, t.canApplyTemplate, t.applyTemplate)
 	t.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, t.newSheetFromTemplate)

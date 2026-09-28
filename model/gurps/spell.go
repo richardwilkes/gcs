@@ -41,12 +41,13 @@ var (
 	_ = assertTemplatePickerNode[*Spell]
 	_ = assertEditorData[*SpellEditData]
 
-	_ TechLevelProvider       = &Spell{}
-	_ SkillAdjustmentProvider = &Spell{}
-	_ TemplatePickerProvider  = &Spell{}
-	_ FeatureSwitcher         = &Spell{}
-	_ LeveledOwner            = &Spell{}
-	_ SkillLevelStepper       = &Spell{}
+	_ TechLevelProvider         = &Spell{}
+	_ SkillAdjustmentProvider   = &Spell{}
+	_ TemplatePickerProvider    = &Spell{}
+	_ templateChoiceConvertible = &Spell{}
+	_ FeatureSwitcher           = &Spell{}
+	_ LeveledOwner              = &Spell{}
+	_ SkillLevelStepper         = &Spell{}
 
 	_ TemplatePickerProvider = &SpellData{}
 	_ TemplatePickerProvider = &SpellEditData{}
@@ -151,6 +152,34 @@ func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 // SaveSpells writes the Spell list to the file as JSON.
 func SaveSpells(spells []*Spell, filePath string) error {
 	return saveRows(filePath, spells)
+}
+
+// NewSpellChoiceContainer creates a new template choice container for spells.
+func NewSpellChoiceContainer(owner DataOwner, parent *Spell) *Spell {
+	s := NewSpell(owner, parent, true)
+	s.TemplatePicker = newTemplateChoicePicker()
+	s.Name = s.Kind()
+	return s
+}
+
+func (s *Spell) canBecomeTemplateChoiceContainer() bool {
+	return true
+}
+
+func (s *Spell) templateChoiceContainerExclusions() []string {
+	var list []string
+	if s.VTTNotes != "" {
+		list = append(list, i18n.Text("VTT notes"))
+	}
+	if len(s.Tags) != 0 {
+		list = append(list, i18n.Text("tags"))
+	}
+	return list
+}
+
+func (s *Spell) clearTemplateChoiceContainerExclusions() {
+	s.VTTNotes = ""
+	s.Tags = nil
 }
 
 // NewSpell creates a new Spell.
@@ -1093,6 +1122,9 @@ func (s *Spell) Kind() string {
 		return i18n.Text("Ritual Magic Spell")
 	}
 	if s.Container() {
+		if !s.TemplatePicker.IsZero() {
+			return i18n.Text("Spell Choice")
+		}
 		return i18n.Text("Spell Container")
 	}
 	return i18n.Text("Spell")

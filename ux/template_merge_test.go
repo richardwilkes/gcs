@@ -344,3 +344,48 @@ func TestPlaceMergesIntoExistingRows(t *testing.T) {
 		c.Equal(0, len(containerChildren[0].Children()), "the merged child must no longer be in the view")
 	})
 }
+
+// TestMergePointsLeavesChoiceOptionsAlone verifies that a row within a template choice container takes no part in
+// merging. A required row copied in isn't folded into an identical option, which would make it optional, and an option
+// copied in isn't folded into an identical required row, which would take it out of its choice.
+func TestMergePointsLeavesChoiceOptionsAlone(t *testing.T) {
+	c := check.New(t)
+	newChoice := func(names ...string) *gurps.Skill {
+		choice := gurps.NewSkillChoiceContainer(nil, nil)
+		for _, name := range names {
+			option := newTestSkill(name, fxp.FromInteger(4), nil)
+			option.SetParent(choice)
+			choice.Children = append(choice.Children, option)
+		}
+		return choice
+	}
+
+	t.Run("a required row is not folded into an option", func(_ *testing.T) {
+		choice := newChoice("Broadsword", "Shortsword")
+		incoming := []*gurps.Skill{newTestSkill("Broadsword", fxp.FromInteger(4), nil)}
+		selMap := make(map[tid.TID]bool)
+		remaining := mergePoints([]*gurps.Skill{choice}, incoming, "3", selMap)
+		c.Equal(1, len(remaining), "the required row must be added")
+		c.Equal(fxp.FromInteger(4), choice.Children[0].Points, "the option must keep its points")
+		c.Equal(0, len(selMap))
+	})
+
+	t.Run("an option is not folded into a required row", func(_ *testing.T) {
+		required := newTestSkill("Broadsword", fxp.FromInteger(4), nil)
+		choice := newChoice("Broadsword", "Shortsword")
+		selMap := make(map[tid.TID]bool)
+		remaining := mergePoints([]*gurps.Skill{required}, []*gurps.Skill{choice}, "3", selMap)
+		c.Equal(1, len(remaining), "the choice must be added")
+		c.Equal(2, len(choice.Children), "the choice must keep every option")
+		c.Equal(fxp.FromInteger(4), required.Points, "the required row must keep its points")
+	})
+
+	t.Run("an incoming option still has its tech level resolved", func(_ *testing.T) {
+		choice := newChoice()
+		option := newTestSkill("Guns", fxp.FromInteger(1), new(""))
+		option.SetParent(choice)
+		choice.Children = []*gurps.Skill{option}
+		mergePoints(nil, []*gurps.Skill{choice}, "3", make(map[tid.TID]bool))
+		c.Equal("3", option.TL())
+	})
+}

@@ -20,63 +20,48 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// newChoices builds the "Choices" row an item editor shows for a picker, returning the two popups and the qualifier
-// field it is made of.
-func newChoices(pickerType picker.Type, compare criteria.NumericComparison) (typePopup *unison.PopupMenu[picker.Type], comparisonPopup *unison.PopupMenu[string], field unison.Paneler) {
-	trait := gurps.NewTrait(nil, nil, true)
+// newChoices builds the "Choices" row an item editor shows for the container, returning the two popups and the
+// qualifier field it is made of, all nil when the editor shows no such row.
+func newChoices(trait *gurps.Trait) (typePopup *unison.PopupMenu[picker.Type], comparisonPopup *unison.PopupMenu[string], field unison.Paneler) {
+	e := &editor[*gurps.Trait, *gurps.TraitEditData]{target: trait, editorData: &gurps.TraitEditData{}}
+	e.editorData.CopyFrom(trait)
+	return addChoices(e, unison.NewPanel())
+}
+
+// newChoiceContainer returns a trait choice container whose picker is set as given.
+func newChoiceContainer(pickerType picker.Type, compare criteria.NumericComparison) *gurps.Trait {
+	trait := gurps.NewTraitChoiceContainer(nil, nil)
 	trait.TemplatePicker.Type = pickerType
 	trait.TemplatePicker.Qualifier.Compare = compare
 	trait.TemplatePicker.Qualifier.Qualifier = fxp.One
-	e := &editor[*gurps.Trait, *gurps.TraitEditData]{target: trait, editorData: &gurps.TraitEditData{}}
-	e.editorData.CopyFrom(trait)
-	return addChoices(e, unison.NewPanel(), false)
+	return trait
 }
 
-// TestChoicesOpeningState verifies that a freshly opened editor blanks the picker's comparison popup and qualifier
-// field under exactly the conditions its own selection callback uses. A picker set to Not Applicable is zero, so
-// anything entered for it is dropped when the item is saved; leaving the comparison popup live let the user make a
-// selection that set the comparison, un-blanked the qualifier and marked the item modified, all for edits that could
-// never be kept. In the other direction, a saved picker whose comparison takes no qualifier opened with the qualifier
-// editable, even though every later pass through the callback blanks it.
+// TestChoicesOnlyForChoiceContainers verifies that only a choice container's editor offers choices, and that it can't
+// take them out of use. A container becomes a choice container only by being created as one, and stays one.
+func TestChoicesOnlyForChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	typePopup, _, _ := newChoices(gurps.NewTrait(nil, nil, true))
+	c.Nil(typePopup, "a plain container must not offer choices")
+
+	typePopup, _, _ = newChoices(newChoiceContainer(picker.Count, criteria.EqualsNumber))
+	c.NotNil(typePopup, "a choice container must offer choices")
+	c.Equal(-1, typePopup.IndexOfItem(picker.NotApplicable), "a choice container must not offer to stop being one")
+}
+
+// TestChoicesOpeningState verifies that a freshly opened editor blanks the picker's qualifier field exactly when its
+// comparison takes no qualifier.
 func TestChoicesOpeningState(t *testing.T) {
 	c := check.New(t)
-
-	// The default for every new trait, skill and spell container. Nothing about it can be saved, so nothing about it
-	// may be edited.
-	_, comparison, field := newChoices(picker.NotApplicable, criteria.AnyNumber)
-	c.False(comparison.Enabled(), "a picker that isn't in use must not offer a comparison")
-	c.False(field.AsPanel().Enabled(), "a picker that isn't in use must not offer a qualifier")
-
-	// In use, but comparing against anything, which needs no number to compare with.
-	_, comparison, field = newChoices(picker.Count, criteria.AnyNumber)
-	c.True(comparison.Enabled(), "a picker in use must offer a comparison")
+	_, comparison, field := newChoices(newChoiceContainer(picker.Count, criteria.AnyNumber))
+	c.True(comparison.Enabled(), "a choice container must offer a comparison")
 	c.False(field.AsPanel().Enabled(), "a comparison that takes no qualifier must not offer one")
 
-	// In use with a comparison that needs a number, so everything is editable.
-	_, comparison, field = newChoices(picker.Points, criteria.AtLeastNumber)
-	c.True(comparison.Enabled(), "a picker in use must offer a comparison")
+	_, comparison, field = newChoices(newChoiceContainer(picker.Points, criteria.AtLeastNumber))
+	c.True(comparison.Enabled(), "a choice container must offer a comparison")
 	c.True(field.AsPanel().Enabled(), "a comparison that takes a qualifier must offer one")
-}
 
-// TestChoicesFollowTheTypeSelection verifies that choosing a picker type updates the comparison popup and qualifier
-// field, and that returning to Not Applicable blanks them both again. A Not Applicable picker's qualifier data is
-// meaningless and is normalized away (see TemplatePicker.Clone) as soon as the editor stages the data, so putting a
-// fresh picker to use starts with the comparison blank until one is chosen, rather than resurrecting whatever was set
-// before it went out of use.
-func TestChoicesFollowTheTypeSelection(t *testing.T) {
-	c := check.New(t)
-	typePopup, comparison, field := newChoices(picker.NotApplicable, criteria.EqualsNumber)
-	c.False(comparison.Enabled(), "a picker that isn't in use must not offer a comparison")
-	c.False(field.AsPanel().Enabled(), "a picker that isn't in use must not offer a qualifier")
-
-	typePopup.Select(picker.Count)
-	c.True(comparison.Enabled(), "putting the picker to use must offer a comparison")
-	c.False(field.AsPanel().Enabled(), "a freshly enabled picker has no comparison yet, so no qualifier to offer")
-
+	_, comparison, field = newChoices(newChoiceContainer(picker.Count, criteria.AnyNumber))
 	comparison.SelectIndex(int(criteria.EqualsNumber))
 	c.True(field.AsPanel().Enabled(), "choosing a comparison that takes a qualifier must offer one")
-
-	typePopup.Select(picker.NotApplicable)
-	c.False(comparison.Enabled(), "taking the picker out of use must withdraw the comparison")
-	c.False(field.AsPanel().Enabled(), "taking the picker out of use must withdraw the qualifier")
 }

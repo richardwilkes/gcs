@@ -65,6 +65,8 @@ const (
 	JumpToSearchFilterItemID
 	ConvertToContainerItemID
 	ConvertToNonContainerItemID
+	ConvertToChoiceContainerItemID
+	ConvertToGroupContainerItemID
 	ToggleStateItemID
 	IncrementItemID
 	DecrementItemID
@@ -160,6 +162,12 @@ const (
 	NewRitualMagicSpellItemID
 	NewTechniqueItemID
 	LastAlternateNonContainerMarker
+
+	// These are only offered by templates, the only place template choices may be made, so they must stay outside the
+	// container block above, which the library tables install all of.
+	NewSkillChoiceContainerItemID
+	NewSpellChoiceContainerItemID
+	NewTraitChoiceContainerItemID
 
 	NewMeleeWeaponItemID
 	NewRangedWeaponItemID
@@ -295,6 +303,8 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, swapDefaultsAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, convertToContainerAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, convertToNonContainerAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, convertToChoiceContainerAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, convertToGroupContainerAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, syncWithSourceAction.NewMenuItem(f))
@@ -306,6 +316,7 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 
 	m.InsertItem(-1, newTraitAction.NewMenuItem(f))
 	m.InsertItem(-1, newTraitContainerAction.NewMenuItem(f))
+	m.InsertItem(-1, newTraitChoiceContainerAction.NewMenuItem(f))
 	m.InsertItem(-1, newTraitModifierAction.NewMenuItem(f))
 	m.InsertItem(-1, newTraitContainerModifierAction.NewMenuItem(f))
 	m.InsertItem(-1, addNaturalAttacksAction.NewMenuItem(f))
@@ -313,11 +324,13 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, newSkillAction.NewMenuItem(f))
 	m.InsertItem(-1, newSkillContainerAction.NewMenuItem(f))
+	m.InsertItem(-1, newSkillChoiceContainerAction.NewMenuItem(f))
 	m.InsertItem(-1, newTechniqueAction.NewMenuItem(f))
 
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, newSpellAction.NewMenuItem(f))
 	m.InsertItem(-1, newSpellContainerAction.NewMenuItem(f))
+	m.InsertItem(-1, newSpellChoiceContainerAction.NewMenuItem(f))
 	m.InsertItem(-1, newRitualMagicSpellAction.NewMenuItem(f))
 
 	m.InsertSeparator(-1, false)
@@ -561,6 +574,8 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		contextMenuItemFor(swapDefaultsAction),
 		contextMenuItemFor(convertToContainerAction),
 		contextMenuItemFor(convertToNonContainerAction),
+		contextMenuItemFor(convertToChoiceContainerAction),
+		contextMenuItemFor(convertToGroupContainerAction),
 		ContextMenuItem{"", -1},
 		contextMenuItemFor(openOnePageReferenceAction),
 		contextMenuItemFor(openEachPageReferenceAction),

@@ -40,14 +40,19 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)
 	}
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
-	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
-	addTagsLabelAndField(content, &e.editorData.Tags)
+	// A choice container dissolves into the options chosen from it when the template is applied, so it has no use for
+	// the VTT notes or tags, which only matter to a skill that reaches a sheet.
+	choice := gurps.IsTemplateChoiceContainer(e.target)
+	if !choice {
+		addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
+		addTagsLabelAndField(content, &e.editorData.Tags)
+	}
 	if !e.target.Container() {
 		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
 	}
 	addPreconfigurable(e, content)
 	entity := gurps.EntityFromNode(e.target)
-	addChoices(e, content, true)
+	addChoices(e, content)
 	if !e.target.Container() {
 		if e.target.IsTechnique() {
 			if e.editorData.TechniqueDefault == nil {
@@ -229,7 +234,11 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addSourceFields(content, &e.target.SourcedID)
+	if choice {
+		addIDField(content, &e.target.SourcedID)
+	} else {
+		addSourceFields(content, &e.target.SourcedID)
+	}
 	if !e.target.Container() {
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
 		if !e.target.IsTechnique() {

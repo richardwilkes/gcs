@@ -33,7 +33,12 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	entity := gurps.EntityFromNode(e.target)
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
-	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
+	// A choice container dissolves into the options chosen from it when the template is applied, so it has no use for
+	// the VTT notes or tags, which only matter to a spell that reaches a sheet.
+	choice := gurps.IsTemplateChoiceContainer(e.target)
+	if !choice {
+		addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
+	}
 	if !e.target.Container() {
 		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)
 		addLabelAndListField(content, i18n.Text("College"), i18n.Text("colleges"), (*[]string)(&e.editorData.College))
@@ -94,15 +99,21 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		addLabelAndMultiLineStringField(content, i18n.Text("Duration"), "", &e.editorData.Duration)
 		addLabelAndMultiLineStringField(content, i18n.Text("Item"), "", &e.editorData.Item)
 	}
-	addTagsLabelAndField(content, &e.editorData.Tags)
+	if !choice {
+		addTagsLabelAndField(content, &e.editorData.Tags)
+	}
 	addPreconfigurable(e, content)
-	addChoices(e, content, true)
+	addChoices(e, content)
 	if !e.target.Container() {
 		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addSourceFields(content, &e.target.SourcedID)
+	if choice {
+		addIDField(content, &e.target.SourcedID)
+	} else {
+		addSourceFields(content, &e.target.SourcedID)
+	}
 	if !e.target.Container() {
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, true))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))

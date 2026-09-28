@@ -70,3 +70,14 @@ func IsNodePreconfigured[T Node[T]](node T) bool {
 	}
 	return false
 }
+
+// ClearPreconfigured clears the preconfigured mark on the nodes and their children. The mark only means something where
+// modifiers and nameables are still to be settled, so a sheet, where they already have been, never keeps it.
+func ClearPreconfigured[T Node[T]](nodes ...T) {
+	Traverse(func(node T) bool {
+		if tl, ok := any(node).(Preconfigurable); ok && !xreflect.IsNil(tl) {
+			tl.SetPreconfigured(false)
+		}
+		return false
+	}, false, false, nodes...)
+}

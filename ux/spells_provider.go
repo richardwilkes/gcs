@@ -36,6 +36,7 @@ func NewSpellsProvider(provider gurps.SpellListProvider, forPage bool) TableProv
 		columnIDs:    p.ColumnIDs,
 		headerData:   gurps.SpellsHeaderData,
 		newItem:      gurps.NewSpell,
+		newChoice:    gurps.NewSpellChoiceContainer,
 		edit:         func(owner Rebuildable, item *gurps.Spell) { EditSpell(owner, item) },
 		forPage:      forPage,
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.SpellsExt),
@@ -131,7 +132,7 @@ func (p *spellsProvider) ExcessWidthColumnID() int {
 // implementation creates.
 func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Spell]], variant ItemVariant) {
 	switch variant {
-	case NoItemVariant, ContainerItemVariant:
+	case NoItemVariant, ContainerItemVariant, ChoiceContainerItemVariant:
 		p.listProvider.CreateItem(owner, table, variant)
 	case AlternateItemVariant:
 		p.createItem(owner, table, gurps.NewRitualMagicSpell(p.DataOwner(), nil, false))
@@ -144,6 +145,7 @@ func (p *spellsProvider) ContextMenuItems() []ContextMenuItem {
 	return AppendDefaultContextMenuItems([]ContextMenuItem{
 		contextMenuItemFor(newSpellAction),
 		contextMenuItemFor(newSpellContainerAction),
+		contextMenuItemFor(newSpellChoiceContainerAction),
 		contextMenuItemFor(newRitualMagicSpellAction),
 	})
 }

@@ -71,9 +71,23 @@
   they are, without asking about their modifiers or @Name@ substitutions again. Copying items from a character sheet
   onto another still asks whether to disable the existing ancestry when an ancestry is among them, and offers to
   randomize the profile again.
+- Template choices now live in their own kind of container, a choice. In a template, the new "New Trait Choice", "New
+  Skill Choice" and "New Spell Choice" commands add one, and "Convert to Choice" and "Convert to Group" turn a group
+  into a choice and back. Both conversions warn before removing anything. Since a choice is replaced by the options
+  chosen from it when the template is applied, its editor shows only its name, notes, choices and page references.
+- Modifiers on a template choice are not supported, nor is anything else a choice has no use for. A choice is dissolved
+  when the template is applied, and anything on it is left behind, so a modifier placed on one never reached the
+  character. Loading a template, or copying or dragging rows into one, now removes from each choice its modifiers, VTT
+  notes, user description, tags, self-control roll, frequency of appearance, prerequisites, library source and its
+  preconfigured, disabled and switched on settings, and makes a trait choice a plain group. Put a modifier meant for
+  every option on each option instead.
 
 ## Bug Fixes
 
+- The Preconfigured setting, which marks an item whose modifiers and @Name@ substitutions are already settled so that
+  they are not asked about again, can now be set in a library as well as in a template, and is kept when items are
+  copied into a library, or from a library into a template. It is never shown on a character or loot sheet, where it
+  means nothing, and opening a sheet now clears any an older version left on nested items.
 - Providing @Name@ substitutions for a modifier dropped onto or applied to a trait or piece of equipment on a character
   sheet no longer discards the substitutions that trait or equipment already had, including those for the other
   modifiers applied with it and for its disabled modifiers. A substitution shared by several of the new modifiers is
@@ -92,6 +106,8 @@
   choice is now made on the way, just as when applying the template, and only the options chosen arrive. Dragging a
   choice container into a library now asks first, and removes the choices if you continue, since only a template can
   hold them.
+- Character sheets and libraries that already hold template choices, left there by older versions, now have the choices
+  removed when they are opened, since only a template can hold them. The options inside are kept.
 - A container given choices in a template no longer keeps the library source it was copied from. Syncing with that
   source would have quietly removed the choices, since the library's copy has none.
 - The question of whether to disable the character's existing ancestry, and the offer to randomize the profile again,

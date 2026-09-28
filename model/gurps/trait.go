@@ -47,10 +47,11 @@ var (
 	_ = assertTemplatePickerNode[*Trait]
 	_ = assertEditorData[*TraitEditData]
 
-	_ WeaponOwner            = &Trait{}
-	_ TemplatePickerProvider = &Trait{}
-	_ LeveledOwner           = &Trait{}
-	_ FeatureSwitcher        = &Trait{}
+	_ WeaponOwner               = &Trait{}
+	_ TemplatePickerProvider    = &Trait{}
+	_ templateChoiceConvertible = &Trait{}
+	_ LeveledOwner              = &Trait{}
+	_ FeatureSwitcher           = &Trait{}
 
 	_ TemplatePickerProvider = &TraitData{}
 	_ TemplatePickerProvider = &TraitEditData{}
@@ -167,6 +168,73 @@ func NewTrait(owner DataOwner, parent *Trait, isContainer bool) *Trait {
 	t.Name = t.Kind()
 	t.SetOpen(isContainer)
 	return &t
+}
+
+// NewTraitChoiceContainer creates a new template choice container for traits.
+func NewTraitChoiceContainer(owner DataOwner, parent *Trait) *Trait {
+	t := NewTrait(owner, parent, true)
+	t.TemplatePicker = newTemplateChoicePicker()
+	t.Name = t.Kind()
+	return t
+}
+
+func (t *Trait) canBecomeTemplateChoiceContainer() bool {
+	return t.ContainerType == container.Group
+}
+
+func (t *Trait) templateChoiceContainerExclusions() []string {
+	var list []string
+	if t.VTTNotes != "" {
+		list = append(list, i18n.Text("VTT notes"))
+	}
+	if t.UserDesc != "" {
+		list = append(list, i18n.Text("user description"))
+	}
+	if len(t.Tags) != 0 {
+		list = append(list, i18n.Text("tags"))
+	}
+	if len(t.Modifiers) != 0 {
+		list = append(list, i18n.Text("modifiers"))
+	}
+	if t.SelfControl != selfctrl.None || t.SelfControlAdj != selfctrl.NoAdjustment {
+		list = append(list, i18n.Text("self-control roll"))
+	}
+	if t.Frequency != frequency.None {
+		list = append(list, i18n.Text("frequency of appearance"))
+	}
+	if t.Preconfigured {
+		list = append(list, i18n.Text("preconfigured mark"))
+	}
+	if t.Disabled {
+		list = append(list, i18n.Text("disabled state"))
+	}
+	if t.SwitchedOn {
+		list = append(list, i18n.Text("switched on state"))
+	}
+	if !t.Prereq.IsZero() {
+		list = append(list, i18n.Text("prerequisites"))
+	}
+	return list
+}
+
+// clearTemplateChoiceContainerExclusions also makes the container a plain group. The container type means nothing to a
+// container that dissolves into the choices made from it, and only a group may become a choice container anyway.
+func (t *Trait) clearTemplateChoiceContainerExclusions() {
+	if t.ContainerType != container.Group {
+		t.ContainerType = container.Group
+		t.ClearUnusedFieldsForType()
+	}
+	t.VTTNotes = ""
+	t.UserDesc = ""
+	t.Tags = nil
+	t.Modifiers = nil
+	t.SelfControl = selfctrl.None
+	t.SelfControlAdj = selfctrl.NoAdjustment
+	t.Frequency = frequency.None
+	t.Preconfigured = false
+	t.Disabled = false
+	t.SwitchedOn = false
+	t.Prereq = nil
 }
 
 func traitKind(isContainer bool) byte {
@@ -1074,6 +1142,9 @@ func modifyPoints(points, modifier fxp.Fraction) fxp.Fraction {
 // Kind returns the kind of data.
 func (t *Trait) Kind() string {
 	if t.Container() {
+		if !t.TemplatePicker.IsZero() {
+			return i18n.Text("Trait Choice")
+		}
 		return i18n.Text("Trait Container")
 	}
 	return i18n.Text("Trait")

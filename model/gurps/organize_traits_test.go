@@ -185,6 +185,27 @@ func TestOrganizeTraitsIgnoresNonGroupContainers(t *testing.T) {
 	}
 }
 
+// A template choice container is never filed into, even when it is a group carrying a category name, since a trait
+// filed into it would stop being mandatory and become one of the choice's options.
+func TestOrganizeTraitsIgnoresChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	choice := NewTraitChoiceContainer(e, nil)
+	choice.Name = "Languages"
+	option := newOrganizableTrait(e, "Elvish", 3, "Language")
+	option.SetParent(choice)
+	choice.SetChildren([]*Trait{option})
+	loose := newOrganizableTrait(e, "Dwarvish", 3, "Language")
+	organized, changed := OrganizeTraits(e, []*Trait{choice, loose})
+	c.True(changed, "filing the loose trait changes the list")
+	c.Equal(2, len(organized))
+	c.True(organized[0] != choice, "the choice container is not reused")
+	c.False(IsTemplateChoiceContainer(organized[0]), "the created container is a plain group")
+	c.Equal([]string{"Dwarvish"}, organizedNames(organized[0].Children), "the loose trait is filed into the new one")
+	c.True(organized[1] == choice, "the choice container is kept")
+	c.Equal([]string{"Elvish"}, organizedNames(choice.Children), "the choice keeps only its own options")
+}
+
 // A category container left with nothing in it is removed, while a container the user made for some other purpose is
 // kept even when it is empty.
 func TestOrganizeTraitsDropsEmptyCategoryContainers(t *testing.T) {
