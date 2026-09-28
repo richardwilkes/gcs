@@ -53,18 +53,26 @@ func canCopySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[
 }
 
 // copySelectionTo copies the table's selected rows onto each of the destinations the user picks from those given (see
-// PromptForDestination), landing them in the destination's list for the rows' type and applying them there the way any
+// promptForDestinations), landing them in the destination's list for the rows' type and applying them there the way any
 // rows arriving in that destination are (see applyTransfer). Each destination is applied to independently, so canceling
 // one of them leaves the others alone.
 func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*Node[T]], destinations []D) {
 	if !table.HasSelection() {
 		return
 	}
-	destinations = PromptForDestination(destinations)
+	sel := table.SelectedRows(true)
+	rows := make([]T, len(sel))
+	for i, row := range sel {
+		rows[i] = row.Data()
+	}
+	what := describeRows(rows)
+	destinations = promptForDestinations(promptOperation{
+		name:        i18n.Text("Copy"),
+		description: fmt.Sprintf(i18n.Text("Copying %s"), shortNames(what)...),
+	}, destinations)
 	if len(destinations) == 0 {
 		return
 	}
-	sel := table.SelectedRows(true)
 	key := blockKeyForRow(sel[0].Data())
 	editName := fmt.Sprintf(i18n.Text("Insert %s"), sel[0].Data().Kind())
 	for _, d := range destinations {
@@ -74,7 +82,11 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 		if !ok || target == nil {
 			continue
 		}
+		op := promptOperation{
+			name:        i18n.Text("Copy"),
+			description: fmt.Sprintf(i18n.Text("Copying %s to %s"), shortNames(what, d.Title())...),
+		}
 		applyTransfer(target.Table, newApplyParts(newAppendPart(target.Table, sel)),
-			applyOptionsFor(table, target.Table), editName)
+			applyOptionsFor(table, target.Table), op, editName)
 	}
 }

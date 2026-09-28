@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -100,7 +101,7 @@ func modifierAltDropSupport[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 			for _, row := range tableDragData.Rows {
 				modifiers = append(modifiers, row.Data())
 			}
-			return attachModifierClones([]*unison.Table[*Node[T]]{p.table}, p.DataOwner(), targets, modifiers,
+			return attachModifierClones(i18n.Text("Drag"), []*unison.Table[*Node[T]]{p.table}, p.DataOwner(), targets, modifiers,
 				libraryFileFromTable(tableDragData.Table))
 		},
 	}
@@ -306,7 +307,11 @@ func applyDrop[T gurps.Node[T]](data *unison.TableDragData[*Node[T]], table *uni
 	for _, row := range data.Rows {
 		part.rows = append(part.rows, row.CloneForTarget(table, parent).Data())
 	}
-	return applyTransfer(table, newApplyParts(part), applyOptionsFor(data.Table, table), i18n.Text("Drag"))
+	op := promptOperation{
+		name:        i18n.Text("Drag"),
+		description: fmt.Sprintf(i18n.Text("Dropping %s into %s"), shortNames(describeRows(part.rows), dockableTitle(table))...),
+	}
+	return applyTransfer(table, newApplyParts(part), applyOptionsFor(data.Table, table), op, i18n.Text("Drag"))
 }
 
 // dropRebuilder returns the owner that a drop into the given table is reported to by rebuilding it, or nil if the drop

@@ -483,7 +483,7 @@ func newLibraryStyleTraitsTable(traits ...*gurps.Trait) *unison.Table[*Node[*gur
 func stubTraitModifierPrompt(t *testing.T, respond func(modifiers []*gurps.TraitModifier) bool) *int {
 	t.Helper()
 	shown := 0
-	swapForTest(t, &promptForTraitModifiers, func(_ string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		if len(modifiers) == 0 {
 			return false, false // The real prompt has nothing to show in this case, so it can't change anything either.
 		}
@@ -629,10 +629,10 @@ func TestApplyModifierSkipsChoiceContainers(t *testing.T) {
 	ranged := gurps.NewTraitModifier(nil, nil, false)
 	ranged.Name = "Ranged"
 	tables := []*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table}
-	c.True(attachModifierClones(tables, template.template, []*gurps.Trait{choice, plain}, []*gurps.TraitModifier{ranged},
+	c.True(attachModifierClones("", tables, template.template, []*gurps.Trait{choice, plain}, []*gurps.TraitModifier{ranged},
 		gurps.LibraryFile{}))
 	c.Equal(0, len(choice.Modifiers), "the choice must not be given the modifier")
 	c.Equal([]string{"Ranged"}, appliedModifierNames(plain.Modifiers), "the other target must still get it")
-	c.False(attachModifierClones(tables, template.template, []*gurps.Trait{choice}, []*gurps.TraitModifier{ranged},
+	c.False(attachModifierClones("", tables, template.template, []*gurps.Trait{choice}, []*gurps.TraitModifier{ranged},
 		gurps.LibraryFile{}), "a choice alone leaves nothing to do")
 }

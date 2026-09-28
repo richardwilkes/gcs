@@ -14,7 +14,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -25,12 +27,13 @@ import (
 )
 
 // The nameables prompt is held in a variable so that tests can substitute a non-interactive implementation.
-var promptForNameables = ShowNameablesDialog
+var promptForNameables = showNameablesDialog
 
-// ProcessNameables processes the rows and their children for any nameables. Returns false if the user canceled the
-// prompt, in which case the caller is expected to abandon the whole operation the prompt was part of.
-func ProcessNameables[T gurps.Node[T]](rows []T) bool {
-	return ProcessNameableGroups([]NameableGroup[T]{{Rows: rows}})
+// processNameables processes the rows and their children for any nameables. The operation describes what the prompt is
+// part of and may be empty (see newOperationLabel). Returns false if the user canceled the prompt, in which case the
+// caller is expected to abandon the whole operation the prompt was part of.
+func processNameables[T gurps.Node[T]](op promptOperation, rows []T) bool {
+	return processNameableGroups(op, []NameableGroup[T]{{Rows: rows}})
 }
 
 // NameableGroup is a set of rows whose entries in the nameables prompt share a label. An entry is normally titled with
@@ -54,15 +57,13 @@ type sharedNameableKey struct {
 	key   string
 }
 
-// ProcessNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
+// processNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
 // that covers all of the groups. Nothing is rebuilt or reported here; the caller does that once the answers are in.
-// Returns false if the user canceled the prompt, in which case the caller is expected to abandon the whole operation
-// the prompt was part of.
-func ProcessNameableGroups[T gurps.Node[T]](groups []NameableGroup[T]) bool {
+// The operation describes what the prompt is part of and may be empty (see newOperationLabel). Returns false if the
+// user canceled the prompt, in which case the caller is expected to abandon the whole operation the prompt was part of.
+func processNameableGroups[T gurps.Node[T]](op promptOperation, groups []NameableGroup[T]) bool {
 	var data []T
-	var titles []string
-	var nameables []map[string]string
-	var visibleKeys [][]string
+	var sections []nameablesSection
 	var shared []sharedNameableKey
 	for _, group := range groups {
 		// For a group with shared replacements, the entry each key was first asked about under.
@@ -111,26 +112,30 @@ func ProcessNameableGroups[T gurps.Node[T]](groups []NameableGroup[T]) bool {
 					title = group.Label + ": " + title
 				}
 				data = append(data, row)
-				titles = append(titles, title)
-				nameables = append(nameables, m)
-				visibleKeys = append(visibleKeys, keys) // nil means "show all keys"
+				sections = append(sections, nameablesSection{
+					Title:       title,
+					Location:    rowLocation(row),
+					Nameables:   m,
+					VisibleKeys: keys, // nil means "show all keys"
+				})
 				return false
 			}, false, false, row)
 		}
 	}
 	if len(data) > 0 {
-		if !promptForNameables(titles, nameables, visibleKeys) {
+		if !promptForNameables(op, sections) {
 			return false
 		}
 		for _, one := range shared {
-			if v, ok := nameables[one.from][one.key]; ok {
-				nameables[one.entry][one.key] = v
+			if v, ok := sections[one.from].Nameables[one.key]; ok {
+				sections[one.entry].Nameables[one.key] = v
 			} else {
-				delete(nameables[one.entry], one.key) // Cleared under the entry it was asked about, so cleared here too.
+				// Cleared under the entry it was asked about, so cleared here too.
+				delete(sections[one.entry].Nameables, one.key)
 			}
 		}
 		for i, row := range data {
-			row.ApplyNameableKeys(nameables[i])
+			row.ApplyNameableKeys(sections[i].Nameables)
 		}
 	}
 	return true
@@ -145,9 +150,21 @@ func missingNameableKeys[T gurps.Node[T]](row T, nameables map[string]string) []
 	return nameable.Missing(nameables, replacements)
 }
 
-// ShowNameablesDialog shows a dialog for editing nameables. For each row, visibleKeys restricts which keys of the
-// corresponding nameables map are shown/editable; a nil entry shows all of that row's keys.
-func ShowNameablesDialog(titles []string, nameables []map[string]string, visibleKeys [][]string) bool {
+// nameablesSection is one row's part of the nameables dialog.
+type nameablesSection struct {
+	// Title names the row.
+	Title string
+	// Location is the row's kind and the containers above it (see rowLocation). It may be empty.
+	Location string
+	// Nameables maps each of the row's keys to its replacement, and receives the answers.
+	Nameables map[string]string
+	// VisibleKeys restricts which keys of Nameables are shown and editable; nil shows all of them.
+	VisibleKeys []string
+}
+
+// showNameablesDialog shows a dialog for editing the nameables of each section. The operation describes what the
+// dialog is part of and may be empty (see newOperationLabel).
+func showNameablesDialog(op promptOperation, sections []nameablesSection) bool {
 	list := unison.NewPanel()
 	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
 	list.SetLayout(&unison.FlexLayout{
@@ -155,14 +172,11 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	for i, one := range titles {
-		var keys []string
-		if visibleKeys != nil {
-			keys = visibleKeys[i]
-		}
+	for i, section := range sections {
+		keys := section.VisibleKeys
 		if keys == nil {
-			keys = make([]string, 0, len(nameables[i]))
-			for k := range nameables[i] {
+			keys = make([]string, 0, len(section.Nameables))
+			for k := range section.Nameables {
 				keys = append(keys, k)
 			}
 		}
@@ -177,13 +191,7 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 			})
 			list.AddChild(sep)
 		}
-		header := unison.NewLabel()
-		header.Font = unison.SystemFont
-		headerTitle := xstrings.Truncate(one, 50, true)
-		header.SetTitle(headerTitle)
-		if headerTitle != one {
-			header.Tooltip = newWrappedTooltip(one)
-		}
+		header := newTruncatedLabel(section.Title, maxRowNameLength, unison.SystemFont)
 		header.SetLayoutData(&unison.FlexLayoutData{
 			HSpan:  2,
 			HAlign: align.Fill,
@@ -191,13 +199,23 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 			HGrab:  true,
 		})
 		list.AddChild(header)
+		if section.Location != "" {
+			location := newTruncatedLabel(section.Location, maxContextLineLength, fonts.FieldSecondary)
+			location.SetLayoutData(&unison.FlexLayoutData{
+				HSpan:  2,
+				HAlign: align.Fill,
+				VAlign: align.Middle,
+				HGrab:  true,
+			})
+			list.AddChild(location)
+		}
 		for _, k := range keys {
 			marker, ok := nameable.NewMarker(k)
 			if !ok {
 				continue
 			}
 			label := unison.NewLabel()
-			title := xstrings.Truncate(marker.Label, 60, true)
+			title := xstrings.Truncate(marker.Label, maxFieldLabelLength, true)
 			tooltip := marker.Tooltip
 			if title != marker.Label {
 				tooltip = strings.TrimSpace(marker.Label + "\n\n" + tooltip)
@@ -212,10 +230,10 @@ func ShowNameablesDialog(titles []string, nameables []map[string]string, visible
 			})
 			label.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 20}))
 			list.AddChild(label)
-			list.AddChild(createNameableField(&marker, nameables[i]))
+			list.AddChild(createNameableField(&marker, section.Nameables))
 		}
 	}
-	return showListQuestionDialog(i18n.Text("Provide substitutions:"), list)
+	return showListQuestionDialog(op.at(promptstep.Substitutions), i18n.Text("Provide substitutions:"), list)
 }
 
 // createNameableField builds the widget used to edit the replacement value for the marker, which comes from

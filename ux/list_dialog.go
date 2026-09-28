@@ -17,15 +17,18 @@ import (
 )
 
 // showListQuestionDialog puts up a modal question dialog whose content is list, wrapped in a bordered scroll panel
-// that takes whatever room the dialog offers, beneath a label showing header and then any extraHeaders, in order. It
-// reports whether the dialog was accepted.
-func showListQuestionDialog(header string, list unison.Paneler, extraHeaders ...*unison.Label) bool {
-	return unison.QuestionDialogWithPanel(newListQuestionPanel(header, list, extraHeaders...)) == unison.ModalResponseOK
+// that takes whatever room the dialog offers, beneath a label showing header and then any extraHeaders, in order. The
+// dialog is titled for the operation, whose description, if it has one, is shown above the header (see
+// promptOperation). It reports whether the dialog was accepted.
+func showListQuestionDialog(op promptOperation, header string, list unison.Paneler, extraHeaders ...*unison.Label) bool {
+	return runPromptDialog(op, newListQuestionPanel(op, header, list, extraHeaders...), unison.NewCancelButtonInfo(),
+		unison.NewOKButtonInfo()) == unison.ModalResponseOK
 }
 
-// newListQuestionPanel builds the content panel showListQuestionDialog shows: the header labels stacked over the list's
-// scroll panel in a single column, with the scroll panel the only child that grows to fill the dialog.
-func newListQuestionPanel(header string, list unison.Paneler, extraHeaders ...*unison.Label) *unison.Panel {
+// newListQuestionPanel builds the content panel showListQuestionDialog shows: the operation's description, when it has
+// one, then the header labels, stacked over the list's scroll panel in a single column, with the scroll panel the only
+// child that grows to fill the dialog.
+func newListQuestionPanel(op promptOperation, header string, list unison.Paneler, extraHeaders ...*unison.Label) *unison.Panel {
 	scroll := unison.NewScrollPanel()
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
@@ -44,6 +47,9 @@ func newListQuestionPanel(header string, list unison.Paneler, extraHeaders ...*u
 		HAlign:   align.Fill,
 		VAlign:   align.Fill,
 	})
+	if opLabel := newOperationLabel(op); opLabel != nil {
+		panel.AddChild(opLabel)
+	}
 	label := unison.NewLabel()
 	label.SetTitle(header)
 	panel.AddChild(label)

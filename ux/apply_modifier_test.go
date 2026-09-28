@@ -109,7 +109,7 @@ func TestAttachModifierClonesGivesEachTargetItsOwnCopies(t *testing.T) {
 	inner.Disabled = true
 	container.Children = []*gurps.TraitModifier{inner}
 
-	c.True(attachModifierClones(tables, owner, []*gurps.Trait{first, second}, []*gurps.TraitModifier{mod, container},
+	c.True(attachModifierClones("", tables, owner, []*gurps.Trait{first, second}, []*gurps.TraitModifier{mod, container},
 		gurps.LibraryFile{}))
 
 	c.Equal([]string{"Ranged", "Group"}, appliedModifierNames(first.Modifiers))
@@ -154,7 +154,8 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 	recordPrompts := func(t *testing.T, respond func(title string, modifiers []*gurps.TraitModifier) (changed, canceled bool)) *[]prompt {
 		t.Helper()
 		var prompts []prompt
-		swapForTest(t, &promptForTraitModifiers, func(title string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+		swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+			title := info.name
 			p := prompt{title: title}
 			gurps.Traverse(func(m *gurps.TraitModifier) bool {
 				p.names = append(p.names, m.Name)
@@ -189,7 +190,7 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 			return false, false
 		})
 
-		c.True(attachModifierClones([]*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
+		c.True(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
 			[]*gurps.Trait{alpha, beta}, newModifiers(), gurps.LibraryFile{}))
 		c.Equal([]prompt{wantPrompt("Alpha"), wantPrompt("Beta")}, *prompts,
 			"each target must be asked about its own copies, the ones pointed at directly already switched on")
@@ -219,13 +220,13 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 			return false, title == "Alpha"
 		})
 		nameablesShown := 0
-		swapForTest(t, &promptForNameables, func(_ []string, _ []map[string]string, _ [][]string) bool {
+		swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
 			nameablesShown++
 			return true
-		})
+		}))
 		modifiers := append(newModifiers(), newSwitchableTraitModifier("@Material@ Coating"))
 
-		c.False(attachModifierClones([]*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
+		c.False(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
 			[]*gurps.Trait{alpha, beta}, modifiers, gurps.LibraryFile{}), "a canceled prompt must be reported")
 		c.Equal(1, len(*prompts), "the prompts must stop at the one that was canceled")
 		c.Equal(0, nameablesShown, "the nameables prompt must not follow a canceled modifier prompt")
@@ -252,7 +253,7 @@ func TestAttachModifierClonesOnASheetRebuildsWithoutPrompting(t *testing.T) {
 	c.Equal(-1, switchColumnIndex(stale.Columns, gurps.TraitSwitchColumn), "the traits list starts without switches")
 	mod := newSwitchableTraitModifier("Ranged")
 
-	c.True(attachModifierClones([]*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
+	c.True(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
 		[]*gurps.Trait{entity.Traits[0], entity.Traits[1]}, []*gurps.TraitModifier{mod}, gurps.LibraryFile{}))
 	c.False(entity.Traits[0].Modifiers[0].Disabled, "the clone is switched on")
 	c.False(entity.Traits[1].Modifiers[0].Disabled, "the clone is switched on")
@@ -283,14 +284,14 @@ func TestAttachModifierClonesCanceledPromptPutsTheTargetBack(t *testing.T) {
 	named.Name = "@Material@ Coating"
 	named.Replacements = map[string]string{"Material": "Steel"} // As an older version saved it.
 	shown := 0
-	swapForTest(t, &promptForNameables, func(_ []string, _ []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
 		shown++
 		c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel"}, trait.Replacements,
 			"the modifier's replacements must have been moved onto the trait by the time the prompt is up")
 		return false
-	})
+	}))
 
-	c.False(attachModifierClones([]*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
+	c.False(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
 		[]*gurps.Trait{trait}, []*gurps.TraitModifier{named}, gurps.LibraryFile{}),
 		"a canceled prompt must be reported")
 	c.Equal(1, shown, "the nameables prompt must have been shown")
@@ -391,10 +392,10 @@ func TestApplySelectedModifiersAppliesASelectedContainerOnceAndRecordsItsSource(
 	library.table.SetSelectionMap(map[tid.TID]bool{group.ID(): true, inner.ID(): true})
 	c.Equal(2, len(library.table.SelectedRows(false)),
 		"both the container and the modifier within it must be selected for the check to mean anything")
-	swapForTest(t, &promptForModifierDestination, func(_ []FileBackedDockable) (FileBackedDockable, bool) {
+	swapForTest(t, &promptForModifierDestination, func(_ promptOperation, _ []FileBackedDockable) (FileBackedDockable, bool) {
 		return sheet, true
 	})
-	swapForTest(t, &showModifierTargetsPrompt, func(_ string, list unison.Paneler, _ ...*unison.Label) bool {
+	swapForTest(t, &showModifierTargetsPrompt, func(_ promptOperation, _ string, list unison.Paneler, _ ...*unison.Label) bool {
 		targets, ok := list.(*unison.List[modifierTargetChoice[*gurps.Trait]])
 		if !ok {
 			t.Errorf("the target prompt must hold a list of trait choices, not a %T", list)
@@ -547,12 +548,12 @@ func TestApplyModifiersToCanceledPromptChangesNothing(t *testing.T) {
 	mod := newSwitchableEquipmentModifier("Fine @Quality@")
 	forbidModifierPrompts(t)
 	shown := 0
-	swapForTest(t, &promptForNameables, func(titles []string, _ []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
 		shown++
 		c.Equal(2, len(titles), "one prompt covers the copy each target got")
 		c.Equal(0, counter.count, "nothing may be shown before the prompt is answered")
 		return false
-	})
+	}))
 	rope := equipmentNamed("Rope", entity.CarriedEquipment)
 	coin := equipmentNamed("Coin", entity.OtherEquipment)
 
@@ -585,7 +586,7 @@ func TestApplyModifiersToKeepsEveryNameableAnswer(t *testing.T) {
 	color.Name = "@Color@ Paint"
 	answers := map[string]string{"Material": "Steel", "Color": "Red"}
 	shown := 0
-	swapForTest(t, &promptForNameables, func(titles []string, nameables []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, _ [][]string) bool {
 		shown++
 		c.Equal(2, len(titles), "one prompt covers both modifiers")
 		for _, one := range nameables {
@@ -594,7 +595,7 @@ func TestApplyModifiersToKeepsEveryNameableAnswer(t *testing.T) {
 			}
 		}
 		return true
-	})
+	}))
 
 	c.True(applyModifiersTo([]*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, []*gurps.Trait{trait},
 		[]*gurps.TraitModifier{material, color}, gurps.LibraryFile{}))
@@ -612,10 +613,10 @@ func TestApplyModifiersToDestinationsWithoutAnEntity(t *testing.T) {
 	forbidPrompts := func(t *testing.T) {
 		t.Helper()
 		forbidModifierPrompts(t)
-		swapForTest(t, &promptForNameables, func(titles []string, _ []map[string]string, _ [][]string) bool {
+		swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
 			t.Errorf("the nameables prompt must not be shown, but was shown for %v", titles)
 			return false
-		})
+		}))
 	}
 	// checkUndo verifies that the change was recorded as a single undoable edit whose undo takes the modifier back off
 	// and leaves the destination unmodified, and whose redo puts it back. modifierCount has to look the target up
@@ -805,19 +806,19 @@ func TestModifierTargetCellFactoryIndentsNestedTargets(t *testing.T) {
 }
 
 // TestPromptForSingleDestinationSkipsTheDialogForOneChoice verifies that promptForSingleDestination and
-// PromptForDestination hand a lone choice back without a dialog and report no choice at all as nothing chosen. Neither
+// promptForDestinations hand a lone choice back without a dialog and report no choice at all as nothing chosen. Neither
 // can put up a dialog here, since there is no window.
 func TestPromptForSingleDestinationSkipsTheDialogForOneChoice(t *testing.T) {
 	c := check.New(t)
 	sheet := newApplyModifierTestSheet(t)
-	dest, ok := promptForSingleDestination([]FileBackedDockable{sheet})
+	dest, ok := promptForSingleDestination(promptOperation{}, []FileBackedDockable{sheet})
 	c.True(ok, "a lone choice must be taken without asking")
 	c.Equal(any(sheet), any(dest), "the lone choice must be the one handed back")
-	_, ok = promptForSingleDestination[FileBackedDockable](nil)
+	_, ok = promptForSingleDestination[FileBackedDockable](promptOperation{}, nil)
 	c.False(ok, "no choice at all must be reported as nothing chosen")
-	c.Equal([]FileBackedDockable{sheet}, PromptForDestination([]FileBackedDockable{sheet}),
+	c.Equal([]FileBackedDockable{sheet}, promptForDestinations(promptOperation{}, []FileBackedDockable{sheet}),
 		"a lone choice must come back as it is")
-	c.Equal(0, len(PromptForDestination[FileBackedDockable](nil)), "no choice at all must come back empty")
+	c.Equal(0, len(promptForDestinations[FileBackedDockable](promptOperation{}, nil)), "no choice at all must come back empty")
 }
 
 // TestApplyModifierCommandNeedsASelectionAndADestination verifies that the command needs both a selection and an open
@@ -898,7 +899,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	library := NewEquipmentModifierTableDockable("mods"+gurps.EquipmentModifiersExt, []*gurps.EquipmentModifier{mod})
 	library.table.SelectAll()
 	var offered []string
-	swapForTest(t, &promptForModifierDestination, func(choices []FileBackedDockable) (FileBackedDockable, bool) {
+	swapForTest(t, &promptForModifierDestination, func(_ promptOperation, choices []FileBackedDockable) (FileBackedDockable, bool) {
 		for _, choice := range choices {
 			offered = append(offered, choice.Title())
 		}
@@ -906,7 +907,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	})
 	var header string
 	var labels []string
-	swapForTest(t, &showModifierTargetsPrompt, func(h string, list unison.Paneler, _ ...*unison.Label) bool {
+	swapForTest(t, &showModifierTargetsPrompt, func(_ promptOperation, h string, list unison.Paneler, _ ...*unison.Label) bool {
 		header = h
 		targets, ok := list.(*unison.List[modifierTargetChoice[*gurps.Equipment]])
 		if !ok {

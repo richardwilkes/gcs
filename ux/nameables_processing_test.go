@@ -18,16 +18,33 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// slicedNameablesPrompt adapts a stand-in for the nameables prompt that takes the sections as parallel slices of their
+// titles, substitution maps and visible keys. The maps are the sections' own, so whatever the stand-in fills in reaches
+// the rows.
+func slicedNameablesPrompt(fn func(titles []string, nameables []map[string]string, visibleKeys [][]string) bool) func(promptOperation, []nameablesSection) bool {
+	return func(_ promptOperation, sections []nameablesSection) bool {
+		titles := make([]string, len(sections))
+		nameables := make([]map[string]string, len(sections))
+		visibleKeys := make([][]string, len(sections))
+		for i, section := range sections {
+			titles[i] = section.Title
+			nameables[i] = section.Nameables
+			visibleKeys[i] = section.VisibleKeys
+		}
+		return fn(titles, nameables, visibleKeys)
+	}
+}
+
 // stubNameablesPrompt substitutes a non-interactive nameables prompt that hands the section titles and the substitution
 // maps it was asked to fill to the given responder and reports back whatever the responder returns. The count of
 // prompts actually shown is returned, and the real prompt is restored when the test finishes.
 func stubNameablesPrompt(t *testing.T, respond func(titles []string, nameables []map[string]string) bool) *int {
 	t.Helper()
 	shown := 0
-	swapForTest(t, &promptForNameables, func(titles []string, nameables []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, _ [][]string) bool {
 		shown++
 		return respond(titles, nameables)
-	})
+	}))
 	return &shown
 }
 
@@ -207,7 +224,7 @@ func TestAltDropAsksAboutAKeySharedByATargetsModifiersOnce(t *testing.T) {
 	var asked []map[string]string
 	var visible [][]string
 	answer := "Steel"
-	swapForTest(t, &promptForNameables, func(titles []string, nameables []map[string]string, visibleKeys [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, visibleKeys [][]string) bool {
 		headings = titles
 		asked = make([]map[string]string, 0, len(nameables))
 		visible = visibleKeys
@@ -222,7 +239,7 @@ func TestAltDropAsksAboutAKeySharedByATargetsModifiersOnce(t *testing.T) {
 			}
 		}
 		return true
-	})
+	}))
 
 	altDrop(sheet.Traits.provider.AltDropSupport(), []int{0}, coating, inlay)
 	c.Equal(1, len(headings), "the key must be asked about once, under the first modifier that uses it")
@@ -269,7 +286,7 @@ func TestProcessNameableGroupsSharesOneAnswerAcrossTheEntriesThatUseIt(t *testin
 	answerVisibleKeys := func(t *testing.T, answers map[string]string) *[][]string {
 		t.Helper()
 		var visible [][]string
-		swapForTest(t, &promptForNameables, func(_ []string, nameables []map[string]string, visibleKeys [][]string) bool {
+		swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, nameables []map[string]string, visibleKeys [][]string) bool {
 			visible = visibleKeys
 			for i, keys := range visibleKeys {
 				for _, k := range keys {
@@ -281,7 +298,7 @@ func TestProcessNameableGroupsSharesOneAnswerAcrossTheEntriesThatUseIt(t *testin
 				}
 			}
 			return true
-		})
+		}))
 		return &visible
 	}
 
@@ -289,7 +306,7 @@ func TestProcessNameableGroupsSharesOneAnswerAcrossTheEntriesThatUseIt(t *testin
 		c := check.New(t)
 		sword, groups := newSword()
 		visible := answerVisibleKeys(t, map[string]string{"Material": "Steel", "Color": "Red"})
-		c.True(ProcessNameableGroups(groups))
+		c.True(processNameableGroups(promptOperation{}, groups))
 		c.Equal([][]string{{"Material"}, {"Color"}}, *visible,
 			"the shared key is shown once, under the first modifier, and the second asks only about its own")
 		c.Equal(map[string]string{"Material": "Steel", "Color": "Red"}, sword.Replacements,
@@ -302,7 +319,7 @@ func TestProcessNameableGroupsSharesOneAnswerAcrossTheEntriesThatUseIt(t *testin
 		c := check.New(t)
 		sword, groups := newSword()
 		answerVisibleKeys(t, map[string]string{"Color": "Red"})
-		c.True(ProcessNameableGroups(groups))
+		c.True(processNameableGroups(promptOperation{}, groups))
 		c.Equal(map[string]string{"Color": "Red"}, sword.Replacements,
 			"clearing the key under the first modifier must clear it for the second as well")
 		c.Equal([]string{"@Material@ Coating", "Red @Material@ Guard"}, appliedModifierNames(sword.Modifiers))
@@ -328,7 +345,7 @@ func TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce(t *testing.T) {
 	group.Children = []*gurps.TraitModifier{pommel, guard}
 	var visible [][]string
 	shown := 0
-	swapForTest(t, &promptForNameables, func(_ []string, nameables []map[string]string, visibleKeys [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, nameables []map[string]string, visibleKeys [][]string) bool {
 		shown++
 		visible = visibleKeys
 		// Only the keys shown are answered, as with the real dialog.
@@ -338,7 +355,7 @@ func TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce(t *testing.T) {
 			}
 		}
 		return true
-	})
+	}))
 
 	altDrop(sheet.Traits.provider.AltDropSupport(), []int{0}, group)
 	c.Equal(1, *containerPrompts, "the target must have been asked about the container's contents once")

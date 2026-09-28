@@ -27,7 +27,8 @@ type modifierPrompt struct {
 func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 	t.Helper()
 	var prompts []modifierPrompt
-	swapForTest(t, &promptForTraitModifiers, func(title string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+		title := info.name
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
 			p.modifiers = append(p.modifiers, one.Name)
@@ -35,7 +36,8 @@ func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 		prompts = append(prompts, p)
 		return false, false
 	})
-	swapForTest(t, &promptForEquipmentModifiers, func(title string, modifiers []*gurps.EquipmentModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, modifiers []*gurps.EquipmentModifier) (changed, canceled bool) {
+		title := info.name
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
 			p.modifiers = append(p.modifiers, one.Name)
@@ -94,21 +96,23 @@ func tabledProvider[T gurps.Node[T]](provider TableProvider[T]) TableProvider[T]
 // responder after calling this.
 func forbidModifierPrompts(t *testing.T) {
 	t.Helper()
-	swapForTest(t, &promptForTraitModifiers, func(title string, _ []*gurps.TraitModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+		title := info.name
 		t.Errorf("the modifier prompt must not be shown, but was shown for %q", title)
 		return false, false
 	})
-	swapForTest(t, &promptForEquipmentModifiers, func(title string, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+		title := info.name
 		t.Errorf("the modifier prompt must not be shown, but was shown for %q", title)
 		return false, false
 	})
-	swapForTest(t, &promptForNameables, func(titles []string, _ []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
 		t.Errorf("the nameables prompt must not be shown, but was shown for %v", titles)
 		return false
-	})
+	}))
 }
 
-// TestProcessModifiersIgnoresModifierRows documents that ProcessModifiers only has something to do for rows that can
+// TestProcessModifiersIgnoresModifierRows documents that processModifiers only has something to do for rows that can
 // hold modifiers. Handing it the modifiers themselves matches nothing, which is why its callers pass the rows that
 // carry the modifiers (see applyTransfer).
 func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
@@ -118,18 +122,37 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
-	ProcessModifiers([]*gurps.TraitModifier{traitMod})
+	processModifiers(promptOperation{}, []*gurps.TraitModifier{traitMod})
 	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
 	equipmentMod.Name = "Equipment Modifier"
-	ProcessModifiers([]*gurps.EquipmentModifier{equipmentMod})
+	processModifiers(promptOperation{}, []*gurps.EquipmentModifier{equipmentMod})
 	c.Equal(0, len(*prompts), "modifier rows have no modifiers of their own to prompt for")
 
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Trait"
 	trait.Modifiers = []*gurps.TraitModifier{traitMod}
-	ProcessModifiers([]*gurps.Trait{trait})
+	processModifiers(promptOperation{}, []*gurps.Trait{trait})
 	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
 		"a trait must be prompted for with its own modifiers")
+}
+
+// TestModifierPromptsCountOnlyRowsWithModifiers verifies that a row without modifiers is neither prompted for nor
+// counted, so the count the prompts show is of the prompts the user will actually see.
+func TestModifierPromptsCountOnlyRowsWithModifiers(t *testing.T) {
+	c := check.New(t)
+	var steps [][2]int
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+		steps = append(steps, [2]int{info.step, info.steps})
+		return false, false
+	})
+	entity := gurps.NewEntity()
+	plain := gurps.NewTrait(entity, nil, false)
+	first := gurps.NewTrait(entity, nil, false)
+	first.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
+	second := gurps.NewTrait(entity, nil, false)
+	second.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
+	c.True(processModifiers(promptOperation{}, []*gurps.Trait{plain, first, plain, second}))
+	c.Equal([][2]int{{1, 2}, {2, 2}}, steps)
 }
 
 // TestAltDropOnTraitSwitchesTheDroppedModifierOn verifies that dropping a trait modifier onto a trait row adds an

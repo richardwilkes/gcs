@@ -1672,6 +1672,62 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
+		Pkg:  "model/gurps/enums/promptstep",
+		Name: "step",
+		Desc: "identifies the step of an operation a prompt is for, such as settling the modifiers of rows being applied",
+		Values: []*enumValue{
+			{
+				Key:           "none",
+				EmptyStringOK: true,
+				NoLocalize:    true,
+			},
+			{
+				Key:    "destination",
+				String: "Destination",
+			},
+			{
+				Key:    "targets",
+				String: "Targets",
+			},
+			{
+				Key:    "choice",
+				String: "Choice",
+			},
+			{
+				Key:    "level",
+				String: "Level",
+			},
+			{
+				Key:    "points",
+				String: "Points",
+			},
+			{
+				Key:    "quantity",
+				String: "Quantity",
+			},
+			{
+				Key:    "remove_choices",
+				String: "Remove Choices",
+			},
+			{
+				Key:    "modifiers",
+				String: "Modifiers",
+			},
+			{
+				Key:    "substitutions",
+				String: "Substitutions",
+			},
+			{
+				Key:    "ancestry",
+				String: "Ancestry",
+			},
+			{
+				Key:    "randomize",
+				String: "Randomize",
+			},
+		},
+	},
+	{
 		Pkg:  "model/gurps/enums/selector",
 		Name: "field",
 		Desc: "identifies a multi-state field that a SelectorOverride can replace",

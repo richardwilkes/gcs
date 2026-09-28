@@ -181,7 +181,11 @@ func (t *Template) newSheetFromTemplate(_ any) {
 	e := gurps.NewEntity()
 	sheet := NewSheet(e.Profile.Name+gurps.SheetExt, e)
 	DisplayNewDockable(sheet)
-	if !t.applyTemplateToSheet(sheet, true) {
+	op := promptOperation{
+		name:        i18n.Text("New Sheet"),
+		description: fmt.Sprintf(i18n.Text("Creating a sheet from template %s"), shortNames(t.Title())...),
+	}
+	if !t.applyTemplateToSheet(sheet, op, true) {
 		// A picker was canceled, which abandons the new character too, not just the template. The sheet has been
 		// left untouched, so it closes without asking about saving.
 		sheet.AttemptClose()
@@ -208,15 +212,26 @@ func ApplyTemplate(filePath string) {
 
 // applyTemplate applies the template to the sheets the user picks, offering to randomize the profile again when the
 // template brings an ancestry. The parameter is only there to fit the command handler signature and is ignored.
-// Creating a new sheet from a template is the one path that skips that offer, which it does by calling
-// applyTemplateToSheet directly.
+// Creating a new sheet from a template is the one path that randomizes without making that offer, which it does by
+// calling applyTemplateToSheet directly.
 func (t *Template) applyTemplate(_ any) {
-	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
-		t.applyTemplateToSheet(sheet, false)
+	name := i18n.Text("Apply Template")
+	chooseOp := promptOperation{
+		name:        name,
+		description: fmt.Sprintf(i18n.Text("Applying template %s"), shortNames(t.Title())...),
+	}
+	for _, sheet := range promptForDestinations(chooseOp, OpenSheets(nil)) {
+		t.applyTemplateToSheet(sheet, promptOperation{
+			name:        name,
+			description: fmt.Sprintf(i18n.Text("Applying template %s to %s"), shortNames(t.Title(), sheet.Title())...),
+		}, false)
 	}
 }
 
-func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) bool {
+// applyTemplateToSheet applies the template to the sheet, putting the questions it raises to the user as part of the
+// given operation. With suppressRandomizePrompt, the profile is randomized again without asking when the template
+// brings an ancestry, rather than the user being offered it.
+func (t *Template) applyTemplateToSheet(sheet *Sheet, op promptOperation, suppressRandomizePrompt bool) bool {
 	parts := &applyParts{
 		bodyType:  t.template.BodyType,
 		traits:    newAppendPart(sheet.Traits.Table, t.Traits.Table.RootRows()),
@@ -227,7 +242,7 @@ func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bo
 	}
 	opts := applyOptionsFor(t, sheet)
 	opts.suppressRandomizePrompt = suppressRandomizePrompt
-	if !applyTransfer(sheet, parts, opts, i18n.Text("Apply Template")) {
+	if !applyTransfer(sheet, parts, opts, op, i18n.Text("Apply Template")) {
 		return false
 	}
 	sheet.Window().ToFront()

@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -36,13 +37,14 @@ var promptForPickers = processPickers
 
 // processPickers presents the template picker dialog for each row of the parts that has one, replacing the rows with
 // the resulting choices. It returns false if the user canceled one of them, in which case the parts must be discarded.
-func processPickers(parts *applyParts) bool {
-	return parts.all(applyPartOps.resolvePickers)
+// The operation describes what the dialogs are part of and may be empty (see newOperationLabel).
+func processPickers(op promptOperation, parts *applyParts) bool {
+	return parts.all(func(part applyPartOps) bool { return part.resolvePickers(op) })
 }
 
-func processPickerRows[T gurps.Node[T]](rows []T) (revised []T, abort bool) {
+func processPickerRows[T gurps.Node[T]](op promptOperation, rows []T) (revised []T, abort bool) {
 	for _, one := range rows {
-		result, cancel := processPickerRow(one)
+		result, cancel := processPickerRow(op, one)
 		if cancel {
 			return nil, true
 		}
@@ -51,7 +53,7 @@ func processPickerRows[T gurps.Node[T]](rows []T) (revised []T, abort bool) {
 	return revised, false
 }
 
-func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
+func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, abort bool) {
 	if !row.Container() {
 		return []T{row}, false
 	}
@@ -65,7 +67,7 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		rowChildren := make([]T, 0, len(children))
 		for _, child := range children {
 			var result []T
-			result, abort = processPickerRow(child)
+			result, abort = processPickerRow(op, child)
 			if abort {
 				return nil, true
 			}
@@ -155,7 +157,7 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		}
 	}
 	for _, child := range children {
-		boxes = addPickerRow(list, child, tp.Type, callback, boxes)
+		boxes = addPickerRow(op, list, child, tp.Type, callback, boxes)
 	}
 
 	scroll := unison.NewScrollPanel()
@@ -178,10 +180,21 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 		HAlign:   align.Fill,
 		VAlign:   align.Fill,
 	})
+	if opLabel := newOperationLabel(op); opLabel != nil {
+		opLabel.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+		panel.AddChild(opLabel)
+	}
 	label := unison.NewLabel()
 	label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	label.SetTitle(row.String())
 	panel.AddChild(label)
+	// A choice nested within another is put to the user only once its enclosing choice has been answered, so the
+	// containers above it are named to tie it back to the answer that brought it up.
+	if location := rowLocation(row); location != "" {
+		label = newTruncatedLabel(location, maxContextLineLength, fonts.FieldSecondary)
+		label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+		panel.AddChild(label)
+	}
 	if notesCapable, hasNotes := any(row).(interface{ Notes() string }); hasNotes {
 		if notes := notesCapable.Notes(); notes != "" {
 			label = unison.NewLabel()
@@ -207,19 +220,19 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	panel.AddChild(scroll)
 
 	var err error
-	dialog, err = unison.NewDialog(nil, nil, panel,
-		[]*unison.DialogButtonInfo{
-			unison.NewCancelButtonInfo(),
-			{
-				Title:        i18n.Text("Override"),
-				ResponseCode: unison.ModalResponseUserBase,
-			},
-			unison.NewOKButtonInfo(),
-		})
+	dialog, err = newPromptDialog(op.at(promptstep.Choice), nil, nil, panel,
+		unison.NewCancelButtonInfo(),
+		&unison.DialogButtonInfo{
+			Title:        i18n.Text("Override"),
+			ResponseCode: unison.ModalResponseUserBase,
+		},
+		unison.NewOKButtonInfo())
 	if err != nil {
 		errs.Log(err)
 		return nil, true
 	}
+	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice")
+	dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(overrideTip)
 	callback()
 	if dialog.RunModal() == unison.ModalResponseCancel {
 		return nil, true
@@ -229,7 +242,7 @@ func processPickerRow[T gurps.Node[T]](row T) (revised []T, abort bool) {
 	for i, box := range boxes {
 		if box.State == check.On {
 			var result []T
-			result, abort = processPickerRow(children[i])
+			result, abort = processPickerRow(op, children[i])
 			if abort {
 				return nil, true
 			}
@@ -247,7 +260,7 @@ func pickerMatchStateColor(matches bool) unison.Color {
 	return unison.ThemeError.GetColor()
 }
 
-func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
+func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row T, pt picker.Type, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -272,21 +285,21 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 	switch actual := any(row).(type) {
 	case *gurps.Trait:
 		if actual.IsLeveled() {
-			onClick = func() { pickerRowLevelEditor(actual, checkBox, pt, callback) }
+			onClick = func() { pickerRowLevelEditor(op, actual, checkBox, pt, callback) }
 			editTooltip = i18n.Text("Edit level")
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Skill:
 		if !actual.Container() {
-			onClick = func() { pickerRowPointEditor(actual, checkBox, pt, callback) }
+			onClick = func() { pickerRowPointEditor(op, actual, checkBox, pt, callback) }
 			editTooltip = i18n.Text("Edit points")
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Spell:
 		if !actual.Container() {
-			onClick = func() { pickerRowPointEditor(actual, checkBox, pt, callback) }
+			onClick = func() { pickerRowPointEditor(op, actual, checkBox, pt, callback) }
 			editTooltip = i18n.Text("Edit points")
 		}
 		pageRef = actual.PageRef
@@ -295,7 +308,7 @@ func addPickerRow[T gurps.Node[T]](parent *unison.Panel, row T, pt picker.Type, 
 		// A choice made by value or weight may take more than one of an option, so its quantity may be set while
 		// picking. A group has no quantity of its own to set.
 		if (pt == picker.Value || pt == picker.Weight) && !actual.IsGroup() {
-			onClick = func() { pickerRowQuantityEditor(actual, &details, callback) }
+			onClick = func() { pickerRowQuantityEditor(op, actual, &details, callback) }
 			editTooltip = i18n.Text("Edit quantity")
 		}
 		pageRef = actual.PageRef
@@ -420,7 +433,7 @@ func formatPickerTotal[T gurps.Node[T]](row T, pt picker.Type, total gurps.Numer
 
 // pickerRowQuantityEditor asks for a new quantity of an option of a choice made by value or weight, updating the
 // option's details and the running total to match.
-func pickerRowQuantityEditor(eqp *gurps.Equipment, details *[]*unison.Label, callback func()) {
+func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *[]*unison.Label, callback func()) {
 	quantity := eqp.Quantity
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -433,11 +446,8 @@ func pickerRowQuantityEditor(eqp *gurps.Equipment, details *[]*unison.Label, cal
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return quantity },
 		func(value fxp.Int) { quantity = value }, fxp.One, fxp.Max-1, false, false))
-	dialog, err := unison.NewDialog(nil, nil, panel,
-		[]*unison.DialogButtonInfo{
-			unison.NewCancelButtonInfo(),
-			unison.NewOKButtonInfo(),
-		})
+	dialog, err := newPromptDialog(op.at(promptstep.Quantity), nil, nil, panel, unison.NewCancelButtonInfo(),
+		unison.NewOKButtonInfo())
 	if err != nil {
 		errs.Log(err)
 		return
@@ -484,7 +494,7 @@ func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T
 	checkBox.SetTitle(title)
 }
 
-func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
+func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
 	levels := trait.Levels
 	maximum := trait.ResolvedMaxLevels()
 	fieldMax := fxp.MaxBasePoints
@@ -507,11 +517,8 @@ func pickerRowLevelEditor(trait *gurps.Trait, checkBox *unison.CheckBox, pt pick
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return levels },
 		func(value fxp.Int) { levels = value }, 0, fieldMax, false, false))
-	dialog, err := unison.NewDialog(nil, nil, panel,
-		[]*unison.DialogButtonInfo{
-			unison.NewCancelButtonInfo(),
-			unison.NewOKButtonInfo(),
-		})
+	dialog, err := newPromptDialog(op.at(promptstep.Level), nil, nil, panel, unison.NewCancelButtonInfo(),
+		unison.NewOKButtonInfo())
 	if err != nil {
 		errs.Log(err)
 		return
@@ -531,7 +538,7 @@ type pickerRowPointEditorTypes[T gurps.Node[T]] interface {
 	gurps.RawPointsAdjuster
 }
 
-func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
+func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, node T, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
 	points := node.RawPoints()
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -544,11 +551,8 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](node T, checkBox *unis
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return points },
 		func(value fxp.Int) { points = value }, 0, fxp.MaxBasePoints, false, false))
-	dialog, err := unison.NewDialog(nil, nil, panel,
-		[]*unison.DialogButtonInfo{
-			unison.NewCancelButtonInfo(),
-			unison.NewOKButtonInfo(),
-		})
+	dialog, err := newPromptDialog(op.at(promptstep.Points), nil, nil, panel, unison.NewCancelButtonInfo(),
+		unison.NewOKButtonInfo())
 	if err != nil {
 		errs.Log(err)
 		return

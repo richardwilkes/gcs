@@ -50,8 +50,8 @@ func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	originalTraitCount := len(entity.Traits)
 	template := newTestTemplateWithBodyType("Template Body")
 
-	swapForTest(t, &promptForPickers, func(_ *applyParts) bool { return false })
-	c.False(template.applyTemplateToSheet(sheet, true), "a canceled picker must report that the template was not applied")
+	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts) bool { return false })
+	c.False(template.applyTemplateToSheet(sheet, promptOperation{}, true), "a canceled picker must report that the template was not applied")
 	c.Equal(originalBody, entity.SheetSettings.BodyType, "the body type must not have been replaced")
 	c.Equal(originalTraitCount, len(entity.Traits), "no traits must have been added")
 	c.Equal(originalTraitCount, len(sheet.Traits.Table.RootRows()), "no rows must have been added to the traits table")
@@ -65,7 +65,7 @@ func TestNewSheetFromTemplateCanceledPickerClosesTheSheet(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
 	template := newTestTemplateWithBodyType("Template Body")
-	swapForTest(t, &promptForPickers, func(_ *applyParts) bool { return false })
+	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts) bool { return false })
 	var open int
 	screen.Do(func() {
 		template.newSheetFromTemplate(nil)
@@ -84,7 +84,7 @@ func TestApplyTemplateUndoRestoresBodyType(t *testing.T) {
 	c.NotEqual("Template Body", originalBodyName, "the test requires the template's body type to be distinguishable")
 	template := newTestTemplateWithBodyType("Template Body")
 
-	c.True(template.applyTemplateToSheet(sheet, true), "the template must be applied")
+	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, true), "the template must be applied")
 	c.Equal("Template Body", entity.SheetSettings.BodyType.Name, "the template's body type must be applied")
 	c.NotEqual(template.template.BodyType, entity.SheetSettings.BodyType,
 		"the sheet must get a copy of the template's body type, not the template's own")
@@ -112,7 +112,7 @@ func TestApplyTemplateWithoutBodyTypeLeavesBodyTypeAlone(t *testing.T) {
 	template := newTestTemplateWithBodyType("Template Body")
 	template.template.BodyType = nil
 
-	c.True(template.applyTemplateToSheet(sheet, true), "the template must be applied")
+	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, true), "the template must be applied")
 	c.Equal(originalBody, entity.SheetSettings.BodyType, "the body type must have been left alone")
 
 	sheet.undoMgr.Undo()
