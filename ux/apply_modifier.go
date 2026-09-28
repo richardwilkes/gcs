@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -156,7 +157,7 @@ func applySelectedModifiers[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 	from := libraryFileFromTable(source)
 	op := promptOperation{
 		name:        i18n.Text("Apply Modifier"),
-		description: fmt.Sprintf(i18n.Text("Applying %s"), describeRows(modifiers)),
+		description: fmt.Sprintf(i18n.Text("Applying %s"), shortNames(describeRows(modifiers))...),
 	}
 	dest, ok := promptForModifierDestination(op, modifierDestinations(kind, AllDockables()))
 	if !ok {
@@ -202,7 +203,7 @@ func applyModifiersTo[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](
 		!xreflect.IsNil(provider) {
 		dataOwner = provider.DataOwner()
 	}
-	if !attachModifierClones(tables, dataOwner, targets, modifiers, from) {
+	if !attachModifierClones(i18n.Text("Apply Modifier"), tables, dataOwner, targets, modifiers, from) {
 		return false
 	}
 	opened := selectModifierTargets(tables, targets)
@@ -259,23 +260,24 @@ func selectModifierTargets[T gurps.Node[T]](tables []*unison.Table[*Node[T]], ta
 // modifiers onto rows and the Apply Modifier command end here. A modifier pointed at directly is enabled, since the
 // user has just said to apply it. A container's contents are a set to choose from, so when the rows belong to an
 // entity each target receiving a container is asked which of its new modifiers should be enabled (see
-// ProcessModifiers); elsewhere they are left as they came and the choice is made when the row reaches a sheet (see
+// processModifiers); elsewhere they are left as they came and the choice is made when the row reaches a sheet (see
 // applyTransfer). For an entity the nameables prompt follows, before anything is shown or reported, so that a cancel
 // only has to take the clones back off and the owner is rebuilt once, with the answers in place; that rebuild is also
 // what reports the change (see dropRebuilder). Elsewhere reporting is left to the caller. The tables are the ones the
 // targets live in and all belong to one owner. A row that can't take modifiers, such as a template choice container, is
 // never given them (see gurps.CanTakeModifiers); the callers already leave such rows out of their targets, so this is
-// only a backstop. Returns false if nothing was changed: a prompt was canceled, in which case
-// every target has been put back as it was, or there was nothing to do.
-func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](tables []*unison.Table[*Node[T]], dataOwner gurps.DataOwner, targets []T, modifiers []M, from gurps.LibraryFile) bool {
+// only a backstop. The name is the short name of the operation the prompts are part of, which starts their titles (see
+// promptOperation). Returns false if nothing was changed: a prompt was canceled, in which case every target has been put
+// back as it was, or there was nothing to do.
+func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](name string, tables []*unison.Table[*Node[T]], dataOwner gurps.DataOwner, targets []T, modifiers []M, from gurps.LibraryFile) bool {
 	targets = slices.DeleteFunc(slices.Clone(targets), func(node T) bool { return !gurps.CanTakeModifiers(node) })
 	if len(tables) == 0 || len(targets) == 0 || len(modifiers) == 0 {
 		return false
 	}
 	forEntity := !xreflect.IsNil(dataOwner) && dataOwner.OwningEntity() != nil
 	op := promptOperation{
-		name:        i18n.Text("Apply Modifier"),
-		description: fmt.Sprintf(i18n.Text("Adding %s to %s"), describeRows(modifiers), describeRows(targets)),
+		name:        name,
+		description: fmt.Sprintf(i18n.Text("Adding %s to %s"), shortNames(describeRows(modifiers), describeRows(targets))...),
 	}
 	askAboutContainers := false
 	for _, m := range modifiers {
@@ -325,7 +327,7 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 		}
 		groups = append(groups, NameableGroup[M]{Label: target.String(), Rows: clones, SharedReplacements: true})
 	}
-	if forEntity && !ProcessNameableGroups(op, groups) {
+	if forEntity && !processNameableGroups(op, groups) {
 		restore()
 		return false
 	}
@@ -410,7 +412,7 @@ func showModifierTargetsDialog[T gurps.Node[T]](op promptOperation, header strin
 	list := newChoiceList[modifierTargetChoice[T]](true)
 	list.Factory = &modifierTargetCellFactory[T]{}
 	list.Append(choices...)
-	if !showModifierTargetsPrompt(op.at(i18n.Text("Targets")), header, list) {
+	if !showModifierTargetsPrompt(op.at(promptstep.Targets), header, list) {
 		return nil
 	}
 	return pickFromList(list, choices)

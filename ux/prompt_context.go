@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
@@ -28,42 +29,76 @@ import (
 // Modifiers", is given a line describing the operation under way, such as "Applying template Knight to Sir Bob", and
 // places the rows it asks about by their kind and the containers above them.
 
-// promptOperation describes the operation a prompt is part of. Any of its fields may be empty.
+const (
+	// maxNameLength is how much of a name goes into a description or a list of names. Names are cut down before the
+	// text holding them is put together, so that a long one can't push the rest of that text out of sight.
+	maxNameLength = 40
+	// maxLocationLength is how long the containers above a row may run before the ones in the middle are left out.
+	maxLocationLength = 60
+)
+
+// promptOperation describes the operation a prompt is part of. Any of its fields may be left at its zero value.
 type promptOperation struct {
 	// name is the operation's short name, such as "Apply Template", which starts the prompt's title.
 	name string
 	// description says what the operation is doing, such as "Applying template Knight to Sir Bob", and is shown above
 	// the prompt's question (see newOperationLabel).
 	description string
-	// step names the prompt within the operation, such as "Modifiers", and ends the prompt's title.
-	step string
+	// step identifies the prompt within the operation, and ends the prompt's title.
+	step promptstep.Step
 }
 
 // at returns the operation with its step set to the given one.
-func (op promptOperation) at(step string) promptOperation {
+func (op promptOperation) at(step promptstep.Step) promptOperation {
 	op.step = step
 	return op
 }
 
-// title returns the title for a prompt of the operation: its name and step, or whichever of them isn't empty.
+// title returns the title for a prompt of the operation: its name and step, or whichever of them it has.
 func (op promptOperation) title() string {
 	switch {
-	case op.name == "":
-		return op.step
-	case op.step == "":
+	case op.step == promptstep.None:
 		return op.name
+	case op.name == "":
+		return op.step.String()
 	default:
-		return fmt.Sprintf(i18n.Text("%s: %s"), op.name, op.step)
+		return fmt.Sprintf(i18n.Text("%s: %s"), op.name, op.step.String())
 	}
 }
 
+// shortNames returns the names cut down to maxNameLength, ready to be handed to fmt.Sprintf.
+func shortNames(names ...string) []any {
+	short := make([]any, len(names))
+	for i, name := range names {
+		short[i] = xstrings.Truncate(name, maxNameLength, true)
+	}
+	return short
+}
+
 // describeRows names the rows a transfer is moving: the row itself when there is only the one, or else how many there
-// are.
+// are, counted by their kind.
 func describeRows[T gurps.Node[T]](rows []T) string {
 	if len(rows) == 1 {
 		return rows[0].String()
 	}
-	return fmt.Sprintf(i18n.Text("%d rows"), len(rows))
+	var format string
+	switch any(rows).(type) {
+	case []*gurps.Trait:
+		format = i18n.Text("%d traits")
+	case []*gurps.Skill:
+		format = i18n.Text("%d skills")
+	case []*gurps.Spell:
+		format = i18n.Text("%d spells")
+	case []*gurps.Equipment:
+		format = i18n.Text("%d pieces of equipment")
+	case []*gurps.Note:
+		format = i18n.Text("%d notes")
+	case []*gurps.TraitModifier, []*gurps.EquipmentModifier:
+		format = i18n.Text("%d modifiers")
+	default:
+		format = i18n.Text("%d rows")
+	}
+	return fmt.Sprintf(format, len(rows))
 }
 
 // dockableTitle returns the title of the dockable holding the panel, or an empty string if there isn't one.
@@ -75,6 +110,51 @@ func dockableTitle(panel unison.Paneler) string {
 		return d.Title()
 	}
 	return ""
+}
+
+// rowLocation describes where a row being asked about sits: its kind, followed by the containers above it, outermost
+// first. A row at the top level has nothing worth saying about where it is, so an empty string is returned for it.
+// When the containers run long, the ones in the middle are left out, keeping the outermost, which says where the rows
+// came from, and the innermost, which is the one the row is actually in.
+func rowLocation[T gurps.Node[T]](row T) string {
+	var path []string
+	for parent := row.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
+		path = append(path, parent.String())
+	}
+	if len(path) == 0 {
+		return ""
+	}
+	slices.Reverse(path)
+	separator := i18n.Text(" › ")
+	joined := strings.Join(path, separator)
+	if len(path) > 2 && len([]rune(joined)) > maxLocationLength {
+		joined = strings.Join([]string{path[0], "…", path[len(path)-1]}, separator)
+	}
+	return fmt.Sprintf(i18n.Text("%s in %s"), row.Kind(), joined)
+}
+
+// nameList returns the names one per line, each cut down to maxNameLength, and cut short with a count of the rest when
+// there are too many to show.
+func nameList(names []string) string {
+	const maxShown = 10
+	lines := make([]string, 0, min(len(names), maxShown))
+	for i, name := range names {
+		if i == maxShown-1 && len(names) > maxShown {
+			lines = append(lines, fmt.Sprintf(i18n.Text("and %d more"), len(names)-i))
+			break
+		}
+		lines = append(lines, xstrings.Truncate(name, maxNameLength, true))
+	}
+	return strings.Join(lines, "\n")
+}
+
+// joinNames returns the names on one line, each cut down to maxNameLength.
+func joinNames(names []string) string {
+	short := make([]string, len(names))
+	for i, name := range names {
+		short[i] = xstrings.Truncate(name, maxNameLength, true)
+	}
+	return strings.Join(short, i18n.Text(", "))
 }
 
 // newPromptDialog returns a dialog for a prompt of the operation, titled for it (see promptOperation.title). A nil icon
@@ -122,16 +202,20 @@ func newOperationLabel(op promptOperation) *unison.Label {
 	return newTruncatedLabel(op.description, 80, fonts.FieldSecondary)
 }
 
-// rowLocation describes where a row being asked about sits: its kind, followed by the containers above it, outermost
-// first, when it has any.
-func rowLocation[T gurps.Node[T]](row T) string {
-	var path []string
-	for parent := row.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
-		path = append(path, parent.String())
+// newOperationMessagePanel returns a message panel with the primary and detail text, beneath the operation's
+// description when it has one (see newOperationLabel).
+func newOperationMessagePanel(op promptOperation, primary, detail string) *unison.Panel {
+	message := unison.NewMessagePanel(primary, detail)
+	opLabel := newOperationLabel(op)
+	if opLabel == nil {
+		return message
 	}
-	if len(path) == 0 {
-		return row.Kind()
-	}
-	slices.Reverse(path)
-	return fmt.Sprintf(i18n.Text("%s in %s"), row.Kind(), strings.Join(path, " › "))
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.AddChild(opLabel)
+	panel.AddChild(message)
+	return panel
 }

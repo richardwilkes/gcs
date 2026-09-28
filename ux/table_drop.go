@@ -101,7 +101,7 @@ func modifierAltDropSupport[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 			for _, row := range tableDragData.Rows {
 				modifiers = append(modifiers, row.Data())
 			}
-			return attachModifierClones([]*unison.Table[*Node[T]]{p.table}, p.DataOwner(), targets, modifiers,
+			return attachModifierClones(i18n.Text("Drag"), []*unison.Table[*Node[T]]{p.table}, p.DataOwner(), targets, modifiers,
 				libraryFileFromTable(tableDragData.Table))
 		},
 	}
@@ -308,8 +308,8 @@ func applyDrop[T gurps.Node[T]](data *unison.TableDragData[*Node[T]], table *uni
 		part.rows = append(part.rows, row.CloneForTarget(table, parent).Data())
 	}
 	op := promptOperation{
-		name:        i18n.Text("Drop"),
-		description: fmt.Sprintf(i18n.Text("Dropping %s into %s"), describeRows(part.rows), dockableTitle(table)),
+		name:        i18n.Text("Drag"),
+		description: fmt.Sprintf(i18n.Text("Dropping %s into %s"), shortNames(describeRows(part.rows), dockableTitle(table))...),
 	}
 	return applyTransfer(table, newApplyParts(part), applyOptionsFor(data.Table, table), op, i18n.Text("Drag"))
 }

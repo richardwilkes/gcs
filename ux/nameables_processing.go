@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -26,13 +27,13 @@ import (
 )
 
 // The nameables prompt is held in a variable so that tests can substitute a non-interactive implementation.
-var promptForNameables = ShowNameablesDialog
+var promptForNameables = showNameablesDialog
 
-// ProcessNameables processes the rows and their children for any nameables. The operation describes what the prompt is
+// processNameables processes the rows and their children for any nameables. The operation describes what the prompt is
 // part of and may be empty (see newOperationLabel). Returns false if the user canceled the prompt, in which case the
 // caller is expected to abandon the whole operation the prompt was part of.
-func ProcessNameables[T gurps.Node[T]](op promptOperation, rows []T) bool {
-	return ProcessNameableGroups(op, []NameableGroup[T]{{Rows: rows}})
+func processNameables[T gurps.Node[T]](op promptOperation, rows []T) bool {
+	return processNameableGroups(op, []NameableGroup[T]{{Rows: rows}})
 }
 
 // NameableGroup is a set of rows whose entries in the nameables prompt share a label. An entry is normally titled with
@@ -56,13 +57,13 @@ type sharedNameableKey struct {
 	key   string
 }
 
-// ProcessNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
+// processNameableGroups processes the rows of each group and their children for any nameables, putting up one prompt
 // that covers all of the groups. Nothing is rebuilt or reported here; the caller does that once the answers are in.
 // The operation describes what the prompt is part of and may be empty (see newOperationLabel). Returns false if the
 // user canceled the prompt, in which case the caller is expected to abandon the whole operation the prompt was part of.
-func ProcessNameableGroups[T gurps.Node[T]](op promptOperation, groups []NameableGroup[T]) bool {
+func processNameableGroups[T gurps.Node[T]](op promptOperation, groups []NameableGroup[T]) bool {
 	var data []T
-	var sections []NameablesSection
+	var sections []nameablesSection
 	var shared []sharedNameableKey
 	for _, group := range groups {
 		// For a group with shared replacements, the entry each key was first asked about under.
@@ -111,7 +112,7 @@ func ProcessNameableGroups[T gurps.Node[T]](op promptOperation, groups []Nameabl
 					title = group.Label + ": " + title
 				}
 				data = append(data, row)
-				sections = append(sections, NameablesSection{
+				sections = append(sections, nameablesSection{
 					Title:       title,
 					Location:    rowLocation(row),
 					Nameables:   m,
@@ -149,8 +150,8 @@ func missingNameableKeys[T gurps.Node[T]](row T, nameables map[string]string) []
 	return nameable.Missing(nameables, replacements)
 }
 
-// NameablesSection is one row's part of the nameables dialog.
-type NameablesSection struct {
+// nameablesSection is one row's part of the nameables dialog.
+type nameablesSection struct {
 	// Title names the row.
 	Title string
 	// Location is the row's kind and the containers above it (see rowLocation). It may be empty.
@@ -161,9 +162,9 @@ type NameablesSection struct {
 	VisibleKeys []string
 }
 
-// ShowNameablesDialog shows a dialog for editing the nameables of each section. The operation describes what the
+// showNameablesDialog shows a dialog for editing the nameables of each section. The operation describes what the
 // dialog is part of and may be empty (see newOperationLabel).
-func ShowNameablesDialog(op promptOperation, sections []NameablesSection) bool {
+func showNameablesDialog(op promptOperation, sections []nameablesSection) bool {
 	list := unison.NewPanel()
 	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
 	list.SetLayout(&unison.FlexLayout{
@@ -232,7 +233,7 @@ func ShowNameablesDialog(op promptOperation, sections []NameablesSection) bool {
 			list.AddChild(createNameableField(&marker, section.Nameables))
 		}
 	}
-	return showListQuestionDialog(op.at(i18n.Text("Substitutions")), i18n.Text("Provide substitutions:"), list)
+	return showListQuestionDialog(op.at(promptstep.Substitutions), i18n.Text("Provide substitutions:"), list)
 }
 
 // createNameableField builds the widget used to edit the replacement value for the marker, which comes from

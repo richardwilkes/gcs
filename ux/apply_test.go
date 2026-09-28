@@ -224,7 +224,7 @@ func TestAncestryQuestionNamesTheContainers(t *testing.T) {
 	arriving := newAncestryTrait("Human")
 	arriving.Name = "Desert Human (@Tribe@)"
 	template := newTestTemplateWithTraits(arriving)
-	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []NameablesSection) bool {
+	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
 		for _, section := range sections {
 			for k := range section.Nameables {
 				section.Nameables[k] = "Sand"
@@ -284,7 +284,7 @@ func TestRandomizationSeesTheArrivingTraits(t *testing.T) {
 	data.Traits = []*gurps.Trait{newAncestryTrait("Human"), strong}
 	template := newTestTemplateDockable("Strong", data)
 
-	c.True(template.applyTemplateToSheet(sheet, true), "the template must be applied")
+	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, true), "the template must be applied")
 
 	entity := sheet.Entity()
 	c.Equal(fxp.FromInteger(20), entity.ResolveAttributeCurrent(gurps.StrengthID), "the template must raise ST to 20")
@@ -329,12 +329,12 @@ func TestCanceledNameablesPromptLeavesSheetUntouched(t *testing.T) {
 	template := newTestTemplateWithBodyType("Template Body")
 	template.template.Traits[0].Name = "Phobia (@Subject@)"
 	shown := 0
-	swapForTest(t, &promptForNameables, func(_ promptOperation, _ []NameablesSection) bool {
+	swapForTest(t, &promptForNameables, func(_ promptOperation, _ []nameablesSection) bool {
 		shown++
 		return false
 	})
 
-	c.False(template.applyTemplateToSheet(sheet, true), "a canceled prompt must report the template was not applied")
+	c.False(template.applyTemplateToSheet(sheet, promptOperation{}, true), "a canceled prompt must report the template was not applied")
 	c.Equal(1, shown, "the nameables must have been put to the user")
 	c.Equal(originalBodyName, entity.SheetSettings.BodyType.Name, "the body type must not have been replaced")
 	c.Equal(originalTraits, len(entity.Traits), "the template's trait must not have been added")
@@ -506,4 +506,120 @@ func TestEditorApplyClearsSourceOfTemplatePicker(t *testing.T) {
 	choices.Source = source
 	clearSourceOfTemplatePicker(choices)
 	c.Equal(gurps.Source{}, choices.Source, "a container with choices must lose its source")
+}
+
+// transferPrompt records one prompt a transfer put up: which prompt it was, the operation it was told it is part of
+// and, for a modifier prompt, the row it asked about and its place in the count.
+type transferPrompt struct {
+	prompt      string
+	name        string
+	description string
+	row         string
+	location    string
+	step        int
+	steps       int
+}
+
+// TestApplyTemplatePromptSequence verifies the prompts applying a template puts up, in order, and that each is told the
+// operation it is part of: the template choices, one modifier prompt per row with modifiers counted across the traits
+// and the equipment as a single run, the substitutions, the ancestry question naming both ancestries, and the offer to
+// randomize again.
+func TestApplyTemplatePromptSequence(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	existing := newAncestryTrait("Human")
+	existing.SetDataOwner(entity)
+	entity.Traits = append(entity.Traits, existing)
+	sheet.Rebuild(true)
+
+	// Named for what the test is about but linked to an ancestry that exists without a library, as only an ancestry
+	// that can be found counts as arriving.
+	elf := newAncestryTrait("Human")
+	elf.Name = "Elf"
+	keenSenses := gurps.NewTrait(nil, elf, false)
+	keenSenses.Name = "Keen Senses"
+	keenSenses.AddModifiers(gurps.NewTraitModifier(nil, nil, false))
+	elf.Children = []*gurps.Trait{keenSenses}
+	talent := gurps.NewTrait(nil, nil, false)
+	talent.Name = "Talent (@Subject@)"
+	talent.AddModifiers(gurps.NewTraitModifier(nil, nil, false))
+	sword := gurps.NewEquipment(nil, nil, false)
+	sword.Name = "Sword"
+	sword.AddModifiers(gurps.NewEquipmentModifier(nil, nil, false))
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{elf, talent}
+	data.Equipment = []*gurps.Equipment{sword}
+	template := newTestTemplateDockable("Source", data)
+
+	var prompts []transferPrompt
+	record := func(prompt string, op promptOperation) {
+		prompts = append(prompts, transferPrompt{prompt: prompt, name: op.name, description: op.description})
+	}
+	recordModifiers := func(info *modifierPromptInfo) {
+		prompts = append(prompts, transferPrompt{
+			prompt:      "modifiers",
+			name:        info.op.name,
+			description: info.op.description,
+			row:         info.name,
+			location:    info.location,
+			step:        info.step,
+			steps:       info.steps,
+		})
+	}
+	swapForTest(t, &promptForPickers, func(op promptOperation, _ *applyParts) bool {
+		record("choices", op)
+		return true
+	})
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+		recordModifiers(info)
+		return false, false
+	})
+	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+		recordModifiers(info)
+		return false, false
+	})
+	swapForTest(t, &promptForNameables, func(op promptOperation, sections []nameablesSection) bool {
+		record("substitutions", op)
+		c.Equal(1, len(sections), "only the talent carries a nameable")
+		c.Equal("Talent (@Subject@)", sections[0].Title)
+		return true
+	})
+	swapForTest(t, &askToDisableExistingAncestry, func(op promptOperation, incoming, existing []string) bool {
+		record("ancestry", op)
+		c.Equal([]string{"Elf"}, incoming)
+		c.Equal([]string{"Human"}, existing)
+		return false
+	})
+	swapForTest(t, &askToRandomizeAgain, func(op promptOperation) bool {
+		record("randomize", op)
+		return false
+	})
+
+	op := promptOperation{name: "Apply Template", description: "Applying template Source to test"}
+	c.True(template.applyTemplateToSheet(sheet, op, false))
+
+	plain := func(prompt string) transferPrompt {
+		return transferPrompt{prompt: prompt, name: op.name, description: op.description}
+	}
+	modifiers := func(row, location string, step int) transferPrompt {
+		return transferPrompt{
+			prompt:      "modifiers",
+			name:        op.name,
+			description: op.description,
+			row:         row,
+			location:    location,
+			step:        step,
+			steps:       3,
+		}
+	}
+	c.Equal([]transferPrompt{
+		plain("choices"),
+		modifiers("Keen Senses", "Trait in Elf", 1),
+		modifiers("Talent (@Subject@)", "", 2),
+		modifiers("Sword", "", 3),
+		plain("substitutions"),
+		plain("ancestry"),
+		plain("randomize"),
+	}, prompts)
 }

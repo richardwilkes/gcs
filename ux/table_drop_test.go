@@ -629,10 +629,10 @@ func TestApplyModifierSkipsChoiceContainers(t *testing.T) {
 	ranged := gurps.NewTraitModifier(nil, nil, false)
 	ranged.Name = "Ranged"
 	tables := []*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table}
-	c.True(attachModifierClones(tables, template.template, []*gurps.Trait{choice, plain}, []*gurps.TraitModifier{ranged},
+	c.True(attachModifierClones("", tables, template.template, []*gurps.Trait{choice, plain}, []*gurps.TraitModifier{ranged},
 		gurps.LibraryFile{}))
 	c.Equal(0, len(choice.Modifiers), "the choice must not be given the modifier")
 	c.Equal([]string{"Ranged"}, appliedModifierNames(plain.Modifiers), "the other target must still get it")
-	c.False(attachModifierClones(tables, template.template, []*gurps.Trait{choice}, []*gurps.TraitModifier{ranged},
+	c.False(attachModifierClones("", tables, template.template, []*gurps.Trait{choice}, []*gurps.TraitModifier{ranged},
 		gurps.LibraryFile{}), "a choice alone leaves nothing to do")
 }

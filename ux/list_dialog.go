@@ -25,8 +25,9 @@ func showListQuestionDialog(op promptOperation, header string, list unison.Panel
 		unison.NewOKButtonInfo()) == unison.ModalResponseOK
 }
 
-// newListQuestionPanel builds the content panel showListQuestionDialog shows: the header labels stacked over the list's
-// scroll panel in a single column, with the scroll panel the only child that grows to fill the dialog.
+// newListQuestionPanel builds the content panel showListQuestionDialog shows: the operation's description, when it has
+// one, then the header labels, stacked over the list's scroll panel in a single column, with the scroll panel the only
+// child that grows to fill the dialog.
 func newListQuestionPanel(op promptOperation, header string, list unison.Paneler, extraHeaders ...*unison.Label) *unison.Panel {
 	scroll := unison.NewScrollPanel()
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))

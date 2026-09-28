@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -32,26 +33,30 @@ var (
 
 // modifierPromptInfo is what the modifier prompt shows about the row whose modifiers it asks about.
 type modifierPromptInfo struct {
-	// operation describes what the prompt is part of (see newOperationLabel). It may be empty.
+	// op is the operation the prompt is part of (see promptOperation).
 	op promptOperation
 	// name is the row's name.
 	name string
-	// location is the row's kind and the containers above it (see rowLocation).
+	// location is the row's kind and the containers above it (see rowLocation). It is empty for a top-level row.
 	location string
 	// step is the prompt's place among the rows being asked about, counting from 1, and steps is how many rows there
 	// are. A steps of 1 or less shows no count.
 	step, steps int
 }
 
-// ProcessModifiers prompts for which modifiers to enable on each row that can hold them (traits and equipment) and on
-// every row below it. Other rows, the modifiers themselves included, preconfigured rows and rows without modifiers are
-// skipped. Nothing is rebuilt here; the caller reports the change once the answers are in (see applyTransfer). The
-// operation describes what the prompts are part of and may be empty (see newOperationLabel). Returns false if the user
-// canceled a prompt, in which case no further prompts are shown and the caller is expected to abandon the whole
-// operation the prompts were part of.
-func ProcessModifiers[T gurps.Node[T]](op promptOperation, rows []T) bool {
-	// The rows to be asked about are gathered first, so that each prompt can say how many there are in all. Answering
-	// a prompt only toggles modifiers, which adds and takes away no rows, so the count holds throughout.
+// processModifiers prompts for which modifiers to enable on each of the rows that modifierTargets picks out of the given
+// rows. Nothing is rebuilt here; the caller reports the change once the answers are in (see applyTransfer). Returns
+// false if the user canceled a prompt, in which case no further prompts are shown and the caller is expected to abandon
+// the whole operation the prompts were part of.
+func processModifiers[T gurps.Node[T]](op promptOperation, rows []T) bool {
+	targets := modifierTargets(rows)
+	return promptForModifierTargets(op, targets, 0, len(targets))
+}
+
+// modifierTargets returns the rows the modifier prompt asks about: each of the given rows, and every row below them,
+// that holds modifiers (traits and equipment), leaving out preconfigured ones. Other rows, the modifiers themselves
+// included, are left out too.
+func modifierTargets[T gurps.Node[T]](rows []T) []T {
 	var targets []T
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
@@ -61,13 +66,21 @@ func ProcessModifiers[T gurps.Node[T]](op promptOperation, rows []T) bool {
 			return false
 		}, false, false, row)
 	}
+	return targets
+}
+
+// promptForModifierTargets puts up the modifier prompt for each of the targets (see modifierTargets). The prompts are
+// counted as following the given number already done, out of total, since one transfer may ask about the rows of
+// several lists. Answering a prompt only toggles modifiers, which adds and takes away no rows, so a count made
+// beforehand holds throughout. Returns false if the user canceled a prompt, in which case no further prompts are shown.
+func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int) bool {
 	for i, row := range targets {
 		info := modifierPromptInfo{
 			op:       op,
 			name:     row.String(),
 			location: rowLocation(row),
-			step:     i + 1,
-			steps:    len(targets),
+			step:     done + i + 1,
+			steps:    total,
 		}
 		var canceled bool
 		switch t := any(row).(type) {
@@ -176,7 +189,7 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 	if info.location != "" {
 		extraHeaders = append(extraHeaders, newTruncatedLabel(info.location, 80, fonts.FieldSecondary))
 	}
-	if !showListQuestionDialog(info.op.at(i18n.Text("Modifiers")), header, list, extraHeaders...) {
+	if !showListQuestionDialog(info.op.at(promptstep.Modifiers), header, list, extraHeaders...) {
 		return false, true
 	}
 	for cb, gm := range tracker {

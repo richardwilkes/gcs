@@ -354,7 +354,7 @@ func TestApplyModifierSkipsEquipmentGroups(t *testing.T) {
 	sturdy := gurps.NewEquipmentModifier(nil, nil, false)
 	sturdy.Name = "Sturdy"
 	tables := []*unison.Table[*Node[*gurps.Equipment]]{template.Equipment.Table}
-	c.True(attachModifierClones(tables, template.template, []*gurps.Equipment{group, backpack},
+	c.True(attachModifierClones("", tables, template.template, []*gurps.Equipment{group, backpack},
 		[]*gurps.EquipmentModifier{sturdy}, gurps.LibraryFile{}))
 	c.Equal(0, len(group.Modifiers), "the group must not be given the modifier")
 	c.Equal(1, len(backpack.Modifiers), "the physical container must still get it")

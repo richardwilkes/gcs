@@ -21,8 +21,8 @@ import (
 // slicedNameablesPrompt adapts a stand-in for the nameables prompt that takes the sections as parallel slices of their
 // titles, substitution maps and visible keys. The maps are the sections' own, so whatever the stand-in fills in reaches
 // the rows.
-func slicedNameablesPrompt(fn func(titles []string, nameables []map[string]string, visibleKeys [][]string) bool) func(promptOperation, []NameablesSection) bool {
-	return func(_ promptOperation, sections []NameablesSection) bool {
+func slicedNameablesPrompt(fn func(titles []string, nameables []map[string]string, visibleKeys [][]string) bool) func(promptOperation, []nameablesSection) bool {
+	return func(_ promptOperation, sections []nameablesSection) bool {
 		titles := make([]string, len(sections))
 		nameables := make([]map[string]string, len(sections))
 		visibleKeys := make([][]string, len(sections))
@@ -306,7 +306,7 @@ func TestProcessNameableGroupsSharesOneAnswerAcrossTheEntriesThatUseIt(t *testin
 		c := check.New(t)
 		sword, groups := newSword()
 		visible := answerVisibleKeys(t, map[string]string{"Material": "Steel", "Color": "Red"})
-		c.True(ProcessNameableGroups(promptOperation{}, groups))
+		c.True(processNameableGroups(promptOperation{}, groups))
 		c.Equal([][]string{{"Material"}, {"Color"}}, *visible,
 			"the shared key is shown once, under the first modifier, and the second asks only about its own")
 		c.Equal(map[string]string{"Material": "Steel", "Color": "Red"}, sword.Replacements,
@@ -319,7 +319,7 @@ func TestProcessNameableGroupsSharesOneAnswerAcrossTheEntriesThatUseIt(t *testin
 		c := check.New(t)
 		sword, groups := newSword()
 		answerVisibleKeys(t, map[string]string{"Color": "Red"})
-		c.True(ProcessNameableGroups(promptOperation{}, groups))
+		c.True(processNameableGroups(promptOperation{}, groups))
 		c.Equal(map[string]string{"Color": "Red"}, sword.Replacements,
 			"clearing the key under the first modifier must clear it for the second as well")
 		c.Equal([]string{"@Material@ Coating", "Red @Material@ Guard"}, appliedModifierNames(sword.Modifiers))

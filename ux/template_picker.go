@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -189,9 +190,11 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 	panel.AddChild(label)
 	// A choice nested within another is put to the user only once its enclosing choice has been answered, so the
 	// containers above it are named to tie it back to the answer that brought it up.
-	label = newTruncatedLabel(rowLocation(row), 80, fonts.FieldSecondary)
-	label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	panel.AddChild(label)
+	if location := rowLocation(row); location != "" {
+		label = newTruncatedLabel(location, 80, fonts.FieldSecondary)
+		label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+		panel.AddChild(label)
+	}
 	if notesCapable, hasNotes := any(row).(interface{ Notes() string }); hasNotes {
 		if notes := notesCapable.Notes(); notes != "" {
 			label = unison.NewLabel()
@@ -217,7 +220,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 	panel.AddChild(scroll)
 
 	var err error
-	dialog, err = newPromptDialog(op.at(i18n.Text("Choice")), nil, nil, panel,
+	dialog, err = newPromptDialog(op.at(promptstep.Choice), nil, nil, panel,
 		unison.NewCancelButtonInfo(),
 		&unison.DialogButtonInfo{
 			Title:        i18n.Text("Override"),
@@ -228,7 +231,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 		errs.Log(err)
 		return nil, true
 	}
-	overrideTip := i18n.Text("Accept the options checked even though they don't satisfy the choice")
+	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice")
 	dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(overrideTip)
 	callback()
 	if dialog.RunModal() == unison.ModalResponseCancel {
@@ -443,7 +446,7 @@ func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return quantity },
 		func(value fxp.Int) { quantity = value }, fxp.One, fxp.Max-1, false, false))
-	dialog, err := newPromptDialog(op.at(i18n.Text("Quantity")), nil, nil, panel, unison.NewCancelButtonInfo(),
+	dialog, err := newPromptDialog(op.at(promptstep.Quantity), nil, nil, panel, unison.NewCancelButtonInfo(),
 		unison.NewOKButtonInfo())
 	if err != nil {
 		errs.Log(err)
@@ -514,7 +517,7 @@ func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, checkBox *unis
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return levels },
 		func(value fxp.Int) { levels = value }, 0, fieldMax, false, false))
-	dialog, err := newPromptDialog(op.at(i18n.Text("Level")), nil, nil, panel, unison.NewCancelButtonInfo(),
+	dialog, err := newPromptDialog(op.at(promptstep.Level), nil, nil, panel, unison.NewCancelButtonInfo(),
 		unison.NewOKButtonInfo())
 	if err != nil {
 		errs.Log(err)
@@ -548,7 +551,7 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, no
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return points },
 		func(value fxp.Int) { points = value }, 0, fxp.MaxBasePoints, false, false))
-	dialog, err := newPromptDialog(op.at(i18n.Text("Points")), nil, nil, panel, unison.NewCancelButtonInfo(),
+	dialog, err := newPromptDialog(op.at(promptstep.Points), nil, nil, panel, unison.NewCancelButtonInfo(),
 		unison.NewOKButtonInfo())
 	if err != nil {
 		errs.Log(err)

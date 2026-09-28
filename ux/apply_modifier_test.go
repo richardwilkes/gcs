@@ -109,7 +109,7 @@ func TestAttachModifierClonesGivesEachTargetItsOwnCopies(t *testing.T) {
 	inner.Disabled = true
 	container.Children = []*gurps.TraitModifier{inner}
 
-	c.True(attachModifierClones(tables, owner, []*gurps.Trait{first, second}, []*gurps.TraitModifier{mod, container},
+	c.True(attachModifierClones("", tables, owner, []*gurps.Trait{first, second}, []*gurps.TraitModifier{mod, container},
 		gurps.LibraryFile{}))
 
 	c.Equal([]string{"Ranged", "Group"}, appliedModifierNames(first.Modifiers))
@@ -190,7 +190,7 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 			return false, false
 		})
 
-		c.True(attachModifierClones([]*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
+		c.True(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
 			[]*gurps.Trait{alpha, beta}, newModifiers(), gurps.LibraryFile{}))
 		c.Equal([]prompt{wantPrompt("Alpha"), wantPrompt("Beta")}, *prompts,
 			"each target must be asked about its own copies, the ones pointed at directly already switched on")
@@ -226,7 +226,7 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 		}))
 		modifiers := append(newModifiers(), newSwitchableTraitModifier("@Material@ Coating"))
 
-		c.False(attachModifierClones([]*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
+		c.False(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
 			[]*gurps.Trait{alpha, beta}, modifiers, gurps.LibraryFile{}), "a canceled prompt must be reported")
 		c.Equal(1, len(*prompts), "the prompts must stop at the one that was canceled")
 		c.Equal(0, nameablesShown, "the nameables prompt must not follow a canceled modifier prompt")
@@ -253,7 +253,7 @@ func TestAttachModifierClonesOnASheetRebuildsWithoutPrompting(t *testing.T) {
 	c.Equal(-1, switchColumnIndex(stale.Columns, gurps.TraitSwitchColumn), "the traits list starts without switches")
 	mod := newSwitchableTraitModifier("Ranged")
 
-	c.True(attachModifierClones([]*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
+	c.True(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
 		[]*gurps.Trait{entity.Traits[0], entity.Traits[1]}, []*gurps.TraitModifier{mod}, gurps.LibraryFile{}))
 	c.False(entity.Traits[0].Modifiers[0].Disabled, "the clone is switched on")
 	c.False(entity.Traits[1].Modifiers[0].Disabled, "the clone is switched on")
@@ -291,7 +291,7 @@ func TestAttachModifierClonesCanceledPromptPutsTheTargetBack(t *testing.T) {
 		return false
 	}))
 
-	c.False(attachModifierClones([]*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
+	c.False(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
 		[]*gurps.Trait{trait}, []*gurps.TraitModifier{named}, gurps.LibraryFile{}),
 		"a canceled prompt must be reported")
 	c.Equal(1, shown, "the nameables prompt must have been shown")
@@ -806,7 +806,7 @@ func TestModifierTargetCellFactoryIndentsNestedTargets(t *testing.T) {
 }
 
 // TestPromptForSingleDestinationSkipsTheDialogForOneChoice verifies that promptForSingleDestination and
-// PromptForDestination hand a lone choice back without a dialog and report no choice at all as nothing chosen. Neither
+// promptForDestinations hand a lone choice back without a dialog and report no choice at all as nothing chosen. Neither
 // can put up a dialog here, since there is no window.
 func TestPromptForSingleDestinationSkipsTheDialogForOneChoice(t *testing.T) {
 	c := check.New(t)
@@ -816,9 +816,9 @@ func TestPromptForSingleDestinationSkipsTheDialogForOneChoice(t *testing.T) {
 	c.Equal(any(sheet), any(dest), "the lone choice must be the one handed back")
 	_, ok = promptForSingleDestination[FileBackedDockable](promptOperation{}, nil)
 	c.False(ok, "no choice at all must be reported as nothing chosen")
-	c.Equal([]FileBackedDockable{sheet}, PromptForDestination(promptOperation{}, []FileBackedDockable{sheet}),
+	c.Equal([]FileBackedDockable{sheet}, promptForDestinations(promptOperation{}, []FileBackedDockable{sheet}),
 		"a lone choice must come back as it is")
-	c.Equal(0, len(PromptForDestination[FileBackedDockable](promptOperation{}, nil)), "no choice at all must come back empty")
+	c.Equal(0, len(promptForDestinations[FileBackedDockable](promptOperation{}, nil)), "no choice at all must come back empty")
 }
 
 // TestApplyModifierCommandNeedsASelectionAndADestination verifies that the command needs both a selection and an open
