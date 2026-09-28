@@ -525,6 +525,27 @@ func TestTraitEditorShowsTheRangeOfAnOpenChoice(t *testing.T) {
 	c.Equal("20", pointCost(), "a preconfigured trait takes the pick already made")
 }
 
+// TestTraitEditorCountsAnOpenChoiceWhoseOptionsCostTheSame verifies that a trait editor opened outside a sheet shows
+// the cost the list shows while a mandatory modifier choice whose options all cost the same is yet to be made. The
+// editor used to leave the choice out altogether, as though it could be left unmade.
+func TestTraitEditorCountsAnOpenChoiceWhoseOptionsCostTheSame(t *testing.T) {
+	c := check.New(t)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.BasePoints = fxp.FromInteger(10)
+	choice := newTraitModifierChoiceFor(nil, true, []string{"Small", "Large"})
+	choice.Children[0].CostAdj = "+5"
+	choice.Children[1].CostAdj = "+5"
+	trait.AddModifiers(choice)
+	c.Equal(fxp.FromInteger(15), trait.AdjustedPoints(nil), "the list counts the choice")
+	e, content := buildEditorContent(nil, trait, initTraitEditor)
+	// The Point Cost field is the first of the editor's non-editable fields.
+	pointCost := panelsOfType[*NonEditableField](content)[0]
+	c.Equal("15", pointCost.String())
+	e.editorData.Modifiers[0].Children[0].CostAdj = "+1"
+	DeepSync(e)
+	c.Equal("11~15", pointCost.String(), "the editor's own pending state counts")
+}
+
 // TestLockedPickKeepsItsCheckmark verifies that clicking the checkmark of the pick of a mandatory choice on a sheet
 // leaves both the modifier and the checkmark drawn for it as they were, rather than clearing the mark over a pick that
 // is still in force.

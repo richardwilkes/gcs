@@ -756,6 +756,12 @@ func (t *Trait) leafPointsRange(fixed modifierChoicePicks[*TraitModifier], toolt
 	return NumericRangeOf(t.AdjustedPoints(tooltip))
 }
 
+// ModifierChoicePointsRange returns the span of costs this trait, which must not be a container, may come to once the
+// mandatory modifier choices it has yet to make have been made, and false when there are none.
+func (t *Trait) ModifierChoicePointsRange() (NumericRange, bool) {
+	return t.modifierChoicePointsRange(nil)
+}
+
 // modifierChoicePointsRange returns the span of costs this trait, which must not be a container, may come to once the
 // mandatory modifier choices it has yet to make have been made, with those fixed holds a pick for made with that pick,
 // and false when there are none. The modifiers are only gathered off a sheet, where such a choice can still be open.
