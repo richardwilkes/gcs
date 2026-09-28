@@ -979,3 +979,34 @@ func TestNewModifierInAChoiceWithoutAPick(t *testing.T) {
 	c.Equal([]*gurps.TraitModifier{mandatory}, gurps.UnresolvedModifierChoices(e.editorData.Modifiers...),
 		"which is left without its pick")
 }
+
+// TestTakingThePickAwayLeavesTheChoiceFlagged verifies that deleting the pick of a mandatory choice on a sheet, or
+// moving it out of the choice, leaves the choice without a pick, flagged as required, rather than picking another
+// option in its place.
+func TestTakingThePickAwayLeavesTheChoiceFlagged(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	required := func(choice *gurps.TraitModifier) bool {
+		var data gurps.CellData
+		choice.CellData(gurps.TraitModifierDescriptionColumn, &data)
+		return data.ChoiceRequired
+	}
+	for _, remove := range []func(table *unison.Table[*Node[*gurps.TraitModifier]]){
+		func(table *unison.Table[*Node[*gurps.TraitModifier]]) { DeleteSelection(table, true) },
+		func(table *unison.Table[*Node[*gurps.TraitModifier]]) {
+			table.PerformCmd(nil, MoveOutOfContainerItemID)
+		},
+	} {
+		e, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A"))
+		choice := e.editorData.Modifiers[len(e.editorData.Modifiers)-1]
+		c.False(required(choice))
+		table.SetSelectionMap(map[tid.TID]bool{choice.Children[0].ID(): true})
+		remove(table)
+		choice = e.editorData.Modifiers[len(e.editorData.Modifiers)-1]
+		c.Equal(1, len(choice.Children))
+		c.False(choice.Children[0].Enabled(), "B isn't picked in A's place")
+		c.True(required(choice), "the choice is flagged as required")
+	}
+}

@@ -295,9 +295,13 @@ func (t *TableDragUndoEditData[T]) Apply() {
 
 // settleModifierChoices keeps each modifier choice in the table to no more than one enabled option after an edit that
 // may have brought options into one: an insert, a duplicate, a move or a drop. The option a choice already had enabled
-// is kept over those the edit brought in, which are the rows it leaves selected (see gurps.SettleModifierChoices).
-// Every edit ending in commitTableUndo or finishDidDrop must therefore leave selected the rows it brought in, and
-// nothing else it wants to keep, as each already does. A table of anything but modifiers is left alone.
+// is kept over those the edit brought in, which are taken to be the rows it leaves selected (see
+// gurps.SettleModifierChoices). A duplicate and a drop leave just the rows they brought in selected. An insert does too,
+// though a new modifier arrives in a choice already turned off (see InsertItems). A move leaves the selection as the
+// user made it, which may hold rows that didn't move, so it settles with the rows that did before it gets here (see
+// settleModifierChoicesFor), leaving nothing for this to do. Settling only ever turns options off: an edit that takes
+// the pick of a mandatory choice away, as deleting it or moving it out does, leaves the choice without one, flagged as
+// required on a sheet. A table of anything but modifiers is left alone.
 func settleModifierChoices[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	var zero T
 	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || table == nil {
