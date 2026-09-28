@@ -695,6 +695,67 @@ func TestLoadingKeepsThePicksOfUnsupportedForms(t *testing.T) {
 	c.False(loaded.Children[1].Enabled(), "a supported form keeps no more than one")
 }
 
+// TestIndependentModifierChoicesWithinTheCap verifies that each way of making two open choices is costed, and that the
+// ways of making twelve choices of two options each, as many as the cap allows, are all worked through.
+func TestIndependentModifierChoicesWithinTheCap(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.BasePoints = fxp.FromInteger(10)
+	trait.AddModifiers(newTraitModifierChoiceWith(true, "+1", "+2"), newTraitModifierChoiceWith(true, "+10", "+20"))
+	c.Equal("21~32", trait.PointsRange(nil).String())
+
+	atTheCap := NewTrait(nil, nil, false)
+	atTheCap.BasePoints = fxp.FromInteger(10)
+	for range 12 {
+		atTheCap.AddModifiers(newTraitModifierChoiceWith(true, "+0", "+1"))
+	}
+	c.Equal("10~22", atTheCap.PointsRange(nil).String(), "4096 ways are all worked through")
+}
+
+// TestContainedWeightReductionOfEachOption verifies that each option of a mandatory choice on a container reduces the
+// weight of its contents by its own reduction, paired with its own weight, rather than the least weight of one option
+// being paired with the greatest reduction of another.
+func TestContainedWeightReductionOfEachOption(t *testing.T) {
+	c := check.New(t)
+	pack := NewEquipment(nil, nil, true)
+	pack.BaseWeight = "1 lb"
+	choice := NewEquipmentModifierChoice(nil, nil)
+	reducing := NewEquipmentModifier(nil, choice, false)
+	reducing.WeightAmount = "+1 lb"
+	reduction := NewContainedWeightReduction()
+	reduction.Reduction = "50%"
+	reducing.Features = Features{reduction}
+	reducing.SetEnabled(false)
+	plain := NewEquipmentModifier(nil, choice, false)
+	plain.SetEnabled(false)
+	choice.Children = []*EquipmentModifier{reducing, plain}
+	pack.AddModifiers(choice)
+	item := newEquipmentItem("Rock", "0", "10 lb")
+	item.SetParent(pack)
+	pack.Children = []*Equipment{item}
+	c.Equal("7~11 lb", FormatWeightRange(pack.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
+	c.Equal(fxp.Weight(fxp.FromInteger(7)), pack.ExtendedWeight(false, fxp.Pound))
+}
+
+// TestEditorCopyAsksAboutInheritedChoicesOnTheContainer verifies that a copy of a trait, as an editor works on, whose
+// own modifiers still belong to the original, takes a choice it inherits as made when the container above it is
+// preconfigured, and its own choice as made when the copy is.
+func TestEditorCopyAsksAboutInheritedChoicesOnTheContainer(t *testing.T) {
+	c := check.New(t)
+	parent := newTraitContainerWithChoice(container.Group, []string{"+1", "+3"})
+	parent.Modifiers[0].Children[1].SetEnabled(true)
+	parent.Preconfigured = true
+	child := newTraitWithPoints(parent, 10)
+	child.AddModifiers(newTraitModifierChoiceWith(true, "+5", "+10"))
+	child.Modifiers[0].Children[1].SetEnabled(true)
+	editorCopy := child.Clone(LibraryFile{}, child.DataOwner(), parent, Copy)
+	editorCopy.TraitEditData = child.TraitEditData
+	c.Equal(child, editorCopy.Modifiers[0].Target(), "the copy's modifiers still belong to the original")
+	c.Equal("18~23", editorCopy.PointsRange(nil).String(), "the container's choice is taken as made")
+	editorCopy.Preconfigured = true
+	c.Equal("23", editorCopy.PointsRange(nil).String(), "and the copy's own once it is preconfigured")
+}
+
 // TestPastTheCapTheCurrentPicksCount verifies that with more ways of making the open choices than are worked through,
 // the choices count as made with the picks they have, so that every figure agrees with every other.
 func TestPastTheCapTheCurrentPicksCount(t *testing.T) {
