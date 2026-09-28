@@ -779,6 +779,12 @@ func (t *Trait) containerModifierChoices(fixed modifierChoicePicks[*TraitModifie
 	if IsOnSheet(t) {
 		return nil, fixed
 	}
+	// With no choice of its own to make, the container has nothing to multiply the ways of those inside with, and
+	// each trait inside keeps to the cap alone, so the traits inside needn't be looked at.
+	own, _ := openMandatoryModifierChoices(t, t.AllModifiers(), fixed)
+	if len(own) == 0 {
+		return nil, fixed
+	}
 	most := 1
 	var within []*TraitModifier
 	Traverse(func(one *Trait) bool {
@@ -795,8 +801,7 @@ func (t *Trait) containerModifierChoices(fixed modifierChoicePicks[*TraitModifie
 		}
 		return nil, asTheyStand
 	}
-	open, _ := openMandatoryModifierChoices(t, t.AllModifiers(), fixed)
-	return open, fixed
+	return own, fixed
 }
 
 // alternativeAbilitiesPointsRange returns the span of costs a set of alternative abilities may be worth, given the
