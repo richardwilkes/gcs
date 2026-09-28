@@ -860,3 +860,20 @@ func TestListFilterKeyForExtension(t *testing.T) {
 		c.True(slices.Contains(keys, want), "the keys include %q", want)
 	}
 }
+
+// TestListFilterMatchesEquipmentContainerType verifies that a filter on equipment can tell a group from a physical
+// container, as one on traits can tell their kinds of container apart, and that a piece of equipment that isn't a
+// container has no container type.
+func TestListFilterMatchesEquipmentContainerType(t *testing.T) {
+	c := check.New(t)
+	group := gurps.NewEquipmentGroup(nil, nil)
+	backpack := gurps.NewEquipment(nil, nil, true)
+	item := gurps.NewEquipment(nil, nil, false)
+	isGroup := newTextFilterCondition("container_type", criteria.IsText, "group")
+	isContainer := newTextFilterCondition("container_type", criteria.IsText, "container")
+	fields := gurps.EquipmentFilterFields()
+	c.True(matchesListFilter(newTestListFilter(isGroup), fields, group))
+	c.False(matchesListFilter(newTestListFilter(isGroup), fields, backpack))
+	c.True(matchesListFilter(newTestListFilter(isContainer), fields, backpack))
+	c.False(matchesListFilter(newTestListFilter(isContainer), fields, item), "an item is no kind of container")
+}

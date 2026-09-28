@@ -1002,18 +1002,28 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 					default:
 						ex.writeEncodedText("1")
 					}
+				// A group has no quantity, value or weight of its own, so these are left empty for one, as its row in
+				// the list leaves them.
 				case "QTY":
-					ex.writeEncodedText(eqp.Quantity.String())
+					if !eqp.IsGroup() {
+						ex.writeEncodedText(eqp.Quantity.String())
+					}
 				case "COST":
-					ex.writeEncodedText(eqp.AdjustedValue().String())
+					if !eqp.IsGroup() {
+						ex.writeEncodedText(eqp.AdjustedValue().String())
+					}
 				case weightExportKey:
-					ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(eqp.AdjustedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)))
+					if !eqp.IsGroup() {
+						ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(eqp.AdjustedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)))
+					}
 				case "COST_SUMMARY":
 					ex.writeEncodedText(eqp.ExtendedValue().String())
 				case "WEIGHT_SUMMARY":
 					ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(eqp.ExtendedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)))
 				case "WEIGHT_RAW":
-					ex.writeEncodedText(fxp.Int(eqp.AdjustedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)).String())
+					if !eqp.IsGroup() {
+						ex.writeEncodedText(fxp.Int(eqp.AdjustedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)).String())
+					}
 				case techLevelExportKey:
 					ex.writeEncodedText(eqp.TechLevel)
 				case "LEGALITY_CLASS", "LC":

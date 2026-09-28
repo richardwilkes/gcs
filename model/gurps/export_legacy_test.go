@@ -453,3 +453,20 @@ func TestLegacyExportAttributeLoops(t *testing.T) {
 			"@SECONDARY_ATTRIBUTE_LOOP_COUNT|@SECONDARY_ATTRIBUTE_LOOP_START<@ID>@SECONDARY_ATTRIBUTE_LOOP_END|"+
 			"@POINT_POOL_LOOP_COUNT|@POINT_POOL_LOOP_START<@ID:@CURRENT/@MAXIMUM>@POINT_POOL_LOOP_END"))
 }
+
+// TestLegacyExportLeavesAGroupsOwnFiguresEmpty verifies that the legacy exporter leaves out the quantity, value and
+// weight of a group, which has none of its own, while still giving the totals of what it holds.
+func TestLegacyExportLeavesAGroupsOwnFiguresEmpty(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	group := NewEquipmentGroup(e, nil)
+	group.Name = "Kit"
+	rope := NewEquipment(e, group, false)
+	rope.Name = "Rope"
+	rope.BaseValue = "5"
+	rope.BaseWeight = "2 lb"
+	group.Children = []*Equipment{rope}
+	e.CarriedEquipment = []*Equipment{group}
+	c.Equal("Kit||||2 lb|5|\nRope|1|5|2 lb|2 lb|5|\n", runLegacyExport(t, c, e,
+		"@EQUIPMENT_LOOP_START@DESCRIPTION|@QTY|@COST|@WEIGHT|@WEIGHT_SUMMARY|@COST_SUMMARY|\n@EQUIPMENT_LOOP_END"))
+}

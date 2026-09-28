@@ -81,13 +81,16 @@
   notes, user description, tags, self-control roll, frequency of appearance, prerequisites, library source and its
   preconfigured, disabled and switched on settings, and makes a trait choice a plain group. Put a modifier meant for
   every option on each option instead.
-- Equipment containers now have a type. A container is still a piece of equipment that holds other equipment, such as
-  a backpack, and every existing container stays one. A group only organizes the equipment in it: it has no quantity,
+- Equipment containers now have a type. A container is still a piece of equipment that holds other equipment, such as a
+  backpack, and every existing container stays one. A group only organizes the equipment in it: it has no quantity,
   value, weight, tech level, legality class, uses, rated ST, level, modifiers, weapons, features or prerequisites of its
   own, so it is worth and weighs just what its contents do. The new "New Carried Equipment Group" and "New Other
   Equipment Group" commands add one, "Convert to Group" turns a container into a group, warning first about what the
   group can't keep, and "Convert to Container" turns a group back into a container. A group can't be given modifiers,
-  whether by dropping them onto it or with "Apply Modifier".
+  whether by dropping them onto it or with "Apply Modifier". In exports, an equipment container's type is now
+  "container" or "group", rather than always "group", just as a trait container's is its container type, and the legacy
+  text export leaves a group's quantity, value and weight empty. Saved list filters can test an equipment container's
+  type, and scripts can read it as its kind.
 - Equipment can now be offered as a template choice. In a template, "New Equipment Choice" adds one, and "Convert to
   Choice" turns an equipment group into one. An equipment choice is picked by count, by value or by weight, and its
   editor shows only the name, notes, choice and page reference. A choice picked by value or weight lets the

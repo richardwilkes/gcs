@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"strings"
+
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
@@ -53,6 +55,7 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	addScriptWeapons(r, m, func() []*Weapon { return item.Weapons })
 	addScriptActiveModifiers(r, m, item, newScriptEquipmentModifier)
 	if item.Container() {
+		m["kind"] = func() goja.Value { return r.ToValue(strings.ReplaceAll(item.ContainerType.Key(), "_", " ")) }
 		m["children"] = func() goja.Value { return scriptObjects(r, item.Children, hasQuantity, newScriptEquipment) }
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))

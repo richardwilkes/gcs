@@ -200,3 +200,20 @@ func TestScriptEntityOtherEquipment(t *testing.T) {
 	c.Equal("1", resolve("entity.otherEquipment.length"))
 	c.Equal("Spare Armor", resolve("entity.otherEquipment[0].name"))
 }
+
+// TestScriptEquipmentKind verifies that a script can tell a group from a physical container, as it can tell trait
+// containers apart, and that a piece of equipment that isn't a container has no kind.
+func TestScriptEquipmentKind(t *testing.T) {
+	c := check.New(t)
+	kind := func(eqp *Equipment) string {
+		v, err := runScript(0, "String(self.kind)", ScriptArg{
+			Name:  "self",
+			Value: func(r *goja.Runtime) any { return newScriptEquipment(r, eqp) },
+		})
+		c.NoError(err, "the script should run")
+		return v
+	}
+	c.Equal("container", kind(NewEquipment(nil, nil, true)))
+	c.Equal("group", kind(NewEquipmentGroup(nil, nil)))
+	c.Equal("undefined", kind(NewEquipment(nil, nil, false)))
+}
