@@ -623,3 +623,49 @@ func TestApplyTemplatePromptSequence(t *testing.T) {
 		plain("randomize"),
 	}, prompts)
 }
+
+// TestApplyTemplateCountsModifierPromptsBeforeAskingThem verifies that the modifier prompts of a transfer are numbered
+// from a count made before any is answered. A preconfigured trait is only asked about while a mandatory choice of its
+// has no pick, so answering its prompt used to drop it from a count made afterward, and the equipment prompt that
+// followed was numbered as the first again.
+func TestApplyTemplateCountsModifierPromptsBeforeAskingThem(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Talent"
+	trait.Preconfigured = true
+	trait.AddModifiers(newTraitModifierChoiceFor(nil, true, []string{"A", "B"}))
+	sword := gurps.NewEquipment(nil, nil, false)
+	sword.Name = "Sword"
+	sword.AddModifiers(gurps.NewEquipmentModifier(nil, nil, false))
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{trait}
+	data.Equipment = []*gurps.Equipment{sword}
+	template := newTestTemplateDockable("Source", data)
+
+	type step struct {
+		row         string
+		step, steps int
+	}
+	var steps []step
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+		steps = append(steps, step{row: info.name, step: info.step, steps: info.steps})
+		// Answer as the user must, by making the choice.
+		gurps.Traverse(func(mod *gurps.TraitModifier) bool {
+			if gurps.IsMandatoryModifierChoice(mod) {
+				gurps.ModifierChoiceOptions(mod)[0].SetEnabled(true)
+			}
+			return false
+		}, false, false, modifiers...)
+		return true, false
+	})
+	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+		steps = append(steps, step{row: info.name, step: info.step, steps: info.steps})
+		return false, false
+	})
+	swapForTest(t, &promptForNameables, func(_ promptOperation, _ []nameablesSection) bool { return true })
+	swapForTest(t, &askToRandomizeAgain, func(_ promptOperation) bool { return false })
+
+	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, false))
+	c.Equal([]step{{row: "Talent", step: 1, steps: 2}, {row: "Sword", step: 2, steps: 2}}, steps)
+}

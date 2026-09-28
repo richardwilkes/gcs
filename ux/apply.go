@@ -181,16 +181,25 @@ func (a *applyParts) each(fn func(part applyPartOps)) {
 }
 
 // promptForModifiers puts up the modifier prompts for the rows of every part, numbering them across all of the parts
-// rather than starting over with each, since the user sees them as one run. Returns false if a prompt was canceled.
+// rather than starting over with each, since the user sees them as one run. Each part's rows are counted before any
+// prompt is answered, since answering one can take a row out of those a count made afterward would find (see
+// modifierTargets). Returns false if a prompt was canceled.
 func (a *applyParts) promptForModifiers(op promptOperation) bool {
+	var counts []int
 	total := 0
-	a.each(func(part applyPartOps) { total += part.modifierTargetCount() })
+	a.each(func(part applyPartOps) {
+		count := part.modifierTargetCount()
+		counts = append(counts, count)
+		total += count
+	})
 	done := 0
+	i := 0
 	return a.all(func(part applyPartOps) bool {
 		if !part.promptForModifiers(op, done, total) {
 			return false
 		}
-		done += part.modifierTargetCount()
+		done += counts[i]
+		i++
 		return true
 	})
 }

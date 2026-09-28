@@ -85,9 +85,9 @@ func modifierTargets[T gurps.Node[T]](rows []T, requirePicks bool) []T {
 // promptForModifierTargets puts up the modifier prompt for each of the targets (see modifierTargets), asking about the
 // modifiers modifiersToAskAbout picks out. requirePicks is true when the rows are headed for a sheet (see
 // modifierPromptInfo.requirePicks). The prompts are counted as following the given number already done, out of total,
-// since one transfer may ask about the rows of several lists. Answering a prompt only toggles modifiers, which adds and
-// takes away no rows, so a count made beforehand holds throughout. Returns false if the user canceled a prompt, in which
-// case no further prompts are shown.
+// since one transfer may ask about the rows of several lists. The targets are gathered before any prompt is answered,
+// since answering one can make a preconfigured row no longer a target, so a count made afterward would come up short.
+// Returns false if the user canceled a prompt, in which case no further prompts are shown.
 func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int, requirePicks bool) bool {
 	for i, row := range targets {
 		info := modifierPromptInfo{
