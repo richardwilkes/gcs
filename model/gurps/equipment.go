@@ -85,6 +85,10 @@ type Equipment struct {
 // EquipmentData holds the Equipment data that is written to disk.
 type EquipmentData struct {
 	SourcedID
+	// ContainerType is the kind of container this is, when it is one. It is kept out of the data an editor edits, since
+	// no editor changes it: a container changes kind only through a conversion, and an editor opened before one would
+	// otherwise put the old kind back when applied.
+	ContainerType eqcontainer.Type `json:"container_type,omitzero"`
 	EquipmentEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Equipment   `json:"children,omitempty"` // Only for containers
@@ -126,10 +130,10 @@ type EquipmentSyncData struct {
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
 }
 
-// EquipmentContainerSyncData holds the equipment sync data that is only applicable to equipment that are containers.
+// EquipmentContainerSyncData holds the equipment sync data that is only applicable to equipment that are containers and
+// that an editor may edit. The kind of container is kept in EquipmentData instead.
 type EquipmentContainerSyncData struct {
-	TemplatePicker TemplatePicker   `json:"template_picker,omitzero"`
-	ContainerType  eqcontainer.Type `json:"container_type,omitzero"`
+	TemplatePicker TemplatePicker `json:"template_picker,omitzero"`
 }
 
 // NewEquipmentFromFile loads an Equipment list from a file.
@@ -348,6 +352,7 @@ func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, 
 	other.AdjustSource(from, e.SourcedID, mode)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
+	other.ContainerType = e.ContainerType
 	other.copyFrom(other, &e.EquipmentEditData, false, mode)
 	PropagateNodeNoteClosedState(e, other)
 	if e.HasChildren() {
@@ -1142,11 +1147,11 @@ func (e *Equipment) CanConvertToFromContainer() bool {
 	return !e.Container() || (!e.HasChildren() && !IsTemplateChoiceContainer(e))
 }
 
-// ConvertToContainer converts this node to a container.
-// The container it becomes is always a physical container, since the piece of equipment it was already has everything
-// one holds.
+// ConvertToContainer converts this node to a container. The container it becomes is always a physical container, since
+// the piece of equipment it was already has everything one holds.
 func (e *Equipment) ConvertToContainer() {
 	e.TID = tid.TID(kinds.EquipmentContainer) + e.TID[1:]
+	e.ContainerType = eqcontainer.Container
 	e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
 }
 
@@ -1158,11 +1163,14 @@ func (e *Equipment) ConvertToNonContainer() {
 		e.LegalityClass = defaultLegalityClass
 	}
 	e.TID = tid.TID(kinds.Equipment) + e.TID[1:]
+	e.ContainerType = eqcontainer.Container
 	e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
 }
 
-// equipmentContainerConversionState is what converting equipment to or from a container changes besides its kind.
+// equipmentContainerConversionState is what converting equipment to or from a container, or between kinds of
+// container, changes besides its kind of node.
 type equipmentContainerConversionState struct {
+	containerType eqcontainer.Type
 	container     EquipmentContainerSyncData
 	legalityClass string
 }
@@ -1170,12 +1178,17 @@ type equipmentContainerConversionState struct {
 // ContainerConversionState returns what converting this equipment to or from a container changes besides its kind, so
 // that undoing the conversion can put it back (see RestoreContainerConversionState).
 func (e *Equipment) ContainerConversionState() any {
-	return equipmentContainerConversionState{container: e.EquipmentContainerSyncData, legalityClass: e.LegalityClass}
+	return equipmentContainerConversionState{
+		containerType: e.ContainerType,
+		container:     e.EquipmentContainerSyncData,
+		legalityClass: e.LegalityClass,
+	}
 }
 
 // RestoreContainerConversionState puts back what ContainerConversionState returned.
 func (e *Equipment) RestoreContainerConversionState(state any) {
 	if s, ok := state.(equipmentContainerConversionState); ok {
+		e.ContainerType = s.containerType
 		e.EquipmentContainerSyncData = s.container
 		e.LegalityClass = s.legalityClass
 	}
@@ -1200,6 +1213,7 @@ func (e *Equipment) Kind() string {
 // of equipment in its own right is cleared, and its quantity is always one.
 func (e *Equipment) ClearUnusedFieldsForType() {
 	if !e.Container() {
+		e.ContainerType = eqcontainer.Container
 		e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
 		e.Children = nil
 		return
@@ -1229,6 +1243,7 @@ func (e *Equipment) SyncWithSource() {
 	syncFromSource(e, func(other *Equipment) {
 		e.EquipmentSyncData = other.EquipmentSyncData
 		if e.Container() {
+			e.ContainerType = other.ContainerType
 			e.EquipmentContainerSyncData = other.EquipmentContainerSyncData
 		}
 		e.Tags = slices.Clone(other.Tags)
@@ -1243,15 +1258,11 @@ func (e *Equipment) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
-	e.EquipmentSyncData.hash(h)
+	e.hash(h)
 	if e.Container() {
-		e.EquipmentContainerSyncData.hash(h)
+		e.TemplatePicker.Hash(h)
+		xhash.Num8(h, e.ContainerType)
 	}
-}
-
-func (e *EquipmentContainerSyncData) hash(h hash.Hash) {
-	e.TemplatePicker.Hash(h)
-	xhash.Num8(h, e.ContainerType)
 }
 
 // TemplatePickerData implements TemplatePickerProvider.
@@ -1312,10 +1323,17 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	e.Features = other.Features.Clone()
 }
 
+// CanPreconfigureContainer implements Preconfigurable. The data an editor edits doesn't say what kind of container it
+// belongs to, and the only editor that offers the setting is a physical container's; see Equipment's own
+// CanPreconfigureContainer for the answer that takes the kind into account.
+func (e *EquipmentEditData) CanPreconfigureContainer() bool {
+	return true
+}
+
 // CanPreconfigureContainer implements Preconfigurable. Only a physical container has modifiers of its own to
 // preconfigure.
-func (e *EquipmentEditData) CanPreconfigureContainer() bool {
-	return e.ContainerType == eqcontainer.Container
+func (e *Equipment) CanPreconfigureContainer() bool {
+	return e.IsPhysicalContainer()
 }
 
 // ModifierList returns the list of modifiers

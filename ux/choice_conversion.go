@@ -29,6 +29,10 @@ type choiceConversion[T gurps.Node[T], D gurps.EditorData[T]] struct {
 	after        D
 	sourceBefore gurps.Source
 	sourceAfter  gurps.Source
+	// stateBefore and stateAfter hold what the conversion changes outside of the data an editor edits, such as the kind
+	// of an equipment container, for a target that keeps any (see containerConversionStateKeeper).
+	stateBefore any
+	stateAfter  any
 }
 
 type choiceConversionList[T gurps.Node[T], D gurps.EditorData[T]] struct {
@@ -48,12 +52,19 @@ func (c *choiceConversionList[T, D]) apply(undo bool) {
 	}
 	discardEditorsFor(ids)
 	for _, one := range c.list {
+		keeper, keeps := any(one.target).(containerConversionStateKeeper)
 		if undo {
 			one.before.ApplyTo(one.target)
 			restoreSource(one.target, one.sourceBefore, one.sourceAfter)
+			if keeps {
+				keeper.RestoreContainerConversionState(one.stateBefore)
+			}
 		} else {
 			one.after.ApplyTo(one.target)
 			restoreSource(one.target, one.sourceAfter, one.sourceBefore)
+			if keeps {
+				keeper.RestoreContainerConversionState(one.stateAfter)
+			}
 		}
 	}
 	rebuildAsModified(c.owner, true)
@@ -207,9 +218,16 @@ func convertContainerKinds[T gurps.Node[T], D gurps.EditorData[T]](owner Rebuild
 			before:       newData(target),
 			sourceBefore: target.GetSource(),
 		}
+		keeper, keeps := any(target).(containerConversionStateKeeper)
+		if keeps {
+			conv.stateBefore = keeper.ContainerConversionState()
+		}
 		convertContainerKind(target, kind)
 		conv.after = newData(target)
 		conv.sourceAfter = target.GetSource()
+		if keeps {
+			conv.stateAfter = keeper.ContainerConversionState()
+		}
 		edits.list = append(edits.list, conv)
 	}
 	return edits

@@ -607,3 +607,19 @@ func TestEquipmentChoiceCappedAtWhatItsOptionsReach(t *testing.T) {
 	c.Equal("10~50", rangeFor(criteria.AtLeastNumber, 10))
 	c.Equal("100+", rangeFor(criteria.AtLeastNumber, 100), "a qualifier nothing can reach still gives its own range")
 }
+
+// TestEditorDataCantChangeTheKindOfContainer verifies that data an editor took from a container before the container
+// was converted to another kind can't put the old kind back when applied, since the kind isn't among the data an editor
+// edits.
+func TestEditorDataCantChangeTheKindOfContainer(t *testing.T) {
+	c := check.New(t)
+	backpack := NewEquipment(nil, nil, true)
+	var data EquipmentEditData
+	data.CopyFrom(backpack)
+	backpack.ConvertToGroup()
+	data.ApplyTo(backpack)
+	c.True(backpack.IsGroup(), "applying the stale data must leave the group a group")
+
+	clone := backpack.Clone(LibraryFile{}, nil, nil, Copy)
+	c.True(clone.IsGroup(), "a clone must keep the kind of container")
+}
