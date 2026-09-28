@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -123,16 +122,8 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 		// The picker is satisfied while some way of making those remaining choices would satisfy it.
 		total := gurps.NumericRangeOf(0)
 		for i, box := range boxes {
-			if box.State == check.On {
-				switch tp.Type {
-				case picker.NotApplicable:
-				case picker.Count:
-					total = total.Add(gurps.NumericRangeOf(fxp.One))
-				case picker.Points:
-					total = total.Add(pointsRangeFor(children[i]))
-				case picker.Value, picker.Weight:
-					total = total.Add(pickerMeasureRange(children[i], tp.Type))
-				}
+			if box.State == check.On && tp.Type != picker.NotApplicable {
+				total = total.Add(gurps.PickerMeasureRange(children[i], tp.Type))
 			}
 		}
 		matches := total.CanSatisfy(tp.Qualifier)
@@ -395,19 +386,6 @@ func pickerRowDetails[T gurps.Node[T]](row T) []string {
 	}
 }
 
-// pickerMeasureRange returns what an option counts toward a choice made by value or weight: the range of its extended
-// value or weight, which takes its quantity into account.
-func pickerMeasureRange[T gurps.Node[T]](row T, pt picker.Type) gurps.NumericRange {
-	eqp, ok := any(row).(*gurps.Equipment)
-	if !ok || xreflect.IsNil(eqp) {
-		return gurps.NumericRangeOf(0)
-	}
-	if pt == picker.Weight {
-		return eqp.ExtendedWeightRange(pickerWeightUnits(eqp))
-	}
-	return eqp.ExtendedValueRange()
-}
-
 // pickerWeightUnits returns the units the picker dialog shows weights in: those of the sheet the row being picked from
 // is headed for, since it is already owned by that sheet while the dialog is shown, or the default ones otherwise.
 func pickerWeightUnits[T gurps.Node[T]](row T) fxp.WeightUnit {
@@ -477,7 +455,7 @@ func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T
 	case picker.Points:
 		// A row that presents choices of its own is worth a range rather than a single cost, which is worth showing
 		// even though picking it leads to another dialog: it is what the row will add to the total.
-		points := pointsRangeFor(row)
+		points := gurps.PickerMeasureRange(row, picker.Points)
 		value, settled := points.Settled()
 		if !settled || value != 0 {
 			pointsLabel := i18n.Text("points")
@@ -565,27 +543,4 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, no
 	callback()
 	checkBox.MarkForLayoutRecursivelyUpward()
 	checkBox.MarkForRedraw()
-}
-
-// pointsRangeFor returns the span of costs a picker may end up counting a row as being worth. A skill or spell is
-// counted by its raw points, inside a container as much as on its own, since a picker counts what is being bought
-// rather than what the destination sheet's bonuses make of it. The rows are already owned by that sheet by the time
-// the picker is shown, so its bonuses would otherwise be counted. A trait is counted by its adjusted points, which is
-// the only cost a trait has. Either way a container accounts for any choices it presents -- including the exact ones,
-// which are worth what they ask for rather than what their children add up to.
-func pointsRangeFor[T gurps.Node[T]](child T) gurps.NumericRange {
-	if xreflect.IsNil(child) {
-		return gurps.NumericRangeOf(0)
-	}
-	// Covers skills and spells
-	if rp, ok := any(child).(interface{ RawPointsRange() gurps.NumericRange }); ok {
-		return rp.RawPointsRange()
-	}
-	// Covers traits
-	if rp, ok := any(child).(interface {
-		PointsRange(tooltip *xbytes.InsertBuffer) gurps.NumericRange
-	}); ok {
-		return rp.PointsRange(nil)
-	}
-	return gurps.NumericRangeOf(0)
 }

@@ -48,6 +48,8 @@ var (
 	_ FeatureSwitcher           = &Equipment{}
 	_ TemplatePickerProvider    = &Equipment{}
 	_ templateChoiceConvertible = &Equipment{}
+	_ groupConvertible          = &Equipment{}
+	_ modifierTaker             = &Equipment{}
 
 	_ TemplatePickerProvider = &EquipmentData{}
 	_ TemplatePickerProvider = &EquipmentEditData{}
@@ -186,6 +188,11 @@ func NewEquipmentChoiceContainer(owner DataOwner, parent *Equipment) *Equipment 
 // choice container for equipment is always a group.
 func (e *Equipment) IsGroup() bool {
 	return e.Container() && e.ContainerType == eqcontainer.Group
+}
+
+// canTakeModifiers implements modifierTaker. A group keeps nothing of its own, modifiers included.
+func (e *Equipment) canTakeModifiers() bool {
+	return !e.IsGroup()
 }
 
 // HasOwnQuantity returns true if this equipment has a quantity of its own, one that may be shown and changed. A group

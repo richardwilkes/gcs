@@ -134,11 +134,7 @@ func canConvertContainerKind[T gurps.Node[T]](data T, kind containerKind) bool {
 	case choiceContainerKind:
 		return gurps.CanConvertToTemplateChoiceContainer(data)
 	case groupContainerKind:
-		if gurps.IsTemplateChoiceContainer(data) {
-			return true
-		}
-		eqp, ok := any(data).(*gurps.Equipment)
-		return ok && eqp.CanConvertToGroup()
+		return gurps.CanConvertToGroupContainer(data)
 	default:
 		return false
 	}
@@ -150,11 +146,7 @@ func convertContainerKind[T gurps.Node[T]](data T, kind containerKind) {
 	case choiceContainerKind:
 		gurps.ConvertToTemplateChoiceContainer(data)
 	case groupContainerKind:
-		if gurps.IsTemplateChoiceContainer(data) {
-			gurps.ConvertFromTemplateChoiceContainer(data)
-		} else if eqp, ok := any(data).(*gurps.Equipment); ok {
-			eqp.ConvertToGroup()
-		}
+		gurps.ConvertToGroupContainer(data)
 	}
 }
 
@@ -250,11 +242,8 @@ func confirmContainerKindConversion[T gurps.Node[T]](targets []T, kind container
 		case choiceContainerKind:
 			list = gurps.TemplateChoiceConversionLosses(target)
 		case groupContainerKind:
-			if gurps.IsTemplateChoiceContainer(target) {
-				removesChoices = true
-			} else if eqp, ok := any(target).(*gurps.Equipment); ok {
-				list = eqp.GroupConversionLosses()
-			}
+			removesChoices = removesChoices || gurps.IsTemplateChoiceContainer(target)
+			list = gurps.GroupConversionLosses(target)
 		default:
 		}
 		if len(list) != 0 {

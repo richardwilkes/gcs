@@ -292,10 +292,10 @@ func TestPickerQuantityUpdatesDetailsAndTotal(t *testing.T) {
 	c.Equal(fxp.FromInteger(4), torch.Quantity)
 	c.Equal("4", details[0].String())
 	c.Equal("$12", details[1].String())
-	c.Equal("$12", formatPickerTotal(torch, picker.Value, pickerMeasureRange(torch, picker.Value)))
+	c.Equal("$12", formatPickerTotal(torch, picker.Value, gurps.PickerMeasureRange(torch, picker.Value)))
 	units := gurps.SheetSettingsFor(nil).DefaultWeightUnits
 	c.Equal(units.Format(torch.ExtendedWeight(false, units)), details[2].String())
-	c.Equal(details[2].String(), formatPickerTotal(torch, picker.Weight, pickerMeasureRange(torch, picker.Weight)))
+	c.Equal(details[2].String(), formatPickerTotal(torch, picker.Weight, gurps.PickerMeasureRange(torch, picker.Weight)))
 }
 
 // TestQuantityCommandsSkipGroups verifies that Increment and Decrement, which adjust equipment's quantity, leave a
