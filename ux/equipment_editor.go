@@ -195,8 +195,11 @@ func extendedWeightTextForEditor(target *gurps.Equipment, overlay *gurps.Equipme
 	return defUnits.Format(extendedWeightForEditor(target, overlay, defUnits))
 }
 
+// cloneEquipmentWithOverlay returns a throwaway copy of the equipment holding the editor's pending data. The copy gets
+// modifiers of its own, since costing equipment points its modifiers at it, and the editor's must keep modifying the
+// equipment being edited.
 func cloneEquipmentWithOverlay(e *gurps.Equipment, overlay *gurps.EquipmentEditData) *gurps.Equipment {
 	clone := e.Clone(e.Source.LibraryFile, e.DataOwner(), e.Parent(), gurps.Copy)
-	clone.EquipmentEditData = *overlay
+	overlay.ApplyTo(clone)
 	return clone
 }
