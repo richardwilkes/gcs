@@ -671,6 +671,36 @@ func TestMovingAGroupIntoAChoiceKeepsThePick(t *testing.T) {
 	c.False(options[0].Enabled(), "what the group carried in arrives turned off")
 	c.True(options[1].Enabled(), "the choice keeps its pick, X")
 	c.False(options[2].Enabled())
+
+	unison.UndoManagerFor(table).Undo()
+	roots := liveTable(table).RootRows()
+	c.Equal(2, len(roots), "undo takes the group back out")
+	c.True(roots[0].Data().Children[0].Enabled(), "and turns what it carried back on")
+	options = gurps.ModifierChoiceOptions(roots[1].Data())
+	c.True(options[0].Enabled(), "the choice still has its pick")
+	c.False(options[1].Enabled())
+}
+
+// TestMovingIntoAChoiceCountsOnlyWhatMoved verifies that moving a modifier into a choice while the choice's pick is
+// selected along with it keeps the pick, since the pick didn't move, and leaves the selection as it was.
+func TestMovingIntoAChoiceCountsOnlyWhatMoved(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	moved := gurps.NewTraitModifier(entity, nil, false)
+	moved.Name = "M"
+	e, table := traitEditorOnSheet(t, sheet, moved, newTraitModifierChoiceFor(entity, false, []string{"P", "Q"}, "P"))
+	movedCopy := e.editorData.Modifiers[0]
+	pick := e.editorData.Modifiers[1].Children[0]
+	table.SetSelectionMap(map[tid.TID]bool{movedCopy.ID(): true, pick.ID(): true})
+	table.PerformCmd(nil, MoveIntoContainerItemID)
+	c.Equal(1, len(e.editorData.Modifiers), "M went into the choice")
+	options := gurps.ModifierChoiceOptions(e.editorData.Modifiers[0])
+	c.Equal([]*gurps.TraitModifier{movedCopy, pick, options[2]}, options)
+	c.False(movedCopy.Enabled(), "M arrives turned off")
+	c.True(pick.Enabled(), "P stays the pick, since it didn't move")
+	c.Equal(2, len(table.SelectedRows(false)), "the selection is left as it was")
 }
 
 // TestDropIntoAClosedChoiceKeepsTheDroppedRowsSelected verifies that rows dropped into a closed modifier container

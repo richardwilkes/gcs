@@ -303,20 +303,32 @@ func settleModifierChoices[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || table == nil {
 		return
 	}
+	var arrived []T
+	for _, row := range table.SelectedRows(false) {
+		if data := row.Data(); !xreflect.IsNil(data) {
+			arrived = append(arrived, data)
+		}
+	}
+	settleModifierChoicesFor(table, arrived)
+}
+
+// settleModifierChoicesFor is settleModifierChoices for an edit that knows which rows it brought in, rather than
+// leaving them selected.
+func settleModifierChoicesFor[T gurps.Node[T]](table *unison.Table[*Node[T]], arrived []T) {
+	var zero T
+	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || table == nil {
+		return
+	}
 	provider, ok := any(table.Model).(TableProvider[T])
 	if !ok {
 		return
 	}
 	// A row brought in brings whatever it holds, so a group carried into a choice brings its options.
 	incoming := make(map[tid.TID]bool)
-	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); !xreflect.IsNil(data) {
-			gurps.Traverse(func(node T) bool {
-				incoming[node.ID()] = true
-				return false
-			}, false, false, data)
-		}
-	}
+	gurps.Traverse(func(node T) bool {
+		incoming[node.ID()] = true
+		return false
+	}, false, false, arrived...)
 	if gurps.SettleModifierChoices(func(node T) bool { return incoming[node.ID()] }, provider.RootData()...) {
 		table.MarkForRedraw()
 	}
