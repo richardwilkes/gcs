@@ -10,11 +10,13 @@
 package ux
 
 import (
+	"fmt"
+
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
@@ -28,26 +30,52 @@ var (
 	promptForEquipmentModifiers = showModifiersDialog[*gurps.EquipmentModifier]
 )
 
+// modifierPromptInfo is what the modifier prompt shows about the row whose modifiers it asks about.
+type modifierPromptInfo struct {
+	// operation describes what the prompt is part of (see newOperationLabel). It may be empty.
+	op promptOperation
+	// name is the row's name.
+	name string
+	// location is the row's kind and the containers above it (see rowLocation).
+	location string
+	// step is the prompt's place among the rows being asked about, counting from 1, and steps is how many rows there
+	// are. A steps of 1 or less shows no count.
+	step, steps int
+}
+
 // ProcessModifiers prompts for which modifiers to enable on each row that can hold them (traits and equipment) and on
-// every row below it. Other rows, the modifiers themselves included, and preconfigured rows are skipped. Nothing is
-// rebuilt here; the caller reports the change once the answers are in (see applyTransfer). Returns false if the user
+// every row below it. Other rows, the modifiers themselves included, preconfigured rows and rows without modifiers are
+// skipped. Nothing is rebuilt here; the caller reports the change once the answers are in (see applyTransfer). The
+// operation describes what the prompts are part of and may be empty (see newOperationLabel). Returns false if the user
 // canceled a prompt, in which case no further prompts are shown and the caller is expected to abandon the whole
 // operation the prompts were part of.
-func ProcessModifiers[T gurps.Node[T]](rows []T) bool {
-	canceled := false
+func ProcessModifiers[T gurps.Node[T]](op promptOperation, rows []T) bool {
+	// The rows to be asked about are gathered first, so that each prompt can say how many there are in all. Answering
+	// a prompt only toggles modifiers, which adds and takes away no rows, so the count holds throughout.
+	var targets []T
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
-			if gurps.IsNodePreconfigured(row) {
-				return false
+			if !gurps.IsNodePreconfigured(row) && hasModifiers(row) {
+				targets = append(targets, row)
 			}
-			switch t := any(row).(type) {
-			case *gurps.Trait:
-				_, canceled = promptForTraitModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers)
-			case *gurps.Equipment:
-				_, canceled = promptForEquipmentModifiers(xstrings.Truncate(row.String(), 40, true), t.Modifiers)
-			}
-			return canceled
+			return false
 		}, false, false, row)
+	}
+	for i, row := range targets {
+		info := modifierPromptInfo{
+			op:       op,
+			name:     row.String(),
+			location: rowLocation(row),
+			step:     i + 1,
+			steps:    len(targets),
+		}
+		var canceled bool
+		switch t := any(row).(type) {
+		case *gurps.Trait:
+			_, canceled = promptForTraitModifiers(&info, t.Modifiers)
+		case *gurps.Equipment:
+			_, canceled = promptForEquipmentModifiers(&info, t.Modifiers)
+		}
 		if canceled {
 			return false
 		}
@@ -55,7 +83,19 @@ func ProcessModifiers[T gurps.Node[T]](rows []T) bool {
 	return true
 }
 
-func showModifiersDialog[T gurps.Node[T]](title string, modifiers []T) (changed, canceled bool) {
+// hasModifiers returns true if the row is a trait or piece of equipment with modifiers.
+func hasModifiers[T gurps.Node[T]](row T) bool {
+	switch t := any(row).(type) {
+	case *gurps.Trait:
+		return len(t.Modifiers) != 0
+	case *gurps.Equipment:
+		return len(t.Modifiers) != 0
+	default:
+		return false
+	}
+}
+
+func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []T) (changed, canceled bool) {
 	if len(modifiers) == 0 {
 		return false, false
 	}
@@ -128,10 +168,15 @@ func showModifiersDialog[T gurps.Node[T]](title string, modifiers []T) (changed,
 		insets.Bottom = 0
 		children[len(children)-1].SetBorder(unison.NewEmptyBorder(insets))
 	}
-	label := unison.NewLabel()
-	label.Font = unison.SystemFont
-	label.SetTitle(title)
-	if !showListQuestionDialog(i18n.Text("Select Modifiers for:"), list, label) {
+	header := i18n.Text("Select Modifiers for:")
+	if info.steps > 1 {
+		header = fmt.Sprintf(i18n.Text("Select Modifiers (%d of %d) for:"), info.step, info.steps)
+	}
+	extraHeaders := []*unison.Label{newTruncatedLabel(info.name, 60, unison.SystemFont)}
+	if info.location != "" {
+		extraHeaders = append(extraHeaders, newTruncatedLabel(info.location, 80, fonts.FieldSecondary))
+	}
+	if !showListQuestionDialog(info.op.at(i18n.Text("Modifiers")), header, list, extraHeaders...) {
 		return false, true
 	}
 	for cb, gm := range tracker {

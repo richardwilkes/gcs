@@ -211,12 +211,18 @@ func ApplyTemplate(filePath string) {
 // Creating a new sheet from a template is the one path that skips that offer, which it does by calling
 // applyTemplateToSheet directly.
 func (t *Template) applyTemplate(_ any) {
-	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
+	op := promptOperation{
+		name:        i18n.Text("Apply Template"),
+		description: fmt.Sprintf(i18n.Text("Applying template %s"), t.Title()),
+	}
+	for _, sheet := range PromptForDestination(op, OpenSheets(nil)) {
 		t.applyTemplateToSheet(sheet, false)
 	}
 }
 
-func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) bool {
+// applyTemplateToSheet applies the template to the sheet. A newSheet is one just created from the template, which isn't
+// offered to have its profile randomized again, since it was never randomized a first time.
+func (t *Template) applyTemplateToSheet(sheet *Sheet, newSheet bool) bool {
 	parts := &applyParts{
 		bodyType:  t.template.BodyType,
 		traits:    newAppendPart(sheet.Traits.Table, t.Traits.Table.RootRows()),
@@ -226,8 +232,18 @@ func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bo
 		notes:     newAppendPart(sheet.Notes.Table, t.Notes.Table.RootRows()),
 	}
 	opts := applyOptionsFor(t, sheet)
-	opts.suppressRandomizePrompt = suppressRandomizePrompt
-	if !applyTransfer(sheet, parts, opts, i18n.Text("Apply Template")) {
+	opts.suppressRandomizePrompt = newSheet
+	op := promptOperation{
+		name:        i18n.Text("Apply Template"),
+		description: fmt.Sprintf(i18n.Text("Applying template %s to %s"), t.Title(), sheet.Title()),
+	}
+	if newSheet {
+		op = promptOperation{
+			name:        i18n.Text("New Sheet"),
+			description: fmt.Sprintf(i18n.Text("Creating a sheet from template %s"), t.Title()),
+		}
+	}
+	if !applyTransfer(sheet, parts, opts, op, i18n.Text("Apply Template")) {
 		return false
 	}
 	sheet.Window().ToFront()

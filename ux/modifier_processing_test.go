@@ -27,7 +27,8 @@ type modifierPrompt struct {
 func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 	t.Helper()
 	var prompts []modifierPrompt
-	swapForTest(t, &promptForTraitModifiers, func(title string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+		title := info.name
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
 			p.modifiers = append(p.modifiers, one.Name)
@@ -35,7 +36,8 @@ func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 		prompts = append(prompts, p)
 		return false, false
 	})
-	swapForTest(t, &promptForEquipmentModifiers, func(title string, modifiers []*gurps.EquipmentModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, modifiers []*gurps.EquipmentModifier) (changed, canceled bool) {
+		title := info.name
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
 			p.modifiers = append(p.modifiers, one.Name)
@@ -94,18 +96,20 @@ func tabledProvider[T gurps.Node[T]](provider TableProvider[T]) TableProvider[T]
 // responder after calling this.
 func forbidModifierPrompts(t *testing.T) {
 	t.Helper()
-	swapForTest(t, &promptForTraitModifiers, func(title string, _ []*gurps.TraitModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+		title := info.name
 		t.Errorf("the modifier prompt must not be shown, but was shown for %q", title)
 		return false, false
 	})
-	swapForTest(t, &promptForEquipmentModifiers, func(title string, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+		title := info.name
 		t.Errorf("the modifier prompt must not be shown, but was shown for %q", title)
 		return false, false
 	})
-	swapForTest(t, &promptForNameables, func(titles []string, _ []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
 		t.Errorf("the nameables prompt must not be shown, but was shown for %v", titles)
 		return false
-	})
+	}))
 }
 
 // TestProcessModifiersIgnoresModifierRows documents that ProcessModifiers only has something to do for rows that can
@@ -118,16 +122,16 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
-	ProcessModifiers([]*gurps.TraitModifier{traitMod})
+	ProcessModifiers(promptOperation{}, []*gurps.TraitModifier{traitMod})
 	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
 	equipmentMod.Name = "Equipment Modifier"
-	ProcessModifiers([]*gurps.EquipmentModifier{equipmentMod})
+	ProcessModifiers(promptOperation{}, []*gurps.EquipmentModifier{equipmentMod})
 	c.Equal(0, len(*prompts), "modifier rows have no modifiers of their own to prompt for")
 
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Trait"
 	trait.Modifiers = []*gurps.TraitModifier{traitMod}
-	ProcessModifiers([]*gurps.Trait{trait})
+	ProcessModifiers(promptOperation{}, []*gurps.Trait{trait})
 	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
 		"a trait must be prompted for with its own modifiers")
 }

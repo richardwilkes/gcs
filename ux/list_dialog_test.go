@@ -16,16 +16,17 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestNewListQuestionPanel verifies the shape of the panel the list question dialogs share: the header label comes
-// first, any extra header labels follow it in the order given, and the list itself sits last, inside a scroll panel
-// that is the only child asked to take up the dialog's spare room. The extra headers are how the modifier prompt names
-// the row being asked about, so they have to land between the header and the list rather than anywhere else.
+// TestNewListQuestionPanel verifies the shape of the panel the list question dialogs share: the operation label, when
+// there is one, comes first, then the header label, then any extra header labels in the order given, and the list
+// itself sits last, inside a scroll panel that is the only child asked to take up the dialog's spare room. The extra
+// headers are how the modifier prompt names the row being asked about, so they have to land between the header and the
+// list rather than anywhere else.
 func TestNewListQuestionPanel(t *testing.T) {
 	c := check.New(t)
 	list := unison.NewPanel()
 	extra := unison.NewLabel()
 	extra.SetTitle("Extra")
-	panel := newListQuestionPanel("Header", list, extra)
+	panel := newListQuestionPanel(promptOperation{}, "Header", list, extra)
 	children := panel.Children()
 	c.Equal(3, len(children), "the panel must hold the header, the extra header and the scroll panel")
 
@@ -45,6 +46,15 @@ func TestNewListQuestionPanel(t *testing.T) {
 		c.Nil(child.LayoutData(), "the headers must not compete with the scroll panel for room")
 	}
 
-	c.Equal(2, len(newListQuestionPanel("Header", unison.NewPanel()).Children()),
+	c.Equal(2, len(newListQuestionPanel(promptOperation{}, "Header", unison.NewPanel()).Children()),
 		"with no extra headers, only the header and the scroll panel remain")
+
+	children = newListQuestionPanel(promptOperation{description: "Operation"}, "Header", unison.NewPanel()).Children()
+	c.Equal(3, len(children), "an operation must add a label of its own")
+	operation, ok := children[0].Self.(*unison.Label)
+	c.True(ok, "the operation must come first")
+	c.Equal("Operation", operation.String())
+	header, ok = children[1].Self.(*unison.Label)
+	c.True(ok, "the header must follow the operation")
+	c.Equal("Header", header.String())
 }

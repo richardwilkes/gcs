@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -155,11 +154,16 @@ func applySelectedModifiers[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 		modifiers = append(modifiers, row.Data())
 	}
 	from := libraryFileFromTable(source)
-	dest, ok := promptForModifierDestination(modifierDestinations(kind, AllDockables()))
+	op := promptOperation{
+		name:        i18n.Text("Apply Modifier"),
+		description: fmt.Sprintf(i18n.Text("Applying %s"), describeRows(modifiers)),
+	}
+	dest, ok := promptForModifierDestination(op, modifierDestinations(kind, AllDockables()))
 	if !ok {
 		return
 	}
-	picked := showModifierTargetsDialog(fmt.Sprintf(kind.header, dest.Title()), modifierTargetChoices(kind.lists(dest)))
+	picked := showModifierTargetsDialog(op, fmt.Sprintf(kind.header, dest.Title()),
+		modifierTargetChoices(kind.lists(dest)))
 	if len(picked) == 0 {
 		return
 	}
@@ -269,6 +273,10 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 		return false
 	}
 	forEntity := !xreflect.IsNil(dataOwner) && dataOwner.OwningEntity() != nil
+	op := promptOperation{
+		name:        i18n.Text("Apply Modifier"),
+		description: fmt.Sprintf(i18n.Text("Adding %s to %s"), describeRows(modifiers), describeRows(targets)),
+	}
 	askAboutContainers := false
 	for _, m := range modifiers {
 		if m.Container() {
@@ -291,7 +299,7 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 			}
 		}
 	}
-	for _, target := range targets {
+	for i, target := range targets {
 		originalModifiers = append(originalModifiers, target.ModifierList())
 		originalReplacements = append(originalReplacements, maps.Clone(target.NameableReplacements()))
 		clones := make([]M, 0, len(modifiers))
@@ -305,13 +313,19 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 			clones = append(clones, clone)
 		}
 		target.AddModifiers(clones...)
-		if askAboutContainers && promptForClonedModifiers(xstrings.Truncate(target.String(), 40, true), clones) {
+		if askAboutContainers && promptForClonedModifiers(&modifierPromptInfo{
+			op:       op,
+			name:     target.String(),
+			location: rowLocation(target),
+			step:     i + 1,
+			steps:    len(targets),
+		}, clones) {
 			restore()
 			return false
 		}
 		groups = append(groups, NameableGroup[M]{Label: target.String(), Rows: clones, SharedReplacements: true})
 	}
-	if forEntity && !ProcessNameableGroups(groups) {
+	if forEntity && !ProcessNameableGroups(op, groups) {
 		restore()
 		return false
 	}
@@ -327,12 +341,12 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 
 // promptForClonedModifiers puts up the prompt asking which of the clones should be enabled and reports whether it was
 // canceled. Clones of a kind with no prompt are not asked about.
-func promptForClonedModifiers[M gurps.Node[M]](title string, clones []M) (canceled bool) {
+func promptForClonedModifiers[M gurps.Node[M]](info *modifierPromptInfo, clones []M) (canceled bool) {
 	switch mods := any(clones).(type) {
 	case []*gurps.TraitModifier:
-		_, canceled = promptForTraitModifiers(title, mods)
+		_, canceled = promptForTraitModifiers(info, mods)
 	case []*gurps.EquipmentModifier:
-		_, canceled = promptForEquipmentModifiers(title, mods)
+		_, canceled = promptForEquipmentModifiers(info, mods)
 	}
 	return canceled
 }
@@ -389,14 +403,14 @@ func modifierTargetChoices[T gurps.Node[T]](lists []modifierTargetList[T]) []mod
 
 // showModifierTargetsDialog puts up the target prompt of the Apply Modifier command and returns the chosen rows, in
 // prompt order, or nil if there was nothing to offer, the dialog was canceled or nothing was chosen.
-func showModifierTargetsDialog[T gurps.Node[T]](header string, choices []modifierTargetChoice[T]) []modifierTargetChoice[T] {
+func showModifierTargetsDialog[T gurps.Node[T]](op promptOperation, header string, choices []modifierTargetChoice[T]) []modifierTargetChoice[T] {
 	if len(choices) == 0 {
 		return nil
 	}
 	list := newChoiceList[modifierTargetChoice[T]](true)
 	list.Factory = &modifierTargetCellFactory[T]{}
 	list.Append(choices...)
-	if !showModifierTargetsPrompt(header, list) {
+	if !showModifierTargetsPrompt(op.at(i18n.Text("Targets")), header, list) {
 		return nil
 	}
 	return pickFromList(list, choices)

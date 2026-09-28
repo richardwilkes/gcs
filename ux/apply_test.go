@@ -51,7 +51,7 @@ func newTestTemplateWithTraits(traits ...*gurps.Trait) *Template {
 func pickFirstOption(t *testing.T) *int {
 	t.Helper()
 	calls := 0
-	swapForTest(t, &promptForPickers, func(parts *applyParts) bool {
+	swapForTest(t, &promptForPickers, func(_ promptOperation, parts *applyParts) bool {
 		calls++
 		var revised []*gurps.Trait
 		for _, row := range parts.traits.rows {
@@ -188,12 +188,12 @@ func TestAncestryQuestionOnlyForChosenAncestry(t *testing.T) {
 		template := newTestTemplateWithTraits(choices)
 		pickFirstOption(t)
 		asked := 0
-		swapForTest(t, &askToDisableExistingAncestry, func(_, _ string) bool {
+		swapForTest(t, &askToDisableExistingAncestry, func(_ promptOperation, _, _ []string) bool {
 			asked++
 			return false
 		})
 		randomizeAsked := 0
-		swapForTest(t, &askToRandomizeAgain, func() bool {
+		swapForTest(t, &askToRandomizeAgain, func(_ promptOperation) bool {
 			randomizeAsked++
 			return false
 		})
@@ -224,26 +224,26 @@ func TestAncestryQuestionNamesTheContainers(t *testing.T) {
 	arriving := newAncestryTrait("Human")
 	arriving.Name = "Desert Human (@Tribe@)"
 	template := newTestTemplateWithTraits(arriving)
-	swapForTest(t, &promptForNameables, func(_ []string, nameables []map[string]string, _ [][]string) bool {
-		for _, m := range nameables {
-			for k := range m {
-				m[k] = "Sand"
+	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []NameablesSection) bool {
+		for _, section := range sections {
+			for k := range section.Nameables {
+				section.Nameables[k] = "Sand"
 			}
 		}
 		return true
 	})
-	var incomingName, existingName string
-	swapForTest(t, &askToDisableExistingAncestry, func(incoming, existing string) bool {
-		incomingName = incoming
-		existingName = existing
+	var incomingNames, existingNames []string
+	swapForTest(t, &askToDisableExistingAncestry, func(_ promptOperation, incoming, existing []string) bool {
+		incomingNames = incoming
+		existingNames = existing
 		return false
 	})
-	swapForTest(t, &askToRandomizeAgain, func() bool { return false })
+	swapForTest(t, &askToRandomizeAgain, func(_ promptOperation) bool { return false })
 
 	copySelectionTo(template.Traits.Table, []*Sheet{sheet})
 
-	c.Equal("Desert Human (Sand)", incomingName, "the arriving container must be named, with its nameables settled")
-	c.Equal("Northern Human", existingName, "the existing container must be named")
+	c.Equal([]string{"Desert Human (Sand)"}, incomingNames, "the arriving container must be named, with its nameables settled")
+	c.Equal([]string{"Northern Human"}, existingNames, "the existing container must be named")
 }
 
 // TestCopyOfAncestryBetweenSheetsOffersRandomization verifies that an ancestry copied from one sheet to another brings
@@ -258,7 +258,7 @@ func TestCopyOfAncestryBetweenSheetsOffersRandomization(t *testing.T) {
 	source.Traits.Table.SelectAll()
 	destination := newTestSheetForTemplate(t)
 	offered := 0
-	swapForTest(t, &askToRandomizeAgain, func() bool {
+	swapForTest(t, &askToRandomizeAgain, func(_ promptOperation) bool {
 		offered++
 		return false
 	})
@@ -305,7 +305,7 @@ func TestCanceledModifierPromptLeavesSheetUntouched(t *testing.T) {
 	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
 	source := newLibraryStyleTraitsTable(trait)
 	source.SelectAll()
-	swapForTest(t, &promptForTraitModifiers, func(_ string, _ []*gurps.TraitModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
 		return false, true
 	})
 
@@ -329,7 +329,7 @@ func TestCanceledNameablesPromptLeavesSheetUntouched(t *testing.T) {
 	template := newTestTemplateWithBodyType("Template Body")
 	template.template.Traits[0].Name = "Phobia (@Subject@)"
 	shown := 0
-	swapForTest(t, &promptForNameables, func(_ []string, _ []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, func(_ promptOperation, _ []NameablesSection) bool {
 		shown++
 		return false
 	})
@@ -368,7 +368,7 @@ func TestDropOnSheetIsAppliedWhereItLanded(t *testing.T) {
 	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
 	from := newLibraryStyleTraitsTable(trait)
 	var childrenWhenPrompted int
-	swapForTest(t, &promptForTraitModifiers, func(_ string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		childrenWhenPrompted = len(group.Children)
 		modifiers[0].Disabled = false
 		return true, false
@@ -398,7 +398,7 @@ func TestDropOnSheetWithCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	originalTraits := len(entity.Traits)
 	source := newTestTemplateWithTraits(newChoiceTrait("Pick One", "First", "Second"))
 	calls := 0
-	swapForTest(t, &promptForPickers, func(_ *applyParts) bool {
+	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts) bool {
 		calls++
 		return false
 	})
@@ -425,7 +425,7 @@ func TestDropOnLibraryAsksBeforeRemovingPickers(t *testing.T) {
 		provider, ok := to.ClientData()[TableProviderClientKey].(TableProvider[*gurps.Trait])
 		c.True(ok)
 		asked := 0
-		swapForTest(t, &confirmTemplatePickerDataRemoval, func() bool {
+		swapForTest(t, &confirmTemplatePickerDataRemoval, func(_ promptOperation, _ []string) bool {
 			asked++
 			return accept
 		})

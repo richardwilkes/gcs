@@ -196,7 +196,10 @@ func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 			i18n.Text("Open one or more other character sheets first."))
 		return
 	}
-	sheets := PromptForDestination(availableSheets)
+	sheets := PromptForDestination(promptOperation{
+		name:        i18n.Text("Copy Points Record"),
+		description: i18n.Text("Copying a points record"),
+	}, availableSheets)
 	if len(sheets) == 0 {
 		return
 	}

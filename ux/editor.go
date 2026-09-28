@@ -105,7 +105,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 				e.nameablesButton.Tooltip = newWrappedTooltip(i18n.Text("Set Substitutions"))
 				e.nameablesButton.ClickCallback = func() {
 					if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
-						ShowNameablesDialog([]string{tmp.String()}, []map[string]string{m}, [][]string{nil})
+						ShowNameablesDialog(promptOperation{}, []NameablesSection{{Title: tmp.String(), Nameables: m}})
 						tmp.ApplyNameableKeys(m)
 						// Applying nameable keys only alters the replacements map, so copy just that back. CopyFrom
 						// would replace the entire object graph with fresh sub-objects, orphaning the widgets already

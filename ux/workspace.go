@@ -823,16 +823,18 @@ func saveDockableAs(d FileBackedDockable, extension string, fallbackDir func() s
 }
 
 // PromptForDestination puts up a modal dialog to choose one or more destinations when choices holds more than one, and
-// returns choices unchanged otherwise. Returns nil if the dialog was canceled or nothing was selected.
-func PromptForDestination[T FileBackedDockable](choices []T) []T {
-	return promptForDestinations(choices, true)
+// returns choices unchanged otherwise. The operation describes what the destinations are being chosen for, such as
+// "Copying Broadsword", and is shown above the question. Returns nil if the dialog was canceled or nothing was
+// selected.
+func PromptForDestination[T FileBackedDockable](op promptOperation, choices []T) []T {
+	return promptForDestinations(op, choices, true)
 }
 
 // promptForSingleDestination puts up a modal dialog to choose exactly one destination when choices holds more than one,
-// and returns the one choice without asking otherwise. Reports false if there was nothing to choose from or the dialog
-// was canceled.
-func promptForSingleDestination[T FileBackedDockable](choices []T) (T, bool) {
-	if result := promptForDestinations(choices, false); len(result) != 0 {
+// and returns the one choice without asking otherwise. The operation is as for PromptForDestination. Reports false if
+// there was nothing to choose from or the dialog was canceled.
+func promptForSingleDestination[T FileBackedDockable](op promptOperation, choices []T) (T, bool) {
+	if result := promptForDestinations(op, choices, false); len(result) != 0 {
 		return result[0], true
 	}
 	var zero T
@@ -841,7 +843,7 @@ func promptForSingleDestination[T FileBackedDockable](choices []T) (T, bool) {
 
 // promptForDestinations is shared by PromptForDestination and promptForSingleDestination. With multiple false, the
 // first choice starts out selected, so that Return alone accepts it and a screen reader lands on a row.
-func promptForDestinations[T FileBackedDockable](choices []T, multiple bool) []T {
+func promptForDestinations[T FileBackedDockable](op promptOperation, choices []T, multiple bool) []T {
 	if len(choices) < 2 {
 		return choices
 	}
@@ -861,7 +863,7 @@ func promptForDestinations[T FileBackedDockable](choices []T, multiple bool) []T
 	} else {
 		list.Select(false, 0)
 	}
-	if !showListQuestionDialog(header, list) {
+	if !showListQuestionDialog(op.at(i18n.Text("Destination")), header, list) {
 		return nil
 	}
 	return pickFromList(list, choices)

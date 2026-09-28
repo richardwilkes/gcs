@@ -483,7 +483,7 @@ func newLibraryStyleTraitsTable(traits ...*gurps.Trait) *unison.Table[*Node[*gur
 func stubTraitModifierPrompt(t *testing.T, respond func(modifiers []*gurps.TraitModifier) bool) *int {
 	t.Helper()
 	shown := 0
-	swapForTest(t, &promptForTraitModifiers, func(_ string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		if len(modifiers) == 0 {
 			return false, false // The real prompt has nothing to show in this case, so it can't change anything either.
 		}

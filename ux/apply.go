@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -19,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // transferKind classifies a document by what may arrive in it. Rows landing on a sheet are applied to it, settling
@@ -120,11 +122,11 @@ type applyPart[T gurps.Node[T]] struct {
 // applyPartOps is what applyTransfer needs of each part, whatever its row type.
 type applyPartOps interface {
 	normalizeChoices()
-	resolvePickers() bool
-	hasPickerData() bool
+	resolvePickers(op promptOperation) bool
+	pickerContainers() []string
 	stripPickers()
-	promptForModifiers() bool
-	promptForNameables() bool
+	promptForModifiers(op promptOperation) bool
+	promptForNameables(op promptOperation) bool
 	place(merge bool)
 	clearPreconfigured()
 	undoData() tableRestorer
@@ -178,17 +180,19 @@ func (a *applyParts) each(fn func(part applyPartOps)) {
 	})
 }
 
-// hasPickerData returns true if any of the parts' rows carry template picker data.
-func (a *applyParts) hasPickerData() bool {
-	return !a.all(func(part applyPartOps) bool { return !part.hasPickerData() })
+// pickerContainers returns the names of the containers among the parts' rows that carry template picker data.
+func (a *applyParts) pickerContainers() []string {
+	var names []string
+	a.each(func(part applyPartOps) { names = append(names, part.pickerContainers()...) })
+	return names
 }
 
 func (p *applyPart[T]) normalizeChoices() {
 	gurps.NormalizeTemplateChoiceContainers(p.rows...)
 }
 
-func (p *applyPart[T]) resolvePickers() bool {
-	revised, abort := processPickerRows(p.rows)
+func (p *applyPart[T]) resolvePickers(op promptOperation) bool {
+	revised, abort := processPickerRows(op, p.rows)
 	if abort {
 		return false
 	}
@@ -196,8 +200,19 @@ func (p *applyPart[T]) resolvePickers() bool {
 	return true
 }
 
-func (p *applyPart[T]) hasPickerData() bool {
-	return gurps.HasTemplatePickerData(p.rows...)
+func (p *applyPart[T]) pickerContainers() []string {
+	var names []string
+	gurps.Traverse(func(row T) bool {
+		if row.Container() {
+			if tpp, ok := any(row).(gurps.TemplatePickerProvider); ok {
+				if _, data := tpp.TemplatePickerData(); !data.IsZero() {
+					names = append(names, row.String())
+				}
+			}
+		}
+		return false
+	}, false, false, p.rows...)
+	return names
 }
 
 func (p *applyPart[T]) stripPickers() {
@@ -206,12 +221,12 @@ func (p *applyPart[T]) stripPickers() {
 
 // promptForModifiers and promptForNameables put up the prompts for the rows' modifiers and nameable keys. Neither
 // rebuilds or reports anything: the rows aren't in a table yet, and applyTransfer does both once the answers are in.
-func (p *applyPart[T]) promptForModifiers() bool {
-	return ProcessModifiers(p.rows)
+func (p *applyPart[T]) promptForModifiers(op promptOperation) bool {
+	return ProcessModifiers(op, p.rows)
 }
 
-func (p *applyPart[T]) promptForNameables() bool {
-	return ProcessNameables(p.rows)
+func (p *applyPart[T]) promptForNameables(op promptOperation) bool {
+	return ProcessNameables(op, p.rows)
 }
 
 // place puts the rows into their table and leaves them selected. With merge, the points of any row that duplicates one
@@ -295,23 +310,29 @@ func (p *applyPart[T]) changed() (unison.Paneler, Rebuildable) {
 // is put to the user against the incoming rows alone, before they have been added to anything: the template choices,
 // the modifiers, the nameables, the ancestry question and the randomization. Canceling any of them discards the rows,
 // leaving the destination exactly as it was, and returns false. Only once every answer is in is the destination
-// changed, all at once, and the change is recorded as a single undo edit with the given name.
-func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOptions, editName string) bool {
+// changed, all at once, and the change is recorded as a single undo edit with the given name. The operation describes
+// the transfer, such as "Copying Broadsword to Sir Bob", and each question shows it (see newOperationLabel), since the
+// questions are otherwise asked with nothing around them to say what they are part of.
+func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOptions, op promptOperation, editName string) bool {
 	// The incoming rows are clones, so normalizing them changes nothing elsewhere, even if a later prompt is canceled. It
 	// comes first so that no prompt asks about modifiers or nameables a choice container is about to lose.
 	if opts.normalizeChoices {
 		parts.each(applyPartOps.normalizeChoices)
 	}
-	if opts.resolvePickers && !promptForPickers(parts) {
+	if opts.resolvePickers && !promptForPickers(op, parts) {
 		return false
 	}
-	stripPickers := opts.stripPickers && parts.hasPickerData()
-	if stripPickers && !confirmTemplatePickerDataRemoval() {
+	var pickerContainers []string
+	if opts.stripPickers {
+		pickerContainers = parts.pickerContainers()
+	}
+	stripPickers := len(pickerContainers) != 0
+	if stripPickers && !confirmTemplatePickerDataRemoval(op, pickerContainers) {
 		return false
 	}
 	if opts.promptForChoices &&
-		!(parts.all(func(part applyPartOps) bool { return part.promptForModifiers() }) &&
-			parts.all(func(part applyPartOps) bool { return part.promptForNameables() })) {
+		!(parts.all(func(part applyPartOps) bool { return part.promptForModifiers(op) }) &&
+			parts.all(func(part applyPartOps) bool { return part.promptForNameables(op) })) {
 		return false
 	}
 	// The ancestries arriving are only known once the template choices have been settled, since an ancestry may be one
@@ -328,12 +349,12 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	disableExistingAncestries := false
 	if opts.askAncestry && len(incomingAncestries) != 0 {
 		if existing := gurps.ActiveAncestryTraits(entity.Traits); len(existing) != 0 {
-			disableExistingAncestries = askToDisableExistingAncestry(incomingAncestries[0].NameWithReplacements(),
-				existing[0].NameWithReplacements())
+			disableExistingAncestries = askToDisableExistingAncestry(op, ancestryNames(incomingAncestries),
+				ancestryNames(existing))
 		}
 	}
 	randomize := opts.randomize && len(incomingAncestries) != 0 && gurps.GlobalSettings().General.AutoFillProfile &&
-		(opts.suppressRandomizePrompt || askToRandomizeAgain())
+		(opts.suppressRandomizePrompt || askToRandomizeAgain(op))
 
 	// Every answer is in, so the destination is changed from this point on. The undo manager is found first, since the
 	// rebuild that reports the change can replace the table it would otherwise be found through.
@@ -386,36 +407,90 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	return true
 }
 
-// askToDisableExistingAncestry asks whether the character's existing ancestry should be disabled in favor of the one
+// ancestryNames returns the names of the ancestry containers, with their nameables replaced.
+func ancestryNames(ancestries []*gurps.Trait) []string {
+	names := make([]string, len(ancestries))
+	for i, one := range ancestries {
+		names[i] = one.NameWithReplacements()
+	}
+	return names
+}
+
+// askToDisableExistingAncestry asks whether the character's existing ancestries should be disabled in favor of the ones
 // arriving. It is held in a variable so that tests can substitute a non-interactive implementation.
-var askToDisableExistingAncestry = func(incoming, existing string) bool {
-	return unison.YesNoDialog(fmt.Sprintf(i18n.Text(`An Ancestry (%s) is being added.
-Disable your character's existing Ancestry (%s)?`), incoming, existing), "") == unison.ModalResponseOK
+var askToDisableExistingAncestry = func(op promptOperation, incoming, existing []string) bool {
+	primary := i18n.Text("An ancestry is being added")
+	if len(incoming) > 1 {
+		primary = i18n.Text("Ancestries are being added")
+	}
+	question := i18n.Text("Disable the character's existing ancestry?")
+	if len(existing) > 1 {
+		question = i18n.Text("Disable all of the character's existing ancestries?")
+	}
+	detail := fmt.Sprintf(i18n.Text("Adding: %s\nExisting: %s\n\n%s"), strings.Join(incoming, ", "),
+		strings.Join(existing, ", "), question)
+	return runPromptDialog(op.at(i18n.Text("Ancestry")), newOperationMessagePanel(op, primary, detail),
+		unison.NewNoButtonInfo(), unison.NewYesButtonInfo()) == unison.ModalResponseOK
 }
 
 // askToRandomizeAgain asks whether the profile randomization should be applied again for the ancestry arriving. It is
 // held in a variable so that tests can substitute a non-interactive implementation.
-var askToRandomizeAgain = func() bool {
-	return unison.YesNoDialog(i18n.Text("Would you like to apply the initial randomization again?"), "") ==
-		unison.ModalResponseOK
+var askToRandomizeAgain = func(op promptOperation) bool {
+	return runPromptDialog(op.at(i18n.Text("Randomize")), newOperationMessagePanel(op,
+		i18n.Text("Randomize the character's profile again?"),
+		i18n.Text("An ancestry is being added. Randomizing replaces the character's name, gender,\nage, birthday, height, weight, eyes, hair, skin and handedness with new values.")),
+		unison.NewNoButtonInfo(), unison.NewYesButtonInfo()) == unison.ModalResponseOK
 }
 
 // confirmTemplatePickerDataRemoval asks whether rows carrying template picker data may have that data removed so they
-// can be added to something other than a template. It is held in a variable so that tests can substitute a
-// non-interactive implementation.
-var confirmTemplatePickerDataRemoval = func() bool {
+// can be added to something other than a template. The containers are the names of the rows that carry it. It is held
+// in a variable so that tests can substitute a non-interactive implementation.
+var confirmTemplatePickerDataRemoval = func(op promptOperation, containers []string) bool {
 	remove := unison.NewOKButtonInfo()
 	remove.Title = i18n.Text("Remove Choices")
-	dialog, err := unison.NewDialog(unison.DefaultDialogTheme.ErrorIcon, unison.DefaultDialogTheme.ErrorIconInk,
-		unison.NewMessagePanel(i18n.Text("Template choices can only be kept in a template"),
-			i18n.Text(`Some of the rows being added carry template choices, which only a template can hold.
-Continuing removes the choices, leaving the rows otherwise as they are.`)),
-		[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), remove})
+	// Unlike the other prompts, this one carries an icon: continuing throws data away, which a warning should mark.
+	dialog, err := newPromptDialog(op.at(remove.Title), unison.DefaultDialogTheme.WarningIcon,
+		unison.DefaultDialogTheme.WarningIconInk, newOperationMessagePanel(op,
+			i18n.Text("Template choices can only be kept in a template"),
+			fmt.Sprintf(i18n.Text(`These rows carry template choices, which only a template can hold:
+%s
+
+Continuing removes the choices, leaving the rows otherwise as they are.`), nameList(containers))),
+		unison.NewCancelButtonInfo(), remove)
 	if err != nil {
 		errs.Log(err)
 		return false
 	}
 	return dialog.RunModal() == unison.ModalResponseOK
+}
+
+// nameList returns the names one per line, cut short with a count of the rest when there are too many to show.
+func nameList(names []string) string {
+	const maxShown = 10
+	if len(names) <= maxShown {
+		return strings.Join(names, "\n")
+	}
+	return strings.Join(names[:maxShown-1], "\n") + "\n" +
+		fmt.Sprintf(i18n.Text("and %d more"), len(names)-maxShown+1)
+}
+
+// newOperationMessagePanel returns a message panel with the primary and detail text, beneath the operation when it isn't
+// empty (see newOperationLabel).
+func newOperationMessagePanel(op promptOperation, primary, detail string) *unison.Panel {
+	message := unison.NewMessagePanel(primary, detail)
+	opLabel := newOperationLabel(op)
+	if opLabel == nil {
+		return message
+	}
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
+	panel.AddChild(opLabel)
+	panel.AddChild(message)
+	return panel
 }
 
 // applyUndoEditData holds what applyTransfer can change: the tables the parts go into and, for a character sheet, the

@@ -704,10 +704,10 @@ func TestAltDropWithACanceledPromptLeavesNothingBehind(t *testing.T) {
 	swapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
 	swapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
 	shown := 0
-	swapForTest(t, &promptForNameables, func(_ []string, _ []map[string]string, _ [][]string) bool {
+	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
 		shown++
 		return false
-	})
+	}))
 
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
