@@ -97,3 +97,14 @@ func installToggleModifierEnabledHandler[T gurps.Node[T]](table *unison.Table[*N
 		func(_ any) bool { return canToggleModifierEnabled(table) },
 		func(_ any) { toggleModifierEnabled(table.AncestorOrSelf[Rebuildable](), table) })
 }
+
+// addModifierEnabledCheckBox adds the Enabled check box to a modifier's editor. The pick of a mandatory choice on a
+// sheet can't be turned off (see gurps.IsLockedModifierChoiceSelection), so for it the box is disabled, and says how the
+// pick is changed instead. Applying the editor still keeps the pick on, should the box somehow be unchecked.
+func addModifierEnabledCheckBox[T gurps.Node[T]](parent *unison.Panel, target T, disabled *bool) {
+	box := addInvertedCheckBox(parent, i18n.Text("Enabled"), disabled)
+	if gurps.IsLockedModifierChoiceSelection(target) {
+		box.SetEnabled(false)
+		box.Tooltip = newWrappedTooltip(i18n.Text("This is the pick of a choice that must be made, so it can't be turned off. Pick another of the choice's modifiers instead."))
+	}
+}

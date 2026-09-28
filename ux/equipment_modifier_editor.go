@@ -40,7 +40,7 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addCheckBox(content, i18n.Text("Also show notes in weapon usage"), &e.editorData.ShowNotesOnWeapon)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	content.AddChild(unison.NewPanel())
-	addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
+	addModifierEnabledCheckBox(content, e.target, &e.editorData.Disabled)
 	addEquipmentCostFields(content, e)
 	addEquipmentWeightFields(content, e)
 	addTagsLabelAndField(content, &e.editorData.Tags)

@@ -38,7 +38,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	addCheckBox(content, i18n.Text("Also show notes in weapon usage"), &e.editorData.ShowNotesOnWeapon)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	content.AddChild(unison.NewPanel())
-	addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
+	addModifierEnabledCheckBox(content, e.target, &e.editorData.Disabled)
 	costLabel := i18n.Text("Cost")
 	wrapper, _ := addFlowWrapper(content, costLabel, 2)
 	field := NewStringField(nil, "", costLabel,
