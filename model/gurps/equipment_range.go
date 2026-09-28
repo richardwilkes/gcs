@@ -91,6 +91,14 @@ func equipmentContentsRange(e *Equipment, measure picker.Type, children []Numeri
 	}
 }
 
+// lowerEndOf returns the least of the range, a value or weight never being less than nothing.
+func lowerEndOf(r NumericRange) fxp.Int {
+	if r.Min == nil {
+		return 0
+	}
+	return max(*r.Min, 0)
+}
+
 // scaleNumericRange returns the range multiplied by the given positive quantity.
 func scaleNumericRange(r NumericRange, quantity fxp.Int) NumericRange {
 	scale := func(end *fxp.Int) *fxp.Int {

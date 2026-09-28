@@ -850,10 +850,14 @@ func (e *Equipment) AdjustedValue() fxp.Int {
 	return ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), e.Modifiers)
 }
 
-// ExtendedValue returns the extended value.
+// ExtendedValue returns the extended value. A template choice container that is yet to be made counts as the least it
+// may come to, as does anything holding one; see ExtendedValueRange for the whole of what it may come to.
 func (e *Equipment) ExtendedValue() fxp.Int {
 	if e.Quantity <= 0 {
 		return 0
+	}
+	if IsTemplateChoiceContainer(e) {
+		return lowerEndOf(e.ExtendedValueRange())
 	}
 	value := e.AdjustedValue()
 	if e.Container() {
@@ -865,10 +869,13 @@ func (e *Equipment) ExtendedValue() fxp.Int {
 }
 
 // ExtendedValueOfJustOne returns the extended value of just one piece of this equipment, including the value of
-// children.
+// children. A template choice container is a group, so there is only ever one of it.
 func (e *Equipment) ExtendedValueOfJustOne() fxp.Int {
 	if e.Quantity <= 0 {
 		return 0
+	}
+	if IsTemplateChoiceContainer(e) {
+		return e.ExtendedValue()
 	}
 	value := e.AdjustedValue()
 	if e.Container() {
@@ -899,8 +906,12 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.
 	return WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits)
 }
 
-// ExtendedWeight returns the extended weight.
+// ExtendedWeight returns the extended weight. A template choice container that is yet to be made counts as the least it
+// may come to, as does anything holding one; see ExtendedWeightRange for the whole of what it may come to.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
+	if e.Quantity > 0 && IsTemplateChoiceContainer(e) {
+		return fxp.Weight(lowerEndOf(e.ExtendedWeightRange(defUnits)))
+	}
 	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.ResolvedBaseWeight(), e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.ReallyEquipped())
 }
 

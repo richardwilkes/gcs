@@ -484,3 +484,29 @@ func TestEquipmentGroupRoundTripsThroughAnItem(t *testing.T) {
 	group.RestoreContainerConversionState(state)
 	c.True(group.IsPhysicalContainer(), "restoring the state must put the container type back")
 }
+
+// TestEquipmentChoiceCountsAsItsLowerEnd verifies that a choice yet to be made counts as the least it may come to
+// wherever a single value or weight is needed, including what is written into a template's file, and so does anything
+// holding one.
+func TestEquipmentChoiceCountsAsItsLowerEnd(t *testing.T) {
+	c := check.New(t)
+	choice := newRangeTestChoice(picker.Count, criteria.EqualsNumber, fxp.One)
+	c.Equal(fxp.FromInteger(10), choice.ExtendedValue(), "the cheapest option is the least the choice may come to")
+	c.Equal(fxp.Weight(fxp.One), choice.ExtendedWeight(false, fxp.Pound))
+
+	backpack := NewEquipment(nil, nil, true)
+	backpack.BaseValue = "5"
+	backpack.BaseWeight = "2 lb"
+	choice.SetParent(backpack)
+	backpack.Children = []*Equipment{choice}
+	c.Equal(fxp.FromInteger(15), backpack.ExtendedValue())
+	c.Equal(fxp.FromInteger(15), backpack.ExtendedValueOfJustOne())
+	c.Equal(fxp.Weight(fxp.FromInteger(3)), backpack.ExtendedWeight(false, fxp.Pound))
+
+	tmpl := NewTemplate()
+	tmpl.Equipment = []*Equipment{backpack}
+	data, err := json.Marshal(tmpl)
+	c.NoError(err)
+	c.True(strings.Contains(string(data), `"extended_value":15,`),
+		"the file must record the least the backpack may come to: %s", string(data))
+}

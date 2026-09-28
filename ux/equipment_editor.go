@@ -71,7 +71,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	extendedValueLabel := i18n.Text("Extended Value")
 	content.AddChild(NewFieldLeadingLabel(extendedValueLabel, false))
 	content.AddChild(NewNonEditableField(func(field *NonEditableField) {
-		field.SetTitle(extendedValueForEditor(e.target, e.editorData).Comma())
+		field.SetTitle(extendedValueTextForEditor(e.target, e.editorData))
 		field.MarkForLayoutAndRedraw()
 	}))
 	addLabelAndScriptField(content, nil, "", i18n.Text("Weight"),
@@ -85,7 +85,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	content.AddChild(NewFieldLeadingLabel(extendedWeightLabel, false))
 	content.AddChild(NewNonEditableField(func(field *NonEditableField) {
 		defUnits := gurps.SheetSettingsFor(entity).DefaultWeightUnits
-		field.SetTitle(defUnits.Format(extendedWeightForEditor(e.target, e.editorData, defUnits)))
+		field.SetTitle(extendedWeightTextForEditor(e.target, e.editorData, defUnits))
 		field.MarkForLayoutAndRedraw()
 	}))
 	content.AddChild(unison.NewPanel())
@@ -183,6 +183,28 @@ func extendedWeightForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEd
 	clone := cloneEquipmentWithOverlay(target, overlay)
 	return gurps.ExtendedWeightAdjustedForModifiers(clone, defUnits, overlay.Quantity, clone.ResolvedBaseWeight(),
 		overlay.Modifiers, overlay.Features, target.Children, false, false)
+}
+
+// extendedValueTextForEditor renders the Extended Value preview for the equipment editor. A container holding a choice
+// yet to be made shows the range of values the choice may come to, as the list does.
+func extendedValueTextForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData) string {
+	if overlay.Quantity > 0 && target.Container() {
+		if r := cloneEquipmentWithOverlay(target, overlay).ExtendedValueRange(); !r.IsSettled() {
+			return gurps.FormatValueRange(r, fxp.Int.Comma)
+		}
+	}
+	return extendedValueForEditor(target, overlay).Comma()
+}
+
+// extendedWeightTextForEditor renders the Extended Weight preview for the equipment editor. A container holding a
+// choice yet to be made shows the range of weights the choice may come to, as the list does.
+func extendedWeightTextForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData, defUnits fxp.WeightUnit) string {
+	if overlay.Quantity > 0 && target.Container() {
+		if r := cloneEquipmentWithOverlay(target, overlay).ExtendedWeightRange(defUnits); !r.IsSettled() {
+			return gurps.FormatWeightRange(r, defUnits.Format)
+		}
+	}
+	return defUnits.Format(extendedWeightForEditor(target, overlay, defUnits))
 }
 
 func cloneEquipmentWithOverlay(e *gurps.Equipment, overlay *gurps.EquipmentEditData) *gurps.Equipment {
