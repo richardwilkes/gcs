@@ -25,6 +25,14 @@ type ConvertableContainer interface {
 	ConvertToNonContainer()
 }
 
+// physicalContainerConvertible is implemented by nodes whose containers come in more than one kind, one of which holds
+// things as a piece of equipment in its own right, such as a backpack, rather than only organizing them. "Convert to
+// Container" turns the other kinds into that one, as well as turning a node that isn't a container into one.
+type physicalContainerConvertible interface {
+	CanConvertToPhysicalContainer() bool
+	ConvertToPhysicalContainer()
+}
+
 // containerConversionStateKeeper is implemented by nodes whose conversion to or from a container changes more than
 // their kind, such as equipment, whose kind of container and legality class change too, so that undoing and redoing
 // a conversion can put that back as well.
@@ -55,6 +63,10 @@ func (c *containerConversionList) Apply() {
 type containerConversion struct {
 	Target      ConvertableContainer
 	ToContainer bool
+	// kindOnly marks a conversion of a container to another kind of container (see physicalContainerConvertible). It
+	// leaves the node a container, so it is carried out by ConvertToPhysicalContainer, or, when undone, by putting its
+	// state back alone.
+	kindOnly bool
 	// state, when hasState is true, is what the target is left holding once converted (see
 	// containerConversionStateKeeper).
 	state    any
@@ -69,9 +81,16 @@ func newContainerConversion(target ConvertableContainer, toContainer bool) *cont
 }
 
 func (c *containerConversion) Apply() {
-	if c.ToContainer {
+	switch {
+	case c.kindOnly:
+		if c.ToContainer {
+			if pc, ok := c.Target.(physicalContainerConvertible); ok {
+				pc.ConvertToPhysicalContainer()
+			}
+		}
+	case c.ToContainer:
 		c.Target.ConvertToContainer()
-	} else {
+	default:
 		c.Target.ConvertToNonContainer()
 	}
 	if c.hasState {
@@ -117,17 +136,31 @@ func ConvertToNonContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Tab
 }
 
 // convertibleSelection returns the selected rows' data that can be converted in the given direction: to a container
-// when toContainer is true, to a non-container otherwise.
+// when toContainer is true, to a non-container otherwise. Converting to a container includes turning a container of
+// another kind into one holding things in its own right (see physicalContainerConvertible).
 func convertibleSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], toContainer bool) []T {
 	var list []T
 	for _, row := range table.SelectedRows(false) {
 		data := row.Data()
-		if c, ok := any(data).(ConvertableContainer); ok && !xreflect.IsNil(data) &&
-			c.CanConvertToFromContainer() && c.Container() != toContainer {
+		if !xreflect.IsNil(data) && (canConvertContainer(data, toContainer) || (toContainer && isKindOnly(data))) {
 			list = append(list, data)
 		}
 	}
 	return list
+}
+
+// canConvertContainer returns true if the data can be converted to a container when toContainer is true, or to a
+// non-container otherwise.
+func canConvertContainer(data any, toContainer bool) bool {
+	c, ok := data.(ConvertableContainer)
+	return ok && c.CanConvertToFromContainer() && c.Container() != toContainer
+}
+
+// isKindOnly returns true if converting the data to a container would only change its kind of container (see
+// physicalContainerConvertible).
+func isKindOnly(data any) bool {
+	pc, ok := data.(physicalContainerConvertible)
+	return ok && pc.CanConvertToPhysicalContainer()
 }
 
 // canConvertContainers returns true if the table's current selection has a row that can be converted in the given
@@ -185,6 +218,11 @@ func convertContainersWithoutUndo[T gurps.Node[T]](owner Rebuildable, table *uni
 		target := any(data).(ConvertableContainer) //nolint:errcheck // convertibleSelection checked this
 		undo := newContainerConversion(target, !toContainer)
 		redo := newContainerConversion(target, toContainer)
+		if toContainer && isKindOnly(data) {
+			// It stays a container, so undoing it only puts its state back.
+			undo.kindOnly, undo.ToContainer = true, false
+			redo.kindOnly = true
+		}
 		keeper, keeps := target.(containerConversionStateKeeper)
 		if keeps {
 			undo.state, undo.hasState = keeper.ContainerConversionState(), true

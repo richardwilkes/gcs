@@ -359,3 +359,24 @@ func TestApplyModifierSkipsEquipmentGroups(t *testing.T) {
 	c.Equal(0, len(group.Modifiers), "the group must not be given the modifier")
 	c.Equal(1, len(backpack.Modifiers), "the physical container must still get it")
 }
+
+// TestConvertToContainerInALibrary verifies that "Convert to Container" turns a group into a physical container in an
+// equipment library too, where it is the shared conversion that handles it, and that undo turns it back.
+func TestConvertToContainerInALibrary(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	group := gurps.NewEquipmentGroup(nil, nil)
+	item := gurps.NewEquipment(nil, nil, false)
+	d := NewEquipmentTableDockable("Gear"+gurps.EquipmentExt, []*gurps.Equipment{group, item})
+	table := d.table
+	table.SetSelectionMap(map[tid.TID]bool{group.ID(): true, item.ID(): true})
+	c.True(d.CanPerformCmd(nil, ConvertToContainerItemID))
+	d.PerformCmd(nil, ConvertToContainerItemID)
+	c.True(group.IsPhysicalContainer(), "the group must have become a physical container")
+	c.True(item.IsPhysicalContainer(), "the item must have become a physical container")
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr)
+	mgr.Undo()
+	c.True(group.IsGroup(), "undo must turn the group back")
+	c.False(item.Container(), "the same undo must turn the item back")
+}
