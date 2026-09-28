@@ -114,7 +114,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false))
 	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
-	content.AddChild(newEquipmentModifiersPanel(e, entity, &e.editorData.Modifiers))
+	content.AddChild(newEquipmentModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 	e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 	content.AddChild(e.meleeWeapons)
 	e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)

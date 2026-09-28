@@ -24,6 +24,10 @@ type editorListPanel[T gurps.Node[T]] struct {
 	list     *[]T
 	provider TableProvider[T]
 	table    *unison.Table[*Node[T]]
+	// attach, when set, points the nodes of a list that replaces the current one at whatever they belong to. The
+	// nodes of a list restored by undo or redo are rebuilt from their serialized form, which records neither their data
+	// owner nor the item they belong to.
+	attach func(list []T)
 }
 
 // init sets up the panel and builds its table. self is the concrete panel embedding this one, which provider must
@@ -51,6 +55,9 @@ func (p *editorListPanel[T]) DataOwner() gurps.DataOwner {
 
 // setList replaces the list and re-syncs the table to it, keeping the selection.
 func (p *editorListPanel[T]) setList(list []T) {
+	if p.attach != nil {
+		p.attach(list)
+	}
 	*p.list = list
 	syncTablePreservingSelection(p.table)
 }

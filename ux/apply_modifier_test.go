@@ -874,7 +874,7 @@ func TestApplyModifierCommandNeedsASelectionAndADestination(t *testing.T) {
 	root := &stubRebuildable{}
 	root.Self = root
 	editorModifiers := []*gurps.TraitModifier{mod.Clone(gurps.LibraryFile{}, sheet.Entity(), nil, gurps.Copy)}
-	editor := newTraitModifiersPanel(root, sheet.Entity(), &editorModifiers)
+	editor := newTraitModifiersPanel(root, sheet.Entity(), gurps.NewTrait(sheet.Entity(), nil, false), &editorModifiers)
 	editor.table.SelectAll()
 	c.True(editor.table.HasSelection(), "the editor's modifier must be selected for the check to mean anything")
 	c.False(canApply(editor.table), "a modifier list inside an editor must not offer the command")

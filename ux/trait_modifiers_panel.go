@@ -18,9 +18,16 @@ type traitModifiersPanel struct {
 	editorListPanel[*gurps.TraitModifier]
 }
 
-func newTraitModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, modifiers *[]*gurps.TraitModifier) *traitModifiersPanel {
+// newTraitModifiersPanel returns a panel for the modifiers of the trait being edited, which are kept pointed at it.
+func newTraitModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, trait *gurps.Trait, modifiers *[]*gurps.TraitModifier) *traitModifiersPanel {
 	p := &traitModifiersPanel{}
 	p.init(p, owner, modifiers, NewTraitModifiersProvider(p, true), "trait-modifiers-"+uuid.New().String())
+	p.attach = func(list []*gurps.TraitModifier) {
+		gurps.SetDataOwnerAll(trait.DataOwner(), list)
+		for _, one := range list {
+			one.SetTarget(trait)
+		}
+	}
 	p.installNewItemHandler(cmdRoot, NewTraitModifierItemID, NoItemVariant)
 	p.installNewItemHandler(cmdRoot, NewTraitContainerModifierItemID, ContainerItemVariant)
 	p.installNewItemHandler(cmdRoot, NewTraitModifierChoiceItemID, ChoiceContainerItemVariant)

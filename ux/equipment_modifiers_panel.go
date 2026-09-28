@@ -18,9 +18,17 @@ type equipmentModifiersPanel struct {
 	editorListPanel[*gurps.EquipmentModifier]
 }
 
-func newEquipmentModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, modifiers *[]*gurps.EquipmentModifier) *equipmentModifiersPanel {
+// newEquipmentModifiersPanel returns a panel for the modifiers of the equipment being edited, which are kept pointed at
+// it.
+func newEquipmentModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, equipment *gurps.Equipment, modifiers *[]*gurps.EquipmentModifier) *equipmentModifiersPanel {
 	p := &equipmentModifiersPanel{}
 	p.init(p, owner, modifiers, NewEquipmentModifiersProvider(p, true), "equipment-modifiers-"+uuid.New().String())
+	p.attach = func(list []*gurps.EquipmentModifier) {
+		gurps.SetDataOwnerAll(equipment.DataOwner(), list)
+		for _, one := range list {
+			one.SetTarget(equipment)
+		}
+	}
 	p.installNewItemHandler(cmdRoot, NewEquipmentModifierItemID, NoItemVariant)
 	p.installNewItemHandler(cmdRoot, NewEquipmentContainerModifierItemID, ContainerItemVariant)
 	p.installNewItemHandler(cmdRoot, NewEquipmentModifierChoiceItemID, ChoiceContainerItemVariant)

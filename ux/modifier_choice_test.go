@@ -310,8 +310,100 @@ func TestDuplicatingAnOptionKeepsThePick(t *testing.T) {
 	c.Equal(3, len(choice.Children))
 	c.True(choice.Children[0].Enabled(), "the pick the choice had is kept")
 	c.False(choice.Children[1].Enabled(), "the duplicate arrives turned off")
+	c.Equal(trait, choice.Children[1].Target(), "the duplicate modifies the trait its original does")
+	c.True(gurps.IsOnSheet(choice.Children[1]))
 	unison.UndoManagerFor(table).Undo()
-	c.Equal(2, len(e.editorData.Modifiers[0].Children), "undo takes the duplicate away")
+	options := liveTable(table).RootRows()[0].Data().Children
+	c.Equal(2, len(options), "undo takes the duplicate away")
+	c.True(options[0].Enabled(), "undo keeps the pick")
+	c.False(options[1].Enabled())
+}
+
+// TestUndoInAnEditorKeepsTheModifiersAttached verifies that the modifiers and weapons an editor's lists get back from
+// a structural undo still belong to the item being edited, so that the pick of a mandatory choice on a sheet is still
+// locked, and a weapon still has its owner.
+func TestUndoInAnEditorKeepsTheModifiersAttached(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
+	trait.Weapons = []*gurps.Weapon{gurps.NewWeapon(trait, true)}
+	e, content := buildEditorContent(sheet, trait, initTraitEditor)
+	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
+	c.True(ok)
+	table := panel.table
+	table.SetSelectionMap(map[tid.TID]bool{e.editorData.Modifiers[0].Children[1].ID(): true})
+	DuplicateSelection(table)
+	unison.UndoManagerFor(table).Undo()
+	table = liveTable(table)
+	pick := table.RootRows()[0].Data().Children[0]
+	c.True(pick.Enabled())
+	c.True(gurps.IsOnSheet(pick), "the restored modifiers keep the sheet as their owner")
+	c.Equal(trait, pick.Target(), "the restored modifiers keep modifying the trait")
+	table.SetSelectionMap(map[tid.TID]bool{pick.ID(): true})
+	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the pick is still locked")
+	adjustModifierEnabled(e, table, pick, false)
+	c.True(pick.Enabled(), "and can't be turned off")
+
+	weapons, ok := firstPanelOfType[*weaponsPanel](content)
+	c.True(ok)
+	weaponTable := weapons.table
+	weaponTable.SetSelectionMap(map[tid.TID]bool{e.editorData.Weapons[0].ID(): true})
+	DuplicateSelection(weaponTable)
+	unison.UndoManagerFor(weaponTable).Undo()
+	c.Equal(1, len(e.editorData.Weapons))
+	c.Equal(gurps.WeaponOwner(trait), e.editorData.Weapons[0].Owner, "the restored weapon keeps its owner")
+}
+
+// TestDuplicateInAnEditorModifiesTheSameItem verifies that a modifier duplicated within a choice in an editor's list
+// modifies the item its original does and has the same data owner.
+func TestDuplicateInAnEditorModifiesTheSameItem(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	container := gurps.NewTrait(entity, nil, true)
+	container.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
+	e, content := buildEditorContent(sheet, container, initTraitEditor)
+	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
+	c.True(ok)
+	table := panel.table
+	table.SetSelectionMap(map[tid.TID]bool{e.editorData.Modifiers[0].Children[0].ID(): true})
+	DuplicateSelection(table)
+	duplicate := e.editorData.Modifiers[0].Children[1]
+	c.Equal(container, duplicate.Target())
+	c.True(gurps.IsOnSheet(duplicate))
+}
+
+// TestUndoInALootEquipmentEditorKeepsThePickLocked verifies that the modifiers an equipment editor's list gets back
+// from a structural undo on a loot sheet still have the loot as their owner, which locks the pick of a mandatory
+// choice there as on a character sheet.
+func TestUndoInALootEquipmentEditorKeepsThePickLocked(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	choice := gurps.NewEquipmentModifierChoice(sheet.loot, nil)
+	for _, name := range []string{"A", "B"} {
+		option := gurps.NewEquipmentModifier(sheet.loot, choice, false)
+		option.Name = name
+		option.SetEnabled(name == "A")
+		choice.Children = append(choice.Children, option)
+	}
+	equipment := gurps.NewEquipment(sheet.loot, nil, false)
+	equipment.Modifiers = []*gurps.EquipmentModifier{choice}
+	e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
+	panel, ok := firstPanelOfType[*equipmentModifiersPanel](content)
+	c.True(ok)
+	table := panel.table
+	table.SetSelectionMap(map[tid.TID]bool{e.editorData.Modifiers[0].Children[1].ID(): true})
+	DuplicateSelection(table)
+	duplicate := e.editorData.Modifiers[0].Children[1]
+	c.True(gurps.IsOnSheet(duplicate), "the duplicate is on the loot sheet as its original is")
+	unison.UndoManagerFor(table).Undo()
+	table = liveTable(table)
+	pick := table.RootRows()[0].Data().Children[0]
+	c.True(gurps.IsOnSheet(pick), "the restored modifiers keep the loot as their owner")
+	table.SetSelectionMap(map[tid.TID]bool{pick.ID(): true})
+	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the pick is still locked")
 }
 
 // TestConvertingToAChoiceOnASheetPicksTheFirstOption verifies that a group converted to a choice on a sheet, where a

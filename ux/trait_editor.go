@@ -164,11 +164,11 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	}
 	if e.target.Container() {
 		if !choice {
-			content.AddChild(newTraitModifiersPanel(e, entity, &e.editorData.Modifiers))
+			content.AddChild(newTraitModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 		}
 	} else {
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
-		content.AddChild(newTraitModifiersPanel(e, entity, &e.editorData.Modifiers))
+		content.AddChild(newTraitModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 		content.AddChild(e.meleeWeapons)
 		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
