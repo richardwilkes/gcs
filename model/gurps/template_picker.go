@@ -47,7 +47,7 @@ func (t TemplatePicker) IsZero() bool {
 }
 
 // String returns a description of the picker. A weight is described in the default sheet settings' units, since only a
-// template or a library keeps a picker and neither has an entity; see StringWithUnits for describing it in another's.
+// template keeps a picker and a template has no entity; see StringWithUnits for describing it in another's.
 func (t TemplatePicker) String() string {
 	return t.StringWithUnits(SheetSettingsFor(nil).DefaultWeightUnits)
 }
