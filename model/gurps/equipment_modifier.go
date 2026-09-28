@@ -711,8 +711,9 @@ func (e *EquipmentModifier) SyncWithSource() {
 		e.Tags = slices.Clone(other.Tags)
 		if e.Container() {
 			e.ModifierContainerSyncData = other.ModifierContainerSyncData
-			// The source may have made this a choice, which keeps no more than one of its options enabled.
-			SettleModifierChoices(nil, e)
+			// The source may have made this a choice, which keeps no more than one of its options enabled, or made a
+			// choice within another one a group, whose options are then the other one's.
+			settleModifierChoicesAround(e)
 		} else {
 			e.EquipmentModifierNonContainerSyncData = other.EquipmentModifierNonContainerSyncData
 			e.Features = other.Features.Clone()

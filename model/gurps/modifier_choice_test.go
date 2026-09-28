@@ -495,6 +495,49 @@ func TestSyncSettlesAModifierChoice(t *testing.T) {
 	c.False(b.Enabled(), "and no other")
 }
 
+// TestSyncSettlesTheOuterChoice verifies that a choice within a choice which its library source has since made a group
+// gives its options to the choice around it, which keeps the pick it had, for both kinds of modifier.
+func TestSyncSettlesTheOuterChoice(t *testing.T) {
+	c := check.New(t)
+	libFile := LibraryFile{Library: "Test Library", Path: "Test"}
+
+	entity := NewEntity()
+	outer := NewTraitModifierChoice(entity, nil)
+	outer.SetMandatoryChoice(false)
+	p := NewTraitModifier(entity, outer, false)
+	inner := NewTraitModifierChoice(entity, outer)
+	q := NewTraitModifier(entity, inner, false)
+	inner.Children = []*TraitModifier{q}
+	outer.Children = []*TraitModifier{p, inner}
+	source := NewTraitModifier(nil, nil, true)
+	inner.Source = Source{LibraryFile: libFile, TID: source.TID}
+	entity.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
+		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
+	}
+	inner.SyncWithSource()
+	c.False(IsModifierChoice(inner), "the sync makes the inner choice a group")
+	c.True(p.Enabled(), "the outer choice keeps its pick")
+	c.False(q.Enabled(), "the option that came with the group is turned off")
+
+	entity = NewEntity()
+	eqOuter := NewEquipmentModifierChoice(entity, nil)
+	eqOuter.SetMandatoryChoice(false)
+	eqP := NewEquipmentModifier(entity, eqOuter, false)
+	eqInner := NewEquipmentModifierChoice(entity, eqOuter)
+	eqQ := NewEquipmentModifier(entity, eqInner, false)
+	eqInner.Children = []*EquipmentModifier{eqQ}
+	eqOuter.Children = []*EquipmentModifier{eqP, eqInner}
+	eqSource := NewEquipmentModifier(nil, nil, true)
+	eqInner.Source = Source{LibraryFile: libFile, TID: eqSource.TID}
+	entity.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
+		libFile: {dataHashes: map[tid.TID]HashAndData{eqSource.TID: {Hash: Hash64(eqSource), Data: eqSource}}},
+	}
+	eqInner.SyncWithSource()
+	c.False(IsModifierChoice(eqInner))
+	c.True(eqP.Enabled())
+	c.False(eqQ.Enabled())
+}
+
 // TestLoadingKeepsThePicksOfUnsupportedForms verifies that loading keeps a choice held in a supported form to one
 // enabled option, but leaves the options of one held in a form a newer version may allow several picks for as they are.
 func TestLoadingKeepsThePicksOfUnsupportedForms(t *testing.T) {

@@ -603,8 +603,9 @@ func (t *TraitModifier) SyncWithSource() {
 		t.Tags = slices.Clone(other.Tags)
 		if t.Container() {
 			t.ModifierContainerSyncData = other.ModifierContainerSyncData
-			// The source may have made this a choice, which keeps no more than one of its options enabled.
-			SettleModifierChoices(nil, t)
+			// The source may have made this a choice, which keeps no more than one of its options enabled, or made a
+			// choice within another one a group, whose options are then the other one's.
+			settleModifierChoicesAround(t)
 		} else {
 			t.TraitModifierNonContainerSyncData = other.TraitModifierNonContainerSyncData
 			t.Features = other.Features.Clone()

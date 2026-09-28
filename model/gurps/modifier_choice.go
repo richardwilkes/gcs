@@ -424,8 +424,16 @@ func ConvertFromModifierChoice[T Node[T]](node T) {
 		return
 	}
 	data.Choice = TemplatePicker{}
-	if outer, ok := modifierChoiceAbove(node); ok {
-		SettleModifierChoices(func(one T) bool { return isWithin(one, node) }, outer)
+	settleModifierChoicesAround(node)
+}
+
+// settleModifierChoicesAround settles the modifier choices within the container and the choice around it, if any, once
+// the container may have become a choice or stopped being one. One that stopped being a choice has handed its options
+// to the choice around it, which keeps the pick it already had over any of theirs.
+func settleModifierChoicesAround[T Node[T]](container T) {
+	SettleModifierChoices(nil, container)
+	if outer, ok := modifierChoiceAbove(container); ok {
+		SettleModifierChoices(func(one T) bool { return isWithin(one, container) }, outer)
 	}
 }
 
