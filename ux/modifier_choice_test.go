@@ -211,6 +211,14 @@ func TestCreatingModifierChoices(t *testing.T) {
 	c.True(slices.Contains(titles, "New Trait Modifier Group"), "a modifier container is now called a group")
 	c.True(slices.Contains(titles, "New Trait Modifier Choice"))
 
+	var edited *gurps.TraitModifier
+	provider.edit = func(_ Rebuildable, item *gurps.TraitModifier) { edited = item }
+	library.PerformCmd(nil, NewTraitModifierChoiceItemID)
+	c.NotNil(edited, "the new choice is handed to its editor")
+	c.Equal(1, len(provider.RootData()), "the command adds the choice to the list")
+	c.True(provider.RootData()[0] == edited)
+	c.True(gurps.IsMandatoryModifierChoice(edited))
+
 	e, _, _ := newEquipmentEditorWithModifiers(t)
 	c.True(e.CanPerformCmd(nil, NewEquipmentModifierChoiceItemID))
 	c.True(gurps.IsMandatoryModifierChoice(gurps.NewEquipmentModifierChoice(nil, nil)))
@@ -620,6 +628,68 @@ func TestModifierSelectionOutsideASheet(t *testing.T) {
 	trait.Preconfigured = true
 	c.True(processModifiers(promptOperation{}, []*gurps.Trait{trait}, false))
 	c.Equal(0, len(*prompts), "a preconfigured row headed for a template isn't asked about its choices")
+}
+
+// TestModifierSelectionReachesIntoNestedContainers verifies that the prompt finds the options of a choice through the
+// groups nested beneath it, while a choice nested beneath it keeps its own options, and that picking an option tells
+// the prompt, which is how its OK button learns whether it may be pressed.
+func TestModifierSelectionReachesIntoNestedContainers(t *testing.T) {
+	c := check.New(t)
+	named := func(parent *gurps.TraitModifier, name string) *gurps.TraitModifier {
+		m := gurps.NewTraitModifier(nil, parent, false)
+		m.Name = name
+		m.SetEnabled(false)
+		parent.Children = append(parent.Children, m)
+		return m
+	}
+	outer := gurps.NewTraitModifier(nil, nil, true)
+	plain := named(outer, "Plain")
+	choice := gurps.NewTraitModifierChoice(nil, outer)
+	outer.Children = append(outer.Children, choice)
+	direct := named(choice, "Direct")
+	group := gurps.NewTraitModifier(nil, choice, true)
+	choice.Children = append(choice.Children, group)
+	grouped := named(group, "Grouped")
+	inner := gurps.NewTraitModifierChoice(nil, choice)
+	choice.Children = append(choice.Children, inner)
+	low := named(inner, "Low")
+	high := named(inner, "High")
+
+	s := newModifierSelection([]*gurps.TraitModifier{outer}, true)
+	c.NotNil(s)
+	var changes int
+	s.onChange = func() { changes++ }
+	c.Equal(1, len(s.boxes), "only the modifier outside every choice gets a check box")
+	c.Equal(2, len(s.choices), "each choice, nested or not, gets its own group of radio buttons")
+	optionsOf := func(choice *choiceRadioGroup) map[gurps.GeneralModifier]*unison.RadioButton {
+		options := make(map[gurps.GeneralModifier]*unison.RadioButton)
+		for rb, gm := range choice.options {
+			options[gm] = rb
+		}
+		return options
+	}
+	outerOptions := optionsOf(s.choices[0])
+	innerOptions := optionsOf(s.choices[1])
+	c.Equal(2, len(outerOptions))
+	c.NotNil(outerOptions[direct])
+	c.NotNil(outerOptions[grouped], "an option in a group beneath the choice is one of its options")
+	c.Equal(2, len(innerOptions), "the nested choice's options are its own")
+	c.NotNil(innerOptions[low])
+	c.NotNil(innerOptions[high])
+	c.False(s.complete())
+
+	outerOptions[grouped].Click()
+	c.Equal(1, changes, "picking an option tells the prompt")
+	c.False(s.complete(), "the nested choice still has to be made")
+	innerOptions[high].Click()
+	c.Equal(2, changes)
+	c.True(s.complete())
+	c.True(s.apply())
+	c.False(plain.Enabled())
+	c.False(direct.Enabled())
+	c.True(grouped.Enabled())
+	c.False(low.Enabled())
+	c.True(high.Enabled())
 }
 
 // TestEmptyMandatoryChoiceDoesNotHoldThePromptOpen verifies that a mandatory choice with no options, which has

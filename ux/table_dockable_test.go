@@ -145,6 +145,43 @@ func TestTableDockableNewItemIsDisabledWhileFiltered(t *testing.T) {
 	c.Equal(3, len(d.provider.RootData()), "no item may have been created along the way")
 }
 
+// TestModifierLibraryNewItemIsDisabledWhileFiltered verifies that a modifier library turns its new-item commands, the
+// one for a new choice included, off while the quick filter is hiding part of the list, as other library lists do.
+func TestModifierLibraryNewItemIsDisabledWhileFiltered(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	traitMod := gurps.NewTraitModifier(nil, nil, false)
+	traitMod.Name = "Accessibility"
+	checkNewItemsOffWhileFiltered(c,
+		NewTraitModifierTableDockable("test"+gurps.TraitModifiersExt, []*gurps.TraitModifier{traitMod}),
+		NewTraitModifierItemID, NewTraitContainerModifierItemID, NewTraitModifierChoiceItemID)
+	eqpMod := gurps.NewEquipmentModifier(nil, nil, false)
+	eqpMod.Name = "Balanced"
+	checkNewItemsOffWhileFiltered(c,
+		NewEquipmentModifierTableDockable("test"+gurps.EquipmentModifiersExt, []*gurps.EquipmentModifier{eqpMod}),
+		NewEquipmentModifierItemID, NewEquipmentContainerModifierItemID, NewEquipmentModifierChoiceItemID)
+}
+
+// checkNewItemsOffWhileFiltered checks that the library list offers each of the new-item commands only while its
+// quick filter is empty.
+func checkNewItemsOffWhileFiltered[T gurps.Node[T]](c check.Checker, d *TableDockable[T], ids ...int) {
+	c.Helper()
+	for _, id := range ids {
+		c.True(d.AsPanel().CanPerformCmd(nil, id), "an unfiltered library list must be able to create items")
+	}
+	d.filterField.SetText("zzz")
+	c.True(d.table.IsFiltered())
+	for _, id := range ids {
+		c.False(d.AsPanel().CanPerformCmd(nil, id), "a filtered library list must not offer new items")
+	}
+	d.filterField.SetText("")
+	for _, id := range ids {
+		c.True(d.AsPanel().CanPerformCmd(nil, id), "clearing the filter must make the commands available again")
+	}
+}
+
 // TestTableDockableSavedFilterAndQuickFilterCombine verifies that a saved filter and the quick filter work together:
 // putting a saved filter in force leaves the quick filter's field usable and its text in place, a row has to pass both
 // to be shown, and each can be cleared on its own, leaving the other to filter the list alone.
