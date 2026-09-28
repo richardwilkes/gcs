@@ -43,7 +43,8 @@ const (
 	NoItemVariant ItemVariant = iota
 	ContainerItemVariant
 	AlternateItemVariant
-	// ChoiceContainerItemVariant is a template choice container, which only a template may hold.
+	// ChoiceContainerItemVariant is a choice container: a template choice container, which only a template may hold, or
+	// a modifier choice.
 	ChoiceContainerItemVariant
 	// GroupContainerItemVariant is a container that only organizes what it holds, for the node types whose plain
 	// container is something more than that.

@@ -508,6 +508,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
 		data.UnsatisfiedReason, data.PrereqContradiction = t.prereqStatus()
+		data.UnresolvedChoice = unresolvedModifierChoiceText(t, t.Modifiers)
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		if tooltip.Len() != 0 {
 			t := i18n.Text("Trait level adjustments:\n") + strings.ReplaceAll(tooltip.String(), "\n", "\n- ")
@@ -664,6 +665,11 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 		return 0
 	}
 	if !t.Container() {
+		// A mandatory modifier choice yet to be made counts as the least it may come to; see PointsRange for the whole
+		// of what it may come to.
+		if r, open := t.modifierChoicePointsRange(); open && r.Min != nil {
+			return *r.Min
+		}
 		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
 			t.SelfControl, t.Frequency, t.AllModifiers(), t.RoundCostDown)
 	}
@@ -693,6 +699,12 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 // tooltip alone even then -- see AdjustedPoints -- but is asked for its cost the same way a skill or a spell is.
 func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 	if !t.Container() {
+		// A mandatory modifier choice still to be made leaves the cost open until it is.
+		if !t.EffectivelyDisabled() {
+			if r, open := t.modifierChoicePointsRange(); open {
+				return r
+			}
+		}
 		// The disabled case is covered too: AdjustedPoints reports nothing for a trait that is switched off.
 		return NumericRangeOf(t.AdjustedPoints(tooltip))
 	}
@@ -709,6 +721,19 @@ func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 	// A picker with nothing to pick from, and a container carrying no picker at all, both come back as the total of
 	// the children, which is what everything inside a container being taken costs.
 	return pointsRangeForPicker(t.TemplatePicker, ranges)
+}
+
+// modifierChoicePointsRange returns the span of costs this trait, which must not be a container, may come to once the
+// mandatory modifier choices it has yet to make have been made, and false when it has none. The modifiers are only
+// gathered off a sheet, where such a choice can still be open.
+func (t *Trait) modifierChoicePointsRange() (NumericRange, bool) {
+	if IsOnSheet(t) {
+		return NumericRange{}, false
+	}
+	return modifierChoiceRange(t, t.AllModifiers(), func(modifiers []*TraitModifier) NumericRange {
+		return NumericRangeOf(AdjustedPoints(nil, t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
+			t.SelfControl, t.Frequency, modifiers, t.RoundCostDown))
+	})
 }
 
 // alternativeAbilitiesPointsRange returns the span of costs a set of alternative abilities may be worth, given the

@@ -23,6 +23,7 @@ func newTraitModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, modifier
 	p.init(p, owner, modifiers, NewTraitModifiersProvider(p, true), "trait-modifiers-"+uuid.New().String())
 	p.installNewItemHandler(cmdRoot, NewTraitModifierItemID, NoItemVariant)
 	p.installNewItemHandler(cmdRoot, NewTraitContainerModifierItemID, ContainerItemVariant)
+	p.installNewItemHandler(cmdRoot, NewTraitModifierChoiceItemID, ChoiceContainerItemVariant)
 	return p
 }
 

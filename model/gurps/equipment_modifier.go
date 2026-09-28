@@ -36,7 +36,9 @@ var (
 	_ = assertModifierNode[*EquipmentModifier]
 	_ = assertEditorData[*EquipmentModifierEditData]
 
-	_ GeneralModifier = &EquipmentModifier{}
+	_ GeneralModifier        = &EquipmentModifier{}
+	_ ModifierChoiceProvider = &EquipmentModifier{}
+	_ ModifierChoiceProvider = &EquipmentModifierEditData{}
 )
 
 // Columns that can be used with the equipment modifier method .CellData()
@@ -73,6 +75,7 @@ type EquipmentModifierEditData struct {
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
 	EquipmentModifierEditDataNonContainerOnly
+	ModifierContainerSyncData
 }
 
 // EquipmentModifierEditDataNonContainerOnly holds the EquipmentModifier data that is only applicable to
@@ -119,6 +122,14 @@ func NewEquipmentModifier(owner DataOwner, parent *EquipmentModifier, container 
 	e.owner = owner
 	e.SetOpen(container)
 	return &e
+}
+
+// NewEquipmentModifierChoice creates a new equipment modifier choice, which asks for exactly one of its options.
+func NewEquipmentModifierChoice(owner DataOwner, parent *EquipmentModifier) *EquipmentModifier {
+	e := NewEquipmentModifier(owner, parent, true)
+	e.SetMandatoryChoice(true)
+	e.Name = e.Kind()
+	return e
 }
 
 func equipmentModifierKind(container bool) byte {
@@ -217,6 +228,8 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	migrateLegacyText(&e.LocalNotes, localData.ExprNotes)
 	e.ClearUnusedFieldsForType()
 	finishNodeUnmarshal(e, &e.Tags, localData.Categories, open)
+	// No more than one option of a choice may be enabled, which data edited by hand may not have kept to.
+	settleLoadedModifierChoices(e)
 	return nil
 }
 
@@ -267,6 +280,7 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 		data.Primary = e.NameWithReplacements()
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		fillModifierChoiceCell(e, data)
 	case EquipmentModifierTechLevelColumn:
 		if !e.Container() {
 			data.Type = cell.Text
@@ -490,6 +504,16 @@ func (e *EquipmentModifier) ApplyNameableKeys(m map[string]string) {
 	}
 }
 
+// enabledVariant implements Modifier.
+func (e *EquipmentModifier) enabledVariant() *EquipmentModifier { //nolint:unused // Only called through the Modifier constraint
+	if e.Enabled() {
+		return e
+	}
+	variant := *e
+	variant.Disabled = false
+	return &variant
+}
+
 // Enabled returns true if this node is enabled.
 func (e *EquipmentModifier) Enabled() bool {
 	return !e.Disabled || e.Container()
@@ -504,11 +528,21 @@ func (e *EquipmentModifier) SetEnabled(enabled bool) {
 
 // CostMultiplier returns the amount to multiply the cost by.
 func (e *EquipmentModifier) CostMultiplier() fxp.Int {
+	return e.costMultiplier(nil)
+}
+
+// costMultiplier returns the amount to multiply the cost by. A cost per pound is worked out from weight when it isn't
+// nil, and from the equipment's own adjusted weight otherwise: while a mandatory modifier choice is still to be made,
+// each way of making it has a weight of its own, which its cost has to be worked out from.
+func (e *EquipmentModifier) costMultiplier(weight *fxp.Int) fxp.Int {
 	multiplier := multiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
 	if e.CostIsPerPound {
-		weight := fxp.Int(e.equipment.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
+		if weight == nil {
+			w := fxp.Int(e.equipment.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
+			weight = &w
+		}
 		baseWeight := fxp.Int(e.equipment.ResolvedBaseWeight())
-		multiplier = multiplier.Mul(max(weight, baseWeight).Ceil().Max(fxp.One))
+		multiplier = multiplier.Mul(max(*weight, baseWeight).Ceil().Max(fxp.One))
 	}
 	return multiplier
 }
@@ -531,14 +565,20 @@ func multiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.I
 
 // ValueAdjustedForModifiers returns the value after adjusting it for a set of modifiers.
 func ValueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
-	cost := processNonCFStep(equipment, emcost.Original, value, modifiers)
+	return valueAdjustedForModifiers(equipment, value, modifiers, nil)
+}
+
+// valueAdjustedForModifiers is ValueAdjustedForModifiers, with a cost per pound worked out from weight when it isn't
+// nil (see EquipmentModifier.costMultiplier).
+func valueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []*EquipmentModifier, weight *fxp.Int) fxp.Int {
+	cost := processNonCFStep(equipment, emcost.Original, value, modifiers, weight)
 
 	var cf fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.equipment = equipment
 		if mod.CostType == emcost.Base {
 			t := emcost.Base.FromString(mod.CostAmount)
-			cf += t.ExtractValue(mod.CostAmount).Mul(mod.CostMultiplier())
+			cf += t.ExtractValue(mod.CostAmount).Mul(mod.costMultiplier(weight))
 			if t == emcost.Multiplier {
 				cf -= fxp.One
 			}
@@ -549,21 +589,21 @@ func ValueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []
 		cost = cost.Mul(cf.Max(fxp.NegPointEight) + fxp.One)
 	}
 
-	cost = processNonCFStep(equipment, emcost.FinalBase, cost, modifiers)
+	cost = processNonCFStep(equipment, emcost.FinalBase, cost, modifiers, weight)
 
-	cost = processNonCFStep(equipment, emcost.Final, cost, modifiers)
+	cost = processNonCFStep(equipment, emcost.Final, cost, modifiers, weight)
 
 	return cost.Max(0)
 }
 
-func processNonCFStep(equipment *Equipment, costType emcost.Type, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
+func processNonCFStep(equipment *Equipment, costType emcost.Type, value fxp.Int, modifiers []*EquipmentModifier, weight *fxp.Int) fxp.Int {
 	var percentages, additions fxp.Int
 	cost := value
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.equipment = equipment
 		if mod.CostType == costType {
 			t := costType.FromString(mod.CostAmount)
-			amt := t.ExtractValue(mod.CostAmount).Mul(mod.CostMultiplier())
+			amt := t.ExtractValue(mod.CostAmount).Mul(mod.costMultiplier(weight))
 			switch t {
 			case emcost.Addition:
 				additions += amt
@@ -642,16 +682,24 @@ func processMultiplyAddWeightStep(equipment *Equipment, weightType emweight.Type
 // Kind returns the kind of data.
 func (e *EquipmentModifier) Kind() string {
 	if e.Container() {
-		return i18n.Text("Equipment Modifier Container")
+		if e.IsChoice() {
+			return i18n.Text("Equipment Modifier Choice")
+		}
+		return i18n.Text("Equipment Modifier Group")
 	}
 	return i18n.Text("Equipment Modifier")
 }
 
-// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container). A
+// container only organizes the modifiers it holds, or offers a choice among them, so it keeps nothing that would make
+// it a modifier in its own right, and a choice is kept to the forms a modifier choice supports.
 func (e *EquipmentModifier) ClearUnusedFieldsForType() {
 	if e.Container() {
 		e.EquipmentModifierEditDataNonContainerOnly = EquipmentModifierEditDataNonContainerOnly{}
+		e.VTTNotes = ""
+		e.normalizeModifierChoice()
 	} else {
+		e.ModifierContainerSyncData = ModifierContainerSyncData{}
 		e.Children = nil
 	}
 }
@@ -661,7 +709,11 @@ func (e *EquipmentModifier) SyncWithSource() {
 	syncFromSource(e, func(other *EquipmentModifier) {
 		e.EquipmentModifierSyncData = other.EquipmentModifierSyncData
 		e.Tags = slices.Clone(other.Tags)
-		if !e.Container() {
+		if e.Container() {
+			e.ModifierContainerSyncData = other.ModifierContainerSyncData
+			// The source may have made this a choice, which keeps no more than one of its options enabled.
+			SettleModifierChoices(nil, e)
+		} else {
 			e.EquipmentModifierNonContainerSyncData = other.EquipmentModifierNonContainerSyncData
 			e.Features = other.Features.Clone()
 		}
@@ -671,10 +723,9 @@ func (e *EquipmentModifier) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *EquipmentModifier) Hash(h hash.Hash) {
-	e.hash(h)
+	e.EquipmentModifierSyncData.hash(h)
 	if e.Container() {
-		// Containers carry no further sync data, so mark them the same way a nil value is marked elsewhere
-		xhash.Num8(h, uint8(255))
+		e.ModifierContainerSyncData.hash(h)
 	} else {
 		e.EquipmentModifierNonContainerSyncData.hash(h)
 	}

@@ -110,8 +110,12 @@ func modifierAltDropSupport[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
-	drop := table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
-		didDropCallback[T])
+	var drop *unison.TableDrop[*Node[T], *TableDragUndoEditData[T]]
+	drop = table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
+		func(undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+			revealModifierDropTarget(to, drop.TargetParent)
+			didDropCallback(undo, from, to, move)
+		})
 	installApplyingDrop(drop, provider)
 	// The keyboard repositioning commands are the equivalents of a drag within the table, so they belong on exactly
 	// the tables that accept one.
@@ -228,6 +232,21 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 	}
 }
 
+// revealModifierDropTarget opens the modifier container rows were just dropped into, if it was closed, as moving rows
+// into a container does. The rows would otherwise be hidden, and the selection can only hold rows that are showing,
+// yet it is what tells which rows arrived when the choices the drop may have added options to are settled (see
+// settleModifierChoices). Other tables are left as they are.
+func revealModifierDropTarget[T gurps.Node[T]](table *unison.Table[*Node[T]], parent *Node[T]) {
+	var zero T
+	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || parent == nil {
+		return
+	}
+	if data := parent.Data(); !xreflect.IsNil(data) && data.Container() && !data.IsOpen() {
+		data.SetOpen(true)
+		table.SyncToModel()
+	}
+}
+
 func willDropCallback[T gurps.Node[T]](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*TableDragUndoEditData[T]] {
 	mgr := unison.UndoManagerFor(to)
 	if mgr == nil {
@@ -340,6 +359,8 @@ func dropRebuilder(table unison.Paneler) Rebuildable {
 }
 
 func finishDidDrop[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+	// Settled ahead of the "after" state being taken, as commitTableUndo does.
+	settleModifierChoices(liveTable(to))
 	if undo == nil {
 		return
 	}

@@ -82,12 +82,17 @@ type CellData struct {
 	// among the prerequisites; see Trait.prereqStatus. At most one of it and UnsatisfiedReason is set.
 	PrereqContradiction string
 	TemplateInfo        string
+	ChoiceInfo          string
 	InlineTag           string
 	Type                cell.Type
 	Disabled            bool
 	Dim                 bool
 	Checked             bool
 	Alignment           align.Enum
+	// UnresolvedChoice explains which mandatory modifier choices of an item on a sheet have yet to be made.
+	UnresolvedChoice string
+	// ChoiceRequired is true for a mandatory modifier choice on a sheet that has yet to be made.
+	ChoiceRequired bool
 	// ForPage is the one input in this struct: the caller sets it before invoking a node's CellData method, and it
 	// is left untouched by that method. It is true when the cell is being displayed on a sheet, template or loot
 	// page, as opposed to an editor, a library list, or a request made only to sort the rows. Display preferences

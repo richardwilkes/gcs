@@ -97,6 +97,25 @@
   quantity of each option be changed while picking. The picker dialog shows each option's quantity, value and weight.
   Until the choice is made, a template shows the value and weight the choice may come to as a range, and so do the
   containers holding it and the list's totals.
+- Modifier containers are now called groups, and a group can be made a choice. A mandatory choice asks for exactly one
+  of its modifiers, such as the one that sets the price of a trait whose cost varies, and an optional choice asks for at
+  most one, which makes its modifiers mutually exclusive. "New Trait Modifier Choice" and "New Equipment Modifier
+  Choice" add one, and "Convert to Choice" and "Convert to Group" turn a group into a choice and back, in a modifier
+  library or in a trait or equipment editor. Unlike a template choice, a modifier choice keeps all of its modifiers
+  wherever it goes; the one picked is the one enabled, and no more than one is ever enabled: turning one on, in the list
+  or in its editor, turns off the one that was on, and a modifier added, duplicated, moved or dropped into a choice that
+  already has its pick arrives turned off. When modifiers are asked about, a choice's modifiers are offered as radio
+  buttons, and an optional choice adds "None". When a trait or piece of equipment is added to a character or loot sheet,
+  a mandatory choice must be made before the prompt can be accepted; elsewhere, such as in a template, it may be left
+  without a pick. A trait or piece of equipment marked preconfigured takes the picks its choices already have and is
+  only asked about a mandatory choice that has none. On a character or loot sheet a mandatory choice must always have
+  its pick: it can be changed but not turned off, making a choice mandatory there, by converting a group or in its
+  editor, picks its first option, and one otherwise left without a pick, as a library sync can leave it, is flagged,
+  both on the item and on the choice. Until a mandatory choice is made, a template or library shows the points a trait
+  may cost as a range, and the value and weight of a piece of equipment, and counts the least of them wherever a single
+  figure is needed.
+- The editor for a modifier group or choice now shows only the name, notes, choice, tags, page reference and library
+  source. The other fields only ever applied to a modifier, and a group's VTT notes are no longer kept.
 
 ## Bug Fixes
 

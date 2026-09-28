@@ -163,6 +163,13 @@ const (
 	NewOtherEquipmentGroupItemID
 	LastGroupContainerMarker
 
+	// Unlike a template choice, a modifier choice may be held anywhere modifiers are, so the library tables install
+	// these too.
+	FirstModifierChoiceMarker // Keep this block grouped together
+	NewEquipmentModifierChoiceItemID
+	NewTraitModifierChoiceItemID
+	LastModifierChoiceMarker
+
 	FirstAlternateNonContainerMarker // Keep this block grouped together
 	NewRitualMagicSpellItemID
 	NewTechniqueItemID
@@ -325,6 +332,7 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, newTraitChoiceContainerAction.NewMenuItem(f))
 	m.InsertItem(-1, newTraitModifierAction.NewMenuItem(f))
 	m.InsertItem(-1, newTraitContainerModifierAction.NewMenuItem(f))
+	m.InsertItem(-1, newTraitModifierChoiceAction.NewMenuItem(f))
 	m.InsertItem(-1, addNaturalAttacksAction.NewMenuItem(f))
 
 	m.InsertSeparator(-1, false)
@@ -349,6 +357,7 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, newOtherEquipmentGroupAction.NewMenuItem(f))
 	m.InsertItem(-1, newEquipmentModifierAction.NewMenuItem(f))
 	m.InsertItem(-1, newEquipmentContainerModifierAction.NewMenuItem(f))
+	m.InsertItem(-1, newEquipmentModifierChoiceAction.NewMenuItem(f))
 
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, newNoteAction.NewMenuItem(f))

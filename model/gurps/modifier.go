@@ -74,6 +74,9 @@ type Modifier[M Modifier[M, T], T Modifiable[T, M]] interface {
 	GeneralModifier
 	// fillWithNameableKeysEvenIfDisabled is FillWithNameableKeys without the enabled check.
 	fillWithNameableKeysEvenIfDisabled(m, existing map[string]string)
+	// enabledVariant returns the modifier itself when it is enabled, or a shallow copy of it that is enabled otherwise,
+	// for working out what its target would be worth were it enabled without changing the modifier.
+	enabledVariant() M
 }
 
 // attachModifiers points each of the modifiers at the target and gives them the target's data owner.

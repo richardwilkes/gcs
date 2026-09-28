@@ -20,57 +20,108 @@ import (
 )
 
 // The value and weight ranges of equipment reuse NumericRange, which is a range of fxp.Int with the picker arithmetic
-// already worked out; a weight is an fxp.Int in canonical units. As with points, a range is only ever unsettled on a
-// template, the one place a choice can still be left to make, so everywhere else it is the same single value
-// ExtendedValue or ExtendedWeight reports.
+// already worked out; a weight is an fxp.Int in canonical units. As with points, a range is never unsettled on a sheet,
+// where every choice has been made, so there it is the same single value ExtendedValue or ExtendedWeight reports.
+
+// AdjustedValueRange returns the span of values one of this equipment may end up having, not counting what it holds,
+// once any mandatory choice among its modifiers has been made.
+func (e *Equipment) AdjustedValueRange() NumericRange {
+	if r, open := e.modifierChoiceValueRange(); open {
+		return r
+	}
+	return NumericRangeOf(e.AdjustedValue())
+}
+
+// modifierChoiceValueRange returns the span of values one of this equipment may come to once the mandatory modifier
+// choices it has yet to make have been made, and false when it has none.
+func (e *Equipment) modifierChoiceValueRange() (NumericRange, bool) {
+	defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
+	return modifierChoiceRange(e, e.Modifiers, func(modifiers []*EquipmentModifier) NumericRange {
+		// A cost per pound is worked out from the weight this way of making the choices gives, not the equipment's.
+		weight := fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits))
+		return NumericRangeOf(valueAdjustedForModifiers(e, e.ResolvedBaseValue(), modifiers, &weight))
+	})
+}
+
+// AdjustedWeightRange returns the span of weights one of this equipment may end up having, not counting what it holds,
+// once any mandatory choice among its modifiers has been made.
+func (e *Equipment) AdjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
+	if r, open := e.modifierChoiceWeightRange(defUnits); open {
+		return r
+	}
+	return NumericRangeOf(fxp.Int(e.AdjustedWeight(false, defUnits)))
+}
+
+// modifierChoiceWeightRange returns the span of weights one of this equipment may come to once the mandatory modifier
+// choices it has yet to make have been made, and false when it has none.
+func (e *Equipment) modifierChoiceWeightRange(defUnits fxp.WeightUnit) (NumericRange, bool) {
+	return modifierChoiceRange(e, e.Modifiers, func(modifiers []*EquipmentModifier) NumericRange {
+		return NumericRangeOf(fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)))
+	})
+}
 
 // ExtendedValueRange returns the span of extended values this equipment may end up having once every choice within it
-// has been made.
+// has been made, a mandatory choice among its modifiers included.
 func (e *Equipment) ExtendedValueRange() NumericRange {
 	if e.Quantity <= 0 {
 		return NumericRangeOf(0)
 	}
-	if !e.Container() {
+	contents := NumericRangeOf(0)
+	if e.Container() {
+		children := make([]NumericRange, len(e.Children))
+		for i, one := range e.Children {
+			children[i] = one.ExtendedValueRange()
+		}
+		contents = equipmentContentsRange(e, picker.Value, children)
+	}
+	own := e.AdjustedValueRange()
+	if !e.Container() && own.IsSettled() {
 		return NumericRangeOf(e.ExtendedValue())
 	}
-	children := make([]NumericRange, len(e.Children))
-	for i, one := range e.Children {
-		children[i] = one.ExtendedValueRange()
-	}
-	contents := equipmentContentsRange(e, picker.Value, children)
-	return scaleNumericRange(NumericRangeOf(e.AdjustedValue()).Add(contents), e.Quantity)
+	return scaleNumericRange(own.Add(contents), e.Quantity)
 }
 
 // ExtendedWeightRange returns the span of extended weights this equipment may end up having once every choice within
-// it has been made.
+// it has been made, a mandatory choice among its modifiers included.
 func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 	if e.Quantity <= 0 {
 		return NumericRangeOf(0)
 	}
-	if !e.Container() {
-		return NumericRangeOf(fxp.Int(e.ExtendedWeight(false, defUnits)))
-	}
-	children := make([]NumericRange, len(e.Children))
-	for i, one := range e.Children {
-		children[i] = one.ExtendedWeightRange(defUnits)
-	}
-	contents := equipmentContentsRange(e, picker.Weight, children)
-	reduction := containedWeightReductionFor(e, defUnits, e.Modifiers, e.Features)
-	reduce := func(end *fxp.Int) *fxp.Int {
-		if end == nil {
-			// A reduction that takes away everything leaves nothing, however much there was to begin with.
-			if !reduction.removesEverything() {
-				return nil
-			}
-			var nothing fxp.Int
-			return &nothing
+	contents := NumericRangeOf(0)
+	if e.Container() {
+		children := make([]NumericRange, len(e.Children))
+		for i, one := range e.Children {
+			children[i] = one.ExtendedWeightRange(defUnits)
 		}
-		value := fxp.Int(reduction.apply(fxp.Weight(*end)))
-		return &value
+		contents = equipmentContentsRange(e, picker.Weight, children)
 	}
-	contents = NumericRange{Min: reduce(contents.Min), Max: reduce(contents.Max)}
-	base := WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits)
-	return scaleNumericRange(NumericRangeOf(fxp.Int(base)).Add(contents), e.Quantity)
+	// The modifiers weigh on the contents as well as on the equipment itself, since they may reduce the weight of what
+	// it holds.
+	weigh := func(modifiers []*EquipmentModifier) NumericRange {
+		reduction := containedWeightReductionFor(e, defUnits, modifiers, e.Features)
+		reduce := func(end *fxp.Int) *fxp.Int {
+			if end == nil {
+				// A reduction that takes away everything leaves nothing, however much there was to begin with.
+				if !reduction.removesEverything() {
+					return nil
+				}
+				var nothing fxp.Int
+				return &nothing
+			}
+			value := fxp.Int(reduction.apply(fxp.Weight(*end)))
+			return &value
+		}
+		base := WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)
+		return NumericRangeOf(fxp.Int(base)).Add(NumericRange{Min: reduce(contents.Min), Max: reduce(contents.Max)})
+	}
+	r, open := modifierChoiceRange(e, e.Modifiers, weigh)
+	if !open {
+		if !e.Container() {
+			return NumericRangeOf(fxp.Int(e.ExtendedWeight(false, defUnits)))
+		}
+		r = weigh(e.Modifiers)
+	}
+	return scaleNumericRange(r, e.Quantity)
 }
 
 // equipmentContentsRange returns the range of what the container holds, measured as the given picker type measures it,

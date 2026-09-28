@@ -88,6 +88,7 @@ var (
 	newEquipmentContainerModifierAction *unison.Action
 	newEquipmentLibraryAction           *unison.Action
 	newEquipmentModifierAction          *unison.Action
+	newEquipmentModifierChoiceAction    *unison.Action
 	newEquipmentModifiersLibraryAction  *unison.Action
 	newMarkdownFileAction               *unison.Action
 	newMeleeWeaponAction                *unison.Action
@@ -115,6 +116,7 @@ var (
 	newTraitChoiceContainerAction       *unison.Action
 	newTraitContainerModifierAction     *unison.Action
 	newTraitModifierAction              *unison.Action
+	newTraitModifierChoiceAction        *unison.Action
 	newTraitModifiersLibraryAction      *unison.Action
 	newTraitsLibraryAction              *unison.Action
 	openAction                          *unison.Action
@@ -381,8 +383,10 @@ func registerActions() {
 	// 	},
 	// })
 	newEquipmentContainerModifierAction = registerFocusAction("new.eqm.container", NewEquipmentContainerModifierItemID,
-		i18n.Text("New Equipment Modifier Container"),
+		i18n.Text("New Equipment Modifier Group"),
 		unison.KeyBinding{KeyCode: unison.KeyF, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})
+	newEquipmentModifierChoiceAction = registerFocusAction("new.eqm.choice", NewEquipmentModifierChoiceItemID,
+		i18n.Text("New Equipment Modifier Choice"), unison.KeyBinding{})
 	newEquipmentLibraryAction = registerLibraryAction("new.eqp.lib", NewEquipmentLibraryItemID,
 		i18n.Text("New Equipment Library"), "Equipment"+gurps.EquipmentExt, NewEquipmentTableDockable)
 	newEquipmentModifierAction = registerFocusAction("new.eqm", NewEquipmentModifierItemID,
@@ -465,8 +469,10 @@ func registerActions() {
 	newTraitChoiceContainerAction = registerFocusAction("new.adq.choice", NewTraitChoiceContainerItemID,
 		i18n.Text("New Trait Choice"), unison.KeyBinding{})
 	newTraitContainerModifierAction = registerFocusAction("new.adm.container", NewTraitContainerModifierItemID,
-		i18n.Text("New Trait Modifier Container"),
+		i18n.Text("New Trait Modifier Group"),
 		unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})
+	newTraitModifierChoiceAction = registerFocusAction("new.adm.choice", NewTraitModifierChoiceItemID,
+		i18n.Text("New Trait Modifier Choice"), unison.KeyBinding{})
 	newTraitModifierAction = registerFocusAction("new.adm", NewTraitModifierItemID, i18n.Text("New Trait Modifier"),
 		unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Option | mod.OSMenuCommand()})
 	newTraitModifiersLibraryAction = registerLibraryAction("new.adm.lib", NewTraitModifiersLibraryItemID,

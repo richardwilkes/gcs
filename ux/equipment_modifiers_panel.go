@@ -23,6 +23,7 @@ func newEquipmentModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, modi
 	p.init(p, owner, modifiers, NewEquipmentModifiersProvider(p, true), "equipment-modifiers-"+uuid.New().String())
 	p.installNewItemHandler(cmdRoot, NewEquipmentModifierItemID, NoItemVariant)
 	p.installNewItemHandler(cmdRoot, NewEquipmentContainerModifierItemID, ContainerItemVariant)
+	p.installNewItemHandler(cmdRoot, NewEquipmentModifierChoiceItemID, ChoiceContainerItemVariant)
 	return p
 }
 

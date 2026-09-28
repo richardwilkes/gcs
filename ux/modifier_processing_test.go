@@ -122,16 +122,16 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
-	processModifiers(promptOperation{}, []*gurps.TraitModifier{traitMod})
+	processModifiers(promptOperation{}, []*gurps.TraitModifier{traitMod}, true)
 	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
 	equipmentMod.Name = "Equipment Modifier"
-	processModifiers(promptOperation{}, []*gurps.EquipmentModifier{equipmentMod})
+	processModifiers(promptOperation{}, []*gurps.EquipmentModifier{equipmentMod}, true)
 	c.Equal(0, len(*prompts), "modifier rows have no modifiers of their own to prompt for")
 
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Trait"
 	trait.Modifiers = []*gurps.TraitModifier{traitMod}
-	processModifiers(promptOperation{}, []*gurps.Trait{trait})
+	processModifiers(promptOperation{}, []*gurps.Trait{trait}, true)
 	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
 		"a trait must be prompted for with its own modifiers")
 }
@@ -151,7 +151,7 @@ func TestModifierPromptsCountOnlyRowsWithModifiers(t *testing.T) {
 	first.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
 	second := gurps.NewTrait(entity, nil, false)
 	second.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
-	c.True(processModifiers(promptOperation{}, []*gurps.Trait{plain, first, plain, second}))
+	c.True(processModifiers(promptOperation{}, []*gurps.Trait{plain, first, plain, second}, false))
 	c.Equal([][2]int{{1, 2}, {2, 2}}, steps)
 }
 

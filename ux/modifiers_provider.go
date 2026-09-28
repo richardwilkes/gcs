@@ -29,6 +29,7 @@ type modifierProviderSpec[T gurps.Node[T]] struct {
 	columns           []int // The fixed run of columns, description first.
 	libSrcColumn      int
 	newItem           func(owner gurps.DataOwner, parent T, container bool) T
+	newChoice         func(owner gurps.DataOwner, parent T) T
 	edit              func(owner Rebuildable, item T)
 	menuActions       []*unison.Action
 	filterKey         string
@@ -50,6 +51,7 @@ func newModifiersProvider[T gurps.Node[T]](owner gurps.DataOwnerProvider, list f
 		columnIDs:    p.ColumnIDs,
 		headerData:   headerData,
 		newItem:      spec.newItem,
+		newChoice:    spec.newChoice,
 		edit:         spec.edit,
 		filterKey:    spec.filterKey,
 		filterFields: spec.filterFields,

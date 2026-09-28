@@ -186,9 +186,10 @@ func extendedWeightForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEd
 }
 
 // extendedValueTextForEditor renders the Extended Value preview for the equipment editor. A container holding a choice
-// yet to be made shows the range of values the choice may come to, as the list does.
+// yet to be made, or equipment with a mandatory modifier choice yet to be made, shows the range of values the choice
+// may come to, as the list does.
 func extendedValueTextForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData) string {
-	if overlay.Quantity > 0 && target.Container() {
+	if overlay.Quantity > 0 {
 		if r := cloneEquipmentWithOverlay(target, overlay).ExtendedValueRange(); !r.IsSettled() {
 			return gurps.FormatValueRange(r, fxp.Int.Comma)
 		}
@@ -197,9 +198,10 @@ func extendedValueTextForEditor(target *gurps.Equipment, overlay *gurps.Equipmen
 }
 
 // extendedWeightTextForEditor renders the Extended Weight preview for the equipment editor. A container holding a
-// choice yet to be made shows the range of weights the choice may come to, as the list does.
+// choice yet to be made, or equipment with a mandatory modifier choice yet to be made, shows the range of weights the
+// choice may come to, as the list does.
 func extendedWeightTextForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData, defUnits fxp.WeightUnit) string {
-	if overlay.Quantity > 0 && target.Container() {
+	if overlay.Quantity > 0 {
 		if r := cloneEquipmentWithOverlay(target, overlay).ExtendedWeightRange(defUnits); !r.IsSettled() {
 			return gurps.FormatWeightRange(r, defUnits.Format)
 		}

@@ -259,7 +259,7 @@ func selectModifierTargets[T gurps.Node[T]](tables []*unison.Table[*Node[T]], ta
 // attachModifierClones gives each target its own clones of the modifiers, appended to its modifiers. Both dropping
 // modifiers onto rows and the Apply Modifier command end here. A modifier pointed at directly is enabled, since the
 // user has just said to apply it. A container's contents are a set to choose from, so when the rows belong to an
-// entity each target receiving a container is asked which of its new modifiers should be enabled (see
+// entity or a loot sheet each target receiving a container is asked which of its new modifiers should be enabled (see
 // processModifiers); elsewhere they are left as they came and the choice is made when the row reaches a sheet (see
 // applyTransfer). For an entity the nameables prompt follows, before anything is shown or reported, so that a cancel
 // only has to take the clones back off and the owner is rebuilt once, with the answers in place; that rebuild is also
@@ -282,7 +282,8 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 	askAboutContainers := false
 	for _, m := range modifiers {
 		if m.Container() {
-			askAboutContainers = forEntity
+			// A loot sheet is a sheet too, where the choices a container of modifiers offers have to be made.
+			askAboutContainers = gurps.IsSheetOwner(dataOwner)
 			break
 		}
 	}
@@ -316,11 +317,12 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 		}
 		target.AddModifiers(clones...)
 		if askAboutContainers && promptForClonedModifiers(&modifierPromptInfo{
-			op:       op,
-			name:     target.String(),
-			location: rowLocation(target),
-			step:     i + 1,
-			steps:    len(targets),
+			op:           op,
+			name:         target.String(),
+			location:     rowLocation(target),
+			step:         i + 1,
+			steps:        len(targets),
+			requirePicks: true,
 		}, clones) {
 			restore()
 			return false
@@ -342,7 +344,8 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 }
 
 // promptForClonedModifiers puts up the prompt asking which of the clones should be enabled and reports whether it was
-// canceled. Clones of a kind with no prompt are not asked about.
+// canceled. The clones are going onto a sheet, so a mandatory choice among them has to have its pick made (see
+// modifierPromptInfo.requirePicks). Clones of a kind with no prompt are not asked about.
 func promptForClonedModifiers[M gurps.Node[M]](info *modifierPromptInfo, clones []M) (canceled bool) {
 	switch mods := any(clones).(type) {
 	case []*gurps.TraitModifier:

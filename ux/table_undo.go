@@ -12,6 +12,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
@@ -69,11 +70,13 @@ func beginTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], title string
 	}
 }
 
-// commitTableUndo finishes an edit begun with beginTableUndo: the table's current data becomes the edit's "after"
-// state and the edit is handed to the table's undo manager. Both come from the table currently showing the data (see
-// liveTable), since the edit may have replaced the table the "before" state was captured from, and an orphaned table
-// has no manager above it any more. A nil edit is ignored.
+// commitTableUndo finishes an edit begun with beginTableUndo: the table's current data becomes the edit's "after" state
+// and the edit is handed to the table's undo manager. Any modifier choice the edit left with more than one option
+// enabled is settled first, so that the "after" state holds the settled choice (see settleModifierChoices). Both come
+// from the table currently showing the data (see liveTable), since the edit may have replaced the table the "before"
+// state was captured from, and an orphaned table has no manager above it any more. A nil edit is ignored.
 func commitTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], undo *unison.UndoEdit[*TableUndoEditData[T]]) {
+	settleModifierChoices(liveTable(table))
 	if undo == nil {
 		return
 	}
@@ -288,4 +291,33 @@ func (t *TableDragUndoEditData[T]) Apply() {
 	restored.add(t.To.restore())
 	restored.add(t.From.restore())
 	restored.report()
+}
+
+// settleModifierChoices keeps each modifier choice in the table to no more than one enabled option after an edit that
+// may have brought options into one: an insert, a duplicate, a move or a drop. The option a choice already had enabled
+// is kept over those the edit brought in, which are the rows it leaves selected (see gurps.SettleModifierChoices).
+// Every edit ending in commitTableUndo or finishDidDrop must therefore leave selected the rows it brought in, and
+// nothing else it wants to keep, as each already does. A table of anything but modifiers is left alone.
+func settleModifierChoices[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
+	var zero T
+	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || table == nil {
+		return
+	}
+	provider, ok := any(table.Model).(TableProvider[T])
+	if !ok {
+		return
+	}
+	// A row brought in brings whatever it holds, so a group carried into a choice brings its options.
+	incoming := make(map[tid.TID]bool)
+	for _, row := range table.SelectedRows(false) {
+		if data := row.Data(); !xreflect.IsNil(data) {
+			gurps.Traverse(func(node T) bool {
+				incoming[node.ID()] = true
+				return false
+			}, false, false, data)
+		}
+	}
+	if gurps.SettleModifierChoices(func(node T) bool { return incoming[node.ID()] }, provider.RootData()...) {
+		table.MarkForRedraw()
+	}
 }

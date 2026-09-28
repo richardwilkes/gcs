@@ -269,9 +269,19 @@ func (e *editor[N, D]) applyEdits() {
 	// The source isn't part of the editor's data, so the undo edit has to carry it itself should applying the edit
 	// have cleared it (see clearSourceOfTemplatePicker).
 	sourceBefore := target.GetSource()
+	// Nor are the options of a modifier choice the target is, or is an option of, which the rules of the choice may
+	// change along with it.
+	optionsBefore := choiceOptionStates(target)
+	wasEnabled := target.Enabled()
+	changesEnabled := false
+	if _, ok := gurps.ModifierChoiceFor(target); ok {
+		changesEnabled = e.changesEnabled()
+	}
 	e.editorData.ApplyTo(target)
+	applyModifierChoiceRulesAfterEdit(target, wasEnabled, changesEnabled)
 	clearSourceOfTemplatePicker(target)
 	sourceAfter := target.GetSource()
+	optionsAfter := choiceOptionStates(target)
 	if mgr := unison.UndoManagerFor(owner); mgr != nil {
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
@@ -279,11 +289,13 @@ func (e *editor[N, D]) applyEdits() {
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
 				restoreSource(target, sourceBefore, sourceAfter)
+				restoreModifierEnabledStates(optionsBefore)
 				rebuildAsModified(owner, true)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.AfterData.ApplyTo(target)
 				restoreSource(target, sourceAfter, sourceBefore)
+				restoreModifierEnabledStates(optionsAfter)
 				rebuildAsModified(owner, true)
 			},
 			BeforeData: e.beforeData,
@@ -291,6 +303,48 @@ func (e *editor[N, D]) applyEdits() {
 		})
 	}
 	rebuildAsModified(owner, true)
+}
+
+// choiceOptionStates returns the enabled state of each option of the modifier choice the node is, or is an option of,
+// or nil if it is neither.
+func choiceOptionStates[N gurps.Node[N]](node N) map[gurps.GeneralModifier]bool {
+	if gurps.IsModifierChoice(node) {
+		return modifierEnabledStates(node)
+	}
+	if choice, ok := gurps.ModifierChoiceFor(node); ok {
+		return modifierEnabledStates(choice)
+	}
+	return nil
+}
+
+// changesEnabled returns true if the editor's data turns the target on or off, rather than carrying along the state
+// the target had when the editor was opened.
+func (e *editor[N, D]) changesEnabled() bool {
+	scratch := e.target.Clone(gurps.LibraryFile{}, e.target.DataOwner(), e.target.Parent(), gurps.Copy)
+	e.beforeData.ApplyTo(scratch)
+	before := scratch.Enabled()
+	e.editorData.ApplyTo(scratch)
+	return scratch.Enabled() != before
+}
+
+// applyModifierChoiceRulesAfterEdit applies the rules of a modifier choice after an editor's data has been applied to
+// the target. For an option of a choice, the rules only follow a change the editor made to whether it is enabled; the
+// state the editor opened with is otherwise put back, since the option may have been picked, or had another picked
+// over it, since then. A choice itself is brought into line with the rules, which it may no longer be in after, say,
+// being made mandatory on a sheet with nothing picked.
+func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled bool) {
+	if gurps.IsModifierChoice(target) {
+		gurps.EnsureModifierChoiceRules(target)
+		return
+	}
+	if _, ok := gurps.ModifierChoiceFor(target); !ok {
+		return
+	}
+	if changesEnabled {
+		gurps.KeepModifierChoiceRules(target, wasEnabled)
+	} else {
+		gurps.SetModifierEnabled(target, wasEnabled)
+	}
 }
 
 // restoreSource sets the target's source to want when applying an edit changed it from other, leaving it alone

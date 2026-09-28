@@ -456,6 +456,29 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		delete(tag.ClientData(), noInvertColorsMarker)
 		p.AddChild(tag)
 	}
+	if c.UnresolvedChoice != "" {
+		p.AddChild(makeTagForNode(i18n.Text("Modifier choice required"), unison.ThemeError, unison.ThemeOnError,
+			n.secondaryFieldFont(), unison.TriangleExclamationSVG))
+	}
+	if c.ChoiceInfo != "" {
+		// Drawn in the row's own colors, as the template choice tag above is, for the same reason.
+		tag := makeTagForNode(c.ChoiceInfo, foreground, background, n.secondaryFieldFont(), svg.SignPost)
+		delete(tag.ClientData(), noInvertColorsMarker)
+		if c.ChoiceRequired {
+			// A mandatory choice yet to be made on a sheet says so right beside what it asks for.
+			row := unison.NewPanel()
+			row.SetLayout(&unison.FlexLayout{
+				Columns:  2,
+				HSpacing: unison.StdHSpacing / 2,
+			})
+			row.AddChild(tag)
+			row.AddChild(makeTagForNode(i18n.Text("Required"), unison.ThemeError, unison.ThemeOnError,
+				n.secondaryFieldFont(), unison.TriangleExclamationSVG))
+			p.AddChild(row)
+		} else {
+			p.AddChild(tag)
+		}
+	}
 	if tooltip := labelCellTooltip(c); tooltip != "" {
 		var workingDir string
 		if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
@@ -472,8 +495,23 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 // replaces the cell's own tooltip, since the row is flagged as broken and the reason is what the user needs to put it
 // right. The explanation of a contradiction among the prerequisites is put ahead of the cell's own tooltip instead,
 // under the same separator Trait.CellData uses between the blocks of that tooltip, since the row is enabled and in
-// use, so what its own tooltip says still applies.
+// use, so what its own tooltip says still applies. The explanation of a mandatory modifier choice left unresolved on a
+// sheet goes ahead of all of that, under the same separator.
 func labelCellTooltip(c *gurps.CellData) string {
+	tooltip := prereqCellTooltip(c)
+	switch {
+	case c.UnresolvedChoice == "":
+		return tooltip
+	case tooltip == "":
+		return c.UnresolvedChoice
+	default:
+		return c.UnresolvedChoice + "\n---\n" + tooltip
+	}
+}
+
+// prereqCellTooltip returns the text of the tooltip a label cell shows before any unresolved modifier choice is
+// explained ahead of it.
+func prereqCellTooltip(c *gurps.CellData) string {
 	switch {
 	case c.UnsatisfiedReason != "":
 		return c.UnsatisfiedReason
@@ -649,6 +687,11 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 			return nil
 		},
 		func(label *unison.Label, _ mod.Modifiers) bool {
+			// The pick of a mandatory modifier choice on a sheet can't be turned off (see
+			// gurps.IsLockedModifierChoiceSelection), so the click is refused, which puts the checkmark back.
+			if gurps.IsLockedModifierChoiceSelection(n.data) {
+				return false
+			}
 			if !handleCheck(n.data, label, c.Checked) {
 				MarkModified(label)
 			}

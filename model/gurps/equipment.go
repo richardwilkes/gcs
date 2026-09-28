@@ -454,14 +454,14 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 		data.Detail = i18n.Text("Legality Class")
 	case EquipmentCostColumn:
 		data = imageHeaderData(HeaderCoins, i18n.Text("The value of one of these pieces of equipment"))
-		data.Less = fxp.IntLessFromString
+		data.Less = ValueRangeLessFromString
 	case EquipmentExtendedCostColumn:
 		data = imageHeaderData(HeaderStackedCoins,
 			i18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"))
 		data.Less = ValueRangeLessFromString
 	case EquipmentWeightColumn:
 		data = imageHeaderData(HeaderWeight, i18n.Text("The weight of one of these pieces of equipment"))
-		data.Less = fxp.WeightLessFromStringFunc(settings.DefaultWeightUnits)
+		data.Less = WeightRangeLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentExtendedWeightColumn:
 		data = imageHeaderData(HeaderStackedWeight,
 			i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment"))
@@ -564,6 +564,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Primary = e.String()
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
+		data.UnresolvedChoice = unresolvedModifierChoiceText(e, e.Modifiers)
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		data.TemplateInfo = e.TemplatePicker.String()
 	case EquipmentTLColumn:
@@ -578,14 +579,14 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		if e.IsGroup() {
 			break
 		}
-		e.valueCellData(data, e.AdjustedValue())
+		e.valueRangeCellData(data, e.AdjustedValueRange())
 	case EquipmentExtendedCostColumn:
 		e.valueRangeCellData(data, e.ExtendedValueRange())
 	case EquipmentWeightColumn:
 		if e.IsGroup() {
 			break
 		}
-		e.weightCellData(data, e.AdjustedWeight)
+		e.weightRangeCellData(data, e.AdjustedWeightRange)
 	case EquipmentExtendedWeightColumn:
 		e.weightRangeCellData(data, e.ExtendedWeightRange)
 	case EquipmentTagsColumn:
@@ -846,7 +847,13 @@ func (e *Equipment) ResolvedBaseValue() fxp.Int {
 }
 
 // AdjustedValue returns the value after adjustments for any modifiers. Does not include the value of children.
+//
+// A mandatory modifier choice yet to be made counts as the least it may come to; see AdjustedValueRange for the whole
+// of what it may come to.
 func (e *Equipment) AdjustedValue() fxp.Int {
+	if r, open := e.modifierChoiceValueRange(); open && r.Min != nil {
+		return lowerEndOf(r)
+	}
 	return ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), e.Modifiers)
 }
 
@@ -899,17 +906,24 @@ func (e *Equipment) ResolvedBaseWeight() fxp.Weight {
 }
 
 // AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children.
+//
+// A mandatory modifier choice yet to be made counts as the least it may come to; see AdjustedWeightRange for the whole
+// of what it may come to.
 func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
 	if forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped() {
 		return 0
+	}
+	if r, open := e.modifierChoiceWeightRange(defUnits); open && r.Min != nil {
+		return fxp.Weight(lowerEndOf(r))
 	}
 	return WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits)
 }
 
 // ExtendedWeight returns the extended weight. A template choice container that is yet to be made counts as the least it
-// may come to, as does anything holding one; see ExtendedWeightRange for the whole of what it may come to.
+// may come to, as does anything holding one, and so does a mandatory modifier choice yet to be made; see
+// ExtendedWeightRange for the whole of what it may come to.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
-	if e.Quantity > 0 && IsTemplateChoiceContainer(e) {
+	if e.Quantity > 0 && (IsTemplateChoiceContainer(e) || hasOpenMandatoryModifierChoice(e, e.Modifiers)) {
 		return fxp.Weight(lowerEndOf(e.ExtendedWeightRange(defUnits)))
 	}
 	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.ResolvedBaseWeight(), e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.ReallyEquipped())

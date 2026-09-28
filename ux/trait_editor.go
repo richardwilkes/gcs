@@ -51,9 +51,14 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	if !e.target.Container() {
 		wrapper, _ := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
-			field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
-				e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency, e.editorData.Modifiers,
-				e.editorData.RoundCostDown).String())
+			// While a mandatory modifier choice is yet to be made, the cost is shown as the range the list shows.
+			if r := cloneTraitWithOverlay(e.target, e.editorData).PointsRange(nil); !r.IsSettled() {
+				field.SetTitle(r.String())
+			} else {
+				field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
+					e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency,
+					e.editorData.Modifiers, e.editorData.RoundCostDown).String())
+			}
 			field.MarkForLayoutAndRedraw()
 		})
 		insets := costField.Border().Insets()
