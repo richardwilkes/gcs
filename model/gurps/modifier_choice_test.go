@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -238,6 +239,87 @@ func TestTraitPointsRangeWithMandatoryModifierChoice(t *testing.T) {
 	parent.Preconfigured = true
 	child.Preconfigured = false
 	c.Equal("11", child.PointsRange(nil).String(), "a preconfigured container settles its own choice")
+}
+
+// newTraitWithPoints returns a trait that isn't a container, costing the given points, held by parent.
+func newTraitWithPoints(parent *Trait, points int) *Trait {
+	trait := NewTrait(nil, parent, false)
+	trait.BasePoints = fxp.FromInteger(points)
+	parent.Children = append(parent.Children, trait)
+	return trait
+}
+
+// newTraitContainerWithChoice returns a trait container of the given type whose modifiers are a mandatory choice
+// holding an option for each cost adjustment, with none of them picked, and which holds a trait costing each of the
+// given points.
+func newTraitContainerWithChoice(containerType container.Type, costs []string, points ...int) *Trait {
+	parent := NewTrait(nil, nil, true)
+	parent.ContainerType = containerType
+	parent.AddModifiers(newTraitModifierChoiceWith(true, costs...))
+	for _, one := range points {
+		newTraitWithPoints(parent, one)
+	}
+	return parent
+}
+
+// TestTraitContainerChoiceIsCostedAsAWhole verifies that a mandatory choice among a container's own modifiers is made
+// once for the whole container, each way of making it costing every trait inside with the same pick, rather than each
+// trait being costed with whichever pick suits it. Wherever a single cost is needed, the container counts as the least
+// of those.
+func TestTraitContainerChoiceIsCostedAsAWhole(t *testing.T) {
+	c := check.New(t)
+	costs := []string{"-50%", "+50%"}
+	group := newTraitContainerWithChoice(container.Group, costs, 10, -10)
+	c.Equal("0", group.PointsRange(nil).String(), "either pick makes the two cancel out")
+	c.Equal(fxp.Int(0), group.AdjustedPoints(nil))
+	c.Equal("5~15", group.Children[0].PointsRange(nil).String(), "each trait alone still shows its own range")
+
+	abilities := newTraitContainerWithChoice(container.AlternativeAbilities, costs, 10, -10)
+	c.Equal("4~12", abilities.PointsRange(nil).String())
+	c.Equal(fxp.FromInteger(4), abilities.AdjustedPoints(nil))
+
+	abilities.Modifiers[0].Children[1].SetEnabled(true)
+	c.Equal("4~12", abilities.PointsRange(nil).String(), "a pick made outside a sheet is only a default until asked")
+	abilities.Preconfigured = true
+	c.Equal("12", abilities.PointsRange(nil).String(), "a preconfigured container takes the pick already made")
+	c.Equal(fxp.FromInteger(12), abilities.AdjustedPoints(nil))
+
+	// A container within a container makes its own choice for each way the outer one's is made. The four ways cost -3,
+	// 6, -2 and 8, the inner container coming to 6, 15, 6 and 16 of them.
+	outer := newTraitContainerWithChoice(container.Group, []string{"+1", "+2"})
+	inner := newTraitContainerWithChoice(container.AlternativeAbilities, costs, 10, -10)
+	inner.SetParent(outer)
+	outer.Children = append(outer.Children, inner)
+	newTraitWithPoints(outer, -10)
+	c.Equal("-3~8", outer.PointsRange(nil).String())
+	c.Equal(fxp.FromInteger(-3), outer.AdjustedPoints(nil))
+	c.Equal("6~16", inner.PointsRange(nil).String(), "the inner container alone works through both choices")
+	outer.Preconfigured = true
+	outer.Modifiers[0].Children[1].SetEnabled(true)
+	c.Equal("-2~8", outer.PointsRange(nil).String(), "a preconfigured outer container settles only its own choice")
+	c.Equal("6~16", inner.PointsRange(nil).String())
+}
+
+// TestTraitContainerChoicesPastTheCap verifies that the ways of making the open choices of a container and those of a
+// trait inside it multiply together, and that past the cap every choice within the container counts as made with the
+// picks it has, even for a trait inside that would be within the cap alone.
+func TestTraitContainerChoicesPastTheCap(t *testing.T) {
+	c := check.New(t)
+	build := func(containerChoices int) *Trait {
+		parent := NewTrait(nil, nil, true)
+		for range containerChoices {
+			parent.AddModifiers(newTraitModifierChoiceWith(true, "+0", "+1"))
+		}
+		newTraitWithPoints(parent, 10).AddModifiers(newTraitModifierChoiceWith(true, "+0", "+1"))
+		newTraitWithPoints(parent, 10)
+		return parent
+	}
+	within := build(11)
+	c.Equal("20~43", within.PointsRange(nil).String(), "2048 ways by 2 is within the cap")
+	past := build(12)
+	c.Equal("10~22", past.Children[1].PointsRange(nil).String(), "4096 ways alone is within it")
+	c.Equal("20", past.PointsRange(nil).String(), "but 4096 ways by 2 is past it")
+	c.Equal(fxp.FromInteger(20), past.AdjustedPoints(nil))
 }
 
 // TestUnresolvedModifierChoiceOnASheet verifies that a mandatory choice with no pick is flagged on a character sheet,

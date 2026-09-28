@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"maps"
 	"slices"
 	"strings"
 
@@ -464,7 +465,9 @@ func isWithin[T Node[T]](node, container T) bool {
 // maxModifierChoiceVariants is the most ways of making the open mandatory choices of a set of modifiers that
 // modifierChoiceRange will work through. No real trait or piece of equipment comes anywhere near it; it is there so
 // that a pathological file can't lock up the display. Past it, the choices are treated as made with the picks they
-// have, so that every figure agrees with every other.
+// have, so that every figure agrees with every other. A trait container makes the choices among its modifiers for the
+// traits inside it, so the ways of making those multiply with the ways of making each trait's own, and the cap covers
+// them together.
 const maxModifierChoiceVariants = 4096
 
 // IsOnSheet returns true if the node belongs to a character sheet or a loot sheet. That is where every modifier choice
@@ -486,33 +489,34 @@ func IsSheetOwner(owner DataOwner) bool {
 	return isLoot
 }
 
-// openMandatoryModifierChoices returns the options of each mandatory choice among the modifiers of the item being
-// costed that has yet to be made, or nothing when there are too many ways of making them to work through (see
-// maxModifierChoiceVariants). On a sheet every choice has been made. Elsewhere a mandatory choice is asked about when
-// the item reaches a sheet, and so is still to be made, unless the item is marked preconfigured and the choice already
-// has its pick, which is then taken without asking. A choice with no options has nothing to make.
-func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M) [][]M {
+// modifierChoicePicks maps each mandatory modifier choice whose pick has been settled on for the cost being worked out
+// to the option picked, or to nil when it counts as made with the picks it has. A trait container settles on a pick for
+// each open choice among its modifiers in turn, which every trait inside it then counts, so that no two of them count
+// different picks of one choice.
+type modifierChoicePicks[M comparable] map[M]M
+
+// openMandatoryModifierChoices returns each mandatory choice among the modifiers of the item being costed that has yet
+// to be made and that fixed holds no pick for, along with the number of ways of making them, which is never counted
+// past one more than maxModifierChoiceVariants. On a sheet every choice has been made. Elsewhere a mandatory choice is
+// asked about when the item reaches a sheet, and so is still to be made, unless the item is marked preconfigured and
+// the choice already has its pick, which is then taken without asking. A choice with no options has nothing to make.
+func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M]) (open []M, variants int) {
+	variants = 1
 	if xreflect.IsNil(item) || IsOnSheet(item) {
-		return nil
+		return nil, variants
 	}
-	var open [][]M
 	Traverse(func(mod M) bool {
-		if !IsMandatoryModifierChoice(mod) || (IsNodePreconfigured(modifierAskedAboutOn(item, mod)) &&
-			ModifierChoiceIsResolved(mod)) {
+		if _, isFixed := fixed[mod]; isFixed || !IsMandatoryModifierChoice(mod) ||
+			(IsNodePreconfigured(modifierAskedAboutOn(item, mod)) && ModifierChoiceIsResolved(mod)) {
 			return false
 		}
 		if options := ModifierChoiceOptions(mod); len(options) != 0 {
-			open = append(open, options)
+			open = append(open, mod)
+			variants = min(variants*len(options), maxModifierChoiceVariants+1)
 		}
 		return false
 	}, false, false, modifiers...)
-	count := 1
-	for _, options := range open {
-		if count *= len(options); count > maxModifierChoiceVariants {
-			return nil
-		}
-	}
-	return open
+	return open, variants
 }
 
 // modifierAskedAboutOn returns what the modifier, one of those the item being costed is subject to, is asked about on:
@@ -532,62 +536,84 @@ func modifierAskedAboutOn[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, 
 }
 
 // hasOpenMandatoryModifierChoice returns true if a mandatory choice among the modifiers of the item being costed has
-// yet to be made.
+// yet to be made, and there aren't too many ways of making them to work through (see maxModifierChoiceVariants).
 func hasOpenMandatoryModifierChoice[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M) bool {
-	return len(openMandatoryModifierChoices(item, modifiers)) != 0
+	open, variants := openMandatoryModifierChoices(item, modifiers, nil)
+	return len(open) != 0 && variants <= maxModifierChoiceVariants
 }
 
 // modifierChoiceRange returns the span of what eval reports for each way the open mandatory choices among the
-// modifiers of the item being costed can be made. eval is handed the modifiers as they would stand with the choices
-// made: a flat list of the modifiers that aren't containers, in their usual order, with just the option picked from
-// each open choice among them, enabled. The second return is false, and eval is never called, when there is no open
-// choice to make, or too many ways of making them (see maxModifierChoiceVariants). Wherever a single number is needed
-// instead, an open choice counts as the least it may come to.
-func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, eval func([]M) NumericRange) (NumericRange, bool) {
-	choices := openMandatoryModifierChoices(item, modifiers)
-	if len(choices) == 0 {
-		return NumericRange{}, false
+// modifiers of the item being costed can be made, with each choice fixed holds a pick for counted as made with that
+// pick. eval is handed the modifiers as they would stand with the choices made: a flat list of the modifiers that
+// aren't containers, in their usual order, with just the option picked from each of those choices among them, enabled.
+// The second return is false, and eval is never called, when there is no such choice, or only open ones with too many
+// ways of making them (see maxModifierChoiceVariants), which then count as made with the picks they have. Wherever a
+// single number is needed instead, an open choice counts as the least it may come to.
+func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M], eval func([]M) NumericRange) (NumericRange, bool) {
+	open, variants := openMandatoryModifierChoices(item, modifiers, fixed)
+	if variants > maxModifierChoiceVariants {
+		open = nil
 	}
-	count := 1
-	for _, options := range choices {
-		count *= len(options)
-	}
-	optionOf := make(map[M]int)
-	for i, options := range choices {
-		for _, one := range options {
-			optionOf[one] = i
-		}
-	}
+	// The choice each option of an open choice, or of one fixed holds a pick for, is an option of.
+	choiceOf := make(map[M]M)
 	var leaves []M
 	Traverse(func(mod M) bool {
 		leaves = append(leaves, mod)
+		if choice, ok := ModifierChoiceFor(mod); ok {
+			if _, isFixed := fixed[choice]; isFixed || slices.Contains(open, choice) {
+				choiceOf[mod] = choice
+			}
+		}
 		return false
 	}, false, true, modifiers...)
-	picks := make([]int, len(choices))
+	if len(choiceOf) == 0 {
+		return NumericRange{}, false
+	}
 	variant := make([]M, 0, len(leaves))
-	ranges := make([]NumericRange, 0, count)
-	for {
+	ranges := make([]NumericRange, 0, variants)
+	eachModifierChoicePick(open, fixed, func(picks modifierChoicePicks[M]) {
 		variant = variant[:0]
 		for _, one := range leaves {
-			if i, isOption := optionOf[one]; !isOption {
+			choice, isOption := choiceOf[one]
+			switch {
+			case !isOption || xreflect.IsNil(picks[choice]):
 				variant = append(variant, one)
-			} else if choices[i][picks[i]] == one {
+			case picks[choice] == one:
 				variant = append(variant, one.enabledVariant())
 			}
 		}
 		ranges = append(ranges, eval(variant))
+	})
+	return spanOfNumericRanges(ranges), true
+}
+
+// eachModifierChoicePick calls fn once for each way of making the choices, handing it the picks in fixed along with
+// the one made for each choice. fn is called just once, with the picks in fixed, when there are no choices to make.
+// The picks handed to fn are only good until it returns.
+func eachModifierChoicePick[M Node[M]](choices []M, fixed modifierChoicePicks[M], fn func(picks modifierChoicePicks[M])) {
+	options := make([][]M, len(choices))
+	for i, one := range choices {
+		options[i] = ModifierChoiceOptions(one)
+	}
+	picks := make(modifierChoicePicks[M], len(fixed)+len(choices))
+	maps.Copy(picks, fixed)
+	which := make([]int, len(choices))
+	for {
+		for i, one := range choices {
+			picks[one] = options[i][which[i]]
+		}
+		fn(picks)
 		// Advance to the next way of making the choices, stopping once every one has been tried.
 		i := 0
-		for ; i < len(picks); i++ {
-			picks[i]++
-			if picks[i] < len(choices[i]) {
+		for ; i < len(which); i++ {
+			which[i]++
+			if which[i] < len(options[i]) {
 				break
 			}
-			picks[i] = 0
+			which[i] = 0
 		}
-		if i == len(picks) {
-			break
+		if i == len(which) {
+			return
 		}
 	}
-	return spanOfNumericRanges(ranges), true
 }

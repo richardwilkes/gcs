@@ -36,7 +36,7 @@ func (e *Equipment) AdjustedValueRange() NumericRange {
 // choices it has yet to make have been made, and false when it has none.
 func (e *Equipment) modifierChoiceValueRange() (NumericRange, bool) {
 	defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
-	return modifierChoiceRange(e, e.Modifiers, func(modifiers []*EquipmentModifier) NumericRange {
+	return modifierChoiceRange(e, e.Modifiers, nil, func(modifiers []*EquipmentModifier) NumericRange {
 		// A cost per pound is worked out from the weight this way of making the choices gives, not the equipment's.
 		weight := fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits))
 		return NumericRangeOf(valueAdjustedForModifiers(e, e.ResolvedBaseValue(), modifiers, &weight))
@@ -55,7 +55,7 @@ func (e *Equipment) AdjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 // modifierChoiceWeightRange returns the span of weights one of this equipment may come to once the mandatory modifier
 // choices it has yet to make have been made, and false when it has none.
 func (e *Equipment) modifierChoiceWeightRange(defUnits fxp.WeightUnit) (NumericRange, bool) {
-	return modifierChoiceRange(e, e.Modifiers, func(modifiers []*EquipmentModifier) NumericRange {
+	return modifierChoiceRange(e, e.Modifiers, nil, func(modifiers []*EquipmentModifier) NumericRange {
 		return NumericRangeOf(fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)))
 	})
 }
@@ -124,7 +124,7 @@ func (e *Equipment) extendedWeightRange(forSkills bool, defUnits fxp.WeightUnit)
 		}
 		return NumericRangeOf(fxp.Int(base)).Add(NumericRange{Min: reduce(contents.Min), Max: reduce(contents.Max)})
 	}
-	r, open := modifierChoiceRange(e, e.Modifiers, weigh)
+	r, open := modifierChoiceRange(e, e.Modifiers, nil, weigh)
 	if !open {
 		if !e.Container() {
 			return NumericRangeOf(fxp.Int(e.ExtendedWeight(forSkills, defUnits)))
