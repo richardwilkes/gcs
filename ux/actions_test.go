@@ -25,10 +25,11 @@ import (
 // registration helper must be listed here, or TestKeyBindingIDsAreUnique cannot see the IDs it registers; that test
 // fails on a binding registered but not found in the source, which catches a helper missing from this list.
 var keyBindingRegistrars = map[string]bool{
-	"registerKeyBindableAction": true,
-	"registerFocusAction":       true,
-	"registerLibraryAction":     true,
-	"registerSheetAction":       true,
+	"registerKeyBindableAction":           true,
+	"registerFocusAction":                 true,
+	"registerFocusActionWithContextTitle": true,
+	"registerLibraryAction":               true,
+	"registerSheetAction":                 true,
 }
 
 // gurps.RegisterKeyBinding silently ignores a duplicate ID, so an action that reuses one is never added to the binding

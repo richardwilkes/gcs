@@ -98,6 +98,9 @@
   quantity of each option be changed while picking. The picker dialog shows each option's quantity, value and weight.
   Until the choice is made, a template shows the value and weight the choice may come to as a range, and so do the
   containers holding it and the list's totals.
+- A list's context menu no longer repeats what the list holds in each of its "New" commands. A trait list's now offers
+  "New Trait", "New Container" and "New Choice", and an equipment list's "New Equipment", "New Container", "New Group"
+  and "New Choice". The menu bar keeps the full names, since it can add to any list.
 
 ## Bug Fixes
 

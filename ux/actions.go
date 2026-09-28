@@ -163,10 +163,11 @@ var (
 )
 
 // contextMenuShortTitles holds, by action ID, the title a context menu shows for an action whose own title says more
-// than a context menu needs to. The menu bar's "New ... Equipment" commands name the list they add to, since both
-// lists are reachable from it, but a list's own context menu can only add to that list, and its first item already
-// names what the list holds. It is filled in by registerActions.
-var contextMenuShortTitles map[int]string
+// than a context menu needs to. The menu bar's "New ..." commands name what they add, and for equipment the list they
+// add it to, since every list is reachable from the menu bar. A list's own context menu can only add to that list, and
+// its first item already names what the list holds, so the rest need only say what kind of row they add. It is filled
+// in as the actions are registered (see registerFocusActionWithContextTitle).
+var contextMenuShortTitles = make(map[int]string)
 
 func registerActions() {
 	// Standard actions that may be assigned a key binding
@@ -340,15 +341,18 @@ func registerActions() {
 		Title:           i18n.Text("New Ancestry"),
 		ExecuteCallback: func(_ *unison.Action, _ any) { newAncestryDocument() },
 	})
-	newCarriedEquipmentAction = registerFocusAction("new.eqp", NewCarriedEquipmentItemID,
-		i18n.Text("New Carried Equipment"), unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.OSMenuCommand()})
-	newCarriedEquipmentContainerAction = registerFocusAction("new.eqp.container", NewCarriedEquipmentContainerItemID,
-		i18n.Text("New Carried Equipment Container"),
+	newCarriedEquipmentAction = registerFocusActionWithContextTitle("new.eqp", NewCarriedEquipmentItemID,
+		i18n.Text("New Carried Equipment"), i18n.Text("New Equipment"),
+		unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.OSMenuCommand()})
+	newCarriedEquipmentContainerAction = registerFocusActionWithContextTitle("new.eqp.container",
+		NewCarriedEquipmentContainerItemID, i18n.Text("New Carried Equipment Container"), i18n.Text("New Container"),
 		unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.Shift | mod.OSMenuCommand()})
-	newCarriedEquipmentGroupAction = registerFocusAction("new.eqp.group", NewCarriedEquipmentGroupItemID,
-		i18n.Text("New Carried Equipment Group"), unison.KeyBinding{})
-	newEquipmentChoiceContainerAction = registerFocusAction("new.eqp.choice", NewEquipmentChoiceContainerItemID,
-		i18n.Text("New Equipment Choice"), unison.KeyBinding{})
+	newCarriedEquipmentGroupAction = registerFocusActionWithContextTitle("new.eqp.group",
+		NewCarriedEquipmentGroupItemID, i18n.Text("New Carried Equipment Group"), i18n.Text("New Group"),
+		unison.KeyBinding{})
+	newEquipmentChoiceContainerAction = registerFocusActionWithContextTitle("new.eqp.choice",
+		NewEquipmentChoiceContainerItemID, i18n.Text("New Equipment Choice"), i18n.Text("New Choice"),
+		unison.KeyBinding{})
 	newCharacterSheetAction = registerKeyBindableAction("new.char.sheet", &unison.Action{
 		ID:         NewSheetItemID,
 		Title:      i18n.Text("New Character Sheet"),
@@ -407,31 +411,20 @@ func registerActions() {
 	})
 	newNoteAction = registerFocusAction("new.not", NewNoteItemID, i18n.Text("New Note"),
 		unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: mod.Shift | mod.OSMenuCommand()})
-	newNoteContainerAction = registerFocusAction("new.not.container", NewNoteContainerItemID,
-		i18n.Text("New Note Container"),
+	newNoteContainerAction = registerFocusActionWithContextTitle("new.not.container", NewNoteContainerItemID,
+		i18n.Text("New Note Container"), i18n.Text("New Container"),
 		unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})
 	newNotesLibraryAction = registerLibraryAction("new.not.lib", NewNotesLibraryItemID, i18n.Text("New Notes Library"),
 		"Notes"+gurps.NotesExt, NewNoteTableDockable)
-	newOtherEquipmentAction = registerFocusAction("new.eqp.other", NewOtherEquipmentItemID,
-		i18n.Text("New Other Equipment"),
+	newOtherEquipmentAction = registerFocusActionWithContextTitle("new.eqp.other", NewOtherEquipmentItemID,
+		i18n.Text("New Other Equipment"), i18n.Text("New Equipment"),
 		unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.Option | mod.OSMenuCommand()})
-	newOtherEquipmentContainerAction = registerFocusAction("new.eqp.other.container", NewOtherEquipmentContainerItemID,
-		i18n.Text("New Other Equipment Container"),
+	newOtherEquipmentContainerAction = registerFocusActionWithContextTitle("new.eqp.other.container",
+		NewOtherEquipmentContainerItemID, i18n.Text("New Other Equipment Container"), i18n.Text("New Container"),
 		unison.KeyBinding{KeyCode: unison.KeyE, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})
-	newOtherEquipmentGroupAction = registerFocusAction("new.eqp.other.group", NewOtherEquipmentGroupItemID,
-		i18n.Text("New Other Equipment Group"), unison.KeyBinding{})
-	container := i18n.Text("New Container")
-	choice := i18n.Text("New Choice")
-	group := i18n.Text("New Group")
-	contextMenuShortTitles = map[int]string{
-		NewCarriedEquipmentItemID:          i18n.Text("New Equipment"),
-		NewOtherEquipmentItemID:            i18n.Text("New Equipment"),
-		NewCarriedEquipmentContainerItemID: container,
-		NewOtherEquipmentContainerItemID:   container,
-		NewCarriedEquipmentGroupItemID:     group,
-		NewOtherEquipmentGroupItemID:       group,
-		NewEquipmentChoiceContainerItemID:  choice,
-	}
+	newOtherEquipmentGroupAction = registerFocusActionWithContextTitle("new.eqp.other.group",
+		NewOtherEquipmentGroupItemID, i18n.Text("New Other Equipment Group"), i18n.Text("New Group"),
+		unison.KeyBinding{})
 	newRangedWeaponAction = registerFocusAction("new.ranged", NewRangedWeaponItemID, i18n.Text("New Ranged Weapon"),
 		unison.KeyBinding{KeyCode: unison.KeyR, Modifiers: mod.Shift | mod.OSMenuCommand()})
 	newRitualMagicSpellAction = registerFocusAction("new.spl.ritual", NewRitualMagicSpellItemID,
@@ -439,31 +432,31 @@ func registerActions() {
 		unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})
 	newSkillAction = registerFocusAction("new.skl", NewSkillItemID, i18n.Text("New Skill"),
 		unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: mod.OSMenuCommand()})
-	newSkillContainerAction = registerFocusAction("new.skl.container", NewSkillContainerItemID,
-		i18n.Text("New Skill Container"),
+	newSkillContainerAction = registerFocusActionWithContextTitle("new.skl.container", NewSkillContainerItemID,
+		i18n.Text("New Skill Container"), i18n.Text("New Container"),
 		unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: mod.Shift | mod.OSMenuCommand()})
-	newSkillChoiceContainerAction = registerFocusAction("new.skl.choice", NewSkillChoiceContainerItemID,
-		i18n.Text("New Skill Choice"), unison.KeyBinding{})
+	newSkillChoiceContainerAction = registerFocusActionWithContextTitle("new.skl.choice", NewSkillChoiceContainerItemID,
+		i18n.Text("New Skill Choice"), i18n.Text("New Choice"), unison.KeyBinding{})
 	newSkillsLibraryAction = registerLibraryAction("new.skl.lib", NewSkillsLibraryItemID,
 		i18n.Text("New Skills Library"), "Skills"+gurps.SkillsExt, NewSkillTableDockable)
 	newSpellAction = registerFocusAction("new.spl", NewSpellItemID, i18n.Text("New Spell"),
 		unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: mod.OSMenuCommand()})
-	newSpellContainerAction = registerFocusAction("new.spl.container", NewSpellContainerItemID,
-		i18n.Text("New Spell Container"),
+	newSpellContainerAction = registerFocusActionWithContextTitle("new.spl.container", NewSpellContainerItemID,
+		i18n.Text("New Spell Container"), i18n.Text("New Container"),
 		unison.KeyBinding{KeyCode: unison.KeyB, Modifiers: mod.Shift | mod.OSMenuCommand()})
-	newSpellChoiceContainerAction = registerFocusAction("new.spl.choice", NewSpellChoiceContainerItemID,
-		i18n.Text("New Spell Choice"), unison.KeyBinding{})
+	newSpellChoiceContainerAction = registerFocusActionWithContextTitle("new.spl.choice", NewSpellChoiceContainerItemID,
+		i18n.Text("New Spell Choice"), i18n.Text("New Choice"), unison.KeyBinding{})
 	newSpellsLibraryAction = registerLibraryAction("new.spl.lib", NewSpellsLibraryItemID,
 		i18n.Text("New Spells Library"), "Spells"+gurps.SpellsExt, NewSpellTableDockable)
 	newTechniqueAction = registerFocusAction("new.skl.technique", NewTechniqueItemID, i18n.Text("New Technique"),
 		unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: mod.OSMenuCommand()})
 	newTraitAction = registerFocusAction("new.adq", NewTraitItemID, i18n.Text("New Trait"),
 		unison.KeyBinding{KeyCode: unison.KeyD, Modifiers: mod.OSMenuCommand()})
-	newTraitContainerAction = registerFocusAction("new.adq.container", NewTraitContainerItemID,
-		i18n.Text("New Trait Container"),
+	newTraitContainerAction = registerFocusActionWithContextTitle("new.adq.container", NewTraitContainerItemID,
+		i18n.Text("New Trait Container"), i18n.Text("New Container"),
 		unison.KeyBinding{KeyCode: unison.KeyD, Modifiers: mod.Shift | mod.OSMenuCommand()})
-	newTraitChoiceContainerAction = registerFocusAction("new.adq.choice", NewTraitChoiceContainerItemID,
-		i18n.Text("New Trait Choice"), unison.KeyBinding{})
+	newTraitChoiceContainerAction = registerFocusActionWithContextTitle("new.adq.choice", NewTraitChoiceContainerItemID,
+		i18n.Text("New Trait Choice"), i18n.Text("New Choice"), unison.KeyBinding{})
 	newTraitContainerModifierAction = registerFocusAction("new.adm.container", NewTraitContainerModifierItemID,
 		i18n.Text("New Trait Modifier Container"),
 		unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})
@@ -644,6 +637,15 @@ func registerFocusAction(key string, id int, title string, binding unison.KeyBin
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
+}
+
+// registerFocusActionWithContextTitle is registerFocusAction for an action a list's context menu shows under the
+// shorter contextTitle (see contextMenuShortTitles).
+func registerFocusActionWithContextTitle(key string, id int, title, contextTitle string,
+	binding unison.KeyBinding,
+) *unison.Action {
+	contextMenuShortTitles[id] = contextTitle
+	return registerFocusAction(key, id, title, binding)
 }
 
 // registerLibraryAction registers a key-bindable action that opens a new, empty library of the given type in a table
