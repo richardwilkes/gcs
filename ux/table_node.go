@@ -449,7 +449,12 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			unison.ThemeOnWarning, n.secondaryFieldFont(), unison.TriangleExclamationSVG))
 	}
 	if c.TemplateInfo != "" {
-		p.AddChild(makeTagForNode(c.TemplateInfo, foreground, background, n.secondaryFieldFont(), svg.GCSTemplate))
+		// Unlike the prerequisite tags, whose colors are fixed, this one is drawn in the row's own colors, so it must
+		// follow them as the row is selected and deselected rather than keeping those it was built with (see
+		// applyInkRecursively).
+		tag := makeTagForNode(c.TemplateInfo, foreground, background, n.secondaryFieldFont(), svg.GCSTemplate)
+		delete(tag.ClientData(), noInvertColorsMarker)
+		p.AddChild(tag)
 	}
 	if tooltip := labelCellTooltip(c); tooltip != "" {
 		var workingDir string
