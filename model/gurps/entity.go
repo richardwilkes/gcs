@@ -284,10 +284,17 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if !tid.IsKindAndValid(e.ID, kinds.Entity) {
 		e.ID = tid.MustNewTID(kinds.Entity)
 	}
-	// Only a template may hold template picker data, so any a character sheet carries is removed.
+	// Only a template may hold template picker data, so any a character sheet carries is removed, and the preconfigured
+	// mark means nothing on a sheet, so any an older version left behind is cleared.
 	ClearTemplatePickerData(e.Traits...)
 	ClearTemplatePickerData(e.Skills...)
 	ClearTemplatePickerData(e.Spells...)
+	ClearPreconfigured(e.Traits...)
+	ClearPreconfigured(e.Skills...)
+	ClearPreconfigured(e.Spells...)
+	ClearPreconfigured(e.CarriedEquipment...)
+	ClearPreconfigured(e.OtherEquipment...)
+	ClearPreconfigured(e.Notes...)
 	// The clone comes from the published snapshot rather than the live global settings, since unmarshaling may be
 	// running on a background goroutine (the deep search content cache) while the UI thread mutates the live settings.
 	if e.SheetSettings == nil {

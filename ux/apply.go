@@ -61,7 +61,7 @@ type applyOptions struct {
 	randomize bool
 	// suppressRandomizePrompt randomizes without asking first.
 	suppressRandomizePrompt bool
-	// clearPreconfigured clears the Preconfigured flag, which only means something in a template.
+	// clearPreconfigured clears the Preconfigured flag, which means nothing on a sheet.
 	clearPreconfigured bool
 	// stripPickers removes the template choices the rows carry, once the user agrees to it, since the destination can't
 	// hold them and has no way to settle them either.
@@ -70,12 +70,12 @@ type applyOptions struct {
 	merge bool
 }
 
-// applyOptionsFor returns the steps that rows moving from the source's document into the destination's go through.
-// Rows arriving on a sheet from anywhere but another sheet are fully applied; from another sheet they are a plain copy,
-// save for settling any template choices a sheet can't hold, the ancestry question and the offer to randomize. Rows
-// arriving on a template are kept as authored, save that their choice containers are normalized and those from a
-// library have their modifiers and nameables prompted for. Rows arriving in a library are kept as they are, save for the template choices, which only a template
-// can hold.
+// applyOptionsFor returns the steps that rows moving from the source's document into the destination's go through. Rows
+// arriving on a sheet from anywhere but another sheet are fully applied; from another sheet they are a plain copy, save
+// for settling any template choices a sheet can't hold, the ancestry question and the offer to randomize. Rows arriving
+// on a template are kept as authored, save that their choice containers are normalized and those from a library have
+// their modifiers and nameables prompted for. Rows arriving in a library are kept as they are, Preconfigured flag
+// included, save for the template choices, which only a template can hold.
 func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 	from := transferKindOf(source)
 	switch transferKindOf(destination) {
@@ -100,7 +100,7 @@ func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 	case transferTemplate:
 		return applyOptions{normalizeChoices: true, promptForChoices: from == transferLibrary, merge: true}
 	default:
-		return applyOptions{stripPickers: true, clearPreconfigured: true}
+		return applyOptions{stripPickers: true}
 	}
 }
 
@@ -265,12 +265,7 @@ func (p *applyPart[T]) place(merge bool) {
 }
 
 func (p *applyPart[T]) clearPreconfigured() {
-	gurps.Traverse(func(row T) bool {
-		if tl, ok := any(row).(gurps.Preconfigurable); ok {
-			tl.SetPreconfigured(false)
-		}
-		return false
-	}, false, false, p.placed...)
+	gurps.ClearPreconfigured(p.placed...)
 }
 
 func (p *applyPart[T]) undoData() tableRestorer {

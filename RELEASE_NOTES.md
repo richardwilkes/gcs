@@ -84,6 +84,10 @@
 
 ## Bug Fixes
 
+- The Preconfigured setting, which marks an item whose modifiers and @Name@ substitutions are already settled so that
+  they are not asked about again, can now be set in a library as well as in a template, and is kept when items are
+  copied into a library, or from a library into a template. It is never shown on a character or loot sheet, where it
+  means nothing, and opening a sheet now clears any an older version left on nested items.
 - Providing @Name@ substitutions for a modifier dropped onto or applied to a trait or piece of equipment on a character
   sheet no longer discards the substitutions that trait or equipment already had, including those for the other
   modifiers applied with it and for its disabled modifiers. A substitution shared by several of the new modifiers is

@@ -372,8 +372,8 @@ func TestApplyOptionsFor(t *testing.T) {
 		"a template to a template is a plain copy, save for normalizing choice containers")
 	c.Equal(applyOptions{normalizeChoices: true, merge: true}, applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
 		"a sheet to a template is a plain copy, save for normalizing choice containers")
-	c.Equal(applyOptions{stripPickers: true, clearPreconfigured: true}, applyOptionsFor(template.Traits.Table, library),
-		"anything to a library is a plain copy, save for the choices only a template can hold")
+	c.Equal(applyOptions{stripPickers: true}, applyOptionsFor(template.Traits.Table, library),
+		"anything to a library is a plain copy, Preconfigured flag included, save for the choices only a template can hold")
 }
 
 // TestDropWithinASheetSurvivesTheSourceTableBeingReplaced verifies that a drag from one list on a sheet to another is

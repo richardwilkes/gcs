@@ -97,6 +97,9 @@ func (l *Loot) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if !tid.IsKindAndValid(l.ID, kinds.Loot) {
 		l.ID = tid.MustNewTID(kinds.Loot)
 	}
+	// The preconfigured mark means nothing on a sheet, so any an older version left behind is cleared.
+	ClearPreconfigured(l.Equipment...)
+	ClearPreconfigured(l.Notes...)
 	l.EnsureAttachments()
 	return nil
 }
