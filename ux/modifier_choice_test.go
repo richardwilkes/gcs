@@ -86,8 +86,15 @@ func TestModifierChoiceConversionInLibrary(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
 	group := gurps.NewTraitModifier(nil, nil, true)
+	for range 2 {
+		group.Children = append(group.Children, gurps.NewTraitModifier(nil, group, false))
+	}
 	leaf := gurps.NewTraitModifier(nil, nil, false)
 	library := NewTraitModifierTableDockable("mods"+gurps.TraitModifiersExt, []*gurps.TraitModifier{group, leaf})
+	group = library.table.RootRows()[0].Data()
+	enabled := func() []bool {
+		return []bool{group.Children[0].Enabled(), group.Children[1].Enabled()}
+	}
 	table := library.table
 	mgr := unison.UndoManagerFor(table)
 	c.NotNil(mgr)
@@ -111,6 +118,7 @@ func TestModifierChoiceConversionInLibrary(t *testing.T) {
 	table.PerformCmd(table, ConvertToChoiceContainerItemID)
 	c.Equal(0, asked, "nothing is lost, so nothing may be asked")
 	c.True(gurps.IsMandatoryModifierChoice(group), "a new choice is a mandatory one")
+	c.Equal([]bool{true, false}, enabled(), "a choice keeps no more than one option on")
 	toChoice, toGroup = canConvert(group)
 	c.False(toChoice)
 	c.True(toGroup)
@@ -118,10 +126,53 @@ func TestModifierChoiceConversionInLibrary(t *testing.T) {
 	table.PerformCmd(table, ConvertToGroupContainerItemID)
 	c.Equal(1, asked, "removing the choice must be confirmed first")
 	c.False(gurps.IsModifierChoice(group))
+	c.Equal([]bool{true, false}, enabled())
 	mgr.Undo()
 	c.True(gurps.IsModifierChoice(group), "undo must restore the choice")
+	c.Equal([]bool{true, false}, enabled())
 	mgr.Undo()
 	c.False(gurps.IsModifierChoice(group), "undo must turn it back into a group")
+	c.Equal([]bool{true, true}, enabled(), "undo must turn the second option back on")
+}
+
+// TestConvertingNestedGroupsTogetherUndoesCleanly verifies that converting a group and a group within it to choices in
+// one go, which changes the enabled states of the tree they share, puts every one of them back on undo, and takes them
+// to where the conversion left them on redo.
+func TestConvertingNestedGroupsTogetherUndoesCleanly(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	newLeaf := func(parent *gurps.TraitModifier, name string) *gurps.TraitModifier {
+		leaf := gurps.NewTraitModifier(nil, parent, false)
+		leaf.Name = name
+		parent.Children = append(parent.Children, leaf)
+		return leaf
+	}
+	g1 := gurps.NewTraitModifier(nil, nil, true)
+	a := newLeaf(g1, "A")
+	b := newLeaf(g1, "B")
+	g2 := gurps.NewTraitModifier(nil, g1, true)
+	g1.Children = append(g1.Children, g2)
+	d1 := newLeaf(g2, "C")
+	d2 := newLeaf(g2, "D")
+	library := NewTraitModifierTableDockable("mods"+gurps.TraitModifiersExt, []*gurps.TraitModifier{g1})
+	table := library.table
+	enabled := func() []bool { return []bool{a.Enabled(), b.Enabled(), d1.Enabled(), d2.Enabled()} }
+	c.Equal([]bool{true, true, true, true}, enabled())
+
+	table.SetSelectionMap(map[tid.TID]bool{g1.ID(): true, g2.ID(): true})
+	table.PerformCmd(table, ConvertToChoiceContainerItemID)
+	c.True(gurps.IsModifierChoice(g1))
+	c.True(gurps.IsModifierChoice(g2))
+	converted := enabled()
+	c.Equal([]bool{true, false, false, false}, converted, "only A is left on")
+
+	mgr := unison.UndoManagerFor(table)
+	mgr.Undo()
+	c.False(gurps.IsModifierChoice(g1))
+	c.False(gurps.IsModifierChoice(g2))
+	c.Equal([]bool{true, true, true, true}, enabled(), "undo must turn every option back on")
+	mgr.Redo()
+	c.Equal(converted, enabled(), "redo must leave them as the conversion did")
 }
 
 // TestModifierChoiceConversionInEditor verifies that the conversions reach the modifier table of a trait editor, where
