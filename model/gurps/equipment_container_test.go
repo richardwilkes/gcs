@@ -560,3 +560,12 @@ func item(parent *Equipment, name, value, weight string) *Equipment {
 	parent.Children = append(parent.Children, one)
 	return one
 }
+
+// TestEquipmentHasOwnQuantity verifies which equipment has a quantity of its own to show and change.
+func TestEquipmentHasOwnQuantity(t *testing.T) {
+	c := check.New(t)
+	c.True(NewEquipment(nil, nil, false).HasOwnQuantity())
+	c.True(NewEquipment(nil, nil, true).HasOwnQuantity(), "a physical container has a quantity")
+	c.False(NewEquipmentGroup(nil, nil).HasOwnQuantity(), "a group's quantity is always one")
+	c.False(NewEquipmentChoiceContainer(nil, nil).HasOwnQuantity(), "a choice is a group")
+}

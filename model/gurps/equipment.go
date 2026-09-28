@@ -184,6 +184,13 @@ func (e *Equipment) IsGroup() bool {
 	return e.Container() && e.ContainerType == eqcontainer.Group
 }
 
+// HasOwnQuantity returns true if this equipment has a quantity of its own, one that may be shown and changed. A group
+// has none: its quantity is always one. Everything that shows, changes or depends on changing the quantity asks this,
+// so that none of them can disagree about which equipment has one.
+func (e *Equipment) HasOwnQuantity() bool {
+	return !e.IsGroup()
+}
+
 // IsPhysicalContainer returns true if this is a container that is itself a piece of equipment, such as a backpack,
 // with a value, weight and so on of its own in addition to those of the equipment it holds.
 func (e *Equipment) IsPhysicalContainer() bool {
@@ -553,7 +560,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Dim = true
 		}
 	case EquipmentQuantityColumn:
-		if e.IsGroup() {
+		if !e.HasOwnQuantity() {
 			break
 		}
 		data.Type = cell.Text

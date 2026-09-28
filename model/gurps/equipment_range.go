@@ -92,7 +92,7 @@ func equipmentContentsRange(e *Equipment, measure picker.Type, children []Numeri
 		return rangeForPickerByMeasure(e.TemplatePicker.Qualifier, children)
 	default:
 		for i, one := range e.Children {
-			if !one.IsGroup() && SignForNumericRanges(children[i]) != NumericRangeZero {
+			if one.HasOwnQuantity() && SignForNumericRanges(children[i]) != NumericRangeZero {
 				return numericRangeAtLeast(0)
 			}
 		}
