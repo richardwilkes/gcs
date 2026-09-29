@@ -579,14 +579,14 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		if e.IsGroup() {
 			break
 		}
-		e.valueRangeCellData(data, e.AdjustedValueRange())
+		e.valueRangeCellData(data, e.adjustedValueRange())
 	case EquipmentExtendedCostColumn:
 		e.valueRangeCellData(data, e.ExtendedValueRange())
 	case EquipmentWeightColumn:
 		if e.IsGroup() {
 			break
 		}
-		e.weightRangeCellData(data, e.AdjustedWeightRange)
+		e.weightRangeCellData(data, e.adjustedWeightRange)
 	case EquipmentExtendedWeightColumn:
 		e.weightRangeCellData(data, e.ExtendedWeightRange)
 	case EquipmentTagsColumn:
@@ -846,15 +846,10 @@ func (e *Equipment) ResolvedBaseValue() fxp.Int {
 		Min(fxp.Max - 1).Max(0)
 }
 
-// AdjustedValue returns the value after adjustments for any modifiers. Does not include the value of children.
-//
-// A mandatory modifier choice yet to be made counts as the least it may come to; see AdjustedValueRange for the whole
-// of what it may come to.
+// AdjustedValue returns the value after adjustments for any modifiers. Does not include the value of children. An open
+// mandatory modifier choice counts as the least it may come to.
 func (e *Equipment) AdjustedValue() fxp.Int {
-	if r, open := e.modifierChoiceValueRange(); open && r.Min != nil {
-		return lowerEndOf(r)
-	}
-	return ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), e.Modifiers)
+	return lowerEndOf(e.adjustedValueRange())
 }
 
 // ExtendedValue returns the extended value. A template choice container that is yet to be made counts as the least it
@@ -905,18 +900,13 @@ func (e *Equipment) ResolvedBaseWeight() fxp.Weight {
 		SheetSettingsFor(entity).DefaultWeightUnits)
 }
 
-// AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children.
-//
-// A mandatory modifier choice yet to be made counts as the least it may come to; see AdjustedWeightRange for the whole
-// of what it may come to.
+// AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children. An
+// open mandatory modifier choice counts as the least it may come to.
 func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
 	if forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped() {
 		return 0
 	}
-	if r, open := e.modifierChoiceWeightRange(defUnits); open && r.Min != nil {
-		return fxp.Weight(lowerEndOf(r))
-	}
-	return WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits)
+	return fxp.Weight(lowerEndOf(e.adjustedWeightRange(defUnits)))
 }
 
 // ExtendedWeight returns the extended weight. A template choice container that is yet to be made counts as the least it

@@ -23,38 +23,27 @@ import (
 // already worked out; a weight is an fxp.Int in canonical units. As with points, a range is never unsettled on a sheet,
 // where every choice has been made, so there it is the same single value ExtendedValue or ExtendedWeight reports.
 
-// AdjustedValueRange returns the span of values one of this equipment may end up having, not counting what it holds,
-// once any mandatory choice among its modifiers has been made.
-func (e *Equipment) AdjustedValueRange() NumericRange {
-	if r, open := e.modifierChoiceValueRange(); open {
-		return r
-	}
-	return NumericRangeOf(e.AdjustedValue())
-}
-
-// modifierChoiceValueRange returns the span of values one of this equipment may come to once the mandatory modifier
-// choices it has yet to make have been made, and false when it has none.
-func (e *Equipment) modifierChoiceValueRange() (NumericRange, bool) {
-	return modifierChoiceRange(e, e.Modifiers, nil, func(modifiers []*EquipmentModifier) NumericRange {
+// adjustedValueRange returns the span of values one of this equipment may have, not counting what it holds, while a
+// mandatory choice among its modifiers is open.
+func (e *Equipment) adjustedValueRange() NumericRange {
+	eval := func(modifiers []*EquipmentModifier) NumericRange {
 		return NumericRangeOf(ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), modifiers))
-	})
-}
-
-// AdjustedWeightRange returns the span of weights one of this equipment may end up having, not counting what it holds,
-// once any mandatory choice among its modifiers has been made.
-func (e *Equipment) AdjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
-	if r, open := e.modifierChoiceWeightRange(defUnits); open {
+	}
+	if r, open := modifierChoiceRange(e, e.Modifiers, nil, eval); open {
 		return r
 	}
-	return NumericRangeOf(fxp.Int(e.AdjustedWeight(false, defUnits)))
+	return eval(e.Modifiers)
 }
 
-// modifierChoiceWeightRange returns the span of weights one of this equipment may come to once the mandatory modifier
-// choices it has yet to make have been made, and false when it has none.
-func (e *Equipment) modifierChoiceWeightRange(defUnits fxp.WeightUnit) (NumericRange, bool) {
-	return modifierChoiceRange(e, e.Modifiers, nil, func(modifiers []*EquipmentModifier) NumericRange {
+// adjustedWeightRange is adjustedValueRange for weight.
+func (e *Equipment) adjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
+	eval := func(modifiers []*EquipmentModifier) NumericRange {
 		return NumericRangeOf(fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)))
-	})
+	}
+	if r, open := modifierChoiceRange(e, e.Modifiers, nil, eval); open {
+		return r
+	}
+	return eval(e.Modifiers)
 }
 
 // ExtendedValueRange returns the span of extended values this equipment may end up having once every choice within it
@@ -71,7 +60,7 @@ func (e *Equipment) ExtendedValueRange() NumericRange {
 		}
 		contents = equipmentContentsRange(e, picker.Value, children)
 	}
-	own := e.AdjustedValueRange()
+	own := e.adjustedValueRange()
 	if !e.Container() && own.IsSettled() {
 		return NumericRangeOf(e.ExtendedValue())
 	}

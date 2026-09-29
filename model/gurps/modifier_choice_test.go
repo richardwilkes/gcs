@@ -431,8 +431,8 @@ func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	newOption(choice, "+100", "+2 lb")
 	eqp.AddModifiers(choice)
 
-	c.Equal("150~200", FormatValueRange(eqp.AdjustedValueRange(), fxp.Int.Comma), "one of it alone is open too")
-	c.Equal("4~5 lb", FormatWeightRange(eqp.AdjustedWeightRange(fxp.Pound), fxp.Pound.Format))
+	c.Equal("150~200", FormatValueRange(eqp.adjustedValueRange(), fxp.Int.Comma), "one of it alone is open too")
+	c.Equal("4~5 lb", FormatWeightRange(eqp.adjustedWeightRange(fxp.Pound), fxp.Pound.Format))
 	c.Equal("300~400", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma))
 	c.Equal("8~10 lb", FormatWeightRange(eqp.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
 	c.Equal(fxp.FromInteger(150), eqp.AdjustedValue(), "a single value is the least the choice may come to")
@@ -752,7 +752,7 @@ func TestPastTheCapTheCurrentPicksCount(t *testing.T) {
 		}
 		eqp.AddModifiers(choice)
 	}
-	c.Equal("10 lb", FormatWeightRange(eqp.AdjustedWeightRange(fxp.Pound), fxp.Pound.Format))
+	c.Equal("10 lb", FormatWeightRange(eqp.adjustedWeightRange(fxp.Pound), fxp.Pound.Format))
 	c.Equal(fxp.Weight(fxp.FromInteger(10)), eqp.AdjustedWeight(false, fxp.Pound))
 	c.Equal(fxp.Weight(fxp.FromInteger(20)), eqp.ExtendedWeight(false, fxp.Pound))
 	c.Equal("200", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma))
