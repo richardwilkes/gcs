@@ -625,9 +625,8 @@ func TestApplyTemplatePromptSequence(t *testing.T) {
 }
 
 // TestApplyTemplateCountsModifierPromptsBeforeAskingThem verifies that the modifier prompts of a transfer are numbered
-// from a count made before any is answered. A preconfigured trait is only asked about while a mandatory choice of its
-// has no pick, so answering its prompt used to drop it from a count made afterward, and the equipment prompt that
-// followed was numbered as the first again.
+// from a count made before any is answered: a preconfigured trait is only asked about while a mandatory choice of its
+// has no pick, so answering its prompt takes it out of any count made afterward.
 func TestApplyTemplateCountsModifierPromptsBeforeAskingThem(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -651,12 +650,7 @@ func TestApplyTemplateCountsModifierPromptsBeforeAskingThem(t *testing.T) {
 	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		steps = append(steps, step{row: info.name, step: info.step, steps: info.steps})
 		// Answer as the user must, by making the choice.
-		gurps.Traverse(func(mod *gurps.TraitModifier) bool {
-			if gurps.IsMandatoryModifierChoice(mod) {
-				gurps.ModifierChoiceOptions(mod)[0].SetEnabled(true)
-			}
-			return false
-		}, false, false, modifiers...)
+		gurps.ModifierChoiceOptions(modifiers[0])[0].SetEnabled(true)
 		return true, false
 	})
 	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
