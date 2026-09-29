@@ -73,64 +73,47 @@ func TestModifierContainerKinds(t *testing.T) {
 	c.False(IsTemplateChoiceContainer(choice), "a modifier choice is not a template choice")
 }
 
-// TestModifierChoiceReadsUnsupportedFormsAsTheNearest verifies that a choice held in a form this version doesn't
-// support is read, and described, as the nearer of the two it does, an exact count of one or more as exactly one and any
-// other as at most one, yet kept as it is through a save, so that a newer version's choice isn't lost, until the choice is edited.
-// Neither a modifier that isn't a container nor a group keeps picker data, nor a container its VTT notes.
-func TestModifierChoiceReadsUnsupportedFormsAsTheNearest(t *testing.T) {
+// TestModifierChoiceNormalizesOnLoad verifies that loading rewrites a choice in the nearer supported form, an exact
+// count of one or more as mandatory and any other as optional, and settles its picks, and that neither a group nor a
+// modifier that isn't a container keeps picker data, nor a container its VTT notes.
+func TestModifierChoiceNormalizesOnLoad(t *testing.T) {
 	c := check.New(t)
 	load := func(container bool, tp TemplatePicker) *TraitModifier {
 		t.Helper()
+		m := NewTraitModifier(nil, nil, container)
+		if container {
+			newTraitModifierOption(m, "A", "+1")
+			newTraitModifierOption(m, "B", "+1")
+		}
+		data, err := json.Marshal(m)
+		c.NoError(err)
 		pickerData, err := json.Marshal(tp)
 		c.NoError(err)
-		var m TraitModifier
-		c.NoError(json.Unmarshal([]byte(`{"id":"`+string(NewTraitModifier(nil, nil, container).TID)+
-			`","name":"Choice","vtt_notes":"notes","choice":`+string(pickerData)+`}`), &m))
-		return &m
+		data = append(data[:len(data)-1], `,"vtt_notes":"notes","choice":`+string(pickerData)+"}"...)
+		var loaded TraitModifier
+		c.NoError(json.Unmarshal(data, &loaded))
+		return &loaded
 	}
 	number := func(compare criteria.NumericComparison, qualifier int) criteria.Number {
 		return criteria.Number{Compare: compare, Qualifier: fxp.FromInteger(qualifier)}
 	}
-
-	pickThree := TemplatePicker{Type: picker.Count, Qualifier: number(criteria.EqualsNumber, 3)}
-	exact := load(true, pickThree)
-	c.True(IsMandatoryModifierChoice(exact), "an exact count is read as exactly one")
-	c.Equal("Pick 1", ModifierChoiceDescription(exact), "and described as the form it is read as")
-	c.Equal(pickThree, exact.Choice, "the form it was held in is kept")
-	c.Equal("", exact.VTTNotes, "a container keeps no VTT notes")
-
-	byPoints := load(true, TemplatePicker{Type: picker.Points, Qualifier: number(criteria.AtLeastNumber, 5)})
-	c.True(IsModifierChoice(byPoints))
-	c.False(IsMandatoryModifierChoice(byPoints), "any other count is read as at most one")
-	c.Equal("Pick at most 1", ModifierChoiceDescription(byPoints))
-
-	for _, tp := range []TemplatePicker{
-		{Type: picker.Points, Qualifier: number(criteria.EqualsNumber, 10)},
-		{Type: picker.Count, Qualifier: number(criteria.EqualsNumber, 0)},
+	for tp, mandatory := range map[TemplatePicker]bool{
+		{Type: picker.Count, Qualifier: number(criteria.EqualsNumber, 3)}:   true,
+		{Type: picker.Count, Qualifier: number(criteria.AtLeastNumber, 1)}:  false,
+		{Type: picker.Count, Qualifier: number(criteria.EqualsNumber, 0)}:   false,
+		{Type: picker.Points, Qualifier: number(criteria.EqualsNumber, 10)}: false,
 	} {
-		other := load(true, tp)
-		c.True(IsModifierChoice(other))
-		c.False(IsMandatoryModifierChoice(other), "only an exact count of one or more is read as exactly one")
-		c.Equal("Pick at most 1", ModifierChoiceDescription(other))
-		c.False(other.isSupportedChoice())
+		choice := load(true, tp)
+		c.Equal(newModifierChoicePicker(mandatory), choice.Choice)
+		c.True(choice.Children[0].Enabled())
+		c.False(choice.Children[1].Enabled(), "its picks are settled")
+		c.Equal("", choice.VTTNotes, "a container keeps no VTT notes")
 	}
-
 	group := load(true, TemplatePicker{Qualifier: number(criteria.AtMostNumber, 2)})
-	c.False(IsModifierChoice(group))
 	c.Equal(TemplatePicker{}, group.Choice, "a group keeps no stray picker data")
-
 	leaf := load(false, newModifierChoicePicker(true))
 	c.Equal(TemplatePicker{}, leaf.Choice, "a modifier that isn't a container keeps no picker data")
 	c.Equal("notes", leaf.VTTNotes)
-
-	data, err := json.Marshal(exact)
-	c.NoError(err)
-	var reloaded TraitModifier
-	c.NoError(json.Unmarshal(data, &reloaded))
-	c.Equal(pickThree, reloaded.Choice, "a form this version doesn't support survives a save")
-
-	exact.SetMandatoryChoice(true)
-	c.Equal(newModifierChoicePicker(true), exact.Choice, "editing the choice rewrites it in a supported form")
 }
 
 // TestModifierLibraryKeepsItsChoices verifies that a modifier library keeps its choices when saved and loaded again,
@@ -613,41 +596,6 @@ func TestSyncSettlesTheOuterChoice(t *testing.T) {
 	c.False(IsModifierChoice(eqInner))
 	c.True(eqP.Enabled())
 	c.False(eqQ.Enabled())
-}
-
-// TestLoadingKeepsThePicksOfUnsupportedForms verifies that loading keeps a choice held in a supported form to one
-// enabled option, but leaves the options of one held in a form a newer version may allow several picks for as they are,
-// and so does any later settling, as a table edit beside the choice does, until the choice is edited.
-func TestLoadingKeepsThePicksOfUnsupportedForms(t *testing.T) {
-	c := check.New(t)
-	load := func(tp TemplatePicker) *TraitModifier {
-		t.Helper()
-		choice := NewTraitModifierChoice(nil, nil)
-		choice.Choice = tp
-		for range 2 {
-			newTraitModifierOption(choice, "Option", "+1")
-		}
-		data, err := json.Marshal(choice)
-		c.NoError(err)
-		var loaded TraitModifier
-		c.NoError(json.Unmarshal(data, &loaded))
-		return &loaded
-	}
-	atLeastOne := TemplatePicker{Type: picker.Count, Qualifier: criteria.Number{
-		Compare:   criteria.AtLeastNumber,
-		Qualifier: fxp.One,
-	}}
-	loaded := load(atLeastOne)
-	c.True(loaded.Children[0].Enabled() && loaded.Children[1].Enabled(), "a form this version doesn't support keeps its picks")
-	c.Equal(atLeastOne, loaded.Choice)
-	c.False(SettleModifierChoices(nil, loaded), "settling leaves it alone too")
-	c.True(loaded.Children[0].Enabled() && loaded.Children[1].Enabled())
-	loaded.SetMandatoryChoice(false)
-	c.True(SettleModifierChoices(nil, loaded), "once edited, it is settled like any other")
-	c.False(loaded.Children[1].Enabled())
-	loaded = load(newModifierChoicePicker(false))
-	c.True(loaded.Children[0].Enabled())
-	c.False(loaded.Children[1].Enabled(), "a supported form keeps no more than one")
 }
 
 // TestIndependentModifierChoicesWithinTheCap verifies that each way of making two open choices is costed, and that the

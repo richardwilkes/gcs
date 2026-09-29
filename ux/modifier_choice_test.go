@@ -13,7 +13,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -1115,15 +1114,12 @@ func TestTakingThePickAwayLeavesTheChoiceFlagged(t *testing.T) {
 }
 
 // TestEditingAChoiceLeavesItsOptionsAlone verifies that applying a choice's editor without changing what the choice
-// asks for leaves its options as they are: a mandatory choice on a sheet flagged for want of a pick isn't given one,
-// and a choice held in a form this version doesn't support keeps every option that form let it have.
+// asks for leaves its options as they are: a mandatory choice on a sheet flagged for want of a pick isn't given one.
 func TestEditingAChoiceLeavesItsOptionsAlone(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	unsupported := newTraitModifierChoiceFor(entity, true, []string{"C", "D"}, "C", "D")
-	unsupported.ModifierChoiceData().Choice.Qualifier.Compare = criteria.AtLeastNumber
-	traitEditor, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}), unsupported)
+	traitEditor, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}))
 
 	open := traitEditor.editorData.Modifiers[0]
 	choiceEditor, _ := buildEditorContent(traitEditor, open, initTraitModifierEditor)
@@ -1132,14 +1128,6 @@ func TestEditingAChoiceLeavesItsOptionsAlone(t *testing.T) {
 	c.Equal("Renamed", open.Name)
 	c.False(open.Children[0].Enabled(), "the edit doesn't pick the first option")
 	c.False(open.Children[1].Enabled())
-
-	held := traitEditor.editorData.Modifiers[1]
-	choiceEditor, _ = buildEditorContent(traitEditor, held, initTraitModifierEditor)
-	choiceEditor.editorData.Name = "Renamed"
-	choiceEditor.applyEdits()
-	c.True(held.Children[0].Enabled(), "the edit doesn't settle a form it doesn't know")
-	c.True(held.Children[1].Enabled())
-	c.Equal(criteria.AtLeastNumber, held.ModifierChoiceData().Choice.Qualifier.Compare, "and keeps the form")
 }
 
 // TestLockedPickHasItsEnabledBoxDisabled verifies that the editor of the pick of a mandatory choice on a sheet doesn't

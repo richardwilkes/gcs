@@ -59,13 +59,9 @@ func (m *ModifierContainerSyncData) IsChoice() bool {
 	return !m.Choice.IsZero()
 }
 
-// IsMandatoryChoice returns true if the container is a choice that asks for exactly one of its options. A choice held
-// in a form this version doesn't support is read as the nearer of the two that are: an exact count of one or more as
-// exactly one, and any other, such as a number of points or a count of none, as at most one, the choice that asks the
-// least of whoever makes it.
+// IsMandatoryChoice returns true if the container is a choice that asks for exactly one of its options.
 func (m *ModifierContainerSyncData) IsMandatoryChoice() bool {
-	return m.IsChoice() && m.Choice.Type.EnsureValid() == picker.Count &&
-		m.Choice.Qualifier.Compare.EnsureValid() == criteria.EqualsNumber && m.Choice.Qualifier.Qualifier >= fxp.One
+	return m.Choice == newModifierChoicePicker(true)
 }
 
 // SetMandatoryChoice makes the container a choice that asks for exactly one of its options when mandatory is true, and
@@ -74,17 +70,13 @@ func (m *ModifierContainerSyncData) SetMandatoryChoice(mandatory bool) {
 	m.Choice = newModifierChoicePicker(mandatory)
 }
 
-// isSupportedChoice returns true if the container is a choice held in one of the two forms this version supports.
-func (m *ModifierContainerSyncData) isSupportedChoice() bool {
-	return m.IsChoice() && m.Choice == newModifierChoicePicker(m.IsMandatoryChoice())
-}
-
-// normalizeModifierChoice clears whatever a group holds in the picker of a choice. A choice's picker is kept as it is,
-// even in a form this version doesn't support, so that a newer one's choice survives being loaded and saved here: it is
-// read as the nearer of the two forms that are supported (see IsMandatoryChoice), and only rewritten to one of them
-// when the choice is edited.
+// normalizeModifierChoice clears whatever a group holds in the picker of a choice, and rewrites a choice in the nearer
+// of the two supported forms: an exact count of one or more is mandatory, and anything else optional.
 func (m *ModifierContainerSyncData) normalizeModifierChoice() {
-	if !m.IsChoice() {
+	if m.IsChoice() {
+		m.SetMandatoryChoice(m.Choice.Type.EnsureValid() == picker.Count &&
+			m.Choice.Qualifier.Compare.EnsureValid() == criteria.EqualsNumber && m.Choice.Qualifier.Qualifier >= fxp.One)
+	} else {
 		m.Choice = TemplatePicker{}
 	}
 }
@@ -136,8 +128,7 @@ func IsMandatoryModifierChoice[T Node[T]](node T) bool {
 // 1", or an empty string if the node isn't one.
 func ModifierChoiceDescription[T Node[T]](node T) string {
 	if data := modifierChoiceData(node); data != nil {
-		// Described as the form it is read as, which a choice held in another form may not be.
-		return newModifierChoicePicker(data.IsMandatoryChoice()).String()
+		return data.Choice.String()
 	}
 	return ""
 }
@@ -347,13 +338,12 @@ func IsLockedModifierChoiceSelection[T Node[T]](mod T) bool {
 // SettleModifierChoices turns off all but one of the enabled options of each modifier choice among the nodes and their
 // children, since a choice never has more than one enabled. The one kept is the first enabled option that incoming
 // doesn't report as having just arrived, so that the pick a choice already had survives an option being added, moved
-// or pasted into it, or failing that the first enabled option. A nil incoming reports nothing as having arrived. A
-// choice held in a form this version doesn't support keeps its options as they are, since the newer version that saved
-// it may allow it more than one, until the choice is edited. Returns true if anything was turned off.
+// or pasted into it, or failing that the first enabled option. A nil incoming reports nothing as having arrived.
+// Returns true if anything was turned off.
 func SettleModifierChoices[T Node[T]](incoming func(T) bool, nodes ...T) bool {
 	changed := false
 	Traverse(func(node T) bool {
-		if data := modifierChoiceData(node); data != nil && data.isSupportedChoice() &&
+		if data := modifierChoiceData(node); data != nil &&
 			settleModifierChoice(incoming, node) {
 			changed = true
 		}

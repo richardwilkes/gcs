@@ -342,8 +342,7 @@ func modifierChoicePicker[N gurps.Node[N]](node N) gurps.TemplatePicker {
 // state the editor opened with is otherwise put back, since the option may have been picked, or had another picked
 // over it, since then. A choice itself is brought into line with the rules only when the editor changed what it asks
 // for, which it may then no longer be in line with after, say, being made mandatory on a sheet with nothing picked. An
-// edit that leaves that alone leaves its options alone too: one flagged for want of a pick stays that way, and one
-// held in a form this version doesn't support keeps the options that form allows.
+// edit that leaves that alone leaves its options alone too, so one flagged for want of a pick stays that way.
 func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled, choiceChanged bool) {
 	if gurps.IsModifierChoice(target) {
 		if choiceChanged {
