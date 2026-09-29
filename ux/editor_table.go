@@ -16,8 +16,8 @@ import (
 
 func newEditorTable[T gurps.Node[T]](parent *unison.Panel, provider TableProvider[T]) *unison.Table[*Node[T]] {
 	header, table := NewNodeTable(provider, unison.FieldFont)
-	owner := func() Rebuildable { return table.AncestorOrSelf[Rebuildable]() }
-	installStandardTableCmdHandlers(parent, table, provider, owner, true)
+	installStandardTableCmdHandlers(parent, table, provider,
+		func() Rebuildable { return table.AncestorOrSelf[Rebuildable]() }, true)
 	// Toggle State belongs here rather than in NewNodeTable because the editor tables are the only ones that carry the
 	// checkmark columns it flips: the modifier tables show the enabled column only when built for an editor, and the
 	// weapon tables show the Hide column only when they aren't built for a page. Installing it any higher would offer
@@ -28,10 +28,10 @@ func newEditorTable[T gurps.Node[T]](parent *unison.Panel, provider TableProvide
 	switch t := any(table).(type) {
 	case *unison.Table[*Node[*gurps.TraitModifier]]:
 		installToggleModifierEnabledHandler(t)
-		installModifierChoiceConversionHandlers[*gurps.TraitModifier, *gurps.TraitModifierEditData](t, t, owner)
+		installModifierChoiceConversionHandlers[*gurps.TraitModifier, *gurps.TraitModifierEditData](t, t)
 	case *unison.Table[*Node[*gurps.EquipmentModifier]]:
 		installToggleModifierEnabledHandler(t)
-		installModifierChoiceConversionHandlers[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData](t, t, owner)
+		installModifierChoiceConversionHandlers[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData](t, t)
 	case *unison.Table[*Node[*gurps.Weapon]]:
 		installToggleHiddenHandler(t)
 	}

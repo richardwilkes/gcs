@@ -111,26 +111,25 @@ func installEquipmentContainerConversionHandlers(paneler unison.Paneler, table *
 		func(_ any) { convertEquipmentToPhysicalContainers(owner, table) })
 }
 
-// installModifierChoiceConversionHandlers installs the commands that convert the selected modifier groups to modifier
-// choices and back. Unlike a template choice, a modifier choice may be held anywhere modifiers are, so every modifier
-// table installs these: a library list's and the one in a trait or equipment editor. The owner is asked for when a
-// command runs, since an editor's table is built before it is attached to the editor that owns it.
-func installModifierChoiceConversionHandlers[T gurps.Node[T], D gurps.EditorData[T]](paneler unison.Paneler, table *unison.Table[*Node[T]], owner func() Rebuildable) {
-	for _, kind := range []containerKind{choiceContainerKind, groupContainerKind} {
-		id := ConvertToChoiceContainerItemID
-		if kind == groupContainerKind {
-			id = ConvertToGroupContainerItemID
-		}
-		paneler.AsPanel().InstallCmdHandlers(id,
-			func(_ any) bool { return len(containerKindConvertibleSelection(table, kind)) != 0 },
-			func(_ any) { convertSelectedContainers[T, D](owner(), table, kind) })
-	}
+// installModifierChoiceConversionHandlers installs the commands that convert modifier groups to choices and back, on
+// every modifier table, since a modifier choice may be held anywhere modifiers are.
+func installModifierChoiceConversionHandlers[T gurps.Node[T], D gurps.EditorData[T]](paneler unison.Paneler, table *unison.Table[*Node[T]]) {
+	installContainerKindConversionHandler[T, D](paneler, table, nil, ConvertToChoiceContainerItemID, choiceContainerKind)
+	installContainerKindConversionHandler[T, D](paneler, table, nil, ConvertToGroupContainerItemID, groupContainerKind)
 }
 
+// installContainerKindConversionHandler installs the command that converts the selected containers to the given kind.
+// A nil owner is looked up when the command runs, for a table built before it is attached to its owner.
 func installContainerKindConversionHandler[T gurps.Node[T], D gurps.EditorData[T]](paneler unison.Paneler, table *unison.Table[*Node[T]], owner Rebuildable, id int, kind containerKind) {
 	paneler.AsPanel().InstallCmdHandlers(id,
 		func(_ any) bool { return len(containerKindConvertibleSelection(table, kind)) != 0 },
-		func(_ any) { convertSelectedContainers[T, D](owner, table, kind) })
+		func(_ any) {
+			o := owner
+			if o == nil {
+				o = table.AncestorOrSelf[Rebuildable]()
+			}
+			convertSelectedContainers[T, D](o, table, kind)
+		})
 }
 
 // convertSelectedContainers converts the selected rows that can be converted to the given kind, after closing any
