@@ -250,20 +250,14 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 				return false
 			}
 			s.addRow(gm.Depth(), text, nil, nil)
-			none := unison.NewRadioButton()
-			none.Accessibility.Name = i18n.Text("None")
-			none.ClickCallback = changed
-			choice.group.Add(none)
+			none := choice.newRadio(i18n.Text("None"), changed)
 			choice.group.Select(none)
 			s.addRow(gm.Depth()+1, "*"+i18n.Text("None")+"*", none, nil)
 			return false
 		}
 		if owner, found := gurps.ModifierChoiceFor(m); found && choices[owner] != nil {
 			choice := choices[owner]
-			rb := unison.NewRadioButton()
-			rb.Accessibility.Name = gm.NameWithReplacements()
-			rb.ClickCallback = changed
-			choice.group.Add(rb)
+			rb := choice.newRadio(gm.NameWithReplacements(), changed)
 			choice.options[rb] = gm
 			if gm.Enabled() && !choice.hasPickedOption() {
 				choice.group.Select(rb)
@@ -272,6 +266,7 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 			return false
 		}
 		cb := unison.NewCheckBox()
+		cb.Font = unison.DefaultMarkdownTheme.Font
 		cb.Accessibility.Name = gm.NameWithReplacements()
 		cb.State = check.FromBool(gm.Enabled())
 		s.boxes[cb] = gm
@@ -289,6 +284,16 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 	}
 	changed()
 	return s
+}
+
+// newRadio returns a radio button for one answer to the choice.
+func (c *choiceRadioGroup) newRadio(name string, onClick func()) *unison.RadioButton {
+	rb := unison.NewRadioButton()
+	rb.Font = unison.DefaultMarkdownTheme.Font
+	rb.Accessibility.Name = name
+	rb.ClickCallback = onClick
+	c.group.Add(rb)
+	return rb
 }
 
 // hasPickedOption returns true if one of the options, rather than "None", is picked.
@@ -329,12 +334,6 @@ func (s *modifierSelection) addRow(depth int, text string, control interface {
 			VAlign: align.Start,
 		})
 		panel.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2}))
-		switch c := panel.Self.(type) {
-		case *unison.CheckBox:
-			c.Font = unison.DefaultMarkdownTheme.Font
-		case *unison.RadioButton:
-			c.Font = unison.DefaultMarkdownTheme.Font
-		}
 		md.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
 			if where.In(md.ContentRect(false)) {
 				control.Click()
